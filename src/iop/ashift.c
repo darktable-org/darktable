@@ -1196,7 +1196,7 @@ void modify_roi_out(dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
         "insane data", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
     {
       dt_control_log
         (_("module '%s' has insane data so it is bypassed for now."
@@ -3447,7 +3447,7 @@ void process(dt_iop_module_t *self,
   const int ch_width = ch * roi_in->width;
 
   // only for preview pipe: collect input buffer data and do some other evaluations
-  if(g && self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(g && self->dev->gui_attached && dt_pipe_is_preview(piece->pipe))
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
@@ -3585,7 +3585,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_homo = NULL;
 
   // only for preview pipe: collect input buffer data and do some other evaluations
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly

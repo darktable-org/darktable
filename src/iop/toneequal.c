@@ -1033,7 +1033,7 @@ void toneeq_process(dt_iop_module_t *self,
       dt_iop_gui_leave_critical_section(self);
     }
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
     {
       // For DT_DEV_PIXELPIPE_FULL, we cache the luminance mask for performance
       // but it's not accessed from GUI
@@ -1051,7 +1051,7 @@ void toneeq_process(dt_iop_module_t *self,
       luminance = g->full_preview_buf;
       cached = TRUE;
     }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    else if(dt_pipe_is_preview(piece->pipe))
     {
       // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache it too to
       // compute the full image stats upon user request in GUI threads
@@ -1097,7 +1097,7 @@ void toneeq_process(dt_iop_module_t *self,
   {
     // caching path : store the luminance mask for GUI access
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
     {
       dt_hash_t saved_hash;
       hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
@@ -1113,7 +1113,7 @@ void toneeq_process(dt_iop_module_t *self,
         hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    else if(dt_pipe_is_preview(piece->pipe))
     {
       dt_hash_t saved_hash;
       hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
@@ -1146,7 +1146,7 @@ void toneeq_process(dt_iop_module_t *self,
   }
 
   // Display output
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     if(g->mask_display)
     {

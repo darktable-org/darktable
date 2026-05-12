@@ -2116,7 +2116,7 @@ void process(dt_iop_module_t *self,
     && mask_clipped_pixels(in, mask, data->normalize, data->reconstruct_feather, roi_out->width, roi_out->height);
 
   // display mask and exit
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && mask)
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && mask)
   {
     const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
@@ -2449,7 +2449,7 @@ int process_cl(dt_iop_module_t *self,
   clipped = NULL;
 
   // display mask and exit
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 

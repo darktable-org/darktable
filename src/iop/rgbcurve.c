@@ -1748,7 +1748,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_rgbcurve_data_t *d = piece->data;
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)p1;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(pipe))
   {
     piece->request_histogram |= DT_REQUEST_ON;
     self->histogram_middle_grey = p->compensate_middle_grey;

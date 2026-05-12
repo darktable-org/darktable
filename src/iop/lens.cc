@@ -1896,9 +1896,7 @@ static void _commit_params_lf(dt_iop_module_t *self,
   }
 
   /* calculate which corrections will be applied by Lensfun */
-  if(self->dev->gui_attached
-     && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
     const int used_lf_mask = (raw_monochrome)
@@ -2561,8 +2559,7 @@ static void _commit_params_md(dt_iop_module_t *self,
      || (d->scale_md > 2.0f)) // reset image scale if unproper data
     d->scale_md = 1.0f;
 
-  if(self->dev->gui_attached && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = _check_corrections_md(d);
@@ -2577,8 +2574,7 @@ static void _commit_params_vig(dt_iop_module_t *self,
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
-  if(self->dev->gui_attached && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = 0;
@@ -3009,7 +3005,7 @@ void process(dt_iop_module_t *self,
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean mask = g && g->vig_masking && dt_pipe_is_full(piece->pipe);
   const gboolean pre_vignette = mask || (d->v_strength > 0.0f);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
   float *data = (float *)ivoid;
@@ -3088,7 +3084,7 @@ int process_cl(dt_iop_module_t *self,
 
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean mask = g && g->vig_masking && dt_pipe_is_full(piece->pipe);
   const gboolean pre_vignette = mask || (d->v_strength > 0.0f);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 

@@ -642,8 +642,8 @@ void process(dt_iop_module_t *self,
   const float *const restrict brilliance = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->brilliance);
 
   const gint mask_display
-      = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && self->dev->gui_attached
-         && g && g->mask_display);
+      = dt_pipe_is_full(piece->pipe) && self->dev->gui_attached
+         && g && g->mask_display;
 
   // pixel size of the checker background
   const size_t checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
@@ -1027,8 +1027,8 @@ int process_cl(dt_iop_module_t *self,
 
   // Size of the checker
   const gint mask_display
-      = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && self->dev->gui_attached
-         && g && g->mask_display);
+      = dt_pipe_is_full(piece->pipe) && self->dev->gui_attached
+         && g && g->mask_display;
   const int checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
   const int checker_2 = 2 * checker_1;
   const int mask_type = (mask_display) ? g->mask_type : 0;

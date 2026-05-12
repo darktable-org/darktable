@@ -229,7 +229,7 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
                            const int scale)
 {
   if(!darktable.dump_pfm_module) return;
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == 0) return;
+  if(!dt_pipe_is_full(piece->pipe)) return;
 
   char name[256];
   snprintf(name, sizeof(name), namespec, scale);
@@ -1640,15 +1640,13 @@ static float nlmeans_scattering(int *nbhood,
   float scattering = d->scattering;
 
   const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
-  if(piece->pipe->type
-     & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_THUMBNAIL))
+  if(dt_pipe_is_fast(piece->pipe) || dt_pipe_is_preview(piece->pipe) || dt_pipe_is_thumb(piece->pipe))
   {
     // much faster but inaccurate for previews
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
-  else if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
-          && !darktable.develop->late_scaling.enabled)
+  else if(dt_pipe_is_canvas(piece->pipe) && !darktable.develop->late_scaling.enabled)
   {
     // faster but slightly more inaccurate
     K = MAX(MIN(4, K), K * scale);
@@ -1903,7 +1901,7 @@ static void process_variance(dt_iop_module_t *self,
   size_t npixels = (size_t)width * height;
 
   dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
+  if(dt_pipe_is_preview(piece->pipe) || (g == NULL))
   {
     return;
   }

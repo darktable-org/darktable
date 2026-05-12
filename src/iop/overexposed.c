@@ -403,8 +403,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  piece->enabled = self->dev->overexposed.enabled && fullpipe && self->dev->gui_attached;
+  piece->enabled = self->dev->overexposed.enabled && dt_pipe_is_full(piece->pipe) && self->dev->gui_attached;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

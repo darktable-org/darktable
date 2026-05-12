@@ -368,7 +368,7 @@ void process(
   const dt_aligned_pixel_t norm2 = { nL * nL, nC * nC, nC * nC, 1.0f };
 
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  const int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL));
+  const int decimate = dt_pipe_is_preview(piece->pipe) || dt_pipe_is_thumb(piece->pipe);
 
   const dt_nlmeans_param_t params = { .scattering = 0,
                                       .scale = scale,

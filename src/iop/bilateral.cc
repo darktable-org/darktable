@@ -166,7 +166,7 @@ void process(dt_iop_module_t *self,
   // if rad <= 6 use naive version!
   const int prad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
   const int rad = MIN(prad, MIN(roi_out->width, roi_out->height) - 2 * prad);
-  const gboolean thumb = piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL;
+  const gboolean thumb = dt_pipe_is_thumb(piece->pipe);
   if(rad < 1 || (rad <= MAX_DIRECT_STAMP_RADIUS && thumb))
   {
     // no use denoising the thumbnail. takes ages without permutohedral

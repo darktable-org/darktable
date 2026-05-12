@@ -532,7 +532,7 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->width = MAX(4, (int)odx);
   roi_out->height = MAX(4, (int)ody);
 
-  const gboolean exporting = piece->pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL);
+  const gboolean exporting = dt_pipe_is_export(piece->pipe) || dt_pipe_is_thumb(piece->pipe);
   const gboolean aligned = d->ratio_d != 0 && d->ratio_n != 0;
   if(!exporting || !aligned)
     return;

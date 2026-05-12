@@ -579,7 +579,7 @@ void process(dt_iop_module_t *self,
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   // display selection if requested
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+  if(dt_pipe_is_full(piece->pipe)
      && g
      && g->display_mask
      && dt_iop_has_focus(self)
@@ -2789,7 +2789,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(pipe))
     piece->request_histogram |= DT_REQUEST_ON;
   else
     piece->request_histogram &= ~DT_REQUEST_ON;

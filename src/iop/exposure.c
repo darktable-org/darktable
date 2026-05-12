@@ -494,7 +494,7 @@ static void _process_common_setup(dt_iop_module_t *self,
     }
 
     // second, show computed correction in UI.
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+    if(g && dt_pipe_is_preview(piece->pipe))
     {
       dt_iop_gui_enter_critical_section(self);
       g->deflicker_computed_exposure = exposure;

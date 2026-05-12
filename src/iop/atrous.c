@@ -289,7 +289,7 @@ static void process_wavelets(dt_iop_module_t *self,
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -376,7 +376,7 @@ int process_cl(dt_iop_module_t *self,
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -486,7 +486,7 @@ int process_cl(dt_iop_module_t *self,
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);

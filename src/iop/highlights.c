@@ -550,7 +550,7 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const dt_iop_highlights_mode_t dmode =  d->mode;
   const float clipper = d->clip * highlights_clip_magics[dmode];
 
@@ -832,8 +832,8 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean fastmode = pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
+  const gboolean fastmode = dt_pipe_is_fast(pipe);
   const dt_iop_highlights_mode_t dmode = fastmode && (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
                                         ? DT_IOP_HIGHLIGHTS_OPPOSED
                                         : d->mode;
@@ -876,7 +876,7 @@ void process(dt_iop_module_t *self,
 
   /* While rendering thumnbnails we look for an acceptable lower quality */
   gboolean high_quality = TRUE;
-  if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(dt_pipe_is_thumb(pipe))
   {
     const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(pipe->final_width, pipe->final_height);
     const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
@@ -1039,7 +1039,7 @@ void commit_params(dt_iop_module_t *self,
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
     piece->process_tiling_ready = FALSE;
 
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
