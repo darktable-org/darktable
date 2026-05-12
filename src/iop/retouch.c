@@ -4596,7 +4596,7 @@ int process_cl(dt_iop_module_t *self,
 
   // copy input image to the new buffer
   {
-    size_t region[] = { roi_rt->width, roi_rt->height };
+    const size_t region[2] = { roi_rt->width, roi_rt->height };
     err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, in_retouch, CLIMG_ORIGIN, region, 0);
     if(err != CL_SUCCESS) goto cleanup;
   }

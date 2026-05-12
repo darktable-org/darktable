@@ -1620,7 +1620,7 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t region[] = { width, height };
+  const size_t region[2] = { width, height };
 
   // allow fast mode, just copy input to output
   if(fastmode)

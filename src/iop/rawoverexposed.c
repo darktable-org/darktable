@@ -251,7 +251,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  size_t region[] = { width, height };
+  const size_t region[2] = { width, height };
 
   process_common_setup(self, piece);
 

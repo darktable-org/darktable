@@ -998,7 +998,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   dt_colorspaces_iccprofile_info_cl_t *work_profile_info_cl = NULL;
   cl_float *work_profile_lut_cl = NULL;
 
-  size_t region[] = { owidth, oheight };
+  const size_t region[2] = { owidth, oheight };
 
   // parameters, for every channel the 4 limits + pre-computed
   // increasing slope and decreasing slope

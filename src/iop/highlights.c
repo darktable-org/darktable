@@ -544,8 +544,8 @@ int process_cl(dt_iop_module_t *self,
       return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
     else
     {
-      size_t iorigin[] = { roi_out->x, roi_out->y };
-      size_t region[] = { roi_out->width, roi_out->height };
+      const size_t iorigin[2] = { roi_out->x, roi_out->y };
+      const size_t region[2] = { roi_out->width, roi_out->height };
       return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, CLIMG_ORIGIN, region);
     }
   }

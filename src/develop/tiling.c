@@ -745,8 +745,8 @@ static void _default_process_tiling_ptp(dt_iop_module_t *self,
       if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
 
       /* origin and region of effective part of tile, which we want to store later */
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { wd, ht, 1 };
+      size_t origin[2] = { 0, 0 };
+      size_t region[2] = { wd, ht };
 
       /* roi_in and roi_out for process_cl on subbuffer */
       dt_iop_roi_t iroi = { roi_in->x + tx * tile_wd, roi_in->y + ty * tile_ht, wd, ht, roi_in->scale };

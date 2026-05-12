@@ -1324,8 +1324,8 @@ static int _process_cl_lf(dt_iop_module_t *self,
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
 
-  size_t iregion[] = { (size_t)iwidth, (size_t)iheight };
-  size_t oregion[] = { (size_t)owidth, (size_t)oheight };
+  const size_t iregion[2] = { (size_t)iwidth, (size_t)iheight };
+  const size_t oregion[2] = { (size_t)owidth, (size_t)oheight };
 
   int modflags;
   int ldkernel = -1;
@@ -2829,7 +2829,7 @@ static int _process_cl_md(dt_iop_module_t *self,
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
   {
-    size_t oregion[] = { (size_t)roi_out->width, (size_t)roi_out->height };
+    const size_t oregion[2] = { (size_t)roi_out->width, (size_t)roi_out->height };
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out,
                                         CLIMG_ORIGIN, CLIMG_ORIGIN, oregion);
   }
@@ -3120,7 +3120,7 @@ int process_cl(dt_iop_module_t *self,
   }
   else
   {
-    size_t region[] = { (size_t)roi_in->width, (size_t)roi_in->height };
+    const size_t region[2] = { (size_t)roi_in->width, (size_t)roi_in->height };
     err = dt_opencl_enqueue_copy_image(piece->pipe->devid, data,
                                        dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   }

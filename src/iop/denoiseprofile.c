@@ -2231,7 +2231,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
   if(npixels < 2)
   {
     // copy original input from dev_in -> dev_out
-    size_t region[] = { width, height };
+    const size_t region[2] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
     free(dev_detail);
@@ -2525,7 +2525,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
   // account, so current output lies in dev_buf1
   if(dev_buf1 != dev_tmp)
   {
-    size_t region[] = { width, height };
+    const size_t region[2] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_buf1, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
   }
