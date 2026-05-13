@@ -1727,12 +1727,14 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   const gboolean warnings_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_warnings");
   const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
 
-  dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_toe_power,
-                                    params.need_convex_toe && warnings_enabled
-                                    ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
-  dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
-                                    params.need_concave_shoulder && warnings_enabled
-                                    ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+  if(g->basic_curve_controls.curve_toe_power)
+    dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_toe_power,
+                                     params.need_convex_toe && warnings_enabled
+                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+  if(g->basic_curve_controls.curve_shoulder_power)
+    dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
+                                     params.need_concave_shoulder && warnings_enabled
+                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
 }
 
 static void _update_redraw_dynamic_gui(dt_iop_module_t* const self,
