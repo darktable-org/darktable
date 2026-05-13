@@ -613,7 +613,7 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
   return TRUE;
 }
 
-// find libonnxruntime.so.* recursively, skip auditwheel *.libs/ peers
+// find the ORT runtime library recursively, skipping *.libs/ peers
 static gchar *_scan_for_ort_lib(const char *root)
 {
   GDir *d = g_dir_open(root, 0, NULL);
@@ -628,7 +628,11 @@ static gchar *_scan_for_ort_lib(const char *root)
       if(!g_str_has_suffix(name, ".libs"))
         result = _scan_for_ort_lib(p);
     }
+#ifdef _WIN32
+    else if(g_strcmp0(name, "onnxruntime.dll") == 0)
+#else
     else if(g_str_has_prefix(name, "libonnxruntime.so."))
+#endif
     {
       result = g_strdup(p);
     }
@@ -679,33 +683,11 @@ GList *dt_ai_ort_find_libraries(void)
     if(g_file_test(dir, G_FILE_TEST_IS_DIR))
     {
 #ifdef _WIN32
-      // look for onnxruntime.dll
-      gchar *exact = g_build_filename(dir, "onnxruntime.dll", NULL);
-      if(g_file_test(exact, G_FILE_TEST_EXISTS))
-      {
-        user_paths[i] = exact;
-      }
-      else
-      {
-        g_free(exact);
-        GDir *d = g_dir_open(dir, 0, NULL);
-        if(d)
-        {
-          const gchar *name;
-          while((name = g_dir_read_name(d)))
-          {
-            if(g_str_has_prefix(name, "onnxruntime") &&
-               g_str_has_suffix(name, ".dll"))
-            {
-              user_paths[i] = g_build_filename(dir, name, NULL);
-              break;
-            }
-          }
-          g_dir_close(d);
-        }
-      }
+      const char *flat_name = "onnxruntime.dll";
 #else
-      gchar *exact = g_build_filename(dir, "libonnxruntime.so", NULL);
+      const char *flat_name = "libonnxruntime.so";
+#endif
+      gchar *exact = g_build_filename(dir, flat_name, NULL);
       if(g_file_test(exact, G_FILE_TEST_EXISTS))
       {
         user_paths[i] = exact;
@@ -713,10 +695,8 @@ GList *dt_ai_ort_find_libraries(void)
       else
       {
         g_free(exact);
-        // preserve_layout puts the lib in onnxruntime/capi/
         user_paths[i] = _scan_for_ort_lib(dir);
       }
-#endif
     }
     g_free(dir);
   }
