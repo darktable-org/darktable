@@ -44,6 +44,7 @@
         <script>\..\..\share\darktable\ort_gpu.json
         $env:ProgramFiles\darktable\share\darktable\ort_gpu.json
         $env:LOCALAPPDATA\darktable\share\darktable\ort_gpu.json
+        https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json (fallback)
 
 .EXAMPLE
     .\install-ort-gpu.ps1
@@ -78,10 +79,17 @@ $ErrorActionPreference = "Stop"
 
 # --- Locate manifest ---
 if (-not $Manifest) {
-    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $candidates = @(
-        (Join-Path $ScriptDir "..\..\data\ort_gpu.json"),
-        (Join-Path $ScriptDir "..\..\share\darktable\ort_gpu.json"),
+    # MyInvocation.MyCommand.Path is null when run via irm | iex (no file on disk)
+    $ScriptPath = $MyInvocation.MyCommand.Path
+    $candidates = @()
+    if ($ScriptPath) {
+        $ScriptDir = Split-Path -Parent $ScriptPath
+        $candidates += @(
+            (Join-Path $ScriptDir "..\..\data\ort_gpu.json"),
+            (Join-Path $ScriptDir "..\..\share\darktable\ort_gpu.json")
+        )
+    }
+    $candidates += @(
         (Join-Path $env:ProgramFiles "darktable\share\darktable\ort_gpu.json"),
         (Join-Path $env:LOCALAPPDATA "darktable\share\darktable\ort_gpu.json")
     )
@@ -89,9 +97,18 @@ if (-not $Manifest) {
         if (Test-Path $c) { $Manifest = $c; break }
     }
     if (-not $Manifest) {
-        Write-Host "Error: cannot find ort_gpu.json manifest." -ForegroundColor Red
-        Write-Host "  Use -Manifest <path> to specify it manually."
-        exit 1
+        # No local copy found; fetch from GitHub so the script works when
+        # downloaded and run directly from a raw GitHub URL.
+        $GhManifestUrl = "https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json"
+        $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "ort_gpu_$(New-Guid).json"
+        try {
+            Invoke-WebRequest -Uri $GhManifestUrl -OutFile $tmp -UseBasicParsing
+            $Manifest = $tmp
+        } catch {
+            Write-Host "Error: cannot find or download ort_gpu.json." -ForegroundColor Red
+            Write-Host "  Use -Manifest <path> to specify it manually."
+            exit 1
+        }
     }
 }
 
@@ -99,6 +116,10 @@ if (-not (Test-Path $Manifest)) {
     Write-Host "Error: manifest not found: $Manifest" -ForegroundColor Red
     exit 1
 }
+
+Write-Host ""
+Write-Host "ONNX Runtime GPU acceleration installer"
+Write-Host "========================================"
 
 $Platform = "windows"
 $Arch = "x86_64"
@@ -212,9 +233,6 @@ if (-not $Package) {
 $InstallDir = Join-Path $env:LOCALAPPDATA $Package.install_subdir
 
 # --- Info & confirmation ---
-Write-Host ""
-Write-Host "ONNX Runtime $($Package.ort_version) - GPU acceleration installer"
-Write-Host "============================================================"
 Write-Host ""
 Write-Host "GPU: $($Selected.label)"
 if ($Selected.driver) { Write-Host "Driver: $($Selected.driver)" }

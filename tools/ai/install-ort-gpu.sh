@@ -53,6 +53,7 @@ OPTIONS
             <script>/../../share/darktable/ort_gpu.json
             /usr/share/darktable/ort_gpu.json
             /usr/local/share/darktable/ort_gpu.json
+            https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json (fallback)
 
     -h, --help
         Show this help and exit.
@@ -76,6 +77,19 @@ YES=false
 FORCE=false
 MANIFEST=""
 VENDOR_OVERRIDE=""
+
+# read user input from the controlling tty, not stdin -- when run via
+# `curl ... | bash`, stdin is the pipe and `read` returns immediately
+# with empty input. usage: ask "Prompt: " VAR_NAME
+ask() {
+  local prompt="$1" var="$2"
+  if [ -r /dev/tty ]; then
+    read -rp "$prompt" "$var" </dev/tty
+  else
+    echo "Cannot prompt for input (no tty). Re-run with --vendor and -y" >&2
+    exit 1
+  fi
+}
 while [ $# -gt 0 ]; do
   case "$1" in
     -y|--yes) YES=true; shift ;;
@@ -100,9 +114,16 @@ if [ -z "$MANIFEST" ]; then
   elif [ -f "/usr/local/share/darktable/ort_gpu.json" ]; then
     MANIFEST="/usr/local/share/darktable/ort_gpu.json"
   else
-    echo "Error: cannot find ort_gpu.json manifest." >&2
-    echo "  Use --manifest <path> to specify it manually." >&2
-    exit 1
+    # No local copy found; fetch from GitHub so the script works when
+    # downloaded and run directly from a raw GitHub URL.
+    GH_MANIFEST_URL="https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json"
+    MANIFEST="$(mktemp --suffix=.json)"
+    if ! command -v curl >/dev/null 2>&1; then
+      echo "Error: cannot find ort_gpu.json manifest and curl is not available." >&2
+      echo "  Use --manifest <path> to specify it manually." >&2
+      exit 1
+    fi
+    curl -fsSL "$GH_MANIFEST_URL" -o "$MANIFEST" || { echo "Error: cannot download ort_gpu.json from GitHub." >&2; exit 1; }
   fi
 fi
 
@@ -119,6 +140,10 @@ fi
 
 ARCH=$(uname -m)
 PLATFORM="linux"
+
+echo ""
+echo "ONNX Runtime GPU acceleration installer"
+echo "========================================"
 
 # --- Detect GPU (skipped with --vendor) ---
 VENDOR=""
@@ -299,7 +324,7 @@ else
     esac
   done
   echo ""
-  read -rp "Select GPU [1-${#VENDORS[@]}]: " choice
+  ask "Select GPU [1-${#VENDORS[@]}]: " choice
   idx=$((choice - 1))
   if [ "$idx" -lt 0 ] || [ "$idx" -ge ${#VENDORS[@]} ]; then
     echo "Invalid selection." >&2
@@ -373,9 +398,6 @@ INSTALL_DIR="$HOME/.local/lib/$PKG_INSTALL_SUBDIR"
 
 # --- Info & confirmation ---
 echo ""
-echo "ONNX Runtime $PKG_ORT_VERSION - GPU acceleration installer"
-echo "============================================================"
-echo ""
 echo "GPU: $SEL_LABEL"
 [ -n "$SEL_DRIVER" ] && echo "Driver: $SEL_DRIVER"
 echo "ORT version: $PKG_ORT_VERSION"
@@ -385,7 +407,7 @@ echo "Install to: $INSTALL_DIR"
 echo ""
 
 if [ "$YES" = false ]; then
-  read -rp "Continue? [y/N] " answer
+  ask "Continue? [y/N] " answer
   if [[ ! "$answer" =~ ^[Yy] ]]; then
     echo "Aborted."
     exit 0
@@ -400,14 +422,11 @@ trap 'rm -rf "$TMPDIR"' EXIT
 ARCHIVE="$TMPDIR/ort-package"
 
 echo "Downloading..."
-if command -v wget &>/dev/null; then
-  wget -q --show-progress -O "$ARCHIVE" "$PKG_URL"
-elif command -v curl &>/dev/null; then
-  curl -fL --progress-bar -o "$ARCHIVE" "$PKG_URL"
-else
-  echo "Error: neither wget nor curl found." >&2
+if ! command -v curl &>/dev/null; then
+  echo "Error: curl not found." >&2
   exit 1
 fi
+curl -fL --progress-bar -o "$ARCHIVE" "$PKG_URL"
 
 if [ ! -s "$ARCHIVE" ]; then
   echo "Error: download failed from $PKG_URL" >&2
