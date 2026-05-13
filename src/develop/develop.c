@@ -2887,9 +2887,9 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
     {
     case SIZE_LARGE:
       tscalemax = constrained
-        ? (tscaleold > 2.0f
+        ? (tscaleold >= 2.0f
            ? tscaletop
-           : (tscaleold > 1.0f ? 2.0f : 1.0f))
+           : (tscaleold >= 1.0f ? 2.0f : 1.0f))
         : tscaletop;
       tscalemin = constrained
         ? (tscaleold < tscalefit
@@ -2899,7 +2899,7 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
       break;
     case SIZE_MEDIUM:
       tscalemax = constrained
-        ? (tscaleold > 2.0f
+        ? (tscaleold >= 2.0f
            ? tscaletop
            : 2.0f)
         : tscaletop;
@@ -2911,7 +2911,7 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
       break;
     case SIZE_SMALL:
       tscalemax = constrained
-        ? (tscaleold > 2.0f
+        ? (tscaleold >= 2.0f
            ? tscaletop
            : tscalefit)
         : tscaletop;
