@@ -36,14 +36,6 @@
 #define OVERLAP_DENOISE 64
 #define OVERLAP_UPSCALE 16
 
-// candidate tile sizes from largest to smallest, used by both the
-// startup memory-budget selector and the runtime OOM-retry fallback.
-// the memory-budget check gates which entry is chosen at startup;
-// the tile size cache persists the result so JIT-compiling EPs
-// (MIGraphX, CoreML, TensorRT) only pay the compile cost once
-#define DT_RESTORE_TILE_LADDER_1X {2048, 1536, 1024, 768, 512, 384, 256}
-#define DT_RESTORE_TILE_LADDER_SR {768, 512, 384, 256, 192}
-
 // --- environment lifecycle ---
 
 dt_restore_env_t *dt_restore_env_init(void)
@@ -186,66 +178,43 @@ static float _parse_target_mean(const dt_ai_model_info_t *info,
   return (float)v;
 }
 
-static int _select_tile_size(const int *ladder, int n_ladder, int scale);
-// resolve the tile ladder for a model: prefer the "input_sizes" JSON
-// array attribute from config.json when present, otherwise fall back
-// to the built-in ladder for the model's scale. always returns a
-// freshly-allocated int[] + count that the caller owns and g_free()s
-static void _resolve_tile_ladder(const dt_ai_model_info_t *info,
-                                 int scale,
-                                 int **out_sizes,
-                                 int *out_count);
-
-// returns the cached tile size for model_id+scale+provider combo, or 0 if not set
-static int _get_cached_tile_size(const char *model_id, int scale)
+// resolve the model's declared input size. all NR models ship static
+// ONNX exports with one fixed input H×W, declared in config.json as
+// either "<stem>.input_sizes" (multi-model package) or top-level
+// "input_sizes" (single-model package). returns the first entry, or
+// 0 if neither is declared
+static int _resolve_tile_size(const dt_ai_model_info_t *info,
+                              const char *stem)
 {
-  char *prov = dt_conf_get_string(DT_AI_CONF_PROVIDER);
-  char *key = g_strdup_printf("plugins/ai/tile_cache/%s/%d/%s",
-                               model_id, scale, prov ? prov : "auto");
-  g_free(prov);
-  const int cached = dt_conf_get_int(key);
-  g_free(key);
-  return cached;
+  int n = 0;
+  int *sizes = NULL;
+  if(stem)
+  {
+    char *key = g_strdup_printf("%s.input_sizes", stem);
+    sizes = dt_ai_model_attribute_int_array(info, key, &n);
+    g_free(key);
+  }
+  if(!sizes || n == 0)
+  {
+    g_free(sizes);
+    sizes = dt_ai_model_attribute_int_array(info, "input_sizes", &n);
+  }
+  const int tile_size = (sizes && n > 0) ? sizes[0] : 0;
+  g_free(sizes);
+  return tile_size;
 }
 
-// persist a successful tile size to darktablerc so the next run skips OOM retry
-static void _set_cached_tile_size(const char *model_id, int scale, int tile_size)
-{
-  char *prov = dt_conf_get_string(DT_AI_CONF_PROVIDER);
-  char *key = g_strdup_printf("plugins/ai/tile_cache/%s/%d/%s",
-                               model_id, scale, prov ? prov : "auto");
-  g_free(prov);
-  dt_conf_set_int(key, tile_size);
-  g_free(key);
-}
-
-// internal: create an ORT session for model_id/model_file with spatial dims
-// fixed to tile_size. returns a new ai_ctx, or NULL on failure
-static dt_ai_context_t *_create_session(dt_ai_environment_t *ai_env,
-                                        const char *model_id,
-                                        const char *model_file,
-                                        const char *dim_h,
-                                        const char *dim_w,
-                                        int tile_size,
-                                        uint32_t ep_flags)
-{
-  const dt_ai_dim_override_t overrides[] = {
-    { "batch_size", 1 },
-    { "batch",      1 },
-    { dim_h,        tile_size },
-    { dim_w,        tile_size },
-  };
-  return dt_ai_load_model_ext(
-    ai_env, model_id, model_file,
-    DT_AI_PROVIDER_CONFIGURED, DT_AI_OPT_ALL,
-    overrides, (int)G_N_ELEMENTS(overrides), ep_flags);
-}
-
-// internal: resolve task -> model_id -> load with tile size dim overrides
+// internal: resolve task -> model_id -> load static ONNX. `stem` is the
+// file-stem variant key inside the package's attributes object (e.g.
+// "model_bayer" → looks up attributes.model_bayer.* and loads
+// model_bayer.onnx). non-variant tasks pass stem=NULL and supply
+// `default_file` directly. `expected_kind` is the input_kind contract
+// the caller wants enforced; UNKNOWN skips the check
 static dt_restore_context_t *_load(dt_restore_env_t *env,
                                    const char *task,
-                                   const char *variant,
+                                   const char *stem,
                                    const char *default_file,
+                                   dt_restore_input_kind_t expected_kind,
                                    int scale)
 {
   if(!env) return NULL;
@@ -257,45 +226,30 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
     return NULL;
   }
 
-  // look up spatial dimension names for this model
-  const char *dim_h, *dim_w;
-  dt_ai_models_get_spatial_dims(darktable.ai_registry, model_id,
-                                &dim_h, &dim_w);
-
   const dt_ai_model_info_t *info
     = dt_ai_get_model_info_by_id(env->ai_env, model_id);
 
-  // variant-aware config lookup: variant models must declare their ONNX
-  // filename under variants.<variant>.onnx. input_kind is stashed on ctx
-  // so raw paths can sanity-check they're pointing at the right model.
-  // non-variant models (denoise, upscale) pass variant=NULL and supply
-  // the filename directly via default_file
-  char *variant_file = NULL;
+  char *model_file = stem
+    ? g_strdup_printf("%s.onnx", stem)
+    : g_strdup(default_file);
   char *input_kind = NULL;
   // policy strings (all optional; NULL falls through to defaults)
   char *cs_str = NULL, *wb_str = NULL, *scale_str = NULL;
   char *bo_str = NULL, *edge_str = NULL;
-  // expected input_kind for this variant slot. raw variants MUST match
-  // one of the declared v1 contracts; non-variant tasks pass UNKNOWN
-  // and skip the contract check entirely
-  dt_restore_input_kind_t expected_kind = DT_RESTORE_INPUT_KIND_UNKNOWN;
-  if(variant)
+  if(stem)
   {
-    char *k_file  = g_strdup_printf("variants.%s.onnx", variant);
-    char *k_kind  = g_strdup_printf("variants.%s.input_kind", variant);
-    char *k_cs    = g_strdup_printf("variants.%s.input_colorspace", variant);
-    char *k_wb    = g_strdup_printf("variants.%s.wb_norm", variant);
-    char *k_scale = g_strdup_printf("variants.%s.output_scale", variant);
-    char *k_bo    = g_strdup_printf("variants.%s.bayer_orientation", variant);
-    char *k_edge  = g_strdup_printf("variants.%s.edge_pad", variant);
-    variant_file = dt_ai_model_attribute_string(info, k_file);
+    char *k_kind  = g_strdup_printf("%s.input_kind", stem);
+    char *k_cs    = g_strdup_printf("%s.input_colorspace", stem);
+    char *k_wb    = g_strdup_printf("%s.wb_norm", stem);
+    char *k_scale = g_strdup_printf("%s.output_scale", stem);
+    char *k_bo    = g_strdup_printf("%s.bayer_orientation", stem);
+    char *k_edge  = g_strdup_printf("%s.edge_pad", stem);
     input_kind   = dt_ai_model_attribute_string(info, k_kind);
     cs_str       = dt_ai_model_attribute_string(info, k_cs);
     wb_str       = dt_ai_model_attribute_string(info, k_wb);
     scale_str    = dt_ai_model_attribute_string(info, k_scale);
     bo_str       = dt_ai_model_attribute_string(info, k_bo);
     edge_str     = dt_ai_model_attribute_string(info, k_edge);
-    g_free(k_file);
     g_free(k_kind);
     g_free(k_cs);
     g_free(k_wb);
@@ -303,36 +257,11 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
     g_free(k_bo);
     g_free(k_edge);
 
-    if(!variant_file)
-    {
-      dt_print(DT_DEBUG_AI,
-               "[restore] model %s declares no variants.%s.onnx — "
-               "cannot load variant",
-               model_id, variant);
-      g_free(input_kind);
-      g_free(cs_str);
-      g_free(wb_str);
-      g_free(scale_str);
-      g_free(bo_str);
-      g_free(edge_str);
-      g_free(model_id);
-      return NULL;
-    }
-
-    // contract check: the variant slot name pins which input_kind we
-    // expect. older manifests predate the label; if unset, assume the
-    // expected one (back-compat). a declared-but-wrong label is a hard
-    // error — refusing to load keeps mis-packaged ONNX from crashing
-    // at inference with a confusing shape-mismatch
-    if(!g_strcmp0(task, TASK_RAWDENOISE))
-    {
-      if(!g_strcmp0(variant, "bayer"))
-        expected_kind = DT_RESTORE_INPUT_KIND_BAYER_V1;
-      else if(!g_strcmp0(variant, "xtrans"))
-        expected_kind = DT_RESTORE_INPUT_KIND_XTRANS_V1;
-      else if(!g_strcmp0(variant, "linear"))
-        expected_kind = DT_RESTORE_INPUT_KIND_LINEAR_V1;
-    }
+    // contract check: the caller pins which input_kind it expects.
+    // older manifests predate the label; if unset, assume the expected
+    // one (back-compat). a declared-but-wrong label is a hard error —
+    // refusing to load keeps mis-packaged ONNX from crashing at
+    // inference with a confusing shape-mismatch
     if(expected_kind != DT_RESTORE_INPUT_KIND_UNKNOWN)
     {
       const dt_restore_input_kind_t declared = _parse_input_kind(input_kind);
@@ -342,72 +271,63 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
       if(mismatch || (!missing && declared == DT_RESTORE_INPUT_KIND_UNKNOWN))
       {
         dt_print(DT_DEBUG_AI,
-                 "[restore] model %s variant '%s': input_kind '%s' "
+                 "[restore] model %s '%s': input_kind '%s' "
                  "does not match expected '%s' — refusing to load",
-                 model_id, variant, input_kind,
+                 model_id, stem, input_kind,
                  _input_kind_name(expected_kind));
         dt_control_log(_("raw denoise model %s: incompatible input_kind"),
                        model_id);
+        g_free(model_file);
         g_free(input_kind);
         g_free(cs_str);
         g_free(wb_str);
         g_free(scale_str);
         g_free(bo_str);
         g_free(edge_str);
-        g_free(variant_file);
         g_free(model_id);
         return NULL;
       }
     }
 
     dt_print(DT_DEBUG_AI,
-             "[restore] variant '%s': file=%s input_kind=%s",
-             variant, variant_file,
+             "[restore] '%s': file=%s input_kind=%s",
+             stem, model_file,
              input_kind ? input_kind : "(none)");
   }
-  const char *model_file = variant ? variant_file : default_file;
 
-  // resolve the tile ladder: model-declared input_sizes if present,
-  // otherwise a copy of the built-in ladder for this scale
-  int *tile_ladder = NULL;
-  int n_tile_ladder = 0;
-  _resolve_tile_ladder(info, scale, &tile_ladder, &n_tile_ladder);
-
-  // select tile size from cache, but only if the cached value is still
-  // a member of the ladder — otherwise a model upgrade that narrowed
-  // its supported input_sizes would load with a stale size and fail
-  // at graph shape inference (U-Nets are strict about spatial dims)
-  int tile_size = _get_cached_tile_size(model_id, scale);
-  gboolean cached_ok = FALSE;
-  for(int i = 0; i < n_tile_ladder && !cached_ok; i++)
-    if(tile_ladder[i] == tile_size) cached_ok = TRUE;
-  if(!cached_ok)
+  // static-shape ONNX: the model declares its input dim and we use it
+  // verbatim. no fallback ladder, no cache, no OOM retry — packaging
+  // is expected to pick a tile size that fits the target hardware
+  const int tile_size = _resolve_tile_size(info, stem);
+  if(tile_size <= 0)
   {
-    if(tile_size > 0)
-      dt_print(DT_DEBUG_AI,
-               "[restore] cached tile size %d not in ladder, re-selecting",
-               tile_size);
-    tile_size = _select_tile_size(tile_ladder, n_tile_ladder, scale);
+    dt_print(DT_DEBUG_AI,
+             "[restore] model %s%s%s declares no input_sizes — "
+             "static ONNX requires a fixed tile size",
+             model_id,
+             stem ? " stem=" : "", stem ? stem : "");
+    dt_control_log(_("AI model %s: missing input_sizes in manifest"),
+                   model_id);
+    g_free(model_file);
+    g_free(input_kind);
+    g_free(cs_str);
+    g_free(wb_str);
+    g_free(scale_str);
+    g_free(bo_str);
+    g_free(edge_str);
+    g_free(model_id);
+    return NULL;
   }
 
-  // CoreML CPU-only flag: models whose intermediate activations
-  // overflow FP16 (e.g. raw denoise) declare this in config.json
-  // to force CoreML's CPU path which runs FP32
-  const uint32_t ep_flags
-    = dt_ai_model_attribute_bool(info, "coreml_cpu_only") ? 1 : 0;
-  if(ep_flags)
-    dt_print(DT_DEBUG_AI,
-             "[restore] model %s: coreml_cpu_only=true (ep_flags=%u)",
-             model_id, ep_flags);
-
-  dt_ai_context_t *ai_ctx = _create_session(
-    env->ai_env, model_id, model_file, dim_h, dim_w, tile_size,
-    ep_flags);
+  // EP safety (cpu_only attribute) is resolved inside the backend by
+  // matching the model_file against the model's top-level cpu_only list
+  dt_ai_context_t *ai_ctx = dt_ai_load_model_ext(
+    env->ai_env, model_id, model_file,
+    DT_AI_PROVIDER_CONFIGURED, DT_AI_OPT_ALL, NULL, 0, 0);
   if(!ai_ctx)
   {
     g_free(model_id);
-    g_free(tile_ladder);
-    g_free(variant_file);
+    g_free(model_file);
     g_free(input_kind);
     g_free(cs_str);
     g_free(wb_str);
@@ -425,13 +345,8 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   ctx->input_kind          = input_kind;   // take ownership
   ctx->scale               = scale;
   ctx->model_id            = model_id;
-  ctx->model_file          = g_strdup(model_file);
+  ctx->model_file          = model_file;   // take ownership
   ctx->tile_size           = tile_size;
-  ctx->tile_ladder         = tile_ladder;
-  ctx->n_tile_ladder       = n_tile_ladder;
-  ctx->ep_flags            = ep_flags;
-  ctx->dim_h               = g_strdup(dim_h);
-  ctx->dim_w               = g_strdup(dim_w);
   ctx->preserve_wide_gamut = TRUE;
 
   // resolve policy enums: per-variant defaults reproduce today's
@@ -461,8 +376,8 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
     ctx->wb_mode          = _parse_wb_mode(wb_str, default_wb);
     ctx->output_scale     = _parse_output_scale(scale_str, DT_RESTORE_OUT_MATCH_GAIN);
     ctx->input_colorspace = _parse_colorspace(cs_str, default_cs);
-    char *k_tm = variant
-      ? g_strdup_printf("variants.%s.target_mean", variant) : NULL;
+    char *k_tm = stem
+      ? g_strdup_printf("%s.target_mean", stem) : NULL;
     ctx->target_mean = k_tm
       ? _parse_target_mean(info, k_tm, default_tm) : default_tm;
     g_free(k_tm);
@@ -501,36 +416,13 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
     dt_print(DT_DEBUG_AI,
              "[restore] model %s declares shadow_boost attribute",
              model_id);
-  g_free(variant_file);
   return ctx;
-}
-
-// internal: recreate the ORT session with a smaller tile size after OOM.
-// updates ctx->ai_ctx and ctx->tile_size in place.
-// returns TRUE on success, FALSE if the reload also fails.
-//
-// unload the old session BEFORE creating the new one: after a GPU OOM
-// the old session is still holding VRAM, and trying to allocate even
-// a tiny new session on top triggers a cascade of init failures in
-// ORT's provider-fallback retry path. freeing first lets the new
-// session fit without the retries
-static gboolean _reload_session(dt_restore_context_t *ctx, int new_tile_size)
-{
-  dt_ai_unload_model(ctx->ai_ctx);
-  ctx->ai_ctx = NULL;
-
-  dt_ai_context_t *new_ctx = _create_session(
-    ctx->env->ai_env, ctx->model_id, ctx->model_file,
-    ctx->dim_h, ctx->dim_w, new_tile_size, ctx->ep_flags);
-  if(!new_ctx) return FALSE;
-  ctx->ai_ctx    = new_ctx;
-  ctx->tile_size = new_tile_size;
-  return TRUE;
 }
 
 dt_restore_context_t *dt_restore_load_denoise(dt_restore_env_t *env)
 {
-  return _load(env, TASK_DENOISE, NULL, NULL, 1);
+  return _load(env, TASK_DENOISE, NULL, NULL,
+               DT_RESTORE_INPUT_KIND_UNKNOWN, 1);
 }
 
 dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img)
@@ -547,46 +439,53 @@ dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img)
 
 dt_restore_context_t *dt_restore_load_rawdenoise_bayer(dt_restore_env_t *env)
 {
-  // scale 1x, same pipeline as denoise; filename comes from the model's
-  // variants.bayer.onnx attribute. loading fails if the YAML doesn't
-  // declare it — no silent fallback for broken model packages
-  return _load(env, TASK_RAWDENOISE, "bayer", NULL, 1);
+  // scale 1x, same pipeline as denoise; loads model_bayer.onnx and
+  // reads its policy knobs from attributes.model_bayer.*
+  return _load(env, TASK_RAWDENOISE, "model_bayer", NULL,
+               DT_RESTORE_INPUT_KIND_BAYER_V1, 1);
 }
 
 dt_restore_context_t *dt_restore_load_rawdenoise_linear(dt_restore_env_t *env)
 {
   // generic-demosaic fallback: Foveon, monochrome-with-pattern, and
   // currently also X-Trans (until dt_restore_load_rawdenoise_xtrans
-  // gets a dedicated variant to load)
-  return _load(env, TASK_RAWDENOISE, "linear", NULL, 1);
+  // gets a dedicated model_xtrans to load)
+  return _load(env, TASK_RAWDENOISE, "model_linear", NULL,
+               DT_RESTORE_INPUT_KIND_LINEAR_V1, 1);
 }
 
 dt_restore_context_t *dt_restore_load_rawdenoise_xtrans(dt_restore_env_t *env)
 {
-  // prefer a dedicated xtrans variant when the manifest declares one;
+  // prefer a dedicated model_xtrans when the manifest declares one;
   // fall back to the linear pipeline otherwise. this lets a future
   // RawNIND release ship a dedicated X-Trans model via just a manifest
   // update — no code changes in darktable (assuming the dedicated model
   // shares the linear pipeline; a structurally different X-Trans input
   // format would still need its own preprocessing code)
-  dt_restore_context_t *ctx = _load(env, TASK_RAWDENOISE, "xtrans", NULL, 1);
+  dt_restore_context_t *ctx = _load(env, TASK_RAWDENOISE, "model_xtrans", NULL,
+                                    DT_RESTORE_INPUT_KIND_XTRANS_V1, 1);
   if(!ctx)
   {
     dt_print(DT_DEBUG_AI,
-             "[restore] no dedicated xtrans variant; using linear as fallback");
-    ctx = _load(env, TASK_RAWDENOISE, "linear", NULL, 1);
+             "[restore] no dedicated xtrans model; using linear as fallback");
+    ctx = _load(env, TASK_RAWDENOISE, "model_linear", NULL,
+                DT_RESTORE_INPUT_KIND_LINEAR_V1, 1);
   }
   return ctx;
 }
 
 dt_restore_context_t *dt_restore_load_upscale_x2(dt_restore_env_t *env)
 {
-  return _load(env, TASK_UPSCALE, NULL, "model_x2.onnx", 2);
+  // stem "model_x2" → loads model_x2.onnx and reads its tile ladder
+  // from attributes.model_x2.input_sizes when declared
+  return _load(env, TASK_UPSCALE, "model_x2", NULL,
+               DT_RESTORE_INPUT_KIND_UNKNOWN, 2);
 }
 
 dt_restore_context_t *dt_restore_load_upscale_x4(dt_restore_env_t *env)
 {
-  return _load(env, TASK_UPSCALE, NULL, "model_x4.onnx", 4);
+  return _load(env, TASK_UPSCALE, "model_x4", NULL,
+               DT_RESTORE_INPUT_KIND_UNKNOWN, 4);
 }
 
 dt_restore_context_t *dt_restore_ref(dt_restore_context_t *ctx)
@@ -605,9 +504,6 @@ void dt_restore_unref(dt_restore_context_t *ctx)
     g_free(ctx->input_kind);
     g_free(ctx->model_id);
     g_free(ctx->model_file);
-    g_free(ctx->dim_h);
-    g_free(ctx->dim_w);
-    g_free(ctx->tile_ladder);
     g_free(ctx);
   }
 }
@@ -650,73 +546,6 @@ gboolean dt_restore_upscale_available(dt_restore_env_t *env)
 int dt_restore_get_overlap(int scale)
 {
   return (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
-}
-
-static int _select_tile_size(const int *ladder, int n_ladder, int scale)
-{
-  const size_t avail = dt_get_available_mem();
-  const size_t budget = avail / 4;
-
-  for(int i = 0; i < n_ladder; i++)
-  {
-    const size_t T = (size_t)ladder[i];
-    const size_t T_out = T * scale;
-    const size_t tile_in = T * T * 3 * sizeof(float);
-    const size_t tile_out
-      = T_out * T_out * 3 * sizeof(float);
-    const size_t ort_factor = (scale > 1) ? 50 : 100;
-    const size_t ort_overhead
-      = T_out * T_out * 3 * sizeof(float) * ort_factor;
-    const size_t total = tile_in + tile_out + ort_overhead;
-
-    if(total <= budget)
-    {
-      dt_print(DT_DEBUG_AI,
-               "[restore] tile size %d (scale=%d, need %zuMB, budget %zuMB)",
-               ladder[i], scale,
-               total / (1024 * 1024),
-               budget / (1024 * 1024));
-      return ladder[i];
-    }
-  }
-
-  dt_print(DT_DEBUG_AI,
-           "[restore] using minimum tile size %d (budget %zuMB)",
-           ladder[n_ladder - 1],
-           budget / (1024 * 1024));
-  return ladder[n_ladder - 1];
-}
-
-static void _resolve_tile_ladder(const dt_ai_model_info_t *info,
-                                 int scale,
-                                 int **out_sizes,
-                                 int *out_count)
-{
-  // prefer the model's declared input_sizes if present: some exports
-  // ship with a fixed set of supported tile sizes (e.g. the model was
-  // compiled for specific spatial dims) and using anything outside
-  // that list will either refuse to run or produce garbage
-  int n = 0;
-  int *sizes = dt_ai_model_attribute_int_array(info, "input_sizes", &n);
-  if(sizes && n > 0)
-  {
-    *out_sizes = sizes;
-    *out_count = n;
-    return;
-  }
-  g_free(sizes);
-
-  // fall back to the built-in ladder for the model's scale
-  static const int ladder_1x[] = DT_RESTORE_TILE_LADDER_1X;
-  static const int ladder_sr[] = DT_RESTORE_TILE_LADDER_SR;
-  const int *src = (scale > 1) ? ladder_sr : ladder_1x;
-  const int src_n = (scale > 1)
-    ? (int)(sizeof(ladder_sr) / sizeof(int))
-    : (int)(sizeof(ladder_1x) / sizeof(int));
-  int *copy = g_new(int, src_n);
-  memcpy(copy, src, src_n * sizeof(int));
-  *out_sizes = copy;
-  *out_count = src_n;
 }
 
 int dt_restore_run_patch_bayer(dt_restore_context_t *ctx,
@@ -767,51 +596,34 @@ int dt_restore_run_patch_3ch_raw(dt_restore_context_t *ctx,
   return dt_ai_run(ctx->ai_ctx, &input, 1, &output, 1);
 }
 
-const int *dt_restore_get_tile_ladder(const dt_restore_context_t *ctx,
-                                      int *out_count)
-{
-  if(!ctx)
-  {
-    if(out_count) *out_count = 0;
-    return NULL;
-  }
-  if(out_count) *out_count = ctx->n_tile_ladder;
-  return ctx->tile_ladder;
-}
-
 int dt_restore_get_tile_size(const dt_restore_context_t *ctx)
 {
   return ctx ? ctx->tile_size : 0;
 }
 
-gboolean dt_restore_reload_session(dt_restore_context_t *ctx,
-                                   int new_tile_size)
+gboolean dt_restore_reload_session_cpu(dt_restore_context_t *ctx)
 {
-  if(!ctx) return FALSE;
-  return _reload_session(ctx, new_tile_size);
-}
-
-gboolean dt_restore_step_down_tile_size(dt_restore_context_t *ctx,
-                                        int *T_inout)
-{
-  if(!ctx || !T_inout) return FALSE;
-  int next_T = 0;
-  for(int i = 0; i < ctx->n_tile_ladder; i++)
-    if(ctx->tile_ladder[i] < *T_inout)
-    {
-      next_T = ctx->tile_ladder[i];
-      break;
-    }
-  if(next_T <= 0 || !_reload_session(ctx, next_T))
+  if(!ctx || !ctx->env || !ctx->env->ai_env || !ctx->model_id)
     return FALSE;
-  *T_inout = next_T;
-  return TRUE;
-}
 
-void dt_restore_persist_tile_size(const dt_restore_context_t *ctx)
-{
-  if(ctx && ctx->model_id)
-    _set_cached_tile_size(ctx->model_id, ctx->scale, ctx->tile_size);
+  // unload the old session BEFORE creating the new one: on GPU EPs the
+  // failing session may still hold VRAM, and the CPU session creation
+  // happens to be cheaper if no other ORT state is in flight
+  dt_ai_unload_model(ctx->ai_ctx);
+  ctx->ai_ctx = NULL;
+
+  dt_ai_context_t *new_ctx = dt_ai_load_model_ext(
+    ctx->env->ai_env, ctx->model_id, ctx->model_file,
+    DT_AI_PROVIDER_CPU, DT_AI_OPT_ALL, NULL, 0, 0);
+  if(!new_ctx)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] CPU fallback session load failed for %s",
+             ctx->model_id);
+    return FALSE;
+  }
+  ctx->ai_ctx = new_ctx;
+  return TRUE;
 }
 
 // shared bridge: run the user's darktable pixelpipe on an arbitrary sensor

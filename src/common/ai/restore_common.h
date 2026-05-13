@@ -141,9 +141,7 @@ struct dt_restore_context_t
   dt_restore_edge_pad_t          edge_pad;
   float                          target_mean;  // NAN = no exposure boost
   int scale;        // model upscale factor (1 for denoise, 2/4 for upscale)
-  int tile_size;    // tile size used to create the current session
-  char *dim_h;      // symbolic height dim name used for session overrides
-  char *dim_w;      // symbolic width dim name used for session overrides
+  int tile_size;    // static input dim baked into the loaded ONNX
   // color management (RGB path): convert working profile → sRGB before
   // inference and back after. if has_profile is FALSE, fall back to
   // gamma-only conversion (treats working-profile numbers as if sRGB).
@@ -159,13 +157,6 @@ struct dt_restore_context_t
   // per image inside dt_restore_process_tiled() based on luminance.
   gboolean shadow_boost_capable;
   gboolean shadow_boost;
-  // tile ladder candidates from largest to smallest; either the
-  // model's "input_sizes" attribute from config.json (when declared)
-  // or a copy of the built-in ladder for the model's scale. both the
-  // startup budget selector and the runtime OOM retry loop iterate it
-  int *tile_ladder;
-  int n_tile_ladder;
-  uint32_t ep_flags;  // execution provider flags (e.g. CoreML CPU-only)
   gint ref_count;
 };
 

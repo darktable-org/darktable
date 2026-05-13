@@ -542,11 +542,9 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
   const int O = dt_restore_get_overlap(scale);
   const int S = scale;
   const int out_w = width * S;
-  int T = ctx->tile_size;
+  const int T = ctx->tile_size;
+  gboolean cpu_fallback_done = FALSE;
 
-  // outer retry loop: on inference failure (e.g. GPU OOM) drop to the
-  // next smaller candidate in the shared ladder and try again
-retry:;
   int step = T - 2 * O;
   int T_out = T * S;
   int O_out = O * S;
@@ -653,18 +651,18 @@ retry:;
       if(dt_restore_run_patch(
            ctx, tile_in, T, T, tile_out, S) != 0)
       {
-        // retry with the next smaller ladder entry if no rows have
-        // been delivered yet (safe to restart). once rows are written
-        // we can't rewind the row_writer (e.g. TIFF is sequential)
-        if(ty == 0 && dt_restore_step_down_tile_size(ctx, &T))
+        // GPU failure on the first tile: retry once on CPU. safe only
+        // before any rows have been delivered to the writer
+        if(tx == 0 && ty == 0 && !cpu_fallback_done
+           && dt_restore_reload_session_cpu(ctx))
         {
           dt_print(DT_DEBUG_AI,
-                   "[restore_rgb] tile %d,%d failed, retrying at T=%d",
-                   tx, ty, T);
-          g_free(tile_in);
-          g_free(tile_out);
-          g_free(row_buf);
-          goto retry;
+                   "[restore_rgb] GPU inference failed; retrying on CPU");
+          dt_control_log(_("AI denoise: GPU inference failed, "
+                           "falling back to CPU"));
+          cpu_fallback_done = TRUE;
+          tx--;  // re-run the same tile on the new session
+          continue;
         }
         dt_print(DT_DEBUG_AI,
                  "[restore_rgb] inference failed at tile %d,%d (T=%d)",
@@ -714,10 +712,6 @@ retry:;
       }
     }
   }
-
-  // persist tile size on first full success so subsequent runs skip OOM retry
-  if(res == 0)
-    dt_restore_persist_tile_size(ctx);
 
 cleanup:
   g_free(tile_in);

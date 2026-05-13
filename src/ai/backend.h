@@ -184,6 +184,10 @@ typedef struct dt_ai_model_info_t {
   const char *backend;     ///< Backend type (e.g. "onnx")
   int num_inputs;          ///< Number of model inputs (default 1)
   const char *attributes;  ///< Optional attributes
+  const char *cpu_only;    ///< Top-level cpu_only block (JSON: array or object).
+                           ///< Consumed internally by the load function to
+                           ///< override the provider when the model declares
+                           ///< the configured EP unsafe.
 } dt_ai_model_info_t;
 
 /* --- Model "attributes" lookup ---
@@ -314,10 +318,18 @@ typedef struct {
  * @param env Library environment.
  * @param model_id ID of the model to load.
  * @param model_file Filename within the model directory (NULL = "model.onnx").
+ *                   When the model package declares per-file cpu_only entries,
+ *                   matching is done against this filename's stem (the
+ *                   basename minus the ".onnx" extension).
  * @param provider Execution provider (DT_AI_PROVIDER_CONFIGURED = use user config).
+ *                 The load function may override this to CPU when the model
+ *                 declares the configured GPU EP unsafe (see cpu_only attribute).
  * @param opt_level Graph optimization level.
  * @param dim_overrides Array of symbolic dimension overrides (NULL = none).
  * @param n_overrides Number of overrides.
+ * @param ep_flags EP-specific flag bitmask. Callers should pass 0; the
+ *                 load function adds bits internally based on the model's
+ *                 cpu_only declaration (e.g. COREML_FLAG_USE_CPU_ONLY).
  * @return dt_ai_context_t* Context ready for inference, or NULL.
  */
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
