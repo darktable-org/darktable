@@ -346,12 +346,11 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
 
   // tile setup in packed (half-res) space
   const int O = OVERLAP_PACKED;
-  int T = dt_restore_get_tile_size(ctx);
-  if(T <= 2 * O) T = 256;  // defensive fallback
-
-retry:;
+  const int T = dt_restore_get_tile_size(ctx);
+  if(T <= 2 * O) return 1;
   const int step = T - 2 * O;
   if(step <= 0) return 1;
+  gboolean cpu_fallback_done = FALSE;
   const size_t tile_in_plane = (size_t)T * T;
   const size_t tile_out_w = 2 * (size_t)T;
   const size_t tile_out_plane = tile_out_w * tile_out_w;
@@ -481,19 +480,18 @@ retry:;
       // inference
       if(dt_restore_run_patch_bayer(ctx, tile_in, T, T, tile_out) != 0)
       {
-        // step down the ladder if possible. first tile only so we
-        // don't rewrite pixels we've already delivered
-        if(ty == 0 && tx == 0 && dt_restore_step_down_tile_size(ctx, &T))
+        // GPU failure on the first tile: retry once on CPU
+        if(tx == 0 && ty == 0 && !cpu_fallback_done
+           && dt_restore_reload_session_cpu(ctx))
         {
           dt_print(DT_DEBUG_AI,
-                   "[restore_raw_bayer] tile %d,%d failed, retrying at T=%d",
-                   tx, ty, T);
-          g_free(tile_in);
-          g_free(tile_out);
-          g_free(h_strip_top);
-          g_free(h_strip_bot);
-          g_free(v_strip_left);
-          goto retry;
+                   "[restore_raw_bayer] GPU inference failed; "
+                   "retrying on CPU");
+          dt_control_log(_("AI raw denoise: GPU inference failed, "
+                           "falling back to CPU"));
+          cpu_fallback_done = TRUE;
+          tx--;
+          continue;
         }
         dt_print(DT_DEBUG_AI,
                  "[restore_raw_bayer] inference failed at tile %d,%d (T=%d)",
@@ -734,8 +732,6 @@ retry:;
              (unsigned)omin, (unsigned)omax,
              n ? (double)osum / n : 0.0,
              black[0], white);
-
-    dt_restore_persist_tile_size(ctx);
   }
 
   return res;
@@ -780,29 +776,13 @@ int dt_restore_raw_bayer_preview_piped(dt_restore_context_t *ctx,
   crop_h = (crop_h / 2) * 2;
   if(crop_w <= 0 || crop_h <= 0) return 1;
 
-  // OOM-retry loop: on inference failure step down the model's tile
-  // ladder and rebuild the single-tile geometry + packed tile. mirrors
-  // the batch path's recovery, scoped to one tile (no row_writer to
-  // rewind, no ty/tx==0 guard needed)
-  int T = dt_restore_get_tile_size(ctx);
+  const int T = dt_restore_get_tile_size(ctx);
   if(T <= 0) return 1;
 
-  float *tile_in = NULL;
-  float *tile_out = NULL;
-  int sensor_T = 0;
-  int pp_sr0 = 0, pp_sc0 = 0;
-  size_t tile_out_w = 0;
-  size_t tile_out_plane = 0;
-
-retry:;
-  sensor_T = 2 * T;
+  const int sensor_T = 2 * T;
   const int max_disp = sensor_T - 4 * OVERLAP_PACKED;
   if(crop_w > max_disp || crop_h > max_disp)
-  {
-    g_free(tile_in);
-    g_free(tile_out);
     return 1;
-  }
 
   int inf_x = crop_x + crop_w / 2 - sensor_T / 2;
   int inf_y = crop_y + crop_h / 2 - sensor_T / 2;
@@ -810,13 +790,11 @@ retry:;
   inf_y = (inf_y / 2) * 2;
 
   const size_t tile_in_plane = (size_t)T * T;
-  tile_out_w = 2 * (size_t)T;
-  tile_out_plane = tile_out_w * tile_out_w;
+  const size_t tile_out_w = 2 * (size_t)T;
+  const size_t tile_out_plane = tile_out_w * tile_out_w;
 
-  g_free(tile_in);
-  g_free(tile_out);
-  tile_in = g_try_malloc(tile_in_plane * 4 * sizeof(float));
-  tile_out = g_try_malloc(tile_out_plane * 3 * sizeof(float));
+  float *tile_in = g_try_malloc(tile_in_plane * 4 * sizeof(float));
+  float *tile_out = g_try_malloc(tile_out_plane * 3 * sizeof(float));
   if(!tile_in || !tile_out)
   {
     g_free(tile_in);
@@ -827,6 +805,7 @@ retry:;
   // geometry applies the same orientation + mirror policy as the batch
   // path. sr0_base / sc0_base for the preview is the user-centred,
   // even-snapped inference tile origin in sensor coords
+  int pp_sr0 = 0, pp_sc0 = 0;
   int pp_mir_y_lo, pp_mir_y_hi, pp_mir_x_lo, pp_mir_x_hi;
   _bayer_tile_geometry(ctx, &prep, inf_y, inf_x, width, height,
                        &pp_sr0, &pp_sc0,
@@ -837,13 +816,18 @@ retry:;
                    pp_mir_y_lo, pp_mir_y_hi, pp_mir_x_lo, pp_mir_x_hi,
                    T, &prep, tile_in);
 
-  if(dt_restore_run_patch_bayer(ctx, tile_in, T, T, tile_out) != 0)
+  gboolean cpu_fallback_done = FALSE;
+  while(dt_restore_run_patch_bayer(ctx, tile_in, T, T, tile_out) != 0)
   {
-    if(dt_restore_step_down_tile_size(ctx, &T))
+    if(!cpu_fallback_done && dt_restore_reload_session_cpu(ctx))
     {
       dt_print(DT_DEBUG_AI,
-               "[restore_raw_bayer] preview failed, retrying at T=%d", T);
-      goto retry;
+               "[restore_raw_bayer] preview GPU inference failed; "
+               "retrying on CPU");
+      dt_control_log(_("AI raw denoise: GPU inference failed, "
+                       "falling back to CPU"));
+      cpu_fallback_done = TRUE;
+      continue;
     }
     dt_print(DT_DEBUG_AI,
              "[restore_raw_bayer] preview inference failed at T=%d", T);

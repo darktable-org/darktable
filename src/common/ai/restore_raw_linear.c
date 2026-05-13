@@ -482,18 +482,16 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
 
   // tile setup
   const int O = OVERLAP_LINEAR;
-  int T = dt_restore_get_tile_size(ctx);
-  if(T <= 2 * O) T = 256;
-
-retry:;
-  const int step = T - 2 * O;
-  if(step <= 0)
+  const int T = dt_restore_get_tile_size(ctx);
+  if(T <= 2 * O)
   {
     dt_free_align(rgb_src);
     dt_free_align(rgb_out);
     dt_free_align(rgba);
     return 1;
   }
+  const int step = T - 2 * O;
+  gboolean cpu_fallback_done = FALSE;
   const size_t tile_plane = (size_t)T * T;
   const int cols = (w + step - 1) / step;
   const int rows = (h + step - 1) / step;
@@ -576,17 +574,18 @@ retry:;
       // inference
       if(dt_restore_run_patch_3ch_raw(ctx, tile_in, T, T, tile_out) != 0)
       {
-        if(ty == 0 && tx == 0 && dt_restore_step_down_tile_size(ctx, &T))
+        // GPU failure on the first tile: retry once on CPU
+        if(tx == 0 && ty == 0 && !cpu_fallback_done
+           && dt_restore_reload_session_cpu(ctx))
         {
           dt_print(DT_DEBUG_AI,
-                   "[restore_raw_linear] tile %d,%d failed, retrying at T=%d",
-                   tx, ty, T);
-          g_free(tile_in);
-          g_free(tile_out);
-          g_free(h_strip_top);
-          g_free(h_strip_bot);
-          g_free(v_strip_left);
-          goto retry;
+                   "[restore_raw_linear] GPU inference failed; "
+                   "retrying on CPU");
+          dt_control_log(_("AI raw denoise: GPU inference failed, "
+                           "falling back to CPU"));
+          cpu_fallback_done = TRUE;
+          tx--;
+          continue;
         }
         dt_print(DT_DEBUG_AI,
                  "[restore_raw_linear] inference failed at tile %d,%d (T=%d)",
@@ -813,8 +812,6 @@ retry:;
       rgb_out[i + plane]     = cam[1];
       rgb_out[i + 2 * plane] = cam[2];
     }
-
-    dt_restore_persist_tile_size(ctx);
   }
 
   dt_free_align(rgb_src);
@@ -962,39 +959,20 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
       cam_to_input[i] = input_to_cam[i] = (i % 4 == 0) ? 1.0f : 0.0f;
   }
 
-  // OOM-retry loop: on inference failure step down the model's tile
-  // ladder and rebuild the single-tile geometry. mirrors the batch
-  // path's recovery, scoped to one tile (no row_writer to rewind)
-  int T = dt_restore_get_tile_size(ctx);
+  const int T = dt_restore_get_tile_size(ctx);
   if(T <= 0) return 1;
 
-  float *tile_in = NULL;
-  float *tile_out = NULL;
-  int inf_x = 0, inf_y = 0;
-  size_t tile_plane = 0;
-  float exposure_boost = 1.0f;
+  const int max_disp = T - 2 * OVERLAP_LINEAR;
+  if(crop_w > max_disp || crop_h > max_disp) return 1;
 
-retry:;
-  {
-    const int max_disp = T - 2 * OVERLAP_LINEAR;
-    if(crop_w > max_disp || crop_h > max_disp)
-    {
-      g_free(tile_in);
-      g_free(tile_out);
-      return 1;
-    }
-  }
-
-  inf_x = crop_x + crop_w / 2 - T / 2;
-  inf_y = crop_y + crop_h / 2 - T / 2;
+  const int inf_x = crop_x + crop_w / 2 - T / 2;
+  const int inf_y = crop_y + crop_h / 2 - T / 2;
 
   // extract crop + overlap from cached full lin_rec2020 -> tile_in
   // apply exposure boost (same as preview), run inference
-  tile_plane = (size_t)T * T;
-  g_free(tile_in);
-  g_free(tile_out);
-  tile_in = g_try_malloc(tile_plane * 3 * sizeof(float));
-  tile_out = g_try_malloc(tile_plane * 3 * sizeof(float));
+  const size_t tile_plane = (size_t)T * T;
+  float *tile_in = g_try_malloc(tile_plane * 3 * sizeof(float));
+  float *tile_out = g_try_malloc(tile_plane * 3 * sizeof(float));
   if(!tile_in || !tile_out)
   {
     g_free(tile_in);
@@ -1016,16 +994,21 @@ retry:;
     }
   }
 
-  exposure_boost = 1.0f;
+  float exposure_boost = 1.0f;
   _linear_exposure_boost(ctx, tile_in, tile_plane, NULL, &exposure_boost);
 
-  if(dt_restore_run_patch_3ch_raw(ctx, tile_in, T, T, tile_out) != 0)
+  gboolean cpu_fallback_done = FALSE;
+  while(dt_restore_run_patch_3ch_raw(ctx, tile_in, T, T, tile_out) != 0)
   {
-    if(dt_restore_step_down_tile_size(ctx, &T))
+    if(!cpu_fallback_done && dt_restore_reload_session_cpu(ctx))
     {
       dt_print(DT_DEBUG_AI,
-               "[restore_raw_linear] preview failed, retrying at T=%d", T);
-      goto retry;
+               "[restore_raw_linear] preview GPU inference failed; "
+               "retrying on CPU");
+      dt_control_log(_("AI raw denoise: GPU inference failed, "
+                       "falling back to CPU"));
+      cpu_fallback_done = TRUE;
+      continue;
     }
     dt_print(DT_DEBUG_AI,
              "[restore_raw_linear] preview inference failed at T=%d", T);
