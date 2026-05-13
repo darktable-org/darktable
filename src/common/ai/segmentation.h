@@ -34,7 +34,9 @@ typedef struct dt_seg_context_t dt_seg_context_t;
 typedef struct dt_seg_point_t
 {
   float x, y;  ///< pixel coordinates in the original image space
-  int label;   ///< 1 = foreground (include), 0 = background (exclude)
+  int label;   ///< 0 = background (exclude), 1 = foreground (include),
+               ///< 2 = box top-left corner, 3 = box bottom-right corner
+               ///< (box prompts are SAM-only; check dt_seg_supports_box)
 } dt_seg_point_t;
 
 /**
@@ -148,21 +150,30 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
 /**
  * @brief Load encoder embeddings + RGB from disk cache.
  *        Validates that the cached data matches the loaded model
- *        and that distort_hash matches (geometry unchanged).
+ *        and that distort_hash matches (geometry unchanged). On
+ *        success the RGB guide is installed into the context and
+ *        retrievable via dt_seg_get_encoded_rgb().
  * @param ctx Segmentation context with model loaded.
  * @param imgid Image ID to look up.
  * @param distort_hash Current distortion module param hash.
- * @param out_rgb Set to allocated RGB buffer (caller frees).
- * @param out_rgb_w Set to RGB width.
- * @param out_rgb_h Set to RGB height.
  * @return TRUE on cache hit, FALSE on miss or mismatch.
  */
 gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
                                 const dt_imgid_t imgid,
-                                const dt_hash_t distort_hash,
-                                uint8_t **out_rgb,
-                                int *out_rgb_w,
-                                int *out_rgb_h);
+                                const dt_hash_t distort_hash);
+
+/**
+ * @brief Return the encoded RGB guide (uint8 HWC, 3ch) and its
+ *        dimensions. The pointer is owned by the context and stays
+ *        valid until the next encode or context free. NULL-safe.
+ * @param ctx Segmentation context.
+ * @param out_w Set to RGB width (or 0 if not encoded). Optional.
+ * @param out_h Set to RGB height (or 0 if not encoded). Optional.
+ * @return RGB pointer, or NULL if no encoding is active.
+ */
+const uint8_t *dt_seg_get_encoded_rgb(const dt_seg_context_t *ctx,
+                                      int *out_w,
+                                      int *out_h);
 
 /**
  * @brief Return the model ID string for this context (NULL-safe).

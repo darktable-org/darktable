@@ -20,6 +20,8 @@
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/densecrf.h"
+#include "common/distance_transform.h"
 #include "common/mipmap_cache.h"
 #include "common/ras2vect.h"
 #include "control/conf.h"
@@ -33,24 +35,28 @@
 #include "imageio/imageio_common.h"
 #include "views/view.h"
 
+#include <limits.h>
 #include <math.h>
 #include <string.h>
 
-#define CONF_OBJECT_MODEL_KEY "plugins/darkroom/masks/object/model"
 #define CONF_OBJECT_THRESHOLD_KEY "plugins/darkroom/masks/object/threshold"
-#define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
+#define CONF_OBJECT_REFINE_PASSES_KEY "plugins/darkroom/masks/object/refine_passes"
 #define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"
 #define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 #define CONF_OBJECT_PATH_PREVIEW_KEY "plugins/darkroom/masks/object/path_preview"
+#define CONF_OBJECT_REFINE_BOUNDARY_KEY "plugins/darkroom/masks/object/refine_boundary"
+#define CONF_OBJECT_REFINE_BOUNDARY_ITER_KEY "plugins/darkroom/masks/object/refine_boundary_iterations"
+#define CONF_OBJECT_REFINE_BOUNDARY_SIGMA_COLOR_KEY "plugins/darkroom/masks/object/refine_boundary_sigma_color"
+#define CONF_OBJECT_REFINE_BOUNDARY_W_BILATERAL_KEY "plugins/darkroom/masks/object/refine_boundary_weight_bilateral"
 
 // default render target (longest side in pixels).
 // the SAM encoder internally downscales to 1024 so encoding quality
 // is the same, but higher render resolution gives the guided filter
 // and vectorizer more detail for edge refinement.
 // configurable via plugins/darkroom/masks/object/render_size
-#define SEG_RENDER_DEFAULT 1024
+#define SEG_RENDER_DEFAULT 1536
 #define CONF_OBJECT_RENDER_SIZE_KEY "plugins/darkroom/masks/object/render_size"
 
 // --- per-session segmentation state (stored in gui->scratchpad) ---
@@ -78,8 +84,6 @@ typedef struct _object_data_t
   dt_imgid_t encoded_imgid; // image ID that was encoded
   dt_hash_t encoded_distort_hash; // distort hash at encode time (detects crop/rotate)
   int encode_w, encode_h;   // encoding resolution (for coordinate mapping)
-  uint8_t *encode_rgb;      // stored RGB from encoding (uint8, HWC, 3ch)
-  int encode_rgb_w, encode_rgb_h;
   guint modifier_poll_id;   // timer to detect shift key changes
   GThread *encode_thread;   // background encoding thread
   gboolean dragging;        // TRUE between press and release during click drag
@@ -92,6 +96,7 @@ typedef struct _object_data_t
   int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
   float preview_smoothing;          // current smoothing (potrace alphamax, 0.0-1.3)
   float preview_feather;            // path border/feather (0.0-0.5, normalized)
+  gboolean preview_refine;          // run DenseCRF edge refinement on each decode
 } _object_data_t;
 
 static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
@@ -197,7 +202,6 @@ static void _destroy_data(_object_data_t *d)
   }
 
   g_free(d->mask);
-  g_free(d->encode_rgb);
   _free_preview_forms(d);
   g_free(d);
 }
@@ -330,26 +334,15 @@ static gpointer _encode_thread_func(gpointer data)
   // use distort hash from darkroom's live state (passed by caller)
   // instead of computing from the thread's dev, which may have
   // stale history (not yet flushed to database)
+  if(dt_seg_disk_cache_load(d->seg, imgid, distort_hash))
   {
-    uint8_t *cached_rgb = NULL;
-    int cached_rgb_w = 0, cached_rgb_h = 0;
-    if(dt_seg_disk_cache_load(d->seg, imgid, distort_hash,
-                              &cached_rgb,
-                              &cached_rgb_w, &cached_rgb_h))
-    {
-      dt_dev_pixelpipe_cleanup(&pipe);
-      dt_mipmap_cache_release(&buf);
-      dt_dev_cleanup(&dev);
-      d->encode_w = cached_rgb_w;
-      d->encode_h = cached_rgb_h;
-      g_free(d->encode_rgb);
-      d->encode_rgb = cached_rgb;
-      d->encode_rgb_w = cached_rgb_w;
-      d->encode_rgb_h = cached_rgb_h;
-      g_atomic_int_set(&d->encode_state, ENCODE_READY);
-      dt_seg_warmup_decoder(d->seg);
-      return NULL;
-    }
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_mipmap_cache_release(&buf);
+    dt_dev_cleanup(&dev);
+    dt_seg_get_encoded_rgb(d->seg, &d->encode_w, &d->encode_h);
+    g_atomic_int_set(&d->encode_state, ENCODE_READY);
+    dt_seg_warmup_decoder(d->seg);
+    return NULL;
   }
 
   dt_print(DT_DEBUG_AI,
@@ -410,16 +403,11 @@ static gpointer _encode_thread_func(gpointer data)
       d->model_loaded = FALSE;
   }
 
-  // store the RGB image for edge-aware mask refinement
-  g_free(d->encode_rgb);
-  d->encode_rgb = rgb;
-  d->encode_rgb_w = out_w;
-  d->encode_rgb_h = out_h;
-
-  // save to disk cache for future sessions
+  // dt_seg_encode_image keeps its own copy of rgb for edge refinement
   if(ok)
     dt_seg_disk_cache_save(d->seg, imgid, distort_hash,
                            rgb, out_w, out_h);
+  g_free(rgb);
 
   // signal ready so the user can start placing points; warmup continues
   // on this thread; _run_decoder joins the thread on the first click to
@@ -531,7 +519,122 @@ static void _keep_seed_component(float *mask,
   g_free(labels);
 }
 
-// run the decoder with accumulated points and update the cached mask
+static float _mask_iou(const float *const restrict a,
+                       const float *const restrict b,
+                       const size_t n,
+                       const float threshold)
+{
+  size_t inter = 0, uni = 0;
+  DT_OMP_FOR(reduction(+:inter, uni))
+  for(size_t i = 0; i < n; i++)
+  {
+    const int A = a[i] > threshold;
+    const int B = b[i] > threshold;
+    inter += A & B;
+    uni   += A | B;
+  }
+  return uni > 0 ? (float)inter / (float)uni : 0.0f;
+}
+
+// peak of the (exact-Euclidean) distance transform of mask>threshold,
+// excluding pixels within min_separation of any positive prompt
+static gboolean _find_peak_point(const float *const restrict mask,
+                                 const size_t w,
+                                 const size_t h,
+                                 const float threshold,
+                                 const dt_seg_point_t *const exclude,
+                                 const int n_exclude,
+                                 const float min_separation,
+                                 dt_seg_point_t *const out)
+{
+  float *const restrict dist = dt_alloc_align_float(w * h);
+  if(!dist) return FALSE;
+
+  // exact-euclidean DT: dist[i] = distance to nearest pixel where mask<thr
+  // require ~4 px interior depth — shallower peaks aren't informative
+  const float min_depth = 4.0f;
+  const float max_dist
+    = dt_image_distance_transform(mask, dist, w, h,
+                                  threshold, DT_DISTANCE_TRANSFORM_MASK);
+  if(max_dist <= min_depth) { dt_free_align(dist); return FALSE; }
+
+  // zero out pixels too close to existing positive prompts so the
+  // subsequent argmax never picks them
+  const float min_sep_sq = min_separation * min_separation;
+  for(int k = 0; k < n_exclude; k++)
+  {
+    if(exclude[k].label != 1) continue;
+    const float px = exclude[k].x;
+    const float py = exclude[k].y;
+    const int x0 = MAX(0, (int)(px - min_separation));
+    const int x1 = MIN((int)w - 1, (int)(px + min_separation));
+    const int y0 = MAX(0, (int)(py - min_separation));
+    const int y1 = MIN((int)h - 1, (int)(py + min_separation));
+    DT_OMP_FOR(collapse(2))
+    for(int y = y0; y <= y1; y++)
+      for(int x = x0; x <= x1; x++)
+      {
+        const float dx = (float)x - px;
+        const float dy = (float)y - py;
+        if(dx * dx + dy * dy < min_sep_sq) dist[(size_t)y * w + x] = 0.0f;
+      }
+  }
+
+  // single-threaded combined max+argmax (exclusion may have lowered
+  // the peak below max_dist, so we can't reuse that value here)
+  size_t best_idx = (size_t)-1;
+  float best = min_depth;
+  for(size_t i = 0; i < w * h; i++)
+    if(dist[i] > best) { best = dist[i]; best_idx = i; }
+  dt_free_align(dist);
+  if(best_idx == (size_t)-1) return FALSE;
+
+  const size_t py = best_idx / w;
+  const size_t px = best_idx % w;
+  out->x = (float)px;
+  out->y = (float)py;
+  out->label = 1;
+  return TRUE;
+}
+
+// tight bbox around mask>threshold, padded by `padding` (fraction of
+// bbox extent); FALSE if mask is empty
+static gboolean _compute_bbox(const float *const restrict mask,
+                              const int w,
+                              const int h,
+                              const float threshold,
+                              const float padding,
+                              dt_seg_point_t *const tl,
+                              dt_seg_point_t *const br)
+{
+  // single-threaded: cheap, and avoids OMP-reduction identity surprises
+  int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+  for(int y = 0; y < h; y++)
+  {
+    for(int x = 0; x < w; x++)
+    {
+      if(mask[(size_t)y * w + x] > threshold)
+      {
+        if(x < min_x) min_x = x;
+        if(y < min_y) min_y = y;
+        if(x > max_x) max_x = x;
+        if(y > max_y) max_y = y;
+      }
+    }
+  }
+  if(max_x == INT_MIN) return FALSE;
+
+  const int pad_x = (int)((max_x - min_x) * padding) + 1;
+  const int pad_y = (int)((max_y - min_y) * padding) + 1;
+  tl->x = (float)CLAMP(min_x - pad_x, 0, w - 1);
+  tl->y = (float)CLAMP(min_y - pad_y, 0, h - 1);
+  tl->label = 2;
+  br->x = (float)CLAMP(max_x + pad_x, 0, w - 1);
+  br->y = (float)CLAMP(max_y + pad_y, 0, h - 1);
+  br->label = 3;
+  return TRUE;
+}
+
 static void _run_decoder(dt_masks_form_gui_t *gui)
 {
   _object_data_t *d = _get_data(gui);
@@ -566,13 +669,17 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   if(gui->guipoints_count <= 1 && !d->has_selection)
     dt_seg_reset_prev_mask(d->seg);
 
-  dt_seg_point_t *points = g_new(dt_seg_point_t, n_prompt_points);
+  // headroom: one peak point per pass + 2 box corners (SAM only)
+  const int n_passes = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_PASSES_KEY),
+                             1, 3);
+  dt_seg_point_t *points = g_new(dt_seg_point_t, n_prompt_points + n_passes + 2);
   for(int i = 0; i < n_prompt_points; i++)
   {
     points[i].x = gp[i * 2 + 0] * sx;
     points[i].y = gp[i * 2 + 1] * sy;
     points[i].label = (int)gpp[i];
   }
+  int n_points = n_prompt_points;
 
   // find seed point for connected component filter:
   // always search ALL accumulated points (not just prompt points)
@@ -588,20 +695,51 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     }
   }
 
-  // multi-pass iterative refinement: run decoder multiple times,
-  // feeding back the low-res mask each time to tighten boundaries.
-  const int n_passes = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_KEY), 1, 5);
+  const float threshold
+    = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
+  const gboolean supports_box = dt_seg_supports_box(d->seg);
   int mw = 0, mh = 0;
   float *mask = NULL;
+  gboolean box_added = FALSE;
 
   for(int pass = 0; pass < n_passes; pass++)
   {
-    float *new_mask = dt_seg_compute_mask(d->seg, points,
-                                          n_prompt_points, &mw, &mh);
-    if(!new_mask)
+    float *new_mask = dt_seg_compute_mask(d->seg, points, n_points, &mw, &mh);
+    if(!new_mask) break;
+
+    if(mask && _mask_iou(mask, new_mask, (size_t)mw * mh, threshold) > 0.99f)
+    {
+      g_free(mask);
+      mask = new_mask;
+      dt_print(DT_DEBUG_AI,
+               "[object mask] converged at pass %d/%d", pass + 1, n_passes);
       break;
+    }
     g_free(mask);
     mask = new_mask;
+
+    if(pass + 1 >= n_passes) break;
+
+    gboolean any_added = FALSE;
+    dt_seg_point_t peak;
+    if(_find_peak_point(mask, mw, mh, threshold,
+                        points, n_points, 8.0f, &peak))
+    {
+      points[n_points++] = peak;
+      any_added = TRUE;
+    }
+    if(supports_box && !box_added)
+    {
+      dt_seg_point_t tl, br;
+      if(_compute_bbox(mask, mw, mh, threshold, 0.05f, &tl, &br))
+      {
+        points[n_points++] = tl;
+        points[n_points++] = br;
+        box_added = TRUE;
+        any_added = TRUE;
+      }
+    }
+    if(!any_added) break;
   }
   g_free(points);
 
@@ -610,10 +748,33 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     // remove disconnected blobs: keep only the component at the seed point
     seed_x = CLAMP(seed_x, 0, mw - 1);
     seed_y = CLAMP(seed_y, 0, mh - 1);
-    const float threshold = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
-                                  0.3f, 0.9f);
-
     _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
+
+    // optional DenseCRF edge refinement using the encoded RGB as guide
+    if(d->preview_refine)
+    {
+      int rgb_w = 0, rgb_h = 0;
+      const uint8_t *rgb = dt_seg_get_encoded_rgb(d->seg, &rgb_w, &rgb_h);
+      if(rgb && rgb_w == mw && rgb_h == mh)
+      {
+        const int crf_iter
+          = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_BOUNDARY_ITER_KEY),
+                  1, 10);
+        const float crf_sigma_color
+          = CLAMP(dt_conf_get_float(CONF_OBJECT_REFINE_BOUNDARY_SIGMA_COLOR_KEY),
+                  1.0f, 50.0f);
+        const float crf_w_bilateral
+          = CLAMP(dt_conf_get_float(CONF_OBJECT_REFINE_BOUNDARY_W_BILATERAL_KEY),
+                  0.5f, 30.0f);
+        const double t0 = dt_get_wtime();
+        dt_dense_crf_binary(mask, rgb, mw, mh,
+                            5.0f, crf_sigma_color,
+                            3.0f, crf_w_bilateral, crf_iter);
+        dt_print(DT_DEBUG_AI,
+                 "[object mask] CRF refinement: %dx%d (%.2fs)",
+                 mw, mh, dt_get_wtime() - t0);
+      }
+    }
 
     g_free(d->mask);
     d->mask = mask;
@@ -1300,6 +1461,8 @@ static void _object_events_post_expose(cairo_t *cr,
     d->preview_cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
     d->preview_smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
     d->preview_feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
+    d->preview_refine = dt_conf_key_exists(CONF_OBJECT_REFINE_BOUNDARY_KEY)
+                        && dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
 
     // restore persistent model (stays loaded across mask sessions)
     // if the active model changed in preferences, discard the old one
@@ -1360,9 +1523,6 @@ static void _object_events_post_expose(cairo_t *cr,
     d->mask = NULL;
     d->mask_w = d->mask_h = 0;
     d->encode_w = d->encode_h = 0;
-    g_free(d->encode_rgb);
-    d->encode_rgb = NULL;
-    d->encode_rgb_w = d->encode_rgb_h = 0;
     d->encode_state = ENCODE_IDLE;
     // reset selection, preview, and point state so the new image starts fresh
     d->has_selection = FALSE;
@@ -1768,6 +1928,19 @@ static void _object_modify_property(dt_masks_form_t *const form,
         *max = fminf(*max, 1.0f / feather);
         *min = fmaxf(*min, 0.0005f / feather);
         *count += 2; // both borders (same as path)
+      }
+      break;
+    case DT_MASKS_PROPERTY_REFINE:
+      // toggle applies on the next decoder run, not immediately
+      if(has_mask)
+      {
+        if(new_val != old_val)
+          dt_conf_set_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY, new_val > 0.5f);
+        const gboolean enabled
+          = dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
+        d->preview_refine = enabled;
+        *sum += enabled ? 1.0f : 0.0f;
+        ++*count;
       }
       break;
     default:;

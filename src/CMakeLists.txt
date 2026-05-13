@@ -38,6 +38,7 @@ FILE(GLOB SOURCE_FILES
   "common/database.c"
   "common/datetime.c"
   "common/dbus.c"
+  "common/densecrf.cc"
   "common/distance_transform.c"
   "common/dlopencl.c"
   "common/dng_opcode.c"
