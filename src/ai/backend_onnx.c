@@ -56,11 +56,10 @@ struct dt_ai_context_t
   gboolean dynamic_outputs;
 };
 
-// minimum ORT API we'll fall back to when the runtime library is older
-// than what we were compiled against. v14 = ORT 1.14, the first release
-// with ONNX opset 18 support — older ORT can't run our models. bump
-// this in lockstep with any model that requires a newer opset
-#define DT_ORT_MIN_API_VERSION 14
+// minimum ORT API we accept. v18 = ORT 1.18, required for ROCm 6.0
+// and the V2 CUDA EP options API. caps ONNX opset at 20 — bump in
+// lockstep with any model that needs a newer opset
+#define DT_ORT_MIN_API_VERSION 18
 
 // cache size for per-device VRAM lookups; ORT also uses a uint32 device id
 #define DT_AI_MAX_CUDA_DEVICES 8

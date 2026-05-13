@@ -122,8 +122,9 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
   * macOS 11+ (Big Sur)
   * Apple Silicon (M1+)
 
-**GPU memory:** 4 GB VRAM minimum, 8 GB+ recommended. With less memory
-darktable will use smaller tiles, which is slower but still works.
+**GPU memory:** 4 GB VRAM minimum. Models ship with fixed input
+dimensions sized to fit this budget; if GPU inference fails (out of
+memory, unsupported op), darktable automatically falls back to CPU.
 
 To enable GPU acceleration, set the path to the GPU-enabled ONNX Runtime library in
 preferences → processing → AI. darktable will auto-detect available execution providers.
@@ -237,7 +238,7 @@ Optional dependencies (minimum version):
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.9.3 *(for AVIF import & export)*
-* ONNX Runtime 1.16 *(for AI inference)*
+* ONNX Runtime 1.18 *(for AI inference)*
 * libarchive 3.8.5 *(for AI models download)*
 * libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
