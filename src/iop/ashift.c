@@ -367,6 +367,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *structure_quad;
   GtkWidget *structure_lines;
   gboolean straightening;
+  gboolean straighten_click_mode;
   gboolean fix_horizon_active;
   float straighten_x;
   float straighten_y;
@@ -4823,7 +4824,47 @@ int button_pressed(dt_iop_module_t *self,
          || (g->fix_horizon_active && which == GDK_BUTTON_PRIMARY)))
   {
     dt_control_change_cursor("crosshair");
+
+    // click-click mode when fix horizon button is active and right-click
+    if(g->fix_horizon_active && which == GDK_BUTTON_SECONDARY)
+    {
+      if(g->straightening)
+      {
+        // second right-click: finalize the straightening
+        g->straightening = FALSE;
+        g->straighten_click_mode = FALSE;
+
+        const float angle = _calculate_straightening(self, pzx, pzy, g->straighten_x, g->straighten_y, wd, ht, zoom_scale);
+
+        dt_bauhaus_widget_set_quad_active(g->rotation, FALSE);
+        g->fix_horizon_active = FALSE;
+        darktable.develop->proxy.forward_left_click = FALSE;
+        dt_control_change_cursor("default");
+
+        if(angle != 0.0f)
+        {
+          const float n = dt_bauhaus_slider_get(g->rotation) - angle;
+          dt_bauhaus_slider_set(g->rotation, n);
+          dt_toast_log(_("rotation adjusted by %3.2f° to %3.2f°"), -angle, n);
+        }
+        dt_control_queue_redraw_center();
+        return TRUE;
+      }
+      else
+      {
+        // first right-click: record the first point
+        g->straightening = TRUE;
+        g->straighten_click_mode = TRUE;
+        g->straighten_x = pzx;
+        g->straighten_y = pzy;
+        dt_control_queue_redraw_center();
+        return TRUE;
+      }
+    }
+
+    // drag mode for left-click (with button active) or right-click (without button)
     g->straightening = TRUE;
+    g->straighten_click_mode = FALSE;
     g->straighten_x = pzx;
     g->straighten_y = pzy;
     return TRUE;
@@ -5062,6 +5103,9 @@ int button_released(dt_iop_module_t *self,
 
   if(g->straightening)
   {
+    // if in click-click mode, do nothing on release (waiting for second click)
+    if(g->straighten_click_mode) return TRUE;
+
     g->straightening = FALSE;
 
     const float bzx = g->straighten_x, bzy = g->straighten_y;
@@ -5483,7 +5527,16 @@ static void _event_fix_horizon_quad_clicked(GtkWidget *widget,
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
   g->fix_horizon_active = dt_bauhaus_widget_get_quad_active(widget);
-  dt_control_change_cursor(g->fix_horizon_active ? "crosshair" : "default");
+  if(!g->fix_horizon_active)
+  {
+    g->straightening = FALSE;
+    g->straighten_click_mode = FALSE;
+    dt_control_change_cursor("default");
+  }
+  else
+  {
+    dt_control_change_cursor("crosshair");
+  }
   darktable.develop->proxy.forward_left_click = g->fix_horizon_active;
 }
 
@@ -5975,6 +6028,7 @@ void gui_init(dt_iop_module_t *self)
   g->jobparams = 0;
   g->adjust_crop = FALSE;
   g->fix_horizon_active = FALSE;
+  g->straighten_click_mode = FALSE;
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
 
@@ -5994,7 +6048,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->rotation, TRUE);
   g_signal_connect(G_OBJECT(g->rotation), "quad-pressed",
                    G_CALLBACK(_event_fix_horizon_quad_clicked), (gpointer)self);
-  dt_bauhaus_widget_set_quad_tooltip(g->rotation, _("fix the horizon by drawing a line on the image\nclick to activate, then click and drag on the image"));
+  dt_bauhaus_widget_set_quad_tooltip(g->rotation, _("fix the horizon by drawing a line on the image\n\nleft-click and drag on the image\nOR\nright-click to place the first point\nthen right click again to release the tool"));
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
@@ -6090,8 +6144,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text
     (g->rotation,
-     _("rotate image\nright-click and drag to define a horizontal or vertical"
-       " line by drawing on the image"));
+     _("rotate image\nright-click twice to define a horizontal or vertical"
+       " line on the image"));
   gtk_widget_set_tooltip_text
     (g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text

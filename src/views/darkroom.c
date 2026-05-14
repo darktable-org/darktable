@@ -858,7 +858,8 @@ void expose(dt_view_t *self,
   // if dragging the rotation line, do it and nothing else
   if(dev->proxy.rotate
      && (darktable.control->button_down_which == GDK_BUTTON_SECONDARY
-         || dmod == dev->proxy.rotate))
+         || dmod == dev->proxy.rotate
+         || dev->proxy.forward_left_click))
   {
     // reminder, we want this to be exposed always for guidings
     if(dev->proxy.rotate && dev->proxy.rotate->gui_post_expose)
@@ -3872,6 +3873,20 @@ void mouse_moved(dt_view_t *self,
      && !dt_iop_color_picker_is_visible(dev)
      && darktable.control->button_down
      && darktable.control->button_down_which == GDK_BUTTON_PRIMARY
+     && dev->proxy.rotate)
+  {
+    _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
+    handled = dev->proxy.rotate->mouse_moved(dev->proxy.rotate, zoom_x, zoom_y,
+                                             pressure, which, zoom_scale);
+  }
+
+  // fix horizon click-click: forward mouse moves with no button held
+  // so the rubber-band line updates between the two right-clicks
+  if(dev->proxy.forward_left_click
+     && !handled
+     && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
+     && !darktable.control->button_down
      && dev->proxy.rotate)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
