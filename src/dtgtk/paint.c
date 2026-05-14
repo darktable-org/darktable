@@ -3585,13 +3585,17 @@ void dtgtk_cairo_paint_horizon(cairo_t *cr, const gint x, const gint y, const gi
 {
   PREAMBLE(1, 1, 0, 0)
 
-  // horizon line
+  // horizon line (2px tall)
+  cairo_matrix_t matrix;
+  cairo_get_matrix(cr, &matrix);
+  cairo_set_line_width(cr, 2.0 / matrix.yy);
   cairo_move_to(cr, 0.0, 0.55);
   cairo_line_to(cr, 1.0, 0.55);
   cairo_stroke(cr);
 
-  // sun half circle above horizon, centered on the line
-  cairo_arc_negative(cr, 0.5, 0.55, 0.22, 0, -M_PI);
+  // sun half circle above horizon (2px thick, with 1px gap)
+  cairo_set_line_width(cr, 2.0 / matrix.yy);
+  cairo_arc_negative(cr, 0.5, 0.55 - 1.0 / matrix.yy, 0.22, 0, -M_PI);
   cairo_stroke(cr);
 
   FINISH
