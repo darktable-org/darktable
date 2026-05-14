@@ -3581,6 +3581,22 @@ void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, const gint x, const gint y
   FINISH
 }
 
+void dtgtk_cairo_paint_horizon(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // horizon line
+  cairo_move_to(cr, 0.0, 0.55);
+  cairo_line_to(cr, 1.0, 0.55);
+  cairo_stroke(cr);
+
+  // sun half circle above horizon
+  cairo_arc(cr, 0.3, 0.35, 0.15, -M_PI, 0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
