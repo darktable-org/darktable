@@ -4198,8 +4198,9 @@ void scrolled(dt_view_t *self,
     if(handled) return;
   }
 
-  // free zoom
-  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
+  // free zoom: constrain when the config asks for it AND CTRL isn't held
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, up, x, y, constrained);
 }
 
@@ -4257,7 +4258,9 @@ gboolean gesture_pinch(dt_view_t *self,
 {
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
-  (void)state;
+  // constrain when the config asks for it AND CTRL isn't held
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
 
   // Gesture-mode classifier: each event contributes its zoom_eq & pan_eq magnitude in pixels
   // to a decaying score. When the recent history is zoom-dominant (score > ZOOM_DOMINANT_PX)
@@ -4340,7 +4343,7 @@ gboolean gesture_pinch(dt_view_t *self,
              "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f"
              " (score=%.2f zoom_eq=%.2f pan_eq=%.2f)",
              eff_dx, eff_dy, zoom_pan_score, zoom_eq_px, pan_eq_px);
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, TRUE);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, constrained);
   }
 
   const float ppd = dev->full.ppd;
@@ -4368,7 +4371,7 @@ gboolean gesture_pinch(dt_view_t *self,
            dev->full.border_size, dev->full.width, dev->full.height,
            dx, dy, eff_dx, eff_dy, zoom_pan_score, zoom_dominant,
            scale, state, tscale, tscalefloor, tscaletop, zoom_scale);
-  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, TRUE);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
 
   return TRUE;
 }
@@ -4559,7 +4562,6 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
                                                  dt_develop_t *dev)
 {
   if(dev->gui_leaving) return TRUE;
-
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
@@ -4569,7 +4571,8 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
 
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-    const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
+    const gboolean constrained =
+      dev->constrain_zoom && !dt_modifier_is(event->state, GDK_CONTROL_MASK);
     dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
                      event->x, event->y, constrained);
   }
