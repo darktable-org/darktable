@@ -121,6 +121,7 @@ typedef struct dt_download_dialog_t
   double progress;
   gboolean finished;
   gboolean cancelled;
+  gboolean finish_handled;  // one-shot guard, GTK main thread only -- no mutex needed
   GMutex mutex;
 } dt_download_dialog_t;
 #endif
@@ -762,28 +763,24 @@ static gboolean _update_progress_idle(gpointer user_data)
     g_free(text);
   }
 
-  if(finished)
+  const gboolean dialog_alive = dl->dialog && GTK_IS_WIDGET(dl->dialog);
+  if(finished && !dl->finish_handled && dialog_alive)
   {
+    dl->finish_handled = TRUE;
     if(error)
     {
-      // show error in dialog
-      if(dl->dialog && GTK_IS_WIDGET(dl->dialog))
-      {
-        gtk_label_set_text(GTK_LABEL(dl->status_label), error);
-        gtk_widget_show(dl->status_label);
-      }
-      g_free(error);
+      gtk_label_set_text(GTK_LABEL(dl->status_label), error);
+      gtk_widget_show(dl->status_label);
     }
     else
     {
-      // success - close dialog
-      if(dl->dialog && GTK_IS_WIDGET(dl->dialog))
-        gtk_dialog_response(GTK_DIALOG(dl->dialog), GTK_RESPONSE_OK);
+      gtk_dialog_response(GTK_DIALOG(dl->dialog), GTK_RESPONSE_OK);
     }
-    return G_SOURCE_REMOVE;
   }
 
   g_free(error);
+  // removal is owned by the caller; returning G_SOURCE_REMOVE here
+  // would race with that explicit remove
   return G_SOURCE_CONTINUE;
 }
 
@@ -880,8 +877,8 @@ _download_model_with_dialog(dt_prefs_ai_data_t *data, const char *model_id)
   // wait for thread to finish — after this, dl->finished is TRUE
   g_thread_join(thread);
 
-  // remove the timer. Any already-dispatched idle callback will see
-  // dl->finished == TRUE and return G_SOURCE_REMOVE harmlessly.
+  // remove the timer -- sole removal point; idle callback always
+  // returns G_SOURCE_CONTINUE to avoid racing with this remove
   g_source_remove(timer_id);
 
   // destroy the dialog before freeing dl so no straggling callback
