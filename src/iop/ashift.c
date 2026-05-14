@@ -6048,7 +6048,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->rotation, TRUE);
   g_signal_connect(G_OBJECT(g->rotation), "quad-pressed",
                    G_CALLBACK(_event_fix_horizon_quad_clicked), (gpointer)self);
-  dt_bauhaus_widget_set_quad_tooltip(g->rotation, _("fix the horizon by drawing a line on the image\n\nleft-click and drag on the image\nOR\nright-click to place the first point\nthen right click again to release the tool"));
+  dt_bauhaus_widget_set_quad_tooltip(g->rotation,
+                                     _("fix the horizon by drawing a line on the image\n\n"
+                                       "left-click and drag on the image\nOR\nright-click "
+                                       "to place the first point\nthen right-click again to release the tool"));
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
@@ -6144,8 +6147,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text
     (g->rotation,
-     _("rotate image\nright-click twice to define a horizontal or vertical"
-       " line on the image"));
+     _("rotate image\nright-click and drag to define a horizontal or vertical"
+       " line by drawing on the image"));
   gtk_widget_set_tooltip_text
     (g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text
