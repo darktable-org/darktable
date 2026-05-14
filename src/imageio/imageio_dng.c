@@ -285,22 +285,35 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   if(!canonical)
     _set_dng_shared_metadata(tif, img);
 
-  // CFA description
+  const int crop_x = (img->crop_x > 0) ? img->crop_x : 0;
+  const int crop_y = (img->crop_y > 0) ? img->crop_y : 0;
+  const int vis_w  = (img->p_width  > 0 && img->p_width  <= width  - crop_x)
+                     ? img->p_width  : (width  - crop_x);
+  const int vis_h  = (img->p_height > 0 && img->p_height <= height - crop_y)
+                     ? img->p_height : (height - crop_y);
+
+  // CFAPattern and BlackLevel are indexed from ActiveArea[0,0], so
+  // rotate per-site arrays when ActiveArea starts on an odd row/col
+  const int dy = crop_y & 1;
+  const int dx = crop_x & 1;
+
   const uint16_t cfa_repeat_dim[2] = { 2, 2 };
   TIFFSetField(tif, TIFFTAG_CFAREPEATPATTERNDIM, cfa_repeat_dim);
 
   uint8_t cfa_pattern[4];
-  _cfa_bytes_from_filters(img->buf_dsc.filters, cfa_pattern);
+  {
+    uint8_t native[4];
+    _cfa_bytes_from_filters(img->buf_dsc.filters, native);
+    for(int yy = 0; yy < 2; yy++)
+      for(int xx = 0; xx < 2; xx++)
+        cfa_pattern[yy * 2 + xx] = native[((yy + dy) & 1) * 2 + ((xx + dx) & 1)];
+  }
   TIFFSetField(tif, TIFFTAG_CFAPATTERN, 4, cfa_pattern);
 
   const uint8_t cfa_plane_color[3] = { 0, 1, 2 };   // R, G, B
   TIFFSetField(tif, TIFFTAG_CFAPLANECOLOR, 3, cfa_plane_color);
   TIFFSetField(tif, TIFFTAG_CFALAYOUT, (uint16_t)1); // rectangular
 
-  // black/white levels
-  // BlackLevel is declared as a 2x2 repeat over the CFA pattern. we
-  // honor per-channel values when rawspeed provided them, otherwise
-  // fall back to the single raw_black_level broadcast to all four
   const uint16_t bl_repeat_dim[2] = { 2, 2 };
   TIFFSetField(tif, TIFFTAG_BLACKLEVELREPEATDIM, bl_repeat_dim);
 
@@ -310,11 +323,17 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
        || img->raw_black_level_separate[1] != 0
        || img->raw_black_level_separate[2] != 0
        || img->raw_black_level_separate[3] != 0);
-  for(int i = 0; i < 4; i++)
+  if(have_separate)
   {
-    black_level[i] = have_separate
-      ? (float)img->raw_black_level_separate[i]
-      : (float)img->raw_black_level;
+    for(int yy = 0; yy < 2; yy++)
+      for(int xx = 0; xx < 2; xx++)
+        black_level[yy * 2 + xx] =
+          (float)img->raw_black_level_separate[((yy + dy) & 1) * 2 + ((xx + dx) & 1)];
+  }
+  else
+  {
+    for(int i = 0; i < 4; i++)
+      black_level[i] = (float)img->raw_black_level;
   }
   TIFFSetField(tif, TIFFTAG_BLACKLEVEL, 4, black_level);
 
@@ -324,12 +343,6 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
 
   // advertise the visible region inside the full raw buffer; without
   // these tags the importer renders the optical-black margins too
-  const int crop_x = (img->crop_x > 0) ? img->crop_x : 0;
-  const int crop_y = (img->crop_y > 0) ? img->crop_y : 0;
-  const int vis_w  = (img->p_width  > 0 && img->p_width  <= width  - crop_x)
-                     ? img->p_width  : (width  - crop_x);
-  const int vis_h  = (img->p_height > 0 && img->p_height <= height - crop_y)
-                     ? img->p_height : (height - crop_y);
 
   const uint32_t active_area[4] = {
     (uint32_t)crop_y, (uint32_t)crop_x,
