@@ -337,6 +337,24 @@ static void _thumb_set_image_size(dt_thumbnail_t *thumb,
                               MIN(image_h, imgbox_h));
 }
 
+static void _thumb_update_zoom_label(dt_thumbnail_t *thumb)
+{
+  if(!thumb->zoomable
+     || thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK
+     || !thumb->w_zoom)
+    return;
+  if(thumb->zoom_100 < 1.0f || thumb->zoom <= 1.0f)
+  {
+    gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("fit"));
+  }
+  else
+  {
+    gchar *z = g_strdup_printf("%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
+    gtk_label_set_text(GTK_LABEL(thumb->w_zoom), z);
+    g_free(z);
+  }
+}
+
 static void _thumb_draw_image(dt_thumbnail_t *thumb,
                               cairo_t *cr)
 {
@@ -881,21 +899,8 @@ static gboolean _event_image_draw(GtkWidget *widget,
     }
 
     // and we can also set the zooming level if needed
-    if(res == DT_VIEW_SURFACE_OK
-       && thumb->zoomable
-       && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-    {
-      if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
-      {
-        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("fit"));
-      }
-      else
-      {
-        gchar *z = g_strdup_printf("%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
-        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), z);
-        g_free(z);
-      }
-    }
+    if(res == DT_VIEW_SURFACE_OK)
+      _thumb_update_zoom_label(thumb);
   }
 
   _thumb_draw_image(thumb, cr);
@@ -2261,6 +2266,7 @@ void dt_thumbnail_image_refresh_zoom(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_image_box, 0);
     gtk_widget_set_margin_top(thumb->w_image_box, 0);
   }
+  _thumb_update_zoom_label(thumb);
   gtk_widget_queue_draw(thumb->w_main);
 }
 
@@ -2281,6 +2287,7 @@ void dt_thumbnail_image_preview_zoom(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_image_box, 0);
     gtk_widget_set_margin_top(thumb->w_image_box, 0);
   }
+  _thumb_update_zoom_label(thumb);
   gtk_widget_queue_draw(thumb->w_main);
 }
 
