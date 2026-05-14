@@ -1172,10 +1172,10 @@ gboolean dt_masks_events_button_released(dt_iop_module_t *module,
   dt_masks_form_t *form = dev->form_visible;
   dt_masks_form_gui_t *gui = dev->form_gui;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   if(dev->mask_form_selected_id)
     dt_dev_masks_selection_change(dev, module, dev->mask_form_selected_id);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(form->functions)
   {
@@ -1365,9 +1365,9 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   if(newform && newform->type != DT_MASKS_GROUP)
     darktable.develop->form_gui->creation = TRUE;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_masks_selection_change(darktable.develop, NULL, 0);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void dt_masks_reset_form_gui(void)
@@ -1447,10 +1447,10 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_masks_selection_change(darktable.develop, NULL,
                                 value && form ? form->formid : NO_MASKID);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(bd->masks_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
@@ -1485,9 +1485,9 @@ void dt_masks_set_edit_mode_single_form(dt_iop_module_t *module,
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : NO_MASKID);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_control_queue_redraw_center();
 }
@@ -1717,9 +1717,9 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget,
   if(sel == 0) return;
   if(sel == 1)
   {
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     return;
   }
   if(sel > 0)

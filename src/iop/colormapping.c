@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -763,7 +763,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_SOURCE;
@@ -774,7 +774,7 @@ static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *se
 
 static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_TARGET;
@@ -902,7 +902,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   if(!g || !g->buffer) return;
   if(!(p->flag & ACQUIRE)) return;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   dt_iop_gui_enter_critical_section(self);
   const int width = g->width;
@@ -912,7 +912,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   if(!buffer)
   {
     dt_iop_gui_leave_critical_section(self);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     return;
   }
   dt_iop_image_copy_by_size(buffer, g->buffer, width, height, ch);
@@ -970,7 +970,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   }
 
   p->flag &= ~(GET_TARGET | GET_SOURCE | ACQUIRE);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(p->flag & HAS_SOURCE) dt_dev_add_history_item(darktable.develop, self, TRUE);
 

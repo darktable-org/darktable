@@ -1620,7 +1620,7 @@ void gui_update(dt_iop_module_t *self)
 
 static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
 
   g->dual_mask = dt_bauhaus_widget_get_quad_active(quad);
@@ -1635,7 +1635,7 @@ static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 
 static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   g->cs_mask = dt_bauhaus_widget_get_quad_active(quad);
 
@@ -1649,7 +1649,7 @@ static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 
 static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   g->cs_boost_mask = dt_bauhaus_widget_get_quad_active(quad);
 
@@ -1663,7 +1663,7 @@ static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
 
 static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   g->new_radius = -1.0f;
   dt_dev_reprocess_center(self->dev);
@@ -1672,9 +1672,9 @@ static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
 static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  if(!g || darktable.gui->reset) return;
+  if(!g || DT_IN_GUI_UPDATE()) return;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   const gboolean new_radius = g->new_radius > 0.0f;
   const gboolean new_thrs = g->new_thrs > 0.0f;
   if(new_radius)
@@ -1683,7 +1683,7 @@ static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
   if(new_thrs)
     dt_bauhaus_slider_set_val(g->cs_thrs, g->new_thrs);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(new_radius || new_thrs)
   {

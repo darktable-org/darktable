@@ -3425,12 +3425,12 @@ static void do_fit(dt_iop_module_t *self,
   do_crop(self, p);
   dt_dev_invalidate_all(darktable.develop);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->rotation, p->rotation);
   dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
   dt_bauhaus_slider_set(g->shear, p->shear);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void process(dt_iop_module_t *self,
@@ -5309,7 +5309,7 @@ void gui_reset(dt_iop_module_t *self)
 
 static void cropmode_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_ashift_params_t *p = self->params;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
@@ -5324,7 +5324,7 @@ static int _event_fit_v_button_clicked(GtkWidget *widget,
                                        const GdkEventButton *event,
                                        dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -5372,7 +5372,7 @@ static int _event_fit_h_button_clicked(GtkWidget *widget,
                                        const GdkEventButton *event,
                                        dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -5420,7 +5420,7 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
                                           const GdkEventButton *event,
                                           dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -5470,7 +5470,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget,
                                          const GdkEventButton *event,
                                          dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -5548,7 +5548,7 @@ static void _event_process_after_preview_callback(gpointer instance, dt_iop_modu
   g->jobcode = ASHIFT_JOBCODE_NONE;
   g->jobparams = 0;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   switch(jobcode)
   {
@@ -5794,7 +5794,7 @@ static gboolean _event_draw(GtkWidget *widget,
                             dt_iop_module_t *self)
 {
   const dt_iop_ashift_gui_data_t *g = self->gui_data;
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   dt_iop_gui_enter_critical_section(self);
   const int isflipped = g->isflipped;
@@ -5810,10 +5810,10 @@ static gboolean _event_draw(GtkWidget *widget,
   snprintf(string_h, sizeof(string_h),
            _("lens shift (%s)"), isflipped ? _("vertical") : _("horizontal"));
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   return FALSE;
 }
@@ -5860,7 +5860,7 @@ static int _event_structure_quad_clicked(GtkWidget *widget,
                                          dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   dt_iop_request_focus(self);
 
@@ -5888,7 +5888,7 @@ static int _event_structure_lines_clicked(GtkWidget *widget,
                                           dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   dt_iop_request_focus(self);
 

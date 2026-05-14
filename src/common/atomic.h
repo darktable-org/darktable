@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,8 @@ inline int dt_atomic_sub_int(dt_atomic_int *var, int decr) { return std::atomic_
 inline int dt_atomic_exch_int(dt_atomic_int *var, int value) { return std::atomic_exchange(var,value); }
 inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 { return std::atomic_compare_exchange_strong(var,expected,value); }
+inline void dt_atomic_incr_int(dt_atomic_int *var) { std::atomic_fetch_add(var,1); }
+inline void dt_atomic_decr_int(dt_atomic_int *var) { std::atomic_fetch_sub(var,1); }
 
 #elif !defined(__STDC_NO_ATOMICS__)
 
@@ -50,6 +52,8 @@ inline int dt_atomic_sub_int(dt_atomic_int *var, int decr) { return atomic_fetch
 inline int dt_atomic_exch_int(dt_atomic_int *var, int value) { return atomic_exchange(var,value); }
 inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 { return atomic_compare_exchange_strong(var,expected,value); }
+inline void dt_atomic_incr_int(dt_atomic_int *var) { atomic_fetch_add(var,1); }
+inline void dt_atomic_decr_int(dt_atomic_int *var) { atomic_fetch_sub(var,1); }
 
 #elif defined(__GNUC__)
 // we don't have or aren't supposed to use C11 atomics, but the compiler is a recent-enough version of GCC
@@ -66,6 +70,8 @@ inline int dt_atomic_exch_int(dt_atomic_int *var, int value)
 { int orig;  __atomic_exchange(var,&value,&orig,__ATOMIC_SEQ_CST); return orig; }
 inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 { return __atomic_compare_exchange(var,expected,&value,0,__ATOMIC_SEQ_CST,__ATOMIC_SEQ_CST); }
+inline void dt_atomic_incr_int(dt_atomic_int *var) { __atomic_fetch_add(var,1,__ATOMIC_SEQ_CST); }
+inline void dt_atomic_decr_int(dt_atomic_int *var) { __atomic_fetch_sub(var,1,__ATOMIC_SEQ_CST); }
 
 #else
 // we don't have or aren't supposed to use C11 atomics, and don't have GNU intrinsics, so
@@ -132,7 +138,27 @@ inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
   return success;
 }
 
+inline void dt_atomic_incr_int(dt_atomic_int *var)
+{
+  pthread_mutex_lock(&dt_atom_mutex);
+  (*var)++;
+  pthread_mutex_unlock(&dt_atom_mutex);
+}
+
+inline void dt_atomic_decr_int(dt_atomic_int *var)
+{
+  pthread_mutex_lock(&dt_atom_mutex);
+  (*var)--;
+  pthread_mutex_unlock(&dt_atom_mutex);
+}
+
 #endif // __STDC_NO_ATOMICS__
+
+inline int dt_atomic_incr_int_if_zero(dt_atomic_int *var)
+{
+  int expected = 0;
+  return dt_atomic_CAS_int(var, &expected, 1);
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

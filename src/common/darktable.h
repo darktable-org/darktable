@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -299,6 +299,23 @@ char *dt_version_major_minor();
 #else
   #define DT_FMA(x, y, z) ((x) * (y) + (z))
 #endif
+
+#define DT_TRY_GUI_UPDATE(ret)                                         \
+     if(!dt_atomic_incr_int_if_zero(&darktable.gui->reset)) return ret \
+
+#define DT_GUARD_GUI_UPDATE(ret)                                       \
+     if(dt_atomic_get_int(&darktable.gui->reset) != 0) return ret      \
+
+#define DT_IN_GUI_UPDATE() (dt_atomic_get_int(&darktable.gui->reset)>0)
+
+#define DT_CLEAR_GUI_UPDATE()                                       \
+    dt_atomic_set_int(&darktable.gui->reset, 0)                     \
+
+#define DT_ENTER_GUI_UPDATE()                                       \
+    dt_atomic_incr_int(&darktable.gui->reset)                       \
+
+#define DT_LEAVE_GUI_UPDATE()                                       \
+    dt_atomic_decr_int(&darktable.gui->reset)                       \
 
 struct dt_gui_gtk_t;
 struct dt_control_t;

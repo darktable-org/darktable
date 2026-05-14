@@ -1409,7 +1409,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lut3d_params_t *p = self->params;
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
   g_strlcpy(filepath, dt_bauhaus_combobox_get_text(widget), sizeof(filepath));
@@ -1445,7 +1445,7 @@ static void _entry_callback(GtkEntry *entry, dt_iop_module_t *self)
 
 static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lut3d_params_t *p = self->params;
   GtkTreeIter iter;
   GtkTreeModel *model;

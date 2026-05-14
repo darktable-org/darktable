@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ extern inline int dt_atomic_add_int(dt_atomic_int *var, int incr);
 extern inline int dt_atomic_sub_int(dt_atomic_int *var, int decr);
 extern inline int dt_atomic_exch_int(dt_atomic_int *var, int value);
 extern inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value);
+extern void dt_atomic_incr_int(dt_atomic_int *var);
+extern void dt_atomic_decr_int(dt_atomic_int *var);
+extern int dt_atomic_incr_int_if_zero(dt_atomic_int *var);
 
 #if !defined(__STDC_NO_ATOMICS__)
 // using C11 atomics, everything is handled in the header file, so we don't need to define anything in this file

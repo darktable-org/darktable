@@ -2462,7 +2462,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
 static void _use_latest_md_algo_callback(GtkWidget *button,
                                          dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
   p->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -2476,7 +2476,7 @@ static void _use_latest_md_algo_callback(GtkWidget *button,
 static void _autoscale_pressed_md(GtkWidget *button,
                                   dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   dt_bauhaus_slider_set(g->scale_md, 1.0f);
@@ -3764,7 +3764,7 @@ static void _camera_menu_select(GtkMenuItem *menuitem, dt_iop_module_t *self)
 {
   _camera_set(self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem),
                                                   "lfCamera"));
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   p->has_been_set = TRUE;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -4103,7 +4103,7 @@ static void _lens_menu_select(GtkMenuItem *menuitem,
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   _lens_set(self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   p->has_been_set = TRUE;
 
   const float scale = _get_autoscale_lf(self, p, g->camera);
@@ -4327,7 +4327,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 static void _have_corrections_done(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_gui_enter_critical_section(self);
   const int corrections_done = g->corrections_done;
@@ -4353,7 +4353,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance,
 static void _visualize_callback(GtkWidget *quad,
                                 dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   g->vig_masking = dt_bauhaus_widget_get_quad_active(quad);
   dt_dev_reprocess_center(self->dev);

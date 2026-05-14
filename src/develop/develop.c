@@ -1200,9 +1200,9 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
     {
       if(module->off)
       {
-        ++darktable.gui->reset;
+        DT_ENTER_GUI_UPDATE();
         dt_iop_gui_set_enable_button(module);
-        --darktable.gui->reset;
+        DT_LEAVE_GUI_UPDATE();
       }
     }
   }
@@ -1337,7 +1337,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
                                   const gboolean new_item,
                                   const gpointer target)
 {
-  if(!darktable.gui || darktable.gui->reset) return;
+  if(!darktable.gui || DT_IN_GUI_UPDATE()) return;
 
   // record current name, needed to ensure we do an undo record
   // if the module name is changed.
@@ -1650,7 +1650,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   GList *dev_iop = g_list_copy(dev->iop);
 
   dt_dev_pop_history_items_ext(dev, cnt);
@@ -1700,7 +1700,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
     dt_dev_pixelpipe_rebuild(dev);
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
@@ -2741,7 +2741,7 @@ void dt_dev_read_history(dt_develop_t *dev)
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   if(dev && dev->gui_attached)
   {
     dt_dev_pipe_synch_all(dev);
@@ -2756,7 +2756,7 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
 
 void dt_dev_reprocess_center(dt_develop_t *dev)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   if(dev && dev->gui_attached)
   {
     dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
@@ -2772,7 +2772,7 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
 
 void dt_dev_reprocess_preview(dt_develop_t *dev)
 {
-  if(darktable.gui->reset || !dev || !dev->gui_attached)
+  if(DT_IN_GUI_UPDATE() || !dev || !dev->gui_attached)
     return;
 
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
@@ -3546,7 +3546,7 @@ void dt_dev_invalidate_history_module(GList *list,
 void dt_dev_module_remove(dt_develop_t *dev,
                           dt_iop_module_t *module)
 {
-  // if(darktable.gui->reset) return;
+  // DT_GUARD_GUI_UPDATE();
   dt_pthread_mutex_lock(&dev->history_mutex);
   int del = 0;
 

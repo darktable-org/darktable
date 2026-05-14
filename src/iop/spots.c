@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -332,7 +332,7 @@ static gboolean _add_shape_callback(GtkWidget *widget,
                                     GdkEventButton *e,
                                     dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   const dt_iop_spots_gui_data_t *g = self->gui_data;
 
@@ -354,7 +354,7 @@ static gboolean _edit_masks(GtkWidget *widget,
                             GdkEventButton *e,
                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   // if we don't have the focus, request for it and quit, gui_focus() do the rest
   if(darktable.develop->gui_module != self)
@@ -381,7 +381,7 @@ static gboolean _edit_masks(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -405,7 +405,7 @@ static gboolean _edit_masks(GtkWidget *widget,
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_control_queue_redraw_center();
 

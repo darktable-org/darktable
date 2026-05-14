@@ -5140,7 +5140,7 @@ void dt_action_widget_toast(dt_action_t *action,
                             const gchar *msg,
                             ...)
 {
-  if(!darktable.gui->reset)
+  if(!DT_IN_GUI_UPDATE())
   {
     va_list ap;
     va_start(ap, msg);

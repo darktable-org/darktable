@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -477,7 +477,7 @@ static void extra_callback(GtkWidget *w,
                            dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_useless_params_t *p = self->params;
   dt_iop_useless_gui_data_t *g = self->gui_data;
@@ -486,9 +486,9 @@ static void extra_callback(GtkWidget *w,
 
   // Setting a widget value will trigger a callback that will update params.
   // If this is not desirable (because it might result in a cycle) then use
-  // ++darktable.gui->reset;
+  // DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->factor, p->factor + extra);
-  // and reverse with --darktable.gui->reset;
+  // and reverse with DT_LEAVE_GUI_UPDATE();
 
   // If any params updated directly, not via a callback, then
   // let core know of the changes

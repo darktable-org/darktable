@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -958,7 +958,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 static void logbase_callback(GtkWidget *slider,
                              dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -987,7 +987,7 @@ void gui_changed(dt_iop_module_t *self,
 
 static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_tonecurve_params_t *p = self->params;
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   const int combo = dt_bauhaus_combobox_get(widget);
@@ -1010,7 +1010,7 @@ static void tab_switch(GtkNotebook *notebook,
                        dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   g->channel = (tonecurve_channel_t)page_num;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));

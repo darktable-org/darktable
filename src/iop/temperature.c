@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1711,7 +1711,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 static void _temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -1749,7 +1749,7 @@ static gboolean _btn_toggled(GtkWidget *togglebutton,
                             GdkEventButton *event,
                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
 
@@ -1781,7 +1781,7 @@ static gboolean _btn_toggled(GtkWidget *togglebutton,
 
 static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *p = self->params;
@@ -1902,11 +1902,11 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
         const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
         const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
 
-        ++darktable.gui->reset;
+        DT_ENTER_GUI_UPDATE();
         dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
         dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
         dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
-        --darktable.gui->reset;
+        DT_LEAVE_GUI_UPDATE();
       }
     }
     break;
@@ -1928,7 +1928,7 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
     _mul2temp(self, p, &TempK, &tint);
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   float *pcoeffs = (float *)p;
   dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
@@ -1936,7 +1936,7 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_g, pcoeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, pcoeffs[2]);
   dt_bauhaus_slider_set(g->scale_y, pcoeffs[3]);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   _color_temptint_sliders(self);
   _color_rgb_sliders(self);
@@ -1948,7 +1948,7 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *p = self->params;

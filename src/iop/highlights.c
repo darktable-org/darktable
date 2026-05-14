@@ -1255,7 +1255,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   _set_quads(g, quad);
   dt_dev_reprocess_center(self->dev);

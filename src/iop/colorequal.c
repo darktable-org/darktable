@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2025 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2550,10 +2550,10 @@ void color_picker_apply(dt_iop_module_t *self,
     dt_aligned_pixel_t max_Ych = { 0.0f, 0.0f, 0.0f, 0.0f };
     _pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color_max, max_Ych);
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     p->white_level = log2f(max_Ych[0]);
     dt_bauhaus_slider_set(g->white_level, p->white_level);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     gui_changed(self, picker, NULL);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2564,7 +2564,7 @@ void color_picker_apply(dt_iop_module_t *self,
 
 static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
@@ -2573,7 +2573,7 @@ static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
 
 static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
@@ -2585,7 +2585,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
                                           const guint page_num,
                                           dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   // The 4th tab is options, in which case we do nothing

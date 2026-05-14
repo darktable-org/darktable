@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -429,7 +429,7 @@ void gui_changed(dt_iop_module_t *self,
 static void interpolator_callback(GtkWidget *widget,
                                   dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_rgbcurve_params_t *p = self->params;
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
 
@@ -457,7 +457,7 @@ static void tab_switch_callback(GtkNotebook *notebook,
                                 guint page_num,
                                 dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
 
   g->channel = (rgbcurve_channel_t)page_num;

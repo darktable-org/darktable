@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -257,11 +257,11 @@ void color_picker_apply(dt_iop_module_t *self,
   p->hue        = H;
   p->saturation = S;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->hue, p->hue);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
   update_saturation_slider_end_color(g->saturation, p->hue);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }

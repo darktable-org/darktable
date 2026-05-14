@@ -1093,7 +1093,7 @@ static void _watermark_callback(GtkWidget *tb,
 {
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
   memset(p->filename, 0, sizeof(p->filename));
   const int n = dt_bauhaus_combobox_get(g->watermarks);
@@ -1212,7 +1212,7 @@ static void _alignment_callback(const GtkWidget *tb,
   int index = -1;
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
 
 
@@ -1239,7 +1239,7 @@ static void _alignment_callback(const GtkWidget *tb,
 static void _text_callback(GtkWidget *entry,
                            dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
   g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
@@ -1249,7 +1249,7 @@ static void _text_callback(GtkWidget *entry,
 static void _colorpick_color_set(GtkColorButton *widget,
                                  dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
 
   GdkRGBA c;
@@ -1267,7 +1267,7 @@ static void _colorpick_color_set(GtkColorButton *widget,
 static void _fontsel_callback(GtkWidget *button,
                               dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
 
   gchar *fontname = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button));

@@ -128,13 +128,13 @@ static void _lib_navigation_control_redraw_callback(gpointer instance,
                          ? g_strdup(_("small"))
                          : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
   {
     dt_bauhaus_combobox_set_text(d->zoom, zoomline);
     dt_bauhaus_combobox_set(d->zoom, -1);
   }
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   g_free(zoomline);
 
   gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(self->widget)));

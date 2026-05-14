@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -164,9 +164,9 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     module->gui_data = NULL;
     if(darktable.gui)
     {
-      ++darktable.gui->reset;
+      DT_ENTER_GUI_UPDATE();
       module->gui_init(module);
-      --darktable.gui->reset;
+      DT_LEAVE_GUI_UPDATE();
     }
     if(module->widget) g_object_ref(module->widget);
     g_free(libname);

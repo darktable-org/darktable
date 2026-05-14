@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -164,11 +164,11 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
     g->call_auto_levels = 0;
     dt_iop_gui_leave_critical_section(self);
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     gui_update(self);
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   else
   {
@@ -683,7 +683,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget,
 static void _auto_levels_callback(GtkButton *button,
                                   dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
 
@@ -710,7 +710,7 @@ static void _auto_levels_callback(GtkButton *button,
 static void _select_region_toggled_callback(GtkToggleButton *togglebutton,
                                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
 
@@ -758,7 +758,7 @@ static void _tab_switch_callback(GtkNotebook *notebook,
                                  const guint page_num,
                                  dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
 
   g->channel = (dt_iop_rgblevels_channel_t)page_num;
@@ -1270,7 +1270,7 @@ void process(dt_iop_module_t *self,
   if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->call_auto_levels == 1 && !darktable.gui->reset)
+    if(g->call_auto_levels == 1 && !DT_IN_GUI_UPDATE())
     {
       g->call_auto_levels = -1;
 
@@ -1423,7 +1423,7 @@ int process_cl(dt_iop_module_t *self,
   if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->call_auto_levels == 1 && !darktable.gui->reset)
+    if(g->call_auto_levels == 1 && !DT_IN_GUI_UPDATE())
     {
       g->call_auto_levels = -1;
 

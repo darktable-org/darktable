@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
     : dt_bauhaus_slider_get(widget);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   int count = 0, pos = 0;
   float sum = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
   if(!is_bool)
@@ -266,7 +266,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     dt_control_queue_redraw_center();
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _update_all_properties(dt_lib_masks_t *self)
@@ -338,7 +338,7 @@ static void _tree_add_shape(GtkButton *button, gpointer shape)
 
 static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer shape)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -485,9 +485,9 @@ static void _tree_cleanup(GtkButton *button, dt_lib_module_t *self)
 
 static void _add_masks_history_item(dt_lib_masks_t *lm)
 {
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 
@@ -821,7 +821,7 @@ static void _tree_cell_edited(GtkCellRendererText *cell,
 
 static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   // we reset all "show mask" icon of iops
   dt_masks_reset_show_masks_icons();
 
@@ -1202,7 +1202,7 @@ static gboolean _tree_restrict_select(GtkTreeSelection *selection,
                                       const gboolean path_currently_selected,
                                       gpointer data)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   // if the change is SELECT->UNSELECT no pb
   if(path_currently_selected) return TRUE;
@@ -1521,9 +1521,8 @@ void gui_update(dt_lib_module_t *self)
   /* first destroy all buttons in list */
   dt_lib_masks_t *lm = self->data;
   if(!lm) return;
-  if(darktable.gui->reset) return;
 
-  ++darktable.gui->reset;
+  DT_TRY_GUI_UPDATE();
 
   // if a treeview is already present, let's get the currently selected items
   // as we are going to recreate the tree.
@@ -1604,7 +1603,7 @@ void gui_update(dt_lib_module_t *self)
 
   g_object_unref(treestore);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_gui_widget_reallocate_now(lm->treeview);
 }
@@ -1614,12 +1613,11 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   dt_lib_masks_t *lm = self->data;
   dt_lib_gui_queue_update(self);
 
-  if(darktable.gui->reset) return;
-  ++darktable.gui->reset;
+  DT_TRY_GUI_UPDATE();
 
   _update_all_properties(lm);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
 }
 
@@ -1773,7 +1771,7 @@ static void _lib_masks_selection_change(dt_lib_module_t *self,
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   if(!model) return;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   // we first unselect all
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
@@ -1791,7 +1789,7 @@ static void _lib_masks_selection_change(dt_lib_module_t *self,
     if(!found) gtk_tree_view_collapse_all(GTK_TREE_VIEW(lm->treeview));
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   _update_all_properties(lm);
 }

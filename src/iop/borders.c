@@ -773,9 +773,9 @@ static void _aspect_changed(GtkWidget *combo,
   if(which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
     p->aspect = _aspect_ratios[which];
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->aspect_slider,p->aspect);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -790,9 +790,9 @@ static void _position_h_changed(GtkWidget *combo,
   if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
     p->pos_h = _pos_h_ratios[which];
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->pos_h_slider,p->pos_h);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -807,9 +807,9 @@ static void _position_v_changed(GtkWidget *combo,
   if(which < DT_IOP_BORDERS_POSITION_V_COUNT)
   {
     p->pos_v = _pos_v_ratios[which];
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->pos_v_slider,p->pos_v);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -855,7 +855,7 @@ void gui_changed(dt_iop_module_t *self,
 static void _colorpick_color_set(GtkColorButton *widget,
                                 dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_borders_params_t *p = self->params;
 
   // turn off the other color picker so that this tool actually works ...
@@ -872,7 +872,7 @@ static void _colorpick_color_set(GtkColorButton *widget,
 
 static void _frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_borders_params_t *p = self->params;
 
   // turn off the other color picker so that this tool actually works ...

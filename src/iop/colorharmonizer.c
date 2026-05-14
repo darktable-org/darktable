@@ -849,7 +849,7 @@ static void _push_to_vectorscope(dt_iop_module_t *self)
 
 static void _anchor_hue_slider_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_color_picker_reset(self, TRUE);
   dt_iop_colorharmonizer_params_t *p = self->params;
   p->anchor_hue = _ryb_to_ucs_fast(dt_bauhaus_slider_get(widget) / 360.0f);
@@ -867,10 +867,10 @@ static void _apply_harmony_guide(dt_iop_module_t *self,
   p->rule      = (dt_iop_colorharmonizer_rule_t)(guide->type - 1);
   p->anchor_hue = _ryb_to_ucs_fast(guide->rotation / 360.0f);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_combobox_set(g->rule, p->rule);
   dt_bauhaus_slider_set(g->anchor_hue, (float)guide->rotation);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   gui_changed(self, NULL, NULL);
   dt_dev_add_history_item(self->dev, self, TRUE);
@@ -982,7 +982,7 @@ static gboolean _swatch_draw_callback(GtkWidget *widget,
 
 static void _custom_hue_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   // Deactivate any active color picker when the slider is moved directly.
   dt_iop_color_picker_reset(self, TRUE);
@@ -1005,7 +1005,7 @@ static void _custom_hue_changed(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _node_saturation_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colorharmonizer_params_t *p = self->params;
   const int idx = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "slider-index"));
   p->node_saturation[idx] = dt_bauhaus_slider_get(widget);
@@ -1040,9 +1040,9 @@ static void _init_custom_nodes_from_rule(dt_iop_module_t *self,
   p->num_custom_nodes = CLAMP(num_nodes, 2, COLORHARMONIZER_MAX_NODES);
   if(num_nodes < 2) p->custom_hue[1] = p->custom_hue[0]; // monochromatic fallback
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->num_custom_nodes_slider, p->num_custom_nodes);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 // Update widget visibility based on current mode (custom vs. predefined) and node count.
@@ -1081,10 +1081,10 @@ static void _update_visibility(const dt_iop_colorharmonizer_params_t *p,
 static void _sync_custom_sliders(const dt_iop_colorharmonizer_params_t *p,
                                  dt_iop_colorharmonizer_gui_data_t *g)
 {
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
     dt_bauhaus_slider_set(g->custom_hue_slider[i], _ucs_to_ryb_fast(p->custom_hue[i]) * 360.0f);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 // Push the current harmony to the vectorscope if sync is enabled and the changed
@@ -1152,14 +1152,14 @@ void gui_update(dt_iop_module_t *self)
   // _from_params sliders/combos (rule, pull_strength, pull_width, neutral_protection,
   // smoothing, num_custom_nodes) auto-sync before gui_update() is called; only custom
   // widgets that need coordinate conversion or aren't _from_params need manual sync.
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->anchor_hue, _ucs_to_ryb_fast(p->anchor_hue) * 360.0f);
   for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
   {
     dt_bauhaus_slider_set(g->custom_hue_slider[i], _ucs_to_ryb_fast(p->custom_hue[i]) * 360.0f);
     dt_bauhaus_slider_set(g->sat_slider[i], p->node_saturation[i]);
   }
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_gui_update_collapsible_section(&g->sat_section);
   gui_changed(self, NULL, NULL);
@@ -1208,9 +1208,9 @@ void color_picker_apply(dt_iop_module_t *self,
   if(picker == g->anchor_hue)
   {
     p->anchor_hue = hue;
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->anchor_hue, _ucs_to_ryb_fast(hue) * 360.0f);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
     {
@@ -1228,9 +1228,9 @@ void color_picker_apply(dt_iop_module_t *self,
     if(picker == g->custom_hue_slider[i])
     {
       p->custom_hue[i] = hue;
-      ++darktable.gui->reset;
+      DT_ENTER_GUI_UPDATE();
       dt_bauhaus_slider_set(g->custom_hue_slider[i], _ucs_to_ryb_fast(hue) * 360.0f);
-      --darktable.gui->reset;
+      DT_LEAVE_GUI_UPDATE();
       gtk_widget_queue_draw(g->custom_swatch[i]);
       dt_dev_add_history_item(self->dev, self, TRUE);
       gui_changed(self, g->custom_hue_slider[i], NULL);
@@ -1364,10 +1364,10 @@ static void _auto_detect_callback(GtkButton *button, dt_iop_module_t *self)
   p->rule       = best_rule;
   p->anchor_hue = best_anchor;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_combobox_set(g->rule, p->rule);
   dt_bauhaus_slider_set(g->anchor_hue, _ucs_to_ryb_fast(p->anchor_hue) * 360.0f);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   gui_changed(self, NULL, NULL);
   dt_dev_add_history_item(self->dev, self, TRUE);
