@@ -5992,7 +5992,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->rotation, TRUE);
   g_signal_connect(G_OBJECT(g->rotation), "quad-pressed",
                    G_CALLBACK(_event_fix_horizon_quad_clicked), (gpointer)self);
-  dt_bauhaus_widget_set_quad_tooltip(g->rotation, _("fix the horizon by drawing a line on the image"));
+  dt_bauhaus_widget_set_quad_tooltip(g->rotation, _("fix the horizon by drawing a line on the image\nclick to activate, then click and drag on the image"));
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
