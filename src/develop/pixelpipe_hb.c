@@ -1673,6 +1673,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            GList *pieces,
                                            const int pos)
 {
+  /* As this is done recursively we check for any dt_dev_pixelpipe_stopper_t
+     signal that might have been set.
+  */
   if(dt_pipe_shutdown(pipe))
     return TRUE;
 
@@ -1728,9 +1731,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
 
   // 1) if cached buffer is still available, return data
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
   dt_hash_t hash = dt_dev_pixelpipe_cache_hash(roi_out, pipe, pos);
 
   // we do not want data from the preview pixelpipe cache
@@ -1752,10 +1752,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   {
     dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                                output, out_format, module, TRUE);
-
-    if(dt_pipe_shutdown(pipe))
-      return TRUE;
-
     dt_print_pipe(DT_DEBUG_PIPE,
                   "pipe data: from cache",
                   pipe, module, DT_DEVICE_NONE, &roi_in, NULL);
@@ -1930,15 +1926,15 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     dt_show_times_f(&start, "[dev_pixelpipe]",
                     "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
 
-    return dt_pipe_shutdown(pipe);
+    return FALSE;
   }
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
 
   // 3b) recurse and obtain output array in &input
 
   // get region of interest which is needed in input
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
   {
@@ -1973,10 +1969,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
-  // reserve new cache line: output
   if(dt_pipe_shutdown(pipe))
     return TRUE;
 
+  // reserve new cache line: output
   const gboolean important = module
       && dt_pipe_no_mask_display(pipe)
       && dt_pipe_is_canvas(pipe)
