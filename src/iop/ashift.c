@@ -5071,6 +5071,7 @@ int button_released(dt_iop_module_t *self,
     {
       dt_bauhaus_widget_set_quad_active(g->rotation, FALSE);
       g->fix_horizon_active = FALSE;
+      darktable.develop->proxy.forward_left_click = FALSE;
       dt_control_change_cursor("default");
     }
 
@@ -5483,6 +5484,7 @@ static void _event_fix_horizon_quad_clicked(GtkWidget *widget,
   dt_iop_ashift_gui_data_t *g = self->gui_data;
   g->fix_horizon_active = dt_bauhaus_widget_get_quad_active(widget);
   dt_control_change_cursor(g->fix_horizon_active ? "crosshair" : "default");
+  darktable.develop->proxy.forward_left_click = g->fix_horizon_active;
 }
 
 static int _event_structure_auto_clicked(GtkWidget *widget,
@@ -6178,7 +6180,10 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   if(darktable.develop->proxy.rotate == self)
+  {
     darktable.develop->proxy.rotate = NULL;
+    darktable.develop->proxy.forward_left_click = FALSE;
+  }
 
   const dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(g->lines) free(g->lines);
