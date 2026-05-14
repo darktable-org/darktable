@@ -123,8 +123,8 @@ static int _tensor_get(lua_State *L)
     const int idx = lua_tointeger(L, -1);
     lua_pop(L, 1);
     if(idx < 0 || idx >= t->shape[i])
-      return luaL_error(L, "index %d out of range [0, %" PRId64 ")",
-                        idx, t->shape[i]);
+      return luaL_error(L, "index %d out of range [0, %d)",
+                        idx, (int)t->shape[i]);
     stride /= (size_t)t->shape[i];
     offset += (size_t)idx * stride;
   }
@@ -156,8 +156,8 @@ static int _tensor_set(lua_State *L)
     const int idx = lua_tointeger(L, -1);
     lua_pop(L, 1);
     if(idx < 0 || idx >= t->shape[i])
-      return luaL_error(L, "index %d out of range [0, %" PRId64 ")",
-                        idx, t->shape[i]);
+      return luaL_error(L, "index %d out of range [0, %d)",
+                        idx, (int)t->shape[i]);
     stride /= (size_t)t->shape[i];
     offset += (size_t)idx * stride;
   }
@@ -249,8 +249,8 @@ static int _tensor_paste(lua_State *L)
   {
     if(dst->shape[i] != src->shape[i])
       return luaL_error(L,
-        "leading dimension %d mismatch: dst=%" PRId64
-        ", src=%" PRId64, i, dst->shape[i], src->shape[i]);
+        "leading dimension %d mismatch: dst=%d, src=%d",
+        i, (int)dst->shape[i], (int)src->shape[i]);
   }
 
   const int y = luaL_checkinteger(L, 3);
@@ -829,20 +829,26 @@ static int _ai_model_for_task(lua_State *L)
   return 1;
 }
 
-// darktable.ai.load_model(model_id [, provider])
-// load an ONNX model by id (e.g. "denoise-nind").
-// optional provider: "cpu", "cuda", "coreml", "directml", etc.
+// darktable.ai.load_model(model_id [, provider [, model_file]])
+// load an ONNX model by id (e.g. "denoise-nind"). optional
+// provider: "cpu", "cuda", "coreml", "directml", etc. optional
+// model_file picks a variant inside the package (default
+// "model.onnx") -- e.g. rawdenoise-nind ships "model_bayer.onnx"
+// and "model_linear.onnx" with no plain model.onnx.
 // returns a context object for inference
 static int _ai_load_model(lua_State *L)
 {
   const char *model_id = luaL_checkstring(L, 1);
   dt_ai_provider_t provider = DT_AI_PROVIDER_AUTO;
+  const char *model_file = NULL;
 
   if(lua_gettop(L) >= 2 && !lua_isnil(L, 2))
   {
     const char *prov_str = luaL_checkstring(L, 2);
     provider = dt_ai_provider_from_string(prov_str);
   }
+  if(lua_gettop(L) >= 3 && !lua_isnil(L, 3))
+    model_file = luaL_checkstring(L, 3);
 
   dt_ai_environment_t *env
     = dt_ai_registry_get_env(darktable.ai_registry);
@@ -850,9 +856,13 @@ static int _ai_load_model(lua_State *L)
     return luaL_error(L, "AI subsystem is not available");
 
   dt_ai_context_t *ctx
-    = dt_ai_load_model(env, model_id, NULL, provider);
+    = dt_ai_load_model(env, model_id, model_file, provider);
   if(!ctx)
-    return luaL_error(L, "failed to load model '%s'", model_id);
+    return luaL_error(L,
+      "failed to load model '%s'%s%s",
+      model_id,
+      model_file ? " file " : "",
+      model_file ? model_file : "");
 
   dt_lua_ai_context_t *p = lua_newuserdata(L, sizeof(dt_lua_ai_context_t));
   *p = ctx;
@@ -1111,16 +1121,35 @@ static int _ai_load_image(lua_State *L)
 //   1. tensor [1,1,H,W] — single-channel float CFA mosaic
 //   2. metadata table: imgid, filters, black_level,
 //      black_level_separate, white_level, wb_coeffs,
-//      color_matrix, width, height, xtrans (X-Trans only)
+//      color_matrix, width, height, crop_x, crop_y,
+//      visible_width, visible_height, xtrans (X-Trans only).
+// width/height are the full buffer (which on some sensors, e.g.
+// Canon, includes optical-black margins); crop the tensor to
+// (crop_y, crop_x, visible_height, visible_width) for the
+// light-sensing region only.
 static int _ai_load_raw(lua_State *L)
 {
   dt_lua_image_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, 1);
 
-  // get image metadata
+  // load raw FIRST so rawspeed/libraw populates the cache fields
+  // we read below -- on a never-opened image they start at zero
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL,
+                      DT_MIPMAP_BLOCKING, 'r');
+  if(!buf.buf || buf.width <= 0 || buf.height <= 0)
+  {
+    dt_mipmap_cache_release(&buf);
+    return luaL_error(L, "cannot load raw data for image %d",
+                      imgid);
+  }
+
   const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   if(!img)
+  {
+    dt_mipmap_cache_release(&buf);
     return luaL_error(L, "cannot access image %d", imgid);
+  }
 
   // save metadata before releasing cache
   const uint32_t filters = img->buf_dsc.filters;
@@ -1133,6 +1162,10 @@ static int _ai_load_raw(lua_State *L)
   const uint32_t white_point = img->raw_white_point;
   dt_aligned_pixel_t wb_coeffs;
   memcpy(wb_coeffs, img->wb_coeffs, sizeof(wb_coeffs));
+  const int32_t img_crop_x = img->crop_x;
+  const int32_t img_crop_y = img->crop_y;
+  const int32_t img_p_width = img->p_width;
+  const int32_t img_p_height = img->p_height;
   float color_matrix[4][3];
   memcpy(color_matrix, img->adobe_XYZ_to_CAM,
          sizeof(color_matrix));
@@ -1140,17 +1173,6 @@ static int _ai_load_raw(lua_State *L)
   const int channels = img->buf_dsc.channels;
 
   dt_image_cache_read_release(img);
-
-  // load full-resolution raw buffer
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL,
-                      DT_MIPMAP_BLOCKING, 'r');
-  if(!buf.buf || buf.width <= 0 || buf.height <= 0)
-  {
-    dt_mipmap_cache_release(&buf);
-    return luaL_error(L, "cannot load raw data for image %d",
-                      imgid);
-  }
 
   const int w = buf.width;
   const int h = buf.height;
@@ -1216,6 +1238,18 @@ static int _ai_load_raw(lua_State *L)
 
   lua_pushinteger(L, h);
   lua_setfield(L, -2, "height");
+
+  lua_pushinteger(L, img_crop_x);
+  lua_setfield(L, -2, "crop_x");
+
+  lua_pushinteger(L, img_crop_y);
+  lua_setfield(L, -2, "crop_y");
+
+  lua_pushinteger(L, img_p_width);
+  lua_setfield(L, -2, "visible_width");
+
+  lua_pushinteger(L, img_p_height);
+  lua_setfield(L, -2, "visible_height");
 
   // black_level_separate[4]
   lua_newtable(L);
