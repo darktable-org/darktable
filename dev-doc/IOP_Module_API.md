@@ -224,7 +224,7 @@ For most modules (those that don't change geometry), `roi_in` and `roi_out` are 
 
 ### Pipe Types (`dt_dev_pixelpipe_type_t`)
 
-Multiple pipelines may process an image simultaneously. Check `piece->pipe->type` when behavior should differ:
+Multiple pipelines may process an image simultaneously. Check `dt_pipe_is_full()` and friends when behavior should differ:
 
 ```c
 DT_DEV_PIXELPIPE_FULL       // Full-resolution center view
@@ -473,7 +473,7 @@ If `IOP_FLAGS_ALLOW_TILING` is set, implement `tiling_callback()` to report memo
 | `maxbuf` / `maxbuf_cl` | Largest single temporary buffer as a multiple of input size |
 | `overhead` | Fixed memory overhead in bytes |
 | `overlap` | Pixels of overlap between adjacent tiles (for spatial filters) |
-| `xalign` / `yalign` | Tile origin alignment (1 = none, 2 = Bayer pattern) |
+| `align` | Tile origin alignment (1 = none, other values only for special algorithms) |
 
 ```c
 void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -486,8 +486,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 4;       // 4-pixel overlap for a 3×3 kernel
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;         // no special care for sensor patterns
 }
 ```
 

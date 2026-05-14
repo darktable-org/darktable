@@ -305,9 +305,9 @@ Always check these conditions before scheduling a GUI update from `process()`:
 ```c
 dt_iop_mymodule_gui_data_t *g = self->gui_data;
 
-if(g != NULL                                          // GUI exists (not export)
-   && self->dev->gui_attached                         // darkroom active
-   && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))   // not preview/thumbnail
+if(g != NULL                          // GUI exists (not export)
+   && self->dev->gui_attached         // darkroom active
+   && dt_pipe_is_full(piece->pipe))   // not preview/thumbnail
 {
   // Schedule GUI update...
 }
@@ -371,7 +371,7 @@ static gboolean _update_gui(gpointer data)
 
 // At end of process():
 if(g != NULL && self->dev->gui_attached
-   && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+   && dt_pipe_is_full(piece->pipe))
 {
   mymodule_gui_msg_t *msg = g_malloc(sizeof(*msg));
   msg->self = self;
