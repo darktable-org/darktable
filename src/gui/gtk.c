@@ -1463,6 +1463,52 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_loc_get_sharedir(sharedir, sizeof(sharedir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
+#ifdef _WIN32
+  // set win32 title bar color based on theme (background color)
+  g_signal_override_class_handler("map", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color_callback));
+  g_signal_override_class_handler("style-updated", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color_callback));
+#endif
+
+  GtkWidget *widget;
+  if(!gui->ui)
+    gui->ui = g_malloc0(sizeof(dt_ui_t));
+  gui->surface = NULL;
+  gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
+  gui->grouping = dt_conf_get_bool("ui_last/grouping");
+  gui->expanded_group_id = NO_IMGID;
+  gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");
+  gui->last_preset = NULL;
+  gui->have_pen_pressure = FALSE;
+
+  // load the style / theme
+  GtkSettings *settings = gtk_settings_get_default();
+  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, (gchar *)0);
+  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
+  g_object_unref(settings);
+
+  // smooth scrolling must be enabled to handle trackpad/touch events
+  gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
+
+  // key accelerator that enables scrolling of side panels
+  gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
+
+  // Init focus peaking
+  gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
+  /* Have the delete event (window close) end the program */
+  snprintf(path, sizeof(path), "%s/icons", datadir);
+  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
+  snprintf(path, sizeof(path), "%s/icons", sharedir);
+  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
+
+  //init overlay colors
+  dt_guides_set_overlay_colors();
+
+  // Initializing widgets
+  _init_widgets(gui);
+
 #ifdef MAC_INTEGRATION
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
 
@@ -1519,10 +1565,17 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // build the menu bar
   GtkWidget *menu_bar = gtk_menu_bar_new();
-  gtk_widget_show(menu_bar);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), view_root_menu);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), window_root_menu);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_root_menu);
+
+  // park the menubar inside the (already constructed) main window so
+  // gtk-mac-integration finds a real Quartz-backed GtkWindow as the
+  // toplevel. the GtkMenuBar widget itself stays hidden — the items
+  // are mirrored into the native macOS NSMenu by mac-integration
+  GtkWidget *main_vbox = gtk_bin_get_child(GTK_BIN(gui->ui->main_window));
+  gtk_box_pack_start(GTK_BOX(main_vbox), menu_bar, FALSE, FALSE, 0);
+  gtk_widget_set_no_show_all(menu_bar, TRUE);
 
   gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar));
 
@@ -1547,52 +1600,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect_data(G_OBJECT(OSXApp), "NSApplicationOpenFile",
                         G_CALLBACK(_osx_openfile_callback), NULL, NULL, 0);
 #endif
-
-#ifdef _WIN32
-  // set win32 title bar color based on theme (background color)
-  g_signal_override_class_handler("map", gtk_window_get_type(),
-                                  G_CALLBACK(_window_set_titlebar_color_callback));
-  g_signal_override_class_handler("style-updated", gtk_window_get_type(),
-                                  G_CALLBACK(_window_set_titlebar_color_callback));
-#endif
-
-  GtkWidget *widget;
-  if(!gui->ui)
-    gui->ui = g_malloc0(sizeof(dt_ui_t));
-  gui->surface = NULL;
-  gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
-  gui->grouping = dt_conf_get_bool("ui_last/grouping");
-  gui->expanded_group_id = NO_IMGID;
-  gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");
-  gui->last_preset = NULL;
-  gui->have_pen_pressure = FALSE;
-
-  // load the style / theme
-  GtkSettings *settings = gtk_settings_get_default();
-  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, (gchar *)0);
-  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
-  g_object_unref(settings);
-
-  // smooth scrolling must be enabled to handle trackpad/touch events
-  gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
-
-  // key accelerator that enables scrolling of side panels
-  gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
-
-  // Init focus peaking
-  gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
-
-  /* Have the delete event (window close) end the program */
-  snprintf(path, sizeof(path), "%s/icons", datadir);
-  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
-  snprintf(path, sizeof(path), "%s/icons", sharedir);
-  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
-
-  //init overlay colors
-  dt_guides_set_overlay_colors();
-
-  // Initializing widgets
-  _init_widgets(gui);
 
   widget = dt_ui_center(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event",
