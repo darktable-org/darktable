@@ -1662,6 +1662,18 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
           && dt_pipe_is_basic(piece->pipe);
 }
 
+static inline gboolean _dev_pixelpipe_stop_request(const dt_develop_t *dev,
+                                                   const dt_dev_pixelpipe_t *pipe)
+{
+  // sched_yield() doesn't make sense on current multicore systems any longer
+  return (dev && dev->gui_leaving)
+      || (dt_pipe_is_full(pipe) && pipe->changed == DT_DEV_PIPE_ZOOMED)
+      || (dt_pipe_is_full(pipe) && dev->image_force_reload)
+      || (dt_pipe_is_preview(pipe) && pipe->loading)
+      || (dt_pipe_is_preview2(pipe) && pipe->loading)
+      || (pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED);
+}
+
 // recursive helper for process, returns TRUE in case of unfinished work or error
 static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            dt_develop_t *dev,
@@ -1761,17 +1773,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     return FALSE;
   }
 
-  // 2) if history changed or exit event, abort processing?
-  // preview pipe: abort on all but zoom events (same buffer anyways)
-  // if image has changed, stop now.
-  if(dt_iop_breakpoint(dev, pipe)
-     || (pipe == dev->full.pipe     && dev->image_force_reload)
-     || (pipe == dev->preview_pipe  && dev->preview_pipe->loading)
-     || (pipe == dev->preview2.pipe && dev->preview2.pipe->loading)
-     || dev->gui_leaving)
-  {
+  // 2) if history changed or exit event ... abort pipe processing?
+  if(_dev_pixelpipe_stop_request(dev, pipe))
     return TRUE;
-  }
 
   // 3) input -> output
   if(!modules)

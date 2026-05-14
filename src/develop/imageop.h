@@ -429,9 +429,6 @@ extern const struct dt_action_def_t dt_action_def_iop;
  */
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data);
 
-/** let plugins have breakpoints: */
-gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
-
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
 
