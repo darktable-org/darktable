@@ -170,7 +170,11 @@ public:
       DT_OMP_SIMD()
       for(int i = 0; i < KD; i++)
 	 key[i] = origin.key[i] + direction;
-      key[dim] = origin.key[dim] - direction * KD;
+      // KD of the lattice's (KD+1) coords are stored; the (KD+1)-th is
+      // implicit (-sum). skip the adjustment for the implicit axis to
+      // avoid writing key[KD] and smashing the stack
+      if(dim < KD)
+        key[dim] = origin.key[dim] - direction * KD;
       setHash();
     }
 
