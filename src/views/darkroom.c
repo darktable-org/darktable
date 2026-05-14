@@ -4221,17 +4221,29 @@ gboolean gesture_pan(dt_view_t *self,
   // Mask editing (brush etc.) uses scroll for tool parameters.
   if(dev->form_visible
      && !darktable.develop->darkroom_skip_mouse_events)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pan] ignored: mask form active");
     return FALSE;
+  }
 
   // Let active modules consume scroll for their own interactions (e.g. brush size).
   if(dev->gui_module && dev->gui_module->scrolled
      && !darktable.develop->darkroom_skip_mouse_events
      && !dt_iop_color_picker_is_visible(dev)
      && dt_dev_modulegroups_test_activated(darktable.develop))
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pan] ignored: active module '%s' consumes scroll",
+             dev->gui_module->name());
     return FALSE;
+  }
 
   if(dx == 0.0 && dy == 0.0) return FALSE;
 
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom pan] x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x",
+           x, y, dx, dy, state);
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, dx, dy, TRUE);
   return TRUE;
 }
@@ -4239,72 +4251,85 @@ gboolean gesture_pan(dt_view_t *self,
 gboolean gesture_pinch(dt_view_t *self,
                        const double x,
                        const double y,
+                       const double dx,
+                       const double dy,
                        const int phase,
                        const double scale,
                        const int state)
 {
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
-
-  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
-  const double pinch_step_ratio = 1.1;
-
-  static double pinch_last_scale = 0.0;
+  (void)state;
+  static float pinch_begin_tscale = 0.0f;
 
   if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
-    pinch_last_scale = scale > 0.0 ? scale : 1.0;
+    pinch_begin_tscale =
+      dt_dev_get_zoom_scale(&dev->full, dev->full.zoom, 1 << dev->full.closeup, FALSE)
+      * dev->full.ppd;
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] begin x=%.2f y=%.2f scale=%.6f state=0x%x last=%.6f",
-             x, y, scale, state, pinch_last_scale);
+             "[darkroom pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
+             " -> begin_tscale=%.6f ppd=%.2f",
+             x, y, scale, state, pinch_begin_tscale, dev->full.ppd);
     return TRUE;
   }
   else if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
           || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] end/cancel phase=%d x=%.2f y=%.2f scale=%.6f state=0x%x",
-             phase, x, y, scale, state);
-    pinch_last_scale = 0.0;
+             "[darkroom pinch] %s x=%.1f y=%.1f scale=%.6f state=0x%x",
+             phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel",
+             x, y, scale, state);
+    pinch_begin_tscale = 0.0f;
     return TRUE;
   }
 
   if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] ignored phase=%d x=%.2f y=%.2f scale=%.6f state=0x%x",
-             phase, x, y, scale, state);
+             "[darkroom pinch] unknown phase=%d ignored", phase);
     return FALSE;
   }
-  if(pinch_last_scale <= 0.0 || scale <= 0.0)
+  if(pinch_begin_tscale <= 0.0f || scale <= 0.0)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] invalid scale update last=%.6f scale=%.6f",
-             pinch_last_scale, scale);
+             "[darkroom pinch] update skipped: begin_tscale=%.6f scale=%.6f",
+             pinch_begin_tscale, scale);
     return FALSE;
   }
 
-  const double ratio = scale / pinch_last_scale;
-  int zoom_step = -1;
-  if(ratio > pinch_step_ratio)
-    zoom_step = 1;
-  else if(ratio < 1.0 / pinch_step_ratio)
-    zoom_step = 0;
+  // On macOS (GDK Quartz), NSEventTypeMagnify never populates dx/dy and the
+  // gesture focal-point x/y is set once at phase=BEGIN and does not update
+  // during the gesture — so both approaches to infer translation are zero.
+  // Pan on macOS therefore arrives as a separate smooth-scroll stream which is
+  // routed to gesture_pan by _scrolled() in gtk.c.
+  // On other platforms (Wayland/X11), dx/dy carry the actual translational delta.
+  const double eff_dx = dx;
+  const double eff_dy = dy;
 
-  if(zoom_step >= 0)
+  if(eff_dx != 0.0 || eff_dy != 0.0)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] zoom step=%d x=%.2f y=%.2f ratio=%.6f scale=%.6f last=%.6f",
-             zoom_step, x, y, ratio, scale, pinch_last_scale);
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, constrained);
-    pinch_last_scale = scale;
+             "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f (combined with scale)",
+             eff_dx, eff_dy);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, TRUE);
   }
-  else
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] below threshold ratio=%.6f scale=%.6f last=%.6f",
-             ratio, scale, pinch_last_scale);
-  }
+
+  const float ppd = dev->full.ppd;
+  const float fitscale = dt_dev_get_zoom_scale(&dev->full, DT_ZOOM_FIT, 1.0f, FALSE);
+  const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
+  const float tscaletop = 16.0f;
+  const float tscale = CLAMP(pinch_begin_tscale * scale, tscalefloor, tscaletop);
+
+  // Keep pinch fully continuous for a smartphone-like feeling, including at high zoom.
+  const float zoom_scale = tscale / ppd;
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom pinch] update x=%.1f y=%.1f raw_dx=%.3f raw_dy=%.3f"
+           " eff_dx=%.3f eff_dy=%.3f scale=%.6f state=0x%x"
+           " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
+           x, y, dx, dy, eff_dx, eff_dy, scale, state,
+           tscale, tscalefloor, tscaletop, zoom_scale);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x, y, TRUE);
 
   return TRUE;
 }
