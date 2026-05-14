@@ -285,6 +285,11 @@ typedef enum dt_signal_t
   /* \brief This signal is raised after a preset has been applied */
   DT_SIGNAL_PRESET_APPLIED,
 
+  /** \brief This signal is raised when AI models have been downloaded/changed
+    no param, no returned value
+    */
+  DT_SIGNAL_AI_MODELS_CHANGED,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;

@@ -104,7 +104,7 @@ User clicks custom button
     ↓
 your_callback() fires
     ↓
-Check: if(darktable.gui->reset) return;
+Check: DT_GUARD_GUI_UPDATE()
     ↓
 Modify self->params directly
     ↓
@@ -117,18 +117,18 @@ commit_params() → process()
 ```
 Framework loads new params into self->params
     ↓
-Framework sets darktable.gui->reset
+Framework call DT_ENTER_GUI_UPDATE()
     ↓
 Framework calls your gui_update()
     ↓
 You sync widgets, call gui_changed(self, NULL, NULL)
     ↓
-Framework clears darktable.gui->reset
+Framework call DT_LEAVE_GUI_UPDATE()
 ```
 
 ### `gui_update()` — Sync Widgets from Params
 
-Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework sets `darktable.gui->reset` before calling it, so widget callbacks won't fire.
+Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework increments atomically gui state `DT_ENTER_GUI_UPDATE()` before calling it, so widget callbacks won't fire.
 
 Sliders and comboboxes created with `_from_params` auto-sync. You only need to manually sync toggle buttons and custom widgets. Always end with `gui_changed(self, NULL, NULL)`:
 
@@ -167,7 +167,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 }
 ```
 
-### The Reset Flag (`darktable.gui->reset`)
+### The Reset Flag (`DT_GUARD_GUI_UPDATE`)
 
 A counter (not a boolean) that suppresses callback processing when non-zero. The framework uses it during `gui_update()`.
 
@@ -175,7 +175,7 @@ A counter (not a boolean) that suppresses callback processing when non-zero. The
 ```c
 static void my_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;  // Always do this
+  DT_GUARD_GUI_UPDATE()  // Always do this
 
   dt_iop_mymodule_params_t *p = self->params;
   p->value = calculate_new_value();
@@ -186,9 +186,9 @@ static void my_callback(GtkWidget *w, dt_iop_module_t *self)
 **Pattern 2: Suppress callbacks when programmatically updating widgets:**
 ```c
 // Setting slider2 in response to slider1 changing
-++darktable.gui->reset;
+DT_ENTER_GUI_UPDATE()
 dt_bauhaus_slider_set(g->slider2, compute_from(p->value1));
---darktable.gui->reset;
+DT_LEAVE_GUI_UPDATE()
 ```
 
 ### `dt_dev_add_history_item()`
@@ -252,6 +252,44 @@ For modules with canvas interaction (crop, masks):
 - `mouse_moved()`, `button_pressed()`, `button_released()`, `scrolled()` — return 1 if event handled
 - `gui_post_expose()` — draw overlays on the center view with Cairo
 
+### Cursor Management
+
+There are three levels of cursor change:
+
+1. Regular cursor changes
+2. Temporary cursor changes, which override regular cursor changes
+3. Global cursor changes, which override regular or temporary cursor changes
+
+Use `dt_control_change_cursor()` for regular cursor changes to set the mouse cursor shape during an interaction. This function uses **CSS cursor names**.
+
+```c
+// Example: set to crosshair during interaction
+dt_control_change_cursor("crosshair");
+```
+
+Commonly used CSS cursor names in darktable:
+- `"default"`: standard arrow
+- `"pointer"`: clickable or draggable element
+- `"move"`: dragging an object
+- `"crosshair"`: precise selection/cropping
+- `"wait"`: busy state (replaces legacy `GDK_WATCH`)
+- `"not-allowed"`: invalid target or help-mode deselect
+- `"help"`: help mode
+- `"none"`: hidden cursor
+- `"w-resize"`, `"e-resize"`, `"n-resize"`, `"s-resize"`: cardinal resizing
+- `"nw-resize"`, `"ne-resize"`, `"se-resize"`, `"sw-resize"`: corner resizing
+- `"ew-resize"`, `"ns-resize"`: bidirectional resizing
+
+Refer to `src/control/control.c` for the implementation of fallbacks for backends with incomplete CSS support.
+
+Use `dt_control_set_temp_cursor()` to set the mouse cursor shape temporarily, for example if a particular portion of a widget needs to override the cursor set widget-wide by `dt_control_change_cursor()`. Follow this up with `dt_control_clear_temp_cursor()` to restore the cursor to the shape set by the most recent call to `dt_control_change_cursor()`. It is possible to make successive calls to `dt_control_set_temp_cursor()` to update the temporary cursor before it is eventually cleared.
+
+To make a UI-wide global cursor change, set the cursor (via a regular or temporary change) then call `dt_control_forbid_change_cursor()`. Successive calls to `dt_control_change_cursor()` or `dt_control_set_temp_cursor()` will not modify the cursor. To end this global change, call `dt_control_allow_change_cursor()` and then clear any temporary cursor.
+
+Use `dt_gui_cursor_set_busy()` to set a UI-wide busy cursor. This is meant to be used for modal operations which can only be halted by clicking cancel in the job progress widget. Remove the busy cursor with `dt_gui_cursor_clear_busy()`.
+
+In general, darktable widgets do not set their GDK window cursors. If a widget needs to display a particular cursor, it will catch enter/leave events and make appropriate calls to `dt_control_change_cursor()` and/or `dt_control_set_temp_cursor()`. This allows for the global busy, help, and keyboard mapping cursors to override GDK window cursors.
+
 ---
 
 ## 3. Thread Safety — Updating GUI from `process()`
@@ -267,9 +305,9 @@ Always check these conditions before scheduling a GUI update from `process()`:
 ```c
 dt_iop_mymodule_gui_data_t *g = self->gui_data;
 
-if(g != NULL                                          // GUI exists (not export)
-   && self->dev->gui_attached                         // darkroom active
-   && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))   // not preview/thumbnail
+if(g != NULL                          // GUI exists (not export)
+   && self->dev->gui_attached         // darkroom active
+   && dt_pipe_is_full(piece->pipe))   // not preview/thumbnail
 {
   // Schedule GUI update...
 }
@@ -333,7 +371,7 @@ static gboolean _update_gui(gpointer data)
 
 // At end of process():
 if(g != NULL && self->dev->gui_attached
-   && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+   && dt_pipe_is_full(piece->pipe))
 {
   mymodule_gui_msg_t *msg = g_malloc(sizeof(*msg));
   msg->self = self;

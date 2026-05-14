@@ -30,6 +30,8 @@
 #include <stdlib.h>
 
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
+// Tested this on rusticl and rocm on potent hardware; for both drivers there was a performance penalty of ~30%
+// with clearly better CPU vs GPU results
 #define USE_NEW_IMPL_CL 0
 
 // number of intermediate buffers used by OpenCL code path.  Needs to match value in src/common/nlmeans_core.c
@@ -156,24 +158,28 @@ static int bucket_next(unsigned int *state, unsigned int max)
 
   return next;
 }
+#endif
 
+#ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_nlmeans_params_t *d = piece->data;
   dt_iop_nlmeans_global_data_t *gd = self->global_data;
-#if USE_NEW_IMPL_CL
   const int width = roi_in->width;
   const int height = roi_in->height;
-
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   const int K = ceilf(7 * scale);         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
   // adjust to Lab, make L more important
-  const float max_L = 120.0f, max_C = 512.0f;
-  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float max_L = 120.0f;
+  const float max_C = 512.0f;
+  const float nL = 1.0f / max_L;
+  const float nC = 1.0f / max_C;
+
+#if USE_NEW_IMPL_CL
   const float norm2[4] = { nL, nC }; //luma and chroma scaling factors
 
   // allocate a buffer to receive the denoised image
@@ -201,6 +207,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     .kernel_vert = gd->kernel_nlmeans_vert,
     .kernel_accu = gd->kernel_nlmeans_accu
   };
+
   cl_int err = nlmeans_denoise_cl(&params, devid, dev_in, dev_U2, roi_in);
   if(err == CL_SUCCESS)
   {
@@ -209,25 +216,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_nlmeans_finish, width, height,
       CLARG(dev_in), CLARG(dev_U2), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(weight));
   }
-  // clean up and check whether all kernels ran successfully
-  dt_opencl_release_mem_object(dev_U2);
-  return err;
 
 #else // old code
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
-  const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = ceilf(7 * scale);         // nbhood
-  const float sharpness = 3000.0f / (1.0f + d->strength);
-
-  // adjust to Lab, make L more important
-  const float max_L = 120.0f, max_C = 512.0f;
-  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
-  const float nL2 = nL * nL, nC2 = nC * nC;
+  const float nL2 = nL * nL;
+  const float nC2 = nC * nC;
   const dt_aligned_pixel_t weight = { d->luma, d->chroma, d->chroma, 1.0f };
 
   const int devid = piece->pipe->devid;
@@ -264,8 +258,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   else
     vblocksize = 1;
 
-  size_t sizesl[3];
-  size_t local[3];
+  size_t sizesl[2];
+  size_t local[2];
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_nlmeans_init, width, height,
           CLARG(dev_U2), CLARG(width), CLARG(height));
@@ -277,7 +271,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   for(int j = -K; j <= 0; j++)
     for(int i = -K; i <= K; i++)
     {
-      int q[2] = { i, j };
+      const int q[2] = { i, j };
 
       cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
 
@@ -288,10 +282,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
       sizesl[0] = bwidth;
       sizesl[1] = ROUNDUPDHT(height, devid);
-      sizesl[2] = 1;
       local[0] = hblocksize;
       local[1] = 1;
-      local[2] = 1;
       cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_nlmeans_horiz, sizesl, local,
         CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width),
@@ -301,10 +293,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
       sizesl[0] = ROUNDUPDWD(width, devid);
       sizesl[1] = bheight;
-      sizesl[2] = 1;
       local[0] = 1;
       local[1] = vblocksize;
-      local[2] = 1;
       cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_nlmeans_vert, sizesl, local,
         CLARG(dev_U4_t), CLARG(dev_U4_tt),
@@ -328,12 +318,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     CLARG(width), CLARG(height), CLARG(weight));
 
 error:
-  dt_opencl_release_mem_object(dev_U2);
   for(int k = 0; k < NUM_BUCKETS; k++)
      dt_opencl_release_mem_object(buckets[k]);
 
-  return err;
 #endif /* USE_NEW_IMPL_CL */
+  dt_opencl_release_mem_object(dev_U2);
+  return err;
 }
 #endif
 
@@ -378,7 +368,7 @@ void process(
   const dt_aligned_pixel_t norm2 = { nL * nL, nC * nC, nC * nC, 1.0f };
 
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  const int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL));
+  const int decimate = dt_pipe_is_preview(piece->pipe) || dt_pipe_is_thumb(piece->pipe);
 
   const dt_nlmeans_param_t params = { .scattering = 0,
                                       .scale = scale,

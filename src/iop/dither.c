@@ -302,7 +302,7 @@ static int _get_dither_parameters(
   int graymode = -1;
   *levels = 65536;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
-  const int bds = (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) ? 1 : l1 * l1;
+  const int bds = dt_pipe_is_export(piece->pipe) ? 1 : l1 * l1;
   switch(data->dither_type)
   {
     case DITHER_FS1BIT:
@@ -376,7 +376,7 @@ static int _get_dither_parameters(
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL))
+      if(dt_pipe_is_preview(piece->pipe) || dt_pipe_is_thumb(piece->pipe))
       {
         graymode = -1;
       }

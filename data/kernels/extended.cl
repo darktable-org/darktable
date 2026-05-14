@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2014 Ulrich Pegelow
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,58 +22,52 @@
 
 
 __kernel void
-graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float4 color,
-              const float density, const float length_base, const float length_inc_x, const float length_inc_y)
+graduatedndp (read_only image2d_t in,
+              write_only image2d_t out,
+              const int width,
+              const int height,
+              const float4 color,
+              const float density,
+              const float length_base,
+              const float length_inc_x,
+              const float length_inc_y)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
-  const float len = length_base + y*length_inc_y + x*length_inc_x;
-
-  const float t = 0.693147181f * (density * clipf(0.5f+len)/8.0f);
-  const float d1 = t * t * 0.5f;
-  const float d2 = d1 * t * 0.333333333f;
-  const float d3 = d2 * t * 0.25f;
-  float dens = 1.0f + t + d1 + d2 + d3;
-  dens *= dens;
-  dens *= dens;
-  dens *= dens;
-
-  pixel.xyz = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens)).xyz;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  float len = length_base + y*length_inc_y + x*length_inc_x;
+  float dens = dtcl_exp2(density * clipf(0.5f + len));
+  pixel = pixel / (color + ((float4)1.0f - color) * (float4)dens);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
 __kernel void
-graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float4 color,
-              const float density, const float length_base, const float length_inc_x, const float length_inc_y)
+graduatedndm (read_only image2d_t in,
+              write_only image2d_t out,
+              const int width,
+              const int height,
+              const float4 color,
+              const float density,
+              const float length_base,
+              const float length_inc_x,
+              const float length_inc_y)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
-  const float len = length_base + y*length_inc_y + x*length_inc_x;
-
-  const float t = 0.693147181f * (-density * clipf(0.5f-len)/8.0f);
-  const float d1 = t * t * 0.5f;
-  const float d2 = d1 * t * 0.333333333f;
-  const float d3 = d2 * t * 0.25f;
-  float dens = 1.0f + t + d1 + d2 + d3;
-  dens *= dens;
-  dens *= dens;
-  dens *= dens;
-
-  pixel.xyz = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens)).xyz;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  float len = length_base + y*length_inc_y + x*length_inc_x;
+  float dens = dtcl_exp2(-density * clipf(0.5f - len));
+  pixel = pixel * (color + ((float4)1.0f - color) * (float4)dens);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 __kernel void
@@ -269,9 +263,9 @@ vibrance (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
-  const float sw = sqrt(pixel.y*pixel.y + pixel.z*pixel.z)/256.0f;
+  const float sw = dt_fast_hypot(pixel.y, pixel.z)/256.0f;
   const float ls = 1.0f - amount * sw * 0.25f;
   const float ss = 1.0f + amount * sw;
 
@@ -735,9 +729,9 @@ static inline float4 opacity_masks(const float x,
   float4 output;
   const float x_offset = (x - mask_grey_fulcrum);
   const float x_offset_norm = x_offset / mask_grey_fulcrum;
-  const float alpha = 1.f / (1.f + native_exp(x_offset_norm * shadows_weight));    // opacity of shadows
-  const float beta = 1.f / (1.f + native_exp(-x_offset_norm * highlights_weight)); // opacity of highlights
-  const float gamma = native_exp(-sqf(x_offset) * midtones_weight / 4.f) * sqf(1.f - alpha) * sqf(1.f - beta) * 8.f; // opacity of midtones
+  const float alpha = 1.f / (1.f + dtcl_exp(x_offset_norm * shadows_weight));    // opacity of shadows
+  const float beta = 1.f / (1.f + dtcl_exp(-x_offset_norm * highlights_weight)); // opacity of highlights
+  const float gamma = dtcl_exp(-sqf(x_offset) * midtones_weight / 4.f) * sqf(1.f - alpha) * sqf(1.f - beta) * 8.f; // opacity of midtones
 
   output.x = alpha;
   output.y = gamma;
@@ -776,7 +770,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   // we clip pipeline RGB while reading; this also ensures a proper alpha
-  const float4 pix_in = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+  float4 pix_in = fmax(0.0f, readpixel(in, x, y));
 
   float4 XYZ_D65 = 0.f;
   float4 LMS = 0.f;
@@ -808,7 +802,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   Ych.z = hue_rotation_matrix[0] * cos_h + hue_rotation_matrix[1] * sin_h;
   Ych.w = hue_rotation_matrix[2] * cos_h + hue_rotation_matrix[3] * sin_h;
 
-  // Linear chroma : distance to achromatic at constant luminance in scene-referred
+  // Linear chroma : distance to achromatic at constant luminance in scene-referred
   const float chroma_boost = chroma_global + dot(opacities, chroma);
   const float vib = vibrance * (1.0f - dtcl_pow(Ych.y, fabs(vibrance)));
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
@@ -968,7 +962,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     JCH = dt_UCS_HCB_to_JCH(HCB);
 
     // Gamut mapping
-    const float max_colorfulness = lookup_gamut(gamut_lut, JCH.z); // WARNING : this is M²
+    const float max_colorfulness = lookup_gamut(gamut_lut, JCH.z); // WARNING : this is M²
     const float max_chroma = 15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
     const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.f };
     const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);

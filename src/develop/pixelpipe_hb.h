@@ -31,6 +31,17 @@ G_BEGIN_DECLS
 
 #define DT_PIPECACHE_MIN 2
 
+/** cached distorted mask at a geometric module's output boundary.
+ *  used to avoid re-distorting masks from scratch when multiple
+ *  downstream modules request the same mask type. */
+typedef struct dt_dev_distorted_mask_cache_t
+{
+  float *data;      // the cached distorted mask at this piece's output
+  dt_iop_roi_t roi; // the roi this mask corresponds to (piece->processed_roi_out)
+  dt_hash_t hash;     // hash of pipe/geometry state for invalidation
+  dt_hash_t src_hash; // hash of source data (e.g. threshold) for invalidation
+} dt_dev_distorted_mask_cache_t;
+
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -63,6 +74,10 @@ typedef struct dt_dev_pixelpipe_iop_t
   uint8_t xtrans[6][6];
   uint32_t filters;
   GHashTable *raster_masks;
+
+  // cached distorted masks at geometric module boundaries
+  dt_dev_distorted_mask_cache_t detail_mask_cache;
+  dt_dev_distorted_mask_cache_t raster_mask_cache;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -204,6 +219,10 @@ typedef struct dt_dev_pixelpipe_t
   // module blending cache
   float *bcache_data;
   dt_hash_t bcache_hash;
+
+  // reusable ping-pong buffers for mask distortion walks
+  float *mask_distort_buf[2];
+  size_t mask_distort_buf_size[2];
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
@@ -212,6 +231,52 @@ static inline gboolean dt_pipe_shutdown(dt_dev_pixelpipe_t *pipe)
 {
   return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
 }
+
+static inline gboolean dt_pipe_is_fast(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_FAST);
+}
+static inline gboolean dt_pipe_is_full(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_FULL);
+}
+static inline gboolean dt_pipe_is_thumb(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL);
+}
+static inline gboolean dt_pipe_is_export(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_EXPORT);
+}
+static inline gboolean dt_pipe_is_basic(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_BASIC);
+}
+static inline gboolean dt_pipe_is_canvas(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_CANVAS);
+}
+static inline gboolean dt_pipe_is_preview(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
+}
+static inline gboolean dt_pipe_is_preview2(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2);
+}
+static inline gboolean dt_pipe_is_screen(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_SCREEN);
+}
+static inline gboolean dt_pipe_no_mask_display(const dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE;
+}
+static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
+}
+
 // report pipe->type as textual string
 const char *dt_dev_pixelpipe_type_to_str(dt_dev_pixelpipe_type_t pipe_type);
 
@@ -345,7 +410,8 @@ void dt_print_pipe_ext(const char *title,
 // helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
-                                  const struct dt_iop_module_t *target_module);
+                                  const struct dt_iop_module_t *target_module,
+                                  dt_hash_t src_hash);
 
 dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *roi,

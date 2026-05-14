@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2025 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,14 +32,14 @@ typedef enum dt_pixelpipe_picker_source_t
 } dt_pixelpipe_picker_source_t;
 
 void dt_color_picker_backtransform_box(dt_develop_t *dev,
-                              const int num,
-                              const float *in,
-                              float *out);
+                                       const int num,
+                                       const float *in,
+                                       float *out);
 void dt_color_picker_transform_box(dt_develop_t *dev,
-                              const int num,
-                              const float *in,
-                              float *out,
-                              gboolean scale);
+                                   const int num,
+                                   const float *in,
+                                   float *out,
+                                   gboolean scale);
 gboolean dt_color_picker_box(dt_iop_module_t *module,
                              const dt_iop_roi_t *roi,
                              const dt_colorpicker_sample_t *const sample,

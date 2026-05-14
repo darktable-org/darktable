@@ -927,17 +927,16 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   else
     return DT_OPENCL_PROCESS_CL;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
-  size_t local[] = { blocksize, blocksize, 1 };
-  size_t sizes[3];
+  size_t region[2] = { width, height };
+  size_t local[2] = { blocksize, blocksize };
+  size_t sizes[2];
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
   _compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
   // copy dev_in to intermediate buffer dev_temp1
-  err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp1, origin, region, 0);
+  err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp1, CLIMG_ORIGIN, region, 0);
   if(err != CL_SUCCESS) return err;
 
   // first blur step: column by column with dev_temp1 -> dev_temp2
@@ -976,7 +975,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     return err;
 
   // finally produce output in dev_out
-  return dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
+  return dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, CLIMG_ORIGIN, region);
 }
 
 cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
@@ -1025,8 +1024,8 @@ cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev
   else
     return  DT_OPENCL_PROCESS_CL;
 
-  size_t local[] = { blocksize, blocksize, 1 };
-  size_t sizes[3];
+  size_t local[2] = { blocksize, blocksize };
+  size_t sizes[2];
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;

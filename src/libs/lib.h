@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,11 +28,7 @@
 #include "gui/presets.h"
 
 #ifdef USE_LUA
-#include "lua/call.h"
-#include "lua/events.h"
 #include "lua/lib.h"
-#include "lua/modules.h"
-#include "lua/types.h"
 #endif
 
 struct dt_lib_module_t;
@@ -77,9 +73,18 @@ typedef struct dt_lib_t
                       int width, int height,
                       const dt_iop_order_iccprofile_info_t *const profile_info_from,
                       const dt_iop_order_iccprofile_info_t *const profile_info_to);
-      // FIXME: now that PR #5532 is merged, define this as
-      // dt_atomic_int and include "common/atomic.h" and use
-      // dt_atomic_set_int() and dt_atomic_get_int()
+      void (*get_harmony)(struct dt_lib_module_t *self, dt_color_harmony_guide_t *guide);
+      void (*set_harmony)(struct dt_lib_module_t *self, const dt_color_harmony_guide_t *guide);
+      void (*set_scope)(struct dt_lib_module_t *self, int scope);
+      void (*set_type)(struct dt_lib_module_t *self, int type);
+      void (*get_sector_angles)(struct dt_lib_module_t *self,
+                                const dt_color_harmony_type_t type,
+                                const int rotation,
+                                float *angles,
+                                int *n);
+      void (*set_harmony_callback)(struct dt_lib_module_t *self,
+                                   void (*cb)(const dt_color_harmony_guide_t *, void *),
+                                   void *user_data);
       gboolean is_linear;
     } histogram;
 
@@ -116,6 +121,7 @@ typedef struct dt_lib_module_t
   gboolean gui_uptodate;
 
   GtkWidget *arrow;
+  GtkWidget *preset_label;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 
@@ -216,6 +222,29 @@ void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
 /** set the colorpicker point selection tool and position */
 void dt_lib_colorpicker_set_point(dt_lib_t *lib,
                                   const float pos[2]);
+
+/** get the histogram color harmony */
+void dt_lib_histogram_get_harmony(dt_lib_t *lib, dt_color_harmony_guide_t *guide);
+
+/** set the histogram color harmony */
+void dt_lib_histogram_set_harmony(dt_lib_t *lib, const dt_color_harmony_guide_t *guide);
+
+/** register a callback notified on user-driven vectorscope harmony changes */
+void dt_lib_histogram_set_harmony_callback(dt_lib_t *lib,
+    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data);
+
+/** set the histogram scope type */
+void dt_lib_histogram_set_scope(dt_lib_t *lib, int scope);
+
+/** set the histogram vectorscope type */
+void dt_lib_histogram_set_type(dt_lib_t *lib, int type);
+
+/** get the absolute RYB sector angles for a predefined harmony type and rotation */
+void dt_lib_histogram_get_sector_angles(dt_lib_t *lib,
+                                        const dt_color_harmony_type_t type,
+                                        const int rotation,
+                                        float *angles,
+                                        int *n);
 
 /* reset color picker pos to default */
 void dt_lib_colorpicker_reset_box_area(dt_pickerbox_t box);

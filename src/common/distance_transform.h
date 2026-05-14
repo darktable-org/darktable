@@ -24,7 +24,7 @@ typedef enum dt_distance_transform_t
 
 #define DT_DISTANCE_TRANSFORM_MAX (1e20)
 
-float dt_image_distance_transform(float *const src,
+float dt_image_distance_transform(const float *const src,
                                   float *const out,
                                   const size_t width,
                                   const size_t height,

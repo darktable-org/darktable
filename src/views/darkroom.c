@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,6 +80,22 @@ DT_MODULE(1)
 
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
+// Look up imgid's current rowid in memory.collected_images and store it in
+// darktable.darkroom_active_imgid_rowid. If imgid isn't in the collection,
+// leave the previous value untouched - it represents the last valid position.
+static void _refresh_active_image_rowid(const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid))
+    return;
+  sqlite3_stmt *stmt;
+  gchar *q = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    darktable.darkroom_active_imgid_rowid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  g_free(q);
+}
+
 /* signal handler for filmstrip image switching */
 
 static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid);
@@ -131,6 +147,50 @@ static void _get_zoom_pos(dt_dev_viewport_t *port,
   {
     dt_dev_get_pointer_zoom_pos(port, x, y, zoom_x, zoom_y, zoom_scale);
   }
+}
+
+/* Compute the correction (zoom_x_preview - zoom_x_full) to add to a full-pipe
+   normalized zoom position to get the equivalent preview-pipe position.
+   Mask overlay points live in preview-pipe output space while _get_zoom_pos()
+   and dt_dev_get_viewport_params() use the full pipe; applying this correction
+   makes mouse positions match mask point coordinates when crop (or similar
+   modules) rounds pixel counts differently in the two pipes. */
+static void _preview_pipe_zoom_correction(dt_develop_t *dev, float *cx, float *cy)
+{
+  *cx = *cy = 0.f;
+  if(!dev->preview_pipe || !dev->full.pipe) return;
+
+  const float full_iw = (float)dev->full.pipe->iwidth;
+  const float full_ih = (float)dev->full.pipe->iheight;
+  if(full_iw <= 0 || full_ih <= 0) return;
+
+  const float pp_wd   = (float)dev->preview_pipe->processed_width;
+  const float pp_ht   = (float)dev->preview_pipe->processed_height;
+  const float full_wd = (float)dev->full.pipe->processed_width;
+  const float full_ht = (float)dev->full.pipe->processed_height;
+  if(pp_wd <= 0 || pp_ht <= 0 || full_wd <= 0 || full_ht <= 0) return;
+
+  // Full-pipe viewport centre in normalised coords
+  float full_pts[2] = { dev->full.zoom_x, dev->full.zoom_y };
+  dt_dev_distort_transform_plus(dev, dev->full.pipe,
+                                0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, full_pts, 1);
+  const float zoom_x_full = full_pts[0] / full_wd - 0.5f;
+  const float zoom_y_full = full_pts[1] / full_ht - 0.5f;
+
+  // Preview-pipe viewport centre in normalised coords
+  const float prev_iw = (float)dev->preview_pipe->iwidth;
+  const float prev_ih = (float)dev->preview_pipe->iheight;
+  float prev_pts[2] = {
+    dev->full.zoom_x * prev_iw / full_iw,
+    dev->full.zoom_y * prev_ih / full_ih
+  };
+  dt_dev_distort_transform_plus(dev, dev->preview_pipe,
+                                0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, prev_pts, 1);
+  const float zoom_x_vp = prev_pts[0] / pp_wd - 0.5f;
+  const float zoom_y_vp = prev_pts[1] / pp_ht - 0.5f;
+
+  *cx = zoom_x_vp - zoom_x_full;
+  *cy = zoom_y_vp - zoom_y_full;
 }
 
 static void _get_zoom_pos_bnd(dt_dev_viewport_t *port,
@@ -231,11 +291,12 @@ void _display_module_trouble_message_callback(gpointer instance,
       if(label_widget)
       {
         // set the warning message in the module's message area just below the header
-        gtk_label_set_text(GTK_LABEL(label_widget), trouble_msg);
+        gtk_label_set_markup(GTK_LABEL(label_widget), trouble_msg);
       }
       else
       {
-        label_widget = gtk_label_new(trouble_msg);;
+        label_widget = gtk_label_new(NULL);
+        gtk_label_set_markup(GTK_LABEL(label_widget), trouble_msg);
         gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
         gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
         gtk_widget_set_name(label_widget, "iop-plugin-warning");
@@ -486,13 +547,13 @@ void expose(dt_view_t *self,
   if(dev->gui_synch && !port->pipe->loading)
   {
     // synch module guis from gtk thread:
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
       dt_iop_gui_update(module);
     }
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     dev->gui_synch = FALSE;
   }
 
@@ -698,6 +759,29 @@ void expose(dt_view_t *self,
   float pzx = FLT_MAX, pzy = 0.0f;
   float zoom_scale = dt_dev_get_zoom_scale(&dev->full, port->zoom, 1 << port->closeup, TRUE);
 
+  // Compute viewport center through the preview pipe. port->zoom_x is in full-pipe input
+  // space; scale to preview-pipe input space before forward-transforming. Mask overlay
+  // points live in preview-pipe output space, so the Cairo viewport must use the same
+  // coordinate origin — using the full-pipe result causes a sub-pixel divergence that
+  // becomes a visible shift at high zoom when crop changes the pipe aspect ratio.
+  const float full_iw = dev->full.pipe ? (float)dev->full.pipe->iwidth  : 1.f;
+  const float full_ih = dev->full.pipe ? (float)dev->full.pipe->iheight : 1.f;
+  const float prev_iw = dev->preview_pipe ? (float)dev->preview_pipe->iwidth  : 1.f;
+  const float prev_ih = dev->preview_pipe ? (float)dev->preview_pipe->iheight : 1.f;
+  float prev_pts[2] = {
+    port->zoom_x * prev_iw / full_iw,
+    port->zoom_y * prev_ih / full_ih
+  };
+  dt_dev_distort_transform_plus(dev, dev->preview_pipe,
+                                0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, prev_pts, 1);
+  const float pp_wd = dev->preview_pipe->processed_width;
+  const float pp_ht = dev->preview_pipe->processed_height;
+  float zoom_x_vp = pp_wd > 0 ? prev_pts[0] / pp_wd - 0.5f : 0.f;
+  float zoom_y_vp = pp_ht > 0 ? prev_pts[1] / pp_ht - 0.5f : 0.f;
+  // apply same clamping as zoom_x/zoom_y (image fits nearly entirely in view)
+  if(boxw > 0.95f) zoom_x_vp = 0.f;
+  if(boxh > 0.95f) zoom_y_vp = 0.f;
+
   // don't draw guides and color pickers on image margins
   cairo_rectangle(cri, tb, tb, width - 2.0 * tb, height - 2.0 * tb);
 
@@ -754,7 +838,21 @@ void expose(dt_view_t *self,
         "expose masks",
          port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
+    // Clip to viewport (excluding border) so mask overlays don't
+    // bleed into the grey border when the image is zoomed in.
+    cairo_save(cri);
+    const float vp_w = (width - 2.0f * tb) / zoom_scale;
+    const float vp_h = (height - 2.0f * tb) / zoom_scale;
+    const float vp_x = (tb - 0.5f * width) / zoom_scale + 0.5f * wd + zoom_x * wd;
+    const float vp_y = (tb - 0.5f * height) / zoom_scale + 0.5f * ht + zoom_y * ht;
+    cairo_rectangle(cri, vp_x, vp_y, vp_w, vp_h);
+    cairo_clip(cri);
+    // Mask overlay points are in preview-pipe output space; shift the
+    // coordinate origin by the sub-pixel difference between full-pipe
+    // and preview-pipe viewport centres so overlays land on the image.
+    cairo_translate(cri, (zoom_x - zoom_x_vp) * wd, (zoom_y - zoom_y_vp) * ht);
     dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
+    cairo_restore(cri);
   }
 
   // if dragging the rotation line, do it and nothing else
@@ -1035,6 +1133,12 @@ static void _dev_change_image(dt_develop_t *dev,
   dev->requested_id = imgid;
   dt_dev_clear_chroma_troubles(dev);
 
+  // remember the rowid of the new image so jump-image can still locate the
+  // next/previous image if the current one stops matching the collection
+  // filter before the user navigates away.
+  darktable.darkroom_active_imgid_rowid = 0;
+  _refresh_active_image_rowid(imgid);
+
   // possible enable autosaving due to conf setting but wait for some
   // seconds for first save
   darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
@@ -1140,7 +1244,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
@@ -1256,7 +1360,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
      are blocked due to implementation of dt_iop_request_focus so we do it now
      A double history entry is not generated.
   */
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_masks_list_change(dev);
 
@@ -1329,7 +1433,8 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
 
     _dev_change_image(dev, imgid);
     // move filmstrip
-    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+      dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
     // force redraw
     dt_control_queue_redraw();
   }
@@ -1345,62 +1450,78 @@ static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   const dt_imgid_t imgid = dev->requested_id;
   int new_offset = 1;
   dt_imgid_t new_id = NO_IMGID;
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
 
-  // we new offset and imgid after the jump
+  // Locate the current image in the (possibly filtered) collection. If the
+  // user just rejected the current image while a filter excludes rejects, it
+  // is no longer in memory.collected_images and current_rowid will be 0 - in
+  // that case we use the rowid stored at load time: the same rowid in the new
+  // collection now points to whatever image came right after the removed one.
+  int current_rowid = 0;
+  sqlite3_stmt *stmt_pos;
+  gchar *query_pos =
+    g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query_pos, -1, &stmt_pos, NULL);
+  if(sqlite3_step(stmt_pos) == SQLITE_ROW)
+    current_rowid = sqlite3_column_int(stmt_pos, 0);
+  sqlite3_finalize(stmt_pos);
+  g_free(query_pos);
+
+  // target rowid in memory.collected_images. When the current image is still
+  // there, simply step from its rowid. When it's been filtered out, the slot
+  // it used to occupy is now held by the next image, so for diff > 0 we step
+  // (diff - 1) forward from that slot, and for diff < 0 we step diff back.
+  int target_rowid;
+  if(current_rowid > 0)
+    target_rowid = current_rowid + diff;
+  else if(darktable.darkroom_active_imgid_rowid > 0)
+    target_rowid = darktable.darkroom_active_imgid_rowid + (diff > 0 ? diff - 1 : diff);
+  else
+    target_rowid = (diff > 0) ? 1 : -1;
+
   sqlite3_stmt *stmt;
-  // clang-format off
-  gchar *query =
-    g_strdup_printf("SELECT rowid, imgid "
-                    "FROM memory.collected_images "
-                    "WHERE rowid=(SELECT rowid "
-                    "               FROM memory.collected_images"
-                    "               WHERE imgid=%d)+%d",
-                    imgid, diff);
-  // clang-format on
+  gchar *query = g_strdup_printf("SELECT rowid, imgid FROM memory.collected_images WHERE rowid=%d",
+                                 target_rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
-  else if(diff > 0)
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  if(!dt_is_valid_imgid(new_id))
   {
-    // if we are here, that means that the current is not anymore in
-    // the list in this case, let's use the current offset image
-    new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
-    new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
-  }
-  else
-  {
-    // if we are here, that means that the current is not anymore in
-    // the list in this case, let's use the image before current
-    // offset
-    new_offset = MAX(1, dt_ui_thumbtable(darktable.gui->ui)->offset - 1);
+    // past the start/end of the collection - wrap around
     sqlite3_stmt *stmt2;
-    gchar *query2 =
-      g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d",
-                      new_offset);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      diff > 0 ? "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1"
+               : "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
+      -1,
+      &stmt2,
+      NULL);
     if(sqlite3_step(stmt2) == SQLITE_ROW)
     {
-      new_id = sqlite3_column_int(stmt2, 0);
+      new_offset = sqlite3_column_int(stmt2, 0);
+      new_id = sqlite3_column_int(stmt2, 1);
+      if(diff > 0)
+        dt_toast_log(_("past end of collection, looped to first image"));
+      else
+        dt_toast_log(_("past beginning of collection, looped to last image"));
     }
-    else
-    {
-      new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
-      new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
-    }
-    g_free(query2);
     sqlite3_finalize(stmt2);
   }
-  g_free(query);
-  sqlite3_finalize(stmt);
 
   if(!dt_is_valid_imgid(new_id) || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
   _dev_change_image(dev, new_id);
-  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+  if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+    dt_thumbtable_set_offset(table, new_offset, TRUE);
+  else
+    dt_thumbtable_ensure_imgid_visibility(table, new_id);
 
   // if it's a change by key_press, we set mouse_over to the active image
   if(by_key) dt_control_set_mouse_over_id(new_id);
@@ -1454,6 +1575,23 @@ static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
                                                      gpointer data)
 {
   dt_control_queue_redraw_center();
+}
+
+// Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
+// image still matches the collection filter, refresh the stored rowid to its
+// new position. Once the active image stops matching, leave the value frozen
+// at its last valid rowid: the rebuilt collection now has the next image at
+// that slot, which is what _dev_jump_image needs to navigate forward.
+static void _darkroom_collection_changed_callback(gpointer instance,
+                                                  dt_collection_change_t query_change,
+                                                  dt_collection_properties_t changed_property,
+                                                  gpointer imgs,
+                                                  const dt_imgid_t next,
+                                                  gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_develop_t *dev = self->data;
+  _refresh_active_image_rowid(dev->requested_id);
 }
 
 static void _darkroom_ui_preview2_pipe_finish_signal_callback(gpointer instance,
@@ -2207,7 +2345,7 @@ static void _overlay_cycle_callback(dt_action_t *action)
 
 static void _toggle_mask_visibility_callback(dt_action_t *action)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_develop_t *dev = dt_action_view(action)->data;
   dt_iop_module_t *mod = dev->gui_module;
@@ -2220,7 +2358,7 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
   {
     dt_iop_gui_blend_data_t *bd = mod->blend_data;
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     dt_iop_color_picker_reset(mod, TRUE);
 
@@ -2242,7 +2380,7 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
     }
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
 }
 
@@ -2470,6 +2608,258 @@ void connect_button_press_release(GtkWidget *w, GtkWidget *p)
                    G_CALLBACK(_quickbutton_press_release), p);
 }
 
+// cycle modules begins
+
+static void _cycle_modules(const gboolean down)
+{
+  GList *modules = NULL;
+  for(GList *l = darktable.develop->iop; l; l = l->next)
+  {
+    dt_iop_module_t *m = l->data;
+    if(m->expander && gtk_widget_is_visible(m->expander))
+    {
+      modules = g_list_prepend(modules, m);
+    }
+  }
+
+  GList *current_item = g_list_find(modules, dt_dev_gui_module());
+  GList *next_item = NULL;
+  if(!modules)
+  {
+    dt_toast_log(_("no visible modules"));
+    return;
+  }
+  else if(!modules->next)
+  {
+    next_item = modules;
+  }
+  else
+  {
+    if(!current_item)
+      current_item = g_list_first(modules);
+    if(down)
+    {
+      next_item = g_list_next(current_item);
+      if(!next_item)
+        next_item = g_list_first(modules);
+    }
+    else
+    {
+      next_item = g_list_previous(current_item);
+      if(!next_item)
+        next_item = g_list_last(modules);
+    }
+  }
+
+  dt_iop_module_t *module_to_focus = (dt_iop_module_t *)next_item->data;
+  dt_iop_gui_set_expanded(module_to_focus, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+  const gchar *instance_name = dt_iop_get_instance_name(module_to_focus);
+  const gchar *module_name = dt_iop_get_localized_name(module_to_focus->op);
+  if(strlen(instance_name) > 0)
+    dt_toast_log(_("focused instance '%s' of '%s'"), instance_name, module_name);
+  else
+    dt_toast_log(_("focused module '%s'"), module_name);
+  g_list_free(modules);
+}
+
+static void _enable_focused_module(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else if(module->hide_enable_button)
+    dt_toast_log(_("'%s' cannot be enabled or disabled"), dt_iop_get_localized_name(module->op));
+  else if(module->off)
+  {
+    const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+    const gchar *instance_name = dt_iop_get_instance_name(module);
+    const gchar *module_name = dt_iop_get_localized_name(module->op);
+    if(strlen(instance_name) > 0)
+    {
+      if(!active)
+        dt_toast_log(_("enabled instance '%s' of '%s'"), instance_name, module_name);
+      else
+        dt_toast_log(_("disabled instance '%s' of '%s'"), instance_name, module_name);
+    }
+    else
+    {
+      if(!active)
+        dt_toast_log(_("enabled module '%s'"), module_name);
+      else
+        dt_toast_log(_("disabled module '%s'"), module_name);
+    }
+  }
+}
+
+static void _show_focused_module(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else
+    dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+}
+
+static void _new_instance_focused_module(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    dt_toast_log(_("'%s' does not support multiple instances"),
+                 dt_iop_get_localized_name(module->op));
+  else
+  {
+    dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
+    if(new_module)
+    {
+      const gchar *instance_name = dt_iop_get_instance_name(new_module);
+      if(strlen(instance_name) > 0)
+        dt_toast_log(_("added instance '%s' of '%s'"),
+                     instance_name,
+                     dt_iop_get_localized_name(new_module->op));
+      else
+        dt_toast_log(_("added instance of '%s'"), dt_iop_get_localized_name(new_module->op));
+    }
+  }
+}
+
+static void _delete_focused_module_instance(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    dt_toast_log(_("'%s' does not support multiple instances"),
+                 dt_iop_get_localized_name(module->op));
+  else
+  {
+    const gchar *localized = dt_iop_get_localized_name(module->op);
+    gchar *instance_name = g_strdup(dt_iop_get_instance_name(module));
+    dt_iop_gui_delete(module);
+    if(strlen(instance_name) > 0)
+      dt_toast_log(_("deleted instance '%s' of '%s'"), instance_name, localized);
+    else
+      dt_toast_log(_("deleted instance of '%s'"), localized);
+    g_free(instance_name);
+  }
+}
+
+static void _action_enable_focused(dt_action_t *action)
+{
+  _enable_focused_module();
+}
+
+static void _action_show_focused(dt_action_t *action)
+{
+  _show_focused_module();
+}
+
+static void _action_new_instance_focused(dt_action_t *action)
+{
+  _new_instance_focused_module();
+}
+
+static void _action_delete_instance_focused(dt_action_t *action)
+{
+  _delete_focused_module_instance();
+}
+
+static void _cycle_instances(const gboolean down)
+{
+  dt_iop_module_t *current_module = dt_dev_gui_module();
+  if(!current_module)
+  {
+    dt_toast_log(_("no focused module"));
+    return;
+  }
+
+  GList *instances = NULL;
+  for(GList *l = darktable.develop->iop; l; l = l->next)
+  {
+    dt_iop_module_t *m = l->data;
+    if(!strcmp(m->op, current_module->op) && m->expander && gtk_widget_is_visible(m->expander))
+    {
+      instances = g_list_prepend(instances, m);
+    }
+  }
+
+  if(!instances || !instances->next)
+  {
+    g_list_free(instances);
+    dt_toast_log(_("only one instance of '%s'"), dt_iop_get_localized_name(current_module->op));
+    return;
+  }
+
+  GList *current_item = g_list_find(instances, current_module);
+  GList *next_item = NULL;
+  if(down)
+  {
+    next_item = g_list_next(current_item);
+    if(!next_item)
+      next_item = g_list_first(instances);
+  }
+  else
+  {
+    next_item = g_list_previous(current_item);
+    if(!next_item)
+      next_item = g_list_last(instances);
+  }
+
+  dt_iop_module_t *module_to_focus = (dt_iop_module_t *)next_item->data;
+  dt_iop_gui_set_expanded(module_to_focus, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+  const gchar *instance_name = dt_iop_get_instance_name(module_to_focus);
+  if(strlen(instance_name) > 0)
+    dt_toast_log(_("focused instance '%s' of '%s'"),
+                 instance_name,
+                 dt_iop_get_localized_name(module_to_focus->op));
+  else
+    dt_toast_log(_("focused module '%s'"), dt_iop_get_localized_name(module_to_focus->op));
+  g_list_free(instances);
+}
+
+static float _action_callback_cycle_modules(gpointer widget,
+                                            dt_action_element_t element,
+                                            const dt_action_effect_t effect,
+                                            const float move_size)
+{
+  if(DT_PERFORM_ACTION(move_size))
+  {
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_DEFAULT_KEY:
+      _enable_focused_module();
+      break;
+    case DT_ACTION_EFFECT_DEFAULT_UP:
+      _cycle_modules(FALSE);
+      break;
+    case DT_ACTION_EFFECT_DEFAULT_DOWN:
+      _cycle_modules(TRUE);
+      break;
+    case DT_ACTION_EFFECT_CYCLE_PREVIOUS_INSTANCE:
+      _cycle_instances(FALSE);
+      break;
+    case DT_ACTION_EFFECT_CYCLE_NEXT_INSTANCE:
+      _cycle_instances(TRUE);
+      break;
+    }
+    return 0;
+  }
+  return DT_ACTION_NOT_VALID;
+}
+
+static const dt_action_element_def_t _action_elements_cycle_modules[]
+  = { { NULL, dt_action_effect_cycle } };
+
+static const dt_action_def_t _action_def_cycle_modules
+  = { N_("cycle modules"),
+      _action_callback_cycle_modules,
+      _action_elements_cycle_modules,
+      NULL, TRUE };
+
+// cycle modules ends
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = self->data;
@@ -2523,6 +2913,20 @@ void gui_init(dt_view_t *self)
      right-click shortcut assignment and tooltip display. */
   dt_action_register(DT_ACTION(self), N_("toggle pinned state in second window"),
                      _toggle_pin_second_window_action, 0, 0);
+
+  /* cycle through visible modules and their instances */
+  dt_action_define(sa, NULL, N_("cycle modules"), NULL, &_action_def_cycle_modules);
+
+  /* global <focused> shortcuts */
+  dt_action_register(&darktable.control->actions_focus, N_("enable"), _action_enable_focused, 0, 0);
+  dt_action_register(&darktable.control->actions_focus, N_("show"), _action_show_focused, 0, 0);
+  dt_action_register(
+    &darktable.control->actions_focus, N_("new instance"), _action_new_instance_focused, 0, 0);
+  dt_action_register(&darktable.control->actions_focus,
+                     N_("delete instance"),
+                     _action_delete_instance_focused,
+                     0,
+                     0);
 
   /* Enable color assessment conditions */
   {
@@ -3049,6 +3453,7 @@ void enter(dt_view_t *self)
                            _darkroom_ui_preview2_pipe_finish_signal_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TROUBLE_MESSAGE,
                            _display_module_trouble_message_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _darkroom_collection_changed_callback);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
@@ -3083,6 +3488,11 @@ void enter(dt_view_t *self)
 
   dt_dev_load_image(darktable.develop, dev->image_storage.id);
 
+  // seed the rowid tracker with the initial image's position so that, if the
+  // active image stops matching the collection filter before the user
+  // navigates away, jump-image can still find the next/previous image.
+  darktable.darkroom_active_imgid_rowid = 0;
+  _refresh_active_image_rowid(dev->image_storage.id);
 
   /*
    * add IOP modules to plugin list
@@ -3376,7 +3786,7 @@ void mouse_leave(dt_view_t *self)
     handled = dev->gui_module->mouse_leave(dev->gui_module);
 
   // reset any changes the selected plugin might have made.
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 }
 
 void mouse_enter(dt_view_t *self)
@@ -3449,7 +3859,9 @@ void mouse_moved(dt_view_t *self,
      && !dt_iop_color_picker_is_visible(dev))
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_mouse_moved(dev->gui_module, zoom_x, zoom_y,
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_mouse_moved(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                           pressure, which, zoom_scale);
   }
 
@@ -3503,7 +3915,7 @@ int button_released(dt_view_t *self,
 
   if(darktable.develop->darkroom_skip_mouse_events && which == GDK_BUTTON_PRIMARY)
   {
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     return 1;
   }
 
@@ -3515,7 +3927,7 @@ int button_released(dt_view_t *self,
     {
       dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       dt_control_queue_redraw_center();
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     return 1;
   }
@@ -3533,7 +3945,9 @@ int button_released(dt_view_t *self,
   if(dev->form_visible)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_button_released(dev->gui_module, zoom_x, zoom_y,
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_button_released(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                               which, state, zoom_scale);
     if(handled) return handled;
   }
@@ -3546,7 +3960,7 @@ int button_released(dt_view_t *self,
                                                which, state, zoom_scale);
     if(handled) return handled;
   }
-  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor(GDK_LEFT_PTR);
+  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor("default");
 
   return 1;
 }
@@ -3570,7 +3984,7 @@ int button_pressed(dt_view_t *self,
     if(which == GDK_BUTTON_PRIMARY)
     {
       if(type == GDK_2BUTTON_PRESS) return 0;
-      dt_control_change_cursor(GDK_HAND1);
+      dt_control_change_cursor("pointer");
       return 1;
     }
     else if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
@@ -3642,7 +4056,7 @@ int button_pressed(dt_view_t *self,
                                           zoom_y + dy };
           dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
         }
-        dt_control_change_cursor(GDK_FLEUR);
+        dt_control_change_cursor("move");
       }
 
       dt_color_picker_backtransform_box(dev, 1, sample->point, sample->point);
@@ -3710,7 +4124,9 @@ int button_pressed(dt_view_t *self,
   if(dev->form_visible)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_button_pressed(dev->gui_module, zoom_x, zoom_y,
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_button_pressed(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                              pressure, which, type, state);
     if(handled) return handled;
   }
@@ -3727,7 +4143,7 @@ int button_pressed(dt_view_t *self,
   if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS) return 0;
   if(which == GDK_BUTTON_PRIMARY)
   {
-    dt_control_change_cursor(GDK_HAND1);
+    dt_control_change_cursor("pointer");
     return 1;
   }
 
@@ -3766,7 +4182,10 @@ void scrolled(dt_view_t *self,
      && !darktable.develop->darkroom_skip_mouse_events)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_mouse_scrolled(dev->gui_module, zoom_x, zoom_y, up, state);
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_mouse_scrolled(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
+                                             up, state);
     if(handled) return;
   }
 
@@ -3802,17 +4221,29 @@ gboolean gesture_pan(dt_view_t *self,
   // Mask editing (brush etc.) uses scroll for tool parameters.
   if(dev->form_visible
      && !darktable.develop->darkroom_skip_mouse_events)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pan] ignored: mask form active");
     return FALSE;
+  }
 
   // Let active modules consume scroll for their own interactions (e.g. brush size).
   if(dev->gui_module && dev->gui_module->scrolled
      && !darktable.develop->darkroom_skip_mouse_events
      && !dt_iop_color_picker_is_visible(dev)
      && dt_dev_modulegroups_test_activated(darktable.develop))
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pan] ignored: active module '%s' consumes scroll",
+             dev->gui_module->name());
     return FALSE;
+  }
 
   if(dx == 0.0 && dy == 0.0) return FALSE;
 
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom pan] x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x",
+           x, y, dx, dy, state);
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, dx, dy, TRUE);
   return TRUE;
 }
@@ -3820,44 +4251,85 @@ gboolean gesture_pan(dt_view_t *self,
 gboolean gesture_pinch(dt_view_t *self,
                        const double x,
                        const double y,
+                       const double dx,
+                       const double dy,
                        const int phase,
                        const double scale,
                        const int state)
 {
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
-  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
-  const double pinch_step_ratio = 1.1;
-
-  static double pinch_last_scale = 0.0;
+  (void)state;
+  static float pinch_begin_tscale = 0.0f;
 
   if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
-    pinch_last_scale = scale > 0.0 ? scale : 1.0;
+    pinch_begin_tscale =
+      dt_dev_get_zoom_scale(&dev->full, dev->full.zoom, 1 << dev->full.closeup, FALSE)
+      * dev->full.ppd;
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
+             " -> begin_tscale=%.6f ppd=%.2f",
+             x, y, scale, state, pinch_begin_tscale, dev->full.ppd);
     return TRUE;
   }
   else if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
           || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
   {
-    pinch_last_scale = 0.0;
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pinch] %s x=%.1f y=%.1f scale=%.6f state=0x%x",
+             phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel",
+             x, y, scale, state);
+    pinch_begin_tscale = 0.0f;
     return TRUE;
   }
 
-  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
-  if(pinch_last_scale <= 0.0 || scale <= 0.0) return FALSE;
-
-  const double ratio = scale / pinch_last_scale;
-  int zoom_step = -1;
-  if(ratio > pinch_step_ratio)
-    zoom_step = 1;
-  else if(ratio < 1.0 / pinch_step_ratio)
-    zoom_step = 0;
-
-  if(zoom_step >= 0)
+  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
   {
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, constrained);
-    pinch_last_scale = scale;
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pinch] unknown phase=%d ignored", phase);
+    return FALSE;
   }
+  if(pinch_begin_tscale <= 0.0f || scale <= 0.0)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pinch] update skipped: begin_tscale=%.6f scale=%.6f",
+             pinch_begin_tscale, scale);
+    return FALSE;
+  }
+
+  // On macOS (GDK Quartz), NSEventTypeMagnify never populates dx/dy and the
+  // gesture focal-point x/y is set once at phase=BEGIN and does not update
+  // during the gesture — so both approaches to infer translation are zero.
+  // Pan on macOS therefore arrives as a separate smooth-scroll stream which is
+  // routed to gesture_pan by _scrolled() in gtk.c.
+  // On other platforms (Wayland/X11), dx/dy carry the actual translational delta.
+  const double eff_dx = dx;
+  const double eff_dy = dy;
+
+  if(eff_dx != 0.0 || eff_dy != 0.0)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f (combined with scale)",
+             eff_dx, eff_dy);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, TRUE);
+  }
+
+  const float ppd = dev->full.ppd;
+  const float fitscale = dt_dev_get_zoom_scale(&dev->full, DT_ZOOM_FIT, 1.0f, FALSE);
+  const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
+  const float tscaletop = 16.0f;
+  const float tscale = CLAMP(pinch_begin_tscale * scale, tscalefloor, tscaletop);
+
+  // Keep pinch fully continuous for a smartphone-like feeling, including at high zoom.
+  const float zoom_scale = tscale / ppd;
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom pinch] update x=%.1f y=%.1f raw_dx=%.3f raw_dy=%.3f"
+           " eff_dx=%.3f eff_dy=%.3f scale=%.6f state=0x%x"
+           " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
+           x, y, dx, dy, eff_dx, eff_dy, scale, state,
+           tscale, tscalefloor, tscaletop, zoom_scale);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x, y, TRUE);
 
   return TRUE;
 }

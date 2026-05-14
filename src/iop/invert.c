@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -189,9 +189,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_iop_invert_params_t *p = self->params;
   for_four_channels(k) p->color[k] = grayrgb[k];
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gui_update_from_coeffs(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_redraw_widget(self->widget);
@@ -199,7 +199,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_invert_gui_data_t *g = self->gui_data;
   dt_iop_invert_params_t *p = self->params;
 

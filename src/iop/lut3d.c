@@ -324,7 +324,7 @@ static void _correct_pixel_tetrahedral(const float *const in,
       rgbd[c] = rgbd[c] - rgbi[c]; // delta red/green/blue
     }
 
-  // indexes of P000 to P111 in clut
+    // indexes of P000 to P111 in clut
     const size_t color = rgbi[0] + rgbi[1] * level + rgbi[2] * level2;
     const size_t i000 = color * 3;                     // P000
     const size_t i100 = i000 + 3;                      // P100
@@ -459,7 +459,8 @@ static void _correct_pixel_pyramid(const float *const in,
 }
 
 #ifdef HAVE_GMIC
-static void _get_cache_filename(const char *const lutname, char *const cache_filename)
+static void _get_cache_filename(const char *const lutname,
+                                char *const cache_filename)
 {
   char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
   char *cache_file = g_build_filename(cache_dir, lutname, NULL);
@@ -470,7 +471,8 @@ static void _get_cache_filename(const char *const lutname, char *const cache_fil
 }
 
 static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
-                                          const char *const filepath, float **clut)
+                                          const char *const filepath,
+                                          float **clut)
 {
   uint8_t level = DT_IOP_LUT3D_CLUT_LEVEL;
   float *lclut;
@@ -505,7 +507,8 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
 
 
 static uint16_t _calculate_clut_haldclut(dt_iop_lut3d_params_t *const p,
-                                         const char *const filepath, float **clut)
+                                         const char *const filepath,
+                                         float **clut)
 {
   dt_imageio_png_t png;
   if(!dt_imageio_png_read_header(filepath, &png))
@@ -1406,7 +1409,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lut3d_params_t *p = self->params;
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
   g_strlcpy(filepath, dt_bauhaus_combobox_get_text(widget), sizeof(filepath));
@@ -1442,7 +1445,7 @@ static void _entry_callback(GtkEntry *entry, dt_iop_module_t *self)
 
 static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_lut3d_params_t *p = self->params;
   GtkTreeIter iter;
   GtkTreeModel *model;

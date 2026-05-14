@@ -115,11 +115,11 @@ static dt_scopes_highlight_t _hist_get_highlight(const dt_scopes_mode_t *const s
          ? DT_SCOPES_HIGHLIGHT_BLACK_POINT : DT_SCOPES_HIGHLIGHT_EXPOSURE;
 }
 
-static double _hist_get_exposure_pos(const dt_scopes_mode_t *const self,
-                                     const double x,
-                                     const double y)
+static double _hist_get_exposure_delta(const dt_scopes_mode_t *const self,
+                                       const double offset_x,
+                                       const double offset_y)
 {
-  return x;
+  return offset_x / gtk_widget_get_allocated_width(self->scopes->scope_draw);
 }
 
 static void _hist_draw(const dt_scopes_mode_t *const self,
@@ -235,16 +235,15 @@ static void _hist_scale_clicked(GtkWidget *button, dt_scopes_mode_t *self)
   dt_scopes_refresh(self->scopes);
 }
 
-static void _hist_add_to_options_box(dt_scopes_mode_t *const self,
-                                     dt_action_t *dark,
-                                     GtkWidget *box)
+static void _hist_add_options(dt_scopes_mode_t *const self,
+                              dt_action_t *dark)
 {
   dt_scopes_hist_t *d = self->data;
   d->scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  gtk_widget_set_valign(d->scale_button, GTK_ALIGN_START);
   dt_action_define(dark, NULL, N_("switch histogram scale"),
                    d->scale_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box), d->scale_button, FALSE, FALSE, 0);
-
+  dt_gui_box_add(self->options_box, d->scale_button);
   g_signal_connect(G_OBJECT(d->scale_button), "clicked",
                    G_CALLBACK(_hist_scale_clicked), self);
 }
@@ -269,16 +268,14 @@ const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .draw_scope = NULL,
   .draw_scope_channels = _hist_draw,
   .get_highlight = _hist_get_highlight,
-  .get_exposure_pos = _hist_get_exposure_pos,
+  .get_exposure_delta = _hist_get_exposure_delta,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
-  .eventbox_motion = NULL,
   .update_buttons = _hist_update_buttons,
   .mode_enter = _hist_mode_enter,
   .mode_leave = _hist_mode_leave,
   .gui_init = _hist_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = _hist_add_to_options_box,
+  .add_options = _hist_add_options,
   .gui_cleanup = _hist_gui_cleanup
 };
 

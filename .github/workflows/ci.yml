@@ -61,7 +61,7 @@ jobs:
           - "ubuntu:26.04"
         compiler:
           - { compiler: GNU16,  CC: gcc-16,   CXX: g++-16,     packages: gcc-16 g++-16 }
-          - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
+          - { compiler: LLVM22, CC: clang-22, CXX: clang++-22, packages: clang-22 libomp-22-dev llvm-22-dev libc++-22-dev libc++abi1 lld-22 clang-tools-22 mlir-22-tools libmlir-22-dev}
         btype:
           - Release
         target:
@@ -91,10 +91,17 @@ jobs:
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
       DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: Update base packages
-        timeout-minutes: 1
+      - name: Select fallback Ubuntu mirror if requested
+        if: startsWith(github.ref_name, 'azure-')
+        # Sometimes the default Ubuntu mirror is unreliable under overload
+        # and CI fails because of this. We can use a special branch name
+        # prefix to switch the mirror to the one on Azure. Always using the
+        # Azure is not a solution as it can also fail from time to time.
         run: |
           sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
+      - name: Update base packages
+        timeout-minutes: 15
+        run: |
           set -xe
           rm -rf /var/lib/apt/lists/*
           apt-get --yes update
@@ -114,6 +121,7 @@ jobs:
             git \
             gdb \
             intltool \
+            libarchive-dev \
             libatk1.0-dev \
             libavif-dev \
             libcairo2-dev \
@@ -134,6 +142,7 @@ jobs:
             liblcms2-dev \
             liblensfun-dev \
             liblua5.4-dev \
+            libonnxruntime-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
@@ -245,6 +254,7 @@ jobs:
             iso-codes:p
             lcms2:p
             lensfun:p
+            libarchive:p
             libavif:p
             libgphoto2:p
             libheif:p
@@ -257,7 +267,7 @@ jobs:
             libtiff:p
             libwebp:p
             libxml2:p
-            lua:p
+            lua54:p
             omp:p
             openexr:p
             openjpeg2:p
@@ -268,7 +278,7 @@ jobs:
             SDL2:p
             sqlite3:p
             zlib:p
-          update: false
+          update: true
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v6
@@ -350,10 +360,7 @@ jobs:
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --verbose || true
-          # handle keg-only libs
-          brew link --force libomp
-          brew link --force libsoup
+          brew bundle --quiet || true
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";

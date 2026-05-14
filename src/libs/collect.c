@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -132,6 +132,15 @@ typedef struct _range_t
   GtkTreePath *path2;
 } _range_t;
 
+typedef struct filmroll_row_t
+{
+  char *folder;
+  char *value;
+  int id;
+  int count;
+  int status;
+} filmroll_row_t;
+
 static void _lib_collect_gui_update(dt_lib_module_t *self);
 
 static void _lib_folders_update_collection(const gchar *filmroll);
@@ -154,6 +163,27 @@ static void row_activated_with_event(GtkTreeView *view,
 static int _is_time_property(const int property);
 
 static void _populate_collect_combo(GtkWidget *w);
+
+static gint _sort_filmroll_by_display_name(gconstpointer a, gconstpointer b)
+{
+  const filmroll_row_t *ra = a;
+  const filmroll_row_t *rb = b;
+  return g_ascii_strcasecmp(ra->folder, rb->folder);
+}
+
+static gint _sort_filmroll_rows(gconstpointer a, gconstpointer b)
+{
+  const filmroll_row_t *ra = a;
+  const filmroll_row_t *rb = b;
+  return g_ascii_strcasecmp(ra->value, rb->value);
+}
+
+static gint _sort_filmroll_by_id(gconstpointer a, gconstpointer b)
+{
+  const filmroll_row_t *ra = a;
+  const filmroll_row_t *rb = b;
+  return ra->id - rb->id;
+}
 
 int last_state = 0;
 
@@ -627,7 +657,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   if(get_path && dt_modifier_is(event->state, GDK_SHIFT_MASK)
      && gtk_tree_selection_count_selected_rows(selection) > 0
-     && (d->view_rule == DT_COLLECTION_PROP_DAY || _is_time_property(d->view_rule)
+     && (d->view_rule == DT_COLLECTION_PROP_DAY
+         || d->view_rule == DT_COLLECTION_PROP_MONTH 
+         || _is_time_property(d->view_rule)
          || d->view_rule == DT_COLLECTION_PROP_APERTURE
          || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
          || d->view_rule == DT_COLLECTION_PROP_ISO
@@ -676,7 +708,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
      || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY
          && (dt_modifier_is(event->state, GDK_SHIFT_MASK)
-             || dt_modifier_is(event->state, GDK_CONTROL_MASK))))
+             || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+     || (d->view_rule == DT_COLLECTION_PROP_MONTH
+         && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
 
@@ -1364,6 +1398,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
       format_separator = "%s|";
       break;
     case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_MONTH:
     case DT_COLLECTION_PROP_TIME:
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
     case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
@@ -1502,6 +1537,20 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_MONTH:
+        // clang-format off
+        query = g_strdup_printf
+          ("SELECT CAST(strftime('%%m', datetime_taken / 86400000000.0"
+           "            + julianday('0001-01-01')) AS INTEGER) AS month_num,"
+           "        1, COUNT(*) AS count"
+           " FROM main.images AS mi"
+           " WHERE datetime_taken IS NOT NULL AND datetime_taken <> 0"
+           " AND %s"
+           " GROUP BY month_num"
+           " ORDER BY month_num", where_ext);
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_TIME:
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
@@ -1562,6 +1611,14 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
         if(property == DT_COLLECTION_PROP_DAY)
           sdt[10] = '\0';
         name = g_strdup(sdt);
+      }
+      else if(property == DT_COLLECTION_PROP_MONTH)
+      {
+        const int month_num = sqlite3_column_int(stmt, 0);
+        if(month_num >= 1 && month_num <= 12)
+          name = g_strdup_printf("%02d - %s", month_num, _(dt_month_names[month_num - 1]));
+        else
+          name = g_strdup(_("unknown"));
       }
       else
       {
@@ -2192,6 +2249,22 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         }
         break;
 
+      case DT_COLLECTION_PROP_MONTH: // capture month
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT CAST(strftime('%%m', datetime_taken / 86400000000.0"
+                   "            + julianday('0001-01-01')) AS INTEGER) AS month_num,"
+                   "        1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " WHERE datetime_taken IS NOT NULL AND datetime_taken <> 0"
+                   " AND %s"
+                   " GROUP BY month_num"
+                   " ORDER BY month_num %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       default:
         if(property >= DT_COLLECTION_PROP_METADATA_OFFSET)
         {
@@ -2224,17 +2297,11 @@ static void _list_view(dt_lib_collect_rule_t *dr)
 
           if(sort_by_import_time)
           {
-            if(sort_descending)
-              order_by = g_strdup("film_rolls_id DESC");
-            else
-              order_by = g_strdup("film_rolls_id ASC");
+            order_by = g_strdup(sort_descending ? "film_rolls_id DESC" : "film_rolls_id ASC");
           }
           else
           {
-            if(sort_descending)
-              order_by = g_strdup("lower(folder) DESC");
-            else
-              order_by = g_strdup("lower(folder) ASC");
+            order_by = g_strdup(sort_descending ? "lower(folder) DESC" : "lower(folder) ASC");
           }
 
           // clang-format off
@@ -2261,6 +2328,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
     if(strlen(query) > 0)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      
+      GList *rows = NULL;
+
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
@@ -2275,6 +2345,17 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         {
           folder = dt_image_film_roll_name(folder);
           status = !sqlite3_column_int(stmt, 3);
+
+          filmroll_row_t *r = g_malloc(sizeof(*r));
+          r->folder = g_strdup(folder);
+          r->value = g_strdup(value);
+          r->id = sqlite3_column_int(stmt, 1);
+          r->count = count;
+          r->status = status;
+
+          rows = g_list_prepend(rows, r);
+
+          continue;
         }
         else if(property == DT_COLLECTION_PROP_RATING)
         {
@@ -2303,6 +2384,14 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                folder = "★★★★★";
                break;
           }
+        }
+        else if(property == DT_COLLECTION_PROP_MONTH)
+        {
+          const int month_num = sqlite3_column_int(stmt, 0);
+          if(month_num >= 1 && month_num <= 12)
+            folder = _(dt_month_names[month_num - 1]);
+          else
+            folder = _("unknown");
         }
 
         // check if name is empty string
@@ -2344,6 +2433,62 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         g_free(text);
         g_free(escaped_text);
       }
+
+      if(property == DT_COLLECTION_PROP_FILMROLL)
+      {
+        const gboolean sort_by_import_time =
+          dt_conf_is_equal("plugins/collect/filmroll_sort", "import time");
+        const gboolean sort_by_folder_name = 
+          dt_conf_is_equal("plugins/collect/filmroll_sort", "folder name");
+      
+        if(sort_by_import_time)
+        {      
+          rows = g_list_sort(rows, _sort_filmroll_by_id);
+        }
+        else if(sort_by_folder_name)
+        {
+          rows = g_list_sort(rows, _sort_filmroll_rows);
+        }
+        else
+        {
+          rows = g_list_sort(rows, _sort_filmroll_by_display_name);
+        }
+      
+        if(sort_descending)
+          rows = g_list_reverse(rows);
+      
+        for(GList *l = rows; l; l = l->next)
+        {
+          filmroll_row_t *r = l->data;
+      
+          gchar *text = g_strdup(r->value);
+          gchar *ptr = text;
+          while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr))
+            ptr[0] = '?';
+      
+          gchar *escaped_text = g_markup_escape_text(text, -1);
+      
+          gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
+                                            DT_LIB_COLLECT_COL_TEXT, r->folder,
+                                            DT_LIB_COLLECT_COL_ID, r->id,
+                                            DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
+                                            DT_LIB_COLLECT_COL_PATH, r->value,
+                                            DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                                            DT_LIB_COLLECT_COL_COUNT, r->count,
+                                            DT_LIB_COLLECT_COL_UNREACHABLE, r->status,
+                                            -1);
+      
+          g_free(text);
+          g_free(escaped_text);
+          g_free(r->folder);
+          g_free(r->value);
+          g_free(r);
+        }
+      
+        g_list_free(rows);
+        rows = NULL;
+      }
+
       sqlite3_finalize(stmt);
     }
 
@@ -2553,7 +2698,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // we check if something has changed since last call
   if(d->view_rule != -1) return;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
   const int active = CLAMP(_a, 0, (MAX_RULES - 1));
   d->nb_rules = active + 1;
@@ -2624,7 +2769,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // update list of proposals if the module's contents are visible
   d->active_rule = active;
   dt_lib_gui_queue_update(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -2644,7 +2789,7 @@ void gui_reset(dt_lib_module_t *self)
 static void combo_changed(GtkWidget *combo,
                           dt_lib_collect_rule_t *d)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                   entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
@@ -2763,7 +2908,12 @@ static void row_activated_with_event(GtkTreeView *view,
       gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &text2, -1);
 
       gchar *n_text;
-      n_text = g_strdup_printf("[%s;%s]", text, text2);
+      const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
+
+      if(sort_descending)
+        n_text = g_strdup_printf("[%s;%s]", text2, text);
+      else
+        n_text = g_strdup_printf("[%s;%s]", text, text2);
 
       g_free(text);
       g_free(text2);
@@ -3343,6 +3493,7 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("times"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MONTH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
@@ -4011,6 +4162,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MODULE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ORDER);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MONTH);
 }
 #endif
 #undef MAX_RULES

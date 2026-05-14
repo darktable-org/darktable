@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2024 darktable developers.
+ *    Copyright (C) 2015-2026 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,8 +17,9 @@
  */
 
 /*
- *  this is a simple PDF writer, capable of creating multi page PDFs with embedded images.
- *  it is NOT meant to be a full fledged PDF library, and shall never turn into something like that!
+ *  this is a simple PDF writer, capable of creating multi page PDFs
+ *  with embedded images.  it is NOT meant to be a full fledged PDF
+ *  library, and shall never turn into something like that!
  */
 
 // add the following define to compile this into a standalone test program:
@@ -97,10 +98,12 @@ end:
   return res;
 }
 
-// a paper size has 2 numbers, separated by 'x' or '*' and a unit, either one per number or one in the end (for both)
-// <n> <u>? [x|*] <n> <u>
-// alternatively it could be a well defined format
-int dt_pdf_parse_paper_size(const char *str, float *width, float *height)
+// a paper size has 2 numbers, separated by 'x' or '*' and a unit,
+// either one per number or one in the end (for both) <n> <u>? [x|*]
+// <n> <u> alternatively it could be a well defined format
+int dt_pdf_parse_paper_size(const char *str,
+                            float *width,
+                            float *height)
 {
   int res = 0;
   gboolean width_has_unit = FALSE;
@@ -189,7 +192,9 @@ end:
 
 static const char *stream_encoder_filters[] = {"/ASCIIHexDecode", "/FlateDecode"};
 
-static void _pdf_set_offset(dt_pdf_t *pdf, int id, size_t offset)
+static void _pdf_set_offset(dt_pdf_t *pdf,
+                            int id,
+                            const size_t offset)
 {
   id--; // object ids start at 1
   if(id >= pdf->n_offsets)
@@ -200,7 +205,11 @@ static void _pdf_set_offset(dt_pdf_t *pdf, int id, size_t offset)
   pdf->offsets[id] = offset;
 }
 
-dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dpi, dt_pdf_stream_encoder_t default_encoder)
+dt_pdf_t *dt_pdf_start(const char *filename,
+                       const float width,
+                       const float height,
+                       const float dpi,
+                       const dt_pdf_stream_encoder_t default_encoder)
 {
   dt_pdf_t *pdf = calloc(1, sizeof(dt_pdf_t));
   if(!pdf) return NULL;
@@ -216,7 +225,8 @@ dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dp
   pdf->page_height = height;
   pdf->dpi = dpi;
   pdf->default_encoder = default_encoder;
-  // object counting starts at 1, and the first 2 are reserved for the document catalog + pages dictionary
+  // object counting starts at 1, and the first 2 are reserved for the
+  // document catalog + pages dictionary
   pdf->next_id = 3;
   pdf->next_image = 0;
 
@@ -249,10 +259,14 @@ dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dp
   return pdf;
 }
 
-// TODO: maybe OpenMP-ify, it's quite fast already (the fwrite is the slowest part), but wouldn't hurt
-static size_t _pdf_stream_encoder_ASCIIHex(dt_pdf_t *pdf, const unsigned char *data, size_t len)
+// TODO: maybe OpenMP-ify, it's quite fast already (the fwrite is the
+// slowest part), but wouldn't hurt
+static size_t _pdf_stream_encoder_ASCIIHex(dt_pdf_t *pdf,
+                                           const unsigned char *data,
+                                           const size_t len)
 {
-  const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+  const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                         'a', 'b', 'c', 'd', 'e', 'f' };
 
   char buf[512]; // keep this a multiple of 2!
 
@@ -269,14 +283,16 @@ static size_t _pdf_stream_encoder_ASCIIHex(dt_pdf_t *pdf, const unsigned char *d
 }
 
 // using zlib we get quite small files, but it's slow
-static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf, const unsigned char *data, size_t len)
+static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf,
+                                        const unsigned char *data,
+                                        const size_t len)
 {
   int result;
   uLongf destLen = compressBound(len);
   unsigned char *buffer = malloc(destLen);
   if(!buffer)
     return 0;
-  
+
   result = compress(buffer, &destLen, data, len);
 
   if(result != Z_OK)
@@ -291,7 +307,10 @@ static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf, const unsigned char *data
   return destLen;
 }
 
-static size_t _pdf_write_stream(dt_pdf_t *pdf, dt_pdf_stream_encoder_t encoder, const unsigned char *data, size_t len)
+static size_t _pdf_write_stream(dt_pdf_t *pdf,
+                                const dt_pdf_stream_encoder_t encoder,
+                                const unsigned char *data,
+                                const size_t len)
 {
   size_t stream_size = 0;
   switch(encoder)
@@ -320,10 +339,12 @@ int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
     return 0;
 }
 
-int dt_pdf_add_icc_from_data(dt_pdf_t *pdf, const unsigned char *data, size_t size)
+int dt_pdf_add_icc_from_data(dt_pdf_t *pdf,
+                             const unsigned char *data,
+                             const size_t size)
 {
-  int icc_id = pdf->next_id++;
-  int length_id = pdf->next_id++;
+  const int icc_id = pdf->next_id++;
+  const int length_id = pdf->next_id++;
   size_t bytes_written = 0;
 
   // length of the stream
@@ -361,10 +382,17 @@ int dt_pdf_add_icc_from_data(dt_pdf_t *pdf, const unsigned char *data, size_t si
   return icc_id;
 }
 
-// this adds an image to the pdf file and returns the info needed to reference it later.
-// if icc_id is 0 then we suppose the pixel data to be in output device space, otherwise the ICC profile object is referenced.
-// if image == NULL only the outline can be shown later
-dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int width, int height, int bpp, int icc_id, float border)
+// this adds an image to the pdf file and returns the info needed to
+// reference it later.  if icc_id is 0 then we suppose the pixel data
+// to be in output device space, otherwise the ICC profile object is
+// referenced.  if image == NULL only the outline can be shown later
+dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf,
+                                 const unsigned char *image,
+                                 const int width,
+                                 const int height,
+                                 const int bpp,
+                                 const int icc_id,
+                                 const float border)
 {
   size_t stream_size = 0;
   size_t bytes_written = 0;
@@ -403,7 +431,8 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int 
     "/Height %d\n",
     pdf_image->object_id, pdf_image->name_id, stream_encoder_filters[pdf->default_encoder], width, height
   );
-  // As I understand it in the printing case DeviceRGB (==> icc_id = 0) is enough since the pixel data is in the device space then.
+  // As I understand it in the printing case DeviceRGB (==> icc_id =
+  // 0) is enough since the pixel data is in the device space then.
   if(icc_id > 0)
     bytes_written += fprintf(pdf->fd, "/ColorSpace [ /ICCBased %d 0 R ]\n", icc_id);
   else
@@ -418,7 +447,8 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int 
   );
 
   // the stream
-  stream_size = _pdf_write_stream(pdf, pdf->default_encoder, image, (size_t)3 * (bpp / 8) * width * height);
+  stream_size = _pdf_write_stream(pdf, pdf->default_encoder,
+                                  image, (size_t)3 * (bpp / 8) * width * height);
   if(stream_size == 0)
   {
     free(pdf_image);
@@ -446,7 +476,9 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int 
   return pdf_image;
 }
 
-dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_images)
+dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf,
+                               dt_pdf_image_t **images,
+                               const int n_images)
 {
   dt_pdf_page_t *pdf_page = calloc(1, sizeof(dt_pdf_page_t));
   if(!pdf_page) return NULL;
@@ -467,7 +499,8 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
     pdf_page->object_id
   );
   for(int i = 0; i < n_images; i++)
-    bytes_written += fprintf(pdf->fd, "/Im%d %d 0 R\n", images[i]->name_id, images[i]->object_id);
+    bytes_written += fprintf(pdf->fd, "/Im%d %d 0 R\n",
+                             images[i]->name_id, images[i]->object_id);
   bytes_written += fprintf(pdf->fd,
     ">>\n"
     "/ProcSet [ /PDF /Text /ImageC ] >>\n"
@@ -489,8 +522,9 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
     content_id, length_id
   );
 
-  // the stream -- we need its size in the length object
-  // we want the image printed with at least the given DPI, scaling it down to fit the page if it is too big
+  // the stream -- we need its size in the length object we want the
+  // image printed with at least the given DPI, scaling it down to fit
+  // the page if it is too big
   gboolean portrait_page = pdf->page_width < pdf->page_height;
 
   for(int i = 0; i < n_images; i++)
@@ -511,8 +545,8 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
       height = images[i]->height;
     }
 
-    float image_aspect_ratio = width / height;
-    float bb_aspect_ratio = images[i]->bb_width / images[i]->bb_height;
+    const float image_aspect_ratio = width / height;
+    const float bb_aspect_ratio = images[i]->bb_width / images[i]->bb_height;
 
     if(image_aspect_ratio <= bb_aspect_ratio)
     {
@@ -524,7 +558,7 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
     else
     {
       // scale to fit width
-      float width_in_point = (width / pdf->dpi) * 72.0;
+      const float width_in_point = (width / pdf->dpi) * 72.0;
       scale_x = MIN(images[i]->bb_width, width_in_point);
       scale_y = scale_x / image_aspect_ratio;
     }
@@ -535,14 +569,14 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
 
     if(rotate_to_fit && !images[i]->outline_mode)
     {
-      float tmp = scale_x;
+      const float tmp = scale_x;
       scale_x = scale_y;
       scale_y = tmp;
       translate_x += scale_y;
     }
 
-    // unfortunately regular fprintf honors the decimal separator as set by the current locale,
-    // we want '.' in all cases though.
+    // unfortunately regular fprintf honors the decimal separator as
+    // set by the current locale, we want '.' in all cases though.
     char translate_x_str[G_ASCII_DTOSTR_BUF_SIZE];
     char translate_y_str[G_ASCII_DTOSTR_BUF_SIZE];
     char scale_x_str[G_ASCII_DTOSTR_BUF_SIZE];
@@ -626,11 +660,14 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
   return pdf_page;
 }
 
-// our writing order is a little strange since we write object 2 (the pages dictionary) at the end of the file
-// because we don't know the number of pages / objects in advance (due to lazy coding)
-void dt_pdf_finish(dt_pdf_t *pdf, dt_pdf_page_t **pages, int n_pages)
+// our writing order is a little strange since we write object 2 (the
+// pages dictionary) at the end of the file because we don't know the
+// number of pages / objects in advance (due to lazy coding)
+void dt_pdf_finish(dt_pdf_t *pdf,
+                   dt_pdf_page_t **pages,
+                   const int n_pages)
 {
-  int info_id = pdf->next_id++;
+  const int info_id = pdf->next_id++;
   size_t bytes_written = 0;
 
   // the pages dictionary
@@ -735,7 +772,8 @@ time_error:
     "0000000000 65535 f \n",
     pdf->next_id
   );
-  for(int i = 0; i < pdf->next_id - 1; i++) fprintf(pdf->fd, "%010zu 00000 n \n", pdf->offsets[i]);
+  for(int i = 0; i < pdf->next_id - 1; i++)
+    fprintf(pdf->fd, "%010zu 00000 n \n", pdf->offsets[i]);
 
   // the trailer
   fprintf(pdf->fd,
@@ -744,7 +782,9 @@ time_error:
     "/Size %d\n"
     "/Info %d 0 R\n" // we want to have the Info last in the file, so this is /Size - 1
     "/Root 1 0 R\n"
-    "/ID [<dead> <babe>]\n" // TODO find something less necrophilic, maybe hash of image + history? or just of filename + date :)
+    "/ID [<dead> <babe>]\n" // TODO find something less necrophilic,
+                            // maybe hash of image + history? or just
+                            // of filename + date :)
     ">>\n",
     pdf->next_id, info_id
   );
@@ -763,7 +803,9 @@ time_error:
 #ifdef STANDALONE
 
 // just for debugging to read a ppm file
-float * read_ppm(const char * filename, int * wd, int * ht)
+float * read_ppm(const char *filename,
+                 int *wd,
+                 int *ht)
 {
   FILE *f = g_fopen(filename, "rb");
 
@@ -860,16 +902,22 @@ int main(int argc, char *argv[])
 
   // example for A4 portrait, which is 210 mm x 297 mm.
   float page_width, page_height, border;
-  dt_pdf_parse_length("10 mm", &border); // add an empty space of 1 cm for the sake of demonstration
+  dt_pdf_parse_length("10 mm", &border); // add an empty space of 1 cm
+                                         // for the sake of
+                                         // demonstration
   dt_pdf_parse_paper_size("a4", &page_width, &page_height);
 
-  // since this is just stupid example code we are going to put the images into the pdf twice:
-  // I am not 100% sure if image objects may be reused like that in PDFs, but it seems to work
+  // since this is just stupid example code we are going to put the
+  // images into the pdf twice: I am not 100% sure if image objects
+  // may be reused like that in PDFs, but it seems to work
 
-  dt_pdf_t *pdf = dt_pdf_start(argv[argc - 1], page_width, page_height, 360, DT_PDF_STREAM_ENCODER_FLATE);
+  dt_pdf_t *pdf = dt_pdf_start(argv[argc - 1], page_width, page_height,
+                               360, DT_PDF_STREAM_ENCODER_FLATE);
 
-  // we can load icc profiles and assign them to images. For testing something like
-  // https://github.com/boxerab/graphicsmagick/raw/master/profiles/BRG.icc works really good
+  // we can load icc profiles and assign them to images. For testing
+  // something like
+  // https://github.com/boxerab/graphicsmagick/raw/master/profiles/BRG.icc
+  // works really good
   int icc_id = dt_pdf_add_icc(pdf, "BRG.icc");
 
   const int n_images = argc - 2;
@@ -878,8 +926,9 @@ int main(int argc, char *argv[])
   dt_pdf_image_t *images[n_images];
   dt_pdf_page_t *pages[n_pages]; // one extra page for the stupid image dump
 
-  // load all the images. it doesn't matter when we do it, as long as they are loaded before
-  // creating the page they should appear on (and even that is just a constraint of this code)
+  // load all the images. it doesn't matter when we do it, as long as
+  // they are loaded before creating the page they should appear on
+  // (and even that is just a constraint of this code)
   for(int i = 0; i < n_images; i++)
   {
     int width, height;
@@ -896,7 +945,8 @@ int main(int argc, char *argv[])
     for(int i = 0; i < width * height * 3; i++)
       data[i] = CLIP(image[i]) * 65535;
 
-    images[i] = dt_pdf_add_image(pdf, (unsigned char *)data, width, height, 16, icc_id, border);
+    images[i] = dt_pdf_add_image(pdf, (unsigned char *)data, width, height,
+                                 16, icc_id, border);
     free(image);
     free(data);
   }
@@ -905,9 +955,11 @@ int main(int argc, char *argv[])
   for(int i = 0; i < n_images; i++)
     pages[i] = dt_pdf_add_page(pdf, &images[i], 1);
 
-  // add the whole bunch of images to the last page
-  // images' default bounding boxen span the whole page, so set them a little smaller first, also enable bounding box drawing.
-  // we can also set outline mode afterwards. note that it is NOT safe to load images with outline_mode = 1 and then set it to 0 later!
+  // add the whole bunch of images to the last page images' default
+  // bounding boxen span the whole page, so set them a little smaller
+  // first, also enable bounding box drawing.  we can also set outline
+  // mode afterwards. note that it is NOT safe to load images with
+  // outline_mode = 1 and then set it to 0 later!
   {
     // TODO: use border and add new pages when we filled one up
     float bb_size = dt_pdf_mm_to_point(60);
@@ -953,4 +1005,3 @@ int main(int argc, char *argv[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

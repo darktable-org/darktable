@@ -300,7 +300,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(data->flag == ACQUIRE)
   {
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    if(dt_pipe_is_preview(piece->pipe))
     {
       // only get stuff from the preview pipe, rest stays untouched.
       int hist[HISTN];

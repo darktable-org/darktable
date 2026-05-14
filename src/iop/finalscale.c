@@ -40,7 +40,8 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI
-    | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
+    | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK
+    | IOP_FLAGS_WRITE_PIPECACHE | IOP_FLAGS_WRITE_PIPECACHECL;
 }
 
 int default_group()
@@ -140,7 +141,7 @@ void distort_mask(dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_out)
 {
   const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample_1c(itor, out, roi_out, in, roi_in);
+  dt_interpolation_resample_mask(itor, out, roi_out, in, roi_in);
 }
 
 #ifdef HAVE_OPENCL
@@ -158,7 +159,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   const int devid = piece->pipe->devid;
-  const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
+  const gboolean exporting = dt_pipe_is_export(piece->pipe);
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
@@ -177,7 +178,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
+  const gboolean exporting = dt_pipe_is_export(piece->pipe);
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
                 piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
@@ -194,7 +195,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const int use_finalscale = DT_DEV_PIXELPIPE_IMAGE | DT_DEV_PIXELPIPE_IMAGE_FINAL;
-  piece->enabled = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
+  piece->enabled = dt_pipe_is_export(piece->pipe)
                   || (pipe->type & use_finalscale) == use_finalscale
                   || _gui_fullpipe(piece);
 }

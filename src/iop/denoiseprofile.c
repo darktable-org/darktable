@@ -43,6 +43,7 @@
 
 // which version of the non-local means code should be used?  0=old
 // (this file), 1=new (src/common/nlmeans_core.c)
+// new mode seems to have a perf penalty of 30% without quality improvements as observed in astrophoto denoise
 #define USE_NEW_IMPL_CL 0
 
 #define REDUCESIZE 64
@@ -228,7 +229,7 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
                            const int scale)
 {
   if(!darktable.dump_pfm_module) return;
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == 0) return;
+  if(!dt_pipe_is_full(piece->pipe)) return;
 
   char name[256];
   snprintf(name, sizeof(name), namespec, scale);
@@ -1639,15 +1640,13 @@ static float nlmeans_scattering(int *nbhood,
   float scattering = d->scattering;
 
   const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
-  if(piece->pipe->type
-     & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_THUMBNAIL))
+  if(dt_pipe_is_fast(piece->pipe) || dt_pipe_is_preview(piece->pipe) || dt_pipe_is_thumb(piece->pipe))
   {
     // much faster but inaccurate for previews
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
-  else if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
-          && !darktable.develop->late_scaling.enabled)
+  else if(dt_pipe_is_canvas(piece->pipe) && !darktable.develop->late_scaling.enabled)
   {
     // faster but slightly more inaccurate
     K = MAX(MIN(4, K), K * scale);
@@ -1674,9 +1673,9 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
   compute_wb_factors(wb,d,piece,wb_weights);
 
   // adaptive p depending on white balance
-  p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
-  p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
-  p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  p[0] = MAX(d->shadows + 0.1f * logf(scale / wb[0]), 0.0f);
+  p[1] = MAX(d->shadows + 0.1f * logf(scale / wb[1]), 0.0f);
+  p[2] = MAX(d->shadows + 0.1f * logf(scale / wb[2]), 0.0f);
   p[3] = 0.0f;
 
   // update the coeffs with strength and scale
@@ -1717,9 +1716,9 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   wb[3] = 0.0;
 
   // adaptive p depending on white balance
-  p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
-  p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
-  p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  p[0] = MAX(d->shadows + 0.1f * logf(scale / wb[0]), 0.0f);
+  p[1] = MAX(d->shadows + 0.1f * logf(scale / wb[1]), 0.0f);
+  p[2] = MAX(d->shadows + 0.1f * logf(scale / wb[2]), 0.0f);
   p[3] = 1.0f;
 
   // update the coeffs with strength and scale
@@ -1902,7 +1901,7 @@ static void process_variance(dt_iop_module_t *self,
   size_t npixels = (size_t)width * height;
 
   dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
+  if(dt_pipe_is_preview(piece->pipe) || (g == NULL))
   {
     return;
   }
@@ -2087,8 +2086,8 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  size_t sizesl[3];
-  size_t local[3];
+  size_t sizesl[2];
+  size_t local[2];
 
   for(int kj_index = -K; kj_index <= 0; kj_index++)
   {
@@ -2116,10 +2115,8 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
 
       sizesl[0] = bwidth;
       sizesl[1] = ROUNDUPDHT(height, devid);
-      sizesl[2] = 1;
       local[0] = hblocksize;
       local[1] = 1;
-      local[2] = 1;
       cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_denoiseprofile_horiz, sizesl, local,
                 CLARG(dev_U4), CLARG(dev_U4_t),
@@ -2129,10 +2126,8 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
 
       sizesl[0] = ROUNDUPDWD(width, devid);
       sizesl[1] = bheight;
-      sizesl[2] = 1;
       local[0] = 1;
       local[1] = vblocksize;
-      local[2] = 1;
       cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_denoiseprofile_vert, sizesl, local,
               CLARG(dev_U4_t), CLARG(dev_U4_tt),
@@ -2236,9 +2231,8 @@ static int process_wavelets_cl(dt_iop_module_t *self,
   if(npixels < 2)
   {
     // copy original input from dev_in -> dev_out
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
     free(dev_detail);
     return CL_SUCCESS;
@@ -2414,15 +2408,13 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     // determine thrs as bayesshrink
     dt_aligned_pixel_t sum_y2 = { 0.0f };
 
-    size_t lsizes[3];
-    size_t llocal[3];
+    size_t lsizes[2];
+    size_t llocal[2];
 
     lsizes[0] = bwidth;
     lsizes[1] = bheight;
-    lsizes[2] = 1;
     llocal[0] = flocopt.sizex;
     llocal[1] = flocopt.sizey;
-    llocal[2] = 1;
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_denoiseprofile_reduce_first, lsizes, llocal,
                               CLARG((dev_detail[s])),
                               CLARG(width), CLARG(height),
@@ -2433,17 +2425,15 @@ static int process_wavelets_cl(dt_iop_module_t *self,
 
     lsizes[0] = (size_t)reducesize * slocopt.sizex;
     lsizes[1] = 1;
-    lsizes[2] = 1;
     llocal[0] = slocopt.sizex;
     llocal[1] = 1;
-    llocal[2] = 1;
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_denoiseprofile_reduce_second, lsizes, llocal,
                               CLARG(dev_m), CLARG(dev_r),
                               CLARG(bufsize), CLLOCAL(sizeof(float) * 4 * slocopt.sizex));
     if(err != CL_SUCCESS) goto error;
 
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
-                                            sizeof(float) * 4 * reducesize, CL_TRUE);
+                                            sizeof(float) * 4 * reducesize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
     for(int k = 0; k < reducesize; k++)
@@ -2521,7 +2511,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_synthesize, width, height,
                               CLARG(dev_buf1), CLARG(dev_detail[s]),
                               CLARG(dev_buf2), CLARG(width), CLARG(height),
-                              CLFLARRAY(4, thrs), CLFLARRAY(4, boost));
+                              CLARG(thrs), CLARG(boost));
     if(err != CL_SUCCESS) goto error;
 
     // swap buffers
@@ -2535,9 +2525,8 @@ static int process_wavelets_cl(dt_iop_module_t *self,
   // account, so current output lies in dev_buf1
   if(dev_buf1 != dev_tmp)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_buf1, dev_tmp, origin, origin, region);
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_buf1, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -3191,31 +3180,31 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
                                              cairo_t *crf,
                                              dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
   if(!dt_isnan(g->variance_R))
   {
     gchar *str = g_strdup_printf("%.2f", g->variance_R);
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_R, str);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
   if(!dt_isnan(g->variance_G))
   {
     gchar *str = g_strdup_printf("%.2f", g->variance_G);
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_G, str);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
   if(!dt_isnan(g->variance_B))
   {
     gchar *str = g_strdup_printf("%.2f", g->variance_B);
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_B, str);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
   return FALSE;
@@ -3573,7 +3562,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
                                       dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = self->params;
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(p->wavelet_color_mode == MODE_Y0U0V0)
     g->channel = (dt_iop_denoiseprofile_channel_t)page_num + DT_DENOISE_PROFILE_Y0;

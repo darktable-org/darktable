@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -173,6 +173,11 @@ static inline float pixels2print(dt_lib_export_t *self,
 const char *name(dt_lib_module_t *self)
 {
   return _("export");
+}
+
+gboolean has_preset_label(dt_lib_module_t *self)
+{
+  return TRUE;
 }
 
 const char *description(dt_lib_module_t *self)
@@ -647,13 +652,13 @@ void _set_dimensions(dt_lib_export_t *d,
   gchar *max_height_char = g_strdup_printf("%u", max_height);
   gchar *max_dpi_char = g_strdup_printf("%u", print_dpi);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
   gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
   gtk_entry_set_text(GTK_ENTRY(d->print_dpi), max_dpi_char);
   gtk_entry_set_text(GTK_ENTRY(d->scale), scale);
   _size_in_px_update(d);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_conf_set_int(CONFIG_PREFIX "width", max_width);
   dt_conf_set_int(CONFIG_PREFIX "height", max_height);
@@ -1004,7 +1009,7 @@ static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 static void _dimensions_type_changed(GtkWidget *widget,
                                      dt_lib_export_t *d)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   const dt_dimensions_type_t d_type =
     (dt_dimensions_type_t)dt_bauhaus_combobox_get(widget);
@@ -1030,7 +1035,7 @@ static void _dimensions_type_changed(GtkWidget *widget,
 
 static void _resync_print_dimensions(dt_lib_export_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   const uint32_t width = dt_conf_get_int(CONFIG_PREFIX "width");
   const uint32_t height = dt_conf_get_int(CONFIG_PREFIX "height");
@@ -1039,7 +1044,7 @@ static void _resync_print_dimensions(dt_lib_export_t *self)
   const float p_width = pixels2print(self, width);
   const float p_height = pixels2print(self, height);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gchar *pwidth = g_strdup_printf("%.2f", p_width);
   gchar *pheight = g_strdup_printf("%.2f", p_height);
   gchar *pdpi = g_strdup_printf("%d", dpi);
@@ -1049,12 +1054,12 @@ static void _resync_print_dimensions(dt_lib_export_t *self)
   g_free(pwidth);
   g_free(pheight);
   g_free(pdpi);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _resync_pixel_dimensions(dt_lib_export_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   const float p_width = atof(gtk_entry_get_text(GTK_ENTRY(self->print_width)));
   const float p_height = atof(gtk_entry_get_text(GTK_ENTRY(self->print_height)));
@@ -1065,19 +1070,19 @@ static void _resync_pixel_dimensions(dt_lib_export_t *self)
   dt_conf_set_int(CONFIG_PREFIX "width", width);
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gchar *pwidth = g_strdup_printf("%u", width);
   gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(self->width), pwidth);
   gtk_entry_set_text(GTK_ENTRY(self->height), pheight);
   g_free(pwidth);
   g_free(pheight);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _width_changed(GtkEditable *entry, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   const dt_lib_export_t *d = (dt_lib_export_t *)user_data;
   const uint32_t width = atoi(gtk_entry_get_text(GTK_ENTRY(d->width)));
@@ -1086,7 +1091,7 @@ static void _width_changed(GtkEditable *entry, gpointer user_data)
 
 static void _print_width_changed(GtkEditable *entry, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
 
@@ -1094,17 +1099,17 @@ static void _print_width_changed(GtkEditable *entry, gpointer user_data)
   const uint32_t width = print2pixels(d, p_width);
   dt_conf_set_int(CONFIG_PREFIX "width", width);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gchar *pwidth = g_strdup_printf("%u", width);
   gtk_entry_set_text(GTK_ENTRY(d->width), pwidth);
   g_free(pwidth);
   _size_in_px_update(d);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _height_changed(GtkEditable *entry, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   const dt_lib_export_t *d = (dt_lib_export_t *)user_data;
   const uint32_t height = atoi(gtk_entry_get_text(GTK_ENTRY(d->height)));
@@ -1113,7 +1118,7 @@ static void _height_changed(GtkEditable *entry, gpointer user_data)
 
 static void _print_height_changed(GtkEditable *entry, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
 
@@ -1121,17 +1126,17 @@ static void _print_height_changed(GtkEditable *entry, gpointer user_data)
   const uint32_t height = print2pixels(d, p_height);
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(d->height), pheight);
   g_free(pheight);
   _size_in_px_update(d);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _print_dpi_changed(GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
   const int dpi = atoi(gtk_entry_get_text(GTK_ENTRY(d->print_dpi)));

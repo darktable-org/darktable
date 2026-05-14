@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 
 // xtrans_interpolate adapted from dcraw 9.20
 
-// tile size, optimized to keep data in L2 cache
-#define TS 122
+#define TS DT_MARKESTEIJN_TS
 
 #define PAD_G1_G3 3
 #define PAD_G_INTERP 3
@@ -48,7 +47,8 @@ static void xtrans_markesteijn_interpolate(float *out,
                                            const int width,
                                            const int height,
                                            const uint8_t (*const xtrans)[6],
-                                           const int passes)
+                                           const int passes,
+                                           const uint32_t filters)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -138,7 +138,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCNxtrans(row, col, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[width * row + col] : 0.f;
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? fmax(0.0f, in[width * row + col]) : 0.f;
           }
           else
           {
@@ -153,7 +153,7 @@ static void xtrans_markesteijn_interpolate(float *out,
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCNxtrans(cy, cx, xtrans))
-                  pix[c] = in[width * cy + cx];
+                  pix[c] = fmaxf(0.0f, in[width * cy + cx]);
                 else
                 {
                   // interpolate if mirror pixel is a different color
@@ -166,7 +166,7 @@ static void xtrans_markesteijn_interpolate(float *out,
                       const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
-                        sum += in[width * yy + xx];
+                        sum += fmaxf(0.0f, in[width * yy + xx]);
                         count++;
                       }
                     }
@@ -178,7 +178,8 @@ static void xtrans_markesteijn_interpolate(float *out,
         }
 
       // duplicate rgb[0] to rgb[1], rgb[2], and rgb[3]
-      for(int c = 1; c <= 3; c++) memcpy(rgb[c], rgb[0], sizeof(*rgb));
+      for(int c = 1; c <= 3; c++)
+        dt_iop_image_copy((float*)rgb[c], (float*)rgb[0], sizeof(*rgb) / sizeof(float));
 
       // note that successive calculations are inset within the tile
       // so as to give enough border data, and there needs to be a 6
@@ -503,16 +504,17 @@ static void xtrans_markesteijn_interpolate(float *out,
             }
           }
           for(int c = 0; c < 3; c++)
-            out[4 * (width * (row + top) + col + left) + c] = MAX(0.0f, avg[c]/avg[3]);
+            out[4 * (width * (row + top) + col + left) + c] = fmaxf(0.0f, avg[c]/avg[3]);
         }
     }
   }
   dt_free_align(all_buffers);
+  _vng_lininterpolate(out, in, width, height, filters, xtrans, pad_tile);
 }
 
 #undef TS
 
-#define TS 122
+#define TS DT_FDC_TS
 static void xtrans_fdc_interpolate(float *out,
                                    const float *const in,
                                    const int width,
@@ -1735,8 +1737,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     {
-      const size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
-      const size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
+      const size_t sizes[2] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey) };
+      const size_t local[2] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey };
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_green_minmax, sizes, local,
         CLARG(dev_rgb[0]), CLARG(dev_gminmax),
         CLARG(width), CLARG(height), CLARGINT(PAD_G1_G3), CLARRAY(2, sgreen),
@@ -1754,8 +1756,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     {
-      const size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
-      const size_t local[3] = { locopt_g_interp.sizex, locopt_g_interp.sizey, 1 };
+      const size_t sizes[2] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey) };
+      const size_t local[2] = { locopt_g_interp.sizex, locopt_g_interp.sizey };
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_interpolate_green, sizes, local,
         CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]),
         CLARG(dev_gminmax), CLARG(width), CLARG(height),
@@ -1808,8 +1810,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         const char dir[2] = { i, i ^ 1 };
 
         // we use dev_aux to transport intermediate results from one loop run to the next
-        const size_t sizes[3] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey), 1 };
-        const size_t local[3] = { locopt_rb_g.sizex, locopt_rb_g.sizey, 1 };
+        const size_t sizes[2] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey) };
+        const size_t local[2] = { locopt_rb_g.sizex, locopt_rb_g.sizey };
         err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_solitary_green, sizes, local,
           CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g),
           CLARG(d), CLARRAY(2, dir), CLARG(h), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2)));
@@ -1830,8 +1832,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
       for(int d = 0; d < 4; d++)
       {
-        const size_t sizes[3] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey), 1 };
-        const size_t local[3] = { locopt_rb_br.sizex, locopt_rb_br.sizey, 1 };
+        const size_t sizes[2] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey) };
+        const size_t local[2] = { locopt_rb_br.sizex, locopt_rb_br.sizey };
         err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_red_and_blue, sizes, local,
           CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3)));
@@ -1850,8 +1852,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
       for(int d = 0, n = 0; d < ndir; d += 2, n++)
       {
-        const size_t sizes[3] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey), 1 };
-        const size_t local[3] = { locopt_g22.sizex, locopt_g22.sizey, 1 };
+        const size_t sizes[2] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey) };
+        const size_t local[2] = { locopt_g22.sizex, locopt_g22.sizey };
         err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local,
           CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2)));
@@ -1894,8 +1896,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
 
       // differentiate in all directions
-      const size_t sizes_diff[3] = { ROUNDUP(width, locopt_diff.sizex), ROUNDUP(height, locopt_diff.sizey), 1 };
-      const size_t local_diff[3] = { locopt_diff.sizex, locopt_diff.sizey, 1 };
+      const size_t sizes_diff[2] = { ROUNDUP(width, locopt_diff.sizex), ROUNDUP(height, locopt_diff.sizey) };
+      const size_t local_diff[2] = { locopt_diff.sizex, locopt_diff.sizey };
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_differentiate, sizes_diff, local_diff,
         CLARG(dev_aux), CLARG(dev_drv[d]),
         CLARG(width), CLARG(height), CLARG(pad_yuv), CLARG(d), CLLOCAL(sizeof(float) * 4 * (locopt_diff.sizex + 2*1) * (locopt_diff.sizey + 2*1)));
@@ -1934,8 +1936,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
     for(int d = 0; d < ndir; d++)
     {
-      const size_t sizes[3] = { ROUNDUP(width, locopt_homo.sizex),ROUNDUP(height, locopt_homo.sizey), 1 };
-      const size_t local[3] = { locopt_homo.sizex, locopt_homo.sizey, 1 };
+      const size_t sizes[2] = { ROUNDUP(width, locopt_homo.sizex),ROUNDUP(height, locopt_homo.sizey) };
+      const size_t local[2] = { locopt_homo.sizex, locopt_homo.sizey };
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_homo_set, sizes, local,
         CLARG(dev_drv[d]), CLARG(dev_aux),
         CLARG(dev_homo[d]), CLARG(width), CLARG(height), CLARG(pad_homo), CLLOCAL(sizeof(float) * (locopt_homo.sizex + 2*1) * (locopt_homo.sizey + 2*1)));
@@ -1960,8 +1962,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
     for(int d = 0; d < ndir; d++)
     {
-      size_t sizes[3] = { ROUNDUP(width, locopt_homo_sum.sizex), ROUNDUP(height, locopt_homo_sum.sizey), 1 };
-      size_t local[3] = { locopt_homo_sum.sizex, locopt_homo_sum.sizey, 1 };
+      size_t sizes[2] = { ROUNDUP(width, locopt_homo_sum.sizex), ROUNDUP(height, locopt_homo_sum.sizey) };
+      size_t local[2] = { locopt_homo_sum.sizex, locopt_homo_sum.sizey };
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_homo_sum, sizes, local,
         CLARG(dev_homo[d]), CLARG(dev_homosum[d]),
         CLARG(width), CLARG(height), CLARG(pad_tile), CLLOCAL(sizeof(char) * (locopt_homo_sum.sizex + 2*2) * (locopt_homo_sum.sizey + 2*2)));
@@ -2020,9 +2022,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     // note: we need to take swap of buffers into account, so current output lies in dev_t1
     if(dev_t1 != dev_tmptmp)
     {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_t1, dev_tmptmp, origin, origin, region);
+      const size_t region[2] = { width, height };
+      err = dt_opencl_enqueue_copy_image(devid, dev_t1, dev_tmptmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS) goto error;
     }
 

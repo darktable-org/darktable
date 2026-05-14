@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -448,7 +448,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float sigma_r = 8.0f; // does not depend on scale
 
   // save a copy of preview input buffer so we can get histogram and color statistics out of it
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (data->flag & ACQUIRE))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe) && (data->flag & ACQUIRE))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->buffer) dt_free_align(g->buffer);
@@ -594,7 +594,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 
   // save a copy of preview input buffer so we can get histogram and color statistics out of it
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (data->flag & ACQUIRE))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe) && (data->flag & ACQUIRE))
   {
     dt_iop_gui_enter_critical_section(self);
     dt_free_align(g->buffer);
@@ -675,9 +675,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     }
     else
     {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+      const size_t region[2] = { width, height };
+      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -687,9 +686,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
   else
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   }
 
 error:
@@ -765,7 +763,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_SOURCE;
@@ -776,7 +774,7 @@ static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *se
 
 static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_TARGET;
@@ -904,7 +902,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   if(!g || !g->buffer) return;
   if(!(p->flag & ACQUIRE)) return;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   dt_iop_gui_enter_critical_section(self);
   const int width = g->width;
@@ -914,6 +912,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   if(!buffer)
   {
     dt_iop_gui_leave_critical_section(self);
+    DT_LEAVE_GUI_UPDATE();
     return;
   }
   dt_iop_image_copy_by_size(buffer, g->buffer, width, height, ch);
@@ -971,7 +970,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   }
 
   p->flag &= ~(GET_TARGET | GET_SOURCE | ACQUIRE);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(p->flag & HAS_SOURCE) dt_dev_add_history_item(darktable.develop, self, TRUE);
 

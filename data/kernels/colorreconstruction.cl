@@ -93,13 +93,13 @@ colorreconstruction_splat(
   switch(precedence)
   {
     case COLORRECONSTRUCT_PRECEDENCE_CHROMA:
-      weight = sqrt(pixel.y * pixel.y + pixel.z * pixel.z);
+      weight = dt_fast_hypot(pixel.y, pixel.z);
       break;
 
     case COLORRECONSTRUCT_PRECEDENCE_HUE:
       m = atan2(pixel.z, pixel.y) - params.x;
       // readjust m into [-pi, +pi] interval
-      m = m > M_PI_F ? m - 2*M_PI_F : (m < -M_PI_F ? m + 2*M_PI_F : m);
+      m = m > M_PI_F ? m - DT_2PI_F : (m < -M_PI_F ? m + DT_2PI_F : m);
       weight = exp(-m*m/params.y);
       break;
 

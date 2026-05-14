@@ -269,12 +269,15 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
   cairo_restore(cr);
 }
 
-static double _wave_get_exposure_pos(const dt_scopes_mode_t *const self,
-                                     const double x,
-                                     const double y)
+static double _wave_get_exposure_delta(const dt_scopes_mode_t *const self,
+                                       const double offset_x,
+                                       const double offset_y)
 {
   const dt_scopes_wave_t *const d = self->data;
-  return d->orient == DT_WAVE_ORIENT_HORI ? -y : x;
+  if(d->orient == DT_WAVE_ORIENT_HORI)
+    return -offset_y / gtk_widget_get_allocated_height(self->scopes->scope_draw);
+  else
+    return offset_x / gtk_widget_get_allocated_width(self->scopes->scope_draw);
 }
 
 static dt_scopes_highlight_t _wave_get_highlight(const dt_scopes_mode_t *const self,
@@ -392,17 +395,15 @@ static void _wave_orient_clicked(GtkWidget *button, dt_scopes_mode_t *const self
   dt_scopes_reprocess();
 }
 
-static void _wave_add_to_options_box(dt_scopes_mode_t *const self,
-                                     dt_action_t *dark,
-                                     GtkWidget *box)
+static void _wave_add_options(dt_scopes_mode_t *const self,
+                              dt_action_t *dark)
 {
   dt_scopes_wave_t *const d = self->data;
-
   d->orient_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  gtk_widget_set_valign(d->orient_button, GTK_ALIGN_START);
   dt_action_define(dark, NULL, N_("switch scope orientation"),
                    d->orient_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box), d->orient_button, FALSE, FALSE, 0);
-
+  dt_gui_box_add(self->options_box, d->orient_button);
   g_signal_connect(G_OBJECT(d->orient_button), "clicked",
                    G_CALLBACK(_wave_orient_clicked), self);
 }
@@ -428,16 +429,14 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .draw_scope = NULL,
   .draw_scope_channels = _wave_draw,
   .get_highlight = _wave_get_highlight,
-  .get_exposure_pos = _wave_get_exposure_pos,
+  .get_exposure_delta = _wave_get_exposure_delta,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
-  .eventbox_motion = NULL,
   .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _wave_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = _wave_add_to_options_box,
+  .add_options = _wave_add_options,
   .gui_cleanup = _wave_gui_cleanup
 };
 
@@ -542,16 +541,14 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .draw_scope = _parade_draw,
   .draw_scope_channels = NULL,
   .get_highlight = _wave_get_highlight,
-  .get_exposure_pos = _wave_get_exposure_pos,
+  .get_exposure_delta = _wave_get_exposure_delta,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
-  .eventbox_motion = NULL,
   .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _parade_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = NULL,
+  .add_options = NULL,
   .gui_cleanup = _parade_gui_cleanup
 };
 

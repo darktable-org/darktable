@@ -240,8 +240,8 @@ int process_cl(dt_iop_module_t *self,
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
 
-  size_t sizes[3];
-  size_t local[3];
+  size_t sizes[2];
+  size_t local[2];
 
   for(int i = 0; i < NUM_BUCKETS; i++)
   {
@@ -265,7 +265,6 @@ int process_cl(dt_iop_module_t *self,
       sizes[1] = ROUNDUPDHT(height, devid);
       local[0] = hblocksize;
       local[1] = 1;
-      local[2] = 1;
       dev_tmp2 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_bloom_hblur, sizes, local,
                                 CLARG(dev_tmp1),
@@ -283,7 +282,6 @@ int process_cl(dt_iop_module_t *self,
       sizes[1] = bheight;
       local[0] = 1;
       local[1] = vblocksize;
-      local[2] = 1;
       dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_bloom_vblur, sizes, local,
                                 CLARG(dev_tmp2), CLARG(dev_tmp1),

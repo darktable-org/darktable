@@ -67,7 +67,12 @@ typedef struct
   // DIRCHOOSER and COMBOBOX:
   char *conf_key;
   // COMBOBOX only:
-  char **options; // array of option strings (conf values = display text)
+  char **options;        // array of option ids (written to conf)
+  char **option_labels;  // parallel array of display labels (NULL entry
+                         // when an option has no "id|label" form; in that
+                         // case the id itself is used as the display text).
+                         // labels are looked up via g_dpgettext2 at display
+                         // time so translators can localize them
   int n_options;
 } _dt_question_t;
 
@@ -89,8 +94,12 @@ static void _free_question(gpointer p)
     if(q->qtype == DT_QUESTION_COMBOBOX)
     {
       for(int i = 0; i < q->n_options; i++)
+      {
         g_free(q->options[i]);
+        if(q->option_labels) g_free(q->option_labels[i]);
+      }
       g_free(q->options);
+      g_free(q->option_labels);
     }
   }
   else if(q->qtype == DT_QUESTION_CHECKBOX && q->action.type != DT_WELCOME_ACTION_NONE)
@@ -188,7 +197,16 @@ static void _on_combo_changed(GtkComboBox *combo, gpointer data)
   const _dt_question_t *q = data;
   const int idx = gtk_combo_box_get_active(combo);
   if(idx >= 0 && idx < q->n_options)
+  {
     dt_conf_set_string(q->conf_key, q->options[idx]);
+    // theme applies live so the user can preview grey/dark/darker
+    // and judge which surround they prefer before moving on
+    if(!g_strcmp0(q->conf_key, "ui_last/theme"))
+    {
+      dt_gui_load_theme(q->options[idx]);
+      dt_gui_apply_theme();
+    }
+  }
 }
 
 // ── navigation state ──────────────────────────────────────────────────────────
@@ -367,7 +385,15 @@ static GtkWidget *_build_page_widget(_dt_page_t *pg)
       const char *curval = dt_conf_get_string_const(q->conf_key);
       for(int oi = 0; oi < q->n_options; oi++)
       {
-        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), g_dpgettext2(NULL, "preferences", q->options[oi]));
+        // display label = the portion after '|' (translated via the
+        // "preferences" gettext context); fall back to the id when the
+        // entry has no label. conf value is always the id side
+        const char *display
+          = (q->option_labels && q->option_labels[oi])
+              ? q->option_labels[oi]
+              : q->options[oi];
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo),
+                                       g_dpgettext2(NULL, "preferences", display));
         if(g_strcmp0(curval, q->options[oi]) == 0)
           gtk_combo_box_set_active(GTK_COMBO_BOX(combo), oi);
       }
@@ -514,8 +540,24 @@ static void _page_add_combobox(dt_welcome_screen_t *ws,
   q->conf_key = g_strdup(conf_key);
   q->n_options = n_options;
   q->options = g_new(char *, n_options);
+  q->option_labels = g_new(char *, n_options);
   for(int i = 0; i < n_options; i++)
-    q->options[i] = g_strdup(options[i]);
+  {
+    // split on '|': before is the id (conf value), after is the label
+    // (translatable display text). entries without '|' store NULL label
+    // and fall back to showing the id
+    const char *sep = strchr(options[i], '|');
+    if(sep)
+    {
+      q->options[i] = g_strndup(options[i], sep - options[i]);
+      q->option_labels[i] = g_strdup(sep + 1);
+    }
+    else
+    {
+      q->options[i] = g_strdup(options[i]);
+      q->option_labels[i] = NULL;
+    }
+  }
   g_ptr_array_add(pg->questions, q);
 }
 
@@ -571,6 +613,21 @@ void dt_welcome_screen_page_add_conf(dt_welcome_screen_t *ws,
   case DT_PATH:
     dt_welcome_screen_page_add_dirchooser(ws, page_idx, label, description, conf_key);
     break;
+  case DT_STRING:
+  {
+    // string-type keys can advertise a curated option list to the welcome
+    // screen via <welcomescreen options="a,b,c"/> without needing an <enum>
+    const char *const *opts = dt_confgen_get_welcome_options(conf_key);
+    int n = 0;
+    if(opts)
+      while(opts[n]) n++;
+    if(n > 0)
+      _page_add_combobox(ws, page_idx, label, description, conf_key, opts, n);
+    else
+      dt_print(DT_DEBUG_ALWAYS,
+               "[welcome] string conf key '%s' has no welcome options\n", conf_key);
+    break;
+  }
   default:
     dt_print(DT_DEBUG_ALWAYS,
              "[welcome] conf key '%s' has unsupported type for welcome screen\n", conf_key);

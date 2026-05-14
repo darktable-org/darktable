@@ -304,7 +304,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   }
 
   // show we are busy changing views
-  dt_control_change_cursor(GDK_WATCH);
+  dt_control_change_cursor("wait");
   gdk_display_sync(gdk_display_get_default());
 
   /* cleanup current view before initialization of new  */
@@ -345,9 +345,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   /* change current view to the new view */
 
-  /* 
+  /*
      Race Condition
- 
+
      the current view is set to the new view prior to
      initializing.  Plugins are initialized according to
      the current view, so it must be set prior.
@@ -462,7 +462,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
 
   // reset the cursor to the default one
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   return FALSE;
 }
@@ -715,6 +715,8 @@ gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
 gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
                                        const double x,
                                        const double y,
+                                       const double dx,
+                                       const double dy,
                                        const int phase,
                                        const double scale,
                                        const int state)
@@ -725,7 +727,7 @@ gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
   }
   else if(vm->current_view->gesture_pinch)
   {
-    return vm->current_view->gesture_pinch(vm->current_view, x, y, phase, scale, state);
+    return vm->current_view->gesture_pinch(vm->current_view, x, y, dx, dy, phase, scale, state);
   }
   else
   {
@@ -1289,7 +1291,7 @@ void dt_view_lighttable_change_offset(dt_view_manager_t *vm,
                                       const gboolean reset,
                                       const dt_imgid_t imgid)
 {
-  if(vm->proxy.lighttable.module)
+  if(vm && vm->proxy.lighttable.module)
     vm->proxy.lighttable.change_offset(vm->proxy.lighttable.view, reset, imgid);
 }
 
@@ -1871,7 +1873,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   // Check if we should use the preview pipe for fallback rendering
   // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
-  const gboolean use_preview_fallback = 
+  const gboolean use_preview_fallback =
      (dev == darktable.develop)
      && pp->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
@@ -1879,7 +1881,7 @@ void dt_view_paint_surface(cairo_t *cr,
          || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
          || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
      && (port == &dev->full || port == &dev->preview2);
-     
+
   if(use_preview_fallback)
   {
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;

@@ -135,11 +135,6 @@ void amaze_demosaic(const float *const in,
 {
   const float clip_pt8 = 0.8f * clip_pt;
 
-// this allows to pass AMAZETS to the code. On some machines larger AMAZETS is faster
-// If AMAZETS is undefined it will be set to 160, which is the fastest on machines with 1GB cache per thread.
-#ifndef AMAZETS
-#define AMAZETS 160
-#endif
   // Tile size; the image is processed in square tiles to lower memory requirements and facilitate
   // multi-threading
   // We assure that Tile size is a multiple of 32 in the range [96;992]

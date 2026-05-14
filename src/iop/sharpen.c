@@ -141,9 +141,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(rad == 0)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
   }
@@ -152,9 +151,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   // normally not needed for OpenCL but implemented here for identity with CPU code path
   if(width < 2 * rad + 1 || height < 2 * rad + 1)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
   }
@@ -191,8 +189,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
 
-  size_t sizes[3];
-  size_t local[3];
+  size_t sizes[2];
+  size_t local[2];
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
@@ -205,7 +203,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   sizes[1] = ROUNDUPDHT(height, devid);
   local[0] = hblocksize;
   local[1] = 1;
-  local[2] = 1;
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_sharpen_hblur, sizes, local,
     CLARG(dev_in), CLARG(dev_out), CLARG(dev_m),
     CLARG(rad), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * rad) * sizeof(float)));
@@ -216,7 +213,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   sizes[1] = bheight;
   local[0] = 1;
   local[1] = vblocksize;
-  local[2] = 1;
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_sharpen_vblur, sizes, local,
     CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
     CLARG(rad), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * rad) * sizeof(float)));
@@ -225,7 +221,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   /* mixing tmp and in -> out */
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sharpen_mix, width, height,
     CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
-    CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold));
+    CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold), CLARG(rad));
 
 error:
   dt_opencl_release_mem_object(dev_m);

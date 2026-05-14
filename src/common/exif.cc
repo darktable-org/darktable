@@ -2370,6 +2370,23 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     };
 
+    // read user defined exif tags from metadata editor
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+      gchar *tagname_lower = g_ascii_strdown(metadata->tagname, -1);
+      gboolean is_exif = (g_strstr_len(tagname_lower, -1, "exif") != NULL);
+      g_free(tagname_lower);
+
+      if(is_exif && FIND_EXIF_TAG(metadata->tagname))
+      {
+        std::string str = pos->print(&exifData);
+        dt_metadata_set_import(img->id, metadata->tagname, str.c_str());
+      }
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
     img->exif_inited = TRUE;
     return true;
   }

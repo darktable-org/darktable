@@ -20,6 +20,7 @@
 #include "common/color_picker.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
+#include "scopes/vectorscope.h"
 
 // FIXME: is this used?
 #ifdef GDK_WINDOWING_QUARTZ
@@ -28,12 +29,25 @@
 
 DT_MODULE(1)
 
+static void _lib_histogram_get_harmony(dt_lib_module_t *self,
+                                       dt_color_harmony_guide_t *guide);
+static void _lib_histogram_set_harmony(dt_lib_module_t *self,
+                                       const dt_color_harmony_guide_t *guide);
+static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope);
+static void _lib_histogram_set_type(dt_lib_module_t *self, int type);
+static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
+    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data);
+static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
+                                             const dt_color_harmony_type_t type,
+                                             const int rotation,
+                                             float *angles,
+                                             int *n);
+
 static const gchar *rgb_names[DT_SCOPES_RGB_N] =
   { N_("red"),
     N_("green"),
     N_("blue")
   };
-
 
 const char *name(dt_lib_module_t *self)
 {
@@ -53,17 +67,15 @@ uint32_t container(dt_lib_module_t *self)
     : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
-int expandable(dt_lib_module_t *self)
+gboolean expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 int position(const dt_lib_module_t *self)
 {
   return 1000;
 }
-
-
 
 static void _scope_process
   (struct dt_lib_module_t *self,
@@ -168,12 +180,13 @@ static void _scope_process
   const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to ? fallback : profile_info_to;
 
   dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
-                                            profile_info_from, profile_info_out, "final histogram");
+                                            profile_info_from, profile_info_out,
+                                            "final histogram");
   dt_pthread_mutex_lock(&s->lock);
 
   s->update_counter++;
-  // if using a non-rgb profile_info_out as in cmyk softproofing we pass DT_COLORSPACE_LIN_REC2020
-  //   for calculating the vertex_rgb data.
+  // if using a non-rgb profile_info_out as in cmyk softproofing we pass
+  // DT_COLORSPACE_LIN_REC2020 for calculating the vertex_rgb data.
   dt_scopes_call(s->cur_mode, process, img_display, &roi,
                  profile_info_out->type ? profile_info_out : fallback);
 
@@ -185,7 +198,8 @@ static void _scope_process
 }
 
 
-// FIXME: make this default in _drawable_draw_callback() and only if there is a draw_bkgd method do somethign else?
+// FIXME: make this default in _drawable_draw_callback() and only if there is a
+// draw_bkgd method do somethign else?
 void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
                              cairo_t *cr,
                              const int width,
@@ -292,69 +306,96 @@ void lib_histogram_update_tooltip(const dt_scopes_t *const scopes)
   g_free(tip);
 }
 
-static void _drawable_motion(GtkEventControllerMotion *controller,
-                             double x,
-                             double y,
-                             dt_scopes_t *s)
+static void _drawable_drag_begin(GtkGestureDrag* gesture,
+                                 const gdouble start_x,
+                                 const gdouble start_y,
+                                 dt_scopes_t *s)
 {
-  dt_scopes_mode_t *const cur_mode = s->cur_mode;
-  if(dt_key_modifier_state() & GDK_BUTTON1_MASK
-     && s->highlight != DT_SCOPES_HIGHLIGHT_NONE
-     && dt_scopes_func_exists(cur_mode, get_exposure_pos))
+  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
+     && dt_scopes_func_exists(s->cur_mode, get_exposure_delta)
+     && dt_gui_claim(gesture))
   {
-    const double pos = dt_scopes_call(cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(controller, 1, pos, FALSE);
+    dt_control_change_cursor("grabbing");
+    s->last_offset_x = s->last_offset_y = 0.0;
+    s->dragging = TRUE;
   }
   else
+    dt_gui_deny(gesture);
+}
+
+static void _drawable_drag_end(GtkGestureDrag* g,
+                               const gdouble ox,
+                               const gdouble oy,
+                               dt_scopes_t *s)
+{
+  s->dragging = FALSE;
+  dt_control_change_cursor(s->highlight == DT_SCOPES_HIGHLIGHT_NONE
+                           ? "default" : "grab");
+}
+
+static void _drawable_drag_update(GtkGestureDrag* gesture,
+                                  const gdouble offset_x,
+                                  const gdouble offset_y,
+                                  dt_scopes_t *s)
+{
+  dt_scopes_mode_t *const cur_mode = s->cur_mode;
+  // GTK4: use gtk_event_controller_get_current_event_state()
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  if(gdk_event_get_event_type(event) == GDK_MOTION_NOTIFY)
   {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(s->scope_draw, &allocation);
-    const double posx = x / (double)(allocation.width);
-    const double posy = y / (double)(allocation.height);
-    const dt_scopes_highlight_t prior_highlight = s->highlight;
-
-    if(dt_scopes_func_exists(cur_mode, get_highlight))
-      s->highlight = dt_scopes_call(cur_mode, get_highlight, posx, posy);
-    else
-      s->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-
-    if(prior_highlight != s->highlight)
-    {
-      lib_histogram_update_tooltip(s);
-      dt_scopes_refresh(s);
-      if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-      {
-        // FIXME: should really use named cursors, and differentiate
-        // between "grab" and "grabbing"
-        dt_control_change_cursor(GDK_HAND1);
-      }
-    }
+    // at any time user may user a modifier key to adjust speed
+    // multiplier, so calculate delta since last move, rather than
+    // offset since drag start
+    const gdouble ox = offset_x - s->last_offset_x;
+    const gdouble oy = offset_y - s->last_offset_y;
+    const double delta = dt_scopes_call(cur_mode, get_exposure_delta, ox, oy);
+    dt_dev_exposure_handle_event(1, delta, event->motion.state,
+                                 s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
+    s->last_offset_x = offset_x;
+    s->last_offset_y = offset_y;
   }
+  gdk_event_free(event);
 }
 
 static void _drawable_button_press(GtkGestureSingle *gesture,
-                                   int n_press,
-                                   double x,
-                                   double y,
+                                   const int n_press,
+                                   const double x,
+                                   const double y,
                                    dt_scopes_t *s)
 {
   if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
-     && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
-  {
-    const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(gesture, n_press, pos,
+     && n_press == 2
+     && dt_gui_claim(gesture))
+    dt_dev_exposure_handle_event(2, 0.0, 0,
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
-  }
 }
 
-static void _drawable_button_release(GtkGestureSingle *gesture,
-                                     int n_press,
-                                     double x,
-                                     double y,
-                                     dt_scopes_t *s)
+static void _drawable_motion(GtkEventControllerMotion *controller,
+                             const double x,
+                             const double y,
+                             dt_scopes_t *s)
 {
-  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-    dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
+  if(s->dragging) return;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(s->scope_draw, &allocation);
+  const double posx = x / (double)(allocation.width);
+  const double posy = y / (double)(allocation.height);
+  const dt_scopes_highlight_t prior_highlight = s->highlight;
+
+  if(dt_scopes_func_exists(s->cur_mode, get_highlight))
+    s->highlight = dt_scopes_call(s->cur_mode, get_highlight, posx, posy);
+  else
+    s->highlight = DT_SCOPES_HIGHLIGHT_NONE;
+
+  if(prior_highlight != s->highlight)
+  {
+    lib_histogram_update_tooltip(s);
+    dt_scopes_refresh(s);
+    dt_control_change_cursor(s->highlight == DT_SCOPES_HIGHLIGHT_NONE
+                             ? "default" : "grab");
+  }
 }
 
 static void _drawable_leave(GtkEventControllerMotion *controller,
@@ -367,28 +408,41 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
      && s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
   {
     s->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     dt_scopes_refresh(s);
   }
 }
 
-static gboolean _scope_mode_clicked(GtkWidget *button,
-                                    GdkEventButton *event,
-                                    dt_scopes_t *s)
+static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
 {
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
-    return TRUE;
-
+  // create radio-button-like behavior for choosing scope modes with a
+  // GtkDarktableToggleButton group, using signal blocking to avoid
+  // re-entering this signal handler
   dt_scopes_mode_t *prior_mode = s->cur_mode;
-  for(int i = 0; i < DT_SCOPES_MODE_N; i++) // find the position of the button
+  for(int i = 0; i < DT_SCOPES_MODE_N; i++)
   {
-    if(s->mode_button[i] == button)
+    if(s->modes[i].button_activate == button)
+    {
+      // clicking on current mode button leaves it on
+      if(s->cur_mode == &s->modes[i]
+         && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+      {
+        g_signal_handler_block(button, s->modes[i].toggle_signal_handler);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->modes[i].button_activate), TRUE);
+        g_signal_handler_unblock(button, s->modes[i].toggle_signal_handler);
+        return;
+      }
       s->cur_mode = &s->modes[i];
-    if(prior_mode == &s->modes[i])
-      gtk_toggle_button_set_active
-        (GTK_TOGGLE_BUTTON(s->mode_button[i]), FALSE);
+    }
+    else if(prior_mode == &s->modes[i])
+    {
+      // user clicked on a different mode button, set the prior mode
+      // toggle button to inactive
+      g_signal_handler_block(s->modes[i].button_activate, s->modes[i].toggle_signal_handler);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->modes[i].button_activate), FALSE);
+      g_signal_handler_unblock(s->modes[i].button_activate, s->modes[i].toggle_signal_handler);
+    }
   }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
 
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_scopes_call(s->cur_mode, name));
@@ -402,14 +456,14 @@ static gboolean _scope_mode_clicked(GtkWidget *button,
 
   // even if no current data, GUI should still respond to update
   dt_scopes_refresh(s);
-  // FIXME: does this comparison of update_counter need to be protected within a mutex?
+  // FIXME: does this comparison of update_counter need to be protected within a
+  // mutex?
   if(s->update_counter != s->cur_mode->update_counter)
     dt_scopes_reprocess();
-
-  return TRUE;
 }
 
-static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
+static void _channel_toggle(GtkWidget *button,
+                            dt_scopes_t *s)
 {
   for(int i = 0; i < DT_SCOPES_RGB_N; i++)
     if(s->channel_buttons[i] == button)
@@ -424,28 +478,62 @@ static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
     }
 }
 
-static gboolean _eventbox_scroll_callback(GtkWidget *widget,
-                                          // FIXME: is this GTK4 compatible?
-                                          GdkEventScroll *event,
-                                          dt_scopes_t *s)
+static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
+                                      const gdouble dx,
+                                      const gdouble dy,
+                                      dt_scopes_t *s)
 {
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
-    // bubble to adjusting the overall widget size
-    gtk_widget_event(s->scope_draw, (GdkEvent*)event);
-  else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  if(gdk_event_get_event_type(event) == GDK_SCROLL)
   {
-    const gboolean black = s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-    if(black) { event->delta_x *= -1; event->delta_y *= -1; }
-    dt_dev_exposure_handle_event(event, 0, 0, black);
+    // FIXME: so long as we have event, test its flags -- and for GTK 4 we can
+    // use gtk_get_current_event() and get flags -- make a helper function to do
+    // this.
+    if(dt_modifier_is(event->scroll.state,
+                      GDK_SHIFT_MASK | GDK_MOD1_MASK))
+    {
+      // bubble to adjusting the overall widget size
+      gtk_widget_event(s->scope_draw, event);
+    }
+    else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+    {
+      // FIXME: should scroll for exposure change be handled by each scope, rather than here?
+      // FIXME: should handle smooth scrolling rather than discrete?
+      // FIXME: should scrolling of scope be handled in the drawable rather than
+      //        the eventbox.
+      dt_dev_exposure_handle_event(0, dy - dx, event->scroll.state,
+                                   s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
+    }
+    else
+    {
+      int ebx, eby;
+      gtk_widget_translate_coordinates(gtk_get_event_widget(event), s->scope_draw,
+                                       (int)event->scroll.x, (int)event->scroll.y, &ebx, &eby);
+      dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, ebx, eby,
+                               dx, dy, event->scroll.state);
+    }
   }
-  else
-    dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, event);
-  return TRUE;
+  gdk_event_free(event);
 }
 
-static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
-                                                GdkEventCrossing *event,
-                                                dt_scopes_t *s)
+static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controller,
+                                             const double x,
+                                             const double y,
+                                             dt_scopes_t *s)
+{
+  // This is required in order to correctly display the button tooltips
+  //
+  // FIXME: it should be ok to update button tooltips only when the
+  // main widget tooltip has changed, but calling this only at the end
+  // of lib_histogram_update_tooltip() doesn't work
+  dt_scopes_call_if_exists(s->cur_mode, update_buttons);
+}
+
+static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller,
+                                            const double x,
+                                            const double y,
+                                            dt_scopes_t *s)
 {
   // FIXME: do need to do this, or should this already be updated?
   lib_histogram_update_tooltip(s);
@@ -457,34 +545,33 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
   dt_scopes_call(s->cur_mode, mode_enter);
   gtk_widget_set_visible(s->button_box_rgb,
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
-  gtk_widget_show(s->button_box_main);
-  gtk_widget_show(s->button_box_opt);
-  return FALSE;
+  gtk_widget_show(s->button_box_left);
+  gtk_widget_show(s->button_box_right);
 }
 
-static gboolean _eventbox_motion_notify_callback(GtkWidget *widget,
-                                                 const GdkEventMotion *event,
-                                                 const dt_scopes_t *s)
+static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller,
+                                            dt_scopes_t *s)
 {
-  // This is required in order to correctly display the button tooltips
-  // FIXME: it would seem possible that it is necessary to update button tooltips only when the main widget tooltip has changed, if the tooltip bubbled down, but calling this at the end of lib_histogram_update_tooltip() doesn't seem to help
-  dt_scopes_call_if_exists(s->cur_mode, update_buttons);
-  dt_scopes_call_if_exists(s->cur_mode, eventbox_motion, widget, event);
-
-  return FALSE;
-}
-
-static gboolean _eventbox_leave_notify_callback(GtkWidget *widget,
-                                                const GdkEventCrossing *event,
-                                                const dt_scopes_t *s)
-{
-  // when click between buttons on the buttonbox a leave event is generated -- ignore it
-  if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
+  // when click between buttons on the buttonbox a leave event is
+  // generated -- ignore it (for GTK 4, replace this with the simpler
+  // gtk_event_controller_get_current_event())
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
   {
-    gtk_widget_hide(s->button_box_main);
-    gtk_widget_hide(s->button_box_opt);
+    if(gdk_event_get_event_type(event) == GDK_LEAVE_NOTIFY)
+    {
+      const GdkEventCrossing *xc = &event->crossing;
+      if(xc->mode == GDK_CROSSING_UNGRAB && xc->detail == GDK_NOTIFY_INFERIOR)
+      {
+        gdk_event_free(event);
+        return;
+      }
+    }
+    gdk_event_free(event);
   }
-  return FALSE;
+  gtk_widget_hide(s->button_box_left);
+  gtk_widget_hide(s->button_box_right);
+  gtk_widget_hide(s->button_box_split);
 }
 
 static void _lib_histogram_collapse_callback(dt_action_t *action)
@@ -510,7 +597,9 @@ static void _lib_histogram_preview_updated_callback(gpointer instance,
   // other way to assure that the histogram image is current besides
   // checking the pixelpipe to see if it has processed the current
   // image
-  // FIXME: now that have update_counter can we do this? and get rid of catching DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED?
+  //
+  // FIXME: now that have update_counter can we do this? and get rid of catching
+  // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED?
   const dt_scopes_t *s = self->data;
   dt_scopes_refresh(s);
 }
@@ -526,8 +615,9 @@ void view_enter(struct dt_lib_module_t *self,
   }
   // button box should be hidden when enter view, unless mouse is over
   // histogram, in which case gtk kindly generates enter events
-  gtk_widget_hide(s->button_box_main);
-  gtk_widget_hide(s->button_box_opt);
+  gtk_widget_hide(s->button_box_left);
+  gtk_widget_hide(s->button_box_right);
+  gtk_widget_hide(s->button_box_split);
 
   // FIXME: set histogram data to blank if enter tether with no active image
 }
@@ -537,6 +627,27 @@ void view_leave(struct dt_lib_module_t *self,
                 struct dt_view_t *new_view)
 {
   DT_CONTROL_SIGNAL_DISCONNECT(_lib_histogram_preview_updated_callback, self);
+}
+
+static gboolean _overlay_get_child_position(GtkOverlay *overlay,
+                                            GtkWidget *child,
+                                            GdkRectangle *alloc,
+                                            GtkWidget *match)
+{
+  // GtkOverlay clips main child to its parent widget size, but not
+  // other children. Make sure that we clip match.
+  // GTK4: use gtk_overlay_set_clip_overlay() and gtk_widget_set_valign()
+  if(child != match) return FALSE;
+  GtkAllocation main_alloc;
+  GtkRequisition req;
+  GtkWidget *main = gtk_bin_get_child(GTK_BIN(overlay));
+  gtk_widget_get_allocation(main, &main_alloc);
+  gtk_widget_get_preferred_size(child, NULL, &req);
+  alloc->width = req.width;
+  alloc->height = MIN(req.height, main_alloc.height);
+  alloc->x = main_alloc.width - req.width;   // right align
+  alloc->y = 0;
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -554,6 +665,7 @@ void gui_init(dt_lib_module_t *self)
       &dt_scopes_functions_histogram,};
   const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   s->update_counter = 1;
+  s->dragging = FALSE;
   s->cur_mode = &s->modes[DT_SCOPES_MODE_WAVEFORM];  // failsafe
 
   // FIXME: is there a better way to init this?
@@ -581,9 +693,14 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: do need to pass self, or can wrap a callback as a lambda
   darktable.lib->proxy.histogram.module = self;
   darktable.lib->proxy.histogram.process = _scope_process;
+  darktable.lib->proxy.histogram.get_harmony = _lib_histogram_get_harmony;
+  darktable.lib->proxy.histogram.set_harmony = _lib_histogram_set_harmony;
+  darktable.lib->proxy.histogram.set_scope = _lib_histogram_set_scope;
+  darktable.lib->proxy.histogram.set_type = _lib_histogram_set_type;
+  darktable.lib->proxy.histogram.get_sector_angles = _lib_histogram_get_sector_angles;
+  darktable.lib->proxy.histogram.set_harmony_callback = _lib_histogram_set_harmony_callback;
 
   // create widgets
-  GtkWidget *overlay = gtk_overlay_new();
   dt_action_t *dark =
     dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions,
                       N_("histogram"));
@@ -595,38 +712,47 @@ void gui_init(dt_lib_module_t *self)
   dt_action_t *ac = dt_action_define(dark, NULL, N_("hide histogram"), s->scope_draw, NULL);
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback,
                      GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  gtk_widget_set_events(s->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
   // a row of control buttons, split in two button boxes, on left and right side
-  s->button_box_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_class(s->button_box_main, "button_box");
-  gtk_widget_set_valign(s->button_box_main, GTK_ALIGN_START);
-  gtk_widget_set_halign(s->button_box_main, GTK_ALIGN_START);
+  // overlaying the current scope
+  //
+  // self->widget (GtkEventBox)
+  //   '--> GtkOverlay
+  //          |--> scope_draw (DtGtkDrawingArea with dt_ui_resize_wrap)
+  //          |--> button_box_left (GtkBox hori)
+  //          |      '--> mode buttons
+  //          |--> button_box_right (GtkBox hori)
+  //          |      '--> option buttons for non-split or right side of split
+  //          '--> button_box_split (GtkBox hori)
+  //                 '--> option buttons for left side of split, if shown
+  s->button_box_left = dt_gui_hbox();
+  dt_gui_add_class(s->button_box_left, "button_box");
+  gtk_widget_set_valign(s->button_box_left, GTK_ALIGN_START);
+  gtk_widget_set_halign(s->button_box_left, GTK_ALIGN_START);
 
-  GtkWidget *box_left = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_valign(box_left, GTK_ALIGN_START);
-  gtk_widget_set_halign(box_left, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(s->button_box_main), box_left, FALSE, FALSE, 0);
+  s->button_box_split = dt_gui_hbox();
+  dt_gui_add_class(s->button_box_split, "button_box");
+  gtk_widget_set_valign(s->button_box_split, GTK_ALIGN_START);
+  gtk_widget_set_halign(s->button_box_split, GTK_ALIGN_END);
+  GtkWidget *outer_box_split = dt_gui_hbox();
+  gtk_box_set_homogeneous(GTK_BOX(outer_box_split), TRUE);
+  GtkWidget *split_spacer = dt_gui_hbox();
+  dt_gui_box_add(outer_box_split, s->button_box_split, split_spacer);
 
-  for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
-    dt_scopes_call_if_exists(&s->modes[i],
-                             add_to_main_box, dark, s->button_box_main);
+  s->button_box_right = dt_gui_hbox();
+  dt_gui_add_class(s->button_box_right, "button_box");
+  gtk_widget_set_valign(s->button_box_right, GTK_ALIGN_START);
+  gtk_widget_set_halign(s->button_box_right, GTK_ALIGN_END);
+  gtk_widget_set_hexpand(s->button_box_right, TRUE);
 
-  s->button_box_opt = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  dt_gui_add_class(s->button_box_opt, "button_box");
-  gtk_widget_set_valign(s->button_box_opt, GTK_ALIGN_START);
-  gtk_widget_set_halign(s->button_box_opt, GTK_ALIGN_END);
-
-  // this intermediate box is needed to make the actions on buttons work
-  GtkWidget *box_right = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_valign(box_right, GTK_ALIGN_START);
-  gtk_widget_set_halign(box_right, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(s->button_box_opt), box_right, FALSE, FALSE, 0);
-
-  s->button_box_rgb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_valign(s->button_box_rgb, GTK_ALIGN_CENTER);
-  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_END);
-  gtk_box_pack_end(GTK_BOX(box_right), s->button_box_rgb, FALSE, FALSE, 0);
+  s->overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(s->overlay), s->scope_draw);
+  gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_left);
+  gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_right);
+  gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), outer_box_split);
+  // allow for dragging to change exposure in spaces where not buttons
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), s->button_box_left, TRUE);
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), outer_box_split, TRUE);
 
   // FIXME: the button transitions when they appear on mouseover
   // (mouse enters scope widget) or change (mouse click) cause redraws
@@ -640,23 +766,41 @@ void gui_init(dt_lib_module_t *self)
       dtgtk_cairo_paint_split_waveform_vectorscope,
       dtgtk_cairo_paint_rgb_parade,
       dtgtk_cairo_paint_histogram_scope };
+  // FIXME: can use use GtkStack or tabless GtkNotebook to handle
+  // mode-switching behavior -- drawable and right buttons?
   for(int i=0; i<DT_SCOPES_MODE_N; i++)
   {
-    // FIXME: make these GtkRadioButton?
-    s->mode_button[i] =
-      dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
     const char *const name = dt_scopes_call(&s->modes[i], name);
-    gtk_widget_set_tooltip_text(s->mode_button[i],
-                                _(name));
+    s->modes[i].button_activate =
+      dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
+    gtk_widget_set_halign(s->modes[i].button_activate, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(s->modes[i].button_activate, GTK_ALIGN_START);
+    gtk_widget_set_tooltip_text(s->modes[i].button_activate, _(name));
     dt_action_define(dark, N_("modes"), name,
-                     s->mode_button[i], &dt_action_def_toggle);
-    gtk_box_pack_start(GTK_BOX(box_left), s->mode_button[i], FALSE, FALSE, 0);
-    // FIXME: use "clicked" event instead of "button-press-event"? do GtkDarktableToggleButton support clicked events?
-    g_signal_connect(G_OBJECT(s->mode_button[i]), "button-press-event",
-                     G_CALLBACK(_scope_mode_clicked), s);
-    if(s->cur_mode == &s->modes[i])
-      gtk_toggle_button_set_active
-        (GTK_TOGGLE_BUTTON(s->mode_button[i]), TRUE);
+                     s->modes[i].button_activate, &dt_action_def_toggle);
+    // GTK4: use gtk_toggle_button_set_group(), GTK3: handle in callback
+    s->modes[i].toggle_signal_handler =
+      g_signal_connect_data(G_OBJECT(s->modes[i].button_activate), "toggled",
+                            G_CALLBACK(_mode_toggle), s, NULL, 0);
+
+    if(s->modes[i].functions->add_options)
+    {
+      s->modes[i].options_box = dt_gui_hbox();
+      dt_scopes_call(&s->modes[i], add_options, dark);
+      dt_gui_box_add(s->button_box_right, s->modes[i].options_box);
+    }
+    else
+      s->modes[i].options_box = NULL;
+  }
+
+  // allow for clustering mode buttons in responsive layout
+  const int btns_per_row = 3;
+  for(int row_start=0; row_start < DT_SCOPES_MODE_N; row_start += btns_per_row)
+  {
+    GtkWidget *row = dt_gui_hbox();
+    for(int pos=row_start; pos < row_start+btns_per_row && pos < DT_SCOPES_MODE_N; pos++)
+      dt_gui_box_add(row, s->modes[pos].button_activate);
+    dt_gui_box_add(s->button_box_left, row);
   }
 
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
@@ -665,8 +809,12 @@ void gui_init(dt_lib_module_t *self)
                        _lib_histogram_collapse_callback,
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
+  // RGB channel buttons
+  s->button_box_rgb = dt_gui_hbox();
+  gtk_widget_set_valign(s->button_box_rgb, GTK_ALIGN_CENTER);
+  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_CENTER);
   // red/green/blue channel on/off
-  for(int i=DT_SCOPES_RGB_BLUE; i >= DT_SCOPES_RGB_RED; i--)
+  for(int i=DT_SCOPES_RGB_RED; i < DT_SCOPES_RGB_N; i++)
   {
     g_autofree char *name = g_strdup_printf("%s-channel-button", rgb_names[i]);
     g_autofree char *tip = g_strdup_printf(_("toggle %s channel"), _(rgb_names[i]));
@@ -678,73 +826,64 @@ void gui_init(dt_lib_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
                                  s->channels[i]);
     dt_action_define(dark, N_("toggle colors"), rgb_names[i], btn, &dt_action_def_toggle);
-    gtk_box_pack_end(GTK_BOX(s->button_box_rgb), btn, FALSE, FALSE, 0);
+    dt_gui_box_add(s->button_box_rgb, btn);
     g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_channel_toggle), s);
     s->channel_buttons[i] = btn;
   }
+  // RGB channels are always rightmost
+  dt_gui_box_add(s->button_box_right, s->button_box_rgb);
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
-    dt_scopes_call_if_exists(&s->modes[i], add_to_options_box, dark, box_right);
     dt_scopes_call_if_exists(&s->modes[i], update_buttons);
+    if(s->cur_mode == &s->modes[i])
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(s->modes[i].button_activate), TRUE);
   }
 
   // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?
 
-  // assemble the widgets
-
-  // The main widget is an overlay which has no window, and hence
-  // can't catch events. We need something on top to catch events to
-  // show/hide the buttons. The drawable is below the buttons, and
-  // hence won't catch motion events for the buttons, and gets a leave
-  // event when the cursor moves over the buttons.
-  //
-  // |----- EventBox -----|
-  // |                    |
-  // |  |-- Overlay  --|  |
-  // |  |              |  |
-  // |  |  ButtonBox   |  |
-  // |  |              |  |
-  // |  |--------------|  |
-  // |  |              |  |
-  // |  |  DrawingArea |  |
-  // |  |              |  |
-  // |  |--------------|  |
-  // |                    |
-  // |--------------------|
-
+  // The overlay has no window, and hence can't catch events. We need
+  // something on top to catch events to show/hide the buttons. The
+  // drawable is below the buttons, and hence won't catch motion
+  // events for the buttons, and gets a leave event when the cursor
+  // moves over the buttons.
   GtkWidget *eventbox = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(overlay), s->scope_draw);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), s->button_box_main);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), s->button_box_opt);
-  gtk_container_add(GTK_CONTAINER(eventbox), overlay);
+  gtk_container_add(GTK_CONTAINER(eventbox), s->overlay);
   self->widget = eventbox;
-
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
-  gtk_widget_add_events(s->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
   g_signal_connect(G_OBJECT(s->scope_draw),
                    "draw", G_CALLBACK(_drawable_draw_callback), s);
-  dt_gui_connect_click_all(s->scope_draw, _drawable_button_press,
-                           _drawable_button_release, s);
+  dt_gui_connect_drag(s->scope_draw, _drawable_drag_begin, _drawable_drag_end,
+                      _drawable_drag_update, s);
+  dt_gui_connect_click(s->scope_draw, _drawable_button_press, NULL, s);
   dt_gui_connect_motion(s->scope_draw, _drawable_motion, NULL,
                         _drawable_leave, s);
+  // constrain height of button_box_right to s->scope_draw, necessary
+  // so that harmony buttons are scrollable within overlay
+  g_signal_connect(G_OBJECT(s->overlay), "get-child-position",
+                   G_CALLBACK(_overlay_get_child_position), s->button_box_right);
 
-  gtk_widget_add_events
-    (eventbox,
-     GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
-     | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(eventbox), "scroll-event",
-                   G_CALLBACK(_eventbox_scroll_callback), s);
-  g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
-                   G_CALLBACK(_eventbox_enter_notify_callback), s);
-  g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
-                   G_CALLBACK(_eventbox_leave_notify_callback), s);
-  g_signal_connect(G_OBJECT(eventbox), "motion-notify-event",
-                   G_CALLBACK(_eventbox_motion_notify_callback), s);
+  // FIXME: add (optional) propagation phase argument to dt_gui_connect_*()
+  GtkEventController *scroll_controller =
+    dt_gui_connect_scroll(eventbox, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                    | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _eventbox_scroll_callback, s);
+  gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_CAPTURE);
+  // use GTK_PHASE_TARGET to capture enter/leave events, as
+  // enter/leave events apparently not bubbled in GTK < 3.24.43.
+  dt_gui_connect_motion(eventbox, NULL,
+                        _eventbox_enter_notify_callback,
+                        _eventbox_leave_notify_callback, s);
+  // but need GTK_PHASE_BUBBLE to capture motion events
+  GtkEventController *eventbox_motion_controller =
+    dt_gui_connect_motion(eventbox, _eventbox_motion_notify_callback,
+                          NULL, NULL, s);
+  gtk_event_controller_set_propagation_phase
+    (eventbox_motion_controller, GTK_PHASE_BUBBLE);
 
   gtk_widget_show_all(self->widget);
 }
@@ -759,6 +898,64 @@ void gui_cleanup(dt_lib_module_t *self)
 
   dt_free_align(self->data);
   self->data = NULL;
+}
+
+static void _lib_histogram_get_harmony(dt_lib_module_t *self,
+                                       dt_color_harmony_guide_t *guide)
+{
+  if(self && guide)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_get_harmony(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], guide);
+  }
+}
+
+static void _lib_histogram_set_harmony(dt_lib_module_t *self,
+                                       const dt_color_harmony_guide_t *guide)
+{
+  if(self && guide)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_set_harmony(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], guide);
+  }
+}
+
+static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
+    void (*cb)(const dt_color_harmony_guide_t *, void *),
+    void *user_data)
+{
+  if(self)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_set_harmony_changed_callback(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], cb, user_data);
+  }
+}
+
+static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope)
+{
+  if(self && scope >= 0 && scope < DT_SCOPES_MODE_N)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->modes[scope].button_activate), TRUE);
+  }
+}
+
+static void _lib_histogram_set_type(dt_lib_module_t *self, const int type)
+{
+  if(self && type >= 0)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_set_vectorscope_type(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], type);
+  }
+}
+
+static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
+                                             const dt_color_harmony_type_t type,
+                                             const int rotation,
+                                             float *angles,
+                                             int *n)
+{
+  dt_vec_get_sector_angles(type, rotation, angles, n);
 }
 
 // clang-format off

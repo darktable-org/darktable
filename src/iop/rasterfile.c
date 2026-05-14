@@ -50,6 +50,8 @@
 #include <omp.h>
 #endif
 
+#define SET_THRESHOLD 0.6f
+
 DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
 
 typedef enum dt_iop_rasterfile_mode_t
@@ -164,7 +166,8 @@ static void _vectorize_button_clicked(GtkWidget *widget,
   dt_pthread_mutex_lock(&cd->lock);
 
   const dt_image_t *const image = &(self->dev->image_storage);
-  GList *forms = ras2forms(cd->mask, cd->width, cd->height, image);
+  GList *forms = ras2forms(cd->mask, cd->width, cd->height, image,
+                           SET_THRESHOLD, 0, 0.0, NULL);
 
   dt_pthread_mutex_unlock(&cd->lock);
 
@@ -498,7 +501,7 @@ int process_cl(dt_iop_module_t *self,
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   const ssize_t ch = pipe->dsc.filters ? 1 : 4;
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const gboolean visual = fullpipe && dt_iop_has_focus(self);
 
   const int devid = pipe->devid;
@@ -510,10 +513,9 @@ int process_cl(dt_iop_module_t *self,
     err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
   else
   {
-    size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
-    size_t oorigin[] = { 0, 0, 0 };
-    size_t region[] = { roi_out->width, roi_out->height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+    const size_t iorigin[2] = { roi_out->x, roi_out->y };
+    const size_t region[2] = { roi_out->width, roi_out->height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, CLIMG_ORIGIN, region);
   }
 
   if(dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID)
@@ -553,7 +555,7 @@ void process(dt_iop_module_t *self,
   else
     dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out);
 
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const gboolean request = dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID);
   const gboolean visual = fullpipe && dt_iop_has_focus(self);
   float *mask = visual || request ? _get_rasterfile_mask(piece, roi_in, roi_out) : NULL;
@@ -644,7 +646,7 @@ void distort_mask(dt_iop_module_t *self,
   if(roi_out->scale != roi_in->scale)
   {
     const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-    dt_interpolation_resample_1c(itor, out, roi_out, in, roi_in);
+    dt_interpolation_resample_mask(itor, out, roi_out, in, roi_in);
   }
   else
     dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);

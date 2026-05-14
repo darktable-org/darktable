@@ -512,7 +512,7 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  size_t sizes[] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid), 1 };
+  const size_t sizes[2] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid) };
   dt_opencl_set_kernel_args(devid, kernel, 0,
     CLARG(dev_in), CLARG(dev_out),
     CLARG(width), CLARG(height),

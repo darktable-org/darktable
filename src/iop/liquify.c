@@ -708,13 +708,13 @@ static void mix_warps(dt_liquify_warp_t *result,
   float arg2 = cargf(p2);
   gboolean invert = FALSE;
 
-  if(arg1 > .0f && arg2 < -(M_PI_F / 2.f))
+  if(arg1 > .0f && arg2 < -M_PI_2f)
   {
     invert = TRUE;
     arg1 = M_PI_F - arg1;
     arg2 = -M_PI_F - arg2;
   }
-  else if(arg1 < -(M_PI_F / 2.f) && arg2 > .0f)
+  else if(arg1 < -M_PI_2f && arg2 > .0f)
   {
     invert = TRUE;
     arg1 = -M_PI_F - arg1;
@@ -1557,10 +1557,9 @@ int process_cl(dt_iop_module_t *self,
 
   // 1. copy the whole image (we'll change only a small part of it)
   {
-    size_t src[]    = { roi_out->x - roi_in->x, roi_out->y - roi_in->y, 0 };
-    size_t dest[]   = { 0, 0, 0 };
-    size_t extent[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, src, dest, extent);
+    const size_t src[2]    = { roi_out->x - roi_in->x, roi_out->y - roi_in->y };
+    const size_t extent[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, src, CLIMG_ORIGIN, extent);
     if(err != CL_SUCCESS) return err;
   }
 

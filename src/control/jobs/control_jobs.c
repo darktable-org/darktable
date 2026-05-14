@@ -554,7 +554,7 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   const float eap = image.exif_aperture > 0.0f ? image.exif_aperture : 22.0f;
   const float efl = image.exif_focal_length > 0.0f ? image.exif_focal_length : 8.0f;
   const float rad = .5f * efl / eap;
-  const float aperture = M_PI * rad * rad;
+  const float aperture = M_PI_F * rad * rad;
   const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
   const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
   const float cal = 100.0f / (aperture * exp * iso);
@@ -693,17 +693,17 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
-  dt_imageio_write_dng(pathname,
-                       d.pixels,
-                       d.wd,
-                       d.ht,
-                       exif,
-                       exif_len,
-                       d.first_filter,
-                       (const uint8_t (*)[6])d.first_xtrans,
-                       1.0f,
-                       (const float (*))d.wb_coeffs,
-                       d.adobe_XYZ_to_CAM);
+  dt_imageio_dng_write_float(pathname,
+                             d.pixels,
+                             d.wd,
+                             d.ht,
+                             exif,
+                             exif_len,
+                             d.first_filter,
+                             (const uint8_t (*)[6])d.first_xtrans,
+                             1.0f,
+                             (const float (*))d.wb_coeffs,
+                             d.adobe_XYZ_to_CAM);
   free(exif);
 
   dt_control_job_set_progress(job, 1.0);

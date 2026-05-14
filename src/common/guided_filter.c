@@ -559,10 +559,9 @@ static int _guided_filter_cl_impl(int devid,
     {
       if(tiling)
       {
-        size_t insrc[]  = { 0, first_in, 0 };
-        size_t tdest[]  = { 0, 0, 0 };
-        size_t iarea[]  = { width, t_height, 1 };
-        err = dt_opencl_enqueue_copy_image(devid, dev_in, in, insrc, tdest, iarea);
+        const size_t insrc[2]  = { 0, first_in };
+        const size_t iarea[2]  = { width, t_height };
+        err = dt_opencl_enqueue_copy_image(devid, dev_in, in, insrc, CLIMG_ORIGIN, iarea);
       }
 
       if(err == CL_SUCCESS) err = _cl_split_rgb(devid, width, t_height, first_in, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);
@@ -616,9 +615,9 @@ static int _guided_filter_cl_impl(int devid,
 
       if(err == CL_SUCCESS && tiling)
       {
-        size_t tsrc[]   = { 0, first_out, 0 };
-        size_t odest[]  = { 0, group, 0 };
-        size_t oarea[]  = { width, out_height, 1 };
+        const size_t tsrc[2]   = { 0, first_out };
+        const size_t odest[2]  = { 0, group };
+        const size_t oarea[2]  = { width, out_height };
         // copy relevant fraction of tiled output back
         err = dt_opencl_enqueue_copy_image(devid, out, dev_out, tsrc, odest, oarea);
       }

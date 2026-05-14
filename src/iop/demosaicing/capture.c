@@ -129,7 +129,7 @@ static unsigned char *_cs_precalc_gauss_idx(dt_iop_module_t *self,
     for(int col = 0; col < width; col++)
     {
       const float fcol = col + dx - rwidth;
-      const float sc = sqrtf(frow * frow + fcol * fcol) / mdim;
+      const float sc = hypotf(frow, fcol) / mdim;
       const float corr = cboost * boost * sqrf(MAX(0.0f, sc - 0.5f - centre));
 
       // also special care for the image borders
@@ -690,7 +690,7 @@ static void _prepare_blend(const float *cfa,
       Yold[k] = MAX(0.0f, yw[0] + yw[1] + yw[2]);
       if(row > 1 && col > 1 && row < height-2 && col < w1-2)
       {
-        const int color = (filters == 9u) ? FCNxtrans(row, col, xtrans) : FC(row, col, filters);
+        const int color = fcol(row, col, filters, xtrans);
         const gboolean heat = filters ? cfa[k] > whites[color] : cfa[4*k] > CAPTURE_CFACLIP;
         if(heat || Yold[k] < CAPTURE_YMIN)
         {
@@ -768,7 +768,7 @@ static void _capture_radius(dt_iop_module_t *self,
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
 
   gboolean reliable;
@@ -804,7 +804,7 @@ static void _capture_noise(dt_iop_module_t *self,
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   dt_iop_demosaic_params_t *p = self->params;
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const float thrs = 0.01f * (int)(100.0f * _get_variance_threshold(self));
   const gboolean same_thrs = feqf(p->cs_thrs, thrs, 0.01f);
 
@@ -829,7 +829,7 @@ static inline gboolean _noise_requested(dt_iop_module_t *self,
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
   const gboolean invalid_thrs = d->cs_thrs <= 0.0f;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   // do we require a calculation of the noise threshold?
 
@@ -848,7 +848,7 @@ static inline gboolean _radius_requested(dt_iop_module_t *self,
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
   const gboolean invalid_radius = d->cs_radius <= 0.0f;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   // do we require a calculation of the capture radius?
 
@@ -882,7 +882,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(dt_pipe_is_thumb(pipe))
   {
     const gboolean hqthumb = _get_thumb_quality(pipe->final_width, pipe->final_height);
     if(!hqthumb) return;
@@ -1035,7 +1035,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   const dt_iop_demosaic_data_t *const d = piece->data;
   dt_iop_demosaic_global_data_t *const gd = self->global_data;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(dt_pipe_is_thumb(pipe))
   {
     const gboolean hqthumb = _get_thumb_quality(pipe->final_width, pipe->final_height);
     if(!hqthumb) return CL_SUCCESS;
@@ -1058,10 +1058,9 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   cl_mem luminance = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem tmp2 = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem tmp1 = dt_opencl_alloc_device_buffer(devid, bsize);
-  cl_mem whites = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), icoeffs);
   cl_mem dev_rgb = dt_opencl_duplicate_image(devid, dev_out);
 
-  if(!blendmask || !luminance || !tmp2 || !tmp1 || !whites || !dev_rgb) goto finish;
+  if(!blendmask || !luminance || !tmp2 || !tmp1 || !dev_rgb) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prefill_clip_mask, width, height,
           CLARG(tmp2), CLARG(width), CLARG(height));
@@ -1069,7 +1068,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prepare_blend, width, height,
           CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(dev_xtrans), CLARG(tmp2), CLARG(tmp1),
-          CLARG(whites), CLARG(width), CLARG(height));
+          CLARG(icoeffs), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->modify_blend, width, height,
@@ -1140,7 +1139,6 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(tmp2);
   dt_opencl_release_mem_object(tmp1);
   dt_opencl_release_mem_object(luminance);
-  dt_opencl_release_mem_object(whites);
 
   return err;
 }

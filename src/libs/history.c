@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -405,7 +405,7 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
       if(darktable.develop->gui_module == mod)
         dt_iop_request_focus(NULL);
 
-      ++darktable.gui->reset;
+      DT_ENTER_GUI_UPDATE();
 
       // we remove the plugin effectively
       if(!dt_iop_is_hidden(mod))
@@ -430,7 +430,7 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
       // don't delete the module, a pipe may still need it
       dev->alliop = g_list_append(dev->alliop, mod);
 
-      --darktable.gui->reset;
+      DT_LEAVE_GUI_UPDATE();
 
       // and reset the list
       modules = iop_list;
@@ -506,9 +506,9 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
 
       if(!dt_iop_is_hidden(module))
       {
-        ++darktable.gui->reset;
+        DT_ENTER_GUI_UPDATE();
         module->gui_init(module);
-        --darktable.gui->reset;
+        DT_LEAVE_GUI_UPDATE();
       }
 
       // adjust the multi_name of the new module
@@ -672,7 +672,7 @@ static void _lib_history_will_change_callback(gpointer instance,
 
     if(darktable.develop->gui_module)
     {
-      hist->mask_edit_mode = dt_masks_get_edit_mode(darktable.develop->gui_module);
+      hist->mask_edit_mode = dt_masks_get_edit_mode();
       hist->request_mask_display = darktable.develop->gui_module->request_mask_display;
     }
     else
@@ -1292,7 +1292,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
   g_list_free(children);
 
   reset = FALSE;
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -1312,7 +1312,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
     For raws we have at least rawprepare and demosaic
   */
   const int order = dt_image_is_raw(&darktable.develop->image_storage) ? 2 : 0;
-  dt_dev_pixelpipe_cache_invalidate_later(darktable.develop->preview_pipe, order);
+  dt_dev_pixelpipe_cache_invalidate_later(darktable.develop->preview_pipe, order, "history button: ");
 
   /* signal history changed */
   dt_dev_undo_end_record(darktable.develop);

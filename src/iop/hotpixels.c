@@ -349,7 +349,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     fixed = _process_bayer(data, ivoid, ovoid, roi_out);
   }
 
-  if(g != NULL && self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(g && self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     g->pixels_fixed = fixed;
   }
@@ -374,7 +374,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;
-  d->markfixed = p->markfixed && (!(pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL)));
+  d->markfixed = p->markfixed && (!(dt_pipe_is_thumb(pipe) || dt_pipe_is_export(pipe)));
 
   const dt_image_t *img = &pipe->image;
   const gboolean monoraw = (img->flags & DT_IMAGE_S_RAW) && (img->flags & DT_IMAGE_MONOCHROME);
@@ -417,16 +417,16 @@ void gui_update(dt_iop_module_t *self)
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(g->pixels_fixed < 0) return FALSE;
 
   char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
   g->pixels_fixed = -1;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gtk_label_set_text(g->message, str);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   g_free(str);
 

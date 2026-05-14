@@ -121,18 +121,17 @@ float *dt_masks_calc_scharr_mask(dt_dev_pixelpipe_t *pipe,
     return NULL;
   }
 
-  const gboolean wboff = !pipe->dsc.temperature.enabled || !rawmode;
-  const dt_aligned_pixel_t wb = { wboff ? 1.0f : pipe->dsc.temperature.coeffs[0],
-                                  wboff ? 1.0f : pipe->dsc.temperature.coeffs[1],
-                                  wboff ? 1.0f : pipe->dsc.temperature.coeffs[2] };
-
+  dt_aligned_pixel_t wb = { 1.0f, 1.0f, 1.0f, 1.0f };
+  if(pipe->dsc.temperature.enabled && rawmode)
+    for(int i=0; i < 3; i++)
+      wb[i] /= pipe->dsc.temperature.coeffs[i];
 
   DT_OMP_FOR_SIMD(aligned(tmp : 64))
   for(size_t idx =0; idx < msize; idx++)
   {
-    const float val = fmaxf(0.0f, src[4 * idx] / wb[0])
-                    + fmaxf(0.0f, src[4 * idx + 1] / wb[1])
-                    + fmaxf(0.0f, src[4 * idx + 2] / wb[2]);
+    const float val = fmaxf(0.0f, src[4 * idx] * wb[0])
+                    + fmaxf(0.0f, src[4 * idx + 1] * wb[1])
+                    + fmaxf(0.0f, src[4 * idx + 2] * wb[2]);
     // add a gamma. sqrtf should make noise variance the same for all image
     tmp[idx] = sqrtf(val / 3.0f);
   }

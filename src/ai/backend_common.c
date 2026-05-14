@@ -1,0 +1,793 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2026 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "backend.h"
+#include "common/darktable.h"
+#include "control/conf.h"
+#include <glib.h>
+#include <json-glib/json-glib.h>
+#include <string.h>
+
+// provider table
+
+// clang-format off
+const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT] = {
+  { DT_AI_PROVIDER_AUTO,     "auto",     "auto",
+    1 },
+  { DT_AI_PROVIDER_CPU,      "CPU",      "CPU",
+    1 },
+  { DT_AI_PROVIDER_COREML,   "CoreML",   "Apple CoreML",
+#if defined(__APPLE__)
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_CUDA,     "CUDA",     "NVIDIA CUDA",
+#if defined(__linux__) || defined(_WIN32)
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_MIGRAPHX, "MIGraphX", "AMD MIGraphX",
+#if defined(__linux__)
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_OPENVINO, "OpenVINO", "Intel OpenVINO",
+#if defined(__linux__) || defined(_WIN32) || (defined(__APPLE__) && defined(__x86_64__))
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_DIRECTML, "DirectML", "Windows DirectML",
+#if defined(_WIN32)
+    1
+#else
+    0
+#endif
+  },
+};
+// clang-format on
+
+struct dt_ai_environment_t
+{
+  GList *models;           // list of dt_ai_model_info_t*
+  GHashTable *model_paths; // id -> path (string)
+
+  // to keep pointers in dt_ai_model_info_t valid
+  GList *string_storage; // list of char*
+
+  // remembered for refresh
+  char *search_paths;
+
+  // default execution provider (read from config at init, override with dt_ai_env_set_provider)
+  dt_ai_provider_t provider; // DT_AI_PROVIDER_AUTO = platform auto-detect
+
+  GMutex lock; // thread safety for model list access
+};
+
+static void _store_string(dt_ai_environment_t *env, const char *str, const char **out_ptr)
+{
+  char *copy = g_strdup(str);
+  env->string_storage = g_list_prepend(env->string_storage, copy);
+  *out_ptr = copy;
+}
+
+static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
+{
+  GDir *dir = g_dir_open(root_path, 0, NULL);
+  if(!dir)
+    return;
+
+  const char *entry_name;
+  while((entry_name = g_dir_read_name(dir)))
+  {
+    char *full_path = g_build_filename(root_path, entry_name, NULL);
+    if(g_file_test(full_path, G_FILE_TEST_IS_DIR))
+    {
+      char *config_path = g_build_filename(full_path, "config.json", NULL);
+
+      if(g_file_test(config_path, G_FILE_TEST_EXISTS))
+      {
+        JsonParser *parser = json_parser_new();
+        GError *error = NULL;
+
+        if(json_parser_load_from_file(parser, config_path, &error))
+        {
+          JsonNode *root = json_parser_get_root(parser);
+          JsonObject *obj = json_node_get_object(root);
+
+          const char *id = json_object_get_string_member(obj, "id");
+          const char *name = json_object_get_string_member(obj, "name");
+          const char *desc = json_object_has_member(obj, "description")
+            ? json_object_get_string_member(obj, "description")
+            : "";
+          const char *task = json_object_has_member(obj, "task")
+            ? json_object_get_string_member(obj, "task")
+            : "general";
+          const char *backend = json_object_has_member(obj, "backend")
+            ? json_object_get_string_member(obj, "backend")
+            : "onnx";
+
+          if(id && name)
+          {
+            // skip duplicate model IDs (first discovered wins)
+            if(g_hash_table_contains(env->model_paths, id))
+            {
+              dt_print(DT_DEBUG_AI, "[darktable_ai] skipping duplicate model ID: %s", id);
+            }
+            else
+            {
+              dt_ai_model_info_t *info = g_new0(dt_ai_model_info_t, 1);
+              _store_string(env, id, &info->id);
+              _store_string(env, name, &info->name);
+              _store_string(env, desc, &info->description);
+              _store_string(env, task, &info->task_type);
+
+              const char *arch = json_object_has_member(obj, "arch")
+                ? json_object_get_string_member(obj, "arch")
+                : "";
+              _store_string(env, arch, &info->arch);
+              _store_string(env, backend, &info->backend);
+              info->num_inputs = json_object_has_member(obj, "num_inputs")
+                ? (int)json_object_get_int_member(obj, "num_inputs")
+                : 1;
+
+              // capture optional "attributes" object as a JSON string;
+              // accessors (e.g. dt_ai_model_attribute_bool) parse on demand
+              info->attributes = NULL;
+              if(json_object_has_member(obj, "attributes"))
+              {
+                JsonNode *attr_node = json_object_get_member(obj, "attributes");
+                if(attr_node && JSON_NODE_HOLDS_OBJECT(attr_node))
+                {
+                  JsonGenerator *gen = json_generator_new();
+                  json_generator_set_root(gen, attr_node);
+                  gchar *s = json_generator_to_data(gen, NULL);
+                  if(s)
+                  {
+                    _store_string(env, s, &info->attributes);
+                    g_free(s);
+                  }
+                  g_object_unref(gen);
+                }
+              }
+
+              // capture top-level "cpu_only" (sibling to "attributes")
+              // as a JSON string; can be either an array (applies to all
+              // models in the package) or an object (keyed by onnx filename)
+              info->cpu_only = NULL;
+              if(json_object_has_member(obj, "cpu_only"))
+              {
+                JsonNode *co_node = json_object_get_member(obj, "cpu_only");
+                if(co_node
+                   && (JSON_NODE_HOLDS_ARRAY(co_node)
+                       || JSON_NODE_HOLDS_OBJECT(co_node)))
+                {
+                  JsonGenerator *gen = json_generator_new();
+                  json_generator_set_root(gen, co_node);
+                  gchar *s = json_generator_to_data(gen, NULL);
+                  if(s)
+                  {
+                    _store_string(env, s, &info->cpu_only);
+                    g_free(s);
+                  }
+                  g_object_unref(gen);
+                }
+              }
+
+              env->models = g_list_prepend(env->models, info);
+              g_hash_table_insert(
+                env->model_paths,
+                g_strdup(info->id),
+                g_strdup(full_path));
+
+              dt_print(DT_DEBUG_AI,
+                       "[darktable_ai] discovered: %s (%s, backend=%s)",
+                       name, id, backend);
+            }
+          }
+        }
+        else
+        {
+          dt_print(DT_DEBUG_AI, "[darktable_ai] parse error: %s", error->message);
+          g_error_free(error);
+        }
+        g_object_unref(parser);
+      }
+      g_free(config_path);
+    }
+    g_free(full_path);
+  }
+  g_dir_close(dir);
+}
+
+// scan custom search_paths + default config/data directories
+static void _scan_all_paths(dt_ai_environment_t *env)
+{
+  if(env->search_paths)
+  {
+    char **tokens = g_strsplit(env->search_paths, ";", -1);
+    for(int i = 0; tokens[i] != NULL; i++)
+    {
+      _scan_directory(env, tokens[i]);
+    }
+    g_strfreev(tokens);
+  }
+
+  // scan XDG data dir where the registry downloads/extracts models
+  char *datadir = g_build_filename(g_get_user_data_dir(), "darktable", "models", NULL);
+  _scan_directory(env, datadir);
+  g_free(datadir);
+}
+
+// API implementation
+
+dt_ai_environment_t *dt_ai_env_init(const char *search_paths)
+{
+  // refuse to initialize when AI is disabled in preferences
+  if(!dt_conf_get_bool("plugins/ai/enabled"))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] AI subsystem is disabled");
+    return NULL;
+  }
+
+  dt_print(DT_DEBUG_AI, "[darktable_ai] dt_ai_env_init start.");
+
+  dt_ai_environment_t *env = g_new0(dt_ai_environment_t, 1);
+  g_mutex_init(&env->lock);
+  env->model_paths = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  env->search_paths = g_strdup(search_paths);
+
+  // read user's preferred execution provider from config
+  char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  env->provider = dt_ai_provider_from_string(prov_str);
+  g_free(prov_str);
+
+  _scan_all_paths(env);
+  env->models = g_list_reverse(env->models);
+
+  return env;
+}
+
+int dt_ai_get_model_count(dt_ai_environment_t *env)
+{
+  if(!env)
+    return 0;
+  g_mutex_lock(&env->lock);
+  int count = g_list_length(env->models);
+  g_mutex_unlock(&env->lock);
+  return count;
+}
+
+const dt_ai_model_info_t *
+dt_ai_get_model_info_by_index(dt_ai_environment_t *env, int index)
+{
+  if(!env)
+    return NULL;
+  g_mutex_lock(&env->lock);
+  GList *item = g_list_nth(env->models, index);
+  const dt_ai_model_info_t *info = item ? (const dt_ai_model_info_t *)item->data : NULL;
+  g_mutex_unlock(&env->lock);
+  return info;
+}
+
+const dt_ai_model_info_t *
+dt_ai_get_model_info_by_id(dt_ai_environment_t *env, const char *id)
+{
+  if(!env || !id)
+    return NULL;
+  g_mutex_lock(&env->lock);
+  const dt_ai_model_info_t *result = NULL;
+  for(GList *l = env->models; l != NULL; l = l->next)
+  {
+    dt_ai_model_info_t *info = (dt_ai_model_info_t *)l->data;
+    if(strcmp(info->id, id) == 0)
+    {
+      result = info;
+      break;
+    }
+  }
+  g_mutex_unlock(&env->lock);
+  return result;
+}
+
+static void _free_model_info(gpointer data) { g_free(data); }
+
+void dt_ai_env_refresh(dt_ai_environment_t *env)
+{
+  if(!env)
+    return;
+
+  g_mutex_lock(&env->lock);
+
+  dt_print(DT_DEBUG_AI, "[darktable_ai] refreshing model list");
+
+  // clear existing data
+  g_list_free_full(env->models, _free_model_info);
+  env->models = NULL;
+
+  g_list_free_full(env->string_storage, g_free);
+  env->string_storage = NULL;
+
+  g_hash_table_remove_all(env->model_paths);
+
+  _scan_all_paths(env);
+
+  dt_print(DT_DEBUG_AI,
+           "[darktable_ai] refresh complete, found %d models",
+           g_list_length(env->models));
+
+  g_mutex_unlock(&env->lock);
+}
+
+void dt_ai_env_destroy(dt_ai_environment_t *env)
+{
+  if(!env)
+    return;
+
+  g_list_free_full(env->models, _free_model_info);
+  g_list_free_full(env->string_storage, g_free);
+  g_hash_table_destroy(env->model_paths);
+  g_free(env->search_paths);
+  g_mutex_clear(&env->lock);
+
+  g_free(env);
+}
+
+void dt_ai_env_set_provider(dt_ai_environment_t *env, dt_ai_provider_t provider)
+{
+  if(!env)
+    return;
+  g_mutex_lock(&env->lock);
+  env->provider = provider;
+  g_mutex_unlock(&env->lock);
+}
+
+dt_ai_provider_t dt_ai_env_get_provider(dt_ai_environment_t *env)
+{
+  if(!env)
+    return DT_AI_PROVIDER_AUTO;
+  g_mutex_lock(&env->lock);
+  const dt_ai_provider_t p = env->provider;
+  g_mutex_unlock(&env->lock);
+  return p;
+}
+
+// =backend-specific load (defined in backend_onnx.c)
+
+extern dt_ai_context_t *
+dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
+                    dt_ai_provider_t provider, dt_ai_opt_level_t opt_level,
+                    const dt_ai_dim_override_t *dim_overrides, int n_overrides,
+                    uint32_t ep_flags);
+
+static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
+                                   const char *model_file,
+                                   dt_ai_provider_t configured);
+
+// model loading with backend dispatch
+
+dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
+                                  const char *model_id,
+                                  const char *model_file,
+                                  dt_ai_provider_t provider)
+{
+  return dt_ai_load_model_ext(env, model_id, model_file, provider,
+                              DT_AI_OPT_ALL, NULL, 0, 0);
+}
+
+dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
+                                      const char *model_id,
+                                      const char *model_file,
+                                      dt_ai_provider_t provider,
+                                      dt_ai_opt_level_t opt_level,
+                                      const dt_ai_dim_override_t *dim_overrides,
+                                      int n_overrides,
+                                      uint32_t ep_flags)
+{
+  if(!env || !model_id)
+    return NULL;
+
+  if(!dt_conf_get_bool("plugins/ai/enabled"))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] AI subsystem is disabled");
+    return NULL;
+  }
+
+  // resolve CONFIGURED: read the user's provider preference from config.
+  // read config before acquiring env->lock to avoid lock-ordering issues
+  // with darktable's config lock
+  if(provider == DT_AI_PROVIDER_CONFIGURED)
+  {
+    char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+    provider = dt_ai_provider_from_string(prov_str);
+    g_free(prov_str);
+  }
+
+  // EP safety: if the model declares the configured provider unsafe via
+  // its cpu_only attribute, override the load to fall back to CPU. on
+  // CoreML this stays inside the EP via USE_CPU_ONLY (preserves BNNS
+  // kernels); on every other GPU EP we load with the plain CPU EP. AUTO
+  // and CPU providers are exempt from the check
+  const dt_ai_model_info_t *model_info
+    = dt_ai_get_model_info_by_id(env, model_id);
+  if(model_info
+     && _provider_cpu_only(model_info, model_file, provider))
+  {
+    const char *prov_name = NULL;
+    for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+      if(dt_ai_providers[i].value == provider)
+      {
+        prov_name = dt_ai_providers[i].config_string;
+        break;
+      }
+    if(provider == DT_AI_PROVIDER_COREML)
+    {
+      ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] model %s%s%s prefers CPU on %s; "
+               "using CoreML CPU compute units",
+               model_id,
+               model_file ? " file=" : "",
+               model_file ? model_file : "",
+               prov_name);
+    }
+    else
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] model %s%s%s prefers CPU on %s; "
+               "switching to CPU provider",
+               model_id,
+               model_file ? " file=" : "",
+               model_file ? model_file : "",
+               prov_name);
+      provider = DT_AI_PROVIDER_CPU;
+    }
+  }
+
+  g_mutex_lock(&env->lock);
+  const char *model_dir_orig
+    = (const char *)g_hash_table_lookup(env->model_paths, model_id);
+  char *model_dir = model_dir_orig ? g_strdup(model_dir_orig) : NULL;
+
+  const char *backend = "onnx";
+  for(GList *l = env->models; l != NULL; l = l->next)
+  {
+    dt_ai_model_info_t *info = (dt_ai_model_info_t *)l->data;
+    if(strcmp(info->id, model_id) == 0)
+    {
+      backend = info->backend;
+      break;
+    }
+  }
+  char *backend_copy = g_strdup(backend);
+  g_mutex_unlock(&env->lock);
+
+  if(!model_dir)
+  {
+    dt_print(DT_DEBUG_AI, "[darktable_ai] ID not found: %s", model_id);
+    g_free(backend_copy);
+    return NULL;
+  }
+
+  dt_ai_context_t *ctx = NULL;
+
+  if(strcmp(backend_copy, "onnx") == 0)
+  {
+    ctx = dt_ai_onnx_load_ext(model_dir, model_file, provider, opt_level,
+                               dim_overrides, n_overrides, ep_flags);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] unknown backend '%s' for model '%s'",
+             backend_copy, model_id);
+  }
+
+  g_free(model_dir);
+  g_free(backend_copy);
+  return ctx;
+}
+
+// model attribute lookup — parses the JSON-encoded attributes string
+// on demand; callers pass info from dt_ai_get_model_info_by_id()
+//
+// _attribute_node returns the parsed JsonParser plus a borrowed JsonNode*
+// for the named key; caller must g_object_unref the returned parser;
+// returns NULL parser if the attribute set is absent or the key is missing
+//
+// the key accepts a dotted path ("variants.bayer.onnx"): each segment
+// except the last must resolve to a JSON object; the final segment is
+// the leaf lookup and may hold any JSON value type
+static JsonParser *_attribute_node(const dt_ai_model_info_t *info,
+                                   const char *key,
+                                   JsonNode **out_node)
+{
+  *out_node = NULL;
+  if(!info || !info->attributes || !key) return NULL;
+  JsonParser *parser = json_parser_new();
+  if(!json_parser_load_from_data(parser, info->attributes, -1, NULL))
+  {
+    g_object_unref(parser);
+    return NULL;
+  }
+  JsonNode *root = json_parser_get_root(parser);
+  if(!root || !JSON_NODE_HOLDS_OBJECT(root))
+  {
+    g_object_unref(parser);
+    return NULL;
+  }
+  JsonObject *obj = json_node_get_object(root);
+  gchar **segments = g_strsplit(key, ".", -1);
+  const int n = g_strv_length(segments);
+  JsonNode *node = NULL;
+  for(int i = 0; i < n; i++)
+  {
+    if(!json_object_has_member(obj, segments[i])) goto out;
+    node = json_object_get_member(obj, segments[i]);
+    if(i == n - 1) break;
+    // intermediate segments must be objects to descend further
+    if(!node || !JSON_NODE_HOLDS_OBJECT(node)) { node = NULL; goto out; }
+    obj = json_node_get_object(node);
+  }
+out:
+  g_strfreev(segments);
+  if(!node)
+  {
+    g_object_unref(parser);
+    return NULL;
+  }
+  *out_node = node;
+  return parser;
+}
+
+gboolean dt_ai_model_attribute_bool(const dt_ai_model_info_t *info,
+                                    const char *key)
+{
+  JsonNode *v = NULL;
+  JsonParser *p = _attribute_node(info, key, &v);
+  gboolean result = FALSE;
+  if(v && JSON_NODE_HOLDS_VALUE(v))
+    result = json_node_get_boolean(v);
+  if(p) g_object_unref(p);
+  return result;
+}
+
+int dt_ai_model_attribute_int(const dt_ai_model_info_t *info,
+                              const char *key,
+                              int default_value)
+{
+  JsonNode *v = NULL;
+  JsonParser *p = _attribute_node(info, key, &v);
+  int result = default_value;
+  if(v && JSON_NODE_HOLDS_VALUE(v))
+    result = (int)json_node_get_int(v);
+  if(p) g_object_unref(p);
+  return result;
+}
+
+double dt_ai_model_attribute_double(const dt_ai_model_info_t *info,
+                                    const char *key,
+                                    double default_value)
+{
+  JsonNode *v = NULL;
+  JsonParser *p = _attribute_node(info, key, &v);
+  double result = default_value;
+  if(v && JSON_NODE_HOLDS_VALUE(v))
+    result = json_node_get_double(v);
+  if(p) g_object_unref(p);
+  return result;
+}
+
+char *dt_ai_model_attribute_string(const dt_ai_model_info_t *info,
+                                   const char *key)
+{
+  JsonNode *v = NULL;
+  JsonParser *p = _attribute_node(info, key, &v);
+  char *result = NULL;
+  if(v && JSON_NODE_HOLDS_VALUE(v))
+  {
+    const char *s = json_node_get_string(v);
+    if(s) result = g_strdup(s);
+  }
+  if(p) g_object_unref(p);
+  return result;
+}
+
+int *dt_ai_model_attribute_int_array(const dt_ai_model_info_t *info,
+                                     const char *key,
+                                     int *out_count)
+{
+  if(out_count) *out_count = 0;
+  JsonNode *v = NULL;
+  JsonParser *p = _attribute_node(info, key, &v);
+  int *result = NULL;
+  if(v && JSON_NODE_HOLDS_ARRAY(v))
+  {
+    JsonArray *arr = json_node_get_array(v);
+    const guint n = json_array_get_length(arr);
+    if(n > 0)
+    {
+      result = g_new(int, n);
+      for(guint i = 0; i < n; i++)
+        result[i] = (int)json_array_get_int_element(arr, i);
+      if(out_count) *out_count = (int)n;
+    }
+  }
+  if(p) g_object_unref(p);
+  return result;
+}
+
+// resolve the model's "cpu_only" block against `configured`. the block
+// can take two forms:
+//
+//   cpu_only: [coreml, directml]        (flat list — applies to all)
+//   cpu_only:                           (keyed by onnx filename stem)
+//     model_bayer: [coreml, directml]
+//     model_linear: []
+//
+// when `configured` appears (case-insensitively) in the relevant list,
+// the model declares it unsafe and the caller (dt_ai_load_model_ext)
+// overrides the load: CoreML keeps the EP but sets USE_CPU_ONLY; any
+// other GPU EP is replaced by DT_AI_PROVIDER_CPU. returns FALSE for
+// AUTO/CPU providers, missing block, or providers not in the list
+static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
+                                   const char *model_file,
+                                   dt_ai_provider_t configured)
+{
+  if(!info || !info->cpu_only
+     || configured == DT_AI_PROVIDER_AUTO
+     || configured == DT_AI_PROVIDER_CPU
+     || configured == DT_AI_PROVIDER_CONFIGURED)
+    return FALSE;
+
+  // map provider enum to its config_string (e.g. "CoreML", "DirectML")
+  const char *prov_name = NULL;
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+    if(dt_ai_providers[i].value == configured)
+    {
+      prov_name = dt_ai_providers[i].config_string;
+      break;
+    }
+  if(!prov_name) return FALSE;
+
+  JsonParser *parser = json_parser_new();
+  gboolean result = FALSE;
+  if(json_parser_load_from_data(parser, info->cpu_only, -1, NULL))
+  {
+    JsonNode *root = json_parser_get_root(parser);
+
+    // "cpu_only" can be either a flat array (applies to every model in
+    // the package) or an object keyed by onnx filename stem — the
+    // basename without the ".onnx" extension. dropping the extension
+    // keeps the YAML readable (no quoting needed for keys with dots)
+    JsonArray *arr = NULL;
+    gchar *stem = NULL;
+    if(root && JSON_NODE_HOLDS_ARRAY(root))
+    {
+      arr = json_node_get_array(root);
+    }
+    else if(root && JSON_NODE_HOLDS_OBJECT(root) && model_file)
+    {
+      const char *dot = strrchr(model_file, '.');
+      stem = dot ? g_strndup(model_file, dot - model_file)
+                 : g_strdup(model_file);
+      JsonObject *obj = json_node_get_object(root);
+      if(json_object_has_member(obj, stem))
+      {
+        JsonNode *vn = json_object_get_member(obj, stem);
+        if(vn && JSON_NODE_HOLDS_ARRAY(vn))
+          arr = json_node_get_array(vn);
+      }
+    }
+
+    if(arr)
+    {
+      const guint n = json_array_get_length(arr);
+      for(guint i = 0; i < n; i++)
+      {
+        const gchar *s = json_array_get_string_element(arr, i);
+        if(s && !g_ascii_strcasecmp(s, prov_name))
+        {
+          result = TRUE;
+          break;
+        }
+      }
+    }
+    g_free(stem);
+  }
+  g_object_unref(parser);
+  return result;
+}
+
+// provider string conversion
+
+const char *dt_ai_provider_to_string(dt_ai_provider_t provider)
+{
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+  {
+    if(dt_ai_providers[i].value == provider)
+      return dt_ai_providers[i].display_name;
+  }
+  return dt_ai_providers[0].display_name;  // fallback to "auto"
+}
+
+dt_ai_provider_t dt_ai_provider_from_string(const char *str)
+{
+  if(!str)
+    return DT_AI_PROVIDER_AUTO;
+
+  // match against config_string (primary) and display_name
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+  {
+    if(g_ascii_strcasecmp(str, dt_ai_providers[i].config_string) == 0)
+      return dt_ai_providers[i].value;
+    if(g_ascii_strcasecmp(str, dt_ai_providers[i].display_name) == 0)
+      return dt_ai_providers[i].value;
+  }
+
+  // legacy alias: ROCm was renamed to MIGraphX
+  if(g_ascii_strcasecmp(str, "ROCm") == 0)
+    return DT_AI_PROVIDER_MIGRAPHX;
+
+  return DT_AI_PROVIDER_AUTO;
+}
+
+// parse the comma-separated EP list from dt_ai_ort_probe_library_full().
+// AUTO and CPU are always set — they work regardless of what the library
+// advertises; unknown tokens (e.g. "ROCm", "TensorRT") are ignored
+guint dt_ai_providers_from_eps(const char *eps)
+{
+  guint mask = (1u << DT_AI_PROVIDER_AUTO) | (1u << DT_AI_PROVIDER_CPU);
+  if(!eps) return mask;
+
+  gchar **tokens = g_strsplit(eps, ",", -1);
+  for(int i = 0; tokens[i]; i++)
+  {
+    const dt_ai_provider_t p = dt_ai_provider_from_string(g_strstrip(tokens[i]));
+    if(p != DT_AI_PROVIDER_AUTO)  // from_string returns AUTO on unknown
+      mask |= 1u << p;
+  }
+  g_strfreev(tokens);
+  return mask;
+}
+
+guint dt_ai_providers_bundled(void)
+{
+  guint mask = (1u << DT_AI_PROVIDER_AUTO) | (1u << DT_AI_PROVIDER_CPU);
+#if defined(__APPLE__)
+  mask |= 1u << DT_AI_PROVIDER_COREML;
+#elif defined(_WIN32)
+  mask |= 1u << DT_AI_PROVIDER_DIRECTML;
+#endif
+  return mask;
+}
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

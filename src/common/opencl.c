@@ -339,16 +339,14 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f %.3f",
-    0, // don't use avoid atomics any longer
+  g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
-    cl->dev[devid].clroundup_wd,
-    cl->dev[devid].clroundup_ht,
-    cl->dev[devid].use_events ? DT_OPENCL_EVENTS : 0,
+
+    // this used to define the number of slots, now a bool and using DT_OPENCL_EVENTS if true
+    cl->dev[devid].use_events ? 1 : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
-    0.0f, // dummy for now as we don't have the benching any more
     cl->dev[devid].advantage,
     cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
@@ -383,38 +381,23 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(existing_device)
   {
     const gchar *dat = dt_conf_get_string_const(key);
-    int idummy;
     int micro_nap;
     int pinned_memory;
     int events;
     int asyncmode;
     int disabled;
-    float dummy; // unused
     float advantage;
     float unified_fraction;
-    sscanf(dat, "%i %i %i %i %i %i %i %i %f %f %f",
-           &idummy, &micro_nap, &pinned_memory, &idummy, &idummy,
-           &events, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
+    sscanf(dat, "%i %i %i %i %i %f %f",
+           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage, &unified_fraction);
 
     cldid->use_events = events ? TRUE : FALSE;
-
-    // some rudimentary safety checking if string seems to be ok
-    safety_ok = (advantage >= 0.0f) && (advantage <= 10000.0f);
-
-    if(safety_ok)
-    {
-      cldid->micro_nap = micro_nap;
-      cldid->pinned_memory = pinned_memory;
-      cldid->asyncmode = asyncmode;
-      cldid->disabled = disabled;
-      cldid->advantage = advantage;
-      cldid->unified_fraction = unified_fraction;
-    }
-    else // if there is something wrong with the found conf key reset to defaults
-    {
-      dt_print(DT_DEBUG_OPENCL,
-               "[dt_opencl_read_device_config] malformed data '%s' for '%s'", dat, key);
-    }
+    cldid->micro_nap = micro_nap;
+    cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
+    cldid->asyncmode = asyncmode ? TRUE : FALSE;
+    cldid->disabled = disabled ? TRUE : FALSE;
+    cldid->advantage = advantage;
+    cldid->unified_fraction = unified_fraction;
     setlocale(LC_NUMERIC, locale);
   }
 
@@ -426,10 +409,6 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->micro_nap = 250;
   if((cldid->advantage < 0.0f) || (cldid->advantage > 10000.0f))
     cldid->advantage = 0.0f;
-
-  cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
-  cldid->disabled = cldid->disabled ? TRUE : FALSE;
-  cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid
@@ -760,11 +739,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
       (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "",
       unified_memory ? ", unified mem" : ", dedicated mem" );
 
-  if((is_cpu_device || is_custom_device) && newdevice)
+  if(is_custom_device && newdevice)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "   *** discarding new %s ***\n",
-                 is_cpu_device ? "device as emulated by CPU" : "custom device");
+                 "   *** discarding new custom device ***\n");
     cl->dev[dev].disabled |= TRUE;
     res = TRUE;
     goto end;
@@ -923,10 +901,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].clroundup_ht = 16;
   }
 
+  const gboolean fastopencl = dt_conf_get_bool("opencl_fast");
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   EVENTS HANDLED:           %s\n", STR_YESNO(cl->dev[dev].use_events));
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   OPENCL FAST MODE:         %s\n", STR_YESNO(fastopencl));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1005,42 +986,15 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  gchar* compile_option_name_cname =
-    g_strdup_printf("%s%s_building", DT_CLDEVICE_HEAD, cl->dev[dev].cname);
-  const char* compile_opt = NULL;
-
-  if(dt_conf_key_exists(compile_option_name_cname)
-     && (dt_conf_get_int("performance_configuration_version_completed") > 17))
-    compile_opt = dt_conf_get_string_const(compile_option_name_cname);
-  else
-  {
-    if(!strcmp("nvidiacuda", pname))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else if(!strcmp("apple", pname))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else if(!strcmp("amdacceleratedparallelprocessing", pname))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else if(!strncmp("rusticl", pname, 7))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
-  }
-
-  gchar *my_option = g_strdup(compile_opt);
-  dt_conf_set_string(compile_option_name_cname, my_option);
-
+  const char* compile_opt = fastopencl ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
   cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
-                                my_option,
+                                compile_opt,
                                 cl->dev[dev].cuda && cl->dev[dev].atomic_support ? " -DNVIDIA_SM_20=1" : "",
                                 _opencl_get_vendor_by_id(vendor_id));
   cl->dev[dev].options = g_strdup_printf("%s -I%s",
                              cl->dev[dev].cflags, escapedkerneldir);
 
-  dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER OPTION:       %s\n", my_option);
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER COMMAND:      %s\n", cl->dev[dev].options);
-
-  g_free(compile_option_name_cname);
-  g_free(my_option);
   g_free(escapedkerneldir);
   escapedkerneldir = NULL;
 
@@ -1050,6 +1004,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "colorspaces.cl",
                                                      "colorspace.h",
                                                      "common.h",
+                                                     "guided_filter.cl",
                                                      NULL };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
@@ -1189,6 +1144,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->enabled = FALSE;
   cl->stopped = FALSE;
   cl->error_count = 0;
+  cl->fastcl = dt_conf_get_bool("opencl_fast");
 #if CL_TARGET_OPENCL_VERSION == 300
   cl->api30 = TRUE;
 #else
@@ -1573,7 +1529,7 @@ finally:
         cl->dev[i].max_global_mem = reserved;
         cl->dev[i].max_mem_alloc = MIN(cl->dev[i].max_mem_alloc, reserved);
         dt_print_nts(DT_DEBUG_OPENCL,
-               "   UNIFIED MEM SIZE:         %.0f MB reserved for '%s' id=%d",
+               "   UNIFIED MEM SIZE:         %.0f MB reserved for '%s' id=%d\n",
                (double)reserved / 1024.0 / 1024.0, cl->dev[i].cname, i);
         res->total_memory -= reserved;
       }
@@ -2300,6 +2256,9 @@ static gboolean _opencl_load_program(const int dev,
   len = g_strlcpy(start, cl->dev[dev].cflags, end - start);
   start += len;
 
+  start[0] = dt_conf_get_bool("opencl_fast");
+  start += 1;
+
   /* make sure that the md5sums of all the includes are applied as well */
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++)
   {
@@ -2812,10 +2771,17 @@ int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,
     (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel],
                                              CL_KERNEL_FUNCTION_NAME, sizeof(buf), buf, NULL);
   cl_event *eventp = _opencl_events_get_slot(dev, buf);
+
+  // do we have to pass the 1 for dimension greater than dimensions ?
+  // it seems not to be necessary but we always did that until now
+  // const size_t nsizes[3] = { sizes[0], dimensions > 1 ? sizes[1]: 1, dimensions > 2 ? sizes[2]: 1};
   cl_int err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue,
                                                                cl->dev[dev].kernel[kernel],
-                                                               dimensions, NULL, sizes,
-                                                               local, 0, NULL, eventp);
+                                                               dimensions,
+                                                               NULL,  // global_work_offset
+                                                               sizes, // global_work_size
+                                                               local, // local_work_size, maybe NULL
+                                                               0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -2851,7 +2817,7 @@ int dt_opencl_enqueue_kernel_2d_args_internal(const int dev,
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
     return err;
   }
-  const size_t sizes[] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev), 1 };
+  const size_t sizes[2] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev) };
 
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
@@ -2873,8 +2839,7 @@ int dt_opencl_enqueue_kernel_2d_local_args_internal(const int dev,
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
     return err;
   }
-  const size_t nsizes[3] = { sizes[0], sizes[1], 1 };
-  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, nsizes, local);
+  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, local);
 }
 
 int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
@@ -2894,7 +2859,7 @@ int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
     return err;
   }
-  const size_t sizes[] = { ROUNDUPDWD(x, dev), 1, 1 };
+  const size_t sizes[1] = { ROUNDUPDWD(x, dev) };
 
   return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, NULL, 1);
 }
@@ -2919,11 +2884,10 @@ int dt_opencl_read_host_from_device_rowpitch(const int devid,
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
-  const size_t origin[] = { 0, 0, 0 };
-  const size_t region[] = { width, height, 1 };
+  const size_t region[2] = { width, height };
   // blocking.
-  return dt_opencl_read_host_from_device_raw(devid, host, device, origin,
-                                             region, rowpitch, CL_TRUE);
+  return dt_opencl_read_host_from_device_raw(devid, host, device, CLIMG_ORIGIN,
+                                             region, rowpitch, TRUE);
 }
 
 int dt_opencl_read_host_from_device_raw(const int devid,
@@ -2932,10 +2896,13 @@ int dt_opencl_read_host_from_device_raw(const int devid,
                                         const size_t *origin,
                                         const size_t *region,
                                         const int rowpitch,
-                                        const int blocking)
+                                        const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
+
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
 
   cl_event *eventp = _opencl_events_get_slot(devid, "[Read Image (from device to host)]");
 
@@ -2943,7 +2910,7 @@ int dt_opencl_read_host_from_device_raw(const int devid,
     (darktable.opencl->dev[devid].cmd_queue,
      device,
      blocking ? CL_TRUE : CL_FALSE,
-     origin, region, rowpitch,
+     org, reg, rowpitch,
      0, host, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
@@ -2959,7 +2926,7 @@ int dt_opencl_read_host_from_device_raw(const int devid,
 }
 
 int dt_opencl_write_host_to_device(const int devid,
-                                   void *host,
+                                   const void *host,
                                    void *device,
                                    const int width,
                                    const int height,
@@ -2970,7 +2937,7 @@ int dt_opencl_write_host_to_device(const int devid,
 }
 
 int dt_opencl_write_host_to_device_rowpitch(const int devid,
-                                            void *host,
+                                            const void *host,
                                             void *device,
                                             const int width,
                                             const int height,
@@ -2979,30 +2946,32 @@ int dt_opencl_write_host_to_device_rowpitch(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
-  const size_t origin[] = { 0, 0, 0 };
-  const size_t region[] = { width, height, 1 };
+  const size_t region[2] = { width, height };
   // blocking.
-  return dt_opencl_write_host_to_device_raw(devid, host, device, origin,
-                                            region, rowpitch, CL_TRUE);
+  return dt_opencl_write_host_to_device_raw(devid, host, device, CLIMG_ORIGIN,
+                                            region, rowpitch, TRUE);
 }
 
 int dt_opencl_write_host_to_device_raw(const int devid,
-                                       void *host,
+                                       const void *host,
                                        void *device,
                                        const size_t *origin,
                                        const size_t *region,
                                        const int rowpitch,
-                                       const int blocking)
+                                       const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
+
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
 
   cl_event *eventp = _opencl_events_get_slot(devid, "[Write Image (from host to device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)
     (darktable.opencl->dev[devid].cmd_queue,
      device, blocking ? CL_TRUE : CL_FALSE,
-     origin, region,
-     rowpitch, 0, host, 0, NULL, eventp);
+     org, reg, rowpitch, 0, host, 0, NULL, eventp);
+
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_write_host_to_device_raw] could not write image to device '%s' id=%d: %s",
@@ -3018,19 +2987,24 @@ int dt_opencl_write_host_to_device_raw(const int devid,
 }
 
 int dt_opencl_enqueue_copy_image(const int devid,
-                                 cl_mem src,
+                                 const cl_mem src,
                                  cl_mem dst,
-                                 size_t *orig_src,
-                                 size_t *orig_dst,
-                                 size_t *region)
+                                 const size_t *orig_src,
+                                 const size_t *orig_dst,
+                                 const size_t *region)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  const size_t osrc[3] = { orig_src ? orig_src[0] : 0, orig_src ? orig_src[1] : 0, 0 };
+  const size_t odst[3] = { orig_dst ? orig_dst[0] : 0, orig_dst ? orig_dst[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
+
   cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Image (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)
-    (darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst,
-     region, 0, NULL, eventp);
+    (darktable.opencl->dev[devid].cmd_queue, src, dst,
+     osrc, odst, reg,
+     0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3046,19 +3020,21 @@ int dt_opencl_enqueue_copy_image(const int devid,
 }
 
 int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
-                                           cl_mem src_image,
+                                           const cl_mem src_image,
                                            cl_mem dst_buffer,
-                                           size_t *origin,
-                                           size_t *region,
-                                           size_t offset)
+                                           const size_t *origin,
+                                           const size_t *region,
+                                           const size_t offset)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
   cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Image to Buffer (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)
-    (darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin,
-     region, offset, 0, NULL, eventp);
+    (darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer,
+     org, reg, offset, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3074,19 +3050,21 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
 }
 
 int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
-                                           cl_mem src_buffer,
+                                           const cl_mem src_buffer,
                                            cl_mem dst_image,
-                                           size_t offset,
-                                           size_t *origin,
-                                           size_t *region)
+                                           const size_t offset,
+                                           const size_t *origin,
+                                           const size_t *region)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
   cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Buffer to Image (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)
     (darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset,
-     origin, region, 0, NULL, eventp);
+     org, reg, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3102,11 +3080,11 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
 }
 
 int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid,
-                                            cl_mem src_buffer,
+                                            const cl_mem src_buffer,
                                             cl_mem dst_buffer,
-                                            size_t srcoffset,
-                                            size_t dstoffset,
-                                            size_t size)
+                                            const size_t srcoffset,
+                                            const size_t dstoffset,
+                                            const size_t size)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
@@ -3134,7 +3112,7 @@ int dt_opencl_read_buffer_from_device(const int devid,
                                       void *device,
                                       const size_t offset,
                                       const size_t size,
-                                      const int blocking)
+                                      const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
@@ -3163,7 +3141,7 @@ int dt_opencl_write_buffer_to_device(const int devid,
                                      void *device,
                                      const size_t offset,
                                      const size_t size,
-                                     const int blocking)
+                                     const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
@@ -3296,7 +3274,7 @@ void dt_opencl_release_mem_object(cl_mem mem)
 
 void *dt_opencl_map_buffer(const int devid,
                            cl_mem buffer,
-                           const int blocking,
+                           const gboolean blocking,
                            const int flags,
                            size_t offset,
                            size_t size)
@@ -3373,7 +3351,12 @@ void *dt_opencl_alloc_device(const int devid,
   else if(bpp == sizeof(uint8_t))
     fmt = (cl_image_format){ CL_R, CL_UNSIGNED_INT8 };
   else
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl alloc_device] could not alloc image on device '%s' id=%d because of unknon bpp=%d format",
+             cl->dev[devid].fullname, devid, bpp);
     return NULL;
+  }
 
   cl_image_desc desc;
   memset(&desc, 0, sizeof(cl_image_desc));
@@ -3384,9 +3367,9 @@ void *dt_opencl_alloc_device(const int devid,
   cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
     (cl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
 
-  if(err != CL_SUCCESS)
+  if(err != CL_SUCCESS || dev == NULL)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device] could not alloc img buffer on device '%s' id=%d: %s",
+             "[opencl alloc_device] could not alloc image on device '%s' id=%d: %s",
              cl->dev[devid].fullname, devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
@@ -3522,9 +3505,8 @@ void *dt_opencl_duplicate_image(const int devid, const cl_mem src)
   cl_mem new = dt_opencl_alloc_device(devid, width, height, el);
   if(new == NULL) return NULL;
 
-  size_t origin[]   = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
-  const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, origin, origin, region);
+  const size_t region[2] = { width, height };
+  const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS)
   {
     dt_opencl_release_mem_object(new);
@@ -3535,7 +3517,7 @@ void *dt_opencl_duplicate_image(const int devid, const cl_mem src)
 
 void dt_opencl_dump_pipe_pfm(const char* mod,
                              const int devid,
-                             cl_mem img,
+                             const cl_mem img,
                              const gboolean input,
                              const char *pipe)
 {
@@ -3682,7 +3664,7 @@ gboolean dt_opencl_image_fits_device(const int devid,
 
 /** round size to a multiple of the value given in the device specifig
  * config parameter clroundup_wd/ht */
-int dt_opencl_dev_roundup_width(int size,
+int dt_opencl_dev_roundup_width(const int size,
                                 const int devid)
 {
   if(_cldev_running(devid))
@@ -3694,7 +3676,7 @@ int dt_opencl_dev_roundup_width(int size,
     return 0;
 }
 
-int dt_opencl_dev_roundup_height(int size,
+int dt_opencl_dev_roundup_height(const int size,
                                  const int devid)
 {
   if(_cldev_running(devid))
@@ -3716,6 +3698,12 @@ gboolean dt_opencl_is_enabled(void)
 gboolean dt_opencl_running(void)
 {
   return _cl_running();
+}
+
+/** runtime check for cl system running in fast mode */
+gboolean dt_opencl_running_fast(void)
+{
+  return _cl_running() ? darktable.opencl->fastcl : FALSE;
 }
 
 /** update enabled flag and profile with value from preferences */
@@ -3812,7 +3800,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
   // if first time called: allocate initial buffers
   if(*eventlist == NULL)
   {
-    int newevents = DT_OPENCL_EVENTLISTSIZE;
+    int newevents = DT_OPENCL_EVENTS;
     *eventlist = calloc(newevents, sizeof(cl_event));
     *eventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!*eventlist || !*eventtags)
@@ -3855,7 +3843,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
   // if no more space left in eventlist: grow buffer
   if(*numevents == *maxevents)
   {
-    int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
+    int newevents = *maxevents + DT_OPENCL_EVENTS;
     cl_event *neweventlist = calloc(newevents, sizeof(cl_event));
     dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!neweventlist || !neweventtags)

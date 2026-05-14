@@ -25,6 +25,12 @@
 #include <gtk/gtk.h>
 #ifdef GDK_WINDOWING_QUARTZ
 #include <gdk/gdkquartz.h>
+#if __has_include(<gdk/quartz/gdkquartz-cocoa-access.h>)
+  // GTK 3.24.29+ moved Cocoa-specific declarations to a separate header
+  extern "C" {
+  #include <gdk/quartz/gdkquartz-cocoa-access.h>
+  }
+#endif
 #endif
 #include <gio/gio.h>
 #include <glib.h>
@@ -62,7 +68,6 @@ float dt_osx_get_ppd()
   }
 }
 
-#if !GTK_CHECK_VERSION(3, 24, 14)
 static void dt_osx_disable_fullscreen(GtkWidget *widget)
 {
 #ifdef GDK_WINDOWING_QUARTZ
@@ -72,22 +77,21 @@ static void dt_osx_disable_fullscreen(GtkWidget *widget)
     if(window)
     {
       NSWindow *native = gdk_quartz_window_get_nswindow(window);
-      [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary) | NSWindowCollectionBehaviorFullScreenAuxiliary];
+      [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary)
+                                     | NSWindowCollectionBehaviorFullScreenAuxiliary
+                                     | NSWindowCollectionBehaviorFullScreenDisallowsTiling];
     }
   }
 #endif
 }
-#endif
 
 void dt_osx_disallow_fullscreen(GtkWidget *widget)
 {
-#if !GTK_CHECK_VERSION(3, 24, 14)
 #ifdef GDK_WINDOWING_QUARTZ
   if(gtk_widget_get_realized(widget))
     dt_osx_disable_fullscreen(widget);
   else
     g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_disable_fullscreen), NULL);
-#endif
 #endif
 }
 

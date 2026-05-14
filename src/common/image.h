@@ -401,6 +401,16 @@ gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 char *dt_image_get_filename(const dt_imgid_t imgid);
 /** returns true if the image exists on the database */
 gboolean dt_image_exists(const dt_imgid_t imgid);
+/** TRUE if the given output profile type has primaries wider than sRGB for
+ *  this image. Handles the three UI cases used by export-style controls:
+ *    DT_COLORSPACE_NONE — "image settings", falls back to the image's
+ *                        working profile (wide-gamut if that is).
+ *    DT_COLORSPACE_FILE — custom ICC file, unknown → conservative TRUE.
+ *    any other type     — direct classification via
+ *                        dt_colorspaces_profile_is_wide_gamut().
+ */
+gboolean dt_image_has_wide_gamut_output_profile(const dt_imgid_t imgid,
+                                                const dt_colorspaces_color_profile_type_t icc_type);
 /** returns the full path name where the image was imported
  * from. from_cache=TRUE check and return local cached filename if
  * any. */

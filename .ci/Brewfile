@@ -1,5 +1,5 @@
 #    This file is part of darktable.
-#    Copyright (C) 2016-2024 darktable developers.
+#    Copyright (C) 2016-2026 darktable developers.
 #
 #    darktable is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -36,15 +36,18 @@ brew 'jpeg-turbo'
 brew 'jpeg-xl'
 brew 'json-glib'
 brew 'lensfun'
+brew 'libarchive'
 brew 'libavif'
 brew 'libheif'
 brew 'libraw'
 brew 'librsvg'
 brew 'libsecret'
+brew 'libsoup', link: true
 brew 'little-cms2'
-brew 'lua'
-brew 'libomp'
+brew 'lua@5.4', link: true, overwrite: true
+brew 'libomp', link: true
 brew 'ninja'
+brew 'onnxruntime'
 brew 'openexr'
 brew 'openjpeg'
 brew 'osm-gps-map'
@@ -52,6 +55,7 @@ brew 'portmidi'
 brew 'potrace'
 brew 'pugixml'
 brew 'sdl2'
+brew 'shared-mime-info'
 brew 'curl'
 brew 'perl'
 brew 'webp'

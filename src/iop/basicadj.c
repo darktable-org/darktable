@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,7 +216,7 @@ static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 
 static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -242,7 +242,7 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 
 static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -290,11 +290,11 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
     g->call_auto_exposure = 0;
     dt_iop_gui_leave_critical_section(self);
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     gui_update(self);
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   else
   {
@@ -322,11 +322,11 @@ static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type
 
       if(g)
       {
-        ++darktable.gui->reset;
+        DT_ENTER_GUI_UPDATE();
 
         dt_bauhaus_slider_set_default(g->sl_middle_grey, def_middle_grey);
 
-        --darktable.gui->reset;
+        DT_LEAVE_GUI_UPDATE();
       }
     }
   }
@@ -482,7 +482,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_basicadj_params_t *p = self->params;
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -495,9 +495,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                                                                        work_profile->nonlinearlut) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1058,16 +1058,16 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // compute exposure compensation as geometric mean of the amount that
   // sets the mean or median at middle gray, and the amount that sets the estimated top
   // of the histogram at or near clipping.
-  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / DT_M_LN2f;
+  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / M_LN2f;
   float expcomp2;
 
   if(overex == 0) // image is not overexposed
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / DT_M_LN2f);
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / M_LN2f);
   }
   else
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / DT_M_LN2f);
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / M_LN2f);
   }
 
   if(fabsf(expcomp1) - fabsf(expcomp2) > 1.f) // for great expcomp
@@ -1079,7 +1079,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  const float gain = expf(expcomp * DT_M_LN2f);
+  const float gain = expf(expcomp * M_LN2f);
 
   const float corr = sqrtf(gain * scale / rawmax);
   black = shc * corr;
@@ -1294,10 +1294,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int height = roi_in->height;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->call_auto_exposure == 1 && !darktable.gui->reset)
+    if(g->call_auto_exposure == 1 && !DT_IN_GUI_UPDATE())
     {
       g->call_auto_exposure = -1;
       dt_iop_gui_leave_critical_section(self);
@@ -1412,10 +1412,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->call_auto_exposure == 1 && !darktable.gui->reset)
+    if(g->call_auto_exposure == 1 && !DT_IN_GUI_UPDATE())
     {
       g->call_auto_exposure = -1;
       dt_iop_gui_leave_critical_section(self);

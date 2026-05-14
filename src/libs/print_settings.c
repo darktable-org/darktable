@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2025 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -445,7 +445,7 @@ static void _create_pdf(dt_job_t *job,
 
   const float page_width  = dt_pdf_mm_to_point(width);
   const float page_height = dt_pdf_mm_to_point(height);
-  const int icc_id = 0;
+  int icc_id = 0;
 
   dt_pdf_image_t *pdf_image[MAX_IMAGE_PER_PAGE];
 
@@ -454,11 +454,19 @@ static void _create_pdf(dt_job_t *job,
                                params->prt.printer.resolution,
                                DT_PDF_STREAM_ENCODER_FLATE);
 
-/*
-  // ??? should a profile be embedded here?
-  if(*printer_profile)
-    icc_id = dt_pdf_add_icc(pdf, printer_profile);
-*/
+#ifdef __APPLE__
+  // On macOS, embed the printer ICC profile in the PDF so the
+  // already-converted pixel data is correctly tagged with its actual
+  // color space. Without this, cgpdftoraster assumes DeviceRGB = sRGB
+  // and misinterprets the data.
+  //
+  // On Linux this must NOT be done — Poppler (inside pdftoraster) would
+  // see the ICCBased color space and convert the data back to sRGB,
+  // undoing the LittleCMS conversion. Linux uses cm-calibration instead.
+  if(params->p_icc_profile && *params->p_icc_profile)
+    icc_id = dt_pdf_add_icc(pdf, params->p_icc_profile);
+#endif
+
   int32_t count = 0;
 
   for(int k=0; k<imgs.count; k++)
@@ -511,13 +519,13 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
 
     for(int i=0; i<9; i++)
     {
-      ++darktable.gui->reset;
+      DT_ENTER_GUI_UPDATE();
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[i]), (i == box->alignment));
-      --darktable.gui->reset;
+      DT_LEAVE_GUI_UPDATE();
     }
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_x), x);
 
@@ -527,7 +535,7 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
 
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_height), sheight);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static int _export_and_setup_pos(dt_job_t *job,
@@ -633,7 +641,7 @@ static void _page_new_area_clicked(GtkWidget *widget, dt_lib_module_t *self)
     return;
   }
 
-  dt_control_change_cursor(GDK_PLUS);
+  dt_control_change_cursor("cell");
   ps->creation = TRUE;
   ps->has_changed = TRUE;
 }
@@ -778,6 +786,13 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   params->p_icc_profile = g_strdup(ps->v_piccprofile);
   params->p_icc_intent = ps->v_pintent;
   params->black_point_compensation = ps->v_black_point_compensation;
+
+  // Propagate the printer profile selection so dt_print_file() can
+  // tell CUPS to skip color management when dt already did the
+  // ICC conversion. See cups_print.c for platform-specific details.
+  if(ps->v_piccprofile && *ps->v_piccprofile)
+    g_strlcpy(params->prt.printer.profile, ps->v_piccprofile,
+              sizeof(params->prt.printer.profile));
 
   dt_control_add_job(DT_JOB_QUEUE_USER_EXPORT, job);
 }
@@ -1023,7 +1038,7 @@ _lock_callback(GtkWidget *button, dt_lib_module_t *self)
 static void
 _alignment_callback(GtkWidget *tb, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   int index=-1;
   dt_lib_print_settings_t *ps = self->data;
@@ -1077,7 +1092,7 @@ _grid_callback(GtkWidget *widget, dt_lib_module_t *self)
 
 static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = self->data;
   const float value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size));
@@ -1089,7 +1104,7 @@ static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 static void
 _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = self->data;
 
@@ -1109,7 +1124,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   float incr;
   _precision_by_unit(ps->unit, &n_digits, &incr, NULL);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top), n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
@@ -1148,7 +1163,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->grid_size),
                             grid_size * units[ps->unit]);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   _fill_box_values(ps);
 }
@@ -1612,7 +1627,7 @@ int mouse_moved(struct dt_lib_module_t *self,
   gboolean expose = FALSE;
 
   if(ps->creation)
-    dt_control_change_cursor(GDK_PLUS);
+    dt_control_change_cursor("cell");
 
   if(ps->creation && ps->dragging)
   {
@@ -1750,7 +1765,7 @@ int button_released(struct dt_lib_module_t *self,
   ps->creation = FALSE;
   ps->dragging = FALSE;
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   return 0;
 }
@@ -1803,7 +1818,7 @@ int button_pressed(struct dt_lib_module_t *self,
 
     _get_control(ps, x, y);
 
-    dt_control_change_cursor(GDK_HAND1);
+    dt_control_change_cursor("pointer");
   }
   else if(ps->selected != -1 && which == GDK_BUTTON_SECONDARY)
   {
@@ -2303,7 +2318,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
 
 static void _width_changed(GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
@@ -2323,7 +2338,7 @@ static void _width_changed(GtkWidget *widget, gpointer user_data)
 static void _height_changed(GtkWidget *widget,
                             gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
@@ -2343,7 +2358,7 @@ static void _height_changed(GtkWidget *widget,
 static void _x_changed(GtkWidget *widget,
                        gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
@@ -2363,7 +2378,7 @@ static void _x_changed(GtkWidget *widget,
 static void _y_changed(GtkWidget *widget,
                        gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 

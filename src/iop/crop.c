@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2025 darktable developers.
+    Copyright (C) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -326,7 +326,7 @@ static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_params_t *p,
                         const gboolean enforce_history)
 {
-  if(darktable.gui->reset)
+  if(DT_IN_GUI_UPDATE())
     return;
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID)
     return;
@@ -441,17 +441,33 @@ static gboolean _set_max_clip(dt_iop_module_t *self)
   return TRUE;
 }
 
+// Compute the crop offset (left, top) that the pipeline actually uses for this piece.
+// Use factor=1 (buf_in dimensions without scaling) so the resulting integer crop_left/crop_top
+// exactly matches the roi_out.x/y produced by modify_roi_out during normal pipeline processing.
+// This ensures the mask overlay aligns pixel-accurately with the actual image buffer.
+// (A factor=100 scaling was previously used here to reduce float truncation error, but it
+// produced non-integer offsets like 446.69 while the pipeline crops at integer pixel 446,
+// causing a ~0.7 pixel misalignment visible as ~11 screen pixels at 1600% zoom.)
+static void _get_crop_offset(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              float *crop_left,
+                              float *crop_top)
+{
+  dt_iop_roi_t roi_in = piece->buf_in, roi_out;
+  self->modify_roi_out(self, piece, &roi_out, &roi_in);
+
+  *crop_left = roi_out.x;
+  *crop_top  = roi_out.y;
+}
+
 gboolean distort_transform(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *piece,
                            float *const restrict points,
                            size_t points_count)
 {
-  dt_iop_crop_data_t *d = piece->data;
+  float crop_left, crop_top;
+  _get_crop_offset(self, piece, &crop_left, &crop_top);
 
-  const float crop_top = piece->buf_in.height * d->cy;
-  const float crop_left = piece->buf_in.width * d->cx;
-
-  // nothing to be done if parameters are set to neutral values (no top/left border)
   if(crop_top <= 0.0f && crop_left <= 0.0f) return TRUE;
 
   float *const pts = DT_IS_ALIGNED(points);
@@ -471,12 +487,9 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *const restrict points,
                                size_t points_count)
 {
-  dt_iop_crop_data_t *d = piece->data;
+  float crop_left, crop_top;
+  _get_crop_offset(self, piece, &crop_left, &crop_top);
 
-  const float crop_top = piece->buf_in.height * d->cy;
-  const float crop_left = piece->buf_in.width * d->cx;
-
-  // nothing to be done if parameters are set to neutral values (no top/left border)
   if(crop_top <= 0.0f && crop_left <= 0.0f) return TRUE;
 
   float *const pts = DT_IS_ALIGNED(points);
@@ -519,7 +532,7 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->width = MAX(4, (int)odx);
   roi_out->height = MAX(4, (int)ody);
 
-  const gboolean exporting = piece->pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL);
+  const gboolean exporting = dt_pipe_is_export(piece->pipe) || dt_pipe_is_thumb(piece->pipe);
   const gboolean aligned = d->ratio_d != 0 && d->ratio_n != 0;
   if(!exporting || !aligned)
     return;
@@ -596,10 +609,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { roi_out->width, roi_out->height, 1 };
-  return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
-                                            origin, origin, region);
+  const size_t region[2] = { roi_out->width, roi_out->height };
+  return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
 }
 #endif
 
@@ -1019,7 +1030,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
 
     dt_conf_set_int("plugins/darkroom/crop/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/crop/ratio_n", abs(p->ratio_n));
-    if(darktable.gui->reset)
+    if(DT_IN_GUI_UPDATE())
       return;
     _aspect_apply(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
@@ -1040,7 +1051,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   }
 
   // Update combobox label
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(act == -1)
   {
@@ -1056,7 +1067,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
     dt_bauhaus_combobox_set(g->aspect_presets, act);
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   _commit_box(self, g, p, TRUE);
 }
 
@@ -1077,7 +1088,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_crop_gui_data_t *g = self->gui_data;
   dt_iop_crop_params_t *p = self->params;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(w == g->cx)
   {
@@ -1105,7 +1116,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // update all sliders, as their values may have change to keep aspect ratio
   _update_sliders_and_limit(g);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   _commit_box(self, g, p, TRUE);
 }
 
@@ -1781,9 +1792,9 @@ int mouse_moved(dt_iop_module_t *self,
     // image has changed when it actually hasn't, yet.  The actual
     // clipping parameters get set from the sliders when the iop loses
     // focus, at which time the final selected crop is applied.
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     _update_sliders_and_limit(g);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     dt_control_queue_redraw_center();
     return 1;
@@ -1793,25 +1804,25 @@ int mouse_moved(dt_iop_module_t *self,
     // hover over active borders, no button pressed
     // change mouse pointer
     if(grab == GRAB_LEFT)
-      dt_control_change_cursor(GDK_LEFT_SIDE);
+      dt_control_change_cursor("w-resize");
     else if(grab == GRAB_TOP)
-      dt_control_change_cursor(GDK_TOP_SIDE);
+      dt_control_change_cursor("n-resize");
     else if(grab == GRAB_RIGHT)
-      dt_control_change_cursor(GDK_RIGHT_SIDE);
+      dt_control_change_cursor("e-resize");
     else if(grab == GRAB_BOTTOM)
-      dt_control_change_cursor(GDK_BOTTOM_SIDE);
+      dt_control_change_cursor("s-resize");
     else if(grab == GRAB_TOP_LEFT)
-      dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+      dt_control_change_cursor("nw-resize");
     else if(grab == GRAB_TOP_RIGHT)
-      dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+      dt_control_change_cursor("ne-resize");
     else if(grab == GRAB_BOTTOM_RIGHT)
-      dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+      dt_control_change_cursor("se-resize");
     else if(grab == GRAB_BOTTOM_LEFT)
-      dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+      dt_control_change_cursor("sw-resize");
     else if(grab == GRAB_NONE)
     {
       dt_control_hinter_message("");
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     if(grab != GRAB_NONE)
       dt_control_hinter_message(_("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"));
@@ -1819,7 +1830,7 @@ int mouse_moved(dt_iop_module_t *self,
   }
   else
   {
-    dt_control_change_cursor(GDK_FLEUR);
+    dt_control_change_cursor("move");
     g->cropping = GRAB_CENTER;
     dt_control_hinter_message(_("<b>move</b>: drag, <b>move vertically</b>: shift+drag, "
          "<b>move horizontally</b>: ctrl+drag"));
@@ -1845,7 +1856,7 @@ int button_released(dt_iop_module_t *self,
   g->ctrl_hold = FALSE;
   g->cropping = GRAB_CENTER;
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   // we save the crop into the params now so params are kept in synch with gui settings
   _commit_box(self, g, p, FALSE);

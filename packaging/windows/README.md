@@ -1,6 +1,4 @@
-The steps to build darktable Windows executable and make installer (Windows 8.1 will need to have
-[UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c))
-are as follows:
+The steps to build the darktable Windows executable and make the installer are as follows:
 
 * Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
 
@@ -17,7 +15,7 @@ are as follows:
 
 * Install required and recommended dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,portmidi,potrace,pugixml,SDL2,sqlite3,webp-pixbuf-loader,zlib}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libarchive,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua54,openexr,openjpeg2,osm-gps-map,portmidi,potrace,pugixml,SDL2,sqlite3,webp-pixbuf-loader,zlib}
     ```
 
 * Install the optional tool for building an installer image (currently x64 only):

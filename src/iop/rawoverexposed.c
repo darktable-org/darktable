@@ -251,12 +251,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
+  const size_t region[2] = { width, height };
 
   process_common_setup(self, piece);
 
-  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS) goto error;
 
   const int colorscheme = dev->rawoverexposed.colorscheme;
@@ -339,8 +338,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
               CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
               CLARG(width), CLARG(height),
               CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
-              CLARG(dev_thresholds),
-              CLFLARRAY(4, color));
+              CLARG(dev_thresholds), CLARG(color));
 
 error:
   dt_opencl_release_mem_object(dev_xtrans);
@@ -391,7 +389,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_develop_t *dev = self->dev;
 
   const dt_image_t *const image = &(dev->image_storage);
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const gboolean sensorok = (image->flags & DT_IMAGE_4BAYER) == 0;
 
   piece->enabled = dev->rawoverexposed.enabled && fullpipe && dev->gui_attached && sensorok;

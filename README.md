@@ -16,6 +16,7 @@ darktable is **not** a free Adobe® Lightroom® replacement.
 3. [Requirements](#requirements)
    - [Supported platforms](#supported-platforms)
    - [Hardware](#hardware)
+   - [AI features (optional)](#ai-features-optional )
 4. [Installing](#installing)
    - [Latest release](#latest-release)
    - [Development snapshot](#development-snapshot)
@@ -59,7 +60,7 @@ Requirements
 * FreeBSD
 * NetBSD
 * OpenBSD
-* Windows 8.1 with [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
+* Windows 10 and later
 * Apple Silicon Macs running macOS 14 and later
 * Intel Macs running macOS 15 and later
 
@@ -85,6 +86,62 @@ contrast equalizer, retouch or liquify to be slow beyond usable.*
 
 *A GPU is not mandatory but is strongly recommended for a smoother experience.
 Nvidia GPUs are recommended for safety because some AMD drivers behave unreliably with some modules (e.g. local contrast).*
+
+### AI features (optional)
+
+Darktable includes optional AI-powered features such as object masks, denoise and upscale.
+These require building with `-DUSE_AI=ON` (off by default), or `--enable-ai` when building
+with the build helper script `build.sh`. AI features are disabled by default in preferences
+and must be enabled by the user. Models are downloaded from the AI tab in preferences.
+
+**CPU inference** is bundled and works out of the box - no additional software is needed.
+On macOS (Apple Silicon), CoreML acceleration and on Windows, DirectML GPU acceleration
+are also bundled by default. Processing on CPU is slower than GPU but requires no
+special hardware.
+
+**GPU acceleration** significantly speeds up AI inference but requires installing a
+GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
+
+* **NVIDIA (CUDA):** Linux and Windows.
+  * Supported NVIDIA GPU with up-to-date drivers (Maxwell or newer)
+  * [CUDA Toolkit 12](https://developer.nvidia.com/cuda-12-0-0-download-archive) or [CUDA Toolkit 13](https://developer.nvidia.com/cuda-13-0-0-download-archive)
+  * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads)
+* **AMD (ROCm):** Linux only.
+  * Supported AMD GPU with up-to-date drivers (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
+  * [ROCm 6+](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/) 
+  * [MIGraphX](https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/install/install-migraphx.html) (may require separate install, e.g. `apt install migraphx migraphx-dev` on Ubuntu)
+* **Intel (OpenVINO):** Linux and Windows.
+  * Supported Intel GPU with up-to-date drivers (integrated Gen9+, discrete Arc, or NPU Meteor Lake+)
+  * [Intel OpenCL](https://www.intel.com/content/www/us/en/developer/articles/tool/opencl-drivers.html) or/and [Level Zero runtime](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2025-2/intel-oneapi-level-zero.html) (included with drivers on Windows; on Linux may need `intel-opencl-icd` or `level-zero`)
+  * On Windows, requires [OpenVINO Toolkit](https://docs.openvino.ai/2026/get-started/install-openvino/install-openvino-windows.html) installation
+* **Windows (DirectML):** bundled, works with any DirectX 12 compatible GPU (NVIDIA, AMD, Intel).
+  No extra install needed.
+  * Windows 10 1903+ (DirectML is a system component)
+* **macOS (CoreML):** bundled, uses Apple Neural Engine automatically.
+  No extra install needed.
+  * macOS 11+ (Big Sur)
+  * Apple Silicon (M1+)
+
+**GPU memory:** 4 GB VRAM minimum. Models ship with fixed input
+dimensions sized to fit this budget; if GPU inference fails (out of
+memory, unsupported op), darktable automatically falls back to CPU.
+
+To enable GPU acceleration, run one of the install scripts:
+
+```bash
+# Linux
+curl -fsSL https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.sh | bash
+```
+
+```powershell
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.ps1 | iex
+```
+
+Then point darktable at the installed library via the **AI** tab in preferences
+(click **detect**). See [tools/ai/README.md](tools/ai/README.md) for flags,
+prerequisites, manual install, and troubleshooting. Verify the active provider
+with `darktable -d ai`.
 
 Installing
 ----------
@@ -194,6 +251,8 @@ Optional dependencies (minimum version):
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.9.3 *(for AVIF import & export)*
+* ONNX Runtime 1.18 *(for AI inference)*
+* libarchive 3.8.5 *(for AI models download)*
 * libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
@@ -207,8 +266,13 @@ Optional dependencies (no version requirement):
 * OpenJPEG *(for JPEG 2000 import & export)*
 * GraphicsMagick or ImageMagick *(for misc image format import)*
 
-To install all the dependencies on Linux systems, you may use the source repositories of your distribution
-(provided they are up-to-date):
+To install all the dependencies on Linux systems, you may use the source repository of your distribution.
+This will install the same packages that were used to build the official darktable package on your system.
+Most likely, you will want to build a newer version than the one packaged in the distribution. So please
+note that although this does not happen very often, it is possible that a new version of darktable will
+have a new (required or optional) dependency. So the commands below only simplify the creation of your
+build environment, but will not replace your attention to the build process and possibly finding and
+installing certain additional dependency packages.
 
 #### Fedora and RHEL/CentOS
 
@@ -224,14 +288,12 @@ sudo zypper si -d darktable
 
 #### Ubuntu
 
+Recent Ubuntu releases do not include the deb-src sources out of the box, even in commented form.
+To add them, you need to run "Software & Updates" and on the first tab that opens, "Ubuntu Software",
+check the "Source code" checkbox. Only after that you can use the following command:
+
 ```bash
-sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
-  | sudo tee /etc/apt/sources.list.d/darktable-sources-tmp.list > /dev/null \
-  && (
-    sudo apt-get update
-    sudo apt-get build-dep darktable
-  )
-sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
+sudo apt-get build-dep darktable
 ```
 
 #### Debian
@@ -446,4 +508,3 @@ Community
 ---------
 
 * [Darktable forum on pixls.us](https://discuss.pixls.us/c/software/darktable/19)
-* [Darktable on Mastodon](https://photog.social/@darktable)

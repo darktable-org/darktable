@@ -110,20 +110,6 @@ else()
   set(SOURCE_PACKAGE 0)
 endif()
 
-if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(X86|x86)|(^i.86$)")
-  set(BUILD_SSE2_CODEPATHS OFF)
-endif()
-
-if(BUILD_SSE2_CODEPATHS)
-  CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
-  if(NOT _MSSE2)
-    MESSAGE(WARNING "Building of SSE2-optimized codepaths is enabled, but the compiler does not understand -msse2.")
-    set(BUILD_SSE2_CODEPATHS OFF)
-  endif()
-endif()
-
-MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
-
 #
 # Set platform defaults...
 #
@@ -147,15 +133,6 @@ if(APPLE)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib")
 	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib")
-
-  if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64" AND CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 15)
-    # request classic linker for Xcode 15 for Apple Silicon Macs
-    message("-- Xcode >= 15 on arm64 detected, requesting classic linker")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ld_classic")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ld_classic")
-    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -ld_classic")
-  endif()
-
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
 	add_definitions("-DOS_OBJECT_USE_OBJC=0")

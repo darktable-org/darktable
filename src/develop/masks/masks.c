@@ -142,7 +142,7 @@ GSList *dt_masks_mouse_actions(const dt_masks_form_t *form)
 static void _set_hinter_message(const dt_masks_form_gui_t *gui,
                                 const dt_masks_form_t *form)
 {
-  char msg[256] = "";
+  char msg[512] = "";
 
   const int ftype = form->type;
 
@@ -434,7 +434,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, const dt_mask_id_t formid)
   darktable.develop->forms = g_list_append(dev->forms, fdest);
 
   // we copy all the points
-  if(fbase->functions)
+  if(fbase->functions && fbase->functions->duplicate_points)
     fbase->functions->duplicate_points(dev, fbase, fdest);
 
   // we save the form
@@ -470,7 +470,7 @@ int dt_masks_get_area(const dt_iop_module_t *module,
                       int *posx,
                       int *posy)
 {
-  if(form->functions)
+  if(form->functions && form->functions->get_area)
     return form->functions->get_area(module, piece, form, width, height, posx, posy);
 
   return 0;
@@ -489,7 +489,7 @@ int dt_masks_get_source_area(dt_iop_module_t *module,
   // must be a clone form
   if(form->type & DT_MASKS_CLONE)
   {
-    if(form->functions)
+    if(form->functions && form->functions->get_source_area)
       return form->functions->get_source_area(module, piece, form, width, height,
                                               posx, posy);
   }
@@ -866,6 +866,10 @@ dt_masks_form_t *dt_masks_create(const dt_masks_type_t type)
     form->functions = &dt_masks_functions_gradient;
   else if(type & DT_MASKS_GROUP)
     form->functions = &dt_masks_functions_group;
+#ifdef HAVE_AI
+  else if(type & DT_MASKS_OBJECT)
+    form->functions = &dt_masks_functions_object;
+#endif
 
   if(form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
@@ -1168,10 +1172,10 @@ gboolean dt_masks_events_button_released(dt_iop_module_t *module,
   dt_masks_form_t *form = dev->form_visible;
   dt_masks_form_gui_t *gui = dev->form_gui;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   if(dev->mask_form_selected_id)
     dt_dev_masks_selection_change(dev, module, dev->mask_form_selected_id);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(form->functions)
   {
@@ -1308,6 +1312,11 @@ void dt_masks_events_post_expose(const dt_iop_module_t *module,
 void dt_masks_clear_form_gui(const dt_develop_t *dev)
 {
   if(!dev->form_gui) return;
+  if(dev->form_gui->scratchpad_cleanup)
+  {
+    dev->form_gui->scratchpad_cleanup(dev->form_gui);
+    dev->form_gui->scratchpad_cleanup = NULL;
+  }
   g_list_free_full(dev->form_gui->points, dt_masks_form_gui_points_free);
   dev->form_gui->points = NULL;
   dt_masks_dynbuf_free(dev->form_gui->guipoints);
@@ -1356,9 +1365,9 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   if(newform && newform->type != DT_MASKS_GROUP)
     darktable.develop->form_gui->creation = TRUE;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_masks_selection_change(darktable.develop, NULL, 0);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void dt_masks_reset_form_gui(void)
@@ -1404,11 +1413,16 @@ void dt_masks_reset_show_masks_icons(void)
   }
 }
 
-dt_masks_edit_mode_t dt_masks_get_edit_mode(dt_iop_module_t *module)
+dt_masks_edit_mode_t dt_masks_get_edit_mode(void)
 {
   return darktable.develop->form_gui
     ? darktable.develop->form_gui->edit_mode
     : DT_MASKS_EDIT_OFF;
+}
+
+gboolean dt_masks_is_restricted_mode(void)
+{
+  return dt_masks_get_edit_mode() == DT_MASKS_EDIT_RESTRICTED;
 }
 
 void dt_masks_set_edit_mode(dt_iop_module_t *module,
@@ -1433,10 +1447,10 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_masks_selection_change(darktable.develop, NULL,
                                 value && form ? form->formid : NO_MASKID);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(bd->masks_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
@@ -1471,9 +1485,9 @@ void dt_masks_set_edit_mode_single_form(dt_iop_module_t *module,
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : NO_MASKID);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_control_queue_redraw_center();
 }
@@ -1703,9 +1717,9 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget,
   if(sel == 0) return;
   if(sel == 1)
   {
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     return;
   }
   if(sel > 0)
@@ -2335,7 +2349,7 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
   gui->dx = xref - gui->posx;
   gui->dy = yref - gui->posy;
 
-  const float r = sqrtf(rx * rx + ry * ry);
+  const float r = dt_fast_hypotf(rx, ry);
   const float d = (rx * deltax + ry * deltay) / r;
   const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
 
@@ -2360,7 +2374,7 @@ float dt_masks_change_rotation(const gboolean up,
                                const gboolean is_degree)
 {
   const float step = 40.f;
-  const float incr = is_degree ? 360.f / step : 2.0f * M_PI_F / step;
+  const float incr = is_degree ? 360.f / step : DT_2PI_F / step;
   const float max  = is_degree ? 360.0        : M_PI_F;
   const float v =
     up
@@ -2788,8 +2802,18 @@ void dt_masks_line_stroke(cairo_t *cr,
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
+  double dashed_restricted[] = { DT_PIXEL_APPLY_DPI(8.0), DT_PIXEL_APPLY_DPI(12.0) };
+  dashed_restricted[0] /= zoom_scale;
+  dashed_restricted[1] /= zoom_scale;
+
+  const gboolean restricted = dt_masks_is_restricted_mode();
+
   // first the background draw, darker
-  dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
+  if(restricted && !border)
+    dt_draw_set_color_overlay(cr, FALSE, 0.1);
+  else
+    dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
+
   cairo_set_dash(cr, dashed, border ? len : 0, 0);
 
   const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
@@ -2804,8 +2828,16 @@ void dt_masks_line_stroke(cairo_t *cr,
   // second the foreground draw, lighter (same size as darker if selected)
   cairo_set_line_width(cr, (line_width / (selected && !border ? 1.0 : 2.0)));
 
-  dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
-  cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  if(restricted && !border)
+  {
+    cairo_set_dash(cr, dashed_restricted, len, 4);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
+  }
+  else if(!source)
+  {
+    dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
+    cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  }
 
   cairo_stroke(cr);
 }

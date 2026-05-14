@@ -77,9 +77,9 @@ static inline __m128 lab_f_m_sse2(const __m128 x)
 /** uses D50 white point. */
 static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 {
-  const __m128 d50_inv = _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f);
+  const __m128 d50 = _mm_set_ps(1.0f, 1.0f / 0.8249f, 1.0f, 1.0f / 0.9642f);
   const __m128 coef = _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f);
-  const __m128 f = lab_f_m_sse2(XYZ / d50_inv);
+  const __m128 f = lab_f_m_sse2(XYZ * d50);
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return coef * (_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)) - _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3)));
 }
@@ -140,30 +140,6 @@ static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
     out[r] = matrix_row0[r] * in[0] + matrix_row1[r] * in[1] + matrix_row2[r] * in[2];
 }
 
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float cbrt_5f(float f)
-{
-  uint32_t * const p = (uint32_t *)&f;
-  *p = *p / 3 + 709921077;
-  return f;
-}
-
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float cbrta_halleyf(const float a, const float R)
-{
-  const float a3 = a * a * a;
-  const float b = a * (a3 + R + R) / (a3 + a3 + R);
-  return b;
-}
-
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float lab_f(const float x)
-{
-  const float epsilon = 216.0f / 24389.0f;
-  const float kappa = 24389.0f / 27.0f;
-  return (x > epsilon) ? cbrta_halleyf(cbrt_5f(x), x) : (kappa * x + 16.0f) / 116.0f;
-}
-
 /** uses D50 white point. */
 static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
 static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
@@ -171,9 +147,14 @@ static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
 DT_OMP_DECLARE_SIMD(aligned(Lab, XYZ:16) uniform(Lab, XYZ))
 static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Lab)
 {
+  const float epsilon = 216.0f / 24389.0f;
+  const float kappa = 24389.0f / 27.0f;
   dt_aligned_pixel_t f;
   for_each_channel(i)
-    f[i] = lab_f(XYZ[i] * d50_inv[i]);
+  {
+    const float x = XYZ[i] * d50_inv[i];
+    f[i] = x > epsilon ? cbrtf(x) : (kappa * x + 16.0f) / 116.0f;
+  }
 //  Lab[0] = 116.0f * f[1] - 16.0f;
 //  Lab[1] = 500.0f * (f[0] - f[1]);
 //  Lab[2] = -200.0f * (f[2] - f[1]);
@@ -269,8 +250,8 @@ static inline void dt_D65_XYZ_to_xyY(const dt_aligned_pixel_t sXYZ, dt_aligned_p
   dt_vector_max(XYZ, sXYZ, zero);
 
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
-  xyY[0] = (sum > 0.0f) ? XYZ[0] / sum : D65xyY.x;
-  xyY[1] = (sum > 0.0f) ? XYZ[1] / sum : D65xyY.y;
+  xyY[0] = (sum > 0.0f) ? XYZ[0] / sum : (float)D65xyY.x;
+  xyY[1] = (sum > 0.0f) ? XYZ[1] / sum : (float)D65xyY.y;
   xyY[2] = XYZ[1];
 }
 
@@ -349,7 +330,7 @@ static inline void dt_Luv_to_Lch(const dt_aligned_pixel_t Luv, dt_aligned_pixel_
   Lch[0] = Luv[0];                 // L stays L
   Lch[1] = hypotf(Luv[2], Luv[1]); // chroma radius
   Lch[2] = atan2f(Luv[2], Luv[1]); // hue angle
-  Lch[2] = (Lch[2] < 0.f) ? 2.f * M_PI + Lch[2] : Lch[2]; // ensure angle is positive modulo 2 pi
+  Lch[2] = (Lch[2] < 0.f) ? DT_2PI_F + Lch[2] : Lch[2]; // ensure angle is positive modulo 2 pi
 }
 
 
@@ -486,6 +467,38 @@ static inline float dt_prophotorgb_to_XYZ_luma(const dt_aligned_pixel_t rgb)
           + prophotorgb_to_xyz_transpose[1][1] * rgb[1]
           + prophotorgb_to_xyz_transpose[2][1] * rgb[2]);
 }
+
+// CIE D65 illuminant tristimulus (Y normalized to 1)
+static const float d65_white_xyz[3] = { 0.9504f, 1.0f, 1.0889f };
+
+// D65 XYZ <-> linear RGB matrices, row-major 3x3 (plain float[9]).
+// Distinct from the D50 Bradford-adapted dt_colormatrix_t variants
+// below, which are pre-transposed for SIMD-friendly multiplication.
+// Used by raw_restore_linear's input-space build and by the DNG
+// writer's ColorMatrix1 fallback (paired with CalibrationIlluminant1=D65)
+static const float xyz_to_srgb_d65[9] = {
+   3.2404542f, -1.5371385f, -0.4985314f,
+  -0.9692660f,  1.8760108f,  0.0415560f,
+   0.0556434f, -0.2040259f,  1.0572252f,
+};
+
+static const float srgb_to_xyz_d65[9] = {
+  0.4124564f, 0.3575761f, 0.1804375f,
+  0.2126729f, 0.7151522f, 0.0721750f,
+  0.0193339f, 0.1191920f, 0.9503041f,
+};
+
+static const float xyz_to_rec2020_d65[9] = {
+   1.7166511880f, -0.3556707838f, -0.2533662814f,
+  -0.6666843518f,  1.6164812366f,  0.0157685458f,
+   0.0176398574f, -0.0427706133f,  0.9421031212f,
+};
+
+static const float rec2020_to_xyz_d65[9] = {
+  0.6369580483f, 0.1446169036f, 0.1688809752f,
+  0.2627002120f, 0.6779980715f, 0.0593017165f,
+  0.0000000000f, 0.0280726930f, 1.0609850577f,
+};
 
 // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
 // (transpose and pad the conversion matrix to enable vectorization)
@@ -772,9 +785,9 @@ static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t
   float var_H = atan2f(Lab[2], Lab[1]);
 
   if(var_H > 0.0f)
-    var_H = var_H / (2.0f * M_PI_F);
+    var_H = var_H / DT_2PI_F;
   else
-    var_H = 1.0f - fabsf(var_H) / (2.0f * M_PI_F);
+    var_H = 1.0f - fabsf(var_H) / DT_2PI_F;
 
   LCH[0] = Lab[0];
   LCH[1] = hypotf(Lab[1], Lab[2]);
@@ -786,8 +799,8 @@ DT_OMP_DECLARE_SIMD()
 static inline void dt_LCH_2_Lab(const dt_aligned_pixel_t LCH, dt_aligned_pixel_t Lab)
 {
   Lab[0] = LCH[0];
-  Lab[1] = cosf(2.0f * M_PI_F * LCH[2]) * LCH[1];
-  Lab[2] = sinf(2.0f * M_PI_F * LCH[2]) * LCH[1];
+  Lab[1] = cosf(DT_2PI_F * LCH[2]) * LCH[1];
+  Lab[2] = sinf(DT_2PI_F * LCH[2]) * LCH[1];
 }
 
 static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
@@ -881,7 +894,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
 DT_OMP_DECLARE_SIMD(aligned(JzAzBz, JzCzhz: 16))
 static inline void dt_JzAzBz_2_JzCzhz(const dt_aligned_pixel_t JzAzBz, dt_aligned_pixel_t JzCzhz)
 {
-  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * M_PI_F);
+  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / DT_2PI_F;
   JzCzhz[0] = JzAzBz[0];
   JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
   JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
@@ -891,8 +904,8 @@ DT_OMP_DECLARE_SIMD(aligned(JzCzhz, JzAzBz: 16))
 static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligned_pixel_t JzAzBz)
 {
   JzAzBz[0] = JzCzhz[0];
-  JzAzBz[1] = cosf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
-  JzAzBz[2] = sinf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[1] = cosf(DT_2PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[2] = sinf(DT_2PI_F * JzCzhz[2]) * JzCzhz[1];
 }
 
 DT_OMP_DECLARE_SIMD(aligned(JzAzBz, XYZ_D65: 16))
@@ -957,6 +970,7 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
   XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ_D65[0]) / g;
   XYZ_D65[2] = XYZ[2];
+  XYZ_D65[3] = JzAzBz[3];
 }
 
 // Convert CIE 1931 2° XYZ D65 to CIE 2006 LMS D65 (cone space)
@@ -1403,22 +1417,6 @@ static inline void dt_UCS_HCB_to_JCH(const dt_aligned_pixel_t HCB, dt_aligned_pi
   JCH[0] = HCB[2] / (powf(HCB[1], 1.33654221029386f) + 1.f);
 }
 
-
-static inline void dt_UCS_HSB_to_HPW(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t HPW)
-{
-  HPW[2] = sqrtf(HSB[1] * HSB[1] + HSB[2] * HSB[2]);
-  HPW[1] = (HPW[2] > 0.f) ? HSB[1] / HPW[2] : 0.f;
-  HPW[0] = HSB[0];
-}
-
-
-static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pixel_t HSB)
-{
-  HSB[0] = HPW[0];
-  HSB[1] = HPW[1] * HPW[2];
-  HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
-}
-
 static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L_w, dt_aligned_pixel_t XYZ)
 {
   // Quick path
@@ -1428,6 +1426,30 @@ static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L
   dt_UCS_HSB_to_JCH(HSB, JCH);
   dt_UCS_JCH_to_xyY(JCH, L_w, xyY);
   dt_xyY_to_XYZ(xyY, XYZ);
+}
+
+static inline void dt_UCS_JCH_to_XYZ(const dt_aligned_pixel_t JCH,
+                                     const float L_w,
+                                     dt_aligned_pixel_t XYZ)
+{
+  dt_aligned_pixel_t xyY = { 0.f };
+  dt_UCS_JCH_to_xyY(JCH, L_w, xyY);
+  dt_xyY_to_XYZ(xyY, XYZ);
+}
+
+// Convert a darktable UCS JCH pixel to gamma-corrected sRGB.
+// Chain: JCH → XYZ(D65) → linear sRGB → sRGB gamma
+// Uses the native D65 sRGB matrix; skips the unnecessary D65→D50 adaptation step.
+static inline void dt_UCS_JCH_to_sRGB(const dt_aligned_pixel_t JCH,
+                                      const float L_w,
+                                      dt_aligned_pixel_t sRGB)
+{
+  dt_aligned_pixel_t XYZ_D65, linear;
+  dt_UCS_JCH_to_XYZ(JCH, L_w, XYZ_D65);
+  dt_XYZ_to_Rec709_D65(XYZ_D65, linear);
+  for_each_channel(c)
+    sRGB[c] = linear[c] <= 0.0031308f ? 12.92f * linear[c]
+                                      : 1.055f * powf(linear[c], 1.f / 2.4f) - 0.055f;
 }
 
 #undef DT_RESTRICT

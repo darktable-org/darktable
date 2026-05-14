@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2025 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -415,7 +415,7 @@ int legacy_params(dt_iop_module_t *self,
 
     // New params
     n->quantization = 0.0f;
-    n->smoothing = sqrtf(2.0f);
+    n->smoothing = M_SQRT2_F;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_toneequalizer_params_v2_t);
@@ -472,7 +472,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.exposure_boost = -0.5f;
   p.feathering = 1.0f;
   p.iterations = 1;
-  p.smoothing = sqrtf(2.0f);
+  p.smoothing = M_SQRT2_F;
   p.quantization = 0.0f;
 
   // Init exposure settings
@@ -1033,7 +1033,7 @@ void toneeq_process(dt_iop_module_t *self,
       dt_iop_gui_leave_critical_section(self);
     }
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
     {
       // For DT_DEV_PIXELPIPE_FULL, we cache the luminance mask for performance
       // but it's not accessed from GUI
@@ -1051,7 +1051,7 @@ void toneeq_process(dt_iop_module_t *self,
       luminance = g->full_preview_buf;
       cached = TRUE;
     }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    else if(dt_pipe_is_preview(piece->pipe))
     {
       // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache it too to
       // compute the full image stats upon user request in GUI threads
@@ -1097,7 +1097,7 @@ void toneeq_process(dt_iop_module_t *self,
   {
     // caching path : store the luminance mask for GUI access
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
     {
       dt_hash_t saved_hash;
       hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
@@ -1113,7 +1113,7 @@ void toneeq_process(dt_iop_module_t *self,
         hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    else if(dt_pipe_is_preview(piece->pipe))
     {
       dt_hash_t saved_hash;
       hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
@@ -1131,7 +1131,7 @@ void toneeq_process(dt_iop_module_t *self,
         compute_luminance_mask(in, luminance, width, height, d);
         g->luminance_valid = TRUE;
         dt_iop_gui_leave_critical_section(self);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
+        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
       }
     }
     else // make it dummy-proof
@@ -1146,7 +1146,7 @@ void toneeq_process(dt_iop_module_t *self,
   }
 
   // Display output
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     if(g->mask_display)
     {
@@ -1339,7 +1339,7 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->thumb_preview_hash = DT_INVALID_HASH;
   g->max_histogram = 1;
   g->scale = 1.0f;
-  g->sigma = sqrtf(2.0f);
+  g->sigma = M_SQRT2_F;
   g->mask_display = FALSE;
 
   g->interpolation_valid = FALSE;  // TRUE if the interpolation_matrix is ready
@@ -1702,7 +1702,7 @@ static void show_guiding_controls(const dt_iop_module_t *self)
 void update_exposure_sliders(const dt_iop_toneequalizer_gui_data_t *g,
                              const dt_iop_toneequalizer_params_t *p)
 {
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->noise, p->noise);
   dt_bauhaus_slider_set(g->ultra_deep_blacks, p->ultra_deep_blacks);
   dt_bauhaus_slider_set(g->deep_blacks, p->deep_blacks);
@@ -1712,7 +1712,7 @@ void update_exposure_sliders(const dt_iop_toneequalizer_gui_data_t *g,
   dt_bauhaus_slider_set(g->highlights, p->highlights);
   dt_bauhaus_slider_set(g->whites, p->whites);
   dt_bauhaus_slider_set(g->speculars, p->speculars);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 
@@ -1721,7 +1721,7 @@ void gui_update(dt_iop_module_t *self)
   const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   const dt_iop_toneequalizer_params_t *p = self->params;
 
-  dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
+  dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(M_SQRT2_F) - 1.0f);
 
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
@@ -1758,11 +1758,11 @@ void gui_changed(dt_iop_module_t *self,
 
 static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_toneequalizer_params_t *p = self->params;
   const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  p->smoothing= powf(sqrtf(2.0f), 1.0f +  dt_bauhaus_slider_get(slider));
+  p->smoothing= powf(M_SQRT2_F, 1.0f +  dt_bauhaus_slider_get(slider));
 
   float factors[CHANNELS] DT_ALIGNED_ARRAY;
   get_channels_factors(factors, p);
@@ -1786,16 +1786,16 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_request_focus(self);
 
   if(!self->enabled)
   {
     // activate module and do nothing
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1836,9 +1836,9 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   p->exposure_boost = log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
 
   // Update the GUI stuff
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1852,16 +1852,16 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_request_focus(self);
 
   if(!self->enabled)
   {
     // activate module and do nothing
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1914,9 +1914,9 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   p->contrast_boost += c;
 
   // Update the GUI stuff
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1929,7 +1929,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
                                          GdkEventButton *event,
                                          dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
@@ -2010,7 +2010,7 @@ static void switch_cursors(dt_iop_module_t *self)
   {
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
-    dt_control_change_cursor(GDK_BLANK_CURSOR);
+    dt_control_change_cursor("none");
     dt_control_hinter_message(_("scroll over image to change tone exposure\n"
                                 "shift+scroll for large steps; "
                                 "ctrl+scroll for small steps"));
@@ -2179,7 +2179,7 @@ int scrolled(dt_iop_module_t *self,
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
 
-  if(darktable.gui->reset) return 1;
+  DT_GUARD_GUI_UPDATE(1);
   if(g == NULL) return 0;
   if(!g->has_focus) return 0;
 
@@ -2897,7 +2897,7 @@ static gboolean area_draw(GtkWidget *widget,
   {
     if(g->area_cursor_valid)
     {
-      const float radius = g->sigma * g->graph_width / 8.0f / sqrtf(2.0f);
+      const float radius = g->sigma * g->graph_width / 8.0f / M_SQRT2_F;
       cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
       const float y =
         g->gui_lut[(int)CLAMP(((UI_SAMPLES - 1) * g->area_x / g->graph_width),
@@ -2944,7 +2944,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
                                         const GdkEventCrossing *event,
                                         dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2979,7 +2979,7 @@ static gboolean area_button_press(GtkWidget *widget,
                                   dt_iop_module_t *self)
 {
 
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -3034,7 +3034,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
                                    const GdkEventMotion *event,
                                    dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3088,7 +3088,7 @@ static gboolean area_button_release(GtkWidget *widget,
                                     const GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3129,7 +3129,7 @@ static gboolean notebook_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   // Give focus to module
   dt_iop_request_focus(self);
@@ -3174,12 +3174,12 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_iop_gui_enter_critical_section(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
   dt_iop_gui_leave_critical_section(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 
@@ -3315,7 +3315,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->smoothing), "value-changed",
                    G_CALLBACK(smoothing_callback), self);
   dt_gui_box_add(self->widget, wrapper, g->smoothing);
-  
+
   g->exposure_boost = dt_bauhaus_slider_from_params(self, "exposure_boost");
   dt_bauhaus_slider_set_soft_range(g->exposure_boost, -4.0, 4.0);
   dt_bauhaus_slider_set_format(g->exposure_boost, _(" EV"));
@@ -3337,7 +3337,7 @@ void gui_init(dt_iop_module_t *self)
       "for a better control of the exposure correction."));
   dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, auto_adjust_contrast_boost,
                             _("auto-adjust the contrast"));
-                           
+
   // Masking options
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
@@ -3412,7 +3412,7 @@ void gui_init(dt_iop_module_t *self)
                                dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_luminance_mask, "dt_bauhaus_alignment");
   self->widget = dt_gui_vbox(g->notebook,
-                             dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("display exposure mask"))), 
+                             dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("display exposure mask"))),
                                          g->show_luminance_mask));
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors

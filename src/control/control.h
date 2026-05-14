@@ -43,8 +43,6 @@ G_BEGIN_DECLS
 
 struct dt_lib_backgroundjob_element_t;
 
-typedef GdkCursorType dt_cursor_t;
-
 // called from gui
 void dt_control_expose(GtkWidget *widget, cairo_t *cr);
 gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data);
@@ -55,6 +53,8 @@ void dt_control_mouse_leave(void);
 void dt_control_mouse_enter(void);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_control_log_ack_all(void);
+GList *dt_control_log_history_get_entries(void);
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_busy_enter();
@@ -64,7 +64,11 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 void dt_control_forbid_change_cursor(void);
 // enable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_allow_change_cursor(void);
-void dt_control_change_cursor(dt_cursor_t cursor);
+// set a cursor which will override the cursor set by dt_control_change_cursor
+void dt_control_set_temp_cursor(const char *cursor_name);
+// return to the cursor most rececently set by dt_control_change_cursor
+void dt_control_clear_temp_cursor();
+void dt_control_change_cursor(const char *cursor_name);
 void dt_control_write_sidecar_files(void);
 void dt_control_delete_images(void);
 
@@ -162,6 +166,10 @@ typedef struct dt_control_t
   int32_t toast_pos, toast_ack;
   char toast_message[DT_CTL_TOAST_SIZE][DT_CTL_TOAST_MSG_SIZE];
   guint toast_message_timeout_id;
+
+  // persistent log history
+  GList *log_history;                     // GList of log history entries (newest last)
+  dt_pthread_mutex_t log_history_mutex;   // mutex for history access
 
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;

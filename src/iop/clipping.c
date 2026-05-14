@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -480,7 +480,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
+  if(dt_pipe_is_preview(piece->pipe)) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -548,7 +548,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
+  if(dt_pipe_is_preview(piece->pipe)) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -908,7 +908,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
     roi_out->height = roi_in->height;
     piece->enabled = FALSE;
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
       dt_control_log
         (_("module '%s' has insane data so it is bypassed for now. you should disable it or change parameters\n"),
          self->name());
@@ -1086,9 +1086,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width
      && roi_in->height == roi_out->height)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    const size_t region[2] = { width, height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
   }
   else
@@ -1488,7 +1487,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
         p->ratio_d = 2445;
         p->ratio_n = 2032;
       }
-      else if(fabsf(whratio - sqrtf(2.0f)) < prec)
+      else if(fabsf(whratio - M_SQRT2_F) < prec)
       {
         p->ratio_d = 14142136;
         p->ratio_n = 10000000;
@@ -1788,7 +1787,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     p->ratio_n = n;
     dt_conf_set_int("plugins/darkroom/clipping/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/clipping/ratio_n", abs(p->ratio_n));
-    if(darktable.gui->reset) return;
+    DT_GUARD_GUI_UPDATE();
     apply_box_aspect(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
   }
@@ -1808,7 +1807,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   }
 
   // Update combobox label
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(act == -1)
   {
@@ -1822,7 +1821,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     // we got a default ratio
     dt_bauhaus_combobox_set(g->aspect_presets, act);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1830,7 +1829,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(w == g->cx)
   {
@@ -1855,7 +1854,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->clip_h = p->ch - g->clip_y;
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   commit_box(self, g, p);
 
@@ -2021,7 +2020,7 @@ void gui_update(dt_iop_module_t *self)
 
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
   const int flip = dt_bauhaus_combobox_get(widget);
@@ -2742,7 +2741,7 @@ int mouse_moved(dt_iop_module_t *self,
   {
     // second mouse button, straighten activated:
     g->straightening = 1;
-    dt_control_change_cursor(GDK_CROSSHAIR);
+    dt_control_change_cursor("crosshair");
     dt_control_queue_redraw_center();
   }
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
@@ -2966,7 +2965,7 @@ int mouse_moved(dt_iop_module_t *self,
           // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
           // from the sliders when the iop loses focus, at which time the final selected crop is applied.
 
-          ++darktable.gui->reset;
+          DT_ENTER_GUI_UPDATE();
 
           dt_bauhaus_slider_set(g->cx, g->clip_x);
           dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
@@ -2977,7 +2976,7 @@ int mouse_moved(dt_iop_module_t *self,
           dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
           dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
-          --darktable.gui->reset;
+          DT_LEAVE_GUI_UPDATE();
         }
       }
     }
@@ -2989,25 +2988,25 @@ int mouse_moved(dt_iop_module_t *self,
     // hover over active borders, no button pressed
     // change mouse pointer
     if(grab == GRAB_LEFT)
-      dt_control_change_cursor(GDK_LEFT_SIDE);
+      dt_control_change_cursor("w-resize");
     else if(grab == GRAB_TOP)
-      dt_control_change_cursor(GDK_TOP_SIDE);
+      dt_control_change_cursor("n-resize");
     else if(grab == GRAB_RIGHT)
-      dt_control_change_cursor(GDK_RIGHT_SIDE);
+      dt_control_change_cursor("e-resize");
     else if(grab == GRAB_BOTTOM)
-      dt_control_change_cursor(GDK_BOTTOM_SIDE);
+      dt_control_change_cursor("s-resize");
     else if(grab == GRAB_TOP_LEFT)
-      dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+      dt_control_change_cursor("nw-resize");
     else if(grab == GRAB_TOP_RIGHT)
-      dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+      dt_control_change_cursor("ne-resize");
     else if(grab == GRAB_BOTTOM_RIGHT)
-      dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+      dt_control_change_cursor("se-resize");
     else if(grab == GRAB_BOTTOM_LEFT)
-      dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+      dt_control_change_cursor("sw-resize");
     else if(grab == GRAB_NONE)
     {
       dt_control_hinter_message(_("<b>commit</b>: double-click, <b>straighten</b>: right-drag"));
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     if(grab != GRAB_NONE)
       dt_control_hinter_message(_("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
@@ -3017,7 +3016,7 @@ int mouse_moved(dt_iop_module_t *self,
   else
   {
     // somewhere besides borders. maybe rotate?
-    dt_control_change_cursor(GDK_FLEUR);
+    dt_control_change_cursor("move");
     g->straightening = g->cropping = 0;
     // or maybe keystone
     const float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
@@ -3052,18 +3051,18 @@ int mouse_moved(dt_iop_module_t *self,
       if(g->k_selected >= 0)
       {
         dt_control_hinter_message(_("<b>move control point</b>: drag"));
-        dt_control_change_cursor(GDK_CROSS);
+        dt_control_change_cursor("crosshair");
       }
       else if(g->k_selected_segment >= 0)
       {
         dt_control_hinter_message(_("<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"));
-        dt_control_change_cursor(GDK_CROSS);
+        dt_control_change_cursor("crosshair");
       }
       else
       {
         dt_control_hinter_message(_("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
                                                        "<b>move line/control point</b>: drag"));
-        dt_control_change_cursor(GDK_FLEUR);
+        dt_control_change_cursor("move");
       }
     }
     else
@@ -3078,7 +3077,7 @@ int mouse_moved(dt_iop_module_t *self,
 
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   g->cropping = 0;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
   const float eps = 1e-6f; // threshold to avoid rounding errors
@@ -3137,12 +3136,12 @@ int button_released(dt_iop_module_t *self,
     }
 
     float angle = atan2f(dy, dx);
-    if(!(angle >= -M_PI_F / 2.f && angle <= M_PI_F / 2.f)) angle = 0.0f;
+    if(!(angle >= -M_PI_2f && angle <= M_PI_2f)) angle = 0.0f;
     float close = angle;
-    if(close > M_PI_F / 4.f)
-      close = M_PI_F / 2.f - close;
-    else if(close < -M_PI_F / 4.f)
-      close = -M_PI_F / 2.f - close;
+    if(close > M_PI_4f)
+      close = M_PI_2f - close;
+    else if(close < -M_PI_4f)
+      close = -M_PI_2f - close;
     else
       close = -close;
 
@@ -3151,7 +3150,7 @@ int button_released(dt_iop_module_t *self,
     if(a > 180.f) a -= 360.f;
 
     dt_bauhaus_slider_set(g->angle, a);
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   }
   if(g->k_drag) g->k_drag = FALSE;
 

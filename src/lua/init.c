@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2024 darktable developers.
+   Copyright (C) 2013-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "lua/lua.h"
 #include "lua/lualib.h"
 #include "lua/luastorage.h"
+#include "lua/metadata.h"
 #include "lua/modules.h"
 #include "lua/password.h"
 #include "lua/preferences.h"
@@ -118,14 +119,7 @@ static int run_early_script(lua_State* L)
   char *luarc = g_build_filename(basedir, "luarc", NULL);
   dt_lua_check_print_error(L, luaL_dofile(L, luarc));
   g_free(luarc);
-  if(darktable.gui != NULL)
-  {
-    // run user init script
-    dt_loc_get_user_config_dir(basedir, sizeof(basedir));
-    luarc = g_build_filename(basedir, "luarc", NULL);
-    dt_lua_check_print_error(L, luaL_dofile(L, luarc));
-    g_free(luarc);
-  }
+
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);
     dt_lua_check_print_error(L,luaL_dostring(L,lua_command));
@@ -142,7 +136,7 @@ static lua_CFunction init_funcs[]
         dt_lua_init_luastorages,   dt_lua_init_tags,        dt_lua_init_film,     dt_lua_init_call,
         dt_lua_init_view,          dt_lua_init_events,      dt_lua_init_init,     dt_lua_init_widget,
         dt_lua_init_lualib,        dt_lua_init_gettext,     dt_lua_init_guides,   dt_lua_init_cairo,
-        dt_lua_init_password,      dt_lua_init_util,        NULL };
+        dt_lua_init_password,      dt_lua_init_util,        dt_lua_init_metadata, NULL };
 
 
 void dt_lua_init(lua_State *L, const char *lua_command)
@@ -177,7 +171,11 @@ void dt_lua_init(lua_State *L, const char *lua_command)
   dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L, tmp_path);
   lua_pushstring(L, "/lua/?.lua");
-  lua_concat(L, 7);
+  lua_pushstring(L, ";");
+  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_pushstring(L, "/lua-scripts/?.lua");
+  lua_concat(L, 10);
   lua_setfield(L, -2, "path");
   lua_pop(L, 1);
 

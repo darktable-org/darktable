@@ -62,6 +62,7 @@ endmacro (add_iop)
 # @@_NEW_MODULE: when adding a new module here, please grep @@_NEW_MODULE in the code and adjust accordingly.
 
 # add_iop(useless "useless.c")
+add_iop(colorharmonizer "colorharmonizer.c" DEFAULT_VISIBLE)
 add_iop(rawprepare "rawprepare.c")
 add_iop(soften "soften.c")
 add_iop(bloom "bloom.c")

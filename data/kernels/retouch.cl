@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017 edgardo hoszowski.
+    Copyright (C) 2017-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,22 +38,28 @@ retouch_clear_alpha(global float4 *in, int width, int height)
 }
 
 kernel void
-retouch_copy_alpha(__read_only image2d_t in, global float4 *out, int width, int height)
+retouch_copy_alpha(__read_only image2d_t in,
+                   global float4 *out,
+                   int width,
+                   int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float alpha = readalpha(in, x, y);
   const int idx = mad24(y, width, x);
-  out[idx].w = pixel.w;
+  out[idx].w = alpha;
 }
 
 kernel void
-retouch_copy_buffer_to_image(global float4 *in, global dt_iop_roi_t *roi_in,
-                                         __write_only image2d_t out, global dt_iop_roi_t *roi_out, const int xoffs,
-                                         const int yoffs)
+retouch_copy_buffer_to_image(global float4 *in,
+                             global dt_iop_roi_t *roi_in,
+                             __write_only image2d_t out,
+                             global dt_iop_roi_t *roi_out,
+                             const int xoffs,
+                             const int yoffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -66,8 +72,12 @@ retouch_copy_buffer_to_image(global float4 *in, global dt_iop_roi_t *roi_in,
 }
 
 kernel void
-retouch_copy_buffer_to_buffer(global float4 *in, global dt_iop_roi_t *roi_in, global float4 *out,
-                                          global dt_iop_roi_t *roi_out, const int xoffs, const int yoffs)
+retouch_copy_buffer_to_buffer(global float4 *in,
+                              global dt_iop_roi_t *roi_in,
+                              global float4 *out,
+                              global dt_iop_roi_t *roi_out,
+                              const int xoffs,
+                              const int yoffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -79,8 +89,11 @@ retouch_copy_buffer_to_buffer(global float4 *in, global dt_iop_roi_t *roi_in, gl
 }
 
 kernel void
-retouch_copy_mask_to_alpha(global float4 *in, global dt_iop_roi_t *roi_in, global float *mask_scaled,
-                                       global dt_iop_roi_t *roi_mask_scaled, const float opacity)
+retouch_copy_mask_to_alpha(global float4 *in,
+                           global dt_iop_roi_t *roi_in,
+                           global float *mask_scaled,
+                           global dt_iop_roi_t *roi_mask_scaled,
+                           const float opacity)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -88,18 +101,22 @@ retouch_copy_mask_to_alpha(global float4 *in, global dt_iop_roi_t *roi_in, globa
   if(x >= roi_mask_scaled->width || y >= roi_mask_scaled->height) return;
 
   const int mask_index = mad24(y, roi_mask_scaled->width, x);
-  const int dest_index
-      = mad24(y + roi_mask_scaled->y - roi_in->y, roi_in->width, x + roi_mask_scaled->x - roi_in->x);
+  const int dest_index = mad24(y + roi_mask_scaled->y - roi_in->y, roi_in->width, x + roi_mask_scaled->x - roi_in->x);
 
-  const float f = mask_scaled[mask_index] * opacity;
+  const float f = clipf(mask_scaled[mask_index] * opacity);
 
   if(f > in[dest_index].w) in[dest_index].w = f;
 }
 
 kernel void
-retouch_fill(global float4 *in, global dt_iop_roi_t *roi_in, global float *mask_scaled,
-                         global dt_iop_roi_t *roi_mask_scaled, const float opacity, const float color_x,
-                         const float color_y, const float color_z)
+retouch_fill(global float4 *in,
+             global dt_iop_roi_t *roi_in,
+             global float *mask_scaled,
+             global dt_iop_roi_t *roi_mask_scaled,
+             const float opacity,
+             const float color_x,
+             const float color_y,
+             const float color_z)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -107,11 +124,10 @@ retouch_fill(global float4 *in, global dt_iop_roi_t *roi_in, global float *mask_
   if(x >= roi_mask_scaled->width || y >= roi_mask_scaled->height) return;
 
   const int mask_index = mad24(y, roi_mask_scaled->width, x);
-  const int dest_index
-      = mad24(y + roi_mask_scaled->y - roi_in->y, roi_in->width, x + roi_mask_scaled->x - roi_in->x);
+  const int dest_index = mad24(y + roi_mask_scaled->y - roi_in->y, roi_in->width, x + roi_mask_scaled->x - roi_in->x);
 
   float4 fill_color = { color_x, color_y, color_z, 0.f };
-  const float f = mask_scaled[mask_index] * opacity;
+  const float f = clipf(mask_scaled[mask_index] * opacity);
   const float w = in[dest_index].w;
 
   in[dest_index] = in[dest_index] * (1.0f - f) + fill_color * f;
@@ -120,9 +136,12 @@ retouch_fill(global float4 *in, global dt_iop_roi_t *roi_in, global float *mask_
 }
 
 kernel void
-retouch_copy_buffer_to_buffer_masked(global float4 *buffer_src, global float4 *buffer_dest,
-                                                 global dt_iop_roi_t *roi_buffer_dest, global float *mask_scaled,
-                                                 global dt_iop_roi_t *roi_mask_scaled, const float opacity)
+retouch_copy_buffer_to_buffer_masked(global float4 *buffer_src,
+                                     global float4 *buffer_dest,
+                                     global dt_iop_roi_t *roi_buffer_dest,
+                                     global float *mask_scaled,
+                                     global dt_iop_roi_t *roi_mask_scaled,
+                                     const float opacity)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -134,7 +153,7 @@ retouch_copy_buffer_to_buffer_masked(global float4 *buffer_src, global float4 *b
   const int idx_src = mad24(y, roi_mask_scaled->width, x);
   const int idx_mask = mad24(y, roi_mask_scaled->width, x);
 
-  const float f = mask_scaled[idx_mask] * opacity;
+  const float f = clipf(mask_scaled[idx_mask] * opacity);
   const float w = buffer_dest[idx_dest].w;
 
   buffer_dest[idx_dest] = buffer_dest[idx_dest] * (1.0f - f) + buffer_src[idx_src] * f;
@@ -143,9 +162,12 @@ retouch_copy_buffer_to_buffer_masked(global float4 *buffer_src, global float4 *b
 }
 
 kernel void
-retouch_copy_image_to_buffer_masked(__read_only image2d_t buffer_src, global float4 *buffer_dest,
-                                                global dt_iop_roi_t *roi_buffer_dest, global float *mask_scaled,
-                                                global dt_iop_roi_t *roi_mask_scaled, const float opacity)
+retouch_copy_image_to_buffer_masked(__read_only image2d_t buffer_src,
+                                    global float4 *buffer_dest,
+                                    global dt_iop_roi_t *roi_buffer_dest,
+                                    global float *mask_scaled,
+                                    global dt_iop_roi_t *roi_mask_scaled,
+                                    const float opacity)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -156,17 +178,19 @@ retouch_copy_image_to_buffer_masked(__read_only image2d_t buffer_src, global flo
                              x + roi_mask_scaled->x - roi_buffer_dest->x);
   const int idx_mask = mad24(y, roi_mask_scaled->width, x);
 
-  const float f = mask_scaled[idx_mask] * opacity;
+  const float f = clipf(mask_scaled[idx_mask] * opacity);
   const float w = buffer_dest[idx_dest].w;
 
-  float4 pix = read_imagef(buffer_src, sampleri, (int2)(x, y));
+  float4 pix = readpixel(buffer_src, x, y);
   buffer_dest[idx_dest] = buffer_dest[idx_dest] * (1.0f - f) + pix * f;
 
   buffer_dest[idx_dest].w = w;
 }
 
 kernel void
-retouch_image_rgb2lab(global float4 *in, int width, int height)
+retouch_image_rgb2lab(global float4 *in,
+                      int width,
+                      int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -179,7 +203,9 @@ retouch_image_rgb2lab(global float4 *in, int width, int height)
 }
 
 kernel void
-retouch_image_lab2rgb(global float4 *in, int width, int height)
+retouch_image_lab2rgb(global float4 *in,
+                      int width,
+                      int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);

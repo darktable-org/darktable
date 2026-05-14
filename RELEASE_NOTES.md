@@ -49,7 +49,41 @@ The following is a summary of the main features added to darktable
 5.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- N/A
+- Added optional AI subsystem (build with `-DUSE_AI=ON`). AI features
+  are disabled by default in preferences and can be enabled at runtime
+  without restarting. When disabled, no ONNX Runtime libraries are
+  loaded and no AI-related activity occurs. Models are downloaded from
+  a configurable repository and managed through the AI preferences tab.
+
+- Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
+  and SegNext models for interactive object segmentation — click on an
+  object to generate a precise mask. Supports both foreground and
+  background prompt points with iterative refinement. The encoder runs
+  once per image (with optional GPU acceleration via CoreML, CUDA,
+  MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
+  produces masks interactively.
+
+- Added neural restore module in the lighttable/darkroom sidebar for
+  AI-based image denoise and upscale. Supports NIND UNet denoiser and
+  BSRGAN 2x/4x super-resolution models via the ONNX backend. Features
+  include an interactive before/after split preview with area picker,
+  a detail recovery slider (wavelet-based texture restoration for
+  denoise), batch processing with tiled inference, and TIFF output
+  with automatic library import and image grouping. GPU acceleration
+  is supported through CUDA, ROCm/MIGraphX, DirectML, OpenVINO, and
+  CoreML execution providers.
+
+- Added `colorharmonizer` module that applies color harmony
+  corrections in UCS color space, rotating hues toward a target
+  harmony structure (complementary, split-complementary, triadic,
+  tetradic, etc.). The saturation of target hues can be controlled,
+  and custom-defined harmonies with an arbitrary number of anchor nodes
+  at any angle are also supported. Options are provided to control the
+  intensity of the effect, protect neutral colors, and apply a Gaussian
+  filter to smooth harsh transitions. The module can be synced with the
+  vectorscope in RYB mode, with harmony and rotation angles controllable
+  directly from the vectorscope. Both CPU and OpenCL (GPU) implementations
+  are provided.
 
 ## UI/UX Improvements
 
@@ -115,14 +149,46 @@ changes (where available).
   and two-finger panning. Follow-up fixes refined input source
   handling to keep panning limited to touchpad smooth-scroll input.
 
+- Enabled shortcuts for some existing buttons in duplicate manager,
+  snapshots, and AgX modules.
+
+- Enabled shortcuts to cycle through module groups, modules and
+  module instances.
+
+- Added a configuration option to toggle the filmstrip auto-center
+  behavior. Enabled shortcuts to toggle filmstrip auto-centering and
+  to explicitly recenter the filmstrip on the current image.
+
+- The radius calculated for capture sharpening is now using only the
+  central 60% of the image as lenses are mostly sharper here.
+  For xtrans sensors the radius has been slightly increased as
+  images tend to be more blurred.
+
+- The tone equalizer now visualizes an invalid curve (solver maths)
+  also for old edits.
+
+- Add `--library <path>` command-line option to darktable-cli that
+  allows specifying a `library.db` database file to read image processing
+  history stacks from instead of requiring XMP sidecar files, for people
+  who do not use XMP sidecar files.
+
+- Added display name to the available sort options for film rolls.
+
+- When creating a new workspace from the workspace dialog, settings
+  can optionally be copied from an existing workspace as a template.
+  The workspace-specific configuration is duplicated with paths,
+  labels, collection history, and similar keys cleared so the new
+  workspace keeps its own library database instead of reusing the
+  source library. The workspace dialog allows selecting a workspace as
+  the default for startup; if one is chosen as default, the dialog is
+  not shown on the next launch until “allow for multiple workspaces” is
+  enabled again in preferences (storage).
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
 
 ## Other Changes
-
-- Enabled shortcuts for some existing buttons in duplicate manager,
-  snapshots, and AgX modules.
 
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
@@ -132,11 +198,13 @@ changes (where available).
 
 - Added PNG support (8/16-bit) for external raster masks.
 
-- Removed `Neo` Intel GPU from the Windows blacklist.
+- Removed `Neo` Intel and `pocl` OpenCL drivers from blacklist,
+  the `AMD-APP` driver has been added as not supported by AMD for 10yrs.
 
-- In the styles module, a new option has been added to control the
-  preview size in the tooltip. The available options are: no preview,
-  default size, and large size.
+- In the styles module, a new option has been added to hide the
+  preview in the tooltip. Additionally, a module preference now allows
+  you to change the preview size, with two options available: default
+  and large.
 
 - Improved debugging option --dump-diff-pipe for those of you
   interested in OpenCL code and debugging.
@@ -156,11 +224,62 @@ changes (where available).
 
 - Added a new collection filter for image duplicates.
 
+- The masks in restricted edit mode are now displayed on-canvas as
+  dashed lines to ensure proper feedback.
+
+- Several improvements to AgX:
+  - Default hue preservation is now 60% in most presets, reducing
+    strong hue shifts in bright highlights.
+  - Default contrast has been increased and toe/shoulder power tuned
+    to more closely match sigmoid's defaults.
+  - Added sigmoid-like presets that closely match sigmoid's tone
+    curve.
+  - Removed the punchy presets (except for the blender-like variant,
+    whose parameters still follow Blender's settings).
+  - Improved the toe/shoulder warning tooltips for clarity.
+  - The scene-referred preset is no longer applied exclusively to HDR
+    images.
+  - Primaries selection is now visible even when "disable adjustments"
+    is checked.
+
+- For non-raw images with gamma corrected data we do the initial
+  scaling in linear mode for less artifacts.
+
+- Added a new option to filter images by capture month in collections
+  and collection filters.
+
+- Added `--library` option to `darktable-cli` to use the image library
+  instead of XMP files for reading processing history.
+
+- Exif tags which are added to the metadata editor are now read from
+  the image file on import. For already imported images this can be
+  performed by an Exif refresh.
+
+- The active preset name is now displayed in the header of suitable
+  library modules (import, export). This can be turned off in the
+  "miscellaneous" section in the preferences ("automatically update
+  module name").
+
+- A new log history viewer has been added to the bottom toolbar,
+  providing a persistent record of all dt_control_log messages (e.g.,
+  export progress, library updates, warnings). Click the speech-bubble
+  icon in the center-bottom-right area to open a scrollable popover
+  showing all logged messages with timestamps, automatically
+  deduplicating consecutive identical entries.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
   time. This also fixes the style preview when flying over styles in
   the style module.
+
+- Drawn mask fixes:
+  - Masks do not shift position when crop is toggled on/off.
+  - Pixel-perfect node hovering and editing up to maximum (16x)
+    magnification.
+  - Fix Bezier handle misassignment in vectorized masks causing
+    distorted curves on complex shapes (AI object masks and
+    external raster masks).
 
 - If a tag category is marked as private, all tags and subcategories
   under it are also treated as private.
@@ -218,6 +337,21 @@ changes (where available).
   WB. This was due to a missing reset letting the Color Calibration
   module starting with a wrong WB.
 
+- Avoid speckles when creating drawn masks using the vectorize option
+  in the Raster File module.
+
+- Fixed spurious export size is reduced because of memory restrictions
+  issue.
+
+- Fixed darktable on startup failing to delete left over database
+  lockfiles for non default workspaces.
+
+- Fixed a rare bug which appeared when scale-pixels module was moved above
+  the tone-mapper while applying a shift in "rotate and perspective" module.
+
+- Fixed white and middle-grey patches being swapped for Datacolor
+  SpyderCheckr 48 in the Color Calibration module.
+
 ## Lua
 
 ### API Version
@@ -258,7 +392,9 @@ changes (where available).
 
 ### Optional
 
-- N/A
+- ONNX Runtime 1.17+ for AI features
+
+- libarchive for AI model extraction
 
 ## RawSpeed changes
 

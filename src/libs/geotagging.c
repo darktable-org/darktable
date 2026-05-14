@@ -1439,26 +1439,20 @@ static void _selection_changed_callback(gpointer instance, dt_lib_module_t *self
 #endif
 }
 
-static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_lib_module_t *self)
+static void _datetime_scroll_over(GtkEventControllerScroll *controller,
+                                  double dx, double dy,
+                                  dt_lib_module_t *self)
 {
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
   dt_lib_geotagging_t *d = self->data;
   if(!d->editing)
   {
+    GtkWidget* w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
     int i = 0;
     for(i = 0; i < DT_GEOTAG_PARTS_NB; i++)
       if(w == d->dt.widget[i]) break;
 
-    int delta_y;
-    int increment = 0;
-    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
-    {
-      if(delta_y < 0) increment = 1;
-      else if(delta_y > 0) increment = -1;
-    }
-
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    int increment = CLAMPF(-dy, -1, 1);
+    if(dt_modifier_eq(controller, GDK_SHIFT_MASK))
       increment *= 10;
 
     GDateTime *datetime;
@@ -1491,8 +1485,6 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
 
     _new_datetime(datetime, self);
   }
-
-  return TRUE;
 }
 
 // type 0 date/time, 1 original date/time, 2 offset
@@ -2006,7 +1998,11 @@ void gui_init(dt_lib_module_t *self)
   {
     g_signal_connect(d->dt.widget[i], "changed", G_CALLBACK(_datetime_entry_changed), self);
     g_signal_connect(d->dt.widget[i], "key-press-event", G_CALLBACK(_datetime_key_pressed), self);
-    g_signal_connect(d->dt.widget[i], "scroll-event", G_CALLBACK(_datetime_scroll_over), self);
+    dt_gui_connect_scroll(d->dt.widget[i],
+                          GTK_EVENT_CONTROLLER_SCROLL_VERTICAL
+                          | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _datetime_scroll_over,
+                          self);
   }
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _selection_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);

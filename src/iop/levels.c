@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -340,7 +340,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+    if(g && dt_pipe_is_full(piece->pipe))
     {
       dt_iop_gui_enter_critical_section(self);
       const dt_hash_t hash = g->hash;
@@ -362,7 +362,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       compute_lut(piece);
     }
 
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    if(dt_pipe_is_preview(piece->pipe)
        || d->levels[0] == DT_LEVELS_UNINIT || d->levels[1] == DT_LEVELS_UNINIT
        || d->levels[2] == DT_LEVELS_UNINIT)
     {
@@ -370,7 +370,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       compute_lut(piece);
     }
 
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && d->mode == LEVELS_MODE_AUTOMATIC)
+    if(g && dt_pipe_is_preview(piece->pipe) && d->mode == LEVELS_MODE_AUTOMATIC)
     {
       dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_iop_gui_enter_critical_section(self);
@@ -482,7 +482,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_levels_data_t *d = piece->data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(pipe))
     piece->request_histogram |= DT_REQUEST_ON;
   else
     piece->request_histogram &= ~DT_REQUEST_ON;
@@ -978,7 +978,7 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, d
 
 static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_levels_params_t *p = self->params;
   dt_iop_levels_gui_data_t *g = self->gui_data;
 

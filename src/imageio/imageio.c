@@ -1359,7 +1359,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
           nodes = g_list_previous(nodes))
       {
         dt_dev_pixelpipe_iop_t *node = nodes->data;
-        if(dt_iop_module_is(node->module->so, "finalscale"))
+        if(dt_iop_module_is_finalscale(node->module))
         {
           finalscale = node;
           break;
@@ -1730,6 +1730,7 @@ static int _preview_write_image(dt_imageio_module_data_t *data,
 {
   _imageio_preview_t *d = (_imageio_preview_t *)data;
 
+  if(!in) return 1;
   memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
   d->width = data->width;
   d->height = data->height;

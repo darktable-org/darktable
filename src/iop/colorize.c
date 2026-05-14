@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -174,8 +174,12 @@ void process(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorize_data_t *data = piece->data;
   dt_iop_colorize_global_data_t *gd = self->global_data;
@@ -229,7 +233,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+void color_picker_apply(dt_iop_module_t *self,
+                        GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_colorize_gui_data_t *g = self->gui_data;
@@ -252,11 +257,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   p->hue        = H;
   p->saturation = S;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->hue, p->hue);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
   update_saturation_slider_end_color(g->saturation, p->hue);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -266,7 +271,9 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)p1;
@@ -299,12 +306,16 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->mix = p->source_lightness_mix / 100.0f;
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorize_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;

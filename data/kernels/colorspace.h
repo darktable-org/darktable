@@ -56,10 +56,10 @@ static inline float4 Lab_2_LCH(float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
 
-  H = (H > 0.0f) ? H / (2.0f*M_PI_F) : 1.0f - fabs(H) / (2.0f*M_PI_F);
+  H = (H > 0.0f) ? H / DT_2PI_F : 1.0f - fabs(H) / DT_2PI_F;
 
   const float L = Lab.x;
-  const float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
+  const float C = dt_fast_hypot(Lab.y, Lab.z);
 
   return (float4)(L, C, H, Lab.w);
 }
@@ -68,8 +68,8 @@ static inline float4 Lab_2_LCH(float4 Lab)
 static inline float4 LCH_2_Lab(float4 LCH)
 {
   const float L = LCH.x;
-  const float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
-  const float b = sin(2.0f*M_PI_F*LCH.z) * LCH.y;
+  const float a = dtcl_cos(DT_2PI_F*LCH.z) * LCH.y;
+  const float b = dtcl_sin(DT_2PI_F*LCH.z) * LCH.y;
 
   return (float4)(L, a, b, LCH.w);
 }
@@ -79,15 +79,15 @@ static inline float4 lab_f(float4 x)
 {
   const float4 epsilon = 216.0f / 24389.0f;
   const float4 kappa = 24389.0f / 27.0f;
-  return (x > epsilon) ? dtcl_pow(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
+  return (x > epsilon) ? cbrt(x) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
 }
 
 
 static inline float4 XYZ_to_Lab(float4 xyz)
 {
   float4 lab;
-  const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 1.0f);
-  xyz = lab_f(xyz / d50);
+  const float4 d50i = (float4)(1.0f / 0.9642f, 1.0f, 1.0f / 0.8249f, 1.0f);
+  xyz = lab_f(xyz * d50i);
   lab.x = 116.0f * xyz.y - 16.0f;
   lab.y = 500.0f * (xyz.x - xyz.y);
   lab.z = 200.0f * (xyz.y - xyz.z);
@@ -98,7 +98,7 @@ static inline float4 XYZ_to_Lab(float4 xyz)
 
 static inline float4 lab_f_inv(float4 x)
 {
-  const float4 epsilon = 0.206896551f;
+  const float4 epsilon = 0.20689655172413796f; // cbrtf(216.0f/24389.0f
   const float4 kappa   = 24389.0f / 27.0f;
   return (x > epsilon) ? x*x*x : ((float4)116.0f * x - (float4)16.0f)/kappa;
 }
@@ -182,7 +182,7 @@ static inline float4 RGB_2_HSL(const float4 RGB)
 
   const float L = (var_Max + var_Min) / 2.0f;
 
-  if(fabs(del_Max) > 1e-6f && fabs(del_Max) > 1e-6)
+  if(fabs(var_Max) > 1e-6f && fabs(del_Max) > 1e-6)
   {
     if (L < 0.5f) S = del_Max / (var_Max + var_Min);
     else          S = del_Max / (2.0f - var_Max - var_Min);
@@ -195,8 +195,7 @@ static inline float4 RGB_2_HSL(const float4 RGB)
     else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
     else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
 
-    if (H < 0.0f) H += 1.0f;
-    if (H > 1.0f) H -= 1.0f;
+    H -= floor(H);
   }
 
   return (float4)(H, S, L, RGB.w);
@@ -206,8 +205,7 @@ static inline float4 RGB_2_HSL(const float4 RGB)
 
 static inline float Hue_2_RGB(float v1, float v2, float vH)
 {
-  if (vH < 0.0f) vH += 1.0f;
-  if (vH > 1.0f) vH -= 1.0f;
+  vH = vH - floor(vH);
   if ((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
   if ((2.0f * vH) < 1.0f) return (v2);
   if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
@@ -277,8 +275,7 @@ static inline float4 RGB_2_HSV(const float4 RGB)
 
   HSV.x /= 6.0f;
 
-  if(HSV.x < 0)
-    HSV.x += 1.0f;
+  HSV.x -= floor(HSV.x);
 
   return HSV;
 }
@@ -437,10 +434,10 @@ static inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
 
 static inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 {
-  const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
+  const float h = atan2(JzAzBz.z, JzAzBz.y) / DT_2PI_F;
   float4 JzCzhz;
   JzCzhz.x = JzAzBz.x;
-  JzCzhz.y = dtcl_sqrt(JzAzBz.y * JzAzBz.y + JzAzBz.z * JzAzBz.z);
+  JzCzhz.y = dt_fast_hypot(JzAzBz.y, JzAzBz.z);
   JzCzhz.z = (h >= 0.0f) ? h : 1.0f + h;
   JzCzhz.w = JzAzBz.w;
   return JzCzhz;
@@ -955,9 +952,10 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 
 static inline float lookup_gamut(global const float *gamut_lut, const float x)
 {
+
   // Linearly interpolate the value of the gamut LUT at the hue angle in radians.
   // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
+  const float x_test = (float)LUT_ELEM * (x + M_PI_F) / DT_2PI_F;
 
   // find the 2 closest integer coordinates (next/previous)
   const float x_prev = floor(x_test);

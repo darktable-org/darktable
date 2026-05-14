@@ -2561,6 +2561,55 @@ void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float prima
     for(size_t j = 0; j < 3; j++) RGB_to_XYZ_transposed[i][j] = scale[i] * primaries_matrix[i][j];
 }
 
+// exhaustive switch with no default: when dt_colorspaces_color_profile_type_t
+// gains a new value, the compiler warns and forces this list to be updated;
+// DT_COLORSPACE_NONE and DT_COLORSPACE_FILE require additional context and are
+// handled by callers
+gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile_type_t type)
+{
+  switch(type)
+  {
+    // wider than sRGB
+    case DT_COLORSPACE_ADOBERGB:
+    case DT_COLORSPACE_PROPHOTO_RGB:
+    case DT_COLORSPACE_LIN_REC2020:
+    case DT_COLORSPACE_PQ_REC2020:
+    case DT_COLORSPACE_HLG_REC2020:
+    case DT_COLORSPACE_PQ_P3:
+    case DT_COLORSPACE_HLG_P3:
+    case DT_COLORSPACE_DISPLAY_P3:
+      return TRUE;
+
+    // sRGB primaries (gamma may differ but gamut is the same)
+    case DT_COLORSPACE_SRGB:
+    case DT_COLORSPACE_REC709:
+    case DT_COLORSPACE_LIN_REC709:
+      return FALSE;
+
+    // non-RGB / internal / pseudo profiles — not wide-gamut
+    case DT_COLORSPACE_NONE:
+    case DT_COLORSPACE_FILE:
+    case DT_COLORSPACE_XYZ:
+    case DT_COLORSPACE_LAB:
+    case DT_COLORSPACE_INFRARED:
+    case DT_COLORSPACE_DISPLAY:
+    case DT_COLORSPACE_DISPLAY2:
+    case DT_COLORSPACE_EMBEDDED_ICC:
+    case DT_COLORSPACE_EMBEDDED_MATRIX:
+    case DT_COLORSPACE_STANDARD_MATRIX:
+    case DT_COLORSPACE_ENHANCED_MATRIX:
+    case DT_COLORSPACE_VENDOR_MATRIX:
+    case DT_COLORSPACE_ALTERNATE_MATRIX:
+    case DT_COLORSPACE_BRG:
+    case DT_COLORSPACE_EXPORT:
+    case DT_COLORSPACE_SOFTPROOF:
+    case DT_COLORSPACE_WORK:
+    case DT_COLORSPACE_LAST:
+      return FALSE;
+  }
+  return FALSE;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -53,6 +53,9 @@
 #include "common/undo.h"
 #include "common/gimp.h"
 #include "common/pfm.h"
+#ifdef HAVE_AI
+#include "common/ai_models.h"
+#endif
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -690,7 +693,7 @@ void dt_dump_pipe_diff_pfm(
     const size_t o1 = k + border;
     const size_t o2 = k + pk;
     /* we show a shaded image as background but mark NAN and inf locations */
-    const float shade = good ? 0.05f * sqrtf(CLIP(scale * fmaxf(0.0f, b[k]))) : 0.0f;
+    const float shade = good ? 0.02f * sqrtf(CLIP(scale * fmaxf(0.0f, b[k]))) : 0.0f;
     o[o1] = o[o2] = shade;
     o[o2 + pk-border] = good ? shade : 1.0f;
     /* diffs and ratios are only shown if signal is good */
@@ -703,9 +706,9 @@ void dt_dump_pipe_diff_pfm(
                           ? ((cval > gval ? cval / gval : gval / cval) - 1.0f)
                           : 0.0f;
       if(diff > 1e-7)
-        o[o1] = 0.3f + CLIP(100.0f * sqrtf(diff));
-      if(quot > 1e-3)
-        o[o2] = 0.3f + CLIP(10.0f * quot);
+        o[o1] = 0.2f + CLIP(100.0f * sqrtf(diff));
+      if(quot > 1e-5)
+        o[o2] = 0.2f + CLIP(10.0f * sqrtf(quot));
     }
     else
       invalids += 1;
@@ -917,9 +920,15 @@ char *version = g_strdup_printf(
 #endif
 
 #ifdef HAVE_WEBP
-               "  WebP                   -> ENABLED\n",
+               "  WebP                   -> ENABLED\n"
 #else
-               "  WebP                   -> DISABLED\n",
+               "  WebP                   -> DISABLED\n"
+#endif
+
+#ifdef HAVE_AI
+               "  AI                     -> ENABLED\n",
+#else
+               "  AI                     -> DISABLED\n",
 #endif
 
                PACKAGE_DOCS,
@@ -1144,6 +1153,7 @@ int dt_init(int argc,
           !strcmp(darg, "pipe") ? DT_DEBUG_PIPE :
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
+          !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1564,9 +1574,6 @@ int dt_init(int argc,
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
 
-  const int last_configure_version =
-    dt_conf_get_int("performance_configuration_version_completed");
-
   gboolean has_workspace = FALSE;
 
   // we need this REALLY early so that error messages can be shown,
@@ -1621,7 +1628,7 @@ int dt_init(int argc,
   const char *dblabel = dt_conf_get_string("workspace/label");
   const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
 
-  const gboolean default_dbname = !has_workspace || strcmp(dblabel, "") == 0;
+  const gboolean default_dbname = strcmp(dblabel, "") == 0;
 
   char darktablerc[PATH_MAX] = { 0 };
   snprintf(darktablerc, sizeof(darktablerc),
@@ -1649,12 +1656,25 @@ int dt_init(int argc,
   {
     dt_splash_screen_create(FALSE);
   }
+  const int last_configure_version =
+    dt_conf_get_int("performance_configuration_version_completed");
 
   // detect cpu features and decide which codepaths to enable
   dt_codepaths_init();
 
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
+
+#ifdef HAVE_AI
+  // initialize AI models registry
+  darktable.ai_registry = dt_ai_models_init();
+  if(darktable.ai_registry)
+  {
+    dt_ai_models_load_registry(darktable.ai_registry);
+    if(!darktable.ai_registry->ai_enabled)
+      dt_print(DT_DEBUG_AI, "[darktable_ai] AI subsystem is disabled");
+  }
+#endif
 
   // initialize datetime data
   dt_datetime_init();
@@ -1698,7 +1718,7 @@ int dt_init(int argc,
       if(connection) g_object_unref(connection);
     }
     dt_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
-    if(!image_loaded_elsewhere && init_gui) dt_database_show_error(darktable.db);
+    if(!image_loaded_elsewhere && init_gui) dt_database_show_error(darktable.db, dblabel);
 
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.");
     return 1;
@@ -1853,23 +1873,25 @@ int dt_init(int argc,
   heif_init(NULL);
 #endif
 
+  dt_splash_screen_set_progress(_("initializing WB presets"));
+  dt_wb_presets_init(NULL);
+
+  // Do locale-sensitive init BEFORE starting any background worker jobs
+  dt_splash_screen_set_progress(_("loading noise profiles"));
+  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
+
   dt_splash_screen_set_progress(_("starting OpenCL"));
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
+  darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
+  dt_points_init(darktable.points, dt_get_num_threads());
+
+  // Only then kick off the OpenCL background job
   if(init_gui)
     dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
-  darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
-  dt_points_init(darktable.points, dt_get_num_threads());
-
-  dt_wb_presets_init(NULL);
-
-  dt_splash_screen_set_progress(_("loading noise profiles"));
-  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
-
-  // must come before mipmap_cache, because that one will need to access
-  // image dimensions stored in here:
+  // must come before mipmap_cache, because that one will need to access image dimensions stored in here:
   dt_image_cache_init();
 
   dt_mipmap_cache_init();
@@ -2043,7 +2065,7 @@ int dt_init(int argc,
 
     // finally set the cursor to be the default.
     // for some reason this is needed on some systems to pick up the correctly themed cursor
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   }
   free(config_info);
 
@@ -2199,6 +2221,10 @@ void dt_cleanup()
   dt_mipmap_cache_cleanup();
 
   dt_colorspaces_cleanup(darktable.color_profiles);
+#ifdef HAVE_AI
+  dt_ai_models_cleanup(darktable.ai_registry);
+  darktable.ai_registry = NULL;
+#endif
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
   darktable.conf = NULL;
@@ -2576,6 +2602,16 @@ void dt_configure_runtime_performance(const int old, char *info)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL mandatory timeout has been updated to 1000.\n\n"), DT_PERF_INFOSIZE);
+  }
+
+  if(old == 18)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL 'per device' settings have changed.\n\n"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you will find 'per device' data in 'cldevice_v6_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'micro_nap' 'pinned_memory' 'eventhandles' 'async' 'disabled' 'advantage' 'unified_fraction'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
   #undef INFO_HEADER

@@ -66,8 +66,6 @@ static void _bm_free(potrace_bitmap_t *bm)
   }
 }
 
-#define SET_THRESHOLD 0.6f
-
 static inline void _scale_point(float p[2],
                                 const float xscale,
                                 const float yscale,
@@ -135,14 +133,19 @@ static void _add_point(dt_masks_form_t *form,
   form->points = g_list_append(form->points, bzpt);
 }
 
-static uint32_t formnb = 0;
+static gint formnb = 0;
 
 GList *ras2forms(const float *mask,
                  const int width,
                  const int height,
-                 const dt_image_t *const image)
+                 const dt_image_t *const image,
+                 const float threshold,
+                 const int turdsize,
+                 const double alphamax,
+                 GList **out_signs)
 {
   GList *forms = NULL;
+  GList *signs = NULL;
 
   //  create bitmap mask for potrace
 
@@ -154,7 +157,7 @@ GList *ras2forms(const float *mask,
     for(int x=0; x < width; x++)
     {
       const int index = x + y * width;
-      if(mask[index] < SET_THRESHOLD)
+      if(mask[index] < threshold)
       {
         // black enough to be a point of the form
         BM_USET(bm, x, y);
@@ -168,7 +171,11 @@ GList *ras2forms(const float *mask,
 
   potrace_param_t *param = potrace_param_default();
   // finer path possible
-  param->alphamax = 0.0f;
+  param->turdsize = turdsize > 0 ? turdsize : 50; // ignore area whose size are < 50
+  param->alphamax = alphamax;
+  param->turnpolicy = POTRACE_TURNPOLICY_MINORITY;
+  param->opticurve = 1;
+  param->opttolerance = 0.8;
 
   potrace_state_t *st = potrace_trace(param, bm);
 
@@ -185,19 +192,29 @@ GList *ras2forms(const float *mask,
     const potrace_dpoint_t start = cv->c[n-1][2];
 
     dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
-    snprintf(form->name, sizeof(form->name), "path raster %d", ++formnb);
+    snprintf(form->name, sizeof(form->name), "path raster %d",
+             g_atomic_int_add(&formnb, 1) + 1);
 
+    // Potrace outputs cubic Bezier segments where:
+    //   c[i][0] = outgoing ctrl of the segment's start point
+    //   c[i][1] = incoming ctrl of the segment's end point
+    //   c[i][2] = endpoint
+    // darktable stores per point: ctrl1 = incoming handle, ctrl2 = outgoing.
+    // We must split each segment's control pair across two adjacent points.
+
+    // precompute image scaling factors (used for handle coordinate transform)
+    const float xsc = image ? image->p_width / (float)width : 0.0f;
+    const float ysc = image ? image->p_height / (float)height : 0.0f;
+
+    // add all corner points with zero-length handles
     _add_point(form, image, width, height, start.x, start.y, -1, -1, -1, -1);
 
     for(int i = 0; i < n; i++)
     {
       if(cv->tag[i] == POTRACE_CURVETO)
       {
-        const potrace_dpoint_t c0 = cv->c[i][0];
-        const potrace_dpoint_t c1 = cv->c[i][1];
-        const potrace_dpoint_t e  = cv->c[i][2];
-
-        _add_point(form, image, width, height, e.x, e.y, c0.x, c0.y, c1.x, c1.y);
+        const potrace_dpoint_t e = cv->c[i][2];
+        _add_point(form, image, width, height, e.x, e.y, -1, -1, -1, -1);
       }
       else // POTRACE_CORNER
       {
@@ -209,13 +226,63 @@ GList *ras2forms(const float *mask,
       }
     }
 
+    // assign Bezier handles: for each CURVETO segment, set
+    //   start_point.ctrl2 = c[i][0]  (outgoing)
+    //   end_point.ctrl1   = c[i][1]  (incoming)
+    // the path is closed, so the last segment wraps back to the start point
+    {
+      GList *pt = form->points;  // start point
+      for(int i = 0; i < n; i++)
+      {
+        if(cv->tag[i] == POTRACE_CURVETO)
+        {
+          const potrace_dpoint_t c0 = cv->c[i][0];
+          const potrace_dpoint_t c1 = cv->c[i][1];
+
+          // outgoing handle of current (start-of-segment) point
+          dt_masks_point_path_t *ps = pt->data;
+          ps->ctrl2[0] = c0.x;
+          ps->ctrl2[1] = c0.y;
+          if(image)
+            _scale_point(ps->ctrl2, xsc, ysc,
+                         image->crop_x, image->crop_y,
+                         image->width, image->height);
+
+          // advance to endpoint (wrap to start for the closing segment)
+          pt = g_list_next(pt);
+          if(!pt) pt = form->points;
+
+          // incoming handle of end-of-segment point
+          dt_masks_point_path_t *pe = pt->data;
+          pe->ctrl1[0] = c1.x;
+          pe->ctrl1[1] = c1.y;
+          if(image)
+            _scale_point(pe->ctrl1, xsc, ysc,
+                         image->crop_x, image->crop_y,
+                         image->width, image->height);
+        }
+        else // POTRACE_CORNER: two points added, no Bezier handles
+        {
+          pt = g_list_next(pt); if(!pt) pt = form->points;
+          pt = g_list_next(pt); if(!pt) pt = form->points;
+        }
+      }
+    }
+
     forms = g_list_prepend(forms, form);
+    if(out_signs)
+      signs = g_list_prepend(signs, GINT_TO_POINTER(p->sign));
   }
 
   potrace_state_free(st);
   potrace_param_free(param);
   _bm_free(bm);
 
+  // restore potrace's traversal order (outer first, then its holes).
+  // group consumers need the outer at list position 0 so it acts as the
+  // base while holes subtract on top with DIFFERENCE mode
+  forms = g_list_reverse(forms);
+  if(out_signs) *out_signs = g_list_reverse(signs);
   return forms;
 }
 

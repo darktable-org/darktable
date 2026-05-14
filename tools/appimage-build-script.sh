@@ -28,7 +28,7 @@ export DESTDIR=../AppDir
 # features. For example, you can easily build darktable with support for
 # ImageMagick instead of GraphicsMagick by running this script with the
 # parameters `--disable-graphicsmagick --enable-imagemagick`
-./build.sh --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+./build.sh --enable-ai --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
 
 # Sanitize path to executable in the .desktop (it will be handled by AppImage).
 # In reality, most .desktop files do not include the full path to the program
@@ -69,6 +69,14 @@ cp -a /usr/lib/$ARCH-linux-gnu/libgphoto2_port/* ../AppDir/usr/lib/libgphoto2_po
 # on the host system, see https://github.com/darktable-org/darktable/issues/19266
 mkdir -p ../AppDir/usr/lib/gio
 cp -a /usr/lib/$ARCH-linux-gnu/gio/* ../AppDir/usr/lib/gio
+
+# Include ONNX Runtime library. ORT is loaded via dlopen (ORT_LAZY_LOAD) so
+# linuxdeploy can't detect it automatically. Copy from the build tree.
+ORT_LIB_DIR=$(cmake -LA -N ../build 2>/dev/null | grep ONNXRuntime_LIB_DIR:PATH | cut -d= -f2)
+if [ -d "$ORT_LIB_DIR" ]; then
+  cp -a "$ORT_LIB_DIR"/libonnxruntime*.so* ../AppDir/usr/lib/
+  echo "Bundled ONNX Runtime from $ORT_LIB_DIR"
+fi
 
 # Since linuxdeploy is itself an AppImage, we don't rely on it being installed
 # on the build system, but download it every time we run this script. If that

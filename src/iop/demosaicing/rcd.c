@@ -38,7 +38,7 @@
 */
 
 /* Some notes about the algorithm
-* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable.
+* 1. The calculated data at the tiling borders RCD_BORDER must be 10 to be stable.
 * 2. For the outermost tiles we only have to discard a 7 pixel border region interpolated otherwise.
 * 3. The tilesize has a significant influence on performance, the default is a good guess for modern
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
@@ -65,8 +65,8 @@
   #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
-#define RCD_BORDER 9          // avoid tile-overlap errors
-#define RCD_MARGIN 7          // for the outermost tiles we can have a smaller outer border
+#define RCD_BORDER 10         // avoid tile-overlap errors
+#define RCD_MARGIN 9          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (DT_RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 DT_RCD_TILESIZE
 #define w2 (2 * DT_RCD_TILESIZE)
@@ -80,191 +80,6 @@
 static inline float _safe_in(float a, float scale)
 {
   return fmaxf(0.0f, a) * scale;
-}
-
-/** This is basically ppg adopted to only write data to RCD_MARGIN */
-static void rcd_ppg_border(float *const out,
-                           const float *const in,
-                           const int width,
-                           const int height,
-                           const uint32_t filters,
-                           const int margin)
-{
-  const int border = margin + 3;
-  // write approximatad 3-pixel border region to out
-  float sum[8];
-  for(int j = 0; j < height; j++)
-  {
-    for(int i = 0; i < width; i++)
-    {
-      if(i == 3 && j >= 3 && j < height - 3) i = width - 3;
-      if(i == width) break;
-      memset(sum, 0, sizeof(float) * 8);
-      for(int y = j - 1; y != j + 2; y++)
-      {
-        for(int x = i - 1; x != i + 2; x++)
-        {
-          if((y >= 0) && (x >= 0) && (y < height) && (x < width))
-          {
-            const int f = FC(y, x, filters);
-            sum[f] += fmaxf(0.0f, in[(size_t)y * width + x]);
-            sum[f + 4]++;
-          }
-        }
-      }
-      const int f = FC(j, i, filters);
-      for(int c = 0; c < 3; c++)
-      {
-        if(c != f && sum[c + 4] > 0.0f)
-          out[4 * ((size_t)j * width + i) + c] = sum[c] / sum[c + 4];
-        else
-          out[4 * ((size_t)j * width + i) + c] = fmaxf(0.0f, in[(size_t)j * width + i]);
-      }
-    }
-  }
-
-  DT_OMP_FOR()
-  for(int j = 3; j < height - 3; j++)
-  {
-    float *buf = out + (size_t)4 * width * j + 4 * 3;
-    const float *buf_in = in + (size_t)width * j + 3;
-    for(int i = 3; i < width - 3; i++)
-    {
-      if(i == border && j >= border && j < height - border)
-      {
-        i = width - border;
-        buf = out + (size_t)4 * width * j + 4 * i;
-        buf_in = in + (size_t)width * j + i;
-      }
-      if(i == width) break;
-
-      const int c = FC(j, i, filters);
-      dt_aligned_pixel_t color;
-      const float pc = fmaxf(0.0f, buf_in[0]);
-      if(c == 0 || c == 2)
-      {
-        color[c] = pc;
-        const float pym  = fmaxf(0.0f, buf_in[-width * 1]);
-        const float pym2 = fmaxf(0.0f, buf_in[-width * 2]);
-        const float pym3 = fmaxf(0.0f, buf_in[-width * 3]);
-        const float pyM  = fmaxf(0.0f, buf_in[+width * 1]);
-        const float pyM2 = fmaxf(0.0f, buf_in[+width * 2]);
-        const float pyM3 = fmaxf(0.0f, buf_in[+width * 3]);
-        const float pxm  = fmaxf(0.0f, buf_in[-1]);
-        const float pxm2 = fmaxf(0.0f, buf_in[-2]);
-        const float pxm3 = fmaxf(0.0f, buf_in[-3]);
-        const float pxM  = fmaxf(0.0f, buf_in[+1]);
-        const float pxM2 = fmaxf(0.0f, buf_in[+2]);
-        const float pxM3 = fmaxf(0.0f, buf_in[+3]);
-
-        const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
-        const float diffx = (fabsf(pxm2 - pc) + fabsf(pxM2 - pc) + fabsf(pxm - pxM)) * 3.0f
-                            + (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
-        const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
-        const float diffy = (fabsf(pym2 - pc) + fabsf(pyM2 - pc) + fabsf(pym - pyM)) * 3.0f
-                            + (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
-        if(diffx > diffy)
-        {
-          // use guessy
-          const float m = fminf(pym, pyM);
-          const float M = fmaxf(pym, pyM);
-          color[1] = fmaxf(fminf(guessy * .25f, M), m);
-        }
-        else
-        {
-          const float m = fminf(pxm, pxM);
-          const float M = fmaxf(pxm, pxM);
-          color[1] = fmaxf(fminf(guessx * .25f, M), m);
-        }
-      }
-      else
-        color[1] = pc;
-
-      color[3] = 0.0f;
-      for_each_channel(k)
-        buf[k] = color[k];
-      buf += 4;
-      buf_in++;
-    }
-  }
-// for all pixels: interpolate colors into float array
-  DT_OMP_FOR()
-  for(int j = 1; j < height - 1; j++)
-  {
-    float *buf = out + (size_t)4 * width * j + 4;
-    for(int i = 1; i < width - 1; i++)
-    {
-      if(i == margin && j >= margin && j < height - margin)
-      {
-        i = width - margin;
-        buf = out + (size_t)4 * (width * j + i);
-      }
-      const int c = FC(j, i, filters);
-      dt_aligned_pixel_t color = { buf[0], buf[1], buf[2], buf[3] };
-      const int linesize = 4 * width;
-      // fill all four pixels with correctly interpolated stuff: r/b for green1/2
-      // b for r and r for b
-      if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
-      {
-        // calculate red and blue for green pixels:
-        // need 4-nbhood:
-        const float *nt = buf - linesize;
-        const float *nb = buf + linesize;
-        const float *nl = buf - 4;
-        const float *nr = buf + 4;
-        if(FC(j, i + 1, filters) == 0) // red nb in same row
-        {
-          color[2] = (nt[2] + nb[2] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
-          color[0] = (nl[0] + nr[0] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
-        }
-        else
-        {
-          // blue nb
-          color[0] = (nt[0] + nb[0] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
-          color[2] = (nl[2] + nr[2] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
-        }
-      }
-      else
-      {
-        // get 4-star-nbhood:
-        const float *ntl = buf - 4 - linesize;
-        const float *ntr = buf + 4 - linesize;
-        const float *nbl = buf - 4 + linesize;
-        const float *nbr = buf + 4 + linesize;
-
-        if(c == 0)
-        {
-          // red pixel, fill blue:
-          const float diff1  = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
-          const float guess1 = ntl[2] + nbr[2] + 2.0f * color[1] - ntl[1] - nbr[1];
-          const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
-          const float guess2 = ntr[2] + nbl[2] + 2.0f * color[1] - ntr[1] - nbl[1];
-          if(diff1 > diff2)
-            color[2] = guess2 * .5f;
-          else if(diff1 < diff2)
-            color[2] = guess1 * .5f;
-          else
-            color[2] = (guess1 + guess2) * .25f;
-        }
-        else // c == 2, blue pixel, fill red:
-        {
-          const float diff1  = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
-          const float guess1 = ntl[0] + nbr[0] + 2.0f * color[1] - ntl[1] - nbr[1];
-          const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
-          const float guess2 = ntr[0] + nbl[0] + 2.0f * color[1] - ntr[1] - nbl[1];
-          if(diff1 > diff2)
-            color[0] = guess2 * .5f;
-          else if(diff1 < diff2)
-            color[0] = guess1 * .5f;
-          else
-            color[0] = (guess1 + guess2) * .25f;
-        }
-      }
-      for_each_channel(k)
-        buf[k] = color[k];
-      buf += 4;
-    }
-  }
 }
 
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
@@ -308,13 +123,9 @@ static void rcd_demosaic(float *const restrict out,
                          const uint32_t filters,
                          const float scaler)
 {
+  demosaic_ppg(out, in, width, height, filters, 0.0f, RCD_BORDER);
   if(width < 2*RCD_BORDER || height < 2*RCD_BORDER)
-  {
-    rcd_ppg_border(out, in, width, height, filters, RCD_BORDER);
     return;
-  }
-
-  rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
 
   const float revscaler = 1.0f / scaler;
 
@@ -419,8 +230,7 @@ static void rcd_demosaic(float *const restrict out,
           }
         }
 
-        // STEP 3: Populate the green channel
-        // Step 3.1: Populate the green channel at blue and red CFA positions
+        // STEP 3: Populate the green channel at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
           for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * DT_RCD_TILESIZE + col, lpindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, lpindx++)
@@ -429,9 +239,9 @@ static void rcd_demosaic(float *const restrict out,
 
             // Cardinal gradients
             const float N_Grad = eps + fabsf(cfa[indx - w1] - cfa[indx + w1]) + fabsf(cfai - cfa[indx - w2]) + fabsf(cfa[indx - w1] - cfa[indx - w3]) + fabsf(cfa[indx - w2] - cfa[indx - w4]);
-            const float S_Grad = eps + fabsf(cfa[indx - w1] - cfa[indx + w1]) + fabsf(cfai - cfa[indx + w2]) + fabsf(cfa[indx + w1] - cfa[indx + w3]) + fabsf(cfa[indx + w2] - cfa[indx + w4]);
+            const float S_Grad = eps + fabsf(cfa[indx + w1] - cfa[indx - w1]) + fabsf(cfai - cfa[indx + w2]) + fabsf(cfa[indx + w1] - cfa[indx + w3]) + fabsf(cfa[indx + w2] - cfa[indx + w4]);
             const float W_Grad = eps + fabsf(cfa[indx -  1] - cfa[indx +  1]) + fabsf(cfai - cfa[indx -  2]) + fabsf(cfa[indx -  1] - cfa[indx -  3]) + fabsf(cfa[indx -  2] - cfa[indx -  4]);
-            const float E_Grad = eps + fabsf(cfa[indx -  1] - cfa[indx +  1]) + fabsf(cfai - cfa[indx +  2]) + fabsf(cfa[indx +  1] - cfa[indx +  3]) + fabsf(cfa[indx +  2] - cfa[indx +  4]);
+            const float E_Grad = eps + fabsf(cfa[indx +  1] - cfa[indx -  1]) + fabsf(cfai - cfa[indx +  2]) + fabsf(cfa[indx +  1] - cfa[indx +  3]) + fabsf(cfa[indx +  2] - cfa[indx +  4]);
 
             // Cardinal pixel estimations
             const float lpfi = lpf[lpindx];
@@ -450,7 +260,7 @@ static void rcd_demosaic(float *const restrict out,
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
             const float VH_Disc = (fabsf(0.5f - VH_Central_Value) < fabsf(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
-            rgb[1][indx] = interpolatef(VH_Disc, H_Est, V_Est);
+            rgb[1][indx] = interpolatef(CLIP(VH_Disc), H_Est, V_Est);
           }
         }
 
@@ -504,7 +314,7 @@ static void rcd_demosaic(float *const restrict out,
             const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
-            rgb[c][indx] = rgb[1][indx] + interpolatef(PQ_Disc, Q_Est, P_Est);
+            rgb[c][indx] = rgb[1][indx] + interpolatef(CLIP(PQ_Disc), Q_Est, P_Est);
           }
         }
 
@@ -550,7 +360,7 @@ static void rcd_demosaic(float *const restrict out,
               const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
               // R@G and B@G interpolation
-              rgb[c][indx] = rgb1 + interpolatef(VH_Disc, H_Est, V_Est);
+              rgb[c][indx] = rgb1 + interpolatef(CLIP(VH_Disc), H_Est, V_Est);
             }
           }
         }
@@ -625,12 +435,12 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = sizeof(float) * 1, .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt);
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
     if(err != CL_SUCCESS) goto error;
 
-    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_border_green, sizes, local,
+    size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+    size_t local[2] = { locopt.sizex, locopt.sizey };
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters),
         CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)), CLARGINT(32));
     if(err != CL_SUCCESS) goto error;
@@ -642,12 +452,12 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt);
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
     if(err != CL_SUCCESS) goto error;
 
-    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_border_redblue, sizes, local,
+    size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+    size_t local[2] = { locopt.sizex, locopt.sizey };
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
       CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(filters),
       CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)), CLARGINT(16));
     if(err != CL_SUCCESS) goto error;
@@ -676,42 +486,50 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_1, width, height,
-        CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
-  if(err != CL_SUCCESS) goto error;
-
   // Step 1.2: Calculate vertical and horizontal local discrimination
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_2, width, height,
-        CLARG(VH_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
+  dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 8, .xfactor = 1, .yoffset = 8, .yfactor = 1,
+                                    .cellsize = sizeof(float), .overhead = 0,
+                                    .sizex = 64, .sizey = 64 };
+
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_step_1, &locopt);
   if(err != CL_SUCCESS) goto error;
 
-  // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2_1, width / 2, height,
+  // Fused step1 code with locals.
+  size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+  size_t local[2] = { locopt.sizex, locopt.sizey };
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_step_1, sizes, local,
+      CLARG(cfa), CLARG(VH_dir), CLARG(width), CLARG(height),
+      CLLOCAL(sizeof(float) * (locopt.sizex + 8) * (locopt.sizey + 8)));
+  if(err != CL_SUCCESS) goto error;
+
+  // Step 2: Low pass filter incorporating green, red and blue local samples from the raw data
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2, width / 2, height,
         CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-  // Step 3.1: Populate the green channel at blue and red CFA positions
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3_1, width / 2, height,
+  // Step 3: populate the green channel at blue and red CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3, width / 2, height,
       CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-    // Step 4.1: Calculate a squared P/Q diagonals high pass filter on color differences
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
+  // Step 4.0: Calculate a squared P/Q diagonals high pass filter on color differences
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_0, width / 2, height,
       CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-    // Step 4.2: Calculate P/Q diagonal local discrimination
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
+  // Step 4.1: calculate P/Q diagonal local discrimination
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
         CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-  // Step 4.3: Populate the red and blue channels at blue and red CFA positions
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_1, width / 2, height,
+  // Step 4.2: populate the red and blue channels at blue and red CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
         CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-  // Step 5.2: Populate the red and blue channels at green CFA positions
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_2, width / 2, height,
+  // Step 4.3: Populate the red and blue channels at green CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_3, width / 2, height,
         CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 

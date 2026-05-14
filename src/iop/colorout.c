@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,7 +97,8 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE
+       | IOP_FLAGS_WRITE_PIPECACHE | IOP_FLAGS_WRITE_PIPECACHECL;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
@@ -243,7 +244,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colorout_params_t *p = self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -251,7 +252,7 @@ static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 
 static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_colorout_params_t *p = self->params;
   int pos = dt_bauhaus_combobox_get(widget);
 
@@ -324,9 +325,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_in->width, roi_in->height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    const size_t region[2] = { roi_in->width, roi_in->height };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
   }
@@ -567,7 +567,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   cmsHPROFILE softproof = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
-  d->mode = (pipe->type & DT_DEV_PIXELPIPE_FULL) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  d->mode = dt_pipe_is_full(pipe) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
 
   if(d->xform)
   {
@@ -581,7 +581,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   piece->process_cl_ready = TRUE;
 
   /* if we are exporting then check and set usage of override profile */
-  if(pipe->type & DT_DEV_PIXELPIPE_EXPORT)
+  if(dt_pipe_is_export(pipe))
   {
     if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
@@ -594,13 +594,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     out_filename = p->filename;
     out_intent = p->intent;
   }
-  else if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if(dt_pipe_is_thumb(pipe))
   {
     out_type = dt_mipmap_cache_get_colorspace();
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
   }
-  else if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW2)
+  else if(dt_pipe_is_preview2(pipe))
   {
     /* preview2 is only used in second darkroom window, using display2 profile as output */
     out_type = darktable.color_profiles->display2_type;
@@ -653,7 +653,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   }
 
   /* creating softproof profile if softproof is enabled */
-  if((d->mode != DT_PROFILE_NORMAL) && (pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if((d->mode != DT_PROFILE_NORMAL) && dt_pipe_is_full(pipe))
   {
     const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
       (darktable.color_profiles->softproof_type,

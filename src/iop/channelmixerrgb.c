@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2010-2025 darktable developers.
+  Copyright (C) 2010-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1337,8 +1337,8 @@ static inline void _compute_patches_delta_E(const float *const restrict patches,
 
     // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi],
     // again, to comply with specifications
-    if(h_ref_prime < 0.f) h_ref_prime = 2.f * M_PI_F - h_ref_prime;
-    if(h_test_prime < 0.f) h_test_prime = 2.f * M_PI_F - h_test_prime;
+    if(h_ref_prime < 0.f) h_ref_prime = DT_2PI_F - h_ref_prime;
+    if(h_test_prime < 0.f) h_test_prime = DT_2PI_F - h_test_prime;
 
     // Convert to degrees, again to comply with specs
     h_ref_prime = rad2degf(h_ref_prime);
@@ -1412,9 +1412,9 @@ static inline void _compute_patches_delta_E(const float *const restrict patches,
       else if(fabsf(delta_hue) <= M_PI_F)                         \
         ;                                                         \
       else if(fabsf(delta_hue) > M_PI_F && (hue <= ref_hue))      \
-        delta_hue += 2.f * M_PI_F;                                \
+        delta_hue += DT_2PI_F;                                \
       else if(fabsf(delta_hue) > M_PI_F && (hue > ref_hue))       \
-        delta_hue -= 2.f * M_PI_F;                                \
+        delta_hue -= DT_2PI_F;                                \
       w = sqrtf(expf(-sqf(delta_hue) / 2.f));
 
 
@@ -2064,7 +2064,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message
       (chr->temperature,
-        _("white balance applied twice"),
+        _("white balance applied twice (<u>details</u>)"),
         _("the color calibration module is enabled and already provides\n"
           "chromatic adaptation.\n"
           "set the white balance here to camera reference (D65)\n"
@@ -2073,7 +2073,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
     dt_iop_set_module_trouble_message
       (self,
-        _("white balance module error"),
+        _("white balance module error (<u>details</u>)"),
         _("the white balance module is not using the camera\n"
           "reference illuminant, which will cause issues here\n"
           "with chromatic adaptation. either set it to reference\n"
@@ -2086,7 +2086,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message
       (chr->temperature,
-        _("white balance missing"),
+        _("white balance missing (<u>details</u>)"),
         _("this module is not providing a valid reference illuminant\n"
           "causing chromatic adaptation issues in color calibration.\n"
           "enable this module and either set it to reference\n"
@@ -2095,7 +2095,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
     dt_iop_set_module_trouble_message
       (self,
-        _("white balance missing"),
+        _("white balance missing (<u>details</u>)"),
         _("the white balance module is not providing a valid reference\n"
           "illuminant causing issues with chromatic adaptation here.\n"
           "enable white balance and either set it to reference\n"
@@ -2131,7 +2131,7 @@ void process(dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(piece->pipe))
     _declare_cat_on_pipe(self, FALSE);
 
   dt_colormatrix_t RGB_to_XYZ;
@@ -2172,7 +2172,7 @@ void process(dt_iop_module_t *self,
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES
        || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
-      if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+      if(dt_pipe_is_full(piece->pipe))
       {
         // detection on full image only
         dt_iop_gui_enter_critical_section(self);
@@ -2181,7 +2181,7 @@ void process(dt_iop_module_t *self,
         // anyway
         _auto_detect_WB(in, out, data->illuminant_type, roi_in->width, roi_in->height,
                         ch, RGB_to_XYZ, g->XYZ);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
+        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "AI RGB: ");
         dt_iop_gui_leave_critical_section(self);
       }
 
@@ -2305,7 +2305,7 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(piece->pipe))
     _declare_cat_on_pipe(self, FALSE);
 
   if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
@@ -2583,7 +2583,7 @@ int mouse_moved(dt_iop_module_t *self,
   // to prevent hiding the spot behind it
   if(g->is_cursor_close)
   {
-    dt_control_change_cursor(GDK_BLANK_CURSOR);
+    dt_control_change_cursor("none");
   }
   else
   {
@@ -2839,7 +2839,7 @@ void gui_post_expose(dt_iop_module_t *self,
 
 static void _optimize_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   const int i = dt_bauhaus_combobox_get(widget);
@@ -2852,7 +2852,7 @@ static void _optimize_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _checker_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   const int i = dt_bauhaus_combobox_get(widget);
@@ -2872,7 +2872,7 @@ static void _checker_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _safety_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2886,7 +2886,7 @@ static void _safety_changed_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
@@ -2907,7 +2907,7 @@ static void _start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *
 static void _run_profile_callback(GtkWidget *widget,
                                  dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2920,7 +2920,7 @@ static void _run_profile_callback(GtkWidget *widget,
 static void _run_validation_callback(GtkWidget *widget,
                                     dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2933,7 +2933,7 @@ static void _run_validation_callback(GtkWidget *widget,
 static void _commit_profile_callback(GtkWidget *widget,
                                      dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
   dt_iop_channelmixer_rgb_params_t *p = self->params;
 
@@ -2960,7 +2960,7 @@ static void _commit_profile_callback(GtkWidget *widget,
 
   dt_iop_gui_leave_critical_section(self);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_slider_set(g->temperature, p->temperature);
 
@@ -2982,7 +2982,7 @@ static void _commit_profile_callback(GtkWidget *widget,
   dt_bauhaus_slider_set(g->scale_blue_G, p->blue[1]);
   dt_bauhaus_slider_set(g->scale_blue_B, p->blue[2]);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   gui_changed(self, NULL, NULL);
 
@@ -3009,7 +3009,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
   _check_if_close_to_daylight(p->x, p->y,
                               &p->temperature, &p->illuminant, &p->adaptation);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   dt_bauhaus_slider_set(g->temperature, p->temperature);
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
@@ -3025,7 +3025,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
   _update_approx_cct(self);
   _update_illuminant_color(self);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   gui_changed(self, NULL, NULL);
 
@@ -3157,7 +3157,7 @@ void commit_params(dt_iop_module_t *self,
         || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
-           (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) )
+           dt_pipe_is_full(piece->pipe))
 #endif
       )
     {
@@ -3716,7 +3716,7 @@ static void _update_approx_cct(const dt_iop_module_t *self)
 static void _illum_xy_callback(GtkWidget *slider,
                               dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_channelmixer_rgb_params_t *p = self->params;
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
@@ -3735,11 +3735,11 @@ static void _illum_xy_callback(GtkWidget *slider,
   if(t < 3000.f) t = CCT_reverse_lookup(p->x, p->y);
   p->temperature = t;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->temperature, p->temperature);
   _update_approx_cct(self);
   _update_illuminant_color(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -3945,7 +3945,7 @@ void reload_defaults(dt_iop_module_t *self)
 static void _spot_settings_changed_callback(GtkWidget *slider,
                                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
@@ -4070,7 +4070,7 @@ void gui_changed(dt_iop_module_t *self,
     }
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(!w
      || w == g->hue_spot
@@ -4150,7 +4150,7 @@ void gui_changed(dt_iop_module_t *self,
 
   _declare_cat_on_pipe(self, FALSE);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -4271,12 +4271,12 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     dt_Lab_2_LCH(Lab_output, Lch_output);
 
     // Return the values in sliders
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->lightness_spot, Lch_output[0]);
     dt_bauhaus_slider_set(g->chroma_spot, Lch_output[1]);
     dt_bauhaus_slider_set(g->hue_spot, Lch_output[2] * 360.f);
     _paint_hue(self);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     dt_conf_set_float("darkroom/modules/channelmixerrgb/lightness", Lch_output[0]);
     dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_output[1]);
@@ -4385,7 +4385,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     // not accurate enough for color matching
     p->illuminant = DT_ILLUMINANT_CUSTOM;
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     _check_if_close_to_daylight(p->x, p->y, &p->temperature, NULL, NULL);
 
@@ -4405,7 +4405,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     _paint_hue(self);
     gtk_widget_queue_draw(g->origin_spot);
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -4416,7 +4416,7 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   _auto_set_illuminant(self, pipe);
 }
 

@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2012-2025 darktable developers.
+ *    Copyright (C) 2012-2026 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -713,7 +713,7 @@ static void _settings_update_visibility(const _guides_settings_t *gw)
 
 static void _settings_flip_update(const _guides_settings_t *gw)
 {
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   // we retrieve the global settings
   dt_guides_t *guide =
@@ -726,7 +726,7 @@ static void _settings_flip_update(const _guides_settings_t *gw)
     g_free(key);
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _settings_guides_changed(GtkWidget *w,
@@ -969,10 +969,10 @@ static void _settings_autoshow_change(GtkWidget *mi,
   // we inverse the autoshow value for the module
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
   dt_conf_set_bool(key, !dt_conf_get_bool(key));
-  darktable.gui->reset++;
+  DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->guides_combo),
                                dt_conf_get_bool(key));
-  darktable.gui->reset--;
+  DT_LEAVE_GUI_UPDATE();
   g_free(key);
   dt_control_queue_redraw_center();
 }
@@ -1004,7 +1004,7 @@ void dt_guides_cleanup(GList *guides)
 static void _settings_autoshow_change2(GtkWidget *combo,
                                        dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
   dt_conf_set_bool(key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(combo)));
   g_free(key);

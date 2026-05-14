@@ -43,11 +43,10 @@ typedef enum dt_style_applymode_t
   DT_STYLE_HISTORY_OVERWRITE = 1
 } dt_style_applymode_t;
 
-typedef enum dt_style_previewmode_t {
-  DT_STYLE_PREVIEW_NO,
+typedef enum dt_style_preview_size_t {
   DT_STYLE_PREVIEW_DEFAULT,
   DT_STYLE_PREVIEW_LARGE
-} dt_style_previewmode;
+} dt_style_preview_size_t;
 
 typedef struct dt_style_item_t
 {

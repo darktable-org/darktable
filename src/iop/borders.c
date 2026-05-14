@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -607,9 +607,8 @@ int process_cl(dt_iop_module_t *self,
 
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  const int zero = 0;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_borders_fill, width, height,
-                            CLARG(dev_out), CLARG(zero), CLARG(zero),
+                            CLARG(dev_out), CLARGINT(0), CLARGINT(0),
                             CLARG(width), CLARG(height), CLARG(col));
   if(err != CL_SUCCESS) goto error;
 
@@ -639,12 +638,11 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
   }
 
-  size_t iorigin[] = { 0, 0, 0 };
-  size_t oorigin[] = { binfo.border_in_x, binfo.border_in_y, 0 };
-  size_t region[]  = { roi_in->width, roi_in->height, 1 };
+  const size_t oorigin[2] = { binfo.border_in_x, binfo.border_in_y };
+  const size_t region[2]  = { roi_in->width, roi_in->height };
 
   // copy original input from dev_in -> dev_out as starting point
-  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, oorigin, region);
 
 error:
   return err;
@@ -775,9 +773,9 @@ static void _aspect_changed(GtkWidget *combo,
   if(which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
     p->aspect = _aspect_ratios[which];
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->aspect_slider,p->aspect);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -792,9 +790,9 @@ static void _position_h_changed(GtkWidget *combo,
   if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
     p->pos_h = _pos_h_ratios[which];
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->pos_h_slider,p->pos_h);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -809,9 +807,9 @@ static void _position_v_changed(GtkWidget *combo,
   if(which < DT_IOP_BORDERS_POSITION_V_COUNT)
   {
     p->pos_v = _pos_v_ratios[which];
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->pos_v_slider,p->pos_v);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -857,7 +855,7 @@ void gui_changed(dt_iop_module_t *self,
 static void _colorpick_color_set(GtkColorButton *widget,
                                 dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_borders_params_t *p = self->params;
 
   // turn off the other color picker so that this tool actually works ...
@@ -874,7 +872,7 @@ static void _colorpick_color_set(GtkColorButton *widget,
 
 static void _frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_borders_params_t *p = self->params;
 
   // turn off the other color picker so that this tool actually works ...

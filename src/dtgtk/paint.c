@@ -628,6 +628,62 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
+#ifdef HAVE_AI
+void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1.15, 1, 0, 0)
+
+  // scale down to match neighbouring icon heights
+  cairo_save(cr);
+  cairo_translate(cr, 0.10, 0.07);
+  cairo_scale(cr, 0.80, 0.86);
+
+  const double cx = 0.5;
+  const double cy = 0.5;
+  const double r  = 0.44;
+
+  // controls sparkle character
+  const double tip   = 1.00; // tip reach
+  const double pinch = 0.38; // inward side pull
+
+  cairo_new_path(cr);
+
+  // top
+  cairo_move_to(cr, cx, cy - r * tip);
+
+  // top → right
+  cairo_curve_to(cr,
+                 cx + r*0.25, cy - r*pinch,
+                 cx + r*pinch, cy - r*0.25,
+                 cx + r*tip, cy);
+
+  // right → bottom
+  cairo_curve_to(cr,
+                 cx + r*pinch, cy + r*0.25,
+                 cx + r*0.25, cy + r*pinch,
+                 cx, cy + r*tip);
+
+  // bottom → left
+  cairo_curve_to(cr,
+                 cx - r*0.25, cy + r*pinch,
+                 cx - r*pinch, cy + r*0.25,
+                 cx - r*tip, cy);
+
+  // left → top
+  cairo_curve_to(cr,
+                 cx - r*pinch, cy - r*0.25,
+                 cx - r*0.25, cy - r*pinch,
+                 cx, cy - r*tip);
+
+  cairo_close_path(cr);
+
+  cairo_restore(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+#endif
+
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
@@ -2182,6 +2238,38 @@ void dtgtk_cairo_paint_text_label(cairo_t *cr, const gint x, const gint y, const
 
   cairo_move_to(cr, 0.25, 0.6);
   cairo_line_to(cr, 0.75, 0.6);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_messages(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // speech bubble outline
+  cairo_move_to(cr, 0.15, 0.1);
+  cairo_line_to(cr, 0.85, 0.1);
+  cairo_curve_to(cr, 0.92, 0.1, 0.95, 0.15, 0.95, 0.22);
+  cairo_line_to(cr, 0.95, 0.68);
+  cairo_curve_to(cr, 0.95, 0.75, 0.92, 0.8, 0.85, 0.8);
+  cairo_line_to(cr, 0.35, 0.8);
+  cairo_line_to(cr, 0.15, 1.0);
+  cairo_line_to(cr, 0.2, 0.8);
+  cairo_line_to(cr, 0.15, 0.8);
+  cairo_curve_to(cr, 0.08, 0.8, 0.05, 0.75, 0.05, 0.68);
+  cairo_line_to(cr, 0.05, 0.22);
+  cairo_curve_to(cr, 0.05, 0.15, 0.08, 0.1, 0.15, 0.1);
+  cairo_close_path(cr);
+  cairo_stroke(cr);
+
+  // text lines inside
+  cairo_move_to(cr, 0.2, 0.3);
+  cairo_line_to(cr, 0.8, 0.3);
+  cairo_move_to(cr, 0.2, 0.47);
+  cairo_line_to(cr, 0.65, 0.47);
+  cairo_move_to(cr, 0.2, 0.64);
+  cairo_line_to(cr, 0.7, 0.64);
   cairo_stroke(cr);
 
   FINISH

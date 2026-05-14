@@ -27,7 +27,6 @@ static const gchar *bad_opencl_drivers[] =
   // clang-format off
 
   "beignet",
-  "pocl",
   "clover",
   "amd-app",
 /*

@@ -1025,11 +1025,11 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   if(dt_is_valid_imgid(imgid))
   {
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
-    const int preview_mode = dt_conf_get_int("ui_last/styles_preview_mode");
     // style preview
-    if(preview_mode != DT_STYLE_PREVIEW_NO)
+    const int preview_size = dt_conf_get_int("plugins/lighttable/style/preview_size");
+    if(!dt_conf_get_bool("ui_last/styles_hide_preview"))
     {
-      if(preview_mode == DT_STYLE_PREVIEW_LARGE)
+      if(preview_size == DT_STYLE_PREVIEW_LARGE)
       {
         data.psize = dt_conf_get_int("ui/style/large_preview_size");
       }

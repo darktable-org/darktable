@@ -52,9 +52,9 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_TOP_CENTER;
 }
 
-int expandable(dt_lib_module_t *self)
+gboolean expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 int position(const dt_lib_module_t *self)

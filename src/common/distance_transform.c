@@ -40,7 +40,7 @@
 */
 
 /* Howto
-  float dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height,
+  float dt_image_distance_transform(const float *const restrict src, float *const restrict out, const size_t width, const size_t height,
        const float clip, const dt_distance_transform_t mode)
     writes data to an 1-ch image at 'out' with dimensions given. 'out' must be aligned as by dt_alloc_align_float.
     You may either
@@ -90,7 +90,7 @@ static void _image_distance_transform(const float *f,
   }
 }
 
-float dt_image_distance_transform(float *const src,
+float dt_image_distance_transform(const float *const src,
                                   float *const out,
                                   const size_t width,
                                   const size_t height,

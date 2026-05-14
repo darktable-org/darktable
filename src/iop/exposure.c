@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -494,7 +494,7 @@ static void _process_common_setup(dt_iop_module_t *self,
     }
 
     // second, show computed correction in UI.
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+    if(g && dt_pipe_is_preview(piece->pipe))
     {
       dt_iop_gui_enter_critical_section(self);
       g->deflicker_computed_exposure = exposure;
@@ -773,9 +773,9 @@ static void _exposure_set_white(dt_iop_module_t *self,
 
   dt_iop_exposure_gui_data_t *g = self->gui_data;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->exposure, p->exposure);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -807,9 +807,9 @@ static void _exposure_set_black(dt_iop_module_t *self,
   }
 
   dt_iop_exposure_gui_data_t *g = self->gui_data;
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->black, p->black);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -825,48 +825,36 @@ static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
   return g->effective_exposure;
 }
 
-static void _exposure_proxy_handle_event(gpointer controller,
-                                         int n_press,
-                                         double x,
-                                         const gboolean blackwhite)
+static void _exposure_proxy_handle_event(int n_press,
+                                         gdouble delta,
+                                         GdkModifierType state,
+                                         const gboolean is_blackpoint)
 {
-  dt_iop_module_t *self = darktable.develop->proxy.exposure.module;
+  const dt_iop_module_t *const self = darktable.develop->proxy.exposure.module;
   if(self && self->gui_data)
   {
-    static gboolean black = FALSE;
-    if((n_press > 0 && GTK_IS_GESTURE_SINGLE(controller)) // button press
-       || !n_press) // scroll event
-      black = blackwhite;
+    const dt_iop_exposure_params_t *const p = self->params;
+    const dt_iop_exposure_gui_data_t *const g = self->gui_data;
+    GtkWidget *const widget =
+      is_blackpoint ? g->black : (p->mode == EXPOSURE_MODE_DEFLICKER
+                                  ? g->deflicker_target_level : g->exposure);
+    const float val = dt_bauhaus_slider_get(widget);
+    const float accel = dt_accel_get_speed_multiplier(widget, state);
+    if(is_blackpoint)
+      delta = -delta;
 
-    if(black)
-      x *= -1;
-
-    const dt_iop_exposure_params_t *p = self->params;
-    dt_iop_exposure_gui_data_t *g = self->gui_data;
-    GtkWidget *widget = black ? g->black :
-                        p->mode == EXPOSURE_MODE_DEFLICKER
-                      ? g->deflicker_target_level : g->exposure;
-    if(!n_press)
-      darktable.bauhaus->scroll(widget, controller);
+    if(n_press == 2)
+      dt_bauhaus_widget_reset(widget);
+    else if(!n_press)
+    { // scroll
+      const float step = dt_bauhaus_slider_get_step(widget);
+      dt_bauhaus_slider_set(widget, val + delta * step * accel);
+    }
     else
-    {
-      // ignores the quad width, but is accurate enough
-      const int slider_width = gtk_widget_get_allocated_width(widget);
-      // FIXME: it would be nice to fetch scope_height when using waveform
-      const int scope_width =
-        gtk_widget_get_allocated_width(darktable.lib->proxy.histogram.module->widget);
-      // bauhaus scales motion to slider widget, but we want to scale
-      // proportional to the scope widget, particularly when the
-      // slider has not been allocated and has a width of 1 (which can
-      // happen if its module group has not yet been displayed)
-      x = x * slider_width / scope_width;
-      if(GTK_IS_GESTURE_SINGLE(controller))
-        if(n_press > 0)
-          darktable.bauhaus->press(controller, n_press, x, 0, widget);
-        else
-          darktable.bauhaus->release(controller, -n_press, x, 0, widget);
-      else
-        darktable.bauhaus->motion(controller, x, 0, widget);
+    { // drag
+      const float s_min = dt_bauhaus_slider_get_soft_min(widget);
+      const float s_max = dt_bauhaus_slider_get_soft_max(widget);
+      dt_bauhaus_slider_set(widget, val + delta * (s_max - s_min) * accel);
     }
 
     gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
@@ -904,9 +892,9 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 
   // Write report in GUI
   gchar *str = g_strdup_printf(_("L : \t%.1f %%"), Lch[0]);
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   g_free(str);
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
@@ -927,7 +915,7 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     const float white = exposure2white(-expo);
 
     // apply the exposure compensation
-    dt_aligned_pixel_t XYZ_out;
+    dt_aligned_pixel_t XYZ_out = {0.0f };
     for(int c = 0; c < 3; c++)
       XYZ_out[c] = XYZ[c] * white;
 
@@ -937,10 +925,10 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     Lab_out[1] = Lab_out[2] = 0.f; // make it grey
 
     // Return the values in sliders
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->lightness_spot, Lab_out[0]);
     _paint_hue(self);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     dt_conf_set_float("darkroom/modules/exposure/lightness", Lab_out[0]);
   }
@@ -980,7 +968,7 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   _auto_set_exposure(self, pipe);
 }
 
@@ -1166,7 +1154,7 @@ static void _paint_hue(dt_iop_module_t *self)
 static void _spot_settings_changed_callback(GtkWidget *slider,
                                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_exposure_gui_data_t *g = self->gui_data;
 
@@ -1177,9 +1165,9 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   // Save the color on change
   dt_conf_set_float("darkroom/modules/exposure/lightness", Lch_target[0]);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   _paint_hue(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   // Re-run auto compute if color picker active and mode is correct
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);

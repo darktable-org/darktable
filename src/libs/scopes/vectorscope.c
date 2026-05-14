@@ -18,11 +18,13 @@
 
 #include "common/atomic.h"
 #include "common/color_harmony.h"
+#include "common/color_ryb.h"
 #include "common/image_cache.h"
 #include "common/math.h"
 #include "gui/accelerators.h"
 #include "libs/colorpicker.h"
 #include "scopes.h"
+#include "scopes/vectorscope.h"
 
 // # of gradations between each primary/secondary to draw the hue ring
 // this is tuned to most degenerate cases: curve to blue primary in
@@ -104,11 +106,12 @@ typedef struct dt_scopes_vec_t
   double vectorscope_radius;
 
   GtkWidget *color_harmony_box;        // GtkBox -- contains color harmony buttons
-  GtkWidget *color_harmony_fix;        // GtkFixed -- contains moveable color harmony buttons
+  GtkWidget *harmony_viewport;         // GtkViewport -- contains moveable color harmony buttons
   GtkWidget *vec_scale_button;         // GtkButton -- linear or logarithmic vectorscope
   GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
   GtkWidget *color_harmony_button
-    [DT_COLOR_HARMONY_N - 1];  // GtkButton -- RYB vectorscope color harmonies
+    [DT_COLOR_HARMONY_N];              // GtkButton -- RYB vectorscope color harmonies
+  gulong toggle_signal_handler[DT_COLOR_HARMONY_N];
 
   // state set by buttons
   dt_scopes_vec_vectorscope_type_t vectorscope_type;
@@ -117,8 +120,13 @@ typedef struct dt_scopes_vec_t
   gboolean red, green, blue;
   float *rgb2ryb_ypp;
   float *ryb2rgb_ypp;
-  dt_color_harmony_type_t color_harmony_old;
   dt_color_harmony_guide_t harmony_guide;
+  dt_color_harmony_type_t harmony_prelight;
+  dt_color_harmony_type_t ignore_prelight;
+
+  // callback fired on user-driven harmony changes (button click or scroll rotation)
+  void (*harmony_changed_cb)(const dt_color_harmony_guide_t *guide, void *user_data);
+  void *harmony_changed_user_data;
 } dt_scopes_vec_t;
 
 
@@ -137,9 +145,9 @@ const char* _vec_name(const dt_scopes_mode_t *const self)
 // which compresses mainly the cyan colors (while also reversible)
 // https://danielhaim.com/research/downloads/Computational%20RYB%20Color%20Model%20and%20its%20Applications.pdf
 
-const float x_vtx[7] =     {0.0, 0.166667, 0.333333, 0.5, 0.666667, 0.833333, 1.0};
-const float rgb_y_vtx[7] = {0.0, 0.083333, 0.166667, 0.383838, 0.586575, 0.833333, 1.0};
-const float ryb_y_vtx[7] = {0.0, 0.333333, 0.472217, 0.611105, 0.715271, 0.833333, 1.0};
+// x_vtx and ryb_y_vtx are provided by common/color_ryb.h as
+// dt_color_ryb_x_vtx and dt_color_ryb_y_vtx.
+static const float rgb_y_vtx[7] = {0.0, 0.083333, 0.166667, 0.383838, 0.586575, 0.833333, 1.0};
 
 static void _ryb2rgb(const dt_aligned_pixel_t ryb,
                      dt_aligned_pixel_t rgb,
@@ -147,7 +155,7 @@ static void _ryb2rgb(const dt_aligned_pixel_t ryb,
 {
   dt_aligned_pixel_t HSV;
   dt_RGB_2_HSV(ryb, HSV);
-  HSV[0] = interpolate_val(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, HSV[0],
+  HSV[0] = interpolate_val(sizeof(dt_color_ryb_x_vtx)/sizeof(float), (float *)dt_color_ryb_x_vtx, HSV[0],
                            (float *)rgb_y_vtx, (float *)ryb2rgb_ypp, CUBIC_SPLINE);
   dt_HSV_2_RGB(HSV, rgb);
 }
@@ -158,8 +166,8 @@ static void _rgb2ryb(const dt_aligned_pixel_t rgb,
 {
   dt_aligned_pixel_t HSV;
   dt_RGB_2_HSV(rgb, HSV);
-  HSV[0] = interpolate_val(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, HSV[0],
-                           (float *)ryb_y_vtx, (float *)rgb2ryb_ypp, CUBIC_SPLINE);
+  HSV[0] = interpolate_val(sizeof(dt_color_ryb_x_vtx)/sizeof(float), (float *)dt_color_ryb_x_vtx, HSV[0],
+                           (float *)dt_color_ryb_y_vtx, (float *)rgb2ryb_ypp, CUBIC_SPLINE);
   dt_HSV_2_RGB(HSV, ryb);
 }
 
@@ -473,7 +481,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
       dt_sRGB_to_linear_sRGB(RGB, rgb);
       _rgb2ryb(rgb, RYB, rgb2ryb_ypp);
       dt_RGB_2_HCV(RYB, HCV);
-      const float alpha = 2.f * M_PI_F * HCV[0];
+      const float alpha = DT_2PI_F * HCV[0];
       chromaticity[1] = cosf(alpha) * HCV[1] * 0.01;
       chromaticity[2] = sinf(alpha) * HCV[1] * 0.01;
       break;
@@ -825,32 +833,57 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
   const gboolean display_live_samples = d->vectorscope_samples
     && darktable.lib->proxy.colorpicker.display_samples;
 
-  // we draw the color harmony guidelines
-  if(d->vectorscope_type == DT_SCOPES_VEC_VECTORSCOPE_RYB
-     && d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
+  // we draw the color harmony guidelines (only in RYB mode)
+  const gboolean is_ryb = (d->vectorscope_type == DT_SCOPES_VEC_VECTORSCOPE_RYB);
+  const gboolean is_custom_harmony = is_ryb && (d->harmony_guide.custom_n > 0);
+  dt_color_harmony_type_t cur_harmony =
+    (is_ryb
+     ? (d->harmony_prelight != DT_COLOR_HARMONY_NONE ? d->harmony_prelight : d->harmony_guide.type)
+     : DT_COLOR_HARMONY_NONE);
+  if(cur_harmony || is_custom_harmony)
   {
     cairo_save(cr);
 
     const float hw = dt_scopes_vec_color_harmony_width[d->harmony_guide.width];
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-    const dt_scopes_vec_color_harmony_t hm = _vec_color_harmonies[d->harmony_guide.type];
-    for(int i = 0; i < hm.sectors; i++)
+
+     if(is_custom_harmony)
     {
-      float hr = vs_radius * hm.length[i];
-      if(d->vectorscope_scale == DT_SCOPES_VEC_SCALE_LOGARITHMIC)
-        hr = baselog(hr, vs_radius);
-      const float span1 = (i > 0
-                           ? MIN(hw, (hm.angle[i] - hm.angle[i-1]) / 2.f)
-                           : hw); // avoid sectors overlap
-      const float span2 = (i < hm.sectors - 1
-                           ? MIN(hw, (hm.angle[i+1] - hm.angle[i]) / 2.f)
-                           : hw);
-      const float angle1 =
-        (hm.angle[i] - span1) * 2.f * M_PI_F + deg2radf((float)d->harmony_guide.rotation);
-      const float angle2 =
-        (hm.angle[i] + span2) * 2.f * M_PI_F + deg2radf((float)d->harmony_guide.rotation);
-      cairo_arc(cr, 0., 0., hr * scale, angle1, angle2);
-      cairo_line_to(cr, 0., 0.);
+      // Custom harmony: nodes are at absolute hue positions (normalized turns [0,1)).
+      // Each node gets a fixed-width sector; no rotation offset is applied.
+      const int n = d->harmony_guide.custom_n;
+      for(int i = 0; i < n; i++)
+      {
+        const float center = d->harmony_guide.custom_angles[i] * DT_2PI_F;
+        const float span   = hw * DT_2PI_F;
+        float hr = vs_radius * 0.80f;
+        if(d->vectorscope_scale == DT_SCOPES_VEC_SCALE_LOGARITHMIC)
+          hr = baselog(hr, vs_radius);
+        cairo_arc(cr, 0., 0., hr * scale, center - span, center + span);
+        cairo_line_to(cr, 0., 0.);
+      }
+    }
+    else
+    {
+      const dt_scopes_vec_color_harmony_t hm = _vec_color_harmonies[cur_harmony];
+      for(int i = 0; i < hm.sectors; i++)
+      {
+        float hr = vs_radius * hm.length[i];
+        if(d->vectorscope_scale == DT_SCOPES_VEC_SCALE_LOGARITHMIC)
+          hr = baselog(hr, vs_radius);
+        const float span1 = (i > 0
+                            ? MIN(hw, (hm.angle[i] - hm.angle[i-1]) / 2.f)
+                            : hw); // avoid sectors overlap
+        const float span2 = (i < hm.sectors - 1
+                            ? MIN(hw, (hm.angle[i+1] - hm.angle[i]) / 2.f)
+                            : hw);
+        const float angle1 =
+          (hm.angle[i] - span1) * DT_2PI_F + deg2radf((float)d->harmony_guide.rotation);
+        const float angle2 =
+          (hm.angle[i] + span2) * DT_2PI_F + deg2radf((float)d->harmony_guide.rotation);
+        cairo_arc(cr, 0., 0., hr * scale, angle1, angle2);
+        cairo_line_to(cr, 0., 0.);
+      }
     }
     cairo_close_path(cr);
     cairo_set_source(cr, bkgd_pat);
@@ -878,9 +911,10 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
     }
 
     // FIXME: is there a less awkward way to check if the mouse is over this, or could this even be another widget in the overlay?
-    if(gtk_widget_get_visible(self->scopes->button_box_main))
+    if(!is_custom_harmony && gtk_widget_get_visible(self->scopes->button_box_right))
     {
       // draw information about current selected harmony
+      const dt_scopes_vec_color_harmony_t hm = _vec_color_harmonies[cur_harmony];
       PangoLayout *layout;
       PangoRectangle ink;
       PangoFontDescription *desc =
@@ -889,7 +923,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
-      pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+      pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
 
       gchar *text = g_strdup_printf("%d°\n%s", d->harmony_guide.rotation, _(hm.name));
 
@@ -898,8 +932,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       pango_layout_get_pixel_extents(layout, NULL, &ink);
       cairo_scale(cr, 1., -1.);
       cairo_rotate(cr, -d->vectorscope_angle);
-      cairo_move_to(cr,
-                    0.48f * width - ink.width - ink.x,
+      cairo_move_to(cr, -0.48 * width - ink.x,
                     0.48 * height - ink.height - ink.y);
       pango_cairo_show_layout(cr, layout);
       cairo_stroke(cr);
@@ -1024,19 +1057,6 @@ static void _vec_update_buttons(const dt_scopes_mode_t *const self)
   }
 }
 
-static void _color_harmony_button_on(const dt_scopes_vec_t *const d)
-{
-  const dt_color_harmony_type_t on = d->harmony_guide.type;
-
-  for(dt_color_harmony_type_t c = DT_COLOR_HARMONY_MONOCHROMATIC;
-      c < DT_COLOR_HARMONY_N;
-      c++)
-  {
-    gtk_toggle_button_set_active
-      (GTK_TOGGLE_BUTTON(d->color_harmony_button[c-1]), c == on);
-  }
-}
-
 static void _color_harmony_changed_record(dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
@@ -1053,69 +1073,81 @@ static void _color_harmony_changed_record(dt_scopes_mode_t *const self)
 
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   dt_image_t *img = dt_image_cache_get(imgid, 'w');
-  memcpy(&img->color_harmony_guide,
-         &d->harmony_guide,
-         sizeof(dt_color_harmony_guide_t));
-  dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
+  if(img)
+  {
+    memcpy(&img->color_harmony_guide,
+           &d->harmony_guide,
+           sizeof(dt_color_harmony_guide_t));
+    dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
+  }
 
   dt_scopes_refresh(self->scopes);
 }
 
-static gboolean _color_harmony_clicked(GtkWidget *button,
-                                       GdkEventButton *event,
-                                       dt_scopes_mode_t *const self)
+static void _color_harmony_state_changed(GtkWidget *widget,
+                                         GtkStateFlags flags,
+                                         dt_scopes_mode_t *const self)
 {
+  if(!self || !self->data) return;
   dt_scopes_vec_t *const d = self->data;
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+  GtkStateFlags new_flags = gtk_widget_get_state_flags(widget);
+  const dt_color_harmony_type_t prior = d->harmony_prelight;
+  if(new_flags & GTK_STATE_FLAG_PRELIGHT)
   {
-    // clicked on active button, we remove guidelines
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
-    d->harmony_guide.type = d->color_harmony_old = DT_COLOR_HARMONY_NONE;
-  }
-  else
-  {
-    // find positions of clicked button
-    for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
-      if(d->color_harmony_button[i] == button)
+    for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE+1; i < DT_COLOR_HARMONY_N; i++)
+      if(d->color_harmony_button[i] == widget && i != d->ignore_prelight)
       {
-        d->harmony_guide.type = d->color_harmony_old = i + 1;
-        break;
+        d->harmony_prelight = i;
+        d->ignore_prelight = DT_COLOR_HARMONY_NONE;
       }
-    // FIXME: instead of calling _color_harmony_button_on() here, do this when are cycling through the buttons in the loop above
-    _color_harmony_button_on(d);
+  }
+  if(d->harmony_prelight != prior)
+    dt_scopes_refresh(self->scopes);
+}
+
+static void _color_harmony_toggled(GtkButton *button,
+                                   dt_scopes_mode_t *const self)
+{
+  if(!self || !self->data) return;
+  // this toggle handler is the way to set d->harmony_guide.type:
+  // updating the UI widget will update internal data structures, but
+  // not vice versa
+  dt_scopes_vec_t *const d = self->data;
+  // find positions of clicked button
+  const dt_color_harmony_type_t prior = d->harmony_guide.type;
+  for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE+1; i < DT_COLOR_HARMONY_N; i++)
+  {
+    if(d->color_harmony_button[i] == GTK_WIDGET(button))
+    {
+      if(d->harmony_guide.type == i)
+      {
+        // clicked on active button, remove guidelines
+        if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+        {
+          d->harmony_guide.type = DT_COLOR_HARMONY_NONE;
+          d->harmony_prelight = DT_COLOR_HARMONY_NONE;
+          // don't immediately turn back on scope preview
+          d->ignore_prelight = i;
+        }
+      }
+      else
+      {
+        // clicked on an inactive button, activate guidelines
+        if(prior != DT_COLOR_HARMONY_NONE)
+        {
+          g_signal_handler_block(d->color_harmony_button[prior], d->toggle_signal_handler[prior]);
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[prior]), FALSE);
+          g_signal_handler_unblock(d->color_harmony_button[prior], d->toggle_signal_handler[prior]);
+        }
+        d->harmony_guide.type = i;
+        d->harmony_prelight = i;  // in case is a scroll event
+        d->ignore_prelight = DT_COLOR_HARMONY_NONE;
+      }
+    }
   }
   _color_harmony_changed_record(self);
-  return TRUE;
-}
-
-static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
-                                                     GdkEventCrossing *event,
-                                                     dt_scopes_mode_t *const self)
-{
-  dt_scopes_vec_t *const d = self->data;
-
-  // find positions of entered button
-  d->color_harmony_old = d->harmony_guide.type;
-
-  for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
-    if(d->color_harmony_button[i] == widget)
-    {
-      d->harmony_guide.type = i + 1;
-      break;
-    }
-
-  dt_scopes_refresh(self->scopes);
-  return FALSE;
-}
-
-static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
-                                                     GdkEventCrossing *event,
-                                                     dt_scopes_mode_t *const self)
-{
-  dt_scopes_vec_t *const d = self->data;
-  d->harmony_guide.type = d->color_harmony_old;
-  dt_scopes_refresh(self->scopes);
-  return FALSE;
+  if(d->harmony_changed_cb)
+    d->harmony_changed_cb(&d->harmony_guide, d->harmony_changed_user_data);
 }
 
 static void _vec_append_to_tooltip(const dt_scopes_mode_t *const self,
@@ -1123,7 +1155,7 @@ static void _vec_append_to_tooltip(const dt_scopes_mode_t *const self,
 {
   const dt_scopes_vec_t *const d = self->data;
   if(d->vectorscope_type == DT_SCOPES_VEC_VECTORSCOPE_RYB &&
-     d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
+     (d->harmony_guide.type != DT_COLOR_HARMONY_NONE || d->harmony_guide.custom_n > 0))
     dt_util_str_cat(tip, "\n%s\n%s\n%s\n%s",
                     _("scroll to coarse-rotate"),
                     _("ctrl+scroll to fine rotate"),
@@ -1132,66 +1164,100 @@ static void _vec_append_to_tooltip(const dt_scopes_mode_t *const self,
 }
 
 static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
-                                 GdkEventScroll *event)
+                                 gdouble x, gdouble y,
+                                 gdouble delta_x, gdouble delta_y,
+                                 GdkModifierType state)
 {
   dt_scopes_vec_t *const d = self->data;
-  int delta_y = 0;
-  // FIXME: should only handle these events when in color harmony mode
-  if(!dt_gui_get_scroll_unit_delta(event, &delta_y) || delta_y == 0)
-    return;
 
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
+  // FIXME: if have own drawable for vectorscope can set scroll handler directly
+  // clamp as mouse wheel scrolls sometimes report a delta of 2
+  const int delta = CLAMP(delta_y, -1.0, 1.0);
+  if(dt_modifier_is(state, GDK_SHIFT_MASK)) //( SHIFT+SCROLL
   {
-    if(d->harmony_guide.width == 0 && delta_y < 0)
-      d->harmony_guide.width = DT_COLOR_HARMONY_WIDTH_N - 1;
-    else
-      d->harmony_guide.width = (d->harmony_guide.width +delta_y) % DT_COLOR_HARMONY_WIDTH_N;
+    d->harmony_guide.width = (d->harmony_guide.width + delta + DT_COLOR_HARMONY_WIDTH_N)
+                             % DT_COLOR_HARMONY_WIDTH_N;
   }
-  else if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
+  else if(dt_modifier_is(state, GDK_MOD1_MASK)) // ALT+SCROLL
   {
-    if(d->color_harmony_old == DT_COLOR_HARMONY_NONE && delta_y < 0)
-      d->harmony_guide.type = DT_COLOR_HARMONY_N - 1;
+    const dt_color_harmony_type_t new_type =
+      (d->harmony_guide.type + delta + DT_COLOR_HARMONY_N) % DT_COLOR_HARMONY_N;
+    if(new_type == DT_COLOR_HARMONY_NONE)
+      // turn all buttons off
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(d->color_harmony_button[d->harmony_guide.type]), FALSE);
     else
-      d->harmony_guide.type = (d->color_harmony_old + delta_y) % DT_COLOR_HARMONY_N;
-    _color_harmony_button_on(d);
-    d->color_harmony_old = d->harmony_guide.type;
+      // will automatically turn off the prior button
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(d->color_harmony_button[new_type]), TRUE);
+  }
+  else if(d->harmony_guide.custom_n > 0)
+  {
+    // Custom harmony: rotate all nodes together as a group.
+    const float step = dt_modifier_is(state, GDK_CONTROL_MASK) ? 1.0f / 360.0f : 15.0f / 360.0f;
+    for(int i = 0; i < d->harmony_guide.custom_n; i++)
+      d->harmony_guide.custom_angles[i] =
+        fmodf(d->harmony_guide.custom_angles[i] + delta * step + 1.0f, 1.0f);
   }
   else
   {
-    int a;
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK)) // CTRL+SCROLL
-      a = d->harmony_guide.rotation + delta_y;
+    if(dt_modifier_is(state, GDK_CONTROL_MASK)) // CTRL+SCROLL
+      d->harmony_guide.rotation += delta;
     else // SCROLL
     {
-      d->harmony_guide.rotation = (int)(d->harmony_guide.rotation / 15.) * 15;
-      a = d->harmony_guide.rotation + 15 * delta_y;
+      d->harmony_guide.rotation = ((d->harmony_guide.rotation + 7) / 15) * 15;
+      d->harmony_guide.rotation += 15 * delta;
     }
-    a %= 360;
-    if(a < 0) a += 360;
-    d->harmony_guide.rotation = a;
+    d->harmony_guide.rotation = (d->harmony_guide.rotation + 360) % 360;
   }
   _color_harmony_changed_record(self);
+  if(d->harmony_changed_cb)
+    d->harmony_changed_cb(&d->harmony_guide, d->harmony_changed_user_data);
 }
 
-static void _vec_eventbox_motion(dt_scopes_mode_t *const self,
-                                 GtkWidget *widget,
-                                 const GdkEventMotion *event)
+static void _harmony_adjust_page(GtkWidget *widget,
+                                 GtkAllocation* alloc,
+                                 dt_scopes_mode_t *self)
 {
   dt_scopes_vec_t *const d = self->data;
-  // FIXME: replace the color harmony box buttons with a widget with a combobox, then get rid of the eventbox motion callback
-  // FIXME: this shouldn't do anything unless in RYB mode
-
-  GtkAllocation fix_alloc;
-  // FIXME: why use gtk_widget_get_allocation vs. gtk_widget_get_allocated_height?
-  gtk_widget_get_allocation(d->color_harmony_fix, &fix_alloc);
-  const int full_height = gtk_widget_get_allocated_height(widget);
-  const int excess =
-    gtk_widget_get_allocated_height(d->color_harmony_box) + fix_alloc.y - full_height;
-  const int shift = excess * MAX(event->y - fix_alloc.y, 0) / (full_height - fix_alloc.y);
-  gtk_fixed_move(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, - MAX(shift, 0));
+  // FIXME: when user resizes scope vertically, next time mouse moves,
+  // the buttons widget jumps to new position, so should recalculate
+  // its position here based on mouse position during resize
+  gtk_adjustment_set_page_size
+    (gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(d->harmony_viewport)),
+     alloc->height - gtk_widget_get_allocated_height(d->colorspace_button));
 }
 
-static void _vec_scale_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
+static void _harmony_motion(GtkEventControllerMotion *controller,
+                            double x,
+                            double y,
+                            dt_scopes_mode_t *const self)
+{
+  // harmony type buttons scroll as mouse ranges from below the top
+  // buttons to the scope bottom less resize handle
+  dt_scopes_vec_t *const d = self->data;
+  // FIXME: replace the color harmony box buttons with a widget with a combobox, then get rid of the complicated code to support the custom scrolling widgets
+  GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(d->harmony_viewport));
+  const double scrollable_area = gtk_adjustment_get_page_size(vadj);
+  const double max_val = gtk_adjustment_get_upper(vadj) - scrollable_area;
+  const double val = max_val * y / (scrollable_area - DT_RESIZE_HANDLE_SIZE);
+  gtk_adjustment_set_value(vadj, val);
+}
+
+static void _harmony_leave(GtkEventControllerMotion *controller,
+                           dt_scopes_mode_t *const self)
+{
+  dt_scopes_vec_t *const d = self->data;
+  d->ignore_prelight = DT_COLOR_HARMONY_NONE;
+  if(d->harmony_prelight != DT_COLOR_HARMONY_NONE)
+  {
+    d->harmony_prelight = DT_COLOR_HARMONY_NONE;
+    dt_scopes_refresh(self->scopes);
+  }
+}
+
+static void _vec_scale_clicked(GtkWidget *button,
+                               dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *d = self->data;
 
@@ -1202,44 +1268,16 @@ static void _vec_scale_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
   dt_scopes_reprocess();
 }
 
-static void _vec_colorspace_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
+static void _vec_colorspace_clicked(GtkWidget *button,
+                                    dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *d = self->data;
   d->vectorscope_type = (d->vectorscope_type + 1) % DT_SCOPES_VEC_VECTORSCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
                      dt_scopes_vec_vectorscope_type_names[d->vectorscope_type]);
-  // FIXME: if switching to RYB do need to call _update_color_harmony_gui() to pull in current settings?
   _vec_update_buttons(self);
   lib_histogram_update_tooltip(self->scopes);
   dt_scopes_reprocess();
-}
-
-static void _update_color_harmony_gui(dt_scopes_mode_t *const self)
-{
-  dt_scopes_vec_t *const d = self->data;
-
-  const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
-
-  dt_color_harmony_init(&d->harmony_guide);
-
-  if(img)
-  {
-    memcpy(&d->harmony_guide, &img->color_harmony_guide, sizeof(dt_color_harmony_guide_t));
-    dt_image_cache_read_release(img);
-  }
-
-  // restore rotation/width default
-  if(d->harmony_guide.type == DT_COLOR_HARMONY_NONE)
-  {
-    d->harmony_guide.rotation =
-      dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_rotation");
-    d->harmony_guide.width =
-      dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_width");
-  }
-
-  _color_harmony_button_on(d);
-  dt_scopes_refresh(self->scopes);
 }
 
 static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
@@ -1250,15 +1288,52 @@ static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
   dt_scopes_mode_t *vec_mode = &s->modes[DT_SCOPES_MODE_VECTORSCOPE];
   dt_scopes_vec_t *d = vec_mode->data;
 
-  d->harmony_guide.type = (d->color_harmony_old + 1) % DT_COLOR_HARMONY_N;
-  _color_harmony_button_on(d);
-  d->color_harmony_old = d->harmony_guide.type;
+  const dt_color_harmony_type_t new_type = (d->harmony_guide.type + 1) % DT_COLOR_HARMONY_N;
+  if(new_type == DT_COLOR_HARMONY_NONE)
+    // turn all buttons off
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[d->harmony_guide.type]), FALSE);
+  else
+    // will automatically turn off the prior button
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[new_type]), TRUE);
   _color_harmony_changed_record(vec_mode);
 }
 
-void _vec_signal_image_changed(gpointer instance, dt_scopes_mode_t *const self)
+void _vec_signal_image_changed(gpointer instance,
+                               dt_scopes_mode_t *const self)
 {
-  _update_color_harmony_gui(self);
+  dt_scopes_vec_t *const d = self->data;
+  dt_color_harmony_guide_t new_guide;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  dt_color_harmony_init(&new_guide);
+  if(img)
+  {
+    memcpy(&new_guide, &img->color_harmony_guide, sizeof(dt_color_harmony_guide_t));
+    dt_image_cache_read_release(img);
+  }
+
+  // FIXME: changing type toggle button calls _color_harmony_changed_record() which saves back to image the harmony data which we just loaded
+  if(new_guide.type == DT_COLOR_HARMONY_NONE)
+  {
+    if(d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
+      // deselect prior guide
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(d->color_harmony_button[d->harmony_guide.type]), FALSE);
+    // restore rotation/width default
+    d->harmony_guide.rotation =
+      dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_rotation");
+    d->harmony_guide.width =
+      dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_width");
+  }
+  else
+  {
+    gtk_toggle_button_set_active
+      (GTK_TOGGLE_BUTTON(d->color_harmony_button[new_guide.type]), TRUE);
+    d->harmony_guide.rotation = new_guide.rotation;
+    d->harmony_guide.width = new_guide.width;
+  }
+
+  dt_scopes_refresh(self->scopes);
 }
 
 static void _vec_mode_enter(dt_scopes_mode_t *const self)
@@ -1266,7 +1341,6 @@ static void _vec_mode_enter(dt_scopes_mode_t *const self)
   dt_scopes_vec_t *const d = self->data;
   gtk_widget_show(d->vec_scale_button);
   gtk_widget_show(d->colorspace_button);
-  _update_color_harmony_gui(self);
 }
 
 static void _vec_mode_leave(const dt_scopes_mode_t *const self)
@@ -1317,34 +1391,45 @@ static void _vec_gui_init(dt_scopes_mode_t *const self,
   d->vectorscope_samples = NULL;
   d->selected_sample = -1;
 
-  d->rgb2ryb_ypp = interpolate_set(sizeof(x_vtx)/sizeof(float),
-                                   (float *)x_vtx, (float *)ryb_y_vtx, CUBIC_SPLINE);
-  d->ryb2rgb_ypp = interpolate_set(sizeof(x_vtx)/sizeof(float),
-                                   (float *)x_vtx, (float *)rgb_y_vtx, CUBIC_SPLINE);
+  d->rgb2ryb_ypp = interpolate_set(sizeof(dt_color_ryb_x_vtx)/sizeof(float),
+                                   (float *)dt_color_ryb_x_vtx, (float *)dt_color_ryb_y_vtx, CUBIC_SPLINE);
+  d->ryb2rgb_ypp = interpolate_set(sizeof(dt_color_ryb_x_vtx)/sizeof(float),
+                                   (float *)dt_color_ryb_x_vtx, (float *)rgb_y_vtx, CUBIC_SPLINE);
 
   // set the default harmony (last used), the actual harmony for the image
   // will be restored later.
+  // FIXME: this is always overwritten when load the first image
   str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope/harmony_type");
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N; i++)
     if(g_strcmp0(str, _vec_color_harmonies[i].name) == 0)
-      d->color_harmony_old = d->harmony_guide.type = i;
+      d->harmony_guide.type = i;
   d->harmony_guide.rotation =
     dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_rotation");
   d->harmony_guide.width =
     dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_width");
+  d->harmony_prelight = d->ignore_prelight = DT_COLOR_HARMONY_NONE;
 }
 
-static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
-                                 dt_action_t *dark,
-                                 GtkWidget *box)
+static void _vec_add_options(dt_scopes_mode_t *const self,
+                             dt_action_t *dark)
 {
   dt_scopes_vec_t *const d = self->data;
-  d->color_harmony_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  dt_action_define(dark, NULL, N_("cycle vectorscope types"),
+                   d->colorspace_button, &dt_action_def_button);
+
+  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  gtk_widget_set_valign(d->vec_scale_button, GTK_ALIGN_START);
+  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
+                   d->vec_scale_button, &dt_action_def_button);
+
+  d->harmony_viewport = gtk_viewport_new(NULL, NULL);
+  gtk_widget_set_halign(d->harmony_viewport, GTK_ALIGN_END);
+
+  d->color_harmony_box = dt_gui_vbox();
   gtk_widget_set_valign(d->color_harmony_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->color_harmony_box, GTK_ALIGN_START);
-  d->color_harmony_fix = gtk_fixed_new();
-  gtk_fixed_put(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, 0);
-  gtk_box_pack_start(GTK_BOX(box), d->color_harmony_fix, FALSE, FALSE, 0);
 
   // a series of buttons for color harmony guide lines
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_MONOCHROMATIC;
@@ -1355,47 +1440,33 @@ static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
                                            &(_vec_color_harmonies[i]));
     dt_action_define(dark, N_("color harmonies"),
                      _vec_color_harmonies[i].name, rb, &dt_action_def_toggle);
-    g_signal_connect(G_OBJECT(rb), "button-press-event",
-                     G_CALLBACK(_color_harmony_clicked), self);
-    g_signal_connect(G_OBJECT(rb), "enter-notify-event",
-                     G_CALLBACK(_color_harmony_enter_notify_callback), self);
-    g_signal_connect(G_OBJECT(rb), "leave-notify-event",
-                     G_CALLBACK(_color_harmony_leave_notify_callback), self);
+    d->toggle_signal_handler[i] =
+      g_signal_connect_data(G_OBJECT(rb), "toggled",
+                            G_CALLBACK(_color_harmony_toggled), self, NULL, 0);
+    g_signal_connect(G_OBJECT(rb), "state_flags_changed",
+                     G_CALLBACK(_color_harmony_state_changed), self);
 
-    gtk_box_pack_start(GTK_BOX(d->color_harmony_box), rb, FALSE, FALSE, 0);
-    // FIXME: awkward to store this to skip DT_COLOR_HARMONY_NONE, just leave [0] blank?
-    d->color_harmony_button[i-1] = rb;
+    dt_gui_box_add(d->color_harmony_box, rb);
+    d->color_harmony_button[i] = rb;
   }
-  // FIXME: just do this work in loop above instead of looping again in the helper
-  _color_harmony_button_on(d);
+
+  gtk_container_add(GTK_CONTAINER(d->harmony_viewport), d->color_harmony_box);
+  GtkWidget *colorspace_box = dt_gui_vbox();
+  dt_gui_box_add(colorspace_box, d->colorspace_button, d->harmony_viewport);
+  dt_gui_box_add(self->options_box, d->vec_scale_button, colorspace_box);
 
   // FIXME: do we need this action, or is it vestigial?
   dt_action_register(dark, N_("cycle color harmonies"),
                      _lib_histogram_cycle_harmony_callback, 0, 0);
-}
-
-// FIXME: s/gui_init_options/gui_add_to_options/
-static void _vec_gui_init_options(dt_scopes_mode_t *const self,
-                                  dt_action_t *dark,
-                                  GtkWidget *box)
-{
-  dt_scopes_vec_t *const d = self->data;
-
-  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("cycle vectorscope types"),
-                   d->colorspace_button, &dt_action_def_button);
-  gtk_box_pack_start(GTK_BOX(box), d->colorspace_button, FALSE, FALSE, 0);
-
-  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
-                   d->vec_scale_button, &dt_action_def_button);
-  gtk_box_pack_start(GTK_BOX(box), d->vec_scale_button, FALSE, FALSE, 0);
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->vec_scale_button), "clicked",
                    G_CALLBACK(_vec_scale_clicked), self);
   g_signal_connect(G_OBJECT(d->colorspace_button), "clicked",
                    G_CALLBACK(_vec_colorspace_clicked), self);
+  dt_gui_connect_motion(d->harmony_viewport, _harmony_motion, NULL, _harmony_leave, self);
+  g_signal_connect(G_OBJECT(colorspace_box), "size-allocate",
+                   G_CALLBACK(_harmony_adjust_page), self);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _vec_signal_image_changed);
 }
@@ -1418,7 +1489,8 @@ static void _vec_gui_cleanup(dt_scopes_mode_t *const self)
 }
 
 // The function table for vectorscope mode. This must be public, i.e. no "static" keyword.
-const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
+const dt_scopes_functions_t dt_scopes_functions_vectorscope =
+{
   .name = _vec_name,
   .process = _vec_process,
   .clear = _vec_clear,
@@ -1430,18 +1502,75 @@ const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
   .draw_scope = _vec_draw,
   .draw_scope_channels = NULL,
   .get_highlight = NULL,
-  .get_exposure_pos = NULL,
+  .get_exposure_delta = NULL,
   .append_to_tooltip = _vec_append_to_tooltip,
   .eventbox_scroll = _vec_eventbox_scroll,
-  .eventbox_motion = _vec_eventbox_motion,
   .update_buttons = _vec_update_buttons,
   .mode_enter = _vec_mode_enter,
   .mode_leave = _vec_mode_leave,
   .gui_init = _vec_gui_init,
-  .add_to_main_box = _vec_add_to_main_box,
-  .add_to_options_box = _vec_gui_init_options,
+  .add_options = _vec_add_options,
   .gui_cleanup = _vec_gui_cleanup
 };
+
+void dt_vec_get_harmony(dt_scopes_mode_t *mode, dt_color_harmony_guide_t *guide)
+{
+  const dt_scopes_vec_t *const d = mode->data;
+  memcpy(guide, &d->harmony_guide, sizeof(dt_color_harmony_guide_t));
+}
+
+void dt_vec_set_harmony(dt_scopes_mode_t *mode, const dt_color_harmony_guide_t *guide)
+{
+  dt_scopes_vec_t *const d = mode->data;
+  const dt_color_harmony_type_t old_type = d->harmony_guide.type;
+  memcpy(&d->harmony_guide, guide, sizeof(dt_color_harmony_guide_t));
+
+  // Deactivate old button (with signal blocking to avoid re-entering _color_harmony_toggled)
+  if(old_type != DT_COLOR_HARMONY_NONE)
+  {
+    g_signal_handler_block(d->color_harmony_button[old_type], d->toggle_signal_handler[old_type]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[old_type]), FALSE);
+    g_signal_handler_unblock(d->color_harmony_button[old_type], d->toggle_signal_handler[old_type]);
+  }
+  // Activate new button
+  if(guide->type != DT_COLOR_HARMONY_NONE)
+  {
+    g_signal_handler_block(d->color_harmony_button[guide->type], d->toggle_signal_handler[guide->type]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[guide->type]), TRUE);
+    g_signal_handler_unblock(d->color_harmony_button[guide->type], d->toggle_signal_handler[guide->type]);
+  }
+  _color_harmony_changed_record(mode);
+}
+
+void dt_vec_set_harmony_changed_callback(dt_scopes_mode_t *mode,
+                                         void (*cb)(const dt_color_harmony_guide_t *, void *),
+                                         void *user_data)
+{
+  dt_scopes_vec_t *const d = mode->data;
+  d->harmony_changed_cb = cb;
+  d->harmony_changed_user_data = user_data;
+}
+
+void dt_vec_set_vectorscope_type(dt_scopes_mode_t *mode, const int type)
+{
+  dt_scopes_vec_t *const d = mode->data;
+  if(d->vectorscope_type == (dt_scopes_vec_vectorscope_type_t)type) return;
+  d->vectorscope_type = (dt_scopes_vec_vectorscope_type_t)type;
+  dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
+                     dt_scopes_vec_vectorscope_type_names[d->vectorscope_type]);
+  _vec_update_buttons(mode);
+  dt_scopes_reprocess();
+}
+
+// Returns the absolute RYB hue positions (normalized turns [0,1)) of the sectors
+// for the given predefined harmony type and rotation. n is set to the sector count.
+void dt_vec_get_sector_angles(const dt_color_harmony_type_t type,
+                              const int rotation,
+                              float *angles,
+                              int *n)
+{
+  dt_color_harmony_get_sector_angles(type, rotation, angles, n);
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

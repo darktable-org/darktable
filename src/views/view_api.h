@@ -59,7 +59,8 @@ OPTIONAL(void, configure, struct dt_view_t *self, int width, int height);
 OPTIONAL(void, scrolled, struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
 OPTIONAL(void, scrollbar_changed, struct dt_view_t *self, double x, double y); // scrollbars changed in view
 OPTIONAL(gboolean, gesture_pan, struct dt_view_t *self, double x, double y, double dx, double dy, int state);
-OPTIONAL(gboolean, gesture_pinch, struct dt_view_t *self, double x, double y, int phase, double scale, int state);
+OPTIONAL(gboolean, gesture_pinch, struct dt_view_t *self, double x, double y, double dx, double dy,
+                   int phase, double scale, int state);
 
 // list of mouse actions
 OPTIONAL(GSList *, mouse_actions, const struct dt_view_t *self);
@@ -77,4 +78,3 @@ G_END_DECLS
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

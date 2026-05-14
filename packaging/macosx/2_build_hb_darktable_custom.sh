@@ -7,6 +7,9 @@
 set -e -o pipefail
 trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
 
+# Ensure we use system tools (BSD sed, find, etc.) even if user has GNU tools in PATH
+export PATH="/usr/bin:/bin:$PATH"
+
 # Go to directory of script
 scriptDir=$(dirname "$0")
 cd "$scriptDir"/
@@ -41,7 +44,6 @@ cmake .. \
     -DBUILD_CURVE_TOOLS=ON \
     -DBUILD_NOISE_TOOLS=ON \
     -DDONT_USE_INTERNAL_LUA=OFF \
-    -DBUILD_SSE2_CODEPATHS=OFF \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DUSE_COLORD=OFF \
     -DUSE_KWALLET=OFF \

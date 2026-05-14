@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -227,6 +227,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
         { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
         { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_MONTH, _month_widget_init, _month_update },
         { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
@@ -900,6 +901,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
   _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MONTH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
@@ -960,6 +962,7 @@ static void _populate_rules_combo(GtkWidget *w)
 
   dt_bauhaus_combobox_add_section(w, _("times"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MONTH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
@@ -1215,7 +1218,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
 static gboolean _rule_available_for_topbar(const dt_collection_properties_t prop)
 {
   // we don't want to allow date filters for topbar as the design of the bar is not useful as it
-  if(prop == DT_COLLECTION_PROP_DAY || prop == DT_COLLECTION_PROP_TIME
+  if(prop == DT_COLLECTION_PROP_DAY || prop == DT_COLLECTION_PROP_MONTH || prop == DT_COLLECTION_PROP_TIME
      || prop == DT_COLLECTION_PROP_CHANGE_TIMESTAMP || prop == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
      || prop == DT_COLLECTION_PROP_PRINT_TIMESTAMP || prop == DT_COLLECTION_PROP_IMPORT_TIMESTAMP)
     return FALSE;
@@ -1352,7 +1355,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = self->data;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
 
@@ -1400,7 +1403,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
   // update topbar
   _topbar_update(self);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _filtering_gui_update(dt_lib_module_t *self)
@@ -1447,13 +1450,14 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
   {
     g_free(d->last_where_ext);
     d->last_where_ext = where_ext;
-    for(int i = 0; i <= d->nb_rules; i++)
-    {
-      _widget_update(&d->rule[i]);
-    }
   }
   else
     g_free(where_ext);
+
+  for(int i = 0; i <= d->nb_rules; i++)
+  {
+    _widget_update(&d->rule[i]);
+  }
 }
 
 static void _history_pretty_print(const char *buf, char *out, size_t outsize)
@@ -1510,6 +1514,8 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
       gchar *pretty = NULL;
       if(item == DT_COLLECTION_PROP_COLORLABEL)
         pretty = _colors_pretty_print(str);
+      else if(item == DT_COLLECTION_PROP_MONTH)
+        pretty = _month_pretty_print(str);
       else if(!g_strcmp0(str, "%"))
         pretty = g_strdup(_("all"));
       else
@@ -1987,7 +1993,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = self->data;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
 
@@ -2036,7 +2042,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
     }
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)

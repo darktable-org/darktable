@@ -40,6 +40,8 @@
 #include <string.h>
 #include <strings.h>
 
+#define DT_CTL_LOG_HISTORY_SIZE 1000
+
 static float _action_process_accels_show(const gpointer target,
                                          const dt_action_element_t element,
                                          const dt_action_effect_t effect,
@@ -228,6 +230,10 @@ void dt_control_init(const gboolean withgui)
   s->toast_pos = s->toast_ack = 0;
   s->toast_message_timeout_id = 0;
 
+  // persistent log history initialization
+  s->log_history = NULL;
+  dt_pthread_mutex_init(&s->log_history_mutex, NULL);
+
   pthread_cond_init(&s->cond, NULL);
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
@@ -254,15 +260,79 @@ void dt_control_allow_change_cursor()
   darktable.control->lock_cursor_shape = FALSE;
 }
 
-void dt_control_change_cursor(dt_cursor_t curs)
+// last cursor set by dt_control_change_cursor() or a direct call to
+// gdk_window_set_cursor() outside of functions below
+static GdkCursor* _prev_cursor = NULL;
+
+void _change_cursor_with_fallback(const char *cursor_name,
+                                  gboolean is_temp)
 {
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(!darktable.control->lock_cursor_shape && window)
+  if(!window) return;
+  GdkDisplay *display = gdk_window_get_display(window);
+  GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+
+  // GTK3 fallback: some CSS cursor names are not supported by all
+  // backends (e.g. "wait" and "help" are missing from the GTK3 Win32
+  // mapping table despite Windows having IDC_WAIT and IDC_HELP;
+  // "none" is missing from both the Win32 and X11 backends).
+  // Fall back to the legacy GdkCursorType enum API for these cases.
+  // TODO(GTK4): remove this fallback when migrating to GTK4, where
+  // all backends support the full CSS cursor name spec.
+  if(!cursor)
   {
-    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_window_get_display(window), curs);
+    GdkCursorType type = GDK_LEFT_PTR;
+    if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
+    else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
+    else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
+    else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
+    else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
+    cursor = gdk_cursor_new_for_display(display, type);
+  }
+
+  if(!is_temp && _prev_cursor)
+  {
+    // cursor change request via dt_control_change_cursor() is overriden
+    // by temp cursor, save new cursor to use when clear temp cursor
+    g_object_unref(_prev_cursor);
+    _prev_cursor = g_object_ref(cursor);
+  }
+  else if(!darktable.control->lock_cursor_shape)
+  {
     gdk_window_set_cursor(window, cursor);
     g_object_unref(cursor);
   }
+}
+
+void dt_control_set_temp_cursor(const char *cursor_name)
+{
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(!window) return;
+  // store cursor to return to once clear temp cursor if this is the
+  // initial setup of this temp cursor (as can call this multiple
+  // times to vary a temp cursor)
+  if(!_prev_cursor)
+  {
+    _prev_cursor = gdk_window_get_cursor(window);
+    g_object_ref(_prev_cursor);
+  }
+  _change_cursor_with_fallback(cursor_name, TRUE);
+}
+
+void dt_control_clear_temp_cursor()
+{
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(!_prev_cursor) return;
+  if(window)
+    gdk_window_set_cursor(window, _prev_cursor);
+  g_object_unref(_prev_cursor);
+  _prev_cursor = NULL;
+}
+
+void dt_control_change_cursor(const char *cursor_name)
+{
+  _change_cursor_with_fallback(cursor_name, FALSE);
 }
 
 /* Some implementation and how-to use notes about control->running
@@ -377,6 +447,13 @@ void dt_control_cleanup(const gboolean withgui)
     dt_pthread_mutex_destroy(&s->queue_mutex);
     dt_pthread_mutex_destroy(&s->cond_mutex);
     dt_pthread_mutex_destroy(&s->log_mutex);
+    dt_pthread_mutex_destroy(&s->log_history_mutex);
+    if(s->log_history)
+    {
+      for(GList *elem = s->log_history; elem; elem = elem->next)
+        g_free(elem->data);
+      g_list_free(s->log_history);
+    }
     dt_pthread_mutex_destroy(&s->res_mutex);
     dt_pthread_mutex_destroy(&s->progress_system.mutex);
     if(s->shortcuts) g_sequence_free(s->shortcuts);
@@ -574,6 +651,21 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
   return FALSE;
 }
 
+void dt_control_log_ack_all(void)
+{
+  if(!dt_control_running()) return;
+  dt_control_t *dc = darktable.control;
+  dt_pthread_mutex_lock(&dc->log_mutex);
+  if(dc->log_message_timeout_id)
+  {
+    g_source_remove(dc->log_message_timeout_id);
+    dc->log_message_timeout_id = 0;
+  }
+  dc->log_ack = dc->log_pos;
+  dt_pthread_mutex_unlock(&dc->log_mutex);
+  _control_log_redraw();
+}
+
 static void _control_toast_redraw()
 {
   if(dt_control_running())
@@ -676,9 +768,6 @@ void dt_control_log(const char *msg, ...)
     dc->log_pos++;
   }
 
-  g_free(escaped_msg);
-  va_end(ap);
-
   if(timeout)
     g_source_remove(dc->log_message_timeout_id);
 
@@ -686,8 +775,69 @@ void dt_control_log(const char *msg, ...)
     = g_timeout_add(DT_CTL_LOG_TIMEOUT + 1000 * (msglen / 40),
                     _dt_ctl_log_message_timeout_callback, NULL);
   dt_pthread_mutex_unlock(&dc->log_mutex);
+
+  // store in persistent history (with deduplication)
+  dt_pthread_mutex_lock(&dc->log_history_mutex);
+  if(g_list_length(dc->log_history) > 0)
+  {
+    char *last_msg = ((char *)g_list_last(dc->log_history)->data) + 32;
+    if(g_strcmp0(escaped_msg, last_msg) == 0)
+    {
+      g_free(escaped_msg);
+      va_end(ap);
+      dt_pthread_mutex_unlock(&dc->log_history_mutex);
+      // redraw center later in gui thread:
+      g_idle_add(_redraw_center, 0);
+      return;
+    }
+  }
+
+  // get current time
+  GDateTime *now = g_date_time_new_now_local();
+  gchar *timestamp = g_date_time_format(now, "%H:%M:%S");
+  g_date_time_unref(now);
+
+  // allocate entry: 32 bytes for timestamp + strlen(escaped_msg) + 1 for message
+  const size_t msg_len = strlen(escaped_msg) + 1;
+  char *entry = g_malloc(32 + msg_len);
+  g_strlcpy(entry, timestamp, 32);
+  memcpy(entry + 32, escaped_msg, msg_len);
+  g_free(timestamp);
+
+  dc->log_history = g_list_append(dc->log_history, entry);
+
+  // remove oldest entry if over limit
+  if(g_list_length(dc->log_history) > DT_CTL_LOG_HISTORY_SIZE)
+  {
+    g_free(dc->log_history->data);
+    dc->log_history = g_list_delete_link(dc->log_history, dc->log_history);
+  }
+  dt_pthread_mutex_unlock(&dc->log_history_mutex);
+
+  g_free(escaped_msg);
+  va_end(ap);
+
   // redraw center later in gui thread:
   g_idle_add(_redraw_center, 0);
+}
+
+GList *dt_control_log_history_get_entries(void)
+{
+  dt_control_t *dc = darktable.control;
+  if(!dc) return NULL;
+
+  dt_pthread_mutex_lock(&dc->log_history_mutex);
+
+  GList *result = NULL;
+  for(GList *elem = dc->log_history; elem; elem = elem->next)
+  {
+    char *entry = (char *)elem->data;
+    gchar *line = g_strdup_printf("[%s] %s", entry, entry + 32);
+    result = g_list_append(result, line);
+  }
+
+  dt_pthread_mutex_unlock(&dc->log_history_mutex);
+  return result;
 }
 
 static void _toast_log(const gboolean markup, const char *msg, va_list ap)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "common/curve_tools.h"
 #include "common/darktable.h"
 #include "common/splines.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include <cairo.h>
@@ -67,7 +68,7 @@ static inline void dt_draw_star(cairo_t *cr,
                                 const float r1,
                                 const float r2)
 {
-  const float d = 2.0 * M_PI * 0.1f;
+  const float d = DT_2PI_F * 0.1f;
 
   const float dx[10] = { sinf(0.0),   sinf(d),     sinf(2 * d), sinf(3 * d), sinf(4 * d),
                          sinf(5 * d), sinf(6 * d), sinf(7 * d), sinf(8 * d), sinf(9 * d) };

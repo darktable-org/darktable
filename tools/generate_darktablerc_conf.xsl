@@ -33,6 +33,7 @@ typedef struct {
    const char *welcome_pagenum;      // "" or page number string for the welcome screen
    const char *welcome_questionnum;  // sort order within the welcome page
    const char *welcome_dirchooser;   // "yes" if a directory chooser should be used
+   const char *welcome_options;      // comma-separated curated option list for string-type keys
 } _default_config_t;
 
 static void _clear_confgen_value(void *value)
@@ -52,6 +53,8 @@ static void _clear_confgen_value(void *value)
   s->welcome_pagenum = 0;
   s->welcome_questionnum = 0;
   s->welcome_dirchooser = FALSE;
+  g_strfreev(s->welcome_options);
+  s->welcome_options = NULL;
 }
 
 static void _free_confgen_value(void *value)
@@ -96,9 +99,15 @@ static _default_config_t _config_variables[] =
     <xsl:choose>
       <xsl:when test="welcomescreen">
         <xsl:apply-templates select="welcomescreen" mode="welcome"/>
+        <xsl:text>&#xA;</xsl:text>
+        <!-- emit translation strings for each welcomescreen option label
+             (the portion after '|' in "id|label" pairs). WRAP_TRANSLATION
+             expands to nothing at compile but is picked up by xgettext,
+             matching how <enum> options get into the .pot catalog. -->
+        <xsl:apply-templates select="welcomescreen" mode="options_i18n"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>"", "", ""</xsl:text>
+        <xsl:text>"", "", "", ""</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>&#xA;  },&#xA;</xsl:text>
@@ -141,6 +150,9 @@ void dt_confgen_init()
      item->welcome_pagenum     = var->welcome_pagenum ? atoi(var->welcome_pagenum) : 0;
      item->welcome_questionnum = var->welcome_questionnum ? atoi(var->welcome_questionnum) : 0;
      item->welcome_dirchooser = g_strcmp0(var->welcome_dirchooser, "yes") == 0;
+     item->welcome_options = (var->welcome_options && *var->welcome_options)
+                             ? g_strsplit(var->welcome_options, ",", -1)
+                             : NULL;
      item->is_common = *var->is_common == 'y';
    }
 }
@@ -230,7 +242,49 @@ void dt_confgen_init()
 <xsl:template match="welcomescreen" mode="welcome">
   <xsl:text>"</xsl:text><xsl:value-of select="@pagenum"/><xsl:text>", "</xsl:text>
   <xsl:value-of select="@questionnum"/><xsl:text>", "</xsl:text>
-  <xsl:value-of select="@dirchooser"/><xsl:text>"</xsl:text>
+  <xsl:value-of select="@dirchooser"/><xsl:text>", "</xsl:text>
+  <xsl:value-of select="@options"/><xsl:text>"</xsl:text>
+</xsl:template>
+
+<!-- Recursively walks the comma-separated options attribute and emits
+     WRAP_TRANSLATION(C_("preferences", "<label>")) for each entry that
+     contains a "|" (id|label form). Entries without a pipe are treated
+     as plain identifiers that don't need translation. -->
+<xsl:template name="_emit_option_labels">
+  <xsl:param name="str"/>
+  <xsl:variable name="head">
+    <xsl:choose>
+      <xsl:when test="contains($str, ',')">
+        <xsl:value-of select="substring-before($str, ',')"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$str"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  <xsl:variable name="tail">
+    <xsl:if test="contains($str, ',')">
+      <xsl:value-of select="substring-after($str, ',')"/>
+    </xsl:if>
+  </xsl:variable>
+  <xsl:if test="contains($head, '|')">
+    <xsl:text>    WRAP_TRANSLATION(C_("preferences", "</xsl:text>
+    <xsl:value-of select="substring-after($head, '|')"/>
+    <xsl:text>"))&#xA;</xsl:text>
+  </xsl:if>
+  <xsl:if test="$tail != ''">
+    <xsl:call-template name="_emit_option_labels">
+      <xsl:with-param name="str" select="$tail"/>
+    </xsl:call-template>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template match="welcomescreen" mode="options_i18n">
+  <xsl:if test="@options">
+    <xsl:call-template name="_emit_option_labels">
+      <xsl:with-param name="str" select="@options"/>
+    </xsl:call-template>
+  </xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>

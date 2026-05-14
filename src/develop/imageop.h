@@ -104,7 +104,9 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_CROP_EXPOSER = 1 << 16,      // offers crop exposing
   IOP_FLAGS_EXPAND_ROI_IN = 1 << 17,     // we might have to take special care about roi expansion
   IOP_FLAGS_WRITE_DETAILS = 1 << 18,     // provides the scharr mask used by details
-  IOP_FLAGS_WRITE_RASTER = 1 << 19       // modules not supporting blending might still advertise a raster mask
+  IOP_FLAGS_WRITE_RASTER = 1 << 19,      // modules not supporting blending might still advertise a raster mask
+  IOP_FLAGS_WRITE_PIPECACHE = 1 << 20,   // enforce pipecache writing
+  IOP_FLAGS_WRITE_PIPECACHECL = 1 << 21, // enforce pipecache writing for OpenCL code
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -371,6 +373,8 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state);
 /* duplicate module and return new instance */
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
                                       const gboolean copy_params);
+/* delete module instance */
+void dt_iop_gui_delete(dt_iop_module_t *module);
 
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
@@ -452,6 +456,15 @@ static inline gboolean dt_iop_module_is(const dt_iop_module_so_t *module,
                                         const char*operation)
 {
   return !g_strcmp0(module->op, operation);
+}
+
+static inline gboolean dt_iop_module_is_gamma(const dt_iop_module_t *module)
+{
+  return dt_iop_module_is(module->so, "gamma");
+}
+static inline gboolean dt_iop_module_is_finalscale(const dt_iop_module_t *module)
+{
+  return dt_iop_module_is(module->so, "finalscale");
 }
 
 /** count instances of a module **/

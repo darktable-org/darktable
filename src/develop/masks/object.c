@@ -1,0 +1,1994 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2026 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "common/ai/segmentation.h"
+#include "common/ai_models.h"
+#include "common/colorspaces.h"
+#include "common/debug.h"
+#include "common/densecrf.h"
+#include "common/distance_transform.h"
+#include "common/mipmap_cache.h"
+#include "common/ras2vect.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
+#include "develop/openmp_maths.h"
+#include "develop/pixelpipe_hb.h"
+#include "gui/gtk.h"
+#include "imageio/imageio_common.h"
+#include "views/view.h"
+
+#include <limits.h>
+#include <math.h>
+#include <string.h>
+
+#define CONF_OBJECT_THRESHOLD_KEY "plugins/darkroom/masks/object/threshold"
+#define CONF_OBJECT_REFINE_PASSES_KEY "plugins/darkroom/masks/object/refine_passes"
+#define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"
+#define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
+#define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
+#define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
+#define CONF_OBJECT_PATH_PREVIEW_KEY "plugins/darkroom/masks/object/path_preview"
+#define CONF_OBJECT_REFINE_BOUNDARY_KEY "plugins/darkroom/masks/object/refine_boundary"
+#define CONF_OBJECT_REFINE_BOUNDARY_ITER_KEY "plugins/darkroom/masks/object/refine_boundary_iterations"
+#define CONF_OBJECT_REFINE_BOUNDARY_SIGMA_COLOR_KEY "plugins/darkroom/masks/object/refine_boundary_sigma_color"
+#define CONF_OBJECT_REFINE_BOUNDARY_W_BILATERAL_KEY "plugins/darkroom/masks/object/refine_boundary_weight_bilateral"
+
+// default render target (longest side in pixels).
+// the SAM encoder internally downscales to 1024 so encoding quality
+// is the same, but higher render resolution gives the guided filter
+// and vectorizer more detail for edge refinement.
+// configurable via plugins/darkroom/masks/object/render_size
+#define SEG_RENDER_DEFAULT 1536
+#define CONF_OBJECT_RENDER_SIZE_KEY "plugins/darkroom/masks/object/render_size"
+
+// --- per-session segmentation state (stored in gui->scratchpad) ---
+
+typedef enum _encode_state_t
+{
+  ENCODE_ERROR = -1,
+  ENCODE_IDLE = 0,
+  ENCODE_MSG_SHOWN = 1, // busy message queued, waiting for next expose
+  ENCODE_READY = 2,     // encoding complete, results available
+  ENCODE_RUNNING = 3,   // background thread in progress
+} _encode_state_t;
+
+// minimum drag distance (preview pipe pixels) to distinguish click from drag
+#define DRAG_THRESHOLD 5.0f
+
+typedef struct _object_data_t
+{
+  dt_ai_environment_t *env; // AI environment for model registry
+  dt_seg_context_t *seg;    // SAM context (encoder+decoder)
+  float *mask;              // current mask buffer (preview pipe size)
+  int mask_w, mask_h;       // mask dimensions
+  gboolean model_loaded;    // whether the model was loaded
+  int encode_state;         // uses _encode_state_t values (atomic access)
+  dt_imgid_t encoded_imgid; // image ID that was encoded
+  dt_hash_t encoded_distort_hash; // distort hash at encode time (detects crop/rotate)
+  int encode_w, encode_h;   // encoding resolution (for coordinate mapping)
+  guint modifier_poll_id;   // timer to detect shift key changes
+  GThread *encode_thread;   // background encoding thread
+  gboolean dragging;        // TRUE between press and release during click drag
+  float drag_start_x;       // press position (preview pipe pixel space)
+  float drag_start_y;
+  gboolean has_selection;   // TRUE after first click, enables refinement mode
+  // vectorization preview (auto-updated after each decode)
+  GList *preview_forms;             // GList of dt_masks_form_t* (mask-space pixel coords)
+  GList *preview_signs;             // parallel GList of sign values ('+' or '-')
+  int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
+  float preview_smoothing;          // current smoothing (potrace alphamax, 0.0-1.3)
+  float preview_feather;            // path border/feather (0.0-0.5, normalized)
+  gboolean preview_refine;          // run DenseCRF edge refinement on each decode
+} _object_data_t;
+
+static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
+{
+  return (gui && gui->scratchpad) ? (_object_data_t *)gui->scratchpad : NULL;
+}
+
+// compute a hash of all distortion module parameters
+// from a develop history — changes on crop/rotate/perspective/lens
+// but NOT on exposure/color/masks
+static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
+{
+  dt_hash_t hash = DT_INITHASH;
+  for(GList *l = dev->history; l; l = g_list_next(l))
+  {
+    const dt_dev_history_item_t *item = l->data;
+    if(item->module
+       && item->module->enabled
+       && (item->module->operation_tags() & IOP_TAG_DISTORT))
+    {
+      hash = dt_hash(hash, item->params, item->module->params_size);
+    }
+  }
+  return hash;
+}
+
+static void _on_view_changed(gpointer instance,
+                             dt_view_t *old_view,
+                             dt_view_t *new_view,
+                             gpointer user_data)
+{
+  (void)instance;
+  (void)new_view;
+  (void)user_data;
+
+  // free persistent model when leaving darkroom
+  if(old_view && old_view->view(old_view) == DT_VIEW_DARKROOM)
+  {
+    dt_ai_seg_t *seg = &darktable.ai_seg;
+    if(seg->ctx)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[object mask] freeing persistent model");
+      dt_seg_free(seg->ctx);
+      seg->ctx = NULL;
+    }
+    if(seg->env)
+    {
+      dt_ai_env_destroy(seg->env);
+      seg->env = NULL;
+    }
+    seg->model_loaded = FALSE;
+
+    DT_CONTROL_SIGNAL_DISCONNECT(_on_view_changed, NULL);
+    seg->signal_connected = FALSE;
+  }
+}
+
+// free vectorized preview forms (never registered in dev->forms)
+static void _free_preview_forms(_object_data_t *d)
+{
+  if(!d) return;
+  for(GList *l = d->preview_forms; l; l = g_list_next(l))
+    dt_masks_free_form(l->data);
+  g_list_free(d->preview_forms);
+  d->preview_forms = NULL;
+  g_list_free(d->preview_signs);
+  d->preview_signs = NULL;
+}
+
+// free all resources in _object_data_t (must be called after thread has joined),
+// preserves seg+env in persistent statics so the model stays loaded
+static void _destroy_data(_object_data_t *d)
+{
+  if(!d)
+    return;
+  if(d->modifier_poll_id)
+    g_source_remove(d->modifier_poll_id);
+  if(d->encode_thread)
+    g_thread_join(d->encode_thread);
+
+  // save model to persistent storage - keeps it loaded across
+  // mask sessions, disk cache handles embedding persistence.
+  // only persist if nobody already claimed the slot (guards
+  // against deferred cleanup racing with a new session)
+  dt_ai_seg_t *ps = &darktable.ai_seg;
+  const gboolean persist = dt_conf_get_bool(CONF_OBJECT_PERSIST_KEY);
+  if(persist && !ps->ctx && d->seg)
+  {
+    dt_seg_reset_encoding(d->seg);
+    ps->env = d->env;
+    ps->ctx = d->seg;
+    ps->model_loaded = d->model_loaded;
+    d->env = NULL;
+    d->seg = NULL;
+  }
+  else
+  {
+    if(d->seg) dt_seg_free(d->seg);
+    if(d->env) dt_ai_env_destroy(d->env);
+    d->seg = NULL;
+    d->env = NULL;
+  }
+
+  g_free(d->mask);
+  _free_preview_forms(d);
+  g_free(d);
+}
+
+// idle callback for deferred cleanup when background thread was still running
+static gboolean _deferred_cleanup(gpointer data)
+{
+  _object_data_t *d = data;
+  const int state = g_atomic_int_get(&d->encode_state);
+  if(state == ENCODE_RUNNING)
+    return G_SOURCE_CONTINUE;
+  _destroy_data(d);
+  return G_SOURCE_REMOVE;
+}
+
+static void _free_data(dt_masks_form_gui_t *gui)
+{
+  _object_data_t *d = _get_data(gui);
+  if(!d)
+    return;
+  gui->scratchpad = NULL;
+
+  const int state = g_atomic_int_get(&d->encode_state);
+  if(state == ENCODE_RUNNING)
+  {
+    // thread still running, defer cleanup so we don't block the UI
+    g_timeout_add(200, _deferred_cleanup, d);
+    return;
+  }
+  _destroy_data(d);
+}
+
+// data passed to the background encoding thread
+typedef struct _encode_thread_data_t
+{
+  _object_data_t *d;
+  dt_imgid_t imgid;        // image to encode (thread renders via export pipe)
+  int32_t history_end;     // darkroom history_end (may be ahead of database)
+  dt_hash_t distort_hash;  // hash from live darkroom state (for disk cache key)
+} _encode_thread_data_t;
+
+// background thread: loads model, renders image via export pipe, and encodes,
+// does ZERO GLib/GTK calls - only computation + atomic state set,
+// the poll timer on the main thread detects completion
+static gpointer _encode_thread_func(gpointer data)
+{
+  _encode_thread_data_t *td = data;
+  _object_data_t *d = td->d;
+  const dt_imgid_t imgid = td->imgid;
+  const int32_t td_history_end = td->history_end;
+  const dt_hash_t distort_hash = td->distort_hash;
+  g_free(td);
+
+  // load model if needed
+  if(!d->model_loaded)
+  {
+    if(!d->env)
+      d->env = dt_ai_env_init(NULL);
+
+    char *model_id = dt_ai_models_get_active_for_task("mask");
+    d->seg = dt_seg_load(d->env, model_id);
+    g_free(model_id);
+
+    if(!d->seg)
+    {
+      g_atomic_int_set(&d->encode_state, ENCODE_ERROR);
+      return NULL;
+    }
+    d->model_loaded = TRUE;
+  }
+
+  // render image at high resolution via temporary export pipeline
+  dt_develop_t dev;
+  dt_dev_init(&dev, FALSE);
+  dt_dev_load_image(&dev, imgid);
+
+  // the database's history_end may lag behind the darkroom's
+  // in-memory state (crop/rotate not flushed yet), override
+  // so synch_all applies all current edits
+  if(td_history_end > 0 && td_history_end > dev.history_end)
+    dev.history_end = td_history_end;
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+
+  if(!buf.buf || !buf.width || !buf.height)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[object mask] failed to get image buffer for encoding");
+    dt_dev_cleanup(&dev);
+    g_atomic_int_set(&d->encode_state, ENCODE_ERROR);
+    return NULL;
+  }
+
+  const int wd = dev.image_storage.width;
+  const int ht = dev.image_storage.height;
+
+  dt_dev_pixelpipe_t pipe;
+  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht, IMAGEIO_RGB | IMAGEIO_INT8,
+                                   FALSE))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[object mask] failed to init export pipe for encoding");
+    dt_mipmap_cache_release(&buf);
+    dt_dev_cleanup(&dev);
+    g_atomic_int_set(&d->encode_state, ENCODE_ERROR);
+    return NULL;
+  }
+
+  dt_dev_pixelpipe_set_icc(&pipe, DT_COLORSPACE_SRGB, NULL,
+                           DT_INTENT_PERCEPTUAL);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf,
+                             buf.width, buf.height, buf.iscale);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_synch_all(&pipe, &dev);
+
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight,
+                                  &pipe.processed_width,
+                                  &pipe.processed_height);
+
+  const int render_target = dt_conf_key_exists(CONF_OBJECT_RENDER_SIZE_KEY)
+    ? MAX(dt_conf_get_int(CONF_OBJECT_RENDER_SIZE_KEY), 1024)
+    : SEG_RENDER_DEFAULT;
+  const double scale = fmin((double)render_target / (double)pipe.processed_width,
+                            (double)render_target / (double)pipe.processed_height);
+  const double final_scale = fmin(scale, 1.0); // don't upscale
+  const int out_w = (int)(final_scale * pipe.processed_width);
+  const int out_h = (int)(final_scale * pipe.processed_height);
+
+  // use distort hash from darkroom's live state (passed by caller)
+  // instead of computing from the thread's dev, which may have
+  // stale history (not yet flushed to database)
+  if(dt_seg_disk_cache_load(d->seg, imgid, distort_hash))
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_mipmap_cache_release(&buf);
+    dt_dev_cleanup(&dev);
+    dt_seg_get_encoded_rgb(d->seg, &d->encode_w, &d->encode_h);
+    g_atomic_int_set(&d->encode_state, ENCODE_READY);
+    dt_seg_warmup_decoder(d->seg);
+    return NULL;
+  }
+
+  dt_print(DT_DEBUG_AI,
+           "[object mask] rendering %dx%d (scale=%.3f) for encoding...",
+           out_w, out_h, final_scale);
+
+  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, out_w, out_h, final_scale);
+
+  // backbuf is float RGBA after process_no_gamma, convert to uint8 RGB for SAM
+  uint8_t *rgb = NULL;
+  if(pipe.backbuf)
+  {
+    const float *outbuf = (const float *)pipe.backbuf;
+    rgb = g_try_malloc((size_t)out_w * out_h * 3);
+    if(rgb)
+    {
+      for(size_t i = 0; i < (size_t)out_w * out_h; i++)
+      {
+        rgb[i * 3 + 0] = (uint8_t)CLAMP(outbuf[i * 4 + 0] * 255.0f + 0.5f, 0, 255);
+        rgb[i * 3 + 1] = (uint8_t)CLAMP(outbuf[i * 4 + 1] * 255.0f + 0.5f, 0, 255);
+        rgb[i * 3 + 2] = (uint8_t)CLAMP(outbuf[i * 4 + 2] * 255.0f + 0.5f, 0, 255);
+      }
+    }
+  }
+
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_mipmap_cache_release(&buf);
+  dt_dev_cleanup(&dev);
+
+  if(!rgb)
+  {
+    dt_print(DT_DEBUG_AI, "[object mask] failed to render image for encoding");
+    g_atomic_int_set(&d->encode_state, ENCODE_ERROR);
+    return NULL;
+  }
+
+  // store encoding dimensions for coordinate mapping
+  d->encode_w = out_w;
+  d->encode_h = out_h;
+
+  // encode the image
+  gboolean ok = dt_seg_encode_image(d->seg, rgb, out_w, out_h);
+
+  // if accelerated encoding failed, fall back to CPU
+  if(!ok)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[object mask] encoding failed, retrying with CPU provider");
+    dt_seg_free(d->seg);
+    dt_ai_env_set_provider(d->env, DT_AI_PROVIDER_CPU);
+    char *model_id = dt_ai_models_get_active_for_task("mask");
+    d->seg = dt_seg_load(d->env, model_id);
+    g_free(model_id);
+
+    if(d->seg)
+      ok = dt_seg_encode_image(d->seg, rgb, out_w, out_h);
+    else
+      d->model_loaded = FALSE;
+  }
+
+  // dt_seg_encode_image keeps its own copy of rgb for edge refinement
+  if(ok)
+    dt_seg_disk_cache_save(d->seg, imgid, distort_hash,
+                           rgb, out_w, out_h);
+  g_free(rgb);
+
+  // signal ready so the user can start placing points; warmup continues
+  // on this thread; _run_decoder joins the thread on the first click to
+  // avoid a race with warmup on the shared segmentation context
+  g_atomic_int_set(&d->encode_state, ok ? ENCODE_READY : ENCODE_ERROR);
+
+  // warm up decoder with real encoder embeddings so the first user click
+  // doesn't pay ORT's lazy-init + arena-sizing cost on the main thread
+  if(ok)
+    dt_seg_warmup_decoder(d->seg);
+
+  return NULL;
+}
+
+// keep only the connected component containing the seed pixel
+// (seed_x, seed_y), if the seed is outside any foreground region,
+// keep the largest component instead, operates in-place: non-selected
+// foreground pixels are zeroed
+static void _keep_seed_component(float *mask,
+                                 const int w,
+                                 const int h,
+                                 const float threshold,
+                                 const int seed_x,
+                                 const int seed_y)
+{
+  const int npix = w * h;
+  int16_t *labels = g_try_malloc0((size_t)npix * sizeof(int16_t));
+  if(!labels)
+    return;
+  int *stack = g_try_malloc((size_t)npix * sizeof(int));
+  if(!stack)
+  {
+    g_free(labels);
+    return;
+  }
+
+  int16_t n_labels = 0;
+  int16_t best_label = 0;
+  int best_area = 0;
+  int16_t seed_label = 0;
+
+  for(int i = 0; i < npix; i++)
+  {
+    if(mask[i] <= threshold || labels[i] != 0)
+      continue;
+    if(n_labels >= INT16_MAX)
+      break;
+
+    n_labels++;
+    const int16_t label = n_labels;
+    int area = 0;
+    int sp = 0;
+    stack[sp++] = i;
+    labels[i] = label;
+
+    while(sp > 0)
+    {
+      const int p = stack[--sp];
+      area++;
+      const int px = p % w;
+      const int py = p / w;
+
+      if(px == seed_x && py == seed_y)
+        seed_label = label;
+
+      // 4-connected neighbors
+      if(py > 0 && labels[p - w] == 0 && mask[p - w] > threshold)
+      {
+        labels[p - w] = label;
+        stack[sp++] = p - w;
+      }
+      if(py < h - 1 && labels[p + w] == 0 && mask[p + w] > threshold)
+      {
+        labels[p + w] = label;
+        stack[sp++] = p + w;
+      }
+      if(px > 0 && labels[p - 1] == 0 && mask[p - 1] > threshold)
+      {
+        labels[p - 1] = label;
+        stack[sp++] = p - 1;
+      }
+      if(px < w - 1 && labels[p + 1] == 0 && mask[p + 1] > threshold)
+      {
+        labels[p + 1] = label;
+        stack[sp++] = p + 1;
+      }
+    }
+
+    if(area > best_area)
+    {
+      best_area = area;
+      best_label = label;
+    }
+  }
+
+  // prefer component containing the seed point; fall back to largest
+  const int16_t keep = (seed_label > 0) ? seed_label : best_label;
+
+  if(keep > 0)
+  {
+    for(int i = 0; i < npix; i++)
+    {
+      if(mask[i] > threshold && labels[i] != keep)
+        mask[i] = 0.0f;
+    }
+  }
+
+  g_free(stack);
+  g_free(labels);
+}
+
+static float _mask_iou(const float *const restrict a,
+                       const float *const restrict b,
+                       const size_t n,
+                       const float threshold)
+{
+  size_t inter = 0, uni = 0;
+  DT_OMP_FOR(reduction(+:inter, uni))
+  for(size_t i = 0; i < n; i++)
+  {
+    const int A = a[i] > threshold;
+    const int B = b[i] > threshold;
+    inter += A & B;
+    uni   += A | B;
+  }
+  return uni > 0 ? (float)inter / (float)uni : 0.0f;
+}
+
+// peak of the (exact-Euclidean) distance transform of mask>threshold,
+// excluding pixels within min_separation of any positive prompt
+static gboolean _find_peak_point(const float *const restrict mask,
+                                 const size_t w,
+                                 const size_t h,
+                                 const float threshold,
+                                 const dt_seg_point_t *const exclude,
+                                 const int n_exclude,
+                                 const float min_separation,
+                                 dt_seg_point_t *const out)
+{
+  float *const restrict dist = dt_alloc_align_float(w * h);
+  if(!dist) return FALSE;
+
+  // exact-euclidean DT: dist[i] = distance to nearest pixel where mask<thr
+  // require ~4 px interior depth — shallower peaks aren't informative
+  const float min_depth = 4.0f;
+  const float max_dist
+    = dt_image_distance_transform(mask, dist, w, h,
+                                  threshold, DT_DISTANCE_TRANSFORM_MASK);
+  if(max_dist <= min_depth) { dt_free_align(dist); return FALSE; }
+
+  // zero out pixels too close to existing positive prompts so the
+  // subsequent argmax never picks them
+  const float min_sep_sq = min_separation * min_separation;
+  for(int k = 0; k < n_exclude; k++)
+  {
+    if(exclude[k].label != 1) continue;
+    const float px = exclude[k].x;
+    const float py = exclude[k].y;
+    const int x0 = MAX(0, (int)(px - min_separation));
+    const int x1 = MIN((int)w - 1, (int)(px + min_separation));
+    const int y0 = MAX(0, (int)(py - min_separation));
+    const int y1 = MIN((int)h - 1, (int)(py + min_separation));
+    DT_OMP_FOR(collapse(2))
+    for(int y = y0; y <= y1; y++)
+      for(int x = x0; x <= x1; x++)
+      {
+        const float dx = (float)x - px;
+        const float dy = (float)y - py;
+        if(dx * dx + dy * dy < min_sep_sq) dist[(size_t)y * w + x] = 0.0f;
+      }
+  }
+
+  // single-threaded combined max+argmax (exclusion may have lowered
+  // the peak below max_dist, so we can't reuse that value here)
+  size_t best_idx = (size_t)-1;
+  float best = min_depth;
+  for(size_t i = 0; i < w * h; i++)
+    if(dist[i] > best) { best = dist[i]; best_idx = i; }
+  dt_free_align(dist);
+  if(best_idx == (size_t)-1) return FALSE;
+
+  const size_t py = best_idx / w;
+  const size_t px = best_idx % w;
+  out->x = (float)px;
+  out->y = (float)py;
+  out->label = 1;
+  return TRUE;
+}
+
+// tight bbox around mask>threshold, padded by `padding` (fraction of
+// bbox extent); FALSE if mask is empty
+static gboolean _compute_bbox(const float *const restrict mask,
+                              const int w,
+                              const int h,
+                              const float threshold,
+                              const float padding,
+                              dt_seg_point_t *const tl,
+                              dt_seg_point_t *const br)
+{
+  // single-threaded: cheap, and avoids OMP-reduction identity surprises
+  int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+  for(int y = 0; y < h; y++)
+  {
+    for(int x = 0; x < w; x++)
+    {
+      if(mask[(size_t)y * w + x] > threshold)
+      {
+        if(x < min_x) min_x = x;
+        if(y < min_y) min_y = y;
+        if(x > max_x) max_x = x;
+        if(y > max_y) max_y = y;
+      }
+    }
+  }
+  if(max_x == INT_MIN) return FALSE;
+
+  const int pad_x = (int)((max_x - min_x) * padding) + 1;
+  const int pad_y = (int)((max_y - min_y) * padding) + 1;
+  tl->x = (float)CLAMP(min_x - pad_x, 0, w - 1);
+  tl->y = (float)CLAMP(min_y - pad_y, 0, h - 1);
+  tl->label = 2;
+  br->x = (float)CLAMP(max_x + pad_x, 0, w - 1);
+  br->y = (float)CLAMP(max_y + pad_y, 0, h - 1);
+  br->label = 3;
+  return TRUE;
+}
+
+static void _run_decoder(dt_masks_form_gui_t *gui)
+{
+  _object_data_t *d = _get_data(gui);
+  if(!d || !d->seg || !dt_seg_is_encoded(d->seg))
+    return;
+  if(gui->guipoints_count <= 0)
+    return;
+
+  // wait for encode thread: warmup may still be running after ENCODE_READY
+  if(d->encode_thread)
+  {
+    g_thread_join(d->encode_thread);
+    d->encode_thread = NULL;
+  }
+
+  dt_gui_cursor_set_busy();
+
+  const float *gp = dt_masks_dynbuf_buffer(gui->guipoints);
+  const float *gpp = dt_masks_dynbuf_buffer(gui->guipoints_payload);
+
+  // points are stored in preview pipe pixel space, scale to encoding space
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+  const float sx = (wd > 0) ? (float)d->encode_w / wd : 1.0f;
+  const float sy = (ht > 0) ? (float)d->encode_h / ht : 1.0f;
+
+  // always send all accumulated points; on the first click reset the
+  // previous mask, on subsequent clicks keep it so the decoder gets
+  // both all points AND the previous mask as boundary context;
+  // after decode, prev_mask carries refinement context, don't reset it
+  const int n_prompt_points = gui->guipoints_count;
+  if(gui->guipoints_count <= 1 && !d->has_selection)
+    dt_seg_reset_prev_mask(d->seg);
+
+  // headroom: one peak point per pass + 2 box corners (SAM only)
+  const int n_passes = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_PASSES_KEY),
+                             1, 3);
+  dt_seg_point_t *points = g_new(dt_seg_point_t, n_prompt_points + n_passes + 2);
+  for(int i = 0; i < n_prompt_points; i++)
+  {
+    points[i].x = gp[i * 2 + 0] * sx;
+    points[i].y = gp[i * 2 + 1] * sy;
+    points[i].label = (int)gpp[i];
+  }
+  int n_points = n_prompt_points;
+
+  // find seed point for connected component filter:
+  // always search ALL accumulated points (not just prompt points)
+  int seed_x = -1, seed_y = -1;
+  for(int i = gui->guipoints_count - 1; i >= 0; i--)
+  {
+    const int label = (int)gpp[i];
+    if(label == 1)
+    {
+      seed_x = (int)(gp[i * 2 + 0] * sx);
+      seed_y = (int)(gp[i * 2 + 1] * sy);
+      break;
+    }
+  }
+
+  const float threshold
+    = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
+  const gboolean supports_box = dt_seg_supports_box(d->seg);
+  int mw = 0, mh = 0;
+  float *mask = NULL;
+  gboolean box_added = FALSE;
+
+  for(int pass = 0; pass < n_passes; pass++)
+  {
+    float *new_mask = dt_seg_compute_mask(d->seg, points, n_points, &mw, &mh);
+    if(!new_mask) break;
+
+    if(mask && _mask_iou(mask, new_mask, (size_t)mw * mh, threshold) > 0.99f)
+    {
+      g_free(mask);
+      mask = new_mask;
+      dt_print(DT_DEBUG_AI,
+               "[object mask] converged at pass %d/%d", pass + 1, n_passes);
+      break;
+    }
+    g_free(mask);
+    mask = new_mask;
+
+    if(pass + 1 >= n_passes) break;
+
+    gboolean any_added = FALSE;
+    dt_seg_point_t peak;
+    if(_find_peak_point(mask, mw, mh, threshold,
+                        points, n_points, 8.0f, &peak))
+    {
+      points[n_points++] = peak;
+      any_added = TRUE;
+    }
+    if(supports_box && !box_added)
+    {
+      dt_seg_point_t tl, br;
+      if(_compute_bbox(mask, mw, mh, threshold, 0.05f, &tl, &br))
+      {
+        points[n_points++] = tl;
+        points[n_points++] = br;
+        box_added = TRUE;
+        any_added = TRUE;
+      }
+    }
+    if(!any_added) break;
+  }
+  g_free(points);
+
+  if(mask)
+  {
+    // remove disconnected blobs: keep only the component at the seed point
+    seed_x = CLAMP(seed_x, 0, mw - 1);
+    seed_y = CLAMP(seed_y, 0, mh - 1);
+    _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
+
+    // optional DenseCRF edge refinement using the encoded RGB as guide
+    if(d->preview_refine)
+    {
+      int rgb_w = 0, rgb_h = 0;
+      const uint8_t *rgb = dt_seg_get_encoded_rgb(d->seg, &rgb_w, &rgb_h);
+      if(rgb && rgb_w == mw && rgb_h == mh)
+      {
+        const int crf_iter
+          = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_BOUNDARY_ITER_KEY),
+                  1, 10);
+        const float crf_sigma_color
+          = CLAMP(dt_conf_get_float(CONF_OBJECT_REFINE_BOUNDARY_SIGMA_COLOR_KEY),
+                  1.0f, 50.0f);
+        const float crf_w_bilateral
+          = CLAMP(dt_conf_get_float(CONF_OBJECT_REFINE_BOUNDARY_W_BILATERAL_KEY),
+                  0.5f, 30.0f);
+        const double t0 = dt_get_wtime();
+        dt_dense_crf_binary(mask, rgb, mw, mh,
+                            5.0f, crf_sigma_color,
+                            3.0f, crf_w_bilateral, crf_iter);
+        dt_print(DT_DEBUG_AI,
+                 "[object mask] CRF refinement: %dx%d (%.2fs)",
+                 mw, mh, dt_get_wtime() - t0);
+      }
+    }
+
+    g_free(d->mask);
+    d->mask = mask;
+    d->mask_w = mw;
+    d->mask_h = mh;
+  }
+  dt_gui_cursor_clear_busy();
+}
+
+// run vectorization with current preview parameters, store result in scratchpad,
+// called automatically after each decode and on scroll parameter changes
+static void _update_preview(_object_data_t *d)
+{
+  _free_preview_forms(d);
+  if(!d->mask || d->mask_w <= 0 || d->mask_h <= 0)
+    return;
+
+  // skip vectorization when path preview is disabled
+  if(dt_conf_key_exists(CONF_OBJECT_PATH_PREVIEW_KEY)
+     && !dt_conf_get_bool(CONF_OBJECT_PATH_PREVIEW_KEY))
+    return;
+
+  // ras2forms inherits potrace's convention: pixels < threshold are
+  // "inside the form" (black ink on white paper). our AI mask uses the
+  // opposite — high values = inside the object — so we invert both the
+  // mask and the threshold here. result: the path traces the same
+  // contour as the red overlay (mask > user_threshold)
+  const size_t n = (size_t)d->mask_w * d->mask_h;
+  float *inv_mask = g_try_malloc(n * sizeof(float));
+  if(!inv_mask) return;
+
+  for(size_t i = 0; i < n; i++)
+    inv_mask[i] = 1.0f - d->mask[i];
+
+  const float thresh = 1.0f - CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
+                                    0.3f, 0.9f);
+  d->preview_forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
+                               thresh,
+                               d->preview_cleanup, (double)d->preview_smoothing,
+                               &d->preview_signs);
+  g_free(inv_mask);
+
+  // apply feather to all path points
+  const float feather = d->preview_feather;
+  for(GList *fl = d->preview_forms; fl; fl = g_list_next(fl))
+  {
+    dt_masks_form_t *f = fl->data;
+    for(GList *p = f->points; p; p = g_list_next(p))
+    {
+      dt_masks_point_path_t *pt = p->data;
+      pt->border[0] = feather;
+      pt->border[1] = feather;
+    }
+  }
+}
+
+// save the raster mask as an RGB PNG to the raster mask root folder
+// (compatible with the external raster masks module)
+static void _save_raster_mask(const float *mask,
+                              const int w,
+                              const int h,
+                              const float threshold)
+{
+  if(!mask || w <= 0 || h <= 0) return;
+
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  if(!dt_is_valid_imgid(imgid)) return;
+
+  // get the raster mask root folder from preferences
+  gchar *root = dt_conf_get_string("plugins/darkroom/segments/def_path");
+  if(!root || !*root)
+  {
+    g_free(root);
+    dt_control_log(_("set raster mask root folder in preferences"));
+    return;
+  }
+
+  // ensure the directory exists
+  if(g_mkdir_with_parents(root, 0755) != 0)
+  {
+    dt_print(DT_DEBUG_AI, "[object mask] cannot create folder: %s", root);
+    dt_control_log(_("cannot create raster mask folder"));
+    g_free(root);
+    return;
+  }
+
+  // get image filename without directory and extension
+  char imgpath[PATH_MAX] = { 0 };
+  dt_image_full_path(imgid, imgpath, sizeof(imgpath), NULL);
+  gchar *basename = g_path_get_basename(imgpath);
+  char *dot = g_strrstr(basename, ".");
+  if(dot) *dot = '\0';
+
+  // build output path, append _1, _2, ... if file already exists
+  gchar *mask_name = g_strdup_printf("%s_mask.png", basename);
+  gchar *outpath = g_build_filename(root, mask_name, NULL);
+  g_free(mask_name);
+
+  for(int seq = 1;
+      g_file_test(outpath, G_FILE_TEST_EXISTS) && seq < 1000;
+      seq++)
+  {
+    g_free(outpath);
+    mask_name = g_strdup_printf("%s_mask_%d.png", basename, seq);
+    outpath = g_build_filename(root, mask_name, NULL);
+    g_free(mask_name);
+  }
+
+  g_free(basename);
+  g_free(root);
+
+  // create RGB buffer (rasterfile module expects 3-channel PNG)
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, w);
+  uint8_t *buf = g_try_malloc0((size_t)stride * h);
+  if(!buf)
+  {
+    g_free(outpath);
+    return;
+  }
+
+  for(int y = 0; y < h; y++)
+  {
+    uint8_t *row = buf + y * stride;
+    for(int x = 0; x < w; x++)
+    {
+      const uint8_t v = (mask[y * w + x] > threshold) ? 255 : 0;
+      // cairo RGB24 is native-endian BGRX in memory
+      row[x * 4 + 0] = v; // B
+      row[x * 4 + 1] = v; // G
+      row[x * 4 + 2] = v; // R
+      row[x * 4 + 3] = 0; // unused
+    }
+  }
+
+  cairo_surface_t *surface
+    = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_RGB24,
+                                          w, h, stride);
+  if(surface)
+  {
+    const cairo_status_t st = cairo_surface_write_to_png(surface, outpath);
+    cairo_surface_destroy(surface);
+    if(st == CAIRO_STATUS_SUCCESS)
+    {
+      dt_print(DT_DEBUG_AI, "[object mask] raster mask saved: %s", outpath);
+      dt_control_log(_("raster mask saved"));
+    }
+    else
+    {
+      dt_print(DT_DEBUG_AI, "[object mask] failed to write: %s", outpath);
+      dt_control_log(_("failed to save raster mask"));
+    }
+  }
+  g_free(buf);
+  g_free(outpath);
+}
+
+// transform mask-space forms to input-normalized coords and register them,
+// takes ownership of `forms` and `signs` lists (forms are appended to dev->forms)
+static dt_masks_form_t *
+_register_vectorized_forms(dt_iop_module_t *module,
+                           GList *forms,
+                           GList *signs,
+                           const int mask_w,
+                           const int mask_h)
+{
+  (void)module;
+
+  // darktable mask coordinates are stored in input-image-normalized space:
+  //   coord = backtransform(backbuf_pixel) / iwidth
+  // this undoes all geometric pipeline transforms (crop, rotation, lens, etc.)
+  // so that the mask can be applied at any point in the pipeline
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
+  // vectorized coordinates are in mask space (encoding resolution),
+  // dt_dev_distort_backtransform expects preview pipe pixel space
+  const float msx = (mask_w > 0) ? wd / (float)mask_w : 1.0f;
+  const float msy = (mask_h > 0) ? ht / (float)mask_h : 1.0f;
+
+  for(GList *l = forms; l; l = g_list_next(l))
+  {
+    dt_masks_form_t *f = l->data;
+    const int npts = g_list_length(f->points);
+    if(npts == 0)
+      continue;
+
+    // collect all coordinates into a flat array for batch backtransform,
+    // each path point has 3 coordinate pairs: corner, ctrl1, ctrl2
+    float *pts = g_new(float, npts * 6);
+    int i = 0;
+    for(GList *p = f->points; p; p = g_list_next(p))
+    {
+      dt_masks_point_path_t *pt = p->data;
+      pts[i++] = pt->corner[0];
+      pts[i++] = pt->corner[1];
+      pts[i++] = pt->ctrl1[0];
+      pts[i++] = pt->ctrl1[1];
+      pts[i++] = pt->ctrl2[0];
+      pts[i++] = pt->ctrl2[1];
+    }
+
+    // scale from mask space (encoding resolution) to preview pipe space
+    for(int j = 0; j < npts * 6; j += 2)
+    {
+      pts[j + 0] *= msx;
+      pts[j + 1] *= msy;
+    }
+
+    dt_dev_distort_backtransform(darktable.develop, pts, npts * 3);
+
+    // write back and normalize by input image dimensions
+    i = 0;
+    for(GList *p = f->points; p; p = g_list_next(p))
+    {
+      dt_masks_point_path_t *pt = p->data;
+      pt->corner[0] = pts[i++] / iwidth;
+      pt->corner[1] = pts[i++] / iheight;
+      pt->ctrl1[0] = pts[i++] / iwidth;
+      pt->ctrl1[1] = pts[i++] / iheight;
+      pt->ctrl2[0] = pts[i++] / iwidth;
+      pt->ctrl2[1] = pts[i++] / iheight;
+    }
+    g_free(pts);
+  }
+
+  const int nbform = g_list_length(forms);
+  if(nbform == 0)
+  {
+    g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
+    g_list_free(signs);
+    dt_control_log(_("no mask extracted from AI segmentation"));
+    return NULL;
+  }
+
+  // always wrap paths in a group; holes use difference mode
+
+  // count existing AI object groups/paths for numbering
+  dt_develop_t *dev = darktable.develop;
+  const char *group_prefix = _("ai object group");
+  const char *path_prefix = _("ai object");
+
+  guint grp_nb = 0;
+  guint path_nb = 0;
+  for(GList *l = dev->forms; l; l = g_list_next(l))
+  {
+    const dt_masks_form_t *f = l->data;
+    if(strncmp(f->name, group_prefix, strlen(group_prefix)) == 0)
+      grp_nb++;
+    if(strncmp(f->name, path_prefix, strlen(path_prefix)) == 0)
+      path_nb++;
+  }
+  grp_nb++;
+  path_nb++;
+  for(GList *l = forms; l; l = g_list_next(l))
+  {
+    dt_masks_form_t *f = l->data;
+    snprintf(f->name, sizeof(f->name),
+             "%s #%d", path_prefix, (int)path_nb++);
+  }
+
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
+  snprintf(grp->name, sizeof(grp->name), "%s #%d", group_prefix, (int)grp_nb);
+
+  // register all path forms so they exist in dev->forms
+  for(GList *l = forms; l; l = g_list_next(l))
+  {
+    dt_masks_form_t *f = l->data;
+    dev->forms = g_list_append(dev->forms, f);
+  }
+
+  // add each path to the group; holes get difference mode
+  GList *s = signs;
+  for(GList *l = forms; l; l = g_list_next(l), s = s ? g_list_next(s) : NULL)
+  {
+    dt_masks_form_t *f = l->data;
+    const int sign = s ? GPOINTER_TO_INT(s->data) : '+';
+    dt_masks_point_group_t *grpt = dt_masks_group_add_form(grp, f);
+    if(grpt && sign == '-')
+    {
+      grpt->state = (grpt->state & ~DT_MASKS_STATE_UNION) | DT_MASKS_STATE_DIFFERENCE;
+    }
+  }
+
+  // register the group (history item added by caller after blend mask
+  // assignment)
+  dev->forms = g_list_append(dev->forms, grp);
+
+  g_list_free(forms);
+  g_list_free(signs);
+
+  dt_print(DT_DEBUG_AI, "[object mask] created %d paths", nbform);
+  return grp;
+}
+
+// finalize using cached preview forms (steals ownership from scratchpad)
+static dt_masks_form_t *
+_finalize_from_preview(dt_iop_module_t *module, dt_masks_form_gui_t *gui)
+{
+  _object_data_t *d = _get_data(gui);
+  if(!d || !d->preview_forms)
+    return NULL;
+
+  GList *forms = d->preview_forms;
+  GList *signs = d->preview_signs;
+  const int mw = d->mask_w;
+  const int mh = d->mask_h;
+  d->preview_forms = NULL;
+  d->preview_signs = NULL;
+
+  return _register_vectorized_forms(module, forms, signs, mw, mh);
+}
+
+// finalize: vectorize the mask and register as a group of path forms,
+// fallback when no preview forms are available
+static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
+                                       dt_masks_form_t *form,
+                                       dt_masks_form_gui_t *gui)
+{
+  (void)form;
+  _object_data_t *d = _get_data(gui);
+  if(!d || !d->mask)
+    return NULL;
+
+  const size_t n = (size_t)d->mask_w * d->mask_h;
+  float *inv_mask = g_try_malloc(n * sizeof(float));
+  if(!inv_mask)
+    return NULL;
+
+  for(size_t i = 0; i < n; i++)
+    inv_mask[i] = 1.0f - d->mask[i];
+
+  const int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+  const float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+  const float thresh = 1.0f - CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
+                                    0.3f, 0.9f);
+  GList *signs = NULL;
+  GList *forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
+                           thresh, cleanup, (double)smoothing, &signs);
+  g_free(inv_mask);
+
+  return _register_vectorized_forms(module, forms, signs, d->mask_w, d->mask_h);
+}
+
+// --- mask event handlers ---
+
+static int _object_events_mouse_scrolled(dt_iop_module_t *module,
+                                         const float pzx,
+                                         const float pzy,
+                                         const gboolean up,
+                                         const uint32_t state,
+                                         dt_masks_form_t *form,
+                                         const dt_imgid_t parentid,
+                                         dt_masks_form_gui_t *gui,
+                                         const int index)
+{
+  _object_data_t *d = _get_data(gui);
+
+  // vectorization parameter adjustment (after first click)
+  if(gui->creation && d && d->has_selection && d->mask)
+  {
+    if(dt_modifier_is(state, 0))
+    {
+      // plain scroll: adjust smoothing (potrace alphamax)
+      d->preview_smoothing = CLAMP(d->preview_smoothing + (up ? 0.05f : -0.05f),
+                                   0.0f, 1.3f);
+      dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, d->preview_smoothing);
+      _update_preview(d);
+      dt_toast_log(_("smoothing: %3.2f"), d->preview_smoothing);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    {
+      // shift+scroll: adjust cleanup (potrace turdsize)
+      d->preview_cleanup = CLAMP(d->preview_cleanup + (up ? 5 : -5), 0, 100);
+      dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, d->preview_cleanup);
+      _update_preview(d);
+      dt_toast_log(_("cleanup: %d"), d->preview_cleanup);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+  }
+
+  // opacity control (ctrl+scroll)
+  if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
+  {
+    float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+    opacity = CLAMP(opacity + (up ? 0.05f : -0.05f), 0.05f, 1.0f);
+    dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+    dt_toast_log(_("opacity: %d%%"), (int)(opacity * 100.0f));
+    dt_dev_masks_list_change(darktable.develop);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  return 0;
+}
+
+// clear accumulated points, mask preview, and iterative refinement state
+static void _clear_selection(dt_masks_form_gui_t *gui)
+{
+  _object_data_t *d = _get_data(gui);
+  if(!d)
+    return;
+
+  if(gui->guipoints)
+    dt_masks_dynbuf_reset(gui->guipoints);
+  if(gui->guipoints_payload)
+    dt_masks_dynbuf_reset(gui->guipoints_payload);
+  gui->guipoints_count = 0;
+
+  g_free(d->mask);
+  d->mask = NULL;
+  d->mask_w = d->mask_h = 0;
+
+  if(d->seg)
+    dt_seg_reset_prev_mask(d->seg);
+
+  // reset selection and preview state
+  d->has_selection = FALSE;
+  _free_preview_forms(d);
+
+  dt_control_queue_redraw_center();
+}
+
+static int _object_events_button_pressed(dt_iop_module_t *module,
+                                         float pzx,
+                                         float pzy,
+                                         const double pressure,
+                                         const int which,
+                                         const int type,
+                                         const uint32_t state,
+                                         dt_masks_form_t *form,
+                                         const dt_imgid_t parentid,
+                                         dt_masks_form_gui_t *gui,
+                                         const int index)
+{
+  (void)pressure;
+  (void)parentid;
+  (void)index;
+  if(type == GDK_2BUTTON_PRESS || type == GDK_3BUTTON_PRESS)
+    return 1;
+  if(!gui)
+    return 0;
+
+  _object_data_t *d = _get_data(gui);
+
+  if(gui->creation && which == 1
+     && dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+  {
+    // ctrl+shift+click: clear selection (only after first selection)
+    if(d && d->has_selection && d->encode_state == ENCODE_READY)
+    {
+      _clear_selection(gui);
+      if(darktable.develop->proxy.masks.module)
+        darktable.develop->proxy.masks.list_change(
+          darktable.develop->proxy.masks.module);
+    }
+    return 1;
+  }
+  else if(gui->creation && which == 1)
+  {
+    // need valid scratchpad and completed encoding
+    if(!d || d->encode_state != ENCODE_READY)
+      return 1;
+
+    // dismiss the "ready" hint now that the user is interacting
+    dt_control_log_ack_all();
+
+    // start drag tracking, resolved as click on button release
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
+    d->dragging = TRUE;
+    d->drag_start_x = pzx * wd;
+    d->drag_start_y = pzy * ht;
+    return 1;
+  }
+  else if(gui->creation && which == 3)
+  {
+    // don't exit while background threads are running
+    if(d && g_atomic_int_get(&d->encode_state) == ENCODE_RUNNING)
+      return 1;
+
+    // shift+right-click: save raster mask before vectorization
+    if(d && d->has_selection && d->mask
+       && dt_modifier_is(state, GDK_SHIFT_MASK))
+    {
+      const float thresh = CLAMP(
+        dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
+      _save_raster_mask(d->mask, d->mask_w, d->mask_h, thresh);
+    }
+
+    // right-click: finalize mask (prefer cached preview forms)
+    dt_masks_form_t *new_grp = NULL;
+    if(d && d->preview_forms)
+      new_grp = _finalize_from_preview(module, gui);
+    else if(gui->guipoints_count > 0)
+      new_grp = _finalize_mask(module, form, gui);
+
+    // add the new group to the module's blend mask group
+    if(new_grp)
+    {
+      dt_develop_t *dev = darktable.develop;
+      if(module)
+      {
+        dt_masks_form_t *mod_grp
+          = dt_masks_get_from_id(dev, module->blend_params->mask_id);
+        if(!mod_grp)
+        {
+          mod_grp = dt_masks_create(DT_MASKS_GROUP);
+          gchar *module_label = dt_history_item_get_name(module);
+          snprintf(mod_grp->name, sizeof(mod_grp->name),
+                   _("group '%s'"), module_label);
+          g_free(module_label);
+          dev->forms = g_list_append(dev->forms, mod_grp);
+          module->blend_params->mask_id = mod_grp->formid;
+        }
+        dt_masks_point_group_t *grpt = dt_masks_group_add_form(mod_grp, new_grp);
+        if(grpt)
+          grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+      }
+      dt_dev_add_masks_history_item(dev, module, TRUE);
+    }
+
+    // cleanup and exit creation mode
+    gui->creation = FALSE;
+    gui->creation_continuous = FALSE;
+    gui->creation_continuous_module = NULL;
+
+    _free_data(gui);
+
+    dt_masks_dynbuf_free(gui->guipoints);
+    dt_masks_dynbuf_free(gui->guipoints_payload);
+    gui->guipoints = NULL;
+    gui->guipoints_payload = NULL;
+    gui->guipoints_count = 0;
+
+    dt_control_hinter_message("");
+
+    // exit creation mode and select the new group,
+    // dt_masks_set_edit_mode requires a non-NULL module (it returns
+    // immediately otherwise), so clear the form directly when module
+    // is NULL (standalone mask creation)
+    if(module)
+    {
+      dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+      dt_masks_iop_update(module);
+    }
+    else
+    {
+      dt_masks_change_form_gui(NULL);
+    }
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+
+  return 0;
+}
+
+static int _object_events_button_released(dt_iop_module_t *module,
+                                          const float pzx,
+                                          const float pzy,
+                                          const int which,
+                                          const uint32_t state,
+                                          dt_masks_form_t *form,
+                                          const dt_imgid_t parentid,
+                                          dt_masks_form_gui_t *gui,
+                                          const int index)
+{
+  (void)module;
+  (void)pzx;
+  (void)pzy;
+  (void)form;
+  (void)parentid;
+  (void)index;
+
+  if(!gui || which != 1)
+    return 0;
+
+  _object_data_t *d = _get_data(gui);
+  if(!d || !d->dragging)
+    return 0;
+
+  d->dragging = FALSE;
+
+  if(!gui->guipoints)
+    gui->guipoints = dt_masks_dynbuf_init(200000, "object guipoints");
+  if(!gui->guipoints)
+    return 1;
+  if(!gui->guipoints_payload)
+    gui->guipoints_payload = dt_masks_dynbuf_init(100000,
+                                                  "object guipoints_payload");
+  if(!gui->guipoints_payload)
+    return 1;
+
+  // click: foreground point, shift+click: background point (only
+  // after first selection)
+  const float label = (d->has_selection && dt_modifier_is(state, GDK_SHIFT_MASK))
+    ? 0.0f : 1.0f;
+  dt_masks_dynbuf_add_2(gui->guipoints, d->drag_start_x, d->drag_start_y);
+  dt_masks_dynbuf_add(gui->guipoints_payload, label);
+  gui->guipoints_count++;
+  d->has_selection = TRUE;
+
+  _run_decoder(gui);
+
+  // auto-update vectorization preview after each decode
+  if(d->mask)
+    _update_preview(d);
+
+  // refresh mask properties panel so sliders update for
+  // the current creation step (size vs cleanup/smoothing)
+  if(darktable.develop->proxy.masks.module)
+    darktable.develop->proxy.masks.list_change(darktable.develop->proxy.masks.module);
+
+  dt_control_queue_redraw_center();
+  return 1;
+}
+
+static int _object_events_mouse_moved(dt_iop_module_t *module,
+                                      const float pzx,
+                                      const float pzy,
+                                      const double pressure,
+                                      const int which,
+                                      const float zoom_scale,
+                                      dt_masks_form_t *form,
+                                      const dt_imgid_t parentid,
+                                      dt_masks_form_gui_t *gui,
+                                      const int index)
+{
+  (void)module;
+  (void)pressure;
+  (void)which;
+  (void)zoom_scale;
+  (void)form;
+  (void)parentid;
+  (void)index;
+
+  if(!gui)
+    return 0;
+
+  gui->form_selected = FALSE;
+  gui->border_selected = FALSE;
+  gui->source_selected = FALSE;
+  gui->feather_selected = -1;
+  gui->point_selected = -1;
+  gui->seg_selected = -1;
+  gui->point_border_selected = -1;
+
+  if(gui->creation)
+    dt_control_queue_redraw_center();
+
+  return 1;
+}
+
+// timer callback: periodically redraw center so +/- cursor tracks shift key
+static gboolean _modifier_poll(gpointer data)
+{
+  (void)data;
+  dt_control_queue_redraw_center();
+  return G_SOURCE_CONTINUE;
+}
+
+static void _object_events_post_expose(cairo_t *cr,
+                                       const float zoom_scale,
+                                       dt_masks_form_gui_t *gui,
+                                       const int index,
+                                       const int num_points)
+{
+  (void)index;
+  (void)num_points;
+  if(!gui)
+    return;
+  if(!gui->creation)
+    return;
+
+  // ensure scratchpad exists
+  _object_data_t *d = _get_data(gui);
+  if(!d)
+  {
+    d = g_new0(_object_data_t, 1);
+    d->preview_cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+    d->preview_smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+    d->preview_feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
+    d->preview_refine = dt_conf_key_exists(CONF_OBJECT_REFINE_BOUNDARY_KEY)
+                        && dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
+
+    // restore persistent model (stays loaded across mask sessions)
+    // if the active model changed in preferences, discard the old one
+    {
+      dt_ai_seg_t *ps = &darktable.ai_seg;
+      char *active = dt_ai_models_get_active_for_task("mask");
+      const char *persistent_id = dt_seg_get_model_id(ps->ctx);
+      if(ps->ctx && active
+         && g_strcmp0(active, persistent_id) != 0)
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[object mask] model changed (%s -> %s), "
+                 "discarding persistent model",
+                 persistent_id, active);
+        dt_seg_free(ps->ctx);
+        ps->ctx = NULL;
+        dt_ai_env_destroy(ps->env);
+        ps->env = NULL;
+        ps->model_loaded = FALSE;
+      }
+      g_free(active);
+      d->env = ps->env;
+      d->seg = ps->ctx;
+      d->model_loaded = ps->model_loaded;
+      ps->env = NULL;
+      ps->ctx = NULL;
+      ps->model_loaded = FALSE;
+
+      // connect view-change signal once to free model on darkroom exit
+      if(!ps->signal_connected)
+      {
+        DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                                  _on_view_changed, NULL);
+        ps->signal_connected = TRUE;
+      }
+    }
+
+    gui->scratchpad = d;
+    gui->scratchpad_cleanup = _free_data;
+  }
+
+  // detect distortion changes (crop/rotate on same image):
+  // reset encoding so the image is re-analyzed
+  const dt_imgid_t cur_imgid = darktable.develop->image_storage.id;
+  const int cur_state = g_atomic_int_get(&d->encode_state);
+  if((cur_state == ENCODE_READY || cur_state == ENCODE_ERROR)
+     && (d->encoded_imgid != cur_imgid
+         || d->encoded_distort_hash != _compute_distort_hash(darktable.develop)))
+  {
+    if(d->encode_thread)
+    {
+      g_thread_join(d->encode_thread);
+      d->encode_thread = NULL;
+    }
+    if(d->seg)
+      dt_seg_reset_encoding(d->seg);
+    g_free(d->mask);
+    d->mask = NULL;
+    d->mask_w = d->mask_h = 0;
+    d->encode_w = d->encode_h = 0;
+    d->encode_state = ENCODE_IDLE;
+    // reset selection, preview, and point state so the new image starts fresh
+    d->has_selection = FALSE;
+    _free_preview_forms(d);
+    if(gui->guipoints)
+      dt_masks_dynbuf_reset(gui->guipoints);
+    if(gui->guipoints_payload)
+      dt_masks_dynbuf_reset(gui->guipoints_payload);
+    gui->guipoints_count = 0;
+  }
+
+  // eager encoding: load model and encode image as soon as tool opens
+  if(d->encode_state == ENCODE_IDLE)
+  {
+    dt_control_log(_("object mask: analyzing image..."));
+    d->encode_state = ENCODE_MSG_SHOWN;
+    dt_control_queue_redraw_center();
+    return;
+  }
+
+  if(d->encode_state == ENCODE_MSG_SHOWN)
+  {
+    // frame 2: launch background thread to render and encode the image.
+    // the thread creates a temporary export pipe at high resolution
+    // instead of using the low-res preview backbuf.
+    // flush history to database so the encode thread's dt_dev_load_image
+    // sees the current edits (crop/rotate may not be flushed yet)
+    dt_dev_write_history(darktable.develop);
+
+    const dt_hash_t cur_hash = _compute_distort_hash(darktable.develop);
+
+    _encode_thread_data_t *td = g_new(_encode_thread_data_t, 1);
+    td->d = d;
+    td->imgid = cur_imgid;
+    td->history_end = darktable.develop->history_end;
+    td->distort_hash = cur_hash;
+
+    d->encoded_imgid = cur_imgid;
+    d->encoded_distort_hash = cur_hash;
+    d->encode_state = ENCODE_RUNNING;
+    // start poll timer BEFORE the thread, it will detect completion
+    // and also tracks modifier keys once encoding is ready
+    if(!d->modifier_poll_id)
+      d->modifier_poll_id = g_timeout_add(100, _modifier_poll, NULL);
+    d->encode_thread = g_thread_new("ai-mask-encode", _encode_thread_func, td);
+    return;
+  }
+
+  if(g_atomic_int_get(&d->encode_state) == ENCODE_RUNNING)
+  {
+    // keep the message visible while the thread is working
+    dt_control_log(_("object mask: analyzing image..."));
+    return;
+  }
+
+  if(g_atomic_int_get(&d->encode_state) == ENCODE_READY && d->encode_thread)
+  {
+    // thread finished (detected by poll timer redraw), join it
+    g_thread_join(d->encode_thread);
+    d->encode_thread = NULL;
+    dt_control_log_ack_all();
+    dt_control_log(_("click on object to create mask"));
+  }
+
+  if(g_atomic_int_get(&d->encode_state) == ENCODE_ERROR)
+  {
+    if(d->encode_thread)
+    {
+      g_thread_join(d->encode_thread);
+      d->encode_thread = NULL;
+      // log only once when the thread is first joined
+      dt_control_log(_("object mask preparation failed"));
+    }
+    return;
+  }
+
+  if(d->encode_state != ENCODE_READY)
+    return;
+
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
+  // --- Draw red overlay of current mask ---
+  if(d->mask && d->mask_w > 0 && d->mask_h > 0)
+  {
+    const int mw = d->mask_w;
+    const int mh = d->mask_h;
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, mw);
+    unsigned char *buf = g_try_malloc0((size_t)stride * mh);
+    if(buf)
+    {
+      const float mask_thresh = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
+      for(int y = 0; y < mh; y++)
+      {
+        unsigned char *row = buf + y * stride;
+        for(int x = 0; x < mw; x++)
+        {
+          const float val = d->mask[y * mw + x];
+          if(val > mask_thresh)
+          {
+            const unsigned char alpha = 80;
+            row[x * 4 + 0] = 0;     // B
+            row[x * 4 + 1] = 0;     // G
+            row[x * 4 + 2] = alpha; // R (premultiplied)
+            row[x * 4 + 3] = alpha; // A
+          }
+        }
+      }
+
+      cairo_surface_t *surface = cairo_image_surface_create_for_data
+        (buf, CAIRO_FORMAT_ARGB32, mw, mh, stride);
+
+      if(surface)
+      {
+        cairo_save(cr);
+        cairo_scale(cr, wd / mw, ht / mh);
+        cairo_set_source_surface(cr, surface, 0, 0);
+        cairo_paint(cr);
+        cairo_restore(cr);
+        cairo_surface_destroy(surface);
+      }
+      g_free(buf);
+    }
+  }
+
+  // draw vectorization preview (real path style with anchor dots)
+  if(d->preview_forms)
+  {
+    const float msx = (d->mask_w > 0) ? wd / (float)d->mask_w : 1.0f;
+    const float msy = (d->mask_h > 0) ? ht / (float)d->mask_h : 1.0f;
+
+    for(GList *fl = d->preview_forms; fl; fl = g_list_next(fl))
+    {
+      dt_masks_form_t *f = fl->data;
+      GList *pts = f->points;
+      if(!pts) continue;
+
+      dt_masks_point_path_t *first_pt = pts->data;
+      cairo_move_to(cr,
+                    first_pt->corner[0] * msx,
+                    first_pt->corner[1] * msy);
+
+      // cairo_curve_to(c1, c2, end) expects:
+      //   c1 = outgoing handle of previous point (prev.ctrl2)
+      //   c2 = incoming handle of this point (this.ctrl1)
+      dt_masks_point_path_t *prev_pt = first_pt;
+      for(GList *p = g_list_next(pts); p; p = g_list_next(p))
+      {
+        dt_masks_point_path_t *pt = p->data;
+        cairo_curve_to(cr,
+                       prev_pt->ctrl2[0] * msx, prev_pt->ctrl2[1] * msy,
+                       pt->ctrl1[0] * msx, pt->ctrl1[1] * msy,
+                       pt->corner[0] * msx, pt->corner[1] * msy);
+        prev_pt = pt;
+      }
+
+      // close path back to first point
+      cairo_curve_to(cr,
+                     prev_pt->ctrl2[0] * msx, prev_pt->ctrl2[1] * msy,
+                     first_pt->ctrl1[0] * msx, first_pt->ctrl1[1] * msy,
+                     first_pt->corner[0] * msx, first_pt->corner[1] * msy);
+
+      dt_masks_line_stroke(cr, FALSE, FALSE, FALSE, zoom_scale);
+
+      for(GList *p = pts; p; p = g_list_next(p))
+      {
+        dt_masks_point_path_t *pt = p->data;
+        dt_masks_draw_anchor(cr, FALSE, zoom_scale,
+                             pt->corner[0] * msx, pt->corner[1] * msy);
+      }
+    }
+  }
+
+  // query pointer position and modifier state directly from GDK so the
+  // cursor is drawn at the correct location even before the first
+  // mouse_moved event fires.
+  GtkWidget *cw = dt_ui_center(darktable.gui->ui);
+  GdkWindow *win = gtk_widget_get_window(cw);
+  GdkDevice *pointer = gdk_seat_get_pointer
+    (gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkModifierType mod = 0;
+  int dev_x = 0, dev_y = 0;
+  if(win && pointer)
+    gdk_window_get_device_position(win, pointer, &dev_x, &dev_y, &mod);
+  const gboolean has_sel = d && d->has_selection;
+  const gboolean ctrl_shift_held
+    = has_sel
+      && (mod & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+           == (GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  const gboolean shift_held
+    = has_sel && !ctrl_shift_held
+      && (mod & GDK_SHIFT_MASK) != 0;
+
+  // convert device coordinates to preview pipe pixel space
+  {
+    float pzx, pzy, zs;
+    dt_dev_get_pointer_zoom_pos(&darktable.develop->full,
+                                (float)dev_x, (float)dev_y,
+                                &pzx, &pzy, &zs);
+    gui->posx = pzx * wd;
+    gui->posy = pzy * ht;
+  }
+
+  // draw cursor indicator for click interaction
+  if(gui->posx >= 0.0f && gui->posx <= wd
+     && gui->posy >= 0.0f && gui->posy <= ht)
+  {
+    const float r = DT_PIXEL_APPLY_DPI(8.0f) / zoom_scale;
+    const float lw = DT_PIXEL_APPLY_DPI(2.0f) / zoom_scale;
+    cairo_set_line_width(cr, lw);
+
+    if(ctrl_shift_held)
+    {
+      // clear mode: draw undo/revert arrow above cursor
+      cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.9);
+      const float s = r * 0.7f; // icon size
+      const float cx = gui->posx;
+      const float cy = gui->posy - s * 1.8f; // above cursor
+
+      cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+      cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+
+      // arrowhead pointing left
+      const float ax = cx - s * 0.8f;
+      const float ay = cy - s;
+      cairo_move_to(cr, ax + s * 0.65f, ay - s * 0.6f);
+      cairo_line_to(cr, ax, ay);
+      cairo_line_to(cr, ax + s * 0.65f, ay + s * 0.6f);
+      cairo_stroke(cr);
+
+      // horizontal line from arrow tip to half-circle top
+      cairo_move_to(cr, ax, ay);
+      cairo_line_to(cr, cx, ay);
+
+      // half-circle curving right and down
+      cairo_arc(cr, cx, cy, s, -G_PI * 0.5f, G_PI * 0.5f);
+
+      // small horizontal tail at bottom going left
+      cairo_line_to(cr, cx - s * 0.5f, cy + s);
+      cairo_stroke(cr);
+    }
+    else
+    {
+      cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.9);
+      // horizontal line (common to both + and -)
+      cairo_move_to(cr, gui->posx - r, gui->posy);
+      cairo_line_to(cr, gui->posx + r, gui->posy);
+      cairo_stroke(cr);
+      if(!shift_held)
+      {
+        // add mode: vertical line to form "+"
+        cairo_move_to(cr, gui->posx, gui->posy - r);
+        cairo_line_to(cr, gui->posx, gui->posy + r);
+        cairo_stroke(cr);
+      }
+    }
+  }
+
+}
+
+// --- stub functions (object is transient -- result is path masks) ---
+
+static GSList *_object_setup_mouse_actions
+  (const struct dt_masks_form_t *const form)
+{
+  (void)form;
+  GSList *lm = NULL;
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_LEFT,
+    0,
+    _("[OBJECT] select / add foreground point"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_LEFT,
+    GDK_SHIFT_MASK,
+    _("[OBJECT] add background point"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_LEFT,
+    GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+    _("[OBJECT] clear selection"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_RIGHT,
+    0,
+    _("[OBJECT] apply mask"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_SCROLL,
+    0,
+    _("[OBJECT] change smoothing"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_SCROLL,
+    GDK_SHIFT_MASK,
+    _("[OBJECT] change cleanup"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_SCROLL,
+    GDK_CONTROL_MASK,
+    _("[OBJECT] change opacity"));
+  return lm;
+}
+
+static void _object_set_form_name(dt_masks_form_t *const form,
+                                  const size_t nb)
+{
+  snprintf(form->name, sizeof(form->name), _("object #%d"), (int)nb);
+}
+
+static void _object_set_hint_message(const dt_masks_form_gui_t *const gui,
+                                     const dt_masks_form_t *const form,
+                                     const int opacity,
+                                     char *const restrict msgbuf,
+                                     const size_t msgbuf_len)
+{
+  (void)form;
+  if(gui->creation)
+  {
+    const _object_data_t *d = _get_data((dt_masks_form_gui_t *)gui);
+    if(!d || d->encode_state != ENCODE_READY)
+      return;  // no hints while encoding
+    if(d->has_selection)
+      g_snprintf(msgbuf,
+                 msgbuf_len,
+                 _("<b>add</b>: click, <b>subtract</b>: shift+click, "
+                   "<b>clear</b>: ctrl+shift+click, "
+                   "<b>apply</b>: right-click, "
+                   "<b>apply+save raster</b>: shift+right-click\n"
+                   "<b>smoothing</b>: scroll (%3.2f), "
+                   "<b>cleanup</b>: shift+scroll (%d), "
+                   "<b>opacity</b>: ctrl+scroll (%d%%)"),
+                 d->preview_smoothing, d->preview_cleanup, opacity);
+    else
+      g_snprintf(msgbuf,
+                 msgbuf_len,
+                 _("<b>select</b>: click on object, "
+                   "<b>opacity</b>: ctrl+scroll (%d%%)"),
+                 opacity);
+  }
+}
+
+static void _object_modify_property(dt_masks_form_t *const form,
+                                    const dt_masks_property_t prop,
+                                    const float old_val,
+                                    const float new_val,
+                                    float *sum,
+                                    int *count,
+                                    float *min,
+                                    float *max)
+{
+  (void)form;
+
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  _object_data_t *d = gui ? _get_data(gui) : NULL;
+
+  if(!gui || !gui->creation) return;
+
+  // always increment *count - the framework hides the slider when
+  // count==0 (see libs/masks.c gtk_widget_set_visible)
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:
+      break; // no size slider for click-based interaction
+    case DT_MASKS_PROPERTY_CLEANUP:
+    {
+      int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+      cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
+      dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, cleanup);
+      if(d)
+      {
+        d->preview_cleanup = cleanup;
+        _update_preview(d);
+      }
+      *sum += cleanup;
+      ++*count;
+      break;
+    }
+    case DT_MASKS_PROPERTY_SMOOTHING:
+    {
+      float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+      smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
+      dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, smoothing);
+      if(d)
+      {
+        d->preview_smoothing = smoothing;
+        _update_preview(d);
+      }
+      *sum += smoothing;
+      ++*count;
+      break;
+    }
+    case DT_MASKS_PROPERTY_FEATHER:
+    {
+      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      float feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
+      if(feather < 0.0005f && ratio > 1.0f)
+        feather = 0.001f; // bootstrap from zero on increase
+      feather = CLAMP(feather * ratio, 0.0005f, 1.0f);
+      dt_conf_set_float(CONF_OBJECT_FEATHER_KEY, feather);
+      if(d)
+      {
+        d->preview_feather = feather;
+        _update_preview(d);
+      }
+      *sum += feather + feather; // both borders (same as path)
+      *max = fminf(*max, 1.0f / feather);
+      *min = fmaxf(*min, 0.0005f / feather);
+      *count += 2; // both borders (same as path)
+      break;
+    }
+    case DT_MASKS_PROPERTY_REFINE:
+    {
+      // toggle applies on the next decoder run, not immediately
+      if(new_val != old_val)
+        dt_conf_set_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY, new_val > 0.5f);
+      const gboolean enabled
+        = dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
+      if(d) d->preview_refine = enabled;
+      *sum += enabled ? 1.0f : 0.0f;
+      ++*count;
+      break;
+    }
+    default:;
+  }
+}
+
+// the function table for object masks
+const dt_masks_functions_t dt_masks_functions_object = {
+  .point_struct_size = sizeof(struct dt_masks_point_object_t),
+  .sanitize_config = NULL,
+  .setup_mouse_actions = _object_setup_mouse_actions,
+  .set_form_name = _object_set_form_name,
+  .set_hint_message = _object_set_hint_message,
+  .modify_property = _object_modify_property,
+  .duplicate_points = NULL,
+  .initial_source_pos = NULL,
+  .get_distance = NULL,
+  .get_points = NULL,
+  .get_points_border = NULL,
+  .get_mask = NULL,
+  .get_mask_roi = NULL,
+  .get_area = NULL,
+  .get_source_area = NULL,
+  .mouse_moved = _object_events_mouse_moved,
+  .mouse_scrolled = _object_events_mouse_scrolled,
+  .button_pressed = _object_events_button_pressed,
+  .button_released = _object_events_button_released,
+  .post_expose = _object_events_post_expose
+};
+
+gboolean dt_masks_object_available(void)
+{
+  if(!darktable.ai_registry || !darktable.ai_registry->ai_enabled)
+    return FALSE;
+  char *model_id = dt_ai_models_get_active_for_task("mask");
+  dt_ai_model_t *model = dt_ai_models_get_by_id(darktable.ai_registry, model_id);
+  g_free(model_id);
+  const gboolean available = model && model->status == DT_AI_MODEL_DOWNLOADED;
+  dt_ai_model_free(model);
+  return available;
+}
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

@@ -52,6 +52,7 @@ jobs:
             git \
             gdb \
             intltool \
+            libarchive-dev \
             libatk1.0-dev \
             libcairo2-dev \
             libcolord-dev \
@@ -168,7 +169,14 @@ jobs:
       - name: Update Lensfun data
         run: |
           sudo lensfun-update-data
-      - name: Build and Install
+      - name: Set correct AppImage update info for release build
+        if: github.ref_name != 'master' # will be true only for not nightly builds
+        run: |
+          # Set the environment variable for build step. This is only needed
+          # for release builds, for nightly builds the build script does the
+          # right thing even if this environment variable is not present.
+          echo "DARKTABLE_APPIMAGE_UPDATE=release" >> $GITHUB_ENV
+      - name: Build AppImage
         run: |
           cd src
           bash tools/appimage-build-script.sh
@@ -249,7 +257,7 @@ jobs:
             libtiff:p
             libwebp:p
             libxml2:p
-            lua:p
+            lua54:p
             omp:p
             openexr:p
             openjpeg2:p
@@ -261,7 +269,7 @@ jobs:
             sqlite3:p
             webp-pixbuf-loader:p
             zlib:p
-          update: false
+          update: true
       - name: Build and install the latest compatible version of exiv2
         run: |
           git clone --branch v0.27.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
@@ -314,12 +322,6 @@ jobs:
           cp ${{ env.BUILD_DIR }}/darktable.iss ./
           iscc "darktable.iss"
           mv Output/*.exe ${{ env.BUILD_DIR }}/
-      - name: Create NSIS installer
-        if: runner.arch != 'ARM64'
-        run: |
-          pacboy --noconfirm -S --needed nsis:p
-          cd "${BUILD_DIR}"
-          cmake --build "${BUILD_DIR}" --target package
       - name: Get version info
         run: |
           cd ${SRC_DIR}
@@ -330,7 +332,7 @@ jobs:
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
-          retention-days: 2
+          retention-days: 1
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
@@ -378,18 +380,15 @@ jobs:
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --verbose || true
+          brew bundle --quiet || true
 
           # rebuild graphicsmagick for macOS bundling
           export HOMEBREW_NO_INSTALL_FROM_API=1
-          gm_formula=`brew edit --print-path graphicsmagick`
+          brew developer on
+          gm_formula=`brew edit --quiet --print-path graphicsmagick`
           cat $gm_formula | sed 's/--with-modules/--disable-installed/1' > gm_formula.tmp
           mv gm_formula.tmp $gm_formula
-          brew reinstall --build-from-source --force graphicsmagick
-
-          # handle keg-only libs
-          brew link --force libomp
-          brew link --force libsoup
+          brew reinstall --build-from-source --force --quiet graphicsmagick
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.5
@@ -414,7 +413,7 @@ jobs:
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
-          retention-days: 2
+          retention-days: 1
 
   upload_to_release:
     permissions:
@@ -435,8 +434,13 @@ jobs:
         if: github.ref_name == 'master' # will be true only for nightly builds
         run: |
           pushd src
-          git tag --force nightly
-          git push origin nightly --force
+          # Delete and recreate nightly tag instead of just force retargeting.
+          # This updates the tag creation date. Without this, the github-shown
+          # release date will be stuck on the date the tag was created.
+          git tag -d nightly || true
+          git push origin --delete nightly
+          git tag nightly
+          git push origin nightly
           popd
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -450,7 +454,7 @@ jobs:
           echo "RELEASE_DATE=$NOW" >> $GITHUB_ENV
         shell: bash
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -474,7 +478,7 @@ jobs:
 
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
-            The Windows package `*-win64.exe` requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c). The `*-woa64.exe` package requires at least Windows 11.
+            The Windows package `*-win64.exe` requires at least Windows 10. The `*-woa64.exe` package requires at least Windows 11.
 
             The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma). The `*-x86_64.dmg` package requires at least macOS 15.0 (Sequoia).
 

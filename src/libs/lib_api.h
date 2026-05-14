@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -41,6 +41,9 @@ struct dt_view_t;
 /** get name of the module, to be translated. */
 REQUIRED(const char *, name, struct dt_lib_module_t *self);
 
+/** does the module support a preset label? */
+DEFAULT(gboolean, has_preset_label, struct dt_lib_module_t *self);
+
 /** get the views which the module should be loaded in. */
 REQUIRED(enum dt_view_type_flags_t, views, struct dt_lib_module_t *self);
 /** get the container which the module should be placed in */
@@ -64,7 +67,7 @@ OPTIONAL(void, gui_reset, struct dt_lib_module_t *self);
 /** update libs gui when visible
     triggered by dt_lib_gui_queue_update.
     don't use for widgets accessible via actions when hidden. */
-OPTIONAL(void, gui_update, struct dt_lib_module_t *self);
+DEFAULT(void, gui_update, struct dt_lib_module_t *self);
 
 OPTIONAL(GtkWidget *, gui_tool_box, struct dt_lib_module_t *self);
 

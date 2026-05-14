@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -205,9 +205,9 @@ uint32_t container(dt_lib_module_t *self)
 
 
 /* this module should always be shown without expander */
-int expandable(dt_lib_module_t *self)
+gboolean expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 int position(const dt_lib_module_t *self)
@@ -227,7 +227,7 @@ static GtkWidget *_buttons_get_from_pos(dt_lib_module_t *self, const int pos)
 
 static void _text_entry_changed_callback(GtkEntry *entry, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   _lib_modulegroups_update_iop_visibility(self);
 }
 
@@ -820,7 +820,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   dt_print(DT_DEBUG_IOPORDER, "[lib_modulegroups_update_iop_visibility] modulegroups");
 
   // update basic button selection too
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), d->current == DT_MODULEGROUP_BASICS);
 
   /* only show module group as selected if not currently searching */
@@ -836,7 +836,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
     }
   }
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   // hide deprecated message. it will be shown after if needed
   gtk_widget_set_visible(d->deprecated, FALSE);
@@ -969,13 +969,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
 static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_lib_modulegroups_t *d = self->data;
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   /* deactivate all buttons */
   int gid = 0;
@@ -1006,7 +1006,7 @@ static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
   if(gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
     gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   /* update visibility */
   d->force_show_module = NULL;
@@ -1601,6 +1601,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorout");
   AM("colorzones");
   AM("colorequal");
+  AM("colorharmonizer");
   AM("lut3d");
   AM("monochrome");
   AM("profile");
@@ -1765,6 +1766,7 @@ void init_presets(dt_lib_module_t *self)
   AM("channelmixerrgb");
   AM("colorbalancergb");
   AM("colorequal");
+  AM("colorharmonizer");
   AM("primaries");
 
   SMG(C_("modulegroup", "correct"), "correct");
@@ -2852,6 +2854,99 @@ static gboolean _scroll_group_buttons(GtkWidget *widget,
   return TRUE;
 }
 
+// cycle module groups action
+
+static const gchar *_get_current_group_name(dt_lib_module_t *self)
+{
+  const dt_lib_modulegroups_t *d = self->data;
+  if(d->current == DT_MODULEGROUP_NONE)
+    return _("all");
+  if(d->current == DT_MODULEGROUP_BASICS)
+    return _("quick access");
+  if(d->current == DT_MODULEGROUP_ACTIVE_PIPE)
+    return d->full_active ? _("all") : _("active pipeline");
+  const dt_lib_modulegroups_group_t *gr = g_list_nth_data(d->groups, d->current - 1);
+  return gr ? gr->name : _("unknown");
+}
+
+static void _cycle_module_groups(const gboolean down, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = self->data;
+  const int ngroups = g_list_length(d->groups);
+  const gboolean has_basics = gtk_widget_is_visible(d->basic_btn);
+
+  // Visual order left-to-right: [QAP/basics] [All/active] [group1] ... [groupN]
+  // cycle forward:  active → 1 → ... → N → basics → active → ...
+  // cycle backward: active → basics → N → ... → 1 → active → ...
+  GtkWidget *next = NULL;
+  if(down)
+  {
+    if(d->current == DT_MODULEGROUP_BASICS)
+      next = d->active_btn;
+    else if(d->current == DT_MODULEGROUP_ACTIVE_PIPE)
+      next = ngroups > 0 ? _buttons_get_from_pos(self, 1) : (has_basics ? d->basic_btn : NULL);
+    else
+    {
+      next = _buttons_get_from_pos(self, d->current + 1);
+      if(!next)
+        next = has_basics ? d->basic_btn : d->active_btn;
+    }
+  }
+  else
+  {
+    if(d->current == DT_MODULEGROUP_BASICS)
+      next = ngroups > 0 ? _buttons_get_from_pos(self, ngroups) : d->active_btn;
+    else if(d->current == DT_MODULEGROUP_ACTIVE_PIPE)
+      next =
+        has_basics ? d->basic_btn : (ngroups > 0 ? _buttons_get_from_pos(self, ngroups) : NULL);
+    else if(d->current == 1)
+      next = d->active_btn;
+    else
+      next = _buttons_get_from_pos(self, d->current - 1);
+  }
+
+  if(next)
+  {
+    gtk_button_clicked(GTK_BUTTON(next));
+    dt_toast_log(_("module group: '%s'"), _get_current_group_name(self));
+  }
+}
+
+static float _action_callback_cycle_module_groups(gpointer target,
+                                                  dt_action_element_t element,
+                                                  const dt_action_effect_t effect,
+                                                  const float move_size)
+{
+  dt_lib_module_t *self = darktable.develop->proxy.modulegroups.module;
+  if(!self)
+    return DT_ACTION_NOT_VALID;
+  if(DT_PERFORM_ACTION(move_size))
+  {
+    if(effect == DT_ACTION_EFFECT_DEFAULT_KEY) // toggle
+    {
+      dt_lib_modulegroups_t *d = self->data;
+      gtk_button_clicked(GTK_BUTTON(d->active_btn));
+      dt_toast_log(_("module group: '%s'"), _get_current_group_name(self));
+    }
+    else
+      _cycle_module_groups(effect == DT_ACTION_EFFECT_DEFAULT_DOWN, self);
+    return 0;
+  }
+  return DT_ACTION_NOT_VALID;
+}
+
+static const gchar *_action_effect_cycle_module_groups[]
+  = { N_("toggle"), N_("previous"), N_("next"), NULL };
+
+static const dt_action_element_def_t _action_elements_cycle_module_groups[]
+  = { { NULL, _action_effect_cycle_module_groups } };
+
+static const dt_action_def_t _action_def_cycle_module_groups
+  = { N_("cycle module groups"),
+      _action_callback_cycle_module_groups,
+      _action_elements_cycle_module_groups,
+      NULL, TRUE };
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -2898,6 +2993,10 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(DT_ACTION(self), NULL, N_("active modules"),
                    d->active_btn, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->active_btn, TRUE, TRUE, 0);
+
+  // cycle module groups action
+  dt_action_define(
+    DT_ACTION(self), NULL, N_("cycle module groups"), NULL, &_action_def_cycle_module_groups);
 
   // we load now the presets btn
   self->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);

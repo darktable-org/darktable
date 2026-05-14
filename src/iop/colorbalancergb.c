@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -642,8 +642,8 @@ void process(dt_iop_module_t *self,
   const float *const restrict brilliance = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->brilliance);
 
   const gint mask_display
-      = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && self->dev->gui_attached
-         && g && g->mask_display);
+      = dt_pipe_is_full(piece->pipe) && self->dev->gui_attached
+         && g && g->mask_display;
 
   // pixel size of the checker background
   const size_t checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
@@ -791,7 +791,7 @@ void process(dt_iop_module_t *self,
                                 d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
       SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), M_PI_F / 2.f - T);
+      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), M_PI_2f - T);
       SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
       // Project back to JCh, that is rotate back of -T angle
@@ -1027,8 +1027,8 @@ int process_cl(dt_iop_module_t *self,
 
   // Size of the checker
   const gint mask_display
-      = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && self->dev->gui_attached
-         && g && g->mask_display);
+      = dt_pipe_is_full(piece->pipe) && self->dev->gui_attached
+         && g && g->mask_display;
   const int checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
   const int checker_2 = 2 * checker_1;
   const int mask_type = (mask_display) ? g->mask_type : 0;
@@ -1217,7 +1217,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
             saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
             hue = Jch[2];
 
-            int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+            int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / DT_2PI_F);
             index += (index < 0) ? LUT_ELEM : 0;
             index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
             sampler[index] = fmaxf(sampler[index], saturation);
@@ -1289,7 +1289,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   const GdkModifierType state = dt_key_modifier_state();
   const float hue = (state & GDK_CONTROL_MASK) ? YRG_RAD_TO_CONVENTIONAL_DEG(picked_hue) : YRG_RAD_TO_CONVENTIONAL_DEG(picked_hue) + 180.f;    //take the current or opponent color
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   if(picker == g->global_H)
   {
     p->global_H = hue;
@@ -1330,7 +1330,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   }
   else
     dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker");
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   gui_changed(self, picker, NULL);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1410,7 +1410,7 @@ static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profi
 
 static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
@@ -1602,7 +1602,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_
 
 static void checker_1_picker_callback(GtkColorButton *widget, const dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   GdkRGBA color;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &color);
@@ -1615,7 +1615,7 @@ static void checker_1_picker_callback(GtkColorButton *widget, const dt_iop_modul
 
 static void checker_2_picker_callback(GtkColorButton *widget, const dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   GdkRGBA color;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &color);
@@ -1628,7 +1628,7 @@ static void checker_2_picker_callback(GtkColorButton *widget, const dt_iop_modul
 
 static void checker_size_callback(GtkWidget *widget, const dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const size_t size = dt_bauhaus_slider_get(widget);
   dt_conf_set_int("plugins/darkroom/colorbalancergb/checker/size", size);
   dt_iop_refresh_center(self);
@@ -1663,7 +1663,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // slider backgrounds.
   const gboolean output_profile_changed = output_profile != g->sliders_output_profile;
 
-   ++darktable.gui->reset;
+   DT_ENTER_GUI_UPDATE();
 
   if(output_profile_changed)
     paint_hue_sliders(output_profile, output_matrix, g);
@@ -1683,7 +1683,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->shadows_weight || w == g->highlights_weight || w == g->mask_grey_fulcrum)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   g->sliders_output_profile = output_profile;
 }

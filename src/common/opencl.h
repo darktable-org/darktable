@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,10 +21,9 @@
 #define DT_OPENCL_MAX_PLATFORMS 5
 #define DT_OPENCL_MAX_PROGRAMS 256
 #define DT_OPENCL_MAX_KERNELS 512
-#define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_ERRORS 5
-#define DT_OPENCL_MAX_INCLUDES 7
+#define DT_OPENCL_MAX_INCLUDES 8
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_APPLE 16940800
@@ -32,13 +31,14 @@
 #define DT_OPENCL_CBUFFSIZE 1024
 #define DT_OPENCL_DEFAULT_HEADROOM 600
 
-/* The number of events handled by the driver is principally not limited.
+/* The number of events handled by the driver is principally not limited and can't be checked.
    If a device handler can't process a function handling an event it will return
    an error codition that will be checked in darktable.
    Still we don't want to stress the device resources too much so we try to keep
    handled events in a safe range.
+   The internal list of events takes this as granularity too.
 */
-#define DT_OPENCL_EVENTS 4096
+#define DT_OPENCL_EVENTS 2048
 
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
@@ -62,6 +62,10 @@
 
 G_BEGIN_DECLS
 
+// instead of declaring the size_t struct for origin/dest at (0,0) we have CLIMG_ORIGIN for readability
+// All functions in opencl.c make sure to pass a correct size_t struct
+#define CLIMG_ORIGIN NULL
+
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
 
 // use per device roundups here
@@ -70,12 +74,10 @@ G_BEGIN_DECLS
 
 #define DT_OPENCL_DEFAULT_COMPILE_DEFAULT ("")
 #define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
-#define DT_CLDEVICE_HEAD ("cldevice_v5_")
+#define DT_CLDEVICE_HEAD ("cldevice_v6_")
 
-// version for current darktable cl kernels
-// this is reflected in the kernel directory and allows to
-// enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 5
+// version for current darktable cl kernels reflected in the kernel directory
+#define DT_OPENCL_KERNELS 6
 
 typedef enum dt_opencl_memory_t
 {
@@ -231,6 +233,7 @@ typedef struct dt_opencl_t
   gboolean print_statistics;
   gboolean enabled;
   gboolean stopped;
+  gboolean fastcl;  // for fast runtime checks instead of reading the conf
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
@@ -425,6 +428,9 @@ gboolean dt_opencl_is_enabled(void);
 /** runtime check for cl system running */
 gboolean dt_opencl_running(void);
 
+/** runtime check for cl system running in fast mode */
+gboolean dt_opencl_running_fast(void);
+
 /** update enabled flag and profile with value from preferences */
 void dt_opencl_update_settings(void);
 
@@ -449,29 +455,29 @@ int dt_opencl_read_host_from_device_raw(const int devid,
                                         const size_t *origin,
                                         const size_t *region,
                                         const int rowpitch,
-                                        const int blocking);
+                                        const gboolean blocking);
 
 int dt_opencl_write_host_to_device(const int devid,
-                                   void *host,
+                                   const void *host,
                                    void *device,
                                    const int width,
                                    const int height,
                                    const int bpp);
 
 int dt_opencl_write_host_to_device_rowpitch(const int devid,
-                                            void *host,
+                                            const void *host,
                                             void *device,
                                             const int width,
                                             const int height,
                                             const int rowpitch);
 
 int dt_opencl_write_host_to_device_raw(const int devid,
-                                       void *host,
+                                       const void *host,
                                        void *device,
                                        const size_t *origin,
                                        const size_t *region,
                                        const int rowpitch,
-                                       const int blocking);
+                                       const gboolean blocking);
 
 void *dt_opencl_copy_host_to_device(const int devid,
                                     void *host,
@@ -484,11 +490,11 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
                                              void *host);
 
 int dt_opencl_enqueue_copy_image(const int devid,
-                                 cl_mem src,
+                                 const cl_mem src,
                                  cl_mem dst,
-                                 size_t *orig_src,
-                                 size_t *orig_dst,
-                                 size_t *region);
+                                 const size_t *orig_src,
+                                 const size_t *orig_dst,
+                                 const size_t *region);
 
 void *dt_opencl_alloc_device(const int devid,
                              const int width,
@@ -496,39 +502,39 @@ void *dt_opencl_alloc_device(const int devid,
                              const int bpp);
 
 int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
-                                           cl_mem src_image,
+                                           const cl_mem src_image,
                                            cl_mem dst_buffer,
-                                           size_t *origin,
-                                           size_t *region,
-                                           size_t offset);
+                                           const size_t *origin,
+                                           const size_t *region,
+                                           const size_t offset);
 
 int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
-                                           cl_mem src_buffer,
+                                           const cl_mem src_buffer,
                                            cl_mem dst_image,
-                                           size_t offset,
-                                           size_t *origin,
-                                           size_t *region);
+                                           const size_t offset,
+                                           const size_t *origin,
+                                           const size_t *region);
 
 int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid,
-                                            cl_mem src_buffer,
+                                            const cl_mem src_buffer,
                                             cl_mem dst_buffer,
-                                            size_t srcoffset,
-                                            size_t dstoffset,
-                                            size_t size);
+                                            const size_t srcoffset,
+                                            const size_t dstoffset,
+                                            const size_t size);
 
 int dt_opencl_read_buffer_from_device(const int devid,
                                       void *host,
                                       void *device,
                                       const size_t offset,
                                       const size_t size,
-                                      const int blocking);
+                                      const gboolean blocking);
 
 int dt_opencl_write_buffer_to_device(const int devid,
                                      void *host,
                                      void *device,
                                      const size_t offset,
                                      const size_t size,
-                                     const int blocking);
+                                     const gboolean blocking);
 
 void *dt_opencl_alloc_device_buffer(const int devid,
                                     const size_t size);
@@ -541,7 +547,7 @@ void dt_opencl_release_mem_object(cl_mem mem);
 
 void *dt_opencl_map_buffer(const int devid,
                            cl_mem buffer,
-                           const int blocking,
+                           const gboolean blocking,
                            const int flags,
                            size_t offset,
                            size_t size);
@@ -550,24 +556,24 @@ int dt_opencl_unmap_mem_object(const int devid,
                                cl_mem mem_object,
                                void *mapped_ptr);
 
-size_t dt_opencl_get_mem_object_size(cl_mem mem);
+size_t dt_opencl_get_mem_object_size(const cl_mem mem);
 
-int dt_opencl_get_image_width(cl_mem mem);
+int dt_opencl_get_image_width(const cl_mem mem);
 
-int dt_opencl_get_image_height(cl_mem mem);
+int dt_opencl_get_image_height(const cl_mem mem);
 
-int dt_opencl_get_image_element_size(cl_mem mem);
+int dt_opencl_get_image_element_size(const cl_mem mem);
 
 void *dt_opencl_duplicate_image(const int devid, const cl_mem src);
 
 void dt_opencl_dump_pipe_pfm(const char* mod,
                              const int devid,
-                             cl_mem img,
+                             const cl_mem img,
                              const gboolean input,
                              const char *pipe);
 
 void dt_opencl_memory_statistics(int devid,
-                                 cl_mem mem,
+                                 const cl_mem mem,
                                  dt_opencl_memory_t action);
 
 /** check if image size fit into limits given by OpenCL runtime */
@@ -588,9 +594,9 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
 /** round size to a multiple of the value given in the device specifig
  * config parameter for opencl_size_roundup */
-int dt_opencl_dev_roundup_width(int size,
+int dt_opencl_dev_roundup_width(const int size,
                                 const int devid);
-int dt_opencl_dev_roundup_height(int size,
+int dt_opencl_dev_roundup_height(const int size,
                                  const int devid);
 
 /** reset eventlist to empty state */
@@ -710,6 +716,10 @@ static inline gboolean dt_opencl_is_enabled(void)
   return FALSE;
 }
 static inline gboolean dt_opencl_running(void)
+{
+  return FALSE;
+}
+static inline gboolean dt_opencl_running_fast(void)
 {
   return FALSE;
 }

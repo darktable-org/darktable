@@ -22,6 +22,7 @@ set(MODULES ${MODULES} hinter)
 set(MODULES ${MODULES} global_toolbox)
 set(MODULES ${MODULES} timeline)
 set(MODULES ${MODULES} image_infos)
+set(MODULES ${MODULES} log_history)
 
 # modules
 add_library(import MODULE "import.c")
@@ -64,6 +65,7 @@ add_library(hinter MODULE "tools/hinter.c")
 add_library(global_toolbox MODULE "tools/global_toolbox.c")
 add_library(timeline MODULE "tools/timeline.c")
 add_library(image_infos MODULE "tools/image_infos.c")
+add_library(log_history MODULE "tools/log_history.c")
 
 if(PortMidi_FOUND)
   add_definitions("-DHAVE_PORTMIDI")
@@ -112,6 +114,13 @@ if(CUPS_FOUND)
   add_library(print_settings MODULE "print_settings.c")
   set(MODULES ${MODULES} print_settings)
 endif(CUPS_FOUND)
+
+# AI neural restore module
+if(USE_AI)
+  add_library(neural_restore MODULE "neural_restore.c")
+  target_link_libraries(neural_restore TIFF::TIFF)
+  set(MODULES ${MODULES} neural_restore)
+endif(USE_AI)
 
 # Add libs references
 foreach(module ${MODULES})
