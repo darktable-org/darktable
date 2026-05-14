@@ -811,14 +811,6 @@ restart:
                   dev->image_storage.filename);
   _dev_average_delay_update(&start, &pipe->average_delay);
 
-  // maybe we got zoomed/panned in the meantime?
-  if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
-  {
-    if(port->widget && !stopped)
-      dt_control_queue_redraw_widget(port->widget);
-    goto restart;
-  }
-
   pipe->status = DT_DEV_PIXELPIPE_VALID;
   pipe->loading = FALSE;
   dev->image_invalid_cnt = 0;
