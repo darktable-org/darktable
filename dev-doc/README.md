@@ -92,7 +92,7 @@ const float sigma = user_radius * roi_out->scale / piece->iscale;
 dt_iop_set_module_trouble_message(self, _("warning text"), _("tooltip"), NULL);
 
 // Check pipe type
-if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL) { /* full view only */ }
+if(dt_pipe_is_full(piece->pipe)) { /* full view only */ }
 ```
 
 For widget creation, slider configuration, and notebook patterns, see [GUI.md](GUI.md), [sliders.md](sliders.md), and [GUI_Recipes.md](GUI_Recipes.md).
