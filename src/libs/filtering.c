@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1355,7 +1355,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = self->data;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
 
@@ -1403,7 +1403,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
   // update topbar
   _topbar_update(self);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _filtering_gui_update(dt_lib_module_t *self)
@@ -1993,7 +1993,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = self->data;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
 
@@ -2042,7 +2042,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
     }
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)

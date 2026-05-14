@@ -3180,31 +3180,31 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
                                              cairo_t *crf,
                                              dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
   if(!dt_isnan(g->variance_R))
   {
     gchar *str = g_strdup_printf("%.2f", g->variance_R);
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_R, str);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
   if(!dt_isnan(g->variance_G))
   {
     gchar *str = g_strdup_printf("%.2f", g->variance_G);
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_G, str);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
   if(!dt_isnan(g->variance_B))
   {
     gchar *str = g_strdup_printf("%.2f", g->variance_B);
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_label_set_text(g->label_var_B, str);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     g_free(str);
   }
   return FALSE;
@@ -3562,7 +3562,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
                                       dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = self->params;
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(p->wavelet_color_mode == MODE_Y0U0V0)
     g->channel = (dt_iop_denoiseprofile_channel_t)page_num + DT_DENOISE_PROFILE_Y0;

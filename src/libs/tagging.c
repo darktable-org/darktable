@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2873,7 +2873,7 @@ static void _update_layout(dt_lib_module_t *self)
   dt_lib_tagging_t *d = self->data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   d->suggestion_flag = dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_suggestion_button),
@@ -2930,13 +2930,13 @@ static void _update_layout(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button),
                                d->dttags_flag);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _toggle_suggestion_button_callback(GtkToggleButton *source,
                                                dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion");
   dt_conf_set_bool("plugins/lighttable/tagging/nosuggestion", new_state);
   _update_layout(self);
@@ -2946,7 +2946,7 @@ static void _toggle_suggestion_button_callback(GtkToggleButton *source,
 static void _toggle_tree_button_callback(GtkToggleButton *source,
                                          dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/treeview");
   dt_conf_set_bool("plugins/lighttable/tagging/treeview", new_state);
   _update_layout(self);
@@ -3031,7 +3031,7 @@ static gint _sort_tree_path_func(GtkTreeModel *model,
 static void _toggle_sort_button_callback(GtkToggleButton *source,
                                          dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const gboolean new_state =
     !dt_conf_get_bool("plugins/lighttable/tagging/listsortedbycount");
   dt_conf_set_bool("plugins/lighttable/tagging/listsortedbycount", new_state);
@@ -3043,7 +3043,7 @@ static void _toggle_sort_button_callback(GtkToggleButton *source,
 static void _toggle_hide_button_callback(GtkToggleButton *source,
                                          dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/hidehierarchy");
   dt_conf_set_bool("plugins/lighttable/tagging/hidehierarchy", new_state);
   _update_layout(self);
@@ -3054,7 +3054,7 @@ static void _toggle_hide_button_callback(GtkToggleButton *source,
 static void _toggle_dttags_button_callback(GtkToggleButton *source,
                                            dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/dttags");
   dt_conf_set_bool("plugins/lighttable/tagging/dttags", new_state);
   dt_lib_tagging_t *d = self->data;

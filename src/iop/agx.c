@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1004,7 +1004,7 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
 static void _update_pivot_slider_settings(GtkWidget* const slider,
                                          const dt_iop_agx_params_t* const p)
 {
-  darktable.gui->reset++;
+  DT_ENTER_GUI_UPDATE();
 
   const float range = p->range_white_relative_ev - p->range_black_relative_ev;
 
@@ -1015,7 +1015,7 @@ static void _update_pivot_slider_settings(GtkWidget* const slider,
 
   dt_bauhaus_slider_set(slider, p->curve_pivot_x);
 
-  darktable.gui->reset--;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _update_pivot_x(const float old_black_ev, const float old_white_ev, dt_iop_module_t *self, dt_iop_agx_params_t *const p)
@@ -1111,9 +1111,9 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
            -20.f,
            -0.1f);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _apply_auto_white_exposure(const dt_iop_module_t *self)
@@ -1127,9 +1127,9 @@ static void _apply_auto_white_exposure(const dt_iop_module_t *self)
            0.1f,
            20.f);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
@@ -1149,10 +1149,10 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
            0.1f,
            20.f);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
   dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _read_exposure_params_callback(GtkWidget *widget,
@@ -1191,12 +1191,12 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   p->curve_pivot_y_linear_output = target_y_linearised;
   p->curve_pivot_x = picked_pivot_x;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x,
                         p->curve_pivot_x);
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_y_linear,
                         p->curve_pivot_y_linear_output);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 // move only the pivot's relative (input) exposure, but don't change its output
@@ -1214,9 +1214,9 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   p->curve_pivot_x = (picked_ev - p->range_black_relative_ev) / range;
 
   // Update the slider visually
-  darktable.gui->reset++;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x, p->curve_pivot_x);
-  darktable.gui->reset--;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _create_matrices(const primaries_params_t *params,
@@ -1759,7 +1759,7 @@ void gui_changed(dt_iop_module_t *self,
   dt_iop_agx_params_t *p = self->params;
 
   // avoid infinite cascades of GUI changes
-  if(!darktable.gui->reset)
+  if(!DT_IN_GUI_UPDATE())
   {
     if(widget == g->black_exposure_picker)
     {
@@ -1789,10 +1789,10 @@ void gui_changed(dt_iop_module_t *self,
       p->range_white_relative_ev = old_white_ev * (1.f + ratio);
       _update_pivot_x(old_black_ev, old_white_ev, self, p);
 
-      darktable.gui->reset++;
+      DT_ENTER_GUI_UPDATE();
       dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
       dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
-      darktable.gui->reset--;
+      DT_LEAVE_GUI_UPDATE();
     }
 
     if(g && p->auto_gamma)
@@ -2658,7 +2658,7 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -2676,12 +2676,12 @@ void color_picker_apply(dt_iop_module_t *self,
 
   if(p->auto_gamma)
   {
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     tone_mapping_params_t tone_mapping_params;
     _set_log_mapping_params(self->params, &tone_mapping_params);
     _adjust_pivot(self->params, &tone_mapping_params);
     dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
 
   _update_curve_warnings(self);

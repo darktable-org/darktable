@@ -326,7 +326,7 @@ static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_params_t *p,
                         const gboolean enforce_history)
 {
-  if(darktable.gui->reset)
+  if(DT_IN_GUI_UPDATE())
     return;
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID)
     return;
@@ -1030,7 +1030,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
 
     dt_conf_set_int("plugins/darkroom/crop/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/crop/ratio_n", abs(p->ratio_n));
-    if(darktable.gui->reset)
+    if(DT_IN_GUI_UPDATE())
       return;
     _aspect_apply(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
@@ -1051,7 +1051,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   }
 
   // Update combobox label
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(act == -1)
   {
@@ -1067,7 +1067,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
     dt_bauhaus_combobox_set(g->aspect_presets, act);
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   _commit_box(self, g, p, TRUE);
 }
 
@@ -1088,7 +1088,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_crop_gui_data_t *g = self->gui_data;
   dt_iop_crop_params_t *p = self->params;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(w == g->cx)
   {
@@ -1116,7 +1116,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // update all sliders, as their values may have change to keep aspect ratio
   _update_sliders_and_limit(g);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   _commit_box(self, g, p, TRUE);
 }
 
@@ -1792,9 +1792,9 @@ int mouse_moved(dt_iop_module_t *self,
     // image has changed when it actually hasn't, yet.  The actual
     // clipping parameters get set from the sliders when the iop loses
     // focus, at which time the final selected crop is applied.
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     _update_sliders_and_limit(g);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     dt_control_queue_redraw_center();
     return 1;

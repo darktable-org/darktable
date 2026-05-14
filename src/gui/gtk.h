@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/atomic.h"
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 
@@ -121,7 +122,7 @@ typedef struct dt_gui_gtk_t
 
   char *last_preset;
 
-  int32_t reset;
+  dt_atomic_int reset;
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t hide_tooltips;

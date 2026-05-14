@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,7 +216,7 @@ static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 
 static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -242,7 +242,7 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 
 static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -290,11 +290,11 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
     g->call_auto_exposure = 0;
     dt_iop_gui_leave_critical_section(self);
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     gui_update(self);
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   else
   {
@@ -322,11 +322,11 @@ static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type
 
       if(g)
       {
-        ++darktable.gui->reset;
+        DT_ENTER_GUI_UPDATE();
 
         dt_bauhaus_slider_set_default(g->sl_middle_grey, def_middle_grey);
 
-        --darktable.gui->reset;
+        DT_LEAVE_GUI_UPDATE();
       }
     }
   }
@@ -482,7 +482,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_basicadj_params_t *p = self->params;
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -495,9 +495,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                                                                        work_profile->nonlinearlut) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1297,7 +1297,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->call_auto_exposure == 1 && !darktable.gui->reset)
+    if(g->call_auto_exposure == 1 && !DT_IN_GUI_UPDATE())
     {
       g->call_auto_exposure = -1;
       dt_iop_gui_leave_critical_section(self);
@@ -1415,7 +1415,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->call_auto_exposure == 1 && !darktable.gui->reset)
+    if(g->call_auto_exposure == 1 && !DT_IN_GUI_UPDATE())
     {
       g->call_auto_exposure = -1;
       dt_iop_gui_leave_critical_section(self);

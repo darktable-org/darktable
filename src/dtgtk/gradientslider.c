@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -874,7 +874,7 @@ void dtgtk_gradient_slider_multivalue_set_value
                                                          GRADIENT_SLIDER_SET),
                                  0.0, 1.0);
   gslider->selected = gslider->positions == 1 ? 0 : -1;
-  if(!darktable.gui->reset) g_signal_emit_by_name(G_OBJECT(gslider),
+  if(!DT_IN_GUI_UPDATE()) g_signal_emit_by_name(G_OBJECT(gslider),
                                                   "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
@@ -891,7 +891,7 @@ void dtgtk_gradient_slider_multivalue_set_values
                                                          GRADIENT_SLIDER_SET),
                                  0.0, 1.0);
   gslider->selected = gslider->positions == 1 ? 0 : -1;
-  if(!darktable.gui->reset) g_signal_emit_by_name(G_OBJECT(gslider),
+  if(!DT_IN_GUI_UPDATE()) g_signal_emit_by_name(G_OBJECT(gslider),
                                                   "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }

@@ -82,7 +82,7 @@ Callback:
 ```c
 static void show_mask_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE()
 
   dt_iop_mymodule_gui_data_t *g = self->gui_data;
   g->mask_display = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));

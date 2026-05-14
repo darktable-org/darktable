@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1787,7 +1787,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     p->ratio_n = n;
     dt_conf_set_int("plugins/darkroom/clipping/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/clipping/ratio_n", abs(p->ratio_n));
-    if(darktable.gui->reset) return;
+    DT_GUARD_GUI_UPDATE();
     apply_box_aspect(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
   }
@@ -1807,7 +1807,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   }
 
   // Update combobox label
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(act == -1)
   {
@@ -1821,7 +1821,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     // we got a default ratio
     dt_bauhaus_combobox_set(g->aspect_presets, act);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1829,7 +1829,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   if(w == g->cx)
   {
@@ -1854,7 +1854,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->clip_h = p->ch - g->clip_y;
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   commit_box(self, g, p);
 
@@ -2020,7 +2020,7 @@ void gui_update(dt_iop_module_t *self)
 
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
   const int flip = dt_bauhaus_combobox_get(widget);
@@ -2965,7 +2965,7 @@ int mouse_moved(dt_iop_module_t *self,
           // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
           // from the sliders when the iop loses focus, at which time the final selected crop is applied.
 
-          ++darktable.gui->reset;
+          DT_ENTER_GUI_UPDATE();
 
           dt_bauhaus_slider_set(g->cx, g->clip_x);
           dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
@@ -2976,7 +2976,7 @@ int mouse_moved(dt_iop_module_t *self,
           dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
           dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
-          --darktable.gui->reset;
+          DT_LEAVE_GUI_UPDATE();
         }
       }
     }
@@ -3077,7 +3077,7 @@ int mouse_moved(dt_iop_module_t *self,
 
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   g->cropping = 0;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
   const float eps = 1e-6f; // threshold to avoid rounding errors

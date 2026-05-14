@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -547,13 +547,13 @@ void expose(dt_view_t *self,
   if(dev->gui_synch && !port->pipe->loading)
   {
     // synch module guis from gtk thread:
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
       dt_iop_gui_update(module);
     }
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     dev->gui_synch = FALSE;
   }
 
@@ -1244,7 +1244,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
@@ -1360,7 +1360,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
      are blocked due to implementation of dt_iop_request_focus so we do it now
      A double history entry is not generated.
   */
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_masks_list_change(dev);
 
@@ -2345,7 +2345,7 @@ static void _overlay_cycle_callback(dt_action_t *action)
 
 static void _toggle_mask_visibility_callback(dt_action_t *action)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_develop_t *dev = dt_action_view(action)->data;
   dt_iop_module_t *mod = dev->gui_module;
@@ -2358,7 +2358,7 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
   {
     dt_iop_gui_blend_data_t *bd = mod->blend_data;
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     dt_iop_color_picker_reset(mod, TRUE);
 
@@ -2380,7 +2380,7 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
     }
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
 }
 

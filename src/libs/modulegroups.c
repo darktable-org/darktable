@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -227,7 +227,7 @@ static GtkWidget *_buttons_get_from_pos(dt_lib_module_t *self, const int pos)
 
 static void _text_entry_changed_callback(GtkEntry *entry, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   _lib_modulegroups_update_iop_visibility(self);
 }
 
@@ -820,7 +820,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   dt_print(DT_DEBUG_IOPORDER, "[lib_modulegroups_update_iop_visibility] modulegroups");
 
   // update basic button selection too
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), d->current == DT_MODULEGROUP_BASICS);
 
   /* only show module group as selected if not currently searching */
@@ -836,7 +836,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
     }
   }
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   // hide deprecated message. it will be shown after if needed
   gtk_widget_set_visible(d->deprecated, FALSE);
@@ -969,13 +969,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
 static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_lib_modulegroups_t *d = self->data;
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   /* deactivate all buttons */
   int gid = 0;
@@ -1006,7 +1006,7 @@ static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
   if(gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
     gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   /* update visibility */
   d->force_show_module = NULL;

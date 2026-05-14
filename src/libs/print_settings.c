@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2025 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -519,13 +519,13 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
 
     for(int i=0; i<9; i++)
     {
-      ++darktable.gui->reset;
+      DT_ENTER_GUI_UPDATE();
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[i]), (i == box->alignment));
-      --darktable.gui->reset;
+      DT_LEAVE_GUI_UPDATE();
     }
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_x), x);
 
@@ -535,7 +535,7 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
 
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_height), sheight);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static int _export_and_setup_pos(dt_job_t *job,
@@ -1038,7 +1038,7 @@ _lock_callback(GtkWidget *button, dt_lib_module_t *self)
 static void
 _alignment_callback(GtkWidget *tb, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   int index=-1;
   dt_lib_print_settings_t *ps = self->data;
@@ -1092,7 +1092,7 @@ _grid_callback(GtkWidget *widget, dt_lib_module_t *self)
 
 static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = self->data;
   const float value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size));
@@ -1104,7 +1104,7 @@ static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 static void
 _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = self->data;
 
@@ -1124,7 +1124,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   float incr;
   _precision_by_unit(ps->unit, &n_digits, &incr, NULL);
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top), n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
@@ -1163,7 +1163,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->grid_size),
                             grid_size * units[ps->unit]);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   _fill_box_values(ps);
 }
@@ -2318,7 +2318,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
 
 static void _width_changed(GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
@@ -2338,7 +2338,7 @@ static void _width_changed(GtkWidget *widget, gpointer user_data)
 static void _height_changed(GtkWidget *widget,
                             gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
@@ -2358,7 +2358,7 @@ static void _height_changed(GtkWidget *widget,
 static void _x_changed(GtkWidget *widget,
                        gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
@@ -2378,7 +2378,7 @@ static void _x_changed(GtkWidget *widget,
 static void _y_changed(GtkWidget *widget,
                        gpointer user_data)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 

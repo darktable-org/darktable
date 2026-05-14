@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -989,9 +989,9 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
 {
   dt_lib_snapshots_t *d = self->data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   d->selected = -1;
 
@@ -1008,7 +1008,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
   darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
   gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), d->sidebyside && d->selected >= 0);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   /* redraw center view */
   dt_control_queue_redraw_center();

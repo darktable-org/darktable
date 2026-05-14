@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2025 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1702,7 +1702,7 @@ static void show_guiding_controls(const dt_iop_module_t *self)
 void update_exposure_sliders(const dt_iop_toneequalizer_gui_data_t *g,
                              const dt_iop_toneequalizer_params_t *p)
 {
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->noise, p->noise);
   dt_bauhaus_slider_set(g->ultra_deep_blacks, p->ultra_deep_blacks);
   dt_bauhaus_slider_set(g->deep_blacks, p->deep_blacks);
@@ -1712,7 +1712,7 @@ void update_exposure_sliders(const dt_iop_toneequalizer_gui_data_t *g,
   dt_bauhaus_slider_set(g->highlights, p->highlights);
   dt_bauhaus_slider_set(g->whites, p->whites);
   dt_bauhaus_slider_set(g->speculars, p->speculars);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 
@@ -1758,7 +1758,7 @@ void gui_changed(dt_iop_module_t *self,
 
 static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_toneequalizer_params_t *p = self->params;
   const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -1786,16 +1786,16 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_request_focus(self);
 
   if(!self->enabled)
   {
     // activate module and do nothing
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1836,9 +1836,9 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   p->exposure_boost = log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
 
   // Update the GUI stuff
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1852,16 +1852,16 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_request_focus(self);
 
   if(!self->enabled)
   {
     // activate module and do nothing
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1914,9 +1914,9 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   p->contrast_boost += c;
 
   // Update the GUI stuff
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1929,7 +1929,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
                                          GdkEventButton *event,
                                          dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
@@ -2179,7 +2179,7 @@ int scrolled(dt_iop_module_t *self,
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
 
-  if(darktable.gui->reset) return 1;
+  DT_GUARD_GUI_UPDATE(1);
   if(g == NULL) return 0;
   if(!g->has_focus) return 0;
 
@@ -2944,7 +2944,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
                                         const GdkEventCrossing *event,
                                         dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2979,7 +2979,7 @@ static gboolean area_button_press(GtkWidget *widget,
                                   dt_iop_module_t *self)
 {
 
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -3034,7 +3034,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
                                    const GdkEventMotion *event,
                                    dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3088,7 +3088,7 @@ static gboolean area_button_release(GtkWidget *widget,
                                     const GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3129,7 +3129,7 @@ static gboolean notebook_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   // Give focus to module
   dt_iop_request_focus(self);
@@ -3174,12 +3174,12 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_iop_gui_enter_critical_section(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
   dt_iop_gui_leave_critical_section(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 
@@ -3315,7 +3315,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->smoothing), "value-changed",
                    G_CALLBACK(smoothing_callback), self);
   dt_gui_box_add(self->widget, wrapper, g->smoothing);
-  
+
   g->exposure_boost = dt_bauhaus_slider_from_params(self, "exposure_boost");
   dt_bauhaus_slider_set_soft_range(g->exposure_boost, -4.0, 4.0);
   dt_bauhaus_slider_set_format(g->exposure_boost, _(" EV"));
@@ -3337,7 +3337,7 @@ void gui_init(dt_iop_module_t *self)
       "for a better control of the exposure correction."));
   dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, auto_adjust_contrast_boost,
                             _("auto-adjust the contrast"));
-                           
+
   // Masking options
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
@@ -3412,7 +3412,7 @@ void gui_init(dt_iop_module_t *self)
                                dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_luminance_mask, "dt_bauhaus_alignment");
   self->widget = dt_gui_vbox(g->notebook,
-                             dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("display exposure mask"))), 
+                             dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("display exposure mask"))),
                                          g->show_luminance_mask));
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors

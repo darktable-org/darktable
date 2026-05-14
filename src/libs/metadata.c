@@ -133,7 +133,7 @@ static GtkTextView *_get_textview_from_grid_at_row(const uint32_t row, dt_lib_mo
 static void _textbuffer_changed(GtkTextBuffer *buffer, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   gboolean changed = FALSE;
   for(unsigned int row = 0; row < d->num_grid_rows; row++)
@@ -313,10 +313,10 @@ void gui_update(dt_lib_module_t *self)
     g_free(query);
   }
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   _clear_grid(self);
   g_hash_table_foreach(d->metadata_texts, _fill_textview, self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   _textbuffer_changed(NULL, self);
   gtk_widget_set_sensitive(d->grid, imgs_count > 0);
@@ -518,7 +518,7 @@ static void _update_layout(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
@@ -532,7 +532,7 @@ void gui_reset(dt_lib_module_t *self)
     }
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   _write_metadata(self);
 }

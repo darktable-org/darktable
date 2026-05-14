@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2025 darktable developers.
+    Copyright (C) 2017-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -509,7 +509,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
 
   gboolean selection_changed = FALSE;
 
@@ -576,7 +576,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
   else
     gtk_widget_hide(GTK_WIDGET(g->sl_mask_opacity));
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(selection_changed)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1098,7 +1098,7 @@ static gboolean rt_add_shape(GtkWidget *widget,
 static void rt_colorpick_color_set_callback(GtkColorButton *widget,
                                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_retouch_params_t *p = self->params;
 
   // turn off the other color picker
@@ -1150,8 +1150,7 @@ static void rt_update_wd_bar_labels(const dt_iop_retouch_params_t *p,
 static void rt_num_scales_update(const int _num_scales,
                                  dt_iop_module_t *self)
 {
-  if(darktable.gui->reset)
-    return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1172,7 +1171,7 @@ static void rt_num_scales_update(const int _num_scales,
 
 static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1210,7 +1209,7 @@ static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
 static void rt_merge_from_scale_update(const int _merge_from_scale,
                                        dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1244,7 +1243,7 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       dt_iop_module_t *self)
 {
-  if(darktable.gui->reset)
+  if(DT_IN_GUI_UPDATE())
     return TRUE;
 
   dt_iop_request_focus(self);
@@ -1299,7 +1298,7 @@ static gboolean rt_wdbar_scrolled(GtkWidget *widget,
   if(dt_gui_ignore_scroll(event))
     return FALSE;
 
-  if(darktable.gui->reset)
+  if(DT_IN_GUI_UPDATE())
     return TRUE;
 
   dt_iop_retouch_params_t *p = self->params;
@@ -1574,7 +1573,7 @@ static void rt_gslider_changed(GtkDarktableGradientSlider *gslider,
 
   double dlevels[3];
 
-  if(darktable.gui->reset)
+  if(DT_IN_GUI_UPDATE())
     return;
 
   dtgtk_gradient_slider_multivalue_get_values(gslider, dlevels);
@@ -1626,9 +1625,7 @@ static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton,
                                             GdkEventButton *event,
                                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
-
-  ++darktable.gui->reset;
+  DT_TRY_GUI_UPDATE(TRUE);
 
   int scale_copied = 0;
   const int active = !gtk_toggle_button_get_active(togglebutton);
@@ -1655,7 +1652,7 @@ static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton,
   gtk_widget_set_sensitive(g->bt_paste_scale,
                            g->copied_scale >= 0);
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1666,7 +1663,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
                                                   GdkEventButton *event,
                                                   dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1677,9 +1674,9 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
   {
     dt_control_log(_("cannot display scales when the blending mask is displayed"));
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     gtk_toggle_button_set_active(togglebutton, FALSE);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     return TRUE;
   }
 
@@ -1740,9 +1737,9 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance,
     for(int i = 0; i < 3; i++)
       dlevels[i] = p->preview_levels[i];
 
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     g->preview_auto_levels = 0;
   }
@@ -1756,7 +1753,7 @@ static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton,
                                         GdkEventButton *event,
                                         dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
@@ -1778,7 +1775,7 @@ static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton,
 static void rt_mask_opacity_callback(GtkWidget *slider,
                                      dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   const dt_mask_id_t shape_id = rt_get_selected_shape_id();
 
@@ -1803,11 +1800,11 @@ void gui_post_expose(dt_iop_module_t *self,
 
   if(dt_is_valid_maskid(shape_id))
   {
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, shape_id);
     if(grpt)
       dt_bauhaus_slider_set(g->sl_mask_opacity, grpt->opacity);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
 }
 
@@ -1815,7 +1812,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
                                        GdkEventButton *event,
                                        dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   // if we don't have the focus, request for it and quit, gui_focus() do the rest
   if(darktable.develop->gui_module != self)
@@ -1845,7 +1842,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
 
     dt_iop_color_picker_reset(self, TRUE);
 
@@ -1887,7 +1884,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
                                  (bd->masks_shown != DT_MASKS_EDIT_OFF)
                                  && (darktable.develop->gui_module == self));
 
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
 
     return TRUE;
   }
@@ -1901,7 +1898,7 @@ static gboolean rt_add_shape_callback(GtkWidget *widget,
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -1925,9 +1922,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
                                              GdkEventButton *e,
                                              dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
-
-  ++darktable.gui->reset;
+  DT_TRY_GUI_UPDATE(FALSE);
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1982,7 +1977,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
 
   if(!accept)
   {
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     return FALSE;
   }
 
@@ -2019,7 +2014,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
     dt_control_queue_redraw_center();
   }
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -2045,7 +2040,7 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
                                      GdkEventButton *event,
                                      dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
@@ -2075,7 +2070,7 @@ static gboolean rt_suppress_callback(GtkToggleButton *togglebutton,
                                      GdkEventButton *event,
                                      dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  DT_GUARD_GUI_UPDATE(TRUE);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
   g->suppress_mask = !gtk_toggle_button_get_active(togglebutton);
@@ -2096,9 +2091,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->cmb_fill_mode)
   {
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     rt_show_hide_controls(self);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
   }
   else
   {
@@ -2563,7 +2558,7 @@ void gui_init(dt_iop_module_t *self)
      G_CALLBACK(rt_suppress_callback), TRUE, 0, 0,
      dtgtk_cairo_paint_eye_toggle, scale_end);
   dt_gui_add_class(g->bt_suppress, "dt_transparent_background");
-  
+
   // copy/paste shapes
   GtkWidget *scale_middle = dt_gui_hbox();
   g->bt_paste_scale = dt_iop_togglebutton_new
@@ -3854,7 +3849,7 @@ void process(dt_iop_module_t *self,
   if(g && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->preview_auto_levels == 1 && !darktable.gui->reset)
+    if(g->preview_auto_levels == 1 && !DT_IN_GUI_UPDATE())
     {
       g->preview_auto_levels = -1;
 
@@ -4671,7 +4666,7 @@ int process_cl(dt_iop_module_t *self,
   if(g && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->preview_auto_levels == 1 && !darktable.gui->reset)
+    if(g->preview_auto_levels == 1 && !DT_IN_GUI_UPDATE())
     {
       g->preview_auto_levels = -1;
 

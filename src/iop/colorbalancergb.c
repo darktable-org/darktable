@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1289,7 +1289,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   const GdkModifierType state = dt_key_modifier_state();
   const float hue = (state & GDK_CONTROL_MASK) ? YRG_RAD_TO_CONVENTIONAL_DEG(picked_hue) : YRG_RAD_TO_CONVENTIONAL_DEG(picked_hue) + 180.f;    //take the current or opponent color
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   if(picker == g->global_H)
   {
     p->global_H = hue;
@@ -1330,7 +1330,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   }
   else
     dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker");
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   gui_changed(self, picker, NULL);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1410,7 +1410,7 @@ static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profi
 
 static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
@@ -1602,7 +1602,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_
 
 static void checker_1_picker_callback(GtkColorButton *widget, const dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   GdkRGBA color;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &color);
@@ -1615,7 +1615,7 @@ static void checker_1_picker_callback(GtkColorButton *widget, const dt_iop_modul
 
 static void checker_2_picker_callback(GtkColorButton *widget, const dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
 
   GdkRGBA color;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &color);
@@ -1628,7 +1628,7 @@ static void checker_2_picker_callback(GtkColorButton *widget, const dt_iop_modul
 
 static void checker_size_callback(GtkWidget *widget, const dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   const size_t size = dt_bauhaus_slider_get(widget);
   dt_conf_set_int("plugins/darkroom/colorbalancergb/checker/size", size);
   dt_iop_refresh_center(self);
@@ -1663,7 +1663,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // slider backgrounds.
   const gboolean output_profile_changed = output_profile != g->sliders_output_profile;
 
-   ++darktable.gui->reset;
+   DT_ENTER_GUI_UPDATE();
 
   if(output_profile_changed)
     paint_hue_sliders(output_profile, output_matrix, g);
@@ -1683,7 +1683,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->shadows_weight || w == g->highlights_weight || w == g->mask_grey_fulcrum)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   g->sliders_output_profile = output_profile;
 }

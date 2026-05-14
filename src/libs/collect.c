@@ -2698,7 +2698,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // we check if something has changed since last call
   if(d->view_rule != -1) return;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
   const int active = CLAMP(_a, 0, (MAX_RULES - 1));
   d->nb_rules = active + 1;
@@ -2769,7 +2769,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // update list of proposals if the module's contents are visible
   d->active_rule = active;
   dt_lib_gui_queue_update(self);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -2789,7 +2789,7 @@ void gui_reset(dt_lib_module_t *self)
 static void combo_changed(GtkWidget *combo,
                           dt_lib_collect_rule_t *d)
 {
-  if(darktable.gui->reset) return;
+  DT_GUARD_GUI_UPDATE();
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                   entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");

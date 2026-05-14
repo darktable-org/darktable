@@ -417,16 +417,16 @@ void gui_update(dt_iop_module_t *self)
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
-  if(darktable.gui->reset) return FALSE;
+  DT_GUARD_GUI_UPDATE(FALSE);
 
   if(g->pixels_fixed < 0) return FALSE;
 
   char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
   g->pixels_fixed = -1;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   gtk_label_set_text(g->message, str);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   g_free(str);
 

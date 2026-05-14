@@ -104,7 +104,7 @@ User clicks custom button
     ↓
 your_callback() fires
     ↓
-Check: if(darktable.gui->reset) return;
+Check: DT_GUARD_GUI_UPDATE()
     ↓
 Modify self->params directly
     ↓
@@ -117,18 +117,18 @@ commit_params() → process()
 ```
 Framework loads new params into self->params
     ↓
-Framework sets darktable.gui->reset
+Framework call DT_ENTER_GUI_UPDATE()
     ↓
 Framework calls your gui_update()
     ↓
 You sync widgets, call gui_changed(self, NULL, NULL)
     ↓
-Framework clears darktable.gui->reset
+Framework call DT_LEAVE_GUI_UPDATE()
 ```
 
 ### `gui_update()` — Sync Widgets from Params
 
-Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework sets `darktable.gui->reset` before calling it, so widget callbacks won't fire.
+Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework increments atomically gui state `DT_ENTER_GUI_UPDATE()` before calling it, so widget callbacks won't fire.
 
 Sliders and comboboxes created with `_from_params` auto-sync. You only need to manually sync toggle buttons and custom widgets. Always end with `gui_changed(self, NULL, NULL)`:
 
@@ -167,7 +167,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 }
 ```
 
-### The Reset Flag (`darktable.gui->reset`)
+### The Reset Flag (`DT_GUARD_GUI_UPDATE`)
 
 A counter (not a boolean) that suppresses callback processing when non-zero. The framework uses it during `gui_update()`.
 
@@ -175,7 +175,7 @@ A counter (not a boolean) that suppresses callback processing when non-zero. The
 ```c
 static void my_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;  // Always do this
+  DT_GUARD_GUI_UPDATE()  // Always do this
 
   dt_iop_mymodule_params_t *p = self->params;
   p->value = calculate_new_value();
@@ -186,9 +186,9 @@ static void my_callback(GtkWidget *w, dt_iop_module_t *self)
 **Pattern 2: Suppress callbacks when programmatically updating widgets:**
 ```c
 // Setting slider2 in response to slider1 changing
-++darktable.gui->reset;
+DT_ENTER_GUI_UPDATE()
 dt_bauhaus_slider_set(g->slider2, compute_from(p->value1));
---darktable.gui->reset;
+DT_LEAVE_GUI_UPDATE()
 ```
 
 ### `dt_dev_add_history_item()`

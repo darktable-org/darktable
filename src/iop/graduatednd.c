@@ -469,11 +469,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   p->hue        = H;
   p->saturation = S;
 
-  ++darktable.gui->reset;
+  DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->hue, p->hue);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
   _update_saturation_slider_end_color(g->saturation, p->hue);
-  --darktable.gui->reset;
+  DT_LEAVE_GUI_UPDATE();
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -692,9 +692,9 @@ int button_released(dt_iop_module_t *self,
       r = p->rotation;
       _set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
     }
-    ++darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
     dt_bauhaus_slider_set(g->rotation, r);
-    --darktable.gui->reset;
+    DT_LEAVE_GUI_UPDATE();
     p->rotation = r;
     p->offset = o;
     g->dragging = 0;

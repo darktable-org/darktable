@@ -3906,9 +3906,9 @@ static float _action_process_combo(gpointer target,
     case DT_ACTION_EFFECT_PREVIOUS:
       move_size *= - 1;
     case DT_ACTION_EFFECT_NEXT:
-      ++darktable.gui->reset;
+      DT_ENTER_GUI_UPDATE();
       _combobox_next_sensitive(w, move_size, GDK_MODIFIER_MASK, FALSE);
-      --darktable.gui->reset;
+      DT_LEAVE_GUI_UPDATE();
 
       g_idle_add(_combobox_idle_value_changed, widget);
       break;
