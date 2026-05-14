@@ -3590,8 +3590,8 @@ void dtgtk_cairo_paint_horizon(cairo_t *cr, const gint x, const gint y, const gi
   cairo_line_to(cr, 1.0, 0.55);
   cairo_stroke(cr);
 
-  // sun half circle above horizon
-  cairo_arc(cr, 0.3, 0.35, 0.15, -M_PI, 0);
+  // sun half circle above horizon, centered on the line
+  cairo_arc_negative(cr, 0.5, 0.55, 0.22, 0, -M_PI);
   cairo_stroke(cr);
 
   FINISH
