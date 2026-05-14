@@ -718,20 +718,23 @@ restart:
   const gboolean require_zoom_test = (pipe->changed & ~DT_DEV_PIPE_ZOOMED) || initial;
   initial = FALSE; // don't enforce dt_dev_pixelpipe_change() for restarts
 
+  const float anticipate_move = pipe->changed & DT_DEV_PIPE_ZOOMED
+              ? dt_conf_get_float("darkroom/ui/anticipate_move")
+              : 1.0f;
+
   /* dt_dev_pixelpipe_change()
       locks history mutex while syncing nodes
       finally calculates dimensions
       leaves clean pipe->changed
   */
-  const float anticipate_move = pipe->changed & DT_DEV_PIPE_ZOOMED ? dt_conf_get_float("darkroom/ui/anticipate_move") : 1.0f;
   if(changing || port_loading)
     dt_dev_pixelpipe_change(pipe, dev);
 
   float scale = 1.0f;
   int window_width = G_MAXINT;
   int window_height = G_MAXINT;
-  float zoom_x  = 0;
-  float zoom_y = 0;
+  float zoom_x  = 0.0f;
+  float zoom_y = 0.0f;
 
   if(port)
   {
@@ -740,7 +743,9 @@ restart:
     // the image boundary
     if(port_loading || require_zoom_test)
     {
-      dt_print_pipe(DT_DEBUG_PIPE, "[dt_dev_zoom_move]", pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
+      dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
+        port_loading ? "port_loading " : "",
+        require_zoom_test ? "required_test" : "");
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
     }
 
@@ -764,42 +769,41 @@ restart:
 
   dt_get_times(&start);
 
-  // keep error status of dt_dev_pixelpipe_process() for easy log code && check
-  // for safe dt_control_queue_redraw_widget
-  const gboolean problem = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
-  const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_get_int(&pipe->shutdown);
-  if(problem || shutdown)
-    dt_print(DT_DEBUG_PIPE, "dt_dev_pixelpipe_process %dx%d x=%d y=%d %s%s",
-                wd, ht, x, y,
-                problem ? "problem " : "success ",
-                shutdown == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES"
-                : shutdown == DT_DEV_PIXELPIPE_STOP_HQ  ? "DT_DEV_PIXELPIPE_STOP_HQ"
-                : shutdown == DT_DEV_PIXELPIPE_STOP_NO  ? "DT_DEV_PIXELPIPE_STOP_NO"
-                : "DT_DEV_PIXELPIPE_STOP_OTHER");
-  if(problem)
+  // keep return status of dt_dev_pixelpipe_process()
+  const gboolean stopped = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
+  if(stopped)
   {
+    // If pixelpipe stopped that could be because of pipe->shutdown so we check that and reset.
+    const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+    const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
+    dt_print_pipe(DT_DEBUG_PIPE, "pipe stopped", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "%s%s%s%s",
+                shutdown == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES"
+                  : shutdown == DT_DEV_PIXELPIPE_STOP_HQ  ? "DT_DEV_PIXELPIPE_STOP_HQ"
+                  : shutdown == DT_DEV_PIXELPIPE_STOP_NO  ? "" : "DT_DEV_PIXELPIPE_STOP_OTHER",
+                dev->image_force_reload ? "image_force_reload " : "",
+                pipe->loading ? "pipe_loading " : "",
+                pipe->input_changed ? "pipe_input_changed " : "");
+
+    /* In some cases we should stop restarting the pipe but exit with DT_DEV_PIXELPIPE_INVALID status
+       How can we handle the pipe->loading status in a better way?
+       Just restart?
+    */
     const gboolean img_changed = dev->image_force_reload || pipe->loading || pipe->input_changed;
-    // As image_force_reload could be set while we are restarting we clear it and possibly flush the cache too.
-    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(pipe);
-    dev->image_force_reload = FALSE;
-    // interrupted because image changed?
     if(img_changed)
     {
-      dt_print(DT_DEBUG_PIPE, "img changed: %s%s%s",
-                  dev->image_force_reload ? "image_force_reload " : "",
-                  pipe->loading ? "pipe loading " : "",
-                  pipe->input_changed ? "input_changed " : "");
+      if(dev->image_force_reload)
+      {
+        dt_dev_pixelpipe_cache_flush(pipe);
+        dev->image_force_reload = FALSE;
+      }
       dt_mipmap_cache_release(&buf);
       dt_control_busy_leave();
       pipe->status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&pipe->mutex);
       return;
     }
-    if(shutdown)
-    {
-      dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+    if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
       goto restart;
-    }
   }
 
   dt_show_times_f(&start,
@@ -810,9 +814,8 @@ restart:
   // maybe we got zoomed/panned in the meantime?
   if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
   {
-    if(port->widget && !problem)
+    if(port->widget && !stopped)
       dt_control_queue_redraw_widget(port->widget);
-    dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
     goto restart;
   }
 
