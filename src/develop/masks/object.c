@@ -1882,67 +1882,71 @@ static void _object_modify_property(dt_masks_form_t *const form,
 
   if(!gui || !gui->creation) return;
 
-  // cleanup and smoothing sliders are shown after first click
-  const gboolean has_mask = d && d->has_selection;
-
+  // always increment *count - the framework hides the slider when
+  // count==0 (see libs/masks.c gtk_widget_set_visible)
   switch(prop)
   {
     case DT_MASKS_PROPERTY_SIZE:
       break; // no size slider for click-based interaction
     case DT_MASKS_PROPERTY_CLEANUP:
-      if(has_mask)
+    {
+      int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+      cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
+      dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, cleanup);
+      if(d)
       {
-        int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
-        cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
-        dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, cleanup);
         d->preview_cleanup = cleanup;
         _update_preview(d);
-        *sum += cleanup;
-        ++*count;
       }
+      *sum += cleanup;
+      ++*count;
       break;
+    }
     case DT_MASKS_PROPERTY_SMOOTHING:
-      if(has_mask)
+    {
+      float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+      smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
+      dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, smoothing);
+      if(d)
       {
-        float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
-        smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
-        dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, smoothing);
         d->preview_smoothing = smoothing;
         _update_preview(d);
-        *sum += smoothing;
-        ++*count;
       }
+      *sum += smoothing;
+      ++*count;
       break;
+    }
     case DT_MASKS_PROPERTY_FEATHER:
-      if(has_mask)
+    {
+      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      float feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
+      if(feather < 0.0005f && ratio > 1.0f)
+        feather = 0.001f; // bootstrap from zero on increase
+      feather = CLAMP(feather * ratio, 0.0005f, 1.0f);
+      dt_conf_set_float(CONF_OBJECT_FEATHER_KEY, feather);
+      if(d)
       {
-        const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
-        float feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
-        if(feather < 0.0005f && ratio > 1.0f)
-          feather = 0.001f; // bootstrap from zero on increase
-        feather = CLAMP(feather * ratio, 0.0005f, 1.0f);
-        dt_conf_set_float(CONF_OBJECT_FEATHER_KEY, feather);
         d->preview_feather = feather;
         _update_preview(d);
-        *sum += feather + feather; // both borders (same as path)
-        *max = fminf(*max, 1.0f / feather);
-        *min = fmaxf(*min, 0.0005f / feather);
-        *count += 2; // both borders (same as path)
       }
+      *sum += feather + feather; // both borders (same as path)
+      *max = fminf(*max, 1.0f / feather);
+      *min = fmaxf(*min, 0.0005f / feather);
+      *count += 2; // both borders (same as path)
       break;
+    }
     case DT_MASKS_PROPERTY_REFINE:
+    {
       // toggle applies on the next decoder run, not immediately
-      if(has_mask)
-      {
-        if(new_val != old_val)
-          dt_conf_set_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY, new_val > 0.5f);
-        const gboolean enabled
-          = dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
-        d->preview_refine = enabled;
-        *sum += enabled ? 1.0f : 0.0f;
-        ++*count;
-      }
+      if(new_val != old_val)
+        dt_conf_set_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY, new_val > 0.5f);
+      const gboolean enabled
+        = dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
+      if(d) d->preview_refine = enabled;
+      *sum += enabled ? 1.0f : 0.0f;
+      ++*count;
       break;
+    }
     default:;
   }
 }
