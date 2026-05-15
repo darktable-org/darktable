@@ -1662,6 +1662,18 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
           && dt_pipe_is_basic(piece->pipe);
 }
 
+static inline gboolean _dev_pixelpipe_stop_request(const dt_develop_t *dev,
+                                                   const dt_dev_pixelpipe_t *pipe)
+{
+  // sched_yield() doesn't make sense on current multicore systems any longer
+  return (dev && dev->gui_leaving)
+      || (dt_pipe_is_full(pipe) && pipe->changed == DT_DEV_PIPE_ZOOMED)
+      || (dt_pipe_is_full(pipe) && dev->image_force_reload)
+      || (dt_pipe_is_preview(pipe) && pipe->loading)
+      || (dt_pipe_is_preview2(pipe) && pipe->loading)
+      || (pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED);
+}
+
 // recursive helper for process, returns TRUE in case of unfinished work or error
 static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            dt_develop_t *dev,
@@ -1673,6 +1685,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            GList *pieces,
                                            const int pos)
 {
+  /* As this is done recursively we check for any dt_dev_pixelpipe_stopper_t
+     signal that might have been set.
+  */
   if(dt_pipe_shutdown(pipe))
     return TRUE;
 
@@ -1728,9 +1743,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
 
   // 1) if cached buffer is still available, return data
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
   dt_hash_t hash = dt_dev_pixelpipe_cache_hash(roi_out, pipe, pos);
 
   // we do not want data from the preview pixelpipe cache
@@ -1752,10 +1764,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   {
     dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                                output, out_format, module, TRUE);
-
-    if(dt_pipe_shutdown(pipe))
-      return TRUE;
-
     dt_print_pipe(DT_DEBUG_PIPE,
                   "pipe data: from cache",
                   pipe, module, DT_DEVICE_NONE, &roi_in, NULL);
@@ -1765,17 +1773,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     return FALSE;
   }
 
-  // 2) if history changed or exit event, abort processing?
-  // preview pipe: abort on all but zoom events (same buffer anyways)
-  // if image has changed, stop now.
-  if(dt_iop_breakpoint(dev, pipe)
-     || (pipe == dev->full.pipe     && dev->image_force_reload)
-     || (pipe == dev->preview_pipe  && dev->preview_pipe->loading)
-     || (pipe == dev->preview2.pipe && dev->preview2.pipe->loading)
-     || dev->gui_leaving)
-  {
+  // 2) if history changed or exit event ... abort pipe processing?
+  if(_dev_pixelpipe_stop_request(dev, pipe))
     return TRUE;
-  }
 
   // 3) input -> output
   if(!modules)
@@ -1930,15 +1930,15 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     dt_show_times_f(&start, "[dev_pixelpipe]",
                     "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
 
-    return dt_pipe_shutdown(pipe);
+    return FALSE;
   }
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
 
   // 3b) recurse and obtain output array in &input
 
   // get region of interest which is needed in input
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
   {
@@ -1973,10 +1973,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
-  // reserve new cache line: output
   if(dt_pipe_shutdown(pipe))
     return TRUE;
 
+  // reserve new cache line: output
   const gboolean important = module
       && dt_pipe_no_mask_display(pipe)
       && dt_pipe_is_canvas(pipe)
