@@ -4323,13 +4323,24 @@ gboolean gesture_pinch(dt_view_t *self,
 
   // Keep pinch fully continuous for a smartphone-like feeling, including at high zoom.
   const float zoom_scale = tscale / ppd;
+
+  // Convert root (screen-absolute) pinch coords to center-widget-local.
+  // This is the coord space dt_dev_zoom_move expects for its built-in cursor
+  // anchoring (it computes mouse_off via x - border - 0.5 * port->width).
+  int ox, oy;
+  gdk_window_get_origin(gtk_widget_get_window(dt_ui_center(darktable.gui->ui)), &ox, &oy);
+  const float x_local = (float)x - ox;
+  const float y_local = (float)y - oy;
   dt_print(DT_DEBUG_INPUT,
-           "[darkroom pinch] update x=%.1f y=%.1f raw_dx=%.3f raw_dy=%.3f"
+           "[darkroom pinch] update x=%.1f y=%.1f (local=%.1f,%.1f origin=%d,%d"
+           " border=%d port=%dx%d) raw_dx=%.3f raw_dy=%.3f"
            " eff_dx=%.3f eff_dy=%.3f scale=%.6f state=0x%x"
            " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
-           x, y, dx, dy, eff_dx, eff_dy, scale, state,
+           x, y, x_local, y_local, ox, oy,
+           dev->full.border_size, dev->full.width, dev->full.height,
+           dx, dy, eff_dx, eff_dy, scale, state,
            tscale, tscalefloor, tscaletop, zoom_scale);
-  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x, y, TRUE);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, TRUE);
 
   return TRUE;
 }
