@@ -948,7 +948,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
     goto finalize;
   }
 
-  for(int iter = 0; iter < d->cs_iter && !dt_pipe_shutdown(pipe); iter++)
+  for(int iter = 0; iter < d->cs_iter; iter++)
   {
     _blur_div(tmp1, tmp2, luminance, blendmask, gd->gauss_coeffs, gauss_idx, width, height);
     _blur_mul(tmp2, tmp1, blendmask, gd->gauss_coeffs, gauss_idx, width, height);
@@ -1109,7 +1109,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
     goto finish;
   }
 
-  for(int iter = 0; iter < d->cs_iter && !dt_pipe_shutdown(pipe); iter++)
+  for(int iter = 0; iter < d->cs_iter; iter++)
   {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->gaussian_9x9_div, width, height,
       CLARG(tmp1), CLARG(tmp2), CLARG(luminance), CLARG(blendmask),
