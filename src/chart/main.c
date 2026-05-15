@@ -826,7 +826,11 @@ static void add_hdr_patches(int *N, double **target_L, double **target_a, double
     *target_b = realloc(*target_b, sizeof(double) * (*N + n_extra_patches + 4));
     *colorchecker_Lab = realloc(*colorchecker_Lab, sizeof(double) * 3 * (*N + n_extra_patches));
 
-    if(!*target_L || !*target_a || !*target_b || !*colorchecker_Lab) return;
+    if(!*target_L || !*target_a || !*target_b || !*colorchecker_Lab)
+    {
+      fprintf(stderr, "error: failed to allocate memory for extra patches\n");
+      exit(EXIT_FAILURE);
+    }
 
     memmove(&(*target_L)[n_extra_patches], *target_L, sizeof(double) * *N);
     memmove(&(*target_a)[n_extra_patches], *target_a, sizeof(double) * *N);
