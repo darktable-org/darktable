@@ -230,6 +230,8 @@ static void _bayer_tile_geometry(const dt_restore_context_t *ctx,
                                  const _bayer_prep_t *prep,
                                  int sr0_base, int sc0_base,
                                  int width, int height,
+                                 int vis_y_lo, int vis_y_hi,
+                                 int vis_x_lo, int vis_x_hi,
                                  int *sr0_origin, int *sc0_origin,
                                  int *mir_y_lo, int *mir_y_hi,
                                  int *mir_x_lo, int *mir_x_hi)
@@ -241,13 +243,34 @@ static void _bayer_tile_geometry(const dt_restore_context_t *ctx,
   *sr0_origin = sr0_base + y0;
   *sc0_origin = sc0_base + x0;
 
+  // bound reflection by the visible region so OB rows past the visible
+  // edges don't leak into the model input and bias the gain match
+  int eff_y_lo = vis_y_lo;
+  int eff_y_hi = vis_y_hi;
+  int eff_x_lo = vis_x_lo;
+  int eff_x_hi = vis_x_hi;
+
   const gboolean cropped_mirror
     = ctx && force_rggb
       && ctx->edge_pad == DT_RESTORE_EDGE_MIRROR_CROPPED;
-  *mir_y_lo = cropped_mirror ? y0 : 0;
-  *mir_x_lo = cropped_mirror ? x0 : 0;
-  *mir_y_hi = cropped_mirror ? (height - (y0 ? 1 : 0)) : height;
-  *mir_x_hi = cropped_mirror ? (width  - (x0 ? 1 : 0)) : width;
+  if(cropped_mirror)
+  {
+    // shift to the CFA R origin so reflected 2x2 blocks align with RGGB
+    eff_y_lo += y0;
+    eff_x_lo += x0;
+    // keep the reflection span even so it stays CFA-aligned
+    if((eff_y_hi - eff_y_lo) & 1) eff_y_hi -= 1;
+    if((eff_x_hi - eff_x_lo) & 1) eff_x_hi -= 1;
+  }
+  if(eff_y_lo < 0) eff_y_lo = 0;
+  if(eff_x_lo < 0) eff_x_lo = 0;
+  if(eff_y_hi > height) eff_y_hi = height;
+  if(eff_x_hi > width)  eff_x_hi = width;
+
+  *mir_y_lo = eff_y_lo;
+  *mir_y_hi = eff_y_hi;
+  *mir_x_lo = eff_x_lo;
+  *mir_x_hi = eff_x_hi;
 }
 
 // sr0_origin / sc0_origin are sensor-space top-left coords of the packed
@@ -301,6 +324,73 @@ static void _pack_bayer_tile(const float *cfa,
   }
 }
 
+// trim optical-black inside the metadata-reported visible region: scan
+// rows/cols inward and shrink while their mean stays at the black level.
+// Sony bodies report p_width/p_height that overcounts the actual visible
+// region (A7R V: by 64×40 px). Shrinks in CFA-aligned pairs of 2
+static void _bayer_trim_optical_black(const float *cfa,
+                                      int width,
+                                      int vis_y_lo, int vis_x_lo,
+                                      int *vis_y_hi, int *vis_x_hi,
+                                      const float black[4],
+                                      const float range[4])
+{
+  const float avg_black = 0.25f
+    * (black[0] + black[1] + black[2] + black[3]);
+  const float avg_range = 0.25f
+    * (range[0] + range[1] + range[2] + range[3]);
+  const float threshold = avg_black + 0.005f * avg_range;
+
+  // cap shrinkage so a uniformly-dark frame can't eat into real content
+  const int max_shrink = 256;
+  const int min_y_hi = *vis_y_hi - max_shrink;
+  const int min_x_hi = *vis_x_hi - max_shrink;
+
+  // sub-sample (~2k samples per row/col is plenty to detect OB vs content)
+  const int sx = ((*vis_x_hi - vis_x_lo) > 2048)
+                 ? ((*vis_x_hi - vis_x_lo) / 2048) : 1;
+  const int sy = ((*vis_y_hi - vis_y_lo) > 2048)
+                 ? ((*vis_y_hi - vis_y_lo) / 2048) : 1;
+
+  while(*vis_y_hi - 2 >= vis_y_lo && *vis_y_hi - 2 >= min_y_hi)
+  {
+    const int r0 = *vis_y_hi - 2;
+    const int r1 = *vis_y_hi - 1;
+    double s0 = 0.0, s1 = 0.0;
+    int n = 0;
+    for(int c = vis_x_lo; c < *vis_x_hi; c += sx)
+    {
+      s0 += cfa[(size_t)r0 * width + c];
+      s1 += cfa[(size_t)r1 * width + c];
+      n++;
+    }
+    if(n == 0) break;
+    const float m0 = (float)(s0 / n);
+    const float m1 = (float)(s1 / n);
+    if(m0 < threshold && m1 < threshold) *vis_y_hi -= 2;
+    else break;
+  }
+
+  while(*vis_x_hi - 2 >= vis_x_lo && *vis_x_hi - 2 >= min_x_hi)
+  {
+    const int c0 = *vis_x_hi - 2;
+    const int c1 = *vis_x_hi - 1;
+    double s0 = 0.0, s1 = 0.0;
+    int n = 0;
+    for(int r = vis_y_lo; r < *vis_y_hi; r += sy)
+    {
+      s0 += cfa[(size_t)r * width + c0];
+      s1 += cfa[(size_t)r * width + c1];
+      n++;
+    }
+    if(n == 0) break;
+    const float m0 = (float)(s0 / n);
+    const float m1 = (float)(s1 / n);
+    if(m0 < threshold && m1 < threshold) *vis_x_hi -= 2;
+    else break;
+  }
+}
+
 int dt_restore_raw_bayer(dt_restore_context_t *ctx,
                          const dt_image_t *img,
                          const float *cfa_in,
@@ -339,9 +429,27 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
     cfa_out[i] = (uint16_t)(cv + 0.5f);
   }
 
-  // working region in sensor coords: [y0..y0+2*Hh) x [x0..x0+2*Wh)
-  const int Hh = (height - y0) / 2;
-  const int Wh = (width - x0) / 2;
+  // working region in sensor coords: [y0..y0+2*Hh) x [x0..x0+2*Wh).
+  // trim any optical-black inside the metadata-reported visible region
+  const int vis_x_lo = (img->p_width  > 0) ? img->crop_x : 0;
+  const int vis_y_lo = (img->p_height > 0) ? img->crop_y : 0;
+  int vis_end_x = (img->p_width  > 0) ? (img->crop_x + img->p_width)  : width;
+  int vis_end_y = (img->p_height > 0) ? (img->crop_y + img->p_height) : height;
+  const int vis_end_x_pre = vis_end_x;
+  const int vis_end_y_pre = vis_end_y;
+  _bayer_trim_optical_black(cfa_in, width,
+                            vis_y_lo, vis_x_lo,
+                            &vis_end_y, &vis_end_x,
+                            prep.black, prep.range);
+  if(vis_end_x != vis_end_x_pre || vis_end_y != vis_end_y_pre)
+    dt_print(DT_DEBUG_AI,
+             "[restore_raw_bayer] trimmed optical-black: "
+             "%dx%d → %dx%d (dropped %d cols, %d rows)",
+             vis_end_x_pre - vis_x_lo, vis_end_y_pre - vis_y_lo,
+             vis_end_x - vis_x_lo, vis_end_y - vis_y_lo,
+             vis_end_x_pre - vis_end_x, vis_end_y_pre - vis_end_y);
+  const int Hh = (vis_end_y - y0) / 2;
+  const int Wh = (vis_end_x - x0) / 2;
   if(Hh <= 0 || Wh <= 0) return 0;  // too small; output == input
 
   // tile setup in packed (half-res) space
@@ -359,10 +467,12 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
   const int total_tiles = cols * rows;
 
   dt_print(DT_DEBUG_AI,
-           "[restore_raw_bayer] %dx%d sensor (CFA origin %d,%d), "
-           "working %dx%d packed, tile T=%d, %dx%d grid (%d tiles)",
-           width, height, y0, x0, Wh, Hh,
-           T, cols, rows, total_tiles);
+           "[restore_raw_bayer] %dx%d sensor, visible %dx%d at (%d,%d), "
+           "CFA origin (%d,%d), working %dx%d packed, T=%d, "
+           "%dx%d grid (%d tiles)",
+           width, height, img->p_width, img->p_height,
+           img->crop_x, img->crop_y,
+           y0, x0, Wh, Hh, T, cols, rows, total_tiles);
 
   // diagnostic: raw CFA range and preprocessing params
   {
@@ -448,6 +558,7 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
       _bayer_tile_geometry(ctx, &prep,
                            2 * (py_base - O), 2 * (px_base - O),
                            width, height,
+                           vis_y_lo, vis_end_y, vis_x_lo, vis_end_x,
                            &sr0_origin, &sc0_origin,
                            &mir_y_lo, &mir_y_hi, &mir_x_lo, &mir_x_hi);
       _pack_bayer_tile(cfa_in, width, height,
@@ -807,7 +918,16 @@ int dt_restore_raw_bayer_preview_piped(dt_restore_context_t *ctx,
   // even-snapped inference tile origin in sensor coords
   int pp_sr0 = 0, pp_sc0 = 0;
   int pp_mir_y_lo, pp_mir_y_hi, pp_mir_x_lo, pp_mir_x_hi;
+  const int pp_vis_x_lo  = (img->p_width  > 0) ? img->crop_x : 0;
+  const int pp_vis_y_lo  = (img->p_height > 0) ? img->crop_y : 0;
+  int pp_vis_x_hi = (img->p_width  > 0) ? (img->crop_x + img->p_width)  : width;
+  int pp_vis_y_hi = (img->p_height > 0) ? (img->crop_y + img->p_height) : height;
+  _bayer_trim_optical_black(cfa_full, width,
+                            pp_vis_y_lo, pp_vis_x_lo,
+                            &pp_vis_y_hi, &pp_vis_x_hi,
+                            prep.black, prep.range);
   _bayer_tile_geometry(ctx, &prep, inf_y, inf_x, width, height,
+                       pp_vis_y_lo, pp_vis_y_hi, pp_vis_x_lo, pp_vis_x_hi,
                        &pp_sr0, &pp_sc0,
                        &pp_mir_y_lo, &pp_mir_y_hi,
                        &pp_mir_x_lo, &pp_mir_x_hi);
