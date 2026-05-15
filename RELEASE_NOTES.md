@@ -55,23 +55,37 @@ changes (where available).
   loaded and no AI-related activity occurs. Models are downloaded from
   a configurable repository and managed through the AI preferences tab.
 
+- Added install scripts for Linux and Windows that set up GPU
+  acceleration for the new AI features. The scripts detect the user's
+  GPU vendor (NVIDIA, AMD or Intel) and install the matching GPU
+  runtime. They can be run from a local checkout or fetched and run
+  online with a single command – see the AI section in the README for
+  details. macOS users and most Windows users do not need to run
+  anything; GPU acceleration is already bundled.
+
 - Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
-  and SegNext models for interactive object segmentation — click on an
+  and SegNext models for interactive object segmentation – click on an
   object to generate a precise mask. Supports both foreground and
   background prompt points with iterative refinement. The encoder runs
   once per image (with optional GPU acceleration via CoreML, CUDA,
   MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
   produces masks interactively.
 
-- Added neural restore module in the lighttable/darkroom sidebar for
-  AI-based image denoise and upscale. Supports NIND UNet denoiser and
-  BSRGAN 2x/4x super-resolution models via the ONNX backend. Features
-  include an interactive before/after split preview with area picker,
-  a detail recovery slider (wavelet-based texture restoration for
-  denoise), batch processing with tiled inference, and TIFF output
-  with automatic library import and image grouping. GPU acceleration
-  is supported through CUDA, ROCm/MIGraphX, DirectML, OpenVINO, and
-  CoreML execution providers.
+- Added neural restore module in the lighttable/darkroom sidebar
+  covering three AI-based tasks: raw denoise, image denoise, and
+  upscale. Supports NIND UNet, NAFNet, and RawNIND UtNet2 denoisers
+  and BSRGAN 2x/4x super-resolution models via the ONNX backend.
+  Features include an interactive before/after split preview with
+  area picker, a detail recovery slider (wavelet-based texture
+  restoration for denoise), batch processing with tiled inference,
+  and automatic library re-import with image grouping. Raw denoise
+  writes a DNG (CFA Bayer or linear) that re-enters the user's
+  existing edit; image denoise and upscale write a TIFF embedding
+  the output ICC profile.
+  GPU acceleration is supported through CUDA, ROCm/MIGraphX,
+  DirectML, OpenVINO, and CoreML execution providers. If GPU
+  inference fails (out of memory, unsupported op, EP crash),
+  darktable automatically retries on CPU.
 
 - Added `colorharmonizer` module that applies color harmony
   corrections in UCS color space, rotating hues toward a target
@@ -188,6 +202,12 @@ changes (where available).
   the default for startup; if one is chosen as default, the dialog is
   not shown on the next launch until “allow for multiple workspaces” is
   enabled again in preferences (storage).
+
+- Use native mouse cursors throughout the UI. Cursors such as the
+  busy spinner, hand, crosshair and resize handles now match the
+  operating system's look, most noticeably on macOS where the busy
+  cursor previously appeared as an old-style wristwatch instead of
+  the familiar spinning wheel.
 
 ## Performance Improvements
 
@@ -400,7 +420,7 @@ changes (where available).
 
 ### Optional
 
-- ONNX Runtime 1.17+ for AI features
+- ONNX Runtime 1.18+ for AI features
 
 - libarchive for AI model extraction
 

@@ -122,19 +122,19 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
   * macOS 11+ (Big Sur)
   * Apple Silicon (M1+)
 
-**GPU memory:** 4 GB VRAM minimum. Models ship with fixed input
-dimensions sized to fit this budget; if GPU inference fails (out of
-memory, unsupported op), darktable automatically falls back to CPU.
+**GPU memory:** 4 GB VRAM minimum. If GPU inference fails (out of
+memory, unsupported op, EP crash), darktable automatically retries
+on CPU and continues.
 
 To enable GPU acceleration, run one of the install scripts:
 
+Linux:
 ```bash
-# Linux
 curl -fsSL https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.sh | bash
 ```
 
+Windows (PowerShell):
 ```powershell
-# Windows (PowerShell)
 irm https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.ps1 | iex
 ```
 
