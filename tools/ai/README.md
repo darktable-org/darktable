@@ -5,6 +5,9 @@ and CoreML on macOS. To enable GPU acceleration for AI features (denoise,
 upscale, segmentation), install a GPU-enabled ONNX Runtime build using one
 of the install scripts in this directory.
 
+macOS users don't need to install anything – CoreML acceleration is
+bundled with darktable.
+
 ## What's bundled by default
 
 | Platform | Bundled ONNX Runtime | GPU support |
@@ -60,7 +63,7 @@ manifest from GitHub, so no extra files are needed.
 ### GPU / driver requirements
 
 **NVIDIA (CUDA)** – Pascal-or-newer GPU (compute 6.0+), driver 525+,
-CUDA Toolkit 12.x or 13.x , cuDNN 9.x.
+CUDA Toolkit 12.x or 13.x, cuDNN 9.x.
 
 **AMD (MIGraphX)** – ROCm-supported GPU (Radeon RX 7700+ / Instinct
 MI100+), ROCm 6.x+ with MIGraphX.
@@ -92,12 +95,13 @@ After running the script or built-in installer:
 
 Or set `DT_ORT_LIBRARY` in the environment:
 
+Linux:
 ```bash
-# Linux
 DT_ORT_LIBRARY=~/.local/lib/onnxruntime-cuda/libonnxruntime.so.1.24.4 darktable
 ```
+
+Windows (PowerShell):
 ```powershell
-# Windows
 $env:DT_ORT_LIBRARY="$env:LOCALAPPDATA\onnxruntime-cuda\onnxruntime.dll"; darktable
 ```
 
@@ -149,12 +153,13 @@ What it does:
   range-based matching (`rocm_min: "7.2"`, `rocm_max: "7.3"` covers
   every 7.2.x patch).
 - Computes SHA256 only for wheels whose URL changed since the last
-  refresh — a no-op run does no downloads.
+  refresh – a no-op run does no downloads.
 - Preserves vendors it doesn't manage (e.g. Intel/OpenVINO) and any
   manual fields (`required_libs`, `lib_pattern`, `install_subdir`).
 
-Stdlib only — no extra Python deps. Network access required.
+Stdlib only – no extra Python deps. Network access required.
 
-A weekly CI job (`.github/workflows/refresh-ort-gpu.yml`) runs the
-script in `--update --pr` mode every Monday and opens a PR if anything
-upstream moved. Maintainer reviews and merges; nothing is auto-merged.
+A monthly CI job (`.github/workflows/refresh-ort-gpu.yml`) runs the
+script in `--update --pr` mode on the 1st of each month and opens a
+PR if anything upstream moved. Maintainer reviews and merges; nothing
+is auto-merged.
