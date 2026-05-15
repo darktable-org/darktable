@@ -109,6 +109,9 @@ typedef struct dt_iop_crop_gui_data_t
   dt_gui_collapsible_section_t cs;
 
   float scroll_origin_x, scroll_origin_y;
+
+  gboolean new_crop_active;
+  float new_crop_x0, new_crop_y0;
 } dt_iop_crop_gui_data_t;
 
 typedef struct dt_iop_crop_data_t
@@ -1267,6 +1270,7 @@ void gui_init(dt_iop_module_t *self)
   g->preview_ready = FALSE;
   g->scroll_origin_x = -1.0f;
   g->scroll_origin_y = -1.0f;
+  g->new_crop_active = FALSE;
 
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
@@ -1745,6 +1749,68 @@ int mouse_moved(dt_iop_module_t *self,
 
   if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
   {
+    // Alt+left-drag: draw a new rectangle constrained to current aspect ratio
+    if(g->new_crop_active)
+    {
+      const float dx = pzx - g->new_crop_x0;
+      const float dy = pzy - g->new_crop_y0;
+      const float adx = fabsf(dx);
+      const float ady = fabsf(dy);
+
+      const float aspect = _aspect_ratio_get(self, g->aspect_presets);
+
+      float new_cx, new_cy, new_cw, new_ch;
+
+      if(aspect > 0.0f)
+      {
+        // constrained to current aspect ratio
+        if(adx * aspect >= ady)
+        {
+          // width-driven: width follows mouse, height derived from ratio
+          new_cw = adx;
+          new_ch = adx / aspect;
+        }
+        else
+        {
+          // height-driven: height follows mouse, width derived from ratio
+          new_ch = ady;
+          new_cw = ady * aspect;
+        }
+        new_cx = dx > 0.0f ? g->new_crop_x0 : g->new_crop_x0 - new_cw;
+        new_cy = dy > 0.0f ? g->new_crop_y0 : g->new_crop_y0 - new_ch;
+      }
+      else
+      {
+        // freehand — no aspect constraint
+        new_cx = fminf(g->new_crop_x0, pzx);
+        new_cy = fminf(g->new_crop_y0, pzy);
+        new_cw = adx;
+        new_ch = ady;
+      }
+
+      // clamp against max clip bounds
+      new_cx = CLAMP(new_cx, g->clip_max_x,
+                     g->clip_max_x + g->clip_max_w - MIN_CROP_SIZE);
+      new_cy = CLAMP(new_cy, g->clip_max_y,
+                     g->clip_max_y + g->clip_max_h - MIN_CROP_SIZE);
+      new_cw = CLAMP(new_cw, MIN_CROP_SIZE,
+                     g->clip_max_x + g->clip_max_w - new_cx);
+      new_ch = CLAMP(new_ch, MIN_CROP_SIZE,
+                     g->clip_max_y + g->clip_max_h - new_cy);
+
+      g->clip_x = new_cx;
+      g->clip_y = new_cy;
+      g->clip_w = new_cw;
+      g->clip_h = new_ch;
+
+      ++darktable.gui->reset;
+      _update_sliders_and_limit(g);
+      --darktable.gui->reset;
+
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+
     // draw a light gray frame, to show it's not stored yet:
     // first mouse button, adjust cropping frame, but what do we do?
     const float bzx = g->button_down_zoom_x;
@@ -1911,6 +1977,13 @@ int button_released(dt_iop_module_t *self,
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
+  if(g->new_crop_active)
+  {
+    g->new_crop_active = FALSE;
+    _commit_box(self, g, p, FALSE);
+    return 1;
+  }
+
   /* reset internal ui states*/
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
@@ -1943,6 +2016,15 @@ int button_pressed(dt_iop_module_t *self,
 
   if(which == GDK_BUTTON_PRIMARY)
   {
+    // Alt+left-click+drag draws a new rectangle constrained to aspect ratio
+    if(dt_modifiers_include(state, GDK_MOD1_MASK))
+    {
+      g->new_crop_active = TRUE;
+      g->new_crop_x0 = bzx;
+      g->new_crop_y0 = bzy;
+      return 1;
+    }
+
     float wd, ht;
     dt_dev_get_preview_size(self->dev, &wd, &ht);
 
@@ -2007,6 +2089,8 @@ GSList *mouse_actions(dt_iop_module_t *self)
                                      _("[%s on borders] crop keeping ratio"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, 0,
                                      _("[%s] resize on hover"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_MOD1_MASK,
+                                     _("[%s] new crop rectangle"), self->name());
   return lm;
 }
 
