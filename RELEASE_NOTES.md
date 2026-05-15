@@ -360,7 +360,13 @@ changes (where available).
 
 ### New Features
 
-- N/A
+- Added Lua AI API (`darktable.ai`) for scripting AI model inference.
+  Provides tensor creation, model loading with GPU provider selection,
+  and two calling conventions for inference (pre-allocated and
+  auto-allocated outputs). Image I/O includes loading from file or
+  darktable library (full pipeline export), raw CFA sensor data
+  access, and DNG output with EXIF preservation. Enables Lua scripts
+  to implement custom AI workflows such as raw denoise or upscale.
 
 ### Bug Fixes
 

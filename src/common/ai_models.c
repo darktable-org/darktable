@@ -956,6 +956,8 @@ void dt_ai_models_cleanup(dt_ai_registry_t *registry)
 
   g_mutex_clear(&registry->lock);
 
+  if(registry->env)
+    dt_ai_env_destroy(registry->env);
   g_free(registry->repository);
   g_free(registry->models_dir);
   g_free(registry->cache_dir);
@@ -1934,6 +1936,19 @@ void dt_ai_model_card_free(dt_ai_model_card_t *card)
   g_free(card->training_data_license);
   g_free(card->notes);
   g_free(card);
+}
+
+dt_ai_environment_t *dt_ai_registry_get_env(dt_ai_registry_t *registry)
+{
+  if(!registry || !registry->ai_enabled)
+    return NULL;
+
+  g_mutex_lock(&registry->lock);
+  if(!registry->env)
+    registry->env = dt_ai_env_init(NULL);
+  g_mutex_unlock(&registry->lock);
+
+  return registry->env;
 }
 
 // clang-format off

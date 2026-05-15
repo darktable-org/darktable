@@ -87,6 +87,7 @@ typedef struct dt_ai_registry_t
   gboolean ai_enabled;        // Global AI enable/disable
   dt_ai_provider_t provider;  // Selected execution provider
   gboolean updates_checked;   // TRUE after first check_updates call
+  struct dt_ai_environment_t *env;  // Lazily created backend environment
   GMutex lock;                // Thread safety for registry access
 } dt_ai_registry_t;
 
@@ -348,3 +349,12 @@ dt_ai_model_card_t *dt_ai_models_get_card(
  * @brief Free a model card returned by dt_ai_models_get_card
  */
 void dt_ai_model_card_free(dt_ai_model_card_t *card);
+
+/**
+ * @brief Get or lazily create the AI backend environment.
+ *        The environment is cached in the registry and destroyed
+ *        by dt_ai_models_cleanup().
+ * @param registry The registry
+ * @return Environment handle, or NULL if AI is disabled
+ */
+dt_ai_environment_t *dt_ai_registry_get_env(dt_ai_registry_t *registry);
