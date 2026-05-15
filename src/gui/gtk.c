@@ -778,7 +778,7 @@ static gboolean _input_event(GtkWidget *widget,
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] pinch x=%.2f y=%.2f phase=%d scale=%.6f state=0x%x",
              pinch->x, pinch->y, pinch->phase, pinch->scale, pinch->state);
-    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
+    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x_root, pinch->y_root,
                                      pinch->dx, pinch->dy, pinch->phase,
                                      pinch->scale, pinch->state & 0xf))
     {

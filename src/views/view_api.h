@@ -60,7 +60,7 @@ OPTIONAL(void, scrolled, struct dt_view_t *self, double x, double y, int up, int
 OPTIONAL(void, scrollbar_changed, struct dt_view_t *self, double x, double y); // scrollbars changed in view
 OPTIONAL(gboolean, gesture_pan, struct dt_view_t *self, double x, double y, double dx, double dy, int state);
 OPTIONAL(gboolean, gesture_pinch, struct dt_view_t *self, double x, double y, double dx, double dy,
-                   int phase, double scale, int state);
+                   int phase, double scale, int state); // x,y are root (screen-absolute) coords
 
 // list of mouse actions
 OPTIONAL(GSList *, mouse_actions, const struct dt_view_t *self);
