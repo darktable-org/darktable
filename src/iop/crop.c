@@ -107,6 +107,8 @@ typedef struct dt_iop_crop_gui_data_t
   gboolean preview_ready;
   gint64 focus_time;
   dt_gui_collapsible_section_t cs;
+
+  float scroll_origin_x, scroll_origin_y;
 } dt_iop_crop_gui_data_t;
 
 typedef struct dt_iop_crop_data_t
@@ -1263,6 +1265,8 @@ void gui_init(dt_iop_module_t *self)
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
+  g->scroll_origin_x = -1.0f;
+  g->scroll_origin_y = -1.0f;
 
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
@@ -1663,6 +1667,62 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_stroke(cr);
 }
 
+int scrolled(dt_iop_module_t *self,
+                    const float pzx,
+                    const float pzy,
+                    const int up,
+                    const uint32_t state)
+{
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+
+  if(!g->preview_ready || self->dev->preview_pipe->loading) return 0;
+
+  // handle resize only when pointer is inside the crop rectangle
+  if(pzx < g->clip_x || pzx > g->clip_x + g->clip_w
+     || pzy < g->clip_y || pzy > g->clip_y + g->clip_h)
+    return 0;
+
+  _set_max_clip(self);
+
+  // clamp min size so we never lose the crop rect entirely
+  const float min_cw = MAX(MIN_CROP_SIZE, g->clip_max_w / 100.0f);
+  const float min_ch = MAX(MIN_CROP_SIZE, g->clip_max_h / 100.0f);
+
+  // compute scale factor (same 0.97 exponential scaling that masks use)
+  const float factor = dt_mask_scroll_increases(up) ? 1.0f / 0.97f : 0.97f;
+
+  float new_cw = g->clip_w * factor;
+  float new_ch = g->clip_h * factor;
+
+  // clamp size to limits
+  new_cw = CLAMP(new_cw, min_cw, g->clip_max_w);
+  new_ch = CLAMP(new_ch, min_ch, g->clip_max_h);
+
+  // scale around pointer position so that point under cursor stays fixed
+  float new_cx = pzx + (g->clip_x - pzx) * (new_cw / g->clip_w);
+  float new_cy = pzy + (g->clip_y - pzy) * (new_ch / g->clip_h);
+
+  // clamp against max clip bounds
+  new_cx = CLAMP(new_cx, g->clip_max_x, g->clip_max_x + g->clip_max_w - new_cw);
+  new_cy = CLAMP(new_cy, g->clip_max_y, g->clip_max_y + g->clip_max_h - new_ch);
+
+  g->clip_x = new_cx;
+  g->clip_y = new_cy;
+  g->clip_w = new_cw;
+  g->clip_h = new_ch;
+
+  // enforce aspect ratio
+  _aspect_apply(self, GRAB_HORIZONTAL | GRAB_VERTICAL);
+
+  // update sliders without triggering pixelpipe re-run
+  ++darktable.gui->reset;
+  _update_sliders_and_limit(g);
+  --darktable.gui->reset;
+
+  dt_control_queue_redraw_center();
+  return 1;
+}
+
 int mouse_moved(dt_iop_module_t *self,
                 const float pzx,
                 const float pzy,
@@ -1945,6 +2005,8 @@ GSList *mouse_actions(dt_iop_module_t *self)
                                      _("[%s on borders] crop"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_SHIFT_MASK,
                                      _("[%s on borders] crop keeping ratio"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, 0,
+                                     _("[%s] resize on hover"), self->name());
   return lm;
 }
 
