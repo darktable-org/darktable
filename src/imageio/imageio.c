@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1464,7 +1464,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  // Check if all the metadata export flags are set for AVIF/EXR/JPEG XL/XCF (opt-in)
+  // Check if all the metadata export flags are set for AVIF/EXR/HEIF/JPEG XL/XCF (opt-in)
   //
   // TODO: this is a workaround as these formats do not support fine
   // grained metadata control through dt_exif_xmp_attach_export()
@@ -1475,6 +1475,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   gboolean md_flags_set = TRUE;
   if(!ignore_exif
      && (!strcmp(format->mime(NULL), "image/avif")
+         || !strcmp(format->mime(NULL), "image/heif")
          || !strcmp(format->mime(NULL), "image/x-exr")
          || !strcmp(format->mime(NULL), "image/jxl")
          || !strcmp(format->mime(NULL), "image/x-xcf")))
