@@ -192,10 +192,6 @@ int write_image(dt_imageio_module_data_t *data,
   const float *const restrict in_data = (const float *)in_tmp;
   uint8_t *const restrict out = (uint8_t *)pixels;
 
-  dt_times_t start_time = { 0 }, end_time = { 0 };
-  dt_get_times(&start_time);
-
-  // this conversion loop is copied from avif exporter
   switch(bit_depth)
   {
     case 8:
@@ -228,13 +224,7 @@ int write_image(dt_imageio_module_data_t *data,
             out_pixel[2] = (uint16_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
         }
       }
-
-  } // end switch
-
-  dt_get_times(&end_time);
-  const float tclock = end_time.clock - start_time.clock;
-  const float uclock = end_time.user - start_time.user;
-  dt_control_log("encoding tool %.4f (with uclock=%.4f)\n", tclock, uclock);
+  }
 
 
   // Determine the actual color profile used
