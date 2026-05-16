@@ -407,7 +407,7 @@ int write_image(dt_imageio_module_data_t *data,
   struct heif_encoding_options* options = heif_encoding_options_alloc();
 #ifdef HAVE_LIBSHARPYUV
   options->color_conversion_options.preferred_chroma_downsampling_algorithm = heif_chroma_downsampling_sharp_yuv;
-  options->color_conversion_options.only_use_preferred_chroma_algorithm = false;
+  options->color_conversion_options.only_use_preferred_chroma_algorithm = FALSE;
 #endif
 
   struct heif_image_handle* handle;
