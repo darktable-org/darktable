@@ -227,11 +227,6 @@ int write_image(dt_imageio_module_data_t *data,
 
   // Determine the actual color profile used
   const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, icc_type, icc_filename);
-  if(!cp)
-  {
-    dt_control_log("color profile is null");
-    return 1;
-  }
   dt_print(DT_DEBUG_IMAGEIO,
            "[heif colorprofile profile: %s]",
            dt_colorspaces_get_name(cp->type, filename));
