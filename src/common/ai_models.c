@@ -428,8 +428,23 @@ static void _setup_registry(dt_ai_registry_t *registry)
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  registry->models_dir = g_build_filename(g_get_user_data_dir(), 
-                                          "darktable", "models", NULL);
+  // honour plugins/ai/models_path override; "~/..." expands to $HOME
+  char *override = dt_conf_get_string("plugins/ai/models_path");
+  if(override && override[0])
+  {
+    if(override[0] == '~' && (override[1] == '/' || override[1] == '\0'))
+      registry->models_dir
+        = g_build_filename(g_get_home_dir(), override + 2, NULL);
+    else
+      registry->models_dir = g_strdup(override);
+  }
+  else
+  {
+    registry->models_dir = g_build_filename(g_get_user_data_dir(),
+                                            "darktable", "models", NULL);
+  }
+  g_free(override);
+
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
   _ensure_directory(registry->models_dir);
