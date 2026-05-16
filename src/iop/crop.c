@@ -1204,6 +1204,16 @@ static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   _commit_box(self, g, p, TRUE);
 }
 
+static void _crop_flip_aspect_shortcut(dt_action_t *action)
+{
+  dt_action_t *owner = action->owner;
+  if(!owner || owner->type != DT_ACTION_TYPE_IOP) return;
+  dt_iop_module_t *self = dt_iop_get_module_preferred_instance((dt_iop_module_so_t *)owner);
+  if(!self) return;
+  _event_key_swap(self);
+  _commit_box(self, self->gui_data, self->params, TRUE);
+}
+
 static gint _aspect_ratio_cmp(const dt_iop_crop_aspect_t *a,
                               const dt_iop_crop_aspect_t *b)
 {
@@ -1450,6 +1460,8 @@ void gui_init(dt_iop_module_t *self)
   darktable.develop->cropping.flip_callback = _crop_handle_flip;
 
   dt_shortcut_register(DT_ACTION(self->so), 0, 0, GDK_KEY_c, 0);
+  dt_action_register(DT_ACTION(self->so), N_("flip aspect ratio"),
+                     _crop_flip_aspect_shortcut, GDK_KEY_x, 0);
 }
 
 static void _aspect_free(gpointer data)
