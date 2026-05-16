@@ -462,7 +462,8 @@ int write_image(dt_imageio_module_data_t *data,
   heif_image_handle_release(handle);
 
   err = heif_context_write_to_file(context, filename);
-  if (err.code != heif_error_Ok) {
+  if (err.code != heif_error_Ok)
+  {
     dt_print(DT_DEBUG_ALWAYS,
              "[heif export] error writing image to file: %s (%d)",
              err.message, err.code);
