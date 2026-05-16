@@ -186,8 +186,6 @@ int write_image(dt_imageio_module_data_t *data,
   // Returns NULL if a non-existing channel was given.
   uint8_t* pixels = heif_image_get_plane(image, heif_channel_interleaved, &rowbytes);
 
-  dt_print(DT_DEBUG_ALWAYS, "[heif export] rowbytes = %d", rowbytes);
-
   const float max_channel_f = (float)((1 << bit_depth) - 1);
   const float *const restrict in_data = (const float *)in_tmp;
   uint8_t *const restrict out = (uint8_t *)pixels;
@@ -234,7 +232,7 @@ int write_image(dt_imageio_module_data_t *data,
     dt_control_log("color profile is null");
     return 1;
   }
-  dt_control_log(
+  dt_print(DT_DEBUG_IMAGEIO,
            "[heif colorprofile profile: %s]",
            dt_colorspaces_get_name(cp->type, filename));
 
@@ -296,7 +294,6 @@ int write_image(dt_imageio_module_data_t *data,
 
   if(need_to_embed_icc)
   {
-    dt_control_log("we will embed icc");
     uint32_t icc_profile_len;
     cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
     if(icc_profile_len > 0)
@@ -313,11 +310,6 @@ int write_image(dt_imageio_module_data_t *data,
       heif_image_set_raw_color_profile(image, "prof", icc_profile_data, icc_profile_len);
     }
   }
-
-
-  // temp code to avoid variable not used error
-  if(need_to_embed_icc)
-    dt_control_log("icc profile will be embedded into heif file");
 
   struct heif_context* context = heif_context_alloc();
 
