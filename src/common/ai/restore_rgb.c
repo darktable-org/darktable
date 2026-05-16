@@ -74,7 +74,8 @@ static const float _dwt_sigma_mul_default[DWT_DETAIL_BANDS] = {
 };
 
 // sRGB transfer function (gamma curve only, no primaries change).
-// values > 1.0 are allowed to preserve wide-gamut colors
+// extends to v > 1.0 via the polynomial; callers feeding model input
+// should clamp first since the model produces magenta on > 1 input.
 static inline float _linear_to_srgb(const float v)
 {
   if(v <= 0.0f) return 0.0f;
@@ -257,6 +258,12 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
         sg = sg > 0.0f ? sqrtf(sg) : 0.0f;
         sb = sb > 0.0f ? sqrtf(sb) : 0.0f;
       }
+      // clamp the model input so super-bright highlights (sun, specular)
+      // don't push it out-of-distribution; wide-gamut originals are
+      // preserved via in_gamut_mask pass-through downstream
+      sr = fminf(sr, 1.0f);
+      sg = fminf(sg, 1.0f);
+      sb = fminf(sb, 1.0f);
       srgb_in[p]             = _linear_to_srgb(sr);
       srgb_in[p + plane]     = _linear_to_srgb(sg);
       srgb_in[p + 2 * plane] = _linear_to_srgb(sb);
@@ -270,13 +277,13 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
     {
       const float v = in_patch[i];
       const float boosted = v > 0.0f ? sqrtf(v) : 0.0f;
-      srgb_in[i] = _linear_to_srgb(boosted);
+      srgb_in[i] = _linear_to_srgb(fminf(boosted, 1.0f));
     }
   }
   else
   {
     for(size_t i = 0; i < in_pixels; i++)
-      srgb_in[i] = _linear_to_srgb(in_patch[i]);
+      srgb_in[i] = _linear_to_srgb(fminf(in_patch[i], 1.0f));
   }
 
   const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
