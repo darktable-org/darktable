@@ -257,7 +257,7 @@ void process(dt_iop_module_t *self,
 
   const uint32_t filters = piece->filters;  // Just in case we want to use a roi_in 
 
-  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   dt_iop_cacorrect_data_t *d = piece->data;
 

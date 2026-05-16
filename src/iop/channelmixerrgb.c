@@ -2159,7 +2159,7 @@ void process(dt_iop_module_t *self,
 #ifdef AI_ACTIVATED
     gboolean exit = FALSE;
 #endif
-    if(g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if(g->run_profile && dt_pipe_is_preview(piece->pipe))
     {
       dt_iop_gui_enter_critical_section(self);
       _extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
@@ -2284,7 +2284,7 @@ void process(dt_iop_module_t *self,
 
   // run dE validation at output
   if(self->dev->gui_attached && g)
-    if(g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if(g->run_validation && dt_pipe_is_preview(piece->pipe))
     {
       _validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM);
       g->run_validation = FALSE;
@@ -3130,7 +3130,7 @@ void commit_params(dt_iop_module_t *self,
   convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
   d->illuminant[3] = 0.f;
 
-  const gboolean preview = piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
+  const gboolean preview = dt_pipe_is_preview(piece->pipe);
   const gboolean run_profile = preview && g && g->run_profile;
   const gboolean run_validation = preview && g && g->run_validation;
 

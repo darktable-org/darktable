@@ -58,10 +58,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static inline gboolean _gui_fullpipe(dt_dev_pixelpipe_iop_t *piece)
 {
-  return piece->pipe->type & (DT_DEV_PIXELPIPE_FULL
-                              | DT_DEV_PIXELPIPE_PREVIEW2
-                              | DT_DEV_PIXELPIPE_IMAGE)
-    && darktable.develop->late_scaling.enabled;
+  return (dt_pipe_is_canvas(piece->pipe) || dt_pipe_is_image(piece->pipe))
+     && darktable.develop->late_scaling.enabled;
 }
 
 void modify_roi_in(dt_iop_module_t *self,
@@ -194,9 +192,8 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  const int use_finalscale = DT_DEV_PIXELPIPE_IMAGE | DT_DEV_PIXELPIPE_IMAGE_FINAL;
   piece->enabled = dt_pipe_is_export(piece->pipe)
-                  || (pipe->type & use_finalscale) == use_finalscale
+                  || (dt_pipe_is_image(pipe) && dt_pipe_is_image_final(pipe))
                   || _gui_fullpipe(piece);
 }
 

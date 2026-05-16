@@ -779,7 +779,7 @@ restart:
     dt_print_pipe(DT_DEBUG_PIPE, "pipe stopped", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "%s%s%s%s",
                 shutdown == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES"
                   : shutdown == DT_DEV_PIXELPIPE_STOP_HQ  ? "DT_DEV_PIXELPIPE_STOP_HQ"
-                  : shutdown == DT_DEV_PIXELPIPE_STOP_NO  ? "" : "DT_DEV_PIXELPIPE_STOP_OTHER",
+                  : shutdown == DT_DEV_PIXELPIPE_STOP_NO  ? "" : "DT_DEV_PIXELPIPE_STOP_MODULE",
                 dev->image_force_reload ? "image_force_reload " : "",
                 pipe->loading ? "pipe_loading " : "",
                 pipe->input_changed ? "pipe_input_changed " : "");
@@ -802,9 +802,17 @@ restart:
       dt_pthread_mutex_unlock(&pipe->mutex);
       return;
     }
+
+    /* pixelpipe stops due to changed pipe nodes, HQ mode changes or module aborts.
+       All want restarts as pipe status is not valid yet.
+    */
     if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
       goto restart;
   }
+
+  // image pipes require pending dimension check
+  if(port && dt_pipe_is_image(pipe) && pipe->changed != DT_DEV_PIPE_UNCHANGED)
+    goto restart;
 
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
@@ -3860,7 +3868,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dev.gui_attached = FALSE;
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
-  pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : 0);
+  pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : DT_DEV_PIXELPIPE_NONE);
   // load image and set history_end
 
   dev.snapshot_id = snapshot_id;

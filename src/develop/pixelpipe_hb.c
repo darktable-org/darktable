@@ -50,7 +50,7 @@
 // benchmarking and pfm dumps should happen for these pipes
 static inline gboolean _is_debug_pipe(const dt_dev_pixelpipe_t *pipe)
 {
-  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+  return dt_pipe_is_full(pipe) || dt_pipe_is_export(pipe);
 }
 
 // forward declarations for mask cache helpers
@@ -1107,16 +1107,7 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self,
                                      const dt_dev_pixelpipe_iop_t *const piece)
 {
   const dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(d)
-  {
-    // check only if blend is active
-    if((self->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-       && (d->mask_mode != DEVELOP_MASK_DISABLED))
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
+  return d && (d->mask_mode != DEVELOP_MASK_DISABLED) && (self->flags() & IOP_FLAGS_SUPPORTS_BLENDING);
 }
 
 static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe,
@@ -1267,9 +1258,7 @@ static inline gboolean _piece_wants_blending(const dt_dev_pixelpipe_iop_t *piece
     return FALSE;
 
   const dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(!d || !(d->mask_mode & DEVELOP_MASK_ENABLED)) return FALSE;
-
-  return TRUE;
+  return d && (d->mask_mode & DEVELOP_MASK_ENABLED);
 }
 
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
@@ -3068,7 +3057,7 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   const int devid)
 {
   pipe->processing = TRUE;
-  pipe->nocache = (pipe->type & DT_DEV_PIXELPIPE_IMAGE) != 0;
+  pipe->nocache = dt_pipe_is_image(pipe);
   pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
 
@@ -3745,7 +3734,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 
 #ifdef HAVE_OPENCL
 int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem in,
+                                const cl_mem in,
                                 const dt_iop_roi_t *const roi,
                                 const gboolean rawmode)
 {
