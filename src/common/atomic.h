@@ -88,7 +88,7 @@ inline void dt_atomic_set_int(dt_atomic_int *var, int value)
   pthread_mutex_unlock(&dt_atom_mutex);
 }
 
-inline int dt_atomic_get_int(const dt_atomic_int *const var)
+inline int dt_atomic_get_int(dt_atomic_int *var)
 {
   pthread_mutex_lock(&dt_atom_mutex);
   int value = *var;
@@ -96,7 +96,7 @@ inline int dt_atomic_get_int(const dt_atomic_int *const var)
   return value;
 }
 
-inline int dt_atomic_add_int(const dt_atomic_int *const var, int incr)
+inline int dt_atomic_add_int(dt_atomic_int *var, int incr)
 {
   pthread_mutex_lock(&dt_atom_mutex);
   int value = *var;
@@ -105,7 +105,7 @@ inline int dt_atomic_add_int(const dt_atomic_int *const var, int incr)
   return value;
 }
 
-inline int dt_atomic_sub_int(const dt_atomic_int *const var, int decr)
+inline int dt_atomic_sub_int(dt_atomic_int *var, int decr)
 {
   pthread_mutex_lock(&dt_atom_mutex);
   int value = *var;
@@ -127,11 +127,11 @@ inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 {
   pthread_mutex_lock(&dt_atom_mutex);
   int origvalue = *var;
-  int success = FALSE;
+  int success = 0;
   if (origvalue == *expected)
   {
     *var = value;
-    success = TRUE;
+    success = 1;
   }
   *expected = origvalue;
   pthread_mutex_unlock(&dt_atom_mutex);
