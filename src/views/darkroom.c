@@ -4260,13 +4260,27 @@ gboolean gesture_pinch(dt_view_t *self,
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
   (void)state;
+
+  // Gesture-mode classifier: each event contributes its zoom_eq & pan_eq magnitude in pixels
+  // to a decaying score. When the recent history is zoom-dominant (score > ZOOM_DOMINANT_PX)
+  // we treat the gesture as a pinch and discard the dx/dy translation that would otherwise
+  // jitter the cursor anchor. When pan dominates, the score falls below the threshold and
+  // dx/dy flows through (subject to a small per-axis deadzone for touchpad noise).
+  // The exponential decay gives hysteresis so a single wobble frame mid-gesture doesn't flip the classification.
+  static const float PINCH_ZOOM_PAN_DECAY = 0.8f;
+  static const float PINCH_ZOOM_DOMINANT_PX = 8.0f;
+  static const float PINCH_PAN_DEADZONE_PX = 4.0f;
   static float pinch_begin_tscale = 0.0f;
+  static float prev_scale = 1.0f;
+  static float zoom_pan_score = 0.0f;
 
   if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
     pinch_begin_tscale =
       dt_dev_get_zoom_scale(&dev->full, dev->full.zoom, 1 << dev->full.closeup, FALSE)
       * dev->full.ppd;
+    prev_scale = (float)scale;
+    zoom_pan_score = 0.0f;
     dt_print(DT_DEBUG_INPUT,
              "[darkroom pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
              " -> begin_tscale=%.6f ppd=%.2f",
@@ -4281,6 +4295,8 @@ gboolean gesture_pinch(dt_view_t *self,
              phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel",
              x, y, scale, state);
     pinch_begin_tscale = 0.0f;
+    prev_scale = 1.0f;
+    zoom_pan_score = 0.0f;
     return TRUE;
   }
 
@@ -4304,14 +4320,28 @@ gboolean gesture_pinch(dt_view_t *self,
   // Pan on macOS therefore arrives as a separate smooth-scroll stream which is
   // routed to gesture_pan by _scrolled() in gtk.c.
   // On other platforms (Wayland/X11), dx/dy carry the actual translational delta.
-  const double eff_dx = dx;
-  const double eff_dy = dy;
+  float eff_dx = (float)dx;
+  float eff_dy = (float)dy;
 
-  if(eff_dx != 0.0 || eff_dy != 0.0)
+  // Update the zoom-vs-pan dominance score and use it to decide whether the
+  // dx/dy component is finger-drift wobble (suppress) or real pan (allow).
+  const float scale_inc = (prev_scale > 0.0f) ? fabsf((float)scale / prev_scale - 1.0f) : 0.0f;
+  const float zoom_eq_px = scale_inc * 0.5f * (float)dev->full.width;
+  const float pan_eq_px = sqrtf(eff_dx * eff_dx + eff_dy * eff_dy);
+  zoom_pan_score = zoom_pan_score * PINCH_ZOOM_PAN_DECAY
+                   + (zoom_eq_px - pan_eq_px);
+  const gboolean zoom_dominant = zoom_pan_score > PINCH_ZOOM_DOMINANT_PX;
+  // If zoom is dominant or the pan component is within the deadzone zero that component.
+  eff_dx = (zoom_dominant || fabsf(eff_dx) < PINCH_PAN_DEADZONE_PX) ? 0.0f : eff_dx;
+  eff_dy = (zoom_dominant || fabsf(eff_dy) < PINCH_PAN_DEADZONE_PX) ? 0.0f : eff_dy;
+  prev_scale = (float)scale;
+
+  if(eff_dx != 0.0f || eff_dy != 0.0f)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f (combined with scale)",
-             eff_dx, eff_dy);
+             "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f"
+             " (score=%.2f zoom_eq=%.2f pan_eq=%.2f)",
+             eff_dx, eff_dy, zoom_pan_score, zoom_eq_px, pan_eq_px);
     dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, TRUE);
   }
 
@@ -4334,12 +4364,12 @@ gboolean gesture_pinch(dt_view_t *self,
   dt_print(DT_DEBUG_INPUT,
            "[darkroom pinch] update x=%.1f y=%.1f (local=%.1f,%.1f origin=%d,%d"
            " border=%d port=%dx%d) raw_dx=%.3f raw_dy=%.3f"
-           " eff_dx=%.3f eff_dy=%.3f scale=%.6f state=0x%x"
+           " eff_dx=%.3f eff_dy=%.3f score=%.2f zoom_dom=%d scale=%.6f state=0x%x"
            " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
            x, y, x_local, y_local, ox, oy,
            dev->full.border_size, dev->full.width, dev->full.height,
-           dx, dy, eff_dx, eff_dy, scale, state,
-           tscale, tscalefloor, tscaletop, zoom_scale);
+           dx, dy, eff_dx, eff_dy, zoom_pan_score, zoom_dominant,
+           scale, state, tscale, tscalefloor, tscaletop, zoom_scale);
   dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, TRUE);
 
   return TRUE;
