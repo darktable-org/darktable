@@ -50,8 +50,14 @@
 // benchmarking and pfm dumps should happen for these pipes
 static inline gboolean _is_debug_pipe(const dt_dev_pixelpipe_t *pipe)
 {
-  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+  return dt_pipe_is_full(pipe) || dt_pipe_is_export(pipe);
 }
+
+static inline gboolean _pipe_has_shutdown(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
+}
+
 
 // forward declarations for mask cache helpers
 static void _clear_piece_mask_caches(dt_dev_pixelpipe_iop_t *piece);
@@ -1107,16 +1113,7 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self,
                                      const dt_dev_pixelpipe_iop_t *const piece)
 {
   const dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(d)
-  {
-    // check only if blend is active
-    if((self->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-       && (d->mask_mode != DEVELOP_MASK_DISABLED))
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
+  return d && (d->mask_mode != DEVELOP_MASK_DISABLED) && (self->flags() & IOP_FLAGS_SUPPORTS_BLENDING);
 }
 
 static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe,
@@ -1267,9 +1264,7 @@ static inline gboolean _piece_wants_blending(const dt_dev_pixelpipe_iop_t *piece
     return FALSE;
 
   const dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(!d || !(d->mask_mode & DEVELOP_MASK_ENABLED)) return FALSE;
-
-  return TRUE;
+  return d && (d->mask_mode & DEVELOP_MASK_ENABLED);
 }
 
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
@@ -1286,7 +1281,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_pixelpipe_flow_t *pixelpipe_flow,
                                           const int position)
 {
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   // the data buffers must always have an alignment to DT_CACHELINE_BYTES
@@ -1338,12 +1333,12 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                       cst_from, cst_to, &input_format->cst,
                                       work_profile);
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
@@ -1391,7 +1386,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
       if(want_bcache)
       {
-        if(dt_pipe_no_mask_display(pipe) && !dt_pipe_shutdown(pipe))
+        if(dt_pipe_no_mask_display(pipe) && !_pipe_has_shutdown(pipe))
         {
           float *cache = _get_fast_blendcache(nfloats, phash, pipe);
           if(cache) dt_iop_image_copy(cache, *output, nfloats);
@@ -1433,7 +1428,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
         if(module->process_plain)
         {
           dt_get_times(&start);
-          for(int i = 0; i < counter && !dt_pipe_shutdown(pipe); i++)
+          for(int i = 0; i < counter && !_pipe_has_shutdown(pipe); i++)
             module->process_plain(module, piece, input, *output, roi_in, roi_out);
           dt_get_times(&end);
           const float clock = (end.clock - start.clock) / (float) counter;
@@ -1454,7 +1449,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       module->process(module, piece, input, *output, roi_in, roi_out);
       if(want_bcache)
       {
-        if(dt_pipe_no_mask_display(pipe) && !dt_pipe_shutdown(pipe))
+        if(dt_pipe_no_mask_display(pipe) && !_pipe_has_shutdown(pipe))
         {
           float *cache = _get_fast_blendcache(nfloats, phash, pipe);
           if(cache) dt_iop_image_copy(cache, *output, nfloats);
@@ -1484,7 +1479,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   // and save the output colorspace
   pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
@@ -1509,7 +1504,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
   }
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   // blend needs input/output images with default colorspace
@@ -1540,7 +1535,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     }
   }
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   /* process blending on CPU */
@@ -1551,7 +1546,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     *pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
   }
 
-  return dt_pipe_shutdown(pipe);
+  return _pipe_has_shutdown(pipe);
 }
 
 #ifdef HAVE_OPENCL
@@ -1583,7 +1578,7 @@ static cl_int _opencl_benchmark(dt_dev_pixelpipe_t *pipe,
   const int counter = full ? 100 : 50;
   cl_int err = CL_SUCCESS;
   dt_get_times(&bench);
-  for(int i = 0; i < counter && bout != NULL && err == CL_SUCCESS && !dt_pipe_shutdown(pipe); i++)
+  for(int i = 0; i < counter && bout != NULL && err == CL_SUCCESS && !_pipe_has_shutdown(pipe); i++)
     err = module->process_cl(module, piece, bin, bout, roi_in, roi_out);
   dt_get_times(&end);
   const float clock = (end.clock - bench.clock) / (float)counter;
@@ -1688,7 +1683,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   /* As this is done recursively we check for any dt_dev_pixelpipe_stopper_t
      signal that might have been set.
   */
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   dt_iop_roi_t roi_in = *roi_out;
@@ -1781,7 +1776,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if(!modules)
   {
     // 3a) import input array with given scale and roi
-    if(dt_pipe_shutdown(pipe))
+    if(_pipe_has_shutdown(pipe))
       return TRUE;
 
     dt_times_t start;
@@ -1933,7 +1928,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     return FALSE;
   }
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   // 3b) recurse and obtain output array in &input
@@ -1973,7 +1968,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   // reserve new cache line: output
@@ -1985,7 +1980,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                              output, out_format, module, important);
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   gboolean important_cl = FALSE;
@@ -2066,7 +2061,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   assert(tiling.factor > 0.0f);
   assert(tiling.factor_cl > 0.0f);
 
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   piece->module->position = pos;
@@ -2242,7 +2237,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
           return TRUE;
 
         dt_dev_prepare_piece_cfa(piece, &roi_in);
@@ -2284,7 +2279,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             if(want_bcache && (err == CL_SUCCESS))
             {
               // processing was good
-              if(dt_pipe_no_mask_display(pipe) && !dt_pipe_shutdown(pipe))
+              if(dt_pipe_no_mask_display(pipe) && !_pipe_has_shutdown(pipe))
               {
                 float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
                 if(cache)
@@ -2316,11 +2311,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                           cl_errstr(err));
           else if(_is_debug_pipe(pipe))
           {
-            if(darktable.dump_pfm_pipe && !dt_pipe_shutdown(pipe))
+            if(darktable.dump_pfm_pipe && !_pipe_has_shutdown(pipe))
               dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
-            if(darktable.dump_diff_pipe && !dt_pipe_shutdown(pipe))
+            if(darktable.dump_diff_pipe && !_pipe_has_shutdown(pipe))
               _opencl_dump_diff_pipe_pfm(pipe, module, piece, cl_mem_input, *cl_mem_output, roi_out, &roi_in, cst_out);
           }
 
@@ -2367,7 +2362,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
            return TRUE;
 
         // blend needs input/output images with default colorspace
@@ -2418,7 +2413,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
           success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
         {
           dt_opencl_release_mem_object(cl_mem_input);
           return TRUE;
@@ -2453,7 +2448,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           valid_input_on_gpu_only = FALSE;
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
            return TRUE;
 
         // transform to module input colorspace if not done already
@@ -2465,7 +2460,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                               work_profile);
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
           return TRUE;
 
         // histogram collection for module
@@ -2475,7 +2470,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                     module, piece, &pixelpipe_flow);
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
           return TRUE;
 
         /* now call process_tiling_cl of module; module should emit
@@ -2495,7 +2490,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                             *output, &roi_in, roi_out, in_bpp);
             if(want_bcache && (err == CL_SUCCESS))
             {
-              if(dt_pipe_no_mask_display(pipe) && !dt_pipe_shutdown(pipe))
+              if(dt_pipe_no_mask_display(pipe) && !_pipe_has_shutdown(pipe))
               {
                 float *cache = _get_fast_blendcache(nfloats, phash, pipe);
                 if(cache) dt_iop_image_copy(cache, *output, nfloats);
@@ -2548,7 +2543,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
            return TRUE;
 
         // blend needs input/output images with default colorspace
@@ -2580,7 +2575,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
         }
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
           return TRUE;
 
         /* do process blending on cpu (this is anyhow fast enough) */
@@ -2595,7 +2590,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
           success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
-        if(dt_pipe_shutdown(pipe))
+        if(_pipe_has_shutdown(pipe))
           return TRUE;
       }
       else
@@ -2605,7 +2600,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         success_opencl = FALSE;
       }
 
-      if(dt_pipe_shutdown(pipe))
+      if(_pipe_has_shutdown(pipe))
       {
         dt_opencl_release_mem_object(cl_mem_input);
         return TRUE;
@@ -2672,7 +2667,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             }
           }
 
-          if(dt_pipe_shutdown(pipe))
+          if(_pipe_has_shutdown(pipe))
           {
             dt_opencl_release_mem_object(cl_mem_input);
             return TRUE;
@@ -2729,7 +2724,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           return TRUE;
       }
 
-      if(dt_pipe_shutdown(pipe))
+      if(_pipe_has_shutdown(pipe))
         return TRUE;
     }
     else
@@ -2918,7 +2913,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   }
 
   // 4) colorpicker and scopes:
-  if(dt_pipe_shutdown(pipe))
+  if(_pipe_has_shutdown(pipe))
     return TRUE;
 
   if(dev->gui_attached && !dev->gui_leaving
@@ -2948,7 +2943,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            display_profile,
                                            dt_ioppr_get_histogram_profile_info(dev));
   }
-  return dt_pipe_shutdown(pipe);
+  return _pipe_has_shutdown(pipe);
 }
 
 
@@ -3068,7 +3063,7 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   const int devid)
 {
   pipe->processing = TRUE;
-  pipe->nocache = (pipe->type & DT_DEV_PIXELPIPE_IMAGE) != 0;
+  pipe->nocache = dt_pipe_is_image(pipe);
   pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
 
@@ -3745,7 +3740,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 
 #ifdef HAVE_OPENCL
 int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem in,
+                                const cl_mem in,
                                 const dt_iop_roi_t *const roi,
                                 const gboolean rawmode)
 {

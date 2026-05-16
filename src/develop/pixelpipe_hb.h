@@ -227,11 +227,6 @@ typedef struct dt_dev_pixelpipe_t
 
 struct dt_develop_t;
 
-static inline gboolean dt_pipe_shutdown(dt_dev_pixelpipe_t *pipe)
-{
-  return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
-}
-
 static inline gboolean dt_pipe_is_fast(const dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & DT_DEV_PIXELPIPE_FAST);
@@ -267,6 +262,14 @@ static inline gboolean dt_pipe_is_preview2(const dt_dev_pixelpipe_t *pipe)
 static inline gboolean dt_pipe_is_screen(const dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & DT_DEV_PIXELPIPE_SCREEN);
+}
+static inline gboolean dt_pipe_is_image(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_IMAGE);
+}
+static inline gboolean dt_pipe_is_image_final(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_IMAGE_FINAL);
 }
 static inline gboolean dt_pipe_no_mask_display(const dt_dev_pixelpipe_t *pipe)
 {
@@ -390,7 +393,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
                                   const gboolean mode);
 #ifdef HAVE_OPENCL
 int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem in,
+                                const cl_mem in,
                                 const dt_iop_roi_t *const roi_in,
                                 const gboolean mode);
 #endif

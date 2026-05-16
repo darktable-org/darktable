@@ -1344,7 +1344,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean fastmode = dt_pipe_is_fast(piece->pipe);
 
   const dt_iop_diffuse_data_t *const data = piece->data;
 
@@ -1607,7 +1607,7 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean fastmode = dt_pipe_is_fast(piece->pipe);
 
   const dt_iop_diffuse_data_t *const data = piece->data;
   dt_iop_diffuse_global_data_t *const gd = self->global_data;

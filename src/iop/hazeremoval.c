@@ -637,9 +637,8 @@ void process(dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
-  // so we at least leave a note to the user
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE) && !hq)
+  // As we can't receive data from preview we at least leave a note to the user
+  if(dt_pipe_is_image(piece->pipe) && !hq)
     dt_control_log(_("inconsistent output"));
 
   // In all other cases we calculate distance_max and A0 here.
@@ -907,9 +906,8 @@ int process_cl(dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
-  // so we at least leave a note to the user
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE) && !hq)
+  // As we can't receive data from preview we at least leave a note to the user
+  if(dt_pipe_is_image(piece->pipe) && !hq)
     dt_control_log(_("inconsistent output"));
 
   // In all other cases we calculate distance_max and A0 here.

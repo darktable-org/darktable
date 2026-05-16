@@ -622,7 +622,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)p1;
   dt_iop_crop_data_t *d = piece->data;
 
-  if(dt_iop_has_focus(self) && (pipe->type & DT_DEV_PIXELPIPE_BASIC))
+  if(dt_iop_has_focus(self) && dt_pipe_is_basic(pipe))
   {
     d->cx = 0.0f;
     d->cy = 0.0f;
