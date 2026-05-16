@@ -6051,7 +6051,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_tooltip(g->rotation,
                                      _("fix the horizon by drawing a line on the image\n\n"
                                        "left-click and drag on the image\nOR\nright-click "
-                                       "to place the first point\nthen right-click again to release the tool"));
+                                       "to place the first point,\nthen right-click again to finish and rotate the image"));
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
