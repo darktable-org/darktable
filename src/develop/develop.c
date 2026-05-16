@@ -611,7 +611,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 
   dt_pthread_mutex_lock(&pipe->mutex);
 
-  if(dev->gui_leaving || dt_pipe_shutdown(pipe))
+  if(dev->gui_leaving || (dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO))
   {
     dt_pthread_mutex_unlock(&pipe->mutex);
     return;
@@ -3727,7 +3727,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(dt_pipe_shutdown(pipe))
+    if(dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO)
       return TRUE;  // stop waiting if pipe shuts down
 
     dt_hash_t probehash;

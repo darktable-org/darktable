@@ -227,11 +227,6 @@ typedef struct dt_dev_pixelpipe_t
 
 struct dt_develop_t;
 
-static inline gboolean dt_pipe_shutdown(dt_dev_pixelpipe_t *pipe)
-{
-  return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
-}
-
 static inline gboolean dt_pipe_is_fast(const dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & DT_DEV_PIXELPIPE_FAST);
