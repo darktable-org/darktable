@@ -5535,6 +5535,8 @@ static void _event_fix_horizon_quad_clicked(GtkWidget *widget,
   }
   else
   {
+    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+    dt_iop_request_focus(self);
     dt_control_change_cursor("crosshair");
   }
   darktable.develop->proxy.forward_left_click = g->fix_horizon_active;
