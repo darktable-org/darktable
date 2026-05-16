@@ -1672,9 +1672,10 @@ static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
 static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  if(!g || DT_IN_GUI_UPDATE()) return;
+  if(!g) return;
 
-  DT_ENTER_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
+
   const gboolean new_radius = g->new_radius > 0.0f;
   const gboolean new_thrs = g->new_thrs > 0.0f;
   if(new_radius)
