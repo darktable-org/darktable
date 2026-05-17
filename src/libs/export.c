@@ -1035,7 +1035,7 @@ static void _dimensions_type_changed(GtkWidget *widget,
 
 static void _resync_print_dimensions(dt_lib_export_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   const uint32_t width = dt_conf_get_int(CONFIG_PREFIX "width");
   const uint32_t height = dt_conf_get_int(CONFIG_PREFIX "height");
@@ -1044,7 +1044,6 @@ static void _resync_print_dimensions(dt_lib_export_t *self)
   const float p_width = pixels2print(self, width);
   const float p_height = pixels2print(self, height);
 
-  DT_ENTER_GUI_UPDATE();
   gchar *pwidth = g_strdup_printf("%.2f", p_width);
   gchar *pheight = g_strdup_printf("%.2f", p_height);
   gchar *pdpi = g_strdup_printf("%d", dpi);
@@ -1059,7 +1058,7 @@ static void _resync_print_dimensions(dt_lib_export_t *self)
 
 static void _resync_pixel_dimensions(dt_lib_export_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   const float p_width = atof(gtk_entry_get_text(GTK_ENTRY(self->print_width)));
   const float p_height = atof(gtk_entry_get_text(GTK_ENTRY(self->print_height)));
@@ -1070,7 +1069,6 @@ static void _resync_pixel_dimensions(dt_lib_export_t *self)
   dt_conf_set_int(CONFIG_PREFIX "width", width);
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
-  DT_ENTER_GUI_UPDATE();
   gchar *pwidth = g_strdup_printf("%u", width);
   gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(self->width), pwidth);
@@ -1091,7 +1089,7 @@ static void _width_changed(GtkEditable *entry, gpointer user_data)
 
 static void _print_width_changed(GtkEditable *entry, gpointer user_data)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
 
@@ -1099,7 +1097,6 @@ static void _print_width_changed(GtkEditable *entry, gpointer user_data)
   const uint32_t width = print2pixels(d, p_width);
   dt_conf_set_int(CONFIG_PREFIX "width", width);
 
-  DT_ENTER_GUI_UPDATE();
   gchar *pwidth = g_strdup_printf("%u", width);
   gtk_entry_set_text(GTK_ENTRY(d->width), pwidth);
   g_free(pwidth);
@@ -1118,7 +1115,7 @@ static void _height_changed(GtkEditable *entry, gpointer user_data)
 
 static void _print_height_changed(GtkEditable *entry, gpointer user_data)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
 
@@ -1126,7 +1123,6 @@ static void _print_height_changed(GtkEditable *entry, gpointer user_data)
   const uint32_t height = print2pixels(d, p_height);
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
-  DT_ENTER_GUI_UPDATE();
   gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(d->height), pheight);
   g_free(pheight);
