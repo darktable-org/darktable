@@ -1437,10 +1437,7 @@ static int32_t _process_job_run(dt_job_t *job)
 
     // if basename already ends with the suffix, don't
     // append it again (e.g. re-processing a denoised file)
-    const size_t blen = strlen(basename);
-    const size_t slen = strlen(suffix);
-    const gboolean has_suffix
-      = (blen >= slen) && strcmp(basename + blen - slen, suffix) == 0;
+    const gboolean has_suffix = g_str_has_suffix(basename, suffix);
 
     // build base path without .tif for collision loop
     char base[PATH_MAX];
