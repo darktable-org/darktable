@@ -1104,7 +1104,7 @@ static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 static void
 _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   dt_lib_print_settings_t *ps = self->data;
 
@@ -1123,8 +1123,6 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   int n_digits;
   float incr;
   _precision_by_unit(ps->unit, &n_digits, &incr, NULL);
-
-  DT_ENTER_GUI_UPDATE();
 
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top), n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
