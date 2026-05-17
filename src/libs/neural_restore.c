@@ -445,7 +445,11 @@ typedef struct dt_neural_preview_result_t
   dt_imgid_t imgid;
   float patch_center[2];
 } dt_neural_preview_result_t;
-const char *name(dt_lib_module_t *self) { return _("neural restore"); }
+
+const char *name(dt_lib_module_t *self)
+{
+  return _("neural restore");
+}
 
 const char *description(dt_lib_module_t *self)
 {
@@ -462,15 +466,25 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-int position(const dt_lib_module_t *self) { return 400; }
-static int _ai_check_bpp(dt_imageio_module_data_t *data) { return 32; }
+int position(const dt_lib_module_t *self)
+{
+  return 400;
+}
+
+static int _ai_check_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+ }
 
 static int _ai_check_levels(dt_imageio_module_data_t *data)
 {
   return IMAGEIO_RGB | IMAGEIO_FLOAT;
 }
 
-static const char *_ai_get_mime(dt_imageio_module_data_t *data) { return "memory"; }
+static const char *_ai_get_mime(dt_imageio_module_data_t *data)
+{
+   return "memory";
+}
 
 static int _preview_capture_write_image(dt_imageio_module_data_t *data,
                                         const char *filename,
@@ -479,7 +493,8 @@ static int _preview_capture_write_image(dt_imageio_module_data_t *data,
                                         const char *over_filename,
                                         void *exif, int exif_len,
                                         dt_imgid_t imgid,
-                                        int num, int total,
+                                        const int num,
+                                        const int total,
                                         dt_dev_pixelpipe_t *pipe,
                                         const gboolean export_masks)
 {
@@ -497,7 +512,7 @@ static int _preview_capture_write_image(dt_imageio_module_data_t *data,
   return 0;
 }
 
-static inline float _linear_to_srgb(float v)
+static inline float _linear_to_srgb(const float v)
 {
   if(v <= 0.0f) return 0.0f;
   if(v >= 1.0f) return 1.0f;
@@ -563,7 +578,9 @@ static int _extract_source_jpeg_preview(const char *src_path,
 // convert float RGB (3ch interleaved, linear) to cairo RGB24 surface data
 static void _float_rgb_to_cairo(const float *const restrict src,
                                 unsigned char *const restrict dst,
-                                int width, int height, int stride)
+                                const int width,
+                                const int height,
+                                const int stride)
 {
   for(int y = 0; y < height; y++)
   {
@@ -581,9 +598,11 @@ static void _float_rgb_to_cairo(const float *const restrict src,
 
 // nearest-neighbor upscale for before preview in upscale mode
 static void _nn_upscale(const float *const restrict src,
-                        int src_w, int src_h,
+                        const int src_w,
+                        const int src_h,
                         float *const restrict dst,
-                        int dst_w, int dst_h)
+                        const int dst_w,
+                        const int dst_h)
 {
   for(int y = 0; y < dst_h; y++)
   {
@@ -604,9 +623,9 @@ static void _nn_upscale(const float *const restrict src,
 // target bit depth. scratch must be at least width*3*4 bytes
 static int _write_tiff_scanline(TIFF *tif,
                                 const float *src,
-                                int width,
-                                int bpp,
-                                int row,
+                                const int width,
+                                const int bpp,
+                                const int row,
                                 void *scratch)
 {
   if(bpp == 32)
@@ -617,7 +636,7 @@ static int _write_tiff_scanline(TIFF *tif,
     uint16_t *dst = (uint16_t *)scratch;
     for(int i = 0; i < width * 3; i++)
     {
-      float v = CLAMPF(src[i], 0.0f, 1.0f);
+      const float v = CLAMPF(src[i], 0.0f, 1.0f);
       dst[i] = (uint16_t)(v * 65535.0f + 0.5f);
     }
     return TIFFWriteScanline(tif, dst, row, 0);
@@ -627,16 +646,15 @@ static int _write_tiff_scanline(TIFF *tif,
   uint8_t *dst = (uint8_t *)scratch;
   for(int i = 0; i < width * 3; i++)
   {
-    float v = CLAMPF(src[i], 0.0f, 1.0f);
+    const float v = CLAMPF(src[i], 0.0f, 1.0f);
     dst[i] = (uint8_t)(v * 255.0f + 0.5f);
   }
   return TIFFWriteScanline(tif, dst, row, 0);
 }
 
 // load the right model for a task
-static dt_restore_context_t *_load_for_task(
-  dt_restore_env_t *env,
-  dt_neural_task_t task)
+static dt_restore_context_t *_load_for_task(dt_restore_env_t *env,
+                                            dt_neural_task_t task)
 {
   switch(task)
   {
@@ -657,7 +675,7 @@ static dt_restore_context_t *_load_for_task(
 
 // short, untranslated task names for debug logs (use the localised
 // labels at line ~1022 for user-visible strings)
-static const char *_task_log_name(dt_neural_task_t task)
+static const char *_task_log_name(const dt_neural_task_t task)
 {
   switch(task)
   {
@@ -670,9 +688,8 @@ static const char *_task_log_name(dt_neural_task_t task)
 }
 
 // check if a model is available for a task
-static gboolean _task_model_available(
-  dt_restore_env_t *env,
-  dt_neural_task_t task)
+static gboolean _task_model_available(dt_restore_env_t *env,
+                                      const dt_neural_task_t task)
 {
   switch(task)
   {
@@ -688,7 +705,7 @@ static gboolean _task_model_available(
 // configure the restore context to receive LIN_REC2020 linear input,
 // matching the profile the export pipe is forced to produce
 static void _setup_restore_for_linear_input(dt_restore_context_t *ctx,
-                                            gboolean preserve_wide_gamut)
+                                            const gboolean preserve_wide_gamut)
 {
   const dt_colorspaces_color_profile_t *lin_cp
     = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "",
@@ -699,9 +716,9 @@ static void _setup_restore_for_linear_input(dt_restore_context_t *ctx,
 
 // build an LCMS transform from LIN_REC2020 to dst, NULL when src == dst;
 // caller frees with cmsDeleteTransform
-static cmsHTRANSFORM _build_output_color_transform(
-  dt_colorspaces_color_profile_type_t dst_type,
-  const char *dst_filename)
+static cmsHTRANSFORM _build_output_color_transform
+  (dt_colorspaces_color_profile_type_t dst_type,
+   const char *dst_filename)
 {
   const dt_colorspaces_color_profile_t *lin_cp
     = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "",
@@ -724,7 +741,8 @@ typedef struct _buf_writer_data_t
 } _buf_writer_data_t;
 
 static int _buf_row_writer(const float *scanline,
-                           int out_w, int y,
+                           const int out_w,
+                           const int y,
                            void *user_data)
 {
   _buf_writer_data_t *wd = (_buf_writer_data_t *)user_data;
@@ -750,7 +768,8 @@ typedef struct _tiff_writer_data_t
 } _tiff_writer_data_t;
 
 static int _tiff_row_writer(const float *scanline,
-                            int out_w, int y,
+                            const int out_w,
+                            const int y,
                             void *user_data)
 {
   _tiff_writer_data_t *wd = (_tiff_writer_data_t *)user_data;
@@ -771,9 +790,11 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
                            const void *in_void,
                            dt_colorspaces_color_profile_type_t over_type,
                            const char *over_filename,
-                           void *exif, int exif_len,
-                           dt_imgid_t imgid,
-                           int num, int total,
+                           void *exif,
+                           const int exif_len,
+                           const dt_imgid_t imgid,
+                           const int num,
+                           const int total,
                            dt_dev_pixelpipe_t *pipe,
                            const gboolean export_masks)
 {
@@ -957,12 +978,13 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   return res;
 }
 
-static void _import_image(const char *filename, dt_imgid_t source_imgid)
+static void _import_image(const char *filename,
+                          const dt_imgid_t source_imgid)
 {
   dt_film_t film;
   dt_film_init(&film);
   char *dir = g_path_get_dirname(filename);
-  dt_filmid_t filmid = dt_film_new(&film, dir);
+  const dt_filmid_t filmid = dt_film_new(&film, dir);
   g_free(dir);
   const dt_imgid_t newid = dt_image_import(filmid, filename, FALSE, FALSE);
   dt_film_cleanup(&film);
@@ -990,7 +1012,7 @@ static void _import_image(const char *filename, dt_imgid_t source_imgid)
   }
 }
 
-static const char *_task_suffix(dt_neural_task_t task)
+static const char *_task_suffix(const dt_neural_task_t task)
 {
   switch(task)
   {
@@ -1002,7 +1024,7 @@ static const char *_task_suffix(dt_neural_task_t task)
   }
 }
 
-static int _task_scale(dt_neural_task_t task)
+static int _task_scale(const dt_neural_task_t task)
 {
   switch(task)
   {
@@ -1068,7 +1090,7 @@ static void _job_cleanup(void *param)
 // variant in j->raw_ctx_sensor_class so consecutive images of the same
 // class don't pay the reload cost. returns 0 on success
 static int _ensure_raw_ctx(dt_neural_job_t *j,
-                           dt_restore_sensor_class_t cls)
+                           const dt_restore_sensor_class_t cls)
 {
   if(j->ctx && j->raw_ctx_sensor_class == cls)
     return 0;
@@ -1107,7 +1129,7 @@ static int _ensure_raw_ctx(dt_neural_job_t *j,
 
 // bayer variant: source CFA (single-channel) -> denoise -> CFA DNG
 static int _process_raw_denoise_bayer(dt_neural_job_t *j,
-                                      dt_imgid_t imgid,
+                                      const dt_imgid_t imgid,
                                       const char *out_filename,
                                       const char *src_path,
                                       const dt_image_t *img_meta)
@@ -1208,7 +1230,7 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
 // linear variant: darktable's demosaic runs inside raw_restore_linear,
 // so there's no CFA buffer to hand in. output is a 3ch linear DNG
 static int _process_raw_denoise_linear(dt_neural_job_t *j,
-                                       dt_imgid_t imgid,
+                                       const dt_imgid_t imgid,
                                        const char *out_filename,
                                        const char *src_path,
                                        const dt_image_t *img_meta)
@@ -1257,7 +1279,7 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
 }
 
 static int _process_raw_denoise_one(dt_neural_job_t *j,
-                                    dt_imgid_t imgid,
+                                    const dt_imgid_t imgid,
                                     const char *out_filename,
                                     const char *src_path)
 {
@@ -1385,7 +1407,9 @@ static int32_t _process_job_run(dt_job_t *job)
   int successes = 0;  // images that made it through export (for the completion toast)
   const char *suffix = _task_suffix(j->task);
 
-  for(GList *iter = j->images; iter; iter = g_list_next(iter))
+  for(GList *iter = j->images;
+      iter;
+      iter = g_list_next(iter))
   {
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
@@ -1552,9 +1576,8 @@ static int32_t _process_job_run(dt_job_t *job)
   return 0;
 }
 
-static gboolean _check_model_available(
-  dt_lib_neural_restore_t *d,
-  dt_neural_task_t task)
+static gboolean _check_model_available(dt_lib_neural_restore_t *d,
+                                       const dt_neural_task_t task)
 {
   return _task_model_available(d->env, task);
 }
@@ -1758,7 +1781,8 @@ static void _task_changed(dt_lib_neural_restore_t *d)
 // preview_before / preview_after, and detail (denoise only) holds the
 // DWT luminance residual used by the strength slider
 
-static void _preview_cache_free_slot(dt_lib_neural_restore_t *d, int task)
+static void _preview_cache_free_slot(dt_lib_neural_restore_t *d,
+                                     const dt_neural_task_t task)
 {
   g_free(d->preview_cache[task].before_rgb);
   d->preview_cache[task].before_rgb = NULL;
@@ -1776,8 +1800,8 @@ static void _preview_cache_invalidate_all(dt_lib_neural_restore_t *d)
 }
 
 static gboolean _preview_cache_hit(dt_lib_neural_restore_t *d,
-                                   dt_neural_task_t task,
-                                   dt_imgid_t imgid)
+                                   const dt_neural_task_t task,
+                                   const dt_imgid_t imgid)
 {
   if(task >= NEURAL_TASK_COUNT) return FALSE;
   const __typeof__(d->preview_cache[0]) *e = &d->preview_cache[task];
@@ -1792,11 +1816,13 @@ static gboolean _preview_cache_hit(dt_lib_neural_restore_t *d,
 // memcpy buffers into the cache slot for `task`. caller retains
 // ownership of the source pointers (we duplicate)
 static void _preview_cache_store(dt_lib_neural_restore_t *d,
-                                 dt_neural_task_t task,
-                                 dt_imgid_t imgid,
+                                 const dt_neural_task_t task,
+                                 const dt_imgid_t imgid,
                                  const float patch_center[2],
-                                 int crop_w, int crop_h,
-                                 const float *before, const float *after,
+                                 const int crop_w,
+                                 const int crop_h,
+                                 const float *before,
+                                 const float *after,
                                  const float *detail)
 {
   // task is an unsigned enum, no need for < 0 check
@@ -2052,10 +2078,13 @@ static gpointer _preview_thread(gpointer data)
     if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
+
   for(int y = 0; y < crop_h; y++)
+  {
     memcpy(crop_4ch + (size_t)y * crop_w * 4,
            pixels + ((size_t)(crop_y + y) * pixels_w + crop_x) * 4,
            (size_t)crop_w * 4 * sizeof(float));
+  }
 
   // extract "before" as interleaved RGB (3ch) for display
   float *crop_rgb = g_try_malloc((size_t)crop_w * crop_h * 3 * sizeof(float));
@@ -2065,6 +2094,7 @@ static gpointer _preview_thread(gpointer data)
     if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
+
   for(int y = 0; y < crop_h; y++)
   {
     for(int x = 0; x < crop_w; x++)
@@ -2096,8 +2126,10 @@ static gpointer _preview_thread(gpointer data)
     d->cached_ctx = _load_for_task(pd->env, pd->task);
     d->cached_task = pd->task;
   }
+
   if(d->cached_ctx)
     ctx = dt_restore_ref(d->cached_ctx);
+
   dt_pthread_mutex_unlock(&d->ctx_lock);
 
   if(!ctx)
@@ -2354,7 +2386,7 @@ static void _blend_raw_into_preview(dt_lib_neural_restore_t *d,
 // at the current strength; RGB denoise / upscale just install
 // preview_before/after/detail and rebuild the after surface
 static void _install_cache_slot_raw(dt_lib_module_t *self,
-                                    dt_neural_task_t task)
+                                    const dt_neural_task_t task)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   const __typeof__(d->preview_cache[0]) *e = &d->preview_cache[task];
@@ -2374,7 +2406,7 @@ static void _install_cache_slot_raw(dt_lib_module_t *self,
 }
 
 static void _install_cache_slot_rgb(dt_lib_module_t *self,
-                                    dt_neural_task_t task)
+                                    const dt_neural_task_t task)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   const __typeof__(d->preview_cache[0]) *e = &d->preview_cache[task];
@@ -2412,10 +2444,13 @@ static void _install_cache_slot_rgb(dt_lib_module_t *self,
   gtk_widget_queue_draw(d->preview_area);
 }
 
-static void _install_cache_slot(dt_lib_module_t *self, dt_neural_task_t task)
+static void _install_cache_slot(dt_lib_module_t *self,
+                                const dt_neural_task_t task)
 {
-  if(task == NEURAL_TASK_RAW_DENOISE) _install_cache_slot_raw(self, task);
-  else                                _install_cache_slot_rgb(self, task);
+  if(task == NEURAL_TASK_RAW_DENOISE)
+    _install_cache_slot_raw(self, task);
+  else
+    _install_cache_slot_rgb(self, task);
 }
 
 // debounced strength-slider re-blend. returns G_SOURCE_REMOVE so the
@@ -2473,7 +2508,7 @@ static gboolean _preview_failed_idle(gpointer data)
 }
 
 static void _schedule_preview_failed(dt_lib_module_t *self,
-                                     dt_nr_preview_err_t err)
+                                     const dt_nr_preview_err_t err)
 {
   _preview_failed_data_t *fd = g_new0(_preview_failed_data_t, 1);
   fd->self = self;
@@ -3018,7 +3053,8 @@ static gpointer _preview_thread_dispatch(gpointer data)
 static gboolean _trigger_preview_from_timer(gpointer user_data);
 static void _trigger_preview(dt_lib_module_t *self);
 
-static void _schedule_preview_refresh(dt_lib_module_t *self, guint delay_ms)
+static void _schedule_preview_refresh(dt_lib_module_t *self,
+                                      const guint delay_ms)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   if(!d->model_available || !d->preview_requested) return;
@@ -3127,7 +3163,8 @@ static void _trigger_preview(dt_lib_module_t *self)
 
 // map notebook page index to task. pages are ordered in the notebook as:
 //   0 = raw denoise, 1 = denoise, 2 = upscale (with scale_combo picking 2x/4x)
-static dt_neural_task_t _task_from_page(dt_lib_neural_restore_t *d, int page)
+static dt_neural_task_t _task_from_page(dt_lib_neural_restore_t *d,
+                                        const int page)
 {
   switch(page)
   {
@@ -3148,7 +3185,7 @@ static void _update_task_from_ui(dt_lib_neural_restore_t *d)
 
 static void _notebook_page_changed(GtkNotebook *notebook,
                                    GtkWidget *page,
-                                   guint page_num,
+                                   const guint page_num,
                                    dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
@@ -3163,7 +3200,8 @@ static void _notebook_page_changed(GtkNotebook *notebook,
     _schedule_preview_refresh(self, 150);
 }
 
-static void _scale_combo_changed(GtkWidget *widget, dt_lib_module_t *self)
+static void _scale_combo_changed(GtkWidget *widget,
+                                 dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   _update_task_from_ui(d);
@@ -3172,7 +3210,8 @@ static void _scale_combo_changed(GtkWidget *widget, dt_lib_module_t *self)
     _schedule_preview_refresh(self, 150);
 }
 
-static void _recovery_slider_changed(GtkWidget *widget, dt_lib_module_t *self)
+static void _recovery_slider_changed(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   if(d->recovery_changing) return;
@@ -3259,8 +3298,10 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
 // compute geometry for fitting the export image into the widget
 static void _picking_geometry(const dt_lib_neural_restore_t *d,
                               const int w, const int h,
-                              double *img_w, double *img_h,
-                              double *ox, double *oy)
+                              double *img_w,
+                              double *img_h,
+                              double *ox,
+                              double *oy)
 {
   const double sx = (double)w / d->export_w;
   const double sy = (double)h / d->export_h;
@@ -3304,7 +3345,8 @@ static void _build_export_cairo(dt_lib_neural_restore_t *d)
   }
 }
 
-static void _pick_toggled(GtkToggleButton *btn, dt_lib_module_t *self)
+static void _pick_toggled(GtkToggleButton *btn,
+                          dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = self->data;
   const gboolean active = gtk_toggle_button_get_active(btn);
@@ -3459,8 +3501,9 @@ static gboolean _zoom_tooltip_draw(GtkWidget *widget, cairo_t *cr,
 // actually see individual pixels when assessing noise reduction.
 // suppressed during states where it would be misleading or interfere
 static gboolean _preview_query_tooltip(GtkWidget *widget,
-                                       gint x, gint y,
-                                       gboolean keyboard_mode,
+                                       const gint x,
+                                       const gint y,
+                                       const gboolean keyboard_mode,
                                        GtkTooltip *tooltip,
                                        dt_lib_module_t *self)
 {
@@ -3499,7 +3542,9 @@ static gboolean _preview_query_tooltip(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
+static gboolean _preview_draw(GtkWidget *widget,
+                              cairo_t *cr,
+                              dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
@@ -3946,7 +3991,8 @@ static gboolean _preview_motion(GtkWidget *widget,
   return FALSE;
 }
 
-static void _selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+static void _selection_changed_callback(gpointer instance,
+                                        dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   d->preview_requested = FALSE;
@@ -3956,7 +4002,8 @@ static void _selection_changed_callback(gpointer instance, dt_lib_module_t *self
   _update_button_sensitivity(d);
 }
 
-static void _image_changed_callback(gpointer instance, dt_lib_module_t *self)
+static void _image_changed_callback(gpointer instance,
+                                    dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   d->preview_requested = FALSE;
@@ -3967,7 +4014,8 @@ static void _image_changed_callback(gpointer instance, dt_lib_module_t *self)
 }
 
 
-static void _ai_models_changed_callback(gpointer instance, dt_lib_module_t *self)
+static void _ai_models_changed_callback(gpointer instance,
+                                        dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
