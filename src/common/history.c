@@ -1541,7 +1541,7 @@ GList *dt_history_duplicate(GList *hist)
       {
         // nothing else to do
         dt_print(DT_DEBUG_ALWAYS, "[_duplicate_history]"
-                 " can't find base module for %s\n", old->op_name);
+                 " can't find base module for %s", old->op_name);
       }
     }
 

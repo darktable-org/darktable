@@ -802,7 +802,7 @@ error_im:
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
       "JPEG format, and DT was built without neither GraphicsMagick or "
       "ImageMagick. Please rebuild DT with GraphicsMagick or ImageMagick "
-      "support enabled.\n");
+      "support enabled.");
 #endif
   }
 
@@ -1135,7 +1135,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
       else
         dt_print(DT_DEBUG_ALWAYS,
                  "[imageio] please check that you have imported this style into darktable"
-                 " and specified it in the command line without the .dtstyle extension\n");
+                 " and specified it in the command line without the .dtstyle extension");
       goto error;
     }
 

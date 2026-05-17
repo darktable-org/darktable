@@ -898,7 +898,7 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
         {
           dt_print(DT_DEBUG_ALWAYS,
                   "oops, there seems to be a code path not setting the"
-                  " color space of thumbnails!\n");
+                  " color space of thumbnails!");
         }
         else if(buf.color_space != DT_COLORSPACE_DISPLAY
                 && buf.color_space != DT_COLORSPACE_DISPLAY2)

@@ -2465,7 +2465,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
     {
       const dt_iop_module_t *const restrict mod = modules->data;
 
-      if(!dt_iop_module_is(mod->so, "gamma"))
+      if(!dt_iop_module_is_gamma(mod))
       {
         iop_order_ok = FALSE;
         dt_print(DT_DEBUG_ALWAYS,
