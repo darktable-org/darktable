@@ -1657,7 +1657,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
       {
         dt_print(DT_DEBUG_OPENCL,
                 "[dt_ioppr_transform_image_colorspace_rgb_cl] error on copy image"
-                 " for color transformation\n");
+                 " for color transformation");
         return FALSE;
       }
     }
