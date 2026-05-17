@@ -2581,7 +2581,6 @@ static inline void _compute_output_power(const dt_iop_module_t *self,
 
 static void apply_auto_grey(dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
   dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
@@ -2596,7 +2595,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   p->white_point_source = p->white_point_source + grey_var;
   _compute_output_power(self, p);
 
-  DT_ENTER_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);

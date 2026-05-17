@@ -243,7 +243,7 @@ void cleanup(dt_view_t *self)
   if(dev->second_wnd)
   {
     GtkWidget *wnd = dev->second_wnd;
-    
+
     if(gtk_widget_is_visible(wnd))
     {
       dt_conf_set_bool("second_window/last_visible", TRUE);
@@ -2345,8 +2345,6 @@ static void _overlay_cycle_callback(dt_action_t *action)
 
 static void _toggle_mask_visibility_callback(dt_action_t *action)
 {
-  DT_GUARD_GUI_UPDATE();
-
   dt_develop_t *dev = dt_action_view(action)->data;
   dt_iop_module_t *mod = dev->gui_module;
 
@@ -2358,7 +2356,7 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
   {
     dt_iop_gui_blend_data_t *bd = mod->blend_data;
 
-    DT_ENTER_GUI_UPDATE();
+    DT_TRY_GUI_UPDATE();
 
     dt_iop_color_picker_reset(mod, TRUE);
 
@@ -3457,7 +3455,7 @@ void enter(dt_view_t *self)
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
-  
+
   // Reset shutdown flags on all pipes - they may still be set from previous session
   if(dev->full.pipe)
     dt_atomic_set_int(&dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
@@ -3465,7 +3463,7 @@ void enter(dt_view_t *self)
     dt_atomic_set_int(&dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   if(dev->preview2.pipe)
     dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-  
+
   if(!dev->form_gui)
   {
     dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
@@ -3619,13 +3617,13 @@ void leave(dt_view_t *self)
   if(dev->second_wnd)
   {
     GtkWidget *wnd = dev->second_wnd;
-    
+
     if(gtk_widget_is_visible(wnd))
     {
       dt_conf_set_bool("second_window/last_visible", TRUE);
       _darkroom_ui_second_window_write_config(wnd);
     }
-    
+
     _darkroom_ui_second_window_cleanup(dev);
     gtk_widget_hide(wnd);
     gtk_widget_destroy(wnd);
@@ -4451,7 +4449,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
   dt_develop_t *render_dev = pinned_dev ? pinned_dev : dev;
   dt_dev_viewport_t *port = &render_dev->preview2;
-  
+
   // Check if pinned dev is being cleaned up
   if(pinned_dev && pinned_dev->gui_leaving)
   {
@@ -4459,7 +4457,7 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     port = &dev->preview2;
     pinned_dev = NULL;
   }
-  
+
   // For pinned images, sync viewport dimensions from main dev
   if(pinned_dev)
   {
@@ -4520,14 +4518,14 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
                                                  dt_develop_t *dev)
 {
   if(dev->gui_leaving) return TRUE;
-  
+
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     // Use pinned viewport if pinned, otherwise main dev's preview2
     dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
     if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
-    
+
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
     const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
@@ -4543,11 +4541,11 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
                                                        dt_develop_t *dev)
 {
   if(dev->gui_leaving) return FALSE;
-  
+
   // Use pinned viewport if pinned, otherwise main dev's preview2
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
   if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
-  
+
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
   // Handle double-click to reset zoom and center
@@ -4589,15 +4587,15 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
                                                     dt_develop_t *dev)
 {
   if(dev->gui_leaving) return FALSE;
-  
+
   if(event->state & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
-    
+
     // Use pinned viewport if pinned, otherwise main dev's preview2
     dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
     if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
-    
+
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
     dt_dev_zoom_move(port, DT_ZOOM_MOVE, -1.f, 0,
@@ -4622,10 +4620,10 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
                                                   dt_develop_t *dev)
 {
   if(dev->gui_leaving) return TRUE;
-  
-  gboolean size_changed = (dev->preview2.orig_width != event->width || 
+
+  gboolean size_changed = (dev->preview2.orig_width != event->width ||
                           dev->preview2.orig_height != event->height);
-  
+
   if(size_changed)
   {
     dev->preview2.width = event->width;
@@ -4637,7 +4635,7 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
     dev->preview2.pipe->cache_obsolete = TRUE;
-    
+
     // If we have a pinned image, update its viewport dimensions too
     dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
     if(pinned_dev && !pinned_dev->gui_leaving)
@@ -4660,7 +4658,7 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
 #endif
 
   dt_dev_configure(&dev->preview2);
-  
+
   // Also configure pinned viewport if present
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
   if(pinned_dev && !pinned_dev->gui_leaving)
@@ -4716,12 +4714,12 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
 {
   // Get the window that contains this overlay
   GtkWidget *window = gtk_widget_get_toplevel(overlay);
-  
+
   const int width = MAX(10, dt_conf_get_int("second_window/window_w"));
   const int height = MAX(10, dt_conf_get_int("second_window/window_h"));
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
-  
+
   // Group buttons in a vertical box for easy future expansion.
   GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
@@ -4771,12 +4769,12 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
                    G_CALLBACK(_second_window_buttons_leave_notify_callback), event_box);
 
   dev->preview2.pin_button = pin_button;
-  
+
   dev->preview2.border_size = 0;
   gtk_window_set_default_size(GTK_WINDOW(window), width, height);
   gtk_window_move(GTK_WINDOW(window), x, y);
   gtk_window_resize(GTK_WINDOW(window), width, height);
-  
+
   // Handle window state (fullscreen/maximized)
   const int fullscreen = dt_conf_get_bool("second_window/fullscreen");
   if (fullscreen)
@@ -4825,17 +4823,17 @@ static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev)
   if(dev->preview2_pinned && dev->preview2_pinned_dev)
   {
     dt_develop_t *pinned_dev = dev->preview2_pinned_dev;
-    
+
     pinned_dev->gui_leaving = TRUE;
     pinned_dev->preview2.widget = NULL;
-    
+
     if(pinned_dev->preview2.pipe)
       dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
     if(pinned_dev->preview_pipe)
       dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
     if(pinned_dev->full.pipe)
       dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
-    
+
     if(pinned_dev->preview2.pipe)
     {
       dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->mutex);
@@ -4843,7 +4841,7 @@ static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev)
       dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->busy_mutex);
       dt_pthread_mutex_unlock(&pinned_dev->preview2.pipe->busy_mutex);
     }
-    
+
     dt_dev_cleanup(pinned_dev);
     free(pinned_dev);
     dev->preview2_pinned_dev = NULL;
@@ -4913,7 +4911,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     dt_pthread_mutex_unlock(&dev->preview2.pipe->busy_mutex);
     dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   }
-    
+
   if(dev->second_wnd == NULL)
   {
     dev->preview2.width = -1;
@@ -4940,7 +4938,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     GtkWidget *overlay = gtk_overlay_new();
     gtk_widget_add_events(overlay, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
     gtk_container_add(GTK_CONTAINER(dev->second_wnd), overlay);
-    
+
     // Create the drawing area and add it to the overlay
     dev->preview2.widget = gtk_drawing_area_new();
     gtk_container_add(GTK_CONTAINER(overlay), dev->preview2.widget);

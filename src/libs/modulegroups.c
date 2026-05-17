@@ -969,13 +969,11 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
 static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
   dt_lib_modulegroups_t *d = self->data;
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
-
-  DT_ENTER_GUI_UPDATE();
 
   /* deactivate all buttons */
   int gid = 0;
