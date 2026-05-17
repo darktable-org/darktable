@@ -17,6 +17,11 @@
 */
 
 #include "common/usermanual_url.h"
+#include "common/darktable.h"
+#include "common/l10n.h"
+#include "common/utility.h"
+#include "control/conf.h"
+#include <glib.h>
 
 typedef struct _help_url
 {
@@ -199,6 +204,110 @@ char *dt_get_help_url(const char *name)
       return urls_db[k].url;
 
   return NULL;
+}
+
+static char *_get_base_url()
+{
+  const gboolean use_default_url = dt_conf_get_bool("context_help/use_default_url");
+  const char *c_base_url = dt_confgen_get("context_help/url", DT_DEFAULT);
+  char *base_url = dt_conf_get_string("context_help/url");
+
+  if(use_default_url)
+  {
+    // want to use default URL, reset darktablerc
+    dt_conf_set_string("context_help/url", c_base_url);
+    g_free(base_url);
+    return g_strdup(c_base_url);
+  }
+  else
+    return base_url;
+}
+
+char *dt_get_manual_base_url()
+{
+  char *base_url = _get_base_url();
+
+  // The base_url is: docs.darktable.org/usermanual
+  // The full format for the documentation pages is:
+  //    <base-url>/<ver>/<lang>[/path/to/page]
+  // Where:
+  //   <ver>  = development | 3.6 | 3.8 ...
+  //   <lang> = en / fr ...              (default = en)
+
+  // in case of a standard release, append the dt version to the url
+  if(dt_is_dev_version())
+  {
+    dt_util_str_cat(&base_url, "development/");
+  }
+  else
+  {
+    char *ver = dt_version_major_minor();
+    dt_util_str_cat(&base_url, "%s/", ver);
+    g_free(ver);
+  }
+  return base_url;
+}
+
+char *dt_get_manual_url(const char *topic)
+{
+  char *base_url = dt_get_manual_base_url();
+
+  const char *lang = "en";
+
+  // array of languages the usermanual supports.
+  // NULL MUST remain the last element of the array
+  static const char *supported_languages[] = { "en", "fr", "de", "eo", "es", "gl",
+                                               "it", "nl", "pl", "pt-br", "uk", NULL };
+  int lang_index = 0;
+  gboolean is_language_supported = FALSE;
+
+  if(darktable.l10n != NULL)
+  {
+    const dt_l10n_language_t *language = NULL;
+    if(darktable.l10n->selected != -1)
+      language =
+        (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
+    if(language != NULL)
+      lang = language->code;
+
+    while(supported_languages[lang_index])
+    {
+      gchar *nlang = g_strdup(lang);
+
+      // try lang as-is
+      if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
+      {
+        is_language_supported = TRUE;
+      }
+
+      if(!is_language_supported)
+      {
+        // keep only first part up to _
+        for(gchar *p = nlang; *p; p++)
+          if(*p == '_')
+            *p = '\0';
+
+        if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
+        {
+          is_language_supported = TRUE;
+        }
+      }
+
+      g_free(nlang);
+      if(is_language_supported)
+        break;
+
+      lang_index++;
+    }
+  }
+
+  // language not found, default to EN
+  if(!is_language_supported)
+    lang_index = 0;
+
+  char *url = g_build_path("/", base_url, supported_languages[lang_index], topic, NULL);
+  g_free(base_url);
+  return url;
 }
 
 // clang-format off

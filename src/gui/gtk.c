@@ -39,6 +39,7 @@
 #include "gui/gtk.h"
 
 #include "common/styles.h"
+#include "common/usermanual_url.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
@@ -3571,23 +3572,6 @@ void dt_gui_dialog_add_help(GtkDialog *dialog,
   g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
 }
 
-static char *_get_base_url()
-{
-  const gboolean use_default_url =
-    dt_conf_get_bool("context_help/use_default_url");
-  const char *c_base_url = dt_confgen_get("context_help/url", DT_DEFAULT);
-  char *base_url = dt_conf_get_string("context_help/url");
-
-  if(use_default_url)
-  {
-    // want to use default URL, reset darktablerc
-    dt_conf_set_string("context_help/url", c_base_url);
-    return g_strdup(c_base_url);
-  }
-  else
-    return base_url;
-}
-
 void dt_gui_show_help(GtkWidget *widget)
 {
   // TODO: When the widget doesn't have a help url set we should
@@ -3596,26 +3580,7 @@ void dt_gui_show_help(GtkWidget *widget)
   if(help_url && *help_url)
   {
     dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'", help_url);
-    char *base_url = _get_base_url();
-
-    // The base_url is: docs.darktable.org/usermanual
-    // The full format for the documentation pages is:
-    //    <base-url>/<ver>/<lang>[/path/to/page]
-    // Where:
-    //   <ver>  = development | 3.6 | 3.8 ...
-    //   <lang> = en / fr ...              (default = en)
-
-    // in case of a standard release, append the dt version to the url
-    if(dt_is_dev_version())
-    {
-      dt_util_str_cat(&base_url, "development/");
-    }
-    else
-    {
-      char *ver = dt_version_major_minor();
-      dt_util_str_cat(&base_url, "%s/", ver);
-      g_free(ver);
-    }
+    char *base_url = dt_get_manual_base_url();
 
     char *last_base_url = dt_conf_get_string("context_help/last_url");
 
@@ -3642,58 +3607,7 @@ void dt_gui_show_help(GtkWidget *widget)
     }
     if(base_url)
     {
-      const char *lang = "en";
-
-      // array of languages the usermanual supports.
-      // NULL MUST remain the last element of the array
-      const char *supported_languages[] =
-        { "en", "fr", "de", "eo", "es", "gl", "it", "nl", "pl", "pt-br", "uk", NULL };
-      int lang_index = 0;
-      gboolean is_language_supported = FALSE;
-
-      if(darktable.l10n != NULL)
-      {
-        const dt_l10n_language_t *language = NULL;
-        if(darktable.l10n->selected != -1)
-            language = (dt_l10n_language_t *)
-              g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
-        if(language != NULL)
-          lang = language->code;
-
-        while(supported_languages[lang_index])
-        {
-          gchar *nlang = g_strdup(lang);
-
-          // try lang as-is
-          if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
-          {
-            is_language_supported = TRUE;
-          }
-
-          if(!is_language_supported)
-          {
-            // keep only first part up to _
-            for(gchar *p = nlang; *p; p++)
-              if(*p == '_') *p = '\0';
-
-            if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
-            {
-              is_language_supported = TRUE;
-            }
-          }
-
-          g_free(nlang);
-          if(is_language_supported) break;
-
-          lang_index++;
-        }
-      }
-
-      // language not found, default to EN
-      if(!is_language_supported) lang_index = 0;
-
-      char *url = g_build_path("/", base_url,
-                               supported_languages[lang_index], help_url, NULL);
+      char *url = dt_get_manual_url(help_url);
 
       dt_open_url(url);
 
