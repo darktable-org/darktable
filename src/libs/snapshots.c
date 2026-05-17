@@ -989,9 +989,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
 {
   dt_lib_snapshots_t *d = self->data;
 
-  DT_GUARD_GUI_UPDATE();
-
-  DT_ENTER_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   d->selected = -1;
 
