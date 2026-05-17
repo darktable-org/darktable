@@ -923,6 +923,12 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     float *xform_scratch = xform
       ? g_try_malloc((size_t)out_w * 3 * sizeof(float))
       : NULL;
+    // scratch OOM: drop xform so the writer skips the transform branch
+    if(xform && !xform_scratch)
+    {
+      cmsDeleteTransform(xform);
+      xform = NULL;
+    }
     _tiff_writer_data_t twd = { .tif = tif,
                                 .bpp = bpp,
                                 .scratch = scratch,
