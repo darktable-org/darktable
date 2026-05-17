@@ -685,6 +685,37 @@ static gboolean _task_model_available(
   }
 }
 
+// configure the restore context to receive LIN_REC2020 linear input,
+// matching the profile the export pipe is forced to produce
+static void _setup_restore_for_linear_input(dt_restore_context_t *ctx,
+                                            gboolean preserve_wide_gamut)
+{
+  const dt_colorspaces_color_profile_t *lin_cp
+    = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "",
+                                 DT_PROFILE_DIRECTION_OUT);
+  dt_restore_set_profile(ctx, lin_cp ? lin_cp->profile : NULL);
+  dt_restore_set_preserve_wide_gamut(ctx, preserve_wide_gamut);
+}
+
+// build an LCMS transform from LIN_REC2020 to dst, NULL when src == dst;
+// caller frees with cmsDeleteTransform
+static cmsHTRANSFORM _build_output_color_transform(
+  dt_colorspaces_color_profile_type_t dst_type,
+  const char *dst_filename)
+{
+  const dt_colorspaces_color_profile_t *lin_cp
+    = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "",
+                                 DT_PROFILE_DIRECTION_OUT);
+  const dt_colorspaces_color_profile_t *dst_cp
+    = dt_colorspaces_get_profile(dst_type, dst_filename,
+                                 DT_PROFILE_DIRECTION_OUT);
+  if(!lin_cp || !dst_cp || lin_cp->profile == dst_cp->profile)
+    return NULL;
+  return cmsCreateTransform(lin_cp->profile, TYPE_RGB_FLT,
+                            dst_cp->profile, TYPE_RGB_FLT,
+                            INTENT_PERCEPTUAL, 0);
+}
+
 // row writer: copy 3ch float scanline to float4 RGBA buffer
 typedef struct _buf_writer_data_t
 {
@@ -713,7 +744,9 @@ typedef struct _tiff_writer_data_t
 {
   TIFF *tif;
   int bpp;
-  void *scratch; // bpp conversion buffer
+  void *scratch;          // bpp conversion buffer
+  cmsHTRANSFORM xform;    // LIN_REC2020 → dst, or NULL
+  float *xform_scratch;   // [out_w * 3] floats, only if xform != NULL
 } _tiff_writer_data_t;
 
 static int _tiff_row_writer(const float *scanline,
@@ -721,7 +754,13 @@ static int _tiff_row_writer(const float *scanline,
                             void *user_data)
 {
   _tiff_writer_data_t *wd = (_tiff_writer_data_t *)user_data;
-  return (_write_tiff_scanline(wd->tif, scanline,
+  const float *src = scanline;
+  if(wd->xform)
+  {
+    cmsDoTransform(wd->xform, scanline, wd->xform_scratch, out_w);
+    src = wd->xform_scratch;
+  }
+  return (_write_tiff_scanline(wd->tif, src,
                                out_w, wd->bpp,
                                y, wd->scratch) < 0)
     ? 1 : 0;
@@ -744,14 +783,23 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   if(!job->ctx)
     return 1;
 
-  // inform the restore pipeline of the working profile so it can
-  // convert to sRGB primaries before inference (the model was trained
-  // on sRGB data) and back after. without this the model treats the
-  // working-profile RGB values as sRGB and shifts hues
+  _setup_restore_for_linear_input(job->ctx, job->preserve_wide_gamut);
+
+  // resolve destination profile for TIFF ICC embed (NONE = working)
   const dt_colorspaces_color_profile_t *work_cp
     = dt_colorspaces_get_work_profile(imgid);
-  dt_restore_set_profile(job->ctx, work_cp ? work_cp->profile : NULL);
-  dt_restore_set_preserve_wide_gamut(job->ctx, job->preserve_wide_gamut);
+  const dt_colorspaces_color_profile_type_t dst_type
+    = (job->icc_type == DT_COLORSPACE_NONE)
+      ? (work_cp ? work_cp->type : DT_COLORSPACE_LIN_REC2020)
+      : job->icc_type;
+  const char *dst_filename
+    = (job->icc_type == DT_COLORSPACE_NONE)
+      ? (work_cp ? work_cp->filename : "")
+      : (job->icc_filename ? job->icc_filename : "");
+  const dt_colorspaces_color_profile_t *dst_cp
+    = dt_colorspaces_get_profile(dst_type, dst_filename,
+                                 DT_PROFILE_DIRECTION_OUT);
+  cmsHTRANSFORM xform = _build_output_color_transform(dst_type, dst_filename);
 
   const int width = params->parent.width;
   const int height = params->parent.height;
@@ -792,21 +840,18 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
                TIFFDefaultStripSize(tif, 0));
 
-  // embed the darktable working profile ICC so wide-gamut
-  // colors are preserved (the restore pipeline applies only the
-  // sRGB transfer function, not a primaries conversion)
-  const dt_colorspaces_color_profile_t *cp
-    = dt_colorspaces_get_work_profile(imgid);
-  if(cp && cp->profile)
+  // embed destination profile so re-import / external viewers
+  // interpret the saved pixels correctly
+  if(dst_cp && dst_cp->profile)
   {
     uint32_t icc_len = 0;
-    cmsSaveProfileToMem(cp->profile, NULL, &icc_len);
+    cmsSaveProfileToMem(dst_cp->profile, NULL, &icc_len);
     if(icc_len > 0)
     {
       uint8_t *icc_buf = g_malloc(icc_len);
       if(icc_buf)
       {
-        cmsSaveProfileToMem(cp->profile, icc_buf, &icc_len);
+        cmsSaveProfileToMem(dst_cp->profile, icc_buf, &icc_len);
         TIFFSetField(tif, TIFFTAG_ICCPROFILE, icc_len, icc_buf);
         g_free(icc_buf);
       }
@@ -842,7 +887,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     {
       dt_restore_apply_detail_recovery(in_data, out_4ch, width, height, recovery_alpha);
 
-      // write buffered result to TIFF
+      // write buffered LIN_REC2020 result, converting to dst per row
       const size_t row_bytes = (size_t)out_w * 3 * sizeof(float);
       float *scan = g_malloc(row_bytes);
       void *cvt = (bpp < 32)
@@ -857,6 +902,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
           scan[x * 3 + 1] = row[x * 4 + 1];
           scan[x * 3 + 2] = row[x * 4 + 2];
         }
+        if(xform) cmsDoTransform(xform, scan, scan, out_w);
         if(_write_tiff_scanline(tif, scan, out_w, bpp, y, cvt) < 0)
         {
           dt_print(DT_DEBUG_AI,
@@ -874,18 +920,32 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     void *scratch = (bpp < 32)
       ? g_try_malloc((size_t)out_w * 3 * sizeof(uint16_t))
       : NULL;
+    float *xform_scratch = xform
+      ? g_try_malloc((size_t)out_w * 3 * sizeof(float))
+      : NULL;
+    // scratch OOM: drop xform so the writer skips the transform branch
+    if(xform && !xform_scratch)
+    {
+      cmsDeleteTransform(xform);
+      xform = NULL;
+    }
     _tiff_writer_data_t twd = { .tif = tif,
                                 .bpp = bpp,
-                                .scratch = scratch };
+                                .scratch = scratch,
+                                .xform = xform,
+                                .xform_scratch = xform_scratch };
     res = dt_restore_process_tiled(job->ctx, in_data,
                                    width, height, S,
                                    _tiff_row_writer,
                                    &twd,
                                    job->control_job);
     g_free(scratch);
+    g_free(xform_scratch);
   }
 
   TIFFClose(tif);
+
+  if(xform) cmsDeleteTransform(xform);
 
   // write EXIF metadata from source image
   if(res == 0 && exif && exif_len > 0)
@@ -1432,6 +1492,8 @@ static int32_t _process_job_run(dt_job_t *job)
     }
     else
     {
+      // force LIN_REC2020 – the AI denoise needs linear input; user's
+      // combo choice is applied at TIFF write via LCMS
       step_err = dt_imageio_export_with_flags(
         imgid,
         filename,
@@ -1447,10 +1509,7 @@ static int32_t _process_job_run(dt_job_t *job)
         NULL,   // filter
         FALSE,  // copy_metadata
         FALSE,  // export_masks
-        (j->icc_type == DT_COLORSPACE_NONE)
-          ? dt_colorspaces_get_work_profile(imgid)->type
-          : j->icc_type,
-        j->icc_filename,
+        DT_COLORSPACE_LIN_REC2020, NULL,
         DT_INTENT_PERCEPTUAL,
         NULL, NULL,
         count, total, NULL, -1);
@@ -1917,13 +1976,8 @@ static gpointer _preview_thread(gpointer data)
       .bpp = _ai_check_bpp,
       .write_image = _preview_capture_write_image};
 
-    const dt_colorspaces_color_profile_type_t cfg_type
-      = dt_conf_key_exists(CONF_ICC_TYPE)
-        ? dt_conf_get_int(CONF_ICC_TYPE)
-        : DT_COLORSPACE_NONE;
-    gchar *cfg_file = (cfg_type == DT_COLORSPACE_FILE)
-      ? dt_conf_get_string(CONF_ICC_FILE)
-      : NULL;
+    // force LIN_REC2020 – AI denoise needs linear input; converted to
+    // lin_rec709 for cairo display below
     dt_imageio_export_with_flags(pd->imgid,
                                  "unused",
                                  &fmt,
@@ -1938,13 +1992,9 @@ static gpointer _preview_thread(gpointer data)
                                  NULL,   // filter
                                  FALSE,  // copy_metadata
                                  FALSE,  // export_masks
-                                 (cfg_type == DT_COLORSPACE_NONE)
-                                   ? dt_colorspaces_get_work_profile(pd->imgid)->type
-                                   : cfg_type,
-                                 cfg_file,
+                                 DT_COLORSPACE_LIN_REC2020, NULL,
                                  DT_INTENT_PERCEPTUAL,
                                  NULL, NULL, 1, 1, NULL, -1);
-    g_free(cfg_file);
 
     pixels = cap.pixels;
     pixels_w = cap.cap_w;
@@ -2077,13 +2127,9 @@ static gpointer _preview_thread(gpointer data)
            "[neural_restore] preview: tiled inference %dx%d",
            crop_w, crop_h);
 
-  // set working profile on context so the model sees sRGB primaries
-  const dt_colorspaces_color_profile_t *work_cp
-    = dt_colorspaces_get_work_profile(pd->imgid);
-  dt_restore_set_profile(ctx, work_cp ? work_cp->profile : NULL);
   const gboolean pres = dt_conf_key_exists(CONF_PRESERVE_WIDE_GAMUT)
     ? dt_conf_get_bool(CONF_PRESERVE_WIDE_GAMUT) : TRUE;
-  dt_restore_set_preserve_wide_gamut(ctx, pres);
+  _setup_restore_for_linear_input(ctx, pres);
 
   _buf_writer_data_t bwd = { .out_buf = out_4ch, .out_w = pw };
   const int ret = dt_restore_process_tiled(
@@ -2127,6 +2173,17 @@ static gpointer _preview_thread(gpointer data)
     }
   }
   g_free(out_4ch);
+
+  // convert LIN_REC2020 → linear sRGB for cairo
+  // (_float_rgb_to_cairo applies sRGB gamma, assumes sRGB primaries)
+  cmsHTRANSFORM xform_disp
+    = _build_output_color_transform(DT_COLORSPACE_LIN_REC709, "");
+  if(xform_disp)
+  {
+    cmsDoTransform(xform_disp, before_buf, before_buf, (size_t)pw * ph);
+    cmsDoTransform(xform_disp, after_buf, after_buf, (size_t)pw * ph);
+    cmsDeleteTransform(xform_disp);
+  }
 
   // deliver result to main thread
   dt_neural_preview_result_t *result = g_new(dt_neural_preview_result_t, 1);
@@ -3956,6 +4013,8 @@ static void _profile_combo_changed(GtkWidget *w,
     dt_conf_set_int(CONF_ICC_TYPE, DT_COLORSPACE_NONE);
     dt_conf_set_string(CONF_ICC_FILE, "");
   }
+  // cached previews are in the old profile – drop them
+  _preview_cache_invalidate_all((dt_lib_neural_restore_t *)self->data);
   _update_info_label((dt_lib_neural_restore_t *)self->data);
 }
 
