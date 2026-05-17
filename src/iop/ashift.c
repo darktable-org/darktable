@@ -5535,7 +5535,12 @@ static void _event_fix_horizon_quad_clicked(GtkWidget *widget,
   }
   else
   {
-    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+    if(self->off)
+    {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+      dt_bauhaus_widget_set_quad_active(widget, TRUE);
+      g->fix_horizon_active = TRUE;
+    }
     dt_iop_request_focus(self);
     dt_control_change_cursor("crosshair");
   }
@@ -5896,13 +5901,14 @@ static gboolean _event_draw(GtkWidget *widget,
 
 void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
+  dt_iop_ashift_gui_data_t *g = self->gui_data;
+
   darktable.develop->history_postpone_invalidate = in
     && dt_dev_modulegroups_test_activated(darktable.develop);
 
   if(self->enabled)
   {
     dt_iop_ashift_params_t *p = self->params;
-    dt_iop_ashift_gui_data_t *g = self->gui_data;
     if(in)
     {
       _shadow_crop_box(p,g);
@@ -5914,6 +5920,16 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
       _gui_update_structure_states(self, NULL);
       _do_clean_structure(self, p, TRUE);
     }
+  }
+
+  if(!in && g->fix_horizon_active)
+  {
+    dt_bauhaus_widget_set_quad_active(g->rotation, FALSE);
+    g->fix_horizon_active = FALSE;
+    g->straightening = FALSE;
+    g->straighten_click_mode = FALSE;
+    darktable.develop->proxy.forward_left_click = FALSE;
+    dt_control_change_cursor("default");
   }
 }
 
