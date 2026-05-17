@@ -18,6 +18,7 @@
 
 #include "welcome.h"
 #include "common/darktable.h"
+#include "common/usermanual_url.h"
 #include "control/conf.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -842,13 +843,15 @@ static dt_welcome_screen_t *_build_welcome_screen(void)
      TRUE);
 
   {
+    char *manual_url = dt_get_manual_url(NULL);
+
     /* xgettext: %s is a URL; keep <a href="%s"> and </a> unchanged */
     gchar *text = g_strdup_printf(_("Read the <a href=\"%s\">user manual</a> "
                                     "to learn more and make the most of darktable."),
-                                  "https://docs.darktable.org/usermanual/stable/en/");
-    dt_welcome_screen_page_add_paragraph
-      (ws, page_idx, text, TRUE);
+                                  manual_url);
+    dt_welcome_screen_page_add_paragraph(ws, page_idx, text, TRUE);
     g_free(text);
+    g_free(manual_url);
   }
 
   dt_welcome_screen_page_add_paragraph
