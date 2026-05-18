@@ -387,6 +387,12 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
                                    const char *model_file,
                                    dt_ai_provider_t configured);
 
+static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
+                                          const char *model_id,
+                                          const dt_ai_model_info_t *info,
+                                          const char *model_file,
+                                          uint32_t *inout_ep_flags);
+
 // model loading with backend dispatch
 
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
@@ -417,56 +423,14 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
     return NULL;
   }
 
-  // resolve CONFIGURED: read the user's provider preference from config.
-  // read config before acquiring env->lock to avoid lock-ordering issues
-  // with darktable's config lock
-  if(provider == DT_AI_PROVIDER_CONFIGURED)
-  {
-    char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
-    provider = dt_ai_provider_from_string(prov_str);
-    g_free(prov_str);
-  }
-
-  // EP safety: if the model declares the configured provider unsafe via
-  // its cpu_only attribute, override the load to fall back to CPU. on
-  // CoreML this stays inside the EP via USE_CPU_ONLY (preserves BNNS
-  // kernels); on every other GPU EP we load with the plain CPU EP. AUTO
-  // and CPU providers are exempt from the check
+  // resolve CONFIGURED/AUTO to a concrete EP and apply the model's
+  // cpu_only safety constraint in one place. ep_flags may be updated
+  // (e.g. COREML_FLAG_USE_CPU_ONLY) so the EP can stay enabled while
+  // honoring the constraint
   const dt_ai_model_info_t *model_info
     = dt_ai_get_model_info_by_id(env, model_id);
-  if(model_info
-     && _provider_cpu_only(model_info, model_file, provider))
-  {
-    const char *prov_name = NULL;
-    for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
-      if(dt_ai_providers[i].value == provider)
-      {
-        prov_name = dt_ai_providers[i].config_string;
-        break;
-      }
-    if(provider == DT_AI_PROVIDER_COREML)
-    {
-      ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
-      dt_print(DT_DEBUG_AI,
-               "[darktable_ai] model %s%s%s prefers CPU on %s; "
-               "using CoreML CPU compute units",
-               model_id,
-               model_file ? " file=" : "",
-               model_file ? model_file : "",
-               prov_name);
-    }
-    else
-    {
-      dt_print(DT_DEBUG_AI,
-               "[darktable_ai] model %s%s%s prefers CPU on %s; "
-               "switching to CPU provider",
-               model_id,
-               model_file ? " file=" : "",
-               model_file ? model_file : "",
-               prov_name);
-      provider = DT_AI_PROVIDER_CPU;
-    }
-  }
+  provider = _resolve_provider(provider, model_id, model_info,
+                               model_file, &ep_flags);
 
   g_mutex_lock(&env->lock);
   const char *model_dir_orig
@@ -641,33 +605,29 @@ int *dt_ai_model_attribute_int_array(const dt_ai_model_info_t *info,
   return result;
 }
 
-// resolve the model's "cpu_only" block against `configured`. the block
-// can take two forms:
+// resolve the model's "cpu_only" block against a concrete EP. the
+// block can take two forms:
 //
 //   cpu_only: [coreml, directml]        (flat list — applies to all)
 //   cpu_only:                           (keyed by onnx filename stem)
 //     model_bayer: [coreml, directml]
 //     model_linear: []
 //
-// when `configured` appears (case-insensitively) in the relevant list,
-// the model declares it unsafe and the caller (dt_ai_load_model_ext)
-// overrides the load: CoreML keeps the EP but sets USE_CPU_ONLY; any
-// other GPU EP is replaced by DT_AI_PROVIDER_CPU. returns FALSE for
-// AUTO/CPU providers, missing block, or providers not in the list
+// returns TRUE when `concrete` appears (case-insensitively) in the
+// relevant list. callers must pass a concrete provider — AUTO and
+// CONFIGURED are resolved upstream by _resolve_provider and never
+// reach here. CPU short-circuits to FALSE (it is never restricted)
 static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
                                    const char *model_file,
-                                   dt_ai_provider_t configured)
+                                   dt_ai_provider_t concrete)
 {
-  if(!info || !info->cpu_only
-     || configured == DT_AI_PROVIDER_AUTO
-     || configured == DT_AI_PROVIDER_CPU
-     || configured == DT_AI_PROVIDER_CONFIGURED)
+  if(!info || !info->cpu_only || concrete == DT_AI_PROVIDER_CPU)
     return FALSE;
 
   // map provider enum to its config_string (e.g. "CoreML", "DirectML")
   const char *prov_name = NULL;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
-    if(dt_ai_providers[i].value == configured)
+    if(dt_ai_providers[i].value == concrete)
     {
       prov_name = dt_ai_providers[i].config_string;
       break;
@@ -721,6 +681,130 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
   }
   g_object_unref(parser);
   return result;
+}
+
+// platform-specific candidate order for AUTO. each candidate is tried
+// via dt_ai_probe_provider() and the model's cpu_only list — the first
+// available, non-banned EP wins. CoreML's cpu_only entry does not skip
+// the candidate but pins it to CPU compute units via USE_CPU_ONLY. on
+// linux multiple GPU EPs may coexist, so a model that bans one still
+// gets GPU acceleration via the next. falls through to CPU when every
+// candidate is unavailable or banned
+static const dt_ai_provider_t *_auto_candidates(int *n_out)
+{
+#if defined(__APPLE__)
+  static const dt_ai_provider_t list[] = { DT_AI_PROVIDER_COREML };
+#elif defined(_WIN32)
+  static const dt_ai_provider_t list[] = { DT_AI_PROVIDER_DIRECTML };
+#elif defined(__linux__)
+  static const dt_ai_provider_t list[] = { DT_AI_PROVIDER_CUDA,
+                                           DT_AI_PROVIDER_MIGRAPHX,
+                                           DT_AI_PROVIDER_OPENVINO };
+#else
+  static const dt_ai_provider_t list[1] = { DT_AI_PROVIDER_CPU };
+  *n_out = 0;
+  return list;
+#endif
+  *n_out = (int)(sizeof(list) / sizeof(list[0]));
+  return list;
+}
+
+static const char *_provider_config_name(dt_ai_provider_t p)
+{
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+    if(dt_ai_providers[i].value == p) return dt_ai_providers[i].config_string;
+  return "?";
+}
+
+// resolve a configured provider value to the concrete EP that will be
+// loaded. handles three transformations in one place:
+//
+//   1. CONFIGURED -> reads plugins/ai/provider, then recurses.
+//   2. AUTO       -> probes the platform candidate list; for each
+//                    candidate, applies cpu_only. first candidate that
+//                    is available and either not banned, or (CoreML
+//                    only) tolerable via USE_CPU_ONLY, wins. otherwise
+//                    falls through to CPU.
+//   3. concrete   -> applies cpu_only. CoreML stays with USE_CPU_ONLY,
+//                    any other banned EP demotes to CPU.
+//
+// updates *inout_ep_flags (sets COREML_FLAG_USE_CPU_ONLY where the
+// constraint dictates). guaranteed to return a concrete provider —
+// never AUTO or CONFIGURED — so _enable_acceleration in the backend
+// has no AUTO case to handle
+static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
+                                          const char *model_id,
+                                          const dt_ai_model_info_t *info,
+                                          const char *model_file,
+                                          uint32_t *inout_ep_flags)
+{
+  if(configured == DT_AI_PROVIDER_CONFIGURED)
+  {
+    char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+    configured = dt_ai_provider_from_string(prov_str);
+    g_free(prov_str);
+  }
+
+  if(configured == DT_AI_PROVIDER_CPU) return DT_AI_PROVIDER_CPU;
+
+  const char *id = model_id ? model_id : "?";
+
+  if(configured == DT_AI_PROVIDER_AUTO)
+  {
+    int n = 0;
+    const dt_ai_provider_t *cands = _auto_candidates(&n);
+    // single-candidate platforms (macOS, Windows) skip the probe — the
+    // bundled ORT always supports the platform EP, and if it doesn't,
+    // the load fallback chain in dt_ai_onnx_load_ext demotes to CPU
+    const gboolean skip_probe = (n == 1);
+    for(int i = 0; i < n; i++)
+    {
+      const dt_ai_provider_t c = cands[i];
+      if(!skip_probe && !dt_ai_probe_provider(c)) continue;
+      const gboolean banned = _provider_cpu_only(info, model_file, c);
+      if(!banned)
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[darktable_ai] provider auto -> %s for %s",
+                 _provider_config_name(c), id);
+        return c;
+      }
+      if(c == DT_AI_PROVIDER_COREML)
+      {
+        *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+        dt_print(DT_DEBUG_AI,
+                 "[darktable_ai] provider auto -> %s (cpu compute units) "
+                 "for %s — model prefers CPU on %s",
+                 _provider_config_name(c), id, _provider_config_name(c));
+        return c;
+      }
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] auto: skipping %s for %s — model prefers CPU",
+               _provider_config_name(c), id);
+    }
+    dt_print(DT_DEBUG_AI, "[darktable_ai] provider auto -> CPU for %s", id);
+    return DT_AI_PROVIDER_CPU;
+  }
+
+  // concrete EP explicitly chosen
+  if(_provider_cpu_only(info, model_file, configured))
+  {
+    if(configured == DT_AI_PROVIDER_COREML)
+    {
+      *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] %s prefers CPU on %s — using CoreML CPU "
+               "compute units",
+               id, _provider_config_name(configured));
+      return configured;
+    }
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] %s prefers CPU on %s — switching to CPU provider",
+             id, _provider_config_name(configured));
+    return DT_AI_PROVIDER_CPU;
+  }
+
+  return configured;
 }
 
 // provider string conversion
