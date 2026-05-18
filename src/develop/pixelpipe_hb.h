@@ -281,7 +281,7 @@ static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
 }
 
 // report pipe->type as textual string
-const char *dt_dev_pixelpipe_type_to_str(dt_dev_pixelpipe_type_t pipe_type);
+const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
@@ -412,9 +412,9 @@ void dt_print_pipe_ext(const char *title,
 
 // helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
-                                  float *src,
+                                  const float *src,
                                   const struct dt_iop_module_t *target_module,
-                                  dt_hash_t src_hash);
+                                  const dt_hash_t src_hash);
 
 dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *roi,

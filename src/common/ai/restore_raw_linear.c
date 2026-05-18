@@ -307,8 +307,8 @@ static int _run_demosaic_pipe(const dt_imgid_t imgid,
   for(GList *n = pipe.nodes; n; n = g_list_next(n))
   {
     dt_dev_pixelpipe_iop_t *piece = n->data;
-    if(dt_iop_module_is(piece->module->so, "temperature")
-       || dt_iop_module_is(piece->module->so, "rawdenoise"))
+    if(dt_iop_module_is(piece->module, "temperature")
+       || dt_iop_module_is(piece->module, "rawdenoise"))
       piece->enabled = FALSE;
   }
 

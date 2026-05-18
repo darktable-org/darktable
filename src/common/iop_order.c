@@ -1478,7 +1478,7 @@ static void _count_iop_module(GList *iop,
   for(const GList *modules = iop; modules; modules = g_list_next(modules))
   {
     const dt_iop_module_t *const restrict mod = modules->data;
-    if(dt_iop_module_is(mod->so, operation))
+    if(dt_iop_module_is(mod, operation))
     {
       (*count)++;
       if(*max_multi_priority < mod->multi_priority)
@@ -1531,7 +1531,7 @@ static int _get_multi_priority(dt_develop_t *dev,
   for(const GList *l = dev->iop; l; l = g_list_next(l))
   {
     const dt_iop_module_t *const restrict mod = l->data;
-    if((!only_disabled || !mod->enabled) && dt_iop_module_is(mod->so, operation))
+    if((!only_disabled || !mod->enabled) && dt_iop_module_is(mod, operation))
     {
       count++;
       if(count == n) return mod->multi_priority;
@@ -1984,8 +1984,8 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
         {
           const dt_iop_order_rule_t *const restrict rule = rules->data;
 
-          if(dt_iop_module_is(module->so, rule->op_prev)
-             && dt_iop_module_is(mod->so, rule->op_next))
+          if(dt_iop_module_is(module, rule->op_prev)
+             && dt_iop_module_is(mod, rule->op_next))
           {
             rule_found = TRUE;
             break;
@@ -2071,8 +2071,8 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
         {
           const dt_iop_order_rule_t *const restrict rule = rules->data;
 
-          if(dt_iop_module_is(mod->so, rule->op_prev)
-             && dt_iop_module_is(module->so, rule->op_next))
+          if(dt_iop_module_is(mod, rule->op_prev)
+             && dt_iop_module_is(module, rule->op_next))
           {
             rule_found = TRUE;
             break;
@@ -2364,7 +2364,7 @@ static void _ioppr_check_rules(GList *iop_list,
       const dt_iop_order_rule_t *const restrict rule = rules->data;
 
       // mod must be before rule->op_next
-      if(dt_iop_module_is(mod->so, rule->op_prev))
+      if(dt_iop_module_is(mod, rule->op_prev))
       {
         // check if there's a rule->op_next module before mod
         for(const GList *modules_prev = g_list_previous(modules);
@@ -2386,7 +2386,7 @@ static void _ioppr_check_rules(GList *iop_list,
         }
       }
       // mod must be after rule->op_prev
-      else if(dt_iop_module_is(mod->so, rule->op_next))
+      else if(dt_iop_module_is(mod, rule->op_next))
       {
         // check if there's a rule->op_prev module after mod
         for(const GList *modules_next = g_list_next(modules);
