@@ -246,6 +246,34 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
+/* Returns whether touchpad pinch/pan gestures are enabled by user preference. */
+gboolean dt_gui_touchpad_gestures_enabled(void);
+
+/* Handle a GDK_TOUCHPAD_PINCH event: gestures-enabled check, debug logging,
+ * dispatch, and queue_draw on the originating widget. `tag` identifies the
+ * source in log lines (e.g. "darkroom", "second window"). When `port` is
+ * non-NULL, the gesture is applied directly to that viewport via
+ * dt_dev_pinch_zoom; otherwise it is routed through the view manager so the
+ * current view's gesture_pinch callback fires (used for the main window).
+ * Returns TRUE if the event was a pinch and was consumed. */
+struct dt_dev_viewport_t;
+gboolean dt_gui_handle_touchpad_pinch_event(GtkWidget *widget,
+                                            GdkEvent *event,
+                                            const char *tag,
+                                            struct dt_dev_viewport_t *port);
+
+/* Handle a GDK_SCROLL event coming from a touchpad as a pan gesture. Only
+ * smooth-scrolls from a known touchpad device (and without Ctrl held) are
+ * routed; everything else returns FALSE so the caller can fall back to its
+ * usual discrete-scroll handling. When `port` is non-NULL the pan is applied
+ * directly to that viewport via dt_dev_zoom_move(DT_ZOOM_MOVE), otherwise it
+ * is dispatched to the current view's gesture_pan callback via the view
+ * manager (used for the main window). Returns TRUE if the event was consumed
+ * as a touchpad pan. */
+gboolean dt_gui_handle_touchpad_scroll_pan_event(GtkWidget *widget,
+                                                 GdkEventScroll *event,
+                                                 struct dt_dev_viewport_t *port);
+
 /*
  * new ui api
  */

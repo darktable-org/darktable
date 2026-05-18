@@ -4252,122 +4252,7 @@ gboolean gesture_pinch(dt_view_t *self,
 {
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
-  // constrain when the config asks for it AND CTRL isn't held
-  const gboolean constrained =
-    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
-
-  // Gesture-mode classifier: each event contributes its zoom_eq & pan_eq magnitude in pixels
-  // to a decaying score. When the recent history is zoom-dominant (score > ZOOM_DOMINANT_PX)
-  // we treat the gesture as a pinch and discard the dx/dy translation that would otherwise
-  // jitter the cursor anchor. When pan dominates, the score falls below the threshold and
-  // dx/dy flows through (subject to a small per-axis deadzone for touchpad noise).
-  // The exponential decay gives hysteresis so a single wobble frame mid-gesture doesn't flip the classification.
-  static const float PINCH_ZOOM_PAN_DECAY = 0.8f;
-  static const float PINCH_ZOOM_DOMINANT_PX = 8.0f;
-  static const float PINCH_PAN_DEADZONE_PX = 4.0f;
-  static float pinch_begin_tscale = 0.0f;
-  static float prev_scale = 1.0f;
-  static float zoom_pan_score = 0.0f;
-
-  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
-  {
-    pinch_begin_tscale =
-      dt_dev_get_zoom_scale(&dev->full, dev->full.zoom, 1 << dev->full.closeup, FALSE)
-      * dev->full.ppd;
-    prev_scale = (float)scale;
-    zoom_pan_score = 0.0f;
-    dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
-             " -> begin_tscale=%.6f ppd=%.2f",
-             x, y, scale, state, pinch_begin_tscale, dev->full.ppd);
-    return TRUE;
-  }
-  else if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
-          || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] %s x=%.1f y=%.1f scale=%.6f state=0x%x",
-             phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel",
-             x, y, scale, state);
-    pinch_begin_tscale = 0.0f;
-    prev_scale = 1.0f;
-    zoom_pan_score = 0.0f;
-    return TRUE;
-  }
-
-  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] unknown phase=%d ignored", phase);
-    return FALSE;
-  }
-  if(pinch_begin_tscale <= 0.0f || scale <= 0.0)
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] update skipped: begin_tscale=%.6f scale=%.6f",
-             pinch_begin_tscale, scale);
-    return FALSE;
-  }
-
-  // On macOS (GDK Quartz), NSEventTypeMagnify never populates dx/dy and the
-  // gesture focal-point x/y is set once at phase=BEGIN and does not update
-  // during the gesture — so both approaches to infer translation are zero.
-  // Pan on macOS therefore arrives as a separate smooth-scroll stream which is
-  // routed to gesture_pan by _scrolled() in gtk.c.
-  // On other platforms (Wayland/X11), dx/dy carry the actual translational delta.
-  float eff_dx = (float)dx;
-  float eff_dy = (float)dy;
-
-  // Update the zoom-vs-pan dominance score and use it to decide whether the
-  // dx/dy component is finger-drift wobble (suppress) or real pan (allow).
-  const float scale_inc = (prev_scale > 0.0f) ? fabsf((float)scale / prev_scale - 1.0f) : 0.0f;
-  const float zoom_eq_px = scale_inc * 0.5f * (float)dev->full.width;
-  const float pan_eq_px = sqrtf(eff_dx * eff_dx + eff_dy * eff_dy);
-  zoom_pan_score = zoom_pan_score * PINCH_ZOOM_PAN_DECAY
-                   + (zoom_eq_px - pan_eq_px);
-  const gboolean zoom_dominant = zoom_pan_score > PINCH_ZOOM_DOMINANT_PX;
-  // If zoom is dominant or the pan component is within the deadzone zero that component.
-  eff_dx = (zoom_dominant || fabsf(eff_dx) < PINCH_PAN_DEADZONE_PX) ? 0.0f : eff_dx;
-  eff_dy = (zoom_dominant || fabsf(eff_dy) < PINCH_PAN_DEADZONE_PX) ? 0.0f : eff_dy;
-  prev_scale = (float)scale;
-
-  if(eff_dx != 0.0f || eff_dy != 0.0f)
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f"
-             " (score=%.2f zoom_eq=%.2f pan_eq=%.2f)",
-             eff_dx, eff_dy, zoom_pan_score, zoom_eq_px, pan_eq_px);
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, constrained);
-  }
-
-  const float ppd = dev->full.ppd;
-  const float fitscale = dt_dev_get_zoom_scale(&dev->full, DT_ZOOM_FIT, 1.0f, FALSE);
-  const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
-  const float tscaletop = 16.0f;
-  const float tscale = CLAMP(pinch_begin_tscale * scale, tscalefloor, tscaletop);
-
-  // Keep pinch fully continuous for a smartphone-like feeling, including at high zoom.
-  const float zoom_scale = tscale / ppd;
-
-  // Convert root (screen-absolute) pinch coords to center-widget-local.
-  // This is the coord space dt_dev_zoom_move expects for its built-in cursor
-  // anchoring (it computes mouse_off via x - border - 0.5 * port->width).
-  int ox, oy;
-  gdk_window_get_origin(gtk_widget_get_window(dt_ui_center(darktable.gui->ui)), &ox, &oy);
-  const float x_local = (float)x - ox;
-  const float y_local = (float)y - oy;
-  dt_print(DT_DEBUG_INPUT,
-           "[darkroom pinch] update x=%.1f y=%.1f (local=%.1f,%.1f origin=%d,%d"
-           " border=%d port=%dx%d) raw_dx=%.3f raw_dy=%.3f"
-           " eff_dx=%.3f eff_dy=%.3f score=%.2f zoom_dom=%d scale=%.6f state=0x%x"
-           " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
-           x, y, x_local, y_local, ox, oy,
-           dev->full.border_size, dev->full.width, dev->full.height,
-           dx, dy, eff_dx, eff_dy, zoom_pan_score, zoom_dominant,
-           scale, state, tscale, tscalefloor, tscaletop, zoom_scale);
-  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
-
-  return TRUE;
+  return dt_dev_pinch_zoom(&dev->full, "darkroom", x, y, dx, dy, phase, scale, state);
 }
 
 static void _change_slider_accel_precision(dt_action_t *action)
@@ -4551,20 +4436,40 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   return TRUE;
 }
 
+static gboolean _second_window_event_callback(GtkWidget *widget,
+                                              GdkEvent *event,
+                                              dt_develop_t *dev)
+{
+  if(dev->gui_leaving) return FALSE;
+
+  // Pick the same viewport the scroll/mouse handlers use: pinned if set, else preview2.
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+  dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
+
+  return dt_gui_handle_touchpad_pinch_event(widget, event, "second window", port);
+}
+
 static gboolean _second_window_scrolled_callback(GtkWidget *widget,
                                                  GdkEventScroll *event,
                                                  dt_develop_t *dev)
 {
   if(dev->gui_leaving) return TRUE;
+
+  // Pick the same viewport the mouse/pinch handlers use: pinned if set, else preview2.
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+  dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
+
+  // Route smooth two-finger touchpad scrolls as pan, mirroring the main window's
+  // _scrolled() behavior. Without this the discrete fallback below would zoom
+  // on every smooth-scroll frame.
+  if(dt_gui_handle_touchpad_scroll_pan_event(widget, event, port))
+    return TRUE;
+
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    // Use pinned viewport if pinned, otherwise main dev's preview2
-    dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
-    if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
-
-    dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
-
     const gboolean constrained =
       dev->constrain_zoom && !dt_modifier_is(event->state, GDK_CONTROL_MASK);
     dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
@@ -4991,11 +4896,14 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                           | GDK_BUTTON_RELEASE_MASK
                           | GDK_ENTER_NOTIFY_MASK
                           | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_TOUCHPAD_GESTURE_MASK
                           | darktable.gui->scroll_mask);
 
     /* connect callbacks */
     g_signal_connect(G_OBJECT(dev->preview2.widget), "draw",
                      G_CALLBACK(_second_window_draw_callback), dev);
+    g_signal_connect(G_OBJECT(dev->preview2.widget), "event",
+                     G_CALLBACK(_second_window_event_callback), dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "scroll-event",
                      G_CALLBACK(_second_window_scrolled_callback), dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "button-press-event",

@@ -462,6 +462,20 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       const float x,
                       const float y,
                       const gboolean constrain);
+/* Apply a touchpad pinch-zoom gesture phase to `port`. `tag` is a short
+ * identifier (e.g. "darkroom" / "second window") used only for debug logging.
+ * x/y are the gesture focal point in widget coords, dx/dy any per-frame pan
+ * component, phase is a GdkTouchpadGesturePhase, scale is the cumulative
+ * gesture scale since BEGIN, state is the GDK modifier mask. */
+gboolean dt_dev_pinch_zoom(dt_dev_viewport_t *port,
+                           const char *tag,
+                           const double x,
+                           const double y,
+                           const double dx,
+                           const double dy,
+                           const int phase,
+                           const double scale,
+                           const int state);
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             const dt_dev_zoom_t zoom,
                             const int closeup_factor,
