@@ -1537,46 +1537,11 @@ _enable_acceleration(OrtSessionOptions *session_opts,
 
   case DT_AI_PROVIDER_AUTO:
   default:
-    // auto-detect best provider based on platform
-#if defined(__APPLE__)
-    _try_provider(
-      session_opts,
-      "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
-#elif defined(_WIN32)
-    {
-      const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
-                                           "DT_DML_DEVICE_ID");
-      _try_provider(session_opts,
-                    "OrtSessionOptionsAppendExecutionProvider_DML",
-                    "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
-    }
-#elif defined(__linux__)
-    // try CUDA first, then MIGraphX (cache configured at env init)
-    {
-      const int cuda_dev = _device_id_from_conf("plugins/ai/cuda_device_id",
-                                                "DT_CUDA_DEVICE_ID");
-      const int amd_dev  = _device_id_from_conf("plugins/ai/migraphx_device_id",
-                                                "DT_MIGRAPHX_DEVICE_ID");
-      const gboolean cuda_ok =
-        _try_cuda_v2(session_opts, cuda_dev)
-        || _try_provider(session_opts,
-                         "OrtSessionOptionsAppendExecutionProvider_CUDA",
-                         "NVIDIA CUDA", NULL, (uint32_t)cuda_dev,
-                         DT_AI_PROVIDER_CUDA);
-      if(!cuda_ok)
-      {
-        if(!_try_provider(
-             session_opts,
-             "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-             "AMD MIGraphX", NULL, (uint32_t)amd_dev, DT_AI_PROVIDER_MIGRAPHX))
-          _try_provider(
-            session_opts,
-            "OrtSessionOptionsAppendExecutionProvider_ROCM",
-            "AMD ROCm (legacy)", NULL, (uint32_t)amd_dev, DT_AI_PROVIDER_MIGRAPHX);
-      }
-    }
-#endif
+    // unreachable: dt_ai_load_model_ext resolves AUTO/CONFIGURED to a
+    // concrete EP before this point. log and fall through to CPU
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] unexpected provider %d at _enable_acceleration "
+             "— falling back to CPU", provider);
     break;
   }
 }
@@ -1592,6 +1557,18 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   // refuse to probe when AI is disabled
   if(!dt_conf_get_bool("plugins/ai/enabled"))
     return 0;
+
+  // memoize the result per EP. ORT availability doesn't change within
+  // a process (lib loads once at startup), so a real attach is needed
+  // only on the first call. -1 = unknown, 0 = no, 1 = yes. atomic
+  // access avoids racing concurrent first-callers; the worst case is
+  // two threads both probing — both reach the same answer, both store
+  static gint s_cache[DT_AI_PROVIDER_COUNT] = { -1, -1, -1, -1, -1, -1, -1 };
+  if(provider < DT_AI_PROVIDER_COUNT)
+  {
+    const gint cached = g_atomic_int_get(&s_cache[provider]);
+    if(cached >= 0) return cached;
+  }
 
   // ensure ORT API is initialized
   g_once(&g_ort_once, _init_ort_api, NULL);
@@ -1652,7 +1629,10 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   }
 
   g_ort->ReleaseSessionOptions(opts);
-  return ok ? 1 : 0;
+  const int result = ok ? 1 : 0;
+  if(provider < DT_AI_PROVIDER_COUNT)
+    g_atomic_int_set(&s_cache[provider], result);
+  return result;
 }
 
 // ONNX Model Loading
