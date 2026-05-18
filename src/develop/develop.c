@@ -1433,7 +1433,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *mod = modules->data;
-      if(dt_iop_module_is(mod->so, "mask_manager"))
+      if(dt_iop_module_is(mod, "mask_manager"))
       {
         module = mod;
         break;
@@ -1875,7 +1875,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
           // For new edits the temperature will be added back
           // depending on the chromatic adaptation the standard way.
 
-          if(dt_iop_module_is(module->so, "temperature")
+          if(dt_iop_module_is(module, "temperature")
              && (image->change_timestamp == -1))
           {
             // it is important to recover temperature in this case
@@ -2452,7 +2452,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, module_name))
+      if(dt_iop_module_is(module, module_name))
       {
         // make sure that module not supporting multiple instances are
         // selected here.
@@ -2506,9 +2506,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(is_workflow_none && hist->module->enabled)
     {
-      if(dt_iop_module_is(hist->module->so, "temperature"))
+      if(dt_iop_module_is(hist->module, "temperature"))
         temperature = hist->module;
-      if(dt_iop_module_is(hist->module->so, "channelmixerrgb"))
+      if(dt_iop_module_is(hist->module, "channelmixerrgb"))
         channelmixerrgb = hist->module;
     }
 
@@ -2616,7 +2616,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       }
       else
       {
-        if(dt_iop_module_is(hist->module->so, "spots")
+        if(dt_iop_module_is(hist->module, "spots")
            && modversion == 1)
         {
           // quick and dirty hack to handle spot removal legacy_params
@@ -2632,7 +2632,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
        * by default, so if it is disabled, enable it, and replace params with
        * default_params. if user want to, he can disable it.
        */
-      if(dt_iop_module_is(hist->module->so, "flip")
+      if(dt_iop_module_is(hist->module, "flip")
          && !hist->enabled
          && labs(modversion) == 1)
       {
@@ -3317,7 +3317,7 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
     const dt_iop_module_so_t *module_so = modules->data;
-    if(dt_iop_module_is(module_so, "exposure"))
+    if(dt_iop_module_so_is(module_so, "exposure"))
     {
       exposure_so = module_so;
       break;

@@ -1264,7 +1264,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
     for(const GList *l = dev->iop; l; l = g_list_next(l))
     {
       dt_iop_module_t *mod = l->data;
-      if(dt_iop_module_is(module->so, mod->op))
+      if(dt_iop_module_is(module, mod->op))
         base_multi_priority = MIN(base_multi_priority, mod->multi_priority);
     }
 
@@ -1372,7 +1372,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, active_plugin))
+      if(dt_iop_module_is(module, active_plugin))
       {
         valid = TRUE;
         dt_iop_request_focus(module);
@@ -2351,8 +2351,8 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
   //retouch and spot removal module use masks differently and have
   //different buttons associated keep the shortcuts independent
   if(mod
-     && !dt_iop_module_is(mod->so, "spots")
-     && !dt_iop_module_is(mod->so, "retouch"))
+     && !dt_iop_module_is(mod, "spots")
+     && !dt_iop_module_is(mod, "retouch"))
   {
     dt_iop_gui_blend_data_t *bd = mod->blend_data;
 
@@ -3546,7 +3546,7 @@ void enter(dt_view_t *self)
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, active_plugin))
+      if(dt_iop_module_is(module, active_plugin))
         dt_iop_request_focus(module);
     }
   }
