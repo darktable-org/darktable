@@ -1751,6 +1751,10 @@ int mouse_moved(dt_iop_module_t *self,
   // we don't do anything if the image is not ready
   if(!g->preview_ready || self->dev->preview_pipe->loading) return 0;
 
+  // claim right-click drag to prevent proxy.rotate (straighten horizon) from interfering
+  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_SECONDARY)
+    return 1;
+
   float wd, ht;
   dt_dev_get_preview_size(self->dev, &wd, &ht);
 
@@ -1989,6 +1993,18 @@ int button_released(dt_iop_module_t *self,
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
+  if(which == GDK_BUTTON_SECONDARY)
+  {
+    // we reset cropping on RMB release
+    g->clip_x = 0.0f;
+    g->clip_y = 0.0f;
+    g->clip_w = 1.0f;
+    g->clip_h = 1.0f;
+    _aspect_apply(self, GRAB_BOTTOM_RIGHT);
+    gui_changed(self, NULL, NULL);
+    return 1;
+  }
+
   if(g->new_crop_active)
   {
     g->new_crop_active = FALSE;
@@ -2079,13 +2095,21 @@ int button_pressed(dt_iop_module_t *self,
   }
   else if(which == GDK_BUTTON_SECONDARY)
   {
-    // we reset cropping
-    g->clip_x = 0.0f;
-    g->clip_y = 0.0f;
-    g->clip_w = 1.0f;
-    g->clip_h = 1.0f;
-    _aspect_apply(self, GRAB_BOTTOM_RIGHT);
-    gui_changed(self, NULL, NULL);
+      float wd, ht;
+      dt_dev_get_preview_size(self->dev, &wd, &ht);
+
+      // switch module on already, other code depends in this:
+      if(!self->enabled)
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+      g->button_down_zoom_x = bzx;
+      g->button_down_zoom_y = bzy;
+
+      /* update prev clip box with current */
+      g->prev_clip_x = g->clip_x;
+      g->prev_clip_y = g->clip_y;
+      g->prev_clip_w = g->clip_w;
+      g->prev_clip_h = g->clip_h;
     return 1;
   }
   else
