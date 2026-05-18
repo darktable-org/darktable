@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-13 19:06+0200\n"
-"PO-Revision-Date: 2026-05-18 12:44+0200\n"
+"PO-Revision-Date: 2026-05-18 12:52+0200\n"
 "Last-Translator: Hans Petter Birkeland <hpbirkeland@gmail.com>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -251,7 +251,7 @@ msgstr "hvilke rettigheter som skal angis ved import"
 
 #: ../build/bin/conf_gen.h:1491
 msgid "comma separated tags to be applied when importing"
-msgstr "kommaseparert liste med merker som skal brukes ved import"
+msgstr "kommaseparert liste med nøkkelord som skal brukes ved import"
 
 #: ../build/bin/conf_gen.h:1500
 msgid "import tags from XMP"
@@ -31081,7 +31081,6 @@ msgid "bayer"
 msgstr "bayer"
 
 #: ../src/libs/neural_restore.c:1030
-#| msgid "transpose"
 msgid "x-trans"
 msgstr "x-trans"
 
