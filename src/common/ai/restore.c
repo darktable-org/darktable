@@ -682,7 +682,7 @@ int dt_restore_run_user_pipe_roi(dt_imgid_t imgid,
   for(GList *n = pipe.nodes; n; n = g_list_next(n))
   {
     dt_dev_pixelpipe_iop_t *piece = n->data;
-    if(dt_iop_module_is(piece->module->so, "rawdenoise"))
+    if(dt_iop_module_is(piece->module, "rawdenoise"))
       piece->enabled = FALSE;
   }
 

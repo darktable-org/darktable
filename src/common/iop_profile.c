@@ -838,17 +838,17 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(const struct 
     dt_iop_module_t *mod = modules->data;
 
     // we reach the module, that's it
-    if(dt_iop_module_is(mod->so, module->op)) break;
+    if(dt_iop_module_is(mod, module->op)) break;
 
     // if we reach colorout means that the module is after it
-    if(dt_iop_module_is(mod->so, "colorout"))
+    if(dt_iop_module_is(mod, "colorout"))
     {
       in_between = FALSE;
       break;
     }
 
     // we reach colorin, so far we're good
-    if(dt_iop_module_is(mod->so, "colorin"))
+    if(dt_iop_module_is(mod, "colorin"))
     {
       in_between = TRUE;
       break;
@@ -1049,7 +1049,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *module_so = modules->data;
-    if(dt_iop_module_is(module_so, "colorin"))
+    if(dt_iop_module_so_is(module_so, "colorin"))
     {
       colorin_so = module_so;
       break;
@@ -1060,7 +1060,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, "colorin"))
+      if(dt_iop_module_is(module, "colorin"))
       {
         colorin = module;
         break;
@@ -1101,7 +1101,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
       modules = g_list_previous(modules))
   {
     dt_iop_module_so_t *module_so = modules->data;
-    if(dt_iop_module_is(module_so, "colorout"))
+    if(dt_iop_module_so_is(module_so, "colorout"))
     {
       colorout_so = module_so;
       break;
@@ -1112,7 +1112,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
     for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, "colorout"))
+      if(dt_iop_module_is(module, "colorout"))
       {
         colorout = module;
         break;

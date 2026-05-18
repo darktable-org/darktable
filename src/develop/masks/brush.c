@@ -1927,8 +1927,8 @@ static int _brush_events_button_released(dt_iop_module_t *module,
         // and we switch in edit mode to show all the forms
         // spots and retouch have their own handling of creation_continuous
         if(gui->creation_continuous
-           && (dt_iop_module_is(crea_module->so, "spots")
-               || dt_iop_module_is(crea_module->so, "retouch")))
+           && (dt_iop_module_is(crea_module, "spots")
+               || dt_iop_module_is(crea_module, "retouch")))
           dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
         else if(!gui->creation_continuous)
           dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
@@ -1942,8 +1942,8 @@ static int _brush_events_button_released(dt_iop_module_t *module,
       {
         //spot and retouch manage creation_continuous in their own way
         if(crea_module
-           && !dt_iop_module_is(crea_module->so, "spots")
-           && !dt_iop_module_is(crea_module->so, "retouch"))
+           && !dt_iop_module_is(crea_module, "spots")
+           && !dt_iop_module_is(crea_module, "retouch"))
         {
           dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
           for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)

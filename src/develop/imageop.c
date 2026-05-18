@@ -1164,7 +1164,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
     dt_dev_modulegroups_update_visibility(darktable.develop);
 }
 
-gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
+gboolean dt_iop_so_is_hidden(const dt_iop_module_so_t *module)
 {
   gboolean is_hidden = TRUE;
   if(!(module->flags() & IOP_FLAGS_HIDDEN))
@@ -1179,12 +1179,12 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
   return is_hidden;
 }
 
-gboolean dt_iop_is_hidden(dt_iop_module_t *module)
+gboolean dt_iop_is_hidden(const dt_iop_module_t *module)
 {
   return !module || !module->so || dt_iop_so_is_hidden(module->so);
 }
 
-gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
+gboolean dt_iop_shown_in_group(dt_iop_module_t *module, const uint32_t group)
 {
   if(group == DT_MODULEGROUP_NONE) return TRUE;
 
@@ -1944,7 +1944,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
   {
     dt_iop_module_t *candidate = iter->data;
-    if(dt_iop_module_is(candidate->so, blendop_params->raster_mask_source))
+    if(dt_iop_module_is(candidate, blendop_params->raster_mask_source))
     {
       if(candidate->multi_priority == blendop_params->raster_mask_instance)
       {
@@ -3341,7 +3341,7 @@ dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op)
   for(GList *modules = iop_list; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *mod = modules->data;
-    if(dt_iop_module_is(mod->so, op))
+    if(dt_iop_module_is(mod, op))
     {
       result = mod;
       break;
@@ -3362,10 +3362,10 @@ dt_iop_module_so_t *dt_iop_get_module_so(const char *op)
 
   for(GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *mod = modules->data;
-    if(dt_iop_module_is(mod, op))
+    dt_iop_module_so_t *mod_so = modules->data;
+    if(dt_iop_module_so_is(mod_so, op))
     {
-      result = mod;
+      result = mod_so;
       break;
     }
   }
@@ -3378,9 +3378,9 @@ int dt_iop_get_module_flags(const char *op)
   GList *modules = darktable.iop;
   while(modules)
   {
-    dt_iop_module_so_t *module = modules->data;
-    if(dt_iop_module_is(module, op))
-      return module->flags();
+    dt_iop_module_so_t *module_so = modules->data;
+    if(dt_iop_module_so_is(module_so, op))
+      return module_so->flags();
     modules = g_list_next(modules);
   }
   return 0;
@@ -3659,7 +3659,7 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
   {
     dt_iop_module_t *mod = m->data;
 
-    if(dt_iop_module_is(mod->so, operation)
+    if(dt_iop_module_is(mod, operation)
        && (mod->multi_priority == multi_priority || multi_priority == -1))
     {
       mod_ret = mod;
@@ -3800,7 +3800,7 @@ dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
   {
     dt_iop_module_t *mod = m->data;
 
-    if((dt_iop_module_is(mod->so, operation))
+    if((dt_iop_module_is(mod, operation))
        && ((multi_name == NULL) || (strcmp(mod->multi_name, multi_name) == 0)))
     {
       mod_ret = mod;
@@ -3835,7 +3835,7 @@ gboolean dt_iop_is_first_instance(GList *modules, const dt_iop_module_t *module)
   while(iop)
   {
     dt_iop_module_t *m = iop->data;
-    if(dt_iop_module_is(m->so, module->op))
+    if(dt_iop_module_is(m, module->op))
     {
       is_first = (m == module);
       break;

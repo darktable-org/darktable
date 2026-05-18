@@ -794,10 +794,10 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile
   {
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
-      const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
-      if(dt_iop_module_is(module, "colorin"))
+      const dt_iop_module_so_t *mod_so = (const dt_iop_module_so_t *)(modules->data);
+      if(dt_iop_module_so_is(mod_so, "colorin"))
       {
-        colorin = module;
+        colorin = mod_so;
         break;
       }
     }
@@ -853,10 +853,10 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile
   {
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
-      const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
-      if(dt_iop_module_is(module, "colorout"))
+      const dt_iop_module_so_t *mod_so = (const dt_iop_module_so_t *)(modules->data);
+      if(dt_iop_module_so_is(mod_so, "colorout"))
       {
-        colorout = module;
+        colorout = mod_so;
         break;
       }
     }

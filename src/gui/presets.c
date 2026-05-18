@@ -474,18 +474,16 @@ gboolean dt_gui_presets_confirm_and_delete(const char *name,
     // deregistering accel...
     for(GList *modules = darktable.iop; modules; modules = modules->next)
     {
-      dt_iop_module_so_t *mod = modules->data;
-
-      if(dt_iop_module_is(mod, module_name))
+      dt_iop_module_so_t *mod_so = modules->data;
+      if(dt_iop_module_so_is(mod_so, module_name))
       {
-        dt_action_rename_preset(&mod->actions, name, NULL);
+        dt_action_rename_preset(&mod_so->actions, name, NULL);
         break;
       }
     }
     for(GList *libs = darktable.lib->plugins; libs; libs = g_list_next(libs))
     {
       dt_lib_module_t *lib = libs->data;
-
       if(!strcmp(lib->plugin_name, module_name))
       {
         dt_action_rename_preset(&lib->actions, name, NULL);

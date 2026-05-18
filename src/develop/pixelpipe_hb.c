@@ -512,17 +512,17 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       // not appropriate for the image.  Fixing that seemed to be
       // almost impossible after long discussions but at least we can
       // test, correct and add a problem hint here.
-      if(dt_iop_module_is(piece->module->so, "demosaic")
-         || dt_iop_module_is(piece->module->so, "rawprepare"))
+      if(dt_iop_module_is(piece->module, "demosaic")
+         || dt_iop_module_is(piece->module, "rawprepare"))
       {
         if(rawprep_img && !active)
           piece->enabled = TRUE;
         else if(!rawprep_img && active)
           piece->enabled = FALSE;
       }
-      else if((dt_iop_module_is(piece->module->so, "rawdenoise"))
-              || (dt_iop_module_is(piece->module->so, "hotpixels"))
-              || (dt_iop_module_is(piece->module->so, "cacorrect")))
+      else if((dt_iop_module_is(piece->module, "rawdenoise"))
+              || (dt_iop_module_is(piece->module, "hotpixels"))
+              || (dt_iop_module_is(piece->module, "cacorrect")))
       {
         if(!rawprep_img && active) piece->enabled = FALSE;
       }
@@ -567,7 +567,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         for(GList *m = dev->module_filter_out; m; m = g_list_next(m))
         {
           char *mod = (char *)(m->data);
-          if(dt_iop_module_is(piece->module->so, mod))
+          if(dt_iop_module_is(piece->module, mod))
           {
             piece->enabled = FALSE;
             dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
@@ -2978,7 +2978,7 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op)
 {
   GList *nodes = g_list_last(pipe->nodes);
   dt_dev_pixelpipe_iop_t *piece = nodes->data;
-  while(!dt_iop_module_is(piece->module->so, op))
+  while(!dt_iop_module_is(piece->module, op))
   {
     piece->enabled = FALSE;
     piece = NULL;
@@ -2992,7 +2992,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
 {
   GList *nodes = pipe->nodes;
   dt_dev_pixelpipe_iop_t *piece = nodes->data;
-  while(!dt_iop_module_is(piece->module->so, op))
+  while(!dt_iop_module_is(piece->module, op))
   {
     piece->enabled = FALSE;
     piece = NULL;
@@ -3810,7 +3810,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 // this expects a mask prepared by rawprepare or demosaic and distorts it
 // through all pipeline modules until target
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
-                                  float *src,
+                                  const float *src,
                                   const dt_iop_module_t *target_module,
                                   const dt_hash_t src_hash)
 {
@@ -3825,14 +3825,14 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
   {
     const dt_dev_pixelpipe_iop_t *candidate = iter->data;
 
-    if(dt_iop_module_is(candidate->module->so, "demosaic")
+    if(dt_iop_module_is(candidate->module, "demosaic")
        && candidate->enabled
        && raw_img)
     {
       source_iter = iter;
       break;
     }
-    if(dt_iop_module_is(candidate->module->so, "rawprepare")
+    if(dt_iop_module_is(candidate->module, "rawprepare")
        && candidate->enabled
        && !raw_img)
     {
