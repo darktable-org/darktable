@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-13 19:06+0200\n"
-"PO-Revision-Date: 2026-05-18 11:55+0200\n"
+"PO-Revision-Date: 2026-05-18 12:44+0200\n"
 "Last-Translator: Hans Petter Birkeland <hpbirkeland@gmail.com>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -30518,7 +30518,7 @@ msgstr "kategorier"
 
 #: ../src/libs/metadata_view.c:183
 msgid "image information"
-msgstr "bilde-informasjon"
+msgstr "bildeinformasjon"
 
 #: ../src/libs/metadata_view.c:375
 msgid "unused/deprecated"
