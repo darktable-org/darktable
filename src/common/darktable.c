@@ -2224,6 +2224,7 @@ void dt_cleanup()
 #ifdef HAVE_AI
   dt_ai_models_cleanup(darktable.ai_registry);
   darktable.ai_registry = NULL;
+  dt_ai_backend_cleanup_globals();
 #endif
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);

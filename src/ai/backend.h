@@ -82,6 +82,11 @@ guint dt_ai_providers_bundled(void);
  *  the snapshot is independent of when ORT is lazily initialized. */
 void dt_ai_snapshot_conf_state(void);
 
+/** Free heap-allocated backend globals (cached strings, conf snapshot).
+ *  Call once from dt_cleanup; OrtApi/OrtEnv/GModule are released through
+ *  their own paths (or leak at process exit, which is fine). */
+void dt_ai_backend_cleanup_globals(void);
+
 /** Read plugins/ai/models_path and expand ~ if present. Returns a
  *  newly-allocated path, or NULL if the conf key is empty/unset.
  *  Caller frees with g_free(). */
