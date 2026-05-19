@@ -1410,6 +1410,7 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
   return ok;
 }
 
+#if defined(__APPLE__)
 // V2 keyed-options attach for CoreML. translates ep_flags into named
 // options and wires ModelCacheDirectory for persistent compile cache
 static gboolean _try_coreml_v2(OrtSessionOptions *session_opts,
@@ -1451,6 +1452,7 @@ static gboolean _try_coreml_v2(OrtSessionOptions *session_opts,
   dt_print(DT_DEBUG_AI, "[darktable_ai] Apple CoreML (V2) enabled successfully.");
   return TRUE;
 }
+#endif  // __APPLE__
 
 // pick a GPU device_id: env var wins, then conf, fallback to 0.
 // each multi-GPU-capable EP has its own conf key + env var so users
