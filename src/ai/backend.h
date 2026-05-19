@@ -188,6 +188,9 @@ typedef struct dt_ai_model_info_t {
                            ///< Consumed internally by the load function to
                            ///< override the provider when the model declares
                            ///< the configured EP unsafe.
+  const char *coreml_format; ///< CoreML model format (JSON: string or
+                             ///< stem-keyed object). "neuralnetwork"
+                             ///< (default) or "mlprogram".
 } dt_ai_model_info_t;
 
 /* --- Model "attributes" lookup ---

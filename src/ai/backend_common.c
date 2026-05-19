@@ -199,6 +199,29 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
                 }
               }
 
+              // capture top-level "coreml_format" (string or
+              // stem-keyed object) as a JSON string
+              info->coreml_format = NULL;
+              if(json_object_has_member(obj, "coreml_format"))
+              {
+                JsonNode *cf_node
+                  = json_object_get_member(obj, "coreml_format");
+                if(cf_node
+                   && (JSON_NODE_HOLDS_VALUE(cf_node)
+                       || JSON_NODE_HOLDS_OBJECT(cf_node)))
+                {
+                  JsonGenerator *gen = json_generator_new();
+                  json_generator_set_root(gen, cf_node);
+                  gchar *s = json_generator_to_data(gen, NULL);
+                  if(s)
+                  {
+                    _store_string(env, s, &info->coreml_format);
+                    g_free(s);
+                  }
+                  g_object_unref(gen);
+                }
+              }
+
               env->models = g_list_prepend(env->models, info);
               g_hash_table_insert(
                 env->model_paths,
@@ -686,6 +709,49 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
   return result;
 }
 
+// TRUE if the manifest opts in to MLProgram via "mlprogram" — flat
+// string or stem-keyed object, same shape as cpu_only. unknown values
+// and missing blocks default to NeuralNetwork (Apple's historical
+// CoreML default, lowest-surprise for untested models)
+static gboolean _coreml_use_mlprogram(const dt_ai_model_info_t *info,
+                                      const char *model_file)
+{
+  if(!info || !info->coreml_format) return FALSE;
+
+  JsonParser *parser = json_parser_new();
+  gboolean use_mlprogram = FALSE;
+  if(json_parser_load_from_data(parser, info->coreml_format, -1, NULL))
+  {
+    JsonNode *root = json_parser_get_root(parser);
+    const char *value = NULL;
+    gchar *stem = NULL;
+
+    if(root && JSON_NODE_HOLDS_VALUE(root))
+    {
+      value = json_node_get_string(root);
+    }
+    else if(root && JSON_NODE_HOLDS_OBJECT(root) && model_file)
+    {
+      const char *dot = strrchr(model_file, '.');
+      stem = dot ? g_strndup(model_file, dot - model_file)
+                 : g_strdup(model_file);
+      JsonObject *obj = json_node_get_object(root);
+      if(json_object_has_member(obj, stem))
+      {
+        JsonNode *vn = json_object_get_member(obj, stem);
+        if(vn && JSON_NODE_HOLDS_VALUE(vn))
+          value = json_node_get_string(vn);
+      }
+    }
+
+    if(value && !g_ascii_strcasecmp(value, "mlprogram"))
+      use_mlprogram = TRUE;
+    g_free(stem);
+  }
+  g_object_unref(parser);
+  return use_mlprogram;
+}
+
 // platform-specific candidate order for AUTO. each candidate is tried
 // via dt_ai_probe_provider() and the model's cpu_only list — the first
 // available, non-banned EP wins. CoreML's cpu_only entry does not skip
@@ -751,6 +817,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
   if(configured == DT_AI_PROVIDER_CPU) return DT_AI_PROVIDER_CPU;
 
   const char *id = model_id ? model_id : "?";
+  dt_ai_provider_t result = DT_AI_PROVIDER_CPU;
 
   if(configured == DT_AI_PROVIDER_AUTO)
   {
@@ -760,7 +827,8 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
     // bundled ORT always supports the platform EP, and if it doesn't,
     // the load fallback chain in dt_ai_onnx_load_ext demotes to CPU
     const gboolean skip_probe = (n == 1);
-    for(int i = 0; i < n; i++)
+    gboolean resolved = FALSE;
+    for(int i = 0; i < n && !resolved; i++)
     {
       const dt_ai_provider_t c = cands[i];
       if(!skip_probe && !dt_ai_probe_provider(c)) continue;
@@ -770,28 +838,32 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
         dt_print(DT_DEBUG_AI,
                  "[darktable_ai] provider auto -> %s for %s",
                  _provider_config_name(c), id);
-        return c;
+        result = c;
+        resolved = TRUE;
       }
-      if(c == DT_AI_PROVIDER_COREML)
+      else if(c == DT_AI_PROVIDER_COREML)
       {
         *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
         dt_print(DT_DEBUG_AI,
                  "[darktable_ai] provider auto -> %s (cpu compute units) "
                  "for %s — model prefers CPU on %s",
                  _provider_config_name(c), id, _provider_config_name(c));
-        return c;
+        result = c;
+        resolved = TRUE;
       }
-      dt_print(DT_DEBUG_AI,
-               "[darktable_ai] auto: skipping %s for %s — model prefers CPU",
-               _provider_config_name(c), id);
+      else
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[darktable_ai] auto: skipping %s for %s — model prefers CPU",
+                 _provider_config_name(c), id);
+      }
     }
-    dt_print(DT_DEBUG_AI, "[darktable_ai] provider auto -> CPU for %s", id);
-    return DT_AI_PROVIDER_CPU;
+    if(!resolved)
+      dt_print(DT_DEBUG_AI, "[darktable_ai] provider auto -> CPU for %s", id);
   }
-
-  // concrete EP explicitly chosen
-  if(_provider_cpu_only(info, model_file, configured))
+  else if(_provider_cpu_only(info, model_file, configured))
   {
+    // concrete EP banned by cpu_only
     if(configured == DT_AI_PROVIDER_COREML)
     {
       *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
@@ -799,15 +871,25 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
                "[darktable_ai] %s prefers CPU on %s — using CoreML CPU "
                "compute units",
                id, _provider_config_name(configured));
-      return configured;
+      result = configured;
     }
-    dt_print(DT_DEBUG_AI,
-             "[darktable_ai] %s prefers CPU on %s — switching to CPU provider",
-             id, _provider_config_name(configured));
-    return DT_AI_PROVIDER_CPU;
+    else
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] %s prefers CPU on %s — switching to CPU provider",
+               id, _provider_config_name(configured));
+    }
+  }
+  else
+  {
+    result = configured;
   }
 
-  return configured;
+  if(result == DT_AI_PROVIDER_COREML
+     && _coreml_use_mlprogram(info, model_file))
+    *inout_ep_flags |= 16;  // COREML_FLAG_CREATE_MLPROGRAM
+
+  return result;
 }
 
 // provider string conversion
