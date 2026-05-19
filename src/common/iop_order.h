@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -182,11 +182,7 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
 /** free iop-order list returned by above functions */
 void dt_ioppr_iop_order_list_free(GList *iop_order_list);
 
-/** returns the dt_iop_order_entry_t of iop_order_list with operation = op_name */
-dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list,
-                                                   const char *op_name,
-                                                   const int multi_priority);
-/** likewise, but returns the link in the list instead of the entry */
+/** returns the link in the list of iop_order_list with operation = op_name*/
 GList *dt_ioppr_get_iop_order_link(GList *iop_order_list,
                                    const char *op_name,
                                    const int multi_priority);

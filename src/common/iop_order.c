@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2025 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -850,9 +850,9 @@ GList *dt_ioppr_get_iop_order_link(GList *iop_order_list,
 }
 
 // returns the first iop order entry that matches operation == op_name
-dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list,
-                                                   const char *op_name,
-                                                   const int multi_priority)
+static dt_iop_order_entry_t *_ioppr_get_iop_order_entry(GList *iop_order_list,
+                                                        const char *op_name,
+                                                        const int multi_priority)
 {
   const GList * const restrict link =
     dt_ioppr_get_iop_order_link(iop_order_list, op_name, multi_priority);
@@ -870,7 +870,7 @@ int dt_ioppr_get_iop_order(GList *iop_order_list,
 {
   int iop_order = INT_MAX;
   const dt_iop_order_entry_t *const restrict order_entry =
-    dt_ioppr_get_iop_order_entry(iop_order_list, op_name, multi_priority);
+    _ioppr_get_iop_order_entry(iop_order_list, op_name, multi_priority);
 
   if(order_entry)
   {
@@ -1888,7 +1888,7 @@ gboolean dt_ioppr_check_so_iop_order(GList *iop_list,
   {
     const dt_iop_module_so_t *const restrict mod = modules->data;
     const dt_iop_order_entry_t *const restrict entry =
-      dt_ioppr_get_iop_order_entry(iop_order_list, mod->op, 0); // mod->multi_priority);
+      _ioppr_get_iop_order_entry(iop_order_list, mod->op, 0); // mod->multi_priority);
     if(entry == NULL)
     {
       iop_order_missing = TRUE;
