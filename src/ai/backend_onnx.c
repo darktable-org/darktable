@@ -18,7 +18,6 @@
 
 #include "backend.h"
 #include "common/darktable.h"
-#include "common/file_location.h"
 #include "control/conf.h"
 #include <glib.h>
 #include <onnxruntime_c_api.h>
@@ -1411,6 +1410,48 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
   return ok;
 }
 
+// V2 keyed-options attach for CoreML. translates ep_flags into named
+// options and wires ModelCacheDirectory for persistent compile cache
+static gboolean _try_coreml_v2(OrtSessionOptions *session_opts,
+                               uint32_t ep_flags,
+                               const char *cache_dir)
+{
+  if(!g_ort || !g_ort->SessionOptionsAppendExecutionProvider) return FALSE;
+
+  const char *keys[8];
+  const char *vals[8];
+  size_t n = 0;
+
+  keys[n] = "ModelFormat";
+  vals[n] = (ep_flags & 16) ? "MLProgram" : "NeuralNetwork";
+  n++;
+
+  keys[n] = "MLComputeUnits";
+  vals[n] = (ep_flags & 1) ? "CPUOnly" : "ALL";
+  n++;
+
+  if(cache_dir && cache_dir[0])
+  {
+    keys[n] = "ModelCacheDirectory";
+    vals[n] = cache_dir;
+    n++;
+  }
+
+  dt_print(DT_DEBUG_AI, "[darktable_ai] attempting to enable Apple CoreML (V2)...");
+  OrtStatus *status = g_ort->SessionOptionsAppendExecutionProvider(
+    session_opts, "CoreML", keys, vals, n);
+  if(status)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] Apple CoreML (V2) enable failed: %s",
+             g_ort->GetErrorMessage(status));
+    g_ort->ReleaseStatus(status);
+    return FALSE;
+  }
+  dt_print(DT_DEBUG_AI, "[darktable_ai] Apple CoreML (V2) enabled successfully.");
+  return TRUE;
+}
+
 // pick a GPU device_id: env var wins, then conf, fallback to 0.
 // each multi-GPU-capable EP has its own conf key + env var so users
 // switching between providers don't carry stale indices across vendors
@@ -1575,10 +1616,23 @@ _enable_acceleration(OrtSessionOptions *session_opts,
 
   case DT_AI_PROVIDER_COREML:
 #if defined(__APPLE__)
-    _try_provider(
-      session_opts,
-      "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] CoreML format: %s%s",
+             (coreml_flags & 16) ? "MLProgram" : "NeuralNetwork",
+             (coreml_flags & 1) ? " (CPU compute units)" : "");
+    gchar *fp = _backend_cache_fingerprint(DT_AI_PROVIDER_COREML, -1);
+    char coreml_cache[PATH_MAX] = { 0 };
+    const gboolean have_cache = dt_ai_backend_cache_dir(
+      DT_AI_PROVIDER_COREML, fp, "_shared", coreml_cache, sizeof(coreml_cache));
+    g_free(fp);
+    if(!_try_coreml_v2(session_opts, coreml_flags,
+                       have_cache ? coreml_cache : NULL))
+      _try_provider(
+        session_opts,
+        "OrtSessionOptionsAppendExecutionProvider_CoreML",
+        "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
+  }
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] apple CoreML not available on this platform");
 #endif
