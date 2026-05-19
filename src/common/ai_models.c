@@ -1535,6 +1535,10 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
   g_unlink(download_path);
   g_free(download_path);
 
+  // invalidate before flipping status so the next session sees a fresh
+  // compile, not a stale artifact from the previous model file
+  dt_ai_backend_cache_invalidate(model_id);
+
   // mark success
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
@@ -1680,6 +1684,8 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   char *model_dir = g_build_filename(registry->models_dir, model_id, NULL);
   _rmdir_recursive(model_dir);
   g_free(model_dir);
+
+  dt_ai_backend_cache_invalidate(model_id);
 
   char *task_copy = NULL;
   g_mutex_lock(&registry->lock);
