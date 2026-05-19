@@ -24,7 +24,7 @@
       "name": "denoise nind",
       "description": "UNet denoiser trained on NIND dataset",
       "task": "denoise",
-      "min_version": "0.1",
+      "min_version": "0.2",
       "github_asset": "denoise-nind.dtmodel",
       "default": true
     },
@@ -33,7 +33,7 @@
       "name": "raw denoise nind",
       "description": "UtNet2 raw denoiser trained on RawNIND dataset",
       "task": "rawdenoise",
-      "min_version": "0.1",
+      "min_version": "0.2",
       "github_asset": "rawdenoise-nind.dtmodel",
       "default": true
     },
