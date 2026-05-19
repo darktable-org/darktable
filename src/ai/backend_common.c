@@ -18,9 +18,12 @@
 
 #include "backend.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
+#include <limits.h>
 #include <string.h>
 
 // provider table
@@ -868,6 +871,125 @@ guint dt_ai_providers_bundled(void)
   mask |= 1u << DT_AI_PROVIDER_DIRECTML;
 #endif
   return mask;
+}
+
+// compile-cache helpers
+
+static const char *_ep_name(dt_ai_provider_t provider)
+{
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_COREML:    return "coreml";
+    case DT_AI_PROVIDER_CUDA:      return "cuda";
+    case DT_AI_PROVIDER_MIGRAPHX:  return "migraphx";
+    case DT_AI_PROVIDER_OPENVINO:  return "openvino";
+    case DT_AI_PROVIDER_DIRECTML:  return "directml";
+    default:                       return NULL;
+  }
+}
+
+static void _cache_rmdir_recursive(const char *path)
+{
+  GDir *dir = g_dir_open(path, 0, NULL);
+  if(!dir) return;
+
+  const gchar *name;
+  while((name = g_dir_read_name(dir)))
+  {
+    gchar *child = g_build_filename(path, name, NULL);
+    if(g_file_test(child, G_FILE_TEST_IS_DIR))
+      _cache_rmdir_recursive(child);
+    else
+      g_unlink(child);
+    g_free(child);
+  }
+  g_dir_close(dir);
+  g_rmdir(path);
+}
+
+gboolean dt_ai_backend_cache_dir(dt_ai_provider_t provider,
+                                 const char *fingerprint,
+                                 const char *model_id,
+                                 char *out, size_t size)
+{
+  if(!out || size == 0) return FALSE;
+  const char *ep = _ep_name(provider);
+  if(!ep || !fingerprint || !model_id || !model_id[0]) return FALSE;
+
+  char cachedir[PATH_MAX] = { 0 };
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  gchar *subdir = g_strdup_printf("ai_v%d_%s_%s",
+                                  DT_AI_CACHE_SCHEMA, ep, fingerprint);
+  gchar *full = g_build_filename(cachedir, subdir, model_id, NULL);
+  g_free(subdir);
+
+  const size_t len = strlen(full);
+  if(len + 1 > size)
+  {
+    g_free(full);
+    return FALSE;
+  }
+  if(g_mkdir_with_parents(full, 0700) == -1)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_cache] failed to create cache directory: %s", full);
+    g_free(full);
+    return FALSE;
+  }
+  memcpy(out, full, len + 1);
+  g_free(full);
+  return TRUE;
+}
+
+void dt_ai_backend_cache_invalidate(const char *model_id)
+{
+  if(!model_id || !model_id[0]) return;
+
+  char cachedir[PATH_MAX] = { 0 };
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  GDir *dir = g_dir_open(cachedir, 0, NULL);
+  if(!dir) return;
+
+  // match every "ai_v<N>_<ep>_<fingerprint>" sibling and walk into
+  // <model_id>, catching old schemas/EPs too
+  const gchar *name;
+  while((name = g_dir_read_name(dir)))
+  {
+    if(!g_str_has_prefix(name, "ai_v")) continue;
+    gchar *model_subdir = g_build_filename(cachedir, name, model_id, NULL);
+    if(g_file_test(model_subdir, G_FILE_TEST_IS_DIR))
+    {
+      dt_print(DT_DEBUG_AI, "[ai_cache] invalidating %s", model_subdir);
+      _cache_rmdir_recursive(model_subdir);
+    }
+    g_free(model_subdir);
+  }
+  g_dir_close(dir);
+}
+
+void dt_ai_backend_cache_invalidate_all(void)
+{
+  char cachedir[PATH_MAX] = { 0 };
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  GDir *dir = g_dir_open(cachedir, 0, NULL);
+  if(!dir) return;
+
+  const gchar *name;
+  while((name = g_dir_read_name(dir)))
+  {
+    if(!g_str_has_prefix(name, "ai_v")) continue;
+    gchar *full = g_build_filename(cachedir, name, NULL);
+    if(g_file_test(full, G_FILE_TEST_IS_DIR))
+    {
+      dt_print(DT_DEBUG_AI, "[ai_cache] invalidating %s", full);
+      _cache_rmdir_recursive(full);
+    }
+    g_free(full);
+  }
+  g_dir_close(dir);
 }
 
 // clang-format off
