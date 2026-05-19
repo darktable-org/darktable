@@ -727,20 +727,13 @@ static gboolean _draw(GtkWidget *da,
 }
 
 static GdkDevice *_touchpad = NULL;
-static gboolean _touchpad_gestures_enabled(void)
+
+static void _touchpad_gestures_pref_changed(gpointer instance,
+                                            gpointer user_data)
 {
-  // If conf_gen.h was built before darktableconfig.xml.in gained this key
-  // (incremental build without cmake reconfigure), dt_confgen_value_exists
-  // returns FALSE and dt_conf_get_bool gets an empty string → FALSE.
-  // Default to enabled in that case so a stale build doesn't silently break gestures.
-  if(!dt_confgen_value_exists("darkroom/ui/touchpad_gestures", DT_DEFAULT))
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] 'darkroom/ui/touchpad_gestures' missing from confgen"
-             " (stale conf_gen.h — run cmake reconfigure), defaulting to enabled");
-    return TRUE;
-  }
-  return dt_conf_get_bool("darkroom/ui/touchpad_gestures");
+  (void)instance;
+  dt_gui_gtk_t *gui = user_data;
+  gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
 }
 
 static gboolean _input_event(GtkWidget *widget,
@@ -773,7 +766,7 @@ static gboolean _input_event(GtkWidget *widget,
       break;
   }
 
-  if(event->type == GDK_TOUCHPAD_PINCH && _touchpad_gestures_enabled())
+  if(event->type == GDK_TOUCHPAD_PINCH && darktable.gui->touchpad_gestures_enabled)
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
     dt_print(DT_DEBUG_INPUT,
@@ -805,7 +798,7 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-  const gboolean touchpad_enabled = _touchpad_gestures_enabled();
+  const gboolean touchpad_enabled = darktable.gui->touchpad_gestures_enabled;
   const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
   dt_print(DT_DEBUG_INPUT,
@@ -1514,6 +1507,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
+  gui->touchpad_gestures_enabled = TRUE;
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _touchpad_gestures_pref_changed, gui);
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);

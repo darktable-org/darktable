@@ -2194,7 +2194,7 @@ end:
   }
 }
 
-static void _preference_changed(gpointer instance,
+static void _preference_changed_display_intent(gpointer instance,
                                 gpointer user_data)
 {
   GtkWidget *display_intent = GTK_WIDGET(user_data);
@@ -2209,10 +2209,14 @@ static void _preference_changed(gpointer instance,
   dt_configure_ppd_dpi(darktable.gui);
 }
 
-static void _preference_changed_button_hide(gpointer instance,
-                                            const dt_view_t *self)
+static void _preference_changed(gpointer instance,
+                                const dt_view_t *self)
 {
+  (void)instance;
   dt_develop_t *dev = self->data;
+  
+  dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
+
   for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = modules->data;
@@ -3311,9 +3315,9 @@ void gui_init(dt_view_t *self)
 
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                              _preference_changed, display_intent);
+                              _preference_changed_display_intent, display_intent);
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                              _preference_changed, display2_intent);
+                              _preference_changed_display_intent, display2_intent);
     // and when profiles change
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display_profile_changed, display_profile);
@@ -3580,8 +3584,8 @@ void enter(dt_view_t *self)
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
-  // connect to preference change for module header button hiding
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed_button_hide);
+  // connect to preference change for callback for button hiding and constrain_zoom
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
   dt_iop_color_picker_init();
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
