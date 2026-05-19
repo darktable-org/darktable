@@ -441,3 +441,23 @@ int dt_ai_get_output_shape(dt_ai_context_t *ctx, int index,
  * @param ctx The AI context to unload.
  */
 void dt_ai_unload_model(dt_ai_context_t *ctx);
+
+// compile-cache layout: <user_cache>/ai_v<SCHEMA>_<ep>_<fingerprint>/<model_id>/
+// bump SCHEMA when the layout changes incompatibly; old caches are skipped.
+#define DT_AI_CACHE_SCHEMA 1
+
+// build the compile-cache directory for (provider, fingerprint, model_id)
+// and mkdir -p it. pass model_id = "_shared" for caches without per-model
+// granularity. returns TRUE on success, FALSE on path overflow or mkdir failure.
+gboolean dt_ai_backend_cache_dir(dt_ai_provider_t provider,
+                                 const char *fingerprint,
+                                 const char *model_id,
+                                 char *out, size_t size);
+
+// remove every compile-cache subdir matching model_id across all providers
+// and schemas. called after a model is deleted or replaced.
+void dt_ai_backend_cache_invalidate(const char *model_id);
+
+// remove the entire compile-cache tree. exposed for a future user action;
+// not used internally.
+void dt_ai_backend_cache_invalidate_all(void);
