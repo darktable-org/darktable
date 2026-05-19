@@ -478,6 +478,7 @@ static inline gboolean _full_request(dt_develop_t *dev)
   return
         dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->full.pipe->status == DT_DEV_PIXELPIPE_INVALID
+     || dev->full.pipe->changed != DT_DEV_PIPE_UNCHANGED
      || dev->full.pipe->input_timestamp < dev->preview_pipe->input_timestamp;
 }
 
@@ -737,7 +738,8 @@ void expose(dt_view_t *self,
 
   const gboolean expose_full =
         port->pipe->backbuf                                // do we have an image?
-     && port->pipe->output_imgid == dev->image_storage.id; // same image?
+     && port->pipe->output_imgid == dev->image_storage.id  // same image?
+     && !port->pipe->loading;                              // not loading a new one?
 
   const gboolean use_loading_screen =
 #ifdef _WIN32
@@ -757,9 +759,25 @@ void expose(dt_view_t *self,
     }
     if(!use_loading_screen)
     {
-      // cache the rendered bitmap for use while loading the next image
+      // Cache the rendered content for display while loading the next image.
+#ifdef _WIN32
+      // On the Win32 GDK backend, holding a cairo_surface_reference() to
+      // cairo_get_target(cri) prevents GTK from properly invalidating the
+      // widget surface, causing gtk_widget_queue_draw() to silently fail
+      // (issue #20831). Copy to a standalone image surface instead.
+      cairo_surface_t *target = cairo_get_target(cri);
+      if(width > 0 && height > 0)
+      {
+        darktable.gui->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        cairo_t *cr2 = cairo_create(darktable.gui->surface);
+        cairo_set_source_surface(cr2, target, 0, 0);
+        cairo_paint(cr2);
+        cairo_destroy(cr2);
+      }
+#else
       darktable.gui->surface = cairo_get_target(cri);
       cairo_surface_reference(darktable.gui->surface);
+#endif
     }
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
@@ -888,6 +906,12 @@ void expose(dt_view_t *self,
         cairo_set_source_surface(cri, darktable.gui->surface, 0, 0);
         cairo_paint(cri);
         cairo_restore(cri);
+      }
+      else
+      {
+        // No cached surface (first entry from lighttable) — paint background
+        dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+        cairo_paint(cri);
       }
       dt_toast_log("%s", load_txt);
     }
@@ -3980,6 +4004,23 @@ void leave(dt_view_t *self)
   dt_iop_color_picker_cleanup();
   if(darktable.lib->proxy.colorpicker.picker_proxy)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
+
+  // Clear cached surface so the loading screen shows on next darkroom entry
+  if(darktable.gui->surface)
+  {
+    cairo_surface_destroy(darktable.gui->surface);
+    darktable.gui->surface = NULL;
+  }
+
+  // Invalidate pipe output so expose_full is FALSE on next entry.
+  // Without this, re-opening the same image skips the loading screen
+  // because the stale backbuf + matching output_imgid makes expose_full TRUE.
+  dt_pthread_mutex_lock(&darktable.develop->full.pipe->backbuf_mutex);
+  g_free(darktable.develop->full.pipe->backbuf);
+  darktable.develop->full.pipe->backbuf = NULL;
+  darktable.develop->full.pipe->output_imgid = NO_IMGID;
+  dt_pthread_mutex_unlock(&darktable.develop->full.pipe->backbuf_mutex);
+  darktable.develop->preview_pipe->output_imgid = NO_IMGID;
 
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "darkroom");
 
