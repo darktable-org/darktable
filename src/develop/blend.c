@@ -1461,40 +1461,48 @@ void tiling_callback_blendop(dt_iop_module_t *self,
                              dt_develop_tiling_t *tiling)
 {
   tiling->factor = 0.0f;
+  tiling->factor_cl = 0.0f;
   tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
   tiling->align = 1;
 
   dt_develop_blend_params_t *const bldata = piece->blendop_data;
-  if(bldata)
-  {
-    if(bldata->details != 0.0f)
-    {
-      // details mask requires 2 additional quarter buffers of details data size
-      // so normalize to roi_size
-      dt_dev_detail_mask_t *details = &piece->pipe->scharr;
-      if(details->data)
-        tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
-     }
+  if(bldata == NULL)
+    return;
 
-    if(bldata->feathering_radius > 0.1f) // we don't feather below that
+  if(bldata->details != 0.0f)
+  {
+    // details mask requires 2 additional quarter buffers of details data size
+    // so normalize to roi_size
+    dt_dev_detail_mask_t *details = &piece->pipe->scharr;
+    if(details->data)
     {
-      const int devid = piece->pipe->devid;
-      if(devid > DT_DEVICE_CPU)
-      {
-        /* OpenCL feathering does simple internal tiling for less mem pressure,
-           we still need some mem here for this.
-        */
-        tiling->factor_cl = MAX(tiling->factor, 1.0f);
-      }
-      tiling->factor = MAX(tiling->factor, 18.0f * 0.25f); // we need all 18 intermediate guided filter mask buffers
+      tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
+      tiling->factor_cl = tiling->factor;
     }
   }
+
+  if(bldata->feathering_radius > 0.1f) // we don't feather below that
+  {
+    const int devid = piece->pipe->devid;
+    if(devid > DT_DEVICE_CPU)
+    {
+      /* OpenCL feathering does simple internal tiling for less mem pressure,
+         we still need some mem here for this.
+      */
+      tiling->factor_cl = MAX(tiling->factor_cl, 1.0f);
+    }
+    tiling->factor = MAX(tiling->factor, 18.0f * 0.25f); // we need all 18 intermediate guided filter mask buffers
+
+    tiling->factor += 1.5f; // in + (guide, tmp) + two quarter buffers for the mask
+    tiling->factor_cl += 1.5f;
+  }
+
   const float outnorm = (float)(roi_out->width * roi_out->height) / (roi_in->width * roi_in->height);
-  const float basic = 2.5f + outnorm; // in + out + (guide, tmp) + two quarter buffers for the mask
-  tiling->factor += basic;
-  tiling->factor_cl += basic;
+  tiling->factor += outnorm;
+  tiling->factor_cl += outnorm;
 }
 
 /** check if content of params is all zero, indicating a
