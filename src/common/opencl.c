@@ -327,7 +327,7 @@ gboolean dt_opencl_use_pinned_memory(const int devid)
 
 void dt_opencl_write_device_config(const int devid)
 {
-  if(devid < 0) return;
+  if(devid <= DT_DEVICE_CPU) return;
 
   /* As we have floats as per-device parameters we keep track of current locale
      and do conversions via "C" here and while reading device config
@@ -366,7 +366,7 @@ void dt_opencl_write_device_config(const int devid)
 
 gboolean dt_opencl_read_device_config(const int devid)
 {
-  if(devid < 0) return FALSE;
+  if(devid <= DT_DEVICE_CPU) return FALSE;
 
   gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_NUMERIC, "C");
@@ -1698,7 +1698,7 @@ static const char *_opencl_get_vendor_by_id(const unsigned int id)
 gboolean dt_opencl_finish(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return FALSE;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return FALSE;
 
   const cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
@@ -1713,7 +1713,7 @@ gboolean dt_opencl_finish_sync_pipe(const int devid,
                                     const int pipetype)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return FALSE;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return FALSE;
 
   const gboolean exporting = pipetype & DT_DEV_PIXELPIPE_EXPORT;
   const gboolean asyncmode = cl->dev[devid].asyncmode;
@@ -2596,7 +2596,7 @@ static gboolean _check_kernel(const int dev,
 {
   dt_opencl_t *cl = darktable.opencl;
 
-  if(!cl->inited || dev < 0) return FALSE;
+  if(!cl->inited || dev <= DT_DEVICE_CPU) return FALSE;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return FALSE;
 
   if(cl->dev[dev].kernel_used[kernel]) return TRUE;
@@ -2646,7 +2646,7 @@ int dt_opencl_get_max_work_item_sizes(const int dev,
                                       size_t *sizes)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || dev < 0) return CL_DEVICE_NOT_AVAILABLE;
+  if(!cl->inited || dev <= DT_DEVICE_CPU) return CL_DEVICE_NOT_AVAILABLE;
   return (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid,
                                                   CL_DEVICE_MAX_WORK_ITEM_SIZES,
                                                   sizeof(size_t) * 3, sizes, NULL);
@@ -2659,7 +2659,7 @@ int dt_opencl_get_work_group_limits(const int dev,
                                     unsigned long *localmemsize)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || dev < 0) return CL_DEVICE_NOT_AVAILABLE;
+  if(!cl->inited || dev <= DT_DEVICE_CPU) return CL_DEVICE_NOT_AVAILABLE;
 
   if(cl->dev[dev].local_size == 0) return CL_INVALID_WORK_DIMENSION;
   *localmemsize = cl->dev[dev].local_size;
@@ -2871,23 +2871,13 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int height,
                                   const int bpp)
 {
-  return dt_opencl_read_host_from_device_rowpitch(devid, host, device,
-                                                  width, height, bpp * width);
-}
-
-int dt_opencl_read_host_from_device_rowpitch(const int devid,
-                                             void *host,
-                                             void *device,
-                                             const int width,
-                                             const int height,
-                                             const int rowpitch)
-{
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
+
   const size_t region[2] = { width, height };
   // blocking.
   return dt_opencl_read_host_from_device_raw(devid, host, device, CLIMG_ORIGIN,
-                                             region, rowpitch, TRUE);
+                                             region, (size_t)width * bpp, TRUE);
 }
 
 int dt_opencl_read_host_from_device_raw(const int devid,
@@ -2932,24 +2922,13 @@ int dt_opencl_write_host_to_device(const int devid,
                                    const int height,
                                    const int bpp)
 {
-  return dt_opencl_write_host_to_device_rowpitch(devid, host, device,
-                                                 width, height, width * bpp);
-}
-
-int dt_opencl_write_host_to_device_rowpitch(const int devid,
-                                            const void *host,
-                                            void *device,
-                                            const int width,
-                                            const int height,
-                                            const int rowpitch)
-{
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
   const size_t region[2] = { width, height };
   // blocking.
   return dt_opencl_write_host_to_device_raw(devid, host, device, CLIMG_ORIGIN,
-                                            region, rowpitch, TRUE);
+                                            region, (size_t)width * bpp, TRUE);
 }
 
 int dt_opencl_write_host_to_device_raw(const int devid,
@@ -3276,8 +3255,8 @@ void *dt_opencl_map_buffer(const int devid,
                            cl_mem buffer,
                            const gboolean blocking,
                            const int flags,
-                           size_t offset,
-                           size_t size)
+                           const size_t offset,
+                           const size_t size)
 {
   if(!_cldev_running(devid))
     return NULL;
@@ -3545,10 +3524,10 @@ void dt_opencl_memory_statistics(int devid,
   if(!((darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL)))
     return;
 
-  if(devid < 0)
+  if(devid <= DT_DEVICE_CPU)
     devid = _opencl_get_mem_context_id(mem);
 
-  if(devid < 0)
+  if(devid <= DT_DEVICE_CPU)
     return;
 
   dt_opencl_t *cl = darktable.opencl;
@@ -3622,7 +3601,7 @@ void dt_opencl_check_tuning(const int devid)
 
 cl_ulong dt_opencl_get_device_available(const int devid)
 {
-  if(!darktable.opencl->inited || devid < 0) return 0;
+  if(!darktable.opencl->inited || devid <= DT_DEVICE_CPU) return 0;
   return darktable.opencl->dev[devid].used_available;
 }
 
@@ -3633,7 +3612,7 @@ static cl_ulong _opencl_get_device_memalloc(const int devid)
 
 cl_ulong dt_opencl_get_device_memalloc(const int devid)
 {
-  if(!darktable.opencl->inited || devid < 0) return 0;
+  if(!darktable.opencl->inited || devid <= DT_DEVICE_CPU) return 0;
   return _opencl_get_device_memalloc(devid);
 }
 
@@ -3784,7 +3763,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
                                          const char *tag)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return NULL;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return NULL;
   if(!cl->dev[devid].use_events) return NULL;
 
   static const cl_event zeroevent[1]; // implicitly initialized to zero
@@ -3886,7 +3865,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
 void dt_opencl_events_reset(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return;
   if(!cl->dev[devid].use_events) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -3920,7 +3899,7 @@ void dt_opencl_events_reset(const int devid)
 static void _opencl_events_wait_for(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return;
   if(!cl->dev[devid].use_events) return;
 
   static const cl_event zeroevent[1]; // implicitly initialized to zero
@@ -3961,7 +3940,7 @@ static void _opencl_events_profiling(const int devid,
                                      const gboolean aggregated)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return;
   if(!cl->dev[devid].use_events) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -4061,7 +4040,7 @@ cl_int dt_opencl_events_flush(const int devid,
                               const gboolean reset)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return CL_SUCCESS;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return CL_SUCCESS;
   if(!cl->dev[devid].use_events) return CL_SUCCESS;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -4168,7 +4147,7 @@ cl_int dt_opencl_local_buffer_opt(const int devid,
                                   dt_opencl_local_buffer_t *factors)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return DT_OPENCL_NODEVICE;
+  if(!cl->inited || devid <= DT_DEVICE_CPU) return DT_OPENCL_NODEVICE;
 
   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
   size_t workgroupsize = 0;       // the maximum number of items in a work group
