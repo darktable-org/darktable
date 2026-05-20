@@ -428,22 +428,10 @@ static void _setup_registry(dt_ai_registry_t *registry)
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  // honour plugins/ai/models_path override; "~/..." expands to $HOME
-  char *override = dt_conf_get_string("plugins/ai/models_path");
-  if(override && override[0])
-  {
-    if(override[0] == '~' && (override[1] == '/' || override[1] == '\0'))
-      registry->models_dir
-        = g_build_filename(g_get_home_dir(), override + 2, NULL);
-    else
-      registry->models_dir = g_strdup(override);
-  }
-  else
-  {
+  registry->models_dir = dt_ai_resolve_models_path_override();
+  if(!registry->models_dir)
     registry->models_dir = g_build_filename(g_get_user_data_dir(),
                                             "darktable", "models", NULL);
-  }
-  g_free(override);
 
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
@@ -1966,7 +1954,7 @@ dt_ai_environment_t *dt_ai_registry_get_env(dt_ai_registry_t *registry)
 
   g_mutex_lock(&registry->lock);
   if(!registry->env)
-    registry->env = dt_ai_env_init(NULL);
+    registry->env = dt_ai_env_init(registry->models_dir);
   g_mutex_unlock(&registry->lock);
 
   return registry->env;
