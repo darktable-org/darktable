@@ -248,20 +248,18 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
   g_dir_close(dir);
 }
 
-// scan custom search_paths + default config/data directories
+// scan search_paths + XDG data dir fallback. duplicate IDs are
+// rejected by _scan_directory (first-seen wins)
 static void _scan_all_paths(dt_ai_environment_t *env)
 {
-  if(env->search_paths)
+  if(env->search_paths && env->search_paths[0])
   {
     char **tokens = g_strsplit(env->search_paths, ";", -1);
     for(int i = 0; tokens[i] != NULL; i++)
-    {
       _scan_directory(env, tokens[i]);
-    }
     g_strfreev(tokens);
   }
 
-  // scan XDG data dir where the registry downloads/extracts models
   char *datadir = g_build_filename(g_get_user_data_dir(), "darktable", "models", NULL);
   _scan_directory(env, datadir);
   g_free(datadir);
@@ -269,9 +267,25 @@ static void _scan_all_paths(dt_ai_environment_t *env)
 
 // API implementation
 
+gchar *dt_ai_resolve_models_path_override(void)
+{
+  char *override = dt_conf_get_string("plugins/ai/models_path");
+  if(!override || !override[0])
+  {
+    g_free(override);
+    return NULL;
+  }
+  gchar *resolved;
+  if(override[0] == '~' && (override[1] == '/' || override[1] == '\0'))
+    resolved = g_build_filename(g_get_home_dir(), override + 2, NULL);
+  else
+    resolved = g_strdup(override);
+  g_free(override);
+  return resolved;
+}
+
 dt_ai_environment_t *dt_ai_env_init(const char *search_paths)
 {
-  // refuse to initialize when AI is disabled in preferences
   if(!dt_conf_get_bool("plugins/ai/enabled"))
   {
     dt_print(DT_DEBUG_AI,
@@ -281,10 +295,19 @@ dt_ai_environment_t *dt_ai_env_init(const char *search_paths)
 
   dt_print(DT_DEBUG_AI, "[darktable_ai] dt_ai_env_init start.");
 
+  // honor plugins/ai/models_path when no explicit paths are given
+  gchar *resolved_paths = NULL;
+  if(!search_paths)
+  {
+    resolved_paths = dt_ai_resolve_models_path_override();
+    if(resolved_paths) search_paths = resolved_paths;
+  }
+
   dt_ai_environment_t *env = g_new0(dt_ai_environment_t, 1);
   g_mutex_init(&env->lock);
   env->model_paths = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   env->search_paths = g_strdup(search_paths);
+  g_free(resolved_paths);
 
   // read user's preferred execution provider from config
   char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
