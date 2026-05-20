@@ -160,7 +160,8 @@ void dt_print_pipe_ext(const char *title,
 
   if(pipe)
   {
-    snprintf(pname, sizeof(pname), "[%s%s]",
+    snprintf(pname, sizeof(pname), "[%s%s%s]",
+      pipe->tiling ? "T" : "",
       dt_dev_pixelpipe_type_to_str(pipe->type),
       dt_pipe_is_canvas(pipe) && darktable.develop->late_scaling.enabled ? " HQ" : "");
     if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
@@ -2028,11 +2029,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   /* get tiling requirement of module */
   dt_develop_tiling_t tiling = { 0 };
   // set sentinel value to detect whether callback set sizes
-  tiling.factor_cl = tiling.maxbuf_cl = -1;
+  tiling.factor_cl = tiling.maxbuf_cl = -1.0f;
   module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
   // default to CPU size if callback didn't set GPU
-  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor;
-  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
+  if(tiling.factor_cl < 0.0f) tiling.factor_cl = tiling.factor;
+  if(tiling.maxbuf_cl < 0.0f) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* does this module involve blending? */
   if(piece->blendop_data
