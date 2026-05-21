@@ -226,6 +226,8 @@ changes (where available).
 - Removed `Neo` Intel and `pocl` OpenCL drivers from blacklist,
   the `AMD-APP` driver has been added as not supported by AMD for 10yrs.
 
+- RustiCL is the preferred OpenCL driver instead ROCm on AMD systems.
+
 - In the styles module, a new option has been added to hide the
   preview in the tooltip. Additionally, a module preference now allows
   you to change the preview size, with two options available: default
