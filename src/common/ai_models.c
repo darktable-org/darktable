@@ -1249,6 +1249,49 @@ static gboolean _extract_zip(const char *zippath,
   return success;
 }
 
+// peek at the first archive entry to recover the model_id (the top
+// level directory name in the zip layout)
+static char *_zip_top_dir(const char *zippath)
+{
+  struct archive *a = archive_read_new();
+  archive_read_support_format_zip(a);
+  if(archive_read_open_filename(a, zippath, 10240) != ARCHIVE_OK)
+  {
+    archive_read_free(a);
+    return NULL;
+  }
+  struct archive_entry *entry;
+  char *result = NULL;
+  if(archive_read_next_header(a, &entry) == ARCHIVE_OK)
+  {
+    const char *path = archive_entry_pathname(entry);
+    const char *slash = path ? strchr(path, '/') : NULL;
+    if(slash)      result = g_strndup(path, slash - path);
+    else if(path)  result = g_strdup(path);
+  }
+  archive_read_close(a);
+  archive_read_free(a);
+  return result;
+}
+
+// activate `model_id` only when nothing is active for its task
+static void _activate_if_unset(dt_ai_registry_t *registry,
+                               const char *model_id)
+{
+  if(!registry || !model_id) return;
+  gchar *task = NULL;
+  g_mutex_lock(&registry->lock);
+  const dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
+  if(m && m->task) task = g_strdup(m->task);
+  g_mutex_unlock(&registry->lock);
+  if(!task) return;
+  char *current = dt_ai_models_get_active_for_task(task);
+  if(!current || !current[0])
+    dt_ai_models_set_active_for_task(task, model_id);
+  g_free(current);
+  g_free(task);
+}
+
 // install a local .dtmodel file (zip archive) into the models directory.
 // returns error message (caller must free) or NULL on success.
 char *dt_ai_models_install_local(dt_ai_registry_t *registry,
@@ -1260,14 +1303,22 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
   if(!g_file_test(filepath, G_FILE_TEST_IS_REGULAR))
     return g_strdup_printf(_("file not found: %s"), filepath);
 
+  char *installed_id = _zip_top_dir(filepath);
+
   if(!_extract_zip(filepath, registry->models_dir))
+  {
+    g_free(installed_id);
     return g_strdup(_("failed to extract model archive"));
+  }
 
   // rescan models directory to pick up newly installed model
   dt_ai_models_refresh_status(registry);
 
+  _activate_if_unset(registry, installed_id);
+
   dt_print(DT_DEBUG_AI, "[ai_models] model installed from: %s", filepath);
 
+  g_free(installed_id);
   return NULL; // success
 }
 
@@ -1546,27 +1597,16 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
   dt_ai_backend_cache_invalidate(model_id);
 
   // mark success
-  gchar *task_copy = NULL;
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
   if(m)
   {
     m->status = DT_AI_MODEL_DOWNLOADED;
     m->download_progress = 1.0;
-    if(m->task) task_copy = g_strdup(m->task);
   }
   g_mutex_unlock(&registry->lock);
 
-  // auto-activate only when nothing is active for this task — never
-  // override an existing user choice
-  if(task_copy)
-  {
-    char *current = dt_ai_models_get_active_for_task(task_copy);
-    if(!current || !current[0])
-      dt_ai_models_set_active_for_task(task_copy, model_id);
-    g_free(current);
-    g_free(task_copy);
-  }
+  _activate_if_unset(registry, model_id);
 
   dt_print(DT_DEBUG_AI, "[ai_models] download complete: %s", model_id);
 
