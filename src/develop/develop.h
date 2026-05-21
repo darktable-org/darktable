@@ -347,6 +347,7 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
+    GtkWidget *display_intent_widget, *display2_intent_widget;    // TODO (#18559): remove gtk stuff from here
   } profile;
 
   GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here

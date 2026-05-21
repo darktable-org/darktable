@@ -2194,28 +2194,23 @@ end:
   }
 }
 
-static void _preference_changed_display_intent(gpointer instance,
-                                gpointer user_data)
-{
-  GtkWidget *display_intent = GTK_WIDGET(user_data);
-
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-
-  gtk_widget_set_no_show_all(display_intent, !force_lcms2);
-  gtk_widget_set_visible(display_intent, force_lcms2);
-
-  dt_get_sysresource_level();
-  dt_opencl_update_settings();
-  dt_configure_ppd_dpi(darktable.gui);
-}
-
 static void _preference_changed(gpointer instance,
                                 const dt_view_t *self)
 {
   (void)instance;
   dt_develop_t *dev = self->data;
-  
+
   dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
+
+  const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  gtk_widget_set_no_show_all(dev->profile.display_intent_widget, !force_lcms2);
+  gtk_widget_set_visible(dev->profile.display_intent_widget, force_lcms2);
+  gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, !force_lcms2);
+  gtk_widget_set_visible(dev->profile.display2_intent_widget, force_lcms2);
+
+  dt_get_sysresource_level();
+  dt_opencl_update_settings();
+  dt_configure_ppd_dpi(darktable.gui);
 
   for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
@@ -3192,25 +3187,25 @@ void gui_init(dt_view_t *self)
           N_("absolute colorimetric"),
           NULL };
 
-    GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self),
+    dev->profile.display_intent_widget  = dt_bauhaus_combobox_new_full(DT_ACTION(self),
                                                              N_("profiles"),
                                                              N_("intent"),
                                                              "",
                                                              0,
                                                              _display_intent_callback,
                                                              dev, intents_list);
-    GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self),
+    dev->profile.display2_intent_widget = dt_bauhaus_combobox_new_full(DT_ACTION(self),
                                                               N_("profiles"),
                                                               N_("preview intent"),
                                                               "",
                                                               0,
                                                               _display2_intent_callback,
                                                               dev, intents_list);
-
+        
     if(!force_lcms2)
     {
-      gtk_widget_set_no_show_all(display_intent, TRUE);
-      gtk_widget_set_no_show_all(display2_intent, TRUE);
+      gtk_widget_set_no_show_all(dev->profile.display_intent_widget, TRUE);
+      gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, TRUE);
     }
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -3313,21 +3308,16 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
-    // update the gui when the preferences changed (i.e. show intent when using lcms2)
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                              _preference_changed_display_intent, display_intent);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                              _preference_changed_display_intent, display2_intent);
-    // and when profiles change
+    // update the gui when profiles change (intent visibility is handled by _preference_changed)
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display_profile_changed, display_profile);
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display2_profile_changed, display2_profile);
 
     GtkWidget *vbox = dt_gui_vbox
-      (display_profile, display_intent,
+      (display_profile, dev->profile.display_intent_widget,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       display2_profile, display2_intent, display2_color_assessment,
+       display2_profile, dev->profile.display2_intent_widget, display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
        softproof_profile, histogram_profile);
 
