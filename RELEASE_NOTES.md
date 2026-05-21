@@ -376,6 +376,8 @@ changes (where available).
 - Fixed white and middle-grey patches being swapped for Datacolor
   SpyderCheckr 48 in the Color Calibration module.
 
+- Various stability fixes for OpenCL and CPU pixelpipe processing.
+
 ## Lua
 
 ### API Version
