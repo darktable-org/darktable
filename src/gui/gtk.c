@@ -899,21 +899,13 @@ static gboolean _scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static void _panel_scrolled(GtkEventControllerScroll *controller,
-                            double dx, double dy,
-                            GtkAdjustment *adj)
+static gboolean
+_borders_scrolled(GtkWidget *widget, GdkEventScroll *event, const gpointer user_data)
 {
-  // GTK4: don't need to clamp to upper/lower
-  const double lower = gtk_adjustment_get_lower(adj);
-  const double upper = gtk_adjustment_get_upper(adj)
-                       - gtk_adjustment_get_page_size(adj);
-  const double step = gtk_adjustment_get_step_increment(adj);
-  const double old_val = gtk_adjustment_get_value(adj);
-  const double new_val = CLAMPF(old_val + dy * step, lower, upper);
-  gtk_adjustment_set_value(adj, new_val);
-  // GTK3: explicitly consume the scroll
-  g_signal_stop_emission_by_name(controller, "scroll");
-  // GTK4: return GDK_EVENT_STOP;
+  // pass the scroll event to the matching side panel
+  gtk_widget_event(GTK_WIDGET(user_data), (GdkEvent *)event);
+
+  return TRUE;
 }
 
 static void _scrollbar_changed(GtkWidget *widget,
@@ -2756,14 +2748,11 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                  : GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
 
-  // scrolling the left/right window border scrolls the module lists,
-  // passing on scroll via gtk_widget_event() breaks kinetic scrolling
-  // and isn't GTK4 ready, so directly change GtkAdjustment
-  dt_gui_connect_scroll(left
-                        ? darktable.gui->widgets.right_border
-                        : darktable.gui->widgets.left_border,
-                        GTK_EVENT_CONTROLLER_SCROLL_VERTICAL,
-                        _panel_scrolled, vadj);
+  g_signal_connect(
+    G_OBJECT(left ? darktable.gui->widgets.right_border : darktable.gui->widgets.left_border),
+    "scroll-event",
+    G_CALLBACK(_borders_scrolled),
+    sw);
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over
    * a control, and scroll it's value), only scroll on modifier */
@@ -4822,8 +4811,7 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
     GtkWidget *const sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
     if(sw)
     {
-      GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-      _panel_scrolled(controller, 0.0, dy, vadj);
+      gtk_widget_event(sw, event);
       return TRUE;
     }
   }
