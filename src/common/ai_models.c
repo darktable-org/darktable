@@ -1271,6 +1271,24 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
   return NULL; // success
 }
 
+// best installed model for `task`: default preferred, else first found.
+// caller must hold registry->lock
+static const char *_pick_fallback_active_unlocked(dt_ai_registry_t *registry,
+                                                  const char *task)
+{
+  if(!registry || !task) return NULL;
+  const char *first_installed = NULL;
+  for(GList *l = registry->models; l; l = g_list_next(l))
+  {
+    const dt_ai_model_t *m = (const dt_ai_model_t *)l->data;
+    if(!m->task || strcmp(m->task, task) != 0) continue;
+    if(m->status != DT_AI_MODEL_DOWNLOADED) continue;
+    if(m->is_default) return m->id;
+    if(!first_installed) first_installed = m->id;
+  }
+  return first_installed;
+}
+
 #ifdef HAVE_AI_DOWNLOAD
 // synchronous download - returns error message or NULL on success
 char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
@@ -1528,14 +1546,27 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
   dt_ai_backend_cache_invalidate(model_id);
 
   // mark success
+  gchar *task_copy = NULL;
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
   if(m)
   {
     m->status = DT_AI_MODEL_DOWNLOADED;
     m->download_progress = 1.0;
+    if(m->task) task_copy = g_strdup(m->task);
   }
   g_mutex_unlock(&registry->lock);
+
+  // auto-activate only when nothing is active for this task — never
+  // override an existing user choice
+  if(task_copy)
+  {
+    char *current = dt_ai_models_get_active_for_task(task_copy);
+    if(!current || !current[0])
+      dt_ai_models_set_active_for_task(task_copy, model_id);
+    g_free(current);
+    g_free(task_copy);
+  }
 
   dt_print(DT_DEBUG_AI, "[ai_models] download complete: %s", model_id);
 
@@ -1687,12 +1718,19 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   }
   g_mutex_unlock(&registry->lock);
 
-  // clear active status if this was the active model for its task
+  // if deleted model was active, pick a fallback (default preferred)
   if(task_copy)
   {
     char *active = dt_ai_models_get_active_for_task(task_copy);
     if(active && strcmp(active, model_id) == 0)
-      dt_ai_models_set_active_for_task(task_copy, NULL);
+    {
+      g_mutex_lock(&registry->lock);
+      const char *fallback = _pick_fallback_active_unlocked(registry, task_copy);
+      char *fallback_copy = fallback ? g_strdup(fallback) : NULL;
+      g_mutex_unlock(&registry->lock);
+      dt_ai_models_set_active_for_task(task_copy, fallback_copy);
+      g_free(fallback_copy);
+    }
     g_free(active);
     g_free(task_copy);
   }
