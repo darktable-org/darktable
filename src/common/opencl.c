@@ -527,6 +527,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *confentry = calloc(PATH_MAX, sizeof(char));
   char *binname = calloc(PATH_MAX, sizeof(char));
 
+  dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
+
   // test GPU availability, vendor, memory, image support etc:
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE,
                                            sizeof(cl_bool), &device_available, NULL);
@@ -825,7 +827,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   GLOBAL MEM SIZE:          %.0f MB\n",
                (double)cl->dev[dev].max_global_mem / (double)DT_MEGA);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX MEM ALLOC:            %.0f MB\n",
+               "   MAX IMAGE ALLOC:          %.0f MB\n",
                (double)cl->dev[dev].max_mem_alloc / (double)DT_MEGA);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX IMAGE SIZE:           %zd x %zd\n",
@@ -871,7 +873,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ASYNC PIXELPIPE:          %s\n", STR_YESNO(cl->dev[dev].asyncmode));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PINNED MEMORY TRANSFER:   %s\n", STR_YESNO(cl->dev[dev].pinned_memory));
+               "   PINNED MEMORY TILING:     %s\n", STR_YESNO(cl->dev[dev].pinned_memory));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   SUPPORTED ATOMICS:        %s%s%s\n",
                cl->dev[dev].atomic_support == DT_OPENCL_ATOMIC_NONE ? "none" : "",
@@ -919,8 +921,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     res = TRUE;
     goto end;
   }
-
-  dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
 
   cl->dev[dev].context = (cl->dlocl->symbols->dt_clCreateContext)
     (0, 1, &devid, NULL, NULL, &err);
@@ -1111,6 +1111,9 @@ end:
   // we always write the device config to keep track of disabled devices
   dt_opencl_write_device_config(dev);
 
+  if(res)
+    dt_pthread_mutex_destroy(&cl->dev[dev].lock);
+
   free(device_name);
   free(device_name_cleaned);
   free(fullname);
@@ -1133,6 +1136,43 @@ end:
   free(binname);
 
   return res;
+}
+
+static void _cleanup_cl_device_context(dt_opencl_t *cl, const int i)
+{
+  dt_pthread_mutex_destroy(&cl->dev[i].lock);
+
+  for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
+  {
+    if(cl->dev[i].kernel_used[k])
+      (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
+  }
+
+  for(int k = 0; k < DT_OPENCL_MAX_PROGRAMS; k++)
+  {
+    if(cl->dev[i].program_used[k])
+      (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
+  }
+
+  (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
+  (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
+}
+
+static void _cleanup_cl_device_mem(dt_opencl_t *cl, const int i)
+{
+  if(cl->dev[i].use_events)
+  {
+    dt_opencl_events_reset(i);
+    free(cl->dev[i].eventlist);
+    free(cl->dev[i].eventtags);
+  }
+
+  free((void *)(cl->dev[i].fullname));
+  free((void *)(cl->dev[i].device_version));
+  free((void *)(cl->dev[i].platform));
+  free((void *)(cl->dev[i].cname));
+  free((void *)(cl->dev[i].options));
+  free((void *)(cl->dev[i].cflags));
 }
 
 void dt_opencl_init(dt_opencl_t *cl,
@@ -1539,36 +1579,9 @@ finally:
   {
     for(int i = 0; cl->dev && i < cl->num_devs; i++)
     {
-      dt_pthread_mutex_destroy(&cl->dev[i].lock);
-
-      for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
-      {
-        if(cl->dev[i].kernel_used[k])
-          (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
-      }
-
-      for(int k = 0; k < DT_OPENCL_MAX_PROGRAMS; k++)
-      {
-        if(cl->dev[i].program_used[k])
-          (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
-      }
-
-      (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
-      (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
-
-      if(cl->dev[i].use_events)
-      {
-        dt_opencl_events_reset(i);
-        free(cl->dev[i].eventlist);
-        free(cl->dev[i].eventtags);
-      }
-      free((void *)(cl->dev[i].fullname));
-      free((void *)(cl->dev[i].device_version));
-      free((void *)(cl->dev[i].platform));
-      free((void *)(cl->dev[i].cname));
-      free((void *)(cl->dev[i].options));
-      free((void *)(cl->dev[i].cflags));
-     }
+      _cleanup_cl_device_context(cl, i);
+      _cleanup_cl_device_mem(cl, i);
+    }
   }
 
   free(all_num_devices);
@@ -1595,16 +1608,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
     for(int i = 0; i < cl->num_devs; i++)
     {
-      dt_pthread_mutex_destroy(&cl->dev[i].lock);
-      for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
-        if(cl->dev[i].kernel_used[k])
-          (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
-      for(int k = 0; k < DT_OPENCL_MAX_PROGRAMS; k++)
-        if(cl->dev[i].program_used[k])
-          (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
-      (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
-      (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
-
+      _cleanup_cl_device_context(cl, i);
       if(cl->print_statistics && (darktable.unmuted & DT_DEBUG_MEMORY))
       {
         dt_print_nts(DT_DEBUG_OPENCL,
@@ -1638,22 +1642,9 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                        cl->dev[i].fullname, i);
         }
       }
-
-      if(cl->dev[i].use_events)
-      {
-        dt_opencl_events_reset(i);
-
-        free(cl->dev[i].eventlist);
-        free(cl->dev[i].eventtags);
-      }
-
-      free((void *)(cl->dev[i].fullname));
-      free((void *)(cl->dev[i].device_version));
-      free((void *)(cl->dev[i].platform));
-      free((void *)(cl->dev[i].cname));
-      free((void *)(cl->dev[i].options));
-      free((void *)(cl->dev[i].cflags));
+      _cleanup_cl_device_mem(cl, i);
     }
+
     free(cl->dev_priority_image);
     free(cl->dev_priority_preview);
     free(cl->dev_priority_preview2);
