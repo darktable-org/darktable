@@ -990,10 +990,12 @@ static void _on_install_model(GtkButton *button, gpointer user_data)
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-    _("install AI model"),
+    _("install AI models"),
     GTK_WINDOW(data->parent_dialog),
     GTK_FILE_CHOOSER_ACTION_OPEN,
     _("_open"), _("_cancel"));
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   GtkFileFilter *filter = gtk_file_filter_new();
   gtk_file_filter_set_name(filter, _("AI model packages (*.dtmodel)"));
@@ -1003,32 +1005,53 @@ static void _on_install_model(GtkButton *button, gpointer user_data)
   gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser))
-     == GTK_RESPONSE_ACCEPT)
+     != GTK_RESPONSE_ACCEPT)
   {
-    char *filepath
-      = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    g_object_unref(filechooser);
+    return;
+  }
 
+  GSList *files = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
+  g_object_unref(filechooser);
+
+  int ok = 0;
+  GString *errors = g_string_new(NULL);
+  for(GSList *l = files; l; l = l->next)
+  {
+    const char *filepath = (const char *)l->data;
     char *error = dt_ai_models_install_local(darktable.ai_registry, filepath);
     if(error)
     {
-      GtkWidget *err_dialog = gtk_message_dialog_new(
-        GTK_WINDOW(data->parent_dialog),
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_ERROR,
-        GTK_BUTTONS_OK,
-        "%s", error);
-      gtk_dialog_run(GTK_DIALOG(err_dialog));
-      gtk_widget_destroy(err_dialog);
+      gchar *base = g_path_get_basename(filepath);
+      g_string_append_printf(errors, "%s: %s\n", base, error);
+      g_free(base);
       g_free(error);
     }
     else
     {
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
-      _refresh_model_list(data);
+      ok++;
     }
-    g_free(filepath);
   }
-  g_object_unref(filechooser);
+  g_slist_free_full(files, g_free);
+
+  if(ok)
+  {
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+    _refresh_model_list(data);
+  }
+
+  if(errors->len)
+  {
+    GtkWidget *err_dialog = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL,
+      GTK_MESSAGE_ERROR,
+      GTK_BUTTONS_OK,
+      "%s", errors->str);
+    gtk_dialog_run(GTK_DIALOG(err_dialog));
+    gtk_widget_destroy(err_dialog);
+  }
+  g_string_free(errors, TRUE);
 }
 
 static void _on_delete_selected(GtkButton *button, gpointer user_data)
