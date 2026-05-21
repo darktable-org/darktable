@@ -1896,31 +1896,21 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     G_CALLBACK(_on_download_selected),
     data);
   dt_gui_box_add(button_box, data->download_selected_btn);
-
-  // gap before import
-  GtkWidget *sep1 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-  gtk_widget_set_margin_start(sep1, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(sep1, DT_PIXEL_APPLY_DPI(8));
-  dt_gui_box_add(button_box, sep1);
 #endif // HAVE_AI_DOWNLOAD
 
   // import from file button
   data->install_btn = gtk_button_new_with_label(_("import from file…"));
   gtk_widget_set_tooltip_text(data->install_btn,
     _("install a model from a local .dtmodel file"));
+  gtk_widget_set_margin_start(data->install_btn, DT_PIXEL_APPLY_DPI(16));
   g_signal_connect(data->install_btn, "clicked", G_CALLBACK(_on_install_model), data);
   dt_gui_box_add(button_box, data->install_btn);
-
-  // gap before delete
-  GtkWidget *sep2 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-  gtk_widget_set_margin_start(sep2, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(sep2, DT_PIXEL_APPLY_DPI(8));
-  dt_gui_box_add(button_box, sep2);
 
   // delete selected button
   data->delete_selected_btn = gtk_button_new_with_label(_("delete selected"));
   gtk_widget_set_tooltip_text(data->delete_selected_btn,
     _("remove the selected models from disk"));
+  gtk_widget_set_margin_start(data->delete_selected_btn, DT_PIXEL_APPLY_DPI(16));
   g_signal_connect(
     data->delete_selected_btn,
     "clicked",
