@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#include "dtgtk/paint_cell.h"
 #include "ai/backend.h"
 #include "common/ai_models.h"
 #include "common/darktable.h"
@@ -69,7 +70,7 @@ enum
 {
   COL_SELECTED,
   COL_NAME,
-  COL_INFO,     // info icon column (static "ⓘ" text)
+  COL_INFO,     // info icon visibility flag (TRUE on downloaded rows)
   COL_VERSION,
   COL_TASK,
   COL_ENABLED,
@@ -257,8 +258,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
         ? (model->version ? model->version : "0.0") : "–",
       COL_ID,
       model->id,
-      COL_INFO,
-      is_downloaded ? "\xe2\x93\x98" : "",  // U+24D8 CIRCLED LATIN SMALL LETTER I
+      COL_INFO, is_downloaded,
       -1);
     dt_ai_model_free(model);
   }
@@ -1220,12 +1220,9 @@ static gboolean _info_active_at_bin(dt_prefs_ai_data_t *data,
      && column == data->info_col)
   {
     GtkTreeIter iter;
-    gchar *info = NULL;
     if(gtk_tree_model_get_iter(GTK_TREE_MODEL(data->model_store), &iter, path))
       gtk_tree_model_get(GTK_TREE_MODEL(data->model_store),
-                         &iter, COL_INFO, &info, -1);
-    active = (info && info[0]);
-    g_free(info);
+                         &iter, COL_INFO, &active, -1);
   }
   if(path) gtk_tree_path_free(path);
   return active;
@@ -1309,13 +1306,12 @@ static gboolean _on_info_button_press(GtkWidget *widget,
   if(gtk_tree_model_get_iter(GTK_TREE_MODEL(data->model_store), &iter, path))
   {
     gchar *model_id = NULL;
-    gchar *info = NULL;
+    gboolean has_info = FALSE;
     gtk_tree_model_get(GTK_TREE_MODEL(data->model_store),
-                       &iter, COL_ID, &model_id, COL_INFO, &info, -1);
-    if(model_id && info && info[0])
+                       &iter, COL_ID, &model_id, COL_INFO, &has_info, -1);
+    if(model_id && has_info)
       _show_model_card(data, model_id);
     g_free(model_id);
-    g_free(info);
   }
   gtk_tree_path_free(path);
   return TRUE;
@@ -1713,7 +1709,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     NUM_COLS,
     G_TYPE_BOOLEAN, // selected
     G_TYPE_STRING,  // name
-    G_TYPE_STRING,  // info icon
+    G_TYPE_BOOLEAN, // info icon visible
     G_TYPE_STRING,  // version
     G_TYPE_STRING,  // task
     G_TYPE_BOOLEAN, // enabled
@@ -1782,11 +1778,12 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), name_col);
 
   // info icon column — click opens model card
-  GtkCellRenderer *info_renderer = gtk_cell_renderer_text_new();
+  GtkCellRenderer *info_renderer
+    = dtgtk_paint_cell_new(dtgtk_cairo_paint_info, 0, NULL);
   data->info_col = gtk_tree_view_column_new_with_attributes(
     "",
     info_renderer,
-    "text",
+    "visible",
     COL_INFO,
     NULL);
   gtk_tree_view_column_set_clickable(data->info_col, FALSE);

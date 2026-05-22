@@ -159,6 +159,8 @@ void dtgtk_cairo_paint_messages(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 void dtgtk_cairo_paint_styles(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint the ? help label */
 void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint the i info label */
+void dtgtk_cairo_paint_info(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint the grouping icon. */
 void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint the preferences wheel. */

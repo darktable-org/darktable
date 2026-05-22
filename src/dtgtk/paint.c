@@ -2140,6 +2140,32 @@ void dtgtk_cairo_paint_help(cairo_t *cr, const gint x, const gint y, const gint 
   FINISH
 }
 
+void dtgtk_cairo_paint_info(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(0.95, 1, 0, 0)
+
+  // dot (filled so it reads as a tittle, not a tiny ring)
+  cairo_arc(cr, 0.5, 0.22, 0.05, 0.0, 2.0 * M_PI);
+  cairo_fill(cr);
+
+  // stem
+  cairo_move_to(cr, 0.5,  0.40);
+  cairo_line_to(cr, 0.5,  0.72);
+  // top serif (asymmetric, ends at stem centreline)
+  cairo_move_to(cr, 0.35, 0.40);
+  cairo_line_to(cr, 0.50, 0.40);
+  // bottom serif
+  cairo_move_to(cr, 0.35, 0.72);
+  cairo_line_to(cr, 0.65, 0.72);
+  // outer circle
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, 0.5, 0.5, 0.45, 0.0, 2.0 * M_PI);
+
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_grouping(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
