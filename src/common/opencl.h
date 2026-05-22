@@ -607,6 +607,8 @@ gboolean dt_opencl_read_device_config(const int devid);
 gboolean dt_opencl_avoid_atomics(const int devid);
 void dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
+gboolean dt_opencl_unified_memory(const int devid);
+unsigned int dt_opencl_tiling_align(const int devid);
 
 G_END_DECLS
 
@@ -644,7 +646,7 @@ static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 }
 static inline gboolean dt_opencl_finish(const int devid)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline gboolean dt_opencl_finish_sync_pipe(const int devid,
                                                   const int pipetype)
@@ -653,7 +655,7 @@ static inline gboolean dt_opencl_finish_sync_pipe(const int devid,
 }
 static inline int dt_opencl_lock_device(const int pipetype)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline void dt_opencl_unlock_device(const int dev)
 {
@@ -661,7 +663,7 @@ static inline void dt_opencl_unlock_device(const int dev)
 static inline int dt_opencl_create_kernel(const int program,
                                           const char *name)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline void dt_opencl_free_kernel(const int kernel)
 {
@@ -669,33 +671,33 @@ static inline void dt_opencl_free_kernel(const int kernel)
 static inline int dt_opencl_get_max_work_item_sizes(const int dev,
                                                     size_t *sizes)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline int dt_opencl_get_work_group_limits(const int dev,
                                                   size_t *sizes,
                                                   size_t *workgroupsize,
                                                   unsigned long *localmemsize)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline int dt_opencl_get_kernel_work_group_size(const int dev,
                                                        const int kernel,
                                                        size_t *kernelworkgroupsize)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline int dt_opencl_enqueue_kernel_2d(const int dev,
                                               const int kernel,
                                               const size_t *sizes)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline int dt_opencl_enqueue_kernel_2d_with_local(const int dev,
                                                          const int kernel,
                                                          const size_t *sizes,
                                                          const size_t *local)
 {
-  return -1;
+  return DT_OPENCL_DEFAULT_ERROR;
 }
 static inline gboolean dt_opencl_is_enabled(void)
 {
