@@ -466,7 +466,10 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   else
     scale = val / 100.0f * ppd;
 
-  dt_dev_zoom_move(port, zoom, scale, closeup, -1.0f, -1.0f, TRUE);
+  // Preset zoom picks (small / 50% / custom %) take DT_ZOOM_FREE with an
+  // explicit scale — don't run them through the constrain soft caps.
+  dt_dev_zoom_move(port, zoom, scale, closeup, -1.0f, -1.0f,
+                   zoom != DT_ZOOM_FREE);
 }
 
 static gboolean _lib_navigation_widget_to_center(GtkEventController *controller,

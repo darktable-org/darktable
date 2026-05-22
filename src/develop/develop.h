@@ -347,6 +347,7 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
+    GtkWidget *display_intent_widget, *display2_intent_widget;    // TODO (#18559): remove gtk stuff from here
   } profile;
 
   GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
@@ -357,6 +358,7 @@ typedef struct dt_develop_t
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
   gboolean darkroom_mouse_in_center_area; // TRUE if the mouse cursor is in center area
+  gboolean constrain_zoom;   // cached value of "darkroom/ui/constrain_zoom" pref
 
   GList *module_filter_out;
   
