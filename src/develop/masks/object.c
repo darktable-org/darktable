@@ -1707,6 +1707,11 @@ static void _object_events_post_expose(cairo_t *cr,
   int dev_x = 0, dev_y = 0;
   if(win && pointer)
     gdk_window_get_device_position(win, pointer, &dev_x, &dev_y, &mod);
+
+  // skip indicator when pointer is over a window above us (e.g. prefs)
+  if(pointer
+     && gdk_device_get_window_at_position(pointer, NULL, NULL) != win)
+    return;
   const gboolean has_sel = d && d->has_selection;
   const gboolean ctrl_shift_held
     = has_sel
