@@ -325,6 +325,22 @@ gboolean dt_opencl_use_pinned_memory(const int devid)
   return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].pinned_memory;
 }
 
+gboolean dt_opencl_unified_memory(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].unified_memory;
+}
+
+/* this defines an additional alignment requirement for opencl image width.
+   It can have strong effects on processing speed. Reasonable values are a
+   power of 2. set to 1 for no effect.
+   FIXME we can possibly fix this per device
+*/
+unsigned int dt_opencl_tiling_align(const int devid)
+{
+  return 4;
+}
+
 void dt_opencl_write_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return;
