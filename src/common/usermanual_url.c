@@ -106,6 +106,7 @@ dt_help_url urls_db[] =
   {"ai",                         "preferences-settings/ai/"},
   {"css_tweaks",                 "preferences-settings/general/#css-theme-modifications"},
   {"preset_dialog",              "darkroom/processing-modules/presets/#creating-and-editing-presets"},
+  {"message_log",                "overview/user-interface/bottom-panel/#common-controls"},
 
   // iop links
   {"agx",                        "module-reference/processing-modules/agx/"},
