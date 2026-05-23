@@ -1987,7 +1987,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   // reserve new cache line: output
   const gboolean important = module
       && dt_pipe_no_mask_display(pipe)
-      && dt_pipe_is_canvas(pipe)
+      && dt_pipe_is_screen(pipe)
       && (module->flags() & IOP_FLAGS_WRITE_PIPECACHE);
 
   dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
