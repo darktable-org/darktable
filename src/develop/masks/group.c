@@ -330,7 +330,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = fpts->data;
-    dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
+    dt_masks_form_t *sel = dt_masks_get_from_id_ext(piece->pipe->forms, fpt->formid);
     if(sel)
     {
       ok[pos] = dt_masks_get_mask(module, piece, sel, &bufs[pos],
@@ -648,7 +648,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = fpts->data;
-    dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
+    dt_masks_form_t *sel = dt_masks_get_from_id_ext(piece->pipe->forms, fpt->formid);
 
     if(sel)
     {
