@@ -162,9 +162,9 @@ void dt_ioppr_transform_image_colorspace
    float *const image_out,
    const int width,
    const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
+   const dt_iop_colorspace_type_t cst_from,
+   const dt_iop_colorspace_type_t cst_to,
+   dt_iop_colorspace_type_t *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info);
 
 void dt_ioppr_transform_image_colorspace_rgb
@@ -222,9 +222,9 @@ gboolean dt_ioppr_transform_image_colorspace_cl
    cl_mem dev_img_out,
    const int width,
    const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
+   const dt_iop_colorspace_type_t cst_from,
+   const dt_iop_colorspace_type_t cst_to,
+   dt_iop_colorspace_type_t *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info);
 
 gboolean dt_ioppr_transform_image_colorspace_rgb_cl
