@@ -2401,7 +2401,9 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   dt_draw_line(cr, 0.0, 0.5 * graph_height, graph_width, 0.5 * graph_height);
   cairo_stroke(cr);
 
+  const GdkRGBA fg_color = darktable.bauhaus->graph_fg;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
+  set_color(cr, fg_color);
 
   // Build the curve LUT and plotting params for the current channel
   g->LUT = dt_alloc_align_float(LUT_ELEM);
