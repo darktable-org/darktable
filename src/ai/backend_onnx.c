@@ -631,6 +631,12 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
   return TRUE;
 }
 
+// g_ptr_array_sort passes pointer-to-pointer, hence the double-deref
+static gint _compare_subdir_names(gconstpointer a, gconstpointer b)
+{
+  return g_strcmp0(*(const char * const *)a, *(const char * const *)b);
+}
+
 // find the ORT runtime library recursively, skipping *.libs/ peers
 static gchar *_scan_for_ort_lib(const char *root)
 {
@@ -679,45 +685,12 @@ GList *dt_ai_ort_find_libraries(void)
   };
 #endif
 
-  // user-space paths (install scripts) — scan for ORT libraries
-  static const char *subdirs[] = { "onnxruntime-cuda", "onnxruntime-migraphx", "onnxruntime-openvino" };
-  gchar *user_paths[3] = { NULL };
-
 #ifdef _WIN32
-  // on Windows the install script puts libraries under %LOCALAPPDATA%
   const char *local_app = g_getenv("LOCALAPPDATA");
-  const char *base_dir = local_app ? local_app : g_get_home_dir();
+  gchar *scan_root = g_strdup(local_app ? local_app : g_get_home_dir());
 #else
-  const char *base_dir = g_get_home_dir();
+  gchar *scan_root = g_build_filename(g_get_home_dir(), ".local", "lib", NULL);
 #endif
-
-  for(int i = 0; i < 3; i++)
-  {
-#ifdef _WIN32
-    gchar *dir = g_build_filename(base_dir, subdirs[i], NULL);
-#else
-    gchar *dir = g_build_filename(base_dir, ".local/lib", subdirs[i], NULL);
-#endif
-    if(g_file_test(dir, G_FILE_TEST_IS_DIR))
-    {
-#ifdef _WIN32
-      const char *flat_name = "onnxruntime.dll";
-#else
-      const char *flat_name = "libonnxruntime.so";
-#endif
-      gchar *exact = g_build_filename(dir, flat_name, NULL);
-      if(g_file_test(exact, G_FILE_TEST_EXISTS))
-      {
-        user_paths[i] = exact;
-      }
-      else
-      {
-        g_free(exact);
-        user_paths[i] = _scan_for_ort_lib(dir);
-      }
-    }
-    g_free(dir);
-  }
 
   GList *results = NULL;
 
@@ -741,28 +714,51 @@ GList *dt_ai_ort_find_libraries(void)
     }
   }
 
-  // probe user-space paths
-  for(int i = 0; i < 3; i++)
+  // collect onnxruntime-* names first; sort gives stable UI order
+  // independent of filesystem (ext4 hash, btrfs creation-order, …)
+  GPtrArray *names = g_ptr_array_new_with_free_func(g_free);
+  GDir *scan = g_dir_open(scan_root, 0, NULL);
+  if(scan)
   {
-    if(!user_paths[i]) continue;
+    const char *name;
+    while((name = g_dir_read_name(scan)))
+    {
+      if(g_str_has_prefix(name, "onnxruntime-"))
+        g_ptr_array_add(names, g_strdup(name));
+    }
+    g_dir_close(scan);
+  }
+  g_ptr_array_sort(names, (GCompareFunc)_compare_subdir_names);
+
+  for(guint i = 0; i < names->len; i++)
+  {
+    const char *name = g_ptr_array_index(names, i);
+    gchar *dir = g_build_filename(scan_root, name, NULL);
+    if(!g_file_test(dir, G_FILE_TEST_IS_DIR)) { g_free(dir); continue; }
+
+    gchar *found = _scan_for_ort_lib(dir);
+    g_free(dir);
+    if(!found) continue;
+
     char *version = NULL, *ep = NULL;
-    if(dt_ai_ort_probe_library_full(user_paths[i], &version, &ep))
+    if(dt_ai_ort_probe_library_full(found, &version, &ep))
     {
       dt_ai_ort_found_t *f = g_new0(dt_ai_ort_found_t, 1);
-      f->path = user_paths[i];
+      f->path = found;
       f->version = version;
       f->eps = ep;
-      user_paths[i] = NULL; // ownership transferred
       results = g_list_append(results, f);
     }
     else
     {
+      g_free(found);
       g_free(version);
       g_free(ep);
     }
   }
+  g_ptr_array_free(names, TRUE);
 
-  for(int i = 0; i < 3; i++) g_free(user_paths[i]);
+  g_free(scan_root);
   return results;
 }
 
