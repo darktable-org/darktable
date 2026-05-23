@@ -46,6 +46,9 @@
 #include <errno.h>
 #include <libgen.h>
 #include <sys/stat.h>
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 #include <zlib.h>
 
 static const char *_opencl_get_vendor_by_id(unsigned int id);
@@ -70,6 +73,14 @@ static gboolean _opencl_build_program(const int dev,
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
 static char *_strsep(char **stringp, const char *delim);
+
+static void _opencl_prefault_host_write_pages(const int devid, void *host, const size_t bytes);
+int dt_opencl_read_host_from_device_rowpitch(const int devid,
+                                             void *host,
+                                             void *device,
+                                             const int width,
+                                             const int height,
+                                             const int rowpitch);
 
 /** read scheduling profile for config variables */
 static dt_opencl_scheduling_profile_t _opencl_get_scheduling_profile(void);
@@ -2878,13 +2889,56 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int height,
                                   const int bpp)
 {
+  if(host && width > 0 && height > 0 && bpp > 0)
+    _opencl_prefault_host_write_pages(devid, host, (size_t)width * height * bpp);
+
+  return dt_opencl_read_host_from_device_rowpitch(devid, host, device,
+                                                  width, height, bpp * width);
+}
+
+static void _opencl_prefault_host_write_pages(const int devid, void *host, const size_t bytes)
+{
+#if !defined(_WIN32)
+  if(!host || bytes == 0) return;
+  if(!_cldev_running(devid)) return;
+
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->fastcl || !cl->dev[devid].unified_memory) return;
+
+  const long page_size = sysconf(_SC_PAGESIZE);
+  const size_t step = page_size > 0 ? (size_t)page_size : 4096;
+  if(bytes < step) return;
+
+  volatile unsigned char *p = (volatile unsigned char *)host;
+
+  // NVIDIA OpenCL on unified-memory systems can be extremely slow when a
+  // blocking read faults large cold host buffers from inside the driver.
+  // Touch the destination pages first so the driver sees committed memory.
+  for(size_t offset = 0; offset < bytes; offset += step)
+    p[offset] = p[offset];
+
+  p[bytes - 1] = p[bytes - 1];
+#else
+  (void)devid;
+  (void)host;
+  (void)bytes;
+#endif
+}
+
+int dt_opencl_read_host_from_device_rowpitch(const int devid,
+                                             void *host,
+                                             void *device,
+                                             const int width,
+                                             const int height,
+                                             const int rowpitch)
+{
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
   const size_t region[2] = { width, height };
   // blocking.
   return dt_opencl_read_host_from_device_raw(devid, host, device, CLIMG_ORIGIN,
-                                             region, (size_t)width * bpp, TRUE);
+                                             region, rowpitch, TRUE);
 }
 
 int dt_opencl_read_host_from_device_raw(const int devid,
