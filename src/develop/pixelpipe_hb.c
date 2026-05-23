@@ -1333,6 +1333,18 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                       roi_in->width, roi_in->height,
                                       cst_from, cst_to, &input_format->cst,
                                       work_profile);
+  /*  We just have changed the input data if cst_from != cst_to so
+      the cacheline cst does not reflect the module input colorspace any more!
+      Note: in opencl code path this is different as the in-data colorspace conversion
+      is always done in cl_mem and thus does not affect pipecache.
+
+      Possible ways to handle this:
+      1. for now we just invalidate that cacheline so if the pipe is reprocessed we won't
+          use wrong data.
+      2. we should implement code for the pipe cache that modifies the data cst.
+  */
+  if(cst_from != cst_to)
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
 
   if(_pipe_has_shutdown(pipe))
     return TRUE;
