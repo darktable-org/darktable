@@ -1096,7 +1096,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
       // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
       // padding, e.g. is equivalent to float[x*4], and that on failure
       // it's OK not to touch output
-      int converted_cst;
+      dt_iop_colorspace_type_t converted_cst;
       dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0], 3, 1,
                                           IOP_CS_RGB, IOP_CS_LAB, &converted_cst,
                                           display_profile);
@@ -1310,9 +1310,9 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       ? dt_ioppr_get_pipe_work_profile_info(pipe)
       : NULL;
 
-  const int cst_from = input_format->cst;
-  const int cst_to = module->input_colorspace(module, pipe, piece);
-  const int cst_out = module->output_colorspace(module, pipe, piece);
+  const dt_iop_colorspace_type_t cst_from = input_format->cst;
+  const dt_iop_colorspace_type_t cst_to = module->input_colorspace(module, pipe, piece);
+  const dt_iop_colorspace_type_t cst_out = module->output_colorspace(module, pipe, piece);
 
   dt_dev_prepare_piece_cfa(piece, roi_in);
 
@@ -2165,9 +2165,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     if(possible_cl)
     {
-      const int cst_from = input_cst_cl;
-      const int cst_to = module->input_colorspace(module, pipe, piece);
-      const int cst_out = module->output_colorspace(module, pipe, piece);
+      const dt_iop_colorspace_type_t cst_from = input_cst_cl;
+      const dt_iop_colorspace_type_t cst_to = module->input_colorspace(module, pipe, piece);
+      const dt_iop_colorspace_type_t cst_out = module->output_colorspace(module, pipe, piece);
 
       if(cst_from != cst_to)
         dt_print_pipe(DT_DEBUG_PIPE, "transform colorspace",
