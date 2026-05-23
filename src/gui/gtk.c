@@ -727,20 +727,13 @@ static gboolean _draw(GtkWidget *da,
 }
 
 static GdkDevice *_touchpad = NULL;
-static gboolean _touchpad_gestures_enabled(void)
+
+static void _touchpad_gestures_pref_changed(gpointer instance,
+                                            gpointer user_data)
 {
-  // If conf_gen.h was built before darktableconfig.xml.in gained this key
-  // (incremental build without cmake reconfigure), dt_confgen_value_exists
-  // returns FALSE and dt_conf_get_bool gets an empty string → FALSE.
-  // Default to enabled in that case so a stale build doesn't silently break gestures.
-  if(!dt_confgen_value_exists("darkroom/ui/touchpad_gestures", DT_DEFAULT))
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] 'darkroom/ui/touchpad_gestures' missing from confgen"
-             " (stale conf_gen.h — run cmake reconfigure), defaulting to enabled");
-    return TRUE;
-  }
-  return dt_conf_get_bool("darkroom/ui/touchpad_gestures");
+  (void)instance;
+  dt_gui_gtk_t *gui = user_data;
+  gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
 }
 
 static gboolean _input_event(GtkWidget *widget,
@@ -773,7 +766,7 @@ static gboolean _input_event(GtkWidget *widget,
       break;
   }
 
-  if(event->type == GDK_TOUCHPAD_PINCH && _touchpad_gestures_enabled())
+  if(event->type == GDK_TOUCHPAD_PINCH && darktable.gui->touchpad_gestures_enabled)
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
     dt_print(DT_DEBUG_INPUT,
@@ -805,7 +798,7 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-  const gboolean touchpad_enabled = _touchpad_gestures_enabled();
+  const gboolean touchpad_enabled = darktable.gui->touchpad_gestures_enabled;
   const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
   dt_print(DT_DEBUG_INPUT,
@@ -899,21 +892,13 @@ static gboolean _scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static void _panel_scrolled(GtkEventControllerScroll *controller,
-                            double dx, double dy,
-                            GtkAdjustment *adj)
+static gboolean
+_borders_scrolled(GtkWidget *widget, GdkEventScroll *event, const gpointer user_data)
 {
-  // GTK4: don't need to clamp to upper/lower
-  const double lower = gtk_adjustment_get_lower(adj);
-  const double upper = gtk_adjustment_get_upper(adj)
-                       - gtk_adjustment_get_page_size(adj);
-  const double step = gtk_adjustment_get_step_increment(adj);
-  const double old_val = gtk_adjustment_get_value(adj);
-  const double new_val = CLAMPF(old_val + dy * step, lower, upper);
-  gtk_adjustment_set_value(adj, new_val);
-  // GTK3: explicitly consume the scroll
-  g_signal_stop_emission_by_name(controller, "scroll");
-  // GTK4: return GDK_EVENT_STOP;
+  // pass the scroll event to the matching side panel
+  gtk_widget_event(GTK_WIDGET(user_data), (GdkEvent *)event);
+
+  return TRUE;
 }
 
 static void _scrollbar_changed(GtkWidget *widget,
@@ -1522,6 +1507,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
+  gui->touchpad_gestures_enabled = TRUE;
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _touchpad_gestures_pref_changed, gui);
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
@@ -2756,14 +2745,11 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                  : GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
 
-  // scrolling the left/right window border scrolls the module lists,
-  // passing on scroll via gtk_widget_event() breaks kinetic scrolling
-  // and isn't GTK4 ready, so directly change GtkAdjustment
-  dt_gui_connect_scroll(left
-                        ? darktable.gui->widgets.right_border
-                        : darktable.gui->widgets.left_border,
-                        GTK_EVENT_CONTROLLER_SCROLL_VERTICAL,
-                        _panel_scrolled, vadj);
+  g_signal_connect(
+    G_OBJECT(left ? darktable.gui->widgets.right_border : darktable.gui->widgets.left_border),
+    "scroll-event",
+    G_CALLBACK(_borders_scrolled),
+    sw);
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over
    * a control, and scroll it's value), only scroll on modifier */
@@ -4822,8 +4808,7 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
     GtkWidget *const sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
     if(sw)
     {
-      GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-      _panel_scrolled(controller, 0.0, dy, vadj);
+      gtk_widget_event(sw, event);
       return TRUE;
     }
   }

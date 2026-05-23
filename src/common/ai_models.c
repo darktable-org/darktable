@@ -428,22 +428,10 @@ static void _setup_registry(dt_ai_registry_t *registry)
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  // honour plugins/ai/models_path override; "~/..." expands to $HOME
-  char *override = dt_conf_get_string("plugins/ai/models_path");
-  if(override && override[0])
-  {
-    if(override[0] == '~' && (override[1] == '/' || override[1] == '\0'))
-      registry->models_dir
-        = g_build_filename(g_get_home_dir(), override + 2, NULL);
-    else
-      registry->models_dir = g_strdup(override);
-  }
-  else
-  {
+  registry->models_dir = dt_ai_resolve_models_path_override();
+  if(!registry->models_dir)
     registry->models_dir = g_build_filename(g_get_user_data_dir(),
                                             "darktable", "models", NULL);
-  }
-  g_free(override);
 
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
@@ -1261,6 +1249,49 @@ static gboolean _extract_zip(const char *zippath,
   return success;
 }
 
+// peek at the first archive entry to recover the model_id (the top
+// level directory name in the zip layout)
+static char *_zip_top_dir(const char *zippath)
+{
+  struct archive *a = archive_read_new();
+  archive_read_support_format_zip(a);
+  if(archive_read_open_filename(a, zippath, 10240) != ARCHIVE_OK)
+  {
+    archive_read_free(a);
+    return NULL;
+  }
+  struct archive_entry *entry;
+  char *result = NULL;
+  if(archive_read_next_header(a, &entry) == ARCHIVE_OK)
+  {
+    const char *path = archive_entry_pathname(entry);
+    const char *slash = path ? strchr(path, '/') : NULL;
+    if(slash)      result = g_strndup(path, slash - path);
+    else if(path)  result = g_strdup(path);
+  }
+  archive_read_close(a);
+  archive_read_free(a);
+  return result;
+}
+
+// activate `model_id` only when nothing is active for its task
+static void _activate_if_unset(dt_ai_registry_t *registry,
+                               const char *model_id)
+{
+  if(!registry || !model_id) return;
+  gchar *task = NULL;
+  g_mutex_lock(&registry->lock);
+  const dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
+  if(m && m->task) task = g_strdup(m->task);
+  g_mutex_unlock(&registry->lock);
+  if(!task) return;
+  char *current = dt_ai_models_get_active_for_task(task);
+  if(!current || !current[0])
+    dt_ai_models_set_active_for_task(task, model_id);
+  g_free(current);
+  g_free(task);
+}
+
 // install a local .dtmodel file (zip archive) into the models directory.
 // returns error message (caller must free) or NULL on success.
 char *dt_ai_models_install_local(dt_ai_registry_t *registry,
@@ -1272,15 +1303,41 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
   if(!g_file_test(filepath, G_FILE_TEST_IS_REGULAR))
     return g_strdup_printf(_("file not found: %s"), filepath);
 
+  char *installed_id = _zip_top_dir(filepath);
+
   if(!_extract_zip(filepath, registry->models_dir))
+  {
+    g_free(installed_id);
     return g_strdup(_("failed to extract model archive"));
+  }
 
   // rescan models directory to pick up newly installed model
   dt_ai_models_refresh_status(registry);
 
+  _activate_if_unset(registry, installed_id);
+
   dt_print(DT_DEBUG_AI, "[ai_models] model installed from: %s", filepath);
 
+  g_free(installed_id);
   return NULL; // success
+}
+
+// best installed model for `task`: default preferred, else first found.
+// caller must hold registry->lock
+static const char *_pick_fallback_active_unlocked(dt_ai_registry_t *registry,
+                                                  const char *task)
+{
+  if(!registry || !task) return NULL;
+  const char *first_installed = NULL;
+  for(GList *l = registry->models; l; l = g_list_next(l))
+  {
+    const dt_ai_model_t *m = (const dt_ai_model_t *)l->data;
+    if(!m->task || strcmp(m->task, task) != 0) continue;
+    if(m->status != DT_AI_MODEL_DOWNLOADED) continue;
+    if(m->is_default) return m->id;
+    if(!first_installed) first_installed = m->id;
+  }
+  return first_installed;
 }
 
 #ifdef HAVE_AI_DOWNLOAD
@@ -1535,6 +1592,10 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
   g_unlink(download_path);
   g_free(download_path);
 
+  // invalidate before flipping status so the next session sees a fresh
+  // compile, not a stale artifact from the previous model file
+  dt_ai_backend_cache_invalidate(model_id);
+
   // mark success
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
@@ -1544,6 +1605,8 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
     m->download_progress = 1.0;
   }
   g_mutex_unlock(&registry->lock);
+
+  _activate_if_unset(registry, model_id);
 
   dt_print(DT_DEBUG_AI, "[ai_models] download complete: %s", model_id);
 
@@ -1681,6 +1744,8 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   _rmdir_recursive(model_dir);
   g_free(model_dir);
 
+  dt_ai_backend_cache_invalidate(model_id);
+
   char *task_copy = NULL;
   g_mutex_lock(&registry->lock);
   model = _find_model_unlocked(registry, model_id);
@@ -1693,12 +1758,19 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   }
   g_mutex_unlock(&registry->lock);
 
-  // clear active status if this was the active model for its task
+  // if deleted model was active, pick a fallback (default preferred)
   if(task_copy)
   {
     char *active = dt_ai_models_get_active_for_task(task_copy);
     if(active && strcmp(active, model_id) == 0)
-      dt_ai_models_set_active_for_task(task_copy, NULL);
+    {
+      g_mutex_lock(&registry->lock);
+      const char *fallback = _pick_fallback_active_unlocked(registry, task_copy);
+      char *fallback_copy = fallback ? g_strdup(fallback) : NULL;
+      g_mutex_unlock(&registry->lock);
+      dt_ai_models_set_active_for_task(task_copy, fallback_copy);
+      g_free(fallback_copy);
+    }
     g_free(active);
     g_free(task_copy);
   }
@@ -1960,7 +2032,7 @@ dt_ai_environment_t *dt_ai_registry_get_env(dt_ai_registry_t *registry)
 
   g_mutex_lock(&registry->lock);
   if(!registry->env)
-    registry->env = dt_ai_env_init(NULL);
+    registry->env = dt_ai_env_init(registry->models_dir);
   g_mutex_unlock(&registry->lock);
 
   return registry->env;

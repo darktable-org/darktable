@@ -137,6 +137,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/gradientslider.c"
   "dtgtk/icon.c"
   "dtgtk/paint.c"
+  "dtgtk/paint_cell.c"
   "dtgtk/range.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"

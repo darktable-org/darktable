@@ -167,6 +167,9 @@ changes (where available).
   are now possible on Linux and Windows.
   Zooming gestures are limited to 100%, additionally pressing CTRL
   enables zooming up to 1600%.
+  Caution: this disables the scroll gesture for zooming on MacOS
+  on trackpad and magic mouse. To restore the former behaviour
+  disable touchpad gestures in preferences dialog.
 
 - Enabled shortcuts for some existing buttons in duplicate manager,
   snapshots, and AgX modules.
@@ -225,6 +228,8 @@ changes (where available).
 
 - Removed `Neo` Intel and `pocl` OpenCL drivers from blacklist,
   the `AMD-APP` driver has been added as not supported by AMD for 10yrs.
+
+- RustiCL is the preferred OpenCL driver instead ROCm on AMD systems.
 
 - In the styles module, a new option has been added to hide the
   preview in the tooltip. Additionally, a module preference now allows
@@ -373,6 +378,8 @@ changes (where available).
 
 - Fixed white and middle-grey patches being swapped for Datacolor
   SpyderCheckr 48 in the Color Calibration module.
+
+- Various stability fixes for OpenCL and CPU pixelpipe processing.
 
 ## Lua
 

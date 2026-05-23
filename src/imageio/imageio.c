@@ -1263,7 +1263,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     for(GList *modules = dev.iop; modules; modules = g_list_next(modules))
     {
       colorout = (dt_iop_module_t *)modules->data;
-      if(colorout->get_p && strcmp(colorout->op, "colorout") == 0)
+      if(colorout->get_p && dt_iop_module_is(colorout, "colorout"))
       {
         const dt_colorspaces_color_profile_type_t *type =
           colorout->get_p(colorout->params, "type");

@@ -831,7 +831,7 @@ void process(dt_iop_module_t *self,
     if(out_height > 0)
     {
       if(tiling)
-        dt_print(DT_DEBUG_TILING, "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
+        dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
                tile_nr, num_tiles, group, first_in, last_in, t_rows);
 
       float *t_in = in + width * first_in * ch;
@@ -1104,7 +1104,7 @@ int process_cl(dt_iop_module_t *self,
     {
       if(tiling)
       {
-        dt_print(DT_DEBUG_TILING,
+        dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
               "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
                tile_nr, num_tiles, group, first_in, last_in, t_rows);
 

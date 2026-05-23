@@ -1264,7 +1264,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
     for(const GList *l = dev->iop; l; l = g_list_next(l))
     {
       dt_iop_module_t *mod = l->data;
-      if(dt_iop_module_is(module->so, mod->op))
+      if(dt_iop_module_is(module, mod->op))
         base_multi_priority = MIN(base_multi_priority, mod->multi_priority);
     }
 
@@ -1372,7 +1372,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, active_plugin))
+      if(dt_iop_module_is(module, active_plugin))
       {
         valid = TRUE;
         dt_iop_request_focus(module);
@@ -2195,24 +2195,23 @@ end:
 }
 
 static void _preference_changed(gpointer instance,
-                                gpointer user_data)
+                                const dt_view_t *self)
 {
-  GtkWidget *display_intent = GTK_WIDGET(user_data);
+  (void)instance;
+  dt_develop_t *dev = self->data;
 
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
 
-  gtk_widget_set_no_show_all(display_intent, !force_lcms2);
-  gtk_widget_set_visible(display_intent, force_lcms2);
+  const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  gtk_widget_set_no_show_all(dev->profile.display_intent_widget, !force_lcms2);
+  gtk_widget_set_visible(dev->profile.display_intent_widget, force_lcms2);
+  gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, !force_lcms2);
+  gtk_widget_set_visible(dev->profile.display2_intent_widget, force_lcms2);
 
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
-}
 
-static void _preference_changed_button_hide(gpointer instance,
-                                            const dt_view_t *self)
-{
-  dt_develop_t *dev = self->data;
   for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = modules->data;
@@ -2351,8 +2350,8 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
   //retouch and spot removal module use masks differently and have
   //different buttons associated keep the shortcuts independent
   if(mod
-     && !dt_iop_module_is(mod->so, "spots")
-     && !dt_iop_module_is(mod->so, "retouch"))
+     && !dt_iop_module_is(mod, "spots")
+     && !dt_iop_module_is(mod, "retouch"))
   {
     dt_iop_gui_blend_data_t *bd = mod->blend_data;
 
@@ -3188,25 +3187,25 @@ void gui_init(dt_view_t *self)
           N_("absolute colorimetric"),
           NULL };
 
-    GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self),
+    dev->profile.display_intent_widget  = dt_bauhaus_combobox_new_full(DT_ACTION(self),
                                                              N_("profiles"),
                                                              N_("intent"),
                                                              "",
                                                              0,
                                                              _display_intent_callback,
                                                              dev, intents_list);
-    GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self),
+    dev->profile.display2_intent_widget = dt_bauhaus_combobox_new_full(DT_ACTION(self),
                                                               N_("profiles"),
                                                               N_("preview intent"),
                                                               "",
                                                               0,
                                                               _display2_intent_callback,
                                                               dev, intents_list);
-
+        
     if(!force_lcms2)
     {
-      gtk_widget_set_no_show_all(display_intent, TRUE);
-      gtk_widget_set_no_show_all(display2_intent, TRUE);
+      gtk_widget_set_no_show_all(dev->profile.display_intent_widget, TRUE);
+      gtk_widget_set_no_show_all(dev->profile.display2_intent_widget, TRUE);
     }
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -3309,21 +3308,16 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
-    // update the gui when the preferences changed (i.e. show intent when using lcms2)
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                              _preference_changed, display_intent);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                              _preference_changed, display2_intent);
-    // and when profiles change
+    // update the gui when profiles change (intent visibility is handled by _preference_changed)
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display_profile_changed, display_profile);
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display2_profile_changed, display2_profile);
 
     GtkWidget *vbox = dt_gui_vbox
-      (display_profile, display_intent,
+      (display_profile, dev->profile.display_intent_widget,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       display2_profile, display2_intent, display2_color_assessment,
+       display2_profile, dev->profile.display2_intent_widget, display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
        softproof_profile, histogram_profile);
 
@@ -3546,7 +3540,7 @@ void enter(dt_view_t *self)
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, active_plugin))
+      if(dt_iop_module_is(module, active_plugin))
         dt_iop_request_focus(module);
     }
   }
@@ -3580,8 +3574,8 @@ void enter(dt_view_t *self)
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
-  // connect to preference change for module header button hiding
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed_button_hide);
+  // connect to preference change for callback for button hiding and constrain_zoom
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
   dt_iop_color_picker_init();
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
@@ -4198,8 +4192,9 @@ void scrolled(dt_view_t *self,
     if(handled) return;
   }
 
-  // free zoom
-  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
+  // free zoom: constrain when the config asks for it AND CTRL isn't held
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, up, x, y, constrained);
 }
 
@@ -4257,7 +4252,9 @@ gboolean gesture_pinch(dt_view_t *self,
 {
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
-  (void)state;
+  // constrain when the config asks for it AND CTRL isn't held
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
 
   // Gesture-mode classifier: each event contributes its zoom_eq & pan_eq magnitude in pixels
   // to a decaying score. When the recent history is zoom-dominant (score > ZOOM_DOMINANT_PX)
@@ -4340,7 +4337,7 @@ gboolean gesture_pinch(dt_view_t *self,
              "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f"
              " (score=%.2f zoom_eq=%.2f pan_eq=%.2f)",
              eff_dx, eff_dy, zoom_pan_score, zoom_eq_px, pan_eq_px);
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, TRUE);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, constrained);
   }
 
   const float ppd = dev->full.ppd;
@@ -4368,7 +4365,7 @@ gboolean gesture_pinch(dt_view_t *self,
            dev->full.border_size, dev->full.width, dev->full.height,
            dx, dy, eff_dx, eff_dy, zoom_pan_score, zoom_dominant,
            scale, state, tscale, tscalefloor, tscaletop, zoom_scale);
-  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, TRUE);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
 
   return TRUE;
 }
@@ -4559,7 +4556,6 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
                                                  dt_develop_t *dev)
 {
   if(dev->gui_leaving) return TRUE;
-
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
@@ -4569,7 +4565,8 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
 
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-    const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
+    const gboolean constrained =
+      dev->constrain_zoom && !dt_modifier_is(event->state, GDK_CONTROL_MASK);
     dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
                      event->x, event->y, constrained);
   }

@@ -151,6 +151,8 @@ void dt_dev_init(dt_develop_t *dev,
   dev->full.color_assessment = dt_conf_get_bool("full_window/color_assessment");
   dev->preview2.color_assessment = dt_conf_get_bool("second_window/color_assessment");
 
+  dev->constrain_zoom = dt_conf_get_bool("darkroom/ui/constrain_zoom");
+
   dev->full.zoom = dev->preview2.zoom = DT_ZOOM_FIT;
   dev->full.closeup = dev->preview2.closeup = 0;
   dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0.0f;
@@ -1433,7 +1435,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *mod = modules->data;
-      if(dt_iop_module_is(mod->so, "mask_manager"))
+      if(dt_iop_module_is(mod, "mask_manager"))
       {
         module = mod;
         break;
@@ -1875,7 +1877,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
           // For new edits the temperature will be added back
           // depending on the chromatic adaptation the standard way.
 
-          if(dt_iop_module_is(module->so, "temperature")
+          if(dt_iop_module_is(module, "temperature")
              && (image->change_timestamp == -1))
           {
             // it is important to recover temperature in this case
@@ -2452,7 +2454,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = modules->data;
-      if(dt_iop_module_is(module->so, module_name))
+      if(dt_iop_module_is(module, module_name))
       {
         // make sure that module not supporting multiple instances are
         // selected here.
@@ -2506,9 +2508,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(is_workflow_none && hist->module->enabled)
     {
-      if(dt_iop_module_is(hist->module->so, "temperature"))
+      if(dt_iop_module_is(hist->module, "temperature"))
         temperature = hist->module;
-      if(dt_iop_module_is(hist->module->so, "channelmixerrgb"))
+      if(dt_iop_module_is(hist->module, "channelmixerrgb"))
         channelmixerrgb = hist->module;
     }
 
@@ -2616,7 +2618,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       }
       else
       {
-        if(dt_iop_module_is(hist->module->so, "spots")
+        if(dt_iop_module_is(hist->module, "spots")
            && modversion == 1)
         {
           // quick and dirty hack to handle spot removal legacy_params
@@ -2632,7 +2634,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
        * by default, so if it is disabled, enable it, and replace params with
        * default_params. if user want to, he can disable it.
        */
-      if(dt_iop_module_is(hist->module->so, "flip")
+      if(dt_iop_module_is(hist->module, "flip")
          && !hist->enabled
          && labs(modversion) == 1)
       {
@@ -2847,11 +2849,20 @@ gboolean dt_dev_get_processed_size(dt_dev_viewport_t *port,
   return FALSE;
 }
 
-static float _calculate_new_scroll_zoom_tscale(const int up,
-                                               const gboolean constrained,
-                                               const float tscaleold,
-                                               const float tscalefit)
+// Compute the zoom soft limits for a given old tscale.
+// Shared between scroll-step zoom and continuous (pinch) zoom so both honor
+// the same constrain semantics: cap at 100%/200%/top depending on where the
+// previous scale sits, with CTRL clearing `constrained` upstream as the
+// escape hatch.
+static void _zoom_constraint_bounds(const gboolean constrained,
+                                    const float tscaleold,
+                                    const float tscalefit,
+                                    float *tscalemin,
+                                    float *tscalemax)
 {
+  const float tscaletop = 16.0f;
+  const float tscalefloor = MIN(0.5f * tscalefit, 1.0f);
+
   enum {
     SIZE_SMALL,
     SIZE_MEDIUM,
@@ -2865,6 +2876,48 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
   else
     image_size = SIZE_SMALL;
 
+  switch(image_size)
+  {
+    case SIZE_LARGE:
+      *tscalemax = constrained
+        ? (tscaleold > 2.0f
+           ? tscaletop
+           : (tscaleold > 1.0f ? 2.0f : 1.0f))
+        : tscaletop;
+      *tscalemin = constrained
+        ? (tscaleold < tscalefit
+           ? tscalefloor
+           : tscalefit)
+        : tscalefloor;
+      break;
+    case SIZE_MEDIUM:
+      *tscalemax = constrained
+        ? (tscaleold > 2.0f
+           ? tscaletop
+           : 2.0f)
+        : tscaletop;
+      *tscalemin = constrained
+        ? (tscaleold < tscalefit
+           ? tscalefloor
+           : tscalefit)
+        : tscalefloor;
+      break;
+    case SIZE_SMALL:
+      *tscalemax = constrained
+        ? (tscaleold > 2.0f
+           ? tscaletop
+           : tscalefit)
+        : tscaletop;
+      *tscalemin = tscalefloor;
+      break;
+  }
+}
+
+static float _calculate_new_scroll_zoom_tscale(const int up,
+                                               const gboolean constrained,
+                                               const float tscaleold,
+                                               const float tscalefit)
+{
   // at 200% zoom level or more, we use a step of 2x, while at lower level we use 1.1x
   const float step =
     up
@@ -2875,59 +2928,20 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
   float tscalenew = up ? tscaleold * step : tscaleold / step;
 
   // when zooming, secure we include 2:1, 1:1 and FIT levels anyway in the zoom stops
-  if((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && image_size != SIZE_SMALL)
+  const gboolean is_small = tscalefit > 2.0f;
+  if((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && !is_small)
     tscalenew = tscalefit;
   else if((tscalenew - 1.0f) * (tscaleold - 1.0f) < 0)
     tscalenew = 1.0f;
   else if((tscalenew - 2.0f) * (tscaleold - 2.0f) < 0)
     tscalenew = 2.0f;
 
-  float tscalemax, tscalemin;            // the zoom soft limits
-  const float tscaletop = 16.0f; // the zoom hard limits
-  const float tscalefloor = MIN(0.5f * tscalefit, 1.0f);
+  float tscalemin, tscalemax;
+  _zoom_constraint_bounds(constrained, tscaleold, tscalefit, &tscalemin, &tscalemax);
 
-  switch (image_size) // here we set the logic of zoom limits
-    {
-    case SIZE_LARGE:
-      tscalemax = constrained
-        ? (tscaleold >= 2.0f
-           ? tscaletop
-           : (tscaleold >= 1.0f ? 2.0f : 1.0f))
-        : tscaletop;
-      tscalemin = constrained
-        ? (tscaleold < tscalefit
-           ? tscalefloor
-           : tscalefit)
-        : tscalefloor;
-      break;
-    case SIZE_MEDIUM:
-      tscalemax = constrained
-        ? (tscaleold >= 2.0f
-           ? tscaletop
-           : 2.0f)
-        : tscaletop;
-      tscalemin = constrained
-        ? (tscaleold < tscalefit
-           ? tscalefloor
-           : tscalefit)
-        : tscalefloor;
-      break;
-    case SIZE_SMALL:
-      tscalemax = constrained
-        ? (tscaleold >= 2.0f
-           ? tscaletop
-           : tscalefit)
-        : tscaletop;
-      tscalemin = tscalefloor;
-      break;
-    }
-
-  // we enforce the zoom limits
-  tscalenew = up
+  return up
     ? MIN(tscalenew, tscalemax)
     : MAX(tscalenew, tscalemin);
-
-  return tscalenew;
 }
 
 static char *_transform_type(const dt_dev_transform_direction_t transf_direction)
@@ -3105,13 +3119,13 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     else if(zoom == DT_ZOOM_SCROLL)
     {
       zoom = DT_ZOOM_FREE;
-      const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, FALSE);
+      const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE);
       const float tscaleold = cur_scale * ppd;
       const float tscale = _calculate_new_scroll_zoom_tscale (closeup, constrain, tscaleold, fitscale * ppd);
       scale = tscale / ppd;
 
       closeup = 0;
-      if(tscale < 1.9999)
+      if(tscale < 1.9999f)
         scale = tscale / ppd;
       else
       {
@@ -3143,6 +3157,20 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
       zoom_x = dev->full_preview_last_zoom_x;
       zoom_y = dev->full_preview_last_zoom_y;
       scale = port->zoom_scale;
+    }
+    else if(zoom == DT_ZOOM_FREE && constrain)
+    {
+      // Continuous zoom (pinch): apply the same soft caps as scroll. Using
+      // the current scale as tscaleold means once we clamp at 100%, the next
+      // frame still sees tscaleold == 1.0 and stays clamped; if a prior CTRL
+      // frame lifted us past 1.0, the released-CTRL frame sees tscaleold > 1.0
+      // and progresses up to the 200% cap — matching the scroll escape hatch.
+      const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE);
+      const float tscaleold = cur_scale * ppd;
+      float tscalemin, tscalemax;
+      _zoom_constraint_bounds(TRUE, tscaleold, fitscale * ppd,
+                              &tscalemin, &tscalemax);
+      scale = CLAMP(scale * ppd, tscalemin, tscalemax) / ppd;
     }
 
     port->closeup = closeup;
@@ -3317,7 +3345,7 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
     const dt_iop_module_so_t *module_so = modules->data;
-    if(dt_iop_module_is(module_so, "exposure"))
+    if(dt_iop_module_so_is(module_so, "exposure"))
     {
       exposure_so = module_so;
       break;

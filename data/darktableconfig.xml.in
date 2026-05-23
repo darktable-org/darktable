@@ -503,14 +503,14 @@
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_amdacceleratedparallelprocessing</name>
     <type>bool</type>
-    <default>${DEFCONFIG_NONAPPLE}</default>
+    <default>false</default>
     <shortdescription>AMD ROCm</shortdescription>
     <longdescription>AMD Accelerated Parallel Processing (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_rusticl</name>
     <type>bool</type>
-    <default>false</default>
+    <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>RustiCL</shortdescription>
     <longdescription>RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
@@ -2439,6 +2439,13 @@
     <default>true</default>
     <shortdescription>enable touchpad gestures in darkroom</shortdescription>
     <longdescription><![CDATA[use two-finger touchpad gestures in darkroom for panning and pinch-to-zoom. <b>enabled:</b> touchpad pinch gestures zoom the image and two-finger touchpad scrolling pans it; <i>Ctrl+scroll</i> still uses the legacy zoom behavior. <b>disabled:</b> touchpad gestures are ignored and darkroom falls back to the legacy scroll behavior, including <i>Ctrl+scroll</i> for zooming in and out.]]></longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>darkroom/ui/constrain_zoom</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>constrain darkroom zoom between screen fit and 100%</shortdescription>
+    <longdescription><![CDATA[limits scroll-wheel and pinch-to-zoom in the darkroom to the range between screen fit (zoom out) and 100% (zoom in). <b>enabled:</b> zoom is constrained; hold <i>Ctrl</i> while zooming to temporarily lift the limit and zoom beyond 100%. <b>disabled:</b> zoom is never constrained and the additional <i>Ctrl</i> key press is not needed to zoom beyond 100%.]]></longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/ui/border_size</name>
