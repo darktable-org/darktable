@@ -1183,16 +1183,15 @@ gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name)
 }
 
 __DT_CLONE_TARGETS__
-void dt_ioppr_transform_image_colorspace
-  (struct dt_iop_module_t *self,
-   const float *const image_in,
-   float *const image_out,
-   const int width,
-   const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
-   const dt_iop_order_iccprofile_info_t *const profile_info)
+void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
+                                         const float *const image_in,
+                                         float *const image_out,
+                                         const int width,
+                                         const int height,
+                                         const dt_iop_colorspace_type_t cst_from,
+                                         const dt_iop_colorspace_type_t cst_to,
+                                         dt_iop_colorspace_type_t *converted_cst,
+                                         const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const gboolean inplace = image_in == image_out;
 
@@ -1473,17 +1472,16 @@ void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_p
   *_dev_profile_lut = NULL;
 }
 
-gboolean dt_ioppr_transform_image_colorspace_cl
-  (struct dt_iop_module_t *self,
-   const int devid,
-   cl_mem dev_img_in,
-   cl_mem dev_img_out,
-   const int width,
-   const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
-   const dt_iop_order_iccprofile_info_t *const profile_info)
+gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
+                                                const int devid,
+                                                cl_mem dev_img_in,
+                                                cl_mem dev_img_out,
+                                                const int width,
+                                                const int height,
+                                                const dt_iop_colorspace_type_t cst_from,
+                                                const dt_iop_colorspace_type_t cst_to,
+                                                dt_iop_colorspace_type_t *converted_cst,
+                                                const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   cl_int err = CL_SUCCESS;
 
