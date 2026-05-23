@@ -2848,8 +2848,7 @@ static gboolean _popup_draw(GtkWidget *widget,
     // make extra large, but without dependency on popup window height
     // (that might differ for comboboxes for example). only fall back
     // to height dependency if the popup is really small.
-    PangoFontDescription *desc =
-      pango_font_description_copy_static(bh->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
 
