@@ -167,6 +167,9 @@ changes (where available).
   are now possible on Linux and Windows.
   Zooming gestures are limited to 100%, additionally pressing CTRL
   enables zooming up to 1600%.
+  Caution: this disables the scroll gesture for zooming on MacOS
+  on trackpad and magic mouse. To restore the former behaviour
+  disable touchpad gestures in preferences dialog.
 
 - Enabled shortcuts for some existing buttons in duplicate manager,
   snapshots, and AgX modules.
