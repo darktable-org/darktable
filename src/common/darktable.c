@@ -262,7 +262,7 @@ static int usage(const char *argv0)
          "\n"
          "-d SIGNAL\n"
          "    Enable debug output to the terminal. Valid signals are:\n\n"
-         "    act_on, cache, camctl, camsupport, control, dev, expose,\n"
+         "    act_on, ai, cache, camctl, camsupport, control, dev, expose,\n"
          "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
          "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
          "    sql, tiling, picker, undo\n"
