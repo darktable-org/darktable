@@ -232,6 +232,21 @@ typedef struct dt_masks_functions_t
                           int *count,
                           float *min,
                           float *max);
+  // grow/shrink (outset/inset) a shape to a signed absolute amount in the given
+  // unit (use_percent: TRUE = % of shape size, FALSE = image pixels), measured
+  // from a baseline captured the first time the shape is resized. Positive grows,
+  // negative shrinks, 0 restores the baseline. Results are cached per offset, so
+  // re-requesting a value is lossless. Returns TRUE if a usable shape resulted.
+  // Currently only implemented by path masks.
+  gboolean (*resize)(struct dt_masks_form_t *const form,
+                     const int amount,
+                     const gboolean use_percent);
+  // report the resize offset currently applied to the shape, in the requested
+  // unit, so a UI control can mirror it. Returns FALSE (amount 0) if no resize is
+  // active. Currently only implemented by path masks.
+  gboolean (*resize_get)(struct dt_masks_form_t *const form,
+                         const gboolean use_percent,
+                         float *amount);
   void (*duplicate_points)(dt_develop_t *const dev,
                            struct dt_masks_form_t *base,
                            struct dt_masks_form_t *dest);
