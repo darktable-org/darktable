@@ -2901,6 +2901,8 @@ int dt_opencl_copy_device_to_host(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  dt_opencl_migrate_cl_mem(devid, image);
+
   const size_t region[2] = { width, height };
   // blocking.
   return dt_opencl_read_host_from_device_raw(devid, host, image, CLIMG_ORIGIN,
