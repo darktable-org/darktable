@@ -267,6 +267,8 @@ static int usage(const char *argv0)
          "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
          "    sql, tiling, picker, undo\n"
          "\n"
+         "    It is also possible to specify names that activate all signals\n"
+         "    or a certain subset, as well as increase verbosity:\n"
          "    all     -> to debug all signals\n"
          "    common  -> to debug dev, imageio, masks, opencl, params, pipe\n"
          "    verbose -> when combined with debug options like '-d opencl'\n"
