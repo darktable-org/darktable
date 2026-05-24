@@ -64,26 +64,26 @@ changes (where available).
   anything; GPU acceleration is already bundled.
 
 - Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
-  and SegNext models for interactive object segmentation – click on an
+  or SegNext model for interactive object segmentation – click on an
   object to generate a precise mask. Supports both foreground and
   background prompt points with iterative refinement. The encoder runs
-  once per image (with optional GPU acceleration via CoreML, CUDA,
-  MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
-  produces masks interactively.
+  once per image (GPU-accelerated via the AI backend when available),
+  and the lightweight decoder produces masks interactively.
 
 - Added neural restore module in the lighttable/darkroom sidebar
   covering three AI-based tasks: raw denoise, image denoise, and
-  upscale. Supports NIND UNet, NAFNet, and RawNIND UtNet2 denoisers
-  and BSRGAN 2x/4x super-resolution models via the ONNX backend.
-  Features include an interactive before/after split preview with
-  area picker, a detail recovery slider (wavelet-based texture
-  restoration for denoise), batch processing with tiled inference,
-  and automatic library re-import with image grouping. Raw denoise
-  writes a DNG (CFA Bayer or linear) that re-enters the user's
-  existing edit; image denoise and upscale write a TIFF embedding
-  the output ICC profile.
-  GPU acceleration is supported through CUDA, ROCm/MIGraphX,
-  DirectML, OpenVINO, and CoreML execution providers. If GPU
+  upscale. Default models: NIND UNet (image denoise), RawNIND UtNet2
+  (raw denoise), and BSRGAN 2x/4x (super-resolution), all running on
+  the ONNX backend. Additional models such as NAFNet (image denoise)
+  are available from the model repository and can be installed
+  manually. Features include an interactive before/after split
+  preview with area picker, a strength slider (DWT-based texture
+  recovery for RGB denoise; linear source/denoised blend for raw
+  denoise), batch processing with tiled inference, and automatic
+  library re-import with image grouping. Raw denoise writes a DNG
+  (CFA Bayer or LinearRaw); image denoise and upscale write a TIFF
+  embedding the output ICC profile.
+  GPU acceleration is inherited from the AI backend. If GPU
   inference fails (out of memory, unsupported op, EP crash),
   darktable automatically retries on CPU.
 
@@ -395,7 +395,7 @@ changes (where available).
   auto-allocated outputs). Image I/O includes loading from file or
   darktable library (full pipeline export), raw CFA sensor data
   access, and DNG output with EXIF preservation. Enables Lua scripts
-  to implement custom AI workflows such as raw denoise or upscale.
+  to implement custom AI workflows such as denoise or upscale.
 
 ### Bug Fixes
 
