@@ -92,7 +92,8 @@ Nvidia GPUs are recommended for safety because some AMD drivers behave unreliabl
 Darktable includes optional AI-powered features such as object masks, denoise and upscale.
 These require building with `-DUSE_AI=ON` (off by default), or `--enable-ai` when building
 with the build helper script `build.sh`. AI features are disabled by default in preferences
-and must be enabled by the user. Models are downloaded from the AI tab in preferences.
+and must be enabled by the user. Models are downloaded from the AI tab in preferences
+(default repository: [darktable-org/darktable-ai](https://github.com/darktable-org/darktable-ai)).
 
 **CPU inference** is bundled and works out of the box - no additional software is needed.
 On macOS (Apple Silicon), CoreML acceleration and on Windows, DirectML GPU acceleration
@@ -122,9 +123,12 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
   * macOS 11+ (Big Sur)
   * Apple Silicon (M1+)
 
-**GPU memory:** 4 GB VRAM minimum. If GPU inference fails (out of
-memory, unsupported op, EP crash), darktable automatically retries
-on CPU and continues.
+**GPU memory:** 4 GB VRAM minimum. If GPU inference fails (out of memory, unsupported op,
+EP crash), darktable automatically retries on CPU and continues.
+
+**AMD first-run latency:** on AMD GPUs the first inference per model is significantly
+slower because ROCm/MIGraphX compiles the model graph on the fly. The compiled graph
+is cached, so subsequent runs of the same model are fast.
 
 To enable GPU acceleration, run one of the install scripts:
 
