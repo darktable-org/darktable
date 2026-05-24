@@ -30,6 +30,8 @@
 #include <windows.h>
 #include <dxgi1_6.h>
 #include <initguid.h>
+#include <io.h>
+#include <fcntl.h>
 #else
 #include <fcntl.h>
 #include <unistd.h>
@@ -149,28 +151,47 @@ static gboolean _check_cuda_driver_compat(void)
 }
 #endif  // __linux__
 
-#ifdef ORT_LAZY_LOAD
-// redirect fd 2 to /dev/null.  returns the saved fd on success, -1 on failure.
+// hide ORT's expected stderr noise (GetApi probe rejections, dlopen errors)
 static int _stderr_suppress_begin(void)
 {
-  int saved = dup(STDERR_FILENO);
+#ifdef _WIN32
+  const int fd = _fileno(stderr);
+  const int saved = _dup(fd);
   if(saved == -1) return -1;
-  int devnull = open("/dev/null", O_WRONLY);
+  const int devnull = _open("NUL", _O_WRONLY);
+  if(devnull == -1) { _close(saved); return -1; }
+  fflush(stderr);
+  _dup2(devnull, fd);
+  _close(devnull);
+  return saved;
+#else
+  const int saved = dup(STDERR_FILENO);
+  if(saved == -1) return -1;
+  const int devnull = open("/dev/null", O_WRONLY);
   if(devnull == -1) { close(saved); return -1; }
+  fflush(stderr);
   dup2(devnull, STDERR_FILENO);
   close(devnull);
   return saved;
+#endif
 }
-// restore fd 2 from the saved fd returned by _stderr_suppress_begin.
+
 static void _stderr_suppress_end(int saved)
 {
-  if(saved != -1) { dup2(saved, STDERR_FILENO); close(saved); }
-}
+  if(saved == -1) return;
+  fflush(stderr);
+#ifdef _WIN32
+  _dup2(saved, _fileno(stderr));
+  _close(saved);
+#else
+  dup2(saved, STDERR_FILENO);
+  close(saved);
 #endif
+}
 
-// Probe a shared library for OrtGetApiBase to verify it's a valid ORT build.
-// Returns the version string (caller must g_free) or NULL on failure.
-// Uses BIND_LOCAL to avoid polluting the global symbol namespace.
+// probe a shared library for OrtGetApiBase to verify it's a valid ORT build;
+// returns the version string (caller must g_free) or NULL on failure;
+// uses BIND_LOCAL to avoid polluting the global symbol namespace
 char *dt_ai_ort_probe_library(const char *path)
 {
   if(!path || !path[0]) return NULL;
@@ -193,13 +214,13 @@ char *dt_ai_ort_probe_library(const char *path)
 
   const OrtApiBase *base = get_base();
   gchar *version = g_strdup(base->GetVersionString());
-  dt_print(DT_DEBUG_AI, "[darktable_ai] probe: ORT %s in '%s'", version, path);
+  dt_print(DT_DEBUG_AI, "[darktable_ai] probe: ONNX Runtime %s in '%s'", version, path);
   g_module_close(mod);
   return version;
 }
 
-// Probe a library and return version + comma-separated list of supported EPs.
-// Both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
+// probe a library and return version + comma-separated list of supported EPs.
+// both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
 // FALSE before ORT is loaded (no comparison reference yet)
 // snapshot the conf values that determine which library / EP / device
 // the in-process ORT will be bound to. called eagerly at darktable
@@ -551,6 +572,7 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
     // AMD's official builds do not export the legacy C shim symbols
     // (OrtSessionOptionsAppendExecutionProvider_ROCM, _MIGraphX) — ROCm is
     // only reachable through the OrtApi struct
+    const int _saved = _stderr_suppress_begin();
     const OrtApi *probe_api = base->GetApi(ORT_API_VERSION);
     if(!probe_api)
     {
@@ -558,6 +580,7 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
           v >= DT_ORT_MIN_API_VERSION && !probe_api; v--)
         probe_api = base->GetApi(v);
     }
+    _stderr_suppress_end(_saved);
     if(probe_api && probe_api->GetAvailableProviders)
     {
       char **providers = NULL;
@@ -785,30 +808,32 @@ static const OrtApi *_ort_api_from_module(GModule *mod, const char *label)
   const char *lib_version = base->GetVersionString();
   g_free(g_ort.version);
   g_ort.version = g_strdup(lib_version ? lib_version : "unknown");
-  dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ORT %s from '%s'", lib_version, label);
+  dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ONNX Runtime %s from '%s'", lib_version, label);
 
   // try the compiled API version first, then fall back to lower versions
   // so that older ORT libraries (e.g. MIGraphX on ROCm 6.x) still work
+  const int saved_stderr = _stderr_suppress_begin();
   const OrtApi *api = base->GetApi(ORT_API_VERSION);
+  int picked_version = api ? ORT_API_VERSION : -1;
   if(!api)
   {
     // minimum API version 14 = ORT 1.14, required for ONNX opset 18
     for(int v = ORT_API_VERSION - 1; v >= DT_ORT_MIN_API_VERSION; v--)
     {
       api = base->GetApi(v);
-      if(api)
-      {
-        dt_print(DT_DEBUG_AI,
-                 "[darktable_ai] ORT %s: using API version %d (compiled for %d)",
-                 lib_version, v, ORT_API_VERSION);
-        break;
-      }
+      if(api) { picked_version = v; break; }
     }
-    if(!api)
-      dt_print(DT_DEBUG_AI,
-               "[darktable_ai] ORT %s does not support any compatible API version",
-               lib_version);
   }
+  _stderr_suppress_end(saved_stderr);
+
+  if(api && picked_version != ORT_API_VERSION)
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] ORT %s: using API version %d (compiled for %d)",
+             lib_version, picked_version, ORT_API_VERSION);
+  if(!api)
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] ORT %s does not support any compatible API version",
+             lib_version);
   return api;
 }
 
@@ -880,7 +905,7 @@ static gpointer _init_ort_api(gpointer data)
       ort_mod = g_module_open(bundled, G_MODULE_BIND_LAZY);
       _stderr_suppress_end(saved2);
       if(ort_mod)
-        dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ORT from plugindir: %s", bundled);
+        dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ONNX Runtime from plugindir: %s", bundled);
       g_free(bundled);
     }
 
@@ -901,7 +926,7 @@ static gpointer _init_ort_api(gpointer data)
     const char *bundled_version = base->GetVersionString();
     g_free(g_ort.version);
     g_ort.version = g_strdup(bundled_version ? bundled_version : "unknown");
-    dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ORT %s (bundled)", bundled_version);
+    dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ONNX Runtime %s (bundled)", bundled_version);
     api = base->GetApi(ORT_API_VERSION);
   }
 #endif
