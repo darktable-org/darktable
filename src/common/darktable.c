@@ -718,20 +718,6 @@ void dt_dump_pipe_diff_pfm(
   dt_free_align(o);
 }
 
-static int32_t _detect_opencl_job_run(dt_job_t *job)
-{
-  dt_opencl_init(darktable.opencl, GPOINTER_TO_INT(dt_control_job_get_params(job)), TRUE);
-  return 0;
-}
-
-static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
-{
-  dt_job_t *job = dt_control_job_create(&_detect_opencl_job_run, "detect opencl devices");
-  if(!job) return NULL;
-  dt_control_job_set_params(job, GINT_TO_POINTER(exclude_opencl), NULL);
-  return job;
-}
-
 static int32_t _backthumbs_job_run(dt_job_t *job)
 {
   dt_update_thumbs_thread(dt_control_job_get_params(job));
@@ -1876,7 +1862,6 @@ int dt_init(int argc,
   dt_splash_screen_set_progress(_("initializing WB presets"));
   dt_wb_presets_init(NULL);
 
-  // Do locale-sensitive init BEFORE starting any background worker jobs
   dt_splash_screen_set_progress(_("loading noise profiles"));
   darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
 
@@ -1885,11 +1870,16 @@ int dt_init(int argc,
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
-  // Only then kick off the OpenCL background job
-  if(init_gui)
-    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
-  else
-    dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
+  // OpenCL initialization must run synchronously on the main thread, even in
+  // the GUI path. Loading the ICD loader and the GPU vendor drivers calls
+  // setlocale() internally, which is not reentrant with the gettext() calls
+  // the main thread keeps making while loading modules and building the GUI.
+  // Running this in a background worker job races that global locale state and
+  // intermittently corrupts the heap, surfacing as a SIGSEGV or
+  // "free(): invalid pointer" during early GUI construction (e.g. while the
+  // welcome screen / main window is being shown). This is the same class of
+  // bug as the reorder of the JSON/gettext preset parsers just above.
+  dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
   // must come before mipmap_cache, because that one will need to access image dimensions stored in here:
   dt_image_cache_init();
