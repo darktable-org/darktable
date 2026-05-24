@@ -50,6 +50,14 @@ typedef struct dt_lib_masks_t
   GtkWidget *pressure, *smoothing;
   float last_value[DT_MASKS_PROPERTY_LAST];
   GtkWidget *none_label;
+  // path-only shrink/grow (outset/inset) control. The slider is a signed offset
+  // measured from the shape's baseline (captured by the path mask the first time
+  // it is resized); 0 restores it. The unit (px / %) is a toggle in the slider's
+  // quad. The baseline and the per-offset result cache live in the path mask
+  // code, so the slider just sets and mirrors the current offset.
+  GtkWidget *resize_box, *resize_amount;
+  guint resize_timer;       // debounce source id (0 = none)
+  gboolean resize_updating; // guard: programmatic slider change, don't commit
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection;
   GdkPixbuf *ic_difference, *ic_sum, *ic_exclusion, *ic_used;
@@ -269,6 +277,189 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   DT_LEAVE_GUI_UPDATE();
 }
 
+// Quad for the shrink/grow slider's unit toggle: always shows "%" inside a
+// button-like square frame. Its active state (drawn brighter by bauhaus) tells
+// whether % mode is engaged; the slider label spells out the unit. Rendered
+// with the shared bauhaus label font; the caller has set the source color.
+static void _paint_resize_unit(
+  cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
+{
+  const char *txt = "%";
+  cairo_save(cr);
+
+  // square frame fitting the quad area, stroke kept inside via a half-line inset
+  const double lw = DT_PIXEL_APPLY_DPI(1.0);
+  const double side = MIN(w, h) - lw;
+  const double fx = x + lw * 0.5;
+  const double fy = y + (h - MIN(w, h)) / 2.0 + lw * 0.5;
+  const double r = DT_PIXEL_APPLY_DPI(2.0);
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, fx + side - r, fy + r, r, -M_PI_2, 0.0);
+  cairo_arc(cr, fx + side - r, fy + side - r, r, 0.0, M_PI_2);
+  cairo_arc(cr, fx + r, fy + side - r, r, M_PI_2, M_PI);
+  cairo_arc(cr, fx + r, fy + r, r, M_PI, 1.5 * M_PI);
+  cairo_close_path(cr);
+  cairo_set_line_width(cr, lw);
+  cairo_stroke(cr);
+
+  // text scaled to fit the padded interior, centred
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+  if(darktable.bauhaus->pango_font_desc)
+    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+  pango_layout_set_text(layout, txt, -1);
+  int tw = 0, th = 0;
+  pango_layout_get_pixel_size(layout, &tw, &th);
+
+  const double pad = DT_PIXEL_APPLY_DPI(1.0);
+  const double avail = side - 2.0 * pad;
+  const double scale = (tw > 0 && th > 0) ? fmin(avail / tw, avail / th) : 1.0;
+  cairo_translate(cr, fx + (side - tw * scale) / 2.0, fy + (side - th * scale) / 2.0);
+  cairo_scale(cr, scale, scale);
+  pango_cairo_show_layout(cr, layout);
+  g_object_unref(layout);
+  cairo_restore(cr);
+}
+
+// The single path the shrink/grow slider acts on, or NULL. We require an
+// unambiguous target: a standalone path, or exactly one path specifically
+// selected inside a group. *out_index receives the form's position in the
+// group (0 for a standalone path) for dt_masks_gui_form_create.
+static dt_masks_form_t *_selected_single_path(int *out_index)
+{
+  if(out_index)
+    *out_index = 0;
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_t *form = dev->form_visible;
+  if(!form)
+    return NULL;
+
+  if(!(form->type & DT_MASKS_GROUP))
+    return (form->type & DT_MASKS_PATH) ? form : NULL;
+
+  if(!dev->mask_form_selected_id)
+    return NULL;
+  int pos = 0;
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts), pos++)
+  {
+    dt_masks_point_group_t *fpt = fpts->data;
+    if(fpt->formid != dev->mask_form_selected_id)
+      continue;
+    dt_masks_form_t *sel = dt_masks_get_from_id(dev, fpt->formid);
+    if(sel && (sel->type & DT_MASKS_PATH))
+    {
+      if(out_index)
+        *out_index = pos;
+      return sel;
+    }
+    return NULL;
+  }
+  return NULL;
+}
+
+static void _resize_cancel_pending(dt_lib_masks_t *d)
+{
+  if(d->resize_timer)
+  {
+    g_source_remove(d->resize_timer);
+    d->resize_timer = 0;
+  }
+}
+
+// Set the shape to the slider's absolute offset and commit one history item. The
+// path mask owns the baseline and a per-offset result cache, so the morph runs
+// (at most) once per distinct value and 0 restores the baseline.
+static void _resize_commit(dt_lib_masks_t *d)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_gui_t *gui = dev->form_gui;
+  int idx = 0;
+  dt_masks_form_t *form = _selected_single_path(&idx);
+  if(!form || !gui || !form->functions || !form->functions->resize)
+    return;
+
+  const int amount = (int)roundf(dt_bauhaus_slider_get(d->resize_amount));
+  const gboolean pct = dt_bauhaus_widget_get_quad_active(d->resize_amount);
+
+  if(!form->functions->resize(form, amount, pct) && amount < 0)
+    dt_control_log(_("shrink amount too large: the path would disappear"));
+
+  dt_masks_gui_form_create(form, gui, idx, dev->gui_module);
+  dt_dev_add_masks_history_item(dev, dev->gui_module, TRUE);
+  dt_control_queue_redraw_center();
+}
+
+static gboolean _resize_timeout(gpointer data)
+{
+  dt_lib_masks_t *d = data;
+  d->resize_timer = 0;
+  _resize_commit(d);
+  return G_SOURCE_REMOVE;
+}
+
+// Debounce: morphing is expensive, so commit ~180 ms after the last change
+// rather than on every slider tick.
+static void _resize_schedule_commit(dt_lib_masks_t *d)
+{
+  if(d->resize_updating)
+    return;
+  if(d->resize_timer)
+    g_source_remove(d->resize_timer);
+  d->resize_timer = g_timeout_add(180, _resize_timeout, d);
+}
+
+static void _resize_amount_changed(GtkWidget *w, dt_lib_masks_t *d)
+{
+  _resize_schedule_commit(d);
+}
+
+// Reflect the current unit in the slider's value suffix (e.g. "5 px" / "5 %").
+// Changing a lib widget's *label* at runtime re-registers its action and
+// crashes (the first set_label moves the widget's module to its leaf action),
+// so we use the value format, which is safe to update repeatedly. hard_max is
+// 1000 (> 10) so "%" is a plain suffix, not the percentage auto-scaling case.
+static void _resize_sync_unit(dt_lib_masks_t *d)
+{
+  const gboolean pct = dt_bauhaus_widget_get_quad_active(d->resize_amount);
+  dt_bauhaus_slider_set_format(d->resize_amount, pct ? " %" : " px");
+}
+
+// the unit toggle lives in the slider's quad; bauhaus flips the active flag
+// before emitting "quad-pressed", so the new state is read directly
+static void _resize_unit_quad(GtkWidget *w, dt_lib_masks_t *d)
+{
+  const gboolean pct = dt_bauhaus_widget_get_quad_active(w);
+  // keep the shared resize unit (also used by the scroll gesture) in sync,
+  // storing the untranslated enum strings the path resize code matches against
+  dt_conf_set_string("masks/path_resize_unit", pct ? "% of path size" : "pixels");
+  _resize_sync_unit(d);
+  _resize_schedule_commit(d);
+}
+
+// Refresh the shrink/grow controls for the current selection: show them only for
+// a single path, and mirror the offset the path mask currently has applied (0 for
+// a fresh shape, or whatever a scroll-wheel resize left). Querying the path mask
+// keeps the slider truthful across both gestures without a second baseline here.
+static void _resize_update(dt_lib_masks_t *d)
+{
+  int idx = 0;
+  dt_masks_form_t *path = _selected_single_path(&idx);
+
+  if(path)
+  {
+    const gboolean pct = dt_bauhaus_widget_get_quad_active(d->resize_amount);
+    float amount = 0.0f;
+    if(path->functions && path->functions->resize_get)
+      path->functions->resize_get(path, pct, &amount);
+
+    // reflect the current offset without triggering a (re)commit
+    _resize_cancel_pending(d);
+    d->resize_updating = TRUE;
+    dt_bauhaus_slider_set(d->resize_amount, roundf(amount));
+    d->resize_updating = FALSE;
+  }
+  gtk_widget_set_visible(d->resize_box, path != NULL);
+}
+
 static void _update_all_properties(dt_lib_masks_t *self)
 {
   gtk_widget_show(self->none_label);
@@ -281,6 +472,9 @@ static void _update_all_properties(dt_lib_masks_t *self)
 
   gtk_widget_set_visible(self->pressure, drawing_brush && darktable.gui->have_pen_pressure);
   gtk_widget_set_visible(self->smoothing, drawing_brush);
+
+  // shrink/grow applies only to a single path shape
+  _resize_update(self);
 }
 
 static void _lib_masks_get_values(GtkTreeModel *model,
@@ -1976,6 +2170,40 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->smoothing, N_("properties"), N_("smoothing"));
   dt_gui_box_add(d->cs.container, d->pressure, d->smoothing);
 
+  // path-only shrink/grow (outset/inset) control: a single signed slider whose
+  // quad toggles the unit (px / %). Unlike "size" (a live centroid scaling),
+  // this rasterizes and re-vectorizes the outline. The value is a signed offset
+  // measured from the shape's baseline; 0 restores it. It commits (debounced) on
+  // change. The soft range is ±20 but the hard range is wide so an explicit value
+  // can be typed in.
+  d->resize_amount = dt_bauhaus_slider_new_action(DT_ACTION(self), -1000, 1000, 1, 0.0, 0);
+  dt_bauhaus_widget_set_label(d->resize_amount, N_("properties"), N_("shrink or grow"));
+  dt_bauhaus_slider_set_soft_range(d->resize_amount, -20, 20);
+  dt_bauhaus_slider_set_format(d->resize_amount, "");
+  gtk_widget_set_tooltip_text(d->resize_amount,
+                              _("grow (positive) or shrink (negative) the selected path,\n"
+                                "relative to its shape when selected; 0 restores the original"));
+  g_signal_connect(
+    G_OBJECT(d->resize_amount), "value-changed", G_CALLBACK(_resize_amount_changed), d);
+
+  // unit (px / %) toggle in the slider's quad
+  dt_bauhaus_widget_set_quad_paint(d->resize_amount, _paint_resize_unit, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(d->resize_amount, TRUE);
+  {
+    const char *unit = dt_conf_get_string_const("masks/path_resize_unit");
+    dt_bauhaus_widget_set_quad_active(d->resize_amount, !g_strcmp0(unit, "% of path size"));
+  }
+  dt_bauhaus_widget_set_quad_tooltip(
+    d->resize_amount, _("shrink/grow unit: image pixels (px) or % of path size — click to toggle"));
+  g_signal_connect(G_OBJECT(d->resize_amount), "quad-pressed", G_CALLBACK(_resize_unit_quad), d);
+  // initial value suffix reflects the stored unit
+  _resize_sync_unit(d);
+
+  d->resize_box = d->resize_amount;
+  dt_gui_box_add(d->cs.container, d->resize_amount);
+  gtk_widget_show_all(d->resize_amount);
+  gtk_widget_set_no_show_all(d->resize_amount, TRUE);
+
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
   darktable.develop->proxy.masks.list_change = _lib_masks_recreate_list;
@@ -1986,6 +2214,9 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_masks_t *d = self->data;
+  if(d && d->resize_timer)
+    g_source_remove(d->resize_timer);
   g_free(self->data);
   self->data = NULL;
 }
