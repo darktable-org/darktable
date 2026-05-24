@@ -541,6 +541,7 @@ void *dt_opencl_map_buffer(const int devid,
 int dt_opencl_unmap_mem_object(const int devid,
                                cl_mem mem_object,
                                void *mapped_ptr);
+int dt_opencl_migrate_cl_mem(const int devid, cl_mem mem);
 
 size_t dt_opencl_get_mem_object_size(const cl_mem mem);
 

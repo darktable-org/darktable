@@ -2871,6 +2871,26 @@ int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
   return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, NULL, 1);
 }
 
+int dt_opencl_migrate_cl_mem(const int devid, cl_mem mem)
+{
+  if(!_cldev_running(devid))
+    return DT_OPENCL_NODEVICE;
+
+  cl_event *eventp = _opencl_events_get_slot(devid, "[migrate cl_mem]");
+
+  const cl_mem list[1] = { mem };
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueMigrateMemObjects)
+    (darktable.opencl->dev[devid].cmd_queue,
+      1, list, CL_MIGRATE_MEM_OBJECT_HOST,
+      0, NULL, eventp);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_migrate_cl_mem] on device '%s' id=%d failed: %s",
+             darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  return err;
+}
+
 int dt_opencl_copy_device_to_host(const int devid,
                                   void *host,
                                   cl_mem image,
