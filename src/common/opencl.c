@@ -4093,22 +4093,36 @@ cl_int dt_opencl_events_flush(const int devid,
     else
       (*totalsuccess)++;
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
+    if((darktable.unmuted & DT_DEBUG_PERF)
+       && err == CL_SUCCESS
+       && *retval == CL_COMPLETE)
     {
-      // get profiling info of event (only if darktable was called with '-d perf')
-      cl_ulong start;
-      cl_ulong end;
+      // get profiling info of event (only if darktable was called with '-d perf').
+      // Initialize start/end so a driver that wrongly returns CL_SUCCESS without
+      // populating the value cannot make us subtract garbage.
+      cl_ulong start = 0;
+      cl_ulong end = 0;
       cl_int errs = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)(
           (*eventlist)[k], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
       cl_int erre = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)
         ((*eventlist)[k], CL_PROFILING_COMMAND_END,
          sizeof(cl_ulong), &end, NULL);
-      if(errs == CL_SUCCESS && erre == CL_SUCCESS)
+      if(errs == CL_SUCCESS && erre == CL_SUCCESS && end >= start)
       {
         (*eventtags)[k].timelapsed = end - start;
       }
       else
       {
+        // Driver returned success but timestamps are missing/inverted, or the
+        // profiling query itself failed. Surface this rather than silently
+        // producing a huge underflowed duration.
+        dt_print(DT_DEBUG_OPENCL,
+                 "[opencl_events_flush] invalid profiling data for '%s' on device %d"
+                 " (start=%" G_GUINT64_FORMAT ", end=%" G_GUINT64_FORMAT
+                 ", errs=%s, erre=%s)",
+                 tag[0] == '\0' ? "<?>" : tag, devid,
+                 (guint64)start, (guint64)end,
+                 cl_errstr(errs), cl_errstr(erre));
         (*eventtags)[k].timelapsed = 0;
         (*lostevents)++;
       }
