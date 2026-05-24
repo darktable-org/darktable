@@ -122,6 +122,9 @@ Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignorevers
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueData: "Import folder into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
@@ -133,6 +136,9 @@ Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\c
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueData: "Import into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"
