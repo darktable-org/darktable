@@ -799,15 +799,9 @@ static gboolean _update_progress_idle(gpointer user_data)
   if(finished && !dl->finish_handled && dialog_alive)
   {
     dl->finish_handled = TRUE;
-    if(error)
-    {
-      gtk_label_set_text(GTK_LABEL(dl->status_label), error);
-      gtk_widget_show(dl->status_label);
-    }
-    else
-    {
-      gtk_dialog_response(GTK_DIALOG(dl->dialog), GTK_RESPONSE_OK);
-    }
+    // close the progress dialog in both cases — error is surfaced as
+    // a standard message dialog by the caller after the thread joins
+    gtk_dialog_response(GTK_DIALOG(dl->dialog), GTK_RESPONSE_OK);
   }
 
   g_free(error);
@@ -923,6 +917,19 @@ _download_model_with_dialog(dt_prefs_ai_data_t *data, const char *model_id)
   // notify modules that models have changed
   if(success)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+  else if(response != GTK_RESPONSE_CANCEL)
+  {
+    // download failed (not user-cancelled) — surface in a standard error dialog
+    GtkWidget *err = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL,
+      GTK_MESSAGE_ERROR,
+      GTK_BUTTONS_OK,
+      "%s", dl->error);
+    gtk_window_set_title(GTK_WINDOW(err), _("model download failed"));
+    gtk_dialog_run(GTK_DIALOG(err));
+    gtk_widget_destroy(err);
+  }
 
   // clean up
   g_mutex_clear(&dl->mutex);

@@ -122,14 +122,8 @@ static size_t _curl_write_string(void *ptr, size_t size, size_t nmemb, void *use
   return bytes;
 }
 
-/**
- * @brief extract "major.minor.patch" from darktable_package_version.
- *
- * darktable_package_version looks like "5.5.0+156~gabcdef-dirty" or "5.4.0".
- * we extract the leading "X.Y.Z" portion.
- *
- * @return newly allocated string "X.Y.Z", or NULL on parse failure.
- */
+// Extract the leading "X.Y.Z" from darktable_package_version (which
+// can look like "5.5.0+156~gabcdef-dirty" or just "5.4.0").
 static char *_get_darktable_version_prefix(void)
 {
   int major = 0, minor = 0, patch = 0;
@@ -138,16 +132,10 @@ static char *_get_darktable_version_prefix(void)
   return NULL;
 }
 
-/**
- * @brief query the github api to find the latest model release compatible
- *        with the current darktable version.
- *
- * looks for releases tagged "vX.Y.Z" or "vX.Y.Z.N" where X.Y.Z matches
- * the darktable version. returns the tag with the highest revision number.
- *
- * @param repository  github "owner/repo" string
- * @return newly allocated tag string (e.g. "v5.5.0.2"), or NULL if none found.
- */
+// Resolve the model-repo release tag for the current darktable version
+// via releases-index.json on raw.githubusercontent.com (CDN, no
+// api.github.com rate limit). On failure sets *error_msg to a translated
+// string the caller owns.
 static char *_find_latest_compatible_release(const char *repository, char **error_msg)
 {
   if(error_msg) *error_msg = NULL;
@@ -156,210 +144,60 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
   if(!dt_version)
     return NULL;
 
-  char *api_url = g_strdup_printf(
-    "https://api.github.com/repos/%s/releases?per_page=100",
+  // `HEAD` follows the default branch — survives a master/main rename
+  char *url = g_strdup_printf(
+    "https://raw.githubusercontent.com/%s/HEAD/releases-index.json",
     repository);
 
   CURL *curl = curl_easy_init();
   if(!curl)
   {
-    g_free(api_url);
+    g_free(url);
     g_free(dt_version);
     return NULL;
   }
   dt_curl_init(curl, FALSE);
 
   GString *response = g_string_new(NULL);
-  curl_easy_setopt(curl, CURLOPT_URL, api_url);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
 
-  struct curl_slist *headers = NULL;
-  headers = curl_slist_append(headers, "Accept: application/vnd.github+json");
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
   CURLcode res = curl_easy_perform(curl);
   long http_code = 0;
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-  curl_slist_free_all(headers);
   curl_easy_cleanup(curl);
-  g_free(api_url);
+  g_free(url);
 
   if(res != CURLE_OK || http_code != 200)
   {
     dt_print(DT_DEBUG_AI,
-             "[ai_models] github api request failed: curl=%d, http=%ld",
+             "[ai_models] failed to fetch releases-index.json: curl=%d, http=%ld",
              res, http_code);
     if(error_msg)
     {
       if(res != CURLE_OK)
         *error_msg = g_strdup_printf(_("network error: %s"), curl_easy_strerror(res));
       else if(http_code == 404)
-        *error_msg = g_strdup_printf(_("model repository \"%s\" not found"), repository);
-      else if(http_code == 403)
-        *error_msg = g_strdup(_("GitHub API rate limit exceeded, try again later"));
+        *error_msg = g_strdup_printf(
+          _("model repository \"%s\" missing releases-index.json"),
+          repository);
       else
-        *error_msg = g_strdup_printf(_("GitHub API error (HTTP %ld)"), http_code);
+        *error_msg = g_strdup_printf(
+          _("could not fetch releases-index.json (HTTP %ld)"), http_code);
     }
     g_string_free(response, TRUE);
     g_free(dt_version);
     return NULL;
   }
 
-  // parse json array of releases
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_data(parser, response->str, response->len, NULL))
   {
     g_object_unref(parser);
     g_string_free(response, TRUE);
     g_free(dt_version);
-    return NULL;
-  }
-  g_string_free(response, TRUE);
-
-  JsonNode *root = json_parser_get_root(parser);
-  if(!root || !JSON_NODE_HOLDS_ARRAY(root))
-  {
-    g_object_unref(parser);
-    g_free(dt_version);
-    return NULL;
-  }
-
-  // build prefix to match: accept both "vX.Y.Z" and "X.Y.Z" tag formats
-  size_t ver_len = strlen(dt_version);
-
-  char *best_tag = NULL;
-  int best_revision = -1; // -1 means no revision suffix (e.g., "5.5.0" itself)
-
-  JsonArray *releases = json_node_get_array(root);
-  guint len = json_array_get_length(releases);
-  for(guint i = 0; i < len; i++)
-  {
-    JsonNode *node = json_array_get_element(releases, i);
-    if(!JSON_NODE_HOLDS_OBJECT(node))
-      continue;
-    JsonObject *rel = json_node_get_object(node);
-
-    if(!json_object_has_member(rel, "tag_name"))
-      continue;
-    const char *tag = json_object_get_string_member(rel, "tag_name");
-    if(!tag)
-      continue;
-
-    // skip any non-digit prefix (e.g. "v", "release-") to extract X.Y.Z.W
-    const char *ver_part = tag;
-    while(*ver_part && !g_ascii_isdigit(*ver_part))
-      ver_part++;
-    if(!*ver_part)
-      continue;
-
-    if(strncmp(ver_part, dt_version, ver_len) != 0)
-      continue;
-
-    // tag matches version prefix. check what follows:
-    // "X.Y.Z" (exact) -> revision = 0
-    // "X.Y.Z.N"       -> revision = N
-    const char *suffix = ver_part + ver_len;
-    int revision = 0;
-    if(suffix[0] == '\0')
-    {
-      revision = 0;
-    }
-    else if(suffix[0] == '.' && suffix[1] >= '0' && suffix[1] <= '9')
-    {
-      revision = atoi(suffix + 1);
-    }
-    else
-    {
-      continue; // doesn't match pattern
-    }
-
-    if(revision > best_revision)
-    {
-      best_revision = revision;
-      g_free(best_tag);
-      best_tag = g_strdup(tag);
-    }
-  }
-
-  g_free(dt_version);
-  g_object_unref(parser);
-
-  if(best_tag)
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] found compatible release: %s",
-             best_tag);
-  else
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] no compatible release found for darktable %s",
-             darktable_package_version);
-
-  return best_tag;
-}
-
-/**
- * @brief fetch the SHA256 digest for a release asset from the GitHub API
- *
- * queries /repos/{repo}/releases/tags/{tag}, iterates the assets array,
- * and returns the "digest" field for the asset whose "name" matches
- *
- * @param repository  github "owner/repo" string
- * @param release_tag release tag (e.g. "5.5.0.1")
- * @param asset_name  asset filename (e.g. "denoise-nafnet.zip")
- * @return newly allocated string "SHA256:...", or NULL if not found
- */
-static char *_fetch_asset_digest(
-  const char *repository,
-  const char *release_tag,
-  const char *asset_name)
-{
-  char *api_url = g_strdup_printf(
-    "https://api.github.com/repos/%s/releases/tags/%s",
-    repository,
-    release_tag
-  );
-
-  CURL *curl = curl_easy_init();
-  if(!curl)
-  {
-    g_free(api_url);
-    return NULL;
-  }
-  dt_curl_init(curl, FALSE);
-
-  GString *response = g_string_new(NULL);
-  curl_easy_setopt(curl, CURLOPT_URL, api_url);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
-
-  struct curl_slist *headers = NULL;
-  headers = curl_slist_append(headers, "Accept: application/vnd.github+json");
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-  CURLcode res = curl_easy_perform(curl);
-  long http_code = 0;
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-  curl_slist_free_all(headers);
-  curl_easy_cleanup(curl);
-  g_free(api_url);
-
-  if(res != CURLE_OK || http_code != 200)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] failed to fetch release metadata: curl=%d, http=%ld",
-             res, http_code);
-    g_string_free(response, TRUE);
-    return NULL;
-  }
-
-  // parse the release json object
-  JsonParser *parser = json_parser_new();
-  if(!json_parser_load_from_data(parser, response->str, response->len, NULL))
-  {
-    g_object_unref(parser);
-    g_string_free(response, TRUE);
     return NULL;
   }
   g_string_free(response, TRUE);
@@ -368,51 +206,148 @@ static char *_fetch_asset_digest(
   if(!root || !JSON_NODE_HOLDS_OBJECT(root))
   {
     g_object_unref(parser);
+    g_free(dt_version);
     return NULL;
   }
 
-  JsonObject *release = json_node_get_object(root);
-  if(!json_object_has_member(release, "assets"))
+  char *tag = NULL;
+  JsonObject *root_obj = json_node_get_object(root);
+
+  // v1 is the frozen contract; future schemas live in parallel keys
+  if(json_object_has_member(root_obj, "schema"))
+  {
+    const int schema = (int)json_object_get_int_member(root_obj, "schema");
+    if(schema != 1)
+      dt_print(DT_DEBUG_AI,
+               "[ai_models] releases-index.json top-level schema %d not "
+               "supported by this darktable; expected 1", schema);
+  }
+
+  if(json_object_has_member(root_obj, "compatible_releases"))
+  {
+    JsonObject *map
+      = json_object_get_object_member(root_obj, "compatible_releases");
+    if(map && json_object_has_member(map, dt_version))
+    {
+      const char *t = json_object_get_string_member(map, dt_version);
+      if(t) tag = g_strdup(t);
+    }
+  }
+  else
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] releases-index.json missing 'compatible_releases'");
+  }
+
+  g_object_unref(parser);
+
+  if(tag)
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] found compatible release: %s (darktable %s)",
+             tag, dt_version);
+  else
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] no compatible release in releases-index.json for darktable %s",
+             dt_version);
+
+  g_free(dt_version);
+  return tag;
+}
+
+// Fallback SHA lookup for downloads when check_updates hasn't run yet.
+// Fetches versions.json from the release (CDN, not api.github.com).
+static char *_fetch_asset_digest(
+  const char *repository,
+  const char *release_tag,
+  const char *asset_name)
+{
+  char *model_id = g_strdup(asset_name);
+  char *ext = strrchr(model_id, '.');
+  if(ext && g_strcmp0(ext, ".dtmodel") == 0) *ext = '\0';
+
+  char *url = g_strdup_printf(
+    "https://github.com/%s/releases/download/%s/versions.json",
+    repository, release_tag);
+
+  CURL *curl = curl_easy_init();
+  if(!curl)
+  {
+    g_free(url);
+    g_free(model_id);
+    return NULL;
+  }
+  dt_curl_init(curl, FALSE);
+
+  GString *response = g_string_new(NULL);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  curl_easy_cleanup(curl);
+  g_free(url);
+
+  if(res != CURLE_OK || http_code != 200)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to fetch versions.json: curl=%d, http=%ld",
+             res, http_code);
+    g_string_free(response, TRUE);
+    g_free(model_id);
+    return NULL;
+  }
+
+  JsonParser *parser = json_parser_new();
+  if(!json_parser_load_from_data(parser, response->str, response->len, NULL))
   {
     g_object_unref(parser);
+    g_string_free(response, TRUE);
+    g_free(model_id);
     return NULL;
   }
+  g_string_free(response, TRUE);
 
+  JsonNode *root = json_parser_get_root(parser);
   char *digest = NULL;
-  JsonArray *assets = json_object_get_array_member(release, "assets");
-  guint len = json_array_get_length(assets);
-  for(guint i = 0; i < len; i++)
+  if(root && JSON_NODE_HOLDS_OBJECT(root))
   {
-    JsonNode *node = json_array_get_element(assets, i);
-    if(!JSON_NODE_HOLDS_OBJECT(node))
-      continue;
-    JsonObject *asset_obj = json_node_get_object(node);
-
-    if(!json_object_has_member(asset_obj, "name"))
-      continue;
-    const char *name = json_object_get_string_member(asset_obj, "name");
-    if(g_strcmp0(name, asset_name) != 0)
-      continue;
-
-    if(json_object_has_member(asset_obj, "digest"))
+    JsonObject *root_obj = json_node_get_object(root);
+    if(json_object_has_member(root_obj, "models"))
     {
-      const char *d = json_object_get_string_member(asset_obj, "digest");
-      if(d && g_str_has_prefix(d, "sha256:"))
+      JsonObject *models_obj = json_object_get_object_member(root_obj, "models");
+      if(json_object_has_member(models_obj, model_id))
       {
-        digest = g_strdup(d);
-        dt_print(DT_DEBUG_AI, "[ai_models] asset %s digest: %s", asset_name, digest);
+        JsonNode *m_node = json_object_get_member(models_obj, model_id);
+        if(JSON_NODE_HOLDS_OBJECT(m_node))
+        {
+          JsonObject *m_obj = json_node_get_object(m_node);
+          if(json_object_has_member(m_obj, "sha256"))
+          {
+            const char *s = json_object_get_string_member(m_obj, "sha256");
+            if(s && g_str_has_prefix(s, "sha256:"))
+            {
+              digest = g_strdup(s);
+              dt_print(DT_DEBUG_AI,
+                       "[ai_models] asset %s digest from versions.json: %s",
+                       asset_name, digest);
+            }
+          }
+        }
       }
     }
-    break;
   }
 
   g_object_unref(parser);
 
   if(!digest)
     dt_print(DT_DEBUG_AI,
-             "[ai_models] no digest found for asset %s in release %s",
-             asset_name, release_tag);
+             "[ai_models] no sha256 for %s in versions.json (release %s)",
+             model_id, release_tag);
 
+  g_free(model_id);
   return digest;
 }
 #endif // HAVE_AI_DOWNLOAD
@@ -918,22 +853,31 @@ void dt_ai_models_check_updates(dt_ai_registry_t *registry)
     return;
   }
 
-  // compare remote versions with installed versions
+  // populate model->checksum from sha256 so downloads skip re-fetching
   g_mutex_lock(&registry->lock);
   for(GList *l = registry->models; l; l = g_list_next(l))
   {
     dt_ai_model_t *model = (dt_ai_model_t *)l->data;
-    if(model->status != DT_AI_MODEL_DOWNLOADED)
-      continue;
+    if(!json_object_has_member(models_obj, model->id)) continue;
 
-    if(!json_object_has_member(models_obj, model->id))
-      continue;
+    JsonNode *m_node = json_object_get_member(models_obj, model->id);
+    if(!m_node || !JSON_NODE_HOLDS_OBJECT(m_node)) continue;
+    JsonObject *m_obj = json_node_get_object(m_node);
 
-    const char *remote_version
-      = json_object_get_string_member(models_obj, model->id);
-    if(!remote_version) continue;
+    const char *remote_version = json_object_has_member(m_obj, "version")
+      ? json_object_get_string_member(m_obj, "version") : NULL;
+    const char *remote_sha256 = json_object_has_member(m_obj, "sha256")
+      ? json_object_get_string_member(m_obj, "sha256") : NULL;
 
-    if(_version_compare(model->version, remote_version) < 0)
+    if(remote_sha256 && g_str_has_prefix(remote_sha256, "sha256:"))
+    {
+      g_free(model->checksum);
+      model->checksum = g_strdup(remote_sha256);
+    }
+
+    if(remote_version
+       && model->status == DT_AI_MODEL_DOWNLOADED
+       && _version_compare(model->version, remote_version) < 0)
     {
       model->status = DT_AI_MODEL_UPDATE_AVAILABLE;
       dt_print(DT_DEBUG_AI,
