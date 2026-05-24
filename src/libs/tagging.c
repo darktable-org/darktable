@@ -425,6 +425,8 @@ static void _init_treeview(dt_lib_module_t *self,
     view = d->attached_view;
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
     store = model;
+    g_object_ref(model);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   }
   else // dictionary_view tags of typed text
   {
@@ -433,14 +435,23 @@ static void _init_treeview(dt_lib_module_t *self,
     else
       count = dt_tag_get_with_usage(&tags);
     view = d->dictionary_view;
-    model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
     if(d->tree_flag)
       store = GTK_TREE_MODEL(d->dictionary_treestore);
     else
       store = GTK_TREE_MODEL(d->dictionary_liststore);
+    // Destroy the filter before clearing the underlying store: the
+    // bulk row-deleted emissions corrupt the filter's internal
+    // GSequence cache and crash in node_get_pos (same defensive
+    // pattern as libs/collect.c). The filter is recreated once the
+    // store has been repopulated.
+    model = NULL;
+    g_object_ref(store);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
+    if(d->tree_flag)
+      d->dictionary_treefilter = NULL;
+    else
+      d->dictionary_listfilter = NULL;
   }
-  g_object_ref(model);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
@@ -524,15 +535,20 @@ static void _init_treeview(dt_lib_module_t *self,
       }
       g_strfreev(last_tokens);
     }
+    // recreate the filter on the freshly populated store
+    model = gtk_tree_model_filter_new(store, NULL);
+    gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(model),
+                                             DT_LIB_TAGGING_COL_VISIBLE);
+    d->dictionary_treefilter = GTK_TREE_MODEL_FILTER(model);
     if(d->keyword[0])
     {
       gtk_tree_model_foreach(store,
                              (GtkTreeModelForeachFunc)_set_matching_tag_visibility, self);
       gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_tree_reveal_func, NULL);
-      gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
     }
-    else gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
     g_object_unref(model);
+    g_object_unref(store);
   }
   else
   {
@@ -556,13 +572,28 @@ static void _init_treeview(dt_lib_module_t *self,
            -1);
       }
     }
-    if(which && d->keyword[0])
+    if(which)
     {
-      gtk_tree_model_foreach(store,
-                             (GtkTreeModelForeachFunc)_set_matching_tag_visibility, self);
+      // dictionary_view list mode: recreate the filter on the
+      // freshly populated store (see comment in the dictionary
+      // setup branch above for the rationale).
+      model = gtk_tree_model_filter_new(store, NULL);
+      gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(model),
+                                               DT_LIB_TAGGING_COL_VISIBLE);
+      d->dictionary_listfilter = GTK_TREE_MODEL_FILTER(model);
+      if(d->keyword[0])
+        gtk_tree_model_foreach(store,
+                               (GtkTreeModelForeachFunc)_set_matching_tag_visibility, self);
+      gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+      g_object_unref(model);
+      g_object_unref(store);
     }
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-    g_object_unref(model);
+    else
+    {
+      // attached_view: model is the liststore itself, no filter
+      gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+      g_object_unref(model);
+    }
   }
   if(which)
     _sort_dictionary_list(self, FALSE);
