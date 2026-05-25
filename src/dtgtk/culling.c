@@ -409,15 +409,16 @@ static gboolean _zoom_to_center(dt_thumbnail_t *th,
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
-  // Compute the bound from the new zoom directly. img_width * z_ratio assumes
-  // the surface is at the previous zoom, but during deferred pinch zoom the
-  // surface stays at the gesture-start zoom and z_ratio is only the per-step
-  // ratio — so img_width * z_ratio under-estimates the effective width and the
-  // image progressively drifts toward the top-left corner.
-  int img_w = 0, img_h = 0;
-  gtk_widget_get_size_request(th->w_image, &img_w, &img_h);
-  const float effective_w = (float)img_w * darktable.gui->ppd_thb * zd;
-  const float effective_h = (float)img_h * darktable.gui->ppd_thb * zd;
+  // Bound to the real rendered image extent rather than box*zoom: the latter
+  // assumes the image fills the box, but a photo whose aspect ratio differs from
+  // the box is letterboxed, so box*zoom over-estimates the extent in the
+  // letterboxed dimension and the image drifts toward that edge.
+  // img_width/img_height are at th->img_surf_zoom; scale to the new zoom zd. This
+  // references the surface zoom directly (not the per-step z_ratio), so it stays
+  // correct across a whole deferred gesture where the surface is never reloaded.
+  const float zr = (th->img_surf_zoom > 0.0f) ? zd / th->img_surf_zoom : 1.0f;
+  const float effective_w = (float)th->img_width * zr;
+  const float effective_h = (float)th->img_height * zr;
   th->zoomx = fmaxf((float)iw - effective_w,
                     fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
   th->zoomy = fmaxf((float)ih - effective_h,
@@ -734,7 +735,11 @@ static gboolean _event_scroll(GtkWidget *widget,
       dt_print(DT_DEBUG_INPUT,
                "[culling scroll] ctrl+scroll zoom_delta=%.2f x_culling=%.1f y_culling=%.1f",
                zoom_delta, x_culling, y_culling);
-      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, TRUE);
+      // discrete wheel: a single click has no continuous gesture and emits no
+      // smooth is_stop event to finalise it, so reload the surface immediately
+      // (still cheap — the native mipmap surface cache is reused).  Leaving it
+      // deferred would freeze the image at a stale, scaled-up resolution.
+      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, FALSE);
     }
     else
     {
@@ -925,8 +930,11 @@ static gboolean _event_motion_notify(GtkWidget *widget,
       int iw = 0;
       int ih = 0;
       gtk_widget_get_size_request(th->w_image, &iw, &ih);
-      const int mindx = (int)(iw * darktable.gui->ppd_thb * (1.0f - th->zoom));
-      const int mindy = (int)(ih * darktable.gui->ppd_thb * (1.0f - th->zoom));
+      // bound to the real rendered image extent (handles letterboxing), scaled to
+      // the current zoom in case the surface is still at the gesture-start zoom.
+      const float zr = (th->img_surf_zoom > 0.0f) ? th->zoom / th->img_surf_zoom : 1.0f;
+      const int mindx = (int)(iw * darktable.gui->ppd_thb - th->img_width * zr);
+      const int mindy = (int)(ih * darktable.gui->ppd_thb - th->img_height * zr);
       if(th->zoomx > 0)
         th->zoomx = 0;
       if(th->zoomx < mindx)
@@ -2313,8 +2321,11 @@ gboolean dt_culling_pan_move(dt_culling_t *table,
     dt_thumbnail_t *th = l->data;
     int iw = 0, ih = 0;
     gtk_widget_get_size_request(th->w_image, &iw, &ih);
-    const int mindx = (int)(iw * darktable.gui->ppd_thb * (1.0f - th->zoom));
-    const int mindy = (int)(ih * darktable.gui->ppd_thb * (1.0f - th->zoom));
+    // bound to the real rendered image extent (handles letterboxing), scaled to
+    // the current zoom in case the surface is still at the gesture-start zoom.
+    const float zr = (th->img_surf_zoom > 0.0f) ? th->zoom / th->img_surf_zoom : 1.0f;
+    const int mindx = (int)(iw * darktable.gui->ppd_thb - th->img_width * zr);
+    const int mindy = (int)(ih * darktable.gui->ppd_thb - th->img_height * zr);
     if(th->zoomx > 0) th->zoomx = 0;
     if(th->zoomx < mindx) th->zoomx = mindx;
     if(th->zoomy > 0) th->zoomy = 0;
