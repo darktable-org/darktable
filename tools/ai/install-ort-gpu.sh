@@ -4,6 +4,13 @@
 
 set -euo pipefail
 
+# Surface where the script failed instead of exiting silently. `set -e`
+# otherwise just walks off the end of the world when any command fails.
+trap 'rc=$?; echo "" >&2;
+      echo "Error: install-ort-gpu.sh aborted at line $LINENO (exit $rc)" >&2;
+      echo "  failing command: $BASH_COMMAND" >&2;
+      echo "  Please report at https://github.com/darktable-org/darktable/issues" >&2' ERR
+
 usage() {
   cat <<EOF
 NAME
@@ -363,6 +370,9 @@ detect_rocm_version() {
   if [ -n "$ROCM_VERSION" ]; then
     ROCM_MM=$(echo "$ROCM_VERSION" | grep -oP '^\d+\.\d+')
   fi
+  # always succeed — empty ROCM_VERSION/ROCM_MM signal "not found" without
+  # tripping `set -e` at the call site
+  return 0
 }
 
 # Detect installed CUDA toolkit version. Sets CUDA_MM (major.minor) if found.
@@ -386,14 +396,14 @@ detect_cuda_version() {
   # libcudart.so major version from ldconfig — works regardless of install method
   v=$(ldconfig -p 2>/dev/null | grep -oP 'libcudart\.so\.\K\d+' | sort -V | tail -1 || true)
   [[ "$v" =~ ^[0-9]+$ ]] && { CUDA_MM="${v}.0"; return; }
+  # always succeed — empty CUDA_MM signals "not found" without tripping
+  # `set -e` at the call site
+  return 0
 }
 
 if [ -n "$VENDOR_OVERRIDE" ]; then
   VENDOR="$VENDOR_OVERRIDE"
   echo "EP override: forcing $VENDOR_OVERRIDE (skipping GPU detection)"
-  # auto-detect version only when --ep didn't already pin one
-  [ "$VENDOR_OVERRIDE" = "amd"    ] && [ -z "$ROCM_OVERRIDE" ] && detect_rocm_version
-  [ "$VENDOR_OVERRIDE" = "nvidia" ] && [ -z "$CUDA_OVERRIDE" ] && detect_cuda_version
 else
   # NVIDIA
   if command -v nvidia-smi &>/dev/null; then
@@ -521,13 +531,14 @@ if [ -z "$PKG_JSON" ] || [ "$PKG_JSON" = "null" ]; then
   exit 1
 fi
 
-# Warn when CUDA version could not be detected — package was selected
-# without version filtering and may not match the installed toolkit.
+# Refuse to proceed when the CUDA toolkit version could not be detected —
+# without it we cannot pick the right ONNX Runtime build, and guessing would
+# silently install one that does not match the installed toolkit.
 if [ "$SELECTED" = "nvidia" ] && [ -z "${CUDA_MM:-}" ] && [ -z "$CUDA_OVERRIDE" ]; then
-  echo "Warning: could not detect installed CUDA toolkit version."
-  echo "  Proceeding with: Requirements: $(_field requirements '')"
-  echo "  (use --ep cuda12 or --ep cuda13 to pick explicitly)"
+  echo "Error: could not detect installed CUDA toolkit version."
+  echo "  Re-run with --ep cuda12 or --ep cuda13 to pick the CUDA major explicitly."
   echo ""
+  exit 1
 fi
 
 # Extract fields from JSON

@@ -134,12 +134,12 @@ To enable GPU acceleration, run one of the install scripts:
 
 Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.sh | bash
+curl -fsSL https://raw.githubusercontent.com/darktable-org/darktable/HEAD/tools/ai/install-ort-gpu.sh | bash
 ```
 
 Windows (PowerShell):
 ```powershell
-irm https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.ps1 | iex
+irm https://raw.githubusercontent.com/darktable-org/darktable/HEAD/tools/ai/install-ort-gpu.ps1 | iex
 ```
 
 Then point darktable at the installed library via the **AI** tab in preferences
