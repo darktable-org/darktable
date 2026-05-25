@@ -1916,6 +1916,7 @@ void dt_colorspaces_set_display_profile
   guint8 *buffer = NULL;
   gint buffer_size = 0;
   gchar *profile_source = NULL;
+  gboolean profile_changed = FALSE;
 
 #if defined GDK_WINDOWING_X11
 
@@ -2056,7 +2057,6 @@ void dt_colorspaces_set_display_profile
   profile_source = g_strdup("windows color profile api");
 #endif
 
-  int profile_changed = 0;
   if(profile_type == DT_COLORSPACE_DISPLAY2)
   {
     profile_changed
