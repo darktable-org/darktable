@@ -957,8 +957,15 @@ static gpointer _init_ort_api(gpointer data)
                ort_override, g_module_error());
       goto done;
     }
-    g_ort.module = ort_mod;  // keep handle for _try_provider EP lookups
     api = _ort_api_from_module(ort_mod, ort_override);
+    if(!api)
+    {
+      // api probe failed (version too old / not an ORT lib): close the
+      // handle so we don't keep a non-functional library mapped
+      g_module_close(ort_mod);
+      goto done;
+    }
+    g_ort.module = ort_mod;  // keep handle for _try_provider EP lookups
   }
 #ifdef ORT_LAZY_LOAD
   else
@@ -992,6 +999,12 @@ static gpointer _init_ort_api(gpointer data)
       goto done;
     }
     api = _ort_api_from_module(ort_mod, ORT_LIBRARY_PATH);
+    if(!api)
+    {
+      g_module_close(ort_mod);
+      goto done;
+    }
+    g_ort.module = ort_mod;  // keep handle for _try_provider EP lookups
   }
 #else
   else
