@@ -340,9 +340,6 @@ typedef struct {
  * @param opt_level Graph optimization level.
  * @param dim_overrides Array of symbolic dimension overrides (NULL = none).
  * @param n_overrides Number of overrides.
- * @param ep_flags EP-specific flag bitmask. Callers should pass 0; the
- *                 load function adds bits internally based on the model's
- *                 cpu_only declaration (e.g. COREML_FLAG_USE_CPU_ONLY).
  * @return dt_ai_context_t* Context ready for inference, or NULL.
  */
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
@@ -351,8 +348,7 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                        dt_ai_provider_t provider,
                                        dt_ai_opt_level_t opt_level,
                                        const dt_ai_dim_override_t *dim_overrides,
-                                       int n_overrides,
-                                       uint32_t ep_flags);
+                                       int n_overrides);
 
 /**
  * @brief Tensor Data Types
