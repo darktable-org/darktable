@@ -838,8 +838,8 @@ static void _histogram_collect_cl(const int devid,
 
   if(!pixel) return;
 
-  if(dt_opencl_copy_device_to_host(devid, pixel, img,
-                                   roi->width, roi->height, sizeof(float) * 4) != CL_SUCCESS)
+  if(dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4)
+    != CL_SUCCESS)
   {
     dt_free_align(tmpbuf);
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "[histogram_collect]",
@@ -1622,8 +1622,7 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
     float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
     if(clin && clout && cpudata)
     {
-      cl_int err = dt_opencl_copy_device_to_host(pipe->devid, clout, out,
-                                                              ow, oh, cho * sizeof(float));
+      cl_int err = dt_opencl_copy_device_to_host(pipe->devid, clout, out, ow, oh, cho * sizeof(float));
       if(err == CL_SUCCESS)
       {
         err = dt_opencl_copy_device_to_host(pipe->devid, clin, in, iw, ih, ch);
@@ -2276,8 +2275,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                 float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
                 if(cache)
                 {
-                  err = dt_opencl_copy_device_to_host(pipe->devid, cache, *cl_mem_output,
-                                                        roi_out->width, roi_out->height, out_bpp);
+                  err = dt_opencl_copy_device_to_host(pipe->devid, cache, *cl_mem_output, roi_out->width, roi_out->height, out_bpp);
                   if(err != CL_SUCCESS)
                   {
                     // for some reason writing to bcache failed so let's clear/invalidate it now and leave the error condition
@@ -2417,9 +2415,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(cl_mem_input != NULL)
         {
           /* copy back to CPU buffer, then clean unneeded buffer */
-          if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
-                                           roi_in.width, roi_in.height,
-                                           in_bpp) != CL_SUCCESS)
+          if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp)
+            != CL_SUCCESS)
           {
             dt_print_pipe(DT_DEBUG_OPENCL,
                           "process",
@@ -2618,11 +2615,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           if(cl_mem_input != NULL)
           {
             /* copy input to host memory, so we can find it in cache and wait via blocking flag */
-            if(dt_opencl_copy_device_to_host(pipe->devid, input,
-                                             cl_mem_input,
-                                             roi_in.width,
-                                             roi_in.height,
-                                             in_bpp) != CL_SUCCESS)
+            if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp)
+              != CL_SUCCESS)
             {
               important_cl_input = FALSE;
               dt_print_pipe(DT_DEBUG_OPENCL,
@@ -2669,9 +2663,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
              In-place colorspace conversion to input cst is good as the cpu fallback
              won't do that conversion again.
           */
-          if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
-                                           roi_in.width, roi_in.height,
-                                           in_bpp) != CL_SUCCESS)
+          if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp)
+            != CL_SUCCESS)
           {
             dt_print_pipe(DT_DEBUG_OPENCL,
                           "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s",
@@ -2702,9 +2695,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       /* cleanup unneeded opencl input buffer, and copy back to CPU */
       if(cl_mem_input != NULL)
       {
-        if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
-                                         roi_in.width, roi_in.height,
-                                         in_bpp) != CL_SUCCESS)
+        if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp)
+          != CL_SUCCESS)
         {
           dt_print_pipe(DT_DEBUG_OPENCL,
                         "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s",
@@ -2818,15 +2810,16 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   // warn on NaN or infinity
   if((darktable.unmuted & DT_DEBUG_NAN) && !dt_iop_module_is_gamma(module))
   {
-
+    gboolean valid_output = TRUE;
 #ifdef HAVE_OPENCL
     if(*cl_mem_output != NULL)
-      dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output,
-                                    roi_out->width, roi_out->height, bpp);
+      valid_output = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height, bpp)
+        == CL_SUCCESS;
+
 #endif
 
     const int ch = (*out_format)->channels;
-    if((*out_format)->datatype == TYPE_FLOAT && (ch == 1 || ch == 4))
+    if(valid_output && (*out_format)->datatype == TYPE_FLOAT && (ch == 1 || ch == 4))
     {
       const int m = ch - 1;
 
