@@ -301,9 +301,7 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
   dt_conf_set_bool("plugins/ai/enabled", enabled);
   if(darktable.ai_registry)
   {
-    g_mutex_lock(&darktable.ai_registry->lock);
-    darktable.ai_registry->ai_enabled = enabled;
-    g_mutex_unlock(&darktable.ai_registry->lock);
+    dt_ai_registry_set_enabled(darktable.ai_registry, enabled);
 
     // lazy-init directories + models on first enable
     if(enabled)
@@ -554,7 +552,7 @@ static void _update_provider_status(dt_prefs_ai_data_t *data,
 
   // don't probe GPU providers when AI is disabled —
   // initializing MIGraphX/ROCm on unsupported GPUs can abort()
-  if(!darktable.ai_registry || !darktable.ai_registry->ai_enabled)
+  if(!dt_ai_registry_is_enabled(darktable.ai_registry))
   {
     gtk_label_set_text(GTK_LABEL(data->provider_status), "");
     return;
@@ -589,12 +587,7 @@ static void _on_provider_changed(GtkWidget *widget, gpointer user_data)
   const int combo_idx = dt_bauhaus_combobox_get(widget);
   const int pi = _combo_idx_to_provider(combo_idx, data->supported_providers);
   dt_conf_set_string(DT_AI_CONF_PROVIDER, dt_ai_providers[pi].config_string);
-  if(darktable.ai_registry)
-  {
-    g_mutex_lock(&darktable.ai_registry->lock);
-    darktable.ai_registry->provider = dt_ai_providers[pi].value;
-    g_mutex_unlock(&darktable.ai_registry->lock);
-  }
+  dt_ai_registry_set_provider(darktable.ai_registry, dt_ai_providers[pi].value);
   _update_string_indicator(data->provider_indicator, DT_AI_CONF_PROVIDER);
   _update_provider_status(data, dt_ai_providers[pi].value);
 }

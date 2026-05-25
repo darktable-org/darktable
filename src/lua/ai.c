@@ -838,18 +838,14 @@ static int _context_close(lua_State *L)
 static int _ai_models(lua_State *L)
 {
   dt_ai_registry_t *reg = darktable.ai_registry;
-  if(!reg)
-  {
-    lua_newtable(L);
-    return 1;
-  }
-
-  g_mutex_lock(&reg->lock);
   lua_newtable(L);
-  int idx = 1;
-  for(GList *l = reg->models; l; l = g_list_next(l))
+  if(!reg) return 1;
+
+  const int count = dt_ai_models_get_count(reg);
+  for(int i = 0; i < count; i++)
   {
-    dt_ai_model_t *m = l->data;
+    dt_ai_model_t *m = dt_ai_models_get_by_index(reg, i);
+    if(!m) continue;
     lua_newtable(L);
     lua_pushstring(L, m->id);
     lua_setfield(L, -2, "id");
@@ -863,9 +859,9 @@ static int _ai_models(lua_State *L)
     lua_setfield(L, -2, "status");
     lua_pushboolean(L, m->is_default);
     lua_setfield(L, -2, "is_default");
-    lua_rawseti(L, -2, idx++);
+    lua_rawseti(L, -2, i + 1);
+    dt_ai_model_free(m);
   }
-  g_mutex_unlock(&reg->lock);
   return 1;
 }
 

@@ -75,21 +75,42 @@ typedef void (*dt_ai_progress_callback)(const char *model_id,
                                         gpointer user_data);
 
 /**
- * @brief AI Models Registry
- * Central registry for managing AI models
+ * @brief AI Models Registry — opaque handle.
+ *
+ * The registry holds a private mutex and the in-memory model list.
+ * Both are intentionally hidden so callers can't deadlock by acquiring
+ * the lock directly, race-iterate the list, or touch fields without
+ * going through the API. The full definition lives in ai_models.c.
+ *
+ * External callers should treat the type as opaque and use the
+ * accessor functions below.
  */
-typedef struct dt_ai_registry_t
-{
-  GList *models;              // List of dt_ai_model_t*
-  char *repository;           // GitHub repository (e.g. "darktable-org/darktable-ai")
-  char *models_dir;           // Path to user's models directory
-  char *cache_dir;            // Path to download cache directory
-  gboolean ai_enabled;        // Global AI enable/disable
-  dt_ai_provider_t provider;  // Selected execution provider
-  gboolean updates_checked;   // TRUE after first check_updates call
-  struct dt_ai_environment_t *env;  // Lazily created backend environment
-  GMutex lock;                // Thread safety for registry access
-} dt_ai_registry_t;
+typedef struct dt_ai_registry_t dt_ai_registry_t;
+
+// --- Registry state accessors ---
+// thin, locked accessors for the few fields external callers need to
+// touch. all other registry state is accessed via the model APIs below
+
+/**
+ * @brief TRUE if AI is currently enabled (global toggle in prefs).
+ *        Safe to call from any thread; NULL registry returns FALSE.
+ */
+gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry);
+
+/**
+ * @brief Set the global AI-enabled state in the registry.
+ *        Does NOT write to darktablerc — caller must persist the
+ *        preference separately. Safe to call from any thread.
+ */
+void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, gboolean enabled);
+
+/**
+ * @brief Set the execution provider in the registry.
+ *        Does NOT write to darktablerc — caller must persist the
+ *        preference separately. Safe to call from any thread.
+ */
+void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
+                                 dt_ai_provider_t provider);
 
 // --- Core API ---
 
