@@ -155,6 +155,53 @@ static gboolean _check_cuda_driver_compat(void)
   g_module_close(mod);
   return cached == 1;
 }
+
+// check that the ROCm runtime is loadable AND reports at least one
+// HIP device; ORT's MIGraphX/ROCm EP can abort() during load if the
+// kernel HSA support is missing or no GPU agent is available.
+// result is cached — the check runs only once per process
+static gboolean _check_rocm_runtime(void)
+{
+  static int cached = -1;  // -1 = unchecked, 0 = unusable, 1 = ok
+  if(cached >= 0) return cached == 1;
+
+  cached = 1;  // assume ok until proven otherwise
+
+  // try unversioned first, then probe versioned names from high to low
+  GModule *mod = g_module_open("libamdhip64.so",
+                               G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  for(int v = 8; !mod && v >= 5; v--)
+  {
+    char name[32];
+    snprintf(name, sizeof(name), "libamdhip64.so.%d", v);
+    mod = g_module_open(name, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  }
+  if(!mod) return TRUE;  // can't check — assume compatible
+
+  typedef int (*hip_count_fn)(int *);
+  hip_count_fn count_fn = NULL;
+  g_module_symbol(mod, "hipGetDeviceCount", (gpointer *)&count_fn);
+
+  if(count_fn)
+  {
+    int n = 0;
+    const int rc = count_fn(&n);
+    if(rc == 0 && n > 0)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] ROCm: %d HIP device(s) detected", n);
+    }
+    else
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] ROCm: hipGetDeviceCount rc=%d n=%d — "
+               "disabling MIGraphX/ROCm to prevent crash", rc, n);
+      cached = 0;
+    }
+  }
+  g_module_close(mod);
+  return cached == 1;
+}
 #endif  // __linux__
 
 // hide ORT's expected stderr noise (GetApi probe rejections, dlopen errors)
@@ -1413,6 +1460,11 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
   // before enabling CUDA EP, verify the driver supports the installed runtime;
   // a driver/runtime version mismatch causes ORT to abort() during inference
   if(strstr(symbol_name, "CUDA") && !_check_cuda_driver_compat())
+    return FALSE;
+  // same guard for MIGraphX/ROCm: kernel HSA mismatch or missing GPU
+  // agent causes ORT to abort() during provider load
+  if((strstr(symbol_name, "MIGraphX") || strstr(symbol_name, "ROCM"))
+     && !_check_rocm_runtime())
     return FALSE;
 #endif
   GModule *mod = g_module_open(NULL, 0);
