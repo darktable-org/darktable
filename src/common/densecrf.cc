@@ -111,7 +111,8 @@ extern "C" void dt_dense_crf_binary(float *probabilities,
 {
   if(!probabilities || !rgb
      || width <= 0 || height <= 0
-     || n_iterations <= 0)
+     || n_iterations <= 0
+     || sigma_spatial <= 0.0f || sigma_rgb <= 0.0f)
     return;
 
   const int n = width * height;
