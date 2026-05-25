@@ -136,20 +136,34 @@ static gboolean _check_cuda_driver_compat(void)
   if(drv_fn && rt_fn)
   {
     int drv = 0, rt = 0;
-    drv_fn(&drv);
-    rt_fn(&rt);
-    dt_print(DT_DEBUG_AI,
-             "[darktable_ai] CUDA driver %d.%d, runtime %d.%d",
-             drv / 1000, (drv % 1000) / 10,
-             rt / 1000, (rt % 1000) / 10);
-    if(drv < rt)
+    // cudaSuccess == 0 — anything else means we couldn't read the version
+    // (no driver, init failure, no devices). conservatively treat that
+    // as incompatible so we don't try to enable CUDA on a broken stack
+    const int drv_rc = drv_fn(&drv);
+    const int rt_rc = rt_fn(&rt);
+    if(drv_rc != 0 || rt_rc != 0)
     {
       dt_print(DT_DEBUG_AI,
-               "[darktable_ai] CUDA driver %d.%d is too old for runtime %d.%d — "
-               "disabling CUDA to prevent crash. Update your NVIDIA driver.",
+               "[darktable_ai] CUDA version query failed (drv rc=%d, "
+               "rt rc=%d) — disabling CUDA",
+               drv_rc, rt_rc);
+      cached = 0;
+    }
+    else
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] CUDA driver %d.%d, runtime %d.%d",
                drv / 1000, (drv % 1000) / 10,
                rt / 1000, (rt % 1000) / 10);
-      cached = 0;
+      if(drv < rt)
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[darktable_ai] CUDA driver %d.%d is too old for runtime %d.%d — "
+                 "disabling CUDA to prevent crash. Update your NVIDIA driver.",
+                 drv / 1000, (drv % 1000) / 10,
+                 rt / 1000, (rt % 1000) / 10);
+        cached = 0;
+      }
     }
   }
   g_module_close(mod);
