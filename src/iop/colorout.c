@@ -189,7 +189,7 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       n->type = DT_COLORSPACE_FILE;
-      g_strlcpy(n->filename, o->iccprofile, sizeof(n->filename));
+      dt_strlcpy_to_fixed(n->filename, o->iccprofile, sizeof(n->filename));
     }
 
     n->intent = o->intent;
@@ -214,7 +214,7 @@ int legacy_params(dt_iop_module_t *self,
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     n->type = o->type;
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
     n->intent = o->intent;
 
     *new_params = n;

@@ -251,7 +251,7 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      g_strlcpy(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
     }
 
     new->intent = old->intent;
@@ -308,7 +308,7 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      g_strlcpy(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
     }
 
     new->intent = old->intent;
@@ -366,7 +366,7 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       new->type = DT_COLORSPACE_FILE;
-      g_strlcpy(new->filename, old->iccprofile, sizeof(new->filename));
+      dt_strlcpy_to_fixed(new->filename, old->iccprofile, sizeof(new->filename));
     }
 
     new->intent = old->intent;
@@ -396,7 +396,7 @@ int legacy_params(dt_iop_module_t *self,
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
-    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    dt_strlcpy_to_fixed(new->filename, old->filename, sizeof(new->filename));
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
@@ -428,12 +428,12 @@ int legacy_params(dt_iop_module_t *self,
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
-    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    dt_strlcpy_to_fixed(new->filename, old->filename, sizeof(new->filename));
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
     new->type_work = old->type_work;
-    g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
+    dt_strlcpy_to_fixed(new->filename_work, old->filename_work, sizeof(new->filename_work));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
     *new_params = new;
@@ -544,7 +544,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
     if(pp->work_pos == pos)
     {
       type_work = pp->type;
-      g_strlcpy(filename_work, pp->filename, sizeof(filename_work));
+      dt_strlcpy_to_fixed(filename_work, pp->filename, sizeof(filename_work));
       break;
     }
   }
@@ -1255,8 +1255,8 @@ void commit_params(dt_iop_module_t *self,
 
   d->type = p->type;
   d->type_work = p->type_work;
-  g_strlcpy(d->filename, p->filename, sizeof(d->filename));
-  g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
+  dt_strlcpy_to_fixed(d->filename, p->filename, sizeof(d->filename));
+  dt_strlcpy_to_fixed(d->filename_work, p->filename_work, sizeof(d->filename_work));
 
   const cmsHPROFILE Lab =
     dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
