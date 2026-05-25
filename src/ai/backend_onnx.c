@@ -1563,11 +1563,11 @@ static gboolean _try_coreml_v2(OrtSessionOptions *session_opts,
   size_t n = 0;
 
   keys[n] = "ModelFormat";
-  vals[n] = (ep_flags & 16) ? "MLProgram" : "NeuralNetwork";
+  vals[n] = (ep_flags & DT_COREML_FLAG_CREATE_MLPROGRAM) ? "MLProgram" : "NeuralNetwork";
   n++;
 
   keys[n] = "MLComputeUnits";
-  vals[n] = (ep_flags & 1) ? "CPUOnly" : "ALL";
+  vals[n] = (ep_flags & DT_COREML_FLAG_USE_CPU_ONLY) ? "CPUOnly" : "ALL";
   n++;
 
   if(cache_dir && cache_dir[0])
@@ -1924,8 +1924,8 @@ _enable_acceleration(OrtSessionOptions *session_opts,
   {
     dt_print(DT_DEBUG_AI,
              "[darktable_ai] CoreML format: %s%s",
-             (coreml_flags & 16) ? "MLProgram" : "NeuralNetwork",
-             (coreml_flags & 1) ? " (CPU compute units)" : "");
+             (coreml_flags & DT_COREML_FLAG_CREATE_MLPROGRAM) ? "MLProgram" : "NeuralNetwork",
+             (coreml_flags & DT_COREML_FLAG_USE_CPU_ONLY) ? " (CPU compute units)" : "");
     gchar *fp = _backend_cache_fingerprint(DT_AI_PROVIDER_COREML, -1);
     char coreml_cache[PATH_MAX] = { 0 };
     const gboolean have_cache = dt_ai_backend_cache_dir(
