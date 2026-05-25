@@ -1362,10 +1362,15 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
     return g_strdup_printf(_("file not found: %s"), filepath);
 
   char *installed_id = _zip_top_dir(filepath);
-  if(!installed_id || !installed_id[0])
+  if(!_valid_model_id(installed_id))
   {
+    // zip's top-level dir becomes the model id and a conf key — reject
+    // empty / "." / ".." / path-separator content before it gets there
+    char *err = g_strdup_printf(
+      _("archive top-level directory is not a valid model id: \"%s\""),
+      installed_id ? installed_id : "");
     g_free(installed_id);
-    return g_strdup(_("could not read model id from archive"));
+    return err;
   }
 
   if(!_extract_zip_atomic(filepath, registry->models_dir, installed_id))
