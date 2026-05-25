@@ -200,11 +200,10 @@ static gchar *_default_print_func(const double value, const gboolean detailled)
 static gboolean _default_decode_func(const gchar *text, double *value)
 {
   // TODO : verify the value is numeric
-  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
-  *value = atof(text);
-  setlocale(LC_NUMERIC, locale);
-  g_free(locale);
+  // parse locale-independently (always '.' as decimal separator) without ever
+  // touching the global locale, which a background thread may be mutating via
+  // setlocale() (see the main-thread locale pin in dt_init())
+  *value = g_ascii_strtod(text, NULL);
   return TRUE;
 }
 static gchar *_default_print_date_func(const double value, const gboolean detailled)

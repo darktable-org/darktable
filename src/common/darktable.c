@@ -1560,6 +1560,32 @@ int dt_init(int argc,
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
 
+  // Pin this thread (the main / GUI thread, which performs the overwhelming
+  // majority of gettext() calls) to a private, thread-local copy of the locale
+  // that dt_l10n_init() just finalized. setlocale() and gettext() both act on
+  // glibc's *global* locale and are not safe to call concurrently: setlocale()
+  // frees and rebuilds the global locale data while gettext() reads it.
+  // Background worker threads routinely trigger setlocale() indirectly when they
+  // dlopen and initialize third-party libraries (the OpenCL ICD loader and GPU
+  // vendor drivers, libcups during printer discovery, ...). With the main thread
+  // reading from a private locale, those concurrent global setlocale() calls can
+  // no longer corrupt the state our gettext() reads, which was causing
+  // intermittent startup crashes (SIGSEGV / "free(): invalid pointer" /
+  // "realloc(): invalid pointer") during the gettext-heavy GUI construction.
+  // This must run after dt_l10n_init() has finalized the locale and before any
+  // worker threads are created in dt_control_init(). The private locale lives
+  // for the whole process and is intentionally never freed.
+  //
+  // Not done on Windows: darktable's per-region locale helpers there toggle
+  // _configthreadlocale(_DISABLE_PER_THREAD_LOCALE), which would silently undo a
+  // permanent pin on the main thread.
+#if !defined(WIN32)
+  {
+    const locale_t main_locale = newlocale(LC_ALL_MASK, "", (locale_t)0);
+    if(main_locale) uselocale(main_locale);
+  }
+#endif
+
   gboolean has_workspace = FALSE;
 
   // we need this REALLY early so that error messages can be shown,
