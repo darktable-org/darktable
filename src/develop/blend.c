@@ -1331,8 +1331,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     // get back final mask from the device as the raster mask
     if(!raster)
     {
-      err = dt_opencl_copy_device_to_host(devid, mask, dev_mask,
-                                          owidth, oheight, sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, mask, dev_mask, owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS)
       {
         dt_iop_piece_clear_raster(piece, _mask);
