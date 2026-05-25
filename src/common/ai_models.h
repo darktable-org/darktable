@@ -53,7 +53,10 @@ typedef struct dt_ai_model_t
   char *description;     // Short description
   char *task;            // Task type: "denoise", "upscale", etc.
   char *github_asset;    // Asset filename in GitHub release
-  char *checksum;        // SHA256 checksum (format: "sha256:...")
+  char *checksum;        // checksum string, format "<algo>:<hex>"
+                         // (today only "sha256:..." is produced by the
+                         // GitHub asset digest API; parser tolerates
+                         // other algos but only sha256 is verified)
   char *version;         // actual version from model's config.json
   char *min_version;     // minimum required version from registry
   char *spatial_dim_h;   // symbolic name of height dimension (default "height")
@@ -121,7 +124,10 @@ void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
 dt_ai_registry_t *dt_ai_models_init(void);
 
 /**
- * @brief Load model registry from JSON file
+ * @brief Load model registry from `ai_models.json` bundled with the
+ *        darktable installation (looked up under DATADIR). There is
+ *        no caller-supplied path — the registry source is fixed by
+ *        the install layout.
  * @param registry The registry to populate
  * @return TRUE on success
  */
@@ -150,9 +156,17 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry);
 
 /**
  * @brief Check for model updates by fetching versions.json from the
- *        remote repository. Sets DT_AI_MODEL_UPDATE_AVAILABLE on
- *        models where a newer version exists but the installed
- *        version still meets min_version
+ *        remote repository, and update each model's status:
+ *
+ *        - installed >= remote → DT_AI_MODEL_DOWNLOADED (no change)
+ *        - installed <  remote AND installed >= min_version
+ *          → DT_AI_MODEL_UPDATE_AVAILABLE
+ *        - installed <  min_version → DT_AI_MODEL_UPDATE_REQUIRED
+ *
+ *        UPDATE_REQUIRED means darktable cannot use the installed
+ *        model with the current code; UPDATE_AVAILABLE is a soft
+ *        nudge — the installed model still works.
+ *
  * @param registry The registry to update
  */
 void dt_ai_models_check_updates(dt_ai_registry_t *registry);
@@ -286,6 +300,13 @@ void dt_ai_models_set_enabled(dt_ai_registry_t *registry, const char *model_id,
  * Looks up the centralized config key `plugins/ai/models/active/{task}`.
  * If not set, falls back to legacy consumer config keys, then to the
  * default downloaded model for the task.
+ *
+ * SIDE EFFECT: when the lookup resolves via the default-downloaded
+ * fallback (no conf key present), the resulting id is also written
+ * back to `plugins/ai/models/active/{task}`. Subsequent calls see an
+ * "explicit" choice that was actually materialized by the first call.
+ * Once the conf key holds any value (including the empty string from
+ * an explicit clear), the fallback is bypassed and no write happens.
  *
  * @param task The task type (e.g. "mask", "denoise")
  * @return Newly allocated model ID string (caller must free), or NULL if none active

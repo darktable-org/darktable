@@ -318,6 +318,10 @@ dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
 
 /**
  * @brief Symbolic dimension override for models with dynamic shapes.
+ *
+ * The `name` pointer is only read during the dt_ai_load_model_ext call
+ * — the backend copies anything it needs to keep. Caller may free the
+ * string (or let it go out of scope) immediately after load returns.
  */
 typedef struct {
   const char *name;  ///< Symbolic dimension name (e.g. "num_labels")
@@ -363,7 +367,14 @@ typedef enum {
 } dt_ai_dtype_t;
 
 /**
- * @brief Tensor descriptor for I/O
+ * @brief Tensor descriptor for I/O.
+ *
+ * No explicit byte-size field — the buffer length is implied by
+ * `shape[0] * shape[1] * ... * shape[ndim-1] * sizeof(elem)` where
+ * `sizeof(elem)` is derived from `type`. Caller owns the buffer and
+ * is responsible for allocating enough space. Both `data` and `shape`
+ * pointers are borrowed for the duration of dt_ai_run; the backend
+ * does not copy them.
  */
 typedef struct dt_ai_tensor_t {
   void *data;         ///< Pointer to raw data buffer
