@@ -1099,6 +1099,8 @@ static gboolean _verify_checksum(const char *filepath,
 }
 #endif //HAVE_AI_DOWNLOAD
 
+static gboolean _rmdir_recursive(const char *path);
+
 static gboolean _extract_zip(const char *zippath,
                              const char *destdir)
 {
@@ -1237,6 +1239,74 @@ static gboolean _extract_zip(const char *zippath,
   return success;
 }
 
+// atomically install a .dtmodel into dest_root/<model_id>/.
+// extract into a staging directory inside dest_root, then rename
+// the model subdir into its final place only on full success.
+// on failure, staging is cleaned up and the existing
+// dest_root/<model_id>/ (if any) is left untouched.
+static gboolean _extract_zip_atomic(const char *zippath,
+                                    const char *dest_root,
+                                    const char *model_id)
+{
+  if(!zippath || !dest_root || !model_id || !model_id[0])
+    return FALSE;
+
+  _ensure_directory(dest_root);
+
+  // staging dir as a sibling of the final dir, so the rename is
+  // intra-filesystem and atomic. g_mkdtemp fills XXXXXX with a
+  // unique suffix and creates the directory
+  gchar *staging
+    = g_strdup_printf("%s%s.staging.XXXXXX", dest_root, G_DIR_SEPARATOR_S);
+  if(!g_mkdtemp(staging))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to create staging dir under %s", dest_root);
+    g_free(staging);
+    return FALSE;
+  }
+
+  if(!_extract_zip(zippath, staging))
+  {
+    _rmdir_recursive(staging);
+    g_free(staging);
+    return FALSE;
+  }
+
+  // the zip's top-level dir is the model id; the extracted tree is
+  // staging/<model_id>/. move it to dest_root/<model_id>/.
+  gchar *staged_model = g_build_filename(staging, model_id, NULL);
+  gchar *final_path = g_build_filename(dest_root, model_id, NULL);
+
+  if(!g_file_test(staged_model, G_FILE_TEST_IS_DIR))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] archive top-level does not match model id '%s'",
+             model_id);
+    _rmdir_recursive(staging);
+    g_free(staging);
+    g_free(staged_model);
+    g_free(final_path);
+    return FALSE;
+  }
+
+  // replace any existing install; we just verified a complete copy in staging
+  if(g_file_test(final_path, G_FILE_TEST_EXISTS))
+    _rmdir_recursive(final_path);
+
+  const gboolean ok = g_rename(staged_model, final_path) == 0;
+  if(!ok)
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to move staged model into place: %s -> %s",
+             staged_model, final_path);
+
+  g_free(staged_model);
+  g_free(final_path);
+  _rmdir_recursive(staging);  // remove the now-empty staging parent
+  g_free(staging);
+  return ok;
+}
+
 // peek at the first archive entry to recover the model_id (the top
 // level directory name in the zip layout)
 static char *_zip_top_dir(const char *zippath)
@@ -1292,8 +1362,13 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
     return g_strdup_printf(_("file not found: %s"), filepath);
 
   char *installed_id = _zip_top_dir(filepath);
+  if(!installed_id || !installed_id[0])
+  {
+    g_free(installed_id);
+    return g_strdup(_("could not read model id from archive"));
+  }
 
-  if(!_extract_zip(filepath, registry->models_dir))
+  if(!_extract_zip_atomic(filepath, registry->models_dir, installed_id))
   {
     g_free(installed_id);
     return g_strdup(_("failed to extract model archive"));
@@ -1568,8 +1643,11 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
                       asset));
   }
 
-  // extract to models directory (zip already contains model_id folder)
-  if(!_extract_zip(download_path, registry->models_dir))
+  // extract to models directory (zip already contains model_id folder).
+  // atomic: staging dir + rename, so a partial extract never leaves a
+  // half-written model_id directory that refresh_status would treat as
+  // DOWNLOADED.
+  if(!_extract_zip_atomic(download_path, registry->models_dir, model_id))
   {
     g_unlink(download_path);
     g_free(download_path);
