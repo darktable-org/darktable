@@ -43,12 +43,12 @@ powershell -ExecutionPolicy Bypass -File .\tools\ai\install-ort-gpu.ps1
 
 Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.sh | bash
+curl -fsSL https://raw.githubusercontent.com/darktable-org/darktable/HEAD/tools/ai/install-ort-gpu.sh | bash
 ```
 
 Windows (PowerShell):
 ```powershell
-irm https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/tools/ai/install-ort-gpu.ps1 | iex
+irm https://raw.githubusercontent.com/darktable-org/darktable/HEAD/tools/ai/install-ort-gpu.ps1 | iex
 ```
 
 When no local `ort_gpu.json` is found the scripts automatically fetch the
