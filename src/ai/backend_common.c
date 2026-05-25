@@ -867,7 +867,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
       }
       else if(c == DT_AI_PROVIDER_COREML)
       {
-        *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+        *inout_ep_flags |= DT_COREML_FLAG_USE_CPU_ONLY;
         dt_print(DT_DEBUG_AI,
                  "[darktable_ai] provider auto -> %s (cpu compute units) "
                  "for %s — model prefers CPU on %s",
@@ -890,7 +890,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
     // concrete EP banned by cpu_only
     if(configured == DT_AI_PROVIDER_COREML)
     {
-      *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+      *inout_ep_flags |= DT_COREML_FLAG_USE_CPU_ONLY;
       dt_print(DT_DEBUG_AI,
                "[darktable_ai] %s prefers CPU on %s — using CoreML CPU "
                "compute units",
@@ -911,7 +911,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
 
   if(result == DT_AI_PROVIDER_COREML
      && _coreml_use_mlprogram(info, model_file))
-    *inout_ep_flags |= 16;  // COREML_FLAG_CREATE_MLPROGRAM
+    *inout_ep_flags |= DT_COREML_FLAG_CREATE_MLPROGRAM;
 
   return result;
 }

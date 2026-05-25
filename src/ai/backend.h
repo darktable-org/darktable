@@ -60,6 +60,13 @@ extern const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT];
 /** Config key for the AI execution provider preference */
 #define DT_AI_CONF_PROVIDER "plugins/ai/provider"
 
+/* CoreML EP flag bits, mirroring values from ORT's
+ * coreml_provider_factory.h. defined here so the backend layer doesn't
+ * need to drag the EP header into either file; single source of truth
+ * if Apple ever renumbers the enum. */
+#define DT_COREML_FLAG_USE_CPU_ONLY     0x001u
+#define DT_COREML_FLAG_CREATE_MLPROGRAM 0x010u
+
 /** Get display name for a provider enum value */
 const char *dt_ai_provider_to_string(dt_ai_provider_t provider);
 
