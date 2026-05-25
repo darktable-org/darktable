@@ -40,6 +40,22 @@ static inline char *realpath(const char *path, char *resolved_path)
 }
 #endif
 
+// internal layout of the opaque registry. external callers go through
+// the accessors in ai_models.h — the lock and the model list are
+// intentionally hidden so nobody can race-iterate or deadlock on them
+struct dt_ai_registry_t
+{
+  GList *models;              // list of dt_ai_model_t*
+  char *repository;           // github repository (e.g. "darktable-org/darktable-ai")
+  char *models_dir;           // path to user's models directory
+  char *cache_dir;            // path to download cache directory
+  gboolean ai_enabled;        // global AI enable/disable
+  dt_ai_provider_t provider;  // selected execution provider
+  gboolean updates_checked;   // TRUE after first check_updates call
+  struct dt_ai_environment_t *env;  // lazily created backend environment
+  GMutex lock;                // thread safety for registry access
+};
+
 // config keys
 #define CONF_AI_ENABLED "plugins/ai/enabled"
 #define CONF_AI_REPOSITORY "plugins/ai/repository"
@@ -380,6 +396,34 @@ static void _setup_registry(dt_ai_registry_t *registry)
   dt_print(DT_DEBUG_AI,
            "[ai_models] initialized: models_dir=%s, cache_dir=%s",
            registry->models_dir, registry->cache_dir);
+}
+
+// --- Registry state accessors ---
+
+gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry)
+{
+  if(!registry) return FALSE;
+  g_mutex_lock(&registry->lock);
+  const gboolean v = registry->ai_enabled;
+  g_mutex_unlock(&registry->lock);
+  return v;
+}
+
+void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, gboolean enabled)
+{
+  if(!registry) return;
+  g_mutex_lock(&registry->lock);
+  registry->ai_enabled = enabled;
+  g_mutex_unlock(&registry->lock);
+}
+
+void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
+                                 dt_ai_provider_t provider)
+{
+  if(!registry) return;
+  g_mutex_lock(&registry->lock);
+  registry->provider = provider;
+  g_mutex_unlock(&registry->lock);
 }
 
 dt_ai_registry_t *dt_ai_models_init(void)
