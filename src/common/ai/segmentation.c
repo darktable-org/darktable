@@ -1011,16 +1011,28 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   }
 
   // re-read actual mask dimensions -- the backend updates the shape array
-  // for dynamic-output models after ORT reports the real tensor shape
+  // for dynamic-output models after ORT reports the real tensor shape.
+  // only shrink: growing would push `masks + best * per_mask` past the
+  // allocated buffer on indexed reads below
   if(masks_shape[2] > 0 && masks_shape[3] > 0
      && ((int)masks_shape[2] != dec_h || (int)masks_shape[3] != dec_w))
   {
-    dt_print(DT_DEBUG_AI,
-             "[segmentation] actual decoder output: %"PRId64"x%"PRId64" (allocated %dx%d)",
-             masks_shape[2], masks_shape[3], dec_h, dec_w);
-    dec_h = (int)masks_shape[2];
-    dec_w = (int)masks_shape[3];
-    per_mask = (size_t)dec_h * dec_w;
+    if((int)masks_shape[2] <= dec_h && (int)masks_shape[3] <= dec_w)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] actual decoder output: %"PRId64"x%"PRId64" (allocated %dx%d)",
+               masks_shape[2], masks_shape[3], dec_h, dec_w);
+      dec_h = (int)masks_shape[2];
+      dec_w = (int)masks_shape[3];
+      per_mask = (size_t)dec_h * dec_w;
+    }
+    else
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[segmentation] actual decoder output %"PRId64"x%"PRId64" "
+               "exceeds allocated %dx%d — using allocated dims",
+               masks_shape[2], masks_shape[3], dec_h, dec_w);
+    }
   }
 
   // select best mask and cache refinement data
