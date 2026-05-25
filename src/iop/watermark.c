@@ -22,6 +22,7 @@
 #include "common/tags.h"
 #include "common/variables.h"
 #include "common/datetime.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1095,11 +1096,10 @@ static void _watermark_callback(GtkWidget *tb,
 
   DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
-  memset(p->filename, 0, sizeof(p->filename));
   const int n = dt_bauhaus_combobox_get(g->watermarks);
-  g_strlcpy(p->filename,
-            (char *)g_list_nth_data(g->watermarks_filenames, n),
-            sizeof(p->filename));
+  dt_strlcpy_to_fixed(p->filename,
+                      (char *)g_list_nth_data(g->watermarks_filenames, n),
+                      sizeof(p->filename));
   _text_color_font_set_sensitive(g, p->filename);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1241,7 +1241,7 @@ static void _text_callback(GtkWidget *entry,
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_watermark_params_t *p = self->params;
-  g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
+  dt_strlcpy_to_fixed(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1271,7 +1271,7 @@ static void _fontsel_callback(GtkWidget *button,
   dt_iop_watermark_params_t *p = self->params;
 
   gchar *fontname = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button));
-  g_strlcpy(p->font, fontname, sizeof(p->font));
+  dt_strlcpy_to_fixed(p->font, fontname, sizeof(p->font));
   g_free(fontname);
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);

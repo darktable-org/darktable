@@ -1032,6 +1032,9 @@ static void _drag_and_drop_received(GtkWidget *widget,
 
         dt_overlay_record(imgid_target_image, imgid_intended_overlay);
 
+        // zero-fill so trailing bytes of any previous image path do not bleed
+        // into piece->hash (params are hashed by full buffer length)
+        memset(p->filename, 0, sizeof(p->filename));
         dt_image_full_path(imgid_intended_overlay, p->filename, sizeof(p->filename), NULL);
 
         dt_dev_add_history_item(darktable.develop, self, TRUE);

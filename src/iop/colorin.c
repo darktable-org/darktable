@@ -24,6 +24,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
@@ -551,7 +552,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   if(type_work != DT_COLORSPACE_NONE)
   {
     p->type_work = type_work;
-    g_strlcpy(p->filename_work, filename_work, sizeof(p->filename_work));
+    dt_strlcpy_to_fixed(p->filename_work, filename_work, sizeof(p->filename_work));
 
     const dt_iop_order_iccprofile_info_t *const work_profile =
       dt_ioppr_add_profile_info_to_list(self->dev, p->type_work,

@@ -23,6 +23,7 @@
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -262,7 +263,7 @@ static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
     if(pp->out_pos == pos)
     {
       p->type = pp->type;
-      g_strlcpy(p->filename, pp->filename, sizeof(p->filename));
+      dt_strlcpy_to_fixed(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
 
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
@@ -586,7 +587,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
       p->type = pipe->icc_type;
-      g_strlcpy(p->filename, pipe->icc_filename, sizeof(p->filename));
+      dt_strlcpy_to_fixed(p->filename, pipe->icc_filename, sizeof(p->filename));
     }
     if((unsigned int)pipe->icc_intent < DT_INTENT_LAST) p->intent = pipe->icc_intent;
 

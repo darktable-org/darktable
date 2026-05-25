@@ -64,6 +64,9 @@ gchar *dt_util_fix_path(const gchar *path);
 size_t dt_utf8_strlcpy(char *dest,
                        const char *src,
                        const size_t n);
+/** g_strlcpy variant that zero-fills the destination first, useful e.g.
+    to keep hash stable for IOP params filename fields */
+size_t dt_strlcpy_to_fixed(char *dest, const char *src, const size_t dest_size);
 /** returns true if a file is regular, has read access and a filesize > 0 */
 gboolean dt_util_test_image_file(const char *filename);
 /** returns true if the path represents a directory with write access */
