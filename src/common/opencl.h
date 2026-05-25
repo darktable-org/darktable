@@ -234,6 +234,7 @@ typedef struct dt_opencl_t
   gboolean enabled;
   gboolean stopped;
   gboolean fastcl;  // for fast runtime checks instead of reading the conf
+  gboolean preheated; // for fast runtime checks about host preheating
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
