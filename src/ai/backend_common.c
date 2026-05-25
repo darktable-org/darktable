@@ -641,7 +641,16 @@ int *dt_ai_model_attribute_int_array(const dt_ai_model_info_t *info,
   if(v && JSON_NODE_HOLDS_ARRAY(v))
   {
     JsonArray *arr = json_node_get_array(v);
-    const guint n = json_array_get_length(arr);
+    guint n = json_array_get_length(arr);
+    // cap manifest-driven allocation — single digits are typical
+    const guint max_n = 256;
+    if(n > max_n)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] attribute '%s': %u elements exceeds cap %u, "
+               "truncating", key, n, max_n);
+      n = max_n;
+    }
     if(n > 0)
     {
       result = g_new(int, n);
@@ -685,7 +694,8 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
 
   JsonParser *parser = json_parser_new();
   gboolean result = FALSE;
-  if(json_parser_load_from_data(parser, info->cpu_only, -1, NULL))
+  GError *err = NULL;
+  if(json_parser_load_from_data(parser, info->cpu_only, -1, &err))
   {
     JsonNode *root = json_parser_get_root(parser);
 
@@ -728,6 +738,15 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
     }
     g_free(stem);
   }
+  else if(err)
+  {
+    // malformed cpu_only silently disables the EP safety constraint
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] model '%s': malformed cpu_only JSON (%s) — "
+             "EP safety constraint ignored",
+             info->id ? info->id : "?", err->message);
+    g_error_free(err);
+  }
   g_object_unref(parser);
   return result;
 }
@@ -743,7 +762,8 @@ static gboolean _coreml_use_mlprogram(const dt_ai_model_info_t *info,
 
   JsonParser *parser = json_parser_new();
   gboolean use_mlprogram = FALSE;
-  if(json_parser_load_from_data(parser, info->coreml_format, -1, NULL))
+  GError *err = NULL;
+  if(json_parser_load_from_data(parser, info->coreml_format, -1, &err))
   {
     JsonNode *root = json_parser_get_root(parser);
     const char *value = NULL;
@@ -770,6 +790,14 @@ static gboolean _coreml_use_mlprogram(const dt_ai_model_info_t *info,
     if(value && !g_ascii_strcasecmp(value, "mlprogram"))
       use_mlprogram = TRUE;
     g_free(stem);
+  }
+  else if(err)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] model '%s': malformed coreml_format JSON (%s) — "
+             "falling back to NeuralNetwork",
+             info->id ? info->id : "?", err->message);
+    g_error_free(err);
   }
   g_object_unref(parser);
   return use_mlprogram;
