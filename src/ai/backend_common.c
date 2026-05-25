@@ -450,7 +450,7 @@ dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
                                   dt_ai_provider_t provider)
 {
   return dt_ai_load_model_ext(env, model_id, model_file, provider,
-                              DT_AI_OPT_ALL, NULL, 0, 0);
+                              DT_AI_OPT_ALL, NULL, 0);
 }
 
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
@@ -459,8 +459,7 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                       dt_ai_provider_t provider,
                                       dt_ai_opt_level_t opt_level,
                                       const dt_ai_dim_override_t *dim_overrides,
-                                      int n_overrides,
-                                      uint32_t ep_flags)
+                                      int n_overrides)
 {
   if(!env || !model_id)
     return NULL;
@@ -473,9 +472,10 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
   }
 
   // resolve CONFIGURED/AUTO to a concrete EP and apply the model's
-  // cpu_only safety constraint in one place. ep_flags may be updated
-  // (e.g. COREML_FLAG_USE_CPU_ONLY) so the EP can stay enabled while
-  // honoring the constraint
+  // cpu_only safety constraint in one place. ep_flags is owned by the
+  // load function (e.g. COREML_FLAG_USE_CPU_ONLY) so the EP can stay
+  // enabled while honoring the constraint
+  uint32_t ep_flags = 0;
   const dt_ai_model_info_t *model_info
     = dt_ai_get_model_info_by_id(env, model_id);
   provider = _resolve_provider(provider, model_id, model_info,
