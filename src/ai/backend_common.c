@@ -927,6 +927,18 @@ const char *dt_ai_provider_to_string(dt_ai_provider_t provider)
   return dt_ai_providers[0].display_name;  // fallback to "auto"
 }
 
+size_t dt_ai_tensor_element_count(const int64_t *shape, int ndim)
+{
+  if(!shape || ndim <= 0) return 0;
+  size_t n = 1;
+  for(int i = 0; i < ndim; i++)
+  {
+    if(shape[i] <= 0) return 0;
+    n *= (size_t)shape[i];
+  }
+  return n;
+}
+
 dt_ai_provider_t dt_ai_provider_from_string(const char *str)
 {
   if(!str)

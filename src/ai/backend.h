@@ -52,7 +52,7 @@ typedef struct dt_ai_provider_desc_t {
   dt_ai_provider_t value;
   const char *config_string;
   const char *display_name;
-  int available;
+  gboolean available;
 } dt_ai_provider_desc_t;
 
 extern const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT];
@@ -78,8 +78,10 @@ guint dt_ai_providers_from_eps(const char *eps);
 guint dt_ai_providers_bundled(void);
 
 /** Snapshot the conf state (ORT path, provider, device ids) for the
- *  *_changed_since_load() helpers.  Call once at darktable startup so
- *  the snapshot is independent of when ORT is lazily initialized. */
+ *  *_changed_since_load() helpers. Idempotent — subsequent calls are
+ *  no-ops. Recommended to call once at darktable startup so the
+ *  snapshot reflects pre-modification state; if forgotten, the
+ *  *_changed_since_load() helpers auto-snapshot on first use. */
 void dt_ai_snapshot_conf_state(void);
 
 /** Free heap-allocated backend globals (cached strings, conf snapshot).
@@ -382,6 +384,14 @@ typedef struct dt_ai_tensor_t {
   int64_t *shape;     ///< Array of dimensions
   int ndim;           ///< Number of dimensions
 } dt_ai_tensor_t;
+
+/**
+ * @brief Number of elements implied by a shape (product of all dims).
+ *        Multiply by the element size (sizeof(float), etc.) to get
+ *        the buffer byte length. Returns 0 if any dim is non-positive
+ *        or if ndim is 0.
+ */
+size_t dt_ai_tensor_element_count(const int64_t *shape, int ndim);
 
 /**
  * @brief Run inference through the loaded model.

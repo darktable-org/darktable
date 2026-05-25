@@ -93,6 +93,7 @@ static struct {
   int    cuda_device_id;
   int    migraphx_device_id;
   int    dml_device_id;
+  gboolean taken;
 } g_conf_snapshot = {
   .cuda_device_id     = -1,
   .migraphx_device_id = -1,
@@ -228,11 +229,16 @@ char *dt_ai_ort_probe_library(const char *path)
 // both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
 // FALSE before ORT is loaded (no comparison reference yet)
 // snapshot the conf values that determine which library / EP / device
-// the in-process ORT will be bound to. called eagerly at darktable
-// startup so the *_changed_since_load() helpers have a stable reference
-// independent of when ORT is lazily initialized
+// the in-process ORT will be bound to. idempotent — subsequent calls
+// are no-ops so the snapshot reflects whichever state existed first.
+// callers should still call eagerly at darktable startup; if they
+// forget, the *_changed_since_load() helpers auto-snapshot on first
+// use so they always have a reference to compare against
 void dt_ai_snapshot_conf_state(void)
 {
+  if(g_conf_snapshot.taken) return;
+  g_conf_snapshot.taken = TRUE;
+
   gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
   g_free(g_conf_snapshot.ort_path);
   g_conf_snapshot.ort_path = g_strdup(ort_conf ? ort_conf : "");
@@ -259,6 +265,7 @@ void dt_ai_backend_cleanup_globals(void)
 
 gboolean dt_ai_ort_path_changed_since_load(void)
 {
+  dt_ai_snapshot_conf_state();  // no-op if already taken
   if(!g_conf_snapshot.ort_path) return FALSE;
   gchar *cur = dt_conf_get_string("plugins/ai/ort_library_path");
   const gboolean changed
@@ -269,6 +276,7 @@ gboolean dt_ai_ort_path_changed_since_load(void)
 
 gboolean dt_ai_provider_changed_since_load(void)
 {
+  dt_ai_snapshot_conf_state();  // no-op if already taken
   if(!g_conf_snapshot.provider) return FALSE;
   gchar *cur = dt_conf_get_string(DT_AI_CONF_PROVIDER);
   const gboolean changed
@@ -300,6 +308,7 @@ gboolean dt_ai_device_id_changed_since_load(const dt_ai_provider_t provider)
 {
   const char *key = dt_ai_device_conf_key_for_provider(provider);
   if(!key) return FALSE;
+  dt_ai_snapshot_conf_state();  // no-op if already taken
   int loaded;
   switch(provider)
   {
