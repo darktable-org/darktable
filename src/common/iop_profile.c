@@ -985,6 +985,19 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
   return profile_info;
 }
 
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
+                                      struct dt_dev_pixelpipe_t *pipe,
+                                      const dt_colorspaces_color_profile_type_t type,
+                                      const char *filename,
+                                      const int intent)
+{
+  dt_iop_order_iccprofile_info_t *profile_info =
+    dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+  pipe->export_profile_info = profile_info;
+  return profile_info;
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
 {
   dt_colorspaces_color_profile_type_t histogram_profile_type;
