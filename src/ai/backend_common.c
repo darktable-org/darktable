@@ -846,15 +846,16 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
   {
     int n = 0;
     const dt_ai_provider_t *cands = _auto_candidates(&n);
-    // single-candidate platforms (macOS, Windows) skip the probe — the
-    // bundled ORT always supports the platform EP, and if it doesn't,
-    // the load fallback chain in dt_ai_onnx_load_ext demotes to CPU
-    const gboolean skip_probe = (n == 1);
+    // probe every candidate — even single-candidate platforms (macOS,
+    // Windows). assuming the bundled EP is present breaks when a user
+    // points plugins/ai/ort_library_path at a non-bundled or CPU-only
+    // ORT. dt_ai_probe_provider memoizes its result, so the cost is
+    // a single _try_provider call per EP per process
     gboolean resolved = FALSE;
     for(int i = 0; i < n && !resolved; i++)
     {
       const dt_ai_provider_t c = cands[i];
-      if(!skip_probe && !dt_ai_probe_provider(c)) continue;
+      if(!dt_ai_probe_provider(c)) continue;
       const gboolean banned = _provider_cpu_only(info, model_file, c);
       if(!banned)
       {
