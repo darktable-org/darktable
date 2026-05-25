@@ -172,14 +172,17 @@ extern "C" void dt_dense_crf_binary(float *probabilities,
   }
 
   const size_t n_threads = (size_t)dt_get_num_threads();
-  // grid_points hint for hash-table sizing — over-estimate is harmless,
-  // under-estimate triggers an internal re-grow
-  const size_t spatial_grid = (size_t)((float)height * inv_sigma_s
-                                       * (float)width * inv_sigma_s);
-  const size_t bilateral_grid = (size_t)((float)height * inv_sigma_s
-                                         * (float)width * inv_sigma_s
-                                         * inv_sigma_c * inv_sigma_c * inv_sigma_c
-                                         * 256.0f * 256.0f * 256.0f);
+  // hash-table sizing hint — cap so small sigmas can't request GBs;
+  // the lattice re-grows as needed if we under-estimate
+  const size_t MAX_GRID_HINT = (size_t)1 << 24;  // ~16M buckets
+  size_t spatial_grid = (size_t)((float)height * inv_sigma_s
+                                 * (float)width * inv_sigma_s);
+  size_t bilateral_grid = (size_t)((float)height * inv_sigma_s
+                                   * (float)width * inv_sigma_s
+                                   * inv_sigma_c * inv_sigma_c * inv_sigma_c
+                                   * 256.0f * 256.0f * 256.0f);
+  if(spatial_grid > MAX_GRID_HINT)   spatial_grid   = MAX_GRID_HINT;
+  if(bilateral_grid > MAX_GRID_HINT) bilateral_grid = MAX_GRID_HINT;
 
   // Permutohedral lattices use `new` internally and can throw std::bad_alloc
   // on OOM; catch here so the exception never crosses the C boundary

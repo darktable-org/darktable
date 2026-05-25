@@ -379,19 +379,23 @@ static void _setup_registry(dt_ai_registry_t *registry)
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  registry->models_dir = dt_ai_resolve_models_path_override();
-  if(!registry->models_dir)
-    registry->models_dir = g_build_filename(g_get_user_data_dir(),
-                                            "darktable", "models", NULL);
+  // models_dir is the unlocked "already-initialised" sentinel in
+  // init_lazy, so it must be the LAST field published
+  char *models = dt_ai_resolve_models_path_override();
+  if(!models)
+    models = g_build_filename(g_get_user_data_dir(),
+                              "darktable", "models", NULL);
+  char *cache = g_build_filename(cachedir, "ai_downloads", NULL);
 
-  registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
-
-  _ensure_directory(registry->models_dir);
-  _ensure_directory(registry->cache_dir);
+  _ensure_directory(models);
+  _ensure_directory(cache);
 
   char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
   registry->provider = dt_ai_provider_from_string(prov_str);
   g_free(prov_str);
+
+  registry->cache_dir = cache;
+  registry->models_dir = models;  // publish last
 
   dt_print(DT_DEBUG_AI,
            "[ai_models] initialized: models_dir=%s, cache_dir=%s",

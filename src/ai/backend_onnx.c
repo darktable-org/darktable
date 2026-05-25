@@ -297,7 +297,15 @@ char *dt_ai_ort_probe_library(const char *path)
 // use so they always have a reference to compare against
 void dt_ai_snapshot_conf_state(void)
 {
-  if(g_conf_snapshot.taken) return;
+  // serialise first-init: racing threads must not both run the body
+  // and leak each other's g_strdup'd strings
+  static GMutex snapshot_lock;
+  g_mutex_lock(&snapshot_lock);
+  if(g_conf_snapshot.taken)
+  {
+    g_mutex_unlock(&snapshot_lock);
+    return;
+  }
   g_conf_snapshot.taken = TRUE;
 
   gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
@@ -315,6 +323,8 @@ void dt_ai_snapshot_conf_state(void)
                                                      "DT_MIGRAPHX_DEVICE_ID");
   g_conf_snapshot.dml_device_id      = _device_id_from_conf("plugins/ai/dml_device_id",
                                                      "DT_DML_DEVICE_ID");
+
+  g_mutex_unlock(&snapshot_lock);
 }
 
 void dt_ai_backend_cleanup_globals(void)
@@ -322,6 +332,7 @@ void dt_ai_backend_cleanup_globals(void)
   g_free(g_ort.version);            g_ort.version = NULL;
   g_free(g_conf_snapshot.ort_path); g_conf_snapshot.ort_path = NULL;
   g_free(g_conf_snapshot.provider); g_conf_snapshot.provider = NULL;
+  g_conf_snapshot.taken = FALSE;  // allow re-init on plugin/test reload
 }
 
 gboolean dt_ai_ort_path_changed_since_load(void)
@@ -674,7 +685,19 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
     {
       char **providers = NULL;
       int n_providers = 0;
-      if(probe_api->GetAvailableProviders(&providers, &n_providers) == NULL && providers)
+      OrtStatus *gap_st
+        = probe_api->GetAvailableProviders(&providers, &n_providers);
+      if(gap_st)
+      {
+        probe_api->ReleaseStatus(gap_st);
+        if(providers && probe_api->ReleaseAvailableProviders)
+        {
+          OrtStatus *rs
+            = probe_api->ReleaseAvailableProviders(providers, n_providers);
+          if(rs) probe_api->ReleaseStatus(rs);
+        }
+      }
+      else if(providers)
       {
         // map ORT provider names to short labels
         static const struct { const char *ort_name; const char *label; } map[] = {
@@ -1058,8 +1081,19 @@ static gboolean _ort_has_provider(const char *name)
   if(!g_ort.api || !g_ort.api->GetAvailableProviders) return FALSE;
   char **providers = NULL;
   int n = 0;
-  if(g_ort.api->GetAvailableProviders(&providers, &n) != NULL || !providers)
+  OrtStatus *st = g_ort.api->GetAvailableProviders(&providers, &n);
+  if(st)
+  {
+    g_ort.api->ReleaseStatus(st);
+    // ORT may have partially populated providers before erroring
+    if(providers && g_ort.api->ReleaseAvailableProviders)
+    {
+      OrtStatus *rs = g_ort.api->ReleaseAvailableProviders(providers, n);
+      if(rs) g_ort.api->ReleaseStatus(rs);
+    }
     return FALSE;
+  }
+  if(!providers) return FALSE;
   gboolean found = FALSE;
   for(int i = 0; i < n && !found; i++)
     if(g_strcmp0(providers[i], name) == 0) found = TRUE;
