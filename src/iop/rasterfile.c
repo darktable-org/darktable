@@ -608,7 +608,7 @@ void commit_params(dt_iop_module_t *self,
 
   d->mode = p->mode;
   gchar *fullpath = g_build_filename(p->path, p->file, NULL);
-  g_strlcpy(d->filepath, fullpath, sizeof(d->filepath));
+  dt_strlcpy_to_fixed(d->filepath, fullpath, sizeof(d->filepath));
   g_free(fullpath);
 }
 

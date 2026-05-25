@@ -230,9 +230,11 @@ int legacy_params(dt_iop_module_t *self,
     n->alignment = o->alignment;
     n->rotate = 0.0;
     n->scale_base = DT_SCALE_MAINMENU_IMAGE;
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    g_strlcpy(n->text, "", sizeof(n->text));
-    g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
+    n->scale_img = DT_SCALE_IMG_LARGER;
+    n->scale_svg = DT_SCALE_SVG_WIDTH;
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->text, "", sizeof(n->text));
+    dt_strlcpy_to_fixed(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
 
     *new_params = n;
@@ -267,10 +269,12 @@ int legacy_params(dt_iop_module_t *self,
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = 0.0;
-    n->scale_base = DT_SCALE_MAINMENU_IMAGE;
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    g_strlcpy(n->text, "", sizeof(n->text));
-    g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
+    n->scale_img = DT_SCALE_IMG_LARGER;
+    n->scale_svg = DT_SCALE_SVG_WIDTH;
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->text, "", sizeof(n->text));
+    dt_strlcpy_to_fixed(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
 
     *new_params = n;
@@ -308,10 +312,11 @@ int legacy_params(dt_iop_module_t *self,
     n->alignment = o->alignment;
     n->rotate = o->rotate;
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
-    // let scale_img and scale_svg at the default values
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    g_strlcpy(n->text, "", sizeof(n->text));
-    g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
+    n->scale_img = DT_SCALE_IMG_LARGER;
+    n->scale_svg = DT_SCALE_SVG_WIDTH;
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->text, "", sizeof(n->text));
+    dt_strlcpy_to_fixed(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
 
     *new_params = n;
@@ -355,10 +360,11 @@ int legacy_params(dt_iop_module_t *self,
     n->alignment = o->alignment;
     n->rotate = o->rotate;
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
-    // let scale_img and scale_svg at the default values
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    g_strlcpy(n->text, o->text, sizeof(n->text));
-    g_strlcpy(n->font, o->font, sizeof(n->font));
+    n->scale_img = DT_SCALE_IMG_LARGER;
+    n->scale_svg = DT_SCALE_SVG_WIDTH;
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->text, o->text, sizeof(n->text));
+    dt_strlcpy_to_fixed(n->font, o->font, sizeof(n->font));
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
@@ -404,10 +410,11 @@ int legacy_params(dt_iop_module_t *self,
     n->alignment = o->alignment;
     n->rotate = o->rotate;
     n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
-    // let scale_img and scale_svg at the default values
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    g_strlcpy(n->text, o->text, sizeof(n->text));
-    g_strlcpy(n->font, o->font, sizeof(n->font));
+    n->scale_img = DT_SCALE_IMG_LARGER;
+    n->scale_svg = DT_SCALE_SVG_WIDTH;
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->text, o->text, sizeof(n->text));
+    dt_strlcpy_to_fixed(n->font, o->font, sizeof(n->font));
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
@@ -431,9 +438,9 @@ int legacy_params(dt_iop_module_t *self,
     n->scale_base = o->scale_base;
     n->scale_img = o->scale_img;
     n->scale_svg = o->scale_svg;
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    g_strlcpy(n->text, o->text, sizeof(n->text));
-    g_strlcpy(n->font, o->font, sizeof(n->font));
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->text, o->text, sizeof(n->text));
+    dt_strlcpy_to_fixed(n->font, o->font, sizeof(n->font));
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
@@ -1294,14 +1301,11 @@ void commit_params(dt_iop_module_t *self,
   d->scale_base = p->scale_base;
   d->scale_img = p->scale_img;
   d->scale_svg = p->scale_svg;
-  memset(d->filename, 0, sizeof(d->filename));
-  g_strlcpy(d->filename, p->filename, sizeof(d->filename));
-  memset(d->text, 0, sizeof(d->text));
-  g_strlcpy(d->text, p->text, sizeof(d->text));
+  dt_strlcpy_to_fixed(d->filename, p->filename, sizeof(d->filename));
+  dt_strlcpy_to_fixed(d->text, p->text, sizeof(d->text));
   for(int k=0; k<3; k++)
     d->color[k] = p->color[k];
-  memset(d->font, 0, sizeof(d->font));
-  g_strlcpy(d->font, p->font, sizeof(d->font));
+  dt_strlcpy_to_fixed(d->font, p->font, sizeof(d->font));
 
 // dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...",d->filename);
 }
@@ -1380,8 +1384,8 @@ void init(dt_iop_module_t *self)
 
   dt_iop_watermark_params_t *d = self->default_params;
 
-  g_strlcpy(d->filename, "darktable.svg", sizeof(d->filename));
-  g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));
+  dt_strlcpy_to_fixed(d->filename, "darktable.svg", sizeof(d->filename));
+  dt_strlcpy_to_fixed(d->font, "DejaVu Sans 10", sizeof(d->font));
 }
 
 void gui_init(dt_iop_module_t *self)
