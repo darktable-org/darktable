@@ -556,6 +556,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   d->type = p->type;
 
+  // to be used in pixel-pipe cache
+  dt_ioppr_set_pipe_export_profile_info(self->dev, piece->pipe, p->type, p->filename, p->intent);
+
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   dt_colorspaces_color_profile_type_t out_type = DT_COLORSPACE_SRGB;
