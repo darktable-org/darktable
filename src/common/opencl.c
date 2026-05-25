@@ -48,6 +48,11 @@
 #include <sys/stat.h>
 #include <zlib.h>
 
+#if defined(__linux__)
+#define __USE_MISC
+#include <sys/mman.h>
+#endif
+
 static const char *_opencl_get_vendor_by_id(unsigned int id);
 
 static gboolean _opencl_load_program(const int dev,
@@ -1233,6 +1238,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->stopped = FALSE;
   cl->error_count = 0;
   cl->fastcl = dt_conf_get_bool("opencl_fast");
+  cl->preheated = dt_conf_get_bool("opencl_preheated");
 #if CL_TARGET_OPENCL_VERSION == 300
   cl->api30 = TRUE;
 #else
@@ -2946,8 +2952,34 @@ int dt_opencl_read_host_from_image_raw(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  gboolean preheated = FALSE;
+
   const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
   const size_t reg[3] = { region[0], region[1], 1 };
+
+#if defined(__linux__)  // for now
+  if(darktable.opencl->preheated)
+  {
+    const size_t page_size = (size_t)sysconf(_SC_PAGESIZE);
+    const size_t step = page_size > 0 ? page_size : 4096;
+    size_t bsize = (size_t)rowpitch * region[1];
+    if(bsize >= step)
+    {
+      preheated = TRUE;
+      const void *end = host + bsize;
+      void *start = (void*) (((size_t)host + step -1) & ~(step-1));
+      bsize = (size_t)(end-start); // bsize > step
+
+      const int err = madvise(start, bsize, MADV_POPULATE_WRITE);
+      const int check = DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE;
+      if(err || ((darktable.unmuted & check) == check))
+        dt_print(DT_DEBUG_ALWAYS,
+          "preheating host for read from '%s' id=%d page_size=%zu host=%p aligned at %p(%d MB) %s err=%d",
+            darktable.opencl->dev[devid].fullname, devid,
+            step, host, start, (int)(bsize / DT_MEGA), preheated ? " preheated" : "", err);
+    }
+  }
+#endif // __linux__
 
   cl_event *eventp = _opencl_events_get_slot(devid, "[Read Image (from device to host)]");
 
@@ -2966,7 +2998,6 @@ int dt_opencl_read_host_from_image_raw(const int devid,
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
              "[dt_opencl_read_host_from_image_raw] read image from device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
-
   return err;
 }
 
