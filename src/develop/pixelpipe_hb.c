@@ -291,6 +291,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->work_profile_info = NULL;
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
+  pipe->export_profile_info = NULL;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_hash = DT_INVALID_HASH;
