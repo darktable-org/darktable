@@ -2023,14 +2023,14 @@ void dt_colorspaces_set_display_profile
   if(!hMonitor)
   {
     dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor handle");
-    return;
+    goto cleanup_and_return;
   }
   MONITORINFOEX monitorInfo;
   monitorInfo.cbSize = sizeof(MONITORINFOEX);
   if(!GetMonitorInfoW(hMonitor, (LPMONITORINFO) &monitorInfo))  //get monitor info
   {
     dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor info");
-    return;
+    goto cleanup_and_return;
   }
   HDC hdc = CreateIC(L"MONITOR", monitorInfo.szDevice, NULL, NULL); // get device-info context of the monitor
   if(hdc != NULL)
@@ -2086,6 +2086,9 @@ void dt_colorspaces_set_display_profile
   {
     g_free(buffer);
   }
+#if defined G_OS_WIN32
+cleanup_and_return:
+#endif
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
   if(profile_changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
