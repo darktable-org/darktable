@@ -109,6 +109,10 @@ typedef struct
   gboolean img_surf_preview; // if TRUE, the image is originated from preview pipe
   gboolean img_surf_dirty;   // if TRUE, we need to recreate the surface on next drawing code
   gboolean zoom_preview_pending; // TRUE during active gesture: draw stale surface scaled, defer surface reload
+  float img_surf_zoom; // the thumb->zoom value img_surf was actually rendered at.
+                       // During a deferred gesture thumb->zoom advances while img_surf
+                       // (and img_width/img_height) stay at this value, so bound math
+                       // scales the real surface extent by (zoom / img_surf_zoom).
   // Cache of the native-resolution (pre-scaling) color-converted mipmap surface.
   // Reused across zoom events at the same mipmap level so the expensive
   // calloc + color-transform is only done once per mip-level transition.
