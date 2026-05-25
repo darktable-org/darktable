@@ -35,6 +35,7 @@
 #include "common/fast_guided_filter.h"
 #include "common/pfm.h"
 #include "common/ras2vect.h"
+#include "common/utility.h"
 #include "imageio/imageio_png.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -399,11 +400,11 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
     if(within)
     {
       char *relativepath = g_path_get_dirname(filepath);
-      g_strlcpy(p->path, relativepath, sizeof(p->path));
+      dt_strlcpy_to_fixed(p->path, relativepath, sizeof(p->path));
       g_free(relativepath);
 
       char *bname = g_path_get_basename(filepath);
-      g_strlcpy(p->file, bname, sizeof(p->file));
+      dt_strlcpy_to_fixed(p->file, bname, sizeof(p->file));
       g_free(bname);
 
       _update_filepath(self);
@@ -426,7 +427,7 @@ static void _file_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_rasterfile_params_t *p = self->params;
   const gchar *select = dt_bauhaus_combobox_get_text(widget);
-  g_strlcpy(p->file, select, sizeof(p->file));
+  dt_strlcpy_to_fixed(p->file, select, sizeof(p->file));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
