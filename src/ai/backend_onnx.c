@@ -2569,7 +2569,8 @@ int dt_ai_run(
                  "[darktable_ai] GetTensorMutableData output[%d] failed: %s",
                  i, g_ort.api->GetErrorMessage(status));
         g_ort.api->ReleaseStatus(status);
-        continue;
+        ret = -3;
+        break;
       }
 
       // query ORT's actual tensor size to avoid reading past its allocation.
@@ -2582,7 +2583,8 @@ int dt_ai_run(
         dt_print(DT_DEBUG_AI, "[darktable_ai] GetTensorTypeAndShape output[%d] failed: %s",
                  i, g_ort.api->GetErrorMessage(status));
         g_ort.api->ReleaseStatus(status);
-        continue;
+        ret = -3;
+        break;
       }
       // update caller's shape array with actual ORT output dimensions.
       // this is essential for dynamic-shape models where the caller's
@@ -2607,7 +2609,8 @@ int dt_ai_run(
         dt_print(DT_DEBUG_AI, "[darktable_ai] GetTensorShapeElementCount output[%d] failed: %s",
                  i, g_ort.api->GetErrorMessage(status));
         g_ort.api->ReleaseStatus(status);
-        continue;
+        ret = -3;
+        break;
       }
 
       const int64_t caller_count
@@ -2616,7 +2619,8 @@ int dt_ai_run(
       {
         dt_print(DT_DEBUG_AI,
                  "[darktable_ai] invalid shape for output[%d] post-copy", i);
-        continue;
+        ret = -3;
+        break;
       }
 
       // use the smaller of ORT's actual size and caller's expected size
@@ -2643,7 +2647,8 @@ int dt_ai_run(
           dt_print(DT_DEBUG_AI,
                    "[darktable_ai] unknown dtype %d for output[%d]",
                    outputs[i].type, i);
-          continue;
+          ret = -3;
+          break;
         }
         outputs[i].data = g_try_malloc(ort_element_count * type_size);
         if(!outputs[i].data)
@@ -2651,7 +2656,8 @@ int dt_ai_run(
           dt_print(DT_DEBUG_AI,
                    "[darktable_ai] failed to allocate output[%d] (%zu elements)",
                    i, ort_element_count);
-          continue;
+          ret = -3;
+          break;
         }
       }
 
@@ -2673,7 +2679,8 @@ int dt_ai_run(
           dt_print(DT_DEBUG_AI,
                    "[darktable_ai] unknown dtype %d for output[%d] post-copy",
                    outputs[i].type, i);
-          continue;
+          ret = -3;
+          break;
         }
         memcpy(outputs[i].data, raw_data, element_count * type_size);
       }
