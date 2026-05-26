@@ -197,9 +197,11 @@ static void _bayer_gain_match(const float *tile_in,
   const double out_mean = out_sum / (double)(3 * tile_out_plane);
   // allow negative gain too: the RawNIND model output scale is
   // arbitrary by design (match_gain post-step during training absorbs
-  // it); in some variants the sign is also inverted. guard only
-  // against near-zero mean
-  const float gain = (fabsf((float)out_mean) > 1e-8f)
+  // it); in some variants the sign is also inverted. guard against
+  // near-zero out_mean relative to in_mean — an absolute threshold
+  // is useless because out_mean is typically ~10^6 * in_mean
+  const double thr = 1e-6 * fabs(in_mean);
+  const float gain = (fabs(out_mean) > thr)
     ? (float)(in_mean / out_mean) : 1.0f;
   if(gain != 1.0f)
   {
