@@ -697,7 +697,10 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
       n_out = 1;
     }
 
-    dt_ai_run(ctx->decoder, inputs, ni, outputs, n_out);
+    const int wr = dt_ai_run(ctx->decoder, inputs, ni, outputs, n_out);
+    if(wr != 0)
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] decoder warmup failed (rc=%d)", wr);
   }
 
 cleanup:
