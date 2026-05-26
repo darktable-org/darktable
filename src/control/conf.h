@@ -110,7 +110,6 @@ void dt_conf_init(dt_conf_t *cf,
                   const gboolean is_common,
                   GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
-void dt_conf_save(dt_conf_t *cf);
 gboolean dt_conf_key_exists(const char *key);
 void dt_conf_remove_key(const char *key);
 gboolean dt_conf_key_not_empty(const char *key);
