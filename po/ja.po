@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 20:30+0900\n"
+"PO-Revision-Date: 2026-05-26 21:57+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -4783,10 +4783,8 @@ msgstr "硬さ"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:291
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:476
 #: ../src/iop/filmic.c:1536
-#, fuzzy
-#| msgid "linear part"
 msgid "linear region"
-msgstr "リニア部分"
+msgstr "リニア領域"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:303
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:484
@@ -7413,7 +7411,7 @@ msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
 msgstr ""
-" 'opencl_device_priority' 内でデバイス名を使用している場合は、それらを新しい名"
+"'opencl_device_priority' 内でデバイス名を使用している場合は、それらを新しい名"
 "前に更新してください"
 
 #: ../src/common/darktable.c:2589
@@ -14374,14 +14372,12 @@ msgid "a PDF viewer"
 msgstr "PDFビューア"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
-#, fuzzy
-#| msgid "can be an absolute pathname or the tool may be in the PATH"
 msgid ""
 "can be an absolute pathname or the tool may be in the PATH\n"
 "if not specified the system default will be used to open the PDF"
 msgstr ""
-"絶対パス名で指定することが出来ます\n"
-"または、ツールをパスに含めてください"
+"絶対パスを指定することも、PATH 内のツール名を指定することもできます\n"
+"指定されていない場合は、システムの既定のアプリでPDFを開きます"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:78
 msgid "thumbs per line"
@@ -14404,10 +14400,8 @@ msgstr "一行あたりのサムネイル："
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:137
-#, fuzzy
-#| msgid "export thumbnails to pdf"
 msgid "export thumbnails to PDF"
-msgstr "サムネイルをPDFにエクスポートする"
+msgstr "サムネイルをPDFにエクスポート"
 
 #. convert to PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:184
@@ -14515,10 +14509,8 @@ msgstr "RAWとJPGのペアのJPGをフルサイズのミップマップとして
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:134
-#, fuzzy
-#| msgid "create XMP files"
 msgid "keep JPEG files"
-msgstr "XMPファイルの作成"
+msgstr "JPEGファイルを保持"
 
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:135
 msgid "don't delete JPEGs after copying them to mipmap folder"
@@ -14921,10 +14913,9 @@ msgid "folder %s is already in use. Please specify a different folder name."
 msgstr "フォルダ%sはすでに使用されています。別のフォルダ名を指定してください"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:939
-#, fuzzy, lua-format
-#| msgid "lua scripts successfully updated"
+#, lua-format
 msgid "scripts successfully installed into folder %s"
-msgstr "luaスクリプトの更新に成功しました"
+msgstr "スクリプトをフォルダー%s に正常にインストールしました"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:957
 msgid "no scripts found to install"
@@ -16806,16 +16797,12 @@ msgid "downloaded"
 msgstr "ダウンロード済み"
 
 #: ../src/gui/preferences_ai.c:162
-#, fuzzy
-#| msgid "not available"
 msgid "update available"
-msgstr "利用出来ません"
+msgstr "更新が可能です"
 
 #: ../src/gui/preferences_ai.c:164
-#, fuzzy
-#| msgid "update preset"
 msgid "update required"
-msgstr "プリセットを更新"
+msgstr "更新が必要です"
 
 #: ../src/gui/preferences_ai.c:166
 msgid "downloading..."
@@ -16847,8 +16834,6 @@ msgid "downloading: %s"
 msgstr "ダウンロード中：%s"
 
 #: ../src/gui/preferences_ai.c:997
-#, fuzzy
-#| msgid "install AI model"
 msgid "install AI models"
 msgstr "AIモデルをインストール"
 
@@ -17074,10 +17059,8 @@ msgid "remove the selected models from disk"
 msgstr "選択したモデルをディスクから削除します"
 
 #: ../src/gui/preferences_ai.c:1933
-#, fuzzy
-#| msgid "open help page for shortcuts"
 msgid "open help page for AI settings"
-msgstr "ショートカットについてのヘルプページを開きます"
+msgstr "AIの設定についてのヘルプページを開きます"
 
 #. add to stack
 #: ../src/gui/preferences_ai.c:1945
@@ -17510,10 +17493,8 @@ msgstr ""
 "XMP書き込みを有効にしていない場合、編集作業は失われます"
 
 #: ../src/gui/workspace.c:409 ../src/gui/workspace.c:422
-#, fuzzy
-#| msgid "delete workspace"
 msgid "create workspace"
-msgstr "ワークスペースを削除"
+msgstr "ワークスペースを作成"
 
 #: ../src/gui/workspace.c:410
 msgid ""
@@ -17565,10 +17546,8 @@ msgid "create"
 msgstr "作成"
 
 #: ../src/gui/workspace.c:655
-#, fuzzy
-#| msgid "select an existing workspace"
 msgid "copy settings from existing workspace"
-msgstr "既存のワークスペースを選択してください"
+msgstr "既存のワークスペースから設定をコピーする"
 
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
@@ -22887,13 +22866,6 @@ msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' 4ベイヤー画像のためのカラーマトリクスが見つかりませんでした"
 
 #: ../src/iop/demosaic.c:1738
-#, fuzzy
-#| msgid ""
-#| "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
-#| "slow.\n"
-#| "LMMSE is suited best for high ISO images.\n"
-#| "dual demosaicers increase processing time by blending a VNG variant in a "
-#| "second pass."
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -22904,6 +22876,7 @@ msgid ""
 msgstr ""
 "ベイヤーセンサーのデモザイク方式。PPGとRCDは高速、AMaZEとLMMSEは低速です\n"
 "LMMSEは高ISOの画像に最も適しています\n"
+"VNG4は、まれなケースで、迷路状の模様を回避するのに有効です\n"
 "二重デモザイクは第二パスでVNGバリアントを混ぜ合わせることで処理時間が増加しま"
 "す"
 
@@ -30406,10 +30379,8 @@ msgid "cleanup"
 msgstr "クリーンアップ"
 
 #: ../src/libs/masks.c:120
-#, fuzzy
-#| msgid "drawn mask polarity"
 msgid "refine mask boundary"
-msgstr "描画マスクの極性"
+msgstr "マスクの境界の微調整"
 
 #: ../src/libs/masks.c:391
 #, c-format
@@ -31247,14 +31218,13 @@ msgid "AI-based image restoration: denoise and upscale"
 msgstr "AIによる画像復元：ノイズ除去とアップスケーリング"
 
 #: ../src/libs/neural_restore.c:845
-#, fuzzy, c-format
-#| msgid "failed to import preset %s"
+#, c-format
 msgid "failed to open TIFF for writing: %s"
-msgstr "プリセット%sのインポートに失敗しました"
+msgstr "TIFFを書き込みのために開くことが出来ませんでした: %s"
 
 #: ../src/libs/neural_restore.c:896
 msgid "out of memory for detail recovery buffer"
-msgstr ""
+msgstr "ディテール復元バッファのためのメモリが不足しています"
 
 #: ../src/libs/neural_restore.c:1108
 msgid "bayer"
@@ -31390,16 +31360,12 @@ msgid "preview initialization failed"
 msgstr "プレビューの初期化に失敗しました"
 
 #: ../src/libs/neural_restore.c:3672
-#, fuzzy
-#| msgid "select an image"
 msgid "select an image to preview"
-msgstr "画像を選択"
+msgstr "プレビューする画像を選択してください"
 
 #: ../src/libs/neural_restore.c:4096 ../src/libs/neural_restore.c:4360
-#, fuzzy
-#| msgid "select the script folder"
 msgid "select output folder"
-msgstr "スクリプトフォルダを選択"
+msgstr "出力フォルダを選択してください"
 
 #: ../src/libs/neural_restore.c:4141
 msgid "AI raw denoising"
@@ -31447,10 +31413,8 @@ msgstr ""
 "ダブルクリックすると中央にリセットされます"
 
 #: ../src/libs/neural_restore.c:4234
-#, fuzzy
-#| msgid "selected image"
 msgid "process selected images"
-msgstr "選択画像"
+msgstr "選択画像を処理"
 
 #: ../src/libs/neural_restore.c:4252
 msgid "output parameters"
@@ -31484,10 +31448,8 @@ msgid "add to the current collection"
 msgstr "現在のコレクションに追加"
 
 #: ../src/libs/neural_restore.c:4337
-#, fuzzy
-#| msgid "select all images in current collection"
 msgid "automatically import the output image into the current collection"
-msgstr "現在のコレクション内の全ての画像を選択します"
+msgstr "出力された画像を現在のコレクションに自動的にインポート"
 
 #: ../src/libs/neural_restore.c:4353
 msgid ""
@@ -32975,10 +32937,8 @@ msgid "Lua options"
 msgstr "Lua オプション"
 
 #: ../src/lua/preferences.c:919
-#, fuzzy
-#| msgid "configuration information"
 msgid "per-script configuration options"
-msgstr "設定情報"
+msgstr "スクリプトごとの設定オプション"
 
 #: ../src/views/darkroom.c:626
 #, c-format
