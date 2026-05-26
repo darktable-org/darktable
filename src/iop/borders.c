@@ -188,7 +188,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_borders_params_v1_t;
 
     const dt_iop_borders_params_v1_t *o = (dt_iop_borders_params_v1_t *)old_params;
-    dt_iop_borders_params_v3_t *n = malloc(sizeof(dt_iop_borders_params_v3_t));
+    dt_iop_borders_params_v3_t *n = calloc(1, sizeof(dt_iop_borders_params_v3_t));
 
     *n = default_v3; // start with a fresh copy of default parameters
     memcpy(n->color, o->color, sizeof(o->color));
@@ -224,7 +224,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_borders_params_v2_t;
 
     const dt_iop_borders_params_v2_t *o = (dt_iop_borders_params_v2_t *)old_params;
-    dt_iop_borders_params_v3_t *n = malloc(sizeof(dt_iop_borders_params_v3_t));
+    dt_iop_borders_params_v3_t *n = calloc(1, sizeof(dt_iop_borders_params_v3_t));
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v2_t));
     n->max_border_size = FALSE;
@@ -268,7 +268,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_borders_params_v4_t;
 
     const dt_iop_borders_params_v3_t *o = (dt_iop_borders_params_v3_t *)old_params;
-    dt_iop_borders_params_v4_t *n = malloc(sizeof(dt_iop_borders_params_v4_t));
+    dt_iop_borders_params_v4_t *n = calloc(1, sizeof(dt_iop_borders_params_v4_t));
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
 
