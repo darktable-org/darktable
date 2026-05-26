@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 01:37+0900\n"
+"PO-Revision-Date: 2026-05-26 11:38+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -723,11 +723,9 @@ msgid "dark"
 msgstr "ダーク"
 
 #: ../build/bin/conf_gen.h:4659
-#, fuzzy
-#| msgid "darken"
 msgctxt "preferences"
 msgid "darker"
-msgstr "暗くする"
+msgstr "さらにダーク"
 
 #: ../build/bin/conf_gen.h:4666 ../build/bin/preferences_gen.h:4535
 msgctxt "preferences"
@@ -1059,7 +1057,7 @@ msgid ""
 "\n"
 "<b>disabled</b> actions apply to the current selection (less error prone)"
 msgstr ""
-"選別作業を行うライトテーブルでは、評価づけなどのアクションをカーソルを乗せてい"
+"選別作業を行うライトテーブルでは、評価付けなどのアクションをカーソルを乗せてい"
 "る画像または現在選択中の画像のいずれかに適用します\n"
 "\n"
 "<b>有効</b> ：カーソルを乗せている画像にアクションを適用します（クリック回数を"
@@ -2200,10 +2198,8 @@ msgstr ""
 "でパネルをスクロールします"
 
 #: ../build/bin/preferences_gen.h:4431
-#, fuzzy
-#| msgid "open image in darkroom"
 msgid "enable touchpad gestures in darkroom"
-msgstr "ダークルームで画像を開く"
+msgstr "ダークルームでタッチパッドジェスチャーを有効にする"
 
 #: ../build/bin/preferences_gen.h:4439
 msgid ""
@@ -2214,6 +2210,15 @@ msgid ""
 "back to the legacy scroll behavior, including <i>Ctrl+scroll</i> for zooming "
 "in and out."
 msgstr ""
+"2本指のタッチパッドジェスチャーを使用して、ダークルームでパンとピンチによる"
+"ズームを行います\n"
+"\n"
+"有効: タッチパッドのピンチ操作で画像をズームし、2本指でのスクロール操作で画像"
+"をパンします。<i>Ctrl+スクロール</i> でも従来のズーム操作を引き続き行うことが"
+"出来ます\n"
+"\n"
+"無効: タッチパッドのジェスチャーは無視され、ダークルームは従来のスクロール操作"
+"に戻り、<i>Ctrl+スクロール</i> でズームを行います"
 
 #: ../build/bin/preferences_gen.h:4448
 msgid "always show panels' scrollbars"
@@ -6239,7 +6244,7 @@ msgstr "エラー：入力ファイルと入力オプションが指定されま
 msgid ""
 "error: too many positional arguments\n"
 "\n"
-msgstr ""
+msgstr "エラー：位置引数が多すぎます\n"
 
 #: ../src/cli/main.c:486
 #, c-format
@@ -6251,6 +6256,8 @@ msgid ""
 "notice: no XMP sidecar file nor library path provided, using default settings "
 "for export"
 msgstr ""
+"注意：XMPサイドカーファイルまたはライブラリのパスが指定されていません。デフォ"
+"ルト設定を使用してエクスポートします"
 
 #: ../src/cli/main.c:545
 #, c-format
@@ -6341,11 +6348,11 @@ msgstr ""
 #: ../src/common/ai/restore_raw_linear.c:584
 #: ../src/common/ai/restore_raw_linear.c:1008
 msgid "AI raw denoise: GPU inference failed, falling back to CPU"
-msgstr ""
+msgstr "AI RAWノイズ除去：GPU推論に失敗しました。CPUに切り替えます"
 
 #: ../src/common/ai/restore_rgb.c:668
 msgid "AI denoise: GPU inference failed, falling back to CPU"
-msgstr ""
+msgstr "AIノイズ除去：GPU推論に失敗しました。CPUに切り替えます"
 
 #: ../src/common/ai_models.c:197
 #, c-format
@@ -12393,12 +12400,12 @@ msgstr "選択した画像にカメラスタイルを適用する"
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/auto_straighten.lua:108
 msgid "auto_straighten"
-msgstr ""
+msgstr "自動傾き補正"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/auto_straighten.lua:109
 msgid "straighten an image in darkroom using image metadata"
-msgstr ""
+msgstr "画像メタデータを使用してdarkroomで画像の傾きを自動的に補正します"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -12993,7 +13000,7 @@ msgstr "スタイルをスタイルファイルからインポートします"
 #. type
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:164
 msgid "preferred exif tag reader"
-msgstr ""
+msgstr "優先するexifタグリーダ"
 
 #. label
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:165
@@ -17118,11 +17125,11 @@ msgstr ""
 
 #: ../src/gui/preferences_ai.c:1479
 msgid "ONNX Runtime (onnxruntime*.dll)"
-msgstr ""
+msgstr "ONNX Runtime (onnxruntime*.dll)"
 
 #: ../src/gui/preferences_ai.c:1482
 msgid "ONNX Runtime (libonnxruntime.so*)"
-msgstr ""
+msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 #. enable AI toggle
 #: ../src/gui/preferences_ai.c:1535
@@ -17140,18 +17147,15 @@ msgstr ""
 
 #: ../src/gui/preferences_ai.c:1637
 msgid "ONNX Runtime library"
-msgstr ""
+msgstr "ONNX Runtimeライブラリ"
 
 #: ../src/gui/preferences_ai.c:1651
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "unbounded (deprecated)"
 msgid "bundled (DirectML)"
-msgstr "範囲限定無し (非推奨)"
+msgstr "バンドル版（DirectML）"
 
 #: ../src/gui/preferences_ai.c:1654
 msgid "bundled (CPU only)"
-msgstr ""
+msgstr "バンドル版（CPUのみ）"
 
 #: ../src/gui/preferences_ai.c:1657
 msgid ""
@@ -17159,10 +17163,13 @@ msgid ""
 "leave empty to use the bundled library.\n"
 "requires restart to take effect."
 msgstr ""
+"GPU対応のONNX Runtimeライブラリへのパス\n"
+"空のままにすると、同梱ライブラリが使用されます\n"
+"設定変更を有効にするには再起動が必要です"
 
 #: ../src/gui/preferences_ai.c:1666
 msgid "select a custom ONNX Runtime shared library"
-msgstr ""
+msgstr "カスタムONNX Runtime共有ライブラリを選択してください"
 
 #: ../src/gui/preferences_ai.c:1668
 msgid "detect"
@@ -17170,7 +17177,7 @@ msgstr "検出"
 
 #: ../src/gui/preferences_ai.c:1670
 msgid "search for a system-installed ONNX Runtime library"
-msgstr ""
+msgstr "システムにインストールされているONNX Runtimeライブラリを検索します"
 
 #: ../src/gui/preferences_ai.c:1705
 msgid "models"
@@ -17197,36 +17204,25 @@ msgid "status"
 msgstr "状態"
 
 #: ../src/gui/preferences_ai.c:1878
-#, fuzzy
-#| msgid "download default"
 msgid "download / update default"
-msgstr "デフォルトをダウンロード"
+msgstr "デフォルトをダウンロード／更新"
 
 #: ../src/gui/preferences_ai.c:1880
-#, fuzzy
-#| msgid "download default"
 msgid "download or update all default models"
-msgstr "デフォルトをダウンロード"
+msgstr "全てのデフォルトモデルをダウンロードまたは更新します"
 
 #: ../src/gui/preferences_ai.c:1890
-#, fuzzy
-#| msgid "download selected"
 msgid "download / update selected"
-msgstr "選択項目をダウンロード"
+msgstr "選択項目をダウンロード／更新"
 
 #: ../src/gui/preferences_ai.c:1892
-#, fuzzy
-#| msgid "delete %d selected model?"
-#| msgid_plural "delete %d selected models?"
 msgid "download or update the selected models"
-msgstr "選択した%d個のモデルを削除しますか？"
+msgstr "選択したモデルをダウンロードまたは更新します"
 
 #. import from file button
 #: ../src/gui/preferences_ai.c:1908
-#, fuzzy
-#| msgid "import filter"
 msgid "import from file…"
-msgstr "インポート絞り込み"
+msgstr "ファイルからインポート..."
 
 #: ../src/gui/preferences_ai.c:1910
 msgid "install a model from a local .dtmodel file"
@@ -17238,10 +17234,8 @@ msgid "delete selected"
 msgstr "選択項目を削除"
 
 #: ../src/gui/preferences_ai.c:1923
-#, fuzzy
-#| msgid "remove the selected custom place"
 msgid "remove the selected models from disk"
-msgstr "カスタム設定の場所を削除"
+msgstr "選択したモデルをディスクから削除します"
 
 #: ../src/gui/preferences_ai.c:1933
 #, fuzzy
@@ -17601,7 +17595,7 @@ msgstr "_進む"
 
 #: ../src/gui/welcome.c:796
 msgid "let's set up a few options to get you started."
-msgstr "はじめるにあたって、いくつかのオプションをセットアップしましょう"
+msgstr "最初にいくつかのオプションをセットアップしましょう"
 
 #: ../src/gui/welcome.c:799
 msgid ""
@@ -17616,8 +17610,8 @@ msgid ""
 "you can close this window at any time, in which case the defaults will be "
 "applied."
 msgstr ""
-"このウィンドウはいつでも閉じてかまいません。その場合はデフォルト設定が適用され"
-"ます"
+"このウィンドウはいつでも閉じることが出来ます。その場合はデフォルト設定が適用さ"
+"れます"
 
 #: ../src/gui/welcome.c:837
 msgid "<b>You are all set!</b>"
@@ -31435,7 +31429,7 @@ msgstr "x-trans"
 #: ../src/libs/neural_restore.c:1123
 #, c-format
 msgid "failed to load AI raw denoise %s model"
-msgstr ""
+msgstr "AI RAWノイズ除去モデル%sを読み込むことが出来ませんでした"
 
 #: ../src/libs/neural_restore.c:1170
 msgid "raw denoise: unsupported raw datatype"
@@ -31497,10 +31491,9 @@ msgid "upscaling 4x image %d/%d..."
 msgstr ""
 
 #: ../src/libs/neural_restore.c:1512
-#, fuzzy, c-format
-#| msgid "error getting output profile for image %d"
+#, c-format
 msgid "raw denoise failed for image %d"
-msgstr "画像%dの出力プロファイルの取得中にエラーが発生しました"
+msgstr "画像%dのrawノイズ除去に失敗しました"
 
 #: ../src/libs/neural_restore.c:1541
 #, fuzzy
@@ -31549,10 +31542,8 @@ msgid "click to select preview area"
 msgstr "クリックすると、フルプレビューレイアウトに入ります"
 
 #: ../src/libs/neural_restore.c:3663
-#, fuzzy
-#| msgid "not available"
 msgid "model not available"
-msgstr "利用出来ません"
+msgstr "モデルを利用出来ません"
 
 #: ../src/libs/neural_restore.c:3665 ../src/libs/neural_restore.c:3855
 msgid "generating preview..."
@@ -31612,10 +31603,8 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/neural_restore.c:4184
-#, fuzzy
-#| msgid "scale factor"
 msgid "upscale factor"
-msgstr "スケールファクター"
+msgstr "アップスケールファクター"
 
 #: ../src/libs/neural_restore.c:4186
 msgid "2x"
