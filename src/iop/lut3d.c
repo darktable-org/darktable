@@ -185,7 +185,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lut3d_params_v1_t;
 
     const dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
-    dt_iop_lut3d_params_v3_t *n = malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    dt_iop_lut3d_params_v3_t *n = calloc(1, sizeof(dt_iop_lut3d_params_v3_t));
     g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
     n->colorspace = o->colorspace;
     n->interpolation = o->interpolation;
@@ -212,7 +212,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lut3d_params_v2_t;
 
     const dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
-    dt_iop_lut3d_params_v3_t *n = malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    dt_iop_lut3d_params_v3_t *n = calloc(1, sizeof(dt_iop_lut3d_params_v3_t));
     memcpy(n, o, sizeof(dt_iop_lut3d_params_v3_t)); // v3 is smaller
 
     *new_params = n;
