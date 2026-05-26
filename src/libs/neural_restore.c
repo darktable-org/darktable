@@ -2275,6 +2275,11 @@ static void _cancel_preview(dt_lib_module_t *self)
   d->export_pixels = NULL;
   g_free(d->export_cairo);
   d->export_cairo = NULL;
+  // raw-denoise crops — strength slider would otherwise reblend stale
+  g_free(d->preview_raw_src_rgb);
+  d->preview_raw_src_rgb = NULL;
+  g_free(d->preview_raw_denoised_rgb);
+  d->preview_raw_denoised_rgb = NULL;
   d->picking_thumbnail = FALSE;
   gtk_widget_queue_draw(d->preview_area);
 }
