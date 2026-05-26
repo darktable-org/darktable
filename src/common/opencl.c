@@ -341,7 +341,7 @@ unsigned int dt_opencl_tiling_align(const int devid)
   return 4;
 }
 
-void dt_opencl_write_device_config(const int devid)
+static void _opencl_write_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return;
 
@@ -366,7 +366,7 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].advantage,
     cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "\n[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+           "\n[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
   setlocale(LC_NUMERIC, locale);
 
@@ -376,11 +376,11 @@ void dt_opencl_write_device_config(const int devid)
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   g_snprintf(dat, 510, "%i", cl->dev[devid].headroom);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+           "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
 
-gboolean dt_opencl_read_device_config(const int devid)
+static gboolean _opencl_read_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return FALSE;
 
@@ -439,7 +439,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   else // this is used if updating to 4.0 or fresh installs; see
        // commenting _opencl_get_unused_device_mem()
     cldid->headroom = DT_OPENCL_DEFAULT_HEADROOM;
-  dt_opencl_write_device_config(devid);
+  _opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
 }
 
@@ -642,7 +642,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].cname = strdup(cname);
   cl->dev[dev].vendor_id = vendor_id;
 
-  const gboolean newdevice = dt_opencl_read_device_config(dev);
+  const gboolean newdevice = _opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
                "\n   DEVICE:                   %d: '%s'%s\n",
                k, device_name, (newdevice) ? ", NEW" : "" );
@@ -1029,7 +1029,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(newdevice) // so far the device seems to be ok. Make sure to
                 // write&export the conf database to
   {
-    dt_opencl_write_device_config(dev);
+    _opencl_write_device_config(dev);
     dt_conf_save(darktable.conf);
   }
 
@@ -1125,7 +1125,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
 end:
   // we always write the device config to keep track of disabled devices
-  dt_opencl_write_device_config(dev);
+  _opencl_write_device_config(dev);
 
   if(res)
     dt_pthread_mutex_destroy(&cl->dev[dev].lock);
@@ -1747,7 +1747,6 @@ static int _take_from_list(int *list,
 
   return result;
 }
-
 
 static int _device_by_cname(const char *name)
 {
