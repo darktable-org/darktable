@@ -776,7 +776,6 @@ static gboolean _update_progress_idle(gpointer user_data)
   g_mutex_lock(&dl->mutex);
   double progress = dl->progress;
   gboolean finished = dl->finished;
-  char *error = dl->error ? g_strdup(dl->error) : NULL;
   g_mutex_unlock(&dl->mutex);
 
   if(dl->dialog && GTK_IS_WIDGET(dl->dialog))
@@ -797,7 +796,6 @@ static gboolean _update_progress_idle(gpointer user_data)
     gtk_dialog_response(GTK_DIALOG(dl->dialog), GTK_RESPONSE_OK);
   }
 
-  g_free(error);
   // removal is owned by the caller; returning G_SOURCE_REMOVE here
   // would race with that explicit remove
   return G_SOURCE_CONTINUE;
