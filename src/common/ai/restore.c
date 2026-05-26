@@ -465,12 +465,8 @@ dt_restore_context_t *dt_restore_load_rawdenoise_xtrans(dt_restore_env_t *env)
   dt_restore_context_t *ctx = _load(env, TASK_RAWDENOISE, "model_xtrans", NULL,
                                     DT_RESTORE_INPUT_KIND_XTRANS_V1, 1);
   if(!ctx)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[restore] no dedicated xtrans model; using linear as fallback");
     ctx = _load(env, TASK_RAWDENOISE, "model_linear", NULL,
                 DT_RESTORE_INPUT_KIND_LINEAR_V1, 1);
-  }
   return ctx;
 }
 
