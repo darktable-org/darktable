@@ -1028,7 +1028,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                 // write&export the conf database to
   {
     _opencl_write_device_config(dev);
-    dt_conf_save(darktable.conf);
   }
 
   // now load all darktable cl kernels.
