@@ -31,6 +31,7 @@
 #include "common/file_location.h"
 #include "common/imagebuf.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -438,7 +439,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v2_t *o = (dt_iop_lens_params_v2_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -506,7 +507,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v3_t *o = (dt_iop_lens_params_v3_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -573,7 +574,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v4_t *o = (dt_iop_lens_params_v4_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -640,7 +641,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v5_t *o = (dt_iop_lens_params_v5_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     // The unique method in previous versions was Lensfun
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
@@ -713,7 +714,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v6_t *o = (dt_iop_lens_params_v6_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -787,7 +788,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v7_t *o = (dt_iop_lens_params_v7_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -862,7 +863,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v8_t *o = (dt_iop_lens_params_v8_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -931,7 +932,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v9_t *o = (dt_iop_lens_params_v9_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     memcpy(n, o, sizeof(dt_iop_lens_params_v9_t));
     // new in v10
@@ -3442,9 +3443,9 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
 
   new_lens = _lens_sanitize(img->exif_lens);
-  g_strlcpy(d->lens, new_lens, sizeof(d->lens));
+  dt_strlcpy_to_fixed(d->lens, new_lens, sizeof(d->lens));
   free(new_lens);
-  g_strlcpy(d->camera, img->exif_model, sizeof(d->camera));
+  dt_strlcpy_to_fixed(d->camera, img->exif_model, sizeof(d->camera));
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
   d->focal = img->exif_focal_length;
@@ -3495,7 +3496,7 @@ void reload_defaults(dt_iop_module_t *self)
          *
          * Let's unset lens name and re-run lens query
          */
-        g_strlcpy(d->lens, "", sizeof(d->lens));
+        dt_strlcpy_to_fixed(d->lens, "", sizeof(d->lens));
 
         dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
         lens = gd->db->FindLenses(cam[0], NULL, d->lens, 0);
@@ -3528,7 +3529,7 @@ void reload_defaults(dt_iop_module_t *self)
           }
 
           // and set lens to it
-          g_strlcpy(d->lens, lens[lens_i]->Model, sizeof(d->lens));
+          dt_strlcpy_to_fixed(d->lens, lens[lens_i]->Model, sizeof(d->lens));
         }
 
         d->target_geom = _lenstype_from_lensfun_lenstype(lens[lens_i]->Type);
@@ -3727,7 +3728,7 @@ static void _camera_set(dt_iop_module_t *self, const lfCamera *cam)
     return;
   }
 
-  g_strlcpy(p->camera, cam->Model, sizeof(p->camera));
+  dt_strlcpy_to_fixed(p->camera, cam->Model, sizeof(p->camera));
   p->crop = cam->CropFactor;
   g->camera = cam;
 
@@ -3951,7 +3952,7 @@ static void _lens_set(dt_iop_module_t *self,
   maker = lf_mlstr_get(lens->Maker);
   model = lf_mlstr_get(lens->Model);
 
-  g_strlcpy(p->lens, lens->Model, sizeof(p->lens));
+  dt_strlcpy_to_fixed(p->lens, lens->Model, sizeof(p->lens));
 
   if(model)
   {
