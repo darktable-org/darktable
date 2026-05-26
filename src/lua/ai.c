@@ -37,6 +37,10 @@
 #include <string.h>
 #include <tiffio.h>
 
+#ifdef _WIN32
+#include <wchar.h>
+#endif
+
 /* maximum tensor dimensions */
 #define MAX_TENSOR_DIMS 8
 
@@ -1525,7 +1529,13 @@ static int _tensor_save_tiff(lua_State *L)
     return luaL_error(L,
       "save_tiff requires 1 or 3 channels, got %d", C);
 
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  TIFF *tif = wpath ? TIFFOpenW(wpath, "w") : NULL;
+  g_free(wpath);
+#else
   TIFF *tif = TIFFOpen(path, "w");
+#endif
   if(!tif)
     return luaL_error(L, "cannot open '%s' for writing", path);
 
