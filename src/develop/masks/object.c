@@ -291,6 +291,7 @@ static gpointer _encode_thread_func(gpointer data)
   {
     dt_print(DT_DEBUG_AI,
              "[object mask] failed to get image buffer for encoding");
+    dt_mipmap_cache_release(&buf);
     dt_dev_cleanup(&dev);
     g_atomic_int_set(&d->encode_state, ENCODE_ERROR);
     return NULL;
