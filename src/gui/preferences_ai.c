@@ -1407,7 +1407,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
     for(GList *l = found; l; l = g_list_next(l))
     {
       dt_ai_ort_found_t *f = l->data;
-      gchar *entry = g_strdup_printf("ORT %s [%s]  %s", f->version, f->eps, f->path);
+      gchar *entry = g_strdup_printf("ONNX Runtime %s [%s]  %s", f->version, f->eps, f->path);
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
       g_free(entry);
     }

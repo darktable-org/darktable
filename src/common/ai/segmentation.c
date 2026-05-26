@@ -769,7 +769,7 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
   if(has_dynamic)
     dt_print(DT_DEBUG_AI,
              "[segmentation] encoder has dynamic output shapes, "
-             "using ORT-allocated outputs");
+             "using ONNX Runtime-allocated outputs");
 
   dt_ai_tensor_t outputs[MAX_ENCODER_OUTPUTS];
   for(int i = 0; i < ctx->n_enc_outputs; i++)
