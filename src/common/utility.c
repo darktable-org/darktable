@@ -356,6 +356,13 @@ size_t dt_utf8_strlcpy(char *dest,
   return s - src;
 }
 
+size_t dt_strlcpy_to_fixed(char *dest, const char *src, const size_t dest_size)
+{
+  memset(dest, 0, dest_size);
+  return g_strlcpy(dest, src, dest_size);
+}
+
+
 gboolean dt_util_test_image_file(const char *filename)
 {
   if(g_access(filename, R_OK)) return FALSE;
