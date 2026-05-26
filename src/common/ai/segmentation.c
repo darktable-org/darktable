@@ -415,10 +415,13 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     }
   }
 
-  dt_print(DT_DEBUG_AI,
-           "[segmentation] encoder-decoder reorder: [%d, %d, %d, %d] (n=%d)",
-           ctx->enc_order[0], ctx->enc_order[1], ctx->enc_order[2], ctx->enc_order[3],
-           ctx->n_enc_outputs);
+  char map[128] = {0};
+  int off = 0;
+  for(int di = 0; di < ctx->n_enc_outputs; di++)
+    off += snprintf(map + off, sizeof(map) - off,
+                    "%sdec[%d] <- enc[%d]",
+                    di ? ", " : "", di, ctx->enc_order[di]);
+  dt_print(DT_DEBUG_AI, "[segmentation] tensor routing: %s", map);
 
   // detect model type from arch field in model registry
   const dt_ai_model_info_t *minfo
