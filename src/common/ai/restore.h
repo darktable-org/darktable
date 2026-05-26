@@ -68,6 +68,13 @@ typedef enum
 dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img);
 
 // --- environment lifecycle ---
+//
+// Threading: dt_restore_env_t is NOT internally synchronised. The
+// underlying dt_ai_environment_t is shared by every load / refresh /
+// _model_available call on the same env. Consumers must serialise
+// these against each other (e.g. via the consumer's own ctx lock) —
+// in particular a refresh must not overlap with a model load that's
+// borrowing model_info pointers from the env's model list.
 
 // @brief initialize the restore environment
 //

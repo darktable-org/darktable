@@ -1671,7 +1671,7 @@ int dt_init(int argc,
   if(darktable.ai_registry)
   {
     dt_ai_models_load_registry(darktable.ai_registry);
-    if(!darktable.ai_registry->ai_enabled)
+    if(!dt_ai_registry_is_enabled(darktable.ai_registry))
       dt_print(DT_DEBUG_AI, "[darktable_ai] AI subsystem is disabled");
   }
 #endif

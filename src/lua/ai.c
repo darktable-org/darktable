@@ -37,6 +37,10 @@
 #include <string.h>
 #include <tiffio.h>
 
+#ifdef _WIN32
+#include <wchar.h>
+#endif
+
 /* maximum tensor dimensions */
 #define MAX_TENSOR_DIMS 8
 
@@ -838,18 +842,14 @@ static int _context_close(lua_State *L)
 static int _ai_models(lua_State *L)
 {
   dt_ai_registry_t *reg = darktable.ai_registry;
-  if(!reg)
-  {
-    lua_newtable(L);
-    return 1;
-  }
-
-  g_mutex_lock(&reg->lock);
   lua_newtable(L);
-  int idx = 1;
-  for(GList *l = reg->models; l; l = g_list_next(l))
+  if(!reg) return 1;
+
+  const int count = dt_ai_models_get_count(reg);
+  for(int i = 0; i < count; i++)
   {
-    dt_ai_model_t *m = l->data;
+    dt_ai_model_t *m = dt_ai_models_get_by_index(reg, i);
+    if(!m) continue;
     lua_newtable(L);
     lua_pushstring(L, m->id);
     lua_setfield(L, -2, "id");
@@ -863,9 +863,9 @@ static int _ai_models(lua_State *L)
     lua_setfield(L, -2, "status");
     lua_pushboolean(L, m->is_default);
     lua_setfield(L, -2, "is_default");
-    lua_rawseti(L, -2, idx++);
+    lua_rawseti(L, -2, i + 1);
+    dt_ai_model_free(m);
   }
-  g_mutex_unlock(&reg->lock);
   return 1;
 }
 
@@ -1104,6 +1104,11 @@ static int _load_image_from_imgid(lua_State *L)
     .bpp = _lua_capture_bpp,
     .write_image = _lua_capture_write};
 
+  const dt_colorspaces_color_profile_t *work_cp
+    = dt_colorspaces_get_work_profile(imgid);
+  const dt_colorspaces_color_profile_type_t dst_type
+    = work_cp ? work_cp->type : DT_COLORSPACE_LIN_REC2020;
+
   dt_imageio_export_with_flags(imgid,
                                "unused",
                                &fmt,
@@ -1118,7 +1123,7 @@ static int _load_image_from_imgid(lua_State *L)
                                NULL,   // filter
                                FALSE,  // copy_metadata
                                FALSE,  // export_masks
-                               dt_colorspaces_get_work_profile(imgid)->type,
+                               dst_type,
                                NULL,
                                DT_INTENT_PERCEPTUAL,
                                NULL, NULL, 1, 1, NULL, -1);
@@ -1524,7 +1529,13 @@ static int _tensor_save_tiff(lua_State *L)
     return luaL_error(L,
       "save_tiff requires 1 or 3 channels, got %d", C);
 
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  TIFF *tif = wpath ? TIFFOpenW(wpath, "w") : NULL;
+  g_free(wpath);
+#else
   TIFF *tif = TIFFOpen(path, "w");
+#endif
   if(!tif)
     return luaL_error(L, "cannot open '%s' for writing", path);
 
@@ -1564,6 +1575,7 @@ static int _tensor_save_tiff(lua_State *L)
     }
   }
 
+  gboolean write_ok = TRUE;
   if(bpp == 32)
   {
     // write float scanlines (NCHW → HWC interleaved)
@@ -1571,6 +1583,7 @@ static int _tensor_save_tiff(lua_State *L)
     if(!row)
     {
       TIFFClose(tif);
+      g_unlink(path);
       return luaL_error(L, "failed to allocate row buffer");
     }
     for(int y = 0; y < H; y++)
@@ -1578,7 +1591,11 @@ static int _tensor_save_tiff(lua_State *L)
       for(int x = 0; x < W; x++)
         for(int c = 0; c < C; c++)
           row[x * C + c] = t->data[c * H * W + y * W + x];
-      TIFFWriteScanline(tif, row, y, 0);
+      if(TIFFWriteScanline(tif, row, y, 0) < 0)
+      {
+        write_ok = FALSE;
+        break;
+      }
     }
     g_free(row);
   }
@@ -1590,6 +1607,7 @@ static int _tensor_save_tiff(lua_State *L)
     if(!row)
     {
       TIFFClose(tif);
+      g_unlink(path);
       return luaL_error(L, "failed to allocate row buffer");
     }
     for(int y = 0; y < H; y++)
@@ -1601,12 +1619,21 @@ static int _tensor_save_tiff(lua_State *L)
           v = CLAMP(v, 0.0f, 1.0f);
           row[x * C + c] = (uint16_t)(v * 65535.0f + 0.5f);
         }
-      TIFFWriteScanline(tif, row, y, 0);
+      if(TIFFWriteScanline(tif, row, y, 0) < 0)
+      {
+        write_ok = FALSE;
+        break;
+      }
     }
     g_free(row);
   }
 
   TIFFClose(tif);
+  if(!write_ok)
+  {
+    g_unlink(path);
+    return luaL_error(L, "failed to write TIFF '%s'", path);
+  }
   return 0;
 }
 

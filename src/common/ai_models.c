@@ -40,6 +40,22 @@ static inline char *realpath(const char *path, char *resolved_path)
 }
 #endif
 
+// internal layout of the opaque registry. external callers go through
+// the accessors in ai_models.h — the lock and the model list are
+// intentionally hidden so nobody can race-iterate or deadlock on them
+struct dt_ai_registry_t
+{
+  GList *models;              // list of dt_ai_model_t*
+  char *repository;           // github repository (e.g. "darktable-org/darktable-ai")
+  char *models_dir;           // path to user's models directory
+  char *cache_dir;            // path to download cache directory
+  gboolean ai_enabled;        // global AI enable/disable
+  dt_ai_provider_t provider;  // selected execution provider
+  gboolean updates_checked;   // TRUE after first check_updates call
+  struct dt_ai_environment_t *env;  // lazily created backend environment
+  GMutex lock;                // thread safety for registry access
+};
+
 // config keys
 #define CONF_AI_ENABLED "plugins/ai/enabled"
 #define CONF_AI_REPOSITORY "plugins/ai/repository"
@@ -363,23 +379,55 @@ static void _setup_registry(dt_ai_registry_t *registry)
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  registry->models_dir = dt_ai_resolve_models_path_override();
-  if(!registry->models_dir)
-    registry->models_dir = g_build_filename(g_get_user_data_dir(),
-                                            "darktable", "models", NULL);
+  // models_dir is the unlocked "already-initialised" sentinel in
+  // init_lazy, so it must be the LAST field published
+  char *models = dt_ai_resolve_models_path_override();
+  if(!models)
+    models = g_build_filename(g_get_user_data_dir(),
+                              "darktable", "models", NULL);
+  char *cache = g_build_filename(cachedir, "ai_downloads", NULL);
 
-  registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
-
-  _ensure_directory(registry->models_dir);
-  _ensure_directory(registry->cache_dir);
+  _ensure_directory(models);
+  _ensure_directory(cache);
 
   char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
   registry->provider = dt_ai_provider_from_string(prov_str);
   g_free(prov_str);
 
+  registry->cache_dir = cache;
+  registry->models_dir = models;  // publish last
+
   dt_print(DT_DEBUG_AI,
            "[ai_models] initialized: models_dir=%s, cache_dir=%s",
            registry->models_dir, registry->cache_dir);
+}
+
+// --- Registry state accessors ---
+
+gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry)
+{
+  if(!registry) return FALSE;
+  g_mutex_lock(&registry->lock);
+  const gboolean v = registry->ai_enabled;
+  g_mutex_unlock(&registry->lock);
+  return v;
+}
+
+void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, const gboolean enabled)
+{
+  if(!registry) return;
+  g_mutex_lock(&registry->lock);
+  registry->ai_enabled = enabled;
+  g_mutex_unlock(&registry->lock);
+}
+
+void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
+                                 const dt_ai_provider_t provider)
+{
+  if(!registry) return;
+  g_mutex_lock(&registry->lock);
+  registry->provider = provider;
+  g_mutex_unlock(&registry->lock);
 }
 
 dt_ai_registry_t *dt_ai_models_init(void)
@@ -401,7 +449,13 @@ dt_ai_registry_t *dt_ai_models_init(void)
 
 void dt_ai_models_init_lazy(dt_ai_registry_t *registry)
 {
-  if(!registry || registry->models_dir) return;
+  if(!registry || registry->models_dir)
+  {
+    // catch broken publication order in _setup_registry: any field
+    // added must be initialised BEFORE models_dir, the sentinel
+    if(registry) g_assert(registry->cache_dir);
+    return;
+  }
 
   g_mutex_lock(&registry->lock);
   _setup_registry(registry);
@@ -1055,6 +1109,8 @@ static gboolean _verify_checksum(const char *filepath,
 }
 #endif //HAVE_AI_DOWNLOAD
 
+static gboolean _rmdir_recursive(const char *path);
+
 static gboolean _extract_zip(const char *zippath,
                              const char *destdir)
 {
@@ -1193,6 +1249,74 @@ static gboolean _extract_zip(const char *zippath,
   return success;
 }
 
+// atomically install a .dtmodel into dest_root/<model_id>/.
+// extract into a staging directory inside dest_root, then rename
+// the model subdir into its final place only on full success.
+// on failure, staging is cleaned up and the existing
+// dest_root/<model_id>/ (if any) is left untouched.
+static gboolean _extract_zip_atomic(const char *zippath,
+                                    const char *dest_root,
+                                    const char *model_id)
+{
+  if(!zippath || !dest_root || !model_id || !model_id[0])
+    return FALSE;
+
+  _ensure_directory(dest_root);
+
+  // staging dir as a sibling of the final dir, so the rename is
+  // intra-filesystem and atomic. g_mkdtemp fills XXXXXX with a
+  // unique suffix and creates the directory
+  gchar *staging
+    = g_strdup_printf("%s%s.staging.XXXXXX", dest_root, G_DIR_SEPARATOR_S);
+  if(!g_mkdtemp(staging))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to create staging dir under %s", dest_root);
+    g_free(staging);
+    return FALSE;
+  }
+
+  if(!_extract_zip(zippath, staging))
+  {
+    _rmdir_recursive(staging);
+    g_free(staging);
+    return FALSE;
+  }
+
+  // the zip's top-level dir is the model id; the extracted tree is
+  // staging/<model_id>/. move it to dest_root/<model_id>/.
+  gchar *staged_model = g_build_filename(staging, model_id, NULL);
+  gchar *final_path = g_build_filename(dest_root, model_id, NULL);
+
+  if(!g_file_test(staged_model, G_FILE_TEST_IS_DIR))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] archive top-level does not match model id '%s'",
+             model_id);
+    _rmdir_recursive(staging);
+    g_free(staging);
+    g_free(staged_model);
+    g_free(final_path);
+    return FALSE;
+  }
+
+  // replace any existing install; we just verified a complete copy in staging
+  if(g_file_test(final_path, G_FILE_TEST_EXISTS))
+    _rmdir_recursive(final_path);
+
+  const gboolean ok = g_rename(staged_model, final_path) == 0;
+  if(!ok)
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to move staged model into place: %s -> %s",
+             staged_model, final_path);
+
+  g_free(staged_model);
+  g_free(final_path);
+  _rmdir_recursive(staging);  // remove the now-empty staging parent
+  g_free(staging);
+  return ok;
+}
+
 // peek at the first archive entry to recover the model_id (the top
 // level directory name in the zip layout)
 static char *_zip_top_dir(const char *zippath)
@@ -1248,8 +1372,18 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
     return g_strdup_printf(_("file not found: %s"), filepath);
 
   char *installed_id = _zip_top_dir(filepath);
+  if(!_valid_model_id(installed_id))
+  {
+    // zip's top-level dir becomes the model id and a conf key — reject
+    // empty / "." / ".." / path-separator content before it gets there
+    char *err = g_strdup_printf(
+      _("archive top-level directory is not a valid model id: \"%s\""),
+      installed_id ? installed_id : "");
+    g_free(installed_id);
+    return err;
+  }
 
-  if(!_extract_zip(filepath, registry->models_dir))
+  if(!_extract_zip_atomic(filepath, registry->models_dir, installed_id))
   {
     g_free(installed_id);
     return g_strdup(_("failed to extract model archive"));
@@ -1524,8 +1658,11 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
                       asset));
   }
 
-  // extract to models directory (zip already contains model_id folder)
-  if(!_extract_zip(download_path, registry->models_dir))
+  // extract to models directory (zip already contains model_id folder).
+  // atomic: staging dir + rename, so a partial extract never leaves a
+  // half-written model_id directory that refresh_status would treat as
+  // DOWNLOADED.
+  if(!_extract_zip_atomic(download_path, registry->models_dir, model_id))
   {
     g_unlink(download_path);
     g_free(download_path);
