@@ -1224,6 +1224,7 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
   g_free(jpeg_buf);
   g_free(exif_blob);
   g_free(cfa_out);
+  if(res != 0) g_unlink(out_filename);
   return res;
 }
 
@@ -1275,6 +1276,7 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
   g_free(jpeg_buf);
   g_free(exif_blob);
   dt_free_align(rgb);
+  if(res != 0) g_unlink(out_filename);
   return res;
 }
 
