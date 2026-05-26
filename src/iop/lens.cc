@@ -438,7 +438,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v2_t *o = (dt_iop_lens_params_v2_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -506,7 +506,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v3_t *o = (dt_iop_lens_params_v3_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -573,7 +573,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v4_t *o = (dt_iop_lens_params_v4_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -640,7 +640,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v5_t *o = (dt_iop_lens_params_v5_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     // The unique method in previous versions was Lensfun
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
@@ -713,7 +713,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v6_t *o = (dt_iop_lens_params_v6_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -787,7 +787,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v7_t *o = (dt_iop_lens_params_v7_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -862,7 +862,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v8_t *o = (dt_iop_lens_params_v8_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -931,7 +931,7 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_lens_params_v9_t *o = (dt_iop_lens_params_v9_t *)old_params;
     dt_iop_lens_params_v10_t *n =
-      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
+      (dt_iop_lens_params_v10_t *)calloc(1, sizeof(dt_iop_lens_params_v10_t));
 
     memcpy(n, o, sizeof(dt_iop_lens_params_v9_t));
     // new in v10
