@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 21:57+0900\n"
+"PO-Revision-Date: 2026-05-26 22:30+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -28725,7 +28725,7 @@ msgstr ""
 #: ../src/libs/neural_restore.c:4274 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
-msgstr "画像設定"
+msgstr "画像の設定"
 
 #: ../src/libs/export.c:1611 ../src/libs/print_settings.c:2909
 msgid "output ICC profiles"
@@ -31409,12 +31409,12 @@ msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr ""
-"画像サムネイル上でクリックしてプレビュー領域を選択します\n"
+"画像サムネイル上でクリックしてプレビュー領域を選択\n"
 "ダブルクリックすると中央にリセットされます"
 
 #: ../src/libs/neural_restore.c:4234
 msgid "process selected images"
-msgstr "選択画像を処理"
+msgstr "選択画像を処理します"
 
 #: ../src/libs/neural_restore.c:4252
 msgid "output parameters"
@@ -31449,7 +31449,7 @@ msgstr "現在のコレクションに追加"
 
 #: ../src/libs/neural_restore.c:4337
 msgid "automatically import the output image into the current collection"
-msgstr "出力された画像を現在のコレクションに自動的にインポート"
+msgstr "出力された画像を現在のコレクションに自動的にインポートします"
 
 #: ../src/libs/neural_restore.c:4353
 msgid ""
