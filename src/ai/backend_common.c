@@ -447,7 +447,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
                                   const char *model_id,
                                   const char *model_file,
-                                  dt_ai_provider_t provider)
+                                  const dt_ai_provider_t provider)
 {
   return dt_ai_load_model_ext(env, model_id, model_file, provider,
                               DT_AI_OPT_ALL, NULL, 0);
@@ -456,10 +456,10 @@ dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                       const char *model_id,
                                       const char *model_file,
-                                      dt_ai_provider_t provider,
-                                      dt_ai_opt_level_t opt_level,
+                                      const dt_ai_provider_t provider,
+                                      const dt_ai_opt_level_t opt_level,
                                       const dt_ai_dim_override_t *dim_overrides,
-                                      int n_overrides)
+                                      const int n_overrides)
 {
   if(!env || !model_id)
     return NULL;
@@ -478,8 +478,9 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
   uint32_t ep_flags = 0;
   const dt_ai_model_info_t *model_info
     = dt_ai_get_model_info_by_id(env, model_id);
-  provider = _resolve_provider(provider, model_id, model_info,
-                               model_file, &ep_flags);
+  const dt_ai_provider_t resolved
+    = _resolve_provider(provider, model_id, model_info,
+                        model_file, &ep_flags);
 
   g_mutex_lock(&env->lock);
   const char *model_dir_orig
@@ -510,7 +511,7 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
 
   if(strcmp(backend_copy, "onnx") == 0)
   {
-    ctx = dt_ai_onnx_load_ext(model_dir, model_file, provider, opt_level,
+    ctx = dt_ai_onnx_load_ext(model_dir, model_file, resolved, opt_level,
                                dim_overrides, n_overrides, ep_flags);
   }
   else
@@ -956,7 +957,7 @@ const char *dt_ai_provider_to_string(dt_ai_provider_t provider)
   return dt_ai_providers[0].display_name;  // fallback to "auto"
 }
 
-size_t dt_ai_tensor_element_count(const int64_t *shape, int ndim)
+size_t dt_ai_tensor_element_count(const int64_t *shape, const int ndim)
 {
   if(!shape || ndim <= 0) return 0;
   size_t n = 1;

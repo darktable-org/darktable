@@ -96,7 +96,7 @@ gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry);
  *        Does NOT write to darktablerc — caller must persist the
  *        preference separately. Safe to call from any thread.
  */
-void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, gboolean enabled);
+void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, const gboolean enabled);
 
 /**
  * @brief Set the execution provider in the registry.
@@ -104,7 +104,7 @@ void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, gboolean enabled);
  *        preference separately. Safe to call from any thread.
  */
 void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
-                                 dt_ai_provider_t provider);
+                                 const dt_ai_provider_t provider);
 
 // --- Core API ---
 
