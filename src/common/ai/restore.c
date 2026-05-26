@@ -323,7 +323,7 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   // matching the model_file against the model's top-level cpu_only list
   dt_ai_context_t *ai_ctx = dt_ai_load_model_ext(
     env->ai_env, model_id, model_file,
-    DT_AI_PROVIDER_CONFIGURED, DT_AI_OPT_ALL, NULL, 0, 0);
+    DT_AI_PROVIDER_CONFIGURED, DT_AI_OPT_ALL, NULL, 0);
   if(!ai_ctx)
   {
     g_free(model_id);
@@ -465,12 +465,8 @@ dt_restore_context_t *dt_restore_load_rawdenoise_xtrans(dt_restore_env_t *env)
   dt_restore_context_t *ctx = _load(env, TASK_RAWDENOISE, "model_xtrans", NULL,
                                     DT_RESTORE_INPUT_KIND_XTRANS_V1, 1);
   if(!ctx)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[restore] no dedicated xtrans model; using linear as fallback");
     ctx = _load(env, TASK_RAWDENOISE, "model_linear", NULL,
                 DT_RESTORE_INPUT_KIND_LINEAR_V1, 1);
-  }
   return ctx;
 }
 
@@ -614,7 +610,7 @@ gboolean dt_restore_reload_session_cpu(dt_restore_context_t *ctx)
 
   dt_ai_context_t *new_ctx = dt_ai_load_model_ext(
     ctx->env->ai_env, ctx->model_id, ctx->model_file,
-    DT_AI_PROVIDER_CPU, DT_AI_OPT_ALL, NULL, 0, 0);
+    DT_AI_PROVIDER_CPU, DT_AI_OPT_ALL, NULL, 0);
   if(!new_ctx)
   {
     dt_print(DT_DEBUG_AI,
