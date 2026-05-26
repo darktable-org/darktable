@@ -345,17 +345,13 @@ static void _opencl_write_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return;
 
-  /* As we have floats as per-device parameters we keep track of current locale
-     and do conversions via "C" here and while reading device config
-  */
-  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
-
   dt_opencl_t *cl = darktable.opencl;
+  const float adv = floorf(cl->dev[devid].advantage);
+
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
+  g_snprintf(dat, 510, "%i %i %i %i %i %i.%03i 0.%03i",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
 
@@ -363,12 +359,12 @@ static void _opencl_write_device_config(const int devid)
     cl->dev[devid].use_events ? 1 : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
-    cl->dev[devid].advantage,
-    cl->dev[devid].unified_fraction);
+    (int)(adv),
+    (int)(1000.0f * (cl->dev[devid].advantage - adv)),
+    (int)(1000.0f * cl->dev[devid].unified_fraction));
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "\n[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
-  setlocale(LC_NUMERIC, locale);
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid to support systems with two
@@ -384,9 +380,6 @@ static gboolean _opencl_read_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return FALSE;
 
-  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
-
   dt_opencl_t *cl = darktable.opencl;
   dt_opencl_device_t *cldid = &cl->dev[devid];
   gchar key[256] = { 0 };
@@ -396,27 +389,32 @@ static gboolean _opencl_read_device_config(const int devid)
   gboolean safety_ok = TRUE;
   if(existing_device)
   {
+    /* The per-device conf string includes two floats, to avoid conflicts with
+       the different dot/comma representations depending on current locale we
+       read the different parts of the float string as ints using dummys for
+       separation. Also see the conf writing equivalent above.
+    */
     const gchar *dat = dt_conf_get_string_const(key);
+    char dummy;
     int micro_nap;
     int pinned_memory;
     int events;
     int asyncmode;
     int disabled;
-    float advantage;
-    float unified_fraction;
-    sscanf(dat, "%i %i %i %i %i %f %f",
-           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage, &unified_fraction);
+    int advantage1;
+    int advantage2;
+    int unified_fraction;
+    sscanf(dat, "%i %i %i %i %i %d %c %d %c %c %d",
+           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage1, &dummy, &advantage2, &dummy, &dummy, &unified_fraction);
 
     cldid->use_events = events ? TRUE : FALSE;
     cldid->micro_nap = micro_nap;
     cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
     cldid->asyncmode = asyncmode ? TRUE : FALSE;
     cldid->disabled = disabled ? TRUE : FALSE;
-    cldid->advantage = advantage;
-    cldid->unified_fraction = unified_fraction;
-    setlocale(LC_NUMERIC, locale);
+    cldid->advantage = (float)advantage1 + 0.001f * (float)advantage2;
+    cldid->unified_fraction = 0.001f * (float)unified_fraction;
   }
-
 
   // do some safety housekeeping
   if((cldid->unified_fraction < 0.05f) || (cldid->unified_fraction > 0.5f))
@@ -1585,8 +1583,9 @@ finally:
         cl->dev[i].max_global_mem = reserved;
         cl->dev[i].max_mem_alloc = MIN(cl->dev[i].max_mem_alloc, reserved);
         dt_print_nts(DT_DEBUG_OPENCL,
-               "   UNIFIED MEM SIZE:         %.0f MB reserved for '%s' id=%d\n",
-               (double)reserved / 1024.0 / 1024.0, cl->dev[i].cname, i);
+               "   UNIFIED MEM SIZE:         %.0f MB (%i%%) reserved for '%s' id=%d\n",
+               (double)reserved / 1024.0 / 1024.0, (int)(100.0f * cl->dev[i].unified_fraction),
+               cl->dev[i].cname, i);
         res->total_memory -= reserved;
       }
     }
