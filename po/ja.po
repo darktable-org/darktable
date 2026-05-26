@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 13:24+0900\n"
+"PO-Revision-Date: 2026-05-26 16:45+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -13005,7 +13005,7 @@ msgstr "優先するexifタグリーダ"
 #. label
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:165
 msgid "use exiftool or exiv2 to read exif tags"
-msgstr ""
+msgstr "exifタグの読み取りにexiftoolまたはexiv2を使用します"
 
 #. tooltip
 #. default
@@ -13037,12 +13037,12 @@ msgstr "インポートする１枚または複数の画像を選択します"
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:306
 #, lua-format
 msgid "extracted %d dng files from %s"
-msgstr ""
+msgstr "%d個のDNGファイルを%sから抽出しました"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:338
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:356
 msgid "scanning for burst roll images"
-msgstr ""
+msgstr "連写ロール画像をスキャンしています"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:373
 #, fuzzy
@@ -13075,7 +13075,7 @@ msgstr "利用出来ません"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:399
 msgid " no exif tag reader available, exiting..."
-msgstr ""
+msgstr "利用可能なexifタグリーダがありません。終了します…"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
 #, fuzzy, lua-format
@@ -13573,6 +13573,7 @@ msgstr "パーセント 下"
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:83
 msgid "add recently edited and exported images to system recent bookmarks"
 msgstr ""
+"最近編集・エクスポートした画像をシステムの最近のブックマークに追加します"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13619,7 +13620,7 @@ msgstr "GPXファイルを解析することが出来ませんでした"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:275
 msgid " only  runs on Linux"
-msgstr ""
+msgstr "Linuxでのみ動作します"
 
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:281
 #, fuzzy
@@ -13894,7 +13895,7 @@ msgstr "スケジューラ"
 #. name of script
 #: ../src/external/lua-scripts/official/scheduler.lua:99
 msgid "provide scheduler services for multitasking"
-msgstr ""
+msgstr "マルチタスクのためのスケジューリング機能を提供します"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13920,7 +13921,7 @@ msgstr "シーン参照（フィルミック）"
 
 #: ../src/external/lua-scripts/official/scheduler.lua:130
 msgid "target time slice before interrupt"
-msgstr ""
+msgstr "割り込み前の目標タイムスライス"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. A L I A S E S
@@ -14656,12 +14657,12 @@ msgstr "PDFビューアの実行中に問題が発生しました"
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:84
 msgid "use paired jpg as mipmap"
-msgstr ""
+msgstr "ペアのJPEGをミップマップとして使用する"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:85
 msgid "Use the JPG from the RAW JPG pair as the full size mipmap"
-msgstr ""
+msgstr "RAWとJPGのペアのJPGをフルサイズのミップマップとして使用する"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -14692,7 +14693,7 @@ msgstr "XMPファイルの作成"
 
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:135
 msgid "don't delete JPEGs after copying them to mipmap folder"
-msgstr ""
+msgstr "ミップマップフォルダにコピーした後、JPEGを削除しない"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. A L I A S E S
