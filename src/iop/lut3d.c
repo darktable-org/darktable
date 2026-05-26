@@ -22,6 +22,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
 #include "common/iop_profile.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
@@ -1425,12 +1426,12 @@ static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
       p->lutname[0] = 0;
       _lut3d_clear_lutname_list(g);
     }
-    g_strlcpy(p->filepath, filepath, sizeof(p->filepath));
+    dt_strlcpy_to_fixed(p->filepath, filepath, sizeof(p->filepath));
     _get_compressed_clut(self, FALSE);
     _show_hide_controls(self);
     gtk_entry_set_text(GTK_ENTRY(g->lutentry), "");
 #else
-    g_strlcpy(p->filepath, filepath, sizeof(p->filepath));
+    dt_strlcpy_to_fixed(p->filepath, filepath, sizeof(p->filepath));
 #endif // HAVE_GMIC
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -1456,7 +1457,7 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
     gtk_tree_model_get(model, &iter, DT_LUT3D_COL_NAME, &lutname, -1);
     if(lutname[0] && strcmp(lutname, p->lutname) != 0)
     {
-      g_strlcpy(p->lutname, lutname, sizeof(p->lutname));
+      dt_strlcpy_to_fixed(p->lutname, lutname, sizeof(p->lutname));
       _get_compressed_clut(self, TRUE);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
