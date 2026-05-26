@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 12:18+0900\n"
+"PO-Revision-Date: 2026-05-26 12:27+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -31440,6 +31440,7 @@ msgstr "RAWノイズ除去：元画像を読み込むことが出来ません"
 #: ../src/libs/neural_restore.c:1325
 msgid "raw denoise: image is not a supported raw sensor format"
 msgstr ""
+"RAWノイズ除去：画像がサポートされているRAWセンサーフォーマットではありません"
 
 #: ../src/libs/neural_restore.c:1357 ../src/libs/neural_restore.c:4144
 msgid "upscale"
@@ -31461,7 +31462,7 @@ msgstr "ニューラル復元：出力ディレクトリを作成することが
 
 #: ../src/libs/neural_restore.c:1491
 msgid "neural restore: too many output files"
-msgstr ""
+msgstr "ニューラル復元：出力ファイルが多すぎます"
 
 #: ../src/libs/neural_restore.c:1500
 #, c-format
@@ -31584,7 +31585,7 @@ msgstr "AIアップスケーリング"
 
 #: ../src/libs/neural_restore.c:4157
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
-msgstr ""
+msgstr "元のCFA（0%）とノイズ除去後の出力（100%）の間でブレンドします"
 
 #: ../src/libs/neural_restore.c:4175
 #, no-c-format
