@@ -1100,6 +1100,11 @@ static int _load_image_from_imgid(lua_State *L)
     .bpp = _lua_capture_bpp,
     .write_image = _lua_capture_write};
 
+  const dt_colorspaces_color_profile_t *work_cp
+    = dt_colorspaces_get_work_profile(imgid);
+  const dt_colorspaces_color_profile_type_t dst_type
+    = work_cp ? work_cp->type : DT_COLORSPACE_LIN_REC2020;
+
   dt_imageio_export_with_flags(imgid,
                                "unused",
                                &fmt,
@@ -1114,7 +1119,7 @@ static int _load_image_from_imgid(lua_State *L)
                                NULL,   // filter
                                FALSE,  // copy_metadata
                                FALSE,  // export_masks
-                               dt_colorspaces_get_work_profile(imgid)->type,
+                               dst_type,
                                NULL,
                                DT_INTENT_PERCEPTUAL,
                                NULL, NULL, 1, 1, NULL, -1);
