@@ -1565,6 +1565,7 @@ static int _tensor_save_tiff(lua_State *L)
     }
   }
 
+  gboolean write_ok = TRUE;
   if(bpp == 32)
   {
     // write float scanlines (NCHW → HWC interleaved)
@@ -1572,6 +1573,7 @@ static int _tensor_save_tiff(lua_State *L)
     if(!row)
     {
       TIFFClose(tif);
+      g_unlink(path);
       return luaL_error(L, "failed to allocate row buffer");
     }
     for(int y = 0; y < H; y++)
@@ -1579,7 +1581,11 @@ static int _tensor_save_tiff(lua_State *L)
       for(int x = 0; x < W; x++)
         for(int c = 0; c < C; c++)
           row[x * C + c] = t->data[c * H * W + y * W + x];
-      TIFFWriteScanline(tif, row, y, 0);
+      if(TIFFWriteScanline(tif, row, y, 0) < 0)
+      {
+        write_ok = FALSE;
+        break;
+      }
     }
     g_free(row);
   }
@@ -1591,6 +1597,7 @@ static int _tensor_save_tiff(lua_State *L)
     if(!row)
     {
       TIFFClose(tif);
+      g_unlink(path);
       return luaL_error(L, "failed to allocate row buffer");
     }
     for(int y = 0; y < H; y++)
@@ -1602,12 +1609,21 @@ static int _tensor_save_tiff(lua_State *L)
           v = CLAMP(v, 0.0f, 1.0f);
           row[x * C + c] = (uint16_t)(v * 65535.0f + 0.5f);
         }
-      TIFFWriteScanline(tif, row, y, 0);
+      if(TIFFWriteScanline(tif, row, y, 0) < 0)
+      {
+        write_ok = FALSE;
+        break;
+      }
     }
     g_free(row);
   }
 
   TIFFClose(tif);
+  if(!write_ok)
+  {
+    g_unlink(path);
+    return luaL_error(L, "failed to write TIFF '%s'", path);
+  }
   return 0;
 }
 
