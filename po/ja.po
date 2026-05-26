@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 19:08+0900\n"
+"PO-Revision-Date: 2026-05-26 20:30+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -13164,17 +13164,13 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/group_persistence.lua:120
-#, fuzzy
-#| msgid "group leaders"
 msgid "group persistence"
-msgstr "グループリーダー"
+msgstr "グループの永続化"
 
 #. name of script
 #: ../src/external/lua-scripts/official/group_persistence.lua:121
-#, fuzzy
-#| msgid "prefer enabled instances"
 msgid "preserve groups between darktable instances"
-msgstr "有効になっているインスタンスを優先する"
+msgstr "複数のdarktableインスタンス間でグループを維持する"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13462,16 +13458,13 @@ msgstr "インポートの絞り込み"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:82
-#, fuzzy
-#| msgid "percent bottom"
 msgid "recent_bookmarks"
-msgstr "パーセント 下"
+msgstr "最近使ったファイル（ブックマーク）"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:83
 msgid "add recently edited and exported images to system recent bookmarks"
-msgstr ""
-"最近編集・エクスポートした画像をシステムの最近のブックマークに追加します"
+msgstr "最近編集・エクスポートした画像をシステムの最近使ったファイルに追加する"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13508,10 +13501,8 @@ msgstr ""
 #. ------------------
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:243
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:246
-#, fuzzy
-#| msgid "failed to parse GPX file"
 msgid "failed to open bookmark file"
-msgstr "GPXファイルを解析することが出来ませんでした"
+msgstr "ブックマークファイルを開くことが出来ませんでした"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
@@ -13521,10 +13512,8 @@ msgid " only  runs on Linux"
 msgstr "Linuxでのみ動作します"
 
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:281
-#, fuzzy
-#| msgid "file not found"
 msgid "recent bookmarks file not found"
-msgstr "ファイルが見つかりません"
+msgstr "ブックマークファイルが見つかりません"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
@@ -13599,17 +13588,13 @@ msgstr "ファイルが見つかりません"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:79
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:246
-#, fuzzy
-#| msgid "reset cached thumbnails"
 msgid "regenerate thumbnails"
-msgstr "キャッシュされたサムネイルをリセットする"
+msgstr "サムネイル再生成"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:80
-#, fuzzy
-#| msgid "generate a pdf file of selected images"
 msgid "regenerate mipmap cache for selected images"
-msgstr "選択した画像のpdfファイルを生成します"
+msgstr "選択した画像のミップマップキャッシュを再生成する"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13641,10 +13626,8 @@ msgstr "選択した画像のpdfファイルを生成します"
 #. helper functions
 #. -----------------
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:176
-#, fuzzy
-#| msgid "hide navigation thumbnail"
 msgid "regenerating thumbnails"
-msgstr "ナビゲーションのサムネイルを非表示"
+msgstr "サムネイルを再生成しています"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
@@ -13654,10 +13637,8 @@ msgstr "ナビゲーションのサムネイルを非表示"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:215
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:219
-#, fuzzy
-#| msgid "generate thumbnails in background"
 msgid "generate thumbnails"
-msgstr "バックグラウンドでサムネイルを生成する"
+msgstr "サムネイルを生成する"
 
 #.
 #. This file is part of darktable,
@@ -13811,11 +13792,8 @@ msgstr "マルチタスクのためのスケジューリング機能を提供し
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/scheduler.lua:130
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred (filmic)"
 msgid "scheduler preferred time slice"
-msgstr "シーン参照（フィルミック）"
+msgstr "スケジューラの優先タイムスライス"
 
 #: ../src/external/lua-scripts/official/scheduler.lua:130
 msgid "target time slice before interrupt"
@@ -13930,21 +13908,13 @@ msgstr "割り込み前の目標タイムスライス"
 #: ../src/external/lua-scripts/official/select_duplicates.lua:86
 #: ../src/external/lua-scripts/official/select_duplicates.lua:238
 #: ../src/external/lua-scripts/official/select_duplicates.lua:262
-#, fuzzy
-#| msgid "delete duplicate"
 msgid "select duplicates"
-msgstr "複製を削除"
+msgstr "重複を選択"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/select_duplicates.lua:87
-#, fuzzy
-#| msgid ""
-#| "select unselected images\n"
-#| "in current collection"
 msgid "select duplicate images from a collection"
-msgstr ""
-"現在のコレクション内の\n"
-"選択されていない画像を選択します"
+msgstr "コレクションから重複画像を選択する"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13967,22 +13937,16 @@ msgstr ""
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/select_duplicates.lua:131
-#, fuzzy
-#| msgid "actions on selection"
 msgid " create collection from selection"
-msgstr "選択へのアクション"
+msgstr "選択からコレクションを作成する"
 
 #: ../src/external/lua-scripts/official/select_duplicates.lua:132
-#, fuzzy
-#| msgid "clear color labels of selected images"
 msgid "create collection of selected duplicates"
-msgstr "選択した画像の色ラベルを取消"
+msgstr "選択した重複画像のコレクションを作成する"
 
 #: ../src/external/lua-scripts/official/select_duplicates.lua:239
-#, fuzzy
-#| msgid "duplicate images"
 msgid "select duplicated images"
-msgstr "画像を複製します"
+msgstr "重複画像を選択"
 
 #.
 #.
@@ -14044,17 +14008,13 @@ msgstr "画像を複製します"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:91
-#, fuzzy
-#| msgid "select none"
 msgid "select raw/non-raw"
-msgstr "選択なし"
+msgstr "raw／非rawを選択"
 
 #. name of script
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:92
-#, fuzzy
-#| msgid "click to allow browsing all images from the collection."
 msgid "select raw or non raw files from collection"
-msgstr "クリックすると、コレクションの全ての画像を閲覧することを許可します"
+msgstr "コレクションからrawファイルまたは非rawファイルを選択します"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -14084,28 +14044,20 @@ msgstr "クリックすると、コレクションの全ての画像を閲覧す
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:159
-#, fuzzy
-#| msgid "select all"
 msgid "select raw"
-msgstr "全て選択"
+msgstr "rawを選択"
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:160
-#, fuzzy
-#| msgid "select file"
 msgid "select raw files"
-msgstr "ファイルを選択する"
+msgstr "rawファイルを選択します"
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:161
-#, fuzzy
-#| msgid "select none"
 msgid "select non-raw"
-msgstr "選択なし"
+msgstr "非rawを選択"
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:162
-#, fuzzy
-#| msgid "select none"
 msgid "select non-raw files"
-msgstr "選択なし"
+msgstr "非rawファイルを選択します"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
@@ -14203,23 +14155,17 @@ msgstr "選択なし"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/select_unaltered.lua:78
 #: ../src/external/lua-scripts/official/select_unaltered.lua:151
-#, fuzzy
-#| msgid "select untouched"
 msgid "select unaltered"
-msgstr "未処理画像を選択"
+msgstr "未変更を選択"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/select_unaltered.lua:79
-#, fuzzy
-#| msgid "only select images that have not already been imported"
 msgid "select images that have not been altered in any way"
-msgstr "インポートされていない画像のみ選択します"
+msgstr "一切変更されていない画像だけを選択します"
 
 #: ../src/external/lua-scripts/official/select_unaltered.lua:152
-#, fuzzy
-#| msgid "select lut file"
 msgid "select unaltered files"
-msgstr "lutファイルを選択してください"
+msgstr "未変更のファイルを選択します"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
@@ -14299,18 +14245,13 @@ msgstr "lutファイルを選択してください"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection2collection.lua:94
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "select corrections"
 msgid "selection to collection"
-msgstr "補正を選択"
+msgstr "選択をコレクションに変換"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/selection2collection.lua:95
-#, fuzzy
-#| msgid "add image to or remove it from a selection"
 msgid "create a temporary collection from a selection"
-msgstr "選択に画像を追加または除去する"
+msgstr "選択から一時コレクションを作成します"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -14334,16 +14275,12 @@ msgstr "選択に画像を追加または除去する"
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/selection2collection.lua:144
-#, fuzzy
-#| msgid "actions on selection"
 msgid " keep collections created from selection"
-msgstr "選択へのアクション"
+msgstr " 選択から作成したコレクションを保持します"
 
 #: ../src/external/lua-scripts/official/selection2collection.lua:145
-#, fuzzy
-#| msgid "recent collections settings"
 msgid "keep collections created from selections"
-msgstr "最近のコレクションの設定"
+msgstr "選択から作成したコレクションを保持します"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. A L I A S E S
@@ -14369,10 +14306,8 @@ msgstr "コレクションを作成するのに十分な画像がありません
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/selection2collection.lua:300
-#, fuzzy
-#| msgid "scroll the collection"
 msgid "create temporary collection"
-msgstr "コレクションをスクロールする"
+msgstr "選択画像から作成したコレクションを保持します"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
@@ -14383,10 +14318,8 @@ msgstr "コレクションをスクロールする"
 #. skip if shortcut already registered
 #: ../src/external/lua-scripts/official/selection2collection.lua:304
 #: ../src/external/lua-scripts/official/selection2collection.lua:335
-#, fuzzy
-#| msgid "go to tag collection"
 msgid "convert selection to collection"
-msgstr "タグコレクションへ移動"
+msgstr "選択画像をコレクションに変換します"
 
 #.
 #. This file is part of darktable,
@@ -14429,8 +14362,6 @@ msgid "selection to PDF"
 msgstr "選択画像をPDFで出力"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:57
-#, fuzzy
-#| msgid "generate a pdf file of selected images"
 msgid "generate a PDF file of selected images"
 msgstr "選択した画像のpdfファイルを生成します"
 
@@ -31448,7 +31379,7 @@ msgstr "プレビューを生成しています..."
 
 #: ../src/libs/neural_restore.c:3667
 msgid "click to generate preview"
-msgstr "クリックすると、プレビューを生成します"
+msgstr "クリックしてプレビューを生成"
 
 #: ../src/libs/neural_restore.c:3669
 msgid "image not supported by this task"
