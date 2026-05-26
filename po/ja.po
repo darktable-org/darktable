@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-21 18:57+0200\n"
-"PO-Revision-Date: 2026-05-26 12:27+0900\n"
+"PO-Revision-Date: 2026-05-26 13:24+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -17025,13 +17025,11 @@ msgstr[0] "モデルを削除しますか？"
 msgstr[1] "モデルを削除しますか？"
 
 #: ../src/gui/preferences_ai.c:1098
-#, fuzzy, c-format
-#| msgid "do you really want to clear history of %d selected image?"
-#| msgid_plural "do you really want to clear history of %d selected images?"
+#, c-format
 msgid "do you really want to delete %d selected model?"
 msgid_plural "do you really want to delete %d selected models?"
-msgstr[0] "%d枚の選択画像の履歴を本当に削除しますか？"
-msgstr[1] "%d枚の選択画像の履歴を本当に削除しますか？"
+msgstr[0] "%d個の選択したモデルを本当に削除しますか？"
+msgstr[1] "%d個の選択したモデルを本当に削除しますか？"
 
 #: ../src/gui/preferences_ai.c:1159
 msgid "scope"
@@ -31467,22 +31465,22 @@ msgstr "ニューラル復元：出力ファイルが多すぎます"
 #: ../src/libs/neural_restore.c:1500
 #, c-format
 msgid "denoising image %d/%d..."
-msgstr ""
+msgstr "画像%d/%dをノイズ除去しています…"
 
 #: ../src/libs/neural_restore.c:1501
 #, c-format
 msgid "raw denoising image %d/%d..."
-msgstr ""
+msgstr "画像%d/%dをrawノイズ除去しています…"
 
 #: ../src/libs/neural_restore.c:1502
 #, c-format
 msgid "upscaling 2x image %d/%d..."
-msgstr ""
+msgstr "画像%d/%dを2倍にアップスケーリングしています…"
 
 #: ../src/libs/neural_restore.c:1503
 #, c-format
 msgid "upscaling 4x image %d/%d..."
-msgstr ""
+msgstr "画像%d/%dを4倍にアップスケーリングしています…"
 
 #: ../src/libs/neural_restore.c:1512
 #, c-format
@@ -31497,12 +31495,12 @@ msgstr "ニューラル復元：エクスポートに失敗しました"
 #, c-format
 msgid "neural %s: %d image processed"
 msgid_plural "neural %s: %d images processed"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ニューラル%s: %d枚の画像を処理しました"
+msgstr[1] "ニューラル%s: %d枚の画像を処理しました"
 
 #: ../src/libs/neural_restore.c:1646
 msgid "large output - processing will be slow"
-msgstr ""
+msgstr "出力サイズが大きいです — 処理に時間がかかります"
 
 #: ../src/libs/neural_restore.c:1662
 msgid "output: Bayer CFA DNG"
@@ -31514,13 +31512,11 @@ msgstr "出力：LinearRaw DNG"
 
 #: ../src/libs/neural_restore.c:1682
 msgid "wide-gamut preserved, not denoised"
-msgstr ""
+msgstr "広色域が維持されました、ノイズ除去は適用されていません"
 
 #: ../src/libs/neural_restore.c:1683
-#, fuzzy
-#| msgid "gamut clipping"
 msgid "wide-gamut clipped"
-msgstr "色域クリッピング"
+msgstr "広色域がクリップしています"
 
 #: ../src/libs/neural_restore.c:3475
 #, c-format
@@ -31528,10 +31524,8 @@ msgid "zoom %.0f%%"
 msgstr "ズーム %.0f%%"
 
 #: ../src/libs/neural_restore.c:3638
-#, fuzzy
-#| msgid "click to enter full preview layout."
 msgid "click to select preview area"
-msgstr "クリックすると、フルプレビューレイアウトに入ります"
+msgstr "クリックすると、プレビュー領域を選択します"
 
 #: ../src/libs/neural_restore.c:3663
 msgid "model not available"
@@ -31542,22 +31536,16 @@ msgid "generating preview..."
 msgstr "プレビューを生成しています..."
 
 #: ../src/libs/neural_restore.c:3667
-#, fuzzy
-#| msgid "click to enter full preview layout."
 msgid "click to generate preview"
-msgstr "クリックすると、フルプレビューレイアウトに入ります"
+msgstr "クリックすると、プレビューを生成します"
 
 #: ../src/libs/neural_restore.c:3669
-#, fuzzy
-#| msgid "image '%s' not supported"
 msgid "image not supported by this task"
-msgstr "画像'%s'はサポートされていません"
+msgstr "画像がこのタスクでサポートされていません"
 
 #: ../src/libs/neural_restore.c:3671
-#, fuzzy
-#| msgid "preview display profile"
 msgid "preview initialization failed"
-msgstr "プレビューのディスプレイプロファイル"
+msgstr "プレビューの初期化に失敗しました"
 
 #: ../src/libs/neural_restore.c:3672
 #, fuzzy
@@ -31593,6 +31581,8 @@ msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
 "texture and grain while keeping color noise suppressed"
 msgstr ""
+"100%にすると、AIモデルの出力を完全に適用します\n"
+"値を下げると、色ノイズを抑えたまま、輝度の質感や粒子感を取り戻すことが出来ます"
 
 #: ../src/libs/neural_restore.c:4184
 msgid "upscale factor"
@@ -31611,6 +31601,8 @@ msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr ""
+"画像サムネイル上でクリックしてプレビュー領域を選択します\n"
+"ダブルクリックすると中央にリセットされます"
 
 #: ../src/libs/neural_restore.c:4234
 #, fuzzy
@@ -31628,13 +31620,11 @@ msgstr "出力TIFFビット深度"
 
 #: ../src/libs/neural_restore.c:4305
 msgid "color profile embedded in the output TIFF"
-msgstr ""
+msgstr "出力されるTIFFに埋め込まれるカラープロファイル"
 
 #: ../src/libs/neural_restore.c:4315
-#, fuzzy
-#| msgid "preserve colors"
 msgid "preserve wide-gamut colors"
-msgstr "色の保持"
+msgstr "広色域の色を保持"
 
 #: ../src/libs/neural_restore.c:4322
 msgid ""
@@ -31642,12 +31632,14 @@ msgid ""
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
 "affects denoise"
 msgstr ""
+"オンにすると、sRGB色域の外にあるピクセルはノイズ除去されずそのまま通過します\n"
+"オフにすると、すべてのピクセルがノイズ除去されますが、広色域の色がクリップされ"
+"る可能性があります\n"
+"この設定はノイズ除去にのみ影響します"
 
 #: ../src/libs/neural_restore.c:4331
-#, fuzzy
-#| msgid "%s in current collection"
 msgid "add to the current collection"
-msgstr "現在のコレクション内の%s"
+msgstr "現在のコレクションに追加"
 
 #: ../src/libs/neural_restore.c:4337
 #, fuzzy
@@ -31660,6 +31652,8 @@ msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
 msgstr ""
+"出力フォルダ―darktableの変数をサポートしています\n"
+"$(FILE_FOLDER) = 元画像のフォルダ"
 
 #: ../src/libs/print_settings.c:48
 msgid "print settings"
