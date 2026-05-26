@@ -413,7 +413,7 @@ gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry)
   return v;
 }
 
-void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, gboolean enabled)
+void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, const gboolean enabled)
 {
   if(!registry) return;
   g_mutex_lock(&registry->lock);
@@ -422,7 +422,7 @@ void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, gboolean enabled)
 }
 
 void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
-                                 dt_ai_provider_t provider)
+                                 const dt_ai_provider_t provider)
 {
   if(!registry) return;
   g_mutex_lock(&registry->lock);

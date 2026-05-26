@@ -323,7 +323,7 @@ dt_ai_provider_t dt_ai_env_get_provider(dt_ai_environment_t *env);
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
                                   const char *model_id,
                                   const char *model_file,
-                                  dt_ai_provider_t provider);
+                                  const dt_ai_provider_t provider);
 
 /**
  * @brief Symbolic dimension override for models with dynamic shapes.
@@ -358,10 +358,10 @@ typedef struct {
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                        const char *model_id,
                                        const char *model_file,
-                                       dt_ai_provider_t provider,
-                                       dt_ai_opt_level_t opt_level,
+                                       const dt_ai_provider_t provider,
+                                       const dt_ai_opt_level_t opt_level,
                                        const dt_ai_dim_override_t *dim_overrides,
-                                       int n_overrides);
+                                       const int n_overrides);
 
 /**
  * @brief Tensor Data Types
@@ -398,7 +398,7 @@ typedef struct dt_ai_tensor_t {
  *        the buffer byte length. Returns 0 if any dim is non-positive
  *        or if ndim is 0.
  */
-size_t dt_ai_tensor_element_count(const int64_t *shape, int ndim);
+size_t dt_ai_tensor_element_count(const int64_t *shape, const int ndim);
 
 /**
  * @brief Run inference through the loaded model.
