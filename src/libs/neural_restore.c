@@ -2848,6 +2848,12 @@ static gpointer _preview_thread_raw(gpointer data)
     gchar *cfg_file = (cfg_type == DT_COLORSPACE_FILE)
       ? dt_conf_get_string(CONF_ICC_FILE)
       : NULL;
+    const dt_colorspaces_color_profile_t *work_cp
+      = dt_colorspaces_get_work_profile(pd->imgid);
+    const dt_colorspaces_color_profile_type_t dst_type
+      = (cfg_type == DT_COLORSPACE_NONE)
+        ? (work_cp ? work_cp->type : DT_COLORSPACE_LIN_REC2020)
+        : cfg_type;
     dt_imageio_export_with_flags(
       pd->imgid, "unused", &fmt,
       (dt_imageio_module_data_t *)&cap,
@@ -2861,9 +2867,7 @@ static gpointer _preview_thread_raw(gpointer data)
       NULL,   // filter
       FALSE,  // copy_metadata
       FALSE,  // export_masks
-      (cfg_type == DT_COLORSPACE_NONE)
-        ? dt_colorspaces_get_work_profile(pd->imgid)->type
-        : cfg_type,
+      dst_type,
       cfg_file,
       DT_INTENT_PERCEPTUAL,
       NULL, NULL, 1, 1, NULL, -1);
