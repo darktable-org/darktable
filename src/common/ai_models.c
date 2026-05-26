@@ -449,7 +449,13 @@ dt_ai_registry_t *dt_ai_models_init(void)
 
 void dt_ai_models_init_lazy(dt_ai_registry_t *registry)
 {
-  if(!registry || registry->models_dir) return;
+  if(!registry || registry->models_dir)
+  {
+    // catch broken publication order in _setup_registry: any field
+    // added must be initialised BEFORE models_dir, the sentinel
+    if(registry) g_assert(registry->cache_dir);
+    return;
+  }
 
   g_mutex_lock(&registry->lock);
   _setup_registry(registry);
