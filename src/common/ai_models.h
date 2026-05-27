@@ -68,18 +68,14 @@ typedef void (*dt_ai_progress_callback)(const char *model_id,
                                         const double progress,
                                         gpointer user_data);
 
-/**
- * @brief AI Models Registry — opaque handle.
- *
- * The registry holds a private mutex and the in-memory model list.
- * Both are intentionally hidden so callers can't deadlock by acquiring
- * the lock directly, race-iterate the list, or touch fields without
- * going through the API. The full definition lives in ai_models.c.
- *
- * External callers should treat the type as opaque and use the
- * accessor functions below.
- */
-typedef struct dt_ai_registry_t dt_ai_registry_t;
+// The AI models registry is a per-session singleton owned by
+// darktable.ai_registry. It is created by dt_ai_models_init() and
+// destroyed by dt_ai_models_cleanup(); the struct itself (private
+// mutex + in-memory model list) is defined only in ai_models.c so
+// callers can't deadlock on the lock or race-iterate the list. Every
+// function below operates on that singleton implicitly — there is no
+// registry handle to pass around. All are safe to call before init or
+// on a non-AI build, where they no-op (returning FALSE/0/NULL).
 
 // --- Registry state accessors ---
 // thin, locked accessors for the few fields external callers need to
@@ -87,42 +83,44 @@ typedef struct dt_ai_registry_t dt_ai_registry_t;
 
 /**
  * @brief TRUE if AI is currently enabled (global toggle in prefs).
- *        Safe to call from any thread; NULL registry returns FALSE.
+ *        Safe to call from any thread.
  */
-gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry);
+gboolean dt_ai_registry_is_enabled(void);
 
 /**
  * @brief Set the global AI-enabled state in the registry.
  *        Does NOT write to darktablerc — caller must persist the
  *        preference separately. Safe to call from any thread.
  */
-void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, const gboolean enabled);
+void dt_ai_registry_set_enabled(const gboolean enabled);
 
 /**
  * @brief Set the execution provider in the registry.
  *        Does NOT write to darktablerc — caller must persist the
  *        preference separately. Safe to call from any thread.
  */
-void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
-                                 const dt_ai_provider_t provider);
+void dt_ai_registry_set_provider(const dt_ai_provider_t provider);
 
 // --- Core API ---
 
 /**
- * @brief Initialize the AI models registry
- * @return New registry instance, or NULL on error
+ * @brief Initialize the AI models registry singleton.
+ *        On return darktable.ai_registry points at the new registry
+ *        (always created). When AI is enabled at startup this also sets
+ *        up the model/cache directories.
+ * @return TRUE if ready; FALSE if directory setup failed (the registry
+ *         still exists but downloads/scans will not work)
  */
-dt_ai_registry_t *dt_ai_models_init(void);
+gboolean dt_ai_models_init(void);
 
 /**
  * @brief Load model registry from `ai_models.json` bundled with the
  *        darktable installation (looked up under DATADIR). There is
  *        no caller-supplied path — the registry source is fixed by
  *        the install layout.
- * @param registry The registry to populate
  * @return TRUE on success
  */
-gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry);
+gboolean dt_ai_models_load_registry(void);
 
 /**
  * @brief Lazy-initialize AI registry at runtime
@@ -134,16 +132,13 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry);
  * locally installed models.
  *
  * Safe to call multiple times — no-ops if already initialized.
- *
- * @param registry The registry to initialize
  */
-void dt_ai_models_init_lazy(dt_ai_registry_t *registry);
+void dt_ai_models_init_lazy(void);
 
 /**
  * @brief Scan models directory and update download status
- * @param registry The registry to update
  */
-void dt_ai_models_refresh_status(dt_ai_registry_t *registry);
+void dt_ai_models_refresh_status(void);
 
 /**
  * @brief Check for model updates by fetching versions.json from the
@@ -157,16 +152,13 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry);
  *        UPDATE_REQUIRED means darktable cannot use the installed
  *        model with the current code; UPDATE_AVAILABLE is a soft
  *        nudge — the installed model still works.
- *
- * @param registry The registry to update
  */
-void dt_ai_models_check_updates(dt_ai_registry_t *registry);
+void dt_ai_models_check_updates(void);
 
 /**
- * @brief Clean up and free the registry
- * @param registry The registry to destroy
+ * @brief Clean up and free the registry singleton (sets it to NULL).
  */
-void dt_ai_models_cleanup(dt_ai_registry_t *registry);
+void dt_ai_models_cleanup(void);
 
 // --- Model Access ---
 // All get functions return a COPY of the model. Caller must free with dt_ai_model_free().
@@ -180,110 +172,94 @@ void dt_ai_model_free(dt_ai_model_t *model);
 
 /**
  * @brief Get number of models in registry
- * @param registry The registry
  * @return Number of models
  */
-int dt_ai_models_get_count(dt_ai_registry_t *registry);
+int dt_ai_models_get_count(void);
 
 /**
  * @brief Get model by index (returns a copy, caller must free with dt_ai_model_free)
- * @param registry The registry
  * @param index Index 0 to count-1
  * @return Model copy (caller owns), or NULL
  */
-dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry,
-                                         const int index);
+dt_ai_model_t *dt_ai_models_get_by_index(const int index);
 
 /**
  * @brief Get model by ID (returns a copy, caller must free with dt_ai_model_free)
- * @param registry The registry
  * @param model_id The unique model ID
  * @return Model copy (caller owns), or NULL
  */
-dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry,
-                                      const char *model_id);
+dt_ai_model_t *dt_ai_models_get_by_id(const char *model_id);
 
 // --- Install Operations ---
 
 /**
  * @brief Install a model from a local .dtmodel file
- * @param registry The registry
  * @param filepath Path to the .dtmodel file (zip archive)
  * @return Error message (caller must free) or NULL on success
  */
-char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepath);
+char *dt_ai_models_install_local(const char *filepath);
 
 #ifdef HAVE_AI_DOWNLOAD
 // --- Download Operations ---
 
 /**
  * @brief Download a specific model synchronously
- * @param registry The registry
  * @param model_id The model to download
  * @param callback Progress callback (may be NULL)
  * @param user_data Data for callback
  * @param cancel_flag Pointer to boolean checked for cancellation (may be NULL)
  * @return Error message (caller must free) or NULL on success
  */
-char *dt_ai_models_download_sync(dt_ai_registry_t *registry, const char *model_id,
+char *dt_ai_models_download_sync(const char *model_id,
                                  dt_ai_progress_callback callback,
                                  gpointer user_data,
                                  const gboolean *cancel_flag);
 
 /**
  * @brief Download a specific model (convenience wrapper)
- * @param registry The registry
  * @param model_id The model to download
  * @param callback Progress callback (may be NULL)
  * @param user_data Data for callback
  * @return TRUE on success
  */
-gboolean dt_ai_models_download(dt_ai_registry_t *registry,
-                               const char *model_id,
+gboolean dt_ai_models_download(const char *model_id,
                                dt_ai_progress_callback callback,
                                gpointer user_data);
 
 /**
  * @brief Download all default models (runs in background)
- * @param registry The registry
  * @param callback Progress callback (may be NULL)
  * @param user_data Data for callback
  * @return TRUE if downloads started successfully
  */
-gboolean dt_ai_models_download_default(dt_ai_registry_t *registry,
-                                       dt_ai_progress_callback callback,
+gboolean dt_ai_models_download_default(dt_ai_progress_callback callback,
                                        gpointer user_data);
 
 /**
  * @brief Download all models (runs in background)
- * @param registry The registry
  * @param callback Progress callback (may be NULL)
  * @param user_data Data for callback
  * @return TRUE if downloads started successfully
  */
-gboolean dt_ai_models_download_all(dt_ai_registry_t *registry,
-                                   dt_ai_progress_callback callback,
+gboolean dt_ai_models_download_all(dt_ai_progress_callback callback,
                                    gpointer user_data);
 #endif /* HAVE_AI_DOWNLOAD */
 
 /**
  * @brief Delete a downloaded model
- * @param registry The registry
  * @param model_id The model to delete
  * @return TRUE on success
  */
-gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id);
+gboolean dt_ai_models_delete(const char *model_id);
 
 // --- Configuration ---
 
 /**
  * @brief Set model enabled state (persisted to config)
- * @param registry The registry
  * @param model_id The model ID
  * @param enabled Whether the model should be enabled
  */
-void dt_ai_models_set_enabled(dt_ai_registry_t *registry, const char *model_id,
-                              gboolean enabled);
+void dt_ai_models_set_enabled(const char *model_id, gboolean enabled);
 
 /**
  * @brief Get the active model ID for a task.
@@ -331,21 +307,18 @@ void dt_ai_models_set_active_for_task(const char *task, const char *model_id);
 
 /**
  * @brief Get the path to a downloaded model's directory
- * @param registry The registry
  * @param model_id The model ID
  * @return Path string (caller must free), or NULL if not downloaded
  */
-char *dt_ai_models_get_path(dt_ai_registry_t *registry, const char *model_id);
+char *dt_ai_models_get_path(const char *model_id);
 
 /**
  * @brief Get the symbolic spatial dimension names for a model
- * @param registry The registry
  * @param model_id The model identifier
  * @param out_h Output: height dimension name (never NULL; points to static default if unset)
  * @param out_w Output: width dimension name (never NULL; points to static default if unset)
  */
-void dt_ai_models_get_spatial_dims(dt_ai_registry_t *registry,
-                                   const char *model_id,
+void dt_ai_models_get_spatial_dims(const char *model_id,
                                    const char **out_h,
                                    const char **out_w);
 
@@ -370,13 +343,11 @@ typedef struct dt_ai_model_card_t
 
 /**
  * @brief Read model card from config.json on disk
- * @param registry The registry
  * @param model_id The model identifier
  * @return Card struct (caller must free with dt_ai_model_card_free),
  *         or NULL if model directory not found
  */
-dt_ai_model_card_t *dt_ai_models_get_card(
-  dt_ai_registry_t *registry, const char *model_id);
+dt_ai_model_card_t *dt_ai_models_get_card(const char *model_id);
 
 /**
  * @brief Free a model card returned by dt_ai_models_get_card
@@ -387,7 +358,6 @@ void dt_ai_model_card_free(dt_ai_model_card_t *card);
  * @brief Get or lazily create the AI backend environment.
  *        The environment is cached in the registry and destroyed
  *        by dt_ai_models_cleanup().
- * @param registry The registry
  * @return Environment handle, or NULL if AI is disabled
  */
-dt_ai_environment_t *dt_ai_registry_get_env(dt_ai_registry_t *registry);
+dt_ai_environment_t *dt_ai_registry_get_env(void);

@@ -1666,14 +1666,16 @@ int dt_init(int argc,
   darktable.color_profiles = dt_colorspaces_init();
 
 #ifdef HAVE_AI
-  // initialize AI models registry
-  darktable.ai_registry = dt_ai_models_init();
-  if(darktable.ai_registry)
+  // initialize AI models registry (the singleton darktable.ai_registry)
+  if(dt_ai_models_init())
   {
-    dt_ai_models_load_registry(darktable.ai_registry);
-    if(!dt_ai_registry_is_enabled(darktable.ai_registry))
+    dt_ai_models_load_registry();
+    if(!dt_ai_registry_is_enabled())
       dt_print(DT_DEBUG_AI, "[darktable_ai] AI subsystem is disabled");
   }
+  else
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] could not set up AI directories; AI features unavailable");
 #endif
 
   // initialize datetime data
@@ -2222,8 +2224,7 @@ void dt_cleanup()
 
   dt_colorspaces_cleanup(darktable.color_profiles);
 #ifdef HAVE_AI
-  dt_ai_models_cleanup(darktable.ai_registry);
-  darktable.ai_registry = NULL;
+  dt_ai_models_cleanup();
   dt_ai_backend_cleanup_globals();
 #endif
   dt_conf_cleanup(darktable.conf);

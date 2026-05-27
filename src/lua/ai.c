@@ -841,14 +841,13 @@ static int _context_close(lua_State *L)
 //   task (string), status (int), is_default (bool)
 static int _ai_models(lua_State *L)
 {
-  dt_ai_registry_t *reg = darktable.ai_registry;
   lua_newtable(L);
-  if(!reg) return 1;
+  if(!darktable.ai_registry) return 1;
 
-  const int count = dt_ai_models_get_count(reg);
+  const int count = dt_ai_models_get_count();
   for(int i = 0; i < count; i++)
   {
-    dt_ai_model_t *m = dt_ai_models_get_by_index(reg, i);
+    dt_ai_model_t *m = dt_ai_models_get_by_index(i);
     if(!m) continue;
     lua_newtable(L);
     lua_pushstring(L, m->id);
@@ -908,8 +907,7 @@ static int _ai_load_model(lua_State *L)
   if(lua_gettop(L) >= 3 && !lua_isnil(L, 3))
     model_file = luaL_checkstring(L, 3);
 
-  dt_ai_environment_t *env
-    = dt_ai_registry_get_env(darktable.ai_registry);
+  dt_ai_environment_t *env = dt_ai_registry_get_env();
   if(!env)
     return luaL_error(L, "AI subsystem is not available");
 
