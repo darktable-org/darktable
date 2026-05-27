@@ -572,6 +572,16 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
 int dt_pthread_join(pthread_t thread);
 void dt_pthread_setname(const char *name);
 
+// Pin the calling thread to a private, thread-local copy of the locale, so that
+// setlocale() calls made concurrently by other threads (directly or from inside
+// third-party libraries) can no longer corrupt the global locale state this
+// thread reads through gettext() & friends. Threads created via
+// dt_pthread_create() are pinned automatically; threads created by other means
+// (e.g. glib's g_thread_new / g_thread_pool) must call this once at entry.
+// No-op on Windows, where darktable's per-region locale helpers toggle
+// _configthreadlocale(_DISABLE_PER_THREAD_LOCALE) and would undo a permanent pin.
+void dt_pthread_setlocale(void);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

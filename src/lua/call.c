@@ -120,6 +120,9 @@ static void drop_thread(lua_State*L, int thread_num)
 
 static void run_async_thread_main(gpointer data,gpointer user_data)
 {
+  // glib thread-pool worker: pin a private locale so the gettext() calls made
+  // while running lua scripts cannot race a setlocale() on another thread
+  dt_pthread_setlocale();
   // lua lock ownership transferred from parent thread
   int thread_num = GPOINTER_TO_INT(data);
   lua_State*L = darktable.lua_state.state;
@@ -571,6 +574,9 @@ void dt_lua_async_call_string_internal(const char* function, int line,const char
 
 static gpointer lua_thread_main(gpointer data)
 {
+  // this glib thread runs the lua main loop and dispatches scripts; pin its
+  // locale too (see dt_pthread_setlocale())
+  dt_pthread_setlocale();
   darktable.lua_state.pool = g_thread_pool_new(run_async_thread_main,NULL,-1,false,NULL);
   darktable.lua_state.loop = g_main_loop_new(darktable.lua_state.context,false);
   g_main_loop_run(darktable.lua_state.loop);

@@ -25,6 +25,8 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
 #include <inttypes.h>
 
 #ifdef _WIN32
@@ -32,6 +34,38 @@
 #endif // _WIN32
 
 #include "common/dtpthread.h"
+
+void dt_pthread_setlocale(void)
+{
+#if !defined(_WIN32)
+  // a private copy of the locale the process was started with; this thread's
+  // gettext() reads it instead of the global locale, so it is immune to
+  // setlocale() called concurrently on any other thread. Lives for the whole
+  // thread and is intentionally never freed.
+  const locale_t loc = newlocale(LC_ALL_MASK, "", (locale_t)0);
+  if(loc) uselocale(loc);
+#endif
+}
+
+// Trampoline used by dt_pthread_create() so that every darktable-spawned thread
+// pins its locale before running its actual work (see dt_pthread_setlocale()).
+typedef struct _dt_pthread_start_t
+{
+  void *(*start_routine)(void *);
+  void *arg;
+} _dt_pthread_start_t;
+
+static void *_dt_pthread_start(void *arg)
+{
+  _dt_pthread_start_t *params = (_dt_pthread_start_t *)arg;
+  void *(*start_routine)(void *) = params->start_routine;
+  void *real_arg = params->arg;
+  free(params);
+
+  dt_pthread_setlocale();
+
+  return start_routine(real_arg);
+}
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg)
 {
@@ -60,9 +94,17 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
   }
   assert(ret == 0);
 
-  ret = pthread_create(thread, &attr, start_routine, arg);
+  // wrap the thread entry so it pins a private locale before running (the
+  // trampoline frees params; on failure we free it here since it won't run)
+  _dt_pthread_start_t *params = malloc(sizeof(_dt_pthread_start_t));
+  assert(params);
+  params->start_routine = start_routine;
+  params->arg = arg;
+
+  ret = pthread_create(thread, &attr, _dt_pthread_start, params);
   if(ret != 0)
   {
+    free(params);
     printf("[dt_pthread_create] error: pthread_create() returned %s\n", _pthread_ret_mess(ret));
     fflush(stdout);
   }
