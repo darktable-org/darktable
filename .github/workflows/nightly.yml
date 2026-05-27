@@ -305,8 +305,6 @@ jobs:
           lensfun-update-data
       - name: Build and Install
         run: |
-          # Emergency fix for broken libheif header file. Should be removed when a fixed libheif package is available in MSYS2.
-          perl -pi -e 's/struct heif_bad_pixel { uint32_t row; uint32_t column; };/typedef struct heif_bad_pixel { uint32_t row; uint32_t column; } heif_bad_pixel;/g' /ucrt64/include/libheif/heif_properties.h /clangarm64/include/libheif/heif_properties.h
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
@@ -384,7 +382,7 @@ jobs:
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
 
-          # rebuild graphicsmagick for macOS bundling
+          # Rebuild GraphicsMagick for macOS bundling
           export HOMEBREW_NO_INSTALL_FROM_API=1
           brew developer on
           gm_formula=`brew edit --quiet --print-path graphicsmagick`
