@@ -2882,7 +2882,7 @@ int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
   return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, NULL, 1);
 }
 
-int dt_opencl_copy_device_to_host(const int devid,
+int dt_opencl_copy_image_to_host(const int devid,
                                   void *host,
                                   cl_mem image,
                                   const int width,
@@ -2894,11 +2894,11 @@ int dt_opencl_copy_device_to_host(const int devid,
 
   const size_t region[2] = { width, height };
   // blocking.
-  return dt_opencl_read_host_from_device_raw(devid, host, image, CLIMG_ORIGIN,
+  return dt_opencl_read_host_from_image_raw(devid, host, image, CLIMG_ORIGIN,
                                              region, (size_t)width * bpp, TRUE);
 }
 
-int dt_opencl_read_host_from_device_raw(const int devid,
+int dt_opencl_read_host_from_image_raw(const int devid,
                                         void *host,
                                         cl_mem image,
                                         const size_t *origin,
@@ -2923,17 +2923,17 @@ int dt_opencl_read_host_from_device_raw(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_read_host_from_device_raw] could not read image from device '%s' id=%d: %s",
+             "[dt_opencl_read_host_from_image_raw] could not read image from device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
   else
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[dt_opencl_read_host_from_device_raw] read image from device '%s' id=%d",
+             "[dt_opencl_read_host_from_image_raw] read image from device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
   return err;
 }
 
-int dt_opencl_write_host_to_device(const int devid,
+int dt_opencl_write_host_to_image(const int devid,
                                    const void *host,
                                    cl_mem image,
                                    const int width,
@@ -2945,11 +2945,11 @@ int dt_opencl_write_host_to_device(const int devid,
 
   const size_t region[2] = { width, height };
   // blocking.
-  return dt_opencl_write_host_to_device_raw(devid, host, image, CLIMG_ORIGIN,
+  return dt_opencl_write_host_to_image_raw(devid, host, image, CLIMG_ORIGIN,
                                             region, (size_t)width * bpp, TRUE);
 }
 
-int dt_opencl_write_host_to_device_raw(const int devid,
+int dt_opencl_write_host_to_image_raw(const int devid,
                                        const void *host,
                                        cl_mem image,
                                        const size_t *origin,
@@ -2971,11 +2971,11 @@ int dt_opencl_write_host_to_device_raw(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_write_host_to_device_raw] could not write image to device '%s' id=%d: %s",
+             "[dt_opencl_write_host_to_image_raw] could not write image to device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
   else
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[dt_opencl_write_host_to_device_raw] wrote image to device '%s' id=%d",
+             "[dt_opencl_write_host_to_image_raw] wrote image to device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
 
@@ -3194,7 +3194,7 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
 }
 
 
-static void *_opencl_copy_host_to_device_rowpitch(const int devid,
+static void *_opencl_copy_host_to_image_rowpitch(const int devid,
                                              void *host,
                                              const int width,
                                              const int height,
@@ -3244,13 +3244,13 @@ static void *_opencl_copy_host_to_device_rowpitch(const int devid,
   return dev;
 }
 
-void *dt_opencl_copy_host_to_device(const int devid,
+void *dt_opencl_copy_host_to_image(const int devid,
                                     void *host,
                                     const int width,
                                     const int height,
                                     const int bpp)
 {
-  return _opencl_copy_host_to_device_rowpitch(devid, host, width, height, bpp, 0);
+  return _opencl_copy_host_to_image_rowpitch(devid, host, width, height, bpp, 0);
 }
 
 void dt_opencl_release_mem_object(cl_mem mem)
@@ -3527,7 +3527,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   float *data = dt_alloc_aligned((size_t)width * height * element_size);
   if(data)
   {
-    if(dt_opencl_copy_device_to_host(devid, data, img, width, height, element_size) == CL_SUCCESS)
+    if(dt_opencl_copy_image_to_host(devid, data, img, width, height, element_size) == CL_SUCCESS)
       dt_dump_pfm_file(pipe, data, width, height, element_size, mod,
                        "[dt_opencl_dump_pipe_pfm]", input, !input, FALSE);
 

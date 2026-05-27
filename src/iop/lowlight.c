@@ -203,7 +203,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
-  dev_m = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
+  dev_m = dt_opencl_copy_host_to_image(devid, d->lut, 256, 256, sizeof(float));
   if(dev_m == NULL) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lowlight, width, height,

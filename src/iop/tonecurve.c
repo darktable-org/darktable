@@ -331,13 +331,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
-  dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
+  dev_L = dt_opencl_copy_host_to_image(devid, d->table[ch_L], 256, 256, sizeof(float));
   if(dev_L == NULL) goto error;
 
-  dev_a = dt_opencl_copy_host_to_device(devid, d->table[ch_a], 256, 256, sizeof(float));
+  dev_a = dt_opencl_copy_host_to_image(devid, d->table[ch_a], 256, 256, sizeof(float));
   if(dev_a == NULL) goto error;
 
-  dev_b = dt_opencl_copy_host_to_device(devid, d->table[ch_b], 256, 256, sizeof(float));
+  dev_b = dt_opencl_copy_host_to_image(devid, d->table[ch_b], 256, 256, sizeof(float));
   if(dev_b == NULL) goto error;
 
   dev_coeffs_L = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3,

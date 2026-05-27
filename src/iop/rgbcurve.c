@@ -1811,15 +1811,15 @@ int process_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto cleanup;
 
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  dev_r = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_R],
+  dev_r = dt_opencl_copy_host_to_image(devid, d->table[DT_IOP_RGBCURVE_R],
                                         256, 256, sizeof(float));
   if(dev_r == NULL) goto cleanup;
 
-  dev_g = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_G],
+  dev_g = dt_opencl_copy_host_to_image(devid, d->table[DT_IOP_RGBCURVE_G],
                                         256, 256, sizeof(float));
   if(dev_g == NULL) goto cleanup;
 
-  dev_b = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_B],
+  dev_b = dt_opencl_copy_host_to_image(devid, d->table[DT_IOP_RGBCURVE_B],
                                         256, 256, sizeof(float));
   if(dev_b == NULL) goto cleanup;
 

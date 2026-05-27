@@ -1433,8 +1433,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
       goto cleanup;
     }
 
-    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 256, 256 * 6,
-                                                    sizeof(float));
+    dev_profile_lut = dt_opencl_copy_host_to_image(devid, profile_lut_cl, 256, 256 * 6, sizeof(float));
     if(dev_profile_lut == NULL)
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   }
@@ -1443,8 +1442,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
     profile_lut_cl = calloc(1, sizeof(cl_float) * 1 * 6);
 
     if(profile_lut_cl)
-      dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
-                                                      sizeof(float));
+      dev_profile_lut = dt_opencl_copy_host_to_image(devid, profile_lut_cl, 1, 1 * 6, sizeof(float));
     else
       dev_profile_lut = NULL;
 
@@ -1579,7 +1577,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
 
     dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_cl),
                                                               &profile_info_cl);
-    dev_lut = dt_opencl_copy_host_to_device(devid, lut_cl, 256, 256 * 6, sizeof(float));
+    dev_lut = dt_opencl_copy_host_to_image(devid, lut_cl, 256, 256 * 6, sizeof(float));
 
     if(dev_profile_info == NULL || dev_lut == NULL)
     {
@@ -1610,7 +1608,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
       goto cleanup;
     }
 
-    err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_img_in,
+    err = dt_opencl_copy_image_to_host(devid, src_buffer, dev_img_in,
                                         width, height, 4 * sizeof(float));
     if(err != CL_SUCCESS)
       goto cleanup;
@@ -1620,7 +1618,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
                                         width, height, cst_from, cst_to,
                                         converted_cst, profile_info);
 
-    err = dt_opencl_write_host_to_device(devid, src_buffer, dev_img_out,
+    err = dt_opencl_write_host_to_image(devid, src_buffer, dev_img_out,
                                          width, height, 4 * sizeof(float));
   }
 
@@ -1716,11 +1714,11 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 
     dev_profile_info_from = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_from_cl),
                                                  &profile_info_from_cl);
-    dev_lut_from = dt_opencl_copy_host_to_device(devid, lut_from_cl, 256, 256 * 6, sizeof(float));
+    dev_lut_from = dt_opencl_copy_host_to_image(devid, lut_from_cl, 256, 256 * 6, sizeof(float));
 
     dev_profile_info_to = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_to_cl),
                                                  &profile_info_to_cl);
-    dev_lut_to = dt_opencl_copy_host_to_device(devid, lut_to_cl, 256, 256 * 6, sizeof(float));
+    dev_lut_to = dt_opencl_copy_host_to_image(devid, lut_to_cl, 256, 256 * 6, sizeof(float));
 
     float matrix3x3[9];
     pack_3xSSE_to_3x3(matrix, matrix3x3);
@@ -1768,7 +1766,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
       goto cleanup;
     }
 
-    err = dt_opencl_copy_device_to_host(devid, src_buffer_in, dev_img_in,
+    err = dt_opencl_copy_image_to_host(devid, src_buffer_in, dev_img_in,
                                         width, height, 4 * sizeof(float));
     if(err != CL_SUCCESS)
       goto cleanup;
@@ -1778,7 +1776,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
                                             width, height, profile_info_from,
                                             profile_info_to, message);
 
-    err = dt_opencl_write_host_to_device(devid, src_buffer_out, dev_img_out,
+    err = dt_opencl_write_host_to_image(devid, src_buffer_out, dev_img_out,
                                          width, height, 4 * sizeof(float));
   }
 

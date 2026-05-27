@@ -605,7 +605,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     g->ch = ch;
 
     if(g->buffer)
-      err = dt_opencl_copy_device_to_host(devid, g->buffer, dev_in, width, height, ch * sizeof(float));
+      err = dt_opencl_copy_image_to_host(devid, g->buffer, dev_in, width, height, ch * sizeof(float));
 
     dt_iop_gui_leave_critical_section(self);
 

@@ -128,11 +128,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_lm = NULL;
   cl_mem dev_lcoeffs = NULL;
 
-  dev_cm = dt_opencl_copy_host_to_device(devid, d->ctable, 256, 256, sizeof(float));
+  dev_cm = dt_opencl_copy_host_to_image(devid, d->ctable, 256, 256, sizeof(float));
   if(dev_cm == NULL) goto error;
   dev_ccoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->cunbounded_coeffs);
   if(dev_ccoeffs == NULL) goto error;
-  dev_lm = dt_opencl_copy_host_to_device(devid, d->ltable, 256, 256, sizeof(float));
+  dev_lm = dt_opencl_copy_host_to_image(devid, d->ltable, 256, 256, sizeof(float));
   if(dev_lm == NULL) goto error;
   dev_lcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->lunbounded_coeffs);
   if(dev_lcoeffs == NULL) goto error;

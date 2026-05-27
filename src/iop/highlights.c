@@ -679,7 +679,7 @@ int process_cl(dt_iop_module_t *self,
     float *cpdata = dt_alloc_align_float(ch * roi_out->width * roi_out->height);
     if(cpdata)
     {
-      if(dt_opencl_copy_device_to_host(devid, cpdata, dev_out, roi_out->width, roi_out->height, ch * sizeof(float)) == CL_SUCCESS)
+      if(dt_opencl_copy_image_to_host(devid, cpdata, dev_out, roi_out->width, roi_out->height, ch * sizeof(float)) == CL_SUCCESS)
         mask = _provide_raster_mask(roi_in, roi_out, cpdata, d->clip, piece);
       dt_free_align(cpdata);
     }

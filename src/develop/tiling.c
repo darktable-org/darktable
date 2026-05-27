@@ -1527,14 +1527,14 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
                  (size_t)wd * in_bpp);
 
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
-        err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, origin, region,
+        err = dt_opencl_write_host_to_image_raw(devid, (char *)input_buffer, input, origin, region,
                                                  wd * in_bpp, TRUE);
         if(err != CL_SUCCESS) use_pinned_memory = FALSE;
       }
       else
       {
         /* blocking direct memory transfer: host input image -> opencl/device tile */
-        err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, TRUE);
+        err = dt_opencl_write_host_to_image_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, TRUE);
       }
       if(err != CL_SUCCESS) goto error;
 
@@ -1561,7 +1561,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
       if(use_pinned_memory)
       {
         /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
-        err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, origin, region,
+        err = dt_opencl_read_host_from_image_raw(devid, (char *)output_buffer, output, origin, region,
                                                   wd * out_bpp, TRUE);
         if(err != CL_SUCCESS)
         {
@@ -1597,7 +1597,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
       else
       {
         /* blocking direct memory transfer: good part of opencl/device tile -> host output image */
-        err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region,
+        err = dt_opencl_read_host_from_image_raw(devid, (char *)ovoid + ooffs, output, origin, region,
                                                   opitch, TRUE);
         if(err != CL_SUCCESS) goto error;
       }
@@ -1971,14 +1971,14 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
                  (size_t)iroi_full.width * in_bpp);
 
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
-        err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, CLIMG_ORIGIN, iregion,
+        err = dt_opencl_write_host_to_image_raw(devid, (char *)input_buffer, input, CLIMG_ORIGIN, iregion,
                                                  (size_t)iroi_full.width * in_bpp, TRUE);
         if(err != CL_SUCCESS) use_pinned_memory = FALSE;
       }
       else
       {
         /* blocking direct memory transfer: host input image -> opencl/device tile */
-        err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, CLIMG_ORIGIN, iregion,
+        err = dt_opencl_write_host_to_image_raw(devid, (char *)ivoid + ioffs, input, CLIMG_ORIGIN, iregion,
                                                  ipitch, TRUE);
       }
       if(err != CL_SUCCESS) goto error;
@@ -2008,7 +2008,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       if(use_pinned_memory)
       {
         /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
-        err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, CLIMG_ORIGIN, ofregion,
+        err = dt_opencl_read_host_from_image_raw(devid, (char *)output_buffer, output, CLIMG_ORIGIN, ofregion,
                                                   (size_t)oroi_full.width * out_bpp, TRUE);
         if(err != CL_SUCCESS)
         {
@@ -2025,7 +2025,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       else
       {
         /* blocking direct memory transfer: good part of opencl/device tile -> host output image */
-        err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion,
+        err = dt_opencl_read_host_from_image_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion,
                                                   opitch, TRUE);
         if(err != CL_SUCCESS) goto error;
       }

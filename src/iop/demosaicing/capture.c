@@ -1000,7 +1000,7 @@ static void _capture_radius_cl(dt_iop_module_t *self,
   float *in = dt_iop_image_alloc(roi->width, roi->height, ch);
   if(!in) goto finish;
 
-  err = dt_opencl_copy_device_to_host(pipe->devid, in, dev_in, roi->width, roi->height, sizeof(float) * ch);
+  err = dt_opencl_copy_image_to_host(pipe->devid, in, dev_in, roi->width, roi->height, sizeof(float) * ch);
   if(err == CL_SUCCESS)
     _capture_radius(self, piece, in, roi, xtrans, filters);
 
