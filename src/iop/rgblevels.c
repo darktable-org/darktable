@@ -1439,7 +1439,7 @@ int process_cl(dt_iop_module_t *self,
         goto cleanup;
       }
 
-      err = dt_opencl_copy_device_to_host(devid, src_buffer,
+      err = dt_opencl_copy_image_to_host(devid, src_buffer,
                                           dev_in, width, height, ch * sizeof(float));
       if(err != CL_SUCCESS)
       {
@@ -1471,19 +1471,19 @@ int process_cl(dt_iop_module_t *self,
   const int autoscale = d->params.autoscale;
   const int preserve_colors = d->params.preserve_colors;
 
-  dev_lutr = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
+  dev_lutr = dt_opencl_copy_host_to_image(devid, d->lut[0], 256, 256, sizeof(float));
   if(dev_lutr == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
-  dev_lutg = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
+  dev_lutg = dt_opencl_copy_host_to_image(devid, d->lut[1], 256, 256, sizeof(float));
   if(dev_lutg == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
-  dev_lutb = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+  dev_lutb = dt_opencl_copy_host_to_image(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_lutb == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;

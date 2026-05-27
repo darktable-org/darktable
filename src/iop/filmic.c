@@ -564,10 +564,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_table = NULL;
   cl_mem diff_table = NULL;
 
-  dev_table = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  dev_table = dt_opencl_copy_host_to_image(devid, d->table, 256, 256, sizeof(float));
   if(dev_table == NULL) goto error;
 
-  diff_table = dt_opencl_copy_host_to_device(devid, d->grad_2, 256, 256, sizeof(float));
+  diff_table = dt_opencl_copy_host_to_image(devid, d->grad_2, 256, 256, sizeof(float));
   if(diff_table == NULL) goto error;
 
   const float dynamic_range = d->dynamic_range;
