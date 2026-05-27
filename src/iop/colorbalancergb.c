@@ -1979,7 +1979,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
   dt_bauhaus_slider_set_format(g->shadows_weight, "%");
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
-  dt_bauhaus_widget_set_quad(g->shadows_weight, self, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
+  dt_bauhaus_widget_set_quad(g->shadows_weight,
+                             self,
+                             dtgtk_cairo_paint_showmask,
+                             TRUE,
+                             mask_callback,
+                             _("displays a shadows mask, overlaid as a checkerboard\n"
+                               "the still-visible area of the image (not hidden by the mask) is the area\n"
+                               "that will be affected by the shadows sliders in the other tabs"));
 
   g->mask_grey_fulcrum = dt_bauhaus_slider_from_params(self, "mask_grey_fulcrum");
   dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
