@@ -40,9 +40,11 @@ static inline char *realpath(const char *path, char *resolved_path)
 }
 #endif
 
-// internal layout of the opaque registry. external callers go through
-// the accessors in ai_models.h — the lock and the model list are
-// intentionally hidden so nobody can race-iterate or deadlock on them
+// internal layout of the registry singleton (darktable.ai_registry);
+// external callers go through the accessors in ai_models.h — the lock
+// and the model list are intentionally hidden so nobody can
+// race-iterate or deadlock on them
+typedef struct dt_ai_registry_t dt_ai_registry_t;
 struct dt_ai_registry_t
 {
   GList *models;              // list of dt_ai_model_t*
@@ -370,11 +372,13 @@ static char *_fetch_asset_digest(
 
 // core API
 
-// set up directories and provider config
-// no-ops if already initialized (models_dir != NULL)
-static void _setup_registry(dt_ai_registry_t *registry)
+// set up directories and provider config; returns FALSE if a required
+// directory could not be created — the model/cache dirs are unusable
+// and downloads/scans will fail; no-op returning TRUE if already
+// initialized (models_dir != NULL)
+static gboolean _setup_registry(dt_ai_registry_t *registry)
 {
-  if(registry->models_dir) return;
+  if(registry->models_dir) return TRUE;
 
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
@@ -387,8 +391,18 @@ static void _setup_registry(dt_ai_registry_t *registry)
                               "darktable", "models", NULL);
   char *cache = g_build_filename(cachedir, "ai_downloads", NULL);
 
-  _ensure_directory(models);
-  _ensure_directory(cache);
+  // attempt both before bailing so the log reports every missing dir
+  gboolean ok = TRUE;
+  if(!_ensure_directory(models))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create models dir: %s", models);
+    ok = FALSE;
+  }
+  if(!_ensure_directory(cache))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create cache dir: %s", cache);
+    ok = FALSE;
+  }
 
   char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
   registry->provider = dt_ai_provider_from_string(prov_str);
@@ -398,14 +412,17 @@ static void _setup_registry(dt_ai_registry_t *registry)
   registry->models_dir = models;  // publish last
 
   dt_print(DT_DEBUG_AI,
-           "[ai_models] initialized: models_dir=%s, cache_dir=%s",
-           registry->models_dir, registry->cache_dir);
+           "[ai_models] initialized: models_dir=%s", registry->models_dir);
+  dt_print(DT_DEBUG_AI,
+           "[ai_models] initialized: cache_dir=%s", registry->cache_dir);
+  return ok;
 }
 
 // --- Registry state accessors ---
 
-gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry)
+gboolean dt_ai_registry_is_enabled(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry) return FALSE;
   g_mutex_lock(&registry->lock);
   const gboolean v = registry->ai_enabled;
@@ -413,42 +430,48 @@ gboolean dt_ai_registry_is_enabled(dt_ai_registry_t *registry)
   return v;
 }
 
-void dt_ai_registry_set_enabled(dt_ai_registry_t *registry, const gboolean enabled)
+void dt_ai_registry_set_enabled(const gboolean enabled)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry) return;
   g_mutex_lock(&registry->lock);
   registry->ai_enabled = enabled;
   g_mutex_unlock(&registry->lock);
 }
 
-void dt_ai_registry_set_provider(dt_ai_registry_t *registry,
-                                 const dt_ai_provider_t provider)
+void dt_ai_registry_set_provider(const dt_ai_provider_t provider)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry) return;
   g_mutex_lock(&registry->lock);
   registry->provider = provider;
   g_mutex_unlock(&registry->lock);
 }
 
-dt_ai_registry_t *dt_ai_models_init(void)
+gboolean dt_ai_models_init(void)
 {
   dt_ai_registry_t *registry = g_new0(dt_ai_registry_t, 1);
   g_mutex_init(&registry->lock);
 
   registry->ai_enabled = dt_conf_get_bool(CONF_AI_ENABLED);
 
+  // when AI starts disabled, directory setup is deferred to init_lazy;
+  // nothing can fail here, so report success
+  gboolean ok = TRUE;
   if(registry->ai_enabled)
-    _setup_registry(registry);
+    ok = _setup_registry(registry);
 
   // capture conf snapshot so *_changed_since_load() helpers reference
   // the startup state, not a value modified by user before first ORT use
   dt_ai_snapshot_conf_state();
 
-  return registry;
+  darktable.ai_registry = registry;
+  return ok;
 }
 
-void dt_ai_models_init_lazy(dt_ai_registry_t *registry)
+void dt_ai_models_init_lazy(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || registry->models_dir)
   {
     // catch broken publication order in _setup_registry: any field
@@ -461,7 +484,7 @@ void dt_ai_models_init_lazy(dt_ai_registry_t *registry)
   _setup_registry(registry);
   g_mutex_unlock(&registry->lock);
 
-  dt_ai_models_load_registry(registry);
+  dt_ai_models_load_registry();
 }
 
 static dt_ai_model_t *_parse_model_json(JsonObject *obj)
@@ -489,8 +512,9 @@ static dt_ai_model_t *_parse_model_json(JsonObject *obj)
   return model;
 }
 
-gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
+gboolean dt_ai_models_load_registry(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !registry->ai_enabled)
     return FALSE;
 
@@ -594,7 +618,7 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
   g_free(registry_path);
 
   // check which models are actually downloaded
-  dt_ai_models_refresh_status(registry);
+  dt_ai_models_refresh_status();
 
   return TRUE;
 }
@@ -682,8 +706,9 @@ static gboolean _valid_model_id(const char *model_id)
   return TRUE;
 }
 
-void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
+void dt_ai_models_refresh_status(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry)
     return;
 
@@ -802,8 +827,9 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
   g_mutex_unlock(&registry->lock);
 }
 
-void dt_ai_models_check_updates(dt_ai_registry_t *registry)
+void dt_ai_models_check_updates(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry) return;
 
   // only check once per session
@@ -945,10 +971,14 @@ void dt_ai_models_check_updates(dt_ai_registry_t *registry)
   g_object_unref(parser);
 }
 
-void dt_ai_models_cleanup(dt_ai_registry_t *registry)
+void dt_ai_models_cleanup(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry)
     return;
+
+  // unpublish before teardown so nothing can pick up a half-freed registry
+  darktable.ai_registry = NULL;
 
   g_mutex_lock(&registry->lock);
   g_list_free_full(registry->models, (GDestroyNotify)_model_free);
@@ -979,8 +1009,9 @@ _find_model_unlocked(dt_ai_registry_t *registry, const char *model_id)
   return NULL;
 }
 
-int dt_ai_models_get_count(dt_ai_registry_t *registry)
+int dt_ai_models_get_count(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry)
     return 0;
   g_mutex_lock(&registry->lock);
@@ -989,9 +1020,9 @@ int dt_ai_models_get_count(dt_ai_registry_t *registry)
   return count;
 }
 
-dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry,
-                                         const int index)
+dt_ai_model_t *dt_ai_models_get_by_index(const int index)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || index < 0)
     return NULL;
   g_mutex_lock(&registry->lock);
@@ -1001,9 +1032,9 @@ dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry,
   return copy;
 }
 
-dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry,
-                                      const char *model_id)
+dt_ai_model_t *dt_ai_models_get_by_id(const char *model_id)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !model_id)
     return NULL;
   g_mutex_lock(&registry->lock);
@@ -1362,9 +1393,9 @@ static void _activate_if_unset(dt_ai_registry_t *registry,
 
 // install a local .dtmodel file (zip archive) into the models directory.
 // returns error message (caller must free) or NULL on success.
-char *dt_ai_models_install_local(dt_ai_registry_t *registry,
-                                 const char *filepath)
+char *dt_ai_models_install_local(const char *filepath)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !filepath)
     return g_strdup(_("invalid parameters"));
 
@@ -1390,7 +1421,7 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry,
   }
 
   // rescan models directory to pick up newly installed model
-  dt_ai_models_refresh_status(registry);
+  dt_ai_models_refresh_status();
 
   _activate_if_unset(registry, installed_id);
 
@@ -1420,12 +1451,12 @@ static const char *_pick_fallback_active_unlocked(dt_ai_registry_t *registry,
 
 #ifdef HAVE_AI_DOWNLOAD
 // synchronous download - returns error message or NULL on success
-char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
-                                 const char *model_id,
+char *dt_ai_models_download_sync(const char *model_id,
                                  dt_ai_progress_callback callback,
                                  gpointer user_data,
                                  const gboolean *cancel_flag)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   dt_print(DT_DEBUG_AI,
            "[ai_models] download requested for: %s",
            model_id ? model_id : "(null)");
@@ -1705,12 +1736,11 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
 }
 
 // wrapper that returns boolean for compatibility
-gboolean dt_ai_models_download(dt_ai_registry_t *registry,
-                               const char *model_id,
+gboolean dt_ai_models_download(const char *model_id,
                                dt_ai_progress_callback callback,
                                gpointer user_data)
 {
-  char *error = dt_ai_models_download_sync(registry, model_id, callback, user_data, NULL);
+  char *error = dt_ai_models_download_sync(model_id, callback, user_data, NULL);
   if(error)
   {
     dt_print(DT_DEBUG_AI, "[ai_models] download error: %s", error);
@@ -1720,11 +1750,10 @@ gboolean dt_ai_models_download(dt_ai_registry_t *registry,
   return TRUE;
 }
 
-gboolean dt_ai_models_download_default(
-  dt_ai_registry_t *registry,
-  dt_ai_progress_callback callback,
-  gpointer user_data)
+gboolean dt_ai_models_download_default(dt_ai_progress_callback callback,
+                                       gpointer user_data)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry)
     return FALSE;
 
@@ -1742,17 +1771,17 @@ gboolean dt_ai_models_download_default(
   gboolean any_started = FALSE;
   for(GList *l = ids; l; l = g_list_next(l))
   {
-    if(dt_ai_models_download(registry, (const char *)l->data, callback, user_data))
+    if(dt_ai_models_download((const char *)l->data, callback, user_data))
       any_started = TRUE;
   }
   g_list_free_full(ids, g_free);
   return any_started;
 }
 
-gboolean dt_ai_models_download_all(dt_ai_registry_t *registry,
-                                   dt_ai_progress_callback callback,
+gboolean dt_ai_models_download_all(dt_ai_progress_callback callback,
                                    gpointer user_data)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry)
     return FALSE;
 
@@ -1770,7 +1799,7 @@ gboolean dt_ai_models_download_all(dt_ai_registry_t *registry,
   gboolean any_started = FALSE;
   for(GList *l = ids; l; l = g_list_next(l))
   {
-    if(dt_ai_models_download(registry, (const char *)l->data, callback, user_data))
+    if(dt_ai_models_download((const char *)l->data, callback, user_data))
       any_started = TRUE;
   }
   g_list_free_full(ids, g_free);
@@ -1806,8 +1835,9 @@ static gboolean _rmdir_recursive(const char *path)
   return g_rmdir(path) == 0;
 }
 
-gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
+gboolean dt_ai_models_delete(const char *model_id)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !_valid_model_id(model_id))
     return FALSE;
 
@@ -1861,11 +1891,9 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
 
 // configuration
 
-void dt_ai_models_set_enabled(
-  dt_ai_registry_t *registry,
-  const char *model_id,
-  gboolean enabled)
+void dt_ai_models_set_enabled(const char *model_id, gboolean enabled)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !model_id)
     return;
 
@@ -1980,8 +2008,9 @@ void dt_ai_models_set_active_for_task(const char *task, const char *model_id)
   g_free(conf_key);
 }
 
-char *dt_ai_models_get_path(dt_ai_registry_t *registry, const char *model_id)
+char *dt_ai_models_get_path(const char *model_id)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !_valid_model_id(model_id))
     return NULL;
 
@@ -1996,11 +2025,11 @@ char *dt_ai_models_get_path(dt_ai_registry_t *registry, const char *model_id)
   return g_build_filename(registry->models_dir, model_id, NULL);
 }
 
-void dt_ai_models_get_spatial_dims(dt_ai_registry_t *registry,
-                                   const char *model_id,
+void dt_ai_models_get_spatial_dims(const char *model_id,
                                    const char **out_h,
                                    const char **out_w)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   *out_h = "height";
   *out_w = "width";
   if(!registry || !_valid_model_id(model_id)) return;
@@ -2027,10 +2056,9 @@ static char *_card_str(JsonObject *obj, const char *key)
   return (val && val[0]) ? g_strdup(val) : NULL;
 }
 
-dt_ai_model_card_t *dt_ai_models_get_card(dt_ai_registry_t *registry,
-                                          const char *model_id)
+dt_ai_model_card_t *dt_ai_models_get_card(const char *model_id)
 {
-  char *model_path = dt_ai_models_get_path(registry, model_id);
+  char *model_path = dt_ai_models_get_path(model_id);
   if(!model_path)
   {
     dt_print(DT_DEBUG_AI,
@@ -2106,8 +2134,9 @@ void dt_ai_model_card_free(dt_ai_model_card_t *card)
   g_free(card);
 }
 
-dt_ai_environment_t *dt_ai_registry_get_env(dt_ai_registry_t *registry)
+dt_ai_environment_t *dt_ai_registry_get_env(void)
 {
+  dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry || !registry->ai_enabled)
     return NULL;
 
