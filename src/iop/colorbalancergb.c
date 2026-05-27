@@ -1992,7 +1992,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-gray reference for masking"));
-  dt_bauhaus_widget_set_quad(g->mask_grey_fulcrum, self, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
+  dt_bauhaus_widget_set_quad(g->mask_grey_fulcrum,
+                             self,
+                             dtgtk_cairo_paint_showmask,
+                             TRUE,
+                             mask_callback,
+                             _("displays a mid-tones mask, overlaid as a checkerboard\n"
+                               "the still-visible area of the image (not hidden by the mask) is the area\n"
+                               "that will be affected by the mid-tones sliders in the other tabs"));
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
   dt_bauhaus_slider_set_digits(g->highlights_weight, 4);
