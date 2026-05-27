@@ -1998,7 +1998,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->highlights_weight, 4);
   dt_bauhaus_slider_set_format(g->highlights_weight, "%");
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
-  dt_bauhaus_widget_set_quad(g->highlights_weight, self, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
+  dt_bauhaus_widget_set_quad(g->highlights_weight,
+                             self,
+                             dtgtk_cairo_paint_showmask,
+                             TRUE,
+                             mask_callback,
+                             _("displays a highlights mask, overlaid as a checkerboard\n"
+                               "the still-visible area of the image (not hidden by the mask) is the area\n"
+                               "that will be affected by the highlights sliders in the other tabs"));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "threshold")));
 
