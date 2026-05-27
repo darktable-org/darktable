@@ -1024,8 +1024,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   _opencl_md5sum(clincludes, includemd5);
 
-  if(newdevice) // so far the device seems to be ok. Make sure to
-                // write&export the conf database to
+  if(newdevice)
   {
     _opencl_write_device_config(dev);
   }
@@ -1095,8 +1094,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
          && _opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached))
       {
         dt_print_nts(DT_DEBUG_OPENCL,
-                 "[dt_opencl_device_init] failed to compile program `%s'\n",
-                 programname);
+                 "[dt_opencl_device_init] failed to compile program `%s'\n", programname);
         fclose(f);
         g_strfreev(tokens);
         res = TRUE;
@@ -2407,24 +2405,40 @@ static gboolean _opencl_build_program(const int dev,
 {
   if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS) return TRUE;
 
-  // work-around to fix a bug in some AMD OpenCL compilers, which
-  // would fail parsing certain numerical constants if locale is
-  // different from "C".  we save the current locale, set locale to
-  // "C", and restore the previous setting after OpenCL is initialized
-  char *locale = strdup(setlocale(LC_ALL, NULL));
-  if(dt_conf_key_exists("opencl_force_c_locale"))
-    setlocale(LC_ALL, "C");
-
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
+
+  /*  work-around for some AMD OpenCL compilers which would fail parsing certain
+      numerical constants if locale is different from "C".
+      Note: for safety we must either
+        - use thread-safe glibc functions newlocale(), uselocale() freelocale()
+        - do the locale switching for the current thread only,
+          on Windows where there is no implementation of newlocale/uselocale.
+  */
+
+#if defined(WIN32)
+    char *locale = strdup(setlocale(LC_ALL, NULL));
+    _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+    setlocale(LC_ALL, "C");
+#else
+    locale_t nlocale = newlocale(LC_ALL, "C", (locale_t) 0);
+    locale_t locale = uselocale(nlocale);
+#endif
+
   cl_int err = (cl->dlocl->symbols->dt_clBuildProgram)
     (program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, NULL, NULL);
 
-  if(locale)
-  {
-    setlocale(LC_ALL, locale);
-    free(locale);
-  }
+#if defined(WIN32)
+    if(locale)
+    {
+      setlocale(LC_ALL, locale);
+      free(locale);
+    }
+    _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
+#else
+    uselocale(locale);
+    freelocale(nlocale);
+#endif
 
   if(err != CL_SUCCESS)
     dt_print_nts(DT_DEBUG_OPENCL,
