@@ -3635,7 +3635,7 @@ int process_cl(dt_iop_module_t *self,
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data using actual roi_in dimensions (can exceed buf_in when scale > 1.0)
-      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in,
+      err = dt_opencl_copy_image_to_host(devid, g->buf, dev_in,
                                           roi_in->width, roi_in->height, sizeof(float) * 4);
 
       g->buf_width = roi_in->width;

@@ -734,7 +734,7 @@ int process_cl_fusion(dt_iop_module_t *self,
     }
   }
 
-  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  dev_m = dt_opencl_copy_host_to_image(devid, d->table, 256, 256, sizeof(float));
   if(dev_m == NULL) goto error;
 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
@@ -915,7 +915,7 @@ int process_cl_lut(dt_iop_module_t *self,
   const int height = roi_in->height;
   const int preserve_colors = d->preserve_colors;
 
-  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  dev_m = dt_opencl_copy_host_to_image(devid, d->table, 256, 256, sizeof(float));
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
   if(!dev_m || !dev_coeffs) goto error;
 
