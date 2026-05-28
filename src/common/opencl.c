@@ -346,12 +346,21 @@ static void _opencl_write_device_config(const int devid)
   if(devid <= DT_DEVICE_CPU) return;
 
   dt_opencl_t *cl = darktable.opencl;
-  const float adv = floorf(cl->dev[devid].advantage);
+
+// use threadsafe locale as we want to read/write floats safely
+#if defined(WIN32)
+  char *locale = strdup(setlocale(LC_ALL, NULL));
+  _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+  setlocale(LC_NUMERIC, "C");
+#else
+  locale_t nlocale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+  locale_t locale = uselocale(nlocale);
+#endif
 
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i.%03i 0.%03i",
+  g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
 
@@ -359,9 +368,8 @@ static void _opencl_write_device_config(const int devid)
     cl->dev[devid].use_events ? 1 : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
-    (int)(adv),
-    (int)(1000.0f * (cl->dev[devid].advantage - adv)),
-    (int)(1000.0f * cl->dev[devid].unified_fraction));
+    cl->dev[devid].advantage,
+    cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "\n[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -374,11 +382,33 @@ static void _opencl_write_device_config(const int devid)
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
+
+#if defined(WIN32)
+  if(locale)
+  {
+    setlocale(LC_ALL, locale);
+    free(locale);
+  }
+  _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
+#else
+  uselocale(locale);
+  freelocale(nlocale);
+#endif
 }
 
 static gboolean _opencl_read_device_config(const int devid)
 {
   if(devid <= DT_DEVICE_CPU) return FALSE;
+
+// use threadsafe locale as we want to read/write floats safely
+#if defined(WIN32)
+  char *locale = strdup(setlocale(LC_ALL, NULL));
+  _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+  setlocale(LC_NUMERIC, "C");
+#else
+  locale_t nlocale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+  locale_t locale = uselocale(nlocale);
+#endif
 
   dt_opencl_t *cl = darktable.opencl;
   dt_opencl_device_t *cldid = &cl->dev[devid];
@@ -389,31 +419,24 @@ static gboolean _opencl_read_device_config(const int devid)
   gboolean safety_ok = TRUE;
   if(existing_device)
   {
-    /* The per-device conf string includes two floats, to avoid conflicts with
-       the different dot/comma representations depending on current locale we
-       read the different parts of the float string as ints using dummys for
-       separation. Also see the conf writing equivalent above.
-    */
     const gchar *dat = dt_conf_get_string_const(key);
-    char dummy;
     int micro_nap;
     int pinned_memory;
     int events;
     int asyncmode;
     int disabled;
-    int advantage1;
-    int advantage2;
-    int unified_fraction;
-    sscanf(dat, "%i %i %i %i %i %d %c %d %c %c %d",
-           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage1, &dummy, &advantage2, &dummy, &dummy, &unified_fraction);
+    float advantage;
+    float unified_fraction;
+    sscanf(dat, "%i %i %i %i %i %f %f",
+           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage, &unified_fraction);
 
     cldid->use_events = events ? TRUE : FALSE;
     cldid->micro_nap = micro_nap;
     cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
     cldid->asyncmode = asyncmode ? TRUE : FALSE;
     cldid->disabled = disabled ? TRUE : FALSE;
-    cldid->advantage = (float)advantage1 + 0.001f * (float)advantage2;
-    cldid->unified_fraction = 0.001f * (float)unified_fraction;
+    cldid->advantage = advantage;
+    cldid->unified_fraction = unified_fraction;
   }
 
   // do some safety housekeeping
@@ -437,7 +460,21 @@ static gboolean _opencl_read_device_config(const int devid)
   else // this is used if updating to 4.0 or fresh installs; see
        // commenting _opencl_get_unused_device_mem()
     cldid->headroom = DT_OPENCL_DEFAULT_HEADROOM;
+
+#if defined(WIN32)
+  if(locale)
+  {
+    setlocale(LC_ALL, locale);
+    free(locale);
+  }
+  _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
+#else
+  uselocale(locale);
+  freelocale(nlocale);
+#endif
+
   _opencl_write_device_config(devid);
+
   return !existing_device || !safety_ok;
 }
 
