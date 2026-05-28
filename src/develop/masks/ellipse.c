@@ -394,8 +394,11 @@ static int _ellipse_get_points_border(dt_develop_t *dev,
   if(source)
   {
     const float xs = form->source[0], ys = form->source[1];
+    // the source content is sampled rotated by form->source[2] (radians),
+    // so the source outline must reflect that extra rotation
     return _ellipse_get_points_source(dev, x, y, xs, ys, a, b,
-                                      ellipse->rotation, points, points_count, module);
+                                      ellipse->rotation + rad2degf(form->source[2]),
+                                      points, points_count, module);
   }
   else
   {
@@ -585,7 +588,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
-      if(gui->source_selected)
+      if(gui->source_selected && !dt_modifiers_include(state, GDK_CONTROL_MASK))
       {
         gui->dx = gpt->source[0] - gui->posx;
         gui->dy = gpt->source[1] - gui->posy;
@@ -597,9 +600,38 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
       gui->dx = gpt->points[0] - gui->posx;
       gui->dy = gpt->points[1] - gui->posy;
 
-      if(gui->form_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
+      if((gui->form_selected || gui->source_selected) && dt_modifiers_include(state, GDK_CONTROL_MASK))
       {
-        gui->form_rotating = TRUE;
+        // Modifier scheme (matches the rotate combo used elsewhere for masks):
+        // - CTRL: rotate only the shape under the pointer (source or target)
+        // - CTRL+SHIFT: rotate both shapes together
+        gui->rotate_about_source = FALSE;
+        if(dt_modifiers_include(state, GDK_SHIFT_MASK))
+        {
+          gui->form_rotating = TRUE;
+          gui->counter_rotate_source = FALSE; // joint rotation
+          // If the joint rotation was grabbed on the source, the mouse circles
+          // the source center; measure its angular sweep there so the rotation
+          // gain matches grabbing the target (see rotate_about_source in masks.h).
+          gui->rotate_about_source = gui->source_selected;
+          if(gui->source_selected)
+          {
+            gui->dx = gpt->source[0] - gui->posx;
+            gui->dy = gpt->source[1] - gui->posy;
+          }
+        }
+        else if(gui->source_selected)
+        {
+          gui->source_rotating = TRUE; // source only
+          // rotate around the source center, so use it as reference point
+          gui->dx = gpt->source[0] - gui->posx;
+          gui->dy = gpt->source[1] - gui->posy;
+        }
+        else
+        {
+          gui->form_rotating = TRUE;
+          gui->counter_rotate_source = TRUE; // target only, source stays put
+        }
         return 1;
       }
       else if(gui->point_selected >= 1)
@@ -875,9 +907,11 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
-    // ellipse center
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
+    // pivot for reading the final mouse sweep: the center of the shape the mouse
+    // is circling (source for a joint rotation grabbed on the source), matching
+    // the mouse_moved branch above.
+    const float xref = gui->rotate_about_source ? gpt->source[0] : gpt->points[0];
+    const float yref = gui->rotate_about_source ? gpt->source[1] : gpt->points[1];
 
     const float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
 
@@ -898,11 +932,47 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
     else
       ellipse->rotation += rad2degf(dv);
 
+    // Rotation behavior (counter_rotate_source is set at button-press time):
+    // - CTRL only (target): only the target rotates, the source stays fixed
+    //   (counter_rotate_source == TRUE, so the branch below is skipped)
+    // - CTRL+SHIFT: both shapes rotate together by the same amount
+    //   (counter_rotate_source == FALSE, so the source angle follows)
+    if(!gui->counter_rotate_source)
+      form->source[2] += dv;
+
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
+    gui->rotate_about_source = FALSE;
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
+    dt_masks_gui_form_create(form, gui, index, module);
+
+    return 1;
+  }
+  else if(gui->source_rotating && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    gui->source_rotating = FALSE;
+
+    const float x = pzx * wd;
+    const float y = pzy * ht;
+
+    dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const float xref = gpt->source[0];
+    const float yref = gpt->source[1];
+
+    const float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
+
+    const float dv = atan2f(pts[3] - pts[1],
+                            pts[2] - pts[0]) - atan2f(-(pts[7] - pts[5]),
+                                                      -(pts[6] - pts[4]));
+
+    form->source[2] += dv;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+
     dt_masks_gui_form_create(form, gui, index, module);
 
     return 1;
@@ -1100,9 +1170,14 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
-    // ellipse center
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
+    // Pivot used to read the mouse's angular sweep: the center of the shape the
+    // mouse is circling. For a joint rotation grabbed on the source, that is the
+    // source center; measuring about the destination center would under-report
+    // the angle (smaller subtended angle at a distant pivot) and make the source
+    // feel "heavier" to rotate. The rotation amount applied to both shapes is the
+    // same scalar either way.
+    const float xref = gui->rotate_about_source ? gpt->source[0] : gpt->points[0];
+    const float yref = gui->rotate_about_source ? gpt->source[1] : gpt->points[1];
 
     const float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
 
@@ -1117,10 +1192,18 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
                                                            pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if(check_angle < 0)
-      ellipse->rotation -= rad2degf(dv);
-    else
-      ellipse->rotation += rad2degf(dv);
+    
+    float diff = (check_angle < 0) ? -rad2degf(dv) : rad2degf(dv);
+
+    // Rotation behavior (counter_rotate_source is set at button-press time):
+    // - CTRL only (target): only the target rotates, the source stays fixed
+    //   (counter_rotate_source == TRUE, so the branch below is skipped)
+    // - CTRL+SHIFT: both shapes rotate together by the same amount
+    //   (counter_rotate_source == FALSE, so the source angle follows)
+    if(!gui->counter_rotate_source)
+      form->source[2] += deg2radf(diff);
+
+    ellipse->rotation += diff;
 
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
 
@@ -1128,8 +1211,46 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we remap dx, dy to the right values, as it will be used in next movements
-    gui->dx = xref - gui->posx;
-    gui->dy = yref - gui->posy;
+    gui->dx = xref - x;
+    gui->dy = yref - y;
+
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->source_rotating)
+  {
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+    const float x = pzx * wd;
+    const float y = pzy * ht;
+
+    dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const float xref = gpt->source[0];
+    const float yref = gpt->source[1];
+
+    const float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
+
+    const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0])
+      - atan2f(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
+
+    float pts2[8] = { xref, yref, x, y, xref + 10.0f, yref, xref, yref + 10.0f };
+    dt_dev_distort_backtransform(darktable.develop, pts2, 4);
+
+    float check_angle = atan2f(pts2[7] - pts2[1],
+                               pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1],
+                                                           pts2[4] - pts2[0]);
+    // Normalize to the range -180 to 180 degrees
+    check_angle = atan2f(sinf(check_angle), cosf(check_angle));
+    
+    float diff = (check_angle < 0) ? -dv : dv;
+    form->source[2] += diff;
+
+    dt_masks_gui_form_create(form, gui, index, module);
+
+    gui->dx = xref - x;
+    gui->dy = yref - y;
 
     dt_control_queue_redraw_center();
     return 1;
@@ -1965,9 +2086,14 @@ static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const 
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT,
                                      GDK_SHIFT_MASK,
                                      _("[ELLIPSE] switch feathering mode"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
+  lm = dt_mouse_action_create_simple(lm,
+                                     DT_MOUSE_ACTION_LEFT_DRAG,
                                      GDK_CONTROL_MASK,
-                                     _("[ELLIPSE] rotate shape"));
+                                     _("[ELLIPSE] rotate shape (source only on a clone source)"));
+  lm = dt_mouse_action_create_simple(lm,
+                                     DT_MOUSE_ACTION_LEFT_DRAG,
+                                     GDK_SHIFT_MASK | GDK_CONTROL_MASK,
+                                     _("[ELLIPSE] rotate shape and source together"));
   return lm;
 }
 
@@ -2016,11 +2142,23 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui,
                  "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   else if(gui->point_selected >= 0)
     g_strlcat(msgbuf, _("<b>rotate</b>: ctrl+drag"), msgbuf_len);
+  else if(gui->source_selected)
+    // the source only exists for clone/heal forms, so joint rotation always applies here
+    g_strlcat(msgbuf,
+              _("<b>move</b>: drag, <b>rotate source</b>: ctrl+drag, "
+                "<b>rotate both</b>: shift+ctrl+drag"),
+              msgbuf_len);
   else if(gui->form_selected)
+  {
     g_snprintf(msgbuf, msgbuf_len,
                _("<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag\n"
                  "<b>size</b>: scroll, <b>feather size</b>: shift+scroll,"
                  " <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+    // joint rotation of both shapes only makes sense when there is a source
+    // (clone/heal forms, e.g. in the retouch module)
+    if(form->type & DT_MASKS_CLONE)
+      g_strlcat(msgbuf, _("\n<b>rotate both</b>: shift+ctrl+drag"), msgbuf_len);
+  }
 }
 
 static void _ellipse_sanitize_config(const dt_masks_type_t type)

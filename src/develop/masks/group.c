@@ -67,6 +67,8 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
     gui->border_selected = FALSE;
     gui->form_dragging = FALSE;
     gui->form_rotating = FALSE;
+    gui->source_rotating = FALSE;
+    gui->counter_rotate_source = FALSE;
     gui->pivot_selected = FALSE;
     gui->point_border_selected = -1;
     gui->seg_selected = -1;
@@ -133,6 +135,7 @@ static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui)
     || gui->source_dragging
     || gui->gradient_toggling
     || gui->form_rotating
+    || gui->source_rotating
     || (gui->point_edited != -1)
     || (gui->point_dragging != -1)
     || (gui->feather_dragging != -1)
