@@ -1105,11 +1105,11 @@ static int _ensure_raw_ctx(dt_neural_job_t *j,
   {
     case DT_RESTORE_SENSOR_CLASS_BAYER:
       j->ctx = dt_restore_load_rawdenoise_bayer(j->env);
-      label = _("bayer");
+      label = _("Bayer");
       break;
     case DT_RESTORE_SENSOR_CLASS_XTRANS:
       j->ctx = dt_restore_load_rawdenoise_xtrans(j->env);
-      label = _("x-trans");
+      label = _("X-Trans");
       break;
     case DT_RESTORE_SENSOR_CLASS_LINEAR:
       j->ctx = dt_restore_load_rawdenoise_linear(j->env);
