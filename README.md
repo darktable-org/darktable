@@ -257,7 +257,7 @@ Optional dependencies (minimum version):
 * libavif 0.9.3 *(for AVIF import & export)*
 * ONNX Runtime 1.18 *(for AI inference)*
 * libarchive 3.8.5 *(for AI models download)*
-* libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
+* libheif 1.13.0 *(for HEIF import & export; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
 
