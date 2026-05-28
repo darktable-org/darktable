@@ -2421,7 +2421,7 @@ static gboolean _opencl_build_program(const int dev,
     _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
     setlocale(LC_ALL, "C");
 #else
-    locale_t nlocale = newlocale(LC_ALL, "C", (locale_t) 0);
+    locale_t nlocale = newlocale(LC_ALL_MASK, "C", (locale_t) 0);
     locale_t locale = uselocale(nlocale);
 #endif
 
