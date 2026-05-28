@@ -50,6 +50,32 @@ static inline int _nb_ctrl_point(const int nb_point)
   return nb_point * 3;
 }
 
+// Centroid of a brush stroke: the arithmetic mean of `n` dense centerline
+// points stored with the given stride (floats between consecutive points; 2 for
+// a packed x,y array). A brush "outline" is the centerline traced up then back
+// down, so it has no enclosed area -- a shoelace area centroid would be unstable
+// there. The mean is rotation-invariant (mean(R*p) = R*mean(p)), so the source
+// spins in place; a bounding-box center is not, and would make it drift on
+// repeated rotation.
+static void _brush_centroid(const float *const pts,
+                            const int n,
+                            const int stride,
+                            float *const ox,
+                            float *const oy)
+{
+  double mx = 0.0, my = 0.0;
+  for(int i = 0; i < n; i++)
+  {
+    mx += pts[i * stride];
+    my += pts[i * stride + 1];
+  }
+  if(n > 0)
+  {
+    *ox = (float)(mx / n);
+    *oy = (float)(my / n);
+  }
+}
+
 /** get squared distance of indexed point to line segment, taking
  * weighted payload data into account */
 static float _brush_point_line_distance2(const int index,
@@ -1068,6 +1094,35 @@ static int _brush_get_pts_border(dt_develop_t *dev,
         ptsbuf[i * 2 + 1] += dy;
       }
 
+      // rotate the source outline by form->source[2] around its centroid. The
+      // buffer starts with nb*3 control-point entries (ctrl1/corner/ctrl2 per
+      // node) that are NOT in boundary order, so the pivot is the mean of the
+      // dense centerline that follows (see _brush_centroid). The centroid is
+      // rotation-invariant, so the source spins in place; retouch.c rotates the
+      // cloned/healed source around the centroid of the rasterized mask (which
+      // approximates this), so the overlay tracks the sampled region.
+      if(!feqf(form->source[2], 0.0f, 0.01f))
+      {
+        float cx = 0.0f, cy = 0.0f;
+        const int off = _nb_ctrl_point(nb);
+        if(*points_count - off >= 3)
+          _brush_centroid(&ptsbuf[off * 2], *points_count - off, 2, &cx, &cy);
+        else
+          _brush_centroid(ptsbuf, *points_count, 2, &cx, &cy);
+
+        const float rc = cosf(form->source[2]);
+        const float rs = sinf(form->source[2]);
+
+        DT_OMP_FOR(if(*points_count > 100))
+        for(int i = 0; i < *points_count; i++)
+        {
+          const float rx = ptsbuf[i * 2]     - cx;
+          const float ry = ptsbuf[i * 2 + 1] - cy;
+          ptsbuf[i * 2]     = cx + rx * rc - ry * rs;
+          ptsbuf[i * 2 + 1] = cy + rx * rs + ry * rc;
+        }
+      }
+
       // we apply the rest of the distortions (those after the module)
       // so we have now the SOURCE points in final image reference
       if(!dt_dev_distort_transform_plus(dev, pipe, iop_order,
@@ -1144,25 +1199,24 @@ static void _brush_get_distance(const float x,
 
   // we first check if we are inside the source form
 
-  // add support for clone masks
-  if(gpt->points_count > 2 + _nb_ctrl_point(corner_count)
-     && gpt->source_count > 2 + _nb_ctrl_point(corner_count))
+  // add support for clone masks. Use the source points directly (they already
+  // carry the source rotation) instead of reconstructing them from the target
+  // points plus a translation -- otherwise the hit area would ignore the source
+  // rotation and sit away from the displayed source stroke.
+  if(gpt->source_count > 2 + _nb_ctrl_point(corner_count))
   {
-    const float dx = -gpt->points[2] + gpt->source[2];
-    const float dy = -gpt->points[3] + gpt->source[3];
-
     int current_seg = 1;
-    for(int i = _nb_ctrl_point(corner_count); i < gpt->points_count; i++)
+    for(int i = _nb_ctrl_point(corner_count); i < gpt->source_count; i++)
     {
       // do we change of path segment ?
-      if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3]
-         && gpt->points[i * 2] == gpt->points[current_seg * 6 + 2])
+      if(gpt->source[i * 2 + 1] == gpt->source[current_seg * 6 + 3]
+         && gpt->source[i * 2] == gpt->source[current_seg * 6 + 2])
       {
         current_seg = (current_seg + 1) % corner_count;
       }
-      // distance from tested point to current form point
-      const float yy = gpt->points[i * 2 + 1] + dy;
-      const float xx = gpt->points[i * 2] + dx;
+      // distance from tested point to current source point
+      const float yy = gpt->source[i * 2 + 1];
+      const float xx = gpt->source[i * 2];
 
       const float sdx = x - xx;
       const float sdy = y - yy;
@@ -1552,6 +1606,44 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
       dt_control_queue_redraw_center();
       return 1;
     }
+    else if((gui->form_selected || gui->source_selected || (gui->seg_selected >= 0 && gui->point_selected < 0 &&
+                                    gui->feather_selected < 0 && gui->point_border_selected < 0)) &&
+            gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifiers_include(state, GDK_CONTROL_MASK))
+    {
+      // Modifier scheme (matches the rotate combo used elsewhere for masks):
+      // - CTRL: rotate only the shape under the pointer (source or target)
+      // - CTRL+SHIFT: rotate both shapes together about their centroids
+      gui->rotate_about_source = FALSE;
+      if(dt_modifiers_include(state, GDK_SHIFT_MASK))
+      {
+        gui->form_rotating = TRUE;
+        gui->counter_rotate_source = FALSE; // joint rotation
+        // If the joint rotation was grabbed on the source, the mouse circles the
+        // source centroid; measure its angular sweep there so the rotation gain
+        // matches grabbing the target (see rotate_about_source in masks.h).
+        gui->rotate_about_source = gui->source_selected;
+      }
+      else if(gui->source_selected)
+      {
+        gui->source_rotating = TRUE; // source only
+      }
+      else
+      {
+        gui->form_rotating = TRUE;
+        gui->counter_rotate_source = TRUE; // target only, source stays put
+      }
+
+      gui->point_edited = -1;
+      gui->seg_selected = -1;
+
+      // the rotation pivot is recomputed each motion event from the displayed
+      // outline (see the form_rotating/source_rotating branches in mouse_moved);
+      // here we only record the initial mouse position for the incremental delta
+      gui->scrollx = gui->scrolly = 0.0f;
+      gui->dx = pzx;
+      gui->dy = pzy;
+      return 1;
+    }
     else if(gui->source_selected
             && gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
@@ -1559,8 +1651,15 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
       if(!guipt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->dx = guipt->source[2] - gui->posx;
-      gui->dy = guipt->source[3] - gui->posy;
+      // Anchor the drag on the (unrotated) source position rather than the
+      // displayed node guipt->source[2]: when the source is rotated
+      // (source[2] != 0) the displayed node differs from form->source, so
+      // grabbing it would snap the anchor onto it and make the source jump on
+      // every click. Use the forward-transformed source position instead.
+      float anchor[2] = { form->source[0] * iwidth, form->source[1] * iheight };
+      dt_dev_distort_transform(darktable.develop, anchor, 1);
+      gui->dx = anchor[0] - gui->posx;
+      gui->dy = anchor[1] - gui->posy;
       return 1;
     }
     else if(gui->form_selected
@@ -1626,7 +1725,10 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     {
       const guint nb = g_list_length(form->points);
       gui->point_edited = -1;
-      if(dt_modifier_is(state, GDK_CONTROL_MASK) && gui->seg_selected < nb - 1)
+      // add a node with SHIFT+click on a segment. This used to be CTRL+click,
+      // but CTRL is now reserved for the rotate gesture (see the rotate branch
+      // above), so the add-node modifier was moved to SHIFT to avoid a clash.
+      if(dt_modifier_is(state, GDK_SHIFT_MASK) && gui->seg_selected < nb - 1)
       {
         // we add a new point to the brush
         dt_masks_point_brush_t *bzpt = (malloc(sizeof(dt_masks_point_brush_t)));
@@ -2009,6 +2111,28 @@ static int _brush_events_button_released(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
+  else if(gui->form_rotating)
+  {
+    // rotation was applied incrementally in mouse_moved; just finalise
+    gui->form_rotating = FALSE;
+    gui->rotate_about_source = FALSE;
+    gui->scrollx = gui->scrolly = 0.0f;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+    dt_masks_gui_form_create(form, gui, index, module);
+
+    return 1;
+  }
+  else if(gui->source_rotating)
+  {
+    gui->source_rotating = FALSE;
+    gui->scrollx = gui->scrolly = 0.0f;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+    dt_masks_gui_form_create(form, gui, index, module);
+
+    return 1;
+  }
   else if(gui->form_dragging)
   {
     // we end the form dragging
@@ -2274,6 +2398,147 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
     point->border[0] = point->border[1] = bdr;
 
     // we recreate the form points
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->form_rotating)
+  {
+    // Rotate in screen (backbuffer pixel) space for perfect visual pivot.
+    // The outer gpt (fetched at top of function) already has the current display positions.
+    if(!gpt || gpt->points_count < 6)
+    {
+      // not enough data; just swallow the event
+      gui->dx = pzx;
+      gui->dy = pzy;
+      return 1;
+    }
+
+    // current and previous mouse in backbuffer pixels
+    const float cmx = pzx * wd;
+    const float cmy = pzy * ht;
+    const float pmx = gui->dx * wd;
+    const float pmy = gui->dy * ht;
+
+    // centroid of the stroke on screen, computed from the dense centerline
+    // (which follows the nb*3 control-point entries) so the destination spins
+    // around its rotation-invariant centroid (see the note in
+    // _brush_get_pts_border).
+    const int nc = g_list_length(form->points);
+    const int off = _nb_ctrl_point(nc);
+    float cx = cmx, cy = cmy;
+    if(gpt->points_count - off >= 3)
+      _brush_centroid(&gpt->points[off * 2], gpt->points_count - off, 2, &cx, &cy);
+
+    // Pivot used to read the mouse's angular sweep. For a joint rotation grabbed
+    // on the source, the mouse circles the source centroid, which is offset from
+    // the destination centroid; measuring the sweep about the destination would
+    // under-report the angle (smaller subtended angle at a distant pivot) and
+    // make the source feel "heavier" to rotate. Measure about the source centroid
+    // in that case. The destination geometry is still rotated about cx,cy below.
+    float mx = cx, my = cy;
+    if(gui->rotate_about_source && gpt->source_count - off >= 3)
+      _brush_centroid(&gpt->source[off * 2], gpt->source_count - off, 2, &mx, &my);
+
+    float dv = atan2f(cmy - my, cmx - mx) - atan2f(pmy - my, pmx - mx);
+    if(fabsf(dv) > M_PI_F)
+      dv -= copysignf(DT_2PI_F, dv);
+    const float c = cosf(dv);
+    const float s = sinf(dv);
+
+    // The source is derived from the destination shape (translated by the
+    // source-to-target offset), so rotating the destination geometry already
+    // rotates the source by the same amount around its own centroid -- provided
+    // that offset stays constant. Remember the reference node (first point, which
+    // anchors the offset) so we can hold the offset fixed below; otherwise the
+    // source would orbit the destination instead of spinning in place.
+    dt_masks_point_brush_t *const pt0 = form->points ? form->points->data : NULL;
+    const float ref_old[2] = { pt0 ? pt0->corner[0] : 0.f, pt0 ? pt0->corner[1] : 0.f };
+
+    // Rotate each node's three control points (ctrl1, corner, ctrl2) around the
+    // screen centroid and project them back to image coordinates in one batch,
+    // then scatter the result into the brush nodes.
+    float *const npts = dt_alloc_align_float((size_t)nc * 6);
+    if(npts)
+    {
+      dt_masks_rotate_ctrl_points(
+        darktable.develop, gpt->points, gpt->points_count, nc, cx, cy, c, s, iwidth, iheight, npts);
+
+      int k = 0;
+      for(GList *l = form->points; l; l = g_list_next(l), k++)
+      {
+        dt_masks_point_brush_t *pt = l->data;
+        pt->ctrl1[0] = npts[k * 6 + 0];
+        pt->ctrl1[1] = npts[k * 6 + 1];
+        pt->corner[0] = npts[k * 6 + 2];
+        pt->corner[1] = npts[k * 6 + 3];
+        pt->ctrl2[0] = npts[k * 6 + 4];
+        pt->ctrl2[1] = npts[k * 6 + 5];
+      }
+      dt_free_align(npts);
+    }
+
+    // Source bookkeeping only matters for clone/heal forms (those with a source).
+    // - joint rotation: both shapes rotate by dv. The source inherits the
+    //   rotation from the destination geometry, so source[2] is left untouched.
+    // - target-only rotation: cancel that inherited rotation so the source keeps
+    //   its current orientation.
+    if(form->type & DT_MASKS_CLONE)
+    {
+      if(gui->counter_rotate_source)
+        form->source[2] -= dv;
+
+      // Hold the source-to-target offset constant by shifting the source anchor
+      // by the displacement of the reference node, keeping the source centroid
+      // in place (it spins or stays, but never orbits).
+      if(pt0)
+      {
+        form->source[0] += pt0->corner[0] - ref_old[0];
+        form->source[1] += pt0->corner[1] - ref_old[1];
+      }
+    }
+
+    // remember current mouse (backbuffer-normalized) for next incremental step
+    gui->dx = pzx;
+    gui->dy = pzy;
+
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->source_rotating)
+  {
+    if(!gpt || gpt->source_count < 6)
+    {
+      gui->dx = pzx;
+      gui->dy = pzy;
+      return 1;
+    }
+
+    const float cmx = pzx * wd;
+    const float cmy = pzy * ht;
+    const float pmx = gui->dx * wd;
+    const float pmy = gui->dy * ht;
+
+    // Rotate the source around its centroid (mean of the dense centerline, which
+    // follows the nb*3 control-point entries). The centroid is rotation-invariant,
+    // so the source spins in place; it is the same pivot used by the source
+    // display and (approximately) the pixel sampler, so the overlay tracks the
+    // cloned/healed result. The destination is untouched.
+    const int off = _nb_ctrl_point(g_list_length(form->points));
+    float cx = cmx, cy = cmy;
+    if(gpt->source_count - off >= 3)
+      _brush_centroid(&gpt->source[off * 2], gpt->source_count - off, 2, &cx, &cy);
+
+    float dv = atan2f(cmy - cy, cmx - cx) - atan2f(pmy - cy, pmx - cx);
+    if(fabsf(dv) > M_PI_F)
+      dv -= copysignf(DT_2PI_F, dv);
+
+    form->source[2] += dv;
+
+    gui->dx = pzx;
+    gui->dy = pzy;
+
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -3137,6 +3402,16 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
 static GSList *_brush_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
+  lm = dt_mouse_action_create_simple(
+    lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, _("[BRUSH on segment] add node"));
+  lm = dt_mouse_action_create_simple(lm,
+                                     DT_MOUSE_ACTION_LEFT_DRAG,
+                                     GDK_CONTROL_MASK,
+                                     _("[BRUSH] rotate shape (source only on a clone source)"));
+  lm = dt_mouse_action_create_simple(lm,
+                                     DT_MOUSE_ACTION_LEFT_DRAG,
+                                     GDK_SHIFT_MASK | GDK_CONTROL_MASK,
+                                     _("[BRUSH] rotate shape and source together"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[BRUSH] change size"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
@@ -3166,9 +3441,32 @@ static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui,
   // TODO: check if it would be good idea to have same controls on
   // creation and for selected brush
   if(gui->creation || gui->form_selected)
-    g_snprintf(msgbuf, msgbuf_len,
+  {
+    g_snprintf(msgbuf,
+               msgbuf_len,
                _("<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
-                 "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+                 "<b>opacity</b>: ctrl+scroll (%d%%), <b>rotate</b>: ctrl+drag"),
+               opacity);
+    // joint rotation of both shapes only makes sense when there is a source
+    // (clone/heal forms, e.g. in the retouch module), not while still drawing
+    if(!gui->creation && (form->type & DT_MASKS_CLONE))
+      g_strlcat(msgbuf, _(", <b>rotate both</b>: shift+ctrl+drag"), msgbuf_len);
+  }
+  else if(gui->source_selected)
+    // the source only exists for clone/heal forms, so joint rotation always applies here
+    g_strlcat(msgbuf,
+              _("<b>move</b>: drag, <b>rotate source</b>: ctrl+drag, "
+                "<b>rotate both</b>: shift+ctrl+drag"),
+              msgbuf_len);
+  else if(gui->seg_selected >= 0)
+  {
+    g_strlcat(msgbuf,
+              _("<b>move segment</b>: drag, <b>add node</b>: shift+click\n"
+                "<b>rotate</b>: ctrl+drag"),
+              msgbuf_len);
+    if(form->type & DT_MASKS_CLONE)
+      g_strlcat(msgbuf, _(", <b>rotate both</b>: shift+ctrl+drag"), msgbuf_len);
+  }
   else if(gui->border_selected)
     g_strlcat(msgbuf, _("<b>size</b>: scroll"), msgbuf_len);
 }

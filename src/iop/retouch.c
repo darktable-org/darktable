@@ -897,12 +897,13 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self,
 }
 
 /* returns (dx dy) to get from the source to the destination */
-static int rt_masks_get_delta_to_destination(dt_iop_module_t *self,
+static int rt_masks_get_transform_to_destination(dt_iop_module_t *self,
                                              dt_dev_pixelpipe_iop_t *piece,
                                              const dt_iop_roi_t *roi,
                                              dt_masks_form_t *form,
                                              float *dx,
                                              float *dy,
+                                             float *angle,
                                              const int distort_mode)
 {
   int res = 0;
@@ -910,6 +911,13 @@ static int rt_masks_get_delta_to_destination(dt_iop_module_t *self,
   if(form->type & DT_MASKS_PATH)
   {
     const dt_masks_point_path_t *pt = form->points->data;
+
+    res = rt_masks_point_calc_delta(self, piece, roi, pt->corner,
+                                    form->source, dx, dy, distort_mode);
+  }
+  else if(form->type & DT_MASKS_BRUSH)
+  {
+    const dt_masks_point_brush_t *pt = form->points->data;
 
     res = rt_masks_point_calc_delta(self, piece, roi, pt->corner,
                                     form->source, dx, dy, distort_mode);
@@ -928,13 +936,9 @@ static int rt_masks_get_delta_to_destination(dt_iop_module_t *self,
     res = rt_masks_point_calc_delta(self, piece, roi, pt->center,
                                     form->source, dx, dy, distort_mode);
   }
-  else if(form->type & DT_MASKS_BRUSH)
-  {
-    const dt_masks_point_brush_t *pt = form->points->data;
 
-    res = rt_masks_point_calc_delta(self, piece, roi, pt->corner,
-                                    form->source, dx, dy, distort_mode);
-  }
+  if (angle)
+    *angle = form->source[2];
 
   return res;
 }
@@ -2799,14 +2803,35 @@ static void rt_compute_roi_in(dt_iop_module_t *self,
           if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_HEAL
              || p->rt_forms[index].algorithm == DT_IOP_RETOUCH_CLONE)
           {
-            float dx = 0.f, dy = 0.f;
-            if(rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy,
-                                                 p->rt_forms[index].distort_mode))
+            float dx = 0.f, dy = 0.f, angle = 0.f;
+            if(rt_masks_get_transform_to_destination(
+                 self, piece, roi_in, form, &dx, &dy, &angle, p->rt_forms[index].distort_mode))
             {
+              // source region = destination box translated by (-dx, -dy)
               roiy = fminf(ft - dy, roiy);
               roix = fminf(fl - dx, roix);
               roir = fmaxf(fl + fw - dx, roir);
               roib = fmaxf(ft + fh - dy, roib);
+
+              // when the source is rotated, the box above does not bound the
+              // rotated footprint. dt_masks_get_source_area already applies the
+              // source rotation (it goes through the source point generation), so
+              // it gives the true rotated source bbox -- union it in.
+              if(!feqf(angle, 0.0f, 0.01f))
+              {
+                int sfl, sft, sfw, sfh;
+                if(dt_masks_get_source_area(self, piece, form, &sfw, &sfh, &sfl, &sft))
+                {
+                  sfw *= roi_in->scale;
+                  sfh *= roi_in->scale;
+                  sfl *= roi_in->scale;
+                  sft *= roi_in->scale;
+                  roiy = fminf(sft, roiy);
+                  roix = fminf(sfl, roix);
+                  roir = fmaxf(sfl + sfw, roir);
+                  roib = fmaxf(sft + sfh, roib);
+                }
+              }
             }
           }
         }
@@ -2885,7 +2910,7 @@ static void rt_extend_roi_in_from_source_clones(dt_iop_module_t *self,
           // get the destination area
           int fl_dest, ft_dest;
           float dx = 0.f, dy = 0.f;
-          if(!rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy,
+          if(!rt_masks_get_transform_to_destination(self, piece, roi_in, form, &dx, &dy, NULL,
                                                 p->rt_forms[index].distort_mode))
           {
             continue;
@@ -3234,28 +3259,137 @@ static void rt_intersect_2_rois(dt_iop_roi_t *const roi_1,
   roi_dest->height = y_to - y_from;
 }
 
+// opacity-weighted centroid (center of mass) of a single-channel mask, in
+// roi_mask_scaled-local coords. The centroid is rotation-invariant, which is why
+// it -- not the bounding-box center -- is used as the rotation pivot: it stays
+// put as the source is rotated, matching the overlay which pivots about the same
+// (area) centroid (see _path_centroid / _brush_centroid).
+static void rt_mask_centroid(const float *const mask_scaled,
+                             const dt_iop_roi_t *const roi_mask_scaled,
+                             float *const cx,
+                             float *const cy)
+{
+  const int w = roi_mask_scaled->width;
+  const int h = roi_mask_scaled->height;
+  double sx = 0.0, sy = 0.0, sw = 0.0;
+
+  for(int y = 0; y < h; y++)
+  {
+    const float *const m = mask_scaled + (size_t)y * w;
+    for(int x = 0; x < w; x++)
+    {
+      const float v = m[x];
+      sx += (double)v * x;
+      sy += (double)v * y;
+      sw += v;
+    }
+  }
+
+  if(sw > 1e-6)
+  {
+    *cx = (float)(sx / sw);
+    *cy = (float)(sy / sw);
+  }
+  else
+  {
+    *cx = w * 0.5f;
+    *cy = h * 0.5f;
+  }
+}
+
+// (cx, cy) is the rotation pivot in roi_out-local coords (the mask centroid);
+// only used when angle != 0.
 static void rt_copy_in_to_out(const float *const in,
                               const dt_iop_roi_t *const roi_in,
                               float *const out,
                               const dt_iop_roi_t *const roi_out,
                               const int ch,
                               const int dx,
-                              const int dy)
+                              const int dy,
+                              const float angle,
+                              const float cx,
+                              const float cy)
 {
   const size_t rowsize = sizeof(float) * ch * MIN(roi_out->width, roi_in->width);
   const int xoffs = roi_out->x - roi_in->x - dx;
   const int yoffs = roi_out->y - roi_in->y - dy;
   const int y_to = MIN(roi_out->height, roi_in->height);
 
-  DT_OMP_FOR()
-  for(int y = 0; y < y_to; y++)
+  // treat a negligibly small rotation as no rotation: skips the resampling
+  // path (cheaper) and avoids artifacts from repeated UI actions
+  if(feqf(angle, 0.0f, 0.01f))
   {
-    const size_t iindex = ((size_t)(y + yoffs) * roi_in->width + xoffs) * ch;
-    const size_t oindex = (size_t)y * roi_out->width * ch;
-    float *in1 = (float *)in + iindex;
-    float *out1 = (float *)out + oindex;
+    DT_OMP_FOR()
+    for(int y = 0; y < y_to; y++)
+    {
+      const size_t iindex = ((size_t)(y + yoffs) * roi_in->width + xoffs) * ch;
+      const size_t oindex = (size_t)y * roi_out->width * ch;
+      const float *in1 = in + iindex;
+      float *out1 = out + oindex;
 
-    memcpy(out1, in1, rowsize);
+      memcpy(out1, in1, rowsize);
+    }
+  }
+  else
+  {
+    // Sampling with rotation: the destination pixel at offset (rx,ry) from the
+    // mask centroid is filled with the image pixel that lies under the rotated
+    // source overlay at the matching offset, i.e. centroid + R(angle)*(rx,ry).
+    // This uses the SAME rotation and pivot as the on-screen source outline
+    // (masks code), so the overlay marks the region being copied.
+    const float c = cosf(angle);
+    const float s = sinf(angle);
+    // Rotation pivot: the mask centroid (passed in as cx, cy in roi_out-local
+    // coords), mapped into the source region in roi_in coordinates.
+    const float cx_source = cx + xoffs;
+    const float cy_source = cy + yoffs;
+    const int x_to = MIN(roi_out->width, roi_in->width);
+
+    DT_OMP_FOR()
+    for(int y = 0; y < y_to; y++)
+    {
+      for(int x = 0; x < x_to; x++)
+      {
+        // Translate to source, rotate around source center, get final position
+        const float sx = x + xoffs;
+        const float sy = y + yoffs;
+        const float rx = sx - cx_source;
+        const float ry = sy - cy_source;
+        const float ix = cx_source + rx * c - ry * s;
+        const float iy = cy_source + rx * s + ry * c;
+
+        const size_t oindex = ((size_t)y * roi_out->width + x) * ch;
+        float *out1 = out + oindex;
+
+        // Edge-clamp (replicate) rather than zero-filling out-of-bounds samples:
+        // rt_compute_roi_in grows roi_in to the rotation-aware source area, but it
+        // cannot grow past the actual image border (and the box corners outside
+        // the mask are not covered), so a rotated source near the image edge can
+        // still sample just outside roi_in. Replicating the border keeps a benign
+        // smear there instead of seeding black pixels, which would otherwise
+        // create a hard seam for heal.
+        const float ixc = CLAMPF(ix, 0.0f, roi_in->width - 1.0f);
+        const float iyc = CLAMPF(iy, 0.0f, roi_in->height - 1.0f);
+
+        const int x0 = CLAMP((int)ixc, 0, roi_in->width - 2);
+        const int y0 = CLAMP((int)iyc, 0, roi_in->height - 2);
+        const float dx0 = ixc - x0;
+        const float dy0 = iyc - y0;
+
+        const float *in00 = in + ((size_t)y0 * roi_in->width + x0) * ch;
+        const float *in10 = in + ((size_t)y0 * roi_in->width + x0 + 1) * ch;
+        const float *in01 = in + ((size_t)(y0 + 1) * roi_in->width + x0) * ch;
+        const float *in11 = in + ((size_t)(y0 + 1) * roi_in->width + x0 + 1) * ch;
+
+        for(int c_idx = 0; c_idx < ch; c_idx++)
+        {
+          const float val = in00[c_idx] * (1.0f - dx0) * (1.0f - dy0) +
+                            in10[c_idx] * dx0 * (1.0f - dy0) + in01[c_idx] * (1.0f - dx0) * dy0 +
+                            in11[c_idx] * dx0 * dy0;
+          out1[c_idx] = val;
+        }
+      }
+    }
   }
 }
 
@@ -3416,6 +3550,9 @@ static void _retouch_clone(float *const in,
                            dt_iop_roi_t *const roi_mask_scaled,
                            const int dx,
                            const int dy,
+                           const float angle,
+                           const float cx,
+                           const float cy,
                            const float opacity)
 {
   // alloc temp image to avoid issues when areas self-intersects
@@ -3427,7 +3564,7 @@ static void _retouch_clone(float *const in,
   }
 
   // copy source image to tmp
-  rt_copy_in_to_out(in, roi_in, img_src, roi_mask_scaled, 4, dx, dy);
+  rt_copy_in_to_out(in, roi_in, img_src, roi_mask_scaled, 4, dx, dy, angle, cx, cy);
 
   // clone it
   rt_copy_image_masked(img_src, in, roi_in, mask_scaled, roi_mask_scaled, opacity);
@@ -3460,7 +3597,7 @@ static void _retouch_blur(dt_iop_module_t *self,
 
   // copy source image so we blur just the mask area (at least the
   // smallest rect that covers it)
-  rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, 4, 0, 0);
+  rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, 4, 0, 0, 0.0f, 0.0f, 0.0f);
 
   if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
@@ -3531,6 +3668,9 @@ static void _retouch_heal(float *const in,
                           dt_iop_roi_t *const roi_mask_scaled,
                           const int dx,
                           const int dy,
+                          const float angle,
+                          const float cx,
+                          const float cy,
                           const float opacity,
                           const int max_iter)
 {
@@ -3544,8 +3684,8 @@ static void _retouch_heal(float *const in,
   }
 
   // copy source and destination to temp images
-  rt_copy_in_to_out(in, roi_in, img_src, roi_mask_scaled, 4, dx, dy);
-  rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, 4, 0, 0);
+  rt_copy_in_to_out(in, roi_in, img_src, roi_mask_scaled, 4, dx, dy, angle, cx, cy);
+  rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, 4, 0, 0, 0.0f, 0.0f, 0.0f);
 
   // heal it
   dt_heal(img_src, img_dest, mask_scaled,
@@ -3658,11 +3798,11 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
 
         // search the delta with the source
         const dt_iop_retouch_algo_type_t algo = p->rt_forms[index].algorithm;
-        float dx = 0.f, dy = 0.f;
+        float dx = 0.f, dy = 0.f, angle = 0.f;
 
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
-          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy,
+          if(!rt_masks_get_transform_to_destination(self, piece, roi_layer, form, &dx, &dy, &angle,
                                                 p->rt_forms[index].distort_mode))
           {
             dt_free_align(mask);
@@ -3689,6 +3829,11 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           continue;
         }
 
+        // rotation pivot: mask centroid in roi_mask_scaled-local coords
+        float cx = 0.f, cy = 0.f;
+        if(!feqf(angle, 0.0f, 0.01f))
+          rt_mask_centroid(mask_scaled, &roi_mask_scaled, &cx, &cy);
+
         if((dx != 0
             || dy != 0
             || algo == DT_IOP_RETOUCH_BLUR
@@ -3699,12 +3844,12 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           if(algo == DT_IOP_RETOUCH_CLONE)
           {
             _retouch_clone(layer, roi_layer, mask_scaled,
-                           &roi_mask_scaled, dx, dy, form_opacity);
+                           &roi_mask_scaled, dx, dy, angle, cx, cy, form_opacity);
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
             _retouch_heal(layer, roi_layer, mask_scaled,
-                          &roi_mask_scaled, dx, dy, form_opacity, p->max_heal_iter);
+                          &roi_mask_scaled, dx, dy, angle, cx, cy, form_opacity, p->max_heal_iter);
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
@@ -3885,7 +4030,7 @@ void process(dt_iop_module_t *self,
   }
 
   // return final image
-  rt_copy_in_to_out(in_retouch, roi_rt, ovoid, roi_out, 4, 0, 0);
+  rt_copy_in_to_out(in_retouch, roi_rt, ovoid, roi_out, 4, 0, 0, 0.0f, 0.0f, 0.0f);
 
 cleanup:
   dt_free_align(in_retouch);
@@ -3899,7 +4044,7 @@ void distort_mask(dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  rt_copy_in_to_out(in, roi_in, out, roi_out, 1, 0, 0);
+  rt_copy_in_to_out(in, roi_in, out, roi_out, 1, 0, 0, 0.0f, 0.0f, 0.0f);
 }
 
 #ifdef HAVE_OPENCL
@@ -3984,6 +4129,9 @@ static cl_int rt_copy_in_to_out_cl(const int devid,
                                    const dt_iop_roi_t *const roi_out,
                                    const int dx,
                                    const int dy,
+                                   const float angle,
+                                   const float cx,
+                                   const float cy,
                                    const int kernel)
 {
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -4002,7 +4150,7 @@ static cl_int rt_copy_in_to_out_cl(const int devid,
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, MIN(roi_out->width, roi_in->width), MIN(roi_out->height, roi_in->height),
      CLARG(dev_in), CLARG(dev_roi_in),
      CLARG(dev_out), CLARG(dev_roi_out),
-     CLARG(xoffs), CLARG(yoffs));
+     CLARG(xoffs), CLARG(yoffs), CLARG(angle), CLARG(cx), CLARG(cy));
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_ALWAYS, "rt_copy_in_to_out_cl error 2");
 
@@ -4120,6 +4268,9 @@ static cl_int _retouch_clone_cl(const int devid,
                                 dt_iop_roi_t *const roi_mask_scaled,
                                 const int dx,
                                 const int dy,
+                                const float angle,
+                                const float cx,
+                                const float cy,
                                 const float opacity,
                                 dt_iop_retouch_global_data_t *gd)
 {
@@ -4131,7 +4282,7 @@ static cl_int _retouch_clone_cl(const int devid,
     goto cleanup;
 
   // copy source image to tmp
-  err = rt_copy_in_to_out_cl(devid, dev_layer, roi_layer, dev_src, roi_mask_scaled, dx, dy,
+  err = rt_copy_in_to_out_cl(devid, dev_layer, roi_layer, dev_src, roi_mask_scaled, dx, dy, angle, cx, cy,
                              gd->kernel_retouch_copy_buffer_to_buffer);
   if(err != CL_SUCCESS)
     goto cleanup;
@@ -4214,7 +4365,7 @@ static cl_int _retouch_blur_cl(const int devid,
   }
 
   err = rt_copy_in_to_out_cl(devid, dev_layer, roi_layer, dev_dest,
-                             roi_mask_scaled, 0, 0,
+                             roi_mask_scaled, 0, 0, 0.0f, 0.0f, 0.0f,
                              gd->kernel_retouch_copy_buffer_to_image);
   if(err != CL_SUCCESS)
     goto cleanup;
@@ -4279,14 +4430,17 @@ cleanup:
 static cl_int _retouch_heal_cl(const int devid,
                                cl_mem dev_layer,
                                dt_iop_roi_t *const roi_layer,
-                               float *mask_scaled,
                                cl_mem dev_mask_scaled,
+                               float *const mask_scaled,
                                dt_iop_roi_t *const roi_mask_scaled,
                                const int dx,
                                const int dy,
+                               const float angle,
+                               const float cx,
+                               const float cy,
                                const float opacity,
-                               dt_iop_retouch_global_data_t *gd,
-                               const int max_iter)
+                               const int max_iter,
+                               dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
@@ -4297,13 +4451,13 @@ static cl_int _retouch_heal_cl(const int devid,
     goto cleanup;
 
   err = rt_copy_in_to_out_cl(devid, dev_layer, roi_layer, dev_src,
-                             roi_mask_scaled, dx, dy,
+                             roi_mask_scaled, dx, dy, angle, cx, cy,
                              gd->kernel_retouch_copy_buffer_to_buffer);
   if(err != CL_SUCCESS)
     goto cleanup;
 
   err = rt_copy_in_to_out_cl(devid, dev_layer, roi_layer, dev_dest,
-                             roi_mask_scaled, 0, 0,
+                             roi_mask_scaled, 0, 0, 0.0f, 0.0f, 0.0f,
                              gd->kernel_retouch_copy_buffer_to_buffer);
   if(err != CL_SUCCESS)
     goto cleanup;
@@ -4440,13 +4594,13 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer,
           continue;
         }
 
-        float dx = 0.f, dy = 0.f;
+        float dx = 0.f, dy = 0.f, angle = 0.f;
 
         // search the delta with the source
         const dt_iop_retouch_algo_type_t algo = p->rt_forms[index].algorithm;
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
-          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy,
+          if(!rt_masks_get_transform_to_destination(self, piece, roi_layer, form, &dx, &dy, &angle,
                                                 p->rt_forms[index].distort_mode))
           {
             dt_free_align(mask);
@@ -4465,6 +4619,12 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer,
                                       &dev_mask_scaled,
                                       &roi_mask_scaled,
                                       roi_layer, dx, dy, algo);
+
+        // rotation pivot: mask centroid in roi_mask_scaled-local coords
+        // (computed before mask_scaled may be freed below)
+        float cx = 0.f, cy = 0.f;
+        if(!feqf(angle, 0.0f, 0.01f) && mask_scaled != NULL)
+          rt_mask_centroid(mask_scaled, &roi_mask_scaled, &cx, &cy);
 
         // only heal needs mask scaled
         if(algo != DT_IOP_RETOUCH_HEAL && mask_scaled != NULL)
@@ -4494,14 +4654,14 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer,
           if(algo == DT_IOP_RETOUCH_CLONE)
           {
             err = _retouch_clone_cl(devid, dev_layer, roi_layer,
-                                    dev_mask_scaled, &roi_mask_scaled, dx, dy,
+                                    dev_mask_scaled, &roi_mask_scaled, dx, dy, angle, cx, cy,
                                     form_opacity, gd);
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
             err = _retouch_heal_cl(devid, dev_layer, roi_layer,
-                                   mask_scaled, dev_mask_scaled, &roi_mask_scaled, dx,
-                                   dy, form_opacity, gd, p->max_heal_iter);
+                                   dev_mask_scaled, mask_scaled, &roi_mask_scaled, dx,
+                                   dy, angle, cx, cy, form_opacity, p->max_heal_iter, gd);
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
@@ -4711,7 +4871,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   // return final image
-  err = rt_copy_in_to_out_cl(devid, in_retouch, roi_in, dev_out, roi_out, 0, 0,
+  err = rt_copy_in_to_out_cl(devid, in_retouch, roi_in, dev_out, roi_out, 0, 0, 0.0f, 0.0f, 0.0f,
                              gd->kernel_retouch_copy_buffer_to_image);
 
 cleanup:
