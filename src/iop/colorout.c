@@ -620,10 +620,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   }
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
-  // and the subsequent error messages
+  // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
+  {
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
     return;
+  }
 
   /*
    * Setup transform flags
