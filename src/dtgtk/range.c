@@ -205,9 +205,9 @@ static gboolean _default_decode_func(const gchar *text, double *value)
 #if defined(WIN32)
     char *locale = strdup(setlocale(LC_ALL, NULL));
     _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
-    setlocale(LC_ALL, "C");
+    setlocale(LC_NUMERIC, "C");
 #else
-    locale_t nlocale = newlocale(LC_ALL, "C", (locale_t) 0);
+    locale_t nlocale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
     locale_t locale = uselocale(nlocale);
 #endif
 
