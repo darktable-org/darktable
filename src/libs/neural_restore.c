@@ -3805,6 +3805,10 @@ static gboolean _preview_draw(GtkWidget *widget,
   return FALSE;
 }
 
+// pointer within this distance of the divider shows the resize cursor;
+// clicks within this distance grip the divider without snapping it
+#define PREVIEW_DIVIDER_NEAR_PX  3.0
+
 static gboolean _preview_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       dt_lib_module_t *self)
@@ -3887,13 +3891,18 @@ static gboolean _preview_button_press(GtkWidget *widget,
   const double ox = (w - pw * scale) / 2.0;
   const double div_x = ox + d->split_pos * pw * scale;
 
-  if(fabs(ex - div_x) < 8.0)
+  if(fabs(ex - div_x) < PREVIEW_DIVIDER_NEAR_PX)
   {
+    // precision grip on the divider — drag without snapping
     d->dragging_split = TRUE;
     return TRUE;
   }
 
-  return FALSE;
+  // click anywhere else snaps the divider then enters drag
+  d->split_pos = CLAMP((ex - ox) / (pw * scale), 0.0, 1.0);
+  d->dragging_split = TRUE;
+  gtk_widget_queue_draw(widget);
+  return TRUE;
 }
 
 static gboolean _preview_button_release(GtkWidget *widget,
@@ -3981,7 +3990,7 @@ static gboolean _preview_motion(GtkWidget *widget,
     GdkWindow *win = gtk_widget_get_window(widget);
     if(win)
     {
-      const gboolean near = fabs(ex - div_x) < 8.0;
+      const gboolean near = fabs(ex - div_x) < PREVIEW_DIVIDER_NEAR_PX;
       if(near)
       {
         GdkCursor *cursor = gdk_cursor_new_from_name(
