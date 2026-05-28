@@ -628,8 +628,7 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
 }
 
 
-#define DT_IOPPR_LUT_SAMPLES 0x10000
-
+#define DT_IOPPR_LUT_SAMPLES_FALLBACK 0x10000
 void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                 const int lutsize)
 {
@@ -643,7 +642,7 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                            = profile_info->unbounded_coeffs_out[2][0] = -1.0f;
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.f;
-  profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES;
+  profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES_FALLBACK;
   for(int i = 0; i < 3; i++)
   {
     profile_info->lut_in[i] = dt_alloc_align_float(profile_info->lutsize);
@@ -652,8 +651,7 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
     profile_info->lut_out[i][0] = -1.0f;
   }
 }
-
-#undef DT_IOPPR_LUT_SAMPLES
+#undef DT_IOPPR_LUT_SAMPLES_FALLBACK
 
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 {
@@ -818,6 +816,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
     }
     else
     {
+      dt_ioppr_cleanup_profile_info(profile_info);
       dt_free_align(profile_info);
       profile_info = NULL;
     }
