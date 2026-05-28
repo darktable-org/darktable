@@ -165,7 +165,10 @@ static void _set_hinter_message(const dt_masks_form_gui_t *gui,
 
   if(sel->functions && sel->functions->set_hint_message)
   {
-    sel->functions->set_hint_message(gui, form, opacity, msg, sizeof(msg));
+    // pass the selected sub-form (sel), not the outer form: when editing a
+    // group member, `form` is the group, so its type/points would not describe
+    // the shape the hint is about (e.g. whether it is a clone with a source)
+    sel->functions->set_hint_message(gui, sel, opacity, msg, sizeof(msg));
   }
 
   dt_control_hinter_message(msg);
@@ -459,6 +462,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, const dt_mask_id_t formid)
   // we copy the base values
   fdest->source[0] = fbase->source[0];
   fdest->source[1] = fbase->source[1];
+  fdest->source[2] = fbase->source[2];
   fdest->version = fbase->version;
   snprintf(fdest->name, sizeof(fdest->name), _("copy of `%s'"), fbase->name);
 
@@ -1002,7 +1006,25 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);
-    memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 2);
+    const int source_bytes = sqlite3_column_bytes(stmt, 7);
+    if(source_bytes == sizeof(float) * 2)
+    {
+      memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 2);
+      form->source[2] = 0.0f;
+    }
+    else if(source_bytes == sizeof(float) * 3)
+    {
+      memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 3);
+    }
+    else if(source_bytes == sizeof(float) * 4)
+    {
+      // migration: old format stored an unused scale field as source[3]; drop it
+      memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 3);
+    }
+    else
+    {
+      memset(form->source, 0, sizeof(float) * 3);
+    }
 
     // and now we "read" the blob
     if(form->functions)
@@ -1091,7 +1113,7 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, form->type);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, form->source, 2 * sizeof(float), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, form->source, 3 * sizeof(float), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
   if(form->functions)
   {
@@ -1399,6 +1421,8 @@ void dt_masks_clear_form_gui(const dt_develop_t *dev)
     dev->form_gui->form_dragging = dev->form_gui->form_rotating =
     dev->form_gui->border_toggling = dev->form_gui->gradient_toggling = FALSE;
   dev->form_gui->source_selected = dev->form_gui->source_dragging = FALSE;
+  dev->form_gui->source_rotating = dev->form_gui->counter_rotate_source = FALSE;
+  dev->form_gui->rotate_about_source = FALSE;
   dev->form_gui->pivot_selected = FALSE;
   dev->form_gui->point_border_selected = dev->form_gui->seg_selected =
     dev->form_gui->point_selected = dev->form_gui->feather_selected = -1;
@@ -2119,7 +2143,7 @@ dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form)
   hash = dt_hash(hash, &form->type, sizeof(dt_masks_type_t));
   hash = dt_hash(hash, &form->formid, sizeof(dt_mask_id_t));
   hash = dt_hash(hash, &form->version, sizeof(int));
-  hash = dt_hash(hash, &form->source, sizeof(float) * 2);
+  hash = dt_hash(hash, &form->source, sizeof(float) * 3);
 
   for(const GList *forms = form->points; forms; forms = g_list_next(forms))
   {
@@ -2858,6 +2882,49 @@ void dt_masks_closest_point(const int count,
       dist = d;
     }
   }
+}
+
+void dt_masks_rotate_ctrl_points(dt_develop_t *dev,
+                                 const float *const gpt_points,
+                                 const int points_count,
+                                 const int nb,
+                                 const float cx,
+                                 const float cy,
+                                 const float cos_a,
+                                 const float sin_a,
+                                 const float iwidth,
+                                 const float iheight,
+                                 float *const out)
+{
+  // the control points are the first nb*3 (x,y) pairs of the display buffer
+  const int nctrl = nb * 3;
+  if(nctrl < 1 || points_count < nctrl)
+    return;
+
+  // rotate every control point around the screen pivot into a scratch buffer,
+  // then back-transform the whole batch in one pipe traversal (cheaper and more
+  // accurate than inverting the pipe per point)
+  float *const scr = dt_alloc_align_float((size_t)nctrl * 2);
+  if(!scr)
+    return;
+
+  for(int i = 0; i < nctrl; i++)
+  {
+    const float rx = gpt_points[i * 2] - cx;
+    const float ry = gpt_points[i * 2 + 1] - cy;
+    scr[i * 2] = cx + rx * cos_a - ry * sin_a;
+    scr[i * 2 + 1] = cy + rx * sin_a + ry * cos_a;
+  }
+
+  dt_dev_distort_backtransform(dev, scr, nctrl);
+
+  for(int i = 0; i < nctrl; i++)
+  {
+    out[i * 2] = scr[i * 2] / iwidth;
+    out[i * 2 + 1] = scr[i * 2 + 1] / iheight;
+  }
+
+  dt_free_align(scr);
 }
 
 void dt_masks_line_stroke(cairo_t *cr,
