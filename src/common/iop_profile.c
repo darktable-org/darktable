@@ -689,16 +689,14 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
   profile_info->intent = intent;
 
-  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
+  const gboolean locking = type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2;
+  if(locking)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *profile =
     dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
 
   cmsHPROFILE *rgb_profile = profile ? profile->profile : NULL;;
-
-  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
@@ -774,6 +772,9 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
       (char)(rgb_profile_color_space),
       dt_is_valid_colormatrix(profile_info->matrix_in[0][0]) ? "" : " NO matrix provided",
       profile_info->nonlinearlut ? " nonlinearlut" : "");
+
+  if(locking) // all safe now
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   return FALSE;
 }
