@@ -93,6 +93,8 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
     if(expanded)
     {
+      // expose expansion state to CSS so themes can style expanded modules
+      dt_gui_add_class(GTK_WIDGET(expander), "dt_module_expanded");
       _set_last_expanded(GTK_WIDGET(expander));
       GtkWidget *sw = gtk_widget_get_ancestor(_last_expanded, GTK_TYPE_SCROLLED_WINDOW);
       if(sw)
@@ -101,6 +103,8 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
         _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
       }
     }
+    else
+      dt_gui_remove_class(GTK_WIDGET(expander), "dt_module_expanded");
 
     GtkWidget *frame = expander->body;
     if(frame)
@@ -348,6 +352,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   expander
       = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 0, NULL);
   expander->expanded = TRUE;
+  dt_gui_add_class(GTK_WIDGET(expander), "dt_module_expanded");
   expander->header = header;
   expander->body = body;
 
