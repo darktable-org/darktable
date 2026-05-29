@@ -21857,7 +21857,7 @@ msgstr ""
 "Affiche un masque de hauts lumières, superposé sous forme de damier\n"
 "la partie de l'image toujours visible (non masquée) correspond à la zone qui "
 "sera affectée\n"
-"par les curseurs de hauts lumières dans les autres onglets.\n"
+"par les curseurs de hauts lumières dans les autres onglets."
 
 #: ../src/iop/colorbalancergb.c:2017
 msgctxt "section"
