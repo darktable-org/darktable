@@ -1242,16 +1242,17 @@ void dt_colorspaces_update_display2_transforms()
 }
 
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
-static void _update_display_profile(guchar *tmp_data,
-                                    const gsize size,
-                                    char *name,
-                                    const size_t name_size)
+static gboolean _update_display_profile(guchar *tmp_data,
+                                        const gsize size,
+                                        char *name,
+                                        const size_t name_size)
 {
   g_free(darktable.color_profiles->xprofile_data);
   darktable.color_profiles->xprofile_data = tmp_data;
   darktable.color_profiles->xprofile_size = size;
 
   cmsHPROFILE profile = cmsOpenProfileFromMem(tmp_data, size);
+  gboolean match = FALSE;
   if(profile)
   {
     for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
@@ -1266,23 +1267,25 @@ static void _update_display_profile(guchar *tmp_data,
 
         // update cached transforms for color management of thumbnails
         dt_colorspaces_update_display_transforms();
-
+        match = TRUE;
         break;
       }
     }
   }
+  return match;
 }
 
-static void _update_display2_profile(guchar *tmp_data,
-                                     const gsize size,
-                                     char *name,
-                                     const size_t name_size)
+static gboolean _update_display2_profile(guchar *tmp_data,
+                                         const gsize size,
+                                         char *name,
+                                         const size_t name_size)
 {
   g_free(darktable.color_profiles->xprofile_data2);
   darktable.color_profiles->xprofile_data2 = tmp_data;
   darktable.color_profiles->xprofile_size2 = size;
 
   cmsHPROFILE profile = cmsOpenProfileFromMem(tmp_data, size);
+  gboolean match = FALSE;
   if(profile)
   {
     for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
@@ -1296,11 +1299,12 @@ static void _update_display2_profile(guchar *tmp_data,
 
         // update cached transforms for color management of thumbnails
         dt_colorspaces_update_display2_transforms();
-
+        match = TRUE;
         break;
       }
     }
   }
+  return match;
 }
 
 static void cms_error_handler(const cmsContext ContextID,
@@ -1800,16 +1804,17 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
 }
 
 #ifdef USE_COLORDGTK
-static void dt_colorspaces_get_display_profile_colord_callback(GObject *source,
-                                                               GAsyncResult *res,
-                                                               gpointer user_data)
+static void _colorspaces_get_display_profile_colord_callback(GObject *source,
+                                                             GAsyncResult *res,
+                                                             gpointer user_data)
 {
   const dt_colorspaces_color_profile_type_t profile_type
       = (dt_colorspaces_color_profile_type_t)GPOINTER_TO_INT(user_data);
 
   pthread_rwlock_wrlock(&darktable.color_profiles->xprofile_lock);
 
-  int profile_changed = 0;
+  gboolean profile_changed = FALSE;
+  gboolean match = FALSE;
   CdWindow *window = CD_WINDOW(source);
   GError *error = NULL;
   CdProfile *profile = cd_window_get_profile_finish(window, res, &error);
@@ -1856,12 +1861,12 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source,
         if(profile_changed)
         {
           if(profile_type == DT_COLORSPACE_DISPLAY2)
-            _update_display2_profile(tmp_data, size, NULL, 0);
+            match = _update_display2_profile(tmp_data, size, NULL, 0);
           else
-            _update_display_profile(tmp_data, size, NULL, 0);
+            match = _update_display_profile(tmp_data, size, NULL, 0);
           dt_print(DT_DEBUG_CONTROL,
-                   "[color profile] colord gave us a new screen profile:"
-                   " '%s' (size: %zu)", filename, size);
+                   "[color profile] colord gave us %s new screen profile:"
+                   " '%s' (size: %zu)", match ? "a" : "**NO**", filename, size);
         }
         else
         {
@@ -1876,7 +1881,8 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source,
 
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  if(profile_changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed && match)
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
 
@@ -1917,6 +1923,7 @@ void dt_colorspaces_set_display_profile
   gint buffer_size = 0;
   gchar *profile_source = NULL;
   gboolean profile_changed = FALSE;
+  gboolean match = FALSE;
 
 #if defined GDK_WINDOWING_X11
 
@@ -1976,7 +1983,7 @@ void dt_colorspaces_set_display_profile
                                    ? darktable.develop->second_wnd
                                    : dt_ui_center(darktable.gui->ui);
     cd_window_get_profile(window, center_widget, NULL,
-                          dt_colorspaces_get_display_profile_colord_callback,
+                          _colorspaces_get_display_profile_colord_callback,
                           GINT_TO_POINTER(profile_type));
   }
 #endif
@@ -2075,12 +2082,12 @@ void dt_colorspaces_set_display_profile
   {
     char name[512] = { 0 };
     if(profile_type == DT_COLORSPACE_DISPLAY2)
-      _update_display2_profile(buffer, buffer_size, name, sizeof(name));
+      match = _update_display2_profile(buffer, buffer_size, name, sizeof(name));
     else
-      _update_display_profile(buffer, buffer_size, name, sizeof(name));
-    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s'"
+      match = _update_display_profile(buffer, buffer_size, name, sizeof(name));
+    dt_print(DT_DEBUG_CONTROL, "[color profile] we got %s new screen profile `%s'"
              " from the %s (size: %d)",
-             *name ? name : "(unknown)", profile_source, buffer_size);
+             match ? "a" : "**NO**", *name ? name : "(unknown)", profile_source, buffer_size);
   }
   else
   {
@@ -2090,7 +2097,7 @@ void dt_colorspaces_set_display_profile
 cleanup_and_return:
 #endif
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-  if(profile_changed) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed && match) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
 }
 
@@ -2310,10 +2317,10 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3],
     }
 }
 
-int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
-                                           float in_XYZ_to_CAM[9],
-                                           double XYZ_to_CAM[4][3],
-                                           double CAM_to_XYZ[3][4])
+gboolean dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
+                                                float in_XYZ_to_CAM[9],
+                                                double XYZ_to_CAM[4][3],
+                                                double CAM_to_XYZ[3][4])
 {
   if(dt_is_valid_colormatrix(in_XYZ_to_CAM[0]))
   {
@@ -2343,11 +2350,11 @@ int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
 }
 
 // Converted from dcraw's cam_xyz_coeff()
-int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
-                                           double out_RGB_to_CAM[4][3],
-                                           double out_CAM_to_RGB[3][4],
-                                           const float *embedded_matrix,
-                                           double mul[4])
+gboolean dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
+                                                double out_RGB_to_CAM[4][3],
+                                                double out_CAM_to_RGB[3][4],
+                                                const float *embedded_matrix,
+                                                double mul[4])
 {
   double RGB_to_CAM[4][3];
 
