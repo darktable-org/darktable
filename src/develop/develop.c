@@ -157,11 +157,11 @@ void dt_dev_init(dt_develop_t *dev,
   dev->full.closeup = dev->preview2.closeup = 0;
   dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0.0f;
   dev->full.zoom_scale = dev->preview2.zoom_scale = 1.0f;
-  
+
   // Set back-pointers from viewports to their owning develop
   dev->full.dev = dev;
   dev->preview2.dev = dev;
-  
+
   // Initialize pinned image state
   dev->preview2_pinned = FALSE;
   dev->preview2_pinned_dev = NULL;
@@ -171,17 +171,17 @@ void dt_dev_init(dt_develop_t *dev,
 static void _cleanup_pinned_dev(dt_develop_t *pinned_dev)
 {
   if(!pinned_dev) return;
-  
+
   pinned_dev->gui_leaving = TRUE;
   pinned_dev->preview2.widget = NULL;
-  
+
   if(pinned_dev->preview2.pipe)
     dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
   if(pinned_dev->preview_pipe)
     dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
   if(pinned_dev->full.pipe)
     dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
-  
+
   if(pinned_dev->preview2.pipe)
   {
     dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->mutex);
@@ -189,7 +189,7 @@ static void _cleanup_pinned_dev(dt_develop_t *pinned_dev)
     dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->busy_mutex);
     dt_pthread_mutex_unlock(&pinned_dev->preview2.pipe->busy_mutex);
   }
-  
+
   dt_dev_cleanup(pinned_dev);
   free(pinned_dev);
 }
@@ -244,7 +244,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   if(dev->histogram_pre_tonecurve) free(dev->histogram_pre_tonecurve);
   if(dev->histogram_pre_levels) free(dev->histogram_pre_levels);
   dev->histogram_pre_tonecurve = dev->histogram_pre_levels = NULL;
-  
+
   // Clean up pinned develop
   // Clean up pinned develop
   if(dev->preview2_pinned_dev)
@@ -338,7 +338,7 @@ static dt_iop_module_t *_clone_module(dt_develop_t *dev, dt_iop_module_t *src_mo
     free(new_mod);
     return NULL;
   }
-  
+
   new_mod->instance = src_mod->instance;
   new_mod->enabled = src_mod->enabled;
   new_mod->iop_order = src_mod->iop_order;
@@ -349,10 +349,10 @@ static dt_iop_module_t *_clone_module(dt_develop_t *dev, dt_iop_module_t *src_mo
 
   if(src_mod->params)
       memcpy(new_mod->params, src_mod->params, src_mod->params_size);
-      
+
   if(new_mod->blend_params && src_mod->blend_params)
       memcpy(new_mod->blend_params, src_mod->blend_params, sizeof(dt_develop_blend_params_t));
-      
+
   return new_mod;
 }
 
@@ -518,7 +518,7 @@ static void _unpin_image(dt_develop_t *dev)
 void dt_dev_toggle_preview2_pinned(dt_develop_t *dev)
 {
   if(!dev) return;
-  
+
   // If we're trying to pin, validate the image first
   if(!dev->preview2_pinned)
   {
@@ -527,16 +527,16 @@ void dt_dev_toggle_preview2_pinned(dt_develop_t *dev)
       dt_toast_log(_("no valid image to pin"));
       return;
     }
-    
+
     if(dev->full.pipe && dev->full.pipe->loading)
     {
       dt_toast_log(_("please wait for image to load"));
       return;
     }
   }
-  
+
   dev->preview2_pinned = !dev->preview2_pinned;
-  
+
   if(dev->preview2_pinned)
     _pin_image(dev);
   else
@@ -779,9 +779,7 @@ restart:
     const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
     const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
     dt_print_pipe(DT_DEBUG_PIPE, "pipe stopped", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "%s%s%s%s",
-                shutdown == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES"
-                  : shutdown == DT_DEV_PIXELPIPE_STOP_HQ  ? "DT_DEV_PIXELPIPE_STOP_HQ"
-                  : shutdown == DT_DEV_PIXELPIPE_STOP_NO  ? "" : "DT_DEV_PIXELPIPE_STOP_MODULE",
+                dt_dev_pixelpipe_shutdown_to_str(shutdown),
                 dev->image_force_reload ? "image_force_reload " : "",
                 pipe->loading ? "pipe_loading " : "",
                 pipe->input_changed ? "pipe_input_changed " : "");
@@ -3228,7 +3226,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 
   // Mark pipe as needing zoom update
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
-  
+
   if(port->widget)
     dt_control_queue_redraw_widget(port->widget);
   if(port == &dev->full)
