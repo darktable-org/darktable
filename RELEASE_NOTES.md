@@ -212,6 +212,9 @@ changes (where available).
   cursor previously appeared as an old-style wristwatch instead of
   the familiar spinning wheel.
 
+- Themes can now style expanded modules differently from collapsed
+  ones, via a new `dt_module_expanded` CSS class.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
