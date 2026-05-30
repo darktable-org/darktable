@@ -302,6 +302,12 @@ changes (where available).
   showing all logged messages with timestamps, automatically
   deduplicating consecutive identical entries.
 
+- The OpenCL preferences interface and the internal handling and detection
+  of OpenCL devices and drivers got an overhaul.
+  Users can switch on "OpenCL fast mode" in preferences leading to slightly
+  more differences compared to CPU output for sligtly more performance. 
+  The per-device conf settings got an update, see the docs for reference.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
@@ -341,6 +347,8 @@ changes (where available).
 
 - Fix for usage of incorrect color profiles on secondary monitors on
   Windows.
+  
+- Various fixes for visibly wrong colors after chaning a profile in colorin or colorout. 
 
 - Fixed unexpected localization of user's defined preset name and
   properly localize the module name displayed in the preset dialog.
