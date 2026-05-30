@@ -101,6 +101,18 @@ const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type
 #undef PT_STR
 }
 
+const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t stopper)
+{
+  switch(stopper)
+  {
+  case DT_DEV_PIXELPIPE_STOP_NO:    return "DT_DEV_PIXELPIPE_STOP_NO";
+  case DT_DEV_PIXELPIPE_STOP_NODES: return "DT_DEV_PIXELPIPE_STOP_NODES";
+  case DT_DEV_PIXELPIPE_STOP_HQ:    return "DT_DEV_PIXELPIPE_STOP_HQ";
+  case DT_DEV_PIXELPIPE_STOP_LAST:  return "DT_DEV_PIXELPIPE_STOP_LAST";
+  default:                          return "DT_DEV_PIXELPIPE_STOP_MODULE";
+  }
+}
+
 void dt_print_pipe_ext(const char *title,
                        const dt_dev_pixelpipe_t *pipe,
                        const dt_iop_module_t *module,
@@ -1234,10 +1246,13 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
   const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
   if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
   {
+    dt_print_pipe(DT_DEBUG_PIPE, "module pipe stop",
+      pipe, NULL, pipe->devid, NULL, NULL, "%s",
+      dt_dev_pixelpipe_shutdown_to_str(stopper));
     if(stopper >= DT_DEV_PIXELPIPE_STOP_LAST)
     {
       dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
-      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper, "pipe stop: ");
+      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper, "module pipe stop: ");
     }
   }
   return stopper != DT_DEV_PIXELPIPE_STOP_NO;
