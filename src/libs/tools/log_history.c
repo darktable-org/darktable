@@ -31,6 +31,7 @@ typedef struct dt_lib_log_history_t
   GtkWidget *popover;
   GtkWidget *list_box;
   GtkWidget *scrolled;
+  GtkWidget *badge; /* small dot indicating unread log entries */
 } dt_lib_log_history_t;
 
 static void _populate_list_box(dt_lib_module_t *self);
@@ -110,8 +111,24 @@ static void _log_redraw_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_log_history_t *d = self->data;
   if(d->popover && gtk_widget_is_visible(d->popover))
+  {
     _populate_list_box(self);
+    // popover is visible → clear unread indicator
+    gtk_widget_hide(d->badge);
+  }
+  else
+  {
+    GList *entries = dt_control_log_history_get_entries();
+
+    if(entries && g_list_length(entries) > 0)
+      gtk_widget_show(d->badge);
+    else
+      gtk_widget_hide(d->badge);
+
+    g_list_free_full(entries, g_free);
+  }
 }
+
 
 static gboolean _suppress_popup(GtkWidget *widget,
                                 gpointer user_data)
@@ -150,6 +167,8 @@ static gboolean _button_press_release(GtkWidget *button,
     {
       _populate_list_box(self);
       gtk_popover_popup(GTK_POPOVER(d->popover));
+      // hide unread indicator now that the user sees the log
+      gtk_widget_hide(d->badge);
     }
     return TRUE;
   }
@@ -168,6 +187,19 @@ void gui_init(dt_lib_module_t *self)
   d->button = dtgtk_button_new(dtgtk_cairo_paint_messages, CPF_NONE, NULL);
   gtk_widget_set_tooltip_text(d->button, _("view log history"));
   dt_gui_add_help_link(d->button, "message_log");
+
+  // overlay container to host button and status badge
+  GtkWidget *overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(overlay), d->button);
+
+  // small round badge indicating unread log entries
+  d->badge = gtk_label_new("●");
+  gtk_widget_set_name(d->badge, "log-history-badge");
+  gtk_widget_set_halign(d->badge, GTK_ALIGN_END);
+  gtk_widget_set_valign(d->badge, GTK_ALIGN_START);
+  gtk_widget_set_sensitive(d->badge, FALSE);
+  gtk_widget_hide(d->badge);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->badge);
 
   d->popover = gtk_popover_new(d->button);
   gtk_widget_set_name(d->popover, "log-history-popover");
@@ -195,7 +227,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->button), "button-release-event",
                    G_CALLBACK(_button_press_release), self);
 
-  self->widget = dt_gui_hbox(d->button);
+  self->widget = dt_gui_hbox(overlay);
 
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_LOG_REDRAW,
                             G_CALLBACK(_log_redraw_callback), self);
