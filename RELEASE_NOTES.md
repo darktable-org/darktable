@@ -161,8 +161,6 @@ changes (where available).
 
 - Added touchpad gestures to darkroom and lighttable culling layouts,
   including pinch zooming and two-finger panning.
-  Follow-up fixes refined input-source handling to keep panning
-  limited to touchpad smooth-scroll input.
   Smartphone-like simultaneous pinch zooming and two-finger panning
   are now possible on Linux and Windows.
   Zooming gestures are limited to 100%, additionally pressing CTRL
@@ -219,10 +217,12 @@ changes (where available).
 
 - Increased performance for OpenCL guided filter by internal tiling.
 
-- Increased performance of `blurs` module for both CPU and OpenCL code paths for large radii,
-  which made it possible to increase Gaussian blur's maximum radius from 128px to 256px.
+- Increased performance of `blurs` module for both CPU and OpenCL code
+  paths for large radii, which made it possible to increase Gaussian
+  blur's maximum radius from 128px to 256px.
 
-- Increased performance of `overlay` (composite) module and added OpenCL code path.
+- Increased performance of `overlay` (composite) module and added
+  OpenCL code path.
 
 ## Other Changes
 
@@ -305,7 +305,7 @@ changes (where available).
 - The OpenCL preferences interface and the internal handling and detection
   of OpenCL devices and drivers got an overhaul.
   Users can switch on "OpenCL fast mode" in preferences leading to slightly
-  more differences compared to CPU output for sligtly more performance. 
+  more differences compared to CPU output for sligtly more performance.
   The per-device conf settings got an update, see the docs for reference.
 
 ## Bug Fixes
@@ -347,8 +347,9 @@ changes (where available).
 
 - Fix for usage of incorrect color profiles on secondary monitors on
   Windows.
-  
-- Various fixes for visibly wrong colors after chaning a profile in colorin or colorout. 
+
+- Various fixes for visibly wrong colors after chaning a profile in
+  colorin or colorout.
 
 - Fixed unexpected localization of user's defined preset name and
   properly localize the module name displayed in the preset dialog.
