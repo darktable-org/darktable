@@ -396,13 +396,13 @@ void dt_colorspaces_update_display_transforms();
 void dt_colorspaces_update_display2_transforms();
 
 /** Calculate CAM->XYZ, XYZ->CAM matrices **/
-int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
+gboolean dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
                                            float in_XYZ_to_CAM[9],
                                            double XYZ_to_CAM[4][3],
                                            double CAM_to_XYZ[3][4]);
 
 /** Calculate CAM->RGB, RGB->CAM matrices and default WB multipliers */
-int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
+gboolean dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
                                            double RGB_to_CAM[4][3],
                                            double CAM_to_RGB[3][4],
                                            const float *embedded_matrix,
