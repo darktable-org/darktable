@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-27 15:33-0300\n"
-"PO-Revision-Date: 2026-05-27 15:32-0300\n"
+"POT-Creation-Date: 2026-05-30 11:10-0300\n"
+"PO-Revision-Date: 2026-05-30 11:13-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3098,8 +3098,8 @@ msgid "reverse all"
 msgstr "reverter tudo"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:652
-#: ../src/common/colorspaces.c:1426 ../src/common/colorspaces.c:1774
-#: ../src/iop/colorout.c:856
+#: ../src/common/colorspaces.c:1430 ../src/common/colorspaces.c:1778
+#: ../src/iop/colorout.c:859
 msgid "export profile"
 msgstr "perfil de exportação"
 
@@ -3116,14 +3116,14 @@ msgstr "Rec2020"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:655
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:310
-#: ../src/common/colorspaces.c:1794
+#: ../src/common/colorspaces.c:1798
 msgid "Display P3"
 msgstr "Display P3"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:656
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:311
-#: ../src/common/colorspaces.c:1465 ../src/common/colorspaces.c:1746
+#: ../src/common/colorspaces.c:1469 ../src/common/colorspaces.c:1750
 #: ../src/libs/print_settings.c:1440
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatível)"
@@ -3132,7 +3132,7 @@ msgstr "Adobe RGB (compatível)"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:312
-#: ../src/common/colorspaces.c:1454 ../src/common/colorspaces.c:1744
+#: ../src/common/colorspaces.c:1458 ../src/common/colorspaces.c:1748
 #: ../src/libs/print_settings.c:1433
 msgid "sRGB"
 msgstr "sRGB"
@@ -3256,7 +3256,7 @@ msgstr "preservar cores"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/common/colorspaces.c:1740 ../src/dtgtk/stylemenu.c:69
+#: ../src/common/colorspaces.c:1744 ../src/dtgtk/stylemenu.c:69
 #: ../src/gui/guides.c:833 ../src/iop/basecurve.c:2102
 #: ../src/iop/channelmixerrgb.c:4698 ../src/iop/clipping.c:1916
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2113
@@ -3602,7 +3602,7 @@ msgstr "raio"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:280
-#: ../src/libs/neural_restore.c:4165 ../src/libs/neural_restore.c:4182
+#: ../src/libs/neural_restore.c:4174 ../src/libs/neural_restore.c:4191
 msgid "strength"
 msgstr "força"
 
@@ -4208,13 +4208,13 @@ msgstr "recorte de gama"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:306
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
-#: ../src/common/colorspaces.c:1472 ../src/common/colorspaces.c:1748
+#: ../src/common/colorspaces.c:1476 ../src/common/colorspaces.c:1752
 msgid "linear Rec709 RGB"
 msgstr "RGB Rec709 linear"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:307
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:206
-#: ../src/common/colorspaces.c:1486 ../src/common/colorspaces.c:1750
+#: ../src/common/colorspaces.c:1490 ../src/common/colorspaces.c:1754
 msgid "linear Rec2020 RGB"
 msgstr "RGB Rec2020 linear"
 
@@ -5458,7 +5458,7 @@ msgid "gamma Rec709 RGB"
 msgstr "gama Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:207
-#: ../src/common/colorspaces.c:1530 ../src/common/colorspaces.c:1784
+#: ../src/common/colorspaces.c:1534 ../src/common/colorspaces.c:1788
 msgid "linear ProPhoto RGB"
 msgstr "RGB ProPhoto linear"
 
@@ -6197,7 +6197,7 @@ msgstr "menu flutuante"
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1816
 #: ../src/libs/import.c:1928 ../src/libs/import.c:2020
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4110
+#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4119
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1701
@@ -6630,7 +6630,7 @@ msgid "history"
 msgstr "histórico"
 
 #: ../src/common/collection.c:636 ../src/common/colorlabels.c:389
-#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1613
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1637
 #: ../src/libs/filtering.c:59 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:146
 msgid "color label"
@@ -6668,7 +6668,7 @@ msgstr "grupo"
 msgid "duplicates"
 msgstr "duplicatas"
 
-#: ../src/common/collection.c:660 ../src/dtgtk/thumbnail.c:1628
+#: ../src/common/collection.c:660 ../src/dtgtk/thumbnail.c:1652
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:381
 msgid "local copy"
@@ -7082,121 +7082,121 @@ msgstr "todas as etiquetas coloridas foram removidas"
 msgid "clear"
 msgstr "limpar"
 
-#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1778
+#: ../src/common/colorspaces.c:1425 ../src/common/colorspaces.c:1782
 msgid "work profile"
 msgstr "perfil de trabalho"
 
-#: ../src/common/colorspaces.c:1431 ../src/common/colorspaces.c:1776
+#: ../src/common/colorspaces.c:1435 ../src/common/colorspaces.c:1780
 #: ../src/views/darkroom.c:3221
 msgid "softproof profile"
 msgstr "perfil de prova digital"
 
-#: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1758
+#: ../src/common/colorspaces.c:1445 ../src/common/colorspaces.c:1762
 msgid "system display profile"
 msgstr "perfil do monitor do sistema"
 
-#: ../src/common/colorspaces.c:1446 ../src/common/colorspaces.c:1780
+#: ../src/common/colorspaces.c:1450 ../src/common/colorspaces.c:1784
 msgid "system display profile (second window)"
 msgstr "perfil do monitor do sistema (segunda janela)"
 
-#: ../src/common/colorspaces.c:1459
+#: ../src/common/colorspaces.c:1463
 msgid "sRGB (web-safe)"
 msgstr "sRGB (seguro para Web)"
 
-#: ../src/common/colorspaces.c:1479 ../src/common/colorspaces.c:1782
+#: ../src/common/colorspaces.c:1483 ../src/common/colorspaces.c:1786
 msgid "Rec709 RGB"
 msgstr "RGB Rec709"
 
-#: ../src/common/colorspaces.c:1494
+#: ../src/common/colorspaces.c:1498
 msgid "PQ Rec2020 RGB"
 msgstr "RGB PQ Rec2020"
 
-#: ../src/common/colorspaces.c:1502
+#: ../src/common/colorspaces.c:1506
 msgid "HLG Rec2020 RGB"
 msgstr "RGB HLG Rec2020"
 
-#: ../src/common/colorspaces.c:1509
+#: ../src/common/colorspaces.c:1513
 msgid "PQ P3 RGB"
 msgstr "RGB PQ P3"
 
-#: ../src/common/colorspaces.c:1515
+#: ../src/common/colorspaces.c:1519
 msgid "HLG P3 RGB"
 msgstr "RGB HLG P3"
 
-#: ../src/common/colorspaces.c:1522
+#: ../src/common/colorspaces.c:1526
 msgid "Display P3 RGB"
 msgstr "Display P3 RGB"
 
-#: ../src/common/colorspaces.c:1537 ../src/common/colorspaces.c:1752
+#: ../src/common/colorspaces.c:1541 ../src/common/colorspaces.c:1756
 msgid "linear XYZ"
 msgstr "XYZ linear"
 
-#: ../src/common/colorspaces.c:1544 ../src/common/colorspaces.c:1754
+#: ../src/common/colorspaces.c:1548 ../src/common/colorspaces.c:1758
 #: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2051
 #: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:369
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1552 ../src/common/colorspaces.c:1756
+#: ../src/common/colorspaces.c:1556 ../src/common/colorspaces.c:1760
 msgid "linear infrared BGR"
 msgstr "BGR infravermelho linear"
 
-#: ../src/common/colorspaces.c:1557
+#: ../src/common/colorspaces.c:1561
 msgid "BRG (for testing)"
 msgstr "BRG (para teste)"
 
-#: ../src/common/colorspaces.c:1663
+#: ../src/common/colorspaces.c:1667
 #, c-format
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
 "perfil `%s` não usável como perfil de histograma. foi substituído por sRGB!"
 
-#: ../src/common/colorspaces.c:1742
+#: ../src/common/colorspaces.c:1746
 msgid "no filename"
 msgstr "nenhum nome do arquivo"
 
-#: ../src/common/colorspaces.c:1760
+#: ../src/common/colorspaces.c:1764
 msgid "embedded ICC profile"
 msgstr "perfil ICC embutido"
 
-#: ../src/common/colorspaces.c:1762
+#: ../src/common/colorspaces.c:1766
 msgid "embedded matrix"
 msgstr "matriz embutida"
 
-#: ../src/common/colorspaces.c:1764
+#: ../src/common/colorspaces.c:1768
 msgid "standard color matrix"
 msgstr "matriz de cor padrão"
 
-#: ../src/common/colorspaces.c:1766
+#: ../src/common/colorspaces.c:1770
 msgid "enhanced color matrix"
 msgstr "matriz de cor aprimorada"
 
-#: ../src/common/colorspaces.c:1768
+#: ../src/common/colorspaces.c:1772
 msgid "vendor color matrix"
 msgstr "matriz de cor do fabricante"
 
-#: ../src/common/colorspaces.c:1770
+#: ../src/common/colorspaces.c:1774
 msgid "alternate color matrix"
 msgstr "matriz de cor alternativa"
 
-#: ../src/common/colorspaces.c:1772
+#: ../src/common/colorspaces.c:1776
 msgid "BRG (experimental)"
 msgstr "BRG (experimental)"
 
-#: ../src/common/colorspaces.c:1786
+#: ../src/common/colorspaces.c:1790
 msgid "PQ Rec2020"
 msgstr "PQ Rec2020"
 
-#: ../src/common/colorspaces.c:1788
+#: ../src/common/colorspaces.c:1792
 msgid "HLG Rec2020"
 msgstr "HLG Rec2020"
 
-#: ../src/common/colorspaces.c:1790
+#: ../src/common/colorspaces.c:1794
 msgid "PQ P3"
 msgstr "PQ P3"
 
-#: ../src/common/colorspaces.c:1792
+#: ../src/common/colorspaces.c:1796
 msgid "HLG P3"
 msgstr "HLG P3"
 
@@ -7224,33 +7224,33 @@ msgstr "erro imprimindo `%s' em `%s'"
 msgid "printing `%s' on `%s'"
 msgstr "imprimindo `%s' em `%s'"
 
-#: ../src/common/darktable.c:429
+#: ../src/common/darktable.c:432
 #, c-format
 msgid "found strange path `%s'"
 msgstr "caminho estranho encontrado `%s'"
 
-#: ../src/common/darktable.c:444
+#: ../src/common/darktable.c:447
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erro carregando pasta `%s'"
 
-#: ../src/common/darktable.c:468
+#: ../src/common/darktable.c:471
 #, c-format
 msgid "file `%s' has unsupported format!"
 msgstr "arquivo `%s' é de formato não suportado!"
 
-#: ../src/common/darktable.c:470
+#: ../src/common/darktable.c:473
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "arquivo `%s' é de formato desconhecido!"
 
-#: ../src/common/darktable.c:483 ../src/control/jobs/control_jobs.c:2877
+#: ../src/common/darktable.c:486 ../src/control/jobs/control_jobs.c:2877
 #: ../src/control/jobs/control_jobs.c:2932
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:1604
+#: ../src/common/darktable.c:1607
 #, c-format
 msgid ""
 "you do not have write access to create one of the user directories:\n"
@@ -7265,121 +7265,121 @@ msgstr ""
 "\n"
 "por favor resolva isto e abra o darktable novamente"
 
-#: ../src/common/darktable.c:1609
+#: ../src/common/darktable.c:1612
 msgid "darktable - unable to create directories"
 msgstr "darktable - não foi possível criar diretórios"
 
-#: ../src/common/darktable.c:1611 ../src/common/database.c:4137
+#: ../src/common/darktable.c:1614 ../src/common/database.c:4137
 #: ../src/common/database.c:4339
 msgid "_quit darktable"
 msgstr "_terminar o darktable"
 
 #. initialize the database
-#: ../src/common/darktable.c:1685
+#: ../src/common/darktable.c:1688
 msgid "opening image library"
 msgstr "abrindo boblioteca de imagens"
 
-#: ../src/common/darktable.c:1698
+#: ../src/common/darktable.c:1701
 msgid "forwarding image(s) to running instance"
 msgstr "enviando imagem(s) para a instância em execução"
 
-#: ../src/common/darktable.c:1729
+#: ../src/common/darktable.c:1732
 msgid "preparing database"
 msgstr "preparando base de dados"
 
 #. init darktable tags table
-#: ../src/common/darktable.c:1733
+#: ../src/common/darktable.c:1736
 msgid "setting up tags table"
 msgstr "preparando tabela de etiquetas"
 
 #. Initialize the signal system
-#: ../src/common/darktable.c:1737
+#: ../src/common/darktable.c:1740
 msgid "initializing signals and control"
 msgstr "inicializando sinais e controle"
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1758
 msgid "importing default styles"
 msgstr "importando estilos default"
 
-#: ../src/common/darktable.c:1857
+#: ../src/common/darktable.c:1860
 msgid "initializing GraphicsMagick"
 msgstr "inicializando GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1869
+#: ../src/common/darktable.c:1872
 msgid "initializing ImageMagick"
 msgstr "inicializando ImageMagick"
 
-#: ../src/common/darktable.c:1874
+#: ../src/common/darktable.c:1877
 msgid "initializing libheif"
 msgstr "inicializando libheif"
 
-#: ../src/common/darktable.c:1878
+#: ../src/common/darktable.c:1881
 msgid "initializing WB presets"
 msgstr "inicializando predefinições de WB"
 
 #. Do locale-sensitive init BEFORE starting any background worker jobs
-#: ../src/common/darktable.c:1882
+#: ../src/common/darktable.c:1885
 msgid "loading noise profiles"
 msgstr "carregando perfis de ruído"
 
-#: ../src/common/darktable.c:1885
+#: ../src/common/darktable.c:1888
 msgid "starting OpenCL"
 msgstr "iniciando OpenCL"
 
-#: ../src/common/darktable.c:1909
+#: ../src/common/darktable.c:1912
 msgid "synchronizing local copies"
 msgstr "sincronizando cópias locais"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1916
+#: ../src/common/darktable.c:1919
 msgid "initializing camera control"
 msgstr "inicializando controle da câmera"
 
-#: ../src/common/darktable.c:1929
+#: ../src/common/darktable.c:1932
 msgid "initializing GUI"
 msgstr "inicializando interface gráfica"
 
-#: ../src/common/darktable.c:1946
+#: ../src/common/darktable.c:1949
 msgid "loading image formats"
 msgstr "carregando formatos de imagem"
 
-#: ../src/common/darktable.c:1951 ../src/develop/imageop.c:1719
+#: ../src/common/darktable.c:1954 ../src/develop/imageop.c:1719
 msgid "loading processing modules"
 msgstr "carregando módulos de processamento"
 
-#: ../src/common/darktable.c:1983
+#: ../src/common/darktable.c:1986
 msgid "loading views"
 msgstr "carregando isualizações"
 
-#: ../src/common/darktable.c:1987 ../src/libs/lib.c:940
+#: ../src/common/darktable.c:1990 ../src/libs/lib.c:940
 msgid "loading utility modules"
 msgstr "carregando módulos utilitários"
 
-#: ../src/common/darktable.c:1994
+#: ../src/common/darktable.c:1997
 msgid "initializing Lua"
 msgstr "inicializando lua"
 
 #. If only one image is listed, attempt to load it in darkroom
-#: ../src/common/darktable.c:2023
+#: ../src/common/darktable.c:2026
 msgid "importing image"
 msgstr "importando imagem"
 
-#: ../src/common/darktable.c:2042
+#: ../src/common/darktable.c:2045
 msgid "configuration information"
 msgstr "informações de configuração"
 
-#: ../src/common/darktable.c:2044
+#: ../src/common/darktable.c:2047
 msgid "_show this message again"
 msgstr "_mostrar esta mensagem novamente"
 
-#: ../src/common/darktable.c:2044
+#: ../src/common/darktable.c:2047
 msgid "_dismiss"
 msgstr "_remover"
 
-#: ../src/common/darktable.c:2535
+#: ../src/common/darktable.c:2538
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -7387,12 +7387,12 @@ msgstr ""
 "O interpolador RCD foi definido como padrão ao invés do PPG porque tem "
 "melhor desempenho e qualidade."
 
-#: ../src/common/darktable.c:2537
+#: ../src/common/darktable.c:2540
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "veja preferências/sala escura/interpolação cromática para zoom na sala escura"
 
-#: ../src/common/darktable.c:2543
+#: ../src/common/darktable.c:2546
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -7400,7 +7400,7 @@ msgstr ""
 "a interface com o usuário e os mecanismos internos para ajuste fino de "
 "desempenho do darktable mudaram."
 
-#: ../src/common/darktable.c:2545
+#: ../src/common/darktable.c:2548
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -7408,15 +7408,15 @@ msgstr ""
 "você não encontrará mais headroom e amigos, ao invés disso em preferências/"
 "processamento use:"
 
-#: ../src/common/darktable.c:2547
+#: ../src/common/darktable.c:2550
 msgid "1) darktable resources"
 msgstr "1) recursos do darktable"
 
-#: ../src/common/darktable.c:2549
+#: ../src/common/darktable.c:2552
 msgid "2) tune OpenCL performance"
 msgstr "2) ajustar desempenho do OpenCL"
 
-#: ../src/common/darktable.c:2556
+#: ../src/common/darktable.c:2559
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -7424,7 +7424,7 @@ msgstr ""
 "alguns valores de configuração globais relevantes para o desempenho de "
 "OpenCL não são mais usados."
 
-#: ../src/common/darktable.c:2558
+#: ../src/common/darktable.c:2561
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -7432,8 +7432,8 @@ msgstr ""
 "ao invés disso você encontrará dados 'por dispositivo' em "
 "'cldevice_v5_canonical-name'. o conteúdo é:"
 
-#: ../src/common/darktable.c:2560 ../src/common/darktable.c:2579
-#: ../src/common/darktable.c:2594
+#: ../src/common/darktable.c:2563 ../src/common/darktable.c:2582
+#: ../src/common/darktable.c:2597
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -7441,18 +7441,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2562 ../src/common/darktable.c:2581
+#: ../src/common/darktable.c:2565 ../src/common/darktable.c:2584
 msgid "you may tune as before except 'magic'"
 msgstr "você pode ajustar como antes exceto por 'magic'"
 
-#: ../src/common/darktable.c:2568
+#: ../src/common/darktable.c:2571
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Suas configurações de compilador OpenCL para todos os dispositivos foram "
 "redefinidas para o padrão."
 
-#: ../src/common/darktable.c:2575
+#: ../src/common/darktable.c:2578
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -7460,14 +7460,14 @@ msgstr ""
 "Os dados de parâmetros globais OpenCL 'por dispositivo' foram recriados com "
 "nome atualizado."
 
-#: ../src/common/darktable.c:2577 ../src/common/darktable.c:2592
+#: ../src/common/darktable.c:2580 ../src/common/darktable.c:2595
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "você encontrará dados 'por dispositivo' em 'cldevice_v5_canonical-name'. o "
 "conteúdo é:"
 
-#: ../src/common/darktable.c:2583
+#: ../src/common/darktable.c:2586
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -7475,7 +7475,7 @@ msgstr ""
 "Se você está usando nomes de dispositivo como 'opencl_device_priority' você "
 "deveria atualizá-los para os novos nomes."
 
-#: ../src/common/darktable.c:2590
+#: ../src/common/darktable.c:2593
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -7483,7 +7483,7 @@ msgstr ""
 "dados de configuração OpenCL 'por dispositivo' foram estendidos "
 "automaticamente por 'unified-fraction'."
 
-#: ../src/common/darktable.c:2601
+#: ../src/common/darktable.c:2604
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -7491,13 +7491,13 @@ msgstr ""
 "As configurações OpenCL 'por dispositivo' podem ter sido atualizadas.\n"
 "\n"
 
-#: ../src/common/darktable.c:2606
+#: ../src/common/darktable.c:2609
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
 msgstr "Timeout obrigatório do OpenCL foi atualizado para 1000.\n"
 
-#: ../src/common/darktable.c:2612
+#: ../src/common/darktable.c:2615
 msgid ""
 "OpenCL 'per device' settings have changed.\n"
 "\n"
@@ -7505,14 +7505,14 @@ msgstr ""
 "As configurações OpenCL 'por dispositivo' foram modiricadas..\n"
 "\n"
 
-#: ../src/common/darktable.c:2613
+#: ../src/common/darktable.c:2616
 msgid ""
 "you will find 'per device' data in 'cldevice_v6_canonical-name'. content is:"
 msgstr ""
 "você encontrará dados 'por dispositivo' em 'cldevice_v6_canonical-name'. o "
 "conteúdo é:"
 
-#: ../src/common/darktable.c:2615
+#: ../src/common/darktable.c:2618
 msgid ""
 " 'micro_nap' 'pinned_memory' 'eventhandles' 'async' 'disabled' 'advantage' "
 "'unified_fraction'"
@@ -8208,11 +8208,11 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1243
+#: ../src/common/opencl.c:1280
 msgid "no working OpenCL library found"
 msgstr "nenhuma biblioteca OpenCL funcional encontrada"
 
-#: ../src/common/opencl.c:1263
+#: ../src/common/opencl.c:1300
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -8230,23 +8230,23 @@ msgstr ""
 "  - nenhum driver OpenCL instalado,\n"
 "  - múltiplos drivers instalados por plataforma\n"
 
-#: ../src/common/opencl.c:1378
+#: ../src/common/opencl.c:1415
 msgid "no devices found for unknown platform"
 msgstr "nenhum dispositivo encontrado para plataforma desconhecida"
 
-#: ../src/common/opencl.c:1425
+#: ../src/common/opencl.c:1462
 msgid "not enough memory for OpenCL devices"
 msgstr "não há memória suficiente para dispositivos OpenCL"
 
-#: ../src/common/opencl.c:1463
+#: ../src/common/opencl.c:1500
 msgid "no OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL encontrado"
 
-#: ../src/common/opencl.c:1506
+#: ../src/common/opencl.c:1543
 msgid "no suitable OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL adequado encontrado"
 
-#: ../src/common/opencl.c:1530
+#: ../src/common/opencl.c:1567
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -8257,12 +8257,12 @@ msgstr ""
 "%s\n"
 "desabilitando OpenCL por enquanto"
 
-#: ../src/common/opencl.c:1566
+#: ../src/common/opencl.c:1603
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "perfil de escalonamento OpenCL ajustado para padrão, a configuração mudou"
 
-#: ../src/common/opencl.c:2366
+#: ../src/common/opencl.c:2403
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "construindo programa OpenCL %s para %s"
@@ -9971,7 +9971,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2672 ../src/develop/blend_gui.c:3559
 #: ../src/iop/agx.c:1825 ../src/iop/agx.c:2045 ../src/iop/agx.c:2054
-#: ../src/iop/basicadj.c:623 ../src/iop/colorbalancergb.c:2000
+#: ../src/iop/basicadj.c:623 ../src/iop/colorbalancergb.c:2021
 #: ../src/iop/colorequal.c:3097 ../src/iop/exposure.c:1215
 #: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1481 ../src/iop/filmic.c:1494
 #: ../src/iop/filmic.c:1537 ../src/iop/filmicrgb.c:4385
@@ -10253,7 +10253,7 @@ msgid "feathering radius"
 msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3607 ../src/develop/blend_gui.c:3616
-#: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3112
+#: ../src/iop/colorbalancergb.c:2043 ../src/iop/colorequal.c:3112
 #: ../src/iop/colorequal.c:3139 ../src/iop/demosaic.c:1790
 #: ../src/iop/demosaic.c:1809 ../src/iop/diffuse.c:1775
 #: ../src/iop/diffuse.c:1785 ../src/iop/retouch.c:2671
@@ -10425,7 +10425,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4243
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4252
 msgid "process"
 msgstr "processamento"
 
@@ -11284,7 +11284,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "imagens agrupadas"
 
-#: ../src/dtgtk/thumbnail.c:348 ../src/dtgtk/thumbnail.c:1700
+#: ../src/dtgtk/thumbnail.c:348 ../src/dtgtk/thumbnail.c:1724
 #: ../src/iop/ashift.c:6046 ../src/iop/ashift.c:6133 ../src/iop/ashift.c:6135
 #: ../src/iop/ashift.c:6137 ../src/libs/navigation.c:124
 #: ../src/libs/navigation.c:268
@@ -15113,7 +15113,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4145
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4154
 #: ../src/views/lighttable.c:1588
 msgid "page"
 msgstr "página"
@@ -17016,7 +17016,7 @@ msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
 #: ../src/gui/preferences_ai.c:1385 ../src/iop/lut3d.c:1576
-#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4111
+#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4120
 msgid "_select"
 msgstr "_selecionar"
 
@@ -17632,7 +17632,7 @@ msgstr "copiar configurações de uma área de trabalho existente"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4276
+#: ../src/libs/neural_restore.c:4285
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -17656,7 +17656,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:4273
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:4282
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -17788,7 +17788,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4276
+#: ../src/libs/neural_restore.c:4285
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -17892,7 +17892,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4276
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -19273,7 +19273,7 @@ msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
 #: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1357
-#: ../src/libs/neural_restore.c:4153
+#: ../src/libs/neural_restore.c:4162
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -21724,48 +21724,69 @@ msgid "weight of the shadows over the whole tonal range"
 msgstr "peso das sombras sobre a faixa tonal total"
 
 #: ../src/iop/colorbalancergb.c:1987
+msgid ""
+"displays a shadows mask, overlaid as a checkerboard\n"
+"the still-visible area of the image (not hidden by the mask) is the area\n"
+"that will be affected by the shadows sliders in the other tabs"
+msgstr ""
+
+#: ../src/iop/colorbalancergb.c:1994
 msgid "position of the middle-gray reference for masking"
 msgstr "posição da referência de cinza médio para mascaramento"
 
-#: ../src/iop/colorbalancergb.c:1993
+#: ../src/iop/colorbalancergb.c:2000
+msgid ""
+"displays a mid-tones mask, overlaid as a checkerboard\n"
+"the still-visible area of the image (not hidden by the mask) is the area\n"
+"that will be affected by the mid-tones sliders in the other tabs"
+msgstr ""
+
+#: ../src/iop/colorbalancergb.c:2007
 msgid "weights of highlights over the whole tonal range"
 msgstr "peso dos realces sobre a faixa tonal total"
 
-#: ../src/iop/colorbalancergb.c:1996
+#: ../src/iop/colorbalancergb.c:2013
+msgid ""
+"displays a highlights mask, overlaid as a checkerboard\n"
+"the still-visible area of the image (not hidden by the mask) is the area\n"
+"that will be affected by the highlights sliders in the other tabs"
+msgstr ""
+
+#: ../src/iop/colorbalancergb.c:2017
 msgctxt "section"
 msgid "threshold"
 msgstr "limite"
 
-#: ../src/iop/colorbalancergb.c:2001
+#: ../src/iop/colorbalancergb.c:2022
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "valor de pico de luminância de branco usado para normalizar a função de "
 "potência"
 
-#: ../src/iop/colorbalancergb.c:2007
+#: ../src/iop/colorbalancergb.c:2028
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
 "valor de pico de luminância de cinza usado para normalizar a função de "
 "potência"
 
-#: ../src/iop/colorbalancergb.c:2009
+#: ../src/iop/colorbalancergb.c:2030
 msgctxt "section"
 msgid "mask preview settings"
 msgstr "configurações de pré-visualização de máscara"
 
-#: ../src/iop/colorbalancergb.c:2013 ../src/iop/colorbalancergb.c:2018
+#: ../src/iop/colorbalancergb.c:2034 ../src/iop/colorbalancergb.c:2039
 msgid "select color of the checkerboard from a swatch"
 msgstr "seleciona a cor do tabuleiro em uma amostra"
 
-#: ../src/iop/colorbalancergb.c:2023
+#: ../src/iop/colorbalancergb.c:2044
 msgid "checkerboard size"
 msgstr "tamanho do tabuleiro"
 
-#: ../src/iop/colorbalancergb.c:2027
+#: ../src/iop/colorbalancergb.c:2048
 msgid "checkerboard color 1"
 msgstr "cor 1 do tabuleiro"
 
-#: ../src/iop/colorbalancergb.c:2028
+#: ../src/iop/colorbalancergb.c:2049
 msgid "checkerboard color 2"
 msgstr "cor 2 do tabuleiro"
 
@@ -22530,52 +22551,52 @@ msgstr ""
 msgid "non-linear, RGB or Lab, display-referred"
 msgstr "não-linear, RGB ou Lab, relativo à exibição"
 
-#: ../src/iop/colorout.c:654
+#: ../src/iop/colorout.c:657
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "perfil de saída não encontrado foi substituído por linear sRGB!"
 
-#: ../src/iop/colorout.c:676
+#: ../src/iop/colorout.c:679
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "o perfil de prova digital não encontrado foi substituído pelo sRGB!"
 
-#: ../src/iop/colorout.c:719
+#: ../src/iop/colorout.c:722
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "perfil de saída não suportado foi substituído por linear sRGB!"
 
-#: ../src/iop/colorout.c:841
+#: ../src/iop/colorout.c:844
 msgid "output intent"
 msgstr "intenção de saída"
 
-#: ../src/iop/colorout.c:842
+#: ../src/iop/colorout.c:845
 msgid "rendering intent"
 msgstr "intenção de renderização"
 
-#: ../src/iop/colorout.c:844 ../src/libs/export.c:1637
+#: ../src/iop/colorout.c:847 ../src/libs/export.c:1637
 #: ../src/libs/print_settings.c:2573 ../src/libs/print_settings.c:2922
 #: ../src/views/darkroom.c:3184 ../src/views/lighttable.c:1488
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:845 ../src/libs/export.c:1638
+#: ../src/iop/colorout.c:848 ../src/libs/export.c:1638
 #: ../src/libs/print_settings.c:2574 ../src/libs/print_settings.c:2923
 #: ../src/views/darkroom.c:3185 ../src/views/lighttable.c:1489
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:846 ../src/libs/export.c:1639
+#: ../src/iop/colorout.c:849 ../src/libs/export.c:1639
 #: ../src/libs/print_settings.c:2575 ../src/libs/print_settings.c:2924
 #: ../src/views/darkroom.c:3186 ../src/views/lighttable.c:1490
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:847 ../src/libs/export.c:1640
+#: ../src/iop/colorout.c:850 ../src/libs/export.c:1640
 #: ../src/libs/print_settings.c:2576 ../src/libs/print_settings.c:2925
 #: ../src/views/darkroom.c:3187 ../src/views/lighttable.c:1491
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
 
-#: ../src/iop/colorout.c:863
+#: ../src/iop/colorout.c:866
 msgid "export ICC profiles"
 msgstr "perfil ICC de exportação"
 
@@ -23106,7 +23127,7 @@ msgid "variance blue: "
 msgstr "variância de azul: "
 
 #: ../src/iop/denoiseprofile.c:3678 ../src/libs/export.c:1600
-#: ../src/libs/neural_restore.c:4284 ../src/libs/print_settings.c:2516
+#: ../src/libs/neural_restore.c:4293 ../src/libs/print_settings.c:2516
 #: ../src/libs/print_settings.c:2872
 msgid "profile"
 msgstr "perfil"
@@ -25085,7 +25106,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4453 ../src/iop/overlay.c:1124 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1484 ../src/libs/export.c:1558
-#: ../src/libs/neural_restore.c:4194
+#: ../src/libs/neural_restore.c:4203
 msgid "scale"
 msgstr "escala"
 
@@ -26275,7 +26296,7 @@ msgstr ""
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
 #: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1358
-#: ../src/libs/neural_restore.c:4151
+#: ../src/libs/neural_restore.c:4160
 msgid "raw denoise"
 msgstr "redução de ruído raw"
 
@@ -28727,7 +28748,7 @@ msgstr ""
 "só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1601 ../src/libs/export.c:1636
-#: ../src/libs/neural_restore.c:4285 ../src/libs/print_settings.c:2875
+#: ../src/libs/neural_restore.c:4294 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
 msgstr "configurações da imagem"
@@ -31249,12 +31270,12 @@ msgid "out of memory for detail recovery buffer"
 msgstr "memória insuficiente para buffer de recuperação de detalhes"
 
 #: ../src/libs/neural_restore.c:1108
-msgid "bayer"
-msgstr "bayer"
+msgid "Bayer"
+msgstr "Bayer"
 
 #: ../src/libs/neural_restore.c:1112
-msgid "x-trans"
-msgstr "x-trans"
+msgid "X-Trans"
+msgstr "X-Trans"
 
 #: ../src/libs/neural_restore.c:1123
 #, c-format
@@ -31274,7 +31295,7 @@ msgid "raw denoise: image is not a supported raw sensor format"
 msgstr ""
 "redução de ruído em raw: imagem não é em formato suportado de sensor raw"
 
-#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4155
+#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4164
 msgid "upscale"
 msgstr "aumentar escala"
 
@@ -31365,7 +31386,7 @@ msgstr "clique para selecionar área de pré-visualização"
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:3676 ../src/libs/neural_restore.c:3866
+#: ../src/libs/neural_restore.c:3676 ../src/libs/neural_restore.c:3870
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
@@ -31385,27 +31406,27 @@ msgstr "a inicialização de pré-visualização falhou"
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:4107 ../src/libs/neural_restore.c:4371
+#: ../src/libs/neural_restore.c:4116 ../src/libs/neural_restore.c:4380
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:4152
+#: ../src/libs/neural_restore.c:4161
 msgid "AI raw denoising"
 msgstr "remoção de ruído em raw com IA"
 
-#: ../src/libs/neural_restore.c:4154
+#: ../src/libs/neural_restore.c:4163
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:4156
+#: ../src/libs/neural_restore.c:4165
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:4168
+#: ../src/libs/neural_restore.c:4177
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "mesclar entre CFA de origem (0%) e a saída com remoção de ruído (100%)"
 
-#: ../src/libs/neural_restore.c:4186
+#: ../src/libs/neural_restore.c:4195
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -31414,60 +31435,60 @@ msgstr ""
 "100% aplica a saida completa do modelo de IA; valores menores trazem de "
 "volta luminância textura e granulação enquanto mantém ruído de cor suprimido"
 
-#: ../src/libs/neural_restore.c:4195
+#: ../src/libs/neural_restore.c:4204
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:4197
+#: ../src/libs/neural_restore.c:4206
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:4197
+#: ../src/libs/neural_restore.c:4206
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:4214
+#: ../src/libs/neural_restore.c:4223
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr "clique para escolher área de pré-visualização na miniatura"
 
-#: ../src/libs/neural_restore.c:4245
+#: ../src/libs/neural_restore.c:4254
 msgid "process selected images"
 msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:4263
+#: ../src/libs/neural_restore.c:4272
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:4274
+#: ../src/libs/neural_restore.c:4283
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:4316
+#: ../src/libs/neural_restore.c:4325
 msgid "color profile embedded in the output TIFF"
 msgstr "perfil de cor embutido na saída TIFF"
 
-#: ../src/libs/neural_restore.c:4326
+#: ../src/libs/neural_restore.c:4335
 msgid "preserve wide-gamut colors"
 msgstr "preservar gama ampla de cores"
 
-#: ../src/libs/neural_restore.c:4333
+#: ../src/libs/neural_restore.c:4342
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
 "affects denoise"
-msgstr ""
+msgstr "quando ligado, pixels fora da gama sRGB passam sem remoção de ruído; quando desligado, todos os pixels passam por remoção de ruído mas cores de gama ampla podem ser recortadas; só afeta remoção de ruído"
 
-#: ../src/libs/neural_restore.c:4342
+#: ../src/libs/neural_restore.c:4351
 msgid "add to the current collection"
 msgstr "adicionar à coleção atual"
 
-#: ../src/libs/neural_restore.c:4348
+#: ../src/libs/neural_restore.c:4357
 msgid "automatically import the output image into the current collection"
 msgstr "automaticamente importar imagem de saída na coleção atual"
 
-#: ../src/libs/neural_restore.c:4364
+#: ../src/libs/neural_restore.c:4373
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
