@@ -243,7 +243,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
+static void _intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorout_params_t *p = self->params;
@@ -251,7 +251,7 @@ static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
+static void _output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorout_params_t *p = self->params;
@@ -280,11 +280,10 @@ static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
 {
   dt_develop_t *dev = self->dev;
   if(!dev->gui_attached || dev->gui_leaving) return;
-  dt_dev_reprocess_center(dev);
+  dt_dev_reprocess_all(dev);
 }
 
-#if 1
-static float lerp_lut(const float *const lut, const float v)
+static float _lerp_u_lut(const float *const lut, const float v)
 {
   // TODO: check if optimization is worthwhile!
   const float ft = CLAMPS(v * (LUT_SAMPLES - 1), 0, LUT_SAMPLES - 1);
@@ -294,7 +293,6 @@ static float lerp_lut(const float *const lut, const float v)
   const float l2 = lut[t + 1];
   return l1 * (1.0f - f) + l2 * f;
 }
-#endif
 
 // call only if sure that v<1.0
 static float _lerp_lut(const float *const lut, const float v)
@@ -360,7 +358,7 @@ error:
 }
 #endif
 
-static void process_fastpath_apply_tonecurves(dt_iop_module_t *self,
+static void _process_fastpath_apply_tonecurves(dt_iop_module_t *self,
                                               dt_dev_pixelpipe_iop_t *piece,
                                               void *const ovoid,
                                               const dt_iop_roi_t *const roi_out)
@@ -540,7 +538,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if(!_transform_cmatrix(d, out, (float*)ivoid, npixels))
-      process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
+      _process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else
   {
@@ -750,10 +748,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     if(d->lut[k][0] >= 0.0f)
     {
       const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-      const float y[4] = { lerp_lut(d->lut[k], x[0]),
-                           lerp_lut(d->lut[k], x[1]),
-                           lerp_lut(d->lut[k], x[2]),
-                           lerp_lut(d->lut[k], x[3]) };
+      const float y[4] = { _lerp_u_lut(d->lut[k], x[0]),
+                           _lerp_u_lut(d->lut[k], x[1]),
+                           _lerp_u_lut(d->lut[k], x[2]),
+                           _lerp_u_lut(d->lut[k], x[3]) };
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
     else
@@ -843,7 +841,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
                                _("rendering intent"),
-                               0, intent_changed, self,
+                               0, _intent_changed, self,
                                N_("perceptual"),
                                N_("relative colorimetric"),
                                NC_("rendering intent", "saturation"),
@@ -870,7 +868,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_gui_vbox(g->output_intent, g->output_profile);
 
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
-                   G_CALLBACK(output_profile_changed), (gpointer)self);
+                   G_CALLBACK(_output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed);
