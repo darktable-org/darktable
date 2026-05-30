@@ -1247,7 +1247,9 @@ static gboolean _update_display_profile(guchar *tmp_data,
                                         char *name,
                                         const size_t name_size)
 {
-  g_free(darktable.color_profiles->xprofile_data);
+  uint8_t *old_data = darktable.color_profiles->xprofile_data;
+  const int old_size = darktable.color_profiles->xprofile_size;
+
   darktable.color_profiles->xprofile_data = tmp_data;
   darktable.color_profiles->xprofile_size = size;
 
@@ -1272,6 +1274,14 @@ static gboolean _update_display_profile(guchar *tmp_data,
       }
     }
   }
+  if(match)
+    g_free(old_data);
+  else
+  {
+    darktable.color_profiles->xprofile_data = old_data;
+    darktable.color_profiles->xprofile_size = old_size;
+  }
+
   return match;
 }
 
@@ -1280,7 +1290,12 @@ static gboolean _update_display2_profile(guchar *tmp_data,
                                          char *name,
                                          const size_t name_size)
 {
-  g_free(darktable.color_profiles->xprofile_data2);
+  /*  We try if LCMS2 accepts tmp_data, if there was a match, everything is fine
+      and we can free the old stuff, otherwise continue using old data.
+  */
+  uint8_t *old_data = darktable.color_profiles->xprofile_data2;
+  const int old_size = darktable.color_profiles->xprofile_size2;
+
   darktable.color_profiles->xprofile_data2 = tmp_data;
   darktable.color_profiles->xprofile_size2 = size;
 
@@ -1303,6 +1318,14 @@ static gboolean _update_display2_profile(guchar *tmp_data,
         break;
       }
     }
+  }
+
+  if(match)
+    g_free(old_data);
+  else
+  {
+    darktable.color_profiles->xprofile_data2 = old_data;
+    darktable.color_profiles->xprofile_size2 = old_size;
   }
   return match;
 }
@@ -1858,6 +1881,7 @@ static void _colorspaces_get_display_profile_colord_callback(GObject *source,
             && (darktable.color_profiles->xprofile_size != size
                 || memcmp(darktable.color_profiles->xprofile_data, tmp_data, size) != 0);
         }
+
         if(profile_changed)
         {
           if(profile_type == DT_COLORSPACE_DISPLAY2)
