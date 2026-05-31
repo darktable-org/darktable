@@ -1763,9 +1763,9 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
           || (dev->second_wnd && dev->preview2.pipe->processing)))
   {
     if(dev->full.pipe->processing)
-      dt_atomic_set_int(&dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_HQ);
+      dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_HQ);
     if(dev->second_wnd && dev->preview2.pipe->processing)
-      dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_HQ);
+      dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_HQ);
 
     // do it the hard way for safety
     dt_dev_pixelpipe_rebuild(dev);
@@ -3201,7 +3201,7 @@ void gui_init(dt_view_t *self)
                                                               0,
                                                               _display2_intent_callback,
                                                               dev, intents_list);
-        
+
     if(!force_lcms2)
     {
       gtk_widget_set_no_show_all(dev->profile.display_intent_widget, TRUE);
@@ -4866,11 +4866,11 @@ static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev)
     pinned_dev->preview2.widget = NULL;
 
     if(pinned_dev->preview2.pipe)
-      dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+      dt_dev_pixelpipe_set_shutdown(pinned_dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
     if(pinned_dev->preview_pipe)
-      dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+      dt_dev_pixelpipe_set_shutdown(pinned_dev->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
     if(pinned_dev->full.pipe)
-      dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+      dt_dev_pixelpipe_set_shutdown(pinned_dev->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
 
     if(pinned_dev->preview2.pipe)
     {
