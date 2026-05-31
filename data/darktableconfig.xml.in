@@ -466,13 +466,6 @@
     <shortdescription>OpenCL fast mode</shortdescription>
     <longdescription>if set the OpenCL compiler uses aggressive optimizing for better performance with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>opencl_preheated</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>OpenCL preheated</shortdescription>
-    <longdescription>if set the host mem will be preheated before device->host transfers</longdescription>
-  </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl_scheduling_profile</name>
     <type>
