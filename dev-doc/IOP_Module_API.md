@@ -4,6 +4,7 @@ This guide documents the functions that darktable Image Operation (IOP) modules 
 
 See also:
 - [Pixelpipe Architecture](pixelpipe_architecture.md) for pipeline data flow and caching.
+- [Module Lifecycle](Module_Lifecycle.md) for when these callbacks fire and what the system does around them.
 - [Introspection System](introspection.md) for parameter management.
 - [GUI Architecture](GUI.md) for GUI events, callbacks, thread safety, and widget reparenting.
 
@@ -389,6 +390,8 @@ Some modules use `reload_defaults()` to populate shared state in `dev->chroma` (
 
 Example: `temperature.c` always computes the camera's as-shot WB coefficients and D65 reference coefficients from the image's EXIF data and writes them into `dev->chroma.as_shot[]` and `dev->chroma.D65coeffs[]`. `channelmixerrgb.c` reads these values during its own `commit_params()` to perform chromatic adaptation. If `reload_defaults()` did not run unconditionally, `channelmixerrgb` would have no access to the camera's native WB — even when the white balance module itself is disabled or absent from the history.
 
+For the complete producer/consumer map, the reverse-order default-loading reasoning, and which `dev->chroma` fields each module actually reads, see [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+
 #### Where `default_params` is consumed
 
 **Initial image load.** Inside `dt_dev_read_history_ext()`, `_dt_dev_load_pipeline_defaults()` calls `reload_defaults()` for every module (in reverse pipe order) and copies each `default_params` into `params`. The function then adds the workflow default modules and any auto-presets, and builds `dev->history` **directly from the database rows** — it does *not* call `dt_dev_pop_history_items`. A module with a history row runs with the saved params from that row; a module without one keeps the image-specific `default_params` just loaded. This is true on both the first open of an image and the reopen of an edited one; the only difference is whether the database has any rows for that module.
@@ -400,7 +403,7 @@ Example: `temperature.c` always computes the camera's as-shot WB coefficients an
 
 So `default_params` is consumed in two ways: as the starting point for modules with no (or not-yet-replayed) history, and as the value the per-module "Reset to defaults" button restores. It also sets the visual "default" markers on GUI sliders (via `dt_bauhaus_slider_set_default()`).
 
-For the full sequence — load order, the `dev->chroma` side effects, and the reverse-iteration hazard — see `Module_Lifecycle.md`.
+For the full sequence — load order, the `dev->chroma` side effects, and the reverse-iteration hazard — see [Module_Lifecycle.md](Module_Lifecycle.md).
 
 ### Pipe Lifecycle Functions
 

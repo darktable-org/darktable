@@ -9,7 +9,7 @@ Darktable uses a tabs-based interface in the right panel. Each tab corresponds t
 -   **Technical**: Basic corrections (demosaic, lens, crop).
 -   **Grading**: Color and tone grading.
 -   **Effects**: Artistic effects.
--   **Quick Access Panel**: (Special case, detailed in `Quick_Access_Panel.md`).
+-   **Quick Access Panel**: (Special case, detailed in [Quick_Access_Panel.md](Quick_Access_Panel.md)).
 
 ## Implementation (`modulegroups.c`)
 
