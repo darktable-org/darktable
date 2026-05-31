@@ -101,6 +101,7 @@ data/org.darktable.darktable.desktop.in
 src/bauhaus/bauhaus.c
 src/chart/main.c
 src/cli/main.c
+src/common/ai/restore.c
 src/common/ai/restore_raw_bayer.c
 src/common/ai/restore_raw_linear.c
 src/common/ai/restore_rgb.c
@@ -136,6 +137,7 @@ src/common/noiseprofiles.c
 src/common/opencl.c
 src/common/pdf.h
 src/common/points.h
+src/common/presets.c
 src/common/printing.c
 src/common/printprof.c
 src/common/pwstorage/pwstorage.c
@@ -211,6 +213,7 @@ src/external/lua-scripts/tools/script_manager.lua
 src/generate-cache/main.c
 src/gui/about.c
 src/gui/accelerators.c
+src/gui/color_picker_proxy.c
 src/gui/gtk.c
 src/gui/gtkentry.c
 src/gui/guides.c
@@ -227,6 +230,7 @@ src/gui/workspace.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
+src/imageio/format/heif.c
 src/imageio/format/j2k.c
 src/imageio/format/jpeg.c
 src/imageio/format/jxl.c
@@ -368,6 +372,7 @@ src/libs/filters/focal.c
 src/libs/filters/history.c
 src/libs/filters/iso.c
 src/libs/filters/local_copy.c
+src/libs/filters/misc.c
 src/libs/filters/module_order.c
 src/libs/filters/rating.c
 src/libs/filters/rating_range.c
@@ -410,6 +415,7 @@ src/libs/tools/global_toolbox.c
 src/libs/tools/hinter.c
 src/libs/tools/image_infos.c
 src/libs/tools/lighttable.c
+src/libs/tools/log_history.c
 src/libs/tools/midi.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
