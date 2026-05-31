@@ -2951,13 +2951,13 @@ int dt_opencl_read_host_from_image_raw(const int devid,
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
-
-  gboolean preheated = FALSE;
-
+   
   const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
   const size_t reg[3] = { region[0], region[1], 1 };
 
 #if defined(__linux__)  // for now
+  gboolean preheated = FALSE;
+    
   if(darktable.opencl->preheated)
   {
     const size_t page_size = (size_t)sysconf(_SC_PAGESIZE);
