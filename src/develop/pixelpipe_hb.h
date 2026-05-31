@@ -31,6 +31,8 @@ G_BEGIN_DECLS
 
 #define DT_PIPECACHE_MIN 2
 
+// #define DT_PIPE_CAS_SHUTDOWN
+
 /** cached distorted mask at a geometric module's output boundary.
  *  used to avoid re-distorting masks from scratch when multiple
  *  downstream modules request the same mask type. */
@@ -320,6 +322,10 @@ static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
 const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type);
 // return pipe->shutdown as textual
 const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t stopper);
+
+// sets pipe->shutdown in atomic mode
+// If DT_PIPE_CAS_SHUTDOWN is defined do that only if shutdown was DT_DEV_PIXELPIPE_STOP_NO
+void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe, const dt_dev_pixelpipe_stopper_t stopper);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);

@@ -362,6 +362,28 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
   pipe->icc_intent = icc_intent;
 }
 
+void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe,
+                                       const dt_dev_pixelpipe_stopper_t stopper)
+{
+#ifndef DT_PIPE_CAS_SHUTDOWN
+
+  dt_atomic_set_int(&pipe->shutdown, stopper);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe shutdown request",
+      pipe, NULL, pipe->devid, NULL, NULL, "%s", dt_dev_pixelpipe_shutdown_to_str(stopper));
+
+ #else
+
+  int expected = DT_DEV_PIXELPIPE_STOP_NO;
+  const gboolean new = dt_atomic_CAS_int(&pipe->shutdown, &expected, stopper);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe shutdown request",
+      pipe, NULL, pipe->devid, NULL, NULL,
+      "%s %s",
+      new ? "" : "failed, was",
+      new ? dt_dev_pixelpipe_shutdown_to_str(stopper)
+          : dt_dev_pixelpipe_shutdown_to_str(expected));
+#endif
+}
+
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
@@ -398,7 +420,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 {
   // tell pipe that it should shut itself down if currently running
-  dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(pipe, DT_DEV_PIXELPIPE_STOP_NODES);
 
   // FIXME: either this or all process() -> gdk mutices have to be changed!
   //        (this is a circular dependency on busy_mutex and the gdk mutex)

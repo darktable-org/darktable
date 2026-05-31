@@ -176,11 +176,11 @@ static void _cleanup_pinned_dev(dt_develop_t *pinned_dev)
   pinned_dev->preview2.widget = NULL;
 
   if(pinned_dev->preview2.pipe)
-    dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(pinned_dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
   if(pinned_dev->preview_pipe)
-    dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(pinned_dev->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
   if(pinned_dev->full.pipe)
-    dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(pinned_dev->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
 
   if(pinned_dev->preview2.pipe)
   {
