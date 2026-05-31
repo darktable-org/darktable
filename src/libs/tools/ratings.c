@@ -134,7 +134,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_l
   gtk_widget_get_allocation(widget, &allocation);
 
   const float star_size = allocation.height;
-  const float star_spacing = (allocation.width - 5.0 * star_size) / 4.0;
+  const float star_spacing = (allocation.width - 6.0 * star_size) / 5.0;
 
   cairo_surface_t *cst
       = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
@@ -152,21 +152,34 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_l
   int x = 0;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
   gdk_cairo_set_source_rgba(cr, &fg_color);
+  cairo_set_line_width(cr, 1.6 * cairo_get_line_width(cr));
+  cairo_move_to(cr, x + star_size * .1, star_size / 2.0);
+  cairo_line_to(cr, x + star_size * .9, star_size / 2.0);
+  cairo_stroke(cr);
+  cairo_set_line_width(cr, cairo_get_line_width(cr) / 1.6);
+
+  // draw unrated star
+  dt_draw_star(cr, star_size / 2.0 + x, star_size / 2.0, star_size / 2.0, star_size / (2.0 * 2.5));
+  cairo_stroke(cr);
+  x += star_size + star_spacing;
+
   d->current = 0;
-  for(int k = 0; k < 5; k++)
+  for (int k = 0; k < 5; k++)
   {
     /* outline star */
     dt_draw_star(cr, star_size / 2.0 + x, star_size / 2.0, star_size / 2.0, star_size / (2.0 * 2.5));
-    if(x < d->pointerx)
+    if (x < d->pointerx)
     {
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.5);
       cairo_stroke(cr);
       gdk_cairo_set_source_rgba(cr, &fg_color);
-      if((k + 1) > d->current) d->current = darktable.control->element = (k + 1);
+      if ((k + 1) > d->current)
+        d->current = darktable.control->element = (k + 1);
     }
     else
       cairo_stroke(cr);
+
     x += star_size + star_spacing;
   }
 
@@ -194,7 +207,7 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
                                                    dt_lib_module_t *self)
 {
   dt_lib_ratings_t *d = self->data;
-  if(d->current > 0)
+  //if(d->current > 0)
   {
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
     dt_ratings_apply_on_list(imgs, d->current, TRUE);
