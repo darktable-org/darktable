@@ -377,6 +377,9 @@ history in history order, and `synch_top` re-commits only the top item. Color ca
 therefore recomputes its camera illuminant (`DT_ILLUMINANT_CAMERA`) in `process()`, which runs
 after all the pipe's commits are done.
 
+The field-by-field map and why reverse-order default loading stays correct are in
+[iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+
 ### 4b. Color-profile change (colorin / colorout)
 
 This follows the same flow as a slider adjust: `TOP_CHANGED` or `SYNCH`, depending on the
@@ -424,7 +427,8 @@ Shared state that a `reload_defaults()` depends on must therefore be **reset to 
 value before the reverse default-load**. The framework does this for white balance: it calls
 `dt_dev_reset_chroma()` just before `_dt_dev_load_pipeline_defaults()`. The neutral white
 balance coefficients make color calibration compute its default illuminant from the image's own
-as-shot coefficients, instead of from values left by the previous image.
+as-shot coefficients, instead of from values left by the previous image. The details are in
+[iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ---
 
@@ -508,9 +512,16 @@ section above.
 | `enter` | views/darkroom.c | Darkroom entry: load image, create GUIs, reload defaults, replay history |
 | `_dev_load_requested_image` | views/darkroom.c | Darkroom image switch: keep base instances, read history, replay |
 
+For the white balance and color calibration symbols (`temperature.*`, `channelmixerrgb.*` and
+the `dev->chroma` helpers), see
+[iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md#key-symbols).
+
 ## See also
 
 - [IOP_Module_API.md](IOP_Module_API.md): the callback API reference (signatures, the two
   [`reload_defaults`](IOP_Module_API.md#reload_defaults---per-image-defaults) jobs).
 - [pixelpipe_architecture.md](pixelpipe_architecture.md): pipeline architecture, including the
   [ordering-asymmetry note](pixelpipe_architecture.md#pipeline-ordering-asymmetry).
+- [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md): the white balance and
+  color calibration interaction through `dev->chroma` (worked example of the ordering
+  principle).

@@ -137,7 +137,7 @@ Two key pipeline operations iterate modules in **different** orders:
 
 This matters for modules that communicate via shared state. For example, `temperature.c` writes white balance coefficients into `dev->chroma.wb_coeffs`, and `channelmixerrgb.c` reads them in `reload_defaults()`, `commit_params()` and `process()`. During reverse-order default loading, channelmixerrgb runs first, before temperature has refreshed its values, so any shared state a `reload_defaults()` depends on must be reset to a neutral value beforehand. During history replay, channelmixerrgb may commit before temperature, so it recomputes its white-balance-dependent illuminant in `process()`.
 
-**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb_coeffs` it writes is what keeps the dependent defaults image-local. See [Module_Lifecycle.md](Module_Lifecycle.md#5-pipeline-ordering-asymmetry).
+**Consequence:** Shared state (like `dev->chroma`) must be reset before reverse-order iteration. The framework does this via `dt_dev_reset_chroma()` immediately before `_dt_dev_load_pipeline_defaults()`; the neutral `wb_coeffs` it writes is what keeps the dependent defaults image-local. See [Module_Lifecycle.md](Module_Lifecycle.md#5-pipeline-ordering-asymmetry), and for the full white balance and color calibration interaction, [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ## Introspection Connection
 
