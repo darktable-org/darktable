@@ -115,6 +115,15 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
                                       const char *filename,
                                       const int intent);
 
+/** Record the export profile, used as a cache-identity tag. Returns the (possibly NULL)
+   interned profile-info pointer, no fallback for sRGB in case of failure. */
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
+                                      struct dt_dev_pixelpipe_t *pipe,
+                                      const dt_colorspaces_color_profile_type_t type,
+                                      const char *filename,
+                                      const int intent);
+
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()
  */
@@ -162,9 +171,9 @@ void dt_ioppr_transform_image_colorspace
    float *const image_out,
    const int width,
    const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
+   const dt_iop_colorspace_type_t cst_from,
+   const dt_iop_colorspace_type_t cst_to,
+   dt_iop_colorspace_type_t *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info);
 
 void dt_ioppr_transform_image_colorspace_rgb
@@ -222,9 +231,9 @@ gboolean dt_ioppr_transform_image_colorspace_cl
    cl_mem dev_img_out,
    const int width,
    const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
+   const dt_iop_colorspace_type_t cst_from,
+   const dt_iop_colorspace_type_t cst_to,
+   dt_iop_colorspace_type_t *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info);
 
 gboolean dt_ioppr_transform_image_colorspace_rgb_cl

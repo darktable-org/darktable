@@ -232,7 +232,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
   else if(d->mode == PROFILEGAMMA_GAMMA)
   {
-    dev_table = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+    dev_table = dt_opencl_copy_host_to_image(devid, d->table, 256, 256, sizeof(float));
     if(dev_table == NULL) goto error;
 
     dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);

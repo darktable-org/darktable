@@ -291,6 +291,7 @@ static gpointer _encode_thread_func(gpointer data)
   {
     dt_print(DT_DEBUG_AI,
              "[object mask] failed to get image buffer for encoding");
+    dt_mipmap_cache_release(&buf);
     dt_dev_cleanup(&dev);
     g_atomic_int_set(&d->encode_state, ENCODE_ERROR);
     return NULL;
@@ -1982,10 +1983,10 @@ const dt_masks_functions_t dt_masks_functions_object = {
 
 gboolean dt_masks_object_available(void)
 {
-  if(!darktable.ai_registry || !darktable.ai_registry->ai_enabled)
+  if(!dt_ai_registry_is_enabled())
     return FALSE;
   char *model_id = dt_ai_models_get_active_for_task("mask");
-  dt_ai_model_t *model = dt_ai_models_get_by_id(darktable.ai_registry, model_id);
+  dt_ai_model_t *model = dt_ai_models_get_by_id(model_id);
   g_free(model_id);
   const gboolean available = model && model->status == DT_AI_MODEL_DOWNLOADED;
   dt_ai_model_free(model);

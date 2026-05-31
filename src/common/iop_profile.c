@@ -628,8 +628,7 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
 }
 
 
-#define DT_IOPPR_LUT_SAMPLES 0x10000
-
+#define DT_IOPPR_LUT_SAMPLES_FALLBACK 0x10000
 void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                 const int lutsize)
 {
@@ -643,7 +642,7 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                            = profile_info->unbounded_coeffs_out[2][0] = -1.0f;
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.f;
-  profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES;
+  profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES_FALLBACK;
   for(int i = 0; i < 3; i++)
   {
     profile_info->lut_in[i] = dt_alloc_align_float(profile_info->lutsize);
@@ -652,8 +651,7 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
     profile_info->lut_out[i][0] = -1.0f;
   }
 }
-
-#undef DT_IOPPR_LUT_SAMPLES
+#undef DT_IOPPR_LUT_SAMPLES_FALLBACK
 
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 {
@@ -691,16 +689,14 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
   profile_info->intent = intent;
 
-  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
+  const gboolean locking = type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2;
+  if(locking)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *profile =
     dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
 
   cmsHPROFILE *rgb_profile = profile ? profile->profile : NULL;;
-
-  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
@@ -777,6 +773,9 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
       dt_is_valid_colormatrix(profile_info->matrix_in[0][0]) ? "" : " NO matrix provided",
       profile_info->nonlinearlut ? " nonlinearlut" : "");
 
+  if(locking) // all safe now
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
   return FALSE;
 }
 
@@ -818,6 +817,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
     }
     else
     {
+      dt_ioppr_cleanup_profile_info(profile_info);
       dt_free_align(profile_info);
       profile_info = NULL;
     }
@@ -982,6 +982,19 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
   }
   pipe->output_profile_info = profile_info;
 
+  return profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_set_pipe_export_profile_info(struct dt_develop_t *dev,
+                                      struct dt_dev_pixelpipe_t *pipe,
+                                      const dt_colorspaces_color_profile_type_t type,
+                                      const char *filename,
+                                      const int intent)
+{
+  dt_iop_order_iccprofile_info_t *profile_info =
+    dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+  pipe->export_profile_info = profile_info;
   return profile_info;
 }
 
@@ -1183,16 +1196,15 @@ gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name)
 }
 
 __DT_CLONE_TARGETS__
-void dt_ioppr_transform_image_colorspace
-  (struct dt_iop_module_t *self,
-   const float *const image_in,
-   float *const image_out,
-   const int width,
-   const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
-   const dt_iop_order_iccprofile_info_t *const profile_info)
+void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
+                                         const float *const image_in,
+                                         float *const image_out,
+                                         const int width,
+                                         const int height,
+                                         const dt_iop_colorspace_type_t cst_from,
+                                         const dt_iop_colorspace_type_t cst_to,
+                                         dt_iop_colorspace_type_t *converted_cst,
+                                         const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const gboolean inplace = image_in == image_out;
 
@@ -1421,8 +1433,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
       goto cleanup;
     }
 
-    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 256, 256 * 6,
-                                                    sizeof(float));
+    dev_profile_lut = dt_opencl_copy_host_to_image(devid, profile_lut_cl, 256, 256 * 6, sizeof(float));
     if(dev_profile_lut == NULL)
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   }
@@ -1431,8 +1442,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
     profile_lut_cl = calloc(1, sizeof(cl_float) * 1 * 6);
 
     if(profile_lut_cl)
-      dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
-                                                      sizeof(float));
+      dev_profile_lut = dt_opencl_copy_host_to_image(devid, profile_lut_cl, 1, 1 * 6, sizeof(float));
     else
       dev_profile_lut = NULL;
 
@@ -1473,17 +1483,16 @@ void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_p
   *_dev_profile_lut = NULL;
 }
 
-gboolean dt_ioppr_transform_image_colorspace_cl
-  (struct dt_iop_module_t *self,
-   const int devid,
-   cl_mem dev_img_in,
-   cl_mem dev_img_out,
-   const int width,
-   const int height,
-   const int cst_from,
-   const int cst_to,
-   int *converted_cst,
-   const dt_iop_order_iccprofile_info_t *const profile_info)
+gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
+                                                const int devid,
+                                                cl_mem dev_img_in,
+                                                cl_mem dev_img_out,
+                                                const int width,
+                                                const int height,
+                                                const dt_iop_colorspace_type_t cst_from,
+                                                const dt_iop_colorspace_type_t cst_to,
+                                                dt_iop_colorspace_type_t *converted_cst,
+                                                const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   cl_int err = CL_SUCCESS;
 
@@ -1568,7 +1577,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 
     dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_cl),
                                                               &profile_info_cl);
-    dev_lut = dt_opencl_copy_host_to_device(devid, lut_cl, 256, 256 * 6, sizeof(float));
+    dev_lut = dt_opencl_copy_host_to_image(devid, lut_cl, 256, 256 * 6, sizeof(float));
 
     if(dev_profile_info == NULL || dev_lut == NULL)
     {
@@ -1599,7 +1608,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       goto cleanup;
     }
 
-    err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_img_in,
+    err = dt_opencl_copy_image_to_host(devid, src_buffer, dev_img_in,
                                         width, height, 4 * sizeof(float));
     if(err != CL_SUCCESS)
       goto cleanup;
@@ -1609,7 +1618,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
                                         width, height, cst_from, cst_to,
                                         converted_cst, profile_info);
 
-    err = dt_opencl_write_host_to_device(devid, src_buffer, dev_img_out,
+    err = dt_opencl_write_host_to_image(devid, src_buffer, dev_img_out,
                                          width, height, 4 * sizeof(float));
   }
 
@@ -1705,11 +1714,11 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 
     dev_profile_info_from = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_from_cl),
                                                  &profile_info_from_cl);
-    dev_lut_from = dt_opencl_copy_host_to_device(devid, lut_from_cl, 256, 256 * 6, sizeof(float));
+    dev_lut_from = dt_opencl_copy_host_to_image(devid, lut_from_cl, 256, 256 * 6, sizeof(float));
 
     dev_profile_info_to = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_to_cl),
                                                  &profile_info_to_cl);
-    dev_lut_to = dt_opencl_copy_host_to_device(devid, lut_to_cl, 256, 256 * 6, sizeof(float));
+    dev_lut_to = dt_opencl_copy_host_to_image(devid, lut_to_cl, 256, 256 * 6, sizeof(float));
 
     float matrix3x3[9];
     pack_3xSSE_to_3x3(matrix, matrix3x3);
@@ -1757,7 +1766,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
       goto cleanup;
     }
 
-    err = dt_opencl_copy_device_to_host(devid, src_buffer_in, dev_img_in,
+    err = dt_opencl_copy_image_to_host(devid, src_buffer_in, dev_img_in,
                                         width, height, 4 * sizeof(float));
     if(err != CL_SUCCESS)
       goto cleanup;
@@ -1767,7 +1776,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
                                             width, height, profile_info_from,
                                             profile_info_to, message);
 
-    err = dt_opencl_write_host_to_device(devid, src_buffer_out, dev_img_out,
+    err = dt_opencl_write_host_to_image(devid, src_buffer_out, dev_img_out,
                                          width, height, 4 * sizeof(float));
   }
 

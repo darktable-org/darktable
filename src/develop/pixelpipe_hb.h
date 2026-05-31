@@ -145,6 +145,8 @@ typedef struct dt_dev_pixelpipe_t
   struct dt_iop_order_iccprofile_info_t *input_profile_info;
   /** output profile info **/
   struct dt_iop_order_iccprofile_info_t *output_profile_info;
+  /** used only as a cache-identity tag to invalidate the cache **/
+  struct dt_iop_order_iccprofile_info_t *export_profile_info;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
@@ -282,6 +284,8 @@ static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
 
 // report pipe->type as textual string
 const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type);
+// return pipe->shutdown as textual
+const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t stopper);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);

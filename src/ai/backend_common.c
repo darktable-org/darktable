@@ -447,20 +447,19 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
                                   const char *model_id,
                                   const char *model_file,
-                                  dt_ai_provider_t provider)
+                                  const dt_ai_provider_t provider)
 {
   return dt_ai_load_model_ext(env, model_id, model_file, provider,
-                              DT_AI_OPT_ALL, NULL, 0, 0);
+                              DT_AI_OPT_ALL, NULL, 0);
 }
 
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                       const char *model_id,
                                       const char *model_file,
-                                      dt_ai_provider_t provider,
-                                      dt_ai_opt_level_t opt_level,
+                                      const dt_ai_provider_t provider,
+                                      const dt_ai_opt_level_t opt_level,
                                       const dt_ai_dim_override_t *dim_overrides,
-                                      int n_overrides,
-                                      uint32_t ep_flags)
+                                      const int n_overrides)
 {
   if(!env || !model_id)
     return NULL;
@@ -473,13 +472,15 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
   }
 
   // resolve CONFIGURED/AUTO to a concrete EP and apply the model's
-  // cpu_only safety constraint in one place. ep_flags may be updated
-  // (e.g. COREML_FLAG_USE_CPU_ONLY) so the EP can stay enabled while
-  // honoring the constraint
+  // cpu_only safety constraint in one place. ep_flags is owned by the
+  // load function (e.g. COREML_FLAG_USE_CPU_ONLY) so the EP can stay
+  // enabled while honoring the constraint
+  uint32_t ep_flags = 0;
   const dt_ai_model_info_t *model_info
     = dt_ai_get_model_info_by_id(env, model_id);
-  provider = _resolve_provider(provider, model_id, model_info,
-                               model_file, &ep_flags);
+  const dt_ai_provider_t resolved
+    = _resolve_provider(provider, model_id, model_info,
+                        model_file, &ep_flags);
 
   g_mutex_lock(&env->lock);
   const char *model_dir_orig
@@ -510,7 +511,7 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
 
   if(strcmp(backend_copy, "onnx") == 0)
   {
-    ctx = dt_ai_onnx_load_ext(model_dir, model_file, provider, opt_level,
+    ctx = dt_ai_onnx_load_ext(model_dir, model_file, resolved, opt_level,
                                dim_overrides, n_overrides, ep_flags);
   }
   else
@@ -641,7 +642,16 @@ int *dt_ai_model_attribute_int_array(const dt_ai_model_info_t *info,
   if(v && JSON_NODE_HOLDS_ARRAY(v))
   {
     JsonArray *arr = json_node_get_array(v);
-    const guint n = json_array_get_length(arr);
+    guint n = json_array_get_length(arr);
+    // cap manifest-driven allocation — single digits are typical
+    const guint max_n = 256;
+    if(n > max_n)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] attribute '%s': %u elements exceeds cap %u, "
+               "truncating", key, n, max_n);
+      n = max_n;
+    }
     if(n > 0)
     {
       result = g_new(int, n);
@@ -685,7 +695,8 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
 
   JsonParser *parser = json_parser_new();
   gboolean result = FALSE;
-  if(json_parser_load_from_data(parser, info->cpu_only, -1, NULL))
+  GError *err = NULL;
+  if(json_parser_load_from_data(parser, info->cpu_only, -1, &err))
   {
     JsonNode *root = json_parser_get_root(parser);
 
@@ -728,6 +739,15 @@ static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
     }
     g_free(stem);
   }
+  else if(err)
+  {
+    // malformed cpu_only silently disables the EP safety constraint
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] model '%s': malformed cpu_only JSON (%s) — "
+             "EP safety constraint ignored",
+             info->id ? info->id : "?", err->message);
+    g_error_free(err);
+  }
   g_object_unref(parser);
   return result;
 }
@@ -743,7 +763,8 @@ static gboolean _coreml_use_mlprogram(const dt_ai_model_info_t *info,
 
   JsonParser *parser = json_parser_new();
   gboolean use_mlprogram = FALSE;
-  if(json_parser_load_from_data(parser, info->coreml_format, -1, NULL))
+  GError *err = NULL;
+  if(json_parser_load_from_data(parser, info->coreml_format, -1, &err))
   {
     JsonNode *root = json_parser_get_root(parser);
     const char *value = NULL;
@@ -770,6 +791,14 @@ static gboolean _coreml_use_mlprogram(const dt_ai_model_info_t *info,
     if(value && !g_ascii_strcasecmp(value, "mlprogram"))
       use_mlprogram = TRUE;
     g_free(stem);
+  }
+  else if(err)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] model '%s': malformed coreml_format JSON (%s) — "
+             "falling back to NeuralNetwork",
+             info->id ? info->id : "?", err->message);
+    g_error_free(err);
   }
   g_object_unref(parser);
   return use_mlprogram;
@@ -846,15 +875,16 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
   {
     int n = 0;
     const dt_ai_provider_t *cands = _auto_candidates(&n);
-    // single-candidate platforms (macOS, Windows) skip the probe — the
-    // bundled ORT always supports the platform EP, and if it doesn't,
-    // the load fallback chain in dt_ai_onnx_load_ext demotes to CPU
-    const gboolean skip_probe = (n == 1);
+    // probe every candidate — even single-candidate platforms (macOS,
+    // Windows). assuming the bundled EP is present breaks when a user
+    // points plugins/ai/ort_library_path at a non-bundled or CPU-only
+    // ORT. dt_ai_probe_provider memoizes its result, so the cost is
+    // a single _try_provider call per EP per process
     gboolean resolved = FALSE;
     for(int i = 0; i < n && !resolved; i++)
     {
       const dt_ai_provider_t c = cands[i];
-      if(!skip_probe && !dt_ai_probe_provider(c)) continue;
+      if(!dt_ai_probe_provider(c)) continue;
       const gboolean banned = _provider_cpu_only(info, model_file, c);
       if(!banned)
       {
@@ -866,7 +896,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
       }
       else if(c == DT_AI_PROVIDER_COREML)
       {
-        *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+        *inout_ep_flags |= DT_COREML_FLAG_USE_CPU_ONLY;
         dt_print(DT_DEBUG_AI,
                  "[darktable_ai] provider auto -> %s (cpu compute units) "
                  "for %s — model prefers CPU on %s",
@@ -889,7 +919,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
     // concrete EP banned by cpu_only
     if(configured == DT_AI_PROVIDER_COREML)
     {
-      *inout_ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+      *inout_ep_flags |= DT_COREML_FLAG_USE_CPU_ONLY;
       dt_print(DT_DEBUG_AI,
                "[darktable_ai] %s prefers CPU on %s — using CoreML CPU "
                "compute units",
@@ -910,7 +940,7 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
 
   if(result == DT_AI_PROVIDER_COREML
      && _coreml_use_mlprogram(info, model_file))
-    *inout_ep_flags |= 16;  // COREML_FLAG_CREATE_MLPROGRAM
+    *inout_ep_flags |= DT_COREML_FLAG_CREATE_MLPROGRAM;
 
   return result;
 }
@@ -925,6 +955,18 @@ const char *dt_ai_provider_to_string(dt_ai_provider_t provider)
       return dt_ai_providers[i].display_name;
   }
   return dt_ai_providers[0].display_name;  // fallback to "auto"
+}
+
+size_t dt_ai_tensor_element_count(const int64_t *shape, const int ndim)
+{
+  if(!shape || ndim <= 0) return 0;
+  size_t n = 1;
+  for(int i = 0; i < ndim; i++)
+  {
+    if(shape[i] <= 0) return 0;
+    n *= (size_t)shape[i];
+  }
+  return n;
 }
 
 dt_ai_provider_t dt_ai_provider_from_string(const char *str)

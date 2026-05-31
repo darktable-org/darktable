@@ -197,16 +197,36 @@ static gchar *_default_print_func(const double value, const gboolean detailled)
 {
   return g_strdup_printf("%.0lf", floor(value));
 }
+
 static gboolean _default_decode_func(const gchar *text, double *value)
 {
   // TODO : verify the value is numeric
-  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
+  // use threadsafe locale
+#if defined(WIN32)
+    char *locale = strdup(setlocale(LC_ALL, NULL));
+    _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+    setlocale(LC_NUMERIC, "C");
+#else
+    locale_t nlocale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+    locale_t locale = uselocale(nlocale);
+#endif
+
   *value = atof(text);
-  setlocale(LC_NUMERIC, locale);
-  g_free(locale);
+
+#if defined(WIN32)
+    if(locale)
+    {
+      setlocale(LC_ALL, locale);
+      free(locale);
+    }
+    _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
+#else
+    uselocale(locale);
+    freelocale(nlocale);
+#endif
   return TRUE;
 }
+
 static gchar *_default_print_date_func(const double value, const gboolean detailled)
 {
   if(!detailled)

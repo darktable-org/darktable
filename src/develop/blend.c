@@ -1086,7 +1086,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1); //mask[k] = value;
     }
 
-    err = dt_opencl_write_host_to_device(devid, mask, dev_mask, owidth, oheight, sizeof(float));
+    err = dt_opencl_write_host_to_image(devid, mask, dev_mask, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
   }
   else
@@ -1131,7 +1131,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
 
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
-    err = dt_opencl_write_host_to_device(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
+    err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
 
     // The following call to clFinish() works around a bug in some OpenCL
@@ -1331,8 +1331,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     // get back final mask from the device as the raster mask
     if(!raster)
     {
-      err = dt_opencl_copy_device_to_host(devid, mask, dev_mask,
-                                          owidth, oheight, sizeof(float));
+      err = dt_opencl_copy_image_to_host(devid, mask, dev_mask, owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS)
       {
         dt_iop_piece_clear_raster(piece, _mask);

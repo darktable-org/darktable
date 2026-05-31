@@ -64,26 +64,26 @@ changes (where available).
   anything; GPU acceleration is already bundled.
 
 - Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
-  and SegNext models for interactive object segmentation – click on an
+  or SegNext model for interactive object segmentation – click on an
   object to generate a precise mask. Supports both foreground and
   background prompt points with iterative refinement. The encoder runs
-  once per image (with optional GPU acceleration via CoreML, CUDA,
-  MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
-  produces masks interactively.
+  once per image (GPU-accelerated via the AI backend when available),
+  and the lightweight decoder produces masks interactively.
 
 - Added neural restore module in the lighttable/darkroom sidebar
   covering three AI-based tasks: raw denoise, image denoise, and
-  upscale. Supports NIND UNet, NAFNet, and RawNIND UtNet2 denoisers
-  and BSRGAN 2x/4x super-resolution models via the ONNX backend.
-  Features include an interactive before/after split preview with
-  area picker, a detail recovery slider (wavelet-based texture
-  restoration for denoise), batch processing with tiled inference,
-  and automatic library re-import with image grouping. Raw denoise
-  writes a DNG (CFA Bayer or linear) that re-enters the user's
-  existing edit; image denoise and upscale write a TIFF embedding
-  the output ICC profile.
-  GPU acceleration is supported through CUDA, ROCm/MIGraphX,
-  DirectML, OpenVINO, and CoreML execution providers. If GPU
+  upscale. Default models: NIND UNet (image denoise), RawNIND UtNet2
+  (raw denoise), and BSRGAN 2x/4x (super-resolution), all running on
+  the ONNX backend. Additional models such as NAFNet (image denoise)
+  are available from the model repository and can be installed
+  manually. Features include an interactive before/after split
+  preview with area picker, a strength slider (DWT-based texture
+  recovery for RGB denoise; linear source/denoised blend for raw
+  denoise), batch processing with tiled inference, and automatic
+  library re-import with image grouping. Raw denoise writes a DNG
+  (CFA Bayer or LinearRaw); image denoise and upscale write a TIFF
+  embedding the output ICC profile.
+  GPU acceleration is inherited from the AI backend. If GPU
   inference fails (out of memory, unsupported op, EP crash),
   darktable automatically retries on CPU.
 
@@ -161,8 +161,6 @@ changes (where available).
 
 - Added touchpad gestures to darkroom and lighttable culling layouts,
   including pinch zooming and two-finger panning.
-  Follow-up fixes refined input-source handling to keep panning
-  limited to touchpad smooth-scroll input.
   Smartphone-like simultaneous pinch zooming and two-finger panning
   are now possible on Linux and Windows.
   Zooming gestures are limited to 100%, additionally pressing CTRL
@@ -212,9 +210,19 @@ changes (where available).
   cursor previously appeared as an old-style wristwatch instead of
   the familiar spinning wheel.
 
+- Themes can now style expanded modules differently from collapsed
+  ones, via a new `dt_module_expanded` CSS class.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
+
+- Increased performance of `blurs` module for both CPU and OpenCL code
+  paths for large radii, which made it possible to increase Gaussian
+  blur's maximum radius from 128px to 256px.
+
+- Increased performance of `overlay` (composite) module and added
+  OpenCL code path.
 
 ## Other Changes
 
@@ -294,6 +302,12 @@ changes (where available).
   showing all logged messages with timestamps, automatically
   deduplicating consecutive identical entries.
 
+- The OpenCL preferences interface and the internal handling and detection
+  of OpenCL devices and drivers got an overhaul.
+  Users can switch on "OpenCL fast mode" in preferences leading to slightly
+  more differences compared to CPU output for sligtly more performance.
+  The per-device conf settings got an update, see the docs for reference.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
@@ -333,6 +347,9 @@ changes (where available).
 
 - Fix for usage of incorrect color profiles on secondary monitors on
   Windows.
+
+- Various fixes for visibly wrong colors after chaning a profile in
+  colorin or colorout.
 
 - Fixed unexpected localization of user's defined preset name and
   properly localize the module name displayed in the preset dialog.
@@ -395,7 +412,7 @@ changes (where available).
   auto-allocated outputs). Image I/O includes loading from file or
   darktable library (full pipeline export), raw CFA sensor data
   access, and DNG output with EXIF preservation. Enables Lua scripts
-  to implement custom AI workflows such as raw denoise or upscale.
+  to implement custom AI workflows such as denoise or upscale.
 
 ### Bug Fixes
 

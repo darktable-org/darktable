@@ -23,6 +23,7 @@
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -98,7 +99,7 @@ int default_group()
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE
-       | IOP_FLAGS_WRITE_PIPECACHE | IOP_FLAGS_WRITE_PIPECACHECL;
+       | IOP_FLAGS_WRITE_PIPECACHE | IOP_FLAGS_WRITE_PIPECACHECL_IN;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
@@ -188,7 +189,7 @@ int legacy_params(dt_iop_module_t *self,
     else
     {
       n->type = DT_COLORSPACE_FILE;
-      g_strlcpy(n->filename, o->iccprofile, sizeof(n->filename));
+      dt_strlcpy_to_fixed(n->filename, o->iccprofile, sizeof(n->filename));
     }
 
     n->intent = o->intent;
@@ -213,7 +214,7 @@ int legacy_params(dt_iop_module_t *self,
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     n->type = o->type;
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    dt_strlcpy_to_fixed(n->filename, o->filename, sizeof(n->filename));
     n->intent = o->intent;
 
     *new_params = n;
@@ -242,7 +243,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
+static void _intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorout_params_t *p = self->params;
@@ -250,7 +251,7 @@ static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
+static void _output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorout_params_t *p = self->params;
@@ -262,7 +263,7 @@ static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
     if(pp->out_pos == pos)
     {
       p->type = pp->type;
-      g_strlcpy(p->filename, pp->filename, sizeof(p->filename));
+      dt_strlcpy_to_fixed(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
 
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
@@ -279,11 +280,10 @@ static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
 {
   dt_develop_t *dev = self->dev;
   if(!dev->gui_attached || dev->gui_leaving) return;
-  dt_dev_reprocess_center(dev);
+  dt_dev_reprocess_all(dev);
 }
 
-#if 1
-static float lerp_lut(const float *const lut, const float v)
+static float _lerp_u_lut(const float *const lut, const float v)
 {
   // TODO: check if optimization is worthwhile!
   const float ft = CLAMPS(v * (LUT_SAMPLES - 1), 0, LUT_SAMPLES - 1);
@@ -293,7 +293,6 @@ static float lerp_lut(const float *const lut, const float v)
   const float l2 = lut[t + 1];
   return l1 * (1.0f - f) + l2 * f;
 }
-#endif
 
 // call only if sure that v<1.0
 static float _lerp_lut(const float *const lut, const float v)
@@ -336,11 +335,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmatrix);
   if(dev_m == NULL) goto error;
-  dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
+  dev_r = dt_opencl_copy_host_to_image(devid, d->lut[0], 256, 256, sizeof(float));
   if(dev_r == NULL) goto error;
-  dev_g = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
+  dev_g = dt_opencl_copy_host_to_image(devid, d->lut[1], 256, 256, sizeof(float));
   if(dev_g == NULL) goto error;
-  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+  dev_b = dt_opencl_copy_host_to_image(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_b == NULL) goto error;
   dev_coeffs
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
@@ -359,7 +358,7 @@ error:
 }
 #endif
 
-static void process_fastpath_apply_tonecurves(dt_iop_module_t *self,
+static void _process_fastpath_apply_tonecurves(dt_iop_module_t *self,
                                               dt_dev_pixelpipe_iop_t *piece,
                                               void *const ovoid,
                                               const dt_iop_roi_t *const roi_out)
@@ -539,7 +538,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if(!_transform_cmatrix(d, out, (float*)ivoid, npixels))
-      process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
+      _process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else
   {
@@ -554,6 +553,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_colorout_data_t *d = piece->data;
 
   d->type = p->type;
+
+  // to be used in pixel-pipe cache
+  dt_ioppr_set_pipe_export_profile_info(self->dev, piece->pipe, p->type, p->filename, p->intent);
 
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
@@ -586,7 +588,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
       p->type = pipe->icc_type;
-      g_strlcpy(p->filename, pipe->icc_filename, sizeof(p->filename));
+      dt_strlcpy_to_fixed(p->filename, pipe->icc_filename, sizeof(p->filename));
     }
     if((unsigned int)pipe->icc_intent < DT_INTENT_LAST) p->intent = pipe->icc_intent;
 
@@ -616,10 +618,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   }
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
-  // and the subsequent error messages
+  // and the subsequent error messages but still have to publish the profile_info
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
+  {
+    dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
     return;
+  }
 
   /*
    * Setup transform flags
@@ -743,10 +748,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     if(d->lut[k][0] >= 0.0f)
     {
       const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-      const float y[4] = { lerp_lut(d->lut[k], x[0]),
-                           lerp_lut(d->lut[k], x[1]),
-                           lerp_lut(d->lut[k], x[2]),
-                           lerp_lut(d->lut[k], x[3]) };
+      const float y[4] = { _lerp_u_lut(d->lut[k], x[0]),
+                           _lerp_u_lut(d->lut[k], x[1]),
+                           _lerp_u_lut(d->lut[k], x[2]),
+                           _lerp_u_lut(d->lut[k], x[3]) };
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
     else
@@ -836,7 +841,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
                                _("rendering intent"),
-                               0, intent_changed, self,
+                               0, _intent_changed, self,
                                N_("perceptual"),
                                N_("relative colorimetric"),
                                NC_("rendering intent", "saturation"),
@@ -863,7 +868,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_gui_vbox(g->output_intent, g->output_profile);
 
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
-                   G_CALLBACK(output_profile_changed), (gpointer)self);
+                   G_CALLBACK(_output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed);

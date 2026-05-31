@@ -295,8 +295,6 @@ jobs:
           cd -
       - name: Build and Install
         run: |
-          # Emergency fix for broken libheif header file. Should be removed when a fixed libheif package is available in MSYS2.
-          perl -pi -e 's/struct heif_bad_pixel { uint32_t row; uint32_t column; };/typedef struct heif_bad_pixel { uint32_t row; uint32_t column; } heif_bad_pixel;/g' /ucrt64/include/libheif/heif_properties.h
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
@@ -362,11 +360,9 @@ jobs:
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --quiet || true
+          brew bundle --verbose || true
       - name: Build and Install
         run: |
-          # Emergency fix for broken libheif header file. Should be removed when a fixed libheif package is available in Homebrew.
-          perl -pi -e 's/struct heif_bad_pixel { uint32_t row; uint32_t column; };/typedef struct heif_bad_pixel { uint32_t row; uint32_t column; } heif_bad_pixel;/g' /opt/homebrew/include/libheif/heif_properties.h
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;

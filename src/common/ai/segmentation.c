@@ -317,7 +317,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   // issues with some decoder graphs (e.g. SegNext's Concat->Reshape)
   dt_ai_context_t *decoder
     = dt_ai_load_model_ext(env, model_id, "decoder.onnx", DT_AI_PROVIDER_CPU,
-                           DT_AI_OPT_DISABLED, NULL, 0, 0);
+                           DT_AI_OPT_DISABLED, NULL, 0);
   if(!decoder)
   {
     dt_print(DT_DEBUG_AI, "[segmentation] failed to load decoder for %s", model_id);
@@ -415,10 +415,13 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     }
   }
 
-  dt_print(DT_DEBUG_AI,
-           "[segmentation] encoder-decoder reorder: [%d, %d, %d, %d] (n=%d)",
-           ctx->enc_order[0], ctx->enc_order[1], ctx->enc_order[2], ctx->enc_order[3],
-           ctx->n_enc_outputs);
+  char map[128] = {0};
+  int off = 0;
+  for(int di = 0; di < ctx->n_enc_outputs; di++)
+    off += snprintf(map + off, sizeof(map) - off,
+                    "%sdec[%d] <- enc[%d]",
+                    di ? ", " : "", di, ctx->enc_order[di]);
+  dt_print(DT_DEBUG_AI, "[segmentation] tensor routing: %s", map);
 
   // detect model type from arch field in model registry
   const dt_ai_model_info_t *minfo
@@ -480,7 +483,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
       const dt_ai_dim_override_t overrides[] = {{"num_labels", 1}};
       ctx->decoder = dt_ai_load_model_ext(env, model_id, "decoder.onnx",
                                            DT_AI_PROVIDER_CPU, DT_AI_OPT_BASIC,
-                                           overrides, 1, 0);
+                                           overrides, 1);
       if(!ctx->decoder)
       {
         dt_print(DT_DEBUG_AI, "[segmentation] failed to reload decoder for %s", model_id);
@@ -694,7 +697,10 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
       n_out = 1;
     }
 
-    dt_ai_run(ctx->decoder, inputs, ni, outputs, n_out);
+    const int wr = dt_ai_run(ctx->decoder, inputs, ni, outputs, n_out);
+    if(wr != 0)
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] decoder warmup failed (rc=%d)", wr);
   }
 
 cleanup:
@@ -769,7 +775,7 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
   if(has_dynamic)
     dt_print(DT_DEBUG_AI,
              "[segmentation] encoder has dynamic output shapes, "
-             "using ORT-allocated outputs");
+             "using ONNX Runtime-allocated outputs");
 
   dt_ai_tensor_t outputs[MAX_ENCODER_OUTPUTS];
   for(int i = 0; i < ctx->n_enc_outputs; i++)
@@ -1011,16 +1017,28 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   }
 
   // re-read actual mask dimensions -- the backend updates the shape array
-  // for dynamic-output models after ORT reports the real tensor shape
+  // for dynamic-output models after ORT reports the real tensor shape.
+  // only shrink: growing would push `masks + best * per_mask` past the
+  // allocated buffer on indexed reads below
   if(masks_shape[2] > 0 && masks_shape[3] > 0
      && ((int)masks_shape[2] != dec_h || (int)masks_shape[3] != dec_w))
   {
-    dt_print(DT_DEBUG_AI,
-             "[segmentation] actual decoder output: %"PRId64"x%"PRId64" (allocated %dx%d)",
-             masks_shape[2], masks_shape[3], dec_h, dec_w);
-    dec_h = (int)masks_shape[2];
-    dec_w = (int)masks_shape[3];
-    per_mask = (size_t)dec_h * dec_w;
+    if((int)masks_shape[2] <= dec_h && (int)masks_shape[3] <= dec_w)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] actual decoder output: %"PRId64"x%"PRId64" (allocated %dx%d)",
+               masks_shape[2], masks_shape[3], dec_h, dec_w);
+      dec_h = (int)masks_shape[2];
+      dec_w = (int)masks_shape[3];
+      per_mask = (size_t)dec_h * dec_w;
+    }
+    else
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[segmentation] actual decoder output %"PRId64"x%"PRId64" "
+               "exceeds allocated %dx%d — using allocated dims",
+               masks_shape[2], masks_shape[3], dec_h, dec_w);
+    }
   }
 
   // select best mask and cache refinement data

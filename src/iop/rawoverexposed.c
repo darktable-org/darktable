@@ -268,7 +268,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int raw_height = buf.height;
 
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  dev_raw = dt_opencl_copy_host_to_device(devid, buf.buf, raw_width, raw_height, sizeof(uint16_t));
+  dev_raw = dt_opencl_copy_host_to_image(devid, buf.buf, raw_width, raw_height, sizeof(uint16_t));
   if(dev_raw == NULL) goto error;
 
   const size_t coordbufsize = (size_t)height * width * 2 * sizeof(float);

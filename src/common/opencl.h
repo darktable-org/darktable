@@ -435,37 +435,37 @@ gboolean dt_opencl_running_fast(void);
 void dt_opencl_update_settings(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
-int dt_opencl_copy_device_to_host(const int devid,
+int dt_opencl_copy_image_to_host(const int devid,
                                   void *host,
-                                  void *device,
+                                  cl_mem image,
                                   const int width,
                                   const int height,
                                   const int bpp);
 
-int dt_opencl_read_host_from_device_raw(const int devid,
+int dt_opencl_read_host_from_image_raw(const int devid,
                                         void *host,
-                                        void *device,
+                                        cl_mem image,
                                         const size_t *origin,
                                         const size_t *region,
                                         const int rowpitch,
                                         const gboolean blocking);
 
-int dt_opencl_write_host_to_device(const int devid,
+int dt_opencl_write_host_to_image(const int devid,
                                    const void *host,
-                                   void *device,
+                                   cl_mem image,
                                    const int width,
                                    const int height,
                                    const int bpp);
 
-int dt_opencl_write_host_to_device_raw(const int devid,
+int dt_opencl_write_host_to_image_raw(const int devid,
                                        const void *host,
-                                       void *device,
+                                       cl_mem image,
                                        const size_t *origin,
                                        const size_t *region,
                                        const int rowpitch,
                                        const gboolean blocking);
 
-void *dt_opencl_copy_host_to_device(const int devid,
+void *dt_opencl_copy_host_to_image(const int devid,
                                     void *host,
                                     const int width,
                                     const int height,
@@ -510,14 +510,14 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid,
 
 int dt_opencl_read_buffer_from_device(const int devid,
                                       void *host,
-                                      void *device,
+                                      cl_mem buffer,
                                       const size_t offset,
                                       const size_t size,
                                       const gboolean blocking);
 
 int dt_opencl_write_buffer_to_device(const int devid,
                                      void *host,
-                                     void *device,
+                                     cl_mem buffer,
                                      const size_t offset,
                                      const size_t size,
                                      const gboolean blocking);
@@ -602,8 +602,6 @@ cl_int dt_opencl_local_buffer_opt(const int devid,
                                   dt_opencl_local_buffer_t *factors);
 
 /** utility functions handling device specific properties */
-void dt_opencl_write_device_config(const int devid);
-gboolean dt_opencl_read_device_config(const int devid);
 gboolean dt_opencl_avoid_atomics(const int devid);
 void dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);

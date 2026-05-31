@@ -906,7 +906,7 @@ static void _conf_print(const gchar *key, const gchar *val, FILE *f)
   fprintf(f, "%s=%s\n", key, val);
 }
 
-void dt_conf_save(dt_conf_t *cf)
+static void _conf_save(dt_conf_t *cf)
 {
   FILE *fc = g_fopen(cf->filename_common, "wb");
   FILE *fs = g_fopen(cf->filename, "wb");
@@ -932,7 +932,7 @@ void dt_conf_save(dt_conf_t *cf)
 }
 void dt_conf_cleanup(dt_conf_t *cf)
 {
-  dt_conf_save(cf);
+  _conf_save(cf);
   g_hash_table_unref(cf->table);
   g_hash_table_unref(cf->override_entries);
   g_hash_table_unref(cf->x_confgen);

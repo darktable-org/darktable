@@ -674,7 +674,7 @@ int process_cl(dt_iop_module_t *self,
     float *host_in = dt_alloc_align_float((size_t)width * height * 4);
     if(host_in)
     {
-      if(dt_opencl_copy_device_to_host(devid, host_in, dev_in, width, height, 4 * sizeof(float)) == CL_SUCCESS)
+      if(dt_opencl_copy_image_to_host(devid, host_in, dev_in, width, height, 4 * sizeof(float)) == CL_SUCCESS)
       {
         _update_histogram(self, piece, host_in, roi_in);
       }
