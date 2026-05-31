@@ -1610,6 +1610,16 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_reject);
 
     // the stars
+    // first for removing the rating
+    thumb->w_unrate = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_unratestar, 0, NULL);
+    gtk_widget_set_name(thumb->w_unrate, "thumb-unrate");
+    dt_action_define(&darktable.control->actions_thumb, NULL, "rating",
+                      thumb->w_unrate, &dt_action_def_rating);
+    gtk_widget_set_valign(thumb->w_unrate, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_unrate, GTK_ALIGN_START);
+    gtk_widget_show(thumb->w_unrate);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_unrate);
+
     for(int i = 0; i < MAX_STARS; i++)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
@@ -1917,6 +1927,15 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_bottom(thumb->w_reject, margin_b_icons);
 
     // stars
+    gtk_widget_set_size_request(thumb->w_unrate, icon_size, icon_size);
+    gtk_widget_set_valign(thumb->w_unrate, GTK_ALIGN_END);
+    gtk_widget_set_margin_bottom(thumb->w_unrate, margin_b_icons);
+    gtk_widget_set_margin_start(
+          thumb->w_unrate,
+          thumb->img_margin->left
+              + (width - thumb->img_margin->left
+                 - thumb->img_margin->right - (MAX_STARS + 1) * icon_size) * 0.5 );
+
     for(int i = 0; i < MAX_STARS; i++)
     {
       gtk_widget_set_size_request(thumb->w_stars[i], icon_size, icon_size);
@@ -1926,8 +1945,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
           thumb->w_stars[i],
           thumb->img_margin->left
               + (width - thumb->img_margin->left
-                 - thumb->img_margin->right - MAX_STARS * icon_size) * 0.5
-              + i * icon_size);
+                 - thumb->img_margin->right - (MAX_STARS + 1) * icon_size) * 0.5
+              + (i + 1) * icon_size);
     }
 
     // the color labels
