@@ -147,8 +147,8 @@ typedef struct dt_dev_viewport_t
       - the currently used wb_coeffs in temperature module
       - D65coeffs and as_shot are read from exif data
   f)  - late_correction set by temperature if we want to process data as following
-      If we use the new DT_IOP_TEMP_D65_LATE mode or enable this in user modes of temperature.c
-      and don't have any temp parameters changes later we can calc correction ratios
+      If we enable this for non-D65 modes of temperature.c and don't have any
+      temp parameters changes later we can calc correction ratios
       to take white-balanced (neutralized) data to D65
 */
 typedef struct dt_dev_chroma_t
