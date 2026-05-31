@@ -2793,8 +2793,8 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
 #ifdef HAVE_AI
     bd->masks_type[5] = DT_MASKS_OBJECT;
     bd->masks_shapes[5] = dt_iop_togglebutton_new(module, "blend`shapes",
-                                                  N_("add object"),
                                                   N_("add AI object"),
+                                                  NULL,
                                                   G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0,
                                                   dtgtk_cairo_paint_masks_object, abox);
