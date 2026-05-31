@@ -2632,7 +2632,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            This is true
              a) for the currently focused iop, as that is the iop which is most likely to change next
              b) if there is a hint for changed parameters in history via the flag
-             c) modules having the IOP_FLAGS_WRITE_PIPECACHECL_IN
+             c) modules having the IOP_FLAGS_WRITE_PIPECACHE_IN
              d) in all a-c cases only for screen pipes and no mask_display
 
            Note: we miss writing output for cache for now to be tested via IOP_FLAGS_WRITE_PIPECACHECL_OUT
@@ -2645,7 +2645,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         important_cl_input = cachewrite
             && ((module == dt_dev_gui_module())
                 || darktable.develop->history_last_module == module
-                || (module->flags() & IOP_FLAGS_WRITE_PIPECACHECL_IN));
+                || (module->flags() & IOP_FLAGS_WRITE_PIPECACHE_IN));
 
         if(important_cl_input)
         {
@@ -2820,7 +2820,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     const gboolean last_history = darktable.develop->history_last_module == module;
     if(dt_pipe_is_screen(pipe)
         && dt_pipe_no_mask_display(pipe)
-        && (has_focus || last_history || important_cl_input))
+        && (has_focus || last_history || important_cl_input || (module->flags() & IOP_FLAGS_WRITE_PIPECACHE_IN)))
     {
       dt_print_pipe(DT_DEBUG_PIPE,
                     "importance hints",
