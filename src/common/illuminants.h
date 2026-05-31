@@ -514,31 +514,6 @@ static inline float planckian_normal(const float x, const float t)
 
 
 DT_OMP_DECLARE_SIMD()
-static inline void blackbody_xy_to_tinted_xy(const float x, const float y, const float t, const float tint,
-                                             float *x_out, float *y_out)
-{
-  // Move further away from planckian locus in the orthogonal direction, by an amount of "tint"
-  const float n = planckian_normal(x, t);
-  const float norm = sqrtf(1.f + n * n);
-  *x_out = x + tint * n / norm;
-  *y_out = y - tint / norm;
-}
-
-
-DT_OMP_DECLARE_SIMD()
-static inline float get_tint_from_tinted_xy(const float x, const float y, const float t)
-{
-  // Find the distance between planckian locus and arbitrary x y chromaticity in the orthogonal direction
-  const float n = planckian_normal(x, t);
-  const float norm = sqrtf(1.f + n * n);
-  float x_bb, y_bb;
-  CCT_to_xy_blackbody(t, &x_bb, &y_bb);
-  const float tint = -(y - y_bb) * norm;
-  return tint;
-}
-
-
-DT_OMP_DECLARE_SIMD()
 static inline void xy_to_uv(const float xy[2], float uv[2])
 {
   // Convert to CIE1960 Yuv color space, useful to compute CCT
