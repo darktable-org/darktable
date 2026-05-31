@@ -1324,7 +1324,7 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
 
   if(cls == DT_RESTORE_SENSOR_CLASS_UNSUPPORTED)
   {
-    dt_control_log(_("raw denoise: image is not a supported raw sensor format"));
+    dt_control_log(_("raw denoise: image is not in a supported raw sensor format"));
     return 1;
   }
 
