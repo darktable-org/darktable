@@ -47,6 +47,29 @@ dt.register_event(
   end
 )
 
+--[[
+    Work around (fix) for darktable issue 21035
+
+    If darktable is started with a empty or non-existent configuration directory
+    the splash screen and Lua initialization may have a race condition that results
+    in a darktable crash.  
+
+    To work around that the following checks to see if there is an existing preference, 
+    which would mean the configuration directory is not empty, If the preference does
+    not exist, a 1 second sleep is added to allow the darktable main window to start 
+    before Lua tries to create widgets.
+
+    A preference is set to show that darktable has created a first run and doesn't need
+    to do a Lua sleep when starting
+]]
+
+if not dt.preferences.read("script_manager", "check_update", "bool") then
+  if not dt.preferences.read("luarc", "darktable_first_run_complete", "bool") then
+    dt.control.sleep(1000)
+  end
+end
+dt.preferences.write("luarc", "darktable_first_run_complete", "bool", true)
+
 -- check for gui so that we don't hang darktable-cli
 
 if dt.configuration.has_gui then
