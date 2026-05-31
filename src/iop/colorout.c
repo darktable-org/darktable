@@ -98,8 +98,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE
-       | IOP_FLAGS_WRITE_PIPECACHE | IOP_FLAGS_WRITE_PIPECACHECL_IN;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_WRITE_PIPECACHE_IN;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
