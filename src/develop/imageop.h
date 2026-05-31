@@ -106,7 +106,7 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_WRITE_DETAILS = 1 << 18,     // provides the scharr mask used by details
   IOP_FLAGS_WRITE_RASTER = 1 << 19,      // modules not supporting blending might still advertise a raster mask
   IOP_FLAGS_WRITE_PIPECACHE = 1 << 20,   // enforce pipecache writing
-  IOP_FLAGS_WRITE_PIPECACHECL_IN = 1 << 21, // enforce input pipecache writing for OpenCL code
+  IOP_FLAGS_WRITE_PIPECACHE_IN = 1 << 21, // makes input cacheline important, also ensure input pipecache writing for OpenCL code
 } dt_iop_flags_t;
 
 /** status of a module*/
