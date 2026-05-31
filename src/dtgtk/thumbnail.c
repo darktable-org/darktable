@@ -1070,8 +1070,10 @@ static gboolean _event_rating_release(GtkWidget *widget,
       rating = DT_VIEW_STAR_4;
     else if(widget == thumb->w_stars[4])
       rating = DT_VIEW_STAR_5;
+    else if(widget == thumb->w_unrate)
+      rating = DT_VIEW_DESERT;
 
-    if(rating != DT_VIEW_DESERT)
+    if(rating != DT_VIEW_DESERT || widget == thumb->w_unrate)
     {
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
       dt_collection_update_query(darktable.collection,
@@ -1619,6 +1621,15 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_halign(thumb->w_unrate, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_unrate);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_unrate);
+    g_signal_connect(G_OBJECT(thumb->w_unrate), "enter-notify-event",
+                      G_CALLBACK(_event_star_enter), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_unrate), "leave-notify-event",
+                      G_CALLBACK(_event_star_leave), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_unrate), "button-press-event",
+                      G_CALLBACK(_event_rating_press), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_unrate), "button-release-event",
+                      G_CALLBACK(_event_rating_release),
+                      thumb);
 
     for(int i = 0; i < MAX_STARS; i++)
     {
