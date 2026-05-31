@@ -42,7 +42,6 @@ dt.register_event(
       ov = old_view.id
     end
     if ov == "none" and new_view.id == "lighttable" then
-      dt.print_log("darktable is gui safe")
       darktable_gui_safe = true
     end
   end
