@@ -1,7 +1,7 @@
 # Module Lifecycle: What Happens When the User Interacts
 
-`IOP_Module_API.md` documents the callback API: what each function signature means and what
-a module must implement. This document is its companion. It describes *when* those callbacks
+[IOP_Module_API.md](IOP_Module_API.md) documents the callback API: what each function signature
+means and what a module must implement. This document is its companion. It describes *when* those callbacks
 fire and *what else* the system does around them — pipe change flags, cache invalidation,
 history replay, and cross-module data flow.
 
@@ -22,7 +22,9 @@ a full reference.
 
 ### History stack (`dt_dev_history_item_t`)
 
-An ordered list of per-module parameter snapshots on `dt_develop_t`. `dev->history_end` is
+An ordered list of per-module parameter snapshots on
+[`dt_develop_t`](pixelpipe_architecture.md#dt_develop_t) (the main darkroom session state).
+`dev->history_end` is
 the active cursor: only the entries in the range `[0, history_end)` are "live". Note that a
 history item's **`enabled` flag is stored separately from `params`** — it is not part of the
 params buffer. Toggling a module on or off and editing its parameters are therefore two
@@ -54,7 +56,8 @@ pixelpipe_hb.h.
 
 `synch_all` re-commits every module, but a module whose hash did not change still produces a
 cache hit, so its `process()` is skipped. In other words, the flag controls *committing*, not
-*reprocessing*. Reprocessing is decided per module by the cache (see §6).
+*reprocessing*. Reprocessing is decided per module by the cache (see
+[section 6](#6-pipeline-execution-detail)).
 
 ### Pipe status flags
 
@@ -63,7 +66,9 @@ current), `INVALID` (unusable, for example during teardown).
 
 ### `focus_hash`
 
-A hash of the currently focused module widget, updated by `dt_iop_request_focus()`. Inside
+A module is **focused** when the user opens its panel or clicks into one of its widgets; the
+darkroom tracks a single focused module at a time. `dt_iop_request_focus()` records that module
+and updates `dev->focus_hash`, a hash of the focused module's widget. Inside
 `_dev_add_history_item_ext()` (develop.c), the relevant test is roughly:
 
 ```c
@@ -86,27 +91,25 @@ the image id and pipe profiles and then walks all modules up to the requested po
 
 When the key matches a cached entry, the output is reused and `process()` is skipped. Stale
 entries are not actively deleted on a param change; they simply stop being looked up, and the
-fixed-size LRU evicts them later.
+fixed-size LRU evicts them later. For the full caching model see
+[pixelpipe_architecture.md](pixelpipe_architecture.md#pipeline-caching).
 
 ### `dev->chroma` (shared WB/CAT state)
 
 A struct on `dt_develop_t` used by white balance (`temperature.c`, the producer) and color
 calibration (`channelmixerrgb.c`, the consumer) to communicate. There is **no signal**;
-synchronization is implicit, through the order in which `commit_params()` runs (see §4 and
-§5). Temperature has two distinct write sites:
-
-- `reload_defaults()` writes `as_shot[]` and `D65coeffs[]`. This happens once per image load,
-  **even if temperature is disabled or absent from the history**, so channelmixerrgb always
-  has the camera's native WB reference available.
-- `commit_params()` writes `wb_coeffs[]`, `chr->temperature`, and `chr->late_correction`, on
-  every parameter change.
-
-`channelmixerrgb.commit_params()` reads these values.
+synchronization is implicit, through the order in which `commit_params()` runs (see
+[section 4](#4-cross-module-interactions) and [section 5](#5-pipeline-ordering-asymmetry)).
+Temperature writes the camera WB reference in `reload_defaults()` and the live coefficients in
+`commit_params()`; channelmixerrgb reads them. The full field-by-field producer/consumer map and
+the reverse-load reasoning live in their own doc — see
+[wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ### `module->params` vs `module->default_params`
 
 `default_params` is **image-specific**: it is set by `reload_defaults()` (see
-`IOP_Module_API.md`). `params` is the **live editing state**.
+[IOP_Module_API.md](IOP_Module_API.md#reload_defaults---per-image-defaults)). `params` is the
+**live editing state**.
 `dt_dev_pop_history_items_ext()` resets every module to its `default_params` and then replays
 the history entries on top. As a result, a module with no history entry runs with its
 image-specific defaults, not with compile-time constants.
@@ -124,7 +127,9 @@ callers.
 
 1. **`_dt_dev_load_raw()`** triggers the rawspeed decode through the mipmap cache (this
    blocks), then reads the decoded image struct into `dev->image_storage`. The large mipmap
-   buffer is released right after the decode; `image_storage` keeps the metadata.
+   buffer is released right after the decode; `image_storage` keeps the metadata. (The *mipmap
+   cache* holds pre-scaled copies of each image at several resolutions, used for fast thumbnail
+   and preview generation — see [mipmap](https://en.wikipedia.org/wiki/Mipmap).)
 2. Mark all pipes `DIRTY` and set `loading = TRUE`.
 3. **`dt_iop_load_modules()`** builds the IOP module list (`dev->iop`).
 4. **`dt_dev_read_history_ext()`** does everything else — defaults, presets, and history
@@ -135,18 +140,21 @@ that happens inside `dt_dev_read_history_ext()`.
 
 ### Inside `dt_dev_read_history_ext()` (develop.c)
 
-This function applies saved history by **building `dev->history` directly from the database**.
-It does *not* call `pop_history_items`. The reset-then-replay `pop` path is the undo/redo
-path (§3f), not the initial-load path.
+This function applies saved history by **building `dev->history` directly from the database** —
+it allocates one history item per stored row and appends it to the list. (This is a different
+mechanism from the reset-then-replay path that undo/redo uses later; that one is described in
+[section 3f](#3f-undo-redo-and-history-panel-navigation).)
 
 **For every image** — this is the `if(!no_image)` block, and it runs whether or not the image
 has saved history:
 
 - Clear the scratch `memory.history` table.
-- **`dt_dev_reset_chroma()`** clears part of the shared WB state (§5 lists exactly which
-  fields): `temperature` and `adaptation` become `NULL`, and `wb_coeffs[]` is reset to 1.0.
+- **`dt_dev_reset_chroma()`** clears part of the shared WB state
+  ([section 5](#5-pipeline-ordering-asymmetry) lists exactly which fields): `temperature` and
+  `adaptation` become `NULL`, and `wb_coeffs[]` is reset to 1.0.
 - **`_dt_dev_load_pipeline_defaults()`** calls `dt_iop_reload_defaults()` on every module in
-  **reverse** pipe order (§5 explains the direction). This sets each module's image-specific
+  **reverse** pipe order ([section 5](#5-pipeline-ordering-asymmetry) explains the direction).
+  This sets each module's image-specific
   `default_params`. Because it goes through the wrapper, it also copies them into `params`
   (via `dt_iop_load_default_params()`). Temperature additionally populates
   `dev->chroma.as_shot[]` and `D65coeffs[]` as a side effect.
@@ -189,11 +197,13 @@ This direct call is a deliberate wrapper bypass: it skips the framework's wholes
 `default_params → params` copy (`dt_iop_load_default_params()`). It still refreshes
 `default_params` and the `dev->chroma` reference data, and temperature's own body also writes
 a few `self->params` fields directly (`preset`, `late_correction`). So `params` is partially
-updated, not fully resynced — see the `reload_defaults` caveat in `IOP_Module_API.md`.
+updated, not fully resynced — see the `reload_defaults` caveat in
+[IOP_Module_API.md](IOP_Module_API.md#reload_defaults---per-image-defaults).
 
 The function then re-reads `history_end` from `main.images`, and — when the GUI is attached —
 calls `dt_dev_pipe_synch_all()` and `dt_dev_invalidate_all()` so the pipes will commit and
-reprocess. The pipes stay `DIRTY`, and the pipeline threads run on the next redraw (§6).
+reprocess. The pipes stay `DIRTY`, and the pipeline threads run on the next redraw
+([section 6](#6-pipeline-execution-detail)).
 
 ---
 
@@ -276,7 +286,7 @@ So a removed instance's history entries are **actively deleted**, not merely ski
 headless context, where `gui_attached` is false, this pruning block does not run — but
 interactive removal is the case this document covers.
 
-### 3f. Undo / redo / history-panel navigation
+### 3f. Undo, redo, and history-panel navigation
 
 This is a **distinct path** from the initial image load. During an active editing session it
 is the main way `module->params` are rewritten from saved entries.
@@ -299,19 +309,14 @@ re-commits after the replay.
 
 ### 4a. Temperature (WB) → ChannelMixerRGB (through `dev->chroma`)
 
-There is no signal; synchronization is implicit and ordered by iop_order:
-
-- During `synch_all` or `synch_top`, `dt_iop_commit_params()` runs in pipe order.
-- `temperature.commit_params()` writes `dev->chroma.wb_coeffs[]`, `chr->late_correction`, and
-  the `chr->temperature` pointer.
-- `channelmixerrgb.commit_params()` runs **after** it and reads `wb_coeffs[]` to build its
-  chromatic-adaptation matrix.
-- As a once-per-image-load side effect, `temperature.reload_defaults()` writes
-  `dev->chroma.as_shot[]` and `D65coeffs[]` **unconditionally** — even when temperature is
-  disabled or absent from the history — because channelmixerrgb needs the camera's native WB
-  reference to compute its default illuminant.
-- For late correction, temperature sets `chr->late_correction` and channelmixerrgb reads it.
-  A WB-mode switch raises `SYNCH`, so both re-commit in order.
+There is no signal; synchronization is implicit and ordered by iop_order. Because temperature is
+upstream of channelmixerrgb, a full `synch_all` runs `commit_params()` in pipe order:
+`temperature.commit_params()` writes `dev->chroma.wb_coeffs[]` first and
+`channelmixerrgb.commit_params()` reads it afterward to build its chromatic-adaptation matrix.
+(`synch_top` re-commits only the topmost history item, so it is not evidence that an upstream
+producer has just run.) The full producer/consumer field map, the once-per-load `reload_defaults`
+side effects, and why reverse-order default loading stays correct are covered in
+[wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ### 4b. Color-profile change (colorin / colorout)
 
@@ -326,16 +331,14 @@ and everything downstream reprocesses.
 ## 5. Pipeline ordering asymmetry
 
 Two operations walk the module list in **opposite** directions, which is a common source of
-confusion.
+confusion. (See also the
+[ordering-asymmetry note](pixelpipe_architecture.md#pipeline-ordering-asymmetry) in
+pixelpipe_architecture.md.)
 
-- **`commit_params()` (through `synch_all`)** iterates the history in history-list order. For
-  auto-applied presets this is effectively pipe order: temperature commits first and writes
-  `dev->chroma.wb_coeffs[]`; channelmixerrgb commits second and reads it. One caveat:
-  `synch_top` re-commits **only** the topmost history item, and relies on `wb_coeffs` still
-  being present in `dev->chroma` from a previous full commit. If temperature has never been
-  committed in the current session, `wb_coeffs` may be wrong on a `synch_top`.
-- **`_dt_dev_load_pipeline_defaults()`** iterates in **reverse** pipe order (last module
-  first):
+- **`commit_params()` (through `synch_all`)** iterates the history in history-list order, which
+  is effectively pipe order: an upstream module commits before a downstream one, so any state it
+  writes into shared structures is in place when the downstream module reads it.
+- **`_dt_dev_load_pipeline_defaults()`** iterates in **reverse** pipe order (last module first):
 
   ```c
   for(const GList *modules = g_list_last(dev->iop);
@@ -346,74 +349,20 @@ confusion.
   }
   ```
 
-  So channelmixerrgb's `reload_defaults()` runs **before** temperature's.
-
-### Why reverse? (and what it is *not*)
-
-The source gives no rationale for the reverse direction. Checked against the code, it is
-**not** a chromatic-adaptation (CAT) deduplication mechanism, despite the intuitive theory
-that "the last instance should claim the CAT first." CAT-token ownership is in fact
-**order-independent**, for three reasons:
-
-- `_declare_cat_on_pipe()` (channelmixerrgb.c) resolves a conflict between multiple
-  `channelmixerrgb` instances through `dt_iop_is_first_instance()`. Its conflict branch can
-  take the token away from a previous claimant:
-
-  ```c
-  if(chr->adaptation == NULL)
-    chr->adaptation = self;                              // first to register wins
-  else if(chr->adaptation == self)
-    ;                                                    // already ours
-  else if(dt_iop_is_first_instance(self->dev->iop, self))
-    chr->adaptation = self;                              // earlier in the pipe: take over
-  ```
-
-  So the **first instance in `dev->iop` always ends up owning the token**, regardless of who
-  registered first. Tracing two eligible instances shows that forward iteration would dedup
-  the *defaults* more cleanly than reverse: reverse leaves both instances with active-CAT
-  defaults until a later commit re-resolves the token.
-- `_declare_cat_on_pipe()` returns early when `gui_data == NULL`, so it is a no-op during
-  headless default loading. It therefore cannot be the reason the loop runs in reverse.
-- Duplicate `channelmixerrgb` instances do not exist yet when
-  `_dt_dev_load_pipeline_defaults()` runs at image load. They are created later, by user
-  action or history replay.
-
-So the safe statement is: defaults load in reverse pipe order, and CAT dedup is handled by
-`_declare_cat_on_pipe()` plus `dt_iop_is_first_instance()` — **not** by the loop direction.
-The real hazard the reverse order creates is producer/consumer staleness for modules that read
-shared state in `reload_defaults()`, described next.
-
-### What `dt_dev_reset_chroma()` actually resets
-
-`dt_dev_reset_chroma()` (develop.c) clears only three fields:
-
-```c
-chr->adaptation = NULL;
-chr->temperature = NULL;
-for(int c = 0; c < 4; c++) chr->wb_coeffs[c] = 1.0f;
-```
-
-It does **not** reset `D65coeffs`, `as_shot`, or `late_correction`. Those are initialized only
-by `dt_dev_init_chroma()`, at dev-context creation — not on each image switch.
-
-`channelmixerrgb.reload_defaults()` calls `_get_d65_correction_ratios()`, which reads
-`dev->chroma.D65coeffs[]` and `as_shot[]`. Because temperature's `reload_defaults()` has not
-run yet (reverse order) and `dt_dev_reset_chroma()` leaves those fields alone, channelmixerrgb
-can read **stale values from the previously loaded image**. The visible effect: the default
-illuminant xy that the Reset button restores can be computed from the wrong camera's daylight
-reference right after an image switch.
-
-The `wb_coeffs` staleness (which affects active params through `commit_params()`) **is** fixed
-by `dt_dev_reset_chroma()`. The `D65coeffs` / `as_shot` / `late_correction` staleness (which
-affects **defaults only**) remains. It is a known limitation, not a mitigated bug.
+  So a downstream module's `reload_defaults()` runs **before** an upstream one's. The source
+  documents no rationale for the direction.
 
 ### Developer rule
 
 A module's `reload_defaults()` **cannot** assume that earlier-in-pipe modules have already
-populated the shared `dev->chroma` state. The field that `dt_dev_reset_chroma()` clears
-(`wb_coeffs`) is safe to read, because it holds a neutral 1.0. The fields it does **not** clear
-(`D65coeffs`, `as_shot`, `late_correction`) may still hold stale data from the previous image
-when `reload_defaults()` runs.
+populated shared state (such as `dev->chroma`), because under reverse iteration they have not run
+yet. Shared state that a `reload_defaults()` depends on must therefore be **reset to a neutral
+value before the reverse default-load** — which the framework does via `dt_dev_reset_chroma()`
+just before `_dt_dev_load_pipeline_defaults()`.
+
+The worked example — how white balance and color calibration share `dev->chroma`, and why this
+reset keeps color calibration's defaults image-local despite the reverse order — is in
+[wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
 
 ---
 
@@ -426,7 +375,9 @@ How pixels actually flow once the pipes are marked dirty:
 - `dt_dev_pixelpipe_process()` calls `_dev_pixelpipe_process_rec()` (pixelpipe_hb.c), which
   recurses from the last module back toward the input, pulling each module's input on demand.
 - For each module, the cache key is the **cumulative hash** of all upstream `piece->hash`
-  values (each set in `dt_iop_commit_params()` from op, instance, params, and blend_params),
+  values (each set in
+  [`dt_iop_commit_params()`](IOP_Module_API.md#commit_params---transform-ui-parameters-into-processing-data)
+  from op, instance, params, and blend_params),
   plus the color-profile information. On a key match, the cached output is reused and
   `process()` is skipped. On a miss, `process()` (or `process_cl()` on the GPU) runs and the
   result is stored.
@@ -455,8 +406,7 @@ section above.
 | `dt_dev_load_image` | Top-level image load |
 | `dt_dev_read_history_ext` | Loads defaults/presets and builds `dev->history` from the DB |
 | `_dt_dev_load_pipeline_defaults` | Calls `reload_defaults` on all modules, in reverse pipe order |
-| `dt_dev_reset_chroma` | Clears `adaptation`, `temperature`, `wb_coeffs` only |
-| `dt_dev_init_chroma` | Initializes the full `dev->chroma`, at dev-context creation |
+| `dt_dev_reset_chroma` | Resets shared WB state to neutral before reverse default-load |
 | `dt_dev_add_history_item` / `_dev_add_history_item_ext` | Add/update a history entry; choose `TOP_CHANGED` vs `SYNCH` (the `focus_hash` test lives here) |
 | `dt_dev_pop_history_items` / `_ext` | Reset to defaults, then replay history (used by undo/redo) |
 | `dt_dev_reload_history_items` | Undo/redo and history-panel navigation |
@@ -473,7 +423,6 @@ section above.
 | `dt_iop_load_default_params` | Copies `default_params` into `params` |
 | `dt_iop_commit_params` | Translates params into `piece->data`; sets `piece->hash` |
 | `dt_iop_gui_changed` | Slider/widget change entry point |
-| `dt_iop_is_first_instance` | True for the earliest instance of an op in `dev->iop` |
 | `_gui_off_callback` | Enable/disable toggle handler |
 | `_gui_reset_callback` | Reset-to-defaults handler |
 | `dt_iop_gui_duplicate` | Add a module instance |
@@ -493,12 +442,16 @@ section above.
 | Symbol | File | Role |
 |---|---|---|
 | Basic-hash helper (cumulative cache hash) | pixelpipe_cache.c | Builds the cache key from image id, profiles, and all modules up to a position |
-| `_declare_cat_on_pipe` | channelmixerrgb.c | Claims/resolves the CAT token |
-| `temperature.commit_params` | temperature.c | Writes `dev->chroma.wb_coeffs` |
-| `channelmixerrgb.commit_params` | channelmixerrgb.c | Reads `dev->chroma` |
+
+For the white-balance ↔ color-calibration symbols (`temperature.*` / `channelmixerrgb.*` and the
+`dev->chroma` helpers), see
+[wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md#key-symbols).
 
 ## See also
 
-- `IOP_Module_API.md` — the callback API reference (signatures, the two `reload_defaults`
-  jobs).
-- `pixelpipe_architecture.md` — pipeline architecture, including the ordering-asymmetry note.
+- [IOP_Module_API.md](IOP_Module_API.md) — the callback API reference (signatures, the two
+  [`reload_defaults`](IOP_Module_API.md#reload_defaults---per-image-defaults) jobs).
+- [pixelpipe_architecture.md](pixelpipe_architecture.md) — pipeline architecture, including the
+  [ordering-asymmetry note](pixelpipe_architecture.md#pipeline-ordering-asymmetry).
+- [wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md) — the white-balance ↔
+  color-calibration interaction through `dev->chroma` (worked example of the ordering principle).
