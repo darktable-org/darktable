@@ -689,7 +689,7 @@ static gboolean _event_scroll(GtkWidget *widget,
   }
 
   if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+     && dt_modifiers_include(e->state, GDK_CONTROL_MASK))
   {
     gdouble dx = 0.0, dy = 0.0;
     if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
@@ -718,7 +718,7 @@ static gboolean _event_scroll(GtkWidget *widget,
   // We check before the unit-delta path so fractional smooth scroll is used for panning
   // with full fidelity rather than being accumulated into integer steps.
   if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
+     && !dt_modifiers_include(e->state, GDK_CONTROL_MASK))
   {
     // Check if any thumbnail is zoomed in; if so, pan instead of navigate.
     float fz = 1.0f;
