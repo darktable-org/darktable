@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-30 11:10-0300\n"
-"PO-Revision-Date: 2026-05-30 11:13-0300\n"
+"POT-Creation-Date: 2026-05-31 21:03-0300\n"
+"PO-Revision-Date: 2026-05-31 21:03-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3098,8 +3098,8 @@ msgid "reverse all"
 msgstr "reverter tudo"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:652
-#: ../src/common/colorspaces.c:1430 ../src/common/colorspaces.c:1778
-#: ../src/iop/colorout.c:859
+#: ../src/common/colorspaces.c:1453 ../src/common/colorspaces.c:1801
+#: ../src/iop/colorout.c:856
 msgid "export profile"
 msgstr "perfil de exportação"
 
@@ -3116,14 +3116,14 @@ msgstr "Rec2020"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:655
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:310
-#: ../src/common/colorspaces.c:1798
+#: ../src/common/colorspaces.c:1821
 msgid "Display P3"
 msgstr "Display P3"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:656
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:311
-#: ../src/common/colorspaces.c:1469 ../src/common/colorspaces.c:1750
+#: ../src/common/colorspaces.c:1492 ../src/common/colorspaces.c:1773
 #: ../src/libs/print_settings.c:1440
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatível)"
@@ -3132,7 +3132,7 @@ msgstr "Adobe RGB (compatível)"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:312
-#: ../src/common/colorspaces.c:1458 ../src/common/colorspaces.c:1748
+#: ../src/common/colorspaces.c:1481 ../src/common/colorspaces.c:1771
 #: ../src/libs/print_settings.c:1433
 msgid "sRGB"
 msgstr "sRGB"
@@ -3256,7 +3256,7 @@ msgstr "preservar cores"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/common/colorspaces.c:1744 ../src/dtgtk/stylemenu.c:69
+#: ../src/common/colorspaces.c:1767 ../src/dtgtk/stylemenu.c:69
 #: ../src/gui/guides.c:833 ../src/iop/basecurve.c:2102
 #: ../src/iop/channelmixerrgb.c:4698 ../src/iop/clipping.c:1916
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2113
@@ -3418,7 +3418,8 @@ msgstr "deslocamento"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
 #: ../src/common/collection.c:638 ../src/gui/preferences.c:967
-#: ../src/gui/presets.c:671 ../src/libs/metadata_view.c:149
+#: ../src/gui/presets.c:671 ../src/libs/filters/misc.c:412
+#: ../src/libs/metadata_view.c:149
 msgid "lens"
 msgstr "lente"
 
@@ -3496,9 +3497,10 @@ msgstr "base"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:384
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
-#: ../src/iop/ashift.c:6144 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
-#: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6144
+#: ../src/iop/basicadj.c:653 ../src/iop/flip.c:448 ../src/iop/levels.c:645
+#: ../src/iop/rgblevels.c:1081
 msgid "auto"
 msgstr "auto"
 
@@ -4208,13 +4210,13 @@ msgstr "recorte de gama"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:306
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
-#: ../src/common/colorspaces.c:1476 ../src/common/colorspaces.c:1752
+#: ../src/common/colorspaces.c:1499 ../src/common/colorspaces.c:1775
 msgid "linear Rec709 RGB"
 msgstr "RGB Rec709 linear"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:307
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:206
-#: ../src/common/colorspaces.c:1490 ../src/common/colorspaces.c:1754
+#: ../src/common/colorspaces.c:1513 ../src/common/colorspaces.c:1777
 msgid "linear Rec2020 RGB"
 msgstr "RGB Rec2020 linear"
 
@@ -5458,7 +5460,7 @@ msgid "gamma Rec709 RGB"
 msgstr "gama Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:207
-#: ../src/common/colorspaces.c:1534 ../src/common/colorspaces.c:1788
+#: ../src/common/colorspaces.c:1557 ../src/common/colorspaces.c:1811
 msgid "linear ProPhoto RGB"
 msgstr "RGB ProPhoto linear"
 
@@ -6403,6 +6405,16 @@ msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de formato, abortando exportação..."
 
+#: ../src/common/ai/restore.c:278
+#, c-format
+msgid "raw denoise model %s: incompatible input_kind"
+msgstr ""
+
+#: ../src/common/ai/restore.c:309
+#, c-format
+msgid "AI model %s: missing input_sizes in manifest"
+msgstr "modelo de IA %s: falta input_sizes no manifesto"
+
 #: ../src/common/ai/restore_raw_bayer.c:523
 #: ../src/common/ai/restore_raw_bayer.c:865
 #: ../src/common/ai/restore_raw_linear.c:584
@@ -6586,7 +6598,7 @@ msgstr "rolo de filme"
 msgid "folder"
 msgstr "pasta"
 
-#: ../src/common/collection.c:616
+#: ../src/common/collection.c:616 ../src/libs/filters/misc.c:405
 msgid "camera"
 msgstr "câmera"
 
@@ -6698,20 +6710,23 @@ msgstr "classificação"
 msgid "search"
 msgstr "buscar"
 
-#: ../src/common/collection.c:672 ../src/libs/metadata_view.c:154
+#: ../src/common/collection.c:672 ../src/libs/filters/misc.c:419
+#: ../src/libs/metadata_view.c:154
 msgid "white balance"
 msgstr "balanço de branco"
 
 #: ../src/common/collection.c:674 ../src/common/wb_presets.c:83
-#: ../src/libs/metadata_view.c:155
+#: ../src/libs/filters/misc.c:426 ../src/libs/metadata_view.c:155
 msgid "flash"
 msgstr "flash"
 
-#: ../src/common/collection.c:676 ../src/libs/metadata_view.c:153
+#: ../src/common/collection.c:676 ../src/libs/filters/misc.c:433
+#: ../src/libs/metadata_view.c:153
 msgid "exposure program"
 msgstr "programa de exposição"
 
-#: ../src/common/collection.c:678 ../src/libs/metadata_view.c:156
+#: ../src/common/collection.c:678 ../src/libs/filters/misc.c:440
+#: ../src/libs/metadata_view.c:156
 msgid "metering mode"
 msgstr "modo de medição"
 
@@ -6766,7 +6781,8 @@ msgstr "duplicatas apenas"
 #: ../src/common/collection.c:1779 ../src/common/collection.c:1806
 #: ../src/common/collection.c:1832 ../src/common/collection.c:1858
 #: ../src/common/collection.c:2769 ../src/libs/collect.c:2411
-#: ../src/libs/collect.c:2412
+#: ../src/libs/collect.c:2412 ../src/libs/filters/misc.c:206
+#: ../src/libs/filters/misc.c:208
 msgid "unnamed"
 msgstr "sem nome"
 
@@ -7082,121 +7098,121 @@ msgstr "todas as etiquetas coloridas foram removidas"
 msgid "clear"
 msgstr "limpar"
 
-#: ../src/common/colorspaces.c:1425 ../src/common/colorspaces.c:1782
+#: ../src/common/colorspaces.c:1448 ../src/common/colorspaces.c:1805
 msgid "work profile"
 msgstr "perfil de trabalho"
 
-#: ../src/common/colorspaces.c:1435 ../src/common/colorspaces.c:1780
+#: ../src/common/colorspaces.c:1458 ../src/common/colorspaces.c:1803
 #: ../src/views/darkroom.c:3221
 msgid "softproof profile"
 msgstr "perfil de prova digital"
 
-#: ../src/common/colorspaces.c:1445 ../src/common/colorspaces.c:1762
+#: ../src/common/colorspaces.c:1468 ../src/common/colorspaces.c:1785
 msgid "system display profile"
 msgstr "perfil do monitor do sistema"
 
-#: ../src/common/colorspaces.c:1450 ../src/common/colorspaces.c:1784
+#: ../src/common/colorspaces.c:1473 ../src/common/colorspaces.c:1807
 msgid "system display profile (second window)"
 msgstr "perfil do monitor do sistema (segunda janela)"
 
-#: ../src/common/colorspaces.c:1463
+#: ../src/common/colorspaces.c:1486
 msgid "sRGB (web-safe)"
 msgstr "sRGB (seguro para Web)"
 
-#: ../src/common/colorspaces.c:1483 ../src/common/colorspaces.c:1786
+#: ../src/common/colorspaces.c:1506 ../src/common/colorspaces.c:1809
 msgid "Rec709 RGB"
 msgstr "RGB Rec709"
 
-#: ../src/common/colorspaces.c:1498
+#: ../src/common/colorspaces.c:1521
 msgid "PQ Rec2020 RGB"
 msgstr "RGB PQ Rec2020"
 
-#: ../src/common/colorspaces.c:1506
+#: ../src/common/colorspaces.c:1529
 msgid "HLG Rec2020 RGB"
 msgstr "RGB HLG Rec2020"
 
-#: ../src/common/colorspaces.c:1513
+#: ../src/common/colorspaces.c:1536
 msgid "PQ P3 RGB"
 msgstr "RGB PQ P3"
 
-#: ../src/common/colorspaces.c:1519
+#: ../src/common/colorspaces.c:1542
 msgid "HLG P3 RGB"
 msgstr "RGB HLG P3"
 
-#: ../src/common/colorspaces.c:1526
+#: ../src/common/colorspaces.c:1549
 msgid "Display P3 RGB"
 msgstr "Display P3 RGB"
 
-#: ../src/common/colorspaces.c:1541 ../src/common/colorspaces.c:1756
+#: ../src/common/colorspaces.c:1564 ../src/common/colorspaces.c:1779
 msgid "linear XYZ"
 msgstr "XYZ linear"
 
-#: ../src/common/colorspaces.c:1548 ../src/common/colorspaces.c:1758
+#: ../src/common/colorspaces.c:1571 ../src/common/colorspaces.c:1781
 #: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2051
 #: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:369
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1556 ../src/common/colorspaces.c:1760
+#: ../src/common/colorspaces.c:1579 ../src/common/colorspaces.c:1783
 msgid "linear infrared BGR"
 msgstr "BGR infravermelho linear"
 
-#: ../src/common/colorspaces.c:1561
+#: ../src/common/colorspaces.c:1584
 msgid "BRG (for testing)"
 msgstr "BRG (para teste)"
 
-#: ../src/common/colorspaces.c:1667
+#: ../src/common/colorspaces.c:1690
 #, c-format
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
 "perfil `%s` não usável como perfil de histograma. foi substituído por sRGB!"
 
-#: ../src/common/colorspaces.c:1746
+#: ../src/common/colorspaces.c:1769
 msgid "no filename"
 msgstr "nenhum nome do arquivo"
 
-#: ../src/common/colorspaces.c:1764
+#: ../src/common/colorspaces.c:1787
 msgid "embedded ICC profile"
 msgstr "perfil ICC embutido"
 
-#: ../src/common/colorspaces.c:1766
+#: ../src/common/colorspaces.c:1789
 msgid "embedded matrix"
 msgstr "matriz embutida"
 
-#: ../src/common/colorspaces.c:1768
+#: ../src/common/colorspaces.c:1791
 msgid "standard color matrix"
 msgstr "matriz de cor padrão"
 
-#: ../src/common/colorspaces.c:1770
+#: ../src/common/colorspaces.c:1793
 msgid "enhanced color matrix"
 msgstr "matriz de cor aprimorada"
 
-#: ../src/common/colorspaces.c:1772
+#: ../src/common/colorspaces.c:1795
 msgid "vendor color matrix"
 msgstr "matriz de cor do fabricante"
 
-#: ../src/common/colorspaces.c:1774
+#: ../src/common/colorspaces.c:1797
 msgid "alternate color matrix"
 msgstr "matriz de cor alternativa"
 
-#: ../src/common/colorspaces.c:1776
+#: ../src/common/colorspaces.c:1799
 msgid "BRG (experimental)"
 msgstr "BRG (experimental)"
 
-#: ../src/common/colorspaces.c:1790
+#: ../src/common/colorspaces.c:1813
 msgid "PQ Rec2020"
 msgstr "PQ Rec2020"
 
-#: ../src/common/colorspaces.c:1792
+#: ../src/common/colorspaces.c:1815
 msgid "HLG Rec2020"
 msgstr "HLG Rec2020"
 
-#: ../src/common/colorspaces.c:1794
+#: ../src/common/colorspaces.c:1817
 msgid "PQ P3"
 msgstr "PQ P3"
 
-#: ../src/common/colorspaces.c:1796
+#: ../src/common/colorspaces.c:1819
 msgid "HLG P3"
 msgstr "HLG P3"
 
@@ -8086,7 +8102,7 @@ msgstr "AVIF"
 msgid "ImageMagick"
 msgstr "ImageMagick"
 
-#: ../src/common/image.h:231
+#: ../src/common/image.h:231 ../src/imageio/format/heif.c:554
 msgid "HEIF"
 msgstr "HEIF"
 
@@ -8301,6 +8317,10 @@ msgstr "Carta"
 msgid "Legal"
 msgstr "Legal"
 
+#: ../src/common/presets.c:537
+msgid "(default)"
+msgstr "(padrão)"
+
 #: ../src/common/pwstorage/pwstorage.c:109
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr ""
@@ -8394,7 +8414,7 @@ msgstr "estilos"
 msgid "style named '%s' successfully created"
 msgstr "estilo nomeado '%s' criado com sucesso"
 
-#: ../src/common/styles.c:664 ../src/dtgtk/culling.c:1306
+#: ../src/common/styles.c:664 ../src/dtgtk/culling.c:1338
 msgid "no image selected!"
 msgstr "nenhuma imagem selecionada!"
 
@@ -10035,11 +10055,7 @@ msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
 "mostrar e editar no modo restrito (sem mover/mudar o tamanho de formas)"
 
-#: ../src/develop/blend_gui.c:2796 ../src/libs/masks.c:1876
-msgid "add object"
-msgstr "adicionar objeto"
-
-#: ../src/develop/blend_gui.c:2797 ../src/libs/masks.c:1880
+#: ../src/develop/blend_gui.c:2796 ../src/libs/masks.c:1880
 msgid "add AI object"
 msgstr "adicionar objeto de IA"
 
@@ -10329,7 +10345,7 @@ msgstr "nenhuma imagem válida para fixar"
 msgid "please wait for image to load"
 msgstr "por favor aguarde a imagem ser carregada"
 
-#: ../src/develop/develop.c:1101
+#: ../src/develop/develop.c:1099
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
@@ -10337,12 +10353,12 @@ msgstr ""
 "a gravação automática do histórico foi desabilitada para esta sessão por "
 "causa de um histórico muito grande ou de um drive lento sendo usado"
 
-#: ../src/develop/develop.c:2613
+#: ../src/develop/develop.c:2611
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/develop/develop.c:3552
+#: ../src/develop/develop.c:3550
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
@@ -10993,11 +11009,11 @@ msgstr ""
 "<b>mover segmento</b>: arrastar, <b>adicionar nó</b>:ctrl+clique\n"
 "<b>remover caminho</b>: clique-direito"
 
-#: ../src/develop/pixelpipe_hb.c:537
+#: ../src/develop/pixelpipe_hb.c:571
 msgid "enabled as required"
 msgstr "habilitado porque necessário"
 
-#: ../src/develop/pixelpipe_hb.c:538
+#: ../src/develop/pixelpipe_hb.c:572
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -11007,11 +11023,11 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:545
+#: ../src/develop/pixelpipe_hb.c:579
 msgid "disabled as not appropriate"
 msgstr "desabilitado porque não é apropriado"
 
-#: ../src/develop/pixelpipe_hb.c:546
+#: ../src/develop/pixelpipe_hb.c:580
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -11021,7 +11037,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1328
+#: ../src/develop/pixelpipe_hb.c:1365
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -11031,11 +11047,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1909
+#: ../src/develop/pixelpipe_hb.c:1946
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3130
+#: ../src/develop/pixelpipe_hb.c:3167
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11056,7 +11072,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3432
+#: ../src/develop/pixelpipe_hb.c:3469
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -11092,7 +11108,7 @@ msgstr "você chegou ao final da sua seleção"
 msgid "you have reached the end of your collection"
 msgstr "você chegou ao final da sua coleção"
 
-#: ../src/dtgtk/culling.c:445
+#: ../src/dtgtk/culling.c:467
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "zoom é limitado a %d imagens"
@@ -15139,7 +15155,7 @@ msgstr "configuração"
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1617
 #: ../src/gui/accelerators.c:2922 ../src/gui/accelerators.c:3022
-#: ../src/views/view.c:1754
+#: ../src/views/view.c:1767
 msgid "action"
 msgstr "ação"
 
@@ -15263,7 +15279,7 @@ msgstr "ajustes rápidos"
 msgid "disabled defaults"
 msgstr "padrões desabilitados"
 
-#: ../src/gui/accelerators.c:91 ../src/views/view.c:1563
+#: ../src/gui/accelerators.c:91 ../src/views/view.c:1576
 msgid "scroll"
 msgstr "rolar"
 
@@ -15303,19 +15319,19 @@ msgstr "acima-abaixo"
 msgid "pgupdown"
 msgstr "pgupdown"
 
-#: ../src/gui/accelerators.c:107 ../src/views/view.c:1541
+#: ../src/gui/accelerators.c:107 ../src/views/view.c:1554
 msgid "shift"
 msgstr "shift"
 
-#: ../src/gui/accelerators.c:108 ../src/views/view.c:1543
+#: ../src/gui/accelerators.c:108 ../src/views/view.c:1556
 msgid "ctrl"
 msgstr "ctrl"
 
-#: ../src/gui/accelerators.c:110 ../src/views/view.c:1546
+#: ../src/gui/accelerators.c:110 ../src/views/view.c:1559
 msgid "option"
 msgstr "opçào"
 
-#: ../src/gui/accelerators.c:112 ../src/views/view.c:1548
+#: ../src/gui/accelerators.c:112 ../src/views/view.c:1561
 msgid "alt"
 msgstr "alt"
 
@@ -15931,7 +15947,7 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2919 ../src/views/view.c:1752
+#: ../src/gui/accelerators.c:2919 ../src/views/view.c:1765
 msgid "shortcut"
 msgstr "atalho"
 
@@ -16097,6 +16113,10 @@ msgstr "%s associado a %s"
 #: ../src/gui/accelerators.c:4424
 msgid "short key press resets stuck keys"
 msgstr "pressionamento curto de tecla reinicializa teclas bloqueadas"
+
+#: ../src/gui/color_picker_proxy.c:415 ../src/iop/watermark.c:1462
+msgid "pick color from image"
+msgstr "seleciona cor a partir da imagem"
 
 #: ../src/gui/gtk.c:195 ../src/views/darkroom.c:4964
 msgid "darktable - darkroom preview"
@@ -17629,34 +17649,39 @@ msgstr "criar"
 msgid "copy settings from existing workspace"
 msgstr "copiar configurações de uma área de trabalho existente"
 
-#: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
-#: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
-#: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
+#: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/avif.c:99 ../src/imageio/format/jxl.c:587
+#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/jxl.c:587
 msgid "10 bit"
 msgstr "10 bit"
 
-#: ../src/imageio/format/avif.c:103 ../src/imageio/format/jxl.c:587
+#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/jxl.c:587
 msgid "12 bit"
 msgstr "12 bit"
 
-#: ../src/imageio/format/avif.c:116 ../src/imageio/format/webp.c:411
+#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/webp.c:411
 msgid "lossless"
 msgstr "sem perdas"
 
-#: ../src/imageio/format/avif.c:118 ../src/imageio/format/webp.c:411
+#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/webp.c:411
 msgid "lossy"
 msgstr "com perdas"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
-#: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
-#: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:4282
+#: ../src/imageio/format/heif.c:642 ../src/imageio/format/jxl.c:585
+#: ../src/imageio/format/pdf.c:678 ../src/imageio/format/png.c:688
+#: ../src/imageio/format/tiff.c:880 ../src/imageio/format/xcf.c:358
+#: ../src/libs/neural_restore.c:4282
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -17699,9 +17724,9 @@ msgstr ""
 #. compression
 #. Compression method combo box
 #: ../src/imageio/format/avif.c:981 ../src/imageio/format/exr.cc:631
-#: ../src/imageio/format/pdf.c:693 ../src/imageio/format/png.c:702
-#: ../src/imageio/format/tiff.c:900 ../src/imageio/format/webp.c:409
-#: ../src/libs/masks.c:117
+#: ../src/imageio/format/heif.c:646 ../src/imageio/format/pdf.c:693
+#: ../src/imageio/format/png.c:702 ../src/imageio/format/tiff.c:900
+#: ../src/imageio/format/webp.c:409 ../src/libs/masks.c:117
 msgid "compression"
 msgstr "compressão"
 
@@ -17714,17 +17739,19 @@ msgstr "a compressão para a imagem"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/j2k.c:707
-#: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/jxl.c:611
-#: ../src/imageio/format/webp.c:419 ../src/libs/camera.c:588
+#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:661
+#: ../src/imageio/format/j2k.c:707 ../src/imageio/format/jpeg.c:578
+#: ../src/imageio/format/jxl.c:611 ../src/imageio/format/webp.c:419
+#: ../src/libs/camera.c:588
 msgid "quality"
 msgstr "qualidade"
 
-#: ../src/imageio/format/avif.c:1006
+#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:664
 msgid "the quality of an image, less quality means fewer details"
 msgstr "a qualidade de uma imagem, menos qualidade significa menos detalhes"
 
-#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/jpeg.c:587
+#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:677
+#: ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
 msgstr "subamostragem de croma"
 
@@ -17745,15 +17772,18 @@ msgstr ""
 "4:2:0 - taxa de amostragem de cor dividida pela metade horizontalmente e "
 "verticalmente"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/jpeg.c:597
 msgid "4:4:4"
 msgstr "4:4:4"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/jpeg.c:597
 msgid "4:2:2"
 msgstr "4:2:2"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/jpeg.c:597
 msgid "4:2:0"
 msgstr "4:2:0"
 
@@ -17840,6 +17870,21 @@ msgstr "HTJ2K256"
 #: ../src/imageio/format/exr.cc:646
 msgid "HTJ2K32"
 msgstr "HTJ2K32"
+
+#: ../src/imageio/format/heif.c:678
+msgid ""
+"chroma subsampling setting for HEIF encoder.\n"
+"auto - use subsampling determined by the quality value\n"
+"4:4:4 - no chroma subsampling\n"
+"4:2:2 - color sampling rate halved horizontally\n"
+"4:2:0 - color sampling rate halved horizontally and vertically"
+msgstr ""
+"subamostragem de croma para codificação HEIF.\n"
+"auto - use subamostragem determinado pelo valor de qualidade\n"
+"4:4:4 - nenhuma subamostragem de croma\n"
+"4:2:2 - taxa de amostragem de cor dividida pela metade horizontalmente\n"
+"4:2:0 - taxa de amostragem de cor dividida pela metade horizontalmente e "
+"verticalmente"
 
 #: ../src/imageio/format/j2k.c:448
 msgid "unable to attach output profile to JP2"
@@ -22551,52 +22596,52 @@ msgstr ""
 msgid "non-linear, RGB or Lab, display-referred"
 msgstr "não-linear, RGB ou Lab, relativo à exibição"
 
-#: ../src/iop/colorout.c:657
+#: ../src/iop/colorout.c:654
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "perfil de saída não encontrado foi substituído por linear sRGB!"
 
-#: ../src/iop/colorout.c:679
+#: ../src/iop/colorout.c:676
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "o perfil de prova digital não encontrado foi substituído pelo sRGB!"
 
-#: ../src/iop/colorout.c:722
+#: ../src/iop/colorout.c:719
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "perfil de saída não suportado foi substituído por linear sRGB!"
 
-#: ../src/iop/colorout.c:844
+#: ../src/iop/colorout.c:841
 msgid "output intent"
 msgstr "intenção de saída"
 
-#: ../src/iop/colorout.c:845
+#: ../src/iop/colorout.c:842
 msgid "rendering intent"
 msgstr "intenção de renderização"
 
-#: ../src/iop/colorout.c:847 ../src/libs/export.c:1637
+#: ../src/iop/colorout.c:844 ../src/libs/export.c:1637
 #: ../src/libs/print_settings.c:2573 ../src/libs/print_settings.c:2922
 #: ../src/views/darkroom.c:3184 ../src/views/lighttable.c:1488
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:848 ../src/libs/export.c:1638
+#: ../src/iop/colorout.c:845 ../src/libs/export.c:1638
 #: ../src/libs/print_settings.c:2574 ../src/libs/print_settings.c:2923
 #: ../src/views/darkroom.c:3185 ../src/views/lighttable.c:1489
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:849 ../src/libs/export.c:1639
+#: ../src/iop/colorout.c:846 ../src/libs/export.c:1639
 #: ../src/libs/print_settings.c:2575 ../src/libs/print_settings.c:2924
 #: ../src/views/darkroom.c:3186 ../src/views/lighttable.c:1490
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:850 ../src/libs/export.c:1640
+#: ../src/iop/colorout.c:847 ../src/libs/export.c:1640
 #: ../src/libs/print_settings.c:2576 ../src/libs/print_settings.c:2925
 #: ../src/views/darkroom.c:3187 ../src/views/lighttable.c:1491
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
 
-#: ../src/iop/colorout.c:866
+#: ../src/iop/colorout.c:863
 msgid "export ICC profiles"
 msgstr "perfil ICC de exportação"
 
@@ -27848,10 +27893,6 @@ msgstr ""
 msgid "select watermark color"
 msgstr "seleciona cor da marca d'água"
 
-#: ../src/iop/watermark.c:1462
-msgid "pick color from image"
-msgstr "seleciona cor a partir da imagem"
-
 #: ../src/iop/watermark.c:1492
 msgid ""
 "choose how to scale the watermark\n"
@@ -29328,7 +29369,7 @@ msgstr ""
 "ctr+clique para selecionar múltiplos valores"
 
 #. the button to close the popup
-#: ../src/libs/filters/filename.c:452
+#: ../src/libs/filters/filename.c:452 ../src/libs/filters/misc.c:501
 msgid "ok"
 msgstr "ok"
 
@@ -29339,6 +29380,130 @@ msgstr "filtrar por estado do histórico"
 #: ../src/libs/filters/local_copy.c:142
 msgid "local copied state filter"
 msgstr "filtro por estado de cópia local"
+
+#: ../src/libs/filters/misc.c:86
+msgid "no camera defined"
+msgstr "nenhuma câmera definida"
+
+#: ../src/libs/filters/misc.c:90
+msgid "no lens defined"
+msgstr "nenhuma lente definida"
+
+#: ../src/libs/filters/misc.c:94
+msgid "no group id defined"
+msgstr "nenhum id de grupo definido"
+
+#: ../src/libs/filters/misc.c:99
+msgid "no white balance defined"
+msgstr "nenhum balanço de branco definido"
+
+#: ../src/libs/filters/misc.c:104
+msgid "no flash defined"
+msgstr "nenhum flash definido"
+
+#: ../src/libs/filters/misc.c:109
+msgid "no exposure program defined"
+msgstr "nenhum programa de exposição definido"
+
+#: ../src/libs/filters/misc.c:114
+msgid "no metering mode defined"
+msgstr "nenhum modo de medição definido"
+
+#: ../src/libs/filters/misc.c:406
+msgid ""
+"enter camera to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing cameras"
+msgstr ""
+"entre a câmera para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter câmeras existentes"
+
+#: ../src/libs/filters/misc.c:413
+msgid ""
+"enter lens to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing lenses"
+msgstr ""
+"entre a lente para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter lentes existentes"
+
+#: ../src/libs/filters/misc.c:420
+msgid ""
+"enter white balance to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing white balances"
+msgstr ""
+"entre o balanço de branco para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter balanços de branco existentes"
+
+#: ../src/libs/filters/misc.c:427
+msgid ""
+"enter flash to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing flashes"
+msgstr ""
+"entre o flash para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter flashes existentes"
+
+#: ../src/libs/filters/misc.c:434
+msgid ""
+"enter exposure program to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing exposure programs"
+msgstr ""
+"entre o programa de exposição para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter programas de exposição existentes"
+
+#: ../src/libs/filters/misc.c:441
+msgid ""
+"enter metering mode to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing metering modes"
+msgstr ""
+"entre o modo de medição para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter modos de medição existentes"
+
+#: ../src/libs/filters/misc.c:447 ../src/libs/metadata_view.c:135
+msgid "group id"
+msgstr "identificação de grupo"
+
+#: ../src/libs/filters/misc.c:448
+msgid ""
+"enter group id to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing group ids"
+msgstr ""
+"entre o id de grupo para procurar.\n"
+"múltiplos valores podem ser separados por ','\n"
+"\n"
+"clique-direito para obter ids de grupo existentes"
+
+#: ../src/libs/filters/misc.c:481
+msgid ""
+"click to select\n"
+"ctrl+click to select multiple values"
+msgstr ""
+"clique para selecionar\n"
+"ctrl+clique para selecionar múltiplos valores"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "filter images based on their module order"
@@ -30474,6 +30639,10 @@ msgstr "modo: exclusão"
 msgid "delete unused shapes"
 msgstr "excluir etiquetas não usadas"
 
+#: ../src/libs/masks.c:1876
+msgid "add object"
+msgstr "adicionar objeto"
+
 #: ../src/libs/masks.c:1920
 msgid "created shapes"
 msgstr "formas criadas"
@@ -30650,10 +30819,6 @@ msgstr "todos os direitos reservados"
 #: ../src/libs/metadata_view.c:133
 msgid "filmroll"
 msgstr "rolo de filme"
-
-#: ../src/libs/metadata_view.c:135
-msgid "group id"
-msgstr "identificação de grupo"
 
 #: ../src/libs/metadata_view.c:140
 msgid "import timestamp"
@@ -31478,7 +31643,10 @@ msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
 "affects denoise"
-msgstr "quando ligado, pixels fora da gama sRGB passam sem remoção de ruído; quando desligado, todos os pixels passam por remoção de ruído mas cores de gama ampla podem ser recortadas; só afeta remoção de ruído"
+msgstr ""
+"quando ligado, pixels fora da gama sRGB passam sem remoção de ruído; quando "
+"desligado, todos os pixels passam por remoção de ruído mas cores de gama "
+"ampla podem ser recortadas; só afeta remoção de ruído"
 
 #: ../src/libs/neural_restore.c:4351
 msgid "add to the current collection"
@@ -32916,6 +33084,16 @@ msgstr "alterna modo de seleção com zoom"
 msgid "exit current layout"
 msgstr "sair da disposição atual"
 
+#: ../src/libs/tools/log_history.c:49
+#, fuzzy
+msgid "log history"
+msgstr "copiar histórico"
+
+#: ../src/libs/tools/log_history.c:169
+#, fuzzy
+msgid "view log history"
+msgstr "histórico de processamento"
+
 #: ../src/libs/tools/midi.c:41
 msgid "midi"
 msgstr "midi"
@@ -33935,48 +34113,48 @@ msgstr "nova sessão iniciada '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "nenhuma câmera com acesso remoto disponível para uso..."
 
-#: ../src/views/view.c:1554
+#: ../src/views/view.c:1567
 msgid "left-click"
 msgstr "clique-esquerdo"
 
-#: ../src/views/view.c:1557
+#: ../src/views/view.c:1570
 msgid "right-click"
 msgstr "clique-direito"
 
-#: ../src/views/view.c:1560
+#: ../src/views/view.c:1573
 msgid "middle-click"
 msgstr "clique do meio"
 
-#: ../src/views/view.c:1566
+#: ../src/views/view.c:1579
 msgid "left double-click"
 msgstr "clique-esquerdo-duplo"
 
-#: ../src/views/view.c:1569
+#: ../src/views/view.c:1582
 msgid "right double-click"
 msgstr "clique-direito duplo"
 
-#: ../src/views/view.c:1572
+#: ../src/views/view.c:1585
 msgid "drag and drop"
 msgstr "arrastar e soltar"
 
-#: ../src/views/view.c:1575
+#: ../src/views/view.c:1588
 msgid "left-click+drag"
 msgstr "clique-esquerdo+arrastar"
 
-#: ../src/views/view.c:1578
+#: ../src/views/view.c:1591
 msgid "right-click+drag"
 msgstr "clique-direito+arrastar"
 
-#: ../src/views/view.c:1599
+#: ../src/views/view.c:1612
 msgid "darktable - accels window"
 msgstr "darktable - janela de atalhos"
 
-#: ../src/views/view.c:1646
+#: ../src/views/view.c:1659
 msgid "switch to a classic window which will stay open after key release"
 msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla."
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1712
+#: ../src/views/view.c:1725
 msgid "mouse actions"
 msgstr "ações com mouse"
 
@@ -34347,9 +34525,6 @@ msgstr "ações com mouse"
 #~ msgid "do you really want to physically delete selected image from disk?"
 #~ msgstr ""
 #~ "você realmente deseja excluir fisicamente a imagem selecionada do disco?"
-
-#~ msgid "(default)"
-#~ msgstr "(padrão)"
 
 #~ msgid ""
 #~ "display the sequence of edit actions\n"
