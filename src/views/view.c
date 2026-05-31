@@ -826,7 +826,20 @@ dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
         cairo_t *cr = cairo_create(*surface);
         cairo_scale(cr, scale, scale);
         cairo_set_source_surface(cr, *mip_cache, 0, 0);
-        cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+        // Match the filter logic of the full path below: at a 1:1 mapping
+        // (scale ~ 1.0, i.e. a true 100% view) use NEAREST so we display the
+        // cached native pixels exactly, pixel-for-pixel, rather than softening
+        // them with interpolation.  The cached surface always corresponds to
+        // the exact mip (we only cache when mip == buf.size && buf_wd > 30), so
+        // the skull/fallback branches of the full path can't apply here.
+        if(fabsf(scale - 1.0f) < 0.01f)
+          cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+        else
+          cairo_pattern_set_filter(cairo_get_source(cr),
+                                   ((darktable.gui->filter_image == CAIRO_FILTER_FAST)
+                                    && quality)
+                                   ? CAIRO_FILTER_GOOD
+                                   : darktable.gui->filter_image);
         cairo_paint(cr);
         cairo_destroy(cr);
         return DT_VIEW_SURFACE_OK;
