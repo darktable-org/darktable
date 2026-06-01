@@ -1508,7 +1508,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
 
-  gui->touchpad_gestures_enabled = TRUE;
+  gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
                             _touchpad_gestures_pref_changed, gui);
 

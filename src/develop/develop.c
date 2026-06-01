@@ -176,11 +176,11 @@ static void _cleanup_pinned_dev(dt_develop_t *pinned_dev)
   pinned_dev->preview2.widget = NULL;
 
   if(pinned_dev->preview2.pipe)
-    dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(pinned_dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
   if(pinned_dev->preview_pipe)
-    dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(pinned_dev->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
   if(pinned_dev->full.pipe)
-    dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(pinned_dev->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
 
   if(pinned_dev->preview2.pipe)
   {
@@ -772,11 +772,11 @@ restart:
   dt_get_times(&start);
 
   // keep return status of dt_dev_pixelpipe_process()
-  const gboolean stopped = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
+  const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
+  const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+  const gboolean stopped = early || shutdown != DT_DEV_PIXELPIPE_STOP_NO;
   if(stopped)
   {
-    // If pixelpipe stopped that could be because of pipe->shutdown so we check that and reset.
-    const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
     const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
     dt_print_pipe(DT_DEBUG_PIPE, "pipe stopped", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "%s%s%s%s",
                 dt_dev_pixelpipe_shutdown_to_str(shutdown),

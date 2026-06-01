@@ -324,6 +324,28 @@ static void _set_table_zoom_ratio(dt_culling_t *table, dt_thumbnail_t *th)
   table->zoom_ratio = dt_thumbnail_get_zoom_ratio(th);
 }
 
+// Safety-net finaliser for deferred zoom gestures: fires once no further zoom
+// event has arrived for a short while. This guarantees the surface is reloaded
+// at the correct resolution even when the input device never emits a smooth
+// scroll "stop" event (or emits it without the ctrl modifier still held).
+static gboolean _zoom_finalize_timeout(gpointer user_data)
+{
+  dt_culling_t *table = (dt_culling_t *)user_data;
+  table->zoom_finalize_timeout_id = 0;
+  dt_culling_zoom_end(table);
+  return G_SOURCE_REMOVE;
+}
+
+// (Re)arm the deferred-zoom finaliser. Called after each deferred zoom event so
+// the timer keeps sliding forward while the gesture is ongoing and only fires
+// once the user actually stops.
+static void _schedule_zoom_finalize(dt_culling_t *table)
+{
+  if(table->zoom_finalize_timeout_id)
+    g_source_remove(table->zoom_finalize_timeout_id);
+  table->zoom_finalize_timeout_id = g_timeout_add(200, _zoom_finalize_timeout, table);
+}
+
 static gboolean _zoom_and_shift(dt_thumbnail_t *th,
                                 const int x_offset,
                                 const int y_offset,
@@ -520,6 +542,12 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
       _set_table_zoom_ratio(table, th);
   }
 
+  // Deferred gestures only rescale the stale surface; arm the safety-net timer
+  // so the proper surface reload still happens shortly after scrolling stops
+  // even if no smooth-scroll "stop" event arrives to call dt_culling_zoom_end().
+  if(deferred)
+    _schedule_zoom_finalize(table);
+
   return TRUE;
 }
 
@@ -648,16 +676,20 @@ static gboolean _event_scroll(GtkWidget *widget,
   // accumulator path below, which would otherwise batch several events into
   // a single coarse 0.5-unit step.
   //
-  // Scroll stop event: trigger a proper surface reload now that the gesture is done.
-  if(e->direction == GDK_SCROLL_SMOOTH && e->is_stop
-     && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  // Scroll stop event: trigger a proper surface reload now that the gesture is
+  // done. We deliberately do NOT require ctrl to still be held here: the stop
+  // event often arrives after the user has released ctrl, and a deferred zoom
+  // must be finalised regardless. (If no zoom was pending this is a no-op, and
+  // the safety-net timer in _thumbs_zoom_add covers devices that never emit a
+  // stop event at all.)
+  if(e->direction == GDK_SCROLL_SMOOTH && e->is_stop)
   {
     dt_culling_zoom_end(table);
     return TRUE;
   }
 
   if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+     && dt_modifiers_include(e->state, GDK_CONTROL_MASK))
   {
     gdouble dx = 0.0, dy = 0.0;
     if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
@@ -686,7 +718,7 @@ static gboolean _event_scroll(GtkWidget *widget,
   // We check before the unit-delta path so fractional smooth scroll is used for panning
   // with full fidelity rather than being accumulated into integer steps.
   if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
+     && !dt_modifiers_include(e->state, GDK_CONTROL_MASK))
   {
     // Check if any thumbnail is zoomed in; if so, pan instead of navigate.
     float fz = 1.0f;
@@ -2251,6 +2283,12 @@ gboolean dt_culling_zoom_add(dt_culling_t *table,
 void dt_culling_zoom_end(dt_culling_t *table)
 {
   if(!table) return;
+  // We are finalising now, so cancel any pending safety-net timer.
+  if(table->zoom_finalize_timeout_id)
+  {
+    g_source_remove(table->zoom_finalize_timeout_id);
+    table->zoom_finalize_timeout_id = 0;
+  }
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = l->data;
