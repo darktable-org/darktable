@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 17:20+0200\n"
+"POT-Creation-Date: 2026-06-01 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2539,7 +2539,7 @@ msgstr ""
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
 #: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3048
-#: ../src/iop/colorharmonizer.c:1603 ../src/iop/colorize.c:358
+#: ../src/iop/colorharmonizer.c:1605 ../src/iop/colorize.c:358
 #: ../src/iop/lowpass.c:576 ../src/iop/soften.c:376 ../src/iop/velvia.c:73
 #: ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
@@ -11713,12 +11713,13 @@ msgstr ""
 #. inverted landscape
 #. roll right portrait
 #. Roll Angle 0 is landscape, -90 is rolled to the left in portrait, +- 180 is landscape inverted, 90 is portrait rolled to the right
+#. check for Nidon and change the sign
 #. dt.gui.action("iop/ashift/automatic cropping", "selection", "item:" .. crop, 1.000)
 #. da.wait_until_pixelpipe_complete()
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/auto_straighten.lua:244
+#: ../src/external/lua-scripts/official/auto_straighten.lua:249
 msgid "exiftool not found, exiting..."
 msgstr ""
 
@@ -12201,6 +12202,7 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:106
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:494
 msgid "extract burst roll images"
 msgstr ""
 
@@ -12233,12 +12235,12 @@ msgstr ""
 #. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
 #. name
 #. type
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:164
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:168
 msgid "preferred exif tag reader"
 msgstr ""
 
 #. label
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:165
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:169
 msgid "use exiftool or exiv2 to read exif tags"
 msgstr ""
 
@@ -12250,9 +12252,24 @@ msgstr ""
 #. name
 #. type
 #. label
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:173
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:174
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:177
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:178
 msgid "extract burst roll images on import"
+msgstr ""
+
+#. tooltip
+#. default
+#. display selection button
+#. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
+#. name
+#. type
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:185
+msgid "display select burst roll images button"
+msgstr ""
+
+#. label
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:186
+msgid "add a button to the select module to select burst roll images"
 msgstr ""
 
 #. tooltip
@@ -12267,40 +12284,40 @@ msgstr ""
 #. helper functions
 #. -----------------
 #. skip blank lines created by forfiles
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:306
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:332
 #, lua-format
 msgid "extracted %d dng files from %s"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:338
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:356
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:372
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:390
 msgid "scanning for burst roll images"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:373
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
 msgid "extracting burst roll images"
 msgstr ""
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:392
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:457
 msgid "dnglab executable not found"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:393
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:458
 msgid ": dnglab executable not found, exiting..."
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:398
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:466
 msgid "no exif tag reader available"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:399
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:467
 msgid " no exif tag reader available, exiting..."
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:475
 #, lua-format
 msgid " selected tag reader %s not available"
 msgstr ""
@@ -12308,6 +12325,18 @@ msgstr ""
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:488
+msgid "select burst roll images"
+msgstr ""
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
+msgid "select burst roll image containers"
+msgstr ""
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
+msgid "extract and group burst roll images with container"
+msgstr ""
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -20890,7 +20919,7 @@ msgstr ""
 msgid "vectorscope two-way sync"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1515
+#: ../src/iop/colorharmonizer.c:1517
 msgid ""
 "when enabled, the vectorscope harmony overlay is kept in sync with\n"
 "the harmony rule and anchor hue controls in the module.\n"
@@ -20898,7 +20927,7 @@ msgid ""
 "vice-versa."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1529
+#: ../src/iop/colorharmonizer.c:1531
 msgid ""
 "import the harmony rule and anchor hue currently displayed in the "
 "vectorscope.\n"
@@ -20906,7 +20935,7 @@ msgid ""
 "already active."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1550
+#: ../src/iop/colorharmonizer.c:1552
 msgid ""
 "how strongly off-harmony hues are pulled toward the nearest harmony node.\n"
 "\n"
@@ -20921,7 +20950,7 @@ msgid ""
 "are never affected regardless of this setting."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1564
+#: ../src/iop/colorharmonizer.c:1566
 msgid ""
 "controls the angular reach of each harmony node's attraction.\n"
 "\n"
@@ -20941,7 +20970,7 @@ msgid ""
 "  useful for strongly discordant images or when a painterly look is desired."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1579
+#: ../src/iop/colorharmonizer.c:1581
 msgid ""
 "shields low-chroma (desaturated) colors from the hue correction.\n"
 "\n"
@@ -20959,7 +20988,7 @@ msgid ""
 "range."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1593
+#: ../src/iop/colorharmonizer.c:1595
 msgid ""
 "controls the intensity of smoothing applied to the correction field.\n"
 "\n"
@@ -20973,23 +21002,23 @@ msgid ""
 "  blur the grading across image edges, causing some visual separation."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 1"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 2"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 3"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 4"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1620
+#: ../src/iop/colorharmonizer.c:1622
 msgid ""
 "saturation multiplier for colors near this harmony node.\n"
 "100% = unchanged. below 100% desaturates; above 100% boosts saturation.\n"
@@ -30529,11 +30558,11 @@ msgstr ""
 msgid "exit current layout"
 msgstr ""
 
-#: ../src/libs/tools/log_history.c:49
+#: ../src/libs/tools/log_history.c:50
 msgid "log history"
 msgstr ""
 
-#: ../src/libs/tools/log_history.c:169
+#: ../src/libs/tools/log_history.c:188
 msgid "view log history"
 msgstr ""
 
