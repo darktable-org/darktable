@@ -1511,6 +1511,8 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *sync_row = dt_gui_hbox();
 
   g->sync_to_vectorscope = gtk_check_button_new_with_label(_("vectorscope two-way sync"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->sync_to_vectorscope))),
+                          PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(g->sync_to_vectorscope,
     _("when enabled, the vectorscope harmony overlay is kept in sync with\n"
       "the harmony rule and anchor hue controls in the module.\n"
@@ -1663,3 +1665,9 @@ void gui_cleanup(dt_iop_module_t *self)
   }
   dt_iop_default_cleanup(self);
 }
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
