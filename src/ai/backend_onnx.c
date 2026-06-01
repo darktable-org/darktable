@@ -19,6 +19,7 @@
 #include "backend.h"
 #include "common/darktable.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include <glib.h>
 #include <onnxruntime_c_api.h>
 #include <inttypes.h>
@@ -1195,6 +1196,48 @@ static gboolean _try_openvino_with_cache(OrtSessionOptions *session_opts)
   return TRUE;
 }
 
+// surface MIGraphX's multi-minute first-run model compile to the user
+// (without this, AMD users assume darktable hung); ORT_LOGGING_LEVEL=warning
+// or =error opens up ORT's own log stream for debugging; default FATAL
+// keeps the terminal clean of ORT's chatter
+static void ORT_API_CALL _ort_log_callback(void *param,
+                                           OrtLoggingLevel severity,
+                                           const char *category,
+                                           const char *logid,
+                                           const char *code_location,
+                                           const char *message)
+{
+  (void)param; (void)category; (void)logid;
+  const char *loc = code_location ? code_location : "";
+  const char *msg = message ? message : "";
+
+  const gboolean is_migraphx_compile =
+    strstr(loc, "migraphx_execution_provider.cc")
+    && strstr(msg, "Model Compile: ");
+  if(is_migraphx_compile)
+  {
+    if(strstr(msg, "Begin"))
+      dt_control_log(
+        _("preparing AI model for first use (one-time, can take a while)..."));
+    else if(strstr(msg, "Complete"))
+      dt_control_log(_("AI model ready"));
+  }
+
+  OrtLoggingLevel filter = ORT_LOGGING_LEVEL_FATAL;
+  const char *s = g_getenv("ORT_LOGGING_LEVEL");
+  if(s)
+  {
+    if(!g_ascii_strcasecmp(s, "warning"))    filter = ORT_LOGGING_LEVEL_WARNING;
+    else if(!g_ascii_strcasecmp(s, "error")) filter = ORT_LOGGING_LEVEL_ERROR;
+  }
+  if(is_migraphx_compile || severity >= filter)
+    dt_print(DT_DEBUG_AI, "[onnx_runtime] %s%s%s%s",
+             msg,
+             loc[0] ? " (" : "",
+             loc[0] ? loc : "",
+             loc[0] ? ")" : "");
+}
+
 static gpointer _init_ort_env(gpointer data)
 {
   (void)data;
@@ -1202,29 +1245,15 @@ static gpointer _init_ort_env(gpointer data)
   _setup_amd_caches();
 #endif
   OrtEnv *env = NULL;
-  // ORT log level:
-  //   - default                → FATAL (effectively silent; only unrecoverable crashes surface)
-  //   - -d ai or -d all        → ERROR (default when debugging AI)
-  //   - -d ai/-d all + env     → ORT_LOGGING_LEVEL=verbose|info|warning|error|fatal overrides
-  OrtLoggingLevel log_level = ORT_LOGGING_LEVEL_FATAL;
-  if(darktable.unmuted & DT_DEBUG_AI)
-  {
-    log_level = ORT_LOGGING_LEVEL_ERROR;
-    const char *level_str = g_getenv("ORT_LOGGING_LEVEL");
-    if(level_str)
-    {
-      if(!g_ascii_strcasecmp(level_str, "verbose"))      log_level = ORT_LOGGING_LEVEL_VERBOSE;
-      else if(!g_ascii_strcasecmp(level_str, "info"))    log_level = ORT_LOGGING_LEVEL_INFO;
-      else if(!g_ascii_strcasecmp(level_str, "warning")) log_level = ORT_LOGGING_LEVEL_WARNING;
-      else if(!g_ascii_strcasecmp(level_str, "error"))   log_level = ORT_LOGGING_LEVEL_ERROR;
-      else if(!g_ascii_strcasecmp(level_str, "fatal"))   log_level = ORT_LOGGING_LEVEL_FATAL;
-    }
-  }
 #ifdef ORT_LAZY_LOAD
-  // ORT may emit additional schema-registration noise during env creation.
+  // ORT may still write some schema-registration noise to stderr directly.
   const int saved = _stderr_suppress_begin();
 #endif
-  OrtStatus *status = g_ort.api->CreateEnv(log_level, "DarktableAI", &env);
+  OrtStatus *status = g_ort.api->CreateEnvWithCustomLogger(_ort_log_callback,
+                                                           NULL,
+                                                           ORT_LOGGING_LEVEL_WARNING,
+                                                           "DarktableAI",
+                                                           &env);
 #ifdef ORT_LAZY_LOAD
   _stderr_suppress_end(saved);
 #endif
