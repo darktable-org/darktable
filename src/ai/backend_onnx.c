@@ -1202,11 +1202,29 @@ static gpointer _init_ort_env(gpointer data)
   _setup_amd_caches();
 #endif
   OrtEnv *env = NULL;
+  // ORT log level:
+  //   - default                → FATAL (effectively silent; only unrecoverable crashes surface)
+  //   - -d ai or -d all        → ERROR (default when debugging AI)
+  //   - -d ai/-d all + env     → ORT_LOGGING_LEVEL=verbose|info|warning|error|fatal overrides
+  OrtLoggingLevel log_level = ORT_LOGGING_LEVEL_FATAL;
+  if(darktable.unmuted & DT_DEBUG_AI)
+  {
+    log_level = ORT_LOGGING_LEVEL_ERROR;
+    const char *level_str = g_getenv("ORT_LOGGING_LEVEL");
+    if(level_str)
+    {
+      if(!g_ascii_strcasecmp(level_str, "verbose"))      log_level = ORT_LOGGING_LEVEL_VERBOSE;
+      else if(!g_ascii_strcasecmp(level_str, "info"))    log_level = ORT_LOGGING_LEVEL_INFO;
+      else if(!g_ascii_strcasecmp(level_str, "warning")) log_level = ORT_LOGGING_LEVEL_WARNING;
+      else if(!g_ascii_strcasecmp(level_str, "error"))   log_level = ORT_LOGGING_LEVEL_ERROR;
+      else if(!g_ascii_strcasecmp(level_str, "fatal"))   log_level = ORT_LOGGING_LEVEL_FATAL;
+    }
+  }
 #ifdef ORT_LAZY_LOAD
   // ORT may emit additional schema-registration noise during env creation.
   const int saved = _stderr_suppress_begin();
 #endif
-  OrtStatus *status = g_ort.api->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "DarktableAI", &env);
+  OrtStatus *status = g_ort.api->CreateEnv(log_level, "DarktableAI", &env);
 #ifdef ORT_LAZY_LOAD
   _stderr_suppress_end(saved);
 #endif
