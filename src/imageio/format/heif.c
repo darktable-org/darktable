@@ -421,8 +421,8 @@ int write_image(dt_imageio_module_data_t *data,
   if(exif && exif_len > 0)
   {
     char *xmp_string = dt_exif_xmp_read_string(imgid);
-    const size_t xmp_len = strlen(xmp_string);
-    if(xmp_string && (xmp_len > 0))
+    size_t xmp_len;
+    if(xmp_string && (xmp_len = strlen(xmp_string) > 0))
     {
       err = heif_context_add_XMP_metadata(context, handle, xmp_string, xmp_len);
       g_free(xmp_string);
