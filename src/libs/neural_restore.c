@@ -1100,27 +1100,27 @@ static int _ensure_raw_ctx(dt_neural_job_t *j,
     dt_restore_unref(j->ctx);
     j->ctx = NULL;
   }
-  const char *label = NULL;
+  const char *message = NULL;
   switch(cls)
   {
     case DT_RESTORE_SENSOR_CLASS_BAYER:
       j->ctx = dt_restore_load_rawdenoise_bayer(j->env);
-      label = _("Bayer");
+      message = _("failed to load AI model for Bayer raw denoising");
       break;
     case DT_RESTORE_SENSOR_CLASS_XTRANS:
       j->ctx = dt_restore_load_rawdenoise_xtrans(j->env);
-      label = _("X-Trans");
+      message = _("failed to load AI model for X-Trans raw denoising");
       break;
     case DT_RESTORE_SENSOR_CLASS_LINEAR:
       j->ctx = dt_restore_load_rawdenoise_linear(j->env);
-      label = _("linear");
+      message = _("failed to load AI model for linear raw denoising");
       break;
     default:
       return 1;
   }
   if(!j->ctx)
   {
-    dt_control_log(_("failed to load AI raw denoise %s model"), label);
+    dt_control_log(message, (char* )NULL);
     return 1;
   }
   j->raw_ctx_sensor_class = cls;
@@ -1324,7 +1324,7 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
 
   if(cls == DT_RESTORE_SENSOR_CLASS_UNSUPPORTED)
   {
-    dt_control_log(_("raw denoise: image is not a supported raw sensor format"));
+    dt_control_log(_("raw denoise: image is not in a supported raw sensor format"));
     return 1;
   }
 
