@@ -40,18 +40,6 @@
 #define PROGNAME_SIZE 320
 #endif
 
-static void _process_all_gui_events()
-{
-  // give Gtk a chance to update the screen; we need to let the event
-  // processing run several times for the splash window to actually be
-  // fully displayed/updated
-  for(int i = 0; i < 5; i++)
-  {
-    g_usleep(1000);
-    dt_gui_process_events();
-  }
-}
-
 static GtkWidget *_get_logo()
 {
   // get the darktable logo, including seasonal variants as
@@ -213,7 +201,7 @@ void dt_splash_screen_create(const gboolean force)
   gtk_window_set_default_size(GTK_WINDOW(darktable.splash.start_screen), 700, -1);
   gtk_widget_show_all(darktable.splash.start_screen);
   gtk_widget_hide(darktable.splash.remaining_box);
-  _process_all_gui_events();
+  dt_gui_process_events();
 }
 
 void dt_splash_screen_set_progress(const char *msg)
@@ -226,7 +214,7 @@ void dt_splash_screen_set_progress(const char *msg)
     gtk_label_set_text(GTK_LABEL(darktable.splash.progress_text), msg);
     gtk_widget_show(darktable.splash.progress_text);
     gtk_widget_hide(darktable.splash.remaining_box);
-    _process_all_gui_events();
+    dt_gui_process_events();
     gdk_display_sync(gdk_display_get_default());
   }
 }
@@ -261,7 +249,7 @@ void dt_splash_screen_set_progress_percent(const char *msg,
       gtk_label_set_text(GTK_LABEL(darktable.splash.remaining_text), "   --:--");
     }
     gtk_widget_show_all(darktable.splash.start_screen);
-    _process_all_gui_events();
+    dt_gui_process_events();
   }
 }
 
