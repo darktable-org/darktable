@@ -810,8 +810,8 @@ restart:
       goto restart;
   }
 
-  // image pipes require pending dimension check
-  if(port && dt_pipe_is_image(pipe) && pipe->changed != DT_DEV_PIPE_UNCHANGED)
+  // pipe requires pending dimension check, don't fiddle with redrawing the widget
+  if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
     goto restart;
 
   dt_show_times_f(&start,
