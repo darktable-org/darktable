@@ -305,6 +305,7 @@ int write_image(dt_imageio_module_data_t *data,
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[heif export] failed to allocate ICC profile");
+        heif_image_release(image);
         heif_nclx_color_profile_free(nclx_profile);
         return 1; // failure
       }
@@ -411,6 +412,7 @@ int write_image(dt_imageio_module_data_t *data,
     heif_encoder_release(encoder);
     heif_context_free(context);
     heif_image_release(image);
+    heif_encoding_options_free(options);
     heif_nclx_color_profile_free(nclx_profile);
     return 1; // failure
   }
@@ -424,6 +426,10 @@ int write_image(dt_imageio_module_data_t *data,
       dt_print(DT_DEBUG_ALWAYS,
                "[heif export] failed to save EXIF metadata: %s (%d)",
                err.message, err.code);
+      heif_context_free(context);
+      heif_image_release(image);
+      heif_encoder_release(encoder);
+      heif_encoding_options_free(options);
       heif_nclx_color_profile_free(nclx_profile);
       return 1; // failure
     }
@@ -442,6 +448,10 @@ int write_image(dt_imageio_module_data_t *data,
         dt_print(DT_DEBUG_ALWAYS,
                  "[heif export] failed to save XMP metadata: %s (%d)",
                  err.message, err.code);
+        heif_context_free(context);
+        heif_image_release(image);
+        heif_encoder_release(encoder);
+        heif_encoding_options_free(options);
         heif_nclx_color_profile_free(nclx_profile);
         return 1; // failure
       }
@@ -459,6 +469,7 @@ int write_image(dt_imageio_module_data_t *data,
     heif_encoder_release(encoder);
     heif_context_free(context);
     heif_image_release(image);
+    heif_encoding_options_free(options);
     heif_nclx_color_profile_free(nclx_profile);
     return 1; // failure
   }
@@ -466,6 +477,7 @@ int write_image(dt_imageio_module_data_t *data,
   heif_context_free(context);
   heif_image_release(image);
   heif_encoder_release(encoder);
+  heif_encoding_options_free(options);
   heif_nclx_color_profile_free(nclx_profile);
 
   return 0; // success
