@@ -397,6 +397,18 @@ int write_image(dt_imageio_module_data_t *data,
   heif_encoder_set_logging_level(encoder, 0);
 
   struct heif_encoding_options* options = heif_encoding_options_alloc();
+  if(!options)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[heif export] Failed in heif_encoding_options_alloc for %s",
+             filename);
+    heif_encoder_release(encoder);
+    heif_context_free(context);
+    heif_image_release(image);
+    heif_nclx_color_profile_free(nclx_profile);
+    return 1; // failure
+  }
+
 #ifdef HAVE_LIBSHARPYUV
   options->color_conversion_options.preferred_chroma_downsampling_algorithm = heif_chroma_downsampling_sharp_yuv;
   options->color_conversion_options.only_use_preferred_chroma_algorithm = FALSE;
