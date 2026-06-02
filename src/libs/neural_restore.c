@@ -3088,6 +3088,8 @@ static void _trigger_preview(dt_lib_module_t *self)
   if(!d->model_available || !d->preview_requested)
     return;
 
+  if(dt_view_get_current() == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+
   // invalidate current preview and bump sequence so running thread exits early
   d->preview_ready = FALSE;
   d->preview_error = DT_NR_PREVIEW_ERR_NONE;
@@ -3258,6 +3260,8 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   GList *images = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(!images)
     return;
+
+  if(dt_view_get_current() == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
   dt_neural_job_t *job_data = g_new0(dt_neural_job_t, 1);
   job_data->task = d->task;
