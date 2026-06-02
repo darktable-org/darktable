@@ -1261,23 +1261,29 @@ static inline float *_get_fast_blendcache(const size_t nfloats,
 
 /* use _module_pipe_stop to test for the just processed module leaving a flag to shutdown the pipeline
    immediately.
-   This requires extra care as we want pipecache data after the module and it's input data to be invalided.
+   This requires extra care as we want pipecache data after the module and it's input data to be invalidated.
+   All dt_dev_pixelpipe_stopper_t enums must be served.
 */
-static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
+static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe,
+                                         const dt_iop_module_t *module,
+                                         float *input)
 {
   const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-  if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
-  {
-    dt_print_pipe(DT_DEBUG_PIPE, "module pipe stop",
-      pipe, NULL, pipe->devid, NULL, NULL, "%s",
+  if(stopper <= DT_DEV_PIXELPIPE_STOP_NO)
+    return FALSE;
+
+  dt_print_pipe(DT_DEBUG_PIPE, "module pipe stop",
+      pipe, module, pipe->devid, NULL, NULL, "%s",
       dt_dev_pixelpipe_shutdown_to_str(stopper));
-    if(stopper >= DT_DEV_PIXELPIPE_STOP_LAST)
-    {
-      dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
-      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper, "module pipe stop: ");
-    }
-  }
-  return stopper != DT_DEV_PIXELPIPE_STOP_NO;
+
+  // These case don't require any caretaking of cachelines
+  if(stopper == DT_DEV_PIXELPIPE_STOP_NODES || stopper == DT_DEV_PIXELPIPE_STOP_HQ)
+    return TRUE;
+
+  // stopper reflects the iop_order of the stopping mode so we must invalidate.
+  dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+  dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper, "module pipe stop: ");
+  return TRUE;
 }
 
 void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
@@ -2355,7 +2361,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
         }
 
-        if(_module_pipe_stop(pipe, input))
+        if(_module_pipe_stop(pipe, module, input))
         {
           dt_opencl_release_mem_object(cl_mem_input);
           return TRUE;
@@ -2535,7 +2541,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
         }
 
-        if(_module_pipe_stop(pipe, input))
+        if(_module_pipe_stop(pipe, module, input))
           return TRUE;
 
         dt_iop_colorspace_type_t blend_cst =
