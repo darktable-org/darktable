@@ -181,8 +181,9 @@ int write_image(dt_imageio_module_data_t *data,
   int rowbytes;
 
   // Get a pointer to the actual pixel data.
-  // The 'rowbytes' is returned as "bytes per line".
-  // Returns NULL if a non-existing channel was given.
+  // The function may return NULL in certain cases, but this is not related to
+  // memory allocation. If we give valid arguments, the function will not
+  // return NULL and therefore we do not check for it.
   uint8_t* pixels = heif_image_get_plane(image, heif_channel_interleaved, &rowbytes);
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
@@ -237,7 +238,7 @@ int write_image(dt_imageio_module_data_t *data,
     return 1; // failure
   }
 
-  // !! matrix coefficient may be overriden later if save as RGB (not YUV)
+  // !! Matrix coefficient may be overriden later if we save lossless (so as RGB, not YUV)
   gboolean need_to_embed_icc = FALSE;
   switch(cp->type)
   {
@@ -333,8 +334,6 @@ int write_image(dt_imageio_module_data_t *data,
   switch(subsample)
   {
     case DT_SUBSAMPLE_AUTO:
-      // these thresholds and their description in the
-      // subsampling widget tooltip must match each other
       if(d->quality > 90)
         subsample_string = "444";
       else if(d->quality > 80)
@@ -366,9 +365,6 @@ int write_image(dt_imageio_module_data_t *data,
     return 1; // failure
   }
 
-
-  // not needed if we already set lossy quality
-  // heif_encoder_set_lossless(encoder, FALSE);
   if(d->compression_type == HEIF_LOSSLESS)
   {
     // When choosing lossless, the user's intention is obviously to preserve
