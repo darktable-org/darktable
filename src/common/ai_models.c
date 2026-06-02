@@ -495,15 +495,10 @@ static dt_ai_model_t *_parse_model_json(JsonObject *obj)
   dt_ai_model_t *model = _model_new();
   model->id = g_strdup(json_object_get_string_member(obj, "id"));
   model->name = g_strdup(json_object_get_string_member(obj, "name"));
+  model->github_asset = g_strdup_printf("%s.dtmodel", model->id);
 
-  if(json_object_has_member(obj, "description"))
-    model->description = g_strdup(json_object_get_string_member(obj, "description"));
   if(json_object_has_member(obj, "task"))
     model->task = g_strdup(json_object_get_string_member(obj, "task"));
-  if(json_object_has_member(obj, "github_asset"))
-    model->github_asset = g_strdup(json_object_get_string_member(obj, "github_asset"));
-  if(json_object_has_member(obj, "checksum"))
-    model->checksum = g_strdup(json_object_get_string_member(obj, "checksum"));
   if(json_object_has_member(obj, "min_version"))
     model->min_version = g_strdup(json_object_get_string_member(obj, "min_version"));
   if(json_object_has_member(obj, "default"))
@@ -2109,10 +2104,6 @@ dt_ai_model_card_t *dt_ai_models_get_card(const char *model_id)
   card->training_data = _card_str(mc, "training_data");
   card->training_data_license = _card_str(mc, "training_data_license");
   card->notes = _card_str(mc, "notes");
-
-  // fall back to top-level description
-  if(!card->long_description)
-    card->long_description = _card_str(config, "description");
 
   g_object_unref(parser);
   return card;
