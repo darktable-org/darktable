@@ -14,6 +14,11 @@ HERE="$(dirname "$(readlink -f "${0}")")"
 
 source "$HERE"/apprun-hooks/"linuxdeploy-plugin-gtk.sh"
 
+# The GTK linuxdeploy plugin forces GDK_BACKEND=x11 as a workaround for
+# older crashes. Darktable supports Wayland natively, so override this
+# and fall back to x11 only if Wayland is unavailable.
+export GDK_BACKEND="wayland,x11"
+
 export CAMLIBS=$HERE/usr/lib/libgphoto2/`ls -1 --group-directories-first $HERE/usr/lib/libgphoto2|head -1`
 
 export IOLIBS=$HERE/usr/lib/libgphoto2_port/`ls -1 --group-directories-first $HERE/usr/lib/libgphoto2_port|head -1`
