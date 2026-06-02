@@ -422,6 +422,7 @@ int write_image(dt_imageio_module_data_t *data,
       dt_print(DT_DEBUG_ALWAYS,
                "[heif export] failed to save EXIF metadata: %s (%d)",
                err.message, err.code);
+      heif_image_handle_release(handle);
       heif_context_free(context);
       heif_image_release(image);
       heif_encoder_release(encoder);
@@ -444,6 +445,7 @@ int write_image(dt_imageio_module_data_t *data,
         dt_print(DT_DEBUG_ALWAYS,
                  "[heif export] failed to save XMP metadata: %s (%d)",
                  err.message, err.code);
+        heif_image_handle_release(handle);
         heif_context_free(context);
         heif_image_release(image);
         heif_encoder_release(encoder);
