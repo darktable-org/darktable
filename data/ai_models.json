@@ -4,46 +4,36 @@
     {
       "id": "mask-object-sam21-small",
       "name": "mask sam2.1 hiera small",
-      "description": "Segment Anything 2.1 (Hiera Small) for interactive masking",
       "task": "mask",
       "min_version": "0.1",
-      "github_asset": "mask-object-sam21-small.dtmodel",
       "default": true
     },
     {
       "id": "mask-object-segnext-b2hq",
       "name": "mask segnext vitb-sax2 hq",
-      "description": "SegNext ViT-B SAx2 HQ fine-tuned for interactive masking",
       "task": "mask",
       "min_version": "0.1",
-      "github_asset": "mask-object-segnext-b2hq.dtmodel",
       "default": false
     },
     {
       "id": "denoise-nind",
       "name": "denoise nind",
-      "description": "UNet denoiser trained on NIND dataset",
       "task": "denoise",
       "min_version": "0.2",
-      "github_asset": "denoise-nind.dtmodel",
       "default": true
     },
     {
       "id": "rawdenoise-nind",
       "name": "raw denoise nind",
-      "description": "UtNet2 raw denoiser trained on RawNIND dataset",
       "task": "rawdenoise",
       "min_version": "0.2",
-      "github_asset": "rawdenoise-nind.dtmodel",
       "default": true
     },
     {
-      "id": "upscale-bsrgan",
-      "name": "upscale bsrgan",
-      "description": "BSRGAN 2x and 4x blind super-resolution",
+      "id": "upscale-realplksr",
+      "name": "upscale realplksr",
       "task": "upscale",
-      "min_version": "0.1",
-      "github_asset": "upscale-bsrgan.dtmodel",
+      "min_version": "0.2",
       "default": true
     }
   ]
