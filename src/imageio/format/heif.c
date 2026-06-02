@@ -276,9 +276,10 @@ int write_image(dt_imageio_module_data_t *data,
     nclx_profile.matrix_coefficients = heif_matrix_coefficients_ITU_R_BT_601_6; // 6
     break;
   case DT_COLORSPACE_DISPLAY_P3:
-   nclx_profile.color_primaries = heif_color_primaries_SMPTE_EG_432_1; // 12
-   nclx_profile.transfer_characteristics = heif_transfer_characteristic_IEC_61966_2_1; // 13
-   nclx_profile.matrix_coefficients = heif_matrix_coefficients_chromaticity_derived_non_constant_luminance; // 12
+    nclx_profile.color_primaries = heif_color_primaries_SMPTE_EG_432_1; // 12
+    nclx_profile.transfer_characteristics = heif_transfer_characteristic_IEC_61966_2_1; // 13
+    nclx_profile.matrix_coefficients = heif_matrix_coefficients_chromaticity_derived_non_constant_luminance; // 12
+    break;
   default:
     need_to_embed_icc = TRUE;
     break;
