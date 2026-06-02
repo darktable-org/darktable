@@ -312,6 +312,7 @@ int write_image(dt_imageio_module_data_t *data,
       }
       cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
       heif_image_set_raw_color_profile(image, "prof", icc_profile_data, icc_profile_len);
+      free(icc_profile_data);
     }
   }
 
