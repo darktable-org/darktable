@@ -176,7 +176,15 @@ int write_image(dt_imageio_module_data_t *data,
     return 1; // failure
   }
 
-  heif_image_add_plane(image, heif_channel_interleaved, width, height, bit_depth);
+  err = heif_image_add_plane(image, heif_channel_interleaved, width, height, bit_depth);
+  if(err.code != heif_error_Ok)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[heif export] Failed in heif_image_add_plane for %s",
+             filename);
+    heif_image_release(image);
+    return 1; // failure
+  }
 
   int rowbytes;
 
