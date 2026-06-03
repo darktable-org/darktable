@@ -1152,9 +1152,9 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self,
   return d && (d->mask_mode != DEVELOP_MASK_DISABLED) && (self->flags() & IOP_FLAGS_SUPPORTS_BLENDING);
 }
 
-static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe,
-                                    dt_develop_t *dev,
-                                    dt_iop_module_t *module)
+static gboolean _request_color_pick(const dt_dev_pixelpipe_t *pipe,
+                                    const dt_develop_t *dev,
+                                    const dt_iop_module_t *module)
 {
   // Does the current active module need a picker?
   return
@@ -2139,7 +2139,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     gboolean possible_cl =
         module->process_cl
         && piece->process_cl_ready
-        && !(dt_pipe_is_canvas(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL));
+        && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL));
 
     const uint32_t m_bpp = MAX(in_bpp, bpp);
     const size_t m_width = MAX(roi_in.width, roi_out->width);
