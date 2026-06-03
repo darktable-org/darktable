@@ -167,17 +167,17 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_l
 
   // now the regular stars
   d->current = 0;
-  for (int k = 0; k < 5; k++)
+  for(int k = 0; k < 5; k++)
   {
     /* outline star */
     dt_draw_star(cr, star_size / 2.0 + x, star_size / 2.0, star_size / 2.0, star_size / (2.0 * 2.5));
-    if (x < d->pointerx)
+    if(x < d->pointerx)
     {
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.5);
       cairo_stroke(cr);
       gdk_cairo_set_source_rgba(cr, &fg_color);
-      if ((k + 1) > d->current)
+      if((k + 1) > d->current)
         d->current = darktable.control->element = (k + 1);
     }
     else
@@ -210,14 +210,13 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
                                                    dt_lib_module_t *self)
 {
   dt_lib_ratings_t *d = self->data;
-  //if(d->current > 0)
-  {
-    GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-    dt_ratings_apply_on_list(imgs, d->current, TRUE);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING_RANGE, imgs);
 
-    dt_control_queue_redraw_center();
-  }
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
+  dt_ratings_apply_on_list(imgs, d->current, TRUE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING_RANGE, imgs);
+
+  dt_control_queue_redraw_center();
+  
   return TRUE;
 }
 
