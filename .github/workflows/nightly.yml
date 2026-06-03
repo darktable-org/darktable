@@ -46,7 +46,6 @@ jobs:
         run: |
           sudo apt-get -y install \
             build-essential \
-            appstream-util \
             desktop-file-utils \
             gettext \
             git \
