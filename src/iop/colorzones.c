@@ -1906,7 +1906,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
     if(g->edit_by_area)
     {
       const int bands = p->curve_num_nodes[g->channel];
-      g->mouse_radius = CLAMP(g->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / bands, 1.0);
+      g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * delta_y), 0.2 / bands, 1.0);
       gtk_widget_queue_draw(widget);
     }
     else
