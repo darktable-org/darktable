@@ -99,6 +99,10 @@ elif [ "$DARKTABLE_APPIMAGE_UPDATE" != "no" ]; then
   export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-$ARCH.AppImage.zsync"
 fi
 
+# Disable appstreamcli network validation to protect against a failed build
+# if network or server problems prevent fetching validated resources
+export AS_VALIDATE_NONET=1
+
 # '--deploy-deps-only' are needed to tell linuxdeploy where to collect deps of
 # modules that are loaded via dlopen (therefore cannot be found automatically)
 ./linuxdeploy-$ARCH.AppImage \
