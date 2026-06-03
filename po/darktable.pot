@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 07:36+0200\n"
+"POT-Creation-Date: 2026-06-01 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2539,7 +2539,7 @@ msgstr ""
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
 #: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3048
-#: ../src/iop/colorharmonizer.c:1603 ../src/iop/colorize.c:358
+#: ../src/iop/colorharmonizer.c:1605 ../src/iop/colorize.c:358
 #: ../src/iop/lowpass.c:576 ../src/iop/soften.c:376 ../src/iop/velvia.c:73
 #: ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
@@ -2747,7 +2747,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:652
 #: ../src/common/colorspaces.c:1453 ../src/common/colorspaces.c:1801
-#: ../src/iop/colorout.c:857
+#: ../src/iop/colorout.c:856
 msgid "export profile"
 msgstr ""
 
@@ -7860,7 +7860,7 @@ msgstr ""
 msgid "style named '%s' successfully created"
 msgstr ""
 
-#: ../src/common/styles.c:664 ../src/dtgtk/culling.c:1306
+#: ../src/common/styles.c:664 ../src/dtgtk/culling.c:1338
 msgid "no image selected!"
 msgstr ""
 
@@ -9452,11 +9452,7 @@ msgstr ""
 msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2796 ../src/libs/masks.c:1876
-msgid "add object"
-msgstr ""
-
-#: ../src/develop/blend_gui.c:2797 ../src/libs/masks.c:1880
+#: ../src/develop/blend_gui.c:2796 ../src/libs/masks.c:1880
 msgid "add AI object"
 msgstr ""
 
@@ -10341,27 +10337,27 @@ msgid ""
 "<b>remove path</b>: right-click"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:549
+#: ../src/develop/pixelpipe_hb.c:571
 msgid "enabled as required"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:550
+#: ../src/develop/pixelpipe_hb.c:572
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:557
+#: ../src/develop/pixelpipe_hb.c:579
 msgid "disabled as not appropriate"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:558
+#: ../src/develop/pixelpipe_hb.c:580
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:1343
+#: ../src/develop/pixelpipe_hb.c:1365
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10369,11 +10365,11 @@ msgid ""
 "please report on GitHub"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:1924
+#: ../src/develop/pixelpipe_hb.c:1946
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:3145
+#: ../src/develop/pixelpipe_hb.c:3167
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10385,7 +10381,7 @@ msgid ""
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:3447
+#: ../src/develop/pixelpipe_hb.c:3469
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10416,7 +10412,7 @@ msgstr ""
 msgid "you have reached the end of your collection"
 msgstr ""
 
-#: ../src/dtgtk/culling.c:445
+#: ../src/dtgtk/culling.c:467
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr ""
@@ -11717,12 +11713,13 @@ msgstr ""
 #. inverted landscape
 #. roll right portrait
 #. Roll Angle 0 is landscape, -90 is rolled to the left in portrait, +- 180 is landscape inverted, 90 is portrait rolled to the right
+#. check for Nidon and change the sign
 #. dt.gui.action("iop/ashift/automatic cropping", "selection", "item:" .. crop, 1.000)
 #. da.wait_until_pixelpipe_complete()
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/auto_straighten.lua:244
+#: ../src/external/lua-scripts/official/auto_straighten.lua:249
 msgid "exiftool not found, exiting..."
 msgstr ""
 
@@ -12205,6 +12202,7 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:106
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:494
 msgid "extract burst roll images"
 msgstr ""
 
@@ -12237,12 +12235,12 @@ msgstr ""
 #. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
 #. name
 #. type
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:164
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:168
 msgid "preferred exif tag reader"
 msgstr ""
 
 #. label
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:165
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:169
 msgid "use exiftool or exiv2 to read exif tags"
 msgstr ""
 
@@ -12254,9 +12252,24 @@ msgstr ""
 #. name
 #. type
 #. label
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:173
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:174
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:177
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:178
 msgid "extract burst roll images on import"
+msgstr ""
+
+#. tooltip
+#. default
+#. display selection button
+#. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
+#. name
+#. type
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:185
+msgid "display select burst roll images button"
+msgstr ""
+
+#. label
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:186
+msgid "add a button to the select module to select burst roll images"
 msgstr ""
 
 #. tooltip
@@ -12271,40 +12284,40 @@ msgstr ""
 #. helper functions
 #. -----------------
 #. skip blank lines created by forfiles
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:306
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:332
 #, lua-format
 msgid "extracted %d dng files from %s"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:338
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:356
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:372
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:390
 msgid "scanning for burst roll images"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:373
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
 msgid "extracting burst roll images"
 msgstr ""
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:392
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:457
 msgid "dnglab executable not found"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:393
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:458
 msgid ": dnglab executable not found, exiting..."
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:398
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:466
 msgid "no exif tag reader available"
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:399
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:467
 msgid " no exif tag reader available, exiting..."
 msgstr ""
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:475
 #, lua-format
 msgid " selected tag reader %s not available"
 msgstr ""
@@ -12312,6 +12325,18 @@ msgstr ""
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:488
+msgid "select burst roll images"
+msgstr ""
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
+msgid "select burst roll image containers"
+msgstr ""
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
+msgid "extract and group burst roll images with container"
+msgstr ""
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14392,7 +14417,7 @@ msgstr ""
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1617
 #: ../src/gui/accelerators.c:2922 ../src/gui/accelerators.c:3022
-#: ../src/views/view.c:1754
+#: ../src/views/view.c:1767
 msgid "action"
 msgstr ""
 
@@ -14503,7 +14528,7 @@ msgstr ""
 msgid "disabled defaults"
 msgstr ""
 
-#: ../src/gui/accelerators.c:91 ../src/views/view.c:1563
+#: ../src/gui/accelerators.c:91 ../src/views/view.c:1576
 msgid "scroll"
 msgstr ""
 
@@ -14543,19 +14568,19 @@ msgstr ""
 msgid "pgupdown"
 msgstr ""
 
-#: ../src/gui/accelerators.c:107 ../src/views/view.c:1541
+#: ../src/gui/accelerators.c:107 ../src/views/view.c:1554
 msgid "shift"
 msgstr ""
 
-#: ../src/gui/accelerators.c:108 ../src/views/view.c:1543
+#: ../src/gui/accelerators.c:108 ../src/views/view.c:1556
 msgid "ctrl"
 msgstr ""
 
-#: ../src/gui/accelerators.c:110 ../src/views/view.c:1546
+#: ../src/gui/accelerators.c:110 ../src/views/view.c:1559
 msgid "option"
 msgstr ""
 
-#: ../src/gui/accelerators.c:112 ../src/views/view.c:1548
+#: ../src/gui/accelerators.c:112 ../src/views/view.c:1561
 msgid "alt"
 msgstr ""
 
@@ -15112,7 +15137,7 @@ msgid ""
 "press up or down keys to cycle through matches"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2919 ../src/views/view.c:1752
+#: ../src/gui/accelerators.c:2919 ../src/views/view.c:1765
 msgid "shortcut"
 msgstr ""
 
@@ -16498,11 +16523,11 @@ msgstr ""
 msgid "update preset"
 msgstr ""
 
-#: ../src/gui/splash.c:130
+#: ../src/gui/splash.c:118
 msgid "initializing"
 msgstr ""
 
-#: ../src/gui/splash.c:162 ../src/gui/splash.c:173
+#: ../src/gui/splash.c:150 ../src/gui/splash.c:161
 msgid ""
 "Photography workflow application\n"
 "and RAW developer"
@@ -20894,7 +20919,7 @@ msgstr ""
 msgid "vectorscope two-way sync"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1515
+#: ../src/iop/colorharmonizer.c:1517
 msgid ""
 "when enabled, the vectorscope harmony overlay is kept in sync with\n"
 "the harmony rule and anchor hue controls in the module.\n"
@@ -20902,7 +20927,7 @@ msgid ""
 "vice-versa."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1529
+#: ../src/iop/colorharmonizer.c:1531
 msgid ""
 "import the harmony rule and anchor hue currently displayed in the "
 "vectorscope.\n"
@@ -20910,7 +20935,7 @@ msgid ""
 "already active."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1550
+#: ../src/iop/colorharmonizer.c:1552
 msgid ""
 "how strongly off-harmony hues are pulled toward the nearest harmony node.\n"
 "\n"
@@ -20925,7 +20950,7 @@ msgid ""
 "are never affected regardless of this setting."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1564
+#: ../src/iop/colorharmonizer.c:1566
 msgid ""
 "controls the angular reach of each harmony node's attraction.\n"
 "\n"
@@ -20945,7 +20970,7 @@ msgid ""
 "  useful for strongly discordant images or when a painterly look is desired."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1579
+#: ../src/iop/colorharmonizer.c:1581
 msgid ""
 "shields low-chroma (desaturated) colors from the hue correction.\n"
 "\n"
@@ -20963,7 +20988,7 @@ msgid ""
 "range."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1593
+#: ../src/iop/colorharmonizer.c:1595
 msgid ""
 "controls the intensity of smoothing applied to the correction field.\n"
 "\n"
@@ -20977,23 +21002,23 @@ msgid ""
 "  blur the grading across image edges, causing some visual separation."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 1"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 2"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 3"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 4"
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1620
+#: ../src/iop/colorharmonizer.c:1622
 msgid ""
 "saturation multiplier for colors near this harmony node.\n"
 "100% = unchanged. below 100% desaturates; above 100% boosts saturation.\n"
@@ -21156,52 +21181,52 @@ msgstr ""
 msgid "non-linear, RGB or Lab, display-referred"
 msgstr ""
 
-#: ../src/iop/colorout.c:655
+#: ../src/iop/colorout.c:654
 msgid "missing output profile has been replaced by sRGB!"
 msgstr ""
 
-#: ../src/iop/colorout.c:677
+#: ../src/iop/colorout.c:676
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr ""
 
-#: ../src/iop/colorout.c:720
+#: ../src/iop/colorout.c:719
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr ""
 
-#: ../src/iop/colorout.c:842
+#: ../src/iop/colorout.c:841
 msgid "output intent"
 msgstr ""
 
-#: ../src/iop/colorout.c:843
+#: ../src/iop/colorout.c:842
 msgid "rendering intent"
 msgstr ""
 
-#: ../src/iop/colorout.c:845 ../src/libs/export.c:1637
+#: ../src/iop/colorout.c:844 ../src/libs/export.c:1637
 #: ../src/libs/print_settings.c:2573 ../src/libs/print_settings.c:2922
 #: ../src/views/darkroom.c:3184 ../src/views/lighttable.c:1488
 msgid "perceptual"
 msgstr ""
 
-#: ../src/iop/colorout.c:846 ../src/libs/export.c:1638
+#: ../src/iop/colorout.c:845 ../src/libs/export.c:1638
 #: ../src/libs/print_settings.c:2574 ../src/libs/print_settings.c:2923
 #: ../src/views/darkroom.c:3185 ../src/views/lighttable.c:1489
 msgid "relative colorimetric"
 msgstr ""
 
-#: ../src/iop/colorout.c:847 ../src/libs/export.c:1639
+#: ../src/iop/colorout.c:846 ../src/libs/export.c:1639
 #: ../src/libs/print_settings.c:2575 ../src/libs/print_settings.c:2924
 #: ../src/views/darkroom.c:3186 ../src/views/lighttable.c:1490
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr ""
 
-#: ../src/iop/colorout.c:848 ../src/libs/export.c:1640
+#: ../src/iop/colorout.c:847 ../src/libs/export.c:1640
 #: ../src/libs/print_settings.c:2576 ../src/libs/print_settings.c:2925
 #: ../src/views/darkroom.c:3187 ../src/views/lighttable.c:1491
 msgid "absolute colorimetric"
 msgstr ""
 
-#: ../src/iop/colorout.c:864
+#: ../src/iop/colorout.c:863
 msgid "export ICC profiles"
 msgstr ""
 
@@ -22367,7 +22392,6 @@ msgstr ""
 
 #. centripetal spline
 #: ../src/iop/filmic.c:1586 ../src/iop/profile_gamma.c:602
-#: ../src/libs/neural_restore.c:1116
 msgid "linear"
 msgstr ""
 
@@ -28224,6 +28248,10 @@ msgstr ""
 msgid "delete unused shapes"
 msgstr ""
 
+#: ../src/libs/masks.c:1876
+msgid "add object"
+msgstr ""
+
 #: ../src/libs/masks.c:1920
 msgid "created shapes"
 msgstr ""
@@ -28975,16 +29003,15 @@ msgid "out of memory for detail recovery buffer"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:1108
-msgid "Bayer"
+msgid "failed to load AI model for Bayer raw denoising"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:1112
-msgid "X-Trans"
+msgid "failed to load AI model for X-Trans raw denoising"
 msgstr ""
 
-#: ../src/libs/neural_restore.c:1123
-#, c-format
-msgid "failed to load AI raw denoise %s model"
+#: ../src/libs/neural_restore.c:1116
+msgid "failed to load AI model for linear raw denoising"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:1170
@@ -28996,7 +29023,7 @@ msgid "raw denoise: cannot load source image"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:1327
-msgid "raw denoise: image is not a supported raw sensor format"
+msgid "raw denoise: image is not in a supported raw sensor format"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4164
@@ -30531,11 +30558,11 @@ msgstr ""
 msgid "exit current layout"
 msgstr ""
 
-#: ../src/libs/tools/log_history.c:49
+#: ../src/libs/tools/log_history.c:50
 msgid "log history"
 msgstr ""
 
-#: ../src/libs/tools/log_history.c:169
+#: ../src/libs/tools/log_history.c:188
 msgid "view log history"
 msgstr ""
 
@@ -31485,47 +31512,47 @@ msgstr ""
 msgid "no camera with tethering support available for use..."
 msgstr ""
 
-#: ../src/views/view.c:1554
+#: ../src/views/view.c:1567
 msgid "left-click"
 msgstr ""
 
-#: ../src/views/view.c:1557
+#: ../src/views/view.c:1570
 msgid "right-click"
 msgstr ""
 
-#: ../src/views/view.c:1560
+#: ../src/views/view.c:1573
 msgid "middle-click"
 msgstr ""
 
-#: ../src/views/view.c:1566
+#: ../src/views/view.c:1579
 msgid "left double-click"
 msgstr ""
 
-#: ../src/views/view.c:1569
+#: ../src/views/view.c:1582
 msgid "right double-click"
 msgstr ""
 
-#: ../src/views/view.c:1572
+#: ../src/views/view.c:1585
 msgid "drag and drop"
 msgstr ""
 
-#: ../src/views/view.c:1575
+#: ../src/views/view.c:1588
 msgid "left-click+drag"
 msgstr ""
 
-#: ../src/views/view.c:1578
+#: ../src/views/view.c:1591
 msgid "right-click+drag"
 msgstr ""
 
-#: ../src/views/view.c:1599
+#: ../src/views/view.c:1612
 msgid "darktable - accels window"
 msgstr ""
 
-#: ../src/views/view.c:1646
+#: ../src/views/view.c:1659
 msgid "switch to a classic window which will stay open after key release"
 msgstr ""
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1712
+#: ../src/views/view.c:1725
 msgid "mouse actions"
 msgstr ""
