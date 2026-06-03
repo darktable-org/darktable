@@ -603,7 +603,8 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event,
   gdouble delta_x, delta_y;
   if(dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
   {
-    *delta = delta_x + delta_y;
+    // treat right like up, left like down
+    *delta = fabs(delta_x) > fabs(delta_y) ? -delta_x : delta_y;
     return TRUE;
   }
   return FALSE;
@@ -615,7 +616,8 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event,
   int delta_x, delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
   {
-    *delta = delta_x + delta_y;
+    // treat right like up, left like down
+    *delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
     return TRUE;
   }
   return FALSE;

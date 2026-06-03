@@ -538,7 +538,7 @@ static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, d
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     const float old_size = p->size;
-    p->size = CLAMP(p->size + delta_y * 0.1, 0.5f, 3.0f);
+    p->size = CLAMP(p->size - delta_y * 0.1, 0.5f, 3.0f);
     if(old_size != p->size) dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
   }

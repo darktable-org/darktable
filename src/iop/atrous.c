@@ -1523,7 +1523,7 @@ static gboolean area_scrolled(GtkWidget *widget,
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * delta_y), 0.25 / BANDS, 1.0);
     gtk_widget_queue_draw(widget);
   }
   return TRUE;
