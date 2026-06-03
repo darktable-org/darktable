@@ -1382,7 +1382,7 @@ void process(dt_iop_module_t *self,
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
-  const int iterations = MAX(data->iterations, 1);
+  const int iterations = MAX(dt_pipe_is_preview(piece->pipe) ? data->iterations / 3 : data->iterations, 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
@@ -1640,7 +1640,7 @@ int process_cl(dt_iop_module_t *self,
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
-  const int iterations = MAX(data->iterations, 1);
+  const int iterations = MAX(dt_pipe_is_preview(piece->pipe) ? data->iterations / 3 : data->iterations, 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
