@@ -271,7 +271,7 @@ static int usage(const char *argv0)
          "    It is also possible to specify names that activate all channels\n"
          "    or a certain subset, as well as increase verbosity:\n"
          "    all     -> to debug all channels\n"
-         "    common  -> to debug dev, imageio, masks, opencl, params, pipe\n"
+         "    common  -> to debug imageio, opencl, params, pipe, lua and ai\n"
          "    verbose -> when combined with debug options like '-d opencl'\n"
          "               provides more detailed output. To activate verbosity,\n"
          "               use the additional option '-d verbose'\n"
