@@ -431,6 +431,8 @@ dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img)
     return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
   if(img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER))
     return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
+  if(img->flags & DT_IMAGE_4BAYER)
+    return DT_RESTORE_SENSOR_CLASS_LINEAR;
   const uint32_t filters = img->buf_dsc.filters;
   if(filters == 9u) return DT_RESTORE_SENSOR_CLASS_XTRANS;
   if(filters != 0u) return DT_RESTORE_SENSOR_CLASS_BAYER;
