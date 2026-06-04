@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 21:03-0300\n"
-"PO-Revision-Date: 2026-05-31 21:03-0300\n"
+"POT-Creation-Date: 2026-06-04 09:01-0300\n"
+"PO-Revision-Date: 2026-06-04 09:00-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2891,7 +2891,7 @@ msgstr "brilho"
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
 #: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3048
-#: ../src/iop/colorharmonizer.c:1603 ../src/iop/colorize.c:358
+#: ../src/iop/colorharmonizer.c:1605 ../src/iop/colorize.c:358
 #: ../src/iop/lowpass.c:576 ../src/iop/soften.c:376 ../src/iop/velvia.c:73
 #: ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
@@ -3497,7 +3497,7 @@ msgstr "base"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:384
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6144
 #: ../src/iop/basicadj.c:653 ../src/iop/flip.c:448 ../src/iop/levels.c:645
 #: ../src/iop/rgblevels.c:1081
@@ -3604,7 +3604,7 @@ msgstr "raio"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:280
-#: ../src/libs/neural_restore.c:4174 ../src/libs/neural_restore.c:4191
+#: ../src/libs/neural_restore.c:4178 ../src/libs/neural_restore.c:4195
 msgid "strength"
 msgstr "força"
 
@@ -6199,7 +6199,7 @@ msgstr "menu flutuante"
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1816
 #: ../src/libs/import.c:1928 ../src/libs/import.c:2020
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4119
+#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4123
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1701
@@ -6408,7 +6408,7 @@ msgstr ""
 #: ../src/common/ai/restore.c:278
 #, c-format
 msgid "raw denoise model %s: incompatible input_kind"
-msgstr ""
+msgstr "modelo de remoção de ruído raw %s: input_kind incompatível"
 
 #: ../src/common/ai/restore.c:309
 #, c-format
@@ -6444,51 +6444,51 @@ msgstr "no repositório de modelos \"%s\" falta releases-index.json"
 msgid "could not fetch releases-index.json (HTTP %ld)"
 msgstr "não foi possível trazer releases-index.json (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1400 ../src/common/ai_models.c:1465
+#: ../src/common/ai_models.c:1395 ../src/common/ai_models.c:1460
 msgid "invalid parameters"
 msgstr "parâmetros inválidos"
 
-#: ../src/common/ai_models.c:1403
+#: ../src/common/ai_models.c:1398
 #, c-format
 msgid "file not found: %s"
 msgstr "arquivo não encontrado: %s"
 
-#: ../src/common/ai_models.c:1411
+#: ../src/common/ai_models.c:1406
 #, c-format
 msgid "archive top-level directory is not a valid model id: \"%s\""
 msgstr "diretório raiz do arquivo não é um id válido de modelo: \"%s\""
 
-#: ../src/common/ai_models.c:1420
+#: ../src/common/ai_models.c:1415
 msgid "failed to extract model archive"
 msgstr "falha ao extrair arquivo de modelos"
 
-#: ../src/common/ai_models.c:1473
+#: ../src/common/ai_models.c:1468
 msgid "model not found in registry"
 msgstr "modelo não encontrado no registro"
 
-#: ../src/common/ai_models.c:1479
+#: ../src/common/ai_models.c:1474
 msgid "model has no download asset defined"
 msgstr "modelo não tem recurso definido"
 
-#: ../src/common/ai_models.c:1490
+#: ../src/common/ai_models.c:1485
 msgid "invalid asset filename"
 msgstr "nome de arquivo inválido para recurso"
 
-#: ../src/common/ai_models.c:1496
+#: ../src/common/ai_models.c:1491
 msgid "model is already downloading"
 msgstr "modelo já está sendo baixado"
 
-#: ../src/common/ai_models.c:1527
+#: ../src/common/ai_models.c:1522
 msgid "invalid repository format"
 msgstr "formato inválido de repositório"
 
-#: ../src/common/ai_models.c:1552
+#: ../src/common/ai_models.c:1547
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr ""
 "nenhuma release de modelo de IA compatível encontrada para darktable %s"
 
-#: ../src/common/ai_models.c:1568
+#: ../src/common/ai_models.c:1563
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6497,38 +6497,38 @@ msgstr ""
 "não foi possível obter checksum para %s - recusando baixar sem verificação "
 "de integridade"
 
-#: ../src/common/ai_models.c:1586
+#: ../src/common/ai_models.c:1581
 msgid "failed to build download url"
 msgstr "falha ao construir url para download"
 
-#: ../src/common/ai_models.c:1597
+#: ../src/common/ai_models.c:1592
 #, c-format
 msgid "failed to create file: %s"
 msgstr "falha ao criar arquivo: %s"
 
-#: ../src/common/ai_models.c:1621
+#: ../src/common/ai_models.c:1616
 msgid "failed to initialize download"
 msgstr "falha ao inicializar download"
 
-#: ../src/common/ai_models.c:1641
+#: ../src/common/ai_models.c:1636
 msgid "download cancelled"
 msgstr "download cancelado"
 
-#: ../src/common/ai_models.c:1643
+#: ../src/common/ai_models.c:1638
 #, c-format
 msgid "download failed: %s"
 msgstr "download falhou: %s"
 
-#: ../src/common/ai_models.c:1654
+#: ../src/common/ai_models.c:1649
 #, c-format
 msgid "http error: %ld"
 msgstr "erro http: %ld"
 
-#: ../src/common/ai_models.c:1677
+#: ../src/common/ai_models.c:1672
 msgid "checksum verification failed"
 msgstr "verificação de checksum falhou"
 
-#: ../src/common/ai_models.c:1687
+#: ../src/common/ai_models.c:1682
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6537,7 +6537,7 @@ msgstr ""
 "checksum não disponível para %s - rejeitando instalar sem verificação de "
 "integridade"
 
-#: ../src/common/ai_models.c:1700
+#: ../src/common/ai_models.c:1695
 msgid "failed to extract archive"
 msgstr "falha ao extrair arquivo"
 
@@ -8102,7 +8102,7 @@ msgstr "AVIF"
 msgid "ImageMagick"
 msgstr "ImageMagick"
 
-#: ../src/common/image.h:231 ../src/imageio/format/heif.c:554
+#: ../src/common/image.h:231 ../src/imageio/format/heif.c:599
 msgid "HEIF"
 msgstr "HEIF"
 
@@ -10441,7 +10441,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4252
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4256
 msgid "process"
 msgstr "processamento"
 
@@ -11037,7 +11037,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1365
+#: ../src/develop/pixelpipe_hb.c:1371
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -11047,11 +11047,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1946
+#: ../src/develop/pixelpipe_hb.c:1952
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3167
+#: ../src/develop/pixelpipe_hb.c:3173
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11072,7 +11072,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3469
+#: ../src/develop/pixelpipe_hb.c:3475
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -12454,12 +12454,13 @@ msgstr "qual corte automático realizar"
 #. inverted landscape
 #. roll right portrait
 #. Roll Angle 0 is landscape, -90 is rolled to the left in portrait, +- 180 is landscape inverted, 90 is portrait rolled to the right
+#. check for Nidon and change the sign
 #. dt.gui.action("iop/ashift/automatic cropping", "selection", "item:" .. crop, 1.000)
 #. da.wait_until_pixelpipe_complete()
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/auto_straighten.lua:244
+#: ../src/external/lua-scripts/official/auto_straighten.lua:249
 msgid "exiftool not found, exiting..."
 msgstr "exiftool não encontrado, saindo..."
 
@@ -12948,6 +12949,7 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:106
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:494
 msgid "extract burst roll images"
 msgstr "extrair imagens de uma sequencia"
 
@@ -12980,12 +12982,12 @@ msgstr "extrair sequencia de imagens de um arquivo de sequencias"
 #. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
 #. name
 #. type
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:164
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:168
 msgid "preferred exif tag reader"
 msgstr "leitor preferido para rótulos exif"
 
 #. label
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:165
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:169
 msgid "use exiftool or exiv2 to read exif tags"
 msgstr "usar exiftool ou exiv2 para ler rótulos exif"
 
@@ -12997,10 +12999,26 @@ msgstr "usar exiftool ou exiv2 para ler rótulos exif"
 #. name
 #. type
 #. label
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:173
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:174
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:177
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:178
 msgid "extract burst roll images on import"
 msgstr "extrair imagens de sequencias ao importar"
+
+#. tooltip
+#. default
+#. display selection button
+#. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
+#. name
+#. type
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:185
+msgid "display select burst roll images button"
+msgstr "mostrar botão de seleção de imagens de uma sequencia"
+
+#. label
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:186
+msgid "add a button to the select module to select burst roll images"
+msgstr ""
+"adicionar botão para o módulo de seleção para selecionar imagens em sequência"
 
 #. tooltip
 #. default
@@ -13014,40 +13032,40 @@ msgstr "extrair imagens de sequencias ao importar"
 #. helper functions
 #. -----------------
 #. skip blank lines created by forfiles
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:306
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:332
 #, lua-format
 msgid "extracted %d dng files from %s"
 msgstr "extraídos %d arquivos dng de %s"
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:338
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:356
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:372
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:390
 msgid "scanning for burst roll images"
 msgstr "procurando sequências de imagens"
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:373
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
 msgid "extracting burst roll images"
 msgstr "extraindo sequência de imagens"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:392
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:457
 msgid "dnglab executable not found"
 msgstr "executável do dnglab não encontrado"
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:393
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:458
 msgid ": dnglab executable not found, exiting..."
 msgstr ": executável do dnglab não encontrado, saindo..."
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:398
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:466
 msgid "no exif tag reader available"
 msgstr "nenhum leitor de exif disponível"
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:399
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:467
 msgid " no exif tag reader available, exiting..."
 msgstr " nenhum leitor de exif disponível, saindo..."
 
-#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:475
 #, lua-format
 msgid " selected tag reader %s not available"
 msgstr " leitor de rótulos `%s' não disponível!"
@@ -13055,6 +13073,20 @@ msgstr " leitor de rótulos `%s' não disponível!"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:488
+msgid "select burst roll images"
+msgstr "selecionar imagens de uma sequencia"
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
+#, fuzzy
+msgid "select burst roll image containers"
+msgstr "extrair imagens de sequencias ao importar"
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
+#, fuzzy
+msgid "extract and group burst roll images with container"
+msgstr "extrair imagens de sequencias ao importar"
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -15129,7 +15161,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4154
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4158
 #: ../src/views/lighttable.c:1588
 msgid "page"
 msgstr "página"
@@ -17036,7 +17068,7 @@ msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
 #: ../src/gui/preferences_ai.c:1385 ../src/iop/lut3d.c:1576
-#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4120
+#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4124
 msgid "_select"
 msgstr "_selecionar"
 
@@ -17428,11 +17460,11 @@ msgstr "armazenar nova predefinição..."
 msgid "update preset"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/splash.c:130
+#: ../src/gui/splash.c:118
 msgid "initializing"
 msgstr "inicializando"
 
-#: ../src/gui/splash.c:162 ../src/gui/splash.c:173
+#: ../src/gui/splash.c:150 ../src/gui/splash.c:161
 msgid ""
 "Photography workflow application\n"
 "and RAW developer"
@@ -17649,39 +17681,39 @@ msgstr "criar"
 msgid "copy settings from existing workspace"
 msgstr "copiar configurações de uma área de trabalho existente"
 
-#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "10 bit"
 msgstr "10 bit"
 
-#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "12 bit"
 msgstr "12 bit"
 
-#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossless"
 msgstr "sem perdas"
 
-#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossy"
 msgstr "com perdas"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
-#: ../src/imageio/format/heif.c:642 ../src/imageio/format/jxl.c:585
+#: ../src/imageio/format/heif.c:687 ../src/imageio/format/jxl.c:585
 #: ../src/imageio/format/pdf.c:678 ../src/imageio/format/png.c:688
 #: ../src/imageio/format/tiff.c:880 ../src/imageio/format/xcf.c:358
-#: ../src/libs/neural_restore.c:4282
+#: ../src/libs/neural_restore.c:4286
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -17724,7 +17756,7 @@ msgstr ""
 #. compression
 #. Compression method combo box
 #: ../src/imageio/format/avif.c:981 ../src/imageio/format/exr.cc:631
-#: ../src/imageio/format/heif.c:646 ../src/imageio/format/pdf.c:693
+#: ../src/imageio/format/heif.c:691 ../src/imageio/format/pdf.c:693
 #: ../src/imageio/format/png.c:702 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/webp.c:409 ../src/libs/masks.c:117
 msgid "compression"
@@ -17739,18 +17771,18 @@ msgstr "a compressão para a imagem"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:661
+#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:706
 #: ../src/imageio/format/j2k.c:707 ../src/imageio/format/jpeg.c:578
 #: ../src/imageio/format/jxl.c:611 ../src/imageio/format/webp.c:419
 #: ../src/libs/camera.c:588
 msgid "quality"
 msgstr "qualidade"
 
-#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:664
+#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:709
 msgid "the quality of an image, less quality means fewer details"
 msgstr "a qualidade de uma imagem, menos qualidade significa menos detalhes"
 
-#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:677
+#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:722
 #: ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
 msgstr "subamostragem de croma"
@@ -17772,17 +17804,17 @@ msgstr ""
 "4:2:0 - taxa de amostragem de cor dividida pela metade horizontalmente e "
 "verticalmente"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:4:4"
 msgstr "4:4:4"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:2"
 msgstr "4:2:2"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:0"
 msgstr "4:2:0"
@@ -17818,7 +17850,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4285
+#: ../src/libs/neural_restore.c:4289
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -17871,7 +17903,7 @@ msgstr "HTJ2K256"
 msgid "HTJ2K32"
 msgstr "HTJ2K32"
 
-#: ../src/imageio/format/heif.c:678
+#: ../src/imageio/format/heif.c:723
 msgid ""
 "chroma subsampling setting for HEIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -17937,7 +17969,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -19318,7 +19350,7 @@ msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
 #: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1357
-#: ../src/libs/neural_restore.c:4162
+#: ../src/libs/neural_restore.c:4166
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -22304,7 +22336,7 @@ msgstr ""
 msgid "vectorscope two-way sync"
 msgstr "sincronização em duas vias do vetorscópio"
 
-#: ../src/iop/colorharmonizer.c:1515
+#: ../src/iop/colorharmonizer.c:1517
 msgid ""
 "when enabled, the vectorscope harmony overlay is kept in sync with\n"
 "the harmony rule and anchor hue controls in the module.\n"
@@ -22317,7 +22349,7 @@ msgstr ""
 "desabilite para ajustar o módulo sem perturbar o mostrador do vetoroscópio, "
 "e vice-versa."
 
-#: ../src/iop/colorharmonizer.c:1529
+#: ../src/iop/colorharmonizer.c:1531
 msgid ""
 "import the harmony rule and anchor hue currently displayed in the "
 "vectorscope.\n"
@@ -22325,7 +22357,7 @@ msgid ""
 "already active."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1550
+#: ../src/iop/colorharmonizer.c:1552
 msgid ""
 "how strongly off-harmony hues are pulled toward the nearest harmony node.\n"
 "\n"
@@ -22340,7 +22372,7 @@ msgid ""
 "are never affected regardless of this setting."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1564
+#: ../src/iop/colorharmonizer.c:1566
 msgid ""
 "controls the angular reach of each harmony node's attraction.\n"
 "\n"
@@ -22360,7 +22392,7 @@ msgid ""
 "  useful for strongly discordant images or when a painterly look is desired."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1579
+#: ../src/iop/colorharmonizer.c:1581
 msgid ""
 "shields low-chroma (desaturated) colors from the hue correction.\n"
 "\n"
@@ -22378,7 +22410,7 @@ msgid ""
 "range."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1593
+#: ../src/iop/colorharmonizer.c:1595
 msgid ""
 "controls the intensity of smoothing applied to the correction field.\n"
 "\n"
@@ -22392,23 +22424,23 @@ msgid ""
 "  blur the grading across image edges, causing some visual separation."
 msgstr ""
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 1"
 msgstr "matiz 1"
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 2"
 msgstr "matiz 2"
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 3"
 msgstr "matiz 3"
 
-#: ../src/iop/colorharmonizer.c:1608
+#: ../src/iop/colorharmonizer.c:1610
 msgid "hue 4"
 msgstr "matiz 4"
 
-#: ../src/iop/colorharmonizer.c:1620
+#: ../src/iop/colorharmonizer.c:1622
 msgid ""
 "saturation multiplier for colors near this harmony node.\n"
 "100% = unchanged. below 100% desaturates; above 100% boosts saturation.\n"
@@ -22716,7 +22748,7 @@ msgid "this module is deprecated. better use color mapping module instead."
 msgstr ""
 "este módulo está obsoleto. use o módulo de mapeamento de cor em seu lugar."
 
-#: ../src/iop/colortransfer.c:413
+#: ../src/iop/colortransfer.c:406
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -23172,7 +23204,7 @@ msgid "variance blue: "
 msgstr "variância de azul: "
 
 #: ../src/iop/denoiseprofile.c:3678 ../src/libs/export.c:1600
-#: ../src/libs/neural_restore.c:4293 ../src/libs/print_settings.c:2516
+#: ../src/libs/neural_restore.c:4297 ../src/libs/print_settings.c:2516
 #: ../src/libs/print_settings.c:2872
 msgid "profile"
 msgstr "perfil"
@@ -24090,7 +24122,6 @@ msgstr "contrastado"
 
 #. centripetal spline
 #: ../src/iop/filmic.c:1586 ../src/iop/profile_gamma.c:602
-#: ../src/libs/neural_restore.c:1116
 msgid "linear"
 msgstr "linear"
 
@@ -25151,7 +25182,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4453 ../src/iop/overlay.c:1124 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1484 ../src/libs/export.c:1558
-#: ../src/libs/neural_restore.c:4203
+#: ../src/libs/neural_restore.c:4207
 msgid "scale"
 msgstr "escala"
 
@@ -26341,7 +26372,7 @@ msgstr ""
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
 #: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1358
-#: ../src/libs/neural_restore.c:4160
+#: ../src/libs/neural_restore.c:4164
 msgid "raw denoise"
 msgstr "redução de ruído raw"
 
@@ -28789,7 +28820,7 @@ msgstr ""
 "só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1601 ../src/libs/export.c:1636
-#: ../src/libs/neural_restore.c:4294 ../src/libs/print_settings.c:2875
+#: ../src/libs/neural_restore.c:4298 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
 msgstr "configurações da imagem"
@@ -31416,7 +31447,7 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3302
+#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3306
 msgid "neural restore"
 msgstr "restauração neural"
 
@@ -31435,17 +31466,16 @@ msgid "out of memory for detail recovery buffer"
 msgstr "memória insuficiente para buffer de recuperação de detalhes"
 
 #: ../src/libs/neural_restore.c:1108
-msgid "Bayer"
-msgstr "Bayer"
+msgid "failed to load AI model for Bayer raw denoising"
+msgstr "falha ao carregar modelo de IA para redução de ruído Bayer"
 
 #: ../src/libs/neural_restore.c:1112
-msgid "X-Trans"
-msgstr "X-Trans"
+msgid "failed to load AI model for X-Trans raw denoising"
+msgstr "falha ao carregar modelo de IA para redução de ruído X-Trans"
 
-#: ../src/libs/neural_restore.c:1123
-#, c-format
-msgid "failed to load AI raw denoise %s model"
-msgstr "falha ao carregar modelo de IA %s para redução de ruído em raw"
+#: ../src/libs/neural_restore.c:1116
+msgid "failed to load AI model for linear raw denoising"
+msgstr "falha ao carregar modelo de IA para redução de ruído linear em raw"
 
 #: ../src/libs/neural_restore.c:1170
 msgid "raw denoise: unsupported raw datatype"
@@ -31456,11 +31486,11 @@ msgid "raw denoise: cannot load source image"
 msgstr "redução de ruído em raw: não foi possível carrecra a imagem fonte"
 
 #: ../src/libs/neural_restore.c:1327
-msgid "raw denoise: image is not a supported raw sensor format"
+msgid "raw denoise: image is not in a supported raw sensor format"
 msgstr ""
-"redução de ruído em raw: imagem não é em formato suportado de sensor raw"
+"redução de ruído em raw: imagem não está em formato suportado de sensor raw"
 
-#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4164
+#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4168
 msgid "upscale"
 msgstr "aumentar escala"
 
@@ -31538,60 +31568,60 @@ msgstr "gama ampla de cores preservada, sem redução de ruído"
 msgid "wide-gamut clipped"
 msgstr "gama ampla de cores recortada"
 
-#: ../src/libs/neural_restore.c:3486
+#: ../src/libs/neural_restore.c:3490
 #, c-format
 msgid "zoom %.0f%%"
 msgstr "zoom: %.0f%%"
 
-#: ../src/libs/neural_restore.c:3649
+#: ../src/libs/neural_restore.c:3653
 msgid "click to select preview area"
 msgstr "clique para selecionar área de pré-visualização"
 
-#: ../src/libs/neural_restore.c:3674
+#: ../src/libs/neural_restore.c:3678
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:3676 ../src/libs/neural_restore.c:3870
+#: ../src/libs/neural_restore.c:3680 ../src/libs/neural_restore.c:3874
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
-#: ../src/libs/neural_restore.c:3678
+#: ../src/libs/neural_restore.c:3682
 msgid "click to generate preview"
 msgstr "clique para gerar pré-visualização"
 
-#: ../src/libs/neural_restore.c:3680
+#: ../src/libs/neural_restore.c:3684
 msgid "image not supported by this task"
 msgstr "imagem não é suportada por esta tarefa"
 
-#: ../src/libs/neural_restore.c:3682
+#: ../src/libs/neural_restore.c:3686
 msgid "preview initialization failed"
 msgstr "a inicialização de pré-visualização falhou"
 
-#: ../src/libs/neural_restore.c:3683
+#: ../src/libs/neural_restore.c:3687
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:4116 ../src/libs/neural_restore.c:4380
+#: ../src/libs/neural_restore.c:4120 ../src/libs/neural_restore.c:4384
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:4161
+#: ../src/libs/neural_restore.c:4165
 msgid "AI raw denoising"
 msgstr "remoção de ruído em raw com IA"
 
-#: ../src/libs/neural_restore.c:4163
+#: ../src/libs/neural_restore.c:4167
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:4165
+#: ../src/libs/neural_restore.c:4169
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:4177
+#: ../src/libs/neural_restore.c:4181
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "mesclar entre CFA de origem (0%) e a saída com remoção de ruído (100%)"
 
-#: ../src/libs/neural_restore.c:4195
+#: ../src/libs/neural_restore.c:4199
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -31600,45 +31630,45 @@ msgstr ""
 "100% aplica a saida completa do modelo de IA; valores menores trazem de "
 "volta luminância textura e granulação enquanto mantém ruído de cor suprimido"
 
-#: ../src/libs/neural_restore.c:4204
+#: ../src/libs/neural_restore.c:4208
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:4223
+#: ../src/libs/neural_restore.c:4227
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr "clique para escolher área de pré-visualização na miniatura"
 
-#: ../src/libs/neural_restore.c:4254
+#: ../src/libs/neural_restore.c:4258
 msgid "process selected images"
 msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:4272
+#: ../src/libs/neural_restore.c:4276
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:4283
+#: ../src/libs/neural_restore.c:4287
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:4325
+#: ../src/libs/neural_restore.c:4329
 msgid "color profile embedded in the output TIFF"
 msgstr "perfil de cor embutido na saída TIFF"
 
-#: ../src/libs/neural_restore.c:4335
+#: ../src/libs/neural_restore.c:4339
 msgid "preserve wide-gamut colors"
 msgstr "preservar gama ampla de cores"
 
-#: ../src/libs/neural_restore.c:4342
+#: ../src/libs/neural_restore.c:4346
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
@@ -31648,15 +31678,15 @@ msgstr ""
 "desligado, todos os pixels passam por remoção de ruído mas cores de gama "
 "ampla podem ser recortadas; só afeta remoção de ruído"
 
-#: ../src/libs/neural_restore.c:4351
+#: ../src/libs/neural_restore.c:4355
 msgid "add to the current collection"
 msgstr "adicionar à coleção atual"
 
-#: ../src/libs/neural_restore.c:4357
+#: ../src/libs/neural_restore.c:4361
 msgid "automatically import the output image into the current collection"
 msgstr "automaticamente importar imagem de saída na coleção atual"
 
-#: ../src/libs/neural_restore.c:4373
+#: ../src/libs/neural_restore.c:4377
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -33084,12 +33114,12 @@ msgstr "alterna modo de seleção com zoom"
 msgid "exit current layout"
 msgstr "sair da disposição atual"
 
-#: ../src/libs/tools/log_history.c:49
+#: ../src/libs/tools/log_history.c:50
 #, fuzzy
 msgid "log history"
 msgstr "copiar histórico"
 
-#: ../src/libs/tools/log_history.c:169
+#: ../src/libs/tools/log_history.c:188
 #, fuzzy
 msgid "view log history"
 msgstr "histórico de processamento"
@@ -34157,6 +34187,12 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1725
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "Bayer"
+#~ msgstr "Bayer"
+
+#~ msgid "X-Trans"
+#~ msgstr "X-Trans"
 
 #~ msgid "GitHub API rate limit exceeded, try again later"
 #~ msgstr "Limite de uso da API do Github excedido, tente novamente mais tarde"
