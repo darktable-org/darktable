@@ -827,8 +827,26 @@ restart:
   */
   if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
   {
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
-    goto restart;
+    /* A "special case" handling
+        If a non-image pixelpipe finished with `stopped == FALSE` and `changed == DT_DEV_PIPE_ZOOMED`
+        we don't have to restart but only have to calculate it's dimension and clear pipe->changed
+        avoiding superfluous pixelpipe runs.
+
+        With every restart - even without UI actions - we update zoom, x, y, wd and ht, results can
+        oscillate and might never converge resulting in lots of restarts or even infinite loops.
+    */
+    if(pipe->changed == DT_DEV_PIPE_ZOOMED && !stopped && !dt_pipe_is_image(pipe))
+    {
+      dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight,
+                                      &pipe->processed_width,
+                                      &pipe->processed_height);
+      pipe->changed = DT_DEV_PIPE_UNCHANGED;
+    }
+    else
+    {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
+      goto restart;
+    }
   }
 
   dt_print_pipe(DT_DEBUG_PIPE, "process_image_job done", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "\n");
