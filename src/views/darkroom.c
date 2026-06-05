@@ -4121,6 +4121,11 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
+  // hand the darkroom pipe cache's memory back to the thumbnail cache for
+  // lighttable/culling work, keeping only the static base as a reserve so a
+  // quick return to the same image stays responsive
+  dt_dev_pixelpipe_cache_trim(dev->full.pipe, dev->full.pipe->cache.memlimit);
+
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);

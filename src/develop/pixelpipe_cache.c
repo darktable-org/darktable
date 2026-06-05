@@ -23,6 +23,15 @@
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
+// The darkroom pipe cache holds at most cache->entries full-canvas lines, so its
+// interactively useful size is bounded by that slot count and the canvas
+// resolution. Size the eviction limit from the memory darktable is allowed to use
+// (which tracks the 'resources' setting) rather than the static mipmap-derived
+// base, but never claim more than a 1/DT_PIPECACHE_BUDGET_DIVISOR share of that
+// budget for cachelines, and never collapse below a few working buffers.
+#define DT_PIPECACHE_BUDGET_DIVISOR 2
+#define DT_PIPECACHE_MIN_LINES 4
+
 gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
                                      const int entries,
                                      const size_t size,
@@ -486,7 +495,30 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
     }
   }
 
-  while(cache->memlimit && (cache->memlimit < cache->allmem))
+  /* The static memlimit (set at init from the mipmap fraction) tracks neither the
+     'resources' setting -- 'large' raises the overall budget but not the mipmap
+     fraction -- nor the canvas resolution, where a single full-canvas line can be
+     most of it, collapsing the cache to the alternating buffers and forcing a full
+     pipe recompute on every edit. Size the eviction limit from the memory darktable
+     is allowed to use instead (which does scale with 'resources'), capped to what
+     the cache can actually hold (the pipe only ever fills cache->entries lines) and
+     to a share of the budget, and floored so it never collapses. This runs on the
+     full (darkroom) pipe only; leaving darkroom trims it back via cache_trim(). */
+  size_t effective = cache->memlimit;
+  if(effective)
+  {
+    // largest buffer currently held == the working canvas size
+    size_t maxline = 0;
+    for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+      maxline = MAX(maxline, cache->size[k]);
+    const size_t budget = dt_get_available_mem();
+    const size_t saturate = (size_t)cache->entries * maxline;      // all slots filled
+    const size_t share = budget / DT_PIPECACHE_BUDGET_DIVISOR;     // affordable slice
+    const size_t floor = MIN((size_t)DT_PIPECACHE_MIN_LINES * maxline, budget);
+    effective = MAX(cache->memlimit, MAX(floor, MIN(saturate, share)));
+  }
+
+  while(effective && (effective < cache->allmem))
   {
     const int k = _get_oldest_cacheline(cache, DT_CACHETEST_USED);
     if(k == 0) break;
@@ -497,9 +529,34 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   if(free_cnt + free_invalid_cnt)
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-      "Freed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB max=%zuMB",
+      "Freed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB (base %zuMB) max=%zuMB",
       free_invalid_cnt, free_cnt, freed_invalid/DT_MEGA, freed / DT_MEGA,
-      cache->allmem / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA);
+      cache->allmem / DT_MEGA, effective / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA);
+}
+
+void dt_dev_pixelpipe_cache_trim(dt_dev_pixelpipe_t *pipe, const size_t reserve)
+{
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  // alternating-buffer pipes (export/thumbnail) have nothing to trim
+  if(cache->entries == DT_PIPECACHE_MIN) return;
+
+  size_t freed = 0;
+  int cnt = 0;
+  // free oldest non-important lines until we fit the reserve; important lines
+  // (e.g. the focused module input) are skipped so returning to the same image
+  // stays a cache hit
+  while(reserve < cache->allmem)
+  {
+    const int k = _get_oldest_cacheline(cache, DT_CACHETEST_USED);
+    if(k == 0) break;
+    freed += _free_cacheline(cache, k);
+    cnt++;
+  }
+
+  if(cnt)
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache trim", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "freed %i lines %zuMB, now %zuMB (reserve %zuMB)",
+      cnt, freed / DT_MEGA, cache->allmem / DT_MEGA, reserve / DT_MEGA);
 }
 
 void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
