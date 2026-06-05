@@ -265,6 +265,14 @@ int store(dt_imageio_module_storage_t *self,
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
+#ifdef _WIN32
+  {
+    gchar *clean_filename = dt_util_str_replace(d->filename, "\\", "/");
+    g_strlcpy(d->filename, clean_filename, sizeof(d->filename));
+    g_free(clean_filename);
+  }
+#endif
+
   char filename[PATH_MAX] = { 0 };
   char dirname[PATH_MAX] = { 0 };
   dt_image_full_path(imgid, dirname, sizeof(dirname), NULL);
