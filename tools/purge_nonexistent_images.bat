@@ -72,9 +72,15 @@ if %dryrun% EQU 0 (
 
 set ids=
 
+set "TEMP_FILE=%TEMP%\dt_purge_%RANDOM%.txt"
+sqlite3.exe %DBFILE% %QUERY% > "%TEMP_FILE%"
+
+for /f "tokens=4" %%a in ('chcp') do set "OLD_CP=%%a"
+chcp 65001 >nul
+
 setlocal EnableDelayedExpansion
-for /f "tokens=1* delims=|" %%a in ('sqlite3.exe %DBFILE% %QUERY%') do (
-  if not exist %%b (
+for /f "usebackq tokens=1* delims=|" %%a in ("%TEMP_FILE%") do (
+  if not exist "%%b" (
     echo.  %%b with ID %%a
     if .!ids!==. (
       set ids=%%a
@@ -83,6 +89,9 @@ for /f "tokens=1* delims=|" %%a in ('sqlite3.exe %DBFILE% %QUERY%') do (
     )
   )
 )
+
+chcp %OLD_CP% >nul
+del "%TEMP_FILE%" 2>nul
 
 if %dryrun% EQU 0 (
   echo This is NOT dry run
