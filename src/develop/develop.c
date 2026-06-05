@@ -651,8 +651,9 @@ void dt_dev_process_image_job(dt_develop_t *dev,
                              port ? 1.0 : buf.iscale);
 
   // We require calculation of pixelpipe dimensions via dt_dev_pixelpipe_change() in these cases
-  gboolean initial = pipe->loading || dev->image_force_reload || pipe->input_changed;
+  gboolean initial_change = pipe->loading || dev->image_force_reload || pipe->input_changed;
 
+  // adjust pipeline according to changed flag set by {add,pop}_history_item.
   if(pipe->loading)
   {
     // init pixel pipeline
@@ -701,7 +702,8 @@ void dt_dev_process_image_job(dt_develop_t *dev,
     pipe->input_changed = FALSE;
   }
 
-// adjust pipeline according to changed flag set by {add,pop}_history_item.
+  int restarts = 0; // to check looping
+
 restart:
   if(dev->gui_leaving)
   {
@@ -715,10 +717,10 @@ restart:
   if(port == &dev->full)
     pipe->input_timestamp = dev->timestamp;
 
-  const gboolean changing = (pipe->changed != DT_DEV_PIPE_UNCHANGED) || initial;
+  const gboolean changing = (pipe->changed != DT_DEV_PIPE_UNCHANGED) || initial_change;
   const gboolean port_loading = port && pipe->loading;
-  const gboolean require_zoom_test = (pipe->changed & ~DT_DEV_PIPE_ZOOMED) || initial;
-  initial = FALSE; // don't enforce dt_dev_pixelpipe_change() for restarts
+  const gboolean require_zoom_test = (pipe->changed & ~DT_DEV_PIPE_ZOOMED) || initial_change;
+  initial_change = FALSE; // don't enforce dt_dev_pixelpipe_change() for restarts
 
   const float anticipate_move = pipe->changed & DT_DEV_PIPE_ZOOMED
               ? dt_conf_get_float("darkroom/ui/anticipate_move")
@@ -740,9 +742,12 @@ restart:
 
   if(port)
   {
-    // if just changed to an image with a different aspect ratio or
-    // altered image orientation, the prior zoom xy could now be beyond
-    // the image boundary
+    /* if just changed to an image with a different aspect ratio or
+        altered image orientation, the prior zoom xy could now be beyond
+        the image boundary.
+        dt_dev_zoom_move() possibly leaves port->pipe->changed DT_DEV_PIPE_ZOOMED;
+        and might redraw the widgets as a side effect
+    */
     if(port_loading || require_zoom_test)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
@@ -751,7 +756,7 @@ restart:
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
     }
 
-    // determine scale according to new dimensions
+    // determine scale according to current dimensions
     dt_dev_zoom_t zoom;
     int closeup;
     dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
@@ -775,15 +780,21 @@ restart:
   const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
   const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   const gboolean stopped = early || shutdown != DT_DEV_PIXELPIPE_STOP_NO;
-  if(stopped)
-  {
-    const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
-    dt_print_pipe(DT_DEBUG_PIPE, "pipe stopped", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "%s%s%s%s",
+
+  const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
+  dt_print_pipe(DT_DEBUG_PIPE, stopped ? "pixelpipe_process stopped" : "pixelpipe_process good",
+              pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "%s%s %s%s%s%s%s",
+                restarts > 5 ? "LOOPING " : "",
                 dt_dev_pixelpipe_shutdown_to_str(shutdown),
                 dev->image_force_reload ? "image_force_reload " : "",
                 pipe->loading ? "pipe_loading " : "",
-                pipe->input_changed ? "pipe_input_changed " : "");
+                pipe->input_changed ? "pipe_input_changed " : "",
+                pipe->changed & DT_DEV_PIPE_ZOOMED ? "zoomed " : "",
+                pipe->changed & DT_DEV_PIPE_SYNCH ? "synch" : "");
+  restarts++;
 
+  if(stopped)
+  {
     /* In some cases we should stop restarting the pipe but exit with DT_DEV_PIXELPIPE_INVALID status
        How can we handle the pipe->loading status in a better way?
        Just restart?
@@ -803,17 +814,24 @@ restart:
       return;
     }
 
-    /* pixelpipe stops due to changed pipe nodes, HQ mode changes or module aborts.
-       All want restarts as pipe status is not valid yet.
+    /* pixelpipe stopped due to changed pipe nodes, HQ mode changes or module aborts
+        while processing the pipe. All require restarts as pipe status is not valid yet.
     */
     if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
       goto restart;
   }
 
-  // pipe requires pending dimension check, don't fiddle with redrawing the widget
+  /* Restarts are required because of
+     - DT_DEV_PIPE_SYNCH if there was a history change without taken dt_dev_pixelpipe_change()
+     - DT_DEV_PIPE_ZOOMED if we miss pixelpipe dimension.
+  */
   if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
     goto restart;
+  }
 
+  dt_print_pipe(DT_DEBUG_PIPE, "process_image_job done", pipe, NULL, DT_DEVICE_NONE, &proi, NULL, "\n");
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
                   dev->image_storage.filename);
@@ -3224,6 +3242,10 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
      && old_closeup == port->closeup)
     return;
 
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
+    "dt_dev_zoom_move sets DT_DEV_PIPE_ZOOMED", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
+      port->widget ? "redraw_widget " : "",
+      port == &dev->full ? "navigation_redraw" : "");
   // Mark pipe as needing zoom update
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
 
