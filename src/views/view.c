@@ -1977,6 +1977,8 @@ void dt_view_paint_surface(cairo_t *cr,
 
   if(use_preview_fallback)
   {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_EXPOSE | DT_DEBUG_VERBOSE,
+      "dt_view_paint_surface sets DT_DEV_PIPE_ZOOMED", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
