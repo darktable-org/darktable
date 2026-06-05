@@ -335,6 +335,14 @@ int store(dt_imageio_module_storage_t *self,
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
+#ifdef _WIN32
+  {
+    gchar *clean_filename = dt_util_str_replace(d->filename, "\\", "/");
+    g_strlcpy(d->filename, clean_filename, sizeof(d->filename));
+    g_free(clean_filename);
+  }
+#endif
+
   char filename[PATH_MAX] = { 0 };
   char input_dir[PATH_MAX] = { 0 };
   char pattern[DT_MAX_PATH_FOR_PARAMS];
