@@ -5964,8 +5964,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->rotation, -1.f);
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
   dt_action_t *ac = dt_action_widget(g->rotation);
-  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP, GDK_KEY_bracketleft, GDK_MOD1_MASK);
-  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_bracketright, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_bracketleft, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP, GDK_KEY_bracketright, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_r, GDK_MOD1_MASK);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
