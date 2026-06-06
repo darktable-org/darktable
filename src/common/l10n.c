@@ -85,15 +85,31 @@ static void _set_locale(const char *ui_lang, const char *old_env, const gboolean
     if(full_locale)
     {
       g_setenv("LANG", full_locale, TRUE);
+#ifdef WIN32
+      _putenv_s("LANG", full_locale);
+#endif
       g_free(full_locale);
     }
     g_setenv("LANGUAGE", ui_lang, TRUE);
+#ifdef WIN32
+    _putenv_s("LANGUAGE", ui_lang);
+#endif
     if(gui) gtk_disable_setlocale();
   }
   else if(old_env && *old_env)
+  {
     g_setenv("LANGUAGE", old_env, TRUE);
+#ifdef WIN32
+    _putenv_s("LANGUAGE", old_env);
+#endif
+  }
   else
+  {
     g_unsetenv("LANGUAGE");
+#ifdef WIN32
+    _putenv_s("LANGUAGE", "");
+#endif
+  }
 
   setlocale(LC_ALL, "");
 }
@@ -239,6 +255,9 @@ static void _dt_get_language_names(GList *languages)
         {
           // code taken in parts from GIMP's gimplanguagestore-parser.c
           g_setenv("LANGUAGE", language->code, TRUE);
+#ifdef WIN32
+          _putenv_s("LANGUAGE", language->code);
+#endif
           setlocale (LC_ALL, language->code);
 
           char *localized_name = g_strdup(dgettext("iso_639-2", name));
@@ -251,6 +270,9 @@ static void _dt_get_language_names(GList *languages)
             g_free(localized_name);
 
             g_setenv("LANGUAGE", language->base_code, TRUE);
+#ifdef WIN32
+            _putenv_s("LANGUAGE", language->base_code);
+#endif
             setlocale (LC_ALL, language->base_code);
 
             localized_name = g_strdup(dgettext("iso_639-2", name));
