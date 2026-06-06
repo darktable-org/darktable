@@ -1946,34 +1946,66 @@ void dt_view_paint_surface(cairo_t *cr,
   const int maxw = MIN(port->width, backbuf_scale * processed_width * (1<<closeup) / ppd);
   const int maxh = MIN(port->height, backbuf_scale * processed_height * (1<<closeup) / ppd);
 
+  // Position the clip (and assessment frame) from the viewport centre (zoom) and
+  // the IMAGE's own geometry, NOT from the backbuf ROI centre (offset). The ROI
+  // centre is clamped to the image, and while the viewport is panned outside the
+  // picture to reach off-image mask handles it lags the live zoom in discrete
+  // re-render steps. Driving the clip from it made the clip sawtooth back and
+  // forth on every re-render, even though the image content -- scaled from the
+  // backbuf to the live zoom by back_scale below -- stays put. img_w/img_h are
+  // the full image in screen pixels; on screen the image spans
+  // [(-0.5 - zoom) * img .. (0.5 - zoom) * img] about the viewport centre.
+  const double img_w = processed_width * backbuf_scale * (1 << closeup) / ppd;
+  const double img_h = processed_height * backbuf_scale * (1 << closeup) / ppd;
+
   if(port->color_assessment
      && window != DT_WINDOW_SLIDESHOW)
   {
     // draw the white frame around picture
     const double ratio = dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio");
-    const double borw = maxw + 2.0 * tb * ratio;
-    const double borh = maxh + 2.0 * tb * ratio;
-    cairo_rectangle(cr, -0.5 * borw, -0.5 * borh, borw, borh);
+    const double borw = img_w + 2.0 * tb * ratio;
+    const double borh = img_h + 2.0 * tb * ratio;
+    cairo_rectangle(cr, -0.5 * borw - zoom_x * img_w, -0.5 * borh - zoom_y * img_h, borw, borh);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_COLOR_ASSESSMENT_FG);
     cairo_fill(cr);
   }
 
-  cairo_rectangle(cr, -0.5 * maxw, -0.5 * maxh, maxw, maxh);
+  // clip to the image rectangle intersected with the viewport
+  const double clip_x0 = fmax(-0.5 * port->width, (-0.5 - zoom_x) * img_w);
+  const double clip_x1 = fmin(0.5 * port->width, (0.5 - zoom_x) * img_w);
+  const double clip_y0 = fmax(-0.5 * port->height, (-0.5 - zoom_y) * img_h);
+  const double clip_y1 = fmin(0.5 * port->height, (0.5 - zoom_y) * img_h);
+  cairo_rectangle(cr, clip_x0, clip_y0, fmax(0.0, clip_x1 - clip_x0), fmax(0.0, clip_y1 - clip_y0));
   cairo_clip(cr);
   const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
   const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
   const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
+  // The coverage test below must measure the pan the renderer can still fix, not
+  // the raw one. The render ROI is clamped to the image (see dt_dev_process_image),
+  // so when the viewport is panned outside the picture to reach off-image mask
+  // handles, the backbuf centre (offset) can get no closer to the viewport centre
+  // (zoom) than the image edge. Measuring against the raw zoom centre would keep
+  // reporting the off-image (background) margin as "not covered" and re-trigger
+  // the pipe every frame, making the clip jitter. So measure against reach_*, the
+  // closest centre the renderer can actually reach: when offset already sits there
+  // a re-render cannot improve coverage, and the residual is harmless background.
+  const float rhx = 0.5f * buf_width / fmaxf(1.0f, (float)processed_width * buf_scale);
+  const float rhy = 0.5f * buf_height / fmaxf(1.0f, (float)processed_height * buf_scale);
+  const float reach_x = rhx >= 0.5f ? 0.0f : CLAMP(zoom_x, -(0.5f - rhx), 0.5f - rhx);
+  const float reach_y = rhy >= 0.5f ? 0.0f : CLAMP(zoom_y, -(0.5f - rhy), 0.5f - rhy);
+  const double cov_trans_x = (offset_x - reach_x) * processed_width * buf_scale - 0.5 * buf_width;
+  const double cov_trans_y = (offset_y - reach_y) * processed_height * buf_scale - 0.5 * buf_height;
+
   // Check if we should use the preview pipe for fallback rendering
   // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
   const gboolean use_preview_fallback =
-     (dev == darktable.develop)
-     && pp->output_imgid == dev->image_storage.id
-     && (port->pipe->output_imgid != dev->image_storage.id
-         || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
-         || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
-         || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
-     && (port == &dev->full || port == &dev->preview2);
+    (dev == darktable.develop) && pp->output_imgid == dev->image_storage.id &&
+    (port->pipe->output_imgid != dev->image_storage.id ||
+     fabsf(backbuf_scale / buf_scale - 1.0f) > .09f ||
+     floor(maxw / 2 / back_scale) - 1 > MIN(-cov_trans_x, cov_trans_x + buf_width) ||
+     floor(maxh / 2 / back_scale) - 1 > MIN(-cov_trans_y, cov_trans_y + buf_height)) &&
+    (port == &dev->full || port == &dev->preview2);
 
   if(use_preview_fallback)
   {
