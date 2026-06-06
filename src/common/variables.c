@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <glib/gstdio.h>
 
 typedef struct dt_variables_data_t
 {
@@ -685,6 +686,35 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "FILE.EXTENSION")
           || _has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
+  else if(_has_prefix(variable, "FILE.SIZE")
+          || _has_prefix(variable, "FILE_SIZE"))
+  {
+    char filepath[PATH_MAX] = { 0 };
+    if(params->filename)
+    {
+      g_strlcpy(filepath, params->filename, sizeof(filepath));
+    }
+    else if(dt_is_valid_imgid(params->imgid))
+    {
+      const dt_image_t *img = params->img
+        ? (dt_image_t *)params->img
+        : dt_image_cache_get(params->imgid, 'r');
+      if(img)
+      {
+        dt_image_full_path(img->id, filepath, sizeof(filepath), NULL);
+        if(!params->img) dt_image_cache_read_release(img);
+      }
+    }
+
+    if(filepath[0])
+    {
+      GStatBuf statbuf;
+      if(g_stat(filepath, &statbuf) == 0)
+      {
+        result = g_format_size(statbuf.st_size);
+      }
+    }
+  }
   else if(_has_prefix(variable, "SEQUENCE"))
   {
     uint8_t nb_digit = 4;

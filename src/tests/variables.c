@@ -53,6 +53,8 @@ static const test_t test_variables = {
     {"foo-$(FILE_NAME)-bar", "foo-abcdef12345abcdef-bar"},
     {"äöü-$(FILE_NAME)-äöü", "äöü-abcdef12345abcdef-äöü"},
     {"$(FILE_NAME).$(SEQUENCE)", "abcdef12345abcdef.0023"},
+    {"$(FILE_SIZE)", ""},
+    {"$(FILE.SIZE)", ""},
     {"$(NONEXISTANT)", ""},
     {"foo-$(NONEXISTANT)-bar", "foo--bar"},
 
