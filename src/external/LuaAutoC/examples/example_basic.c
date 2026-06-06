@@ -1,5 +1,6 @@
 #include "../lautoc.h"
 
+// 计算浮点数 val 的 pow 次幂。
 float power(float val, int pow) {
   float x = 1.0;
   for(int i = 0; i < pow; i++) {
