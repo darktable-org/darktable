@@ -3359,27 +3359,11 @@ static dt_dev_proxy_exposure_t *_dev_exposure_proxy_available(dt_develop_t *dev)
   return instance && instance->module ? instance : NULL;
 }
 
-float dt_dev_exposure_get_exposure(dt_develop_t *dev)
+static dt_iop_module_t *_get_preferred_exposure_module(dt_develop_t *dev)
 {
-  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
-  return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
-}
-
-float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
-{
-  if (dt_view_get_current() != DT_VIEW_DARKROOM)
-  {
-    return 0.0f;
-  }
-
-  // The proxy function pointers are only set if an exposure module has been initialized.
-  if (!dev->proxy.exposure.get_effective_exposure)
-  {
-    return 0.0f;
-  }
+  if (dt_view_get_current() != DT_VIEW_DARKROOM) return NULL;
 
   const dt_iop_module_so_t *exposure_so = NULL;
-
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
     const dt_iop_module_so_t *module_so = modules->data;
@@ -3392,20 +3376,30 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
 
   if (exposure_so)
   {
-    dt_iop_module_t *preferred_exposure_instance = dt_iop_get_module_enabled_preferring_unmasked_first_instance(exposure_so);
-    if (preferred_exposure_instance)
-    {
-      return dev->proxy.exposure.get_effective_exposure(preferred_exposure_instance);
-    }
+    return dt_iop_get_module_enabled_preferring_unmasked_first_instance(exposure_so);
   }
+  return NULL;
+}
 
-  return 0.0f;
+float dt_dev_exposure_get_exposure(dt_develop_t *dev)
+{
+  if (!dev->proxy.exposure.get_exposure) return 0.0f;
+  dt_iop_module_t *module = _get_preferred_exposure_module(dev);
+  return module && module->enabled ? dev->proxy.exposure.get_exposure(module) : 0.0f;
+}
+
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
+{
+  if (!dev->proxy.exposure.get_effective_exposure) return 0.0f;
+  dt_iop_module_t *module = _get_preferred_exposure_module(dev);
+  return module ? dev->proxy.exposure.get_effective_exposure(module) : 0.0f;
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
-  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
-  return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
+  if (!dev->proxy.exposure.get_black) return 0.0f;
+  dt_iop_module_t *module = _get_preferred_exposure_module(dev);
+  return module && module->enabled ? dev->proxy.exposure.get_black(module) : 0.0f;
 }
 
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,
