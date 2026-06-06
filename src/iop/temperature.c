@@ -734,6 +734,8 @@ void commit_params(dt_iop_module_t *self,
   {
     for_four_channels(k)
       chr->wb_coeffs[k] = 1.0f;
+    // keep the module handle available for GUI reports (see below)
+    chr->temperature = self;
     return;
   }
 
@@ -760,13 +762,15 @@ void commit_params(dt_iop_module_t *self,
   // image to D65 via D65coeffs/1.0.
   chr->late_correction = piece->enabled ? effective_late_correction : FALSE;
 
-  /* Make sure the chroma information stuff is valid
-     If piece is disabled we always clear the trouble message and
-     make sure chroma does know there is no temperature module.
+  /* Always publish the module handle for GUI reports, regardless of the
+     enabled state. The enabled state is tracked separately via
+     chr->temperature->enabled (module flag) and pipe->dsc.temperature.enabled
+     (pipe flag). This lets color calibration warn about a disabled white
+     balance module while it is still doing chromatic adaptation. Trouble
+     message state is owned entirely by _set_trouble_messages() in
+     channelmixerrgb, so we no longer clear it here.
   */
-  chr->temperature = piece->enabled ? self : NULL;
-  if(dt_pipe_is_preview(pipe) && !piece->enabled)
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+  chr->temperature = self;
 }
 
 void init_pipe(dt_iop_module_t *self,
