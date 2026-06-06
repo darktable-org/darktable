@@ -1125,9 +1125,41 @@ char *dt_copy_filename_extension(const char *filename1,
                                  const char *filename2)
 {
   // assume both filenames have an extension
-  if(!filename2) return NULL;
+  if(!filename1 || !filename2) return NULL;
+  const char *dot1 = strrchr(filename1, '.');
   const char *dot2 = strrchr(filename2, '.');
   if(!dot2) return NULL;
+
+  if(dot1)
+  {
+    gboolean all_lower = TRUE;
+    gboolean all_upper = TRUE;
+    const char *p = dot1 + 1;
+    while(*p)
+    {
+      if(g_ascii_isalpha(*p))
+      {
+        if(g_ascii_isupper(*p)) all_lower = FALSE;
+        if(g_ascii_islower(*p)) all_upper = FALSE;
+      }
+      p++;
+    }
+
+    char *ext = g_strdup(dot2 + 1);
+    if(all_lower)
+    {
+      char *q = ext;
+      while(*q) { *q = g_ascii_tolower(*q); q++; }
+    }
+    else if(all_upper)
+    {
+      char *q = ext;
+      while(*q) { *q = g_ascii_toupper(*q); q++; }
+    }
+    char *res = dt_filename_change_extension(filename1, ext);
+    g_free(ext);
+    return res;
+  }
 
   return dt_filename_change_extension(filename1, dot2+1);
 }
