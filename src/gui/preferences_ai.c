@@ -246,7 +246,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       COL_NAME,
       model->name ? model->name : model->id,
       COL_TASK,
-      model->task ? model->task : "",
+      model->task ? _(model->task) : "",
       COL_STATUS,
       _status_to_string(model->status),
       COL_DEFAULT,
