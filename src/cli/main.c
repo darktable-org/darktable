@@ -236,6 +236,10 @@ int main(int argc, char *arg[])
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
            style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE,
            output_to_dir = FALSE;
+  dt_imageio_module_format_t *format = NULL;
+  dt_imageio_module_storage_t *storage = NULL;
+  dt_imageio_module_data_t *sdata = NULL, *fdata = NULL;
+  int res = 0;
 
   GList* inputs = NULL;
 
@@ -656,11 +660,8 @@ int main(int argc, char *arg[])
   if(total == 0)
   {
     fprintf(stderr, _("no images to export, aborting\n"));
-    free(m_arg);
-    g_free(output_filename);
-    if(output_ext)
-      g_free(output_ext);
-    exit(1);
+    res = 1;
+    goto cleanup;
   }
 
   // attach xmp, if requested:
@@ -674,11 +675,9 @@ int main(int argc, char *arg[])
       {
         fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
         fprintf(stderr, "\n");
-        free(m_arg);
-        g_free(output_filename);
-        if(output_ext)
-          g_free(output_ext);
-        exit(1);
+        dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
+        res = 1;
+        goto cleanup;
       }
       // don't write new xmp:
       dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
@@ -749,30 +748,22 @@ int main(int argc, char *arg[])
   }
 
   // init the export data structures
-  dt_imageio_module_format_t *format;
-  dt_imageio_module_storage_t *storage;
-  dt_imageio_module_data_t *sdata, *fdata;
-
   storage = dt_imageio_get_storage_by_name("disk"); // only exporting to disk makes sense
   if(storage == NULL)
   {
     fprintf(
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
-    free(m_arg);
-    g_free(output_filename);
-    g_free(output_ext);
-    exit(1);
+    res = 1;
+    goto cleanup;
   }
 
   sdata = storage->get_params(storage);
   if(sdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
-    free(m_arg);
-    g_free(output_filename);
-    g_free(output_ext);
-    exit(1);
+    res = 1;
+    goto cleanup;
   }
 
   // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night
@@ -780,24 +771,23 @@ int main(int argc, char *arg[])
   g_strlcpy((char *)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
   g_free(output_filename);
+  output_filename = NULL;
 
   format = dt_imageio_get_format_by_name(output_ext);
   if(format == NULL)
   {
     fprintf(stderr, _("unknown extension '.%s'"), output_ext);
     fprintf(stderr, "\n");
-    free(m_arg);
-    g_free(output_ext);
-    exit(1);
+    res = 1;
+    goto cleanup;
   }
 
   fdata = format->get_params(format);
   if(fdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
-    free(m_arg);
-    g_free(output_ext);
-    exit(1);
+    res = 1;
+    goto cleanup;
   }
 
   uint32_t w, h, fw, fh, sw, sh;
@@ -840,7 +830,7 @@ int main(int argc, char *arg[])
 
   // TODO: add a callback to set the bpp without going through the config
 
-  int num = 1, res = 0;
+  int num = 1;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     const int id = GPOINTER_TO_INT(iter->data);
@@ -864,14 +854,24 @@ int main(int argc, char *arg[])
       res = 1;
   }
 
+cleanup:
   // cleanup time
-  if(storage->finalize_store) storage->finalize_store(storage, sdata);
-  storage->free_params(storage, sdata);
-  format->free_params(format, fdata);
+  if(storage && sdata)
+  {
+    if(storage->finalize_store) storage->finalize_store(storage, sdata);
+    storage->free_params(storage, sdata);
+  }
+  if(format && fdata)
+  {
+    format->free_params(format, fdata);
+  }
   g_list_free(id_list);
 
   if(icc_filename)
     g_free(icc_filename);
+
+  g_free(output_filename);
+  g_free(output_ext);
 
   dt_cleanup();
 
