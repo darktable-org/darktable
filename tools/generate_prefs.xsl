@@ -264,6 +264,38 @@ gboolean restart_required = FALSE;
 
 ]]></xsl:text>
 
+  <!-- Translation stubs for welcomescreen-only entries.
+       Entries with <welcomescreen> but neither prefs= nor dialog= never go
+       through the preferences-tab code path that wraps their shortdescription /
+       longdescription / option labels in _(...). Emit a never-called function
+       referencing them so xgettext picks them up for translators. -->
+  <xsl:text>
+G_GNUC_UNUSED static void _welcomescreen_translation_stubs(void)
+{
+</xsl:text>
+  <xsl:for-each select="./dtconfiglist/dtconfig[welcomescreen and not(@prefs) and not(@dialog)]">
+    <xsl:if test="shortdescription != ''">
+      <xsl:text>  (void)_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>");
+</xsl:text>
+    </xsl:if>
+    <xsl:if test="longdescription != ''">
+      <xsl:if test="contains(longdescription,'%')">
+        <xsl:text>  /* xgettext:no-c-format */
+</xsl:text>
+      </xsl:if>
+      <xsl:text>  (void)_("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>");
+</xsl:text>
+    </xsl:if>
+    <xsl:if test="welcomescreen/@options != ''">
+      <xsl:call-template name="emit-option-labels">
+        <xsl:with-param name="opts" select="welcomescreen/@options"/>
+      </xsl:call-template>
+    </xsl:if>
+  </xsl:for-each>
+  <xsl:text>}
+
+</xsl:text>
+
   <!-- reset callbacks -->
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
@@ -685,6 +717,33 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="default"/><xsl:text>"));
     gtk_widget_set_tooltip_text(labelev, tooltip);</xsl:text>
+  </xsl:template>
+
+<!-- Recursive parser for welcomescreen @options = "id1|label1,id2|label2,..."
+       Emits C_("preferences", "label") per option label so xgettext extracts them. -->
+  <xsl:template name="emit-option-labels">
+    <xsl:param name="opts"/>
+    <xsl:variable name="first">
+      <xsl:choose>
+        <xsl:when test="contains($opts, ',')">
+          <xsl:value-of select="substring-before($opts, ',')"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$opts"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:if test="contains($first, '|')">
+      <xsl:text>  (void)C_("preferences", "</xsl:text>
+      <xsl:value-of select="substring-after($first, '|')"/>
+      <xsl:text>");
+</xsl:text>
+    </xsl:if>
+    <xsl:if test="contains($opts, ',')">
+      <xsl:call-template name="emit-option-labels">
+        <xsl:with-param name="opts" select="substring-after($opts, ',')"/>
+      </xsl:call-template>
+    </xsl:if>
   </xsl:template>
 
 <!-- Grab min/max from input. Is there a better way? -->
