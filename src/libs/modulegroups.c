@@ -1657,7 +1657,14 @@ void init_presets(dt_lib_module_t *self)
   AM("ashift");
 
   if(is_scene_referred)
-    AM("sigmoid");
+  {
+    if(wf_filmic)
+      AM("filmicrgb");
+    else if(wf_agx)
+      AM("agx");
+    else
+      AM("sigmoid");
+  }
   else
     AM("basecurve");
 
