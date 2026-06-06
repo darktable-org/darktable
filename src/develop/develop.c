@@ -776,7 +776,6 @@ restart:
 
   dt_get_times(&start);
 
-  // keep return status of dt_dev_pixelpipe_process()
   const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
   const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   const gboolean stopped = early || shutdown != DT_DEV_PIXELPIPE_STOP_NO;
@@ -795,10 +794,7 @@ restart:
 
   if(stopped)
   {
-    /* In some cases we should stop restarting the pipe but exit with DT_DEV_PIXELPIPE_INVALID status
-       How can we handle the pipe->loading status in a better way?
-       Just restart?
-    */
+    // In some cases we don't restart the pipe but exit with DT_DEV_PIXELPIPE_INVALID status, see _dev_pixelpipe_early_exit()
     const gboolean img_changed = dev->image_force_reload || pipe->loading || pipe->input_changed;
     if(img_changed)
     {
@@ -818,11 +814,15 @@ restart:
         while processing the pipe. All require restarts as pipe status is not valid yet.
     */
     if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
+    {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
       goto restart;
+    }
   }
 
   /* Restarts are required because of
-     - DT_DEV_PIPE_SYNCH if there was a history change without taken dt_dev_pixelpipe_change()
+     - DT_DEV_PIPE_SYNCH, DT_DEV_PIPE_TOP_CHANGED or DT_DEV_PIPE_REMOVE if there was
+       a history change without taken dt_dev_pixelpipe_change()
      - DT_DEV_PIPE_ZOOMED if we miss pixelpipe dimension.
   */
   if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
