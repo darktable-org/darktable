@@ -343,15 +343,15 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
 static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], const dt_aligned_pixel_t WB,
                                               float *x, float *y)
 {
-  // Find the illuminant chromaticity x y from RAW WB coeffs and camera input matrice
+  // Find the illuminant chromaticity x y from RAW WB coeffs and camera input matrix
   dt_aligned_pixel_t XYZ, LMS;
   // Simulate white point, aka convert (1, 1, 1) in camera space to XYZ
-  // warning : we multiply the transpose of CAM_to_XYZ  since the pseudoinverse transposes it
+  // warning: we multiply the transpose of CAM_to_XYZ since the pseudoinverse transposes it
   XYZ[0] = CAM_to_XYZ[0][0] / WB[0] + CAM_to_XYZ[1][0] / WB[1] + CAM_to_XYZ[2][0] / WB[2];
   XYZ[1] = CAM_to_XYZ[0][1] / WB[0] + CAM_to_XYZ[1][1] / WB[1] + CAM_to_XYZ[2][1] / WB[2];
   XYZ[2] = CAM_to_XYZ[0][2] / WB[0] + CAM_to_XYZ[1][2] / WB[1] + CAM_to_XYZ[2][2] / WB[2];
 
-  // Matrices white point is D65. We need to convert it for darktable's pipe (D50)
+  // Matrix's white point is D65. We need to convert it for darktable's pipe (D50)
   static const dt_aligned_pixel_t D65 = { 0.941238f, 1.040633f, 1.088932f, 0.f };
   const float p = powf(1.088932f / 0.818155f, 0.0834f);
 
