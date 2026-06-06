@@ -531,9 +531,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   fprintf(f, "        <p style=\"clear:both;\"></p>\n"
              "    </div>\n"
              "    <div class=\"footer\">\n"
-             "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-             "      document.write(\"download all: <em>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04zu].jpg</em>\")\n"
-             "      </script><br />\n"
+             "      <span id=\"download-all\"></span><br />\n"
              "      created with %s\n"
              "    </div>\n"
              "    <div class=\"pswp\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">\n"
@@ -576,7 +574,6 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
              "<script>\n"
              "var pswpElement = document.querySelectorAll('.pswp')[0];\n"
              "var items = [\n",
-          count,
           darktable_package_string);
   while(d->l)
   {
@@ -596,6 +593,13 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
              "    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);\n"
              "    gallery.init();\n"
              "}\n"
+             "var curl_cmd = \"curl -O#\";\n"
+             "var base = document.documentURI.replace(/\\\\/g, '/').replace(/\\/[^\\/]*$/, '');\n"
+             "for (var i = 0; i < items.length; i++) {\n"
+             "  curl_cmd += \" \\\"\" + base + \"/\" + items[i].src + \"\\\"\";\n"
+             "}\n"
+             "var el = document.getElementById(\"download-all\");\n"
+             "if(el) el.innerHTML = \"download all: <em>\" + curl_cmd + \"</em>\";\n"
              "</script>\n"
              "</html>\n");
   fclose(f);
