@@ -2368,9 +2368,13 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
 {
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  int delta_y = 0;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
-    dt_gui_presets_apply_adjacent_preset(module, delta_y);
+  // preset cycling: right==down==next
+  int delta_x = 0, delta_y = 0;
+  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
+  {
+    const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+    dt_gui_presets_apply_adjacent_preset(module, delta);
+  }
 
   return TRUE;
 }
