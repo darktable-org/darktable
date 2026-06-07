@@ -42,8 +42,7 @@ static dt_hash_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_highlights_data_t *d = piece->data;
   dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, NULL, FALSE);
-  hash = dt_hash(hash, &d->clip, sizeof(d->clip));
-  return dt_hash(hash, &piece->module->dev->chroma.late_correction, sizeof(int));
+  return dt_hash(hash, &d->clip, sizeof(d->clip));
 }
 
 static inline float _calc_linear_refavg(const float *in, const int color)
