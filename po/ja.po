@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-06 21:46+0200\n"
-"PO-Revision-Date: 2026-06-07 10:57+0900\n"
+"PO-Revision-Date: 2026-06-07 11:03+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -31441,7 +31441,7 @@ msgstr "ナビゲーション"
 #: ../src/libs/navigation.c:125 ../src/libs/navigation.c:269
 msgctxt "navigationbox"
 msgid "fill"
-msgstr "画面を満たす"
+msgstr "フィル"
 
 #: ../src/libs/navigation.c:128 ../src/libs/navigation.c:267
 msgid "small"
