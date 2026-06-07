@@ -148,8 +148,8 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   GtkWidget *color_picker;
-  float xy[2];
-  float XYZ[4];
+  float colorchecker_xy[2];
+  float ai_wb_XYZ[4];
 
   point_t box[4];           // the current coordinates, possibly non rectangle, of the bounding box for the color checker
   point_t ideal_box[4];     // the desired coordinates of the perfect rectangle bounding box for the color checker
@@ -1724,8 +1724,8 @@ static void _extract_color_checker(const float *const restrict in,
   dt_D50_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
 
   // save the illuminant in GUI struct for commit
-  g->xy[0] = illuminant_xyY[0];
-  g->xy[1] = illuminant_xyY[1];
+  g->colorchecker_xy[0] = illuminant_xyY[0];
+  g->colorchecker_xy[1] = illuminant_xyY[1];
 
   // and recompute back the LMS to be sure we use the parameters that
   // will be computed later
@@ -2207,7 +2207,7 @@ void process(dt_iop_module_t *self,
         // as scratch space since we will be overwriting it afterwards
         // anyway
         _auto_detect_WB(in, out, data->illuminant_type, roi_in->width, roi_in->height,
-                        ch, RGB_to_XYZ, g->XYZ);
+                        ch, RGB_to_XYZ, g->ai_wb_XYZ);
         dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "AI RGB: ");
         dt_iop_gui_leave_critical_section(self);
       }
@@ -3002,8 +3002,8 @@ static void _commit_profile_callback(GtkWidget *widget,
 
   dt_iop_gui_enter_critical_section(self);
 
-  p->x = g->xy[0];
-  p->y = g->xy[1];
+  p->x = g->colorchecker_xy[0];
+  p->y = g->colorchecker_xy[1];
   p->illuminant = DT_ILLUMINANT_CUSTOM;
   _check_if_close_to_daylight(p->x, p->y, &p->temperature, NULL, NULL);
 
@@ -3063,8 +3063,8 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
     return;
 
   dt_iop_gui_enter_critical_section(self);
-  p->x = g->XYZ[0];
-  p->y = g->XYZ[1];
+  p->x = g->ai_wb_XYZ[0];
+  p->y = g->ai_wb_XYZ[1];
   dt_iop_gui_leave_critical_section(self);
 
   _check_if_close_to_daylight(p->x, p->y,
@@ -4548,7 +4548,7 @@ void gui_init(dt_iop_module_t *self)
   g->delta_E_in = NULL;
   g->delta_E_label_text = NULL;
 
-  g->XYZ[0] = NAN;
+  g->ai_wb_XYZ[0] = NAN;
 
 #ifdef AI_ACTIVATED
    DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
