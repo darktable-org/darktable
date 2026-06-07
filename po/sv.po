@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 19:36+0200\n"
-"PO-Revision-Date: 2026-06-07 18:24+0200\n"
+"POT-Creation-Date: 2026-06-06 21:46+0200\n"
+"PO-Revision-Date: 2026-06-07 18:30+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: johan@betahaus.net\n"
 "Language: sv\n"
@@ -46,12 +46,12 @@ msgctxt "preferences"
 msgid "first instance"
 msgstr "första instansen"
 
-#: ../build/bin/conf_gen.h:112 ../build/bin/preferences_gen.h:4713
+#: ../build/bin/conf_gen.h:112 ../build/bin/preferences_gen.h:4723
 msgctxt "preferences"
 msgid "last instance"
 msgstr "sista instansen"
 
-#: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4369
+#: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4379
 msgctxt "preferences"
 msgid "triangle"
 msgstr "trangel"
@@ -74,7 +74,7 @@ msgstr "stav"
 #: ../build/bin/conf_gen.h:288 ../build/bin/conf_gen.h:440
 #: ../build/bin/conf_gen.h:453 ../build/bin/conf_gen.h:1824
 #: ../build/bin/conf_gen.h:1845 ../build/bin/conf_gen.h:1882
-#: ../build/bin/preferences_gen.h:2852 ../build/bin/preferences_gen.h:2939
+#: ../build/bin/preferences_gen.h:2862 ../build/bin/preferences_gen.h:2949
 msgctxt "preferences"
 msgid "never"
 msgstr "aldrig"
@@ -84,7 +84,7 @@ msgctxt "preferences"
 msgid "once a month"
 msgstr "en gång i månaden"
 
-#: ../build/bin/conf_gen.h:290 ../build/bin/preferences_gen.h:4153
+#: ../build/bin/conf_gen.h:290 ../build/bin/preferences_gen.h:4163
 msgctxt "preferences"
 msgid "once a week"
 msgstr "en gång i veckan"
@@ -107,7 +107,7 @@ msgid "small"
 msgstr "liten"
 
 #: ../build/bin/conf_gen.h:366 ../build/bin/conf_gen.h:593
-#: ../build/bin/preferences_gen.h:3586 ../build/bin/preferences_gen.h:3654
+#: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3664
 msgctxt "preferences"
 msgid "default"
 msgstr "standard"
@@ -122,19 +122,19 @@ msgctxt "preferences"
 msgid "after edit"
 msgstr "efter redigering"
 
-#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4205
+#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4215
 msgctxt "preferences"
 msgid "on import"
 msgstr "vid import"
 
 #: ../build/bin/conf_gen.h:454 ../build/bin/conf_gen.h:1814
 #: ../build/bin/conf_gen.h:1835 ../build/bin/conf_gen.h:5050
-#: ../build/bin/preferences_gen.h:3341
+#: ../build/bin/preferences_gen.h:3351
 msgctxt "preferences"
 msgid "always"
 msgstr "alltid"
 
-#: ../build/bin/conf_gen.h:455 ../build/bin/preferences_gen.h:4223
+#: ../build/bin/conf_gen.h:455 ../build/bin/preferences_gen.h:4233
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "enbart de med stort innehåll"
@@ -144,7 +144,7 @@ msgctxt "preferences"
 msgid "sensitive"
 msgstr "känslighet"
 
-#: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4838
+#: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4848
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "okänslighet"
@@ -159,7 +159,7 @@ msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "väldigt snabb GPU"
 
-#: ../build/bin/conf_gen.h:1064 ../build/bin/preferences_gen.h:4912
+#: ../build/bin/conf_gen.h:1064 ../build/bin/preferences_gen.h:4922
 msgctxt "preferences"
 msgid "import time"
 msgstr "importtid"
@@ -336,7 +336,7 @@ msgid "VGA"
 msgstr "VGA"
 
 #: ../build/bin/conf_gen.h:1817 ../build/bin/conf_gen.h:1838
-#: ../build/bin/conf_gen.h:1885 ../build/bin/preferences_gen.h:2870
+#: ../build/bin/conf_gen.h:1885 ../build/bin/preferences_gen.h:2880
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
@@ -378,7 +378,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1825 ../build/bin/conf_gen.h:3847
-#: ../build/bin/conf_gen.h:5053 ../build/bin/preferences_gen.h:4063
+#: ../build/bin/conf_gen.h:5053 ../build/bin/preferences_gen.h:4073
 msgctxt "preferences"
 msgid "auto"
 msgstr "auto"
@@ -428,7 +428,7 @@ msgctxt "preferences"
 msgid "high"
 msgstr "hög"
 
-#: ../build/bin/conf_gen.h:1982 ../build/bin/preferences_gen.h:3204
+#: ../build/bin/conf_gen.h:1982 ../build/bin/preferences_gen.h:3214
 msgctxt "preferences"
 msgid "false color"
 msgstr "falska färger"
@@ -454,7 +454,7 @@ msgctxt "preferences"
 msgid "top center"
 msgstr "övre mitt"
 
-#: ../build/bin/conf_gen.h:2005 ../build/bin/preferences_gen.h:3119
+#: ../build/bin/conf_gen.h:2005 ../build/bin/preferences_gen.h:3129
 msgctxt "preferences"
 msgid "bottom"
 msgstr "botten"
@@ -549,7 +549,7 @@ msgid "bilinear"
 msgstr "bilinjär"
 
 #: ../build/bin/conf_gen.h:3355 ../build/bin/conf_gen.h:3367
-#: ../build/bin/preferences_gen.h:3426
+#: ../build/bin/preferences_gen.h:3436
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bikubisk"
@@ -559,7 +559,7 @@ msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:3369 ../build/bin/preferences_gen.h:3444
+#: ../build/bin/conf_gen.h:3369 ../build/bin/preferences_gen.h:3454
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
@@ -614,7 +614,7 @@ msgctxt "preferences"
 msgid "left"
 msgstr "vänster"
 
-#: ../build/bin/conf_gen.h:4165 ../build/bin/preferences_gen.h:4552
+#: ../build/bin/conf_gen.h:4165 ../build/bin/preferences_gen.h:4562
 msgctxt "preferences"
 msgid "right"
 msgstr "höger"
@@ -739,22 +739,22 @@ msgctxt "preferences"
 msgid "inch"
 msgstr "tum"
 
-#: ../build/bin/conf_gen.h:4666
+#: ../build/bin/conf_gen.h:4666 ../build/bin/preferences_gen.h:237
 msgctxt "preferences"
 msgid "grey"
 msgstr "grå"
 
-#: ../build/bin/conf_gen.h:4667
+#: ../build/bin/conf_gen.h:4667 ../build/bin/preferences_gen.h:238
 msgctxt "preferences"
 msgid "dark"
 msgstr "mörk"
 
-#: ../build/bin/conf_gen.h:4668
+#: ../build/bin/conf_gen.h:4668 ../build/bin/preferences_gen.h:239
 msgctxt "preferences"
 msgid "darker"
 msgstr "mörkare"
 
-#: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4570
+#: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4580
 msgctxt "preferences"
 msgid "all"
 msgstr "alla"
@@ -769,7 +769,7 @@ msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4813 ../build/bin/preferences_gen.h:3510
+#: ../build/bin/conf_gen.h:4813 ../build/bin/preferences_gen.h:3520
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "scen-tillämpad (sigmoid)"
@@ -884,77 +884,103 @@ msgstr "ej tillgängligt"
 msgid "not available on this system"
 msgstr "ej tillgängligt i detta system"
 
-#: ../build/bin/preferences_gen.h:2588 ../src/control/jobs/control_jobs.c:3118
+#: ../build/bin/preferences_gen.h:235
+msgid "darktable theme"
+msgstr "darktable-tema"
+
+#: ../build/bin/preferences_gen.h:236
+msgid ""
+"the shade around your photo affects how you see its colors and tones while "
+"editing. grey is recommended because it's the most neutral – it doesn't push "
+"your eye in any direction\n"
+"\n"
+"<b>grey:</b> best for accurate color work\n"
+"\n"
+"<b>dark:</b> less distracting around your image\n"
+"\n"
+"<b>darker:</b> good for dimly-lit rooms"
+msgstr ""
+"färgen runt ditt foto påverkar hur du ser dess färger och toner medan du "
+"redigerar. grå rekommenderas eftersom det är mest neutralt – det knuffar inte "
+"ditt öga i någon riktning\n"
+"\n"
+"<b>grå:</b> för för korrekt färgarbete\n"
+"\n"
+"<b>mörk:</b> mindre distraherande runt din bild\n"
+"\n"
+"<b>mörkare:</b> bra för svagt upplysta rum"
+
+#: ../build/bin/preferences_gen.h:2598 ../src/control/jobs/control_jobs.c:3118
 #: ../src/libs/import.c:183
 msgid "import"
 msgstr "import"
 
-#: ../build/bin/preferences_gen.h:2593
+#: ../build/bin/preferences_gen.h:2603
 msgid "session options"
 msgstr "alternativ för session"
 
-#: ../build/bin/preferences_gen.h:2603
+#: ../build/bin/preferences_gen.h:2613
 msgid "base filmroll's directory"
 msgstr "filmrullens baskatalog"
 
-#: ../build/bin/preferences_gen.h:2614 ../build/bin/preferences_gen.h:2636
-#: ../build/bin/preferences_gen.h:2653 ../build/bin/preferences_gen.h:2675
-#: ../build/bin/preferences_gen.h:2708 ../build/bin/preferences_gen.h:2725
-#: ../build/bin/preferences_gen.h:2742 ../build/bin/preferences_gen.h:2759
-#: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:2793
-#: ../build/bin/preferences_gen.h:2810 ../build/bin/preferences_gen.h:2827
-#: ../build/bin/preferences_gen.h:2852 ../build/bin/preferences_gen.h:2870
-#: ../build/bin/preferences_gen.h:2887 ../build/bin/preferences_gen.h:2904
-#: ../build/bin/preferences_gen.h:2921 ../build/bin/preferences_gen.h:2939
-#: ../build/bin/preferences_gen.h:2956 ../build/bin/preferences_gen.h:2978
-#: ../build/bin/preferences_gen.h:3002 ../build/bin/preferences_gen.h:3026
-#: ../build/bin/preferences_gen.h:3059 ../build/bin/preferences_gen.h:3076
-#: ../build/bin/preferences_gen.h:3101 ../build/bin/preferences_gen.h:3119
-#: ../build/bin/preferences_gen.h:3162 ../build/bin/preferences_gen.h:3179
-#: ../build/bin/preferences_gen.h:3204 ../build/bin/preferences_gen.h:3221
-#: ../build/bin/preferences_gen.h:3238 ../build/bin/preferences_gen.h:3255
-#: ../build/bin/preferences_gen.h:3272 ../build/bin/preferences_gen.h:3289
-#: ../build/bin/preferences_gen.h:3306 ../build/bin/preferences_gen.h:3323
-#: ../build/bin/preferences_gen.h:3341 ../build/bin/preferences_gen.h:3358
-#: ../build/bin/preferences_gen.h:3375 ../build/bin/preferences_gen.h:3408
-#: ../build/bin/preferences_gen.h:3426 ../build/bin/preferences_gen.h:3444
-#: ../build/bin/preferences_gen.h:3467 ../build/bin/preferences_gen.h:3491
-#: ../build/bin/preferences_gen.h:3510 ../build/bin/preferences_gen.h:3527
-#: ../build/bin/preferences_gen.h:3544 ../build/bin/preferences_gen.h:3561
-#: ../build/bin/preferences_gen.h:3586 ../build/bin/preferences_gen.h:3611
-#: ../build/bin/preferences_gen.h:3632 ../build/bin/preferences_gen.h:3654
-#: ../build/bin/preferences_gen.h:3675 ../build/bin/preferences_gen.h:3703
-#: ../build/bin/preferences_gen.h:3724 ../build/bin/preferences_gen.h:3745
-#: ../build/bin/preferences_gen.h:3766 ../build/bin/preferences_gen.h:3787
-#: ../build/bin/preferences_gen.h:3808 ../build/bin/preferences_gen.h:3829
-#: ../build/bin/preferences_gen.h:3862 ../build/bin/preferences_gen.h:3879
-#: ../build/bin/preferences_gen.h:3896 ../build/bin/preferences_gen.h:3913
-#: ../build/bin/preferences_gen.h:3930 ../build/bin/preferences_gen.h:3947
-#: ../build/bin/preferences_gen.h:3964 ../build/bin/preferences_gen.h:3981
-#: ../build/bin/preferences_gen.h:3997 ../build/bin/preferences_gen.h:4013
-#: ../build/bin/preferences_gen.h:4030 ../build/bin/preferences_gen.h:4063
-#: ../build/bin/preferences_gen.h:4080 ../build/bin/preferences_gen.h:4102
-#: ../build/bin/preferences_gen.h:4135 ../build/bin/preferences_gen.h:4153
-#: ../build/bin/preferences_gen.h:4205 ../build/bin/preferences_gen.h:4223
-#: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4300
-#: ../build/bin/preferences_gen.h:4317 ../build/bin/preferences_gen.h:4334
-#: ../build/bin/preferences_gen.h:4351 ../build/bin/preferences_gen.h:4369
-#: ../build/bin/preferences_gen.h:4386 ../build/bin/preferences_gen.h:4403
-#: ../build/bin/preferences_gen.h:4420 ../build/bin/preferences_gen.h:4437
-#: ../build/bin/preferences_gen.h:4454 ../build/bin/preferences_gen.h:4471
-#: ../build/bin/preferences_gen.h:4489 ../build/bin/preferences_gen.h:4534
-#: ../build/bin/preferences_gen.h:4552 ../build/bin/preferences_gen.h:4570
-#: ../build/bin/preferences_gen.h:4592 ../build/bin/preferences_gen.h:4620
-#: ../build/bin/preferences_gen.h:4644 ../build/bin/preferences_gen.h:4661
-#: ../build/bin/preferences_gen.h:4678 ../build/bin/preferences_gen.h:4695
-#: ../build/bin/preferences_gen.h:4713 ../build/bin/preferences_gen.h:4730
-#: ../build/bin/preferences_gen.h:4754 ../build/bin/preferences_gen.h:4820
-#: ../build/bin/preferences_gen.h:4838 ../build/bin/preferences_gen.h:4912
+#: ../build/bin/preferences_gen.h:2624 ../build/bin/preferences_gen.h:2646
+#: ../build/bin/preferences_gen.h:2663 ../build/bin/preferences_gen.h:2685
+#: ../build/bin/preferences_gen.h:2718 ../build/bin/preferences_gen.h:2735
+#: ../build/bin/preferences_gen.h:2752 ../build/bin/preferences_gen.h:2769
+#: ../build/bin/preferences_gen.h:2786 ../build/bin/preferences_gen.h:2803
+#: ../build/bin/preferences_gen.h:2820 ../build/bin/preferences_gen.h:2837
+#: ../build/bin/preferences_gen.h:2862 ../build/bin/preferences_gen.h:2880
+#: ../build/bin/preferences_gen.h:2897 ../build/bin/preferences_gen.h:2914
+#: ../build/bin/preferences_gen.h:2931 ../build/bin/preferences_gen.h:2949
+#: ../build/bin/preferences_gen.h:2966 ../build/bin/preferences_gen.h:2988
+#: ../build/bin/preferences_gen.h:3012 ../build/bin/preferences_gen.h:3036
+#: ../build/bin/preferences_gen.h:3069 ../build/bin/preferences_gen.h:3086
+#: ../build/bin/preferences_gen.h:3111 ../build/bin/preferences_gen.h:3129
+#: ../build/bin/preferences_gen.h:3172 ../build/bin/preferences_gen.h:3189
+#: ../build/bin/preferences_gen.h:3214 ../build/bin/preferences_gen.h:3231
+#: ../build/bin/preferences_gen.h:3248 ../build/bin/preferences_gen.h:3265
+#: ../build/bin/preferences_gen.h:3282 ../build/bin/preferences_gen.h:3299
+#: ../build/bin/preferences_gen.h:3316 ../build/bin/preferences_gen.h:3333
+#: ../build/bin/preferences_gen.h:3351 ../build/bin/preferences_gen.h:3368
+#: ../build/bin/preferences_gen.h:3385 ../build/bin/preferences_gen.h:3418
+#: ../build/bin/preferences_gen.h:3436 ../build/bin/preferences_gen.h:3454
+#: ../build/bin/preferences_gen.h:3477 ../build/bin/preferences_gen.h:3501
+#: ../build/bin/preferences_gen.h:3520 ../build/bin/preferences_gen.h:3537
+#: ../build/bin/preferences_gen.h:3554 ../build/bin/preferences_gen.h:3571
+#: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3621
+#: ../build/bin/preferences_gen.h:3642 ../build/bin/preferences_gen.h:3664
+#: ../build/bin/preferences_gen.h:3685 ../build/bin/preferences_gen.h:3713
+#: ../build/bin/preferences_gen.h:3734 ../build/bin/preferences_gen.h:3755
+#: ../build/bin/preferences_gen.h:3776 ../build/bin/preferences_gen.h:3797
+#: ../build/bin/preferences_gen.h:3818 ../build/bin/preferences_gen.h:3839
+#: ../build/bin/preferences_gen.h:3872 ../build/bin/preferences_gen.h:3889
+#: ../build/bin/preferences_gen.h:3906 ../build/bin/preferences_gen.h:3923
+#: ../build/bin/preferences_gen.h:3940 ../build/bin/preferences_gen.h:3957
+#: ../build/bin/preferences_gen.h:3974 ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4007 ../build/bin/preferences_gen.h:4023
+#: ../build/bin/preferences_gen.h:4040 ../build/bin/preferences_gen.h:4073
+#: ../build/bin/preferences_gen.h:4090 ../build/bin/preferences_gen.h:4112
+#: ../build/bin/preferences_gen.h:4145 ../build/bin/preferences_gen.h:4163
+#: ../build/bin/preferences_gen.h:4215 ../build/bin/preferences_gen.h:4233
+#: ../build/bin/preferences_gen.h:4277 ../build/bin/preferences_gen.h:4310
+#: ../build/bin/preferences_gen.h:4327 ../build/bin/preferences_gen.h:4344
+#: ../build/bin/preferences_gen.h:4361 ../build/bin/preferences_gen.h:4379
+#: ../build/bin/preferences_gen.h:4396 ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4430 ../build/bin/preferences_gen.h:4447
+#: ../build/bin/preferences_gen.h:4464 ../build/bin/preferences_gen.h:4481
+#: ../build/bin/preferences_gen.h:4499 ../build/bin/preferences_gen.h:4544
+#: ../build/bin/preferences_gen.h:4562 ../build/bin/preferences_gen.h:4580
+#: ../build/bin/preferences_gen.h:4602 ../build/bin/preferences_gen.h:4630
+#: ../build/bin/preferences_gen.h:4654 ../build/bin/preferences_gen.h:4671
+#: ../build/bin/preferences_gen.h:4688 ../build/bin/preferences_gen.h:4705
+#: ../build/bin/preferences_gen.h:4723 ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:4764 ../build/bin/preferences_gen.h:4830
+#: ../build/bin/preferences_gen.h:4848 ../build/bin/preferences_gen.h:4922
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dubbelklicka för att återställa till `%s'"
 
-#: ../build/bin/preferences_gen.h:2616
+#: ../build/bin/preferences_gen.h:2626
 msgid ""
 "directory where newly imported filmrolls are stored; the default uses <b>$"
 "(PICTURES_FOLDER)</b>, which expands to your system's pictures folder: <i>~/"
@@ -964,42 +990,42 @@ msgstr ""
 "(PICTURES_FOLDER)</b>, vilket vecklas ut till systemets bildkatalog: <i>~/"
 "Bilder</i> i macOS och Linux, <i>C:/Users/username/Bilder</i> i Windows"
 
-#: ../build/bin/preferences_gen.h:2625
+#: ../build/bin/preferences_gen.h:2635
 msgid "filmroll name"
 msgstr "namn på filmrulle"
 
-#: ../build/bin/preferences_gen.h:2638
+#: ../build/bin/preferences_gen.h:2648
 msgid "name of the imported filmroll"
 msgstr "namn på den importerade filmrullen"
 
-#: ../build/bin/preferences_gen.h:2647
+#: ../build/bin/preferences_gen.h:2657
 msgid "keep original filename"
 msgstr "behåll ursprungsfilnamnet"
 
-#: ../build/bin/preferences_gen.h:2653 ../build/bin/preferences_gen.h:2708
-#: ../build/bin/preferences_gen.h:2725 ../build/bin/preferences_gen.h:2759
-#: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:2793
-#: ../build/bin/preferences_gen.h:2827 ../build/bin/preferences_gen.h:2904
-#: ../build/bin/preferences_gen.h:2921 ../build/bin/preferences_gen.h:2956
-#: ../build/bin/preferences_gen.h:3059 ../build/bin/preferences_gen.h:3162
-#: ../build/bin/preferences_gen.h:3221 ../build/bin/preferences_gen.h:3289
-#: ../build/bin/preferences_gen.h:3323 ../build/bin/preferences_gen.h:3375
-#: ../build/bin/preferences_gen.h:3408 ../build/bin/preferences_gen.h:3527
-#: ../build/bin/preferences_gen.h:3544 ../build/bin/preferences_gen.h:3632
-#: ../build/bin/preferences_gen.h:3675 ../build/bin/preferences_gen.h:3745
-#: ../build/bin/preferences_gen.h:3787 ../build/bin/preferences_gen.h:3808
-#: ../build/bin/preferences_gen.h:3829 ../build/bin/preferences_gen.h:3964
-#: ../build/bin/preferences_gen.h:4080 ../build/bin/preferences_gen.h:4135
-#: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4386
-#: ../build/bin/preferences_gen.h:4437 ../build/bin/preferences_gen.h:4620
-#: ../build/bin/preferences_gen.h:4661 ../build/bin/preferences_gen.h:4678
-#: ../build/bin/preferences_gen.h:4695 ../build/bin/preferences_gen.h:4730
-#: ../build/bin/preferences_gen.h:4820
+#: ../build/bin/preferences_gen.h:2663 ../build/bin/preferences_gen.h:2718
+#: ../build/bin/preferences_gen.h:2735 ../build/bin/preferences_gen.h:2769
+#: ../build/bin/preferences_gen.h:2786 ../build/bin/preferences_gen.h:2803
+#: ../build/bin/preferences_gen.h:2837 ../build/bin/preferences_gen.h:2914
+#: ../build/bin/preferences_gen.h:2931 ../build/bin/preferences_gen.h:2966
+#: ../build/bin/preferences_gen.h:3069 ../build/bin/preferences_gen.h:3172
+#: ../build/bin/preferences_gen.h:3231 ../build/bin/preferences_gen.h:3299
+#: ../build/bin/preferences_gen.h:3333 ../build/bin/preferences_gen.h:3385
+#: ../build/bin/preferences_gen.h:3418 ../build/bin/preferences_gen.h:3537
+#: ../build/bin/preferences_gen.h:3554 ../build/bin/preferences_gen.h:3642
+#: ../build/bin/preferences_gen.h:3685 ../build/bin/preferences_gen.h:3755
+#: ../build/bin/preferences_gen.h:3797 ../build/bin/preferences_gen.h:3818
+#: ../build/bin/preferences_gen.h:3839 ../build/bin/preferences_gen.h:3974
+#: ../build/bin/preferences_gen.h:4090 ../build/bin/preferences_gen.h:4145
+#: ../build/bin/preferences_gen.h:4277 ../build/bin/preferences_gen.h:4396
+#: ../build/bin/preferences_gen.h:4447 ../build/bin/preferences_gen.h:4630
+#: ../build/bin/preferences_gen.h:4671 ../build/bin/preferences_gen.h:4688
+#: ../build/bin/preferences_gen.h:4705 ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:4830
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FALSKT"
 
-#: ../build/bin/preferences_gen.h:2655
+#: ../build/bin/preferences_gen.h:2665
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
@@ -1007,39 +1033,39 @@ msgstr ""
 "behåll ursprungsfilens namn i stället för unikt filnamn vid importering från "
 "kamera eller minneskort"
 
-#: ../build/bin/preferences_gen.h:2664
+#: ../build/bin/preferences_gen.h:2674
 msgid "file naming pattern"
 msgstr "filens namnmall"
 
-#: ../build/bin/preferences_gen.h:2677
+#: ../build/bin/preferences_gen.h:2687
 msgid "file naming pattern used for a import session"
 msgstr "mallen på filnamnen för en import"
 
-#: ../build/bin/preferences_gen.h:2687 ../src/gui/gtk.c:1701
+#: ../build/bin/preferences_gen.h:2697 ../src/gui/gtk.c:1701
 #: ../src/gui/preferences.c:631 ../src/libs/tools/lighttable.c:64
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr "ljusbord"
 
-#: ../build/bin/preferences_gen.h:2692 ../build/bin/preferences_gen.h:3043
-#: ../build/bin/preferences_gen.h:3846 ../src/gui/preferences.c:344
+#: ../build/bin/preferences_gen.h:2702 ../build/bin/preferences_gen.h:3053
+#: ../build/bin/preferences_gen.h:3856 ../src/gui/preferences.c:344
 #: ../src/gui/preferences_ai.c:1557
 msgid "general"
 msgstr "generella"
 
-#: ../build/bin/preferences_gen.h:2702
+#: ../build/bin/preferences_gen.h:2712
 msgid "hide built-in presets for utility modules"
 msgstr "göm förinställningar för ljusbordsmoduler"
 
-#: ../build/bin/preferences_gen.h:2710
+#: ../build/bin/preferences_gen.h:2720
 msgid "hide built-in presets of utility modules in presets menu."
 msgstr "göm förinställningar i ljusbordsmoduler i inställningsmenyn."
 
-#: ../build/bin/preferences_gen.h:2719
+#: ../build/bin/preferences_gen.h:2729
 msgid "use single-click in the collections module"
 msgstr "använd enkelklick i samlingsmodulen"
 
-#: ../build/bin/preferences_gen.h:2727
+#: ../build/bin/preferences_gen.h:2737
 msgid ""
 "check this option to use single-click to select items in the collections "
 "module. this will allow you to do range selections for date-time and numeric "
@@ -1048,34 +1074,34 @@ msgstr ""
 "aktivera för att använda enkelklick i stället för dubbelklick i "
 "samlingsmodulen. det låter dig välja spann av datum/tid och numeriska värden."
 
-#: ../build/bin/preferences_gen.h:2736
+#: ../build/bin/preferences_gen.h:2746
 msgid "prioritize the hovered image over the selected images"
 msgstr "prioritera bild under muspekaren framför valda bilder"
 
-#: ../build/bin/preferences_gen.h:2742 ../build/bin/preferences_gen.h:2810
-#: ../build/bin/preferences_gen.h:2887 ../build/bin/preferences_gen.h:3076
-#: ../build/bin/preferences_gen.h:3179 ../build/bin/preferences_gen.h:3238
-#: ../build/bin/preferences_gen.h:3255 ../build/bin/preferences_gen.h:3272
-#: ../build/bin/preferences_gen.h:3306 ../build/bin/preferences_gen.h:3358
-#: ../build/bin/preferences_gen.h:3561 ../build/bin/preferences_gen.h:3611
-#: ../build/bin/preferences_gen.h:3703 ../build/bin/preferences_gen.h:3724
-#: ../build/bin/preferences_gen.h:3766 ../build/bin/preferences_gen.h:3862
-#: ../build/bin/preferences_gen.h:3879 ../build/bin/preferences_gen.h:3896
-#: ../build/bin/preferences_gen.h:3913 ../build/bin/preferences_gen.h:3930
-#: ../build/bin/preferences_gen.h:3947 ../build/bin/preferences_gen.h:3981
-#: ../build/bin/preferences_gen.h:3997 ../build/bin/preferences_gen.h:4013
-#: ../build/bin/preferences_gen.h:4030 ../build/bin/preferences_gen.h:4300
-#: ../build/bin/preferences_gen.h:4317 ../build/bin/preferences_gen.h:4334
-#: ../build/bin/preferences_gen.h:4351 ../build/bin/preferences_gen.h:4403
-#: ../build/bin/preferences_gen.h:4420 ../build/bin/preferences_gen.h:4454
-#: ../build/bin/preferences_gen.h:4471 ../build/bin/preferences_gen.h:4489
-#: ../build/bin/preferences_gen.h:4534 ../build/bin/preferences_gen.h:4644
-#: ../build/bin/preferences_gen.h:4754
+#: ../build/bin/preferences_gen.h:2752 ../build/bin/preferences_gen.h:2820
+#: ../build/bin/preferences_gen.h:2897 ../build/bin/preferences_gen.h:3086
+#: ../build/bin/preferences_gen.h:3189 ../build/bin/preferences_gen.h:3248
+#: ../build/bin/preferences_gen.h:3265 ../build/bin/preferences_gen.h:3282
+#: ../build/bin/preferences_gen.h:3316 ../build/bin/preferences_gen.h:3368
+#: ../build/bin/preferences_gen.h:3571 ../build/bin/preferences_gen.h:3621
+#: ../build/bin/preferences_gen.h:3713 ../build/bin/preferences_gen.h:3734
+#: ../build/bin/preferences_gen.h:3776 ../build/bin/preferences_gen.h:3872
+#: ../build/bin/preferences_gen.h:3889 ../build/bin/preferences_gen.h:3906
+#: ../build/bin/preferences_gen.h:3923 ../build/bin/preferences_gen.h:3940
+#: ../build/bin/preferences_gen.h:3957 ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4007 ../build/bin/preferences_gen.h:4023
+#: ../build/bin/preferences_gen.h:4040 ../build/bin/preferences_gen.h:4310
+#: ../build/bin/preferences_gen.h:4327 ../build/bin/preferences_gen.h:4344
+#: ../build/bin/preferences_gen.h:4361 ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4430 ../build/bin/preferences_gen.h:4464
+#: ../build/bin/preferences_gen.h:4481 ../build/bin/preferences_gen.h:4499
+#: ../build/bin/preferences_gen.h:4544 ../build/bin/preferences_gen.h:4654
+#: ../build/bin/preferences_gen.h:4764
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "SANT"
 
-#: ../build/bin/preferences_gen.h:2744
+#: ../build/bin/preferences_gen.h:2754
 msgid ""
 "in the lighttable, where culling takes place, you can apply actions (e.g., "
 "setting ratings) to the hovered image or to the selected ones\n"
@@ -1093,19 +1119,19 @@ msgstr ""
 "<b>inaktiverad</p> åtgärder tillämpas på det aktuella urvalet (mindre "
 "felbenäget)"
 
-#: ../build/bin/preferences_gen.h:2753
+#: ../build/bin/preferences_gen.h:2763
 msgid "expand a single utility module at a time"
 msgstr "expandera endast en ljusbordsmodul åt gången"
 
-#: ../build/bin/preferences_gen.h:2761
+#: ../build/bin/preferences_gen.h:2771
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr "detta alternativ slår om beteendet för shift+klick i ljusbordsläge"
 
-#: ../build/bin/preferences_gen.h:2770
+#: ../build/bin/preferences_gen.h:2780
 msgid "scroll utility modules to the top when expanded"
 msgstr "rulla till toppen på ljusbordsmoduler när de öppnas"
 
-#: ../build/bin/preferences_gen.h:2778 ../build/bin/preferences_gen.h:3308
+#: ../build/bin/preferences_gen.h:2788 ../build/bin/preferences_gen.h:3318
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -1113,43 +1139,43 @@ msgstr ""
 "när detta är påslaget kommer darktable försöka rulla modulen högst upp i den "
 "synliga listan"
 
-#: ../build/bin/preferences_gen.h:2787
+#: ../build/bin/preferences_gen.h:2797
 msgid "rating an image one star twice will not zero out the rating"
 msgstr ""
 "att betygsätta en bild med en stjärna två gånger nollställer inte "
 "betygsättningen"
 
-#: ../build/bin/preferences_gen.h:2795
+#: ../build/bin/preferences_gen.h:2805
 msgid "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
 "bestämmer om betygsättning av en bild med en stjärna två gånger nollställer "
 "betygsättningen"
 
-#: ../build/bin/preferences_gen.h:2804 ../build/bin/preferences_gen.h:3156
+#: ../build/bin/preferences_gen.h:2814 ../build/bin/preferences_gen.h:3166
 msgid "show scrollbars for central view"
 msgstr "visa rullningslister för centrala vyn"
 
-#: ../build/bin/preferences_gen.h:2812 ../build/bin/preferences_gen.h:3164
+#: ../build/bin/preferences_gen.h:2822 ../build/bin/preferences_gen.h:3174
 msgid "defines whether scrollbars should be displayed"
 msgstr "bestämmer om rullningslister ska visas"
 
-#: ../build/bin/preferences_gen.h:2821
+#: ../build/bin/preferences_gen.h:2831
 msgid "show image time with milliseconds"
 msgstr "visa bilders tid med millisekunder"
 
-#: ../build/bin/preferences_gen.h:2829
+#: ../build/bin/preferences_gen.h:2839
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "bestämmer om tid ska visas med millisekunder"
 
-#: ../build/bin/preferences_gen.h:2835
+#: ../build/bin/preferences_gen.h:2845
 msgid "thumbnails"
 msgstr "miniatyrbilder"
 
-#: ../build/bin/preferences_gen.h:2845
+#: ../build/bin/preferences_gen.h:2855
 msgid "for unaltered images, use raw file instead of embedded JPEG from size"
 msgstr "för oändrade filer, använd råfil istället för inbyggd JPEG från storlek"
 
-#: ../build/bin/preferences_gen.h:2854
+#: ../build/bin/preferences_gen.h:2864
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1170,11 +1196,11 @@ msgstr ""
 "överstiger upplösningen på inbäddad JPEG.\n"
 "(mer information finns i manualen)"
 
-#: ../build/bin/preferences_gen.h:2863
+#: ../build/bin/preferences_gen.h:2873
 msgid "high quality processing from size"
 msgstr "bearbeta i hög kvalitet från storlek"
 
-#: ../build/bin/preferences_gen.h:2872
+#: ../build/bin/preferences_gen.h:2882
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1188,11 +1214,11 @@ msgstr ""
 "du välja 'alltid'.\n"
 "(mer information finns i manualen)"
 
-#: ../build/bin/preferences_gen.h:2881
+#: ../build/bin/preferences_gen.h:2891
 msgid "enable disk backend for thumbnail cache"
 msgstr "aktivera lagring av minityrbildscache på disk"
 
-#: ../build/bin/preferences_gen.h:2889
+#: ../build/bin/preferences_gen.h:2899
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1212,11 +1238,11 @@ msgstr ""
 "för att skapa miniatyrbilder för hela sin samling, kör 'darktable-generate-"
 "cache'."
 
-#: ../build/bin/preferences_gen.h:2898
+#: ../build/bin/preferences_gen.h:2908
 msgid "enable disk backend for full preview cache"
 msgstr "aktivera lagring av minityrbildscache på disk"
 
-#: ../build/bin/preferences_gen.h:2906
+#: ../build/bin/preferences_gen.h:2916
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1234,11 +1260,11 @@ msgstr ""
 "ljusbordet kommer att prestera bättre när du zoomar in på bilder i fullt "
 "förhandsvisningsläge."
 
-#: ../build/bin/preferences_gen.h:2915
+#: ../build/bin/preferences_gen.h:2925
 msgid "enable smooth scrolling for lighttable thumbnails"
 msgstr "aktivera mjuk scroll för miniatyrbilder på ljusbordet"
 
-#: ../build/bin/preferences_gen.h:2923
+#: ../build/bin/preferences_gen.h:2933
 msgid ""
 "if enabled, scrolling the lighttable scrolls by some number of pixels, as "
 "expected with a touch pad.\n"
@@ -1250,11 +1276,11 @@ msgstr ""
 "avaktiverad scrollar ljusbordet hela rader med miniatyrbilder, som passar ett "
 "scrollhjul."
 
-#: ../build/bin/preferences_gen.h:2932
+#: ../build/bin/preferences_gen.h:2942
 msgid "generate thumbnails in background"
 msgstr "generera miniatyrbilder i bakgrunden"
 
-#: ../build/bin/preferences_gen.h:2941
+#: ../build/bin/preferences_gen.h:2951
 msgid ""
 "if 'enable disk backend for thumbnail cache' is enabled thumbnails/mipmaps up "
 "to the selected size are generated while user is inactive in lighttable."
@@ -1263,11 +1289,11 @@ msgstr ""
 "miniatyrbilder upp till vald storlek medan användaren är inaktiv på "
 "ljusbordet."
 
-#: ../build/bin/preferences_gen.h:2950
+#: ../build/bin/preferences_gen.h:2960
 msgid "reset cached thumbnails"
 msgstr "återställ cachade miniatyrbilder"
 
-#: ../build/bin/preferences_gen.h:2958
+#: ../build/bin/preferences_gen.h:2968
 msgid ""
 "force thumbnails to be regenerated by resetting the database. this may be "
 "needed in case some thumbnails have been manually removed or corrupted."
@@ -1275,11 +1301,11 @@ msgstr ""
 "tvinga miniatyrer att återskapas genom att återställa databasen. Detta kan "
 "behövas om miniatyrbilder raderats manuellt eller blivit korrupta."
 
-#: ../build/bin/preferences_gen.h:2967
+#: ../build/bin/preferences_gen.h:2977
 msgid "delimiters for size categories"
 msgstr "avgränsare för storlekskategorier"
 
-#: ../build/bin/preferences_gen.h:2980
+#: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
@@ -1291,28 +1317,28 @@ msgstr ""
 "120|400 innebär till exempel 3 kategorier av miniatyrer: 0px -> 120px, 120px-"
 ">400px och >400px"
 
-#: ../build/bin/preferences_gen.h:2989
+#: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
 msgstr "mönster för miniatyrers text i utökat lager"
 
-#: ../build/bin/preferences_gen.h:3004 ../build/bin/preferences_gen.h:3028
+#: ../build/bin/preferences_gen.h:3014 ../build/bin/preferences_gen.h:3038
 msgid "see manual to know all the tags you can use."
 msgstr "manualen visar alla taggar du kan använda."
 
-#: ../build/bin/preferences_gen.h:3013
+#: ../build/bin/preferences_gen.h:3023
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "mönster för miniatyrers verktygstips (tomt om inaktiverat)"
 
-#: ../build/bin/preferences_gen.h:3038 ../src/gui/gtk.c:1703
+#: ../build/bin/preferences_gen.h:3048 ../src/gui/gtk.c:1703
 #: ../src/gui/preferences.c:630 ../src/views/darkroom.c:109
 msgid "darkroom"
 msgstr "mörkrum"
 
-#: ../build/bin/preferences_gen.h:3053
+#: ../build/bin/preferences_gen.h:3063
 msgid "scroll down to increase mask parameters"
 msgstr "scrolla ner för att öka mask-parametrar"
 
-#: ../build/bin/preferences_gen.h:3061
+#: ../build/bin/preferences_gen.h:3071
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -1324,11 +1350,11 @@ msgstr ""
 "gradient\n"
 "som standard scrollar du upp för att öka dessa parametrar"
 
-#: ../build/bin/preferences_gen.h:3070
+#: ../build/bin/preferences_gen.h:3080
 msgid "middle mouse button zooms to 200%"
 msgstr "mittenknappen på musen zoomar till 200 %"
 
-#: ../build/bin/preferences_gen.h:3079
+#: ../build/bin/preferences_gen.h:3089
 #, no-c-format
 msgid ""
 "if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
@@ -1340,32 +1366,32 @@ msgstr ""
 "passa skärmen, och 'ctrl'-tangenten kan användas för att kontrollera zoom-"
 "graden."
 
-#: ../build/bin/preferences_gen.h:3088
+#: ../build/bin/preferences_gen.h:3098
 msgid "pattern for the image information line"
 msgstr "mönster för bildinformationsraden"
 
-#: ../build/bin/preferences_gen.h:3103
+#: ../build/bin/preferences_gen.h:3113
 msgid "see manual for a list of the tags you can use."
 msgstr "se manualen för en lista av vilka taggar du kan använda."
 
-#: ../build/bin/preferences_gen.h:3112
+#: ../build/bin/preferences_gen.h:3122
 msgid "position of the image information line"
 msgstr "position för bildens informationslinje"
 
-#: ../build/bin/preferences_gen.h:3129
+#: ../build/bin/preferences_gen.h:3139
 msgid "border around image in darkroom mode"
 msgstr "kant runt bilden i mörkrumsläge"
 
-#: ../build/bin/preferences_gen.h:3145 ../build/bin/preferences_gen.h:4180
-#: ../build/bin/preferences_gen.h:4250 ../build/bin/preferences_gen.h:4517
-#: ../build/bin/preferences_gen.h:4788 ../build/bin/preferences_gen.h:4866
-#: ../build/bin/preferences_gen.h:4894 ../build/bin/preferences_gen.h:4957
-#: ../build/bin/preferences_gen.h:5019 ../build/bin/preferences_gen.h:5048
+#: ../build/bin/preferences_gen.h:3155 ../build/bin/preferences_gen.h:4190
+#: ../build/bin/preferences_gen.h:4260 ../build/bin/preferences_gen.h:4527
+#: ../build/bin/preferences_gen.h:4798 ../build/bin/preferences_gen.h:4876
+#: ../build/bin/preferences_gen.h:4904 ../build/bin/preferences_gen.h:4967
+#: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5058
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "dubbelklicka för att återställa till `%d'"
 
-#: ../build/bin/preferences_gen.h:3147
+#: ../build/bin/preferences_gen.h:3157
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you don't "
 "want any border."
@@ -1373,11 +1399,11 @@ msgstr ""
 "jobba med bilden i mörkrumsläge med en smal kant runtom. sätt till 0 om du "
 "inte vill ha någon kant."
 
-#: ../build/bin/preferences_gen.h:3173
+#: ../build/bin/preferences_gen.h:3183
 msgid "show loading screen between images"
 msgstr "visa laddningsskärm mellan foton"
 
-#: ../build/bin/preferences_gen.h:3181
+#: ../build/bin/preferences_gen.h:3191
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
@@ -1385,45 +1411,45 @@ msgstr ""
 "visa grå laddskärm vid navigering mellan foton i mörkrummet\n"
 "avaktivera för att endast visa ett popup-fönster"
 
-#: ../build/bin/preferences_gen.h:3187
+#: ../build/bin/preferences_gen.h:3197
 msgid "modules"
 msgstr "moduler"
 
-#: ../build/bin/preferences_gen.h:3197
+#: ../build/bin/preferences_gen.h:3207
 msgid "display of individual color channels"
 msgstr "visning av individuella färgkanaler"
 
-#: ../build/bin/preferences_gen.h:3206
+#: ../build/bin/preferences_gen.h:3216
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
 msgstr "definierar hur färgkanaler visas när de aktiveras i parametermask."
 
-#: ../build/bin/preferences_gen.h:3215
+#: ../build/bin/preferences_gen.h:3225
 msgid "hide built-in presets for processing modules"
 msgstr "göm förinställningar för process-moduler"
 
-#: ../build/bin/preferences_gen.h:3223
+#: ../build/bin/preferences_gen.h:3233
 msgid "hide built-in presets of processing modules in presets menu."
 msgstr "göm inbyggda stilar i process-moduler i stilmenyn."
 
-#: ../build/bin/preferences_gen.h:3232 ../build/bin/preferences_gen.h:3240
+#: ../build/bin/preferences_gen.h:3242 ../build/bin/preferences_gen.h:3250
 msgid "show the guides widget in modules UI"
 msgstr "visa guide-widgeten i modulgränssnittet"
 
-#: ../build/bin/preferences_gen.h:3249
+#: ../build/bin/preferences_gen.h:3259
 msgid "expand a single processing module at a time"
 msgstr "expandera endast en process-modul åt gången"
 
-#: ../build/bin/preferences_gen.h:3257
+#: ../build/bin/preferences_gen.h:3267
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr "detta alternativ slår om beteendet för shift+klick i mörkrummet"
 
-#: ../build/bin/preferences_gen.h:3266
+#: ../build/bin/preferences_gen.h:3276
 msgid "only collapse modules in current group"
 msgstr "fäll endast ihop moduler i aktuell grupp"
 
-#: ../build/bin/preferences_gen.h:3274
+#: ../build/bin/preferences_gen.h:3284
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
@@ -1431,13 +1457,13 @@ msgstr ""
 "vid expansion av en enskild modul åt gången, fäll endast ihop moduler i den "
 "aktuella gruppen - ignorera moduler i andra grupper"
 
-#: ../build/bin/preferences_gen.h:3283
+#: ../build/bin/preferences_gen.h:3293
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr ""
 "expandera modulen när den är aktiverad och fäll ihop den när den är "
 "inaktiverad"
 
-#: ../build/bin/preferences_gen.h:3291
+#: ../build/bin/preferences_gen.h:3301
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
@@ -1445,24 +1471,24 @@ msgstr ""
 "detta alternativ låter en modul expandera eller fällas ihop automatiskt, när "
 "det är aktiverat."
 
-#: ../build/bin/preferences_gen.h:3300
+#: ../build/bin/preferences_gen.h:3310
 msgid "scroll processing modules to the top when expanded"
 msgstr "scrolla process-moduler till topp när de öppnas"
 
-#: ../build/bin/preferences_gen.h:3317
+#: ../build/bin/preferences_gen.h:3327
 msgid "swap the utility and processing modules panels"
 msgstr "byt plats på panelerna för verktygs- och processmoduler"
 
-#: ../build/bin/preferences_gen.h:3325
+#: ../build/bin/preferences_gen.h:3335
 msgid "move the list of processing modules to the left of the screen"
 msgstr "flytta listan av process-moduler till vänster sida av skärmen"
 
-#: ../build/bin/preferences_gen.h:3334
+#: ../build/bin/preferences_gen.h:3344
 msgid "show right-side buttons in processing module headers"
 msgstr "visa knapparpå höger sida i process-modulers rubriker"
 
 # ska första ordet översättar från engelska till svenska?
-#: ../build/bin/preferences_gen.h:3343
+#: ../build/bin/preferences_gen.h:3353
 msgid ""
 "when the mouse is not over a module, the multi-instance, reset and preset "
 "buttons can be hidden:\n"
@@ -1486,11 +1512,11 @@ msgstr ""
 "- 'smooth' - blekna ut alla knappar i en rubrik samtidigt,\n"
 "- 'glide' - göm gradvis individuella knappar vid behov"
 
-#: ../build/bin/preferences_gen.h:3352
+#: ../build/bin/preferences_gen.h:3362
 msgid "show mask indicator in module headers"
 msgstr "visa mask-indikator i huvud på moduler"
 
-#: ../build/bin/preferences_gen.h:3360
+#: ../build/bin/preferences_gen.h:3370
 msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
@@ -1498,11 +1524,11 @@ msgstr ""
 "om aktiverad, kan en ikon visas i rubriken för varje process-modul, som har "
 "en mask allicerad"
 
-#: ../build/bin/preferences_gen.h:3369
+#: ../build/bin/preferences_gen.h:3379
 msgid "prompt for name on addition of new instance"
 msgstr "fråga efter namn vid skapande av ny instans"
 
-#: ../build/bin/preferences_gen.h:3377
+#: ../build/bin/preferences_gen.h:3387
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
@@ -1510,27 +1536,27 @@ msgstr ""
 "om aktiverad visas namngivningsfråga för varje ny modul-instans (ny eller "
 "duplicerad)"
 
-#: ../build/bin/preferences_gen.h:3387
+#: ../build/bin/preferences_gen.h:3397
 msgid "processing"
 msgstr "bearbetning"
 
-#: ../build/bin/preferences_gen.h:3392
+#: ../build/bin/preferences_gen.h:3402
 msgid "image processing"
 msgstr "bildbearbetning"
 
-#: ../build/bin/preferences_gen.h:3402
+#: ../build/bin/preferences_gen.h:3412
 msgid "always use LittleCMS 2 to apply output color profile"
 msgstr "använd alltid LittleCMS 2 for att applicera utgående färgprofil"
 
-#: ../build/bin/preferences_gen.h:3410
+#: ../build/bin/preferences_gen.h:3420
 msgid "this is slower than the default."
 msgstr "detta är långsammare än standardvalet."
 
-#: ../build/bin/preferences_gen.h:3419
+#: ../build/bin/preferences_gen.h:3429
 msgid "pixel interpolator (warp)"
 msgstr "pixel-interpolator (warp)"
 
-#: ../build/bin/preferences_gen.h:3428
+#: ../build/bin/preferences_gen.h:3438
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
@@ -1538,22 +1564,22 @@ msgstr ""
 "pixel-interpolator som används för rotation, linskorrigering, liquify, "
 "beskärning och slutlig skalning (bilinjär, bikubisk, lanczos2)."
 
-#: ../build/bin/preferences_gen.h:3437
+#: ../build/bin/preferences_gen.h:3447
 msgid "pixel interpolator (scaling)"
 msgstr "pixel-interpolator (skalning)"
 
-#: ../build/bin/preferences_gen.h:3446
+#: ../build/bin/preferences_gen.h:3456
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
 "pixel-interpolator som används för skalning (bilinjär, bikubisk, lanczos2, "
 "lanczos3)."
 
-#: ../build/bin/preferences_gen.h:3455
+#: ../build/bin/preferences_gen.h:3465
 msgid "LUT 3D root folder"
 msgstr "rotkatalog för LUT 3D"
 
-#: ../build/bin/preferences_gen.h:3457 ../build/bin/preferences_gen.h:3481
+#: ../build/bin/preferences_gen.h:3467 ../build/bin/preferences_gen.h:3491
 #: ../src/control/jobs/control_jobs.c:2204
 #: ../src/control/jobs/control_jobs.c:2260 ../src/gui/preferences.c:1260
 #: ../src/gui/presets.c:429 ../src/gui/welcome.c:169 ../src/gui/welcome.c:337
@@ -1565,7 +1591,7 @@ msgstr "rotkatalog för LUT 3D"
 msgid "select directory"
 msgstr "välj katalog"
 
-#: ../build/bin/preferences_gen.h:3470
+#: ../build/bin/preferences_gen.h:3480
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
@@ -1573,11 +1599,11 @@ msgstr ""
 "denna katalog (och underkataloger) innehåller LUT-filer som används av LUT 3D-"
 "modulen. (omstart behövs)"
 
-#: ../build/bin/preferences_gen.h:3479
+#: ../build/bin/preferences_gen.h:3489
 msgid "raster mask files root folder"
 msgstr "rotkatalog för rastermask-filer"
 
-#: ../build/bin/preferences_gen.h:3494
+#: ../build/bin/preferences_gen.h:3504
 msgid ""
 "this folder (and sub-folders) contains PFM/PNG files used by the raster mask "
 "import module. (restart required)"
@@ -1585,11 +1611,11 @@ msgstr ""
 "denna katalog (och underkataloger) innehåller PFM/PNG-filer som används av "
 "importmodulen för rastermasker. (omstart krävs)"
 
-#: ../build/bin/preferences_gen.h:3503
+#: ../build/bin/preferences_gen.h:3513
 msgid "auto-apply pixel workflow defaults"
 msgstr "tillämpa automatiskt standard för pixel-arbetsflöde"
 
-#: ../build/bin/preferences_gen.h:3512
+#: ../build/bin/preferences_gen.h:3522
 msgid ""
 "selects which workflow will be used by default in the darkroom\n"
 "\n"
@@ -1616,11 +1642,11 @@ msgstr ""
 "\n"
 "<b>ingen</b> använd inget fördefinierat arbetsflöde"
 
-#: ../build/bin/preferences_gen.h:3521
+#: ../build/bin/preferences_gen.h:3531
 msgid "auto-apply per camera basecurve presets"
 msgstr "applicera den förinställda baskurvan för kameramodellen automatiskt"
 
-#: ../build/bin/preferences_gen.h:3529
+#: ../build/bin/preferences_gen.h:3539
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available. (restart required)\n"
@@ -1636,11 +1662,11 @@ msgstr ""
 "för att förhindra auto-tillämpad baskurva ska valet \"tillämpa automatiskt "
 "standard för pixel-arbetsflöde\" sättas till \"none\""
 
-#: ../build/bin/preferences_gen.h:3538
+#: ../build/bin/preferences_gen.h:3548
 msgid "detect monochrome previews"
 msgstr "upptäck monokroma förhandsvisningar"
 
-#: ../build/bin/preferences_gen.h:3546
+#: ../build/bin/preferences_gen.h:3556
 msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
@@ -1648,11 +1674,11 @@ msgstr ""
 "många monokroma bilder kan identifieras via EXIF och förhandsgranskningsdata. "
 "se upp: detta saktar ner importen och läser EXIF-data"
 
-#: ../build/bin/preferences_gen.h:3555
+#: ../build/bin/preferences_gen.h:3565
 msgid "show warning messages"
 msgstr "visa varningsmeddelanden"
 
-#: ../build/bin/preferences_gen.h:3563
+#: ../build/bin/preferences_gen.h:3573
 msgid ""
 "display messages in modules to warn beginner users when non-standard and "
 "possibly harmful settings are used in the pipeline.\n"
@@ -1664,15 +1690,15 @@ msgstr ""
 "dessa meddelanden kan vara falskt positiva och bör ignoreras om du vet vad du "
 "gör. det här alternativet döljer dem hela tiden."
 
-#: ../build/bin/preferences_gen.h:3569
+#: ../build/bin/preferences_gen.h:3579
 msgid "CPU / memory"
 msgstr "processor / minne"
 
-#: ../build/bin/preferences_gen.h:3579
+#: ../build/bin/preferences_gen.h:3589
 msgid "darktable resources"
 msgstr "darktable-resurser"
 
-#: ../build/bin/preferences_gen.h:3589
+#: ../build/bin/preferences_gen.h:3599
 #, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources:\n"
@@ -1693,15 +1719,15 @@ msgstr ""
 "- 'large': bästa valet om du inte kör andra applikationer samtidigt som "
 "darktable och vill använda det mesta av systemets resurser för prestanda."
 
-#: ../build/bin/preferences_gen.h:3595
+#: ../build/bin/preferences_gen.h:3605
 msgid "OpenCL GPU acceleration"
 msgstr "OpenCL GPU-accelleration"
 
-#: ../build/bin/preferences_gen.h:3605
+#: ../build/bin/preferences_gen.h:3615
 msgid "activate OpenCL support"
 msgstr "aktivera stöd för OpenCL"
 
-#: ../build/bin/preferences_gen.h:3613
+#: ../build/bin/preferences_gen.h:3623
 msgid ""
 "if found, use OpenCL runtime on your system to speed up processing by using "
 "your graphics card(s).\n"
@@ -1711,11 +1737,11 @@ msgstr ""
 "genom att använda grafikkort.\n"
 "kan slås på och av när som helst."
 
-#: ../build/bin/preferences_gen.h:3626
+#: ../build/bin/preferences_gen.h:3636
 msgid "OpenCL fast mode"
 msgstr "OpenCL snabbt läge"
 
-#: ../build/bin/preferences_gen.h:3634
+#: ../build/bin/preferences_gen.h:3644
 msgid ""
 "if set the OpenCL compiler uses aggressive optimizing for better performance "
 "with reduced precision so more differences between CPU and OpenCL are "
@@ -1725,11 +1751,11 @@ msgstr ""
 "prestanda med minskas precision – större skillnader mellan CPU och OpenCL är "
 "att förvänta."
 
-#: ../build/bin/preferences_gen.h:3647
+#: ../build/bin/preferences_gen.h:3657
 msgid "OpenCL scheduling profile"
 msgstr "OpenCL schemaläggningsprofil"
 
-#: ../build/bin/preferences_gen.h:3656
+#: ../build/bin/preferences_gen.h:3666
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems:\n"
@@ -1747,11 +1773,11 @@ msgstr ""
 "olika GPU:er,\n"
 "- 'väldigt snabb GPU': GPU:en sköter alla processer sekventiellt."
 
-#: ../build/bin/preferences_gen.h:3669
+#: ../build/bin/preferences_gen.h:3679
 msgid "tuned GPU memory"
 msgstr "begränsat GPU-minne"
 
-#: ../build/bin/preferences_gen.h:3677
+#: ../build/bin/preferences_gen.h:3687
 msgid ""
 "if enabled on a system with multiple OpenCL devices you may specify a safety "
 "margin per device (headroom, default is 600MB)"
@@ -1759,39 +1785,39 @@ msgstr ""
 "om aktiverat på ett system med flera OpenCL-enheter kan du ange en "
 "säkerhetsmarginal per enhet (headroom, standard är 600MB)"
 
-#: ../build/bin/preferences_gen.h:3687
+#: ../build/bin/preferences_gen.h:3697
 msgid "OpenCL drivers"
 msgstr "Drivrutiner för OpenCL"
 
-#: ../build/bin/preferences_gen.h:3697
+#: ../build/bin/preferences_gen.h:3707
 msgid "Intel GPU"
 msgstr "Intel GPU"
 
-#: ../build/bin/preferences_gen.h:3705
+#: ../build/bin/preferences_gen.h:3715
 msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr "Intel(R) OpenCL-grafik för alla stödda plattformar (från tillverkare)"
 
-#: ../build/bin/preferences_gen.h:3718
+#: ../build/bin/preferences_gen.h:3728
 msgid "Nvidia CUDA"
 msgstr "Nvidia CUDA"
 
-#: ../build/bin/preferences_gen.h:3726
+#: ../build/bin/preferences_gen.h:3736
 msgid "Nvidia CUDA based OpenCL (vendor provided)"
 msgstr "Nvidia CUDA-baserad OpenCL (från tillverkare)"
 
-#: ../build/bin/preferences_gen.h:3739
+#: ../build/bin/preferences_gen.h:3749
 msgid "AMD ROCm"
 msgstr "AMD ROCm"
 
-#: ../build/bin/preferences_gen.h:3747
+#: ../build/bin/preferences_gen.h:3757
 msgid "AMD Accelerated Parallel Processing (vendor provided)"
 msgstr "AMD Accellerated Parallel Processing (från tillverkare)"
 
-#: ../build/bin/preferences_gen.h:3760
+#: ../build/bin/preferences_gen.h:3770
 msgid "RustiCL"
 msgstr "RustiCL"
 
-#: ../build/bin/preferences_gen.h:3768
+#: ../build/bin/preferences_gen.h:3778
 msgid ""
 "RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor "
 "driver"
@@ -1799,19 +1825,19 @@ msgstr ""
 "RustiCL Mesa OpenCL. om du vill använda det här bör du inaktivera "
 "tillverkarens drivrutin"
 
-#: ../build/bin/preferences_gen.h:3781
+#: ../build/bin/preferences_gen.h:3791
 msgid "Apple"
 msgstr "Apple"
 
-#: ../build/bin/preferences_gen.h:3789
+#: ../build/bin/preferences_gen.h:3799
 msgid "Apple OpenCL (vendor provided)"
 msgstr "Apple OpenCL (från tillverkare)"
 
-#: ../build/bin/preferences_gen.h:3802
+#: ../build/bin/preferences_gen.h:3812
 msgid "Microsoft OpenCLOn12"
 msgstr "Microsoft OpenCLOn12"
 
-#: ../build/bin/preferences_gen.h:3810
+#: ../build/bin/preferences_gen.h:3820
 msgid ""
 "Microsoft OpenCLOn12, only use this if the vendor provided driver does not "
 "work or there is none provided."
@@ -1819,11 +1845,11 @@ msgstr ""
 "Microsoft OpenCLOn12, använd bara om drivrutinen från tillverkaren inte "
 "fungerar eller saknas."
 
-#: ../build/bin/preferences_gen.h:3823
+#: ../build/bin/preferences_gen.h:3833
 msgid "other platforms"
 msgstr "andra plattformar"
 
-#: ../build/bin/preferences_gen.h:3831
+#: ../build/bin/preferences_gen.h:3841
 msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
@@ -1831,39 +1857,39 @@ msgstr ""
 "om aktiverad accepteras alla ospecificerade plattformar. Aktivera endast om "
 "det saknas drivrutin från tillverkaren"
 
-#: ../build/bin/preferences_gen.h:3841
+#: ../build/bin/preferences_gen.h:3851
 msgid "security"
 msgstr "säkerhet"
 
-#: ../build/bin/preferences_gen.h:3856
+#: ../build/bin/preferences_gen.h:3866
 msgid "ask before removing images from the library"
 msgstr "fråga innan en bild tas bort från databasen"
 
-#: ../build/bin/preferences_gen.h:3864
+#: ../build/bin/preferences_gen.h:3874
 msgid "always ask the user before removing image information from the library"
 msgstr "fråga alltid användaren innan bildinformation tas bort från biblioteket"
 
-#: ../build/bin/preferences_gen.h:3873
+#: ../build/bin/preferences_gen.h:3883
 msgid "ask before deleting images from disk"
 msgstr "fråga innan en bild raderas från disken"
 
-#: ../build/bin/preferences_gen.h:3881
+#: ../build/bin/preferences_gen.h:3891
 msgid "always ask the user before any image file is deleted"
 msgstr "fråga alltid användaren innan en bild raderas"
 
-#: ../build/bin/preferences_gen.h:3890
+#: ../build/bin/preferences_gen.h:3900
 msgid "ask before discarding history stack"
 msgstr "fråga innan bildhistoriken rensas"
 
-#: ../build/bin/preferences_gen.h:3898
+#: ../build/bin/preferences_gen.h:3908
 msgid "always ask the user before history stack is discarded on any image"
 msgstr "fråga alltid användaren innan bildhistoriken rensas"
 
-#: ../build/bin/preferences_gen.h:3907
+#: ../build/bin/preferences_gen.h:3917
 msgid "try to use trash when deleting images"
 msgstr "skicka filer till papperskorgen när bilder tas bort"
 
-#: ../build/bin/preferences_gen.h:3915
+#: ../build/bin/preferences_gen.h:3925
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
@@ -1871,27 +1897,27 @@ msgstr ""
 "skicka filer till papperskorgen istället för att ta bort dem permanent, på "
 "system som stöder den metoden"
 
-#: ../build/bin/preferences_gen.h:3924
+#: ../build/bin/preferences_gen.h:3934
 msgid "ask before moving images from film roll folder"
 msgstr "fråga innan bilder flyttas från filmrullens katalog"
 
-#: ../build/bin/preferences_gen.h:3932
+#: ../build/bin/preferences_gen.h:3942
 msgid "always ask the user before any image file is moved."
 msgstr "fråga alltid användaren innan en bild flyttas."
 
-#: ../build/bin/preferences_gen.h:3941
+#: ../build/bin/preferences_gen.h:3951
 msgid "ask before copying images to new film roll folder"
 msgstr "fråga innan bilder kopieras till en ny filmrulles katalog"
 
-#: ../build/bin/preferences_gen.h:3949
+#: ../build/bin/preferences_gen.h:3959
 msgid "always ask the user before any image file is copied."
 msgstr "fråga alltid användaren innan en bild kopieras."
 
-#: ../build/bin/preferences_gen.h:3958
+#: ../build/bin/preferences_gen.h:3968
 msgid "ask before removing empty folders"
 msgstr "fråga innan tomma kataloger tas bort"
 
-#: ../build/bin/preferences_gen.h:3966
+#: ../build/bin/preferences_gen.h:3976
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
@@ -1899,39 +1925,39 @@ msgstr ""
 "fråga alltid användaren innan tomma kataloger tas bort. detta kan hända efter "
 "flytt eller radering av bilder."
 
-#: ../build/bin/preferences_gen.h:3975
+#: ../build/bin/preferences_gen.h:3985
 msgid "ask before deleting a tag"
 msgstr "fråga innan en tagg raderas"
 
-#: ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4001
 msgid "ask before deleting a style"
 msgstr "fråga innan en stil raderas"
 
-#: ../build/bin/preferences_gen.h:4007
+#: ../build/bin/preferences_gen.h:4017
 msgid "ask before deleting a preset"
 msgstr "fråga innan en förinställning raderas"
 
-#: ../build/bin/preferences_gen.h:4015
+#: ../build/bin/preferences_gen.h:4025
 msgid "will ask for confirmation before deleting or overwriting a preset"
 msgstr "frågar om bekräftelse innan stilar tas bort eller skrivs över"
 
-#: ../build/bin/preferences_gen.h:4024
+#: ../build/bin/preferences_gen.h:4034
 msgid "ask before exporting in overwrite mode"
 msgstr "fråga innan export i överskrivningsläge"
 
-#: ../build/bin/preferences_gen.h:4032
+#: ../build/bin/preferences_gen.h:4042
 msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr "frågar om bekräftelse innan filer exporteras i överskrivningsläge"
 
-#: ../build/bin/preferences_gen.h:4038 ../src/libs/tools/viewswitcher.c:151
+#: ../build/bin/preferences_gen.h:4048 ../src/libs/tools/viewswitcher.c:151
 msgid "other"
 msgstr "annat"
 
-#: ../build/bin/preferences_gen.h:4048
+#: ../build/bin/preferences_gen.h:4058
 msgid "password storage backend to use"
 msgstr "lagringsmetod att använda för lösenord"
 
-#: ../build/bin/preferences_gen.h:4065
+#: ../build/bin/preferences_gen.h:4075
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
@@ -1939,11 +1965,11 @@ msgstr ""
 "metod att lagring av lösenord: auto, ingen, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
 
-#: ../build/bin/preferences_gen.h:4074
+#: ../build/bin/preferences_gen.h:4084
 msgid "auto login to storage server"
 msgstr "automatisk inloggning till lagringsserver"
 
-#: ../build/bin/preferences_gen.h:4082
+#: ../build/bin/preferences_gen.h:4092
 msgid ""
 "automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
@@ -1951,11 +1977,11 @@ msgstr ""
 "logga automatiskt in på konfigurerad lagringsserver. detta kräver att du "
 "ställt in en lösenordstjänst."
 
-#: ../build/bin/preferences_gen.h:4091
+#: ../build/bin/preferences_gen.h:4101
 msgid "executable for playing audio files"
 msgstr "program för att spela ljudfiler"
 
-#: ../build/bin/preferences_gen.h:4104
+#: ../build/bin/preferences_gen.h:4114
 msgid ""
 "this external program is used to play audio files some cameras record to keep "
 "notes for images"
@@ -1963,27 +1989,27 @@ msgstr ""
 "detta program används för att spela ljudfiler som kameran har skapat för att "
 "spara ljudnoteringar om bilderna"
 
-#: ../build/bin/preferences_gen.h:4114
+#: ../build/bin/preferences_gen.h:4124
 msgid "storage"
 msgstr "lagring"
 
-#: ../build/bin/preferences_gen.h:4119 ../src/control/crawler.c:747
+#: ../build/bin/preferences_gen.h:4129 ../src/control/crawler.c:747
 msgid "database"
 msgstr "databas"
 
-#: ../build/bin/preferences_gen.h:4129
+#: ../build/bin/preferences_gen.h:4139
 msgid "allow for multiple workspaces"
 msgstr "tillåt för flera arbetsytor"
 
-#: ../build/bin/preferences_gen.h:4137
+#: ../build/bin/preferences_gen.h:4147
 msgid "allow multiple workspaces which can be selected at startup"
 msgstr "tillåt flera arbetsytor som kan väljas vid uppstart"
 
-#: ../build/bin/preferences_gen.h:4146
+#: ../build/bin/preferences_gen.h:4156
 msgid "create database snapshot"
 msgstr "skapa ögonblicksbild av databasen"
 
-#: ../build/bin/preferences_gen.h:4155
+#: ../build/bin/preferences_gen.h:4165
 msgid ""
 "database snapshots are created right before closing darktable. options allow "
 "you to choose how often to make snapshots:\n"
@@ -2006,11 +2032,11 @@ msgstr ""
 "urklipp\n"
 "- 'vid avslut' - skapa ögonblicksbild varje gång darktable stängs"
 
-#: ../build/bin/preferences_gen.h:4164
+#: ../build/bin/preferences_gen.h:4174
 msgid "how many snapshots to keep"
 msgstr "hur många ögonblicksbilder som ska behållas"
 
-#: ../build/bin/preferences_gen.h:4182
+#: ../build/bin/preferences_gen.h:4192
 msgid ""
 "after successfully creating snapshot, how many older snapshots to keep "
 "(excluding mandatory version update ones). enter -1 to keep all snapshots\n"
@@ -2023,15 +2049,15 @@ msgstr ""
 "tänk på att ögonblicksbilder tar upp en del plats och att du bara behöver den "
 "senaste för lyckad återställning"
 
-#: ../build/bin/preferences_gen.h:4188 ../src/libs/copy_history.c:148
+#: ../build/bin/preferences_gen.h:4198 ../src/libs/copy_history.c:148
 msgid "XMP sidecar files"
 msgstr "XMP sidofiler"
 
-#: ../build/bin/preferences_gen.h:4198
+#: ../build/bin/preferences_gen.h:4208
 msgid "create XMP files"
 msgstr "skapa XMP-filer"
 
-#: ../build/bin/preferences_gen.h:4207
+#: ../build/bin/preferences_gen.h:4217
 msgid ""
 "XMP sidecar files store all editing steps, ratings, tags and color labels "
 "alongside your images in an open format readable by other applications, and "
@@ -2061,11 +2087,11 @@ msgstr ""
 "<b>vid import:</b> en XMP-fil skapas när bilden importeras och uppdateras "
 "efter varje ändring"
 
-#: ../build/bin/preferences_gen.h:4216
+#: ../build/bin/preferences_gen.h:4226
 msgid "store XMP tags in compressed format"
 msgstr "lagra XMP-taggar i komprimerat format"
 
-#: ../build/bin/preferences_gen.h:4225
+#: ../build/bin/preferences_gen.h:4235
 msgid ""
 "entries in XMP tags can get rather large and may exceed the available space "
 "to store the history stack in output files.\n"
@@ -2075,11 +2101,11 @@ msgstr ""
 "utrymme för att lagra historiestacken i filer.\n"
 "detta alternativ tillåter XMP-taggar att komprimeras för att spara utrymme."
 
-#: ../build/bin/preferences_gen.h:4234
+#: ../build/bin/preferences_gen.h:4244
 msgid "auto-save interval"
 msgstr "intervall för automatiskt sparande"
 
-#: ../build/bin/preferences_gen.h:4252
+#: ../build/bin/preferences_gen.h:4262
 msgid ""
 "automatically save history while developing using the given interval (in "
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
@@ -2089,11 +2115,11 @@ msgstr ""
 "sekunder); sätt till noll för att stänga av automatiskt sparande. automatiskt "
 "sparande kan inaktiveras på långsamma diskar."
 
-#: ../build/bin/preferences_gen.h:4261
+#: ../build/bin/preferences_gen.h:4271
 msgid "look for updated XMP files on startup"
 msgstr "sök efter uppdaterade XMP-filer vid start"
 
-#: ../build/bin/preferences_gen.h:4269
+#: ../build/bin/preferences_gen.h:4279
 msgid ""
 "check file modification times of all XMP files on startup to check if any got "
 "updated in the meantime"
@@ -2101,19 +2127,19 @@ msgstr ""
 "kontrollera filändringstiden för alla XMP-filer vid start för att se om någon "
 "har uppdaterats sen senast"
 
-#: ../build/bin/preferences_gen.h:4279
+#: ../build/bin/preferences_gen.h:4289
 msgid "miscellaneous"
 msgstr "övrigt"
 
-#: ../build/bin/preferences_gen.h:4284
+#: ../build/bin/preferences_gen.h:4294
 msgid "interface"
 msgstr "gränssnitt"
 
-#: ../build/bin/preferences_gen.h:4294
+#: ../build/bin/preferences_gen.h:4304
 msgid "show splash screen at startup"
 msgstr "visa laddningsskärm vid start"
 
-#: ../build/bin/preferences_gen.h:4302
+#: ../build/bin/preferences_gen.h:4312
 msgid ""
 "display a small window showing the progress of darktable startup before the "
 "main window appears"
@@ -2121,19 +2147,19 @@ msgstr ""
 "visar startförloppet för darktable i ett litet fönster medan applikationen "
 "håller på att starta"
 
-#: ../build/bin/preferences_gen.h:4311
+#: ../build/bin/preferences_gen.h:4321
 msgid "show welcome screen on next run"
 msgstr "visa välkomstskärm vid nästa start"
 
-#: ../build/bin/preferences_gen.h:4319
+#: ../build/bin/preferences_gen.h:4329
 msgid "display the welcome setup screen the next time darktable is launched"
 msgstr "visa välkomstskärmen nästa gång darktable startas"
 
-#: ../build/bin/preferences_gen.h:4328
+#: ../build/bin/preferences_gen.h:4338
 msgid "load default shortcuts at startup"
 msgstr "ladda standard-snabbtangenter vid start"
 
-#: ../build/bin/preferences_gen.h:4336
+#: ../build/bin/preferences_gen.h:4346
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
@@ -2141,35 +2167,35 @@ msgstr ""
 "ladda standard-snabbtangenter innan användarinställningar. stäng av för att "
 "förhindra borttagna standardinställningar att återkomma"
 
-#: ../build/bin/preferences_gen.h:4345
+#: ../build/bin/preferences_gen.h:4355
 msgid "scale slider step with min/max"
 msgstr "skala reglage-steg med min/max"
 
-#: ../build/bin/preferences_gen.h:4353
+#: ../build/bin/preferences_gen.h:4363
 msgid "vary slider step size with min/max range"
 msgstr "variera reglage-stegens storlek med min/max-spann"
 
-#: ../build/bin/preferences_gen.h:4362
+#: ../build/bin/preferences_gen.h:4372
 msgid "marker shape"
 msgstr "form på markering"
 
-#: ../build/bin/preferences_gen.h:4371
+#: ../build/bin/preferences_gen.h:4381
 msgid "the shape of the slider marker"
 msgstr "form på markeringsreglaget"
 
-#: ../build/bin/preferences_gen.h:4380
+#: ../build/bin/preferences_gen.h:4390
 msgid "condensed panels' controls"
 msgstr "kontroller för kompakta paneler"
 
-#: ../build/bin/preferences_gen.h:4388
+#: ../build/bin/preferences_gen.h:4398
 msgid "use condensed panels' controls in all views"
 msgstr "använd kompakta paneler i alla vyer"
 
-#: ../build/bin/preferences_gen.h:4397
+#: ../build/bin/preferences_gen.h:4407
 msgid "automatically update module name"
 msgstr "uppdatera modulnamn automatiskt"
 
-#: ../build/bin/preferences_gen.h:4405
+#: ../build/bin/preferences_gen.h:4415
 msgid ""
 "if enabled, the module name will be automatically updated to match a preset "
 "name or a preset instance name if present."
@@ -2177,20 +2203,20 @@ msgstr ""
 "om aktiverad uppdateras modulnamnet automatiskt baserat på namnet på en "
 "förinställning eller instans om tillgängligt."
 
-#: ../build/bin/preferences_gen.h:4414
+#: ../build/bin/preferences_gen.h:4424
 msgid "sort built-in presets first"
 msgstr "sorterar inbyggda stilar först"
 
-#: ../build/bin/preferences_gen.h:4422
+#: ../build/bin/preferences_gen.h:4432
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr "huruvida inbyggda stilar ska visas före egna stilar i stilmenyn."
 
-#: ../build/bin/preferences_gen.h:4431
+#: ../build/bin/preferences_gen.h:4441
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr "mushjulet skrollar modulernas sidopanel som standard"
 
-#: ../build/bin/preferences_gen.h:4439
+#: ../build/bin/preferences_gen.h:4449
 msgid ""
 "in darktable's darkroom, where you do your edits, all controls are listed on "
 "a panel on the right; you can choose whether you want to use the scroll wheel "
@@ -2218,11 +2244,11 @@ msgstr ""
 "<b>inaktiverad:</b> mushjulet justerar kontrollen under markören och med "
 "<i>Ctrl+Alt</i> rullar panelen."
 
-#: ../build/bin/preferences_gen.h:4448
+#: ../build/bin/preferences_gen.h:4458
 msgid "enable touchpad gestures in darkroom"
 msgstr "aktivera touchpad-gester i mörkrum"
 
-#: ../build/bin/preferences_gen.h:4456
+#: ../build/bin/preferences_gen.h:4466
 msgid ""
 "use two-finger touchpad gestures in darkroom for panning and pinch-to-zoom. "
 "<b>enabled:</b> touchpad pinch gestures zoom the image and two-finger "
@@ -2238,11 +2264,11 @@ msgstr ""
 "och mörkrummet återgår till det äldre rullningsbeteendet, inklusive "
 "<i>Ctrl+rullning</i> för att zooma in och ut."
 
-#: ../build/bin/preferences_gen.h:4465
+#: ../build/bin/preferences_gen.h:4475
 msgid "constrain darkroom zoom between screen fit and 100%"
 msgstr "begränsa zoom i mörkrummet till mellan anpassad till skärm och 100%"
 
-#: ../build/bin/preferences_gen.h:4474
+#: ../build/bin/preferences_gen.h:4484
 #, no-c-format
 msgid ""
 "limits scroll-wheel and pinch-to-zoom in the darkroom to the range between "
@@ -2258,11 +2284,11 @@ msgstr ""
 "begränsad och det krävs ingen extra tryckning på <i>Ctrl</i> för att zooma "
 "utöver 100%."
 
-#: ../build/bin/preferences_gen.h:4483
+#: ../build/bin/preferences_gen.h:4493
 msgid "always show panels' scrollbars"
 msgstr "visa alltid panelers rulllister"
 
-#: ../build/bin/preferences_gen.h:4491
+#: ../build/bin/preferences_gen.h:4501
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content. (restart required)"
@@ -2270,11 +2296,11 @@ msgstr ""
 "definerar om panelernas rullister alltid ska synas eller aktiveras beroende "
 "på innehåll. (kräver omstart)"
 
-#: ../build/bin/preferences_gen.h:4500
+#: ../build/bin/preferences_gen.h:4510
 msgid "duration of the UI transitions in ms"
 msgstr "längd på övergångar i ms"
 
-#: ../build/bin/preferences_gen.h:4519
+#: ../build/bin/preferences_gen.h:4529
 msgid ""
 "how long the transitions take (in ms) for expanding or collapsing modules and "
 "other UI elements"
@@ -2282,11 +2308,11 @@ msgstr ""
 "hur lång tid övergångar ska ta (i millisekunder) för att expandera eller "
 "kollapsa moduler och annat i gränssnittet"
 
-#: ../build/bin/preferences_gen.h:4528
+#: ../build/bin/preferences_gen.h:4538
 msgid "auto-scroll filmstrip to center on selected image"
 msgstr "autoscrolla filmremsan för att centrera på vald bild"
 
-#: ../build/bin/preferences_gen.h:4536
+#: ../build/bin/preferences_gen.h:4546
 msgid ""
 "when enabled, the filmstrip in culling mode and in the darkroom automatically "
 "scrolls to center on the selected image"
@@ -2294,21 +2320,21 @@ msgstr ""
 "när aktiverad rullar filmremsan i urvalsläge och i mörkrummet automatiskt för "
 "att centrera den valda bilden"
 
-#: ../build/bin/preferences_gen.h:4545
+#: ../build/bin/preferences_gen.h:4555
 msgid "position of the scopes module"
 msgstr "position för bildens omfångsmodul"
 
-#: ../build/bin/preferences_gen.h:4554
+#: ../build/bin/preferences_gen.h:4564
 msgid "position the scopes at the top-left or top-right of the screen"
 msgstr ""
 "position för omfångsmodulen (histogram, etc) i toppen på vänster eller höger "
 "sida av skärmen"
 
-#: ../build/bin/preferences_gen.h:4563
+#: ../build/bin/preferences_gen.h:4573
 msgid "method to use for getting the display profile"
 msgstr "metod för att få tag på skärmprofilen"
 
-#: ../build/bin/preferences_gen.h:4572
+#: ../build/bin/preferences_gen.h:4582
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile.\n"
@@ -2318,11 +2344,11 @@ msgstr ""
 "hämta skärmens färgprofil.\n"
 "detta är användbart när ett alternativ ger felaktiga resultat"
 
-#: ../build/bin/preferences_gen.h:4581
+#: ../build/bin/preferences_gen.h:4591
 msgid "order or exclude MIDI devices"
 msgstr "sortera eller exkludera MIDI-enheter"
 
-#: ../build/bin/preferences_gen.h:4594
+#: ../build/bin/preferences_gen.h:4604
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
@@ -2339,17 +2365,17 @@ msgstr ""
 "ensamt avaktiverar MIDI helt"
 
 #. tags
-#: ../build/bin/preferences_gen.h:4604 ../src/develop/lightroom.c:1573
+#: ../build/bin/preferences_gen.h:4614 ../src/develop/lightroom.c:1573
 #: ../src/gui/import_metadata.c:519 ../src/libs/export_metadata.c:196
 #: ../src/libs/image.c:622 ../src/libs/metadata_view.c:174
 msgid "tags"
 msgstr "taggar"
 
-#: ../build/bin/preferences_gen.h:4614
+#: ../build/bin/preferences_gen.h:4624
 msgid "omit hierarchy in simple tag lists"
 msgstr "utelämna hierarki i enkla tagglistor"
 
-#: ../build/bin/preferences_gen.h:4622
+#: ../build/bin/preferences_gen.h:4632
 msgid ""
 "when creating an XMP sidecar file the hierarchical tags are also added as a "
 "simple list\n"
@@ -2362,15 +2388,15 @@ msgstr ""
 "detta alternativ väljs kommer darktable bara inkludera deras sista del och "
 "ignorera resten. så 'foo|bar|baz' kommer bara lägga till 'baz'."
 
-#: ../build/bin/preferences_gen.h:4628
+#: ../build/bin/preferences_gen.h:4638
 msgid "shortcuts with multiple instances"
 msgstr "snabbtangenter med flera instanser"
 
-#: ../build/bin/preferences_gen.h:4638
+#: ../build/bin/preferences_gen.h:4648
 msgid "prefer focused instance"
 msgstr "föredra fokuserad instans"
 
-#: ../build/bin/preferences_gen.h:4646
+#: ../build/bin/preferences_gen.h:4656
 msgid ""
 "where multiple instances of a module are present, apply shortcuts to the "
 "instance that has focus\n"
@@ -2384,50 +2410,50 @@ msgstr ""
 "ordning) för att välja vilken instans snabbtangenterna tillämpas på.\n"
 "notera att blandnings-snabbtangenter alltid tillämpas på fokuserad instans"
 
-#: ../build/bin/preferences_gen.h:4655
+#: ../build/bin/preferences_gen.h:4665
 msgid "prefer expanded instances"
 msgstr "föredra exanderade instanser"
 
-#: ../build/bin/preferences_gen.h:4663
+#: ../build/bin/preferences_gen.h:4673
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
 "ignorera kollapsade instanser om andra instanser av modulen är expanderade"
 
-#: ../build/bin/preferences_gen.h:4672
+#: ../build/bin/preferences_gen.h:4682
 msgid "prefer enabled instances"
 msgstr "föredra aktiva instanser"
 
-#: ../build/bin/preferences_gen.h:4680
+#: ../build/bin/preferences_gen.h:4690
 msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
 msgstr "om instanser av modulen är aktiva, ignorera inaktiva instanser"
 
-#: ../build/bin/preferences_gen.h:4689
+#: ../build/bin/preferences_gen.h:4699
 msgid "prefer unmasked instances"
 msgstr "föredra instanser utan mask"
 
-#: ../build/bin/preferences_gen.h:4697
+#: ../build/bin/preferences_gen.h:4707
 msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
 "ignore masked instances"
 msgstr "om det finns instanser utan mask, ignorera andra instanser"
 
-#: ../build/bin/preferences_gen.h:4706
+#: ../build/bin/preferences_gen.h:4716
 msgid "selection order"
 msgstr "urvalsordning"
 
-#: ../build/bin/preferences_gen.h:4715
+#: ../build/bin/preferences_gen.h:4725
 msgid ""
 "after applying the above rules, apply the shortcut based on its position in "
 "the pixelpipe"
 msgstr "tillämpa snabbtangenter baserat på position i pixelflödet"
 
-#: ../build/bin/preferences_gen.h:4724
+#: ../build/bin/preferences_gen.h:4734
 msgid "allow visual assignment to specific instances"
 msgstr "tillåt visuell tilldelning till specifika instanser"
 
-#: ../build/bin/preferences_gen.h:4732
+#: ../build/bin/preferences_gen.h:4742
 msgid ""
 "when multiple instances are present on an image this allows shortcuts to be "
 "visually assigned to those specific instances\n"
@@ -2437,42 +2463,42 @@ msgstr ""
 "visuella tilldelade till de specifika instanserna\n"
 "annars tilldelas snabbtangenter alltid till de föredragna instansen"
 
-#: ../build/bin/preferences_gen.h:4738
+#: ../build/bin/preferences_gen.h:4748
 msgid "map / geolocalization view"
 msgstr "karta / geolokaliseringsvy"
 
-#: ../build/bin/preferences_gen.h:4748
+#: ../build/bin/preferences_gen.h:4758
 msgid "pretty print the image location"
 msgstr "läsbar visning av bildens position"
 
-#: ../build/bin/preferences_gen.h:4756
+#: ../build/bin/preferences_gen.h:4766
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
 "visar en mer läsbar representation av positionen i bildens informationsmodul"
 
-#: ../build/bin/preferences_gen.h:4762
+#: ../build/bin/preferences_gen.h:4772
 msgid "slideshow view"
 msgstr "bildspelsvy"
 
-#: ../build/bin/preferences_gen.h:4772
+#: ../build/bin/preferences_gen.h:4782
 msgid "waiting time between each image in slideshow"
 msgstr "väntetid mellan varje bild i bildspel"
 
-#: ../build/bin/preferences_gen.h:4814
+#: ../build/bin/preferences_gen.h:4824
 msgid "do not set the 'uncategorized' entry for tags"
 msgstr "sätt inte 'okategoriserad' för taggar"
 
-#: ../build/bin/preferences_gen.h:4822
+#: ../build/bin/preferences_gen.h:4832
 msgid "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr "sätt inte 'okategoriserad' för taggar som saknar underliggande taggar"
 
-#: ../build/bin/preferences_gen.h:4831
+#: ../build/bin/preferences_gen.h:4841
 msgid "tags case sensitivity"
 msgstr "skiftlägeskänslighet för taggar"
 
-#: ../build/bin/preferences_gen.h:4840
+#: ../build/bin/preferences_gen.h:4850
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
@@ -2480,37 +2506,37 @@ msgstr ""
 "skiftlägeskänslighet. utan Sqlite ICU-tillägg fungerar detta bara för de 26 "
 "latinska bokstäverna"
 
-#: ../build/bin/preferences_gen.h:4849 ../build/bin/preferences_gen.h:4940
+#: ../build/bin/preferences_gen.h:4859 ../build/bin/preferences_gen.h:4950
 msgid "number of collections to be stored"
 msgstr "antal samlingar att lagra"
 
-#: ../build/bin/preferences_gen.h:4868 ../build/bin/preferences_gen.h:4959
+#: ../build/bin/preferences_gen.h:4878 ../build/bin/preferences_gen.h:4969
 msgid "the number of recent collections to store and show in this list"
 msgstr "antal nyliga samlingar att lagra och visa i denna lista"
 
-#: ../build/bin/preferences_gen.h:4877
+#: ../build/bin/preferences_gen.h:4887
 msgid "number of folder levels to show in lists"
 msgstr "antal katalognivåer att visa i listan"
 
-#: ../build/bin/preferences_gen.h:4896
+#: ../build/bin/preferences_gen.h:4906
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr "antal katalognivåer att visa i namnet på filmrullen från höger"
 
-#: ../build/bin/preferences_gen.h:4905
+#: ../build/bin/preferences_gen.h:4915
 msgid "sort film rolls by"
 msgstr "sortera filmrullar efter"
 
-#: ../build/bin/preferences_gen.h:4914
+#: ../build/bin/preferences_gen.h:4924
 msgid "sets the collections-list order for film rolls"
 msgstr "sätter ordningen i samlingslistorna för filmrullar"
 
-#: ../build/bin/preferences_gen.h:5002
+#: ../build/bin/preferences_gen.h:5012
 msgid "suggested tags level of confidence"
 msgstr "nivå på förtroende för föreslagna taggar"
 
-#: ../build/bin/preferences_gen.h:5022
+#: ../build/bin/preferences_gen.h:5032
 #, no-c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
@@ -2521,11 +2547,11 @@ msgstr ""
 "associerade taggar, 99: 99 % matchande associerade taggar, 100: ingen "
 "matchande tagg, visa endast nyliga (snabbare)"
 
-#: ../build/bin/preferences_gen.h:5031
+#: ../build/bin/preferences_gen.h:5041
 msgid "number of recently attached tags"
 msgstr "antal nyligen kopplade taggar"
 
-#: ../build/bin/preferences_gen.h:5050
+#: ../build/bin/preferences_gen.h:5060
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
@@ -3466,7 +3492,7 @@ msgstr "bas"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:384
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6144
 #: ../src/iop/basicadj.c:653 ../src/iop/flip.c:448 ../src/iop/levels.c:645
 #: ../src/iop/rgblevels.c:1081
@@ -3573,7 +3599,7 @@ msgstr "radie"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:280
-#: ../src/libs/neural_restore.c:4174 ../src/libs/neural_restore.c:4191
+#: ../src/libs/neural_restore.c:4178 ../src/libs/neural_restore.c:4195
 msgid "strength"
 msgstr "styrka"
 
@@ -6174,7 +6200,7 @@ msgstr "meny"
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1816 ../src/libs/import.c:1928 ../src/libs/import.c:2020
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4119
+#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4123
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1701
@@ -6416,50 +6442,50 @@ msgstr "modellrepot \"%s\" saknar releases-index.json"
 msgid "could not fetch releases-index.json (HTTP %ld)"
 msgstr "kunde inte hämta releases-index.json (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1400 ../src/common/ai_models.c:1465
+#: ../src/common/ai_models.c:1395 ../src/common/ai_models.c:1460
 msgid "invalid parameters"
 msgstr "ogiltiga parametrar"
 
-#: ../src/common/ai_models.c:1403
+#: ../src/common/ai_models.c:1398
 #, c-format
 msgid "file not found: %s"
 msgstr "filen hittades inte: %s"
 
-#: ../src/common/ai_models.c:1411
+#: ../src/common/ai_models.c:1406
 #, c-format
 msgid "archive top-level directory is not a valid model id: \"%s\""
 msgstr "arkivets översta katalog är inte ett giltigt modell-ID: \"%s\""
 
-#: ../src/common/ai_models.c:1420
+#: ../src/common/ai_models.c:1415
 msgid "failed to extract model archive"
 msgstr "misslyckades att packa upp modellarkiv"
 
-#: ../src/common/ai_models.c:1473
+#: ../src/common/ai_models.c:1468
 msgid "model not found in registry"
 msgstr "modellen hittades inte i registret"
 
-#: ../src/common/ai_models.c:1479
+#: ../src/common/ai_models.c:1474
 msgid "model has no download asset defined"
 msgstr "modellen har ingen definierad nedladdning"
 
-#: ../src/common/ai_models.c:1490
+#: ../src/common/ai_models.c:1485
 msgid "invalid asset filename"
 msgstr "ogiltigt filnamn för tillgång"
 
-#: ../src/common/ai_models.c:1496
+#: ../src/common/ai_models.c:1491
 msgid "model is already downloading"
 msgstr "modellen laddas redan ner"
 
-#: ../src/common/ai_models.c:1527
+#: ../src/common/ai_models.c:1522
 msgid "invalid repository format"
 msgstr "ogiltigt format på repo"
 
-#: ../src/common/ai_models.c:1552
+#: ../src/common/ai_models.c:1547
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr "ingen kompatibel AI-modellversion hittades för darktable %s"
 
-#: ../src/common/ai_models.c:1568
+#: ../src/common/ai_models.c:1563
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6468,38 +6494,38 @@ msgstr ""
 "kunde inte hitta checksumma för %s — vägrar ladda ner utan integritets-"
 "verifiering"
 
-#: ../src/common/ai_models.c:1586
+#: ../src/common/ai_models.c:1581
 msgid "failed to build download url"
 msgstr "misslyckades att bygga nedladdnings-url"
 
-#: ../src/common/ai_models.c:1597
+#: ../src/common/ai_models.c:1592
 #, c-format
 msgid "failed to create file: %s"
 msgstr "misslyckades skapa fil: %s"
 
-#: ../src/common/ai_models.c:1621
+#: ../src/common/ai_models.c:1616
 msgid "failed to initialize download"
 msgstr "misslyckades att starta nerladdning"
 
-#: ../src/common/ai_models.c:1641
+#: ../src/common/ai_models.c:1636
 msgid "download cancelled"
 msgstr "nedladdning avbruten"
 
-#: ../src/common/ai_models.c:1643
+#: ../src/common/ai_models.c:1638
 #, c-format
 msgid "download failed: %s"
 msgstr "nerladdning misslyckades: %s"
 
-#: ../src/common/ai_models.c:1654
+#: ../src/common/ai_models.c:1649
 #, c-format
 msgid "http error: %ld"
 msgstr "http-fel: %ld"
 
-#: ../src/common/ai_models.c:1677
+#: ../src/common/ai_models.c:1672
 msgid "checksum verification failed"
 msgstr "verifiering av checksumma misslyckades"
 
-#: ../src/common/ai_models.c:1687
+#: ../src/common/ai_models.c:1682
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6508,7 +6534,7 @@ msgstr ""
 "inte checksumma tillgänglig för %s — vägrar installera utan integritets-"
 "verifiering"
 
-#: ../src/common/ai_models.c:1700
+#: ../src/common/ai_models.c:1695
 msgid "failed to extract archive"
 msgstr "misslyckades att packa upp arkiv"
 
@@ -8063,7 +8089,7 @@ msgstr "AVIF"
 msgid "ImageMagick"
 msgstr "ImageMagick"
 
-#: ../src/common/image.h:231 ../src/imageio/format/heif.c:554
+#: ../src/common/image.h:231 ../src/imageio/format/heif.c:599
 msgid "HEIF"
 msgstr "HEIF"
 
@@ -10297,7 +10323,7 @@ msgstr "ingen giltig bild att fastnåla"
 msgid "please wait for image to load"
 msgstr "vänligen vänta medan bilden laddas"
 
-#: ../src/develop/develop.c:1099
+#: ../src/develop/develop.c:1135
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
@@ -10305,12 +10331,12 @@ msgstr ""
 "automatiskt sparande har stängts av för den här bilden på grund av väldigt "
 "stor historia eller långsam disk"
 
-#: ../src/develop/develop.c:2611
+#: ../src/develop/develop.c:2647
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' skiljer i version: %d != %d"
 
-#: ../src/develop/develop.c:3550
+#: ../src/develop/develop.c:3590
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "modulen är en dubblett, kan inte flytta ny instans efter basinstans\n"
 
@@ -10390,7 +10416,7 @@ msgid "purpose"
 msgstr "syfte"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4252
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4256
 msgid "process"
 msgstr "process"
 
@@ -10981,7 +11007,7 @@ msgstr ""
 "troligen uppstått av att applicera en förinställning, stil eller inklistring "
 "av historik"
 
-#: ../src/develop/pixelpipe_hb.c:1365
+#: ../src/develop/pixelpipe_hb.c:1371
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10992,11 +11018,11 @@ msgstr ""
 "modul '%s'\n"
 "vänligen rapportera på GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1946
+#: ../src/develop/pixelpipe_hb.c:1953
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "fatalt: inkommande data linjerar inte, vänligen rapportera på GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3167
+#: ../src/develop/pixelpipe_hb.c:3174
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11016,7 +11042,7 @@ msgstr ""
 "  - några drivrutiner saknar stöd som krävs för ett antal event,\n"
 "  - för litet \"headroom\" i läge 'använd hela enhetens minne'."
 
-#: ../src/develop/pixelpipe_hb.c:3469
+#: ../src/develop/pixelpipe_hb.c:3476
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -15089,7 +15115,7 @@ msgstr "välj katalog för script"
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4154
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4158
 #: ../src/views/lighttable.c:1588
 msgid "page"
 msgstr "sida"
@@ -16991,7 +17017,7 @@ msgid "select ONNX Runtime library"
 msgstr "välj ONNX Runtime-bibliotek"
 
 #: ../src/gui/preferences_ai.c:1385 ../src/iop/lut3d.c:1576
-#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4120
+#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4124
 msgid "_select"
 msgstr "_välj"
 
@@ -17600,39 +17626,39 @@ msgstr "skapa"
 msgid "copy settings from existing workspace"
 msgstr "kopiera inställningar från en existerande arbetsyta"
 
-#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "8 bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "10 bit"
 msgstr "10-bit"
 
-#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "12 bit"
 msgstr "12-bit"
 
-#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossless"
 msgstr "icke-destruktiv"
 
-#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossy"
 msgstr "destruktiv"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
-#: ../src/imageio/format/heif.c:642 ../src/imageio/format/jxl.c:585
+#: ../src/imageio/format/heif.c:687 ../src/imageio/format/jxl.c:585
 #: ../src/imageio/format/pdf.c:678 ../src/imageio/format/png.c:688
 #: ../src/imageio/format/tiff.c:880 ../src/imageio/format/xcf.c:358
-#: ../src/libs/neural_restore.c:4282
+#: ../src/libs/neural_restore.c:4286
 msgid "bit depth"
 msgstr "bitdjup"
 
@@ -17674,7 +17700,7 @@ msgstr ""
 #. compression
 #. Compression method combo box
 #: ../src/imageio/format/avif.c:981 ../src/imageio/format/exr.cc:631
-#: ../src/imageio/format/heif.c:646 ../src/imageio/format/pdf.c:693
+#: ../src/imageio/format/heif.c:691 ../src/imageio/format/pdf.c:693
 #: ../src/imageio/format/png.c:702 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/webp.c:409 ../src/libs/masks.c:117
 msgid "compression"
@@ -17689,18 +17715,18 @@ msgstr "komprimeringen av bilden"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:661
+#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:706
 #: ../src/imageio/format/j2k.c:707 ../src/imageio/format/jpeg.c:578
 #: ../src/imageio/format/jxl.c:611 ../src/imageio/format/webp.c:419
 #: ../src/libs/camera.c:588
 msgid "quality"
 msgstr "kvalitet"
 
-#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:664
+#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:709
 msgid "the quality of an image, less quality means fewer details"
 msgstr "bildkvalitet, lägre kvalitet betyder färre detaljer"
 
-#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:677
+#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:722
 #: ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
 msgstr "delsampling av mättnad"
@@ -17721,17 +17747,17 @@ msgstr ""
 "4:2:2 - frekvens på färgsampling halveras horisontellt\n"
 "4:2:0 - frekvens på färgsampling halveras horisontellt och vertikalt"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:4:4"
 msgstr "4:4:4"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:2"
 msgstr "4:2:2"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:0"
 msgstr "4:2:0"
@@ -17767,7 +17793,7 @@ msgstr "16-bit (flyttal)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4285
+#: ../src/libs/neural_restore.c:4289
 msgid "32 bit (float)"
 msgstr "32-bit (flyttal)"
 
@@ -17820,7 +17846,7 @@ msgstr "HTJ2K256"
 msgid "HTJ2K32"
 msgstr "HTJ2K32"
 
-#: ../src/imageio/format/heif.c:678
+#: ../src/imageio/format/heif.c:723
 msgid ""
 "chroma subsampling setting for HEIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -17884,7 +17910,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "16 bit"
 msgstr "16-bit"
 
@@ -19254,7 +19280,7 @@ msgid "denoise chroma"
 msgstr "brusreducering färgskala"
 
 #: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1357
-#: ../src/libs/neural_restore.c:4162
+#: ../src/libs/neural_restore.c:4166
 msgid "denoise"
 msgstr "reducera brus"
 
@@ -22733,7 +22759,7 @@ msgstr "färgöverföring"
 msgid "this module is deprecated. better use color mapping module instead."
 msgstr "den här modulen är utfasad. använd hellre modulen färgmappning."
 
-#: ../src/iop/colortransfer.c:413
+#: ../src/iop/colortransfer.c:406
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -23184,7 +23210,7 @@ msgid "variance blue: "
 msgstr "variation blå: "
 
 #: ../src/iop/denoiseprofile.c:3678 ../src/libs/export.c:1600
-#: ../src/libs/neural_restore.c:4293 ../src/libs/print_settings.c:2516
+#: ../src/libs/neural_restore.c:4297 ../src/libs/print_settings.c:2516
 #: ../src/libs/print_settings.c:2872
 msgid "profile"
 msgstr "profil"
@@ -25159,7 +25185,7 @@ msgstr "distans till motivet"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4453 ../src/iop/overlay.c:1124 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1484 ../src/libs/export.c:1558
-#: ../src/libs/neural_restore.c:4203
+#: ../src/libs/neural_restore.c:4207
 msgid "scale"
 msgstr "skala"
 
@@ -26336,7 +26362,7 @@ msgstr ""
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
 #: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1358
-#: ../src/libs/neural_restore.c:4160
+#: ../src/libs/neural_restore.c:4164
 msgid "raw denoise"
 msgstr "raw brusreducering"
 
@@ -28770,7 +28796,7 @@ msgstr ""
 "lagra masker som lager i exporterade bilder. fungerar bara i vissa format."
 
 #: ../src/libs/export.c:1601 ../src/libs/export.c:1636
-#: ../src/libs/neural_restore.c:4294 ../src/libs/print_settings.c:2875
+#: ../src/libs/neural_restore.c:4298 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
 msgstr "bildinställningar"
@@ -31381,7 +31407,7 @@ msgstr "800 %"
 msgid "1600%"
 msgstr "1600 %"
 
-#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3302
+#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3306
 msgid "neural restore"
 msgstr "neural återställning"
 
@@ -31422,7 +31448,7 @@ msgstr "raw-brusreducering: kan inte ladda källbild"
 msgid "raw denoise: image is not in a supported raw sensor format"
 msgstr "raw-brusreducering: bilden är inte inte ett stött rawsensor-format"
 
-#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4164
+#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4168
 msgid "upscale"
 msgstr "skala upp"
 
@@ -31501,60 +31527,60 @@ msgstr "vitt tonomfång bevarat, ej brusreducerat"
 msgid "wide-gamut clipped"
 msgstr "vid tonomfång klippt"
 
-#: ../src/libs/neural_restore.c:3486
+#: ../src/libs/neural_restore.c:3490
 #, c-format
 msgid "zoom %.0f%%"
 msgstr "zoom %.0f%%"
 
-#: ../src/libs/neural_restore.c:3649
+#: ../src/libs/neural_restore.c:3653
 msgid "click to select preview area"
 msgstr "klicka för att välja förhandsvisningsområde"
 
-#: ../src/libs/neural_restore.c:3674
+#: ../src/libs/neural_restore.c:3678
 msgid "model not available"
 msgstr "modell ej tillgänglig"
 
-#: ../src/libs/neural_restore.c:3676 ../src/libs/neural_restore.c:3870
+#: ../src/libs/neural_restore.c:3680 ../src/libs/neural_restore.c:3874
 msgid "generating preview..."
 msgstr "genererar förhandsvisning..."
 
-#: ../src/libs/neural_restore.c:3678
+#: ../src/libs/neural_restore.c:3682
 msgid "click to generate preview"
 msgstr "klicka för att skapa förhandsvisning"
 
-#: ../src/libs/neural_restore.c:3680
+#: ../src/libs/neural_restore.c:3684
 msgid "image not supported by this task"
 msgstr "bild stöds ej av den här uppgiften"
 
-#: ../src/libs/neural_restore.c:3682
+#: ../src/libs/neural_restore.c:3686
 msgid "preview initialization failed"
 msgstr "initiering av förhandsvisning misslyckades"
 
-#: ../src/libs/neural_restore.c:3683
+#: ../src/libs/neural_restore.c:3687
 msgid "select an image to preview"
 msgstr "välj en bild att förhandsvisa"
 
-#: ../src/libs/neural_restore.c:4116 ../src/libs/neural_restore.c:4380
+#: ../src/libs/neural_restore.c:4120 ../src/libs/neural_restore.c:4384
 msgid "select output folder"
 msgstr "välj utgående katalog"
 
-#: ../src/libs/neural_restore.c:4161
+#: ../src/libs/neural_restore.c:4165
 msgid "AI raw denoising"
 msgstr "AI raw-brusreducering"
 
-#: ../src/libs/neural_restore.c:4163
+#: ../src/libs/neural_restore.c:4167
 msgid "AI denoising"
 msgstr "AI brusreducering"
 
-#: ../src/libs/neural_restore.c:4165
+#: ../src/libs/neural_restore.c:4169
 msgid "AI upscaling"
 msgstr "AI uppskalning"
 
-#: ../src/libs/neural_restore.c:4177
+#: ../src/libs/neural_restore.c:4181
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "blandning av källans CFA (0%) och den brusreducerade utdatan (100%)"
 
-#: ../src/libs/neural_restore.c:4195
+#: ../src/libs/neural_restore.c:4199
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -31563,19 +31589,19 @@ msgstr ""
 "100% använder hela AI-modellens utdata; lägre värden tar tillbaka ljushets-"
 "textur och korn medan färgbrus hålls nere"
 
-#: ../src/libs/neural_restore.c:4204
+#: ../src/libs/neural_restore.c:4208
 msgid "upscale factor"
 msgstr "uppskalningsfaktor"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:4223
+#: ../src/libs/neural_restore.c:4227
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -31583,27 +31609,27 @@ msgstr ""
 "klicka för att välja förhandsvisningsområde på miniatyrbilden\n"
 "dubbelklicka för att återställa till centrerad"
 
-#: ../src/libs/neural_restore.c:4254
+#: ../src/libs/neural_restore.c:4258
 msgid "process selected images"
 msgstr "behandla valda bilder"
 
-#: ../src/libs/neural_restore.c:4272
+#: ../src/libs/neural_restore.c:4276
 msgid "output parameters"
 msgstr "utgående parametrar"
 
-#: ../src/libs/neural_restore.c:4283
+#: ../src/libs/neural_restore.c:4287
 msgid "output TIFF bit depth"
 msgstr "utgående TIFF bitdjup"
 
-#: ../src/libs/neural_restore.c:4325
+#: ../src/libs/neural_restore.c:4329
 msgid "color profile embedded in the output TIFF"
 msgstr "färgprofil att bädda in i den utgående TIFF-filen"
 
-#: ../src/libs/neural_restore.c:4335
+#: ../src/libs/neural_restore.c:4339
 msgid "preserve wide-gamut colors"
 msgstr "bevara färger för vid tonomfång"
 
-#: ../src/libs/neural_restore.c:4342
+#: ../src/libs/neural_restore.c:4346
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
@@ -31613,15 +31639,15 @@ msgstr ""
 "när av, alla pixlar brusreduceras, men färger i vid färgrymd kan klippas; "
 "påverkar endast brusdeucering"
 
-#: ../src/libs/neural_restore.c:4351
+#: ../src/libs/neural_restore.c:4355
 msgid "add to the current collection"
 msgstr "lägg till i nuvarande samling"
 
-#: ../src/libs/neural_restore.c:4357
+#: ../src/libs/neural_restore.c:4361
 msgid "automatically import the output image into the current collection"
 msgstr "importera automatiskt utgående fil till nuvarande samling"
 
-#: ../src/libs/neural_restore.c:4373
+#: ../src/libs/neural_restore.c:4377
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
