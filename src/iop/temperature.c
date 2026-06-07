@@ -1577,7 +1577,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_temperature_params_t *d = self->default_params;
   dt_iop_temperature_params_t *p = self->params;
 
-  d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
+  d->preset = DT_IOP_TEMP_AS_SHOT;
   d->late_correction = p->late_correction = dt_is_scene_referred();
 
   float *dcoeffs = (float *)d;
@@ -1663,7 +1663,7 @@ void reload_defaults(dt_iop_module_t *self)
     STR_YESNO(another_cat_defined),
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
 
-  d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
+  d->preset = DT_IOP_TEMP_AS_SHOT;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there

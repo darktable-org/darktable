@@ -2238,7 +2238,7 @@ void process(dt_iop_module_t *self,
     dt_aligned_pixel_t correction_ratios;
     _get_d65_correction_ratios(self, correction_ratios);
 
-    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &(x), &(y)))
+    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -2255,7 +2255,7 @@ void process(dt_iop_module_t *self,
     // which don't come from the EXIF this time).
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &(x), &(y)))
+    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -2366,7 +2366,7 @@ int process_cl(dt_iop_module_t *self,
     dt_aligned_pixel_t correction_ratios;
     _get_d65_correction_ratios(self, correction_ratios);
 
-    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &(x), &(y)))
+    if(find_illuminant_xy_from_as_shot_coeffs(&(self->dev->image_storage), correction_ratios, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -2383,7 +2383,7 @@ int process_cl(dt_iop_module_t *self,
     // which don't come from the EXIF this time).
     float x, y;
 
-    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &(x), &(y)))
+    if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &x, &y))
     {
       // Convert illuminant from xyY to XYZ
       dt_aligned_pixel_t XYZ;
@@ -3201,7 +3201,7 @@ void commit_params(dt_iop_module_t *self,
   // if illuminant is from camera or user WB coefficients, x and y are set on-the-fly at
   // commit time, so we need to set adaptation too
   if(p->illuminant == DT_ILLUMINANT_CAMERA || p->illuminant == DT_ILLUMINANT_FROM_WB)
-      _check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
+    _check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
   d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
