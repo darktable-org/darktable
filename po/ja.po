@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 19:36+0200\n"
-"PO-Revision-Date: 2026-06-05 02:01+0900\n"
+"POT-Creation-Date: 2026-06-06 21:46+0200\n"
+"PO-Revision-Date: 2026-06-07 10:57+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -23,12 +23,12 @@ msgctxt "preferences"
 msgid "first instance"
 msgstr "最初のインスタンス"
 
-#: ../build/bin/conf_gen.h:112 ../build/bin/preferences_gen.h:4713
+#: ../build/bin/conf_gen.h:112 ../build/bin/preferences_gen.h:4723
 msgctxt "preferences"
 msgid "last instance"
 msgstr "最後のインスタンス"
 
-#: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4369
+#: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4379
 msgctxt "preferences"
 msgid "triangle"
 msgstr "トライアングル"
@@ -51,7 +51,7 @@ msgstr "バー"
 #: ../build/bin/conf_gen.h:288 ../build/bin/conf_gen.h:440
 #: ../build/bin/conf_gen.h:453 ../build/bin/conf_gen.h:1824
 #: ../build/bin/conf_gen.h:1845 ../build/bin/conf_gen.h:1882
-#: ../build/bin/preferences_gen.h:2852 ../build/bin/preferences_gen.h:2939
+#: ../build/bin/preferences_gen.h:2862 ../build/bin/preferences_gen.h:2949
 msgctxt "preferences"
 msgid "never"
 msgstr "なし"
@@ -61,7 +61,7 @@ msgctxt "preferences"
 msgid "once a month"
 msgstr "月に一度"
 
-#: ../build/bin/conf_gen.h:290 ../build/bin/preferences_gen.h:4153
+#: ../build/bin/conf_gen.h:290 ../build/bin/preferences_gen.h:4163
 msgctxt "preferences"
 msgid "once a week"
 msgstr "週に一度"
@@ -83,7 +83,7 @@ msgid "small"
 msgstr "小"
 
 #: ../build/bin/conf_gen.h:366 ../build/bin/conf_gen.h:593
-#: ../build/bin/preferences_gen.h:3586 ../build/bin/preferences_gen.h:3654
+#: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3664
 msgctxt "preferences"
 msgid "default"
 msgstr "デフォルト"
@@ -98,19 +98,19 @@ msgctxt "preferences"
 msgid "after edit"
 msgstr "編集後"
 
-#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4205
+#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4215
 msgctxt "preferences"
 msgid "on import"
 msgstr "インポート時"
 
 #: ../build/bin/conf_gen.h:454 ../build/bin/conf_gen.h:1814
 #: ../build/bin/conf_gen.h:1835 ../build/bin/conf_gen.h:5050
-#: ../build/bin/preferences_gen.h:3341
+#: ../build/bin/preferences_gen.h:3351
 msgctxt "preferences"
 msgid "always"
 msgstr "常に"
 
-#: ../build/bin/conf_gen.h:455 ../build/bin/preferences_gen.h:4223
+#: ../build/bin/conf_gen.h:455 ../build/bin/preferences_gen.h:4233
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "項目が大きい場合のみ"
@@ -120,7 +120,7 @@ msgctxt "preferences"
 msgid "sensitive"
 msgstr "区別する"
 
-#: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4838
+#: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4848
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "区別しない"
@@ -135,7 +135,7 @@ msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "非常に高速なGPU"
 
-#: ../build/bin/conf_gen.h:1064 ../build/bin/preferences_gen.h:4912
+#: ../build/bin/conf_gen.h:1064 ../build/bin/preferences_gen.h:4922
 msgctxt "preferences"
 msgid "import time"
 msgstr "インポート日時"
@@ -313,7 +313,7 @@ msgid "VGA"
 msgstr "VGA"
 
 #: ../build/bin/conf_gen.h:1817 ../build/bin/conf_gen.h:1838
-#: ../build/bin/conf_gen.h:1885 ../build/bin/preferences_gen.h:2870
+#: ../build/bin/conf_gen.h:1885 ../build/bin/preferences_gen.h:2880
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
@@ -355,7 +355,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1825 ../build/bin/conf_gen.h:3847
-#: ../build/bin/conf_gen.h:5053 ../build/bin/preferences_gen.h:4063
+#: ../build/bin/conf_gen.h:5053 ../build/bin/preferences_gen.h:4073
 msgctxt "preferences"
 msgid "auto"
 msgstr "自動"
@@ -405,7 +405,7 @@ msgctxt "preferences"
 msgid "high"
 msgstr "高"
 
-#: ../build/bin/conf_gen.h:1982 ../build/bin/preferences_gen.h:3204
+#: ../build/bin/conf_gen.h:1982 ../build/bin/preferences_gen.h:3214
 msgctxt "preferences"
 msgid "false color"
 msgstr "偽色"
@@ -430,7 +430,7 @@ msgctxt "preferences"
 msgid "top center"
 msgstr "上 中央"
 
-#: ../build/bin/conf_gen.h:2005 ../build/bin/preferences_gen.h:3119
+#: ../build/bin/conf_gen.h:2005 ../build/bin/preferences_gen.h:3129
 msgctxt "preferences"
 msgid "bottom"
 msgstr "下"
@@ -522,7 +522,7 @@ msgid "bilinear"
 msgstr "バイリニア"
 
 #: ../build/bin/conf_gen.h:3355 ../build/bin/conf_gen.h:3367
-#: ../build/bin/preferences_gen.h:3426
+#: ../build/bin/preferences_gen.h:3436
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "バイキュービック"
@@ -532,7 +532,7 @@ msgctxt "preferences"
 msgid "lanczos2"
 msgstr "ランチョス2"
 
-#: ../build/bin/conf_gen.h:3369 ../build/bin/preferences_gen.h:3444
+#: ../build/bin/conf_gen.h:3369 ../build/bin/preferences_gen.h:3454
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "ランチョス3"
@@ -587,7 +587,7 @@ msgctxt "preferences"
 msgid "left"
 msgstr "左"
 
-#: ../build/bin/conf_gen.h:4165 ../build/bin/preferences_gen.h:4552
+#: ../build/bin/conf_gen.h:4165 ../build/bin/preferences_gen.h:4562
 msgctxt "preferences"
 msgid "right"
 msgstr "右"
@@ -712,22 +712,22 @@ msgctxt "preferences"
 msgid "inch"
 msgstr "inch"
 
-#: ../build/bin/conf_gen.h:4666
+#: ../build/bin/conf_gen.h:4666 ../build/bin/preferences_gen.h:237
 msgctxt "preferences"
 msgid "grey"
 msgstr "グレー"
 
-#: ../build/bin/conf_gen.h:4667
+#: ../build/bin/conf_gen.h:4667 ../build/bin/preferences_gen.h:238
 msgctxt "preferences"
 msgid "dark"
 msgstr "ダーク"
 
-#: ../build/bin/conf_gen.h:4668
+#: ../build/bin/conf_gen.h:4668 ../build/bin/preferences_gen.h:239
 msgctxt "preferences"
 msgid "darker"
 msgstr "さらにダーク"
 
-#: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4570
+#: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4580
 msgctxt "preferences"
 msgid "all"
 msgstr "全て"
@@ -742,7 +742,7 @@ msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4813 ../build/bin/preferences_gen.h:3510
+#: ../build/bin/conf_gen.h:4813 ../build/bin/preferences_gen.h:3520
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "シーン参照（シグモイド）"
@@ -855,77 +855,103 @@ msgstr "利用出来ません"
 msgid "not available on this system"
 msgstr "このシステムでは利用出来ません"
 
-#: ../build/bin/preferences_gen.h:2588 ../src/control/jobs/control_jobs.c:3118
+#: ../build/bin/preferences_gen.h:235
+msgid "darktable theme"
+msgstr "darktableテーマ"
+
+#: ../build/bin/preferences_gen.h:236
+msgid ""
+"the shade around your photo affects how you see its colors and tones while "
+"editing. grey is recommended because it's the most neutral – it doesn't push "
+"your eye in any direction\n"
+"\n"
+"<b>grey:</b> best for accurate color work\n"
+"\n"
+"<b>dark:</b> less distracting around your image\n"
+"\n"
+"<b>darker:</b> good for dimly-lit rooms"
+msgstr ""
+"写真の周囲の背景色は、編集時に写真の色やトーンがどのように見えるかに影響しま"
+"す。おすすめはグレーですーー最もニュートラルで、視覚を特定の方向に偏らせませ"
+"ん。\n"
+"\n"
+"<b>グレー:</b> 正確な色調整に最適\n"
+"\n"
+"<b>ダーク:</b> 画像の周囲に気が散らず集中しやすい\n"
+"\n"
+"<b>さらにダーク:</b> 薄暗い部屋での作業に適している"
+
+#: ../build/bin/preferences_gen.h:2598 ../src/control/jobs/control_jobs.c:3118
 #: ../src/libs/import.c:183
 msgid "import"
 msgstr "インポート"
 
-#: ../build/bin/preferences_gen.h:2593
+#: ../build/bin/preferences_gen.h:2603
 msgid "session options"
 msgstr "セッションオプション"
 
-#: ../build/bin/preferences_gen.h:2603
+#: ../build/bin/preferences_gen.h:2613
 msgid "base filmroll's directory"
 msgstr "フィルムロールのベースディレクトリ"
 
-#: ../build/bin/preferences_gen.h:2614 ../build/bin/preferences_gen.h:2636
-#: ../build/bin/preferences_gen.h:2653 ../build/bin/preferences_gen.h:2675
-#: ../build/bin/preferences_gen.h:2708 ../build/bin/preferences_gen.h:2725
-#: ../build/bin/preferences_gen.h:2742 ../build/bin/preferences_gen.h:2759
-#: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:2793
-#: ../build/bin/preferences_gen.h:2810 ../build/bin/preferences_gen.h:2827
-#: ../build/bin/preferences_gen.h:2852 ../build/bin/preferences_gen.h:2870
-#: ../build/bin/preferences_gen.h:2887 ../build/bin/preferences_gen.h:2904
-#: ../build/bin/preferences_gen.h:2921 ../build/bin/preferences_gen.h:2939
-#: ../build/bin/preferences_gen.h:2956 ../build/bin/preferences_gen.h:2978
-#: ../build/bin/preferences_gen.h:3002 ../build/bin/preferences_gen.h:3026
-#: ../build/bin/preferences_gen.h:3059 ../build/bin/preferences_gen.h:3076
-#: ../build/bin/preferences_gen.h:3101 ../build/bin/preferences_gen.h:3119
-#: ../build/bin/preferences_gen.h:3162 ../build/bin/preferences_gen.h:3179
-#: ../build/bin/preferences_gen.h:3204 ../build/bin/preferences_gen.h:3221
-#: ../build/bin/preferences_gen.h:3238 ../build/bin/preferences_gen.h:3255
-#: ../build/bin/preferences_gen.h:3272 ../build/bin/preferences_gen.h:3289
-#: ../build/bin/preferences_gen.h:3306 ../build/bin/preferences_gen.h:3323
-#: ../build/bin/preferences_gen.h:3341 ../build/bin/preferences_gen.h:3358
-#: ../build/bin/preferences_gen.h:3375 ../build/bin/preferences_gen.h:3408
-#: ../build/bin/preferences_gen.h:3426 ../build/bin/preferences_gen.h:3444
-#: ../build/bin/preferences_gen.h:3467 ../build/bin/preferences_gen.h:3491
-#: ../build/bin/preferences_gen.h:3510 ../build/bin/preferences_gen.h:3527
-#: ../build/bin/preferences_gen.h:3544 ../build/bin/preferences_gen.h:3561
-#: ../build/bin/preferences_gen.h:3586 ../build/bin/preferences_gen.h:3611
-#: ../build/bin/preferences_gen.h:3632 ../build/bin/preferences_gen.h:3654
-#: ../build/bin/preferences_gen.h:3675 ../build/bin/preferences_gen.h:3703
-#: ../build/bin/preferences_gen.h:3724 ../build/bin/preferences_gen.h:3745
-#: ../build/bin/preferences_gen.h:3766 ../build/bin/preferences_gen.h:3787
-#: ../build/bin/preferences_gen.h:3808 ../build/bin/preferences_gen.h:3829
-#: ../build/bin/preferences_gen.h:3862 ../build/bin/preferences_gen.h:3879
-#: ../build/bin/preferences_gen.h:3896 ../build/bin/preferences_gen.h:3913
-#: ../build/bin/preferences_gen.h:3930 ../build/bin/preferences_gen.h:3947
-#: ../build/bin/preferences_gen.h:3964 ../build/bin/preferences_gen.h:3981
-#: ../build/bin/preferences_gen.h:3997 ../build/bin/preferences_gen.h:4013
-#: ../build/bin/preferences_gen.h:4030 ../build/bin/preferences_gen.h:4063
-#: ../build/bin/preferences_gen.h:4080 ../build/bin/preferences_gen.h:4102
-#: ../build/bin/preferences_gen.h:4135 ../build/bin/preferences_gen.h:4153
-#: ../build/bin/preferences_gen.h:4205 ../build/bin/preferences_gen.h:4223
-#: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4300
-#: ../build/bin/preferences_gen.h:4317 ../build/bin/preferences_gen.h:4334
-#: ../build/bin/preferences_gen.h:4351 ../build/bin/preferences_gen.h:4369
-#: ../build/bin/preferences_gen.h:4386 ../build/bin/preferences_gen.h:4403
-#: ../build/bin/preferences_gen.h:4420 ../build/bin/preferences_gen.h:4437
-#: ../build/bin/preferences_gen.h:4454 ../build/bin/preferences_gen.h:4471
-#: ../build/bin/preferences_gen.h:4489 ../build/bin/preferences_gen.h:4534
-#: ../build/bin/preferences_gen.h:4552 ../build/bin/preferences_gen.h:4570
-#: ../build/bin/preferences_gen.h:4592 ../build/bin/preferences_gen.h:4620
-#: ../build/bin/preferences_gen.h:4644 ../build/bin/preferences_gen.h:4661
-#: ../build/bin/preferences_gen.h:4678 ../build/bin/preferences_gen.h:4695
-#: ../build/bin/preferences_gen.h:4713 ../build/bin/preferences_gen.h:4730
-#: ../build/bin/preferences_gen.h:4754 ../build/bin/preferences_gen.h:4820
-#: ../build/bin/preferences_gen.h:4838 ../build/bin/preferences_gen.h:4912
+#: ../build/bin/preferences_gen.h:2624 ../build/bin/preferences_gen.h:2646
+#: ../build/bin/preferences_gen.h:2663 ../build/bin/preferences_gen.h:2685
+#: ../build/bin/preferences_gen.h:2718 ../build/bin/preferences_gen.h:2735
+#: ../build/bin/preferences_gen.h:2752 ../build/bin/preferences_gen.h:2769
+#: ../build/bin/preferences_gen.h:2786 ../build/bin/preferences_gen.h:2803
+#: ../build/bin/preferences_gen.h:2820 ../build/bin/preferences_gen.h:2837
+#: ../build/bin/preferences_gen.h:2862 ../build/bin/preferences_gen.h:2880
+#: ../build/bin/preferences_gen.h:2897 ../build/bin/preferences_gen.h:2914
+#: ../build/bin/preferences_gen.h:2931 ../build/bin/preferences_gen.h:2949
+#: ../build/bin/preferences_gen.h:2966 ../build/bin/preferences_gen.h:2988
+#: ../build/bin/preferences_gen.h:3012 ../build/bin/preferences_gen.h:3036
+#: ../build/bin/preferences_gen.h:3069 ../build/bin/preferences_gen.h:3086
+#: ../build/bin/preferences_gen.h:3111 ../build/bin/preferences_gen.h:3129
+#: ../build/bin/preferences_gen.h:3172 ../build/bin/preferences_gen.h:3189
+#: ../build/bin/preferences_gen.h:3214 ../build/bin/preferences_gen.h:3231
+#: ../build/bin/preferences_gen.h:3248 ../build/bin/preferences_gen.h:3265
+#: ../build/bin/preferences_gen.h:3282 ../build/bin/preferences_gen.h:3299
+#: ../build/bin/preferences_gen.h:3316 ../build/bin/preferences_gen.h:3333
+#: ../build/bin/preferences_gen.h:3351 ../build/bin/preferences_gen.h:3368
+#: ../build/bin/preferences_gen.h:3385 ../build/bin/preferences_gen.h:3418
+#: ../build/bin/preferences_gen.h:3436 ../build/bin/preferences_gen.h:3454
+#: ../build/bin/preferences_gen.h:3477 ../build/bin/preferences_gen.h:3501
+#: ../build/bin/preferences_gen.h:3520 ../build/bin/preferences_gen.h:3537
+#: ../build/bin/preferences_gen.h:3554 ../build/bin/preferences_gen.h:3571
+#: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3621
+#: ../build/bin/preferences_gen.h:3642 ../build/bin/preferences_gen.h:3664
+#: ../build/bin/preferences_gen.h:3685 ../build/bin/preferences_gen.h:3713
+#: ../build/bin/preferences_gen.h:3734 ../build/bin/preferences_gen.h:3755
+#: ../build/bin/preferences_gen.h:3776 ../build/bin/preferences_gen.h:3797
+#: ../build/bin/preferences_gen.h:3818 ../build/bin/preferences_gen.h:3839
+#: ../build/bin/preferences_gen.h:3872 ../build/bin/preferences_gen.h:3889
+#: ../build/bin/preferences_gen.h:3906 ../build/bin/preferences_gen.h:3923
+#: ../build/bin/preferences_gen.h:3940 ../build/bin/preferences_gen.h:3957
+#: ../build/bin/preferences_gen.h:3974 ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4007 ../build/bin/preferences_gen.h:4023
+#: ../build/bin/preferences_gen.h:4040 ../build/bin/preferences_gen.h:4073
+#: ../build/bin/preferences_gen.h:4090 ../build/bin/preferences_gen.h:4112
+#: ../build/bin/preferences_gen.h:4145 ../build/bin/preferences_gen.h:4163
+#: ../build/bin/preferences_gen.h:4215 ../build/bin/preferences_gen.h:4233
+#: ../build/bin/preferences_gen.h:4277 ../build/bin/preferences_gen.h:4310
+#: ../build/bin/preferences_gen.h:4327 ../build/bin/preferences_gen.h:4344
+#: ../build/bin/preferences_gen.h:4361 ../build/bin/preferences_gen.h:4379
+#: ../build/bin/preferences_gen.h:4396 ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4430 ../build/bin/preferences_gen.h:4447
+#: ../build/bin/preferences_gen.h:4464 ../build/bin/preferences_gen.h:4481
+#: ../build/bin/preferences_gen.h:4499 ../build/bin/preferences_gen.h:4544
+#: ../build/bin/preferences_gen.h:4562 ../build/bin/preferences_gen.h:4580
+#: ../build/bin/preferences_gen.h:4602 ../build/bin/preferences_gen.h:4630
+#: ../build/bin/preferences_gen.h:4654 ../build/bin/preferences_gen.h:4671
+#: ../build/bin/preferences_gen.h:4688 ../build/bin/preferences_gen.h:4705
+#: ../build/bin/preferences_gen.h:4723 ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:4764 ../build/bin/preferences_gen.h:4830
+#: ../build/bin/preferences_gen.h:4848 ../build/bin/preferences_gen.h:4922
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "ダブルクリックすると、 `%s' にリセット"
 
-#: ../build/bin/preferences_gen.h:2616
+#: ../build/bin/preferences_gen.h:2626
 msgid ""
 "directory where newly imported filmrolls are stored; the default uses <b>$"
 "(PICTURES_FOLDER)</b>, which expands to your system's pictures folder: <i>~/"
@@ -936,42 +962,42 @@ msgstr ""
 "フォルダ（macOSやLinuxでは <i>~/Pictures</i> 、Windowsでは<i>C:/Users/"
 "username/Pictures</i> ）に展開されます"
 
-#: ../build/bin/preferences_gen.h:2625
+#: ../build/bin/preferences_gen.h:2635
 msgid "filmroll name"
 msgstr "フィルムロール名"
 
-#: ../build/bin/preferences_gen.h:2638
+#: ../build/bin/preferences_gen.h:2648
 msgid "name of the imported filmroll"
 msgstr "インポートされたフィルムロールの名称"
 
-#: ../build/bin/preferences_gen.h:2647
+#: ../build/bin/preferences_gen.h:2657
 msgid "keep original filename"
 msgstr "元のファイル名を維持"
 
-#: ../build/bin/preferences_gen.h:2653 ../build/bin/preferences_gen.h:2708
-#: ../build/bin/preferences_gen.h:2725 ../build/bin/preferences_gen.h:2759
-#: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:2793
-#: ../build/bin/preferences_gen.h:2827 ../build/bin/preferences_gen.h:2904
-#: ../build/bin/preferences_gen.h:2921 ../build/bin/preferences_gen.h:2956
-#: ../build/bin/preferences_gen.h:3059 ../build/bin/preferences_gen.h:3162
-#: ../build/bin/preferences_gen.h:3221 ../build/bin/preferences_gen.h:3289
-#: ../build/bin/preferences_gen.h:3323 ../build/bin/preferences_gen.h:3375
-#: ../build/bin/preferences_gen.h:3408 ../build/bin/preferences_gen.h:3527
-#: ../build/bin/preferences_gen.h:3544 ../build/bin/preferences_gen.h:3632
-#: ../build/bin/preferences_gen.h:3675 ../build/bin/preferences_gen.h:3745
-#: ../build/bin/preferences_gen.h:3787 ../build/bin/preferences_gen.h:3808
-#: ../build/bin/preferences_gen.h:3829 ../build/bin/preferences_gen.h:3964
-#: ../build/bin/preferences_gen.h:4080 ../build/bin/preferences_gen.h:4135
-#: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4386
-#: ../build/bin/preferences_gen.h:4437 ../build/bin/preferences_gen.h:4620
-#: ../build/bin/preferences_gen.h:4661 ../build/bin/preferences_gen.h:4678
-#: ../build/bin/preferences_gen.h:4695 ../build/bin/preferences_gen.h:4730
-#: ../build/bin/preferences_gen.h:4820
+#: ../build/bin/preferences_gen.h:2663 ../build/bin/preferences_gen.h:2718
+#: ../build/bin/preferences_gen.h:2735 ../build/bin/preferences_gen.h:2769
+#: ../build/bin/preferences_gen.h:2786 ../build/bin/preferences_gen.h:2803
+#: ../build/bin/preferences_gen.h:2837 ../build/bin/preferences_gen.h:2914
+#: ../build/bin/preferences_gen.h:2931 ../build/bin/preferences_gen.h:2966
+#: ../build/bin/preferences_gen.h:3069 ../build/bin/preferences_gen.h:3172
+#: ../build/bin/preferences_gen.h:3231 ../build/bin/preferences_gen.h:3299
+#: ../build/bin/preferences_gen.h:3333 ../build/bin/preferences_gen.h:3385
+#: ../build/bin/preferences_gen.h:3418 ../build/bin/preferences_gen.h:3537
+#: ../build/bin/preferences_gen.h:3554 ../build/bin/preferences_gen.h:3642
+#: ../build/bin/preferences_gen.h:3685 ../build/bin/preferences_gen.h:3755
+#: ../build/bin/preferences_gen.h:3797 ../build/bin/preferences_gen.h:3818
+#: ../build/bin/preferences_gen.h:3839 ../build/bin/preferences_gen.h:3974
+#: ../build/bin/preferences_gen.h:4090 ../build/bin/preferences_gen.h:4145
+#: ../build/bin/preferences_gen.h:4277 ../build/bin/preferences_gen.h:4396
+#: ../build/bin/preferences_gen.h:4447 ../build/bin/preferences_gen.h:4630
+#: ../build/bin/preferences_gen.h:4671 ../build/bin/preferences_gen.h:4688
+#: ../build/bin/preferences_gen.h:4705 ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:4830
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FALSE"
 
-#: ../build/bin/preferences_gen.h:2655
+#: ../build/bin/preferences_gen.h:2665
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
@@ -979,40 +1005,40 @@ msgstr ""
 "カメラあるいはカードからインポートする際、ひな型を用いず、元のファイル名を維持"
 "します"
 
-#: ../build/bin/preferences_gen.h:2664
+#: ../build/bin/preferences_gen.h:2674
 msgid "file naming pattern"
 msgstr "ファイル命名のひな型"
 
-#: ../build/bin/preferences_gen.h:2677
+#: ../build/bin/preferences_gen.h:2687
 msgid "file naming pattern used for a import session"
 msgstr "インポートセッションで使用するファイル命名のひな型"
 
-#: ../build/bin/preferences_gen.h:2687 ../src/gui/gtk.c:1701
+#: ../build/bin/preferences_gen.h:2697 ../src/gui/gtk.c:1701
 #: ../src/gui/preferences.c:631 ../src/libs/tools/lighttable.c:64
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr "ライトテーブル"
 
-#: ../build/bin/preferences_gen.h:2692 ../build/bin/preferences_gen.h:3043
-#: ../build/bin/preferences_gen.h:3846 ../src/gui/preferences.c:344
+#: ../build/bin/preferences_gen.h:2702 ../build/bin/preferences_gen.h:3053
+#: ../build/bin/preferences_gen.h:3856 ../src/gui/preferences.c:344
 #: ../src/gui/preferences_ai.c:1557
 msgid "general"
 msgstr "一般"
 
-#: ../build/bin/preferences_gen.h:2702
+#: ../build/bin/preferences_gen.h:2712
 msgid "hide built-in presets for utility modules"
 msgstr "ユーティリティモジュールの内蔵プリセットを非表示にする"
 
-#: ../build/bin/preferences_gen.h:2710
+#: ../build/bin/preferences_gen.h:2720
 msgid "hide built-in presets of utility modules in presets menu."
 msgstr ""
 "プリセットメニューでユーティリティモジュールの内蔵プリセットを非表示にします"
 
-#: ../build/bin/preferences_gen.h:2719
+#: ../build/bin/preferences_gen.h:2729
 msgid "use single-click in the collections module"
 msgstr "コレクションモジュールでシングルクリックを使用する"
 
-#: ../build/bin/preferences_gen.h:2727
+#: ../build/bin/preferences_gen.h:2737
 msgid ""
 "check this option to use single-click to select items in the collections "
 "module. this will allow you to do range selections for date-time and numeric "
@@ -1022,34 +1048,34 @@ msgstr ""
 "選択出来ます\n"
 "これにより、日付／時刻と数値の範囲選択が可能になります"
 
-#: ../build/bin/preferences_gen.h:2736
+#: ../build/bin/preferences_gen.h:2746
 msgid "prioritize the hovered image over the selected images"
 msgstr "選択した画像よりカーソルを乗せている画像を優先する"
 
-#: ../build/bin/preferences_gen.h:2742 ../build/bin/preferences_gen.h:2810
-#: ../build/bin/preferences_gen.h:2887 ../build/bin/preferences_gen.h:3076
-#: ../build/bin/preferences_gen.h:3179 ../build/bin/preferences_gen.h:3238
-#: ../build/bin/preferences_gen.h:3255 ../build/bin/preferences_gen.h:3272
-#: ../build/bin/preferences_gen.h:3306 ../build/bin/preferences_gen.h:3358
-#: ../build/bin/preferences_gen.h:3561 ../build/bin/preferences_gen.h:3611
-#: ../build/bin/preferences_gen.h:3703 ../build/bin/preferences_gen.h:3724
-#: ../build/bin/preferences_gen.h:3766 ../build/bin/preferences_gen.h:3862
-#: ../build/bin/preferences_gen.h:3879 ../build/bin/preferences_gen.h:3896
-#: ../build/bin/preferences_gen.h:3913 ../build/bin/preferences_gen.h:3930
-#: ../build/bin/preferences_gen.h:3947 ../build/bin/preferences_gen.h:3981
-#: ../build/bin/preferences_gen.h:3997 ../build/bin/preferences_gen.h:4013
-#: ../build/bin/preferences_gen.h:4030 ../build/bin/preferences_gen.h:4300
-#: ../build/bin/preferences_gen.h:4317 ../build/bin/preferences_gen.h:4334
-#: ../build/bin/preferences_gen.h:4351 ../build/bin/preferences_gen.h:4403
-#: ../build/bin/preferences_gen.h:4420 ../build/bin/preferences_gen.h:4454
-#: ../build/bin/preferences_gen.h:4471 ../build/bin/preferences_gen.h:4489
-#: ../build/bin/preferences_gen.h:4534 ../build/bin/preferences_gen.h:4644
-#: ../build/bin/preferences_gen.h:4754
+#: ../build/bin/preferences_gen.h:2752 ../build/bin/preferences_gen.h:2820
+#: ../build/bin/preferences_gen.h:2897 ../build/bin/preferences_gen.h:3086
+#: ../build/bin/preferences_gen.h:3189 ../build/bin/preferences_gen.h:3248
+#: ../build/bin/preferences_gen.h:3265 ../build/bin/preferences_gen.h:3282
+#: ../build/bin/preferences_gen.h:3316 ../build/bin/preferences_gen.h:3368
+#: ../build/bin/preferences_gen.h:3571 ../build/bin/preferences_gen.h:3621
+#: ../build/bin/preferences_gen.h:3713 ../build/bin/preferences_gen.h:3734
+#: ../build/bin/preferences_gen.h:3776 ../build/bin/preferences_gen.h:3872
+#: ../build/bin/preferences_gen.h:3889 ../build/bin/preferences_gen.h:3906
+#: ../build/bin/preferences_gen.h:3923 ../build/bin/preferences_gen.h:3940
+#: ../build/bin/preferences_gen.h:3957 ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4007 ../build/bin/preferences_gen.h:4023
+#: ../build/bin/preferences_gen.h:4040 ../build/bin/preferences_gen.h:4310
+#: ../build/bin/preferences_gen.h:4327 ../build/bin/preferences_gen.h:4344
+#: ../build/bin/preferences_gen.h:4361 ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4430 ../build/bin/preferences_gen.h:4464
+#: ../build/bin/preferences_gen.h:4481 ../build/bin/preferences_gen.h:4499
+#: ../build/bin/preferences_gen.h:4544 ../build/bin/preferences_gen.h:4654
+#: ../build/bin/preferences_gen.h:4764
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "TRUE"
 
-#: ../build/bin/preferences_gen.h:2744
+#: ../build/bin/preferences_gen.h:2754
 msgid ""
 "in the lighttable, where culling takes place, you can apply actions (e.g., "
 "setting ratings) to the hovered image or to the selected ones\n"
@@ -1067,21 +1093,21 @@ msgstr ""
 "<b>無効</b>：現在選択している画像にアクションを適用します（誤操作を防ぎやすく"
 "なります）"
 
-#: ../build/bin/preferences_gen.h:2753
+#: ../build/bin/preferences_gen.h:2763
 msgid "expand a single utility module at a time"
 msgstr "同時に展開されるユーティリティモジュールを一つにする"
 
-#: ../build/bin/preferences_gen.h:2761
+#: ../build/bin/preferences_gen.h:2771
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "このオプションはライトテーブルモードでのShift+クリックの動作のオン／オフを切り"
 "替えます"
 
-#: ../build/bin/preferences_gen.h:2770
+#: ../build/bin/preferences_gen.h:2780
 msgid "scroll utility modules to the top when expanded"
 msgstr "ユーティリティモジュールを展開した時、上へスクロールする"
 
-#: ../build/bin/preferences_gen.h:2778 ../build/bin/preferences_gen.h:3308
+#: ../build/bin/preferences_gen.h:2788 ../build/bin/preferences_gen.h:3318
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -1089,40 +1115,40 @@ msgstr ""
 "このオプションが有効になっている場合、darktableは表示するリストの一番上にモ"
 "ジュールをスクロールさせるよう試みます"
 
-#: ../build/bin/preferences_gen.h:2787
+#: ../build/bin/preferences_gen.h:2797
 msgid "rating an image one star twice will not zero out the rating"
 msgstr "画像を二度1つ星評価にしても星なしの評価にしない"
 
-#: ../build/bin/preferences_gen.h:2795
+#: ../build/bin/preferences_gen.h:2805
 msgid "defines whether rating an image one star twice will zero out star rating"
 msgstr "画像を二度1つ星で評価すると評価が星なしになるかいなかを定義します"
 
-#: ../build/bin/preferences_gen.h:2804 ../build/bin/preferences_gen.h:3156
+#: ../build/bin/preferences_gen.h:2814 ../build/bin/preferences_gen.h:3166
 msgid "show scrollbars for central view"
 msgstr "センタービューのスクロールバーを表示する"
 
-#: ../build/bin/preferences_gen.h:2812 ../build/bin/preferences_gen.h:3164
+#: ../build/bin/preferences_gen.h:2822 ../build/bin/preferences_gen.h:3174
 msgid "defines whether scrollbars should be displayed"
 msgstr "スクロールバーを表示するかいなかを定義します"
 
-#: ../build/bin/preferences_gen.h:2821
+#: ../build/bin/preferences_gen.h:2831
 msgid "show image time with milliseconds"
 msgstr "画像の時間情報をミリ秒まで表示する"
 
-#: ../build/bin/preferences_gen.h:2829
+#: ../build/bin/preferences_gen.h:2839
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "時間情報をミリ秒まで表示するかいなかを定義します"
 
-#: ../build/bin/preferences_gen.h:2835
+#: ../build/bin/preferences_gen.h:2845
 msgid "thumbnails"
 msgstr "サムネイル"
 
 # 次のサイズより大きい場合、埋め込まれたJPEG画像ではなくrawファイルを使用します
-#: ../build/bin/preferences_gen.h:2845
+#: ../build/bin/preferences_gen.h:2855
 msgid "for unaltered images, use raw file instead of embedded JPEG from size"
 msgstr "次のサイズより大きい場合、未編集画像に埋め込みJPEGではなくRAWを使用する"
 
-#: ../build/bin/preferences_gen.h:2854
+#: ../build/bin/preferences_gen.h:2864
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1142,11 +1168,11 @@ msgstr ""
 "め込みJPEGを優先して使用します\n"
 "（マニュアルに詳しい説明があります）"
 
-#: ../build/bin/preferences_gen.h:2863
+#: ../build/bin/preferences_gen.h:2873
 msgid "high quality processing from size"
 msgstr "次のサイズより大きい場合、高クオリティな処理を行う"
 
-#: ../build/bin/preferences_gen.h:2872
+#: ../build/bin/preferences_gen.h:2882
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1160,11 +1186,11 @@ msgstr ""
 "してください\n"
 "（マニュアルに詳しい説明があります）"
 
-#: ../build/bin/preferences_gen.h:2881
+#: ../build/bin/preferences_gen.h:2891
 msgid "enable disk backend for thumbnail cache"
 msgstr "サムネイルキャッシュのディスクバックエンドを有効にする"
 
-#: ../build/bin/preferences_gen.h:2889
+#: ../build/bin/preferences_gen.h:2899
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1184,11 +1210,11 @@ msgstr ""
 "コレクション全体の全てのサムネイルをオフラインで作成するには、'darktable-"
 "generate-cache' を実行してください"
 
-#: ../build/bin/preferences_gen.h:2898
+#: ../build/bin/preferences_gen.h:2908
 msgid "enable disk backend for full preview cache"
 msgstr "フルプレビューキャッシュのディスクバックエンドを有効にする"
 
-#: ../build/bin/preferences_gen.h:2906
+#: ../build/bin/preferences_gen.h:2916
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1206,11 +1232,11 @@ msgstr ""
 "フルプレビューモードで画像をズームする際のライトテーブルのパフォーマンスが大幅"
 "に向上します"
 
-#: ../build/bin/preferences_gen.h:2915
+#: ../build/bin/preferences_gen.h:2925
 msgid "enable smooth scrolling for lighttable thumbnails"
 msgstr "ライトテーブルのサムネイルのなめらかなスクロールを有効にする"
 
-#: ../build/bin/preferences_gen.h:2923
+#: ../build/bin/preferences_gen.h:2933
 msgid ""
 "if enabled, scrolling the lighttable scrolls by some number of pixels, as "
 "expected with a touch pad.\n"
@@ -1222,11 +1248,11 @@ msgstr ""
 "無効にすると、ライトテーブルのスクロールはサムネイルの列ごとになります。マウス"
 "ホイールでの操作に有用です"
 
-#: ../build/bin/preferences_gen.h:2932
+#: ../build/bin/preferences_gen.h:2942
 msgid "generate thumbnails in background"
 msgstr "バックグラウンドでサムネイルを生成する"
 
-#: ../build/bin/preferences_gen.h:2941
+#: ../build/bin/preferences_gen.h:2951
 msgid ""
 "if 'enable disk backend for thumbnail cache' is enabled thumbnails/mipmaps up "
 "to the selected size are generated while user is inactive in lighttable."
@@ -1235,11 +1261,11 @@ msgstr ""
 "テーブル内でアクティブでないときに、選択したサイズまでのサムネイル／ミップマッ"
 "プが生成されます"
 
-#: ../build/bin/preferences_gen.h:2950
+#: ../build/bin/preferences_gen.h:2960
 msgid "reset cached thumbnails"
 msgstr "キャッシュされたサムネイルをリセットする"
 
-#: ../build/bin/preferences_gen.h:2958
+#: ../build/bin/preferences_gen.h:2968
 msgid ""
 "force thumbnails to be regenerated by resetting the database. this may be "
 "needed in case some thumbnails have been manually removed or corrupted."
@@ -1247,11 +1273,11 @@ msgstr ""
 "データベースをリセットすることでサムネイルを再生成させます\n"
 "手動で削除されたり壊れたサムネイルがある場合にこれが必要となるかもしれません"
 
-#: ../build/bin/preferences_gen.h:2967
+#: ../build/bin/preferences_gen.h:2977
 msgid "delimiters for size categories"
 msgstr "サイズカテゴリの区切り"
 
-#: ../build/bin/preferences_gen.h:2980
+#: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
@@ -1263,28 +1289,28 @@ msgstr ""
 "例えば、120 | 400は、サムネイルの3つのカテゴリ（<120px, 120-400px, >400px）を"
 "意味します"
 
-#: ../build/bin/preferences_gen.h:2989
+#: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
 msgstr "サムネイル上の拡張オーバーレイテキストのひな型"
 
-#: ../build/bin/preferences_gen.h:3004 ../build/bin/preferences_gen.h:3028
+#: ../build/bin/preferences_gen.h:3014 ../build/bin/preferences_gen.h:3038
 msgid "see manual to know all the tags you can use."
 msgstr "使用出来るタグの全てについては、マニュアルを参照してください"
 
-#: ../build/bin/preferences_gen.h:3013
+#: ../build/bin/preferences_gen.h:3023
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "サムネイル上のツールチップのひな型（空欄で無効）"
 
-#: ../build/bin/preferences_gen.h:3038 ../src/gui/gtk.c:1703
+#: ../build/bin/preferences_gen.h:3048 ../src/gui/gtk.c:1703
 #: ../src/gui/preferences.c:630 ../src/views/darkroom.c:109
 msgid "darkroom"
 msgstr "ダークルーム"
 
-#: ../build/bin/preferences_gen.h:3053
+#: ../build/bin/preferences_gen.h:3063
 msgid "scroll down to increase mask parameters"
 msgstr "スクロールダウンでマスクのパラメータ値を上げる"
 
-#: ../build/bin/preferences_gen.h:3061
+#: ../build/bin/preferences_gen.h:3071
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -1296,11 +1322,11 @@ msgstr ""
 "湾曲度の値を上げます\n"
 "デフォルトでは、スクロールアップでこれらのパラメータ値を上げます"
 
-#: ../build/bin/preferences_gen.h:3070
+#: ../build/bin/preferences_gen.h:3080
 msgid "middle mouse button zooms to 200%"
 msgstr "マウスのミドルクリックで200%にズームする"
 
-#: ../build/bin/preferences_gen.h:3079
+#: ../build/bin/preferences_gen.h:3089
 #, no-c-format
 msgid ""
 "if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
@@ -1312,32 +1338,32 @@ msgstr ""
 "無効にすると、100%、表示領域にフィットの順に切り替え、Ctrlキーでズームレベルを"
 "調節することが出来ます"
 
-#: ../build/bin/preferences_gen.h:3088
+#: ../build/bin/preferences_gen.h:3098
 msgid "pattern for the image information line"
 msgstr "画像情報のひな型"
 
-#: ../build/bin/preferences_gen.h:3103
+#: ../build/bin/preferences_gen.h:3113
 msgid "see manual for a list of the tags you can use."
 msgstr "使用できるタグのリストは マニュアルを参照してください"
 
-#: ../build/bin/preferences_gen.h:3112
+#: ../build/bin/preferences_gen.h:3122
 msgid "position of the image information line"
 msgstr "画像情報の位置"
 
-#: ../build/bin/preferences_gen.h:3129
+#: ../build/bin/preferences_gen.h:3139
 msgid "border around image in darkroom mode"
 msgstr "ダークルームモードの画像の周囲の余白"
 
-#: ../build/bin/preferences_gen.h:3145 ../build/bin/preferences_gen.h:4180
-#: ../build/bin/preferences_gen.h:4250 ../build/bin/preferences_gen.h:4517
-#: ../build/bin/preferences_gen.h:4788 ../build/bin/preferences_gen.h:4866
-#: ../build/bin/preferences_gen.h:4894 ../build/bin/preferences_gen.h:4957
-#: ../build/bin/preferences_gen.h:5019 ../build/bin/preferences_gen.h:5048
+#: ../build/bin/preferences_gen.h:3155 ../build/bin/preferences_gen.h:4190
+#: ../build/bin/preferences_gen.h:4260 ../build/bin/preferences_gen.h:4527
+#: ../build/bin/preferences_gen.h:4798 ../build/bin/preferences_gen.h:4876
+#: ../build/bin/preferences_gen.h:4904 ../build/bin/preferences_gen.h:4967
+#: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5058
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "ダブルクリックすると、`%d' にリセットします"
 
-#: ../build/bin/preferences_gen.h:3147
+#: ../build/bin/preferences_gen.h:3157
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you don't "
 "want any border."
@@ -1345,11 +1371,11 @@ msgstr ""
 "ダークルームモードの画像処理において画像の周囲に小さい余白を表示します\n"
 "0に設定すると非表示にします"
 
-#: ../build/bin/preferences_gen.h:3173
+#: ../build/bin/preferences_gen.h:3183
 msgid "show loading screen between images"
 msgstr "画像間を移動する時、ロード画面を表示する"
 
-#: ../build/bin/preferences_gen.h:3181
+#: ../build/bin/preferences_gen.h:3191
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
@@ -1357,47 +1383,47 @@ msgstr ""
 "ダークルームで画像間を移動する時に灰色のロード画面を表示します\n"
 "無効にするとトーストメッセージのみ表示します"
 
-#: ../build/bin/preferences_gen.h:3187
+#: ../build/bin/preferences_gen.h:3197
 msgid "modules"
 msgstr "モジュール"
 
-#: ../build/bin/preferences_gen.h:3197
+#: ../build/bin/preferences_gen.h:3207
 msgid "display of individual color channels"
 msgstr "各カラーチャンネルの表示"
 
-#: ../build/bin/preferences_gen.h:3206
+#: ../build/bin/preferences_gen.h:3216
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
 msgstr "パラメトリックマスク機能でのカラーチャンネルの表示され方を定義します"
 
-#: ../build/bin/preferences_gen.h:3215
+#: ../build/bin/preferences_gen.h:3225
 msgid "hide built-in presets for processing modules"
 msgstr "処理モジュールの内蔵プリセットを非表示にする"
 
-#: ../build/bin/preferences_gen.h:3223
+#: ../build/bin/preferences_gen.h:3233
 msgid "hide built-in presets of processing modules in presets menu."
 msgstr "プリセットメニューで処理モジュールの内蔵プリセットを非表示にします"
 
-#: ../build/bin/preferences_gen.h:3232 ../build/bin/preferences_gen.h:3240
+#: ../build/bin/preferences_gen.h:3242 ../build/bin/preferences_gen.h:3250
 msgid "show the guides widget in modules UI"
 msgstr "モジュールのユーザーインターフェースにガイド線のウィジェットを表示する"
 
-#: ../build/bin/preferences_gen.h:3249
+#: ../build/bin/preferences_gen.h:3259
 msgid "expand a single processing module at a time"
 msgstr "同時に展開される処理モジュールを一つにする"
 
-#: ../build/bin/preferences_gen.h:3257
+#: ../build/bin/preferences_gen.h:3267
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "このオプションはダークルームモードでのShift+クリックの動作のオン／オフを切り替"
 "えます"
 
-#: ../build/bin/preferences_gen.h:3266
+#: ../build/bin/preferences_gen.h:3276
 msgid "only collapse modules in current group"
 msgstr "現在のグループのモジュールのみ折りたたむ"
 
-#: ../build/bin/preferences_gen.h:3274
+#: ../build/bin/preferences_gen.h:3284
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
@@ -1405,11 +1431,11 @@ msgstr ""
 "同時に展開されるモジュールが一つのみの場合、現在のグループの他のモジュールのみ"
 "折りたたみます。他のグループのモジュールは無視します"
 
-#: ../build/bin/preferences_gen.h:3283
+#: ../build/bin/preferences_gen.h:3293
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "モジュールをアクティブにした時に展開し、無効にした時に折りたたむ"
 
-#: ../build/bin/preferences_gen.h:3291
+#: ../build/bin/preferences_gen.h:3301
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
@@ -1417,23 +1443,23 @@ msgstr ""
 "このオプションを使用すると、モジュールを有効化あるいは無効化した時に、モジュー"
 "ルを自動的に展開または折りたたみます"
 
-#: ../build/bin/preferences_gen.h:3300
+#: ../build/bin/preferences_gen.h:3310
 msgid "scroll processing modules to the top when expanded"
 msgstr "処理モジュールを展開した時、上へスクロールする"
 
-#: ../build/bin/preferences_gen.h:3317
+#: ../build/bin/preferences_gen.h:3327
 msgid "swap the utility and processing modules panels"
 msgstr "ユーティリティモジュールと処理モジュールのパネルを入れ替える"
 
-#: ../build/bin/preferences_gen.h:3325
+#: ../build/bin/preferences_gen.h:3335
 msgid "move the list of processing modules to the left of the screen"
 msgstr "処理モジュールのリストを画面の左側に移動する"
 
-#: ../build/bin/preferences_gen.h:3334
+#: ../build/bin/preferences_gen.h:3344
 msgid "show right-side buttons in processing module headers"
 msgstr "処理モジュールのヘッダに右側のボタンを表示する"
 
-#: ../build/bin/preferences_gen.h:3343
+#: ../build/bin/preferences_gen.h:3353
 msgid ""
 "when the mouse is not over a module, the multi-instance, reset and preset "
 "buttons can be hidden:\n"
@@ -1457,11 +1483,11 @@ msgstr ""
 "- スムーズ：同一のヘッダ内の全てのボタンが同時に段階的に薄くなります\n"
 "- 徐々に非表示：必要に応じて個々のボタンを徐々に非表示にします"
 
-#: ../build/bin/preferences_gen.h:3352
+#: ../build/bin/preferences_gen.h:3362
 msgid "show mask indicator in module headers"
 msgstr "モジュールのヘッダにマスクインジケーターを表示する"
 
-#: ../build/bin/preferences_gen.h:3360
+#: ../build/bin/preferences_gen.h:3370
 msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
@@ -1469,11 +1495,11 @@ msgstr ""
 "有効にすると、マスクが適用されている処理モジュールのヘッダにアイコンが表示され"
 "ます"
 
-#: ../build/bin/preferences_gen.h:3369
+#: ../build/bin/preferences_gen.h:3379
 msgid "prompt for name on addition of new instance"
 msgstr "新しいインスタンス追加時にインスタンス名プロンプト"
 
-#: ../build/bin/preferences_gen.h:3377
+#: ../build/bin/preferences_gen.h:3387
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
@@ -1481,27 +1507,27 @@ msgstr ""
 "有効にすると、新しいモジュールインスタンス（新しいインスタンスおよび複製）を作"
 "成した時、リネームプロンプトが現れます"
 
-#: ../build/bin/preferences_gen.h:3387
+#: ../build/bin/preferences_gen.h:3397
 msgid "processing"
 msgstr "処理"
 
-#: ../build/bin/preferences_gen.h:3392
+#: ../build/bin/preferences_gen.h:3402
 msgid "image processing"
 msgstr "画像処理"
 
-#: ../build/bin/preferences_gen.h:3402
+#: ../build/bin/preferences_gen.h:3412
 msgid "always use LittleCMS 2 to apply output color profile"
 msgstr "出力カラープロファイルを適用する際、常にLittleCMS 2を使用する"
 
-#: ../build/bin/preferences_gen.h:3410
+#: ../build/bin/preferences_gen.h:3420
 msgid "this is slower than the default."
 msgstr "デフォルトより速度が遅くなります"
 
-#: ../build/bin/preferences_gen.h:3419
+#: ../build/bin/preferences_gen.h:3429
 msgid "pixel interpolator (warp)"
 msgstr "ピクセル補間（画像変形）"
 
-#: ../build/bin/preferences_gen.h:3428
+#: ../build/bin/preferences_gen.h:3438
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
@@ -1509,22 +1535,22 @@ msgstr ""
 "回転、レンズ補正、液化、トリミング、および最終スケーリングのためのモジュールに"
 "使われるピクセル補間（バイリニア、バイキュービック、ランチョス2）"
 
-#: ../build/bin/preferences_gen.h:3437
+#: ../build/bin/preferences_gen.h:3447
 msgid "pixel interpolator (scaling)"
 msgstr "ピクセル補間（画像スケーリング）"
 
-#: ../build/bin/preferences_gen.h:3446
+#: ../build/bin/preferences_gen.h:3456
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
 "画像スケーリングで使われるピクセル補間（バイリニア、バイキュービック、ランチョ"
 "ス2、ランチョス3）"
 
-#: ../build/bin/preferences_gen.h:3455
+#: ../build/bin/preferences_gen.h:3465
 msgid "LUT 3D root folder"
 msgstr "LUT 3Dのルートフォルダ"
 
-#: ../build/bin/preferences_gen.h:3457 ../build/bin/preferences_gen.h:3481
+#: ../build/bin/preferences_gen.h:3467 ../build/bin/preferences_gen.h:3491
 #: ../src/control/jobs/control_jobs.c:2204
 #: ../src/control/jobs/control_jobs.c:2260 ../src/gui/preferences.c:1260
 #: ../src/gui/presets.c:429 ../src/gui/welcome.c:169 ../src/gui/welcome.c:337
@@ -1536,7 +1562,7 @@ msgstr "LUT 3Dのルートフォルダ"
 msgid "select directory"
 msgstr "ディレクトリを選択してください"
 
-#: ../build/bin/preferences_gen.h:3470
+#: ../build/bin/preferences_gen.h:3480
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
@@ -1544,11 +1570,11 @@ msgstr ""
 "このフォルダ（およびサブフォルダ）に、LUT 3Dモジュールが使用するLUTファイルが"
 "含まれます（要再起動）"
 
-#: ../build/bin/preferences_gen.h:3479
+#: ../build/bin/preferences_gen.h:3489
 msgid "raster mask files root folder"
 msgstr "ラスターマスクファイルのルートフォルダ"
 
-#: ../build/bin/preferences_gen.h:3494
+#: ../build/bin/preferences_gen.h:3504
 msgid ""
 "this folder (and sub-folders) contains PFM/PNG files used by the raster mask "
 "import module. (restart required)"
@@ -1556,11 +1582,11 @@ msgstr ""
 "このフォルダ（およびサブフォルダ）に、ラスターマスクインポートモジュールが使用"
 "するPFM/PNGファイルが含まれます（要再起動）"
 
-#: ../build/bin/preferences_gen.h:3503
+#: ../build/bin/preferences_gen.h:3513
 msgid "auto-apply pixel workflow defaults"
 msgstr "自動適用するピクセルワークフローのデフォルト設定"
 
-#: ../build/bin/preferences_gen.h:3512
+#: ../build/bin/preferences_gen.h:3522
 msgid ""
 "selects which workflow will be used by default in the darkroom\n"
 "\n"
@@ -1589,11 +1615,11 @@ msgstr ""
 "\n"
 "<b>なし</b>：予め定義されたワークフローを使用しません"
 
-#: ../build/bin/preferences_gen.h:3521
+#: ../build/bin/preferences_gen.h:3531
 msgid "auto-apply per camera basecurve presets"
 msgstr "カメラごとのベースカーブのプリセットを自動適用する"
 
-#: ../build/bin/preferences_gen.h:3529
+#: ../build/bin/preferences_gen.h:3539
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available. (restart required)\n"
@@ -1609,11 +1635,11 @@ msgstr ""
 "ベースカーブのプリセットの自動適用を避けるには、【ピクセルワークフローのデフォ"
 "ルト設定の自動適用】を'なし'に設定する必要があります"
 
-#: ../build/bin/preferences_gen.h:3538
+#: ../build/bin/preferences_gen.h:3548
 msgid "detect monochrome previews"
 msgstr "モノクロプレビューを検出する"
 
-#: ../build/bin/preferences_gen.h:3546
+#: ../build/bin/preferences_gen.h:3556
 msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
@@ -1621,11 +1647,11 @@ msgstr ""
 "多くのモノクロ画像はEXIFとプレビューデータによって識別されます\n"
 "注意：これにより、インポートとEXIFデータの読み込みが遅くなります"
 
-#: ../build/bin/preferences_gen.h:3555
+#: ../build/bin/preferences_gen.h:3565
 msgid "show warning messages"
 msgstr "警告メッセージを表示する"
 
-#: ../build/bin/preferences_gen.h:3563
+#: ../build/bin/preferences_gen.h:3573
 msgid ""
 "display messages in modules to warn beginner users when non-standard and "
 "possibly harmful settings are used in the pipeline.\n"
@@ -1637,15 +1663,15 @@ msgstr ""
 "これらのメッセージは誤検知である可能性があるため、理解している場合は無視するこ"
 "とをおすすめします。このオプションは警告を常に非表示にします"
 
-#: ../build/bin/preferences_gen.h:3569
+#: ../build/bin/preferences_gen.h:3579
 msgid "CPU / memory"
 msgstr "CPU／メモリ"
 
-#: ../build/bin/preferences_gen.h:3579
+#: ../build/bin/preferences_gen.h:3589
 msgid "darktable resources"
 msgstr "darktableのリソース"
 
-#: ../build/bin/preferences_gen.h:3589
+#: ../build/bin/preferences_gen.h:3599
 #, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources:\n"
@@ -1668,15 +1694,15 @@ msgstr ""
 "上のためにシステムリソースの大部分をdarktableで使用したい場合に最善の選択肢で"
 "す"
 
-#: ../build/bin/preferences_gen.h:3595
+#: ../build/bin/preferences_gen.h:3605
 msgid "OpenCL GPU acceleration"
 msgstr "OpenCL GPUアクセラレーション"
 
-#: ../build/bin/preferences_gen.h:3605
+#: ../build/bin/preferences_gen.h:3615
 msgid "activate OpenCL support"
 msgstr "OpenCLサポートを有効にする"
 
-#: ../build/bin/preferences_gen.h:3613
+#: ../build/bin/preferences_gen.h:3623
 msgid ""
 "if found, use OpenCL runtime on your system to speed up processing by using "
 "your graphics card(s).\n"
@@ -1686,11 +1712,11 @@ msgstr ""
 "イムを使用することで処理速度を向上します\n"
 "いつでもオンとオフを切り替えることが出来ます"
 
-#: ../build/bin/preferences_gen.h:3626
+#: ../build/bin/preferences_gen.h:3636
 msgid "OpenCL fast mode"
 msgstr "OpenCL高速モード"
 
-#: ../build/bin/preferences_gen.h:3634
+#: ../build/bin/preferences_gen.h:3644
 msgid ""
 "if set the OpenCL compiler uses aggressive optimizing for better performance "
 "with reduced precision so more differences between CPU and OpenCL are "
@@ -1700,7 +1726,7 @@ msgstr ""
 "ます。計算精度が低下するため、CPUとOpenCLの間でより大きな差が生じることが予想"
 "されます"
 
-#: ../build/bin/preferences_gen.h:3647
+#: ../build/bin/preferences_gen.h:3657
 msgid "OpenCL scheduling profile"
 msgstr "OpenCLスケジューリングプロファイル"
 
@@ -1708,7 +1734,7 @@ msgstr "OpenCLスケジューリングプロファイル"
 # デフォルト - GPU はフルピクセルパイプを処理し、CPUはプレビューパイプを処理します (設定パラメーターで修正可能)
 # マルチGPU - 2つの異なるGPUで両方のピクセルパイプを並列処理します
 # 最速なGPU - 両方のピクセルパイプを同一のGPUで順次処理します.
-#: ../build/bin/preferences_gen.h:3656
+#: ../build/bin/preferences_gen.h:3666
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems:\n"
@@ -1725,11 +1751,11 @@ msgstr ""
 "- 複数のGPU：2つの異なるGPUで両方のピクセルパイプを並列処理します\n"
 "- 非常に高速なGPU：両方のピクセルパイプを同一のGPUで順次処理します"
 
-#: ../build/bin/preferences_gen.h:3669
+#: ../build/bin/preferences_gen.h:3679
 msgid "tuned GPU memory"
 msgstr "GPUメモリを調整する"
 
-#: ../build/bin/preferences_gen.h:3677
+#: ../build/bin/preferences_gen.h:3687
 msgid ""
 "if enabled on a system with multiple OpenCL devices you may specify a safety "
 "margin per device (headroom, default is 600MB)"
@@ -1737,40 +1763,40 @@ msgstr ""
 "複数のOpenCLデバイスがあるシステムで有効にすると、デバイスごとの安全マージン"
 "（ヘッドルーム、デフォルト値は600MB）を指定します"
 
-#: ../build/bin/preferences_gen.h:3687
+#: ../build/bin/preferences_gen.h:3697
 msgid "OpenCL drivers"
 msgstr "OpenCLドライバ"
 
-#: ../build/bin/preferences_gen.h:3697
+#: ../build/bin/preferences_gen.h:3707
 msgid "Intel GPU"
 msgstr "Intel GPU"
 
-#: ../build/bin/preferences_gen.h:3705
+#: ../build/bin/preferences_gen.h:3715
 msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr ""
 "全ての対応プラットフォーム向けのIntel(R) OpenCLグラフィック（ベンダー提供）"
 
-#: ../build/bin/preferences_gen.h:3718
+#: ../build/bin/preferences_gen.h:3728
 msgid "Nvidia CUDA"
 msgstr "Nvidia CUDA"
 
-#: ../build/bin/preferences_gen.h:3726
+#: ../build/bin/preferences_gen.h:3736
 msgid "Nvidia CUDA based OpenCL (vendor provided)"
 msgstr "Nvidia CUDAベースのOpenCL（ベンダー提供）"
 
-#: ../build/bin/preferences_gen.h:3739
+#: ../build/bin/preferences_gen.h:3749
 msgid "AMD ROCm"
 msgstr "AMD ROCm"
 
-#: ../build/bin/preferences_gen.h:3747
+#: ../build/bin/preferences_gen.h:3757
 msgid "AMD Accelerated Parallel Processing (vendor provided)"
 msgstr "AMD Accelerated Parallel Processing（ベンダー提供）"
 
-#: ../build/bin/preferences_gen.h:3760
+#: ../build/bin/preferences_gen.h:3770
 msgid "RustiCL"
 msgstr "RustiCL"
 
-#: ../build/bin/preferences_gen.h:3768
+#: ../build/bin/preferences_gen.h:3778
 msgid ""
 "RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor "
 "driver"
@@ -1778,19 +1804,19 @@ msgstr ""
 "RustiCL Mesa OpenCL\n"
 "使用したい場合、ベンダーのドライバを無効にしてください"
 
-#: ../build/bin/preferences_gen.h:3781
+#: ../build/bin/preferences_gen.h:3791
 msgid "Apple"
 msgstr "Apple"
 
-#: ../build/bin/preferences_gen.h:3789
+#: ../build/bin/preferences_gen.h:3799
 msgid "Apple OpenCL (vendor provided)"
 msgstr "Apple OpenCL（ベンダー提供）"
 
-#: ../build/bin/preferences_gen.h:3802
+#: ../build/bin/preferences_gen.h:3812
 msgid "Microsoft OpenCLOn12"
 msgstr "Microsoft OpenCLOn12"
 
-#: ../build/bin/preferences_gen.h:3810
+#: ../build/bin/preferences_gen.h:3820
 msgid ""
 "Microsoft OpenCLOn12, only use this if the vendor provided driver does not "
 "work or there is none provided."
@@ -1799,11 +1825,11 @@ msgstr ""
 "ベンダー提供ドライバが動作しない、または提供されていない場合にのみ使用してくだ"
 "さい"
 
-#: ../build/bin/preferences_gen.h:3823
+#: ../build/bin/preferences_gen.h:3833
 msgid "other platforms"
 msgstr "他のプラットフォーム"
 
-#: ../build/bin/preferences_gen.h:3831
+#: ../build/bin/preferences_gen.h:3841
 msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
@@ -1811,66 +1837,66 @@ msgstr ""
 "設定した場合、全ての特定されていないプラットフォームが受け入れられます\n"
 "利用可能なベンダーのドライバが無い場合にのみこれを行ってください"
 
-#: ../build/bin/preferences_gen.h:3841
+#: ../build/bin/preferences_gen.h:3851
 msgid "security"
 msgstr "セキュリティ"
 
-#: ../build/bin/preferences_gen.h:3856
+#: ../build/bin/preferences_gen.h:3866
 msgid "ask before removing images from the library"
 msgstr "画像をライブラリから除去する前に確認する"
 
-#: ../build/bin/preferences_gen.h:3864
+#: ../build/bin/preferences_gen.h:3874
 msgid "always ask the user before removing image information from the library"
 msgstr "画像情報をライブラリから除去する前に必ずユーザーに確認します"
 
-#: ../build/bin/preferences_gen.h:3873
+#: ../build/bin/preferences_gen.h:3883
 msgid "ask before deleting images from disk"
 msgstr "画像をディスクから削除する前に確認する"
 
-#: ../build/bin/preferences_gen.h:3881
+#: ../build/bin/preferences_gen.h:3891
 msgid "always ask the user before any image file is deleted"
 msgstr "ファイルを削除する前に必ずユーザーに確認します"
 
-#: ../build/bin/preferences_gen.h:3890
+#: ../build/bin/preferences_gen.h:3900
 msgid "ask before discarding history stack"
 msgstr "履歴スタックを破棄する前に確認する"
 
-#: ../build/bin/preferences_gen.h:3898
+#: ../build/bin/preferences_gen.h:3908
 msgid "always ask the user before history stack is discarded on any image"
 msgstr "履歴スタックを破棄する前に必ずユーザーに確認します"
 
-#: ../build/bin/preferences_gen.h:3907
+#: ../build/bin/preferences_gen.h:3917
 msgid "try to use trash when deleting images"
 msgstr "画像を削除する時、ゴミ箱を使用するよう試みる"
 
-#: ../build/bin/preferences_gen.h:3915
+#: ../build/bin/preferences_gen.h:3925
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
 msgstr ""
 "対応するシステムでは、ファイルを永久に削除するのではなくゴミ箱へ送ります"
 
-#: ../build/bin/preferences_gen.h:3924
+#: ../build/bin/preferences_gen.h:3934
 msgid "ask before moving images from film roll folder"
 msgstr "フィルムロールフォルダから画像を移動する前に確認する"
 
-#: ../build/bin/preferences_gen.h:3932
+#: ../build/bin/preferences_gen.h:3942
 msgid "always ask the user before any image file is moved."
 msgstr "画像ファイルを移動する前に必ずユーザーに確認します"
 
-#: ../build/bin/preferences_gen.h:3941
+#: ../build/bin/preferences_gen.h:3951
 msgid "ask before copying images to new film roll folder"
 msgstr "新しいフィルムロールフォルダに画像をコピーする前に確認する"
 
-#: ../build/bin/preferences_gen.h:3949
+#: ../build/bin/preferences_gen.h:3959
 msgid "always ask the user before any image file is copied."
 msgstr "ファイルをコピーする前に必ずユーザーに確認します"
 
-#: ../build/bin/preferences_gen.h:3958
+#: ../build/bin/preferences_gen.h:3968
 msgid "ask before removing empty folders"
 msgstr "空のフォルダを削除する前に確認する"
 
-#: ../build/bin/preferences_gen.h:3966
+#: ../build/bin/preferences_gen.h:3976
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
@@ -1878,39 +1904,39 @@ msgstr ""
 "空のフォルダを削除する前に必ずユーザーに確認します\n"
 "これは画像を移動あるいは削除した後に発生します"
 
-#: ../build/bin/preferences_gen.h:3975
+#: ../build/bin/preferences_gen.h:3985
 msgid "ask before deleting a tag"
 msgstr "タグを削除する前に確認する"
 
-#: ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4001
 msgid "ask before deleting a style"
 msgstr "スタイルを削除する前に確認する"
 
-#: ../build/bin/preferences_gen.h:4007
+#: ../build/bin/preferences_gen.h:4017
 msgid "ask before deleting a preset"
 msgstr "プリセットを削除する前に確認する"
 
-#: ../build/bin/preferences_gen.h:4015
+#: ../build/bin/preferences_gen.h:4025
 msgid "will ask for confirmation before deleting or overwriting a preset"
 msgstr "プリセットを削除あるいは上書きする前に確認を求めます"
 
-#: ../build/bin/preferences_gen.h:4024
+#: ../build/bin/preferences_gen.h:4034
 msgid "ask before exporting in overwrite mode"
 msgstr "上書きモードでエクスポートする前に確認する"
 
-#: ../build/bin/preferences_gen.h:4032
+#: ../build/bin/preferences_gen.h:4042
 msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr "上書きモードでファイルをエクスポートする前に確認を求めます"
 
-#: ../build/bin/preferences_gen.h:4038 ../src/libs/tools/viewswitcher.c:151
+#: ../build/bin/preferences_gen.h:4048 ../src/libs/tools/viewswitcher.c:151
 msgid "other"
 msgstr "その他"
 
-#: ../build/bin/preferences_gen.h:4048
+#: ../build/bin/preferences_gen.h:4058
 msgid "password storage backend to use"
 msgstr "パスワードのために使用するストレージバックエンド"
 
-#: ../build/bin/preferences_gen.h:4065
+#: ../build/bin/preferences_gen.h:4075
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
@@ -1918,11 +1944,11 @@ msgstr ""
 "パスワード保存用のストレージバックエンド：自動、なし、libsecret、"
 "kwallet,apple_keychain、windows_credentials"
 
-#: ../build/bin/preferences_gen.h:4074
+#: ../build/bin/preferences_gen.h:4084
 msgid "auto login to storage server"
 msgstr "ストレージサーバーに自動ログイン"
 
-#: ../build/bin/preferences_gen.h:4082
+#: ../build/bin/preferences_gen.h:4092
 msgid ""
 "automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
@@ -1930,11 +1956,11 @@ msgstr ""
 "設定したストレージサーバーに自動ログインします\n"
 "パスワードストレージバックエンドが設定されている必要があります"
 
-#: ../build/bin/preferences_gen.h:4091
+#: ../build/bin/preferences_gen.h:4101
 msgid "executable for playing audio files"
 msgstr "オーディオファイルを再生するための実行プログラム"
 
-#: ../build/bin/preferences_gen.h:4104
+#: ../build/bin/preferences_gen.h:4114
 msgid ""
 "this external program is used to play audio files some cameras record to keep "
 "notes for images"
@@ -1942,29 +1968,29 @@ msgstr ""
 "この外部プログラムは、一部のカメラが記録するオーディオファイルを再生するために"
 "使用されます"
 
-#: ../build/bin/preferences_gen.h:4114
+#: ../build/bin/preferences_gen.h:4124
 msgid "storage"
 msgstr "ストレージ"
 
-#: ../build/bin/preferences_gen.h:4119 ../src/control/crawler.c:747
+#: ../build/bin/preferences_gen.h:4129 ../src/control/crawler.c:747
 msgid "database"
 msgstr "データベース"
 
-#: ../build/bin/preferences_gen.h:4129
+#: ../build/bin/preferences_gen.h:4139
 msgid "allow for multiple workspaces"
 msgstr "複数ワークスペースを有効にする"
 
-#: ../build/bin/preferences_gen.h:4137
+#: ../build/bin/preferences_gen.h:4147
 msgid "allow multiple workspaces which can be selected at startup"
 msgstr ""
 "複数のワークスペースを使用可能にします\n"
 "ワークスペースは使用時に選択することが出来ます"
 
-#: ../build/bin/preferences_gen.h:4146
+#: ../build/bin/preferences_gen.h:4156
 msgid "create database snapshot"
 msgstr "データベースのスナップショット作成"
 
-#: ../build/bin/preferences_gen.h:4155
+#: ../build/bin/preferences_gen.h:4165
 msgid ""
 "database snapshots are created right before closing darktable. options allow "
 "you to choose how often to make snapshots:\n"
@@ -1984,11 +2010,11 @@ msgstr ""
 "- 日に一度：最後にスナップショットが作られてから24時間経つと作成します\n"
 "- 終了時：darktableが閉じられるたびにスナップショットを作成します"
 
-#: ../build/bin/preferences_gen.h:4164
+#: ../build/bin/preferences_gen.h:4174
 msgid "how many snapshots to keep"
 msgstr "保持するスナップショット数"
 
-#: ../build/bin/preferences_gen.h:4182
+#: ../build/bin/preferences_gen.h:4192
 msgid ""
 "after successfully creating snapshot, how many older snapshots to keep "
 "(excluding mandatory version update ones). enter -1 to keep all snapshots\n"
@@ -2002,15 +2028,15 @@ msgstr ""
 "スナップショットを保存するとストレージが消費されること、最新のスナップショット"
 "だけで復元可能であることに留意してください"
 
-#: ../build/bin/preferences_gen.h:4188 ../src/libs/copy_history.c:148
+#: ../build/bin/preferences_gen.h:4198 ../src/libs/copy_history.c:148
 msgid "XMP sidecar files"
 msgstr "XMPサイドカーファイル"
 
-#: ../build/bin/preferences_gen.h:4198
+#: ../build/bin/preferences_gen.h:4208
 msgid "create XMP files"
 msgstr "XMPファイルの作成"
 
-#: ../build/bin/preferences_gen.h:4207
+#: ../build/bin/preferences_gen.h:4217
 msgid ""
 "XMP sidecar files store all editing steps, ratings, tags and color labels "
 "alongside your images in an open format readable by other applications, and "
@@ -2039,11 +2065,11 @@ msgstr ""
 "<b>インポート時</b>：画像がインポートされた時にXMPファイルが作成され、その後変"
 "更が加えられるたびに更新されます"
 
-#: ../build/bin/preferences_gen.h:4216
+#: ../build/bin/preferences_gen.h:4226
 msgid "store XMP tags in compressed format"
 msgstr "圧縮形式でXMPタグを保存する"
 
-#: ../build/bin/preferences_gen.h:4225
+#: ../build/bin/preferences_gen.h:4235
 msgid ""
 "entries in XMP tags can get rather large and may exceed the available space "
 "to store the history stack in output files.\n"
@@ -2053,11 +2079,11 @@ msgstr ""
 "ることがあります\n"
 "このオプションによって、XMPタグを圧縮し、スペースを節約します"
 
-#: ../build/bin/preferences_gen.h:4234
+#: ../build/bin/preferences_gen.h:4244
 msgid "auto-save interval"
 msgstr "自動保存の間隔"
 
-#: ../build/bin/preferences_gen.h:4252
+#: ../build/bin/preferences_gen.h:4262
 msgid ""
 "automatically save history while developing using the given interval (in "
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
@@ -2067,11 +2093,11 @@ msgstr ""
 "0に設定すると自動保存を無効にします\n"
 "低速なドライブでは自動保存は無効になるかもしれません"
 
-#: ../build/bin/preferences_gen.h:4261
+#: ../build/bin/preferences_gen.h:4271
 msgid "look for updated XMP files on startup"
 msgstr "更新されたXMPファイルを起動時に探す"
 
-#: ../build/bin/preferences_gen.h:4269
+#: ../build/bin/preferences_gen.h:4279
 msgid ""
 "check file modification times of all XMP files on startup to check if any got "
 "updated in the meantime"
@@ -2079,19 +2105,19 @@ msgstr ""
 "起動時に全てのXMPファイルの更新日時をチェックし、更新が行われていないか調べま"
 "す"
 
-#: ../build/bin/preferences_gen.h:4279
+#: ../build/bin/preferences_gen.h:4289
 msgid "miscellaneous"
 msgstr "その他"
 
-#: ../build/bin/preferences_gen.h:4284
+#: ../build/bin/preferences_gen.h:4294
 msgid "interface"
 msgstr "インターフェース"
 
-#: ../build/bin/preferences_gen.h:4294
+#: ../build/bin/preferences_gen.h:4304
 msgid "show splash screen at startup"
 msgstr "起動時にスプラッシュスクリーンを表示する"
 
-#: ../build/bin/preferences_gen.h:4302
+#: ../build/bin/preferences_gen.h:4312
 msgid ""
 "display a small window showing the progress of darktable startup before the "
 "main window appears"
@@ -2099,19 +2125,19 @@ msgstr ""
 "メインウィンドウが現れる前にdarktableの起動の進捗を示す小さなウィンドウを表示"
 "します"
 
-#: ../build/bin/preferences_gen.h:4311
+#: ../build/bin/preferences_gen.h:4321
 msgid "show welcome screen on next run"
 msgstr "次回起動時にウェルカムスクリーンを表示する"
 
-#: ../build/bin/preferences_gen.h:4319
+#: ../build/bin/preferences_gen.h:4329
 msgid "display the welcome setup screen the next time darktable is launched"
 msgstr "次回のdarktable起動時にウェルカムセットアップスクリーンを表示します"
 
-#: ../build/bin/preferences_gen.h:4328
+#: ../build/bin/preferences_gen.h:4338
 msgid "load default shortcuts at startup"
 msgstr "ショートカットのデフォルト設定を起動時に読み込む"
 
-#: ../build/bin/preferences_gen.h:4336
+#: ../build/bin/preferences_gen.h:4346
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
@@ -2119,36 +2145,36 @@ msgstr ""
 "ユーザー設定より前にデフォルトのショートカットを読み込みます\n"
 "オフにすると、削除したデフォルト設定に戻ることを避けることが出来ます"
 
-#: ../build/bin/preferences_gen.h:4345
+#: ../build/bin/preferences_gen.h:4355
 msgid "scale slider step with min/max"
 msgstr "スライダーのステップ幅を最大値／最小値に合わせて調整する"
 
-#: ../build/bin/preferences_gen.h:4353
+#: ../build/bin/preferences_gen.h:4363
 msgid "vary slider step size with min/max range"
 msgstr ""
 "スライダーのステップの大きさを最大値から最小値の範囲に合わせて変更します"
 
-#: ../build/bin/preferences_gen.h:4362
+#: ../build/bin/preferences_gen.h:4372
 msgid "marker shape"
 msgstr "マーカーの形状"
 
-#: ../build/bin/preferences_gen.h:4371
+#: ../build/bin/preferences_gen.h:4381
 msgid "the shape of the slider marker"
 msgstr "スライダーマーカーの形状"
 
-#: ../build/bin/preferences_gen.h:4380
+#: ../build/bin/preferences_gen.h:4390
 msgid "condensed panels' controls"
 msgstr "パネルコントロールのコンパクト表示"
 
-#: ../build/bin/preferences_gen.h:4388
+#: ../build/bin/preferences_gen.h:4398
 msgid "use condensed panels' controls in all views"
 msgstr "全てのビューでパネルのコントロールをコンパクトに表示します"
 
-#: ../build/bin/preferences_gen.h:4397
+#: ../build/bin/preferences_gen.h:4407
 msgid "automatically update module name"
 msgstr "モジュール名を自動的に更新する"
 
-#: ../build/bin/preferences_gen.h:4405
+#: ../build/bin/preferences_gen.h:4415
 msgid ""
 "if enabled, the module name will be automatically updated to match a preset "
 "name or a preset instance name if present."
@@ -2156,22 +2182,22 @@ msgstr ""
 "有効にした場合、モジュール名をプリセット名やプリセットインスタンス名に合わせて"
 "自動的に変更します"
 
-#: ../build/bin/preferences_gen.h:4414
+#: ../build/bin/preferences_gen.h:4424
 msgid "sort built-in presets first"
 msgstr "内蔵プリセットを先頭に並べる"
 
-#: ../build/bin/preferences_gen.h:4422
+#: ../build/bin/preferences_gen.h:4432
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
 "プリセットメニューでユーザープリセットの前に内蔵プリセットを表示するかいなか"
 
-#: ../build/bin/preferences_gen.h:4431
+#: ../build/bin/preferences_gen.h:4441
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr ""
 "マウスホイールでモジュールのサイドパネルをスクロールするようデフォルト設定する"
 
-#: ../build/bin/preferences_gen.h:4439
+#: ../build/bin/preferences_gen.h:4449
 msgid ""
 "in darktable's darkroom, where you do your edits, all controls are listed on "
 "a panel on the right; you can choose whether you want to use the scroll wheel "
@@ -2198,11 +2224,11 @@ msgstr ""
 "<b>無効</b>：マウスホイールでカーソル下にある項目の値を調整し、<i>Ctrl+Alt</i>"
 "でパネルをスクロールします"
 
-#: ../build/bin/preferences_gen.h:4448
+#: ../build/bin/preferences_gen.h:4458
 msgid "enable touchpad gestures in darkroom"
 msgstr "ダークルームでタッチパッドジェスチャーを有効にする"
 
-#: ../build/bin/preferences_gen.h:4456
+#: ../build/bin/preferences_gen.h:4466
 msgid ""
 "use two-finger touchpad gestures in darkroom for panning and pinch-to-zoom. "
 "<b>enabled:</b> touchpad pinch gestures zoom the image and two-finger "
@@ -2221,11 +2247,11 @@ msgstr ""
 "無効: タッチパッドのジェスチャーは無視され、ダークルームは従来のスクロール操作"
 "に戻り、<i>Ctrl+スクロール</i> でズームを行います"
 
-#: ../build/bin/preferences_gen.h:4465
+#: ../build/bin/preferences_gen.h:4475
 msgid "constrain darkroom zoom between screen fit and 100%"
-msgstr "darkroomのズーム倍率を画面に合わせるから100%までの範囲に制限する"
+msgstr "darkroomのズーム倍率を画面にフィットから100%までの範囲に制限する"
 
-#: ../build/bin/preferences_gen.h:4474
+#: ../build/bin/preferences_gen.h:4484
 #, no-c-format
 msgid ""
 "limits scroll-wheel and pinch-to-zoom in the darkroom to the range between "
@@ -2234,18 +2260,18 @@ msgid ""
 "zoom beyond 100%. <b>disabled:</b> zoom is never constrained and the "
 "additional <i>Ctrl</i> key press is not needed to zoom beyond 100%."
 msgstr ""
-"darkroom内でのスクロールホイールおよびピンチによるズーム範囲を画面に合わせる"
+"darkroom内でのスクロールホイールおよびピンチによるズーム範囲を画面にフィット"
 "（ズームアウト）から100%（ズームイン）までの間に制限します\n"
 "有効: ズーム範囲が制限されます。ズーム中に<i>Ctrlキー</i>を長押しすると、一時"
 "的に制限が解除され、100%を超えてズーム出来るようになります\n"
 "無効: ズーム範囲は制限されません。100%を超えてズームする場合も<i>Ctrlキー</i>"
 "を押す必要がありません"
 
-#: ../build/bin/preferences_gen.h:4483
+#: ../build/bin/preferences_gen.h:4493
 msgid "always show panels' scrollbars"
 msgstr "パネルのスクロールバーを常に表示する"
 
-#: ../build/bin/preferences_gen.h:4491
+#: ../build/bin/preferences_gen.h:4501
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content. (restart required)"
@@ -2253,11 +2279,11 @@ msgstr ""
 "パネルのスクロールバーを常に表示するか、内容次第でアクティブにします（要再起"
 "動）"
 
-#: ../build/bin/preferences_gen.h:4500
+#: ../build/bin/preferences_gen.h:4510
 msgid "duration of the UI transitions in ms"
 msgstr "UIのトランジッションの長さ（単位はミリ秒）"
 
-#: ../build/bin/preferences_gen.h:4519
+#: ../build/bin/preferences_gen.h:4529
 msgid ""
 "how long the transitions take (in ms) for expanding or collapsing modules and "
 "other UI elements"
@@ -2265,11 +2291,11 @@ msgstr ""
 "モジュールや他のUI要素を展開したり折りたたんだりする時のトランジッションの長さ"
 "（単位はミリ秒）"
 
-#: ../build/bin/preferences_gen.h:4528
+#: ../build/bin/preferences_gen.h:4538
 msgid "auto-scroll filmstrip to center on selected image"
 msgstr "選択した画像を中央に表示するようフィルムストリップを自動スクロールする"
 
-#: ../build/bin/preferences_gen.h:4536
+#: ../build/bin/preferences_gen.h:4546
 msgid ""
 "when enabled, the filmstrip in culling mode and in the darkroom automatically "
 "scrolls to center on the selected image"
@@ -2277,19 +2303,19 @@ msgstr ""
 "有効にすると、選別モードとダークルームにおいて、フィルムストリップが自動的にス"
 "クロールし、選択した画像を中心に表示されます"
 
-#: ../build/bin/preferences_gen.h:4545
+#: ../build/bin/preferences_gen.h:4555
 msgid "position of the scopes module"
 msgstr "スコープモジュールの位置"
 
-#: ../build/bin/preferences_gen.h:4554
+#: ../build/bin/preferences_gen.h:4564
 msgid "position the scopes at the top-left or top-right of the screen"
 msgstr "スコープの位置をスクリーンの左上か右上にします"
 
-#: ../build/bin/preferences_gen.h:4563
+#: ../build/bin/preferences_gen.h:4573
 msgid "method to use for getting the display profile"
 msgstr "ディスプレイプロファイルを取得する方法"
 
-#: ../build/bin/preferences_gen.h:4572
+#: ../build/bin/preferences_gen.h:4582
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile.\n"
@@ -2299,11 +2325,11 @@ msgstr ""
 "を用いるよう強制します\n"
 "それ以外の方法で不適切な結果が出る場合に有用です"
 
-#: ../build/bin/preferences_gen.h:4581
+#: ../build/bin/preferences_gen.h:4591
 msgid "order or exclude MIDI devices"
 msgstr "midiデバイスを指定・除外する"
 
-#: ../build/bin/preferences_gen.h:4594
+#: ../build/bin/preferences_gen.h:4604
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
@@ -2321,19 +2347,19 @@ msgstr ""
 "に何も書かれていない場合にはMIDIが完全に無効になります"
 
 #. tags
-#: ../build/bin/preferences_gen.h:4604 ../src/develop/lightroom.c:1573
+#: ../build/bin/preferences_gen.h:4614 ../src/develop/lightroom.c:1573
 #: ../src/gui/import_metadata.c:519 ../src/libs/export_metadata.c:196
 #: ../src/libs/image.c:622 ../src/libs/metadata_view.c:174
 msgid "tags"
 msgstr "タグ"
 
-#: ../build/bin/preferences_gen.h:4614
+#: ../build/bin/preferences_gen.h:4624
 msgid "omit hierarchy in simple tag lists"
 msgstr "簡易タグリストにおいて階層を省略する"
 
 # XMPファイルを作成するとき、階層タグが非階層タグのリストとしても追加され、他のプログラムでも見られるようになります
 # このオプションがチェックされると、darktable は最後の部分のみを加え、残りを無視します。 したがって 'foo|bar|baz' は 'baz'のみを追加します.
-#: ../build/bin/preferences_gen.h:4622
+#: ../build/bin/preferences_gen.h:4632
 msgid ""
 "when creating an XMP sidecar file the hierarchical tags are also added as a "
 "simple list\n"
@@ -2346,15 +2372,15 @@ msgstr ""
 "このオプションをチェックすると、darktableは最後の部分のみを追加し、残りを無視"
 "します。したがって'foo|bar|baz'は'baz'のみを追加します"
 
-#: ../build/bin/preferences_gen.h:4628
+#: ../build/bin/preferences_gen.h:4638
 msgid "shortcuts with multiple instances"
 msgstr "複数のインスタンスがある場合のキーボードショートカット"
 
-#: ../build/bin/preferences_gen.h:4638
+#: ../build/bin/preferences_gen.h:4648
 msgid "prefer focused instance"
 msgstr "フォーカスしているインスタンスを優先する"
 
-#: ../build/bin/preferences_gen.h:4646
+#: ../build/bin/preferences_gen.h:4656
 msgid ""
 "where multiple instances of a module are present, apply shortcuts to the "
 "instance that has focus\n"
@@ -2370,21 +2396,21 @@ msgstr ""
 "注意：ブレンドのショートカットは常にフォーカスされているインスタンスに適用され"
 "ます"
 
-#: ../build/bin/preferences_gen.h:4655
+#: ../build/bin/preferences_gen.h:4665
 msgid "prefer expanded instances"
 msgstr "展開されているインスタンスを優先する"
 
-#: ../build/bin/preferences_gen.h:4663
+#: ../build/bin/preferences_gen.h:4673
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
 "展開されているインスタンスがモジュールにある場合、折りたたまれているインスタン"
 "スを無視します"
 
-#: ../build/bin/preferences_gen.h:4672
+#: ../build/bin/preferences_gen.h:4682
 msgid "prefer enabled instances"
 msgstr "有効になっているインスタンスを優先する"
 
-#: ../build/bin/preferences_gen.h:4680
+#: ../build/bin/preferences_gen.h:4690
 msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
@@ -2392,11 +2418,11 @@ msgstr ""
 "上のルールを適用したうえで、アクティブなインスタンスがモジュールにある場合、ア"
 "クティブでないインスタンスを無視します"
 
-#: ../build/bin/preferences_gen.h:4689
+#: ../build/bin/preferences_gen.h:4699
 msgid "prefer unmasked instances"
 msgstr "マスクのないインスタンスを優先する"
 
-#: ../build/bin/preferences_gen.h:4697
+#: ../build/bin/preferences_gen.h:4707
 msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
 "ignore masked instances"
@@ -2404,11 +2430,11 @@ msgstr ""
 "上のルールを適用したうえで、マスクが用いられていないインスタンスがモジュールに"
 "ある場合、マスクが用いられているインスタンスを無視します"
 
-#: ../build/bin/preferences_gen.h:4706
+#: ../build/bin/preferences_gen.h:4716
 msgid "selection order"
 msgstr "選択順序"
 
-#: ../build/bin/preferences_gen.h:4715
+#: ../build/bin/preferences_gen.h:4725
 msgid ""
 "after applying the above rules, apply the shortcut based on its position in "
 "the pixelpipe"
@@ -2416,11 +2442,11 @@ msgstr ""
 "上記のルールを適用したうえで、ピクセルパイプの位置にもとづいてキーボードショー"
 "トカットを適用します"
 
-#: ../build/bin/preferences_gen.h:4724
+#: ../build/bin/preferences_gen.h:4734
 msgid "allow visual assignment to specific instances"
 msgstr "特定のインスタンスへの可視的割り当てを許可する"
 
-#: ../build/bin/preferences_gen.h:4732
+#: ../build/bin/preferences_gen.h:4742
 msgid ""
 "when multiple instances are present on an image this allows shortcuts to be "
 "visually assigned to those specific instances\n"
@@ -2431,41 +2457,41 @@ msgstr ""
 "チェックしない場合、キーボードショートカットは常に優先されているインスタンスに"
 "割り当てられます"
 
-#: ../build/bin/preferences_gen.h:4738
+#: ../build/bin/preferences_gen.h:4748
 msgid "map / geolocalization view"
 msgstr "マップ／ジオローカリゼーション"
 
-#: ../build/bin/preferences_gen.h:4748
+#: ../build/bin/preferences_gen.h:4758
 msgid "pretty print the image location"
 msgstr "画像の位置情報を分かりやすく表示する"
 
-#: ../build/bin/preferences_gen.h:4756
+#: ../build/bin/preferences_gen.h:4766
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr "画像情報モジュールにおいて位置情報を読みやすく表示します"
 
-#: ../build/bin/preferences_gen.h:4762
+#: ../build/bin/preferences_gen.h:4772
 msgid "slideshow view"
 msgstr "スライドショー"
 
-#: ../build/bin/preferences_gen.h:4772
+#: ../build/bin/preferences_gen.h:4782
 msgid "waiting time between each image in slideshow"
 msgstr "スライドショーにおける各画像間の待ち時間"
 
-#: ../build/bin/preferences_gen.h:4814
+#: ../build/bin/preferences_gen.h:4824
 msgid "do not set the 'uncategorized' entry for tags"
 msgstr "タグに「未分類」エントリを設定しない"
 
-#: ../build/bin/preferences_gen.h:4822
+#: ../build/bin/preferences_gen.h:4832
 msgid "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr "子を持たないタグに「未分類」エントリを設定しません"
 
-#: ../build/bin/preferences_gen.h:4831
+#: ../build/bin/preferences_gen.h:4841
 msgid "tags case sensitivity"
 msgstr "タグの大文字／小文字の区別"
 
-#: ../build/bin/preferences_gen.h:4840
+#: ../build/bin/preferences_gen.h:4850
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
@@ -2473,37 +2499,37 @@ msgstr ""
 "タグにおいて大文字と小文字を区別するかいなか\n"
 "拡張機能Sqlite ICUがない場合、区別が無効になるのは26個のラテン文字のみです"
 
-#: ../build/bin/preferences_gen.h:4849 ../build/bin/preferences_gen.h:4940
+#: ../build/bin/preferences_gen.h:4859 ../build/bin/preferences_gen.h:4950
 msgid "number of collections to be stored"
 msgstr "記憶するコレクションの数"
 
-#: ../build/bin/preferences_gen.h:4868 ../build/bin/preferences_gen.h:4959
+#: ../build/bin/preferences_gen.h:4878 ../build/bin/preferences_gen.h:4969
 msgid "the number of recent collections to store and show in this list"
 msgstr "記憶してこのリストに表示する直近に使用したコレクションの数"
 
-#: ../build/bin/preferences_gen.h:4877
+#: ../build/bin/preferences_gen.h:4887
 msgid "number of folder levels to show in lists"
 msgstr "リストに表示されるフォルダの階層数"
 
-#: ../build/bin/preferences_gen.h:4896
+#: ../build/bin/preferences_gen.h:4906
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr "フィルムロール名に表示されるフォルダの階層数（右から数えて）"
 
-#: ../build/bin/preferences_gen.h:4905
+#: ../build/bin/preferences_gen.h:4915
 msgid "sort film rolls by"
 msgstr "フィルムロールの並び順"
 
-#: ../build/bin/preferences_gen.h:4914
+#: ../build/bin/preferences_gen.h:4924
 msgid "sets the collections-list order for film rolls"
 msgstr "フィルムロールのコレクションリストの順序を設定します"
 
-#: ../build/bin/preferences_gen.h:5002
+#: ../build/bin/preferences_gen.h:5012
 msgid "suggested tags level of confidence"
 msgstr "サジェストされるタグの信頼水準"
 
-#: ../build/bin/preferences_gen.h:5022
+#: ../build/bin/preferences_gen.h:5032
 #, no-c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
@@ -2516,11 +2542,11 @@ msgstr ""
 "100：条件に合わせたサジェストを行わず、最近使用したタグのみを表示します（高"
 "速）"
 
-#: ../build/bin/preferences_gen.h:5031
+#: ../build/bin/preferences_gen.h:5041
 msgid "number of recently attached tags"
 msgstr "最近付けたタグの数"
 
-#: ../build/bin/preferences_gen.h:5050
+#: ../build/bin/preferences_gen.h:5060
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
@@ -3457,7 +3483,7 @@ msgstr "基準"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:384
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6144
 #: ../src/iop/basicadj.c:653 ../src/iop/flip.c:448 ../src/iop/levels.c:645
 #: ../src/iop/rgblevels.c:1081
@@ -3564,7 +3590,7 @@ msgstr "範囲"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:280
-#: ../src/libs/neural_restore.c:4174 ../src/libs/neural_restore.c:4191
+#: ../src/libs/neural_restore.c:4178 ../src/libs/neural_restore.c:4195
 msgid "strength"
 msgstr "強さ"
 
@@ -6162,7 +6188,7 @@ msgstr "ドロップ ダウン"
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1816 ../src/libs/import.c:1928 ../src/libs/import.c:2020
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4119
+#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4123
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1701
@@ -6402,50 +6428,50 @@ msgstr "モデルリポジトリ\"%s\" にreleases-index.jsonがありません"
 msgid "could not fetch releases-index.json (HTTP %ld)"
 msgstr "releases-index.jsonを取得出来ませんでした（HTTP %ld）"
 
-#: ../src/common/ai_models.c:1400 ../src/common/ai_models.c:1465
+#: ../src/common/ai_models.c:1395 ../src/common/ai_models.c:1460
 msgid "invalid parameters"
 msgstr "無効なパラメータ"
 
-#: ../src/common/ai_models.c:1403
+#: ../src/common/ai_models.c:1398
 #, c-format
 msgid "file not found: %s"
 msgstr "ファイルが見つかりません：%s"
 
-#: ../src/common/ai_models.c:1411
+#: ../src/common/ai_models.c:1406
 #, c-format
 msgid "archive top-level directory is not a valid model id: \"%s\""
 msgstr "アーカイブの最上位ディレクトリが有効なモデルidではありません: \"%s\""
 
-#: ../src/common/ai_models.c:1420
+#: ../src/common/ai_models.c:1415
 msgid "failed to extract model archive"
 msgstr "モデルアーカイブの展開に失敗しました"
 
-#: ../src/common/ai_models.c:1473
+#: ../src/common/ai_models.c:1468
 msgid "model not found in registry"
 msgstr "レジストリ内にモデルが見つかりません"
 
-#: ../src/common/ai_models.c:1479
+#: ../src/common/ai_models.c:1474
 msgid "model has no download asset defined"
 msgstr "モデルに定義されたダウンロードアセットがありません"
 
-#: ../src/common/ai_models.c:1490
+#: ../src/common/ai_models.c:1485
 msgid "invalid asset filename"
 msgstr "無効なアセットファイル名"
 
-#: ../src/common/ai_models.c:1496
+#: ../src/common/ai_models.c:1491
 msgid "model is already downloading"
 msgstr "モデルはすでにダウンロード中です"
 
-#: ../src/common/ai_models.c:1527
+#: ../src/common/ai_models.c:1522
 msgid "invalid repository format"
 msgstr "無効なリポジトリ形式"
 
-#: ../src/common/ai_models.c:1552
+#: ../src/common/ai_models.c:1547
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr "darktable %sと互換性のあるAIモデルのリリースが見つかりませんでした"
 
-#: ../src/common/ai_models.c:1568
+#: ../src/common/ai_models.c:1563
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6454,38 +6480,38 @@ msgstr ""
 "%sのチェックサムを取得することが出来ませんでした。整合性の確認ができないため、"
 "ダウンロードを中止します"
 
-#: ../src/common/ai_models.c:1586
+#: ../src/common/ai_models.c:1581
 msgid "failed to build download url"
 msgstr "ダウンロードurlのビルドに失敗しました"
 
-#: ../src/common/ai_models.c:1597
+#: ../src/common/ai_models.c:1592
 #, c-format
 msgid "failed to create file: %s"
 msgstr "ファイル%sの作成失敗"
 
-#: ../src/common/ai_models.c:1621
+#: ../src/common/ai_models.c:1616
 msgid "failed to initialize download"
 msgstr "ダウンロードの初期化に失敗しました"
 
-#: ../src/common/ai_models.c:1641
+#: ../src/common/ai_models.c:1636
 msgid "download cancelled"
 msgstr "ダウンロードがキャンセルされました"
 
-#: ../src/common/ai_models.c:1643
+#: ../src/common/ai_models.c:1638
 #, c-format
 msgid "download failed: %s"
 msgstr "ダウンロード失敗：%s"
 
-#: ../src/common/ai_models.c:1654
+#: ../src/common/ai_models.c:1649
 #, c-format
 msgid "http error: %ld"
 msgstr "httpエラー：%ld"
 
-#: ../src/common/ai_models.c:1677
+#: ../src/common/ai_models.c:1672
 msgid "checksum verification failed"
 msgstr "チェックサム検証失敗"
 
-#: ../src/common/ai_models.c:1687
+#: ../src/common/ai_models.c:1682
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6494,7 +6520,7 @@ msgstr ""
 "%sのチェックサムが利用出来ません。整合性の確認ができないため、インストールを中"
 "止します"
 
-#: ../src/common/ai_models.c:1700
+#: ../src/common/ai_models.c:1695
 msgid "failed to extract archive"
 msgstr "アーカイブの展開に失敗しました"
 
@@ -8061,7 +8087,7 @@ msgstr "AVIF"
 msgid "ImageMagick"
 msgstr "ImageMagick"
 
-#: ../src/common/image.h:231 ../src/imageio/format/heif.c:554
+#: ../src/common/image.h:231 ../src/imageio/format/heif.c:599
 msgid "HEIF"
 msgstr "HEIF"
 
@@ -10314,7 +10340,7 @@ msgstr "ピン留め出来る有効な画像がありません"
 msgid "please wait for image to load"
 msgstr "画像の読み込みが完了するまでお待ちください"
 
-#: ../src/develop/develop.c:1099
+#: ../src/develop/develop.c:1135
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
@@ -10322,12 +10348,12 @@ msgstr ""
 "履歴が長すぎる、または、低速なドライブが用いられているため、この画像では履歴の"
 "自動保存が無効になりました"
 
-#: ../src/develop/develop.c:2611
+#: ../src/develop/develop.c:2647
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s：モジュール`%s'のバージョンの不一致：%d != %d"
 
-#: ../src/develop/develop.c:3550
+#: ../src/develop/develop.c:3590
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "モジュール複製、新しいインスタンスをベースインスタンスの後ろに移動することは出"
@@ -10409,7 +10435,7 @@ msgid "purpose"
 msgstr "目的"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4252
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4256
 msgid "process"
 msgstr "処理"
 
@@ -11005,7 +11031,7 @@ msgstr ""
 "プリセット、スタイル、あるいは履歴のコピー＆貼り付けを適用したことが原因である"
 "と考えられます"
 
-#: ../src/develop/pixelpipe_hb.c:1365
+#: ../src/develop/pixelpipe_hb.c:1371
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -11015,13 +11041,13 @@ msgstr ""
 "モジュール'%s'の非整列バッファが原因の致命的なピクセルパイプの中断があります\n"
 "GitHubで報告してください"
 
-#: ../src/develop/pixelpipe_hb.c:1946
+#: ../src/develop/pixelpipe_hb.c:1953
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
 "致命的な入力の非整列\n"
 "GitHubで報告してください\n"
 
-#: ../src/develop/pixelpipe_hb.c:3167
+#: ../src/develop/pixelpipe_hb.c:3174
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11041,7 +11067,7 @@ msgstr ""
 "  - '全てのデバイスメモリを使用する'を選択した場合、ヘッドルームの設定が小さす"
 "ぎる"
 
-#: ../src/develop/pixelpipe_hb.c:3469
+#: ../src/develop/pixelpipe_hb.c:3476
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -15118,7 +15144,7 @@ msgstr "スクリプトフォルダを選択"
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4154
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4158
 #: ../src/views/lighttable.c:1588
 msgid "page"
 msgstr "ページ"
@@ -17009,7 +17035,7 @@ msgid "select ONNX Runtime library"
 msgstr "ONNX Runtimeライブラリを選択"
 
 #: ../src/gui/preferences_ai.c:1385 ../src/iop/lut3d.c:1576
-#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4120
+#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4124
 msgid "_select"
 msgstr "_選択"
 
@@ -17624,39 +17650,39 @@ msgstr "作成"
 msgid "copy settings from existing workspace"
 msgstr "既存のワークスペースから設定をコピーする"
 
-#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "8 bit"
 msgstr "8ビット"
 
-#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "10 bit"
 msgstr "10ビット"
 
-#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "12 bit"
 msgstr "12ビット"
 
-#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossless"
 msgstr "可逆"
 
-#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossy"
 msgstr "非可逆"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
-#: ../src/imageio/format/heif.c:642 ../src/imageio/format/jxl.c:585
+#: ../src/imageio/format/heif.c:687 ../src/imageio/format/jxl.c:585
 #: ../src/imageio/format/pdf.c:678 ../src/imageio/format/png.c:688
 #: ../src/imageio/format/tiff.c:880 ../src/imageio/format/xcf.c:358
-#: ../src/libs/neural_restore.c:4282
+#: ../src/libs/neural_restore.c:4286
 msgid "bit depth"
 msgstr "ビット深度"
 
@@ -17698,7 +17724,7 @@ msgstr ""
 #. compression
 #. Compression method combo box
 #: ../src/imageio/format/avif.c:981 ../src/imageio/format/exr.cc:631
-#: ../src/imageio/format/heif.c:646 ../src/imageio/format/pdf.c:693
+#: ../src/imageio/format/heif.c:691 ../src/imageio/format/pdf.c:693
 #: ../src/imageio/format/png.c:702 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/webp.c:409 ../src/libs/masks.c:117
 msgid "compression"
@@ -17713,20 +17739,20 @@ msgstr "画像の圧縮"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:661
+#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:706
 #: ../src/imageio/format/j2k.c:707 ../src/imageio/format/jpeg.c:578
 #: ../src/imageio/format/jxl.c:611 ../src/imageio/format/webp.c:419
 #: ../src/libs/camera.c:588
 msgid "quality"
 msgstr "クオリティ"
 
-#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:664
+#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:709
 msgid "the quality of an image, less quality means fewer details"
 msgstr ""
 "画像のクオリティ\n"
 "クオリティが低いと細部がより失われます"
 
-#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:677
+#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:722
 #: ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
 msgstr "クロマサブサンプリング"
@@ -17747,17 +17773,17 @@ msgstr ""
 "4:2:2 - 水平に半減したカラーサンプリングレート\n"
 "4:2:0 - 水平および垂直に半減したカラーサンプリングレート"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:4:4"
 msgstr "4:4:4"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:2"
 msgstr "4:2:2"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:0"
 msgstr "4:2:0"
@@ -17793,7 +17819,7 @@ msgstr "16ビット（浮動小数点）"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4285
+#: ../src/libs/neural_restore.c:4289
 msgid "32 bit (float)"
 msgstr "32ビット（浮動小数点）"
 
@@ -17846,7 +17872,7 @@ msgstr "HTJ2K256"
 msgid "HTJ2K32"
 msgstr "HTJ2K32"
 
-#: ../src/imageio/format/heif.c:678
+#: ../src/imageio/format/heif.c:723
 msgid ""
 "chroma subsampling setting for HEIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -17910,7 +17936,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "16 bit"
 msgstr "16ビット"
 
@@ -19289,7 +19315,7 @@ msgid "denoise chroma"
 msgstr "クロマノイズ除去"
 
 #: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1357
-#: ../src/libs/neural_restore.c:4162
+#: ../src/libs/neural_restore.c:4166
 msgid "denoise"
 msgstr "ノイズ除去"
 
@@ -22787,7 +22813,7 @@ msgstr ""
 "このモジュールは非推奨です\n"
 "代わりにカラーマッピングモジュールを使用することをおすすめします"
 
-#: ../src/iop/colortransfer.c:413
+#: ../src/iop/colortransfer.c:406
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -23238,7 +23264,7 @@ msgid "variance blue: "
 msgstr "分散 青："
 
 #: ../src/iop/denoiseprofile.c:3678 ../src/libs/export.c:1600
-#: ../src/libs/neural_restore.c:4293 ../src/libs/print_settings.c:2516
+#: ../src/libs/neural_restore.c:4297 ../src/libs/print_settings.c:2516
 #: ../src/libs/print_settings.c:2872
 msgid "profile"
 msgstr "プロファイル"
@@ -25232,7 +25258,7 @@ msgstr "被写体までの距離"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4453 ../src/iop/overlay.c:1124 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1484 ../src/libs/export.c:1558
-#: ../src/libs/neural_restore.c:4203
+#: ../src/libs/neural_restore.c:4207
 msgid "scale"
 msgstr "スケール"
 
@@ -26412,7 +26438,7 @@ msgstr ""
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
 #: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1358
-#: ../src/libs/neural_restore.c:4160
+#: ../src/libs/neural_restore.c:4164
 msgid "raw denoise"
 msgstr "RAWノイズ除去"
 
@@ -28850,7 +28876,7 @@ msgstr ""
 "一部のフォーマットでのみ動作します"
 
 #: ../src/libs/export.c:1601 ../src/libs/export.c:1636
-#: ../src/libs/neural_restore.c:4294 ../src/libs/print_settings.c:2875
+#: ../src/libs/neural_restore.c:4298 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
 msgstr "画像の設定"
@@ -31461,7 +31487,7 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3302
+#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3306
 msgid "neural restore"
 msgstr "ニューラル復元"
 
@@ -31502,7 +31528,7 @@ msgstr "RAWノイズ除去：元画像を読み込むことが出来ません"
 msgid "raw denoise: image is not in a supported raw sensor format"
 msgstr "rawノイズ除去：画像がサポートされているrawセンサー形式ではありません"
 
-#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4164
+#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4168
 msgid "upscale"
 msgstr "アップスケール"
 
@@ -31580,60 +31606,60 @@ msgstr "広色域が維持されました、ノイズ除去は適用されてい
 msgid "wide-gamut clipped"
 msgstr "広色域がクリップしています"
 
-#: ../src/libs/neural_restore.c:3486
+#: ../src/libs/neural_restore.c:3490
 #, c-format
 msgid "zoom %.0f%%"
 msgstr "ズーム %.0f%%"
 
-#: ../src/libs/neural_restore.c:3649
+#: ../src/libs/neural_restore.c:3653
 msgid "click to select preview area"
 msgstr "クリックすると、プレビュー領域を選択します"
 
-#: ../src/libs/neural_restore.c:3674
+#: ../src/libs/neural_restore.c:3678
 msgid "model not available"
 msgstr "モデルを利用出来ません"
 
-#: ../src/libs/neural_restore.c:3676 ../src/libs/neural_restore.c:3870
+#: ../src/libs/neural_restore.c:3680 ../src/libs/neural_restore.c:3874
 msgid "generating preview..."
 msgstr "プレビューを生成しています..."
 
-#: ../src/libs/neural_restore.c:3678
+#: ../src/libs/neural_restore.c:3682
 msgid "click to generate preview"
 msgstr "クリックしてプレビューを生成"
 
-#: ../src/libs/neural_restore.c:3680
+#: ../src/libs/neural_restore.c:3684
 msgid "image not supported by this task"
 msgstr "画像がこのタスクでサポートされていません"
 
-#: ../src/libs/neural_restore.c:3682
+#: ../src/libs/neural_restore.c:3686
 msgid "preview initialization failed"
 msgstr "プレビューの初期化に失敗しました"
 
-#: ../src/libs/neural_restore.c:3683
+#: ../src/libs/neural_restore.c:3687
 msgid "select an image to preview"
 msgstr "プレビューする画像を選択してください"
 
-#: ../src/libs/neural_restore.c:4116 ../src/libs/neural_restore.c:4380
+#: ../src/libs/neural_restore.c:4120 ../src/libs/neural_restore.c:4384
 msgid "select output folder"
 msgstr "出力フォルダを選択してください"
 
-#: ../src/libs/neural_restore.c:4161
+#: ../src/libs/neural_restore.c:4165
 msgid "AI raw denoising"
 msgstr "AI RAWノイズ除去"
 
-#: ../src/libs/neural_restore.c:4163
+#: ../src/libs/neural_restore.c:4167
 msgid "AI denoising"
 msgstr "AIノイズ除去"
 
-#: ../src/libs/neural_restore.c:4165
+#: ../src/libs/neural_restore.c:4169
 msgid "AI upscaling"
 msgstr "AIアップスケーリング"
 
-#: ../src/libs/neural_restore.c:4177
+#: ../src/libs/neural_restore.c:4181
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "元のCFA（0%）とノイズ除去後の出力（100%）の間でブレンドします"
 
-#: ../src/libs/neural_restore.c:4195
+#: ../src/libs/neural_restore.c:4199
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -31642,19 +31668,19 @@ msgstr ""
 "100%にすると、AIモデルの出力を完全に適用します\n"
 "値を下げると、色ノイズを抑えたまま、輝度の質感や粒子感を取り戻すことが出来ます"
 
-#: ../src/libs/neural_restore.c:4204
+#: ../src/libs/neural_restore.c:4208
 msgid "upscale factor"
 msgstr "アップスケールファクター"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:4223
+#: ../src/libs/neural_restore.c:4227
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -31662,27 +31688,27 @@ msgstr ""
 "画像サムネイル上でクリックしてプレビュー領域を選択\n"
 "ダブルクリックすると中央にリセットされます"
 
-#: ../src/libs/neural_restore.c:4254
+#: ../src/libs/neural_restore.c:4258
 msgid "process selected images"
 msgstr "選択画像を処理します"
 
-#: ../src/libs/neural_restore.c:4272
+#: ../src/libs/neural_restore.c:4276
 msgid "output parameters"
 msgstr "出力パラメータ"
 
-#: ../src/libs/neural_restore.c:4283
+#: ../src/libs/neural_restore.c:4287
 msgid "output TIFF bit depth"
 msgstr "出力TIFFビット深度"
 
-#: ../src/libs/neural_restore.c:4325
+#: ../src/libs/neural_restore.c:4329
 msgid "color profile embedded in the output TIFF"
 msgstr "出力されるTIFFに埋め込まれるカラープロファイル"
 
-#: ../src/libs/neural_restore.c:4335
+#: ../src/libs/neural_restore.c:4339
 msgid "preserve wide-gamut colors"
 msgstr "広色域の色を保持"
 
-#: ../src/libs/neural_restore.c:4342
+#: ../src/libs/neural_restore.c:4346
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
@@ -31693,15 +31719,15 @@ msgstr ""
 "る可能性があります\n"
 "この設定はノイズ除去にのみ影響します"
 
-#: ../src/libs/neural_restore.c:4351
+#: ../src/libs/neural_restore.c:4355
 msgid "add to the current collection"
 msgstr "現在のコレクションに追加"
 
-#: ../src/libs/neural_restore.c:4357
+#: ../src/libs/neural_restore.c:4361
 msgid "automatically import the output image into the current collection"
 msgstr "出力された画像を現在のコレクションに自動的にインポートします"
 
-#: ../src/libs/neural_restore.c:4373
+#: ../src/libs/neural_restore.c:4377
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
