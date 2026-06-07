@@ -402,9 +402,31 @@ changes (where available).
 
 ### API Version
 
-- API version is now 9.6.0
+- API version is now 9.7.0
 
 ### New Features
+
+- The lua-scripts are now included in the darktable release, making them
+  available for all users.  If the lua-scripts are already installed, they
+  will be used instead of the included ones.  The luarc file in the user
+  configuration directory is no longer required, but it can still be used
+  for special requirements. 
+
+  If the user does not want the scripts, then can be disabled in the Lua
+  options section of the preferences.
+
+- Lua now has a global variable, darktable_gui_safe, that gets set when it is
+  safe to install a lib.  This is needed because of a startup race condition
+  that indicates the view is lighttable before it is initialized.
+
+- Image metadata fields added using the Metadata Editor module are accessible
+  as a dt_lua_image_t field with the same name as the title assigned in Metadata
+  Editor.  Trying to access a dt_lua_image_t metadata field that does not exist
+  is a fatal error.  The added metadata field is populated when the image is imported
+  or with the image exif data is refreshed.
+
+- darktable.metadata.exists() has been added to the API to check if the dt_lua_image_t
+  metadata field exists before trying to access it.
 
 - Added Lua AI API (`darktable.ai`) for scripting AI model inference.
   Provides tensor creation, model loading with GPU provider selection,
@@ -416,13 +438,67 @@ changes (where available).
 
 ### Bug Fixes
 
-- N/A
+- force cache write after mipmap generation
 
-### Add action support for Lua
+### New Scripts
+
+- contrib/select_non_existing - adds a button to the selection module
+  to select images in the lighttable that dont have corresponding files
+  on disk
+
+- contrib/selected_image_visible - adds a shortcut and an action button
+  to make the currently selected image in lighttable visible.
+
+- contrib/toggle_group_view - add a shortcut and an action button to toggle
+  between a group selected in lighttable and a view containing only the grouped
+  images with the group expanded.
+
+- official/use_paired_jpg_as_mipmap - for images that don't have a full size
+  embedded JPG preview the JPG from a RAW+JPG pair can be copied to the mipmap
+  cache and used as the full resolution mipmap to speed up cache generation.  This
+  is useful for Canon EOS R series cameras that don't embed full size previews.
+
+- official/select_duplicates - add a shortcut and a selection button to select 
+  duplicate images
+
+- official/recent_bookmarks - add recently edited images to the system recently
+  used files for quick access
+
+- official/select_raw_non_raw - add selection buttons to select raw or non-raw images
+  from the lighttable
+
+- official/scheduler - a simple FIFO scheduler for cooperative multitasking
+
+- official/group_persistence - add functional tags containing group information to
+  image groups so that they can be rebuilt if the database is lost.
+
+- official/select_unaltered - add a selection button to select images that have been
+  imported but not opened in darkroom.
+
+- official/selection2collection - create a temporary collection from a selection.  The
+  collection is automatically forgotten when darktable exits.  The user may change this
+  in the Lua options preferences.
+
+- official/extract_burst_roll_images - add a selection button to select Canon burst roll
+  images and an action button to extract the embedded images and group them with the burst
+  roll image.  Requires dnglab.
+
+- official/auto_straighten - automatically straighten an image loaded into darkroom using
+  them embedded pitch and roll data.  Requires exiftool
+
+- examples/ai_denoise - an example script demonstrating how to use the new Lua AI API to denoise
+  a non-raw image
+
+- examples/ai_raw_denoise - an example script demonstrating how to use the new Lua AI API to denoise
+  a raw image.
 
 ### Other Lua changes
 
-- N/A
+- the Lua options in preferences have been reworked so that there are global preferences and
+  preferences for each script that registers them
+
+- scripts_installer has been removed since the scripts are now bundled with the darktable
+  release.
 
 ## Notes
 
