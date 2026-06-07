@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 19:36+0200\n"
-"PO-Revision-Date: 2026-06-03 19:29+0300\n"
+"POT-Creation-Date: 2026-06-06 21:46+0200\n"
+"PO-Revision-Date: 2026-06-07 08:39+0300\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -20,12 +20,12 @@ msgctxt "preferences"
 msgid "first instance"
 msgstr "Ensimmäinen instanssi"
 
-#: ../build/bin/conf_gen.h:112 ../build/bin/preferences_gen.h:4713
+#: ../build/bin/conf_gen.h:112 ../build/bin/preferences_gen.h:4723
 msgctxt "preferences"
 msgid "last instance"
 msgstr "Viimeinen instanssi"
 
-#: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4369
+#: ../build/bin/conf_gen.h:212 ../build/bin/preferences_gen.h:4379
 msgctxt "preferences"
 msgid "triangle"
 msgstr "Kolmio"
@@ -48,7 +48,7 @@ msgstr "Palkki"
 #: ../build/bin/conf_gen.h:288 ../build/bin/conf_gen.h:440
 #: ../build/bin/conf_gen.h:453 ../build/bin/conf_gen.h:1824
 #: ../build/bin/conf_gen.h:1845 ../build/bin/conf_gen.h:1882
-#: ../build/bin/preferences_gen.h:2852 ../build/bin/preferences_gen.h:2939
+#: ../build/bin/preferences_gen.h:2862 ../build/bin/preferences_gen.h:2949
 msgctxt "preferences"
 msgid "never"
 msgstr "Ei koskaan"
@@ -58,7 +58,7 @@ msgctxt "preferences"
 msgid "once a month"
 msgstr "Kerran kuussa"
 
-#: ../build/bin/conf_gen.h:290 ../build/bin/preferences_gen.h:4153
+#: ../build/bin/conf_gen.h:290 ../build/bin/preferences_gen.h:4163
 msgctxt "preferences"
 msgid "once a week"
 msgstr "Kerran viikossa"
@@ -80,7 +80,7 @@ msgid "small"
 msgstr "Pieni"
 
 #: ../build/bin/conf_gen.h:366 ../build/bin/conf_gen.h:593
-#: ../build/bin/preferences_gen.h:3586 ../build/bin/preferences_gen.h:3654
+#: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3664
 msgctxt "preferences"
 msgid "default"
 msgstr "Oletus"
@@ -95,19 +95,19 @@ msgctxt "preferences"
 msgid "after edit"
 msgstr "Muokkauksen jälkeen"
 
-#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4205
+#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4215
 msgctxt "preferences"
 msgid "on import"
 msgstr "Tuonnin yhteydessä"
 
 #: ../build/bin/conf_gen.h:454 ../build/bin/conf_gen.h:1814
 #: ../build/bin/conf_gen.h:1835 ../build/bin/conf_gen.h:5050
-#: ../build/bin/preferences_gen.h:3341
+#: ../build/bin/preferences_gen.h:3351
 msgctxt "preferences"
 msgid "always"
 msgstr "Aina"
 
-#: ../build/bin/conf_gen.h:455 ../build/bin/preferences_gen.h:4223
+#: ../build/bin/conf_gen.h:455 ../build/bin/preferences_gen.h:4233
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "Vain suuret tunnisteet"
@@ -117,7 +117,7 @@ msgctxt "preferences"
 msgid "sensitive"
 msgstr "Herkkyys"
 
-#: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4838
+#: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4848
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "Ei merkitse"
@@ -132,7 +132,7 @@ msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "Erittäin nopea näytönohjain"
 
-#: ../build/bin/conf_gen.h:1064 ../build/bin/preferences_gen.h:4912
+#: ../build/bin/conf_gen.h:1064 ../build/bin/preferences_gen.h:4922
 msgctxt "preferences"
 msgid "import time"
 msgstr "Tuonnin aika"
@@ -309,7 +309,7 @@ msgid "VGA"
 msgstr "VGA"
 
 #: ../build/bin/conf_gen.h:1817 ../build/bin/conf_gen.h:1838
-#: ../build/bin/conf_gen.h:1885 ../build/bin/preferences_gen.h:2870
+#: ../build/bin/conf_gen.h:1885 ../build/bin/preferences_gen.h:2880
 msgctxt "preferences"
 msgid "720p"
 msgstr "720"
@@ -351,7 +351,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1825 ../build/bin/conf_gen.h:3847
-#: ../build/bin/conf_gen.h:5053 ../build/bin/preferences_gen.h:4063
+#: ../build/bin/conf_gen.h:5053 ../build/bin/preferences_gen.h:4073
 msgctxt "preferences"
 msgid "auto"
 msgstr "Automaattinen"
@@ -401,7 +401,7 @@ msgctxt "preferences"
 msgid "high"
 msgstr "Korkea"
 
-#: ../build/bin/conf_gen.h:1982 ../build/bin/preferences_gen.h:3204
+#: ../build/bin/conf_gen.h:1982 ../build/bin/preferences_gen.h:3214
 msgctxt "preferences"
 msgid "false color"
 msgstr "Vääräväri"
@@ -426,7 +426,7 @@ msgctxt "preferences"
 msgid "top center"
 msgstr "Ylhäällä"
 
-#: ../build/bin/conf_gen.h:2005 ../build/bin/preferences_gen.h:3119
+#: ../build/bin/conf_gen.h:2005 ../build/bin/preferences_gen.h:3129
 msgctxt "preferences"
 msgid "bottom"
 msgstr "Alhaalla"
@@ -519,7 +519,7 @@ msgid "bilinear"
 msgstr "bilineaarinen"
 
 #: ../build/bin/conf_gen.h:3355 ../build/bin/conf_gen.h:3367
-#: ../build/bin/preferences_gen.h:3426
+#: ../build/bin/preferences_gen.h:3436
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicubic"
@@ -529,7 +529,7 @@ msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:3369 ../build/bin/preferences_gen.h:3444
+#: ../build/bin/conf_gen.h:3369 ../build/bin/preferences_gen.h:3454
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
@@ -584,7 +584,7 @@ msgctxt "preferences"
 msgid "left"
 msgstr "Vasen"
 
-#: ../build/bin/conf_gen.h:4165 ../build/bin/preferences_gen.h:4552
+#: ../build/bin/conf_gen.h:4165 ../build/bin/preferences_gen.h:4562
 msgctxt "preferences"
 msgid "right"
 msgstr "Oikea"
@@ -709,22 +709,22 @@ msgctxt "preferences"
 msgid "inch"
 msgstr "tuumaa"
 
-#: ../build/bin/conf_gen.h:4666
+#: ../build/bin/conf_gen.h:4666 ../build/bin/preferences_gen.h:237
 msgctxt "preferences"
 msgid "grey"
 msgstr "Harmaa"
 
-#: ../build/bin/conf_gen.h:4667
+#: ../build/bin/conf_gen.h:4667 ../build/bin/preferences_gen.h:238
 msgctxt "preferences"
 msgid "dark"
 msgstr "Pimeä"
 
-#: ../build/bin/conf_gen.h:4668
+#: ../build/bin/conf_gen.h:4668 ../build/bin/preferences_gen.h:239
 msgctxt "preferences"
 msgid "darker"
 msgstr "Piemeämpi"
 
-#: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4570
+#: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4580
 msgctxt "preferences"
 msgid "all"
 msgstr "Kaikki"
@@ -739,7 +739,7 @@ msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4813 ../build/bin/preferences_gen.h:3510
+#: ../build/bin/conf_gen.h:4813 ../build/bin/preferences_gen.h:3520
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "Kohtausperusteinen (Sigmoid)"
@@ -852,77 +852,103 @@ msgstr "Ei saatavilla"
 msgid "not available on this system"
 msgstr "Ei saatavilla tässä järjestelmässä"
 
-#: ../build/bin/preferences_gen.h:2588 ../src/control/jobs/control_jobs.c:3118
+#: ../build/bin/preferences_gen.h:235
+msgid "darktable theme"
+msgstr "Darktablen teema"
+
+#: ../build/bin/preferences_gen.h:236
+msgid ""
+"the shade around your photo affects how you see its colors and tones while "
+"editing. grey is recommended because it's the most neutral – it doesn't push "
+"your eye in any direction\n"
+"\n"
+"<b>grey:</b> best for accurate color work\n"
+"\n"
+"<b>dark:</b> less distracting around your image\n"
+"\n"
+"<b>darker:</b> good for dimly-lit rooms"
+msgstr ""
+"Kuvan ympärillä oleva taustaväri vaikuttaa siihen, miten näet kuvan värit ja "
+"sävyt kuvankäsittelyn aikana. Harmaata suositellaan, koska se on neutraalein "
+"vaihtoehto – eikä se ohjaa katsettasi mihinkään suuntaan.\n"
+"\n"
+"<b>Harmaa:</b> paras tarkkaan värityöskentelyyn.\n"
+"\n"
+"<b>Pimeä:</b> ei häiritse niin paljon kuvan ympärillä. \n"
+"\n"
+"<b>Pimeämpi:</b> hyvä heikosti valaistuihin huoneisiin."
+
+#: ../build/bin/preferences_gen.h:2598 ../src/control/jobs/control_jobs.c:3118
 #: ../src/libs/import.c:183
 msgid "import"
 msgstr "Tuo"
 
-#: ../build/bin/preferences_gen.h:2593
+#: ../build/bin/preferences_gen.h:2603
 msgid "session options"
 msgstr "Istunnon asetukset"
 
-#: ../build/bin/preferences_gen.h:2603
+#: ../build/bin/preferences_gen.h:2613
 msgid "base filmroll's directory"
 msgstr "Filmirullien oletushakemisto"
 
-#: ../build/bin/preferences_gen.h:2614 ../build/bin/preferences_gen.h:2636
-#: ../build/bin/preferences_gen.h:2653 ../build/bin/preferences_gen.h:2675
-#: ../build/bin/preferences_gen.h:2708 ../build/bin/preferences_gen.h:2725
-#: ../build/bin/preferences_gen.h:2742 ../build/bin/preferences_gen.h:2759
-#: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:2793
-#: ../build/bin/preferences_gen.h:2810 ../build/bin/preferences_gen.h:2827
-#: ../build/bin/preferences_gen.h:2852 ../build/bin/preferences_gen.h:2870
-#: ../build/bin/preferences_gen.h:2887 ../build/bin/preferences_gen.h:2904
-#: ../build/bin/preferences_gen.h:2921 ../build/bin/preferences_gen.h:2939
-#: ../build/bin/preferences_gen.h:2956 ../build/bin/preferences_gen.h:2978
-#: ../build/bin/preferences_gen.h:3002 ../build/bin/preferences_gen.h:3026
-#: ../build/bin/preferences_gen.h:3059 ../build/bin/preferences_gen.h:3076
-#: ../build/bin/preferences_gen.h:3101 ../build/bin/preferences_gen.h:3119
-#: ../build/bin/preferences_gen.h:3162 ../build/bin/preferences_gen.h:3179
-#: ../build/bin/preferences_gen.h:3204 ../build/bin/preferences_gen.h:3221
-#: ../build/bin/preferences_gen.h:3238 ../build/bin/preferences_gen.h:3255
-#: ../build/bin/preferences_gen.h:3272 ../build/bin/preferences_gen.h:3289
-#: ../build/bin/preferences_gen.h:3306 ../build/bin/preferences_gen.h:3323
-#: ../build/bin/preferences_gen.h:3341 ../build/bin/preferences_gen.h:3358
-#: ../build/bin/preferences_gen.h:3375 ../build/bin/preferences_gen.h:3408
-#: ../build/bin/preferences_gen.h:3426 ../build/bin/preferences_gen.h:3444
-#: ../build/bin/preferences_gen.h:3467 ../build/bin/preferences_gen.h:3491
-#: ../build/bin/preferences_gen.h:3510 ../build/bin/preferences_gen.h:3527
-#: ../build/bin/preferences_gen.h:3544 ../build/bin/preferences_gen.h:3561
-#: ../build/bin/preferences_gen.h:3586 ../build/bin/preferences_gen.h:3611
-#: ../build/bin/preferences_gen.h:3632 ../build/bin/preferences_gen.h:3654
-#: ../build/bin/preferences_gen.h:3675 ../build/bin/preferences_gen.h:3703
-#: ../build/bin/preferences_gen.h:3724 ../build/bin/preferences_gen.h:3745
-#: ../build/bin/preferences_gen.h:3766 ../build/bin/preferences_gen.h:3787
-#: ../build/bin/preferences_gen.h:3808 ../build/bin/preferences_gen.h:3829
-#: ../build/bin/preferences_gen.h:3862 ../build/bin/preferences_gen.h:3879
-#: ../build/bin/preferences_gen.h:3896 ../build/bin/preferences_gen.h:3913
-#: ../build/bin/preferences_gen.h:3930 ../build/bin/preferences_gen.h:3947
-#: ../build/bin/preferences_gen.h:3964 ../build/bin/preferences_gen.h:3981
-#: ../build/bin/preferences_gen.h:3997 ../build/bin/preferences_gen.h:4013
-#: ../build/bin/preferences_gen.h:4030 ../build/bin/preferences_gen.h:4063
-#: ../build/bin/preferences_gen.h:4080 ../build/bin/preferences_gen.h:4102
-#: ../build/bin/preferences_gen.h:4135 ../build/bin/preferences_gen.h:4153
-#: ../build/bin/preferences_gen.h:4205 ../build/bin/preferences_gen.h:4223
-#: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4300
-#: ../build/bin/preferences_gen.h:4317 ../build/bin/preferences_gen.h:4334
-#: ../build/bin/preferences_gen.h:4351 ../build/bin/preferences_gen.h:4369
-#: ../build/bin/preferences_gen.h:4386 ../build/bin/preferences_gen.h:4403
-#: ../build/bin/preferences_gen.h:4420 ../build/bin/preferences_gen.h:4437
-#: ../build/bin/preferences_gen.h:4454 ../build/bin/preferences_gen.h:4471
-#: ../build/bin/preferences_gen.h:4489 ../build/bin/preferences_gen.h:4534
-#: ../build/bin/preferences_gen.h:4552 ../build/bin/preferences_gen.h:4570
-#: ../build/bin/preferences_gen.h:4592 ../build/bin/preferences_gen.h:4620
-#: ../build/bin/preferences_gen.h:4644 ../build/bin/preferences_gen.h:4661
-#: ../build/bin/preferences_gen.h:4678 ../build/bin/preferences_gen.h:4695
-#: ../build/bin/preferences_gen.h:4713 ../build/bin/preferences_gen.h:4730
-#: ../build/bin/preferences_gen.h:4754 ../build/bin/preferences_gen.h:4820
-#: ../build/bin/preferences_gen.h:4838 ../build/bin/preferences_gen.h:4912
+#: ../build/bin/preferences_gen.h:2624 ../build/bin/preferences_gen.h:2646
+#: ../build/bin/preferences_gen.h:2663 ../build/bin/preferences_gen.h:2685
+#: ../build/bin/preferences_gen.h:2718 ../build/bin/preferences_gen.h:2735
+#: ../build/bin/preferences_gen.h:2752 ../build/bin/preferences_gen.h:2769
+#: ../build/bin/preferences_gen.h:2786 ../build/bin/preferences_gen.h:2803
+#: ../build/bin/preferences_gen.h:2820 ../build/bin/preferences_gen.h:2837
+#: ../build/bin/preferences_gen.h:2862 ../build/bin/preferences_gen.h:2880
+#: ../build/bin/preferences_gen.h:2897 ../build/bin/preferences_gen.h:2914
+#: ../build/bin/preferences_gen.h:2931 ../build/bin/preferences_gen.h:2949
+#: ../build/bin/preferences_gen.h:2966 ../build/bin/preferences_gen.h:2988
+#: ../build/bin/preferences_gen.h:3012 ../build/bin/preferences_gen.h:3036
+#: ../build/bin/preferences_gen.h:3069 ../build/bin/preferences_gen.h:3086
+#: ../build/bin/preferences_gen.h:3111 ../build/bin/preferences_gen.h:3129
+#: ../build/bin/preferences_gen.h:3172 ../build/bin/preferences_gen.h:3189
+#: ../build/bin/preferences_gen.h:3214 ../build/bin/preferences_gen.h:3231
+#: ../build/bin/preferences_gen.h:3248 ../build/bin/preferences_gen.h:3265
+#: ../build/bin/preferences_gen.h:3282 ../build/bin/preferences_gen.h:3299
+#: ../build/bin/preferences_gen.h:3316 ../build/bin/preferences_gen.h:3333
+#: ../build/bin/preferences_gen.h:3351 ../build/bin/preferences_gen.h:3368
+#: ../build/bin/preferences_gen.h:3385 ../build/bin/preferences_gen.h:3418
+#: ../build/bin/preferences_gen.h:3436 ../build/bin/preferences_gen.h:3454
+#: ../build/bin/preferences_gen.h:3477 ../build/bin/preferences_gen.h:3501
+#: ../build/bin/preferences_gen.h:3520 ../build/bin/preferences_gen.h:3537
+#: ../build/bin/preferences_gen.h:3554 ../build/bin/preferences_gen.h:3571
+#: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3621
+#: ../build/bin/preferences_gen.h:3642 ../build/bin/preferences_gen.h:3664
+#: ../build/bin/preferences_gen.h:3685 ../build/bin/preferences_gen.h:3713
+#: ../build/bin/preferences_gen.h:3734 ../build/bin/preferences_gen.h:3755
+#: ../build/bin/preferences_gen.h:3776 ../build/bin/preferences_gen.h:3797
+#: ../build/bin/preferences_gen.h:3818 ../build/bin/preferences_gen.h:3839
+#: ../build/bin/preferences_gen.h:3872 ../build/bin/preferences_gen.h:3889
+#: ../build/bin/preferences_gen.h:3906 ../build/bin/preferences_gen.h:3923
+#: ../build/bin/preferences_gen.h:3940 ../build/bin/preferences_gen.h:3957
+#: ../build/bin/preferences_gen.h:3974 ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4007 ../build/bin/preferences_gen.h:4023
+#: ../build/bin/preferences_gen.h:4040 ../build/bin/preferences_gen.h:4073
+#: ../build/bin/preferences_gen.h:4090 ../build/bin/preferences_gen.h:4112
+#: ../build/bin/preferences_gen.h:4145 ../build/bin/preferences_gen.h:4163
+#: ../build/bin/preferences_gen.h:4215 ../build/bin/preferences_gen.h:4233
+#: ../build/bin/preferences_gen.h:4277 ../build/bin/preferences_gen.h:4310
+#: ../build/bin/preferences_gen.h:4327 ../build/bin/preferences_gen.h:4344
+#: ../build/bin/preferences_gen.h:4361 ../build/bin/preferences_gen.h:4379
+#: ../build/bin/preferences_gen.h:4396 ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4430 ../build/bin/preferences_gen.h:4447
+#: ../build/bin/preferences_gen.h:4464 ../build/bin/preferences_gen.h:4481
+#: ../build/bin/preferences_gen.h:4499 ../build/bin/preferences_gen.h:4544
+#: ../build/bin/preferences_gen.h:4562 ../build/bin/preferences_gen.h:4580
+#: ../build/bin/preferences_gen.h:4602 ../build/bin/preferences_gen.h:4630
+#: ../build/bin/preferences_gen.h:4654 ../build/bin/preferences_gen.h:4671
+#: ../build/bin/preferences_gen.h:4688 ../build/bin/preferences_gen.h:4705
+#: ../build/bin/preferences_gen.h:4723 ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:4764 ../build/bin/preferences_gen.h:4830
+#: ../build/bin/preferences_gen.h:4848 ../build/bin/preferences_gen.h:4922
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "Kaksoisnapsauta palauttaaksesi arvoksi `%s'"
 
-#: ../build/bin/preferences_gen.h:2616
+#: ../build/bin/preferences_gen.h:2626
 msgid ""
 "directory where newly imported filmrolls are stored; the default uses <b>$"
 "(PICTURES_FOLDER)</b>, which expands to your system's pictures folder: <i>~/"
@@ -933,42 +959,42 @@ msgstr ""
 "valokuvahakemistoon: <i>~/Kuvat</i> macOS:ssä ja Linuxissa, <i>C:/Käyttäjät/"
 "käyttäjänimi/Kuvat</i> Windowsissa."
 
-#: ../build/bin/preferences_gen.h:2625
+#: ../build/bin/preferences_gen.h:2635
 msgid "filmroll name"
 msgstr "Filmirullan nimi"
 
-#: ../build/bin/preferences_gen.h:2638
+#: ../build/bin/preferences_gen.h:2648
 msgid "name of the imported filmroll"
 msgstr "Tuodun filmirullan nimi."
 
-#: ../build/bin/preferences_gen.h:2647
+#: ../build/bin/preferences_gen.h:2657
 msgid "keep original filename"
 msgstr "Säilytä alkuperäinen tiedostonimi"
 
-#: ../build/bin/preferences_gen.h:2653 ../build/bin/preferences_gen.h:2708
-#: ../build/bin/preferences_gen.h:2725 ../build/bin/preferences_gen.h:2759
-#: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:2793
-#: ../build/bin/preferences_gen.h:2827 ../build/bin/preferences_gen.h:2904
-#: ../build/bin/preferences_gen.h:2921 ../build/bin/preferences_gen.h:2956
-#: ../build/bin/preferences_gen.h:3059 ../build/bin/preferences_gen.h:3162
-#: ../build/bin/preferences_gen.h:3221 ../build/bin/preferences_gen.h:3289
-#: ../build/bin/preferences_gen.h:3323 ../build/bin/preferences_gen.h:3375
-#: ../build/bin/preferences_gen.h:3408 ../build/bin/preferences_gen.h:3527
-#: ../build/bin/preferences_gen.h:3544 ../build/bin/preferences_gen.h:3632
-#: ../build/bin/preferences_gen.h:3675 ../build/bin/preferences_gen.h:3745
-#: ../build/bin/preferences_gen.h:3787 ../build/bin/preferences_gen.h:3808
-#: ../build/bin/preferences_gen.h:3829 ../build/bin/preferences_gen.h:3964
-#: ../build/bin/preferences_gen.h:4080 ../build/bin/preferences_gen.h:4135
-#: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4386
-#: ../build/bin/preferences_gen.h:4437 ../build/bin/preferences_gen.h:4620
-#: ../build/bin/preferences_gen.h:4661 ../build/bin/preferences_gen.h:4678
-#: ../build/bin/preferences_gen.h:4695 ../build/bin/preferences_gen.h:4730
-#: ../build/bin/preferences_gen.h:4820
+#: ../build/bin/preferences_gen.h:2663 ../build/bin/preferences_gen.h:2718
+#: ../build/bin/preferences_gen.h:2735 ../build/bin/preferences_gen.h:2769
+#: ../build/bin/preferences_gen.h:2786 ../build/bin/preferences_gen.h:2803
+#: ../build/bin/preferences_gen.h:2837 ../build/bin/preferences_gen.h:2914
+#: ../build/bin/preferences_gen.h:2931 ../build/bin/preferences_gen.h:2966
+#: ../build/bin/preferences_gen.h:3069 ../build/bin/preferences_gen.h:3172
+#: ../build/bin/preferences_gen.h:3231 ../build/bin/preferences_gen.h:3299
+#: ../build/bin/preferences_gen.h:3333 ../build/bin/preferences_gen.h:3385
+#: ../build/bin/preferences_gen.h:3418 ../build/bin/preferences_gen.h:3537
+#: ../build/bin/preferences_gen.h:3554 ../build/bin/preferences_gen.h:3642
+#: ../build/bin/preferences_gen.h:3685 ../build/bin/preferences_gen.h:3755
+#: ../build/bin/preferences_gen.h:3797 ../build/bin/preferences_gen.h:3818
+#: ../build/bin/preferences_gen.h:3839 ../build/bin/preferences_gen.h:3974
+#: ../build/bin/preferences_gen.h:4090 ../build/bin/preferences_gen.h:4145
+#: ../build/bin/preferences_gen.h:4277 ../build/bin/preferences_gen.h:4396
+#: ../build/bin/preferences_gen.h:4447 ../build/bin/preferences_gen.h:4630
+#: ../build/bin/preferences_gen.h:4671 ../build/bin/preferences_gen.h:4688
+#: ../build/bin/preferences_gen.h:4705 ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:4830
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "EI VALITTU"
 
-#: ../build/bin/preferences_gen.h:2655
+#: ../build/bin/preferences_gen.h:2665
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
@@ -976,39 +1002,39 @@ msgstr ""
 "Säilytä alkuperäinen tiedostonimi, kun kuvia siirretään kamerasta tai "
 "kortilta."
 
-#: ../build/bin/preferences_gen.h:2664
+#: ../build/bin/preferences_gen.h:2674
 msgid "file naming pattern"
 msgstr "Tiedostojen nimeämiskäytäntö"
 
-#: ../build/bin/preferences_gen.h:2677
+#: ../build/bin/preferences_gen.h:2687
 msgid "file naming pattern used for a import session"
 msgstr "Tuonnissa käytettävä tiedostojen nimeämiskäytäntö."
 
-#: ../build/bin/preferences_gen.h:2687 ../src/gui/gtk.c:1701
+#: ../build/bin/preferences_gen.h:2697 ../src/gui/gtk.c:1701
 #: ../src/gui/preferences.c:631 ../src/libs/tools/lighttable.c:64
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr "Valopöytä"
 
-#: ../build/bin/preferences_gen.h:2692 ../build/bin/preferences_gen.h:3043
-#: ../build/bin/preferences_gen.h:3846 ../src/gui/preferences.c:344
+#: ../build/bin/preferences_gen.h:2702 ../build/bin/preferences_gen.h:3053
+#: ../build/bin/preferences_gen.h:3856 ../src/gui/preferences.c:344
 #: ../src/gui/preferences_ai.c:1557
 msgid "general"
 msgstr "Yleiset"
 
-#: ../build/bin/preferences_gen.h:2702
+#: ../build/bin/preferences_gen.h:2712
 msgid "hide built-in presets for utility modules"
 msgstr "Piilota apumoduulien sisäänrakennetut esiasetukset"
 
-#: ../build/bin/preferences_gen.h:2710
+#: ../build/bin/preferences_gen.h:2720
 msgid "hide built-in presets of utility modules in presets menu."
 msgstr "Piilota apumoduulien sisäänrakennetut esiasetukset valikoista."
 
-#: ../build/bin/preferences_gen.h:2719
+#: ../build/bin/preferences_gen.h:2729
 msgid "use single-click in the collections module"
 msgstr "Käytä yhtä napsautusta kokoelmat-moduulissa"
 
-#: ../build/bin/preferences_gen.h:2727
+#: ../build/bin/preferences_gen.h:2737
 msgid ""
 "check this option to use single-click to select items in the collections "
 "module. this will allow you to do range selections for date-time and numeric "
@@ -1018,34 +1044,34 @@ msgstr ""
 "kokoelmat-moduulissa. Tämä mahdollistaa joukon valinnan päivä-, aika- ja "
 "numeerisilla arvoilla."
 
-#: ../build/bin/preferences_gen.h:2736
+#: ../build/bin/preferences_gen.h:2746
 msgid "prioritize the hovered image over the selected images"
 msgstr "Priorisoi hiiren alla oleva kuva ennen valittuja kuvia"
 
-#: ../build/bin/preferences_gen.h:2742 ../build/bin/preferences_gen.h:2810
-#: ../build/bin/preferences_gen.h:2887 ../build/bin/preferences_gen.h:3076
-#: ../build/bin/preferences_gen.h:3179 ../build/bin/preferences_gen.h:3238
-#: ../build/bin/preferences_gen.h:3255 ../build/bin/preferences_gen.h:3272
-#: ../build/bin/preferences_gen.h:3306 ../build/bin/preferences_gen.h:3358
-#: ../build/bin/preferences_gen.h:3561 ../build/bin/preferences_gen.h:3611
-#: ../build/bin/preferences_gen.h:3703 ../build/bin/preferences_gen.h:3724
-#: ../build/bin/preferences_gen.h:3766 ../build/bin/preferences_gen.h:3862
-#: ../build/bin/preferences_gen.h:3879 ../build/bin/preferences_gen.h:3896
-#: ../build/bin/preferences_gen.h:3913 ../build/bin/preferences_gen.h:3930
-#: ../build/bin/preferences_gen.h:3947 ../build/bin/preferences_gen.h:3981
-#: ../build/bin/preferences_gen.h:3997 ../build/bin/preferences_gen.h:4013
-#: ../build/bin/preferences_gen.h:4030 ../build/bin/preferences_gen.h:4300
-#: ../build/bin/preferences_gen.h:4317 ../build/bin/preferences_gen.h:4334
-#: ../build/bin/preferences_gen.h:4351 ../build/bin/preferences_gen.h:4403
-#: ../build/bin/preferences_gen.h:4420 ../build/bin/preferences_gen.h:4454
-#: ../build/bin/preferences_gen.h:4471 ../build/bin/preferences_gen.h:4489
-#: ../build/bin/preferences_gen.h:4534 ../build/bin/preferences_gen.h:4644
-#: ../build/bin/preferences_gen.h:4754
+#: ../build/bin/preferences_gen.h:2752 ../build/bin/preferences_gen.h:2820
+#: ../build/bin/preferences_gen.h:2897 ../build/bin/preferences_gen.h:3086
+#: ../build/bin/preferences_gen.h:3189 ../build/bin/preferences_gen.h:3248
+#: ../build/bin/preferences_gen.h:3265 ../build/bin/preferences_gen.h:3282
+#: ../build/bin/preferences_gen.h:3316 ../build/bin/preferences_gen.h:3368
+#: ../build/bin/preferences_gen.h:3571 ../build/bin/preferences_gen.h:3621
+#: ../build/bin/preferences_gen.h:3713 ../build/bin/preferences_gen.h:3734
+#: ../build/bin/preferences_gen.h:3776 ../build/bin/preferences_gen.h:3872
+#: ../build/bin/preferences_gen.h:3889 ../build/bin/preferences_gen.h:3906
+#: ../build/bin/preferences_gen.h:3923 ../build/bin/preferences_gen.h:3940
+#: ../build/bin/preferences_gen.h:3957 ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4007 ../build/bin/preferences_gen.h:4023
+#: ../build/bin/preferences_gen.h:4040 ../build/bin/preferences_gen.h:4310
+#: ../build/bin/preferences_gen.h:4327 ../build/bin/preferences_gen.h:4344
+#: ../build/bin/preferences_gen.h:4361 ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4430 ../build/bin/preferences_gen.h:4464
+#: ../build/bin/preferences_gen.h:4481 ../build/bin/preferences_gen.h:4499
+#: ../build/bin/preferences_gen.h:4544 ../build/bin/preferences_gen.h:4654
+#: ../build/bin/preferences_gen.h:4764
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "VALITTU"
 
-#: ../build/bin/preferences_gen.h:2744
+#: ../build/bin/preferences_gen.h:2754
 msgid ""
 "in the lighttable, where culling takes place, you can apply actions (e.g., "
 "setting ratings) to the hovered image or to the selected ones\n"
@@ -1062,20 +1088,20 @@ msgstr ""
 "\n"
 "<b>Ei valittu:</b> Toiminnot asetetaan valittuihin kuviin (vähemmän virheitä)."
 
-#: ../build/bin/preferences_gen.h:2753
+#: ../build/bin/preferences_gen.h:2763
 msgid "expand a single utility module at a time"
 msgstr "Laajenna yksittäinen apumoduuli kerralla"
 
-#: ../build/bin/preferences_gen.h:2761
+#: ../build/bin/preferences_gen.h:2771
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "Tämä asetus vaihtaa moduulien SHIFT+napsautuksen toimintatavan valopöydällä."
 
-#: ../build/bin/preferences_gen.h:2770
+#: ../build/bin/preferences_gen.h:2780
 msgid "scroll utility modules to the top when expanded"
 msgstr "Vieritä apumoduulit ylös laajennettaessa"
 
-#: ../build/bin/preferences_gen.h:2778 ../build/bin/preferences_gen.h:3308
+#: ../build/bin/preferences_gen.h:2788 ../build/bin/preferences_gen.h:3318
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -1083,43 +1109,43 @@ msgstr ""
 "Tämän asetuksen ollessa päällä, Darktable pyrkii näyttämään avatun moduulin "
 "listan yläpäässä."
 
-#: ../build/bin/preferences_gen.h:2787
+#: ../build/bin/preferences_gen.h:2797
 msgid "rating an image one star twice will not zero out the rating"
 msgstr ""
 "Luokittelemalla kuva yhdellä tähdellä kahteen kertaan ei nollaa luokitusta"
 
-#: ../build/bin/preferences_gen.h:2795
+#: ../build/bin/preferences_gen.h:2805
 msgid "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
 "Määrittää nollataanko kuvan luokitus antamalla sille yksi tähti kahdesti."
 
-#: ../build/bin/preferences_gen.h:2804 ../build/bin/preferences_gen.h:3156
+#: ../build/bin/preferences_gen.h:2814 ../build/bin/preferences_gen.h:3166
 msgid "show scrollbars for central view"
 msgstr "Näytä keskinäkymän vierityspalkit"
 
-#: ../build/bin/preferences_gen.h:2812 ../build/bin/preferences_gen.h:3164
+#: ../build/bin/preferences_gen.h:2822 ../build/bin/preferences_gen.h:3174
 msgid "defines whether scrollbars should be displayed"
 msgstr "Määrittää näytetäänkö vierityspalkit."
 
-#: ../build/bin/preferences_gen.h:2821
+#: ../build/bin/preferences_gen.h:2831
 msgid "show image time with milliseconds"
 msgstr "Näytä millisekunnit kuvan ajassa"
 
-#: ../build/bin/preferences_gen.h:2829
+#: ../build/bin/preferences_gen.h:2839
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "Määrittää näytetäänkö aika millisekunneissa."
 
-#: ../build/bin/preferences_gen.h:2835
+#: ../build/bin/preferences_gen.h:2845
 msgid "thumbnails"
 msgstr "Esikatselukuvat"
 
-#: ../build/bin/preferences_gen.h:2845
+#: ../build/bin/preferences_gen.h:2855
 msgid "for unaltered images, use raw file instead of embedded JPEG from size"
 msgstr ""
 "Käytä muokkaamattomille kuville raakakuvaa upotetun JPEG:n sijaan alkaen "
 "koosta"
 
-#: ../build/bin/preferences_gen.h:2854
+#: ../build/bin/preferences_gen.h:2864
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1139,11 +1165,11 @@ msgstr ""
 "ylittäessä upotetun JPEG:n koon se luodaan raakakuvasta.\n"
 "(lisää yksityiskohtia käyttöohjeessa)."
 
-#: ../build/bin/preferences_gen.h:2863
+#: ../build/bin/preferences_gen.h:2873
 msgid "high quality processing from size"
 msgstr "Korkeammalla laadulla käsitteleminen koosta"
 
-#: ../build/bin/preferences_gen.h:2872
+#: ../build/bin/preferences_gen.h:2882
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1157,11 +1183,11 @@ msgstr ""
 "valitse 'Aina'.\n"
 "(lisää yksityiskohtia käyttöohjeessa)."
 
-#: ../build/bin/preferences_gen.h:2881
+#: ../build/bin/preferences_gen.h:2891
 msgid "enable disk backend for thumbnail cache"
 msgstr "Käytä massamuistia esikatselukuvien levylle tallennukseen"
 
-#: ../build/bin/preferences_gen.h:2889
+#: ../build/bin/preferences_gen.h:2899
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1182,11 +1208,11 @@ msgstr ""
 "luoda kaikille kuvillesi esikatselukuvat,\n"
 "aja 'darktable-generate-cache', kun darktable on suljettuna."
 
-#: ../build/bin/preferences_gen.h:2898
+#: ../build/bin/preferences_gen.h:2908
 msgid "enable disk backend for full preview cache"
 msgstr "Käytä massamuistia täyden koon esikatselukuvien välimuistina"
 
-#: ../build/bin/preferences_gen.h:2906
+#: ../build/bin/preferences_gen.h:2916
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1205,11 +1231,11 @@ msgstr ""
 "Valopöydän suorituskyky on tätä asetusta käytettäessä merkittävästi parempi "
 "esikatselukuvia zoomatessa."
 
-#: ../build/bin/preferences_gen.h:2915
+#: ../build/bin/preferences_gen.h:2925
 msgid "enable smooth scrolling for lighttable thumbnails"
 msgstr "Käytä tasaista vieritystä valopöydän esikatselukuville"
 
-#: ../build/bin/preferences_gen.h:2923
+#: ../build/bin/preferences_gen.h:2933
 msgid ""
 "if enabled, scrolling the lighttable scrolls by some number of pixels, as "
 "expected with a touch pad.\n"
@@ -1221,11 +1247,11 @@ msgstr ""
 "Ei valittu, valopöydän vieritys vierittää esikatselukuvien täysiä rivejä. "
 "Sopii hiiren rullan käyttäjälle."
 
-#: ../build/bin/preferences_gen.h:2932
+#: ../build/bin/preferences_gen.h:2942
 msgid "generate thumbnails in background"
 msgstr "Luo esikatselukuvat taustalla"
 
-#: ../build/bin/preferences_gen.h:2941
+#: ../build/bin/preferences_gen.h:2951
 msgid ""
 "if 'enable disk backend for thumbnail cache' is enabled thumbnails/mipmaps up "
 "to the selected size are generated while user is inactive in lighttable."
@@ -1234,11 +1260,11 @@ msgstr ""
 "luodaan esikatselukuvat/mipmapsit valittuun kokoon, kun valopöytä on "
 "aktiivisena ja käyttäjä ei tee mitään."
 
-#: ../build/bin/preferences_gen.h:2950
+#: ../build/bin/preferences_gen.h:2960
 msgid "reset cached thumbnails"
 msgstr "Nollaa välimuistin esikatselukuvat"
 
-#: ../build/bin/preferences_gen.h:2958
+#: ../build/bin/preferences_gen.h:2968
 msgid ""
 "force thumbnails to be regenerated by resetting the database. this may be "
 "needed in case some thumbnails have been manually removed or corrupted."
@@ -1247,11 +1273,11 @@ msgstr ""
 "olla tarpeellista, jos jotkin esikatselukuvat on poistettu käsin tai ne ovat "
 "korruptoituneet."
 
-#: ../build/bin/preferences_gen.h:2967
+#: ../build/bin/preferences_gen.h:2977
 msgid "delimiters for size categories"
 msgstr "Erottimet koon kategorioille"
 
-#: ../build/bin/preferences_gen.h:2980
+#: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
@@ -1263,28 +1289,28 @@ msgstr ""
 "-merkillä. Esimerkiksi 120|400 tarkoittaa kolmea kategoriaa "
 "esikatselukuville: <120px, 120-400px, >400px."
 
-#: ../build/bin/preferences_gen.h:2989
+#: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
 msgstr "Esikatselukuvien laajennettujen kuvapeitteiden tiedot"
 
-#: ../build/bin/preferences_gen.h:3004 ../build/bin/preferences_gen.h:3028
+#: ../build/bin/preferences_gen.h:3014 ../build/bin/preferences_gen.h:3038
 msgid "see manual to know all the tags you can use."
 msgstr "Katso käyttöohjeesta kaikki käytettävissä olevat tunnisteet."
 
-#: ../build/bin/preferences_gen.h:3013
+#: ../build/bin/preferences_gen.h:3023
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "Esikatselukuvien työkaluvinkin tiedot (jos tyhjä, niin ei käytössä)"
 
-#: ../build/bin/preferences_gen.h:3038 ../src/gui/gtk.c:1703
+#: ../build/bin/preferences_gen.h:3048 ../src/gui/gtk.c:1703
 #: ../src/gui/preferences.c:630 ../src/views/darkroom.c:109
 msgid "darkroom"
 msgstr "Pimiö"
 
-#: ../build/bin/preferences_gen.h:3053
+#: ../build/bin/preferences_gen.h:3063
 msgid "scroll down to increase mask parameters"
 msgstr "Pyöritä hiiren rullaa alaspäin lisätäksesi maskin arvoa"
 
-#: ../build/bin/preferences_gen.h:3061
+#: ../build/bin/preferences_gen.h:3071
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -1297,11 +1323,11 @@ msgstr ""
 "kaarevuutta.\n"
 "Oletuksena rullan ylöspäin pyörittäminen lisää näiden parametrien arvoa."
 
-#: ../build/bin/preferences_gen.h:3070
+#: ../build/bin/preferences_gen.h:3080
 msgid "middle mouse button zooms to 200%"
 msgstr "Hiiren keskinapin painallus zoomaa 200%"
 
-#: ../build/bin/preferences_gen.h:3079
+#: ../build/bin/preferences_gen.h:3089
 #, no-c-format
 msgid ""
 "if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
@@ -1313,33 +1339,33 @@ msgstr ""
 "sovituksen ja 100% välillä sekä 'CTRL'-nappia voidaan käyttää zoomauksen "
 "tason määrittämiseen."
 
-#: ../build/bin/preferences_gen.h:3088
+#: ../build/bin/preferences_gen.h:3098
 msgid "pattern for the image information line"
 msgstr "Kuvan tiedot-rivillä näytettävät tiedot"
 
-#: ../build/bin/preferences_gen.h:3103
+#: ../build/bin/preferences_gen.h:3113
 msgid "see manual for a list of the tags you can use."
 msgstr "Katso käyttöohjeesta kaikki käytettävissä olevat tunnisteet."
 
-#: ../build/bin/preferences_gen.h:3112
+#: ../build/bin/preferences_gen.h:3122
 msgid "position of the image information line"
 msgstr "Kuvan tiedot-rivin sijainti"
 
 # kehys vai reuna?
-#: ../build/bin/preferences_gen.h:3129
+#: ../build/bin/preferences_gen.h:3139
 msgid "border around image in darkroom mode"
 msgstr "Kuvien kehyksen koko pimiötilassa"
 
-#: ../build/bin/preferences_gen.h:3145 ../build/bin/preferences_gen.h:4180
-#: ../build/bin/preferences_gen.h:4250 ../build/bin/preferences_gen.h:4517
-#: ../build/bin/preferences_gen.h:4788 ../build/bin/preferences_gen.h:4866
-#: ../build/bin/preferences_gen.h:4894 ../build/bin/preferences_gen.h:4957
-#: ../build/bin/preferences_gen.h:5019 ../build/bin/preferences_gen.h:5048
+#: ../build/bin/preferences_gen.h:3155 ../build/bin/preferences_gen.h:4190
+#: ../build/bin/preferences_gen.h:4260 ../build/bin/preferences_gen.h:4527
+#: ../build/bin/preferences_gen.h:4798 ../build/bin/preferences_gen.h:4876
+#: ../build/bin/preferences_gen.h:4904 ../build/bin/preferences_gen.h:4967
+#: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5058
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "Kaksoisnapsauta palauttaaksesi arvoksi `%d'"
 
-#: ../build/bin/preferences_gen.h:3147
+#: ../build/bin/preferences_gen.h:3157
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you don't "
 "want any border."
@@ -1347,11 +1373,11 @@ msgstr ""
 "Pimiötila näyttää pienen kehyksen kuvan ympärillä. Aseta 0 jos et halua "
 "kehyksiä."
 
-#: ../build/bin/preferences_gen.h:3173
+#: ../build/bin/preferences_gen.h:3183
 msgid "show loading screen between images"
 msgstr "Näytä latausnäyttö kuvien välissä"
 
-#: ../build/bin/preferences_gen.h:3181
+#: ../build/bin/preferences_gen.h:3191
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
@@ -1359,15 +1385,15 @@ msgstr ""
 "Näytä harmaa latausnäyttö pimiössä tapahtuvan kuvien selailun lomassa.\n"
 "Poista käytöstä näyttääksesi ainoastaan kuvakkeen."
 
-#: ../build/bin/preferences_gen.h:3187
+#: ../build/bin/preferences_gen.h:3197
 msgid "modules"
 msgstr "Moduulit"
 
-#: ../build/bin/preferences_gen.h:3197
+#: ../build/bin/preferences_gen.h:3207
 msgid "display of individual color channels"
 msgstr "Yksittäisten värikanavien näyttö"
 
-#: ../build/bin/preferences_gen.h:3206
+#: ../build/bin/preferences_gen.h:3216
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
@@ -1375,32 +1401,32 @@ msgstr ""
 "Määrittää kuinka aktivoidut värikanavat näytetään käytettäessä laskennallisia "
 "maskeja."
 
-#: ../build/bin/preferences_gen.h:3215
+#: ../build/bin/preferences_gen.h:3225
 msgid "hide built-in presets for processing modules"
 msgstr "Piilota käsittelymoduulien sisäänrakennetut esiasetukset"
 
-#: ../build/bin/preferences_gen.h:3223
+#: ../build/bin/preferences_gen.h:3233
 msgid "hide built-in presets of processing modules in presets menu."
 msgstr "Piilota valopöydän moduulien sisäänrakennetut esiasetukset valikoista."
 
-#: ../build/bin/preferences_gen.h:3232 ../build/bin/preferences_gen.h:3240
+#: ../build/bin/preferences_gen.h:3242 ../build/bin/preferences_gen.h:3250
 msgid "show the guides widget in modules UI"
 msgstr "Näytä apulinjojen pienoisohjelma moduuleissa."
 
-#: ../build/bin/preferences_gen.h:3249
+#: ../build/bin/preferences_gen.h:3259
 msgid "expand a single processing module at a time"
 msgstr "Näytä yksittäinen käsittelymoduuli kerralla"
 
-#: ../build/bin/preferences_gen.h:3257
+#: ../build/bin/preferences_gen.h:3267
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "Tämä asetus vaihtaa moduulien SHIFT+napsautuksen toimintatavan pimiössä."
 
-#: ../build/bin/preferences_gen.h:3266
+#: ../build/bin/preferences_gen.h:3276
 msgid "only collapse modules in current group"
 msgstr "Pienennä moduulit ainoastaan valitussa ryhmässä"
 
-#: ../build/bin/preferences_gen.h:3274
+#: ../build/bin/preferences_gen.h:3284
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
@@ -1408,11 +1434,11 @@ msgstr ""
 "Näytettäessä vain yksi moduuli kerrallaan, pienennä muut moduulit ainoastaan "
 "nykyisessä ryhmässä. Muiden ryhmien moduuleja ei pienennetä."
 
-#: ../build/bin/preferences_gen.h:3283
+#: ../build/bin/preferences_gen.h:3293
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "Laajenna moduuli aktivoitaessa ja pienennä käytöstä poistettaessa"
 
-#: ../build/bin/preferences_gen.h:3291
+#: ../build/bin/preferences_gen.h:3301
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
@@ -1420,23 +1446,23 @@ msgstr ""
 "Tämä valinta mahdollistaa moduulin laajentamisen tai pienentämisen, kun se "
 "otetaan käyttöön tai poistetaan käytöstä."
 
-#: ../build/bin/preferences_gen.h:3300
+#: ../build/bin/preferences_gen.h:3310
 msgid "scroll processing modules to the top when expanded"
 msgstr "Siirrä avattu käsittelymoduuli ylös"
 
-#: ../build/bin/preferences_gen.h:3317
+#: ../build/bin/preferences_gen.h:3327
 msgid "swap the utility and processing modules panels"
 msgstr "Vaihda apumoduulien ja käsittelymoduuleiden paneelien sijainnit"
 
-#: ../build/bin/preferences_gen.h:3325
+#: ../build/bin/preferences_gen.h:3335
 msgid "move the list of processing modules to the left of the screen"
 msgstr "Siirtää käsittelymoduulit näytön vasempaan laitaan."
 
-#: ../build/bin/preferences_gen.h:3334
+#: ../build/bin/preferences_gen.h:3344
 msgid "show right-side buttons in processing module headers"
 msgstr "Näytä oikealla olevat kuvakkeet käsittelymoduulien otsikoissa"
 
-#: ../build/bin/preferences_gen.h:3343
+#: ../build/bin/preferences_gen.h:3353
 msgid ""
 "when the mouse is not over a module, the multi-instance, reset and preset "
 "buttons can be hidden:\n"
@@ -1461,11 +1487,11 @@ msgstr ""
 " - 'Tasainen': häivytä kaikki kuvakkeet yhdessä otsikossa yhtäaikaisesti.\n"
 " - 'Liukuva': tarpeen vaatiessa, piilota vähitellen yksittäiset kuvakkeet."
 
-#: ../build/bin/preferences_gen.h:3352
+#: ../build/bin/preferences_gen.h:3362
 msgid "show mask indicator in module headers"
 msgstr "Näytä maskin kuvake moduulin otsikoissa"
 
-#: ../build/bin/preferences_gen.h:3360
+#: ../build/bin/preferences_gen.h:3370
 msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
@@ -1473,11 +1499,11 @@ msgstr ""
 "Jos valittu, näytetään kuvake jokaisen käsittelymoduulin otsikossa, jossa on "
 "maski käytössä."
 
-#: ../build/bin/preferences_gen.h:3369
+#: ../build/bin/preferences_gen.h:3379
 msgid "prompt for name on addition of new instance"
 msgstr "Kysy nimeä uudelle instanssille"
 
-#: ../build/bin/preferences_gen.h:3377
+#: ../build/bin/preferences_gen.h:3387
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
@@ -1485,27 +1511,27 @@ msgstr ""
 "Jos valittu, näytetään ikkuna jossa jokaisen moduulin uudelle instanssille "
 "voidaan antaa uusi nimi (uusi tai kahdennettu instanssi)."
 
-#: ../build/bin/preferences_gen.h:3387
+#: ../build/bin/preferences_gen.h:3397
 msgid "processing"
 msgstr "Käsittely"
 
-#: ../build/bin/preferences_gen.h:3392
+#: ../build/bin/preferences_gen.h:3402
 msgid "image processing"
 msgstr "Kuvan käsittely"
 
-#: ../build/bin/preferences_gen.h:3402
+#: ../build/bin/preferences_gen.h:3412
 msgid "always use LittleCMS 2 to apply output color profile"
 msgstr "Käytä aina LittleCMS 2:ta viennin väriprofiilille"
 
-#: ../build/bin/preferences_gen.h:3410
+#: ../build/bin/preferences_gen.h:3420
 msgid "this is slower than the default."
 msgstr "Tämä on hitaampi kuin oletustapa."
 
-#: ../build/bin/preferences_gen.h:3419
+#: ../build/bin/preferences_gen.h:3429
 msgid "pixel interpolator (warp)"
 msgstr "Pikselien interpolointi (vääristymät)"
 
-#: ../build/bin/preferences_gen.h:3428
+#: ../build/bin/preferences_gen.h:3438
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
@@ -1514,22 +1540,22 @@ msgstr ""
 "rajauksessa ja lopullisessa skaalauksessa käytettävä pikselien "
 "interpolointitapa (bilineaarinen, bicubic, lanczos2)."
 
-#: ../build/bin/preferences_gen.h:3437
+#: ../build/bin/preferences_gen.h:3447
 msgid "pixel interpolator (scaling)"
 msgstr "Pikselien interpolointi (skaalaus)"
 
-#: ../build/bin/preferences_gen.h:3446
+#: ../build/bin/preferences_gen.h:3456
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
 "Kierrossa ja linssinkorjauksessa käytettävä pikselien interpolointitapa "
 "(bilineaarinen, bicubic, lanczos2, lancoz3)."
 
-#: ../build/bin/preferences_gen.h:3455
+#: ../build/bin/preferences_gen.h:3465
 msgid "LUT 3D root folder"
 msgstr "LUT 3D juurihakemisto"
 
-#: ../build/bin/preferences_gen.h:3457 ../build/bin/preferences_gen.h:3481
+#: ../build/bin/preferences_gen.h:3467 ../build/bin/preferences_gen.h:3491
 #: ../src/control/jobs/control_jobs.c:2204
 #: ../src/control/jobs/control_jobs.c:2260 ../src/gui/preferences.c:1260
 #: ../src/gui/presets.c:429 ../src/gui/welcome.c:169 ../src/gui/welcome.c:337
@@ -1541,7 +1567,7 @@ msgstr "LUT 3D juurihakemisto"
 msgid "select directory"
 msgstr "Valitse hakemisto"
 
-#: ../build/bin/preferences_gen.h:3470
+#: ../build/bin/preferences_gen.h:3480
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
@@ -1549,11 +1575,11 @@ msgstr ""
 "Tämä hakemisto (ja alihakemistot) sisältää LUT 3D-moduulin käyttämät LUT-"
 "tiedostot (uudelleenkäynnistys vaaditaan)."
 
-#: ../build/bin/preferences_gen.h:3479
+#: ../build/bin/preferences_gen.h:3489
 msgid "raster mask files root folder"
 msgstr "Rasterimaskitiedostojen juurihakemisto"
 
-#: ../build/bin/preferences_gen.h:3494
+#: ../build/bin/preferences_gen.h:3504
 msgid ""
 "this folder (and sub-folders) contains PFM/PNG files used by the raster mask "
 "import module. (restart required)"
@@ -1561,11 +1587,11 @@ msgstr ""
 "Tämä hakemisto (ja alihakemistot) sisältää Rasterimaskin tuonti -moduulin "
 "käyttämät PFM/PNG-tiedostot (uudelleenkäynnistys vaaditaan)."
 
-#: ../build/bin/preferences_gen.h:3503
+#: ../build/bin/preferences_gen.h:3513
 msgid "auto-apply pixel workflow defaults"
 msgstr "Pikselityöskentelyn oletukset"
 
-#: ../build/bin/preferences_gen.h:3512
+#: ../build/bin/preferences_gen.h:3522
 msgid ""
 "selects which workflow will be used by default in the darkroom\n"
 "\n"
@@ -1594,11 +1620,11 @@ msgstr ""
 "\n"
 "<b>Ei mitään</b> ei käytetä mitään esimääritettyä työskentelytapaa."
 
-#: ../build/bin/preferences_gen.h:3521
+#: ../build/bin/preferences_gen.h:3531
 msgid "auto-apply per camera basecurve presets"
 msgstr "Ota oletuksena käyttöön kamerakohtainen perussävykäyräesiasetus"
 
-#: ../build/bin/preferences_gen.h:3529
+#: ../build/bin/preferences_gen.h:3539
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available. (restart required)\n"
@@ -1614,11 +1640,11 @@ msgstr ""
 "Estääksesi automaattisen perussävykäyräesiasetuksen asettamisen "
 "\"Pikselityöskentelyn oletukset\" tulee asettaa \"Ei mitään\" valintaan."
 
-#: ../build/bin/preferences_gen.h:3538
+#: ../build/bin/preferences_gen.h:3548
 msgid "detect monochrome previews"
 msgstr "Tunnista mustavalkoiset esikatselukuvat"
 
-#: ../build/bin/preferences_gen.h:3546
+#: ../build/bin/preferences_gen.h:3556
 msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
@@ -1626,11 +1652,11 @@ msgstr ""
 "Useat mustavalkoiset kuvat voidaan tunnistaa EXIF- ja esikatselukuvien "
 "tiedoista. Huomioi: tämä hidastaa kuvien tuontia ja EXIF-tietojen lukua."
 
-#: ../build/bin/preferences_gen.h:3555
+#: ../build/bin/preferences_gen.h:3565
 msgid "show warning messages"
 msgstr "Näytä varoitukset"
 
-#: ../build/bin/preferences_gen.h:3563
+#: ../build/bin/preferences_gen.h:3573
 msgid ""
 "display messages in modules to warn beginner users when non-standard and "
 "possibly harmful settings are used in the pipeline.\n"
@@ -1643,15 +1669,15 @@ msgstr ""
 "niissä tilanteissa missä tiedät mitä olet tekemässä. \n"
 "Tämä valinta piilottaa nämä viestit."
 
-#: ../build/bin/preferences_gen.h:3569
+#: ../build/bin/preferences_gen.h:3579
 msgid "CPU / memory"
 msgstr "CPU / muisti"
 
-#: ../build/bin/preferences_gen.h:3579
+#: ../build/bin/preferences_gen.h:3589
 msgid "darktable resources"
 msgstr "Darktablen resurssit"
 
-#: ../build/bin/preferences_gen.h:3589
+#: ../build/bin/preferences_gen.h:3599
 #, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources:\n"
@@ -1673,15 +1699,15 @@ msgstr ""
 " - 'Suuri': Paras vaihtoehto, jos käytetään pääasiassa Darktablea ja haluat "
 "hyödyntää järjestelmän resurssit hyvän suorituskyvyn saamiseksi."
 
-#: ../build/bin/preferences_gen.h:3595
+#: ../build/bin/preferences_gen.h:3605
 msgid "OpenCL GPU acceleration"
 msgstr "OpenCL GPU kiihdytys"
 
-#: ../build/bin/preferences_gen.h:3605
+#: ../build/bin/preferences_gen.h:3615
 msgid "activate OpenCL support"
 msgstr "Käytä OpenCL:ää"
 
-#: ../build/bin/preferences_gen.h:3613
+#: ../build/bin/preferences_gen.h:3623
 msgid ""
 "if found, use OpenCL runtime on your system to speed up processing by using "
 "your graphics card(s).\n"
@@ -1691,11 +1717,11 @@ msgstr ""
 "parantamiseen näytönohjaimella.\n"
 "Asetus voidaan ottaa käyttöön tai pois päältä milloin tahansa."
 
-#: ../build/bin/preferences_gen.h:3626
+#: ../build/bin/preferences_gen.h:3636
 msgid "OpenCL fast mode"
 msgstr "OpenCL nopea tila"
 
-#: ../build/bin/preferences_gen.h:3634
+#: ../build/bin/preferences_gen.h:3644
 msgid ""
 "if set the OpenCL compiler uses aggressive optimizing for better performance "
 "with reduced precision so more differences between CPU and OpenCL are "
@@ -1705,11 +1731,11 @@ msgstr ""
 "suorituskyvyn saavuttamiseksi käyttämällä heikennettyä tarkkuutta, joten näet "
 "suuremman eron CPU:n ja OpenCL:n suorituskyvyssä."
 
-#: ../build/bin/preferences_gen.h:3647
+#: ../build/bin/preferences_gen.h:3657
 msgid "OpenCL scheduling profile"
 msgstr "OpenCL:n ajoitusprofiili"
 
-#: ../build/bin/preferences_gen.h:3656
+#: ../build/bin/preferences_gen.h:3666
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems:\n"
@@ -1728,11 +1754,11 @@ msgstr ""
 " - 'Erittäin nopea näytönohjain': molemmat pikselinkäsittelyt tehdään "
 "peräkkäin näytönohjaimella."
 
-#: ../build/bin/preferences_gen.h:3669
+#: ../build/bin/preferences_gen.h:3679
 msgid "tuned GPU memory"
 msgstr "GPU:n säädetty muisti"
 
-#: ../build/bin/preferences_gen.h:3677
+#: ../build/bin/preferences_gen.h:3687
 msgid ""
 "if enabled on a system with multiple OpenCL devices you may specify a safety "
 "margin per device (headroom, default is 600MB)"
@@ -1741,41 +1767,41 @@ msgstr ""
 "määrittää laitekohtaisen muistin turvamarginaalin (vapaa tila, oletus on "
 "600MT)."
 
-#: ../build/bin/preferences_gen.h:3687
+#: ../build/bin/preferences_gen.h:3697
 msgid "OpenCL drivers"
 msgstr "OpenCL ajurit"
 
-#: ../build/bin/preferences_gen.h:3697
+#: ../build/bin/preferences_gen.h:3707
 msgid "Intel GPU"
 msgstr "Intel GPU"
 
-#: ../build/bin/preferences_gen.h:3705
+#: ../build/bin/preferences_gen.h:3715
 msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr ""
 "Intel(R) OpenCL-grafiikka kaikille tuetuille alustoille (valmistajan "
 "tuottama)."
 
-#: ../build/bin/preferences_gen.h:3718
+#: ../build/bin/preferences_gen.h:3728
 msgid "Nvidia CUDA"
 msgstr "Nvidia CUDA"
 
-#: ../build/bin/preferences_gen.h:3726
+#: ../build/bin/preferences_gen.h:3736
 msgid "Nvidia CUDA based OpenCL (vendor provided)"
 msgstr "Nvidia CUDA pohjainen OpenCL (valmistajan tuottama)."
 
-#: ../build/bin/preferences_gen.h:3739
+#: ../build/bin/preferences_gen.h:3749
 msgid "AMD ROCm"
 msgstr "AMD ROCm"
 
-#: ../build/bin/preferences_gen.h:3747
+#: ../build/bin/preferences_gen.h:3757
 msgid "AMD Accelerated Parallel Processing (vendor provided)"
 msgstr "AMD kiihdytetty rinnakkaisprosessointi (valmistajan tuottama)."
 
-#: ../build/bin/preferences_gen.h:3760
+#: ../build/bin/preferences_gen.h:3770
 msgid "RustiCL"
 msgstr "RustiCL"
 
-#: ../build/bin/preferences_gen.h:3768
+#: ../build/bin/preferences_gen.h:3778
 msgid ""
 "RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor "
 "driver"
@@ -1783,19 +1809,19 @@ msgstr ""
 "RustiCL Mesa OpenCL. Jos haluat käyttää tätä, sinun tulee poistaa valmistajan "
 "ajuri käytöstä."
 
-#: ../build/bin/preferences_gen.h:3781
+#: ../build/bin/preferences_gen.h:3791
 msgid "Apple"
 msgstr "Apple"
 
-#: ../build/bin/preferences_gen.h:3789
+#: ../build/bin/preferences_gen.h:3799
 msgid "Apple OpenCL (vendor provided)"
 msgstr "Apple OpenCL (valmistajan tuottama)."
 
-#: ../build/bin/preferences_gen.h:3802
+#: ../build/bin/preferences_gen.h:3812
 msgid "Microsoft OpenCLOn12"
 msgstr "Microsoft OpenCLOn12"
 
-#: ../build/bin/preferences_gen.h:3810
+#: ../build/bin/preferences_gen.h:3820
 msgid ""
 "Microsoft OpenCLOn12, only use this if the vendor provided driver does not "
 "work or there is none provided."
@@ -1803,11 +1829,11 @@ msgstr ""
 "Microsoft OpenCLOn12, käytä tätä vain silloin, kun valmistajan tuottama ajuri "
 "ei toimi tai sitä ei ole saatavilla."
 
-#: ../build/bin/preferences_gen.h:3823
+#: ../build/bin/preferences_gen.h:3833
 msgid "other platforms"
 msgstr "Muut alustat"
 
-#: ../build/bin/preferences_gen.h:3831
+#: ../build/bin/preferences_gen.h:3841
 msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
@@ -1815,40 +1841,40 @@ msgstr ""
 "Jos asetettu, kaikki määrittämättömät alustat hyväksytään. Tee tämä vain "
 "silloin, kun valmistajan ajuria ei ole saatavilla."
 
-#: ../build/bin/preferences_gen.h:3841
+#: ../build/bin/preferences_gen.h:3851
 msgid "security"
 msgstr "Tietoturva"
 
-#: ../build/bin/preferences_gen.h:3856
+#: ../build/bin/preferences_gen.h:3866
 msgid "ask before removing images from the library"
 msgstr "Varmista kuvien poisto kirjastosta"
 
-#: ../build/bin/preferences_gen.h:3864
+#: ../build/bin/preferences_gen.h:3874
 msgid "always ask the user before removing image information from the library"
 msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan poistoa kirjastosta."
 
-#: ../build/bin/preferences_gen.h:3873
+#: ../build/bin/preferences_gen.h:3883
 msgid "ask before deleting images from disk"
 msgstr "Varmista kuvien poisto levyltä"
 
-#: ../build/bin/preferences_gen.h:3881
+#: ../build/bin/preferences_gen.h:3891
 msgid "always ask the user before any image file is deleted"
 msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan poistoa."
 
-#: ../build/bin/preferences_gen.h:3890
+#: ../build/bin/preferences_gen.h:3900
 msgid "ask before discarding history stack"
 msgstr "Varmista kuvan muokkaushistorian tuhoaminen"
 
-#: ../build/bin/preferences_gen.h:3898
+#: ../build/bin/preferences_gen.h:3908
 msgid "always ask the user before history stack is discarded on any image"
 msgstr ""
 "Käyttäjältä kysytään aina varmistus ennen kuvan muokkaushistorian poistamista."
 
-#: ../build/bin/preferences_gen.h:3907
+#: ../build/bin/preferences_gen.h:3917
 msgid "try to use trash when deleting images"
 msgstr "Siirrä poistettavat kuvat roskakoriin"
 
-#: ../build/bin/preferences_gen.h:3915
+#: ../build/bin/preferences_gen.h:3925
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
@@ -1856,27 +1882,27 @@ msgstr ""
 "Siirrä poistettavat kuvat roskakoriin niiden pysyvän tuhoamisen sijaan. "
 "Tuettu käyttöjärjestelmissä joissa on tuki roskakorille."
 
-#: ../build/bin/preferences_gen.h:3924
+#: ../build/bin/preferences_gen.h:3934
 msgid "ask before moving images from film roll folder"
 msgstr "Varmista kuvien siirto uuteen filmirullan hakemistoon"
 
-#: ../build/bin/preferences_gen.h:3932
+#: ../build/bin/preferences_gen.h:3942
 msgid "always ask the user before any image file is moved."
 msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan siirtoa."
 
-#: ../build/bin/preferences_gen.h:3941
+#: ../build/bin/preferences_gen.h:3951
 msgid "ask before copying images to new film roll folder"
 msgstr "Varmista kuvien kopiointi uuteen filmirullan hakemistoon"
 
-#: ../build/bin/preferences_gen.h:3949
+#: ../build/bin/preferences_gen.h:3959
 msgid "always ask the user before any image file is copied."
 msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan kopiointia."
 
-#: ../build/bin/preferences_gen.h:3958
+#: ../build/bin/preferences_gen.h:3968
 msgid "ask before removing empty folders"
 msgstr "Varmista tyhjien hakemistojen poisto"
 
-#: ../build/bin/preferences_gen.h:3966
+#: ../build/bin/preferences_gen.h:3976
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
@@ -1884,41 +1910,41 @@ msgstr ""
 "Käyttäjältä kysytään aina varmistus ennen tyhjän hakemiston poistoa. Tämä "
 "saattaa tapahtua kuvien siirron tai poiston jälkeen."
 
-#: ../build/bin/preferences_gen.h:3975
+#: ../build/bin/preferences_gen.h:3985
 msgid "ask before deleting a tag"
 msgstr "Varmista tunnisteen poisto"
 
-#: ../build/bin/preferences_gen.h:3991
+#: ../build/bin/preferences_gen.h:4001
 msgid "ask before deleting a style"
 msgstr "Varmista tyylin poisto"
 
-#: ../build/bin/preferences_gen.h:4007
+#: ../build/bin/preferences_gen.h:4017
 msgid "ask before deleting a preset"
 msgstr "Varmista esiasetuksen poisto"
 
-#: ../build/bin/preferences_gen.h:4015
+#: ../build/bin/preferences_gen.h:4025
 msgid "will ask for confirmation before deleting or overwriting a preset"
 msgstr ""
 "Käyttäjältä kysytään varmistus ennen esiasetuksen poistoa tai ylikirjoitusta."
 
-#: ../build/bin/preferences_gen.h:4024
+#: ../build/bin/preferences_gen.h:4034
 msgid "ask before exporting in overwrite mode"
 msgstr "Varmista ennen ylikirjoitustilassa vientiä"
 
-#: ../build/bin/preferences_gen.h:4032
+#: ../build/bin/preferences_gen.h:4042
 msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr ""
 "Käyttäjältä kysytään varmistus ennen kuvien vientiä ylikirjoitustilassa."
 
-#: ../build/bin/preferences_gen.h:4038 ../src/libs/tools/viewswitcher.c:151
+#: ../build/bin/preferences_gen.h:4048 ../src/libs/tools/viewswitcher.c:151
 msgid "other"
 msgstr "Muut"
 
-#: ../build/bin/preferences_gen.h:4048
+#: ../build/bin/preferences_gen.h:4058
 msgid "password storage backend to use"
 msgstr "Salasanojen tallennukseen käytettävä taustapalvelu"
 
-#: ../build/bin/preferences_gen.h:4065
+#: ../build/bin/preferences_gen.h:4075
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
@@ -1926,11 +1952,11 @@ msgstr ""
 "Salasanojen tallennukseen käytettävä taustapalvelu: automaattinen, ei mitään, "
 "libsecret, kwallet, Apple_avainnippu, Windows_todentamisavaimet"
 
-#: ../build/bin/preferences_gen.h:4074
+#: ../build/bin/preferences_gen.h:4084
 msgid "auto login to storage server"
 msgstr "Automaattinen kirjautuminen tallennuspalvelimelle"
 
-#: ../build/bin/preferences_gen.h:4082
+#: ../build/bin/preferences_gen.h:4092
 msgid ""
 "automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
@@ -1938,11 +1964,11 @@ msgstr ""
 "Kirjaudu automaattisesti valittuun tallennuspalvelimeen. Tämä vaatii, että "
 "salasanojen hallinnan taustapalvelu on otettu käyttöön."
 
-#: ../build/bin/preferences_gen.h:4091
+#: ../build/bin/preferences_gen.h:4101
 msgid "executable for playing audio files"
 msgstr "Äänitiedostojen toisto-ohjelma"
 
-#: ../build/bin/preferences_gen.h:4104
+#: ../build/bin/preferences_gen.h:4114
 msgid ""
 "this external program is used to play audio files some cameras record to keep "
 "notes for images"
@@ -1950,27 +1976,27 @@ msgstr ""
 "Ohjelma jota käytetään joihinkin kuvatiedostoihin lisättyjen "
 "ääniaputiedostojen toistamiseen."
 
-#: ../build/bin/preferences_gen.h:4114
+#: ../build/bin/preferences_gen.h:4124
 msgid "storage"
 msgstr "Tallennus"
 
-#: ../build/bin/preferences_gen.h:4119 ../src/control/crawler.c:747
+#: ../build/bin/preferences_gen.h:4129 ../src/control/crawler.c:747
 msgid "database"
 msgstr "Tietokanta"
 
-#: ../build/bin/preferences_gen.h:4129
+#: ../build/bin/preferences_gen.h:4139
 msgid "allow for multiple workspaces"
 msgstr "Salli useita työtiloja"
 
-#: ../build/bin/preferences_gen.h:4137
+#: ../build/bin/preferences_gen.h:4147
 msgid "allow multiple workspaces which can be selected at startup"
 msgstr "Salli useita työtiloja jotka voidaan valita aloituksessa."
 
-#: ../build/bin/preferences_gen.h:4146
+#: ../build/bin/preferences_gen.h:4156
 msgid "create database snapshot"
 msgstr "Luo tietokannan vedos"
 
-#: ../build/bin/preferences_gen.h:4155
+#: ../build/bin/preferences_gen.h:4165
 msgid ""
 "database snapshots are created right before closing darktable. options allow "
 "you to choose how often to make snapshots:\n"
@@ -1993,11 +2019,11 @@ msgstr ""
 "24 tuntia.\n"
 " - 'Suljettaessa': luodaan vedos aina, kun Darktable suljetaan."
 
-#: ../build/bin/preferences_gen.h:4164
+#: ../build/bin/preferences_gen.h:4174
 msgid "how many snapshots to keep"
 msgstr "Kuinka monta vedosta säilytetään"
 
-#: ../build/bin/preferences_gen.h:4182
+#: ../build/bin/preferences_gen.h:4192
 msgid ""
 "after successfully creating snapshot, how many older snapshots to keep "
 "(excluding mandatory version update ones). enter -1 to keep all snapshots\n"
@@ -2010,15 +2036,15 @@ msgstr ""
 "Ota huomioon, että vedokset vievät jonkin verran levytilaa ja tarvitset "
 "ainoastaan viimeisimmän tietojen onnistuneeseen palautukseen."
 
-#: ../build/bin/preferences_gen.h:4188 ../src/libs/copy_history.c:148
+#: ../build/bin/preferences_gen.h:4198 ../src/libs/copy_history.c:148
 msgid "XMP sidecar files"
 msgstr "XMP-aputiedostot"
 
-#: ../build/bin/preferences_gen.h:4198
+#: ../build/bin/preferences_gen.h:4208
 msgid "create XMP files"
 msgstr "Luo XMP-tiedostot"
 
-#: ../build/bin/preferences_gen.h:4207
+#: ../build/bin/preferences_gen.h:4217
 msgid ""
 "XMP sidecar files store all editing steps, ratings, tags and color labels "
 "alongside your images in an open format readable by other applications, and "
@@ -2049,11 +2075,11 @@ msgstr ""
 "<b>Tuonnin yhteydessä:</b> XMP-tiedosto luodaan kuvan tuonnin yhteydessä ja "
 "päivitetään jokaisen muokkaustapahtuman jälkeen."
 
-#: ../build/bin/preferences_gen.h:4216
+#: ../build/bin/preferences_gen.h:4226
 msgid "store XMP tags in compressed format"
 msgstr "Tallenna XMP-tunnisteet pakatussa muodossa"
 
-#: ../build/bin/preferences_gen.h:4225
+#: ../build/bin/preferences_gen.h:4235
 msgid ""
 "entries in XMP tags can get rather large and may exceed the available space "
 "to store the history stack in output files.\n"
@@ -2064,11 +2090,11 @@ msgstr ""
 "kuvissa.\n"
 "Tämä asetus ottaa käyttöön XMP-tunnisteiden pakkauksen ja tilan säästön."
 
-#: ../build/bin/preferences_gen.h:4234
+#: ../build/bin/preferences_gen.h:4244
 msgid "auto-save interval"
 msgstr "Automaattisen tallennuksen aikaväli"
 
-#: ../build/bin/preferences_gen.h:4252
+#: ../build/bin/preferences_gen.h:4262
 msgid ""
 "automatically save history while developing using the given interval (in "
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
@@ -2078,11 +2104,11 @@ msgstr ""
 "poistaaksesi automaattisen tallennuksen käytöstä. Automaattinen tallennus "
 "saatetaan poistaa käytöstä hitailla levyillä."
 
-#: ../build/bin/preferences_gen.h:4261
+#: ../build/bin/preferences_gen.h:4271
 msgid "look for updated XMP files on startup"
 msgstr "Etsi päivittyneet XMP-aputiedostot käynnistäessä"
 
-#: ../build/bin/preferences_gen.h:4269
+#: ../build/bin/preferences_gen.h:4279
 msgid ""
 "check file modification times of all XMP files on startup to check if any got "
 "updated in the meantime"
@@ -2090,19 +2116,19 @@ msgstr ""
 "Tarkista kaikkien XMP-aputiedostojen muokkausajat käynnistyksen yhteydessä "
 "muutosten varalta."
 
-#: ../build/bin/preferences_gen.h:4279
+#: ../build/bin/preferences_gen.h:4289
 msgid "miscellaneous"
 msgstr "Sekalaiset"
 
-#: ../build/bin/preferences_gen.h:4284
+#: ../build/bin/preferences_gen.h:4294
 msgid "interface"
 msgstr "Käyttöliittymä"
 
-#: ../build/bin/preferences_gen.h:4294
+#: ../build/bin/preferences_gen.h:4304
 msgid "show splash screen at startup"
 msgstr "Näytä aloitusnäyttö käynnistyksen yhteydessä"
 
-#: ../build/bin/preferences_gen.h:4302
+#: ../build/bin/preferences_gen.h:4312
 msgid ""
 "display a small window showing the progress of darktable startup before the "
 "main window appears"
@@ -2110,19 +2136,19 @@ msgstr ""
 "Näytä pieni ikkuna, jossa näytetään Darktablen käynnistyksen edistyminen "
 "ennen kuin varsinainen ikkuna avautuu."
 
-#: ../build/bin/preferences_gen.h:4311
+#: ../build/bin/preferences_gen.h:4321
 msgid "show welcome screen on next run"
 msgstr "Näytä tervetuloa-ikkuna seuraavan käynnistyksen yhteydessä"
 
-#: ../build/bin/preferences_gen.h:4319
+#: ../build/bin/preferences_gen.h:4329
 msgid "display the welcome setup screen the next time darktable is launched"
 msgstr "Näytä tervetuloa-asetusikkuna seuraavan käynnistyksen yhteydessä."
 
-#: ../build/bin/preferences_gen.h:4328
+#: ../build/bin/preferences_gen.h:4338
 msgid "load default shortcuts at startup"
 msgstr "Lataa oletuspikavalinnat käynnistyksessä"
 
-#: ../build/bin/preferences_gen.h:4336
+#: ../build/bin/preferences_gen.h:4346
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
@@ -2130,35 +2156,35 @@ msgstr ""
 "Lataa oletuspikavalinnat ennen käyttäjän asetuksia. Kytke pois estääksesi "
 "poistettujen oletusten palaaminen."
 
-#: ../build/bin/preferences_gen.h:4345
+#: ../build/bin/preferences_gen.h:4355
 msgid "scale slider step with min/max"
 msgstr "Muuta liukusäätimien askelta min/max arvoilla"
 
-#: ../build/bin/preferences_gen.h:4353
+#: ../build/bin/preferences_gen.h:4363
 msgid "vary slider step size with min/max range"
 msgstr "Muuta liukusäätimien askeleen kokoa min/max alueella."
 
-#: ../build/bin/preferences_gen.h:4362
+#: ../build/bin/preferences_gen.h:4372
 msgid "marker shape"
 msgstr "Sijainnin ilmaisimen muoto"
 
-#: ../build/bin/preferences_gen.h:4371
+#: ../build/bin/preferences_gen.h:4381
 msgid "the shape of the slider marker"
 msgstr "Vierityspalkin sijainnin ilmaisimen muoto."
 
-#: ../build/bin/preferences_gen.h:4380
+#: ../build/bin/preferences_gen.h:4390
 msgid "condensed panels' controls"
 msgstr "Tiivistettyjen paneelien ohjaimet"
 
-#: ../build/bin/preferences_gen.h:4388
+#: ../build/bin/preferences_gen.h:4398
 msgid "use condensed panels' controls in all views"
 msgstr "Käytä tiivistettyjä paneelin ohjaimia kaikissa näkymissä."
 
-#: ../build/bin/preferences_gen.h:4397
+#: ../build/bin/preferences_gen.h:4407
 msgid "automatically update module name"
 msgstr "Päivitä moduulin nimi automaattisesti"
 
-#: ../build/bin/preferences_gen.h:4405
+#: ../build/bin/preferences_gen.h:4415
 msgid ""
 "if enabled, the module name will be automatically updated to match a preset "
 "name or a preset instance name if present."
@@ -2167,21 +2193,21 @@ msgstr ""
 "esiasetuksen nimeä tai esiasetetun instanssin nimeä, jos sellainen on "
 "käytössä."
 
-#: ../build/bin/preferences_gen.h:4414
+#: ../build/bin/preferences_gen.h:4424
 msgid "sort built-in presets first"
 msgstr "Lajittele sisäänrakennetut esiasetukset ensin"
 
-#: ../build/bin/preferences_gen.h:4422
+#: ../build/bin/preferences_gen.h:4432
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
 "Näytetään sisäänrakennetut esiasetukset ennen käyttäjän luomia esiasetuksia."
 
-#: ../build/bin/preferences_gen.h:4431
+#: ../build/bin/preferences_gen.h:4441
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr "Hiiren rulla vierittää moduulien sivupaneelia"
 
-#: ../build/bin/preferences_gen.h:4439
+#: ../build/bin/preferences_gen.h:4449
 msgid ""
 "in darktable's darkroom, where you do your edits, all controls are listed on "
 "a panel on the right; you can choose whether you want to use the scroll wheel "
@@ -2209,11 +2235,11 @@ msgstr ""
 "<b>Ei valittu:</b> Hiiren rullalla muutetaan kursorin alla olevan ohjaimen "
 "arvoa ja yhdessä <i>Ctrl+Alt</i> kanssa vieritetään paneelia."
 
-#: ../build/bin/preferences_gen.h:4448
+#: ../build/bin/preferences_gen.h:4458
 msgid "enable touchpad gestures in darkroom"
 msgstr "Käytä kosketuslevyn eleitä pimiössä"
 
-#: ../build/bin/preferences_gen.h:4456
+#: ../build/bin/preferences_gen.h:4466
 msgid ""
 "use two-finger touchpad gestures in darkroom for panning and pinch-to-zoom. "
 "<b>enabled:</b> touchpad pinch gestures zoom the image and two-finger "
@@ -2229,11 +2255,11 @@ msgstr ""
 "eleitä ei käytetä pimiössä ja palataan vanhaan tapaan, kuten <i>CTRL+rulla</"
 "i> kuvan zoomaamiseen."
 
-#: ../build/bin/preferences_gen.h:4465
+#: ../build/bin/preferences_gen.h:4475
 msgid "constrain darkroom zoom between screen fit and 100%"
 msgstr "Rajoita pimiön zoomaus näytön sovituksen ja 100% välille"
 
-#: ../build/bin/preferences_gen.h:4474
+#: ../build/bin/preferences_gen.h:4484
 #, no-c-format
 msgid ""
 "limits scroll-wheel and pinch-to-zoom in the darkroom to the range between "
@@ -2248,11 +2274,11 @@ msgstr ""
 "väliaikaisesti ohi 100%. <b>Pois käytöstä</b> zoomausta ei rajoiteta ja "
 "ylimääräinen <i> CTRL</i> painaminen ei ole tarpeen 100% ohi zoomaukseen."
 
-#: ../build/bin/preferences_gen.h:4483
+#: ../build/bin/preferences_gen.h:4493
 msgid "always show panels' scrollbars"
 msgstr "Näytä aina paneelin vierityspalkki"
 
-#: ../build/bin/preferences_gen.h:4491
+#: ../build/bin/preferences_gen.h:4501
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content. (restart required)"
@@ -2260,11 +2286,11 @@ msgstr ""
 "Määrittää näytetäänkö paneelin vierityspalkki aina vai ainoastaan sisällöstä "
 "riippuen (uudelleenkäynnistys vaaditaan)."
 
-#: ../build/bin/preferences_gen.h:4500
+#: ../build/bin/preferences_gen.h:4510
 msgid "duration of the UI transitions in ms"
 msgstr "Käyttöliittymän siirtymien kesto millisekunneissa"
 
-#: ../build/bin/preferences_gen.h:4519
+#: ../build/bin/preferences_gen.h:4529
 msgid ""
 "how long the transitions take (in ms) for expanding or collapsing modules and "
 "other UI elements"
@@ -2272,11 +2298,11 @@ msgstr ""
 "Siirtymän kesto (millisekunneissa) laajennettaessa tai pienennettäessä "
 "moduuleita ja muita käyttöliittymän elementtejä."
 
-#: ../build/bin/preferences_gen.h:4528
+#: ../build/bin/preferences_gen.h:4538
 msgid "auto-scroll filmstrip to center on selected image"
 msgstr "Vieritä filminauhalla valittu kuva automaattisesti keskelle"
 
-#: ../build/bin/preferences_gen.h:4536
+#: ../build/bin/preferences_gen.h:4546
 msgid ""
 "when enabled, the filmstrip in culling mode and in the darkroom automatically "
 "scrolls to center on the selected image"
@@ -2284,21 +2310,21 @@ msgstr ""
 "Kuvien valintatilassa ja pimiössä filminauha vieritetään automaattisesti "
 "valitun kuvan osalta keskelle."
 
-#: ../build/bin/preferences_gen.h:4545
+#: ../build/bin/preferences_gen.h:4555
 msgid "position of the scopes module"
 msgstr "Skaalat-moduulin sijainti"
 
-#: ../build/bin/preferences_gen.h:4554
+#: ../build/bin/preferences_gen.h:4564
 msgid "position the scopes at the top-left or top-right of the screen"
 msgstr ""
 "Skaalojen (mm. histogrammi) sijainti näytön oikeassa tai vasemmassa "
 "yläkulmassa."
 
-#: ../build/bin/preferences_gen.h:4563
+#: ../build/bin/preferences_gen.h:4573
 msgid "method to use for getting the display profile"
 msgstr "Näyttöprofiilin hakutapa"
 
-#: ../build/bin/preferences_gen.h:4572
+#: ../build/bin/preferences_gen.h:4582
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile.\n"
@@ -2308,11 +2334,11 @@ msgstr ""
 "asetukseen.\n"
 "Tästä voi olla hyötyä, jos joku vaihtoehtoinen tapa ei toimi oikein."
 
-#: ../build/bin/preferences_gen.h:4581
+#: ../build/bin/preferences_gen.h:4591
 msgid "order or exclude MIDI devices"
 msgstr "Järjestä tai rajaa ulos MIDI-laitteet"
 
-#: ../build/bin/preferences_gen.h:4594
+#: ../build/bin/preferences_gen.h:4604
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
@@ -2329,17 +2355,17 @@ msgstr ""
 "poistaa kaikki MIDI-laitteet kokonaan käytöstä."
 
 #. tags
-#: ../build/bin/preferences_gen.h:4604 ../src/develop/lightroom.c:1573
+#: ../build/bin/preferences_gen.h:4614 ../src/develop/lightroom.c:1573
 #: ../src/gui/import_metadata.c:519 ../src/libs/export_metadata.c:196
 #: ../src/libs/image.c:622 ../src/libs/metadata_view.c:174
 msgid "tags"
 msgstr "Tunnisteet"
 
-#: ../build/bin/preferences_gen.h:4614
+#: ../build/bin/preferences_gen.h:4624
 msgid "omit hierarchy in simple tag lists"
 msgstr "Jätä hierarkia huomiotta yksinkertaisessa tunnisteluettelossa"
 
-#: ../build/bin/preferences_gen.h:4622
+#: ../build/bin/preferences_gen.h:4632
 msgid ""
 "when creating an XMP sidecar file the hierarchical tags are also added as a "
 "simple list\n"
@@ -2354,15 +2380,15 @@ msgstr ""
 "jättää muut osat huomioimatta. Esimerkiksi 'foo|bar|baz' lisää ainoastaan "
 "'baz'-tunnisteen."
 
-#: ../build/bin/preferences_gen.h:4628
+#: ../build/bin/preferences_gen.h:4638
 msgid "shortcuts with multiple instances"
 msgstr "Useiden instanssien pikavalinnat"
 
-#: ../build/bin/preferences_gen.h:4638
+#: ../build/bin/preferences_gen.h:4648
 msgid "prefer focused instance"
 msgstr "Suosi kohdistettuja instansseja"
 
-#: ../build/bin/preferences_gen.h:4646
+#: ../build/bin/preferences_gen.h:4656
 msgid ""
 "where multiple instances of a module are present, apply shortcuts to the "
 "instance that has focus\n"
@@ -2378,21 +2404,21 @@ msgstr ""
 "Huomioi: Yhdistämisen pikavalinnat vaikuttavat aina valittuna olevaan "
 "instanssiin."
 
-#: ../build/bin/preferences_gen.h:4655
+#: ../build/bin/preferences_gen.h:4665
 msgid "prefer expanded instances"
 msgstr "Suosi laajennettuja instansseja"
 
-#: ../build/bin/preferences_gen.h:4663
+#: ../build/bin/preferences_gen.h:4673
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
 "Jos moduulien instanssit on laajennettu, älä huomioi pienennettyjä "
 "instansseja."
 
-#: ../build/bin/preferences_gen.h:4672
+#: ../build/bin/preferences_gen.h:4682
 msgid "prefer enabled instances"
 msgstr "Suosi käytössä olevia instansseja"
 
-#: ../build/bin/preferences_gen.h:4680
+#: ../build/bin/preferences_gen.h:4690
 msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
@@ -2400,11 +2426,11 @@ msgstr ""
 "Edellä aktivoitujen sääntöjen jälkeen, jos moduulin instanssit ovat "
 "aktiivisia, älä huomioi käytöstä poistettuja instansseja."
 
-#: ../build/bin/preferences_gen.h:4689
+#: ../build/bin/preferences_gen.h:4699
 msgid "prefer unmasked instances"
 msgstr "Suosi maskittomia instansseja"
 
-#: ../build/bin/preferences_gen.h:4697
+#: ../build/bin/preferences_gen.h:4707
 msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
 "ignore masked instances"
@@ -2412,11 +2438,11 @@ msgstr ""
 "Edellä aktivoitujen sääntöjen jälkeen, jos moduulin instansseilla ei ole "
 "maskeja, älä huomioi maskillisia instansseja."
 
-#: ../build/bin/preferences_gen.h:4706
+#: ../build/bin/preferences_gen.h:4716
 msgid "selection order"
 msgstr "Valintajärjestys"
 
-#: ../build/bin/preferences_gen.h:4715
+#: ../build/bin/preferences_gen.h:4725
 msgid ""
 "after applying the above rules, apply the shortcut based on its position in "
 "the pixelpipe"
@@ -2424,11 +2450,11 @@ msgstr ""
 "Edellä aktivoitujen sääntöjen jälkeen, käytä pikavalintoja perustuen sen "
 "sijaintiin käsittelyjonossa."
 
-#: ../build/bin/preferences_gen.h:4724
+#: ../build/bin/preferences_gen.h:4734
 msgid "allow visual assignment to specific instances"
 msgstr "Salli visuaalinen asettamien tietyille instansseille"
 
-#: ../build/bin/preferences_gen.h:4732
+#: ../build/bin/preferences_gen.h:4742
 msgid ""
 "when multiple instances are present on an image this allows shortcuts to be "
 "visually assigned to those specific instances\n"
@@ -2438,44 +2464,44 @@ msgstr ""
 "asettamisen valittuihin instansseihin.\n"
 "Muussa tapauksessa pikavalinnat vaikuttavat ensisijaiseen instanssiin."
 
-#: ../build/bin/preferences_gen.h:4738
+#: ../build/bin/preferences_gen.h:4748
 msgid "map / geolocalization view"
 msgstr "Kartta / Paikkatietojen näkymä"
 
-#: ../build/bin/preferences_gen.h:4748
+#: ../build/bin/preferences_gen.h:4758
 msgid "pretty print the image location"
 msgstr "Näytä kuvien sijaintitiedot luettavammassa muodossa"
 
-#: ../build/bin/preferences_gen.h:4756
+#: ../build/bin/preferences_gen.h:4766
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
 "Näytä kuvien sijaintitiedot luettavammassa muodossa kuvan tiedot -moduulissa."
 
-#: ../build/bin/preferences_gen.h:4762
+#: ../build/bin/preferences_gen.h:4772
 msgid "slideshow view"
 msgstr "Kuvasarja"
 
-#: ../build/bin/preferences_gen.h:4772
+#: ../build/bin/preferences_gen.h:4782
 msgid "waiting time between each image in slideshow"
 msgstr "Kuvien vaihdon odotusaika kuvasarjassa"
 
-#: ../build/bin/preferences_gen.h:4814
+#: ../build/bin/preferences_gen.h:4824
 msgid "do not set the 'uncategorized' entry for tags"
 msgstr "Älä aseta 'Luokittelematon' syötettä tunnisteille."
 
-#: ../build/bin/preferences_gen.h:4822
+#: ../build/bin/preferences_gen.h:4832
 msgid "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr ""
 "Älä aseta 'Luokittelematon' syötettä tunnisteille, joilla ei ole "
 "alitunnisteita."
 
-#: ../build/bin/preferences_gen.h:4831
+#: ../build/bin/preferences_gen.h:4841
 msgid "tags case sensitivity"
 msgstr "Tunnisteen kirjainkoon merkitys"
 
-#: ../build/bin/preferences_gen.h:4840
+#: ../build/bin/preferences_gen.h:4850
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
@@ -2483,38 +2509,38 @@ msgstr ""
 "Tunnisteen kirjainkoon merkitys. Ilman SQLITE-tietokannan ICU-laajennosta, "
 "kirjainkoon merkitys toimii ainoastaan 26 Latin-merkistön kirjaimelle."
 
-#: ../build/bin/preferences_gen.h:4849 ../build/bin/preferences_gen.h:4940
+#: ../build/bin/preferences_gen.h:4859 ../build/bin/preferences_gen.h:4950
 msgid "number of collections to be stored"
 msgstr "Tallennettavien kokoelmien määrä"
 
-#: ../build/bin/preferences_gen.h:4868 ../build/bin/preferences_gen.h:4959
+#: ../build/bin/preferences_gen.h:4878 ../build/bin/preferences_gen.h:4969
 msgid "the number of recent collections to store and show in this list"
 msgstr "Listassa näytettävien ja tallennettavien edellisten kokoelmien määrä."
 
-#: ../build/bin/preferences_gen.h:4877
+#: ../build/bin/preferences_gen.h:4887
 msgid "number of folder levels to show in lists"
 msgstr "Listassa näytettävien hakemistotasojen määrä"
 
-#: ../build/bin/preferences_gen.h:4896
+#: ../build/bin/preferences_gen.h:4906
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
 "Filmirullien nimissä näytettävä hakemistotasojen määrä oikealta lähtien."
 
-#: ../build/bin/preferences_gen.h:4905
+#: ../build/bin/preferences_gen.h:4915
 msgid "sort film rolls by"
 msgstr "Filmirullien lajittelutapa"
 
-#: ../build/bin/preferences_gen.h:4914
+#: ../build/bin/preferences_gen.h:4924
 msgid "sets the collections-list order for film rolls"
 msgstr "Asettaa kokoelmien esitysjärjestyksen filmirullille."
 
-#: ../build/bin/preferences_gen.h:5002
+#: ../build/bin/preferences_gen.h:5012
 msgid "suggested tags level of confidence"
 msgstr "Ehdotettujen tunnisteiden luottamuskerroin"
 
-#: ../build/bin/preferences_gen.h:5022
+#: ../build/bin/preferences_gen.h:5032
 #, no-c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
@@ -2526,11 +2552,11 @@ msgstr ""
 "100: Vastaavia tunnisteita ei näytetä, näytetään vain viimeiaikaset "
 "(nopeampi)."
 
-#: ../build/bin/preferences_gen.h:5031
+#: ../build/bin/preferences_gen.h:5041
 msgid "number of recently attached tags"
 msgstr "Äskettäin käytettyjen tunnisteiden määrä"
 
-#: ../build/bin/preferences_gen.h:5050
+#: ../build/bin/preferences_gen.h:5060
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
@@ -3472,7 +3498,7 @@ msgstr "Perusta"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:384
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6144
 #: ../src/iop/basicadj.c:653 ../src/iop/flip.c:448 ../src/iop/levels.c:645
 #: ../src/iop/rgblevels.c:1081
@@ -3579,7 +3605,7 @@ msgstr "Säde"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:280
-#: ../src/libs/neural_restore.c:4174 ../src/libs/neural_restore.c:4191
+#: ../src/libs/neural_restore.c:4178 ../src/libs/neural_restore.c:4195
 msgid "strength"
 msgstr "Voimakkuus"
 
@@ -6175,7 +6201,7 @@ msgstr "Alasveto"
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1816 ../src/libs/import.c:1928 ../src/libs/import.c:2020
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4119
+#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4123
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1701
@@ -6422,51 +6448,51 @@ msgstr "Mallin varasto \"%s\" ei sisällä releases-index.jsonia."
 msgid "could not fetch releases-index.json (HTTP %ld)"
 msgstr "Ei saatu noudettua releases-index.json (HTTP %ld) tiedostoa."
 
-#: ../src/common/ai_models.c:1400 ../src/common/ai_models.c:1465
+#: ../src/common/ai_models.c:1395 ../src/common/ai_models.c:1460
 msgid "invalid parameters"
 msgstr "Virheelliset asetukset"
 
-#: ../src/common/ai_models.c:1403
+#: ../src/common/ai_models.c:1398
 #, c-format
 msgid "file not found: %s"
 msgstr "Tiedosta ei löydy: %s"
 
-#: ../src/common/ai_models.c:1411
+#: ../src/common/ai_models.c:1406
 #, c-format
 msgid "archive top-level directory is not a valid model id: \"%s\""
 msgstr ""
 "Arkiston ylimmän tason hakemisto ei ole kelvollinen mallin tunniste: \"%s\""
 
-#: ../src/common/ai_models.c:1420
+#: ../src/common/ai_models.c:1415
 msgid "failed to extract model archive"
 msgstr "Mallin arkiston purkaminen epäonnistui."
 
-#: ../src/common/ai_models.c:1473
+#: ../src/common/ai_models.c:1468
 msgid "model not found in registry"
 msgstr "Mallia ei löydy rekisteristä."
 
-#: ../src/common/ai_models.c:1479
+#: ../src/common/ai_models.c:1474
 msgid "model has no download asset defined"
 msgstr "Mallin lataustietoa ei ole määritetty."
 
-#: ../src/common/ai_models.c:1490
+#: ../src/common/ai_models.c:1485
 msgid "invalid asset filename"
 msgstr "Virheellinen assetin tiedostonimi"
 
-#: ../src/common/ai_models.c:1496
+#: ../src/common/ai_models.c:1491
 msgid "model is already downloading"
 msgstr "Mallia ladataan jo."
 
-#: ../src/common/ai_models.c:1527
+#: ../src/common/ai_models.c:1522
 msgid "invalid repository format"
 msgstr "Virheellinen arkistomuoto"
 
-#: ../src/common/ai_models.c:1552
+#: ../src/common/ai_models.c:1547
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr "Yhteensopivaa tekoälymallin julkaisua ei löydy Darktablelle %s"
 
-#: ../src/common/ai_models.c:1568
+#: ../src/common/ai_models.c:1563
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6475,38 +6501,38 @@ msgstr ""
 "Ei satu haettua tarkastussummaa tiedostolle %s — ei ladata ilman eheyden "
 "tarkistusta."
 
-#: ../src/common/ai_models.c:1586
+#: ../src/common/ai_models.c:1581
 msgid "failed to build download url"
 msgstr "Latauksen osoitteen luonti epäonnistui."
 
-#: ../src/common/ai_models.c:1597
+#: ../src/common/ai_models.c:1592
 #, c-format
 msgid "failed to create file: %s"
 msgstr "Tiedoston luonti epäonnistui: %s"
 
-#: ../src/common/ai_models.c:1621
+#: ../src/common/ai_models.c:1616
 msgid "failed to initialize download"
 msgstr "Latauksen alustus epäonnistui"
 
-#: ../src/common/ai_models.c:1641
+#: ../src/common/ai_models.c:1636
 msgid "download cancelled"
 msgstr "Lataaminen peruutettu"
 
-#: ../src/common/ai_models.c:1643
+#: ../src/common/ai_models.c:1638
 #, c-format
 msgid "download failed: %s"
 msgstr "Lataus epäonnistui: %s"
 
-#: ../src/common/ai_models.c:1654
+#: ../src/common/ai_models.c:1649
 #, c-format
 msgid "http error: %ld"
 msgstr "http-virhe: %ld"
 
-#: ../src/common/ai_models.c:1677
+#: ../src/common/ai_models.c:1672
 msgid "checksum verification failed"
 msgstr "Tarkistussumman varmistus epäonnistui"
 
-#: ../src/common/ai_models.c:1687
+#: ../src/common/ai_models.c:1682
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6515,7 +6541,7 @@ msgstr ""
 "Tarkistussummaa ei saatavilla tiedostolle %s — ei ladata ilman eheyden "
 "tarkistusta."
 
-#: ../src/common/ai_models.c:1700
+#: ../src/common/ai_models.c:1695
 msgid "failed to extract archive"
 msgstr "Arkiston purkaminen epäonnistui."
 
@@ -8082,7 +8108,7 @@ msgstr "AVIF"
 msgid "ImageMagick"
 msgstr "ImageMagick"
 
-#: ../src/common/image.h:231 ../src/imageio/format/heif.c:554
+#: ../src/common/image.h:231 ../src/imageio/format/heif.c:599
 msgid "HEIF"
 msgstr "HEIF"
 
@@ -10316,7 +10342,7 @@ msgstr "Ei sopivaa kuvaa kiinnitykseen"
 msgid "please wait for image to load"
 msgstr "Ole hyvä ja odota kuvan latautumista."
 
-#: ../src/develop/develop.c:1099
+#: ../src/develop/develop.c:1135
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
@@ -10324,12 +10350,12 @@ msgstr ""
 "Historian automaattinen tallentaminen on poistettu käytöstä tälle kuvalle, "
 "koska muokkaushistoria on erittäin suuri tai käytössä on hidas levy."
 
-#: ../src/develop/develop.c:2611
+#: ../src/develop/develop.c:2647
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: moduulin `%s' versioristiriita: %d != %d"
 
-#: ../src/develop/develop.c:3550
+#: ../src/develop/develop.c:3590
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Kahdenna moduuli, uutta instanssia ei voi siirtää lähteenä toimivan jälkeen.\n"
@@ -10410,7 +10436,7 @@ msgid "purpose"
 msgstr "tarkoitus"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4252
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4256
 msgid "process"
 msgstr "Käsittele"
 
@@ -11002,7 +11028,7 @@ msgstr ""
 "Tämän on aiheuttanut luultavasti esiasetus, tyyli tai historian "
 "kopiointi&liittäminen."
 
-#: ../src/develop/pixelpipe_hb.c:1365
+#: ../src/develop/pixelpipe_hb.c:1371
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -11013,12 +11039,12 @@ msgstr ""
 "moduulissa '%s'.\n"
 "Ole hyvä ja raportoi virhe GitHubissa."
 
-#: ../src/develop/pixelpipe_hb.c:1946
+#: ../src/develop/pixelpipe_hb.c:1953
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
 "Vakava tulon virheellinen kohdistus. Ole hyvä ja raportoi virhe GitHubissa.\n"
 
-#: ../src/develop/pixelpipe_hb.c:3167
+#: ../src/develop/pixelpipe_hb.c:3174
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11039,7 +11065,7 @@ msgstr ""
 "  - liian pieni vapaan tilan asetus, kun käytetään 'Käytä kaikki laitteen "
 "muisti' asetusta."
 
-#: ../src/develop/pixelpipe_hb.c:3469
+#: ../src/develop/pixelpipe_hb.c:3476
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -15127,7 +15153,7 @@ msgstr "Valitse skriptien hakemisto"
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4154
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4158
 #: ../src/views/lighttable.c:1588
 msgid "page"
 msgstr "Sivu"
@@ -17032,7 +17058,7 @@ msgid "select ONNX Runtime library"
 msgstr "Valitse ONNX ajonaikainen kirjasto"
 
 #: ../src/gui/preferences_ai.c:1385 ../src/iop/lut3d.c:1576
-#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4120
+#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4124
 msgid "_select"
 msgstr "_Valitse"
 
@@ -17644,39 +17670,39 @@ msgstr "Luo"
 msgid "copy settings from existing workspace"
 msgstr "Kopio asetukset olemassa olevasta työtilasta"
 
-#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "8 bit"
 msgstr "8-bittinen"
 
-#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:99 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "10 bit"
 msgstr "10 bit"
 
-#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:644
+#: ../src/imageio/format/avif.c:103 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587
 msgid "12 bit"
 msgstr "12 bit"
 
-#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:116 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossless"
 msgstr "Häviötön"
 
-#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:648
+#: ../src/imageio/format/avif.c:118 ../src/imageio/format/heif.c:693
 #: ../src/imageio/format/webp.c:411
 msgid "lossy"
 msgstr "Häviöllinen"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
-#: ../src/imageio/format/heif.c:642 ../src/imageio/format/jxl.c:585
+#: ../src/imageio/format/heif.c:687 ../src/imageio/format/jxl.c:585
 #: ../src/imageio/format/pdf.c:678 ../src/imageio/format/png.c:688
 #: ../src/imageio/format/tiff.c:880 ../src/imageio/format/xcf.c:358
-#: ../src/libs/neural_restore.c:4282
+#: ../src/libs/neural_restore.c:4286
 msgid "bit depth"
 msgstr "Värisyvyys"
 
@@ -17718,7 +17744,7 @@ msgstr ""
 #. compression
 #. Compression method combo box
 #: ../src/imageio/format/avif.c:981 ../src/imageio/format/exr.cc:631
-#: ../src/imageio/format/heif.c:646 ../src/imageio/format/pdf.c:693
+#: ../src/imageio/format/heif.c:691 ../src/imageio/format/pdf.c:693
 #: ../src/imageio/format/png.c:702 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/webp.c:409 ../src/libs/masks.c:117
 msgid "compression"
@@ -17733,18 +17759,18 @@ msgstr "Kuvan pakkauksen taso"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:661
+#: ../src/imageio/format/avif.c:1003 ../src/imageio/format/heif.c:706
 #: ../src/imageio/format/j2k.c:707 ../src/imageio/format/jpeg.c:578
 #: ../src/imageio/format/jxl.c:611 ../src/imageio/format/webp.c:419
 #: ../src/libs/camera.c:588
 msgid "quality"
 msgstr "Laatu"
 
-#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:664
+#: ../src/imageio/format/avif.c:1006 ../src/imageio/format/heif.c:709
 msgid "the quality of an image, less quality means fewer details"
 msgstr "Kuvan laatu, heikompi laatu tarkoittaa vähemmän yksityiskohtia"
 
-#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:677
+#: ../src/imageio/format/avif.c:1018 ../src/imageio/format/heif.c:722
 #: ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
 msgstr "Kroman alinäytteistys"
@@ -17765,17 +17791,17 @@ msgstr ""
 "4:2:2 - värien näytteistys puolitettu vaakasuunnassa\n"
 "4:2:0 - värien näytteistys puolitettu vaaka- ja pystysuunnassa"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:4:4"
 msgstr "4:4:4"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:2"
 msgstr "4:2:2"
 
-#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:686
+#: ../src/imageio/format/avif.c:1026 ../src/imageio/format/heif.c:731
 #: ../src/imageio/format/jpeg.c:597
 msgid "4:2:0"
 msgstr "4:2:0"
@@ -17811,7 +17837,7 @@ msgstr "16-bittinen (liukuluku)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4285
+#: ../src/libs/neural_restore.c:4289
 msgid "32 bit (float)"
 msgstr "32-bittinen (liukuluku)"
 
@@ -17864,7 +17890,7 @@ msgstr "HTJ2K256"
 msgid "HTJ2K32"
 msgstr "HTJ2K32"
 
-#: ../src/imageio/format/heif.c:678
+#: ../src/imageio/format/heif.c:723
 msgid ""
 "chroma subsampling setting for HEIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -17928,7 +17954,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4285
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4289
 msgid "16 bit"
 msgstr "16-bittinen"
 
@@ -19305,7 +19331,7 @@ msgid "denoise chroma"
 msgstr "Värikohinan poisto"
 
 #: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1357
-#: ../src/libs/neural_restore.c:4162
+#: ../src/libs/neural_restore.c:4166
 msgid "denoise"
 msgstr "Kohinanpoisto"
 
@@ -22804,7 +22830,7 @@ msgstr ""
 "Tämä moduuli on vanhentunut. Kannattaa käyttää värin kartoitus-moduulia tämän "
 "sijaan."
 
-#: ../src/iop/colortransfer.c:413
+#: ../src/iop/colortransfer.c:406
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -23259,7 +23285,7 @@ msgid "variance blue: "
 msgstr "Sinisen vaihtelu: "
 
 #: ../src/iop/denoiseprofile.c:3678 ../src/libs/export.c:1600
-#: ../src/libs/neural_restore.c:4293 ../src/libs/print_settings.c:2516
+#: ../src/libs/neural_restore.c:4297 ../src/libs/print_settings.c:2516
 #: ../src/libs/print_settings.c:2872
 msgid "profile"
 msgstr "Profiili"
@@ -25250,7 +25276,7 @@ msgstr "Etäisyys kohteeseen."
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4453 ../src/iop/overlay.c:1124 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1484 ../src/libs/export.c:1558
-#: ../src/libs/neural_restore.c:4203
+#: ../src/libs/neural_restore.c:4207
 msgid "scale"
 msgstr "Mittakaava"
 
@@ -26433,7 +26459,7 @@ msgstr ""
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
 #: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1358
-#: ../src/libs/neural_restore.c:4160
+#: ../src/libs/neural_restore.c:4164
 msgid "raw denoise"
 msgstr "Raakakuvan kohinanpoisto"
 
@@ -28883,7 +28909,7 @@ msgstr ""
 "kuvatyypeille."
 
 #: ../src/libs/export.c:1601 ../src/libs/export.c:1636
-#: ../src/libs/neural_restore.c:4294 ../src/libs/print_settings.c:2875
+#: ../src/libs/neural_restore.c:4298 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
 msgstr "Lähdekuvan asetukset"
@@ -31508,7 +31534,7 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3302
+#: ../src/libs/neural_restore.c:451 ../src/libs/neural_restore.c:3306
 msgid "neural restore"
 msgstr "Neuroverkkopalautus"
 
@@ -31551,7 +31577,7 @@ msgstr "Raakakuvan kohinanpoisto: Ei voida ladata lähdekuvaa"
 msgid "raw denoise: image is not in a supported raw sensor format"
 msgstr "Raakakuvan kohinanpoisto: Kuva ei ole tuetussa raakakuvamuodossa."
 
-#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4164
+#: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4168
 msgid "upscale"
 msgstr "Suurenna"
 
@@ -31629,60 +31655,60 @@ msgstr "Laaja sävyasteikko säilytetty, kohinanpoistoa ei tehty"
 msgid "wide-gamut clipped"
 msgstr "Laajan sävyasteikon leikkaus"
 
-#: ../src/libs/neural_restore.c:3486
+#: ../src/libs/neural_restore.c:3490
 #, c-format
 msgid "zoom %.0f%%"
 msgstr "Zoomaa %.0f%%"
 
-#: ../src/libs/neural_restore.c:3649
+#: ../src/libs/neural_restore.c:3653
 msgid "click to select preview area"
 msgstr "Napsauta valitaksesi esikatselualueen."
 
-#: ../src/libs/neural_restore.c:3674
+#: ../src/libs/neural_restore.c:3678
 msgid "model not available"
 msgstr "Malli ei saatavilla"
 
-#: ../src/libs/neural_restore.c:3676 ../src/libs/neural_restore.c:3870
+#: ../src/libs/neural_restore.c:3680 ../src/libs/neural_restore.c:3874
 msgid "generating preview..."
 msgstr "Luodaan esikatselua..."
 
-#: ../src/libs/neural_restore.c:3678
+#: ../src/libs/neural_restore.c:3682
 msgid "click to generate preview"
 msgstr "Napsauta luodaksesi esikatselukuvan."
 
-#: ../src/libs/neural_restore.c:3680
+#: ../src/libs/neural_restore.c:3684
 msgid "image not supported by this task"
 msgstr "Kuvaa ei tueta tässä tehtävässä"
 
-#: ../src/libs/neural_restore.c:3682
+#: ../src/libs/neural_restore.c:3686
 msgid "preview initialization failed"
 msgstr "Esikatselun alustus epäonnistui"
 
-#: ../src/libs/neural_restore.c:3683
+#: ../src/libs/neural_restore.c:3687
 msgid "select an image to preview"
 msgstr "Valitse esikatseltava kuva"
 
-#: ../src/libs/neural_restore.c:4116 ../src/libs/neural_restore.c:4380
+#: ../src/libs/neural_restore.c:4120 ../src/libs/neural_restore.c:4384
 msgid "select output folder"
 msgstr "Valitse viennin hakemisto"
 
-#: ../src/libs/neural_restore.c:4161
+#: ../src/libs/neural_restore.c:4165
 msgid "AI raw denoising"
 msgstr "Tekoälypohjainen raakakuvan kohinanpoisto."
 
-#: ../src/libs/neural_restore.c:4163
+#: ../src/libs/neural_restore.c:4167
 msgid "AI denoising"
 msgstr "Tekoälypohjainen kohinanpoisto."
 
-#: ../src/libs/neural_restore.c:4165
+#: ../src/libs/neural_restore.c:4169
 msgid "AI upscaling"
 msgstr "Tekoälypohjainen kuvan suurentaminen."
 
-#: ../src/libs/neural_restore.c:4177
+#: ../src/libs/neural_restore.c:4181
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "Yhdistä lähteen CFA (0%) ja kohinanpoistettu ulostulo (100%)"
 
-#: ../src/libs/neural_restore.c:4195
+#: ../src/libs/neural_restore.c:4199
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -31692,19 +31718,19 @@ msgstr ""
 "palauttavat kirkkauden tekstuurin ja rakeisuuden samalla kun värikohina pysyy "
 "vaimennettuna"
 
-#: ../src/libs/neural_restore.c:4204
+#: ../src/libs/neural_restore.c:4208
 msgid "upscale factor"
 msgstr "Suurennoksen kerroin."
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:4206
+#: ../src/libs/neural_restore.c:4210
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:4223
+#: ../src/libs/neural_restore.c:4227
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -31712,27 +31738,27 @@ msgstr ""
 "Napsauta valitaksesi esikatselun alue kuvasta.\n"
 "Kaksoisnapsauta palauttaaksesi näkymä keskelle."
 
-#: ../src/libs/neural_restore.c:4254
+#: ../src/libs/neural_restore.c:4258
 msgid "process selected images"
 msgstr "Käsittele valitut kuvat"
 
-#: ../src/libs/neural_restore.c:4272
+#: ../src/libs/neural_restore.c:4276
 msgid "output parameters"
 msgstr "Viennin parametrit"
 
-#: ../src/libs/neural_restore.c:4283
+#: ../src/libs/neural_restore.c:4287
 msgid "output TIFF bit depth"
 msgstr "TIFF-tiedoston bittisyvyys"
 
-#: ../src/libs/neural_restore.c:4325
+#: ../src/libs/neural_restore.c:4329
 msgid "color profile embedded in the output TIFF"
 msgstr "Liitä väriprofiili ulostulon TIFF-tiedostoon."
 
-#: ../src/libs/neural_restore.c:4335
+#: ../src/libs/neural_restore.c:4339
 msgid "preserve wide-gamut colors"
 msgstr "Säilytä laajan sävyasteikon värit"
 
-#: ../src/libs/neural_restore.c:4342
+#: ../src/libs/neural_restore.c:4346
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
@@ -31743,16 +31769,16 @@ msgstr ""
 "mutta laajan sävyalueen värit voi leikkaantua; koskee ainoastaan "
 "kohinanpoistoa."
 
-#: ../src/libs/neural_restore.c:4351
+#: ../src/libs/neural_restore.c:4355
 msgid "add to the current collection"
 msgstr "Lisää nykyiseen kokoelmaan"
 
-#: ../src/libs/neural_restore.c:4357
+#: ../src/libs/neural_restore.c:4361
 msgid "automatically import the output image into the current collection"
 msgstr ""
 "Tuo viennin kuva automaattisesti Darktablen kirjaston nykyiseen kokoelmaan."
 
-#: ../src/libs/neural_restore.c:4373
+#: ../src/libs/neural_restore.c:4377
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
