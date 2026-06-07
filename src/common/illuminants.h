@@ -444,7 +444,7 @@ static gboolean get_CAM_to_XYZ(const dt_image_t * img, float(* CAM_to_XYZ)[3])
 static inline gboolean _wb_coeffs_invalid(const dt_aligned_pixel_t wb_coeffs, const int num_coeffs)
 {
   for(int k = 0; k < num_coeffs; k++)
-    if(!dt_isnormal(wb_coeffs[k]) || wb_coeffs[k] == 0.0f) return TRUE;
+    if(!dt_isnormal(wb_coeffs[k])) return TRUE;
 
   return FALSE;
 }
@@ -463,10 +463,7 @@ static gboolean find_illuminant_xy_from_wb_coeffs(const dt_image_t *img, const d
     return FALSE;
   }
 
-  float x, y;
-  WB_coeffs_to_illuminant_xy(CAM_to_XYZ, wb_coeffs, &x, &y);
-  *chroma_x = x;
-  *chroma_y = y;
+  WB_coeffs_to_illuminant_xy(CAM_to_XYZ, wb_coeffs, chroma_x, chroma_y);
 
   return TRUE;
 }
