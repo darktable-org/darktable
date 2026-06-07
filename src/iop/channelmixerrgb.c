@@ -3105,23 +3105,16 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
   dt_iop_channelmixer_rgb_params_t *p = self->params;
   if(p->illuminant == DT_ILLUMINANT_FROM_WB)
   {
-    // The WB coefficients might have changed in the temperature module.
-    // We need to re-calculate the chromaticity (x, y) to update the GUI feedback.
-    float x = p->x;
-    float y = p->y;
+    // WB coefficients might have changed temperature.c; recalculate xy and update the GUI
+    float x, y;
 
     if(find_illuminant_xy_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs, &x, &y))
     {
-      p->x = x;
-      p->y = y;
-
-      darktable.gui->reset++;
-      // Update derived GUI widgets (CCT label, color patch)
+      DT_ENTER_GUI_UPDATE();
       _update_approx_cct(self);
       _update_illuminant_color(self);
 
-      // Update Hue/Chroma sliders to match the new coordinates
-      dt_aligned_pixel_t xyY = { p->x, p->y, 1.f };
+      dt_aligned_pixel_t xyY = { x, y, 1.f };
       dt_aligned_pixel_t Lch;
       dt_xyY_to_Lch(xyY, Lch);
 
@@ -3129,7 +3122,7 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
         dt_bauhaus_slider_set(g->illum_x, rad2degf(Lch[2]));
       dt_bauhaus_slider_set(g->illum_y, Lch[1]);
 
-      darktable.gui->reset--;
+      DT_LEAVE_GUI_UPDATE();
     }
   }
 
