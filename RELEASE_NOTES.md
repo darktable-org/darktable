@@ -420,6 +420,10 @@ changes (where available).
 - Various stability fixes for OpenCL and CPU pixelpipe processing.
   Less differences between CPU and OpenCL processing.
 
+- Ensure that the counter used to disable GUI loop is handled
+  atomically. In some very rare cases the GUI could freeze due to
+  unbalanced setting of the counter.
+
 ## Lua
 
 ### API Version
