@@ -59,33 +59,36 @@ changes (where available).
   acceleration for the new AI features. The scripts detect the user's
   GPU vendor (NVIDIA, AMD or Intel) and install the matching GPU
   runtime. They can be run from a local checkout or fetched and run
-  online with a single command – see the AI section in the README for
-  details. macOS users and most Windows users do not need to run
-  anything; GPU acceleration is already bundled.
+  online with a single command – see the
+  [GPU acceleration page](https://docs.darktable.org/usermanual/development/en/special-topics/ai/gpu-acceleration/)
+  in the user manual for details. macOS users and most Windows users
+  do not need to run anything; GPU acceleration is already bundled.
 
 - Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
   or SegNext model for interactive object segmentation – click on an
   object to generate a precise mask. Supports both foreground and
   background prompt points with iterative refinement. The encoder runs
   once per image (GPU-accelerated via the AI backend when available),
-  and the lightweight decoder produces masks interactively.
+  and the lightweight decoder produces masks interactively. Each click
+  runs iterative refinement passes that tighten the mask, plus an
+  optional DenseCRF refinement pass for clean, edge-aware boundaries.
 
 - Added neural restore module in the lighttable/darkroom sidebar
-  covering three AI-based tasks: raw denoise, image denoise, and
-  upscale. Default models: NIND UNet (image denoise), RawNIND UtNet2
-  (raw denoise), and BSRGAN 2x/4x (super-resolution), all running on
-  the ONNX backend. Additional models such as NAFNet (image denoise)
-  are available from the model repository and can be installed
-  manually. Features include an interactive before/after split
-  preview with area picker, a strength slider (DWT-based texture
+  covering three AI-based tasks: raw denoise, denoise, and
+  upscale. Default models: NIND UNet (denoise), RawNIND UtNet2
+  (raw denoise), and RealPLKSR 2x/4x (super-resolution), all running
+  on the ONNX backend. Additional models such as NAFNet (denoise)
+  and BSRGAN (upscale) are available from the model repository and
+  can be installed manually. Features include an interactive before/after
+  split preview with area picker, a strength slider (DWT-based texture
   recovery for RGB denoise; linear source/denoised blend for raw
   denoise), batch processing with tiled inference, and automatic
   library re-import with image grouping. Raw denoise writes a DNG
   (CFA Bayer or LinearRaw); image denoise and upscale write a TIFF
-  embedding the output ICC profile.
-  GPU acceleration is inherited from the AI backend. If GPU
-  inference fails (out of memory, unsupported op, EP crash),
-  darktable automatically retries on CPU.
+  embedding the output ICC profile. GPU acceleration is inherited
+  from the AI backend. If GPU inference fails (out of memory,
+  unsupported operator, execution provider crash), darktable
+  automatically retries on CPU.
 
 - Added `colorharmonizer` module that applies color harmony
   corrections in UCS color space, rotating hues toward a target
@@ -446,12 +449,13 @@ changes (where available).
   metadata field exists before trying to access it.
 
 - Added Lua AI API (`darktable.ai`) for scripting AI model inference.
-  Provides tensor creation, model loading with GPU provider selection,
-  and two calling conventions for inference (pre-allocated and
-  auto-allocated outputs). Image I/O includes loading from file or
-  darktable library (full pipeline export), raw CFA sensor data
-  access, and DNG output with EXIF preservation. Enables Lua scripts
-  to implement custom AI workflows such as denoise or upscale.
+  Provides tensor creation and model loading with GPU provider
+  selection. Image I/O covers loading from a file or directly from
+  the darktable library (with the full edit pipeline applied), raw
+  CFA sensor data access, and DNG output with EXIF preservation.
+  Enables custom AI workflows beyond the built-in modules – e.g.
+  classification or experimental denoise/upscale models from
+  community repositories.
 
 ### Bug Fixes
 
