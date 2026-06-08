@@ -224,6 +224,9 @@ changes (where available).
 - Increased performance of `overlay` (composite) module and added
   OpenCL code path.
 
+- Avoid superfluous pixelpipe runs for faster darkroom processing
+  and when selecting history entries.
+
 ## Other Changes
 
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
@@ -307,6 +310,8 @@ changes (where available).
   Users can switch on "OpenCL fast mode" in preferences leading to slightly
   more differences compared to CPU output for sligtly more performance.
   The per-device conf settings got an update, see the docs for reference.
+  Support of atomic OpenCL code and OpenCL 3.x is autodetected.
+
 
 ## Bug Fixes
 
@@ -396,7 +401,19 @@ changes (where available).
 - Fixed white and middle-grey patches being swapped for Datacolor
   SpyderCheckr 48 in the Color Calibration module.
 
+- Fixed tone_curve masks affecting areas outside of a drawn mask.
+
+- Fixed subtle errors in Markesteijn and VNG demosaicers.
+
+- All rawspace modules including demosaic allow positioning of main darkroom
+  window with a precison of one pixel.
+
+- When all midi devices are disabled portmidi won't be initialized
+
+- Fixed a bug that lead to ignored or stuck shortcuts
+
 - Various stability fixes for OpenCL and CPU pixelpipe processing.
+  Less differences between CPU and OpenCL processing.
 
 ## Lua
 
