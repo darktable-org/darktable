@@ -102,6 +102,10 @@ changes (where available).
   rotation angles controllable directly from the vectorscope. Both CPU
   and OpenCL (GPU) implementations are provided.
 
+- Added support for HEIF export. User can choose lossless or lossy
+  compression, all practically supported color depths (8/10/12 bit),
+  all supported color subsampling options.
+
 ## UI/UX Improvements
 
 - In the crop module, the crop aspect ratio is added to the dimensions
