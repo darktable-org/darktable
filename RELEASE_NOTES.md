@@ -320,6 +320,10 @@ changes (where available).
   reference.  Support of atomic OpenCL code and OpenCL 3.x is
   autodetected.
 
+- Added two HTJ2K compression options to EXR export. Since they are
+  supported starting with libopenexr 3.4, these options will only be
+  present in darktable if it is linked against a library version 3.4
+  or later.
 
 ## Bug Fixes
 
