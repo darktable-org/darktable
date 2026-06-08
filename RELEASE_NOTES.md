@@ -72,6 +72,9 @@ changes (where available).
   and the lightweight decoder produces masks interactively. Each click
   runs iterative refinement passes that tighten the mask, plus an
   optional DenseCRF refinement pass for clean, edge-aware boundaries.
+  The generated mask can optionally be exported as a PNG for use
+  with the *external raster masks* module when finer edge detail is
+  needed than the vectorized mask provides.
 
 - Added neural restore module in the lighttable/darkroom sidebar
   covering three AI-based tasks: raw denoise, denoise, and
