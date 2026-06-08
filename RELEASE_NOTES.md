@@ -424,6 +424,9 @@ changes (where available).
   atomically. In some very rare cases the GUI could freeze due to
   unbalanced setting of the counter.
 
+- Fixed collection range selection not working if the collection is in
+  descending sort order.
+
 ## Lua
 
 ### API Version
