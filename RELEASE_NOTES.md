@@ -410,10 +410,10 @@ changes (where available).
 
 - Fixed subtle errors in Markesteijn and VNG demosaicers.
 
-- All rawspace modules including demosaic allow positioning of main
-  darkroom window with a precison of one pixel.
+- All RAW space modules including demosaic allow positioning of main
+  darkroom window with a precision of one pixel.
 
-- When all midi devices are disabled portmidi won't be initialized
+- When all midi devices are disabled portmidi won't be initialized.
 
 - Fixed a bug that lead to ignored or stuck shortcuts
 
