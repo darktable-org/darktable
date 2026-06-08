@@ -359,8 +359,8 @@ static void _opencl_write_device_config(const int devid)
 
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
+  g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  g_snprintf(dat, sizeof(dat), "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
 
@@ -371,14 +371,14 @@ static void _opencl_write_device_config(const int devid)
     cl->dev[devid].advantage,
     cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "\n[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+           "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid to support systems with two
   // similar cards.
-  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
-  g_snprintf(dat, 510, "%i", cl->dev[devid].headroom);
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
+  g_snprintf(dat, sizeof(dat), "%i", cl->dev[devid].headroom);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -413,7 +413,7 @@ static gboolean _opencl_read_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   dt_opencl_device_t *cldid = &cl->dev[devid];
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
 
   const gboolean existing_device = dt_conf_key_not_empty(key);
   gboolean safety_ok = TRUE;
@@ -449,7 +449,7 @@ static gboolean _opencl_read_device_config(const int devid)
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid
-  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
