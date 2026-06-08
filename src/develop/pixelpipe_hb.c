@@ -1523,6 +1523,9 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                          | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }
 
+  if(_module_pipe_stop(pipe, module, input))
+    return TRUE;
+
   if(pfm_dump)
   {
     dt_dump_pipe_pfm(module->op, *output, roi_out->width, roi_out->height, bpp,
