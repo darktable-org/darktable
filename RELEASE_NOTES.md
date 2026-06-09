@@ -438,6 +438,8 @@ changes (where available).
 - Fixed collection range selection not working if the collection is in
   descending sort order.
 
+- Fix use-after-free bug in tagging code which caused an instant crash
+
 ## Lua
 
 ### API Version
