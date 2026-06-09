@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 12:50-0300\n"
-"PO-Revision-Date: 2026-06-09 13:16-0300\n"
+"POT-Creation-Date: 2026-06-09 13:28-0300\n"
+"PO-Revision-Date: 2026-06-09 14:48-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -876,7 +876,9 @@ msgid ""
 "\n"
 "<b>darker:</b> good for dimly-lit rooms"
 msgstr ""
-"a sombra ao redor de sua foto afeta como você vê as cores e tons enquanto edita. cinza é recomendado porque é o mais neutro - não enviesará seus olhos em qualquer direção\n"
+"a sombra ao redor de sua foto afeta como você vê as cores e tons enquanto "
+"edita. cinza é recomendado porque é o mais neutro - não enviesará seus olhos "
+"em qualquer direção\n"
 "\n"
 "<b>cinza:</b> melhor para trabalho de cores com precisão\n"
 "\n"
@@ -1289,18 +1291,14 @@ msgid "delimiters for size categories"
 msgstr "delimitadores para categorias de tamanho"
 
 #: ../build/bin/preferences_gen.h:2990
-#, fuzzy
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending on the size of the thumbnail, separated by |.\n"
 "for example, 120|400 means 3 categories of thumbnails: up to 120px, "
 "120-400px, more than 400px"
 msgstr ""
-"categorias de tamanho são usadas para poder determinar as informações e "
-"valores de CSS diferentes dependendo do tamanho da miniatura, separados por "
-"|.\n"
-"por exemplo, 120|400 significa 3 categorias de miniaturas: <120px, 120px-"
-">400px e >400px"
+"categorias de tamanho são usadas para poder determinar valores de sobreposições e CSS diferentes dependendo do tamanho da miniatura, separados por |.\n"
+"por exemplo, 120|400 significa 3 categorias de miniaturas: até 120px, 120-400px e mais que 400px"
 
 #: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
@@ -2291,7 +2289,13 @@ msgid ""
 "constrained; hold <i>Ctrl</i> while zooming to temporarily lift the limit "
 "and zoom beyond 100%. <b>disabled:</b> zoom is never constrained and the "
 "additional <i>Ctrl</i> key press is not needed to zoom beyond 100%."
-msgstr "limita o rolar-mouse e pinçar-para-zoom na sala escura à faixa entre encaixar na tela (zoom para fora) e 100% (zoom para dentro). <b>habilitado:</b> zoom é restrito; seguro <i>Ctrl</i> enquanto fizer zoom para temporariamente liberar o limite e fazer zoom além de 100%. <b>desabilitado:</b> o zoom nunca é restrito e o <i>Ctrl</i> não é necessário para fazer zoom além de 100%."
+msgstr ""
+"limita o rolar-mouse e pinçar-para-zoom na sala escura à faixa entre "
+"encaixar na tela (zoom para fora) e 100% (zoom para dentro). <b>habilitado:</"
+"b> zoom é restrito; seguro <i>Ctrl</i> enquanto fizer zoom para "
+"temporariamente liberar o limite e fazer zoom além de 100%. <b>desabilitado:"
+"</b> o zoom nunca é restrito e o <i>Ctrl</i> não é necessário para fazer "
+"zoom além de 100%."
 
 #: ../build/bin/preferences_gen.h:4493
 msgid "always show panels' scrollbars"
@@ -4139,7 +4143,7 @@ msgstr "regra de harmonia"
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:197
 #: ../src/iop/colorharmonizer.c:1438
 msgid "anchor hue"
-msgstr ""
+msgstr "matiz âncora"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:102
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:201
@@ -13103,14 +13107,12 @@ msgid "select burst roll images"
 msgstr "selecionar imagens de uma sequencia"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
-#, fuzzy
 msgid "select burst roll image containers"
-msgstr "extrair imagens de sequencias ao importar"
+msgstr "extrair conteineres de imagens de sequencias"
 
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
-#, fuzzy
 msgid "extract and group burst roll images with container"
-msgstr "extrair imagens de sequencias ao importar"
+msgstr "extrair e agrupar imagens de sequencias com conteiner"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
@@ -21831,6 +21833,9 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the shadows sliders in the other tabs"
 msgstr ""
+"mostra a máscara de sombras, sobreposta como um tabuleiro\n"
+"a área ainda-visível da imagem (não escondida pela máscara) é a área\n"
+"que será afetada pelos deslizadores de sombra nas outras abas"
 
 #: ../src/iop/colorbalancergb.c:1994
 msgid "position of the middle-gray reference for masking"
@@ -21842,6 +21847,9 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the mid-tones sliders in the other tabs"
 msgstr ""
+"mostra a máscara de meios-tons, sobreposta como um tabuleiro\n"
+"a área ainda-visível da imagem (não escondida pela máscara) é a área\n"
+"que será afetada pelos deslizadores de meios-tons nas outras abas"
 
 #: ../src/iop/colorbalancergb.c:2007
 msgid "weights of highlights over the whole tonal range"
@@ -21853,6 +21861,9 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the highlights sliders in the other tabs"
 msgstr ""
+"mostra a máscara de realces, sobreposta como um tabuleiro\n"
+"a área ainda-visível da imagem (não escondida pela máscara) é a área\n"
+"que será afetada pelos deslizadores de realces nas outras abas"
 
 #: ../src/iop/colorbalancergb.c:2017
 msgctxt "section"
@@ -22292,6 +22303,15 @@ msgid ""
 "how strongly the remaining off-palette colors are pulled toward the detected "
 "palette."
 msgstr ""
+"analisa a distribuição de matiz na imagem e automaticamente sugere uma regra de harmonia\n"
+"e uma matiz âncora que melhor combina com a paleta de cores existente.\n"
+"\n"
+"a detecção avalia cada combinação de regra e âncora contra um histograma ponderado por\n"
+"croma na imagem de pré-visualização, e seleciona a combinação que já cobre a maior\n"
+"parte da energia cromática - isto é, requer a menor correção.\n"
+"\n"
+"o resultado substitui a regra e a âncora atuais. use a força de atração para controlar\n"
+"quão fortemente as cores remanescentes fora-da-paleta são atraídas para a paleta detectada."
 
 #: ../src/iop/colorharmonizer.c:1418
 msgid "not yet available — wait for the preview to finish processing."
@@ -22381,6 +22401,8 @@ msgid ""
 "also switches the histogram panel to the vectorscope view if it is not "
 "already active."
 msgstr ""
+"importa a regra de harmonia e matiz âncora autalmente mostrada no vetoroscópio.\n"
+"também alterna o painel de histograma para a visào do vetoroscópio se ainda não estiver ativo"
 
 #: ../src/iop/colorharmonizer.c:1552
 msgid ""
@@ -22396,6 +22418,16 @@ msgid ""
 "(grays)\n"
 "are never affected regardless of this setting."
 msgstr ""
+"quão fortemente matizes fora-da-harmonia são puxadas para o nó de harmonia mais próximo.\n"
+"\n"
+"0: sem efeito - cores permanecem como estão.\n"
+"valores baixos (0.1-0.3): mudança sutil, cores tendem a paleta sem perder\n"
+"  seu caráter original.\n"
+"valores altos (0.7-1.0): correção agressiva, a maior parte das matizes converge\n"
+"  perceptivelmente para os nós de harmonia.\n"
+"\n"
+"o deslocamento é ponderado pelo croma de cada pixel: os pixels completamente dessaturados (cinza)\n"
+"nunca são afetados por esta configuração."
 
 #: ../src/iop/colorharmonizer.c:1566
 msgid ""
