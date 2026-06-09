@@ -3882,6 +3882,12 @@ static void _lib_tagging_tag_show(dt_action_t *action)
                    G_CALLBACK(_match_selected_func), self);
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+  // the entry now holds its own reference to the completion; drop ours so
+  // the completion (and the reference it keeps on the current dictionary
+  // filter) is released when the floating entry is destroyed. Leaking it
+  // pins stale GtkTreeModelFilters to the dictionary store and makes every
+  // later rebuild fan out to all of them (quadratic slowdown over a session).
+  g_object_unref(completion);
   gtk_widget_set_name(entry, "tag-completion");
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
