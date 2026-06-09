@@ -4,6 +4,8 @@
 ::
 
 @echo off
+
+for /f "tokens=4" %%a in ('chcp') do set "OLD_CP=%%a"
 chcp 65001 >nul
 
 where.exe /q sqlite3
@@ -92,6 +94,7 @@ for /f "usebackq tokens=1* delims=|" %%a in ("%TMPFILE%") do (
   )
 )
 
+chcp %OLD_CP% >nul
 del "%TMPFILE%" >nul 2>&1
 
 if %dryrun% EQU 0 (
