@@ -6127,10 +6127,11 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
              filename,
              e.what());
+    dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, e.what());
     return TRUE;
   }
 }
