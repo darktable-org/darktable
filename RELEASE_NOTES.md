@@ -237,7 +237,7 @@ changes (where available).
 - Avoid superfluous pixelpipe runs for faster darkroom processing
   and when selecting history entries.
 
-- Improvements to mask distort efficiency via incremental caching and 
+- Improvements to mask distort efficiency via incremental caching and
   reduced malloc/free cycles.
 
 ## Other Changes
@@ -442,6 +442,10 @@ changes (where available).
   descending sort order.
 
 - Fix use-after-free bug in tagging code which caused an instant crash
+
+- Fixed scroll direction in rotate and perspective module: scrolling
+  up/down now increases/decreases the selection circle size, matching
+  how resizing drawn masks works.
 
 ## Lua
 
