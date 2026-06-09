@@ -237,6 +237,9 @@ changes (where available).
 - Avoid superfluous pixelpipe runs for faster darkroom processing
   and when selecting history entries.
 
+- Improvements to mask distort efficiency via incremental caching and 
+  reduced malloc/free cycles.
+
 ## Other Changes
 
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
