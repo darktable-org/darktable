@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 21:46+0200\n"
+"POT-Creation-Date: 2026-06-10 23:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1198,9 +1198,9 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
-"depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
-">400px"
+"depending on the size of the thumbnail, separated by |.\n"
+"for example, 120|400 means 3 categories of thumbnails: up to 120px, "
+"120-400px, more than 400px"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:2999
@@ -5862,7 +5862,7 @@ msgstr ""
 #: ../src/libs/tagging.c:1790 ../src/libs/tagging.c:1882
 #: ../src/libs/tagging.c:2011 ../src/libs/tagging.c:2320
 #: ../src/libs/tagging.c:2835 ../src/libs/tagging.c:2877
-#: ../src/libs/tagging.c:3975
+#: ../src/libs/tagging.c:3981
 msgid "_cancel"
 msgstr ""
 
@@ -5872,7 +5872,7 @@ msgstr ""
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020
 #: ../src/libs/tagging.c:1883 ../src/libs/tagging.c:2012
-#: ../src/libs/tagging.c:2321 ../src/libs/tagging.c:3976
+#: ../src/libs/tagging.c:2321 ../src/libs/tagging.c:3982
 msgid "_save"
 msgstr ""
 
@@ -7386,7 +7386,7 @@ msgstr ""
 msgid "cannot read XMP file '%s': '%s'"
 msgstr ""
 
-#: ../src/common/exif.cc:6121
+#: ../src/common/exif.cc:6121 ../src/common/exif.cc:6134
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr ""
@@ -26119,7 +26119,7 @@ msgstr ""
 #: ../src/libs/collect.c:3554 ../src/libs/export.c:1428
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
-#: ../src/libs/tagging.c:3999
+#: ../src/libs/tagging.c:4005
 msgid "preferences..."
 msgstr ""
 
@@ -30142,7 +30142,7 @@ msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 
-#: ../src/libs/tagging.c:3973
+#: ../src/libs/tagging.c:3979
 msgid "tagging settings"
 msgstr ""
 
