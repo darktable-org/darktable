@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 21:46+0200\n"
-"PO-Revision-Date: 2026-06-06 21:49+0200\n"
+"POT-Creation-Date: 2026-06-10 23:06+0200\n"
+"PO-Revision-Date: 2026-06-10 23:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1295,16 +1295,16 @@ msgstr "Catégories de taille des miniatures"
 #: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
-"depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
-">400px"
+"depending on the size of the thumbnail, separated by |.\n"
+"for example, 120|400 means 3 categories of thumbnails: up to 120px, "
+"120-400px, more than 400px"
 msgstr ""
 "Les catégories de taille permettent d’afficher différentes informations en "
 "superposition\n"
 "et présentation graphique, en fonction de tailles de miniatures séparées par "
 "« | ».\n"
-"Par exemple « 120|400 » définit trois catégories de tailles : < 120 px, "
-"120-400 px et > 400 px."
+"Par exemple « 120|400 » définit trois catégories de tailles : jusqu'à 120 px, "
+"120-400 px et plus de 400 px."
 
 #: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
@@ -6248,7 +6248,7 @@ msgstr "Menu déroulant"
 #: ../src/libs/tagging.c:1790 ../src/libs/tagging.c:1882
 #: ../src/libs/tagging.c:2011 ../src/libs/tagging.c:2320
 #: ../src/libs/tagging.c:2835 ../src/libs/tagging.c:2877
-#: ../src/libs/tagging.c:3975
+#: ../src/libs/tagging.c:3981
 msgid "_cancel"
 msgstr "_Annuler"
 
@@ -6258,7 +6258,7 @@ msgstr "_Annuler"
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1883
 #: ../src/libs/tagging.c:2012 ../src/libs/tagging.c:2321
-#: ../src/libs/tagging.c:3976
+#: ../src/libs/tagging.c:3982
 msgid "_save"
 msgstr "_Enregistrer"
 
@@ -7946,7 +7946,7 @@ msgstr ""
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:6121
+#: ../src/common/exif.cc:6121 ../src/common/exif.cc:6134
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -28632,7 +28632,7 @@ msgstr "Préférences des collections"
 #: ../src/libs/collect.c:3554 ../src/libs/export.c:1428
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
-#: ../src/libs/tagging.c:3999
+#: ../src/libs/tagging.c:4005
 msgid "preferences..."
 msgstr "Préférences…"
 
@@ -33027,7 +33027,7 @@ msgstr ""
 "Le raccourci de mots-clés n’est pas actif lorsque la vue est arborescente, "
 "changer pour la vue en liste."
 
-#: ../src/libs/tagging.c:3973
+#: ../src/libs/tagging.c:3979
 msgid "tagging settings"
 msgstr "Paramètres des mots-clés"
 
