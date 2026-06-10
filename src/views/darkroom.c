@@ -3552,7 +3552,7 @@ void enter(dt_view_t *self)
   }
 
   // image should be there now.
-  dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, TRUE, 0.0f, 0.0f, TRUE);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 1, 0.0f, 0.0f, TRUE);
 
   /* connect signal for filmstrip image activate */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
@@ -4575,7 +4575,7 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
 
     const gboolean constrained =
       dev->constrain_zoom && !dt_modifier_is(event->state, GDK_CONTROL_MASK);
-    dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
+    dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0 ? 1 : 0,
                      event->x, event->y, constrained);
   }
 

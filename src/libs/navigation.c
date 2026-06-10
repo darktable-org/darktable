@@ -545,7 +545,7 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
                                           event->scroll.x, event->scroll.y,
                                           &x, &y))
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
-                         0.0f, dy < 0, x, y, constrain);
+                         0.0f, dy < 0 ? 1 : 0, x, y, constrain);
     }
     gdk_event_free(event);
   }

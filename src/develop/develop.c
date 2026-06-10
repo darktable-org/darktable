@@ -1043,7 +1043,7 @@ void dt_dev_configure(dt_dev_viewport_t *port)
     port->width = wd;
     port->height = ht;
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, TRUE, 0.0f, 0.0f, TRUE);
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 1, 0.0f, 0.0f, TRUE);
   }
 }
 
@@ -3262,9 +3262,10 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     return;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
-    "dt_dev_zoom_move sets DT_DEV_PIPE_ZOOMED", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
-      port->widget ? "redraw_widget " : "",
-      port == &dev->full ? "navigation_redraw" : "");
+    "dt_dev_zoom_move", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "set DT_DEV_PIPE_ZOOMED%s%s",
+      port->widget ? ", redraw_widget" : "",
+      port == &dev->full ? ", navigation_redraw" : "");
   // Mark pipe as needing zoom update
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
 
