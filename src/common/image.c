@@ -1819,11 +1819,25 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
                                          const gboolean raise_signals)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
-  if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
-  {
-    g_free(normalized_filename);
+  if(!normalized_filename)
     return NO_IMGID;
+
+  // proxy_src: actual file to read (may differ from normalized_filename when
+  // the raw is absent and we fall back to a .proxy.avif sidecar).
+  char *proxy_src = NULL;
+  if(!dt_util_test_image_file(normalized_filename))
+  {
+    proxy_src = g_strdup_printf("%s.proxy.avif", normalized_filename);
+    if(!dt_util_test_image_file(proxy_src))
+    {
+      g_free(proxy_src);
+      g_free(normalized_filename);
+      return NO_IMGID;
+    }
+    // normalized_filename is the canonical raw name used for DB/XMP paths;
+    // proxy_src is the actual file on disk.
   }
+
   const char *cc = normalized_filename + strlen(normalized_filename);
   for(; *cc != '.' && cc > normalized_filename; cc--)
     ;
@@ -1831,6 +1845,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
      || !strcasecmp(cc, ".dttags")
      || !strcasecmp(cc, ".xmp"))
   {
+    g_free(proxy_src);
     g_free(normalized_filename);
     return NO_IMGID;
   }
@@ -1845,6 +1860,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
      && g_ascii_strncasecmp(ext, "dng", sizeof("dng"))
      && dt_conf_get_bool("ui_last/import_ignore_nonraws"))
   {
+    g_free(proxy_src);
     g_free(normalized_filename);
     g_free(ext);
     return NO_IMGID;
@@ -1858,6 +1874,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     }
   if(!supported)
   {
+    g_free(proxy_src);
     g_free(normalized_filename);
     g_free(ext);
     return NO_IMGID;
@@ -1870,6 +1887,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   if(dt_is_valid_imgid(id))
   {
     g_free(imgfname);
+    g_free(proxy_src);
     dt_image_t *img = dt_image_cache_get(id, 'w');
     if(img)
       img->flags &= ~DT_IMAGE_REMOVE;
@@ -1893,6 +1911,8 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   // and we set the type of image flag (from extension for now)
   gchar *extension = g_strrstr(imgfname, ".");
   flags |= dt_imageio_get_type_from_extension(extension);
+  if(proxy_src)
+    flags |= DT_IMAGE_PROXY_MEDIA;
   // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
   char *extra_file = dt_image_get_audio_path_from_path(normalized_filename);
   if(extra_file)
@@ -2040,7 +2060,8 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     img->group_id = group_id;
 
     // read dttags and exif for database queries!
-    if(dt_exif_read(img, normalized_filename))
+    // for proxy imports the raw file doesn't exist on disk; read exif from the proxy instead
+    if(dt_exif_read(img, proxy_src ? proxy_src : normalized_filename))
       img->exif_inited = FALSE;
     char dtfilename[PATH_MAX] = { 0 };
     g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
@@ -2081,6 +2102,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   g_free(imgfname);
   g_free(basename);
   g_free(sql_pattern);
+  g_free(proxy_src);
   g_free(normalized_filename);
 
 #ifdef USE_LUA

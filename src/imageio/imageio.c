@@ -1627,10 +1627,23 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf)
 {
-  /* first of all, check if file exists, don't bother to test loading
-   * if not exists */
+  /* first of all, check if file exists; if not, try proxy media fallback */
+  const char *use_filename = filename;
+  char proxy_path[PATH_MAX];
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-    return DT_IMAGEIO_FILE_NOT_FOUND;
+  {
+    g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", filename);
+    if(g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR))
+    {
+      use_filename = proxy_path;
+      img->flags |= DT_IMAGE_PROXY_MEDIA;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[imageio_open] '%s' not found, using proxy '%s'",
+               filename, proxy_path);
+    }
+    else
+      return DT_IMAGEIO_FILE_NOT_FOUND;
+  }
 
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
   const int32_t was_bw = dt_image_monochrome_flags(img);
@@ -1639,7 +1652,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   img->loader = LOADER_UNKNOWN;
 
   // check for known magic numbers and call the appropriate loader if we recognize a magic number
-  ret = _open_by_magic_number(img, filename, buf);
+  ret = _open_by_magic_number(img, use_filename, buf);
 
   // Go to fallback path if we didn't recognize the magic bytes (UNRECOGNIZED)
   // or the main loader has rejected the file (UNSUPPORTED_FORMAT)
@@ -1647,20 +1660,20 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   {
     // special case - most camera RAW files are TIFF containers, so if we have an LDR file extension,
     // try loading the file as TIFF
-    if(dt_imageio_is_ldr(filename))
-      ret = dt_imageio_open_tiff(img, filename, buf);
+    if(dt_imageio_is_ldr(use_filename))
+      ret = dt_imageio_open_tiff(img, use_filename, buf);
 
     // try using rawspeed to load a raw
     if(!_image_handled(ret))
-      ret = dt_imageio_open_rawspeed(img, filename, buf);
+      ret = dt_imageio_open_rawspeed(img, use_filename, buf);
 
     // fallback that tries to open file via LibRaw to support Canon CR3
     if(!_image_handled(ret))
-      ret = dt_imageio_open_libraw(img, filename, buf);
+      ret = dt_imageio_open_libraw(img, use_filename, buf);
 
     // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
-      ret = dt_imageio_open_exotic(img, filename, buf);
+      ret = dt_imageio_open_exotic(img, use_filename, buf);
 
     //  if nothing succeeded, declare the image format unsupported
     if(!_image_handled(ret))
