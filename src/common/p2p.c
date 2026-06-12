@@ -323,8 +323,48 @@ void dt_p2p_init(void)
   g_mutex_init(&_p2p.lock);
   _socket_path(_p2p.socket_path, sizeof(_p2p.socket_path));
 
+  const char *cfg_dir = g_get_user_config_dir();
+  char pw_file[PATH_MAX];
+  g_snprintf(pw_file, sizeof(pw_file), "%s/darktable/peer.pw", cfg_dir);
+
   const char *passphrase = dt_conf_get_string_const("plugins/p2p/passphrase");
-  if(!passphrase || passphrase[0] == '\0') return;
+  if(!passphrase || passphrase[0] == '\0')
+  {
+    // Try peer.pw first.
+    gchar *file_pw = NULL;
+    if(g_file_get_contents(pw_file, &file_pw, NULL, NULL) && file_pw && file_pw[0])
+    {
+      // Strip trailing whitespace so editors don't break things.
+      g_strchomp(file_pw);
+      dt_conf_set_string("plugins/p2p/passphrase", file_pw);
+      passphrase = dt_conf_get_string_const("plugins/p2p/passphrase");
+      g_free(file_pw);
+      dt_print(DT_DEBUG_IMAGEIO, "[p2p] loaded passphrase from %s", pw_file);
+    }
+    else
+    {
+      g_free(file_pw);
+      // Fall back: auto-start when peers.txt or peers.db exists.
+      char peers_txt[PATH_MAX], peers_db[PATH_MAX];
+      g_snprintf(peers_txt, sizeof(peers_txt), "%s/darktable/peers.txt", cfg_dir);
+      g_snprintf(peers_db,  sizeof(peers_db),  "%s/darktable/peers.db",  cfg_dir);
+      if(!g_file_test(peers_txt, G_FILE_TEST_EXISTS)
+         && !g_file_test(peers_db, G_FILE_TEST_EXISTS))
+        return;
+
+      // Generate a random passphrase, save it to peer.pw and to config so the
+      // peer identity stays stable across restarts.
+      guint8 rnd[24];
+      for(int i = 0; i < (int)sizeof(rnd); i++)
+        rnd[i] = (guint8)g_random_int_range(0, 256);
+      gchar *auto_pass = g_base64_encode(rnd, sizeof(rnd));
+      g_file_set_contents(pw_file, auto_pass, -1, NULL);
+      dt_conf_set_string("plugins/p2p/passphrase", auto_pass);
+      passphrase = dt_conf_get_string_const("plugins/p2p/passphrase");
+      g_free(auto_pass);
+      dt_print(DT_DEBUG_IMAGEIO, "[p2p] auto-generated passphrase → %s", pw_file);
+    }
+  }
 
   // If a daemon is already listening at the socket (e.g. started manually
   // for debugging), skip spawning and just attach to it.
