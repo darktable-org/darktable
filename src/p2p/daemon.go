@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
@@ -560,6 +561,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 			if b, err := json.Marshal(x); err == nil {
 				d.xmpTop.Publish(d.ctx, b)
 			}
+			go d.pushXMPToPeers(x)
 
 		case "fetch_proxy":
 			var req struct {
@@ -590,6 +592,47 @@ func (d *daemon) handleConn(conn net.Conn) {
 // XMP subscription
 // ---------------------------------------------------------------------------
 
+// applyInboundXMP processes an inbound XMP update received from gossipsub or a
+// direct HTTP push.  from is a short identifier used only for logging.
+func (d *daemon) applyInboundXMP(x xmpMsg, from string) {
+	d.xmpMu.Lock()
+	last := d.xmpSeen[x.Path]
+	t := time.Unix(0, x.Mtime)
+	shouldProcess := t.After(last)
+	if !shouldProcess {
+		if _, statErr := os.Stat(x.Path + ".xmp"); os.IsNotExist(statErr) {
+			shouldProcess = true
+		}
+	}
+	if !shouldProcess {
+		d.xmpMu.Unlock()
+		return
+	}
+	d.xmpSeen[x.Path] = t
+	d.xmpMu.Unlock()
+
+	localPath := d.resolveLocalPath(x.Path, x.Filename, x.CaptureDate)
+	if localPath == "" {
+		log.Printf("[xmp] recv: '%s' (capture=%s) from %s — no local file; fetching proxy",
+			x.Filename, x.CaptureDate, from)
+		go d.fetchAndImport(x.Path, x.Content, x.Filename, x.CaptureDate)
+		return
+	}
+	if localPath != x.Path {
+		log.Printf("[xmp] recv: '%s' from %s — path differs, applying to local '%s'",
+			x.Filename, from, localPath)
+	} else {
+		log.Printf("[xmp] recv: '%s' from %s — applying to '%s'",
+			x.Filename, from, localPath)
+	}
+	if err := writeXMP(localPath, x.Content); err != nil {
+		log.Printf("[xmp] write '%s': %v", localPath, err)
+	} else {
+		result, _ := json.Marshal(map[string]string{"path": localPath})
+		d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
+	}
+}
+
 func (d *daemon) subscribeXMP() {
 	for {
 		m, err := d.xmpSub.Next(d.ctx)
@@ -603,54 +646,51 @@ func (d *daemon) subscribeXMP() {
 		if err := json.Unmarshal(m.Data, &x); err != nil {
 			continue
 		}
+		d.applyInboundXMP(x, m.ReceivedFrom.ShortString())
+	}
+}
 
-		// Dedup by mtime - but allow re-transmission if the file doesn't exist locally
-		d.xmpMu.Lock()
-		last := d.xmpSeen[x.Path]
-		t := time.Unix(0, x.Mtime)
-		
-		// Check if we should process this XMP update
-		shouldProcess := t.After(last)
-		
-		// If we've seen this exact timestamp before, check if the file exists
-		// If file doesn't exist, we should still try to process the update
-		if !shouldProcess {
-			if _, statErr := os.Stat(x.Path + ".xmp"); os.IsNotExist(statErr) {
-				shouldProcess = true
+// pushXMPToPeers sends x directly via HTTP POST to every known reachable peer.
+// This ensures delivery even when gossipsub has not yet established peer
+// connections (peers=0).
+func (d *daemon) pushXMPToPeers(x xmpMsg) {
+	myURL := d.localProxyURL()
+	seen := make(map[string]bool)
+	var targets []string
+	collect := func(u string) {
+		if u != "" && u != myURL && !seen[u] {
+			seen[u] = true
+			targets = append(targets, u)
+		}
+	}
+	d.peersMu.RLock()
+	for _, u := range d.peers {
+		collect(u)
+	}
+	d.peersMu.RUnlock()
+	for _, u := range d.peersToSync() {
+		collect(u)
+	}
+	if len(targets) == 0 {
+		return
+	}
+	b, err := json.Marshal(x)
+	if err != nil {
+		return
+	}
+	for _, baseURL := range targets {
+		baseURL := baseURL
+		go func() {
+			resp, err := http.Post(baseURL+"/xmp", "application/json", bytes.NewReader(b))
+			if err != nil {
+				log.Printf("[xmp] direct push to %s: %v", baseURL, err)
+				return
 			}
-		}
-		
-		if !shouldProcess {
-			d.xmpMu.Unlock()
-			continue
-		}
-		d.xmpSeen[x.Path] = t
-		d.xmpMu.Unlock()
-
-		// Resolve where to apply this XMP locally.
-		localPath := d.resolveLocalPath(x.Path, x.Filename, x.CaptureDate)
-
-		if localPath == "" {
-			log.Printf("[xmp] recv: '%s' (capture=%s) from %s — no local file; fetching proxy",
-				x.Filename, x.CaptureDate, m.ReceivedFrom.ShortString())
-			go d.fetchAndImport(x.Path, x.Content, x.Filename, x.CaptureDate)
-			continue
-		}
-
-		if localPath != x.Path {
-			log.Printf("[xmp] recv: '%s' from %s — path differs, applying to local '%s'",
-				x.Filename, m.ReceivedFrom.ShortString(), localPath)
-		} else {
-			log.Printf("[xmp] recv: '%s' from %s — applying to '%s'",
-				x.Filename, m.ReceivedFrom.ShortString(), localPath)
-		}
-
-		if err := writeXMP(localPath, x.Content); err != nil {
-			log.Printf("[xmp] write '%s': %v", localPath, err)
-		} else {
-			result, _ := json.Marshal(map[string]string{"path": localPath})
-			d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
-		}
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+				log.Printf("[xmp] direct push to %s: HTTP %d", baseURL, resp.StatusCode)
+			}
+		}()
 	}
 }
 
@@ -1051,6 +1091,7 @@ func (d *daemon) startProxyHTTP() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/proxy", d.serveProxy)
 	mux.HandleFunc("/manifest", d.serveManifest)
+	mux.HandleFunc("/xmp", d.serveXMP)
 	d.httpSrv = &http.Server{Handler: mux}
 	go d.httpSrv.Serve(ln)
 	log.Printf("[http] proxy server on %s", ln.Addr())
@@ -1099,6 +1140,24 @@ func (d *daemon) localProxyURL() string {
 		return d.externalURL
 	}
 	return fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
+}
+
+func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var x xmpMsg
+	if err := json.NewDecoder(r.Body).Decode(&x); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if x.SenderID == d.host.ID().String() {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	d.applyInboundXMP(x, "http:"+r.RemoteAddr)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (d *daemon) serveProxy(w http.ResponseWriter, r *http.Request) {
