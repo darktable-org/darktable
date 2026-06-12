@@ -296,33 +296,56 @@ static gpointer _event_thread_func(gpointer user_data)
 // Timer source ID for the debounce; 0 when no timer is pending.
 static guint _p2p_debounce_src = 0;
 
-// Force-write XMP for imgid (ignoring the user's write_sidecar_files setting)
-// and push it to the P2P network.  Called from the GLib main thread.
-static void _p2p_write_and_push(const dt_imgid_t imgid)
+typedef struct
 {
-  if(!dt_is_valid_imgid(imgid)) return;
+  dt_imgid_t imgid;
+} _write_push_ctx_t;
+
+// Background job: resolve paths, write XMP locally, push to network.
+// Runs entirely off the GTK main thread so no lock on the image cache
+// can ever block the UI.
+static int32_t _p2p_write_and_push_job_run(dt_job_t *job)
+{
+  _write_push_ctx_t *ctx = dt_control_job_get_params(job);
+  const dt_imgid_t imgid = ctx->imgid;
+
+  if(!dt_is_valid_imgid(imgid)) return 0;
 
   char raw_path[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, raw_path, sizeof(raw_path), &from_cache);
-  if(!raw_path[0]) return;
+  if(!raw_path[0]) return 0;
 
   char xmp_path[PATH_MAX];
   g_strlcpy(xmp_path, raw_path, sizeof(xmp_path));
   dt_image_path_append_version(imgid, xmp_path, sizeof(xmp_path));
   g_strlcat(xmp_path, ".xmp", sizeof(xmp_path));
 
-  // Write XMP regardless of user's write_sidecar_files setting.
-  if(!dt_exif_xmp_write(imgid, xmp_path, FALSE))
-    dt_p2p_push_xmp(raw_path, xmp_path);
+  if(dt_exif_xmp_write(imgid, xmp_path, FALSE)) return 0;
+
+  dt_p2p_push_xmp(raw_path, xmp_path);
+  return 0;
 }
 
 // GLib timeout callback: fires 3 s after the last history change.
+// Does no I/O — only queues a background job so the main thread
+// is never blocked by image-cache locks or socket I/O.
 static gboolean _p2p_debounce_fire(gpointer user_data)
 {
   _p2p_debounce_src = 0;
-  if(darktable.develop)
-    _p2p_write_and_push(darktable.develop->image_storage.id);
+  if(!darktable.develop) return G_SOURCE_REMOVE;
+
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  if(!dt_is_valid_imgid(imgid)) return G_SOURCE_REMOVE;
+
+  _write_push_ctx_t *ctx = malloc(sizeof(*ctx));
+  if(!ctx) return G_SOURCE_REMOVE;
+  ctx->imgid = imgid;
+
+  dt_job_t *job = dt_control_job_create(&_p2p_write_and_push_job_run, "p2p xmp write+push");
+  if(!job) { free(ctx); return G_SOURCE_REMOVE; }
+  dt_control_job_set_params(job, ctx, free);
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
   return G_SOURCE_REMOVE;
 }
 
@@ -332,6 +355,21 @@ static void _p2p_on_history_change(gpointer user_data)
   if(!dt_p2p_is_running()) return;
   if(_p2p_debounce_src) g_source_remove(_p2p_debounce_src);
   _p2p_debounce_src = g_timeout_add(3000, _p2p_debounce_fire, NULL);
+}
+
+// ---------------------------------------------------------------------------
+// Startup heartbeat — fires every 100 ms from the GTK main loop so we can
+// tell from the log exactly when (and whether) the main loop freezes.
+// Stops automatically after 50 ticks (5 seconds).
+// ---------------------------------------------------------------------------
+
+static gint _p2p_heartbeat_tick = 0;
+
+static gboolean _p2p_heartbeat(gpointer user_data)
+{
+  const gint n = g_atomic_int_add(&_p2p_heartbeat_tick, 1) + 1;
+  dt_print(DT_DEBUG_IMAGEIO, "[p2p] main-loop heartbeat #%d", n);
+  return (n < 50) ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 }
 
 // ---------------------------------------------------------------------------
@@ -394,6 +432,7 @@ void dt_p2p_init(void)
     g_atomic_int_set(&_p2p_evt.stop, 0);
     _p2p_evt.thread = g_thread_new("p2p-events", _event_thread_func, NULL);
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
+    g_timeout_add(100, _p2p_heartbeat, NULL);
     return;
   }
 
@@ -483,6 +522,7 @@ void dt_p2p_init(void)
 
   // Push XMP to peers within 3 s of any history change.
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
+  g_timeout_add(100, _p2p_heartbeat, NULL);
 }
 
 void dt_p2p_cleanup(void)

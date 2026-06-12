@@ -19,7 +19,6 @@
 #include "control/jobs/control_jobs.h"
 #include "common/collection.h"
 #include "common/darktable.h"
-#include "common/p2p.h"
 #include "imageio/proxy.h"
 #include "common/debug.h"
 #include "common/exif.h"
@@ -396,7 +395,9 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
         sqlite3_step(stmt);
         sqlite3_reset(stmt);
         sqlite3_clear_bindings(stmt);
-        dt_p2p_push_xmp(raw_filename, dtfilename);
+        // Do NOT push XMP here: this batch job runs for every image on startup
+        // and would flood the socket buffer, blocking this foreground job.
+        // P2P sync is triggered by the per-edit debounce hook instead.
       }
       dt_image_cache_read_release(img);
     }
