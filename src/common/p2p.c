@@ -24,6 +24,7 @@
 #include "common/image.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "control/signal.h"
@@ -171,6 +172,16 @@ static int32_t _xmp_reload_job_run(dt_job_t *job)
       dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
       dt_print(DT_DEBUG_IMAGEIO, "[p2p] reloaded XMP for '%s'", ctx->path);
     }
+
+    // If this image is open in darkroom, reload its history stack live.
+    if(dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items(darktable.develop);
+
+    // Invalidate cached thumbnails so lighttable regenerates them.
+    dt_mipmap_cache_remove(imgid);
+
+    // Tell all views (lighttable, filmstrip, darkroom) to refresh.
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
   }
   else
   {
