@@ -17,6 +17,7 @@
 */
 
 #include "common/image.h"
+#include "common/p2p.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -3052,6 +3053,10 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 
   gboolean error = FALSE;
 
+  // preserve raw path before version suffix is appended (used for P2P sync)
+  char raw_filename[PATH_MAX];
+  g_strlcpy(raw_filename, filename, sizeof(raw_filename));
+
   dt_image_path_append_version(imgid, filename, sizeof(filename));
   g_strlcat(filename, ".xmp", sizeof(filename));
 
@@ -3060,6 +3065,8 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
      || ((xmp_mode == DT_WRITE_XMP_LAZY) && _any_altered_data(imgid)))
   {
     error = dt_exif_xmp_write(imgid, filename, FALSE);
+    if(!error)
+      dt_p2p_push_xmp(raw_filename, filename);
   }
   else if(xmp_mode == DT_WRITE_XMP_LAZY)
   {

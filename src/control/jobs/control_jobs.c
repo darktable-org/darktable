@@ -19,6 +19,7 @@
 #include "control/jobs/control_jobs.h"
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "common/p2p.h"
 #include "imageio/proxy.h"
 #include "common/debug.h"
 #include "common/exif.h"
@@ -380,6 +381,8 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
     {
       char dtfilename[PATH_MAX] = { 0 };
       dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), NULL);
+      char raw_filename[PATH_MAX];
+      g_strlcpy(raw_filename, dtfilename, sizeof(raw_filename));
       dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
       g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
       // write the sidecar, but ONLY if it is missing or its contents have changed
@@ -393,6 +396,7 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
         sqlite3_step(stmt);
         sqlite3_reset(stmt);
         sqlite3_clear_bindings(stmt);
+        dt_p2p_push_xmp(raw_filename, dtfilename);
       }
       dt_image_cache_read_release(img);
     }
