@@ -15,6 +15,7 @@
 //   dt-p2p-daemon --socket /run/user/$UID/darktable-p2p.sock \
 //                 --passphrase "my secret" \
 //                 --proxy-dir /home/user/Pictures \
+//                 --import-dir /home/user/Pictures/Remote \
 //                 --peers http://192.168.1.108:17842,http://192.168.1.50:17842
 
 package main
@@ -33,6 +34,7 @@ func main() {
 	socketPath := flag.String("socket", defaultSocketPath(), "Unix socket path")
 	passphrase := flag.String("passphrase", "", "Shared passphrase (derives Ed25519 identity)")
 	proxyDir   := flag.String("proxy-dir", "", "Directory to walk for proxy files to announce and serve")
+	importDir  := flag.String("import-dir", "", "Directory to place remote images that don't exist locally")
 	peersFlag  := flag.String("peers", "", "Comma-separated HTTP base URLs of static peers, e.g. http://192.168.1.108:17842")
 	flag.Parse()
 
@@ -53,7 +55,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	d, err := newDaemon(ctx, *socketPath, *passphrase, *proxyDir, staticPeers)
+	d, err := newDaemon(ctx, *socketPath, *passphrase, *proxyDir, *importDir, staticPeers)
 	if err != nil {
 		log.Fatalf("daemon init: %v", err)
 	}

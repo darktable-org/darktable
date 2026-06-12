@@ -314,13 +314,18 @@ void dt_p2p_init(void)
     g_ptr_array_add(argv_arr, (gchar *)peers);
   }
 
+  const char *import_dir = dt_conf_get_string_const("plugins/p2p/import_dir");
+  if(import_dir && import_dir[0])
+  {
+    g_ptr_array_add(argv_arr, (gchar *)"--import-dir");
+    g_ptr_array_add(argv_arr, (gchar *)import_dir);
+  }
+
   g_ptr_array_add(argv_arr, NULL);
 
   GError *err = NULL;
   if(!g_spawn_async(NULL, (gchar **)argv_arr->pdata, NULL,
-                    G_SPAWN_DO_NOT_REAP_CHILD
-                    | G_SPAWN_STDOUT_TO_DEV_NULL
-                    | G_SPAWN_STDERR_TO_DEV_NULL,
+                    G_SPAWN_DO_NOT_REAP_CHILD,
                     NULL, NULL, &_p2p.daemon_pid, &err))
   {
     dt_print(DT_DEBUG_IMAGEIO, "[p2p] failed to spawn daemon: %s",
