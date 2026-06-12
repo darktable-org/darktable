@@ -916,10 +916,11 @@ func (d *daemon) syncWithPeer(baseURL string) {
 		return
 	}
 
-	// Mark peer as synced; on first visit pass ?from= so they connect back.
+	// Check first-visit state but don't commit until we know the HTTP call
+	// succeeds — otherwise a failed attempt marks firstVisit=false forever and
+	// the libp2p connect + reverse-peer handshake never happens.
 	d.syncedPeersMu.Lock()
 	firstVisit := !d.syncedPeers[baseURL]
-	d.syncedPeers[baseURL] = true
 	d.syncedPeersMu.Unlock()
 
 	manifestURL := baseURL + "/manifest"
@@ -931,14 +932,28 @@ func (d *daemon) syncWithPeer(baseURL string) {
 	if err != nil {
 		log.Printf("[peer] manifest from %s: %v", baseURL, err)
 		d.pdb.markFailure(baseURL)
+		// Reset so the next successful attempt still performs the firstVisit steps.
+		d.syncedPeersMu.Lock()
+		delete(d.syncedPeers, baseURL)
+		d.syncedPeersMu.Unlock()
 		return
 	}
 	if resp.StatusCode != 200 {
 		resp.Body.Close()
 		log.Printf("[peer] %s: HTTP %d (old daemon?)", baseURL, resp.StatusCode)
 		d.pdb.markFailure(baseURL)
+		d.syncedPeersMu.Lock()
+		delete(d.syncedPeers, baseURL)
+		d.syncedPeersMu.Unlock()
 		return
 	}
+
+	// Commit first-visit only after confirmed success, with a CAS to handle
+	// concurrent goroutines both racing to be the first successful contact.
+	d.syncedPeersMu.Lock()
+	firstVisit = !d.syncedPeers[baseURL]
+	d.syncedPeers[baseURL] = true
+	d.syncedPeersMu.Unlock()
 	var m manifestResp
 	if err := json.NewDecoder(resp.Body).Decode(&m); err != nil {
 		resp.Body.Close()
