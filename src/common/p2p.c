@@ -326,6 +326,17 @@ void dt_p2p_init(void)
   const char *passphrase = dt_conf_get_string_const("plugins/p2p/passphrase");
   if(!passphrase || passphrase[0] == '\0') return;
 
+  // If a daemon is already listening at the socket (e.g. started manually
+  // for debugging), skip spawning and just attach to it.
+  if(_connect_socket())
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] attached to existing daemon at %s", _p2p.socket_path);
+    g_atomic_int_set(&_p2p_evt.stop, 0);
+    _p2p_evt.thread = g_thread_new("p2p-events", _event_thread_func, NULL);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
+    return;
+  }
+
   char *exe_dir = g_path_get_dirname(g_get_prgname());
   char *daemon  = g_build_filename(exe_dir, "dt-p2p-daemon", NULL);
   g_free(exe_dir);
