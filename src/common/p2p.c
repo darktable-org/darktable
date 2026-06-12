@@ -23,6 +23,7 @@
 #include "common/exif.h"
 #include "common/image_cache.h"
 #include "control/conf.h"
+#include "control/jobs.h"
 #include "control/signal.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
@@ -113,10 +114,10 @@ typedef struct _import_ctx_t
   char path[PATH_MAX];
 } _import_ctx_t;
 
-// Called on the GTK main thread; imports the image into the darktable library.
-static gboolean _import_image_idle(gpointer data)
+// Background job: imports a remote image into the darktable library.
+static int32_t _import_image_job_run(dt_job_t *job)
 {
-  _import_ctx_t *ctx = data;
+  _import_ctx_t *ctx = dt_control_job_get_params(job);
 
   char *dir = g_path_get_dirname(ctx->path);
   dt_film_t film;
@@ -135,14 +136,16 @@ static gboolean _import_image_idle(gpointer data)
     dt_print(DT_DEBUG_IMAGEIO, "[p2p] could not find/create film for '%s'", ctx->path);
   }
 
-  free(ctx);
-  return G_SOURCE_REMOVE;
+  return 0;
 }
 
-// Called on the GTK main thread; reloads the XMP sidecar for an already-imported image.
-static gboolean _xmp_reload_idle(gpointer data)
+// Background job: reloads the XMP sidecar for an already-imported image.
+// Running this as a job (not a GTK idle) avoids blocking the main thread on
+// the image-cache write lock, which can deadlock with background jobs that
+// hold a read lock on the same image at startup.
+static int32_t _xmp_reload_job_run(dt_job_t *job)
 {
-  _import_ctx_t *ctx = data;
+  _import_ctx_t *ctx = dt_control_job_get_params(job);
 
   dt_imgid_t imgid = dt_image_get_id_full_path(ctx->path);
   if(dt_is_valid_imgid(imgid))
@@ -160,11 +163,32 @@ static gboolean _xmp_reload_idle(gpointer data)
   else
   {
     // Image not in library yet — import it (the proxy and XMP are both on disk).
-    return _import_image_idle(ctx);
+    _import_image_job_run(job);
   }
 
-  free(ctx);
-  return G_SOURCE_REMOVE;
+  return 0;
+}
+
+static void _p2p_queue_import(const char *path)
+{
+  _import_ctx_t *ctx = malloc(sizeof(*ctx));
+  if(!ctx) return;
+  g_strlcpy(ctx->path, path, sizeof(ctx->path));
+  dt_job_t *job = dt_control_job_create(&_import_image_job_run, "p2p import");
+  if(!job) { free(ctx); return; }
+  dt_control_job_set_params(job, ctx, free);
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
+}
+
+static void _p2p_queue_xmp_reload(const char *path)
+{
+  _import_ctx_t *ctx = malloc(sizeof(*ctx));
+  if(!ctx) return;
+  g_strlcpy(ctx->path, path, sizeof(ctx->path));
+  dt_job_t *job = dt_control_job_create(&_xmp_reload_job_run, "p2p xmp reload");
+  if(!job) { free(ctx); return; }
+  dt_control_job_set_params(job, ctx, free);
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
 }
 
 // Extract the value of the first "path":"..." field found in json_fragment.
@@ -240,27 +264,23 @@ static gpointer _event_thread_func(gpointer user_data)
     {
       const char *data = strstr(line, "\"data\"");
       if(!data) continue;
-      _import_ctx_t *ctx = malloc(sizeof(*ctx));
-      if(ctx && _extract_path(data, ctx->path, sizeof(ctx->path)))
+      char path[PATH_MAX];
+      if(_extract_path(data, path, sizeof(path)))
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[p2p] received image_imported: %s", ctx->path);
-        gdk_threads_add_idle(_import_image_idle, ctx);
+        dt_print(DT_DEBUG_IMAGEIO, "[p2p] received image_imported: %s", path);
+        _p2p_queue_import(path);
       }
-      else
-        free(ctx);
     }
     else if(strstr(line, "\"xmp_updated\""))
     {
       const char *data = strstr(line, "\"data\"");
       if(!data) continue;
-      _import_ctx_t *ctx = malloc(sizeof(*ctx));
-      if(ctx && _extract_path(data, ctx->path, sizeof(ctx->path)))
+      char path[PATH_MAX];
+      if(_extract_path(data, path, sizeof(path)))
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[p2p] received xmp_updated: %s", ctx->path);
-        gdk_threads_add_idle(_xmp_reload_idle, ctx);
+        dt_print(DT_DEBUG_IMAGEIO, "[p2p] received xmp_updated: %s", path);
+        _p2p_queue_xmp_reload(path);
       }
-      else
-        free(ctx);
     }
   }
 
