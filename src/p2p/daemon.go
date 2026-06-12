@@ -728,7 +728,8 @@ func (d *daemon) fetchAndImport(remotePath, xmpContent, filename, captureDate st
 	log.Printf("[import] imported '%s' → '%s'", filename, localPath)
 	d.addToLocalIndex(localPath)
 
-	result, _ := json.Marshal(map[string]string{"path": localPath})
+	proxyPath := localPath + ".proxy.avif"
+	result, _ := json.Marshal(map[string]string{"path": proxyPath})
 	d.broadcast(socketMsg{Type: "image_imported", Data: result})
 }
 
@@ -828,7 +829,10 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 
 	d.addToLocalIndex(localPath)
 
-	result, _ := json.Marshal(map[string]string{"path": localPath})
+	// Tell darktable about the proxy file that actually exists on disk, not
+	// the raw path (which may be absent or on a slow remote filesystem).
+	proxyPath := localPath + ".proxy.avif"
+	result, _ := json.Marshal(map[string]string{"path": proxyPath})
 	d.broadcast(socketMsg{Type: "image_imported", Data: result})
 }
 

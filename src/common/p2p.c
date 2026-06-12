@@ -122,6 +122,15 @@ static int32_t _import_image_job_run(dt_job_t *job)
 {
   _import_ctx_t *ctx = dt_control_job_get_params(job);
 
+  // Bail out before touching the filesystem if the file isn't present locally.
+  // Importing a non-existent path can trigger NFS/autofs mounts that stall
+  // the main thread via GUnixMountMonitor → dt_film_set_folder_status.
+  if(!g_file_test(ctx->path, G_FILE_TEST_EXISTS))
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] import skipped, file not found: '%s'", ctx->path);
+    return 0;
+  }
+
   char *dir = g_path_get_dirname(ctx->path);
   dt_film_t film;
   dt_filmid_t fid = dt_film_new(&film, dir);
