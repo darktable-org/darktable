@@ -1168,12 +1168,18 @@ add_custom_target(
 # P2P daemon (Go)
 #
 # Enumerate /usr/lib/go-*/bin (Ubuntu APT packages install here per-version)
-# as additional hints alongside the standard tarball location and PATH.
+# and Go module-cache toolchains (go get golang.org/toolchain stores here).
 # pkg-config does not exist for Go; GOROOT is derived from `go env GOROOT`
 # after the binary is found, so no version number is ever hardcoded here.
+# Sort in reverse so newer versions (lexicographically larger) are tried first.
 file(GLOB _go_ubuntu_hints LIST_DIRECTORIES true "/usr/lib/go-*/bin")
+file(GLOB _go_toolchain_hints LIST_DIRECTORIES true
+  "$ENV{HOME}/go/pkg/mod/golang.org/toolchain@*/bin"
+  "/root/go/pkg/mod/golang.org/toolchain@*/bin")
+list(SORT _go_ubuntu_hints ORDER DESCENDING)
+list(SORT _go_toolchain_hints ORDER DESCENDING)
 find_program(GO_EXECUTABLE go
-  HINTS ${_go_ubuntu_hints} /usr/local/go/bin
+  HINTS ${_go_toolchain_hints} /usr/local/go/bin ${_go_ubuntu_hints}
   DOC "Go compiler (used to build dt-p2p-daemon)")
 
 if(GO_EXECUTABLE)

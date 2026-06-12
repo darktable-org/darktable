@@ -1163,9 +1163,6 @@ func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
-	if x.SenderID == d.host.ID().String() {
-		return
-	}
 	go d.applyInboundXMP(x, "http:"+r.RemoteAddr)
 }
 
