@@ -650,15 +650,18 @@ func (d *daemon) subscribeXMP() {
 	}
 }
 
+var xmpPushClient = &http.Client{Timeout: 10 * time.Second}
+
 // pushXMPToPeers sends x directly via HTTP POST to every known reachable peer.
 // This ensures delivery even when gossipsub has not yet established peer
 // connections (peers=0).
 func (d *daemon) pushXMPToPeers(x xmpMsg) {
 	myURL := d.localProxyURL()
+	myLANURL := fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
 	seen := make(map[string]bool)
 	var targets []string
 	collect := func(u string) {
-		if u != "" && u != myURL && !seen[u] {
+		if u != "" && u != myURL && u != myLANURL && !seen[u] {
 			seen[u] = true
 			targets = append(targets, u)
 		}
@@ -671,6 +674,7 @@ func (d *daemon) pushXMPToPeers(x xmpMsg) {
 	for _, u := range d.peersToSync() {
 		collect(u)
 	}
+	log.Printf("[xmp] push targets: myURL=%s  targets=%v", myURL, targets)
 	if len(targets) == 0 {
 		return
 	}
@@ -681,7 +685,7 @@ func (d *daemon) pushXMPToPeers(x xmpMsg) {
 	for _, baseURL := range targets {
 		baseURL := baseURL
 		go func() {
-			resp, err := http.Post(baseURL+"/xmp", "application/json", bytes.NewReader(b))
+			resp, err := xmpPushClient.Post(baseURL+"/xmp", "application/json", bytes.NewReader(b))
 			if err != nil {
 				log.Printf("[xmp] direct push to %s: %v", baseURL, err)
 				return
@@ -1158,12 +1162,11 @@ func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+	w.WriteHeader(http.StatusNoContent)
 	if x.SenderID == d.host.ID().String() {
-		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	d.applyInboundXMP(x, "http:"+r.RemoteAddr)
-	w.WriteHeader(http.StatusNoContent)
+	go d.applyInboundXMP(x, "http:"+r.RemoteAddr)
 }
 
 func (d *daemon) serveProxy(w http.ResponseWriter, r *http.Request) {
