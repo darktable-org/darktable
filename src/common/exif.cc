@@ -60,6 +60,7 @@ using namespace std;
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/p2p.h"
 #include "common/dng_opcode.h"
 #include "common/image_cache.h"
 #include "common/exif.h"
@@ -6113,6 +6114,8 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
         fprintf(fout, "%s", xml_header);
         fprintf(fout, "%s", xmpPacket.c_str());
         fclose(fout);
+        // Notify P2P peers about the updated XMP
+        dt_p2p_push_xmp(imgfname, filename);
       }
       else
       {

@@ -81,6 +81,7 @@ enum
   md_internal_version,
   md_internal_fullpath,
   md_internal_local_copy,
+  md_internal_proxy_media,
   md_internal_import_timestamp,
   md_internal_change_timestamp,
   md_internal_export_timestamp,
@@ -137,6 +138,7 @@ static const char *_labels[] = {
   N_("version"),
   N_("full path"),
   N_("local copy"),
+  N_("proxy media"),
   N_("import timestamp"),
   N_("change timestamp"),
   N_("export timestamp"),
@@ -584,6 +586,7 @@ void gui_update(dt_lib_module_t *self)
                                    "COUNT(DISTINCT version), "
                                    "COUNT(DISTINCT film_id || '/' || filename), " //path
                                    "COUNT(DISTINCT flags & 2048), " //local copy
+                                   "COUNT(DISTINCT flags & 2097152), " //proxy media (1<<21)
                                    "COUNT(DISTINCT import_timestamp), "
                                    "COUNT(DISTINCT change_timestamp), "
                                    "COUNT(DISTINCT export_timestamp), "
@@ -747,6 +750,11 @@ void gui_update(dt_lib_module_t *self)
       case md_internal_local_copy:
         (void)g_strlcpy(text, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(text));
         _metadata_update_value(md_internal_local_copy, text, self);
+        break;
+
+      case md_internal_proxy_media:
+        (void)g_strlcpy(text, (img->flags & DT_IMAGE_PROXY_MEDIA) ? _("yes") : _("no"), sizeof(text));
+        _metadata_update_value(md_internal_proxy_media, text, self);
         break;
 
       case md_internal_import_timestamp:

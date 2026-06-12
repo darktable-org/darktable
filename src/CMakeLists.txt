@@ -79,6 +79,7 @@ FILE(GLOB SOURCE_FILES
   "common/noiseprofiles.c"
   "common/opencl.c"
   "common/overlay.c"
+  "common/p2p.c"
   "common/pdf.c"
   "common/pfm.c"
   "common/presets.c"
@@ -163,6 +164,7 @@ FILE(GLOB SOURCE_FILES
   "gui/styles_dialog.c"
   "imageio/imageio.c"
   "imageio/imageio_dng.c"
+  "imageio/proxy.c"
   "imageio/imageio_jpeg.c"
   "imageio/imageio_module.c"
   "imageio/imageio_pfm.c"
@@ -1161,3 +1163,30 @@ add_custom_target(
   DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+#
+# P2P daemon (Go)
+#
+find_program(GO_EXECUTABLE go
+  HINTS /usr/lib/go-1.26/bin /usr/local/go/bin ENV PATH)
+if(GO_EXECUTABLE)
+  file(GLOB_RECURSE P2P_GO_SOURCES "${CMAKE_SOURCE_DIR}/src/p2p/*.go")
+  add_custom_command(
+    OUTPUT "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+    DEPENDS ${P2P_GO_SOURCES} "${CMAKE_SOURCE_DIR}/src/p2p/go.mod"
+    COMMAND ${CMAKE_COMMAND} -E env
+      GOROOT=/usr/lib/go-1.26
+      PATH=/usr/lib/go-1.26/bin:$ENV{PATH}
+      ${GO_EXECUTABLE} build -o "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+      "${CMAKE_SOURCE_DIR}/src/p2p"
+    COMMENT "Building dt-p2p-daemon (Go)"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/p2p"
+  )
+  add_custom_target(dt-p2p-daemon ALL
+    DEPENDS "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+  )
+  install(PROGRAMS "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+  message(STATUS "Go not found — dt-p2p-daemon will not be built (P2P sync disabled)")
+endif()

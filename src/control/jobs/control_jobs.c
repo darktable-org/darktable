@@ -19,6 +19,7 @@
 #include "control/jobs/control_jobs.h"
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "imageio/proxy.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
@@ -3148,6 +3149,59 @@ void dt_control_import(GList *imgs,
   // if import in place single image => synchronous import
   while(wait)
     g_usleep(100);
+}
+
+// ---------------------------------------------------------------------------
+// Proxy media creation job
+// ---------------------------------------------------------------------------
+
+static int32_t _control_create_proxy_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
+  const guint total = g_list_length(t);
+  const int quality = GPOINTER_TO_INT(params->data);
+  double fraction = 0.0;
+  double prev_time = 0;
+
+  dt_control_job_set_progress_message(job,
+    ngettext("creating proxy for %d image", "creating proxies for %d images", total), total);
+
+  for(; t && !_job_cancelled(job); t = g_list_next(t))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+
+    char raw_path[PATH_MAX] = { 0 };
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, raw_path, sizeof(raw_path), &from_cache);
+
+    if(raw_path[0])
+    {
+      // Skip if a proxy already exists
+      char *proxy_path = g_strdup_printf("%s.proxy.avif", raw_path);
+      const gboolean exists = g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
+      g_free(proxy_path);
+
+      if(!exists)
+        dt_imageio_create_proxy(raw_path, quality);
+    }
+
+    fraction += 1.0 / total;
+    _update_progress(job, fraction, &prev_time);
+  }
+
+  dt_control_queue_redraw_center();
+  return 0;
+}
+
+void dt_control_create_proxy_images(void)
+{
+  const int quality = dt_conf_get_and_sanitize_int("plugins/lighttable/proxy_quality", 0, 100);
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG,
+    _control_generic_images_job_create(
+      &_control_create_proxy_job_run,
+      N_("create proxy media"), quality,
+      NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
 // clang-format off

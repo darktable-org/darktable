@@ -1842,9 +1842,34 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   for(; *cc != '.' && cc > normalized_filename; cc--)
     ;
   if(!strcasecmp(cc, ".dt")
-     || !strcasecmp(cc, ".dttags")
-     || !strcasecmp(cc, ".xmp"))
+     || !strcasecmp(cc, ".dttags"))
   {
+    g_free(proxy_src);
+    g_free(normalized_filename);
+    return NO_IMGID;
+  }
+  if(!strcasecmp(cc, ".xmp"))
+  {
+    // Strip the .xmp suffix and check whether a .proxy.avif sidecar exists for
+    // the canonical raw name.  If so, redirect the import to that canonical name
+    // so _image_import_internal picks up the proxy transparently.
+    char *canonical = g_strndup(normalized_filename,
+                                 (size_t)(cc - normalized_filename));
+    char *proxy_chk = g_strdup_printf("%s.proxy.avif", canonical);
+    const gboolean has_proxy = dt_util_test_image_file(proxy_chk);
+    g_free(proxy_chk);
+    if(has_proxy)
+    {
+      g_free(proxy_src);
+      g_free(normalized_filename);
+      const dt_imgid_t result = _image_import_internal(film_id, canonical,
+                                                        override_ignore_nonraws,
+                                                        lua_locking,
+                                                        raise_signals);
+      g_free(canonical);
+      return result;
+    }
+    g_free(canonical);
     g_free(proxy_src);
     g_free(normalized_filename);
     return NO_IMGID;

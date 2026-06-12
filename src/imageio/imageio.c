@@ -1627,13 +1627,25 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf)
 {
-  /* first of all, check if file exists; if not, try proxy media fallback */
+  /* Check whether to use original raw or proxy sidecar.
+   * Two cases where proxy is used:
+   *   1. Raw file is missing — silent fallback to proxy (remote-editing workflow).
+   *   2. Raw is present but user has enabled "prefer proxy media" — faster loads,
+   *      identical histogram because both normalise to (ADU-black)/(white-black). */
   const char *use_filename = filename;
   char proxy_path[PATH_MAX];
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+  g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", filename);
+
+  const gboolean raw_exists   = g_file_test(filename,   G_FILE_TEST_IS_REGULAR);
+  const gboolean proxy_exists = g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
+
+  // Clear first; re-set below only if we actually load from the proxy.
+  // Without this, the flag sticks in the image cache across reloads.
+  img->flags &= ~DT_IMAGE_PROXY_MEDIA;
+
+  if(!raw_exists)
   {
-    g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", filename);
-    if(g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR))
+    if(proxy_exists)
     {
       use_filename = proxy_path;
       img->flags |= DT_IMAGE_PROXY_MEDIA;
@@ -1643,6 +1655,14 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     }
     else
       return DT_IMAGEIO_FILE_NOT_FOUND;
+  }
+  else if(proxy_exists
+          && dt_conf_get_bool("plugins/darkroom/prefer_proxy_media"))
+  {
+    use_filename = proxy_path;
+    img->flags |= DT_IMAGE_PROXY_MEDIA;
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[imageio_open] prefer-proxy active, using '%s'", proxy_path);
   }
 
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);

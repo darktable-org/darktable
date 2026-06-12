@@ -30,6 +30,7 @@
 #include "common/darktable.h"
 #include "common/datetime.h"
 #include "common/exif.h"
+#include "common/p2p.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
 #include "common/system_signal_handling.h"
@@ -2087,6 +2088,9 @@ int dt_init(int argc,
   dt_capabilities_add("nonapple");
 #endif
 
+  // Start P2P sync daemon if a passphrase is configured
+  dt_p2p_init();
+
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);
 
@@ -2138,6 +2142,9 @@ void dt_get_sysresource_level()
 
 void dt_cleanup()
 {
+  // Shut down P2P daemon before any other teardown
+  dt_p2p_cleanup();
+
   const gboolean init_gui = (darktable.gui != NULL);
 
   dt_stop_backthumbs_crawler(TRUE);
