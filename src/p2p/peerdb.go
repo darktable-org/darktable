@@ -48,6 +48,17 @@ func openPeerDB() (*peerDB, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Single connection serialises all writes; no concurrent SQLITE_BUSY.
+	db.SetMaxOpenConns(1)
+	for _, pragma := range []string{
+		`PRAGMA journal_mode=WAL`,
+		`PRAGMA busy_timeout=5000`,
+	} {
+		if _, err := db.Exec(pragma); err != nil {
+			db.Close()
+			return nil, err
+		}
+	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS peers (
 		url           TEXT    PRIMARY KEY,
 		peer_id       TEXT    NOT NULL DEFAULT '',

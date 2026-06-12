@@ -327,10 +327,6 @@ static int32_t _p2p_write_and_push_job_run(dt_job_t *job)
   // Write the XMP file first to ensure it contains latest changes
   if(dt_exif_xmp_write(imgid, xmp_path, FALSE)) return 0;
 
-  // Add a short delay to ensure file is fully written before pushing
-  struct timespec req = {0, 100000000L}; // 0.1 seconds
-  nanosleep(&req, NULL);
-
   dt_print(DT_DEBUG_IMAGEIO, "[p2p] pushing XMP for '%s' from image id=%d", raw_path, imgid);
   dt_p2p_push_xmp(raw_path, xmp_path);
   return 0;
