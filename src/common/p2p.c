@@ -514,11 +514,16 @@ void dt_p2p_init(void)
   g_ptr_array_add(argv_arr, (gchar *)passphrase);
 
   const char *proxy_dir = dt_conf_get_string_const("plugins/p2p/proxy_dir");
-  if(proxy_dir && proxy_dir[0])
+  static char proxy_dir_default[PATH_MAX];
+  if(!proxy_dir || !proxy_dir[0])
   {
-    g_ptr_array_add(argv_arr, (gchar *)"--proxy-dir");
-    g_ptr_array_add(argv_arr, (gchar *)proxy_dir);
+    const char *home = g_get_home_dir();
+    g_snprintf(proxy_dir_default, sizeof(proxy_dir_default),
+               "%s/Pictures/dtproxy", home ? home : ".");
+    proxy_dir = proxy_dir_default;
   }
+  g_ptr_array_add(argv_arr, (gchar *)"--proxy-dir");
+  g_ptr_array_add(argv_arr, (gchar *)proxy_dir);
 
   const char *peers = dt_conf_get_string_const("plugins/p2p/peers");
   if(peers && peers[0])

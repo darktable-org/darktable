@@ -31,6 +31,7 @@
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+#include "imageio/proxy.h"
 
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"
@@ -1634,10 +1635,10 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
    *      identical histogram because both normalise to (ADU-black)/(white-black). */
   const char *use_filename = filename;
   char proxy_path[PATH_MAX];
-  g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", filename);
+  dt_imageio_proxy_path(filename, proxy_path, sizeof(proxy_path));
 
   const gboolean raw_exists   = g_file_test(filename,   G_FILE_TEST_IS_REGULAR);
-  const gboolean proxy_exists = g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
+  const gboolean proxy_exists = proxy_path[0] && g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
 
   // Clear first; re-set below only if we actually load from the proxy.
   // Without this, the flag sticks in the image cache across reloads.

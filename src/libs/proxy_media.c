@@ -100,7 +100,7 @@ static void _update(dt_lib_module_t *self)
 
   const gboolean raw_exists   = g_file_test(filename, G_FILE_TEST_IS_REGULAR);
   char proxy_path[PATH_MAX];
-  g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", filename);
+  dt_imageio_proxy_path(filename, proxy_path, sizeof(proxy_path));
   const gboolean proxy_exists = g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
 
   if(using_proxy)
@@ -136,7 +136,7 @@ static gboolean _after_proxy_generated(gpointer user_data)
 
   // Check if the proxy was actually created before switching.
   char proxy_path[PATH_MAX];
-  g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", ctx->filename);
+  dt_imageio_proxy_path(ctx->filename, proxy_path, sizeof(proxy_path));
   if(g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR)
      && darktable.develop
      && darktable.develop->image_storage.id == ctx->imgid)
@@ -182,7 +182,7 @@ static void _toggle_source_clicked(GtkButton *btn, gpointer user_data)
   dt_image_full_path(imgid, filename, sizeof(filename), NULL);
 
   char proxy_path[PATH_MAX];
-  g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", filename);
+  dt_imageio_proxy_path(filename, proxy_path, sizeof(proxy_path));
   const gboolean proxy_exists = g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
 
   if(using_proxy)

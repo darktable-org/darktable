@@ -18,6 +18,38 @@
 
 #include "imageio/proxy.h"
 #include "common/darktable.h"
+#include "control/conf.h"
+
+#include <sys/stat.h>
+#include <time.h>
+
+#define PROXY_DEFAULT_DIR_SUFFIX "Pictures/dtproxy"
+
+gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen)
+{
+  if(!raw_path || !raw_path[0] || !buf || buflen == 0) return FALSE;
+
+  const char *cfg = dt_conf_get_string_const("plugins/p2p/proxy_dir");
+  char base[PATH_MAX];
+  if(cfg && cfg[0])
+    g_strlcpy(base, cfg, sizeof(base));
+  else
+  {
+    const char *home = g_get_home_dir();
+    g_snprintf(base, sizeof(base), "%s/%s", home ? home : ".", PROXY_DEFAULT_DIR_SUFFIX);
+  }
+
+  struct stat st;
+  time_t t = (stat(raw_path, &st) == 0) ? st.st_mtime : time(NULL);
+  struct tm tm;
+  localtime_r(&t, &tm);
+
+  char *basename = g_path_get_basename(raw_path);
+  g_snprintf(buf, buflen, "%s/%04d/%02d/%02d/%s.proxy.avif",
+             base, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, basename);
+  g_free(basename);
+  return TRUE;
+}
 
 #ifndef HAVE_LIBRAW
 gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
@@ -76,66 +108,235 @@ static _bayer_offsets_t _get_bayer_offsets(uint32_t filters)
 }
 
 // ---------------------------------------------------------------------------
-// SVT-AV1 bit-depth probe
+// Encoder capability probe
 // ---------------------------------------------------------------------------
 
-// Returns the max bit depth SVT-AV1 can encode (10 or 12), or 0 if unavailable.
-// Runs a tiny 2×2 encode exactly once per process; result is cached atomically.
-static int _svt_max_bit_depth(void)
-{
-  static gint cached = -1; // -1 = not yet probed
-
-  const int c = g_atomic_int_get(&cached);
-  if(c >= 0) return c;
-
-  if(!avifCodecName(AVIF_CODEC_CHOICE_SVT, AVIF_CODEC_FLAG_CAN_ENCODE))
-  {
-    g_atomic_int_compare_and_exchange(&cached, -1, 0);
-    return 0;
-  }
-
-  // Probe: try encoding a 2×2 12-bit YUV444 image with SVT-AV1.
-  avifImage   *probe  = avifImageCreate(2, 2, 12, AVIF_PIXEL_FORMAT_YUV444);
-  avifEncoder *enc    = avifEncoderCreate();
-  int          depth  = 0;
-  avifRWData   output = AVIF_DATA_EMPTY;
-
-  if(probe && enc)
-  {
-    probe->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
-    probe->yuvRange           = AVIF_RANGE_FULL;
-#if AVIF_VERSION >= 1000000
-    avifImageAllocatePlanes(probe, AVIF_PLANES_YUV);
-#else
-    avifImageAllocatePlanes(probe, AVIF_PLANES_YUV);
-#endif
-    for(int ch = 0; ch < 3; ch++)
-      memset(probe->yuvPlanes[ch], 0, probe->yuvRowBytes[ch] * 2);
-
-    enc->codecChoice = AVIF_CODEC_CHOICE_SVT;
-    enc->speed       = 10; // fastest; just testing capability
-
-    if(avifEncoderWrite(enc, probe, &output) == AVIF_RESULT_OK)
-      depth = 12;
-    else
-      depth = 10; // SVT present but can't do 12-bit
-  }
-
-  avifRWDataFree(&output);
-  if(enc)   avifEncoderDestroy(enc);
-  if(probe) avifImageDestroy(probe);
-
-  g_atomic_int_compare_and_exchange(&cached, -1, depth);
-  dt_print(DT_DEBUG_IMAGEIO, "[proxy] SVT-AV1 max bit depth: %d", depth);
-  return g_atomic_int_get(&cached);
-}
-
-// sRGB OETF: linear [0,1] → encoded [0,1].
-// Applied channel-by-channel when encoding a 10-bit SVT proxy.
+// sRGB OETF: linear [0,1] → gamma-encoded [0,1].
 static inline float _srgb_oetf(float v)
 {
   return (v <= 0.0031308f) ? (12.92f * v)
                            : (1.055f * powf(v, 1.0f / 2.4f) - 0.055f);
+}
+
+// Format/depth capability descriptor.
+// Entries are ordered from most-preferred to least-preferred.
+typedef struct
+{
+  avifPixelFormat fmt;
+  int             depth;
+  gboolean        use_gamma;  // apply sRGB OETF before encoding (for depth < 12)
+  gboolean        identity;   // use MC=identity (Y=G Cb=B Cr=R); only valid for YUV444
+} _fmt_cap_t;
+
+// Ordered by bit-depth first (12→10→8), then chroma format (444→422→420).
+static const _fmt_cap_t _fmt_prefs[] = {
+  { AVIF_PIXEL_FORMAT_YUV444, 12, FALSE, TRUE  }, // 12-bit linear identity
+  { AVIF_PIXEL_FORMAT_YUV422, 12, FALSE, FALSE }, // 12-bit linear BT.709 4:2:2
+  { AVIF_PIXEL_FORMAT_YUV420, 12, FALSE, FALSE }, // 12-bit linear BT.709 4:2:0
+  { AVIF_PIXEL_FORMAT_YUV444, 10, TRUE,  TRUE  }, // 10-bit sRGB identity
+  { AVIF_PIXEL_FORMAT_YUV422, 10, TRUE,  FALSE }, // 10-bit sRGB BT.709 4:2:2
+  { AVIF_PIXEL_FORMAT_YUV420, 10, TRUE,  FALSE }, // 10-bit sRGB BT.709 4:2:0
+  { AVIF_PIXEL_FORMAT_YUV444,  8, TRUE,  TRUE  }, // 8-bit  sRGB identity
+  { AVIF_PIXEL_FORMAT_YUV422,  8, TRUE,  FALSE }, // 8-bit  sRGB BT.709 4:2:2
+  { AVIF_PIXEL_FORMAT_YUV420,  8, TRUE,  FALSE }, // 8-bit  sRGB BT.709 4:2:0
+};
+#define N_FMT_PREFS ((int)(sizeof(_fmt_prefs) / sizeof(_fmt_prefs[0])))
+
+// Probe whether a codec can encode a 64×64 image at (fmt, depth).
+// 64×64 satisfies SVT-AV1's minimum dimension requirement.
+static gboolean _probe_codec_fmt(avifCodecChoice codec, avifPixelFormat fmt, int depth)
+{
+  avifImage *probe = avifImageCreate(64, 64, depth, fmt);
+  if(!probe) return FALSE;
+
+  probe->colorPrimaries          = AVIF_COLOR_PRIMARIES_BT709;
+  probe->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+  probe->matrixCoefficients      = (fmt == AVIF_PIXEL_FORMAT_YUV444)
+                                     ? AVIF_MATRIX_COEFFICIENTS_IDENTITY
+                                     : AVIF_MATRIX_COEFFICIENTS_BT709;
+  probe->yuvRange = AVIF_RANGE_FULL;
+#if AVIF_VERSION >= 1000000
+  if(avifImageAllocatePlanes(probe, AVIF_PLANES_YUV) != AVIF_RESULT_OK)
+  { avifImageDestroy(probe); return FALSE; }
+#else
+  avifImageAllocatePlanes(probe, AVIF_PLANES_YUV);
+#endif
+  for(int ch = 0; ch < 3; ch++)
+  {
+    size_t rows = (ch > 0 && fmt == AVIF_PIXEL_FORMAT_YUV420) ? 32 : 64;
+    memset(probe->yuvPlanes[ch], 0, probe->yuvRowBytes[ch] * rows);
+  }
+
+  avifEncoder *enc = avifEncoderCreate();
+  gboolean ok = FALSE;
+  if(enc)
+  {
+    enc->codecChoice = codec;
+    enc->speed       = 10;
+#if AVIF_VERSION >= 1000000
+    enc->quality = 60;
+#else
+    enc->minQuantizer = 30;
+    enc->maxQuantizer = 40;
+#endif
+    avifRWData out = AVIF_DATA_EMPTY;
+    ok = (avifEncoderWrite(enc, probe, &out) == AVIF_RESULT_OK);
+    avifRWDataFree(&out);
+    avifEncoderDestroy(enc);
+  }
+  avifImageDestroy(probe);
+  return ok;
+}
+
+// Per-codec cached best format index into _fmt_prefs[], or -1 if none work.
+// Layout: [0]=SVT  [1]=rav1e  [2]=AOM
+// Value -2 means "not yet probed".
+static gint _codec_cap[3] = { -2, -2, -2 };
+
+static const struct { avifCodecChoice choice; int speed; const char *name; int cap_idx; }
+_codec_prefs[] = {
+  { AVIF_CODEC_CHOICE_SVT,   6, "SVT-AV1", 0 },
+  { AVIF_CODEC_CHOICE_RAV1E, 6, "rav1e",   1 },
+  { AVIF_CODEC_CHOICE_AOM,   6, "AOM",     2 },
+};
+#define N_CODECS ((int)(sizeof(_codec_prefs) / sizeof(_codec_prefs[0])))
+
+// Returns the best _fmt_prefs[] index for the given codec, probing once if needed.
+static int _best_fmt_for_codec(int ci)
+{
+  const int c = g_atomic_int_get(&_codec_cap[ci]);
+  if(c > -2) return c;
+
+  if(!avifCodecName(_codec_prefs[ci].choice, AVIF_CODEC_FLAG_CAN_ENCODE))
+  {
+    g_atomic_int_compare_and_exchange(&_codec_cap[ci], -2, -1);
+    return -1;
+  }
+
+  int best = -1;
+  for(int fi = 0; fi < N_FMT_PREFS; fi++)
+  {
+    if(_probe_codec_fmt(_codec_prefs[ci].choice, _fmt_prefs[fi].fmt, _fmt_prefs[fi].depth))
+    { best = fi; break; }
+  }
+
+  g_atomic_int_compare_and_exchange(&_codec_cap[ci], -2, best);
+  if(best >= 0)
+    dt_print(DT_DEBUG_IMAGEIO, "[proxy] %s best format: YUV%s %d-bit%s",
+             _codec_prefs[ci].name,
+             _fmt_prefs[best].fmt == AVIF_PIXEL_FORMAT_YUV444 ? "444" :
+             _fmt_prefs[best].fmt == AVIF_PIXEL_FORMAT_YUV422 ? "422" : "420",
+             _fmt_prefs[best].depth,
+             _fmt_prefs[best].use_gamma ? " sRGB" : " linear");
+  else
+    dt_print(DT_DEBUG_IMAGEIO, "[proxy] %s: no supported format found",
+             _codec_prefs[ci].name);
+  return g_atomic_int_get(&_codec_cap[ci]);
+}
+
+// ---------------------------------------------------------------------------
+// RGB → avifImage conversion
+// ---------------------------------------------------------------------------
+
+// LUT: 12-bit linear input → gamma-encoded output at target depth.
+// Built once on first use.
+static uint16_t _gamma_lut[4096];
+static gint     _gamma_lut_depth = 0; // depth the LUT was built for
+
+static void _ensure_gamma_lut(int depth)
+{
+  if(g_atomic_int_get(&_gamma_lut_depth) == depth) return;
+  const float dst_max = (float)((1 << depth) - 1);
+  for(int i = 0; i < 4096; i++)
+    _gamma_lut[i] = (uint16_t)CLAMP((int)(_srgb_oetf(i / 4095.0f) * dst_max + 0.5f),
+                                    0, (int)dst_max);
+  g_atomic_int_set(&_gamma_lut_depth, depth);
+}
+
+// Fill an avifImage from 12-bit linear r/g/b planar buffers.
+static void _fill_avif(avifImage *img,
+                       const uint16_t *r_buf, const uint16_t *g_buf, const uint16_t *b_buf,
+                       int ow, int oh, const _fmt_cap_t *cap)
+{
+  const float dst_max  = (float)((1 << cap->depth) - 1);
+  const float lin_sc   = dst_max / 4095.0f;
+
+  const int ystride  = (int)(img->yuvRowBytes[AVIF_CHAN_Y] / sizeof(uint16_t));
+  const int cbstride = (int)(img->yuvRowBytes[AVIF_CHAN_U] / sizeof(uint16_t));
+  const int crstride = (int)(img->yuvRowBytes[AVIF_CHAN_V] / sizeof(uint16_t));
+  uint16_t *yp  = (uint16_t *)img->yuvPlanes[AVIF_CHAN_Y];
+  uint16_t *cbp = (uint16_t *)img->yuvPlanes[AVIF_CHAN_U];
+  uint16_t *crp = (uint16_t *)img->yuvPlanes[AVIF_CHAN_V];
+
+  if(cap->use_gamma) _ensure_gamma_lut(cap->depth);
+
+  if(cap->identity)
+  {
+    // Y=G  Cb=B  Cr=R — all planes full resolution (YUV444 only)
+    for(int y = 0; y < oh; y++)
+      for(int x = 0; x < ow; x++)
+      {
+        int i = y * ow + x;
+        if(cap->use_gamma)
+        {
+          yp [y*ystride  + x] = _gamma_lut[g_buf[i]];
+          cbp[y*cbstride + x] = _gamma_lut[b_buf[i]];
+          crp[y*crstride + x] = _gamma_lut[r_buf[i]];
+        }
+        else
+        {
+          yp [y*ystride  + x] = (uint16_t)(g_buf[i] * lin_sc + 0.5f);
+          cbp[y*cbstride + x] = (uint16_t)(b_buf[i] * lin_sc + 0.5f);
+          crp[y*crstride + x] = (uint16_t)(r_buf[i] * lin_sc + 0.5f);
+        }
+      }
+    return;
+  }
+
+  // BT.709 luma + chroma subsampling (YUV422 or YUV420)
+  // Chroma block: nx=2 for 422/420 horizontal, ny=2 only for 420 vertical
+  const int nx = (cap->fmt == AVIF_PIXEL_FORMAT_YUV444) ? 1 : 2;
+  const int ny = (cap->fmt == AVIF_PIXEL_FORMAT_YUV420) ? 2 : 1;
+  const int cw = ow / nx;
+  const int ch = oh / ny;
+
+  // Y plane — full resolution
+  for(int y = 0; y < oh; y++)
+    for(int x = 0; x < ow; x++)
+    {
+      int idx = y * ow + x;
+      float r = r_buf[idx] / 4095.0f;
+      float g = g_buf[idx] / 4095.0f;
+      float b = b_buf[idx] / 4095.0f;
+      float luma = 0.2126f*r + 0.7152f*g + 0.0722f*b;
+      float out  = cap->use_gamma ? _srgb_oetf(luma) : luma;
+      yp[y*ystride + x] = (uint16_t)CLAMP((int)(out * dst_max + 0.5f), 0, (int)dst_max);
+    }
+
+  // Cb/Cr planes — subsampled, averaged over nx×ny blocks
+  for(int cy = 0; cy < ch; cy++)
+    for(int cx = 0; cx < cw; cx++)
+    {
+      float cb_sum = 0.0f, cr_sum = 0.0f;
+      for(int dy = 0; dy < ny; dy++)
+        for(int dx = 0; dx < nx; dx++)
+        {
+          int idx = (cy*ny + dy) * ow + (cx*nx + dx);
+          float r = r_buf[idx] / 4095.0f;
+          float g = g_buf[idx] / 4095.0f;
+          float b = b_buf[idx] / 4095.0f;
+          float luma = 0.2126f*r + 0.7152f*g + 0.0722f*b;
+          cb_sum += (b - luma) / 1.8556f + 0.5f;
+          cr_sum += (r - luma) / 1.5748f + 0.5f;
+        }
+      float n    = (float)(nx * ny);
+      float cb   = cb_sum / n;
+      float cr   = cr_sum / n;
+      if(cap->use_gamma) { cb = _srgb_oetf(CLAMP(cb, 0.0f, 1.0f));
+                           cr = _srgb_oetf(CLAMP(cr, 0.0f, 1.0f)); }
+      cbp[cy*cbstride + cx] = (uint16_t)CLAMP((int)(cb * dst_max + 0.5f), 0, (int)dst_max);
+      crp[cy*crstride + cx] = (uint16_t)CLAMP((int)(cr * dst_max + 0.5f), 0, (int)dst_max);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -260,79 +461,9 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
     }
   }
 
-  // ---- select encoder and bit depth ----------------------------------------
-  // Prefer SVT-AV1 (fast).  If SVT only supports 10-bit, encode at 10-bit with
-  // sRGB OETF applied per-channel so the quantiser budget goes to shadows.
-  // The decoder (imageio_avif.c) inverts the curve when it sees transferChar=SRGB
-  // on a proxy image, recovering linear [0,1] for the darktable pipeline.
-  // Fall back through rav1e → AOM → AUTO when SVT is absent.
-  const int svt_depth = _svt_max_bit_depth();
-  const int enc_depth = (svt_depth > 0) ? svt_depth : 12; // non-SVT: stay at 12-bit
-  const gboolean use_log = (svt_depth == 10);              // sRGB curve only for 10-bit SVT
-
-  // ---- encode AVIF with identity matrix ------------------------------------
-  // YUV 4:4:4 + AVIF_MATRIX_COEFFICIENTS_IDENTITY (MC=0): Y=G, Cb=B, Cr=R.
-  image = avifImageCreate(ow, oh, enc_depth, AVIF_PIXEL_FORMAT_YUV444);
-  if(!image) goto out;
-
-  image->colorPrimaries          = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
-  // Linear proxies: mark as linear so colour-managed tools handle them correctly.
-  // Log-encoded 10-bit proxies: leave TC unspecified — the sRGB-shaped curve is
-  // applied as a compression artefact, not a colour-space declaration, and
-  // external tools would misinterpret SRGB here.  darktable detects the 10-bit
-  // proxy case directly (DT_IMAGE_PROXY_MEDIA + depth==10) without relying on TC.
-  image->transferCharacteristics = use_log ? AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED
-                                           : AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
-  image->matrixCoefficients      = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
-  image->yuvRange                = AVIF_RANGE_FULL;
-
-#if AVIF_VERSION >= 1000000
-  if(avifImageAllocatePlanes(image, AVIF_PLANES_YUV) != AVIF_RESULT_OK) goto out;
-#else
-  avifImageAllocatePlanes(image, AVIF_PLANES_YUV);
-#endif
-
-  {
-    // libavif identity matrix: Y=G, Cb=B, Cr=R.
-    const int ystride = (int)(image->yuvRowBytes[AVIF_CHAN_Y] / sizeof(uint16_t));
-    const int ustride = (int)(image->yuvRowBytes[AVIF_CHAN_U] / sizeof(uint16_t));
-    const int vstride = (int)(image->yuvRowBytes[AVIF_CHAN_V] / sizeof(uint16_t));
-    uint16_t *yp = (uint16_t *)image->yuvPlanes[AVIF_CHAN_Y];
-    uint16_t *up = (uint16_t *)image->yuvPlanes[AVIF_CHAN_U];
-    uint16_t *vp = (uint16_t *)image->yuvPlanes[AVIF_CHAN_V];
-
-    if(use_log)
-    {
-      // Apply sRGB OETF: 12-bit linear → 10-bit log-encoded.
-      const float src_max = 4095.0f;
-      const float dst_max = (float)((1 << enc_depth) - 1);
-      for(int y = 0; y < oh; y++)
-        for(int x = 0; x < ow; x++)
-        {
-          yp[y * ystride + x] = (uint16_t)(CLAMP(_srgb_oetf(g_buf[y*ow+x] / src_max) * dst_max + 0.5f, 0.0f, dst_max));
-          up[y * ustride + x] = (uint16_t)(CLAMP(_srgb_oetf(b_buf[y*ow+x] / src_max) * dst_max + 0.5f, 0.0f, dst_max));
-          vp[y * vstride + x] = (uint16_t)(CLAMP(_srgb_oetf(r_buf[y*ow+x] / src_max) * dst_max + 0.5f, 0.0f, dst_max));
-        }
-    }
-    else
-    {
-      for(int y = 0; y < oh; y++)
-      {
-        memcpy(yp + y * ystride, g_buf + y * ow, ow * sizeof(uint16_t)); // Y  ← G
-        memcpy(up + y * ustride, b_buf + y * ow, ow * sizeof(uint16_t)); // Cb ← B
-        memcpy(vp + y * vstride, r_buf + y * ow, ow * sizeof(uint16_t)); // Cr ← R
-      }
-    }
-  }
-
   // ---- adaptive quality based on mean image brightness ---------------------
-  // Dark images have low signal-to-quantization-noise ratio: a coarse quantizer
-  // produces visible banding in the shadows. We raise quality toward 99 as the
-  // scene gets darker.  The user's setting acts as the floor for bright images.
-  //
-  // Calibration (mean G brightness normalised to [0,1]):
-  //   ≤ 0.03  (very dark, e.g. night/indoor)  → quality 99
-  //   ≥ 0.30  (typical outdoor daylight)       → quality = user setting
+  // Dark images: raise quality toward 99 to avoid shadow banding.
+  // Bright images: use the user-supplied floor.
   {
     float g_sum = 0.0f;
     const int n = ow * oh;
@@ -352,65 +483,99 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
              raw_path, avg_brightness, quality);
   }
 
-  encoder = avifEncoderCreate();
-  if(!encoder) goto out;
-
-  // Pick the fastest encoder the installed libavif supports.
+  // ---- probe codecs and encode with best available format --------------------
+  // For each codec (SVT first), find the highest bit-depth / widest chroma
+  // format it supports, build an avifImage for that format, and attempt encode.
+  // First success wins; the per-codec best format is cached across calls.
   {
-    static const struct { avifCodecChoice choice; int speed; const char *name; } codec_prefs[] = {
-      { AVIF_CODEC_CHOICE_SVT,   6, "SVT-AV1" },
-      { AVIF_CODEC_CHOICE_RAV1E, 6, "rav1e"   },
-      { AVIF_CODEC_CHOICE_AOM,   6, "AOM"     },
-    };
-    avifCodecChoice chosen      = AVIF_CODEC_CHOICE_AUTO;
-    int             chosen_speed = 6;
-    const char     *chosen_name  = "auto";
-    for(size_t i = 0; i < sizeof(codec_prefs) / sizeof(codec_prefs[0]); i++)
+    gboolean encoded = FALSE;
+    for(int ci = 0; ci < N_CODECS && !encoded; ci++)
     {
-      if(avifCodecName(codec_prefs[i].choice, AVIF_CODEC_FLAG_CAN_ENCODE))
-      {
-        chosen       = codec_prefs[i].choice;
-        chosen_speed = codec_prefs[i].speed;
-        chosen_name  = codec_prefs[i].name;
-        break;
-      }
-    }
-    encoder->codecChoice = chosen;
-    encoder->speed       = chosen_speed;
-    dt_print(DT_DEBUG_IMAGEIO, "[proxy] '%s': %s encoder, %d-bit%s",
-             raw_path, chosen_name, enc_depth, use_log ? ", sRGB log curve" : ", linear");
-  }
+      const int fi = _best_fmt_for_codec(ci);
+      if(fi < 0) continue; // codec absent or no supported format
+
+      const _fmt_cap_t *cap = &_fmt_prefs[fi];
+
+      if(image) { avifImageDestroy(image); image = NULL; }
+      image = avifImageCreate(ow, oh, cap->depth, cap->fmt);
+      if(!image) continue;
+
+      image->colorPrimaries          = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = cap->use_gamma
+                                         ? AVIF_TRANSFER_CHARACTERISTICS_SRGB
+                                         : AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+      image->matrixCoefficients      = cap->identity
+                                         ? AVIF_MATRIX_COEFFICIENTS_IDENTITY
+                                         : AVIF_MATRIX_COEFFICIENTS_BT709;
+      image->yuvRange = AVIF_RANGE_FULL;
 
 #if AVIF_VERSION >= 1000000
-  encoder->quality = quality;
+      if(avifImageAllocatePlanes(image, AVIF_PLANES_YUV) != AVIF_RESULT_OK) continue;
 #else
-  {
-    const int q = ((100 - quality) * AVIF_QUANTIZER_WORST_QUALITY + 50) / 100;
-    encoder->minQuantizer = CLAMP(q - 4, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
-    encoder->maxQuantizer = CLAMP(q + 4, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
-  }
+      avifImageAllocatePlanes(image, AVIF_PLANES_YUV);
 #endif
 
-  if(avifEncoderWrite(encoder, image, &output) != AVIF_RESULT_OK)
-  {
-    dt_print(DT_DEBUG_IMAGEIO, "[proxy] avifEncoderWrite failed for '%s'", raw_path);
-    goto out;
+      _fill_avif(image, r_buf, g_buf, b_buf, ow, oh, cap);
+
+      if(encoder) { avifEncoderDestroy(encoder); encoder = NULL; }
+      encoder = avifEncoderCreate();
+      if(!encoder) goto out;
+
+      encoder->codecChoice = _codec_prefs[ci].choice;
+      encoder->speed       = _codec_prefs[ci].speed;
+#if AVIF_VERSION >= 1000000
+      encoder->quality = quality;
+#else
+      {
+        const int q = ((100 - quality) * AVIF_QUANTIZER_WORST_QUALITY + 50) / 100;
+        encoder->minQuantizer = CLAMP(q - 4, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+        encoder->maxQuantizer = CLAMP(q + 4, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+      }
+#endif
+
+      avifRWDataFree(&output);
+      if(avifEncoderWrite(encoder, image, &output) == AVIF_RESULT_OK)
+      {
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "[proxy] '%s': %s encoder, YUV%s %d-bit %s",
+                 raw_path, _codec_prefs[ci].name,
+                 cap->fmt == AVIF_PIXEL_FORMAT_YUV444 ? "444" :
+                 cap->fmt == AVIF_PIXEL_FORMAT_YUV422 ? "422" : "420",
+                 cap->depth, cap->use_gamma ? "sRGB" : "linear");
+        encoded = TRUE;
+      }
+      else
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "[proxy] '%s': %s encode failed, trying next",
+                 raw_path, _codec_prefs[ci].name);
+      }
+    }
+    if(!encoded)
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[proxy] all encoders failed for '%s'", raw_path);
+      goto out;
+    }
   }
 
   // ---- write output file ------------------------------------------------
   {
-    char *proxy_path = g_strdup_printf("%s.proxy.avif", raw_path);
+    char proxy_path[PATH_MAX];
+    if(!dt_imageio_proxy_path(raw_path, proxy_path, sizeof(proxy_path))) goto out;
+
+    // Ensure the date subdirectory exists.
+    char *dir = g_path_get_dirname(proxy_path);
+    g_mkdir_with_parents(dir, 0755);
+    g_free(dir);
+
     f = g_fopen(proxy_path, "wb");
-    g_free(proxy_path);
     if(!f) goto out;
     if(fwrite(output.data, 1, output.size, f) != output.size)
       goto out;
-  }
 
-  ok = TRUE;
-  dt_print(DT_DEBUG_IMAGEIO,
-           "[proxy] created proxy for '%s' (%zu KB, quality %d)",
-           raw_path, output.size / 1024, quality);
+    ok = TRUE;
+    dt_print(DT_DEBUG_IMAGEIO, "[proxy] created '%s' (%zu KB, quality %d)",
+             proxy_path, output.size / 1024, quality);
+  }
 
 out:
   if(f) fclose(f);

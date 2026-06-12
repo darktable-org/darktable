@@ -3183,9 +3183,9 @@ static int32_t _control_create_proxy_job_run(dt_job_t *job)
     if(raw_path[0])
     {
       // Skip if a proxy already exists
-      char *proxy_path = g_strdup_printf("%s.proxy.avif", raw_path);
-      const gboolean exists = g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
-      g_free(proxy_path);
+      char proxy_path[PATH_MAX];
+      const gboolean exists = dt_imageio_proxy_path(raw_path, proxy_path, sizeof(proxy_path))
+                              && g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
 
       if(!exists)
         dt_imageio_create_proxy(raw_path, quality);

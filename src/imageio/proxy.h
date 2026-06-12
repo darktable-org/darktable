@@ -20,25 +20,25 @@
 #include "common/darktable.h"
 
 /*
- * Proxy media: half-resolution AVIF sidecars (IMG.CR2.proxy.avif) that
- * preserve camera-native linear sensor data without demosaicing, white
- * balance, or colour-space conversion.  darktable loads them transparently
- * when the original raw file is absent.
+ * Compute the proxy path for a raw file.
  *
- * The AVIF is stored with:
- *   - 12-bit depth, YUV 4:4:4
- *   - AVIF_MATRIX_COEFFICIENTS_IDENTITY   (Y=R, Cb=G, Cr=B, no rotation)
- *   - AVIF_COLOR_PRIMARIES_UNSPECIFIED    (camera native)
- *   - AVIF_TRANSFER_CHARACTERISTICS_LINEAR (linear light)
- *   - Full range
+ * Proxies are stored in a central directory (config key
+ * "plugins/p2p/proxy_dir", default ~/Pictures/dtproxy) under
+ * YYYY/MM/DD/ subfolders derived from the raw file's mtime.
+ *
+ * @raw_path  absolute path to the raw file
+ * @buf       output buffer (PATH_MAX recommended)
+ * @buflen    size of @buf
+ *
+ * Returns TRUE when @buf has been filled, FALSE on error.
  */
+gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen);
 
 /*
  * Create a proxy AVIF for the image at @raw_path.
- * The proxy is written to @raw_path + ".proxy.avif".
+ * The proxy is written to the path returned by dt_imageio_proxy_path().
  *
  * @quality  0-100 (higher = better, default 60).
- *           Mapped to the appropriate libavif quantizer range.
  *
  * Returns TRUE on success, FALSE on any error.
  * Requires HAVE_LIBRAW; returns FALSE immediately when libraw is absent.
