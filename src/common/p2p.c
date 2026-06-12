@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 /*
     This file is part of darktable,
     Copyright (C) 2024 darktable developers.
@@ -35,6 +37,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdlib.h>
 
 // ---------------------------------------------------------------------------
 // Internal state
@@ -321,8 +324,14 @@ static int32_t _p2p_write_and_push_job_run(dt_job_t *job)
   dt_image_path_append_version(imgid, xmp_path, sizeof(xmp_path));
   g_strlcat(xmp_path, ".xmp", sizeof(xmp_path));
 
+  // Write the XMP file first to ensure it contains latest changes
   if(dt_exif_xmp_write(imgid, xmp_path, FALSE)) return 0;
 
+  // Add a short delay to ensure file is fully written before pushing
+  struct timespec req = {0, 100000000L}; // 0.1 seconds
+  nanosleep(&req, NULL);
+
+  dt_print(DT_DEBUG_IMAGEIO, "[p2p] pushing XMP for '%s' from image id=%d", raw_path, imgid);
   dt_p2p_push_xmp(raw_path, xmp_path);
   return 0;
 }
@@ -337,6 +346,9 @@ static gboolean _p2p_debounce_fire(gpointer user_data)
 
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!dt_is_valid_imgid(imgid)) return G_SOURCE_REMOVE;
+
+  // Log the image ID for debugging purposes
+  dt_print(DT_DEBUG_IMAGEIO, "[p2p] attempting to push XMP for image id=%d", imgid);
 
   _write_push_ctx_t *ctx = malloc(sizeof(*ctx));
   if(!ctx) return G_SOURCE_REMOVE;
@@ -358,18 +370,20 @@ static void _p2p_on_history_change(gpointer user_data)
 }
 
 // ---------------------------------------------------------------------------
-// Startup heartbeat — fires every 100 ms from the GTK main loop so we can
-// tell from the log exactly when (and whether) the main loop freezes.
-// Stops automatically after 50 ticks (5 seconds).
+// Startup keepalive — fires every 100 ms from the GTK main loop for the
+// first 10 seconds after p2p init.  Without this, the main loop can block
+// indefinitely in epoll_wait after the thumbtable adds new child widgets
+// inside a draw callback: the pending HIGH_IDLE resize sources exist but
+// the loop never wakes to dispatch them.  The timer provides that wakeup.
 // ---------------------------------------------------------------------------
 
-static gint _p2p_heartbeat_tick = 0;
+static gint _p2p_keepalive_tick = 0;
 
-static gboolean _p2p_heartbeat(gpointer user_data)
+static gboolean _p2p_keepalive(gpointer user_data)
 {
-  const gint n = g_atomic_int_add(&_p2p_heartbeat_tick, 1) + 1;
-  dt_print(DT_DEBUG_IMAGEIO, "[p2p] main-loop heartbeat #%d", n);
-  return (n < 50) ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+  const gint n = g_atomic_int_add(&_p2p_keepalive_tick, 1) + 1;
+  dt_print(DT_DEBUG_IMAGEIO, "[p2p] keepalive #%d", n);
+  return (n < 100) ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 }
 
 // ---------------------------------------------------------------------------
@@ -432,7 +446,7 @@ void dt_p2p_init(void)
     g_atomic_int_set(&_p2p_evt.stop, 0);
     _p2p_evt.thread = g_thread_new("p2p-events", _event_thread_func, NULL);
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
-    g_timeout_add(100, _p2p_heartbeat, NULL);
+    g_timeout_add(100, _p2p_keepalive, NULL);
     return;
   }
 
@@ -522,7 +536,7 @@ void dt_p2p_init(void)
 
   // Push XMP to peers within 3 s of any history change.
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
-  g_timeout_add(100, _p2p_heartbeat, NULL);
+  g_timeout_add(100, _p2p_keepalive, NULL);
 }
 
 void dt_p2p_cleanup(void)

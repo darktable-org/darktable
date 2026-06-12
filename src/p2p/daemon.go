@@ -604,11 +604,23 @@ func (d *daemon) subscribeXMP() {
 			continue
 		}
 
-		// Dedup by mtime.
+		// Dedup by mtime - but allow re-transmission if the file doesn't exist locally
 		d.xmpMu.Lock()
 		last := d.xmpSeen[x.Path]
 		t := time.Unix(0, x.Mtime)
-		if !t.After(last) {
+		
+		// Check if we should process this XMP update
+		shouldProcess := t.After(last)
+		
+		// If we've seen this exact timestamp before, check if the file exists
+		// If file doesn't exist, we should still try to process the update
+		if !shouldProcess {
+			if _, statErr := os.Stat(x.Path + ".xmp"); os.IsNotExist(statErr) {
+				shouldProcess = true
+			}
+		}
+		
+		if !shouldProcess {
 			d.xmpMu.Unlock()
 			continue
 		}
