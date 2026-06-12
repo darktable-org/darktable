@@ -377,8 +377,17 @@ void dt_p2p_init(void)
     return;
   }
 
-  char *exe_dir = g_path_get_dirname(g_get_prgname());
-  char *daemon  = g_build_filename(exe_dir, "dt-p2p-daemon", NULL);
+  // Resolve the real executable path so we find dt-p2p-daemon even when
+  // darktable is invoked by name without a full path.
+  char exe_buf[PATH_MAX] = { 0 };
+  ssize_t exe_len = readlink("/proc/self/exe", exe_buf, sizeof(exe_buf) - 1);
+  char *exe_dir;
+  if(exe_len > 0)
+    exe_dir = g_path_get_dirname(exe_buf);
+  else
+    exe_dir = g_path_get_dirname(g_get_prgname());
+
+  char *daemon = g_build_filename(exe_dir, "dt-p2p-daemon", NULL);
   g_free(exe_dir);
 
   if(!g_file_test(daemon, G_FILE_TEST_IS_EXECUTABLE))
