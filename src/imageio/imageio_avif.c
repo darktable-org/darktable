@@ -177,10 +177,12 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     // A 10-bit proxy with sRGB transfer characteristic was encoded with the
     // sRGB OETF for better shadow quantisation.  Invert it here to recover
     // linear [0,1] for the darktable pipeline.
+    // A 10-bit proxy was encoded with the sRGB OETF for shadow quantisation.
+    // We detect this by bit depth + proxy flag — not by TC, since the TC is
+    // left UNSPECIFIED deliberately (the curve is a compression artefact, not
+    // a colour-space declaration, and SRGB would mislead external tools).
     const gboolean proxy_log =
-        (img->flags & DT_IMAGE_PROXY_MEDIA)
-        && (bit_depth == 10)
-        && (avif_image->transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SRGB);
+        (img->flags & DT_IMAGE_PROXY_MEDIA) && (bit_depth == 10);
 
     if(proxy_log)
     {

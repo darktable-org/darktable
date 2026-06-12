@@ -276,7 +276,12 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   if(!image) goto out;
 
   image->colorPrimaries          = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
-  image->transferCharacteristics = use_log ? AVIF_TRANSFER_CHARACTERISTICS_SRGB
+  // Linear proxies: mark as linear so colour-managed tools handle them correctly.
+  // Log-encoded 10-bit proxies: leave TC unspecified — the sRGB-shaped curve is
+  // applied as a compression artefact, not a colour-space declaration, and
+  // external tools would misinterpret SRGB here.  darktable detects the 10-bit
+  // proxy case directly (DT_IMAGE_PROXY_MEDIA + depth==10) without relying on TC.
+  image->transferCharacteristics = use_log ? AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED
                                            : AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
   image->matrixCoefficients      = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
   image->yuvRange                = AVIF_RANGE_FULL;
