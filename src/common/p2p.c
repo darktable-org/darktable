@@ -261,42 +261,60 @@ static gpointer _event_thread_func(gpointer user_data)
   const char *sub = "{\"type\":\"subscribe_events\"}\n";
   send(fd, sub, strlen(sub), MSG_NOSIGNAL);
 
-  FILE *f = fdopen(fd, "r");
-  if(!f)
-  {
-    close(fd);
-    _p2p_evt.sockfd = -1;
-    return NULL;
-  }
+  // Use read() directly rather than fdopen()+fgets() to avoid holding a FILE
+  // _IO_lock during a blocking read.  fgets holds the lock for the entire
+  // duration of the kernel read; any concurrent fflush_all (e.g. from Lua IO)
+  // tries to acquire that same lock, which deadlocks the Lua exec_lock and
+  // freezes the GTK main thread.
+  char buf[65536];
+  int buflen = 0;
 
-  char line[65536];
-  while(!g_atomic_int_get(&_p2p_evt.stop) && fgets(line, sizeof(line), f))
+  while(!g_atomic_int_get(&_p2p_evt.stop))
   {
-    if(strstr(line, "\"image_imported\""))
+    ssize_t n = read(fd, buf + buflen, sizeof(buf) - 1 - buflen);
+    if(n <= 0) break;
+    buflen += n;
+
+    char *start = buf;
+    char *nl;
+    while((nl = (char *)memchr(start, '\n', buflen - (int)(start - buf))) != NULL)
     {
-      const char *data = strstr(line, "\"data\"");
-      if(!data) continue;
-      char path[PATH_MAX];
-      if(_extract_path(data, path, sizeof(path)))
+      *nl = '\0';
+      char *line = start;
+      start = nl + 1;
+
+      if(strstr(line, "\"image_imported\""))
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[p2p] received image_imported: %s", path);
-        _p2p_queue_import(path);
+        const char *data = strstr(line, "\"data\"");
+        if(!data) continue;
+        char path[PATH_MAX];
+        if(_extract_path(data, path, sizeof(path)))
+        {
+          dt_print(DT_DEBUG_IMAGEIO, "[p2p] received image_imported: %s", path);
+          _p2p_queue_import(path);
+        }
+      }
+      else if(strstr(line, "\"xmp_updated\""))
+      {
+        const char *data = strstr(line, "\"data\"");
+        if(!data) continue;
+        char path[PATH_MAX];
+        if(_extract_path(data, path, sizeof(path)))
+        {
+          dt_print(DT_DEBUG_IMAGEIO, "[p2p] received xmp_updated: %s", path);
+          _p2p_queue_xmp_reload(path);
+        }
       }
     }
-    else if(strstr(line, "\"xmp_updated\""))
-    {
-      const char *data = strstr(line, "\"data\"");
-      if(!data) continue;
-      char path[PATH_MAX];
-      if(_extract_path(data, path, sizeof(path)))
-      {
-        dt_print(DT_DEBUG_IMAGEIO, "[p2p] received xmp_updated: %s", path);
-        _p2p_queue_xmp_reload(path);
-      }
-    }
+
+    // Shift remaining partial line to the front; discard if buffer is full.
+    int remaining = buflen - (int)(start - buf);
+    if(remaining > 0 && start != buf)
+      memmove(buf, start, remaining);
+    buflen = ((int)(sizeof(buf) - 1) == remaining) ? 0 : remaining;
   }
 
-  fclose(f);
+  close(fd);
   _p2p_evt.sockfd = -1;
   return NULL;
 }
