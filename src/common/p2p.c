@@ -24,6 +24,7 @@
 #include "common/image_cache.h"
 #include "control/conf.h"
 #include "control/signal.h"
+#include "develop/develop.h"
 #include "gui/gtk.h"
 
 #include <errno.h>
@@ -269,6 +270,51 @@ static gpointer _event_thread_func(gpointer user_data)
 }
 
 // ---------------------------------------------------------------------------
+// History-change hook: debounced XMP sync triggered by module edits
+// ---------------------------------------------------------------------------
+
+// Timer source ID for the debounce; 0 when no timer is pending.
+static guint _p2p_debounce_src = 0;
+
+// Force-write XMP for imgid (ignoring the user's write_sidecar_files setting)
+// and push it to the P2P network.  Called from the GLib main thread.
+static void _p2p_write_and_push(const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid)) return;
+
+  char raw_path[PATH_MAX] = { 0 };
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, raw_path, sizeof(raw_path), &from_cache);
+  if(!raw_path[0]) return;
+
+  char xmp_path[PATH_MAX];
+  g_strlcpy(xmp_path, raw_path, sizeof(xmp_path));
+  dt_image_path_append_version(imgid, xmp_path, sizeof(xmp_path));
+  g_strlcat(xmp_path, ".xmp", sizeof(xmp_path));
+
+  // Write XMP regardless of user's write_sidecar_files setting.
+  if(!dt_exif_xmp_write(imgid, xmp_path, FALSE))
+    dt_p2p_push_xmp(raw_path, xmp_path);
+}
+
+// GLib timeout callback: fires 3 s after the last history change.
+static gboolean _p2p_debounce_fire(gpointer user_data)
+{
+  _p2p_debounce_src = 0;
+  if(darktable.develop)
+    _p2p_write_and_push(darktable.develop->image_storage.id);
+  return G_SOURCE_REMOVE;
+}
+
+// Signal callback: reset the debounce timer on every history change.
+static void _p2p_on_history_change(gpointer user_data)
+{
+  if(!dt_p2p_is_running()) return;
+  if(_p2p_debounce_src) g_source_remove(_p2p_debounce_src);
+  _p2p_debounce_src = g_timeout_add(3000, _p2p_debounce_fire, NULL);
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -354,10 +400,21 @@ void dt_p2p_init(void)
   // Start the event reader thread for push notifications.
   g_atomic_int_set(&_p2p_evt.stop, 0);
   _p2p_evt.thread = g_thread_new("p2p-events", _event_thread_func, NULL);
+
+  // Push XMP to peers within 3 s of any history change.
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
 }
 
 void dt_p2p_cleanup(void)
 {
+  // Cancel any pending debounce timer.
+  if(_p2p_debounce_src)
+  {
+    g_source_remove(_p2p_debounce_src);
+    _p2p_debounce_src = 0;
+  }
+  DT_CONTROL_SIGNAL_DISCONNECT(_p2p_on_history_change, NULL);
+
   // Stop event thread first.
   g_atomic_int_set(&_p2p_evt.stop, 1);
   if(_p2p_evt.sockfd >= 0)
