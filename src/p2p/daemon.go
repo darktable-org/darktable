@@ -687,7 +687,9 @@ func (d *daemon) pushXMPToPeers(x xmpMsg) {
 				return
 			}
 			resp.Body.Close()
-			if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+			if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK {
+				log.Printf("[xmp] direct push to %s: ok", baseURL)
+			} else {
 				log.Printf("[xmp] direct push to %s: HTTP %d", baseURL, resp.StatusCode)
 			}
 		}()
