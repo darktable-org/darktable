@@ -1167,19 +1167,41 @@ add_custom_target(
 #
 # P2P daemon (Go)
 #
+# Enumerate /usr/lib/go-*/bin (Ubuntu APT packages install here per-version)
+# as additional hints alongside the standard tarball location and PATH.
+# pkg-config does not exist for Go; GOROOT is derived from `go env GOROOT`
+# after the binary is found, so no version number is ever hardcoded here.
+file(GLOB _go_ubuntu_hints LIST_DIRECTORIES true "/usr/lib/go-*/bin")
 find_program(GO_EXECUTABLE go
-  HINTS /usr/lib/go-1.26/bin /usr/local/go/bin ENV PATH)
+  HINTS ${_go_ubuntu_hints} /usr/local/go/bin
+  DOC "Go compiler (used to build dt-p2p-daemon)")
+
 if(GO_EXECUTABLE)
+  # Derive GOROOT from the found binary — works for tarball, snap, APT, etc.
+  execute_process(
+    COMMAND "${GO_EXECUTABLE}" env GOROOT
+    OUTPUT_VARIABLE GO_ROOT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  execute_process(
+    COMMAND "${GO_EXECUTABLE}" version
+    OUTPUT_VARIABLE _go_version_string
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  message(STATUS "Found Go: ${GO_EXECUTABLE} (${_go_version_string}), GOROOT=${GO_ROOT}")
+
   file(GLOB_RECURSE P2P_GO_SOURCES "${CMAKE_SOURCE_DIR}/src/p2p/*.go")
   add_custom_command(
     OUTPUT "${DARKTABLE_BINDIR}/dt-p2p-daemon"
     DEPENDS ${P2P_GO_SOURCES} "${CMAKE_SOURCE_DIR}/src/p2p/go.mod"
     COMMAND ${CMAKE_COMMAND} -E env
-      GOROOT=/usr/lib/go-1.26
-      PATH=/usr/lib/go-1.26/bin:$ENV{PATH}
-      ${GO_EXECUTABLE} build -o "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+      "GOROOT=${GO_ROOT}"
+      "PATH=${GO_ROOT}/bin:$ENV{PATH}"
+      "${GO_EXECUTABLE}" build -o "${DARKTABLE_BINDIR}/dt-p2p-daemon"
       "${CMAKE_SOURCE_DIR}/src/p2p"
-    COMMENT "Building dt-p2p-daemon (Go)"
+    COMMENT "Building dt-p2p-daemon with ${_go_version_string}"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/p2p"
   )
   add_custom_target(dt-p2p-daemon ALL
