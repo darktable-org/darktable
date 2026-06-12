@@ -706,7 +706,7 @@ func (d *daemon) fetchAndImport(remotePath, xmpContent, filename, captureDate st
 	// Determine local destination.
 	localPath := d.localDestination(remotePath)
 
-	// Download proxy.
+	// Download proxy: prefer libp2p-known peers, fall back to peersToSync().
 	d.peersMu.RLock()
 	var baseURL string
 	for _, u := range d.peers {
@@ -714,6 +714,17 @@ func (d *daemon) fetchAndImport(remotePath, xmpContent, filename, captureDate st
 		break
 	}
 	d.peersMu.RUnlock()
+
+	if baseURL == "" {
+		myURL := d.localProxyURL()
+		myLANURL := fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
+		for _, u := range d.peersToSync() {
+			if u != myURL && u != myLANURL {
+				baseURL = u
+				break
+			}
+		}
+	}
 
 	if baseURL == "" {
 		log.Printf("[import] no peer available to fetch proxy for '%s'", filename)
@@ -780,7 +791,7 @@ func (d *daemon) subscribeProxy() {
 
 // localDestination returns the local path to use for a remote canonical path.
 // If the remote directory exists here, keep the same path.
-// Otherwise place the file in importDir (creating it if needed).
+// Otherwise fall back to importDir, then proxyDir, then the original path.
 func (d *daemon) localDestination(remotePath string) string {
 	remoteDir := filepath.Dir(remotePath)
 	if _, err := os.Stat(remoteDir); err == nil {
@@ -789,7 +800,10 @@ func (d *daemon) localDestination(remotePath string) string {
 	if d.importDir != "" {
 		return filepath.Join(d.importDir, filepath.Base(remotePath))
 	}
-	return remotePath // fall back: will create dirs
+	if d.proxyDir != "" {
+		return filepath.Join(d.proxyDir, filepath.Base(remotePath))
+	}
+	return remotePath // last resort: will attempt to create dirs
 }
 
 // downloadProxy fetches a proxy from baseURL, writes it to localPath+".proxy.avif",
