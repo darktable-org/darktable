@@ -23,7 +23,9 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -42,12 +44,27 @@ func main() {
 		log.Fatal("--passphrase is required")
 	}
 
+	seen := make(map[string]bool)
 	var staticPeers []string
-	if *peersFlag != "" {
-		for _, p := range strings.Split(*peersFlag, ",") {
-			p = strings.TrimSpace(p)
-			if p != "" {
-				staticPeers = append(staticPeers, p)
+
+	addPeer := func(raw string) {
+		if p := normalizePeerURL(strings.TrimSpace(raw)); p != "" && !seen[p] {
+			seen[p] = true
+			staticPeers = append(staticPeers, p)
+		}
+	}
+
+	// Peers from --peers flag.
+	for _, p := range strings.Split(*peersFlag, ",") {
+		addPeer(p)
+	}
+
+	// Peers from ~/.config/darktable/peers.txt (one entry per line).
+	if data, err := os.ReadFile(peersFilePath()); err == nil {
+		for _, line := range strings.Split(string(data), "\n") {
+			line = strings.TrimSpace(line)
+			if line != "" && !strings.HasPrefix(line, "#") {
+				addPeer(line)
 			}
 		}
 	}
@@ -77,10 +94,47 @@ func main() {
 	d.close()
 }
 
+func peersFilePath() string {
+	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
+		return dir + "/darktable/peers.txt"
+	}
+	if home, err := os.UserHomeDir(); err == nil {
+		return home + "/.config/darktable/peers.txt"
+	}
+	return ""
+}
+
 func defaultSocketPath() string {
 	uid := os.Getenv("XDG_RUNTIME_DIR")
 	if uid != "" {
 		return uid + "/darktable-p2p.sock"
 	}
 	return "/tmp/darktable-p2p.sock"
+}
+
+// normalizePeerURL accepts bare IPs, IP:port, or full http:// URLs and
+// returns a canonical http://host:port string.
+//
+//	192.168.1.108          → http://192.168.1.108:17842
+//	192.168.1.108:8080     → http://192.168.1.108:8080
+//	http://192.168.1.108   → http://192.168.1.108:17842
+func normalizePeerURL(s string) string {
+	if s == "" {
+		return ""
+	}
+	if !strings.Contains(s, "://") {
+		s = "http://" + s
+	}
+	u, err := url.Parse(s)
+	if err != nil || u.Host == "" {
+		return ""
+	}
+	if u.Port() == "" {
+		u.Host = fmt.Sprintf("%s:%d", u.Hostname(), proxyHTTPPort)
+	}
+	// Drop any path/query — we only want the base URL.
+	u.Path = ""
+	u.RawQuery = ""
+	u.Fragment = ""
+	return u.String()
 }

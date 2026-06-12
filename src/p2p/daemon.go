@@ -26,6 +26,11 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 	gocrypto "crypto"
 	_ "crypto/sha256"
+	"net/url"
+
+	"github.com/huin/goupnp/dcps/internetgateway1"
+	"github.com/huin/goupnp/dcps/internetgateway2"
+	natpmp "github.com/jackpal/go-nat-pmp"
 )
 
 const (
@@ -62,9 +67,20 @@ type daemon struct {
 	proxySub *pubsub.Subscription
 	proxyTop *pubsub.Topic
 
+	// externalURL is set when UPnP/NAT-PMP port mapping succeeds.
+	externalURL string
+
+	// pdb is the persistent peer registry; nil if the DB could not be opened.
+	pdb *peerDB
+
 	// known peers: peerID → http base URL
 	peersMu sync.RWMutex
 	peers   map[peer.ID]string
+
+	// syncedPeers tracks HTTP base URLs we have already synced with so peer
+	// gossip and reverse connections don't create infinite loops.
+	syncedPeersMu sync.Mutex
+	syncedPeers   map[string]bool
 
 	// xmp dedup: canonical_path → last mtime synced
 	xmpMu   sync.Mutex
@@ -107,11 +123,13 @@ type proxyAnnounce struct {
 
 // manifestResp is returned by GET /manifest.
 type manifestResp struct {
-	PeerID     string   `json:"peer_id"`
-	LibP2PIP   string   `json:"libp2p_ip"`
-	LibP2PPort int      `json:"libp2p_port"`
-	BaseURL    string   `json:"base_url"`
-	Paths      []string `json:"paths"`
+	PeerID      string   `json:"peer_id"`
+	LibP2PIP    string   `json:"libp2p_ip"`
+	LibP2PPort  int      `json:"libp2p_port"`
+	BaseURL     string   `json:"base_url"`
+	ExternalURL string   `json:"external_url,omitempty"` // public URL if UPnP succeeded
+	Paths       []string `json:"paths"`
+	KnownPeers  []string `json:"known_peers,omitempty"` // HTTP URLs of other known peers
 }
 
 // ---------------------------------------------------------------------------
@@ -267,8 +285,21 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		proxySub:    proxySub,
 		proxyTop:    proxyTop,
 		peers:       make(map[peer.ID]string),
+		syncedPeers: make(map[string]bool),
 		xmpSeen:     make(map[string]time.Time),
 		localIndex:  make(map[string][]string),
+	}
+
+	go d.initExternalAccess()
+
+	// Open peer DB and seed it with the static peers passed in.
+	var dbErr error
+	d.pdb, dbErr = openPeerDB()
+	if dbErr != nil {
+		log.Printf("[peerdb] open failed: %v", dbErr)
+	}
+	for _, u := range staticPeers {
+		d.pdb.touch(u, "")
 	}
 
 	// mDNS (best-effort; many APs block multicast).
@@ -282,6 +313,95 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 	return d, nil
 }
 
+// ---------------------------------------------------------------------------
+// External access via UPnP / NAT-PMP
+// ---------------------------------------------------------------------------
+
+// upnpPortMapper is the subset of goupnp WANIPConnection we need.
+type upnpPortMapper interface {
+	GetExternalIPAddress() (string, error)
+	AddPortMapping(string, uint16, string, uint16, string, bool, string, uint32) error
+}
+
+// initExternalAccess tries UPnP then NAT-PMP to discover the public IP and
+// add a port mapping for proxyHTTPPort.  Sets d.externalURL on success.
+func (d *daemon) initExternalAccess() {
+	time.Sleep(2 * time.Second) // wait for network to settle
+
+	var mapper upnpPortMapper
+
+	if clients, _, err := internetgateway2.NewWANIPConnection2Clients(); err == nil && len(clients) > 0 {
+		mapper = clients[0]
+		log.Printf("[upnp] found WANIPConnection2 gateway")
+	} else if clients, _, err := internetgateway2.NewWANIPConnection1Clients(); err == nil && len(clients) > 0 {
+		mapper = clients[0]
+		log.Printf("[upnp] found WANIPConnection1 (ig2) gateway")
+	} else if clients, _, err := internetgateway1.NewWANIPConnection1Clients(); err == nil && len(clients) > 0 {
+		mapper = clients[0]
+		log.Printf("[upnp] found WANIPConnection1 (ig1) gateway")
+	}
+
+	if mapper != nil {
+		extIP, err := mapper.GetExternalIPAddress()
+		if err == nil && extIP != "" && extIP != "0.0.0.0" {
+			_ = mapper.AddPortMapping("", uint16(proxyHTTPPort), "TCP",
+				uint16(proxyHTTPPort), d.localIP(), true, "darktable-p2p", 3600)
+			d.externalURL = fmt.Sprintf("http://%s:%d", extIP, proxyHTTPPort)
+			log.Printf("[upnp] external URL: %s", d.externalURL)
+			go d.renewUPnP(mapper)
+			return
+		}
+	}
+
+	// Fall back to NAT-PMP.
+	gw := d.defaultGateway()
+	if gw == nil {
+		return
+	}
+	pmp := natpmp.NewClient(gw)
+	if ext, err := pmp.GetExternalAddress(); err == nil {
+		extIP := net.IP(ext.ExternalIPAddress[:]).String()
+		if extIP != "" && extIP != "0.0.0.0" {
+			_, _ = pmp.AddPortMapping("tcp", proxyHTTPPort, proxyHTTPPort, 3600)
+			d.externalURL = fmt.Sprintf("http://%s:%d", extIP, proxyHTTPPort)
+			log.Printf("[nat-pmp] external URL: %s", d.externalURL)
+		}
+	}
+}
+
+// renewUPnP refreshes the port mapping every 50 minutes (lease is 3600s).
+func (d *daemon) renewUPnP(mapper upnpPortMapper) {
+	tick := time.NewTicker(50 * time.Minute)
+	defer tick.Stop()
+	for {
+		select {
+		case <-d.ctx.Done():
+			return
+		case <-tick.C:
+			_ = mapper.AddPortMapping("", uint16(proxyHTTPPort), "TCP",
+				uint16(proxyHTTPPort), d.localIP(), true, "darktable-p2p", 3600)
+		}
+	}
+}
+
+// defaultGateway returns the default IPv4 gateway by connecting a UDP socket
+// (no data is sent) and taking the interface's first-octet-1 address.
+func (d *daemon) defaultGateway() net.IP {
+	conn, err := net.Dial("udp4", "8.8.8.8:53")
+	if err != nil {
+		return nil
+	}
+	defer conn.Close()
+	ip := conn.LocalAddr().(*net.UDPAddr).IP.To4()
+	if ip == nil {
+		return nil
+	}
+	gw := make(net.IP, 4)
+	copy(gw, ip)
+	gw[3] = 1
+	return gw
+}
+
 // HandlePeerFound implements mdns.Notifee.
 func (d *daemon) HandlePeerFound(pi peer.AddrInfo) {
 	if pi.ID == d.host.ID() {
@@ -291,6 +411,8 @@ func (d *daemon) HandlePeerFound(pi peer.AddrInfo) {
 	if err := d.host.Connect(d.ctx, pi); err != nil {
 		log.Printf("[mdns] connect to %s: %v", pi.ID, err)
 	}
+	// HTTP URL is unknown until the peer's proxy announce arrives on gossipsub;
+	// subscribeProxy will touch the DB at that point.
 }
 
 // ---------------------------------------------------------------------------
@@ -415,6 +537,18 @@ func (d *daemon) handleConn(conn net.Conn) {
 			x.SenderID    = d.host.ID().String()
 			x.Filename    = filepath.Base(x.Path)
 			x.CaptureDate = xmpCaptureDate(x.Content)
+
+			// Dedup: darktable may send the same XMP twice (debounce + sidecar job).
+			t := time.Unix(0, x.Mtime)
+			d.xmpMu.Lock()
+			dup := !t.After(d.xmpSeen[x.Path])
+			if !dup {
+				d.xmpSeen[x.Path] = t
+			}
+			d.xmpMu.Unlock()
+			if dup {
+				continue
+			}
 
 			d.peersMu.RLock()
 			nPeers := len(d.peers)
@@ -566,6 +700,7 @@ func (d *daemon) subscribeProxy() {
 		d.peersMu.Lock()
 		d.peers[m.ReceivedFrom] = ann.BaseURL
 		d.peersMu.Unlock()
+		d.pdb.touch(ann.BaseURL, ann.SenderID) // persist gossipsub-discovered peer
 		log.Printf("[proxy] peer %s announced %d proxies at %s",
 			m.ReceivedFrom.ShortString(), len(ann.Paths), ann.BaseURL)
 
@@ -732,7 +867,7 @@ func (d *daemon) publishProxyAnnounce() {
 
 func (d *daemon) syncStaticPeers() {
 	time.Sleep(2 * time.Second)
-	for _, u := range d.staticPeers {
+	for _, u := range d.peersToSync() {
 		go d.syncWithPeer(u)
 	}
 	tick := time.NewTicker(60 * time.Second)
@@ -742,22 +877,66 @@ func (d *daemon) syncStaticPeers() {
 		case <-d.ctx.Done():
 			return
 		case <-tick.C:
-			for _, u := range d.staticPeers {
+			for _, u := range d.peersToSync() {
 				go d.syncWithPeer(u)
 			}
 		}
 	}
 }
 
+// peersToSync returns the union of static peers and DB-persisted peers,
+// deduplicated.
+func (d *daemon) peersToSync() []string {
+	seen := make(map[string]bool)
+	var out []string
+	add := func(u string) {
+		if u != "" && !seen[u] {
+			seen[u] = true
+			out = append(out, u)
+		}
+	}
+	for _, u := range d.staticPeers {
+		add(u)
+	}
+	for _, u := range d.pdb.allURLs() {
+		add(u)
+	}
+	return out
+}
+
 func (d *daemon) syncWithPeer(baseURL string) {
-	resp, err := http.Get(baseURL + "/manifest")
+	baseURL = strings.TrimRight(baseURL, "/")
+	if baseURL == "" {
+		return
+	}
+
+	// Never connect to ourselves.
+	myURL := d.localProxyURL()
+	if baseURL == myURL || baseURL == fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort) {
+		return
+	}
+
+	// Mark peer as synced; on first visit pass ?from= so they connect back.
+	d.syncedPeersMu.Lock()
+	firstVisit := !d.syncedPeers[baseURL]
+	d.syncedPeers[baseURL] = true
+	d.syncedPeersMu.Unlock()
+
+	manifestURL := baseURL + "/manifest"
+	if firstVisit {
+		manifestURL += "?from=" + url.QueryEscape(myURL)
+	}
+
+	resp, err := http.Get(manifestURL)
 	if err != nil {
 		log.Printf("[peer] manifest from %s: %v", baseURL, err)
+		d.pdb.markFailure(baseURL)
 		return
 	}
 	if resp.StatusCode != 200 {
 		resp.Body.Close()
 		log.Printf("[peer] %s: HTTP %d (old daemon?)", baseURL, resp.StatusCode)
+		d.pdb.markFailure(baseURL)
 		return
 	}
 	var m manifestResp
@@ -768,10 +947,18 @@ func (d *daemon) syncWithPeer(baseURL string) {
 	}
 	resp.Body.Close()
 
-	log.Printf("[peer] %s: peerID=%s  proxies=%d", baseURL, m.PeerID[:12], len(m.Paths))
+	// Successful contact — record in DB.
+	d.pdb.markSuccess(baseURL, m.PeerID)
 
-	// Connect via libp2p so gossipsub (XMP) works.
-	if m.PeerID != "" && m.LibP2PIP != "" && m.LibP2PPort > 0 {
+	peerShort := m.PeerID
+	if len(peerShort) > 12 {
+		peerShort = peerShort[:12]
+	}
+	log.Printf("[peer] %s: peerID=%s  proxies=%d  indirect=%d",
+		baseURL, peerShort, len(m.Paths), len(m.KnownPeers))
+
+	// Connect via libp2p so gossipsub (XMP) works (once per peer).
+	if firstVisit && m.PeerID != "" && m.LibP2PIP != "" && m.LibP2PPort > 0 {
 		maStr := fmt.Sprintf("/ip4/%s/tcp/%d", m.LibP2PIP, m.LibP2PPort)
 		ma, maErr := multiaddr.NewMultiaddr(maStr)
 		pid, pidErr := peer.Decode(m.PeerID)
@@ -783,7 +970,7 @@ func (d *daemon) syncWithPeer(baseURL string) {
 			if err := d.host.Connect(d.ctx, pinfo); err != nil {
 				log.Printf("[peer] libp2p connect to %s: %v", maStr, err)
 			} else {
-				log.Printf("[peer] libp2p connected to %s", m.PeerID[:12])
+				log.Printf("[peer] libp2p connected to %s", peerShort)
 			}
 		}
 	}
@@ -796,11 +983,29 @@ func (d *daemon) syncWithPeer(baseURL string) {
 			continue
 		}
 		missing++
-		log.Printf("[peer] will fetch '%s'", filepath.Base(path))
 		go d.autoFetchProxy(path, baseURL)
 	}
-	if missing == 0 && len(m.Paths) > 0 {
+	if missing > 0 {
+		log.Printf("[peer] fetching %d missing proxies from %s", missing, baseURL)
+	} else if len(m.Paths) > 0 {
 		log.Printf("[peer] all %d proxies from %s already present", len(m.Paths), baseURL)
+	}
+
+	// Gossip: connect to indirect peers the remote knows about (first visit only
+	// to avoid propagation storms when the mesh is fully connected).
+	if firstVisit {
+		for _, peerURL := range m.KnownPeers {
+			if peerURL != "" && peerURL != myURL {
+				d.pdb.touch(peerURL, "") // persist before we try to reach them
+				go d.syncWithPeer(peerURL)
+			}
+		}
+		// If the remote advertises a different external URL, prefer that for future calls.
+		if m.ExternalURL != "" && m.ExternalURL != baseURL {
+			d.syncedPeersMu.Lock()
+			d.syncedPeers[m.ExternalURL] = true // treat as same peer, avoid double-sync
+			d.syncedPeersMu.Unlock()
+		}
 	}
 }
 
@@ -863,6 +1068,9 @@ func (d *daemon) localLibP2PPort() int {
 }
 
 func (d *daemon) localProxyURL() string {
+	if d.externalURL != "" {
+		return d.externalURL
+	}
 	return fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
 }
 
@@ -882,6 +1090,17 @@ func (d *daemon) serveProxy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
+	// If the caller passes ?from=URL, record them and trigger a reverse connection.
+	if fromURL := r.URL.Query().Get("from"); fromURL != "" {
+		d.pdb.touch(fromURL, "") // they reached us — they're alive
+		d.syncedPeersMu.Lock()
+		alreadySeen := d.syncedPeers[fromURL]
+		d.syncedPeersMu.Unlock()
+		if !alreadySeen {
+			go d.syncWithPeer(fromURL)
+		}
+	}
+
 	var paths []string
 	if d.proxyDir != "" {
 		filepath.Walk(d.proxyDir, func(p string, fi os.FileInfo, err error) error {
@@ -894,12 +1113,23 @@ func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 			return nil
 		})
 	}
+
+	// Collect all HTTP base URLs we know about so the caller can gossip.
+	d.peersMu.RLock()
+	knownPeers := make([]string, 0, len(d.peers))
+	for _, u := range d.peers {
+		knownPeers = append(knownPeers, u)
+	}
+	d.peersMu.RUnlock()
+
 	resp := manifestResp{
-		PeerID:     d.host.ID().String(),
-		LibP2PIP:   d.localIP(),
-		LibP2PPort: d.localLibP2PPort(),
-		BaseURL:    d.localProxyURL(),
-		Paths:      paths,
+		PeerID:      d.host.ID().String(),
+		LibP2PIP:    d.localIP(),
+		LibP2PPort:  d.localLibP2PPort(),
+		BaseURL:     d.localProxyURL(),
+		ExternalURL: d.externalURL,
+		Paths:       paths,
+		KnownPeers:  knownPeers,
 	}
 	if resp.Paths == nil {
 		resp.Paths = []string{}
@@ -921,6 +1151,7 @@ func (d *daemon) close() {
 		d.ln.Close()
 	}
 	d.host.Close()
+	d.pdb.close()
 }
 
 // ---------------------------------------------------------------------------
