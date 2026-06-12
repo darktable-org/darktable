@@ -128,11 +128,14 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   const int iw   = lr->rawdata.sizes.width;
   const int ih   = lr->rawdata.sizes.height;
 
-  // Work in 2×2 blocks; ensure even dimensions
+  // Work in 2×2 Bayer blocks; bw/bh must be even so each block is complete.
   const int bw = (iw / 2) * 2;
   const int bh = (ih / 2) * 2;
-  const int ow = bw / 2;
-  const int oh = bh / 2;
+  // Output dimensions are half of the Bayer grid.  Round down to even so
+  // SVT-AV1 (and other encoders that require even dimensions) never see an
+  // odd size.  This crops at most 1 output pixel (= 2 raw pixels) per axis.
+  const int ow = (bw / 2) & ~1;
+  const int oh = (bh / 2) & ~1;
 
   const float white = (float)lr->rawdata.color.maximum;
   // Prefer per-channel black levels when available; fall back to scalar
@@ -262,23 +265,30 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   if(!encoder) goto out;
 
   // Pick the fastest encoder the installed libavif supports.
-  // SVT-AV1 is 5-10x faster than libaom at equivalent quality; prefer it when
-  // available.  Fall back to AOM (always present) otherwise.
-  if(avifCodecName(AVIF_CODEC_CHOICE_SVT, AVIF_CODEC_FLAG_CAN_ENCODE))
+  // Walk the preference table in order; use the first codec that reports
+  // encode capability.  AVIF_CODEC_CHOICE_AUTO is the unconditional fallback.
   {
-    encoder->codecChoice = AVIF_CODEC_CHOICE_SVT;
-    // SVT preset: 0=slowest … 13=fastest.  Preset 6 is a good quality/speed
-    // balance (same numeric value as our AOM setting, different meaning).
-    encoder->speed = 6;
-    dt_print(DT_DEBUG_IMAGEIO, "[proxy] using SVT-AV1 encoder (speed 6)");
-  }
-  else
-  {
-    encoder->codecChoice = AVIF_CODEC_CHOICE_AOM;
-    // AOM speed 6 is the "good" preset: proper RD decisions and adaptive block
-    // partitioning.  Speed 10 (FASTEST) produces poor shadow quality.
-    encoder->speed = 6;
-    dt_print(DT_DEBUG_IMAGEIO, "[proxy] using AOM encoder (speed 6)");
+    static const struct { avifCodecChoice choice; int speed; const char *name; } codec_prefs[] = {
+      { AVIF_CODEC_CHOICE_SVT,  6, "SVT-AV1"  }, // 5-10x faster than AOM
+      { AVIF_CODEC_CHOICE_RAV1E, 6, "rav1e"   }, // moderate speed, good quality
+      { AVIF_CODEC_CHOICE_AOM,  6, "AOM"      }, // always present; speed 6 = "good" preset
+    };
+    avifCodecChoice chosen = AVIF_CODEC_CHOICE_AUTO;
+    int chosen_speed = 6;
+    const char *chosen_name = "auto";
+    for(size_t i = 0; i < sizeof(codec_prefs) / sizeof(codec_prefs[0]); i++)
+    {
+      if(avifCodecName(codec_prefs[i].choice, AVIF_CODEC_FLAG_CAN_ENCODE))
+      {
+        chosen       = codec_prefs[i].choice;
+        chosen_speed = codec_prefs[i].speed;
+        chosen_name  = codec_prefs[i].name;
+        break;
+      }
+    }
+    encoder->codecChoice = chosen;
+    encoder->speed       = chosen_speed;
+    dt_print(DT_DEBUG_IMAGEIO, "[proxy] using %s encoder (speed %d)", chosen_name, chosen_speed);
   }
 
 #if AVIF_VERSION >= 1000000
