@@ -20,17 +20,11 @@
 #include "common/darktable.h"
 
 /*
- * Compute the proxy path for a raw file.
+ * Compute the proxy path for a raw file: @raw_path + ".proxy.avif".
+ * The proxy lives as a sidecar next to the original raw file.
  *
- * Proxies are stored in a central directory (config key
- * "plugins/p2p/proxy_dir", default ~/Pictures/dtproxy) under
- * YYYY/MM/DD/ subfolders derived from the raw file's mtime.
- *
- * @raw_path  absolute path to the raw file
- * @buf       output buffer (PATH_MAX recommended)
- * @buflen    size of @buf
- *
- * Returns TRUE when @buf has been filled, FALSE on error.
+ * @buf / @buflen  output buffer (PATH_MAX recommended).
+ * Returns TRUE on success.
  */
 gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen);
 

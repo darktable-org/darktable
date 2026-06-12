@@ -18,36 +18,11 @@
 
 #include "imageio/proxy.h"
 #include "common/darktable.h"
-#include "control/conf.h"
-
-#include <sys/stat.h>
-#include <time.h>
-
-#define PROXY_DEFAULT_DIR_SUFFIX "Pictures/dtproxy"
 
 gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen)
 {
   if(!raw_path || !raw_path[0] || !buf || buflen == 0) return FALSE;
-
-  const char *cfg = dt_conf_get_string_const("plugins/p2p/proxy_dir");
-  char base[PATH_MAX];
-  if(cfg && cfg[0])
-    g_strlcpy(base, cfg, sizeof(base));
-  else
-  {
-    const char *home = g_get_home_dir();
-    g_snprintf(base, sizeof(base), "%s/%s", home ? home : ".", PROXY_DEFAULT_DIR_SUFFIX);
-  }
-
-  struct stat st;
-  time_t t = (stat(raw_path, &st) == 0) ? st.st_mtime : time(NULL);
-  struct tm tm;
-  localtime_r(&t, &tm);
-
-  char *basename = g_path_get_basename(raw_path);
-  g_snprintf(buf, buflen, "%s/%04d/%02d/%02d/%s.proxy.avif",
-             base, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, basename);
-  g_free(basename);
+  g_snprintf(buf, buflen, "%s.proxy.avif", raw_path);
   return TRUE;
 }
 
@@ -393,10 +368,11 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   const int ih   = lr->rawdata.sizes.height;
 
   // Work in 2×2 Bayer blocks; bw/bh must be even so each block is complete.
+  // ow/oh are further rounded down to even so YUV420 encoders (SVT-AV1) accept them.
   const int bw = (iw / 2) * 2;
   const int bh = (ih / 2) * 2;
-  const int ow = bw / 2;
-  const int oh = bh / 2;
+  const int ow = (bw / 2) & ~1;
+  const int oh = (bh / 2) & ~1;
 
   const float white = (float)lr->rawdata.color.maximum;
   // Prefer per-channel black levels when available; fall back to scalar
@@ -561,11 +537,6 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   {
     char proxy_path[PATH_MAX];
     if(!dt_imageio_proxy_path(raw_path, proxy_path, sizeof(proxy_path))) goto out;
-
-    // Ensure the date subdirectory exists.
-    char *dir = g_path_get_dirname(proxy_path);
-    g_mkdir_with_parents(dir, 0755);
-    g_free(dir);
 
     f = g_fopen(proxy_path, "wb");
     if(!f) goto out;
