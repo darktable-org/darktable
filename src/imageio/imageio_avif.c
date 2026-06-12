@@ -18,6 +18,7 @@
 
 #include <avif/avif.h>
 #include <inttypes.h>
+#include <math.h>
 #include <memory.h>
 #include <stdio.h>
 #include <strings.h>
@@ -172,21 +173,46 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   case 10: {
     img->flags |= DT_IMAGE_HDR;
     img->flags &= ~DT_IMAGE_LDR;
-    DT_OMP_FOR_SIMD(collapse(2))
-    for(size_t y = 0; y < height; y++)
-    {
-      for(size_t x = 0; x < width; x++)
-      {
-          uint16_t *in_pixel = (uint16_t *)&in[(y * rowbytes)
-                                               + (3 * sizeof(uint16_t) * x)];
-          float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
 
-          // max_channel_f is 1023.0f for 10bit, 4095.0f for 12bit
-          out_pixel[0] = ((float)in_pixel[0]) * (1.0f / max_channel_f);
-          out_pixel[1] = ((float)in_pixel[1]) * (1.0f / max_channel_f);
-          out_pixel[2] = ((float)in_pixel[2]) * (1.0f / max_channel_f);
-          out_pixel[3] = 0.0f; // alpha
-      }
+    // A 10-bit proxy with sRGB transfer characteristic was encoded with the
+    // sRGB OETF for better shadow quantisation.  Invert it here to recover
+    // linear [0,1] for the darktable pipeline.
+    const gboolean proxy_log =
+        (img->flags & DT_IMAGE_PROXY_MEDIA)
+        && (bit_depth == 10)
+        && (avif_image->transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SRGB);
+
+    if(proxy_log)
+    {
+      // sRGB EOTF (inverse OETF): encoded → linear
+      DT_OMP_FOR_SIMD(collapse(2))
+      for(size_t y = 0; y < height; y++)
+        for(size_t x = 0; x < width; x++)
+        {
+          const uint16_t *in_pixel  = (const uint16_t *)&in[y * rowbytes + 3 * sizeof(uint16_t) * x];
+          float           *out_pixel = &mipbuf[4 * (y * width + x)];
+          for(int c = 0; c < 3; c++)
+          {
+            const float v = in_pixel[c] * (1.0f / 1023.0f);
+            out_pixel[c]  = (v <= 0.04045f) ? (v / 12.92f)
+                                             : powf((v + 0.055f) / 1.055f, 2.4f);
+          }
+          out_pixel[3] = 0.0f;
+        }
+    }
+    else
+    {
+      DT_OMP_FOR_SIMD(collapse(2))
+      for(size_t y = 0; y < height; y++)
+        for(size_t x = 0; x < width; x++)
+        {
+          const uint16_t *in_pixel  = (const uint16_t *)&in[y * rowbytes + 3 * sizeof(uint16_t) * x];
+          float           *out_pixel = &mipbuf[4 * (y * width + x)];
+          out_pixel[0] = in_pixel[0] * (1.0f / max_channel_f);
+          out_pixel[1] = in_pixel[1] * (1.0f / max_channel_f);
+          out_pixel[2] = in_pixel[2] * (1.0f / max_channel_f);
+          out_pixel[3] = 0.0f;
+        }
     }
     break;
   }

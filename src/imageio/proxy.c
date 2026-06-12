@@ -76,6 +76,69 @@ static _bayer_offsets_t _get_bayer_offsets(uint32_t filters)
 }
 
 // ---------------------------------------------------------------------------
+// SVT-AV1 bit-depth probe
+// ---------------------------------------------------------------------------
+
+// Returns the max bit depth SVT-AV1 can encode (10 or 12), or 0 if unavailable.
+// Runs a tiny 2×2 encode exactly once per process; result is cached atomically.
+static int _svt_max_bit_depth(void)
+{
+  static gint cached = -1; // -1 = not yet probed
+
+  const int c = g_atomic_int_get(&cached);
+  if(c >= 0) return c;
+
+  if(!avifCodecName(AVIF_CODEC_CHOICE_SVT, AVIF_CODEC_FLAG_CAN_ENCODE))
+  {
+    g_atomic_int_compare_and_exchange(&cached, -1, 0);
+    return 0;
+  }
+
+  // Probe: try encoding a 2×2 12-bit YUV444 image with SVT-AV1.
+  avifImage   *probe  = avifImageCreate(2, 2, 12, AVIF_PIXEL_FORMAT_YUV444);
+  avifEncoder *enc    = avifEncoderCreate();
+  int          depth  = 0;
+  avifRWData   output = AVIF_DATA_EMPTY;
+
+  if(probe && enc)
+  {
+    probe->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
+    probe->yuvRange           = AVIF_RANGE_FULL;
+#if AVIF_VERSION >= 1000000
+    avifImageAllocatePlanes(probe, AVIF_PLANES_YUV);
+#else
+    avifImageAllocatePlanes(probe, AVIF_PLANES_YUV);
+#endif
+    for(int ch = 0; ch < 3; ch++)
+      memset(probe->yuvPlanes[ch], 0, probe->yuvRowBytes[ch] * 2);
+
+    enc->codecChoice = AVIF_CODEC_CHOICE_SVT;
+    enc->speed       = 10; // fastest; just testing capability
+
+    if(avifEncoderWrite(enc, probe, &output) == AVIF_RESULT_OK)
+      depth = 12;
+    else
+      depth = 10; // SVT present but can't do 12-bit
+  }
+
+  avifRWDataFree(&output);
+  if(enc)   avifEncoderDestroy(enc);
+  if(probe) avifImageDestroy(probe);
+
+  g_atomic_int_compare_and_exchange(&cached, -1, depth);
+  dt_print(DT_DEBUG_IMAGEIO, "[proxy] SVT-AV1 max bit depth: %d", depth);
+  return g_atomic_int_get(&cached);
+}
+
+// sRGB OETF: linear [0,1] → encoded [0,1].
+// Applied channel-by-channel when encoding a 10-bit SVT proxy.
+static inline float _srgb_oetf(float v)
+{
+  return (v <= 0.0031308f) ? (12.92f * v)
+                           : (1.055f * powf(v, 1.0f / 2.4f) - 0.055f);
+}
+
+// ---------------------------------------------------------------------------
 // Proxy creation
 // ---------------------------------------------------------------------------
 
@@ -131,11 +194,8 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   // Work in 2×2 Bayer blocks; bw/bh must be even so each block is complete.
   const int bw = (iw / 2) * 2;
   const int bh = (ih / 2) * 2;
-  // Output dimensions are half of the Bayer grid.  Round down to even so
-  // SVT-AV1 (and other encoders that require even dimensions) never see an
-  // odd size.  This crops at most 1 output pixel (= 2 raw pixels) per axis.
-  const int ow = (bw / 2) & ~1;
-  const int oh = (bh / 2) & ~1;
+  const int ow = bw / 2;
+  const int oh = bh / 2;
 
   const float white = (float)lr->rawdata.color.maximum;
   // Prefer per-channel black levels when available; fall back to scalar
@@ -200,14 +260,24 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
     }
   }
 
-  // ---- encode AVIF with identity matrix ----------------------------------
+  // ---- select encoder and bit depth ----------------------------------------
+  // Prefer SVT-AV1 (fast).  If SVT only supports 10-bit, encode at 10-bit with
+  // sRGB OETF applied per-channel so the quantiser budget goes to shadows.
+  // The decoder (imageio_avif.c) inverts the curve when it sees transferChar=SRGB
+  // on a proxy image, recovering linear [0,1] for the darktable pipeline.
+  // Fall back through rav1e → AOM → AUTO when SVT is absent.
+  const int svt_depth = _svt_max_bit_depth();
+  const int enc_depth = (svt_depth > 0) ? svt_depth : 12; // non-SVT: stay at 12-bit
+  const gboolean use_log = (svt_depth == 10);              // sRGB curve only for 10-bit SVT
+
+  // ---- encode AVIF with identity matrix ------------------------------------
   // YUV 4:4:4 + AVIF_MATRIX_COEFFICIENTS_IDENTITY (MC=0): Y=G, Cb=B, Cr=R.
-  // Unspecified primaries + linear transfer → camera-native linear light.
-  image = avifImageCreate(ow, oh, 12, AVIF_PIXEL_FORMAT_YUV444);
+  image = avifImageCreate(ow, oh, enc_depth, AVIF_PIXEL_FORMAT_YUV444);
   if(!image) goto out;
 
   image->colorPrimaries          = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
-  image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+  image->transferCharacteristics = use_log ? AVIF_TRANSFER_CHARACTERISTICS_SRGB
+                                           : AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
   image->matrixCoefficients      = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
   image->yuvRange                = AVIF_RANGE_FULL;
 
@@ -218,19 +288,35 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
 #endif
 
   {
-    // libavif identity matrix (ITU-T H.273 MC=0): Y=G, Cb=B, Cr=R.
-    // avifImageYUVToRGB with identity gives R=Cr, G=Y, B=Cb.
-    const int ystride = (int)(image->yuvRowBytes[AVIF_CHAN_Y]  / sizeof(uint16_t));
-    const int ustride = (int)(image->yuvRowBytes[AVIF_CHAN_U]  / sizeof(uint16_t));
-    const int vstride = (int)(image->yuvRowBytes[AVIF_CHAN_V]  / sizeof(uint16_t));
+    // libavif identity matrix: Y=G, Cb=B, Cr=R.
+    const int ystride = (int)(image->yuvRowBytes[AVIF_CHAN_Y] / sizeof(uint16_t));
+    const int ustride = (int)(image->yuvRowBytes[AVIF_CHAN_U] / sizeof(uint16_t));
+    const int vstride = (int)(image->yuvRowBytes[AVIF_CHAN_V] / sizeof(uint16_t));
     uint16_t *yp = (uint16_t *)image->yuvPlanes[AVIF_CHAN_Y];
     uint16_t *up = (uint16_t *)image->yuvPlanes[AVIF_CHAN_U];
     uint16_t *vp = (uint16_t *)image->yuvPlanes[AVIF_CHAN_V];
-    for(int y = 0; y < oh; y++)
+
+    if(use_log)
     {
-      memcpy(yp + y * ystride, g_buf + y * ow, ow * sizeof(uint16_t));  // Y  ← G
-      memcpy(up + y * ustride, b_buf + y * ow, ow * sizeof(uint16_t));  // Cb ← B
-      memcpy(vp + y * vstride, r_buf + y * ow, ow * sizeof(uint16_t));  // Cr ← R
+      // Apply sRGB OETF: 12-bit linear → 10-bit log-encoded.
+      const float src_max = 4095.0f;
+      const float dst_max = (float)((1 << enc_depth) - 1);
+      for(int y = 0; y < oh; y++)
+        for(int x = 0; x < ow; x++)
+        {
+          yp[y * ystride + x] = (uint16_t)(CLAMP(_srgb_oetf(g_buf[y*ow+x] / src_max) * dst_max + 0.5f, 0.0f, dst_max));
+          up[y * ustride + x] = (uint16_t)(CLAMP(_srgb_oetf(b_buf[y*ow+x] / src_max) * dst_max + 0.5f, 0.0f, dst_max));
+          vp[y * vstride + x] = (uint16_t)(CLAMP(_srgb_oetf(r_buf[y*ow+x] / src_max) * dst_max + 0.5f, 0.0f, dst_max));
+        }
+    }
+    else
+    {
+      for(int y = 0; y < oh; y++)
+      {
+        memcpy(yp + y * ystride, g_buf + y * ow, ow * sizeof(uint16_t)); // Y  ← G
+        memcpy(up + y * ustride, b_buf + y * ow, ow * sizeof(uint16_t)); // Cb ← B
+        memcpy(vp + y * vstride, r_buf + y * ow, ow * sizeof(uint16_t)); // Cr ← R
+      }
     }
   }
 
@@ -265,17 +351,15 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
   if(!encoder) goto out;
 
   // Pick the fastest encoder the installed libavif supports.
-  // Walk the preference table in order; use the first codec that reports
-  // encode capability.  AVIF_CODEC_CHOICE_AUTO is the unconditional fallback.
   {
     static const struct { avifCodecChoice choice; int speed; const char *name; } codec_prefs[] = {
-      { AVIF_CODEC_CHOICE_SVT,  6, "SVT-AV1"  }, // 5-10x faster than AOM
-      { AVIF_CODEC_CHOICE_RAV1E, 6, "rav1e"   }, // moderate speed, good quality
-      { AVIF_CODEC_CHOICE_AOM,  6, "AOM"      }, // always present; speed 6 = "good" preset
+      { AVIF_CODEC_CHOICE_SVT,   6, "SVT-AV1" },
+      { AVIF_CODEC_CHOICE_RAV1E, 6, "rav1e"   },
+      { AVIF_CODEC_CHOICE_AOM,   6, "AOM"     },
     };
-    avifCodecChoice chosen = AVIF_CODEC_CHOICE_AUTO;
-    int chosen_speed = 6;
-    const char *chosen_name = "auto";
+    avifCodecChoice chosen      = AVIF_CODEC_CHOICE_AUTO;
+    int             chosen_speed = 6;
+    const char     *chosen_name  = "auto";
     for(size_t i = 0; i < sizeof(codec_prefs) / sizeof(codec_prefs[0]); i++)
     {
       if(avifCodecName(codec_prefs[i].choice, AVIF_CODEC_FLAG_CAN_ENCODE))
@@ -288,7 +372,8 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
     }
     encoder->codecChoice = chosen;
     encoder->speed       = chosen_speed;
-    dt_print(DT_DEBUG_IMAGEIO, "[proxy] using %s encoder (speed %d)", chosen_name, chosen_speed);
+    dt_print(DT_DEBUG_IMAGEIO, "[proxy] '%s': %s encoder, %d-bit%s",
+             raw_path, chosen_name, enc_depth, use_log ? ", sRGB log curve" : ", linear");
   }
 
 #if AVIF_VERSION >= 1000000
