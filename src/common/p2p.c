@@ -126,10 +126,17 @@ static int32_t _import_image_job_run(dt_job_t *job)
   // Bail out before touching the filesystem if the file isn't present locally.
   // Importing a non-existent path can trigger NFS/autofs mounts that stall
   // the main thread via GUnixMountMonitor → dt_film_set_folder_status.
+  // Exception: if a .proxy.avif sidecar exists, proceed — _image_import_internal
+  // will fall back to the proxy transparently and record the canonical raw name.
   if(!g_file_test(ctx->path, G_FILE_TEST_EXISTS))
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[p2p] import skipped, file not found: '%s'", ctx->path);
-    return 0;
+    char proxy_path[PATH_MAX];
+    g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", ctx->path);
+    if(!g_file_test(proxy_path, G_FILE_TEST_EXISTS))
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[p2p] import skipped, file not found: '%s'", ctx->path);
+      return 0;
+    }
   }
 
   char *dir = g_path_get_dirname(ctx->path);
@@ -150,6 +157,14 @@ static int32_t _import_image_job_run(dt_job_t *job)
   }
 
   return 0;
+}
+
+static gboolean _reload_history_idle(gpointer data)
+{
+  dt_imgid_t imgid = GPOINTER_TO_INT(data);
+  if(darktable.develop && dt_dev_is_current_image(darktable.develop, imgid))
+    dt_dev_reload_history_items(darktable.develop);
+  return G_SOURCE_REMOVE;
 }
 
 // Background job: reloads the XMP sidecar for an already-imported image.
@@ -173,9 +188,9 @@ static int32_t _xmp_reload_job_run(dt_job_t *job)
       dt_print(DT_DEBUG_IMAGEIO, "[p2p] reloaded XMP for '%s'", ctx->path);
     }
 
-    // If this image is open in darkroom, reload its history stack live.
-    if(dt_dev_is_current_image(darktable.develop, imgid))
-      dt_dev_reload_history_items(darktable.develop);
+    // If this image is open in darkroom, reload its history stack on the main
+    // thread — dt_dev_reload_history_items is not safe to call from a worker.
+    g_idle_add(_reload_history_idle, GINT_TO_POINTER(imgid));
 
     // Invalidate cached thumbnails so lighttable regenerates them.
     dt_mipmap_cache_remove(imgid);

@@ -745,8 +745,10 @@ func (d *daemon) fetchAndImport(remotePath, xmpContent, filename, captureDate st
 	log.Printf("[import] imported '%s' → '%s'", filename, localPath)
 	d.addToLocalIndex(localPath)
 
-	proxyPath := localPath + ".proxy.avif"
-	result, _ := json.Marshal(map[string]string{"path": proxyPath})
+	// Broadcast the canonical raw path so darktable imports it as the raw file
+	// and uses 4F9A9030.CR3.xmp for develop settings.  _image_import_internal
+	// will transparently fall back to the .proxy.avif when the raw is absent.
+	result, _ := json.Marshal(map[string]string{"path": localPath})
 	d.broadcast(socketMsg{Type: "image_imported", Data: result})
 }
 
@@ -849,10 +851,10 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 
 	d.addToLocalIndex(localPath)
 
-	// Tell darktable about the proxy file that actually exists on disk, not
-	// the raw path (which may be absent or on a slow remote filesystem).
-	proxyPath := localPath + ".proxy.avif"
-	result, _ := json.Marshal(map[string]string{"path": proxyPath})
+	// Broadcast the canonical raw path so darktable imports 4F9A9030.CR3 and
+	// reads 4F9A9030.CR3.xmp for develop settings.  _image_import_internal
+	// falls back to the .proxy.avif transparently when the raw is absent.
+	result, _ := json.Marshal(map[string]string{"path": localPath})
 	d.broadcast(socketMsg{Type: "image_imported", Data: result})
 }
 
