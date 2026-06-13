@@ -1864,7 +1864,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   // button box
   GtkWidget *button_box = dt_gui_hbox();
-  gtk_grid_attach(GTK_GRID(models_grid), button_box, 0, row++, 1, 1);
+  gtk_widget_set_name(button_box, "ai-controls");
 
 #ifdef HAVE_AI_DOWNLOAD
   // download / update default button
@@ -1917,13 +1917,13 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_widget_set_tooltip_text(help_btn, _("open help page for AI settings"));
   dt_gui_add_help_link(help_btn, "ai");
   g_signal_connect(help_btn, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-  gtk_box_pack_end(GTK_BOX(button_box), help_btn, FALSE, FALSE, 0);
+  dt_gui_box_add(button_box, dt_gui_align_right(help_btn));
 
   dt_gui_box_add(data->controls_box, models_grid);
 
   // wrap in a scrolled container like other tabs
   GtkWidget *main_scroll = dt_gui_scroll_wrap(main_box);
-  GtkWidget *tab_box = dt_gui_vbox(main_scroll);
+  GtkWidget *tab_box = dt_gui_vbox(main_scroll, button_box);
 
   // add to stack
   gtk_stack_add_titled(GTK_STACK(stack), tab_box, "AI", _("AI"));
