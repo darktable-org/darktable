@@ -38,6 +38,10 @@ void dt_p2p_push_xmp(const char *raw_path, const char *xmp_path);
 // Async: returns immediately; caller can poll for the file.
 void dt_p2p_fetch_proxy(const char *raw_path);
 
+// Tell the daemon that a proxy sidecar for raw_path is now available locally.
+// The daemon will include it in the manifest so peers can download it.
+void dt_p2p_announce_proxy(const char *raw_path);
+
 // Returns TRUE if the P2P daemon is running and connected.
 gboolean dt_p2p_is_running(void);
 

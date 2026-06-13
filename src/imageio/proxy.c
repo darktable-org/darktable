@@ -18,6 +18,7 @@
 
 #include "imageio/proxy.h"
 #include "common/darktable.h"
+#include "common/p2p.h"
 
 gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen)
 {
@@ -546,6 +547,7 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
     ok = TRUE;
     dt_print(DT_DEBUG_IMAGEIO, "[proxy] created '%s' (%zu KB, quality %d)",
              proxy_path, output.size / 1024, quality);
+    dt_p2p_announce_proxy(raw_path);
   }
 
 out:

@@ -20,6 +20,7 @@
 
 #include "common/p2p.h"
 #include "common/darktable.h"
+#include "common/database.h"
 #include "common/film.h"
 #include "common/image.h"
 #include "common/exif.h"
@@ -420,6 +421,40 @@ static gboolean _p2p_keepalive(gpointer user_data)
   return (n < 100) ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 }
 
+// Walk the darktable DB and announce every raw file that already has a
+// .proxy.avif sidecar on disk so the daemon can serve it to peers.
+static gpointer _announce_existing_proxies(gpointer _unused)
+{
+  (void)_unused;
+  // Small delay so the daemon socket is fully ready before we flood it.
+  g_usleep(2 * G_USEC_PER_SEC);
+
+  sqlite3_stmt *stmt;
+  const int rc = sqlite3_prepare_v2(dt_database_get(darktable.db),
+    "SELECT filename FROM main.images", -1, &stmt, NULL);
+  if(rc != SQLITE_OK) return NULL;
+
+  int count = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *path = (const char *)sqlite3_column_text(stmt, 0);
+    if(!path) continue;
+
+    char proxy_path[PATH_MAX];
+    g_snprintf(proxy_path, sizeof(proxy_path), "%s.proxy.avif", path);
+    if(g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR))
+    {
+      dt_p2p_announce_proxy(path);
+      count++;
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  if(count > 0)
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] announced %d existing proxies to daemon", count);
+  return NULL;
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -568,6 +603,9 @@ void dt_p2p_init(void)
   g_atomic_int_set(&_p2p_evt.stop, 0);
   _p2p_evt.thread = g_thread_new("p2p-events", _event_thread_func, NULL);
 
+  // Announce any proxy sidecars that already exist on disk.
+  g_thread_new("p2p-proxy-announce", _announce_existing_proxies, NULL);
+
   // Push XMP to peers within 3 s of any history change.
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _p2p_on_history_change, NULL);
   g_timeout_add(100, _p2p_keepalive, NULL);
@@ -664,6 +702,29 @@ void dt_p2p_fetch_proxy(const char *raw_path)
 
   char *json = g_strdup_printf(
     "{\"type\":\"fetch_proxy\",\"data\":{\"path\":\"%s\"}}", ep->str);
+
+  g_mutex_lock(&_p2p.lock);
+  if(_connect_socket())
+    _send_json(json);
+  g_mutex_unlock(&_p2p.lock);
+
+  g_free(json);
+  g_string_free(ep, TRUE);
+}
+
+void dt_p2p_announce_proxy(const char *raw_path)
+{
+  if(!raw_path) return;
+
+  GString *ep = g_string_new(NULL);
+  for(const char *p = raw_path; *p; p++)
+  {
+    if(*p == '"' || *p == '\\') g_string_append_c(ep, '\\');
+    g_string_append_c(ep, *p);
+  }
+
+  char *json = g_strdup_printf(
+    "{\"type\":\"announce_proxy\",\"data\":{\"path\":\"%s\"}}", ep->str);
 
   g_mutex_lock(&_p2p.lock);
   if(_connect_socket())

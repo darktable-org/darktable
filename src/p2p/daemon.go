@@ -91,6 +91,10 @@ type daemon struct {
 	localIndexMu sync.RWMutex
 	localIndex   map[string][]string
 
+	// announced proxies: raw paths announced by darktable via socket
+	announcedProxiesMu sync.RWMutex
+	announcedProxies   map[string]struct{}
+
 	// darktable clients subscribed to push events
 	subsMu sync.Mutex
 	subs   []*eventSub
@@ -288,7 +292,8 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		peers:       make(map[peer.ID]string),
 		syncedPeers: make(map[string]bool),
 		xmpSeen:     make(map[string]time.Time),
-		localIndex:  make(map[string][]string),
+		localIndex:       make(map[string][]string),
+		announcedProxies: make(map[string]struct{}),
 	}
 
 	go d.initExternalAccess()
@@ -562,6 +567,19 @@ func (d *daemon) handleConn(conn net.Conn) {
 				d.xmpTop.Publish(d.ctx, b)
 			}
 			go d.pushXMPToPeers(x)
+
+		case "announce_proxy":
+			var req struct {
+				Path string `json:"path"`
+			}
+			if err := json.Unmarshal(msg.Data, &req); err != nil {
+				continue
+			}
+			if req.Path != "" {
+				d.announcedProxiesMu.Lock()
+				d.announcedProxies[req.Path] = struct{}{}
+				d.announcedProxiesMu.Unlock()
+			}
 
 		case "fetch_proxy":
 			var req struct {
@@ -1207,18 +1225,36 @@ func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	seen := make(map[string]struct{})
 	var paths []string
+
+	addPath := func(raw string) {
+		if _, dup := seen[raw]; dup {
+			return
+		}
+		if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
+			seen[raw] = struct{}{}
+			paths = append(paths, raw)
+		}
+	}
+
 	if d.proxyDir != "" {
 		filepath.Walk(d.proxyDir, func(p string, fi os.FileInfo, err error) error {
 			if err != nil || fi.IsDir() {
 				return nil
 			}
 			if strings.HasSuffix(p, ".proxy.avif") {
-				paths = append(paths, strings.TrimSuffix(p, ".proxy.avif"))
+				addPath(strings.TrimSuffix(p, ".proxy.avif"))
 			}
 			return nil
 		})
 	}
+
+	d.announcedProxiesMu.RLock()
+	for raw := range d.announcedProxies {
+		addPath(raw)
+	}
+	d.announcedProxiesMu.RUnlock()
 
 	// Collect all HTTP base URLs we know about so the caller can gossip.
 	d.peersMu.RLock()
