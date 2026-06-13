@@ -1348,9 +1348,19 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
   dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
   if(!*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
-    *width = *height = 0;
-    *iscale = 0.0f;
-    return;
+    char proxy_path[PATH_MAX];
+    if(*filename
+       && dt_imageio_proxy_path(filename, proxy_path, sizeof(proxy_path))
+       && g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR))
+    {
+      g_strlcpy(filename, proxy_path, sizeof(filename));
+    }
+    else
+    {
+      *width = *height = 0;
+      *iscale = 0.0f;
+      return;
+    }
   }
 
   dt_mipmap_buffer_t buf;
@@ -1558,6 +1568,17 @@ static void _init_8(uint8_t *buf,
     from_cache = TRUE;
     memset(filename, 0, sizeof(filename));
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+    // If the raw is absent but a proxy AVIF is available, use it for the
+    // embedded-thumbnail attempt (AVIF has no embedded JPEG, so this falls
+    // through to step 4, but filename must not be left as a missing raw path).
+    if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+    {
+      char proxy_chk[PATH_MAX];
+      if(*filename
+         && dt_imageio_proxy_path(filename, proxy_chk, sizeof(proxy_chk))
+         && g_file_test(proxy_chk, G_FILE_TEST_IS_REGULAR))
+        g_strlcpy(filename, proxy_chk, sizeof(filename));
+    }
 
     const char *c = filename + strlen(filename);
     while(*c != '.' && c > filename) c--;
