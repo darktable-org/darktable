@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/database.h"
 #include "common/film.h"
+#include "common/history.h"
 #include "common/image.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
@@ -160,18 +161,19 @@ static int32_t _import_image_job_run(dt_job_t *job)
   return 0;
 }
 
-static gboolean _reload_history_idle(gpointer data)
+typedef struct { dt_imgid_t imgid; char xmp_path[PATH_MAX]; } _apply_xmp_ctx_t;
+
+static gboolean _apply_xmp_main_thread(gpointer data)
 {
-  dt_imgid_t imgid = GPOINTER_TO_INT(data);
-  if(darktable.develop && dt_dev_is_current_image(darktable.develop, imgid))
-    dt_dev_reload_history_items(darktable.develop);
+  _apply_xmp_ctx_t *ctx = data;
+  dt_history_load_and_apply(ctx->imgid, ctx->xmp_path, FALSE);
+  g_free(ctx);
   return G_SOURCE_REMOVE;
 }
 
 // Background job: reloads the XMP sidecar for an already-imported image.
-// Running this as a job (not a GTK idle) avoids blocking the main thread on
-// the image-cache write lock, which can deadlock with background jobs that
-// hold a read lock on the same image at startup.
+// dt_history_load_and_apply handles locking, mipmap invalidation, and signals
+// but must run on the GTK main thread — dispatch via g_main_context_invoke_full.
 static int32_t _xmp_reload_job_run(dt_job_t *job)
 {
   _import_ctx_t *ctx = dt_control_job_get_params(job);
@@ -179,25 +181,12 @@ static int32_t _xmp_reload_job_run(dt_job_t *job)
   dt_imgid_t imgid = dt_image_get_id_full_path(ctx->path);
   if(dt_is_valid_imgid(imgid))
   {
-    char xmp_path[PATH_MAX];
-    g_snprintf(xmp_path, sizeof(xmp_path), "%s.xmp", ctx->path);
-    dt_image_t *img = dt_image_cache_get(imgid, 'w');
-    if(img)
-    {
-      dt_exif_xmp_read(img, xmp_path, FALSE);
-      dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
-      dt_print(DT_DEBUG_IMAGEIO, "[p2p] reloaded XMP for '%s'", ctx->path);
-    }
-
-    // If this image is open in darkroom, reload its history stack on the main
-    // thread — dt_dev_reload_history_items is not safe to call from a worker.
-    g_idle_add(_reload_history_idle, GINT_TO_POINTER(imgid));
-
-    // Invalidate cached thumbnails so lighttable regenerates them.
-    dt_mipmap_cache_remove(imgid);
-
-    // Tell all views (lighttable, filmstrip, darkroom) to refresh.
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+    _apply_xmp_ctx_t *actx = g_malloc(sizeof(*actx));
+    actx->imgid = imgid;
+    g_snprintf(actx->xmp_path, sizeof(actx->xmp_path), "%s.xmp", ctx->path);
+    g_main_context_invoke_full(NULL, G_PRIORITY_DEFAULT,
+                               _apply_xmp_main_thread, actx, NULL);
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] dispatched XMP reload for '%s' id=%d", ctx->path, imgid);
   }
   else
   {
