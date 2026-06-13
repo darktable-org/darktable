@@ -378,8 +378,27 @@ static int32_t _p2p_write_and_push_job_run(dt_job_t *job)
   dt_image_path_append_version(imgid, xmp_path, sizeof(xmp_path));
   g_strlcat(xmp_path, ".xmp", sizeof(xmp_path));
 
-  // Write the XMP file first to ensure it contains latest changes
-  if(dt_exif_xmp_write(imgid, xmp_path, FALSE)) return 0;
+  // Write the XMP file first to ensure it contains latest changes.
+  // If the raw lives on an unmounted remote filesystem, fall back to the p2p
+  // proxy directory so the edit can still be pushed to peers.
+  if(dt_exif_xmp_write(imgid, xmp_path, FALSE))
+  {
+    const char *proxy_dir = dt_conf_get_string_const("plugins/p2p/proxy_dir");
+    if(!proxy_dir || !proxy_dir[0])
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[p2p] xmp write failed for '%s', no proxy dir configured", xmp_path);
+      return 0;
+    }
+    gchar *base = g_path_get_basename(raw_path);
+    g_snprintf(xmp_path, sizeof(xmp_path), "%s/%s.xmp", proxy_dir, base);
+    g_free(base);
+    if(dt_exif_xmp_write(imgid, xmp_path, FALSE))
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[p2p] xmp write also failed for proxy path '%s'", xmp_path);
+      return 0;
+    }
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] xmp write fell back to proxy dir: '%s'", xmp_path);
+  }
 
   dt_print(DT_DEBUG_IMAGEIO, "[p2p] pushing XMP for '%s' from image id=%d", raw_path, imgid);
   dt_p2p_push_xmp(raw_path, xmp_path);
