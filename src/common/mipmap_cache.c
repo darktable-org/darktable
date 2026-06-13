@@ -29,6 +29,7 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_module.h"
+#include "imageio/proxy.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -1520,10 +1521,20 @@ static void _init_8(uint8_t *buf,
   dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
   if(!*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
-    *width = *height = 0;
-    *iscale = 0.0f;
-    *color_space = DT_COLORSPACE_NONE;
-    return;
+    char proxy_path[PATH_MAX];
+    if(*filename
+       && dt_imageio_proxy_path(filename, proxy_path, sizeof(proxy_path))
+       && g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR))
+    {
+      g_strlcpy(filename, proxy_path, sizeof(filename));
+    }
+    else
+    {
+      *width = *height = 0;
+      *iscale = 0.0f;
+      *color_space = DT_COLORSPACE_NONE;
+      return;
+    }
   }
 
   const gboolean altered = dt_image_altered(imgid);
