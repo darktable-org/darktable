@@ -161,19 +161,30 @@ static int32_t _import_image_job_run(dt_job_t *job)
   return 0;
 }
 
-typedef struct { dt_imgid_t imgid; char xmp_path[PATH_MAX]; } _apply_xmp_ctx_t;
+typedef struct { dt_imgid_t imgid; } _apply_xmp_ctx_t;
 
+// Runs on GTK main thread: reload darkroom pipeline and refresh lighttable.
+// The XMP has already been written to the DB by the background job.
 static gboolean _apply_xmp_main_thread(gpointer data)
 {
   _apply_xmp_ctx_t *ctx = data;
-  dt_history_load_and_apply(ctx->imgid, ctx->xmp_path, FALSE);
+  const dt_imgid_t imgid = ctx->imgid;
   g_free(ctx);
+
+  if(darktable.develop && dt_dev_is_current_image(darktable.develop, imgid))
+    dt_dev_reload_history_items(darktable.develop);
+
+  dt_mipmap_cache_remove(imgid);
+  dt_image_update_final_size(imgid);
+  dt_image_cache_set_change_timestamp(imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
   return G_SOURCE_REMOVE;
 }
 
-// Background job: reloads the XMP sidecar for an already-imported image.
-// dt_history_load_and_apply handles locking, mipmap invalidation, and signals
-// but must run on the GTK main thread — dispatch via g_main_context_invoke_full.
+// Background job: reads XMP sidecar into DB, then dispatches UI refresh to
+// the main thread.  Splitting the two steps avoids the deadlock that results
+// from dt_history_load_and_apply holding dt_lock_image while calling
+// dt_dev_reload_history_items (which also tries to acquire the same lock).
 static int32_t _xmp_reload_job_run(dt_job_t *job)
 {
   _import_ctx_t *ctx = dt_control_job_get_params(job);
@@ -181,12 +192,26 @@ static int32_t _xmp_reload_job_run(dt_job_t *job)
   dt_imgid_t imgid = dt_image_get_id_full_path(ctx->path);
   if(dt_is_valid_imgid(imgid))
   {
+    char xmp_path[PATH_MAX];
+    g_snprintf(xmp_path, sizeof(xmp_path), "%s.xmp", ctx->path);
+
+    // Write XMP history into SQLite on this background thread.  Release the
+    // image lock before dispatching to the main thread so dt_dev_reload_history_items
+    // can acquire it without deadlocking.
+    dt_lock_image(imgid);
+    dt_image_t *img = dt_image_cache_get(imgid, 'w');
+    if(img)
+    {
+      dt_exif_xmp_read(img, xmp_path, TRUE);
+      dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "p2p xmp reload");
+    }
+    dt_unlock_image(imgid);
+
     _apply_xmp_ctx_t *actx = g_malloc(sizeof(*actx));
     actx->imgid = imgid;
-    g_snprintf(actx->xmp_path, sizeof(actx->xmp_path), "%s.xmp", ctx->path);
     g_main_context_invoke_full(NULL, G_PRIORITY_DEFAULT,
                                _apply_xmp_main_thread, actx, NULL);
-    dt_print(DT_DEBUG_IMAGEIO, "[p2p] dispatched XMP reload for '%s' id=%d", ctx->path, imgid);
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] queued XMP reload for '%s' id=%d", ctx->path, imgid);
   }
   else
   {
