@@ -19,6 +19,10 @@
 
 #include "common/darktable.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Compute the proxy path for a raw file: @raw_path + ".proxy.avif".
  * The proxy lives as a sidecar next to the original raw file.
@@ -38,3 +42,7 @@ gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen);
  * Requires HAVE_LIBRAW; returns FALSE immediately when libraw is absent.
  */
 gboolean dt_imageio_create_proxy(const char *raw_path, int quality);
+
+#ifdef __cplusplus
+}
+#endif

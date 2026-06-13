@@ -127,17 +127,14 @@ typedef struct
   gboolean        identity;   // use MC=identity (Y=G Cb=B Cr=R); only valid for YUV444
 } _fmt_cap_t;
 
-// Ordered by bit-depth first (12→10→8), then chroma format (444→422→420).
+// Identity-only formats: Y=G, Cb=B, Cr=R — lossless RGB, correct for raw-linear data.
+// Non-identity (chroma-subsampled BT.709) formats are excluded: they require
+// per-channel gamma-before-luma encoding that is error-prone and the proxy reader
+// in imageio_avif.c assumes identity + UNSPECIFIED or LINEAR transfer.
 static const _fmt_cap_t _fmt_prefs[] = {
   { AVIF_PIXEL_FORMAT_YUV444, 12, FALSE, TRUE  }, // 12-bit linear identity
-  { AVIF_PIXEL_FORMAT_YUV422, 12, FALSE, FALSE }, // 12-bit linear BT.709 4:2:2
-  { AVIF_PIXEL_FORMAT_YUV420, 12, FALSE, FALSE }, // 12-bit linear BT.709 4:2:0
   { AVIF_PIXEL_FORMAT_YUV444, 10, TRUE,  TRUE  }, // 10-bit sRGB identity
-  { AVIF_PIXEL_FORMAT_YUV422, 10, TRUE,  FALSE }, // 10-bit sRGB BT.709 4:2:2
-  { AVIF_PIXEL_FORMAT_YUV420, 10, TRUE,  FALSE }, // 10-bit sRGB BT.709 4:2:0
   { AVIF_PIXEL_FORMAT_YUV444,  8, TRUE,  TRUE  }, // 8-bit  sRGB identity
-  { AVIF_PIXEL_FORMAT_YUV422,  8, TRUE,  FALSE }, // 8-bit  sRGB BT.709 4:2:2
-  { AVIF_PIXEL_FORMAT_YUV420,  8, TRUE,  FALSE }, // 8-bit  sRGB BT.709 4:2:0
 };
 #define N_FMT_PREFS ((int)(sizeof(_fmt_prefs) / sizeof(_fmt_prefs[0])))
 
@@ -292,50 +289,6 @@ static void _fill_avif(avifImage *img,
     return;
   }
 
-  // BT.709 luma + chroma subsampling (YUV422 or YUV420)
-  // Chroma block: nx=2 for 422/420 horizontal, ny=2 only for 420 vertical
-  const int nx = (cap->fmt == AVIF_PIXEL_FORMAT_YUV444) ? 1 : 2;
-  const int ny = (cap->fmt == AVIF_PIXEL_FORMAT_YUV420) ? 2 : 1;
-  const int cw = ow / nx;
-  const int ch = oh / ny;
-
-  // Y plane — full resolution
-  for(int y = 0; y < oh; y++)
-    for(int x = 0; x < ow; x++)
-    {
-      int idx = y * ow + x;
-      float r = r_buf[idx] / 4095.0f;
-      float g = g_buf[idx] / 4095.0f;
-      float b = b_buf[idx] / 4095.0f;
-      float luma = 0.2126f*r + 0.7152f*g + 0.0722f*b;
-      float out  = cap->use_gamma ? _srgb_oetf(luma) : luma;
-      yp[y*ystride + x] = (uint16_t)CLAMP((int)(out * dst_max + 0.5f), 0, (int)dst_max);
-    }
-
-  // Cb/Cr planes — subsampled, averaged over nx×ny blocks
-  for(int cy = 0; cy < ch; cy++)
-    for(int cx = 0; cx < cw; cx++)
-    {
-      float cb_sum = 0.0f, cr_sum = 0.0f;
-      for(int dy = 0; dy < ny; dy++)
-        for(int dx = 0; dx < nx; dx++)
-        {
-          int idx = (cy*ny + dy) * ow + (cx*nx + dx);
-          float r = r_buf[idx] / 4095.0f;
-          float g = g_buf[idx] / 4095.0f;
-          float b = b_buf[idx] / 4095.0f;
-          float luma = 0.2126f*r + 0.7152f*g + 0.0722f*b;
-          cb_sum += (b - luma) / 1.8556f + 0.5f;
-          cr_sum += (r - luma) / 1.5748f + 0.5f;
-        }
-      float n    = (float)(nx * ny);
-      float cb   = cb_sum / n;
-      float cr   = cr_sum / n;
-      if(cap->use_gamma) { cb = _srgb_oetf(CLAMP(cb, 0.0f, 1.0f));
-                           cr = _srgb_oetf(CLAMP(cr, 0.0f, 1.0f)); }
-      cbp[cy*cbstride + cx] = (uint16_t)CLAMP((int)(cb * dst_max + 0.5f), 0, (int)dst_max);
-      crp[cy*crstride + cx] = (uint16_t)CLAMP((int)(cr * dst_max + 0.5f), 0, (int)dst_max);
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -501,12 +454,14 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
       if(!image) continue;
 
       image->colorPrimaries          = AVIF_COLOR_PRIMARIES_BT709;
+      // 12-bit is stored linear; 10/8-bit have sRGB OETF applied for shadow
+      // quantisation but the TC is left UNSPECIFIED so that external tools do
+      // not double-apply gamma.  imageio_avif.c detects the encoding via the
+      // DT_IMAGE_PROXY_MEDIA flag + bit-depth and inverts the OETF itself.
       image->transferCharacteristics = cap->use_gamma
-                                         ? AVIF_TRANSFER_CHARACTERISTICS_SRGB
+                                         ? AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED
                                          : AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
-      image->matrixCoefficients      = cap->identity
-                                         ? AVIF_MATRIX_COEFFICIENTS_IDENTITY
-                                         : AVIF_MATRIX_COEFFICIENTS_BT709;
+      image->matrixCoefficients      = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
       image->yuvRange = AVIF_RANGE_FULL;
 
 #if AVIF_VERSION >= 1000000

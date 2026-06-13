@@ -77,6 +77,7 @@ using namespace std;
 #include "develop/masks.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
+#include "imageio/proxy.h"
 
 #define DT_XMP_EXIF_VERSION 5
 
@@ -6032,7 +6033,14 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   gboolean from_cache = TRUE;
 
   dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);
-  if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return TRUE;
+  if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR))
+  {
+    // Accept proxy AVIF as a stand-in for the missing raw file.
+    char proxy_chk[PATH_MAX];
+    if(!dt_imageio_proxy_path(imgfname, proxy_chk, sizeof(proxy_chk))
+       || !g_file_test(proxy_chk, G_FILE_TEST_IS_REGULAR))
+      return TRUE;
+  }
 
   try
   {
