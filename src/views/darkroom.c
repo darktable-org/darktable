@@ -54,6 +54,7 @@
 #include "gui/styles.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+#include "imageio/proxy.h"
 #include "libs/colorpicker.h"
 #include "views/view.h"
 #include "views/view_api.h"
@@ -977,9 +978,15 @@ gboolean try_enter(dt_view_t *self)
   dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("image `%s' is currently unavailable"), img->filename);
-    dt_image_cache_read_release(img);
-    return TRUE;
+    // Allow the image to open if a proxy AVIF is available (same-dir or p2p proxy dir).
+    char proxy_chk[PATH_MAX];
+    dt_imageio_proxy_path(imgfilename, proxy_chk, sizeof(proxy_chk));
+    if(!g_file_test(proxy_chk, G_FILE_TEST_IS_REGULAR))
+    {
+      dt_control_log(_("image `%s' is currently unavailable"), img->filename);
+      dt_image_cache_read_release(img);
+      return TRUE;
+    }
   }
   else if(img->load_status != DT_IMAGEIO_OK)
   {

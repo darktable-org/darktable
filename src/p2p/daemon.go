@@ -174,14 +174,21 @@ func (d *daemon) buildLocalIndex() {
 		if err != nil || fi.IsDir() {
 			return nil
 		}
-		// Index raw files and their proxy placeholders.
-		// A file is "known" if the raw exists OR if only the proxy sidecar exists.
 		name := filepath.Base(p)
-		if strings.HasSuffix(name, ".proxy.avif") || strings.HasSuffix(name, ".xmp") {
-			return nil // skip sidecars
+		if strings.HasSuffix(name, ".xmp") {
+			return nil
 		}
-		canonical := p
-		idx[name] = append(idx[name], canonical)
+		if strings.HasSuffix(name, ".proxy.avif") {
+			// Proxy-only entry: the raw doesn't exist locally.
+			// Index the canonical raw name so resolveLocalPath can find it.
+			rawName := strings.TrimSuffix(name, ".proxy.avif")
+			rawPath := strings.TrimSuffix(p, ".proxy.avif")
+			if _, err := os.Stat(rawPath); err != nil {
+				idx[rawName] = append(idx[rawName], rawPath)
+			}
+			return nil
+		}
+		idx[name] = append(idx[name], p)
 		return nil
 	})
 	d.localIndexMu.Lock()

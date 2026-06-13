@@ -19,10 +19,33 @@
 #include "imageio/proxy.h"
 #include "common/darktable.h"
 #include "common/p2p.h"
+#include "control/conf.h"
 
 gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen)
 {
   if(!raw_path || !raw_path[0] || !buf || buflen == 0) return FALSE;
+
+  // Primary: sidecar in the same directory as the raw file.
+  g_snprintf(buf, buflen, "%s.proxy.avif", raw_path);
+  if(g_file_test(buf, G_FILE_TEST_IS_REGULAR)) return TRUE;
+
+  // Fallback: p2p proxy directory — used when the original raw is on a remote
+  // machine and only the downloaded proxy AVIF is available locally.
+  const char *proxy_dir = dt_conf_get_string_const("plugins/p2p/proxy_dir");
+  if(proxy_dir && proxy_dir[0])
+  {
+    gchar *base = g_path_get_basename(raw_path);
+    gchar *alt  = g_strdup_printf("%s/%s.proxy.avif", proxy_dir, base);
+    g_free(base);
+    const gboolean found = g_file_test(alt, G_FILE_TEST_IS_REGULAR);
+    if(found)
+      g_strlcpy(buf, alt, buflen);
+    g_free(alt);
+    if(found) return TRUE;
+  }
+
+  // Neither location has an existing proxy; return the conventional same-dir
+  // path so callers can write a new proxy there.
   g_snprintf(buf, buflen, "%s.proxy.avif", raw_path);
   return TRUE;
 }
