@@ -382,30 +382,56 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
        (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
                 !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
     {
-      char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, (uint64_t)file->size, (uint64_t)file->timestamp);
-      dt_camera_files_t *existing = g_hash_table_lookup(metadata_hash, key);
-      if(existing == NULL)
+      // Only perform duplicate checking if valid metadata (size and timestamp) is present.
+      // If either is missing (0), we cannot reliably identify duplicates.
+      if(file->size > 0 && file->timestamp > 0)
       {
-        g_hash_table_insert(metadata_hash, key, file);
-        file->possible_duplicate = FALSE;
-      }
-      else
-      {
-        if(strcmp(file->filename, existing->filename) > 0)
+        char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, (uint64_t)file->size, (uint64_t)file->timestamp);
+        dt_camera_files_t *existing = g_hash_table_lookup(metadata_hash, key);
+        if(existing == NULL)
         {
-          file->possible_duplicate = TRUE;
-          g_free(file->duplicate_of);
-          file->duplicate_of = g_strdup(existing->filename);
-          g_free(key);
+          g_hash_table_insert(metadata_hash, key, file);
+          file->possible_duplicate = FALSE;
         }
         else
         {
-          existing->possible_duplicate = TRUE;
-          g_free(existing->duplicate_of);
-          existing->duplicate_of = g_strdup(file->filename);
-          g_hash_table_insert(metadata_hash, key, file);
+          if(strcmp(file->filename, existing->filename) > 0)
+          {
+            file->possible_duplicate = TRUE;
+            g_free(file->duplicate_of);
+            file->duplicate_of = g_strdup(existing->filename);
+            g_free(key);
+          }
+          else
+          {
+            existing->possible_duplicate = TRUE;
+            g_free(existing->duplicate_of);
+            existing->duplicate_of = g_strdup(file->filename);
+            g_hash_table_insert(metadata_hash, key, file);
+          }
         }
       }
+      else
+      {
+        file->possible_duplicate = FALSE;
+      }
+    }
+  }
+
+  // Resolve duplicate chains so every duplicate points to the ultimate primary file.
+  for(GList *img = imgs; img; img = g_list_next(img))
+  {
+    dt_camera_files_t *file = img->data;
+    if(file->possible_duplicate && file->size > 0 && file->timestamp > 0)
+    {
+      char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, (uint64_t)file->size, (uint64_t)file->timestamp);
+      dt_camera_files_t *primary = g_hash_table_lookup(metadata_hash, key);
+      if(primary && primary != file)
+      {
+        g_free(file->duplicate_of);
+        file->duplicate_of = g_strdup(primary->filename);
+      }
+      g_free(key);
     }
   }
   g_hash_table_destroy(metadata_hash);
@@ -2195,7 +2221,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   {
     col = 0;
     GtkWidget *hide_duplicates =
-      dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, TRUE);
+      dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, FALSE);
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
     g_signal_connect(G_OBJECT(hide_duplicates), "toggled",
                      G_CALLBACK(_hide_duplicates_toggled), self);
