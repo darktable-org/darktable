@@ -82,6 +82,8 @@ typedef enum dt_import_cols_t
   DT_IMPORT_UI_DATETIME,        // displayed datetime
   DT_IMPORT_UI_EXISTS,          // whether the image is already imported
   DT_IMPORT_DATETIME,           // file datetime
+  DT_IMPORT_UI_DUPLICATE,       // whether the image is a duplicate
+  DT_IMPORT_TOOLTIP,            // tooltip text
   DT_IMPORT_NUM_COLS
 } dt_import_cols_t;
 
@@ -354,6 +356,8 @@ static void _free_camera_files(gpointer data)
 {
   dt_camera_files_t *file = (dt_camera_files_t *)data;
   g_free(file->filename);
+  // Free the primary file duplicate filename reference
+  g_free(file->duplicate_of);
   g_free(file);
 }
 
@@ -364,6 +368,50 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
   GList *imgs = dt_camctl_get_images_list(darktable.camctl, d->camera);
   int nb = 0;
   const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
+
+  // Metadata duplicate pre-pass: check files by size and timestamp.
+  // Group files with the same size and timestamp using a hash table.
+  // When a duplicate pair is found, flag the one with the lexicographically
+  // higher filename as a possible duplicate, referencing the primary file.
+  GHashTable *metadata_hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+  for(GList *img = imgs; img; img = g_list_next(img))
+  {
+    dt_camera_files_t *file = img->data;
+    const char *ext = g_strrstr(file->filename, ".");
+    if(include_nonraws ||
+       (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
+                !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
+    {
+      char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, (uint64_t)file->size, (uint64_t)file->timestamp);
+      dt_camera_files_t *existing = g_hash_table_lookup(metadata_hash, key);
+      if(existing == NULL)
+      {
+        g_hash_table_insert(metadata_hash, key, file);
+        file->possible_duplicate = FALSE;
+      }
+      else
+      {
+        if(strcmp(file->filename, existing->filename) > 0)
+        {
+          file->possible_duplicate = TRUE;
+          g_free(file->duplicate_of);
+          file->duplicate_of = g_strdup(existing->filename);
+          g_free(key);
+        }
+        else
+        {
+          existing->possible_duplicate = TRUE;
+          g_free(existing->duplicate_of);
+          existing->duplicate_of = g_strdup(file->filename);
+          g_hash_table_insert(metadata_hash, key, file);
+        }
+      }
+    }
+  }
+  g_hash_table_destroy(metadata_hash);
+
+  const gboolean hide_duplicates = dt_conf_get_bool("ui_last/import_hide_duplicates");
+
   for(GList *img = imgs; img; img = g_list_next(img))
   {
     dt_camera_files_t *file = img->data;
@@ -374,6 +422,11 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
        (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
                 !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
     {
+      // If configured to hide duplicate camera images, skip adding them to the UI list store
+      if(hide_duplicates && file->possible_duplicate)
+      {
+        continue;
+      }
       const time_t datetime = file->timestamp;
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
@@ -382,13 +435,26 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
       const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
+
+      // Generate a tooltip indicating the primary file of which this is a duplicate
+      gchar *tooltip = NULL;
+      if(file->possible_duplicate && file->duplicate_of)
+      {
+        tooltip = g_strdup_printf(_("possible duplicate of %s"), file->duplicate_of);
+      }
+
       gtk_list_store_insert_with_values(d->from.store, NULL, -1,
                          DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                          DT_IMPORT_UI_FILENAME, file->filename,
                          DT_IMPORT_FILENAME, file->filename,
                          DT_IMPORT_UI_DATETIME, dt_txt,
                          DT_IMPORT_DATETIME, datetime,
-                         DT_IMPORT_THUMB, d->from.eye, -1);
+                         DT_IMPORT_THUMB, d->from.eye,
+                         // Columns showing duplicate indicator and mouseover tooltip
+                         DT_IMPORT_UI_DUPLICATE, file->possible_duplicate ? "⧉" : " ",
+                         DT_IMPORT_TOOLTIP, tooltip,
+                         -1);
+      g_free(tooltip);
       nb++;
       g_free(dt_txt);
       g_date_time_unref(dt_datetime);
@@ -1009,6 +1075,13 @@ static gboolean _update_files_list(dt_lib_module_t *self)
   GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
   g_object_ref(model);
   gtk_tree_view_set_model(d->from.treeview, NULL);
+  // Query and save the active sort column and sort order before clearing,
+  // so we can restore them later and respect user-selected sorting.
+  gint sort_column_id = GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID;
+  GtkSortType sort_order = GTK_SORT_ASCENDING;
+  const gboolean has_sort = gtk_tree_sortable_get_sort_column_id(GTK_TREE_SORTABLE(model),
+                                                                 &sort_column_id,
+                                                                 &sort_order);
   gtk_list_store_clear(d->from.store);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
@@ -1018,8 +1091,18 @@ static gboolean _update_files_list(dt_lib_module_t *self)
   {
     d->from.nb = _import_from_camera_set_file_list(self);
     gtk_widget_hide(d->from.info);
-    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
-                                         DT_IMPORT_FILENAME, GTK_SORT_ASCENDING);
+    // Restore the user-selected sort column and sort order if available,
+    // otherwise fallback to filename sorting.
+    if(has_sort && sort_column_id != GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID)
+    {
+      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                           sort_column_id, sort_order);
+    }
+    else
+    {
+      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                           DT_IMPORT_FILENAME, GTK_SORT_ASCENDING);
+    }
   }
   else
 #endif
@@ -1049,6 +1132,13 @@ static void _import_new_toggled(GtkWidget *widget,
 
 static void _ignore_nonraws_toggled(GtkWidget *widget,
                                     dt_lib_module_t* self)
+{
+  _update_files_list(self);
+  _show_all_thumbs(self);
+}
+
+static void _hide_duplicates_toggled(GtkWidget *widget,
+                                     dt_lib_module_t* self)
 {
   _update_files_list(self);
   _show_all_thumbs(self);
@@ -1839,7 +1929,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
                                      G_TYPE_STRING, G_TYPE_STRING,
                                      G_TYPE_STRING, G_TYPE_STRING,
-                                     G_TYPE_UINT64);
+                                     G_TYPE_UINT64, G_TYPE_STRING,
+                                     G_TYPE_STRING);
   d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, 0,
                                         dtgtk_cairo_paint_eye);
 
@@ -1859,6 +1950,19 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(25));
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header, _("mark already imported images"));
+
+  // Add a skinny 25px duplicate column next to the exists column (only visible for camera imports)
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes("⧉", renderer, "text",
+                                                     DT_IMPORT_UI_DUPLICATE, NULL);
+  g_object_set(renderer, "xalign", 0.5, NULL);
+  gtk_tree_view_append_column(d->from.treeview, column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(25));
+  gtk_tree_view_column_set_visible(column, d->import_case == DT_IMPORT_CAMERA);
+  header = gtk_tree_view_column_get_button(column);
+  if(header)
+    gtk_widget_set_tooltip_text(header, _("mark possible duplicate images"));
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text",
@@ -1910,6 +2014,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 
   gtk_tree_view_set_model(d->from.treeview, GTK_TREE_MODEL(d->from.store));
   gtk_tree_view_set_headers_visible(d->from.treeview, TRUE);
+  gtk_tree_view_set_tooltip_column(d->from.treeview, DT_IMPORT_TOOLTIP);
 
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(d->from.w), TRUE, TRUE, 0);
 }
@@ -2084,6 +2189,18 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
   g_signal_connect(G_OBJECT(ignore_nonraws), "toggled",
                    G_CALLBACK(_ignore_nonraws_toggled), self);
+
+  // For camera imports, add a checkbox to hide duplicate images and connect its toggled signal
+  if(d->import_case == DT_IMPORT_CAMERA)
+  {
+    col = 0;
+    GtkWidget *hide_duplicates =
+      dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, TRUE);
+    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
+    g_signal_connect(G_OBJECT(hide_duplicates), "toggled",
+                     G_CALLBACK(_hide_duplicates_toggled), self);
+  }
+
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
 
   // files list
@@ -2257,7 +2374,9 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
       }
       else
 #endif
+      {
         dt_control_import(imgs, datetime_override, d->import_case == DT_IMPORT_INPLACE);
+      }
 
       if(d->import_case == DT_IMPORT_INPLACE)
       {
@@ -2461,6 +2580,7 @@ const struct
   int type;
 } _pref[] = {
   {"ui_last/import_ignore_nonraws",     "ignore_nonraws",     DT_BOOL},
+  {"ui_last/import_hide_duplicates",    "hide_duplicates",    DT_BOOL},
   {"ui_last/import_apply_metadata",     "apply_metadata",     DT_BOOL},
   {"ui_last/import_recursive",          "recursive",          DT_BOOL},
   {"ui_last/ignore_exif_rating",        "ignore_exif_rating", DT_BOOL},

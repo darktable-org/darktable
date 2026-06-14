@@ -1151,6 +1151,13 @@
     <longdescription>if enabled, only raw files will be allowed to import. non-raw files will not be visible in the dialog and will not be imported.</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
+    <name>ui_last/import_hide_duplicates</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>hide duplicate images</shortdescription>
+    <longdescription>hide duplicate images from the import list when importing from camera</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_apply_metadata</name>
     <type>bool</type>
     <default>false</default>

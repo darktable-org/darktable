@@ -382,7 +382,7 @@ dt_job_t *dt_camera_import_job_create(GList *images,
                                       const char *time_override)
 {
   dt_job_t *job = dt_control_job_create(&dt_camera_import_job_run,
-                                        "import selected images from camera");
+                                         "import selected images from camera");
   if(!job)
     return NULL;
 
