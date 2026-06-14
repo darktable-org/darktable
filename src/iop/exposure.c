@@ -840,6 +840,8 @@ static void _exposure_proxy_handle_event(int n_press,
                                   ? g->deflicker_target_level : g->exposure);
     const float val = dt_bauhaus_slider_get(widget);
     const float accel = dt_accel_get_speed_multiplier(widget, state);
+    // delta > 0 means 'brighten'; increase exposure or move the black point correction
+    // in the negative direction
     if(is_blackpoint)
       delta = -delta;
 
