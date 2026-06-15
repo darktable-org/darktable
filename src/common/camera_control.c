@@ -1256,7 +1256,11 @@ void dt_camctl_import(const dt_camctl_t *c,
                       const dt_camera_t *cam,
                       GList *images)
 {
-  GList *ifiles = g_list_sort(images, (GCompareFunc)_sort_filename);
+  // Copy the list structure first. g_list_sort sorts in-place and modifies the list nodes,
+  // which would change the head pointer seen by the caller (params->images).
+  // Copying preserves the original list structure so the caller can successfully free it.
+  GList *ifiles = g_list_copy(images);
+  ifiles = g_list_sort(ifiles, (GCompareFunc)_sort_filename);
   char *prev_file = NULL;
   char *prev_output = NULL;
 
@@ -1340,6 +1344,11 @@ void dt_camctl_import(const dt_camctl_t *c,
     prev_file = file;
   }
   g_free(prev_output);
+
+  // Free only the copied list nodes. The actual filename strings are still owned
+  // by the original list 'images' and will be freed by the caller's cleanup handler.
+  // Using g_list_free_full here would result in a use-after-free or double-free.
+  g_list_free(ifiles);
 
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
   _camctl_unlock(c);
