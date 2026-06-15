@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable master NL\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-10 23:06+0200\n"
-"PO-Revision-Date: 2026-06-11 19:08+0200\n"
+"PO-Revision-Date: 2026-06-14 13:04+0200\n"
 "Last-Translator: Reinder Mulder <r.i.m@hccnet.nl>\n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -2867,7 +2867,7 @@ msgstr "witniveau"
 #: ../src/iop/colisa.c:273 ../src/iop/colorequal.c:3066 ../src/iop/lowpass.c:575
 #: ../src/iop/soften.c:380 ../src/iop/vignette.c:1045 ../src/libs/history.c:959
 msgid "brightness"
-msgstr "gamma"
+msgstr "helderheid"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:263
 #: ../build/lib/darktable/plugins/introspection_agx.c:510
