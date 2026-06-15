@@ -45,4 +45,9 @@ void dt_p2p_announce_proxy(const char *raw_path);
 // Returns TRUE if the P2P daemon is running and connected.
 gboolean dt_p2p_is_running(void);
 
+// Tear down the running daemon and restart it with the current darktablerc
+// settings.  Blocks for up to ~2 s while the new daemon binds its socket.
+// Must be called from the GTK main thread.
+void dt_p2p_restart(void);
+
 G_END_DECLS

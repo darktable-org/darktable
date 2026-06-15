@@ -437,6 +437,11 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 	ownFP := pubkeyFingerprint(parsed)
 	allowed := loadAllowedKeyHashes(ownFP)
 	log.Printf("[tls] own fingerprint (sha256): %s", ownFP)
+	// Write fingerprint so darktable UI can display it in preferences.
+	if cfgDir, e2 := os.UserConfigDir(); e2 == nil {
+		_ = os.WriteFile(filepath.Join(cfgDir, "darktable", "peer.fingerprint"),
+			[]byte(ownFP+"\n"), 0644)
+	}
 	log.Printf("[tls] %d key(s) in allowed list (add extras to ~/.config/darktable/peer.keys)", len(allowed))
 
 	authTok := passphraseToken(passphrase)

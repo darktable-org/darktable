@@ -158,6 +158,7 @@ FILE(GLOB SOURCE_FILES
   "gui/import_metadata.c"
   "gui/metadata_tags.c"
   "gui/preferences.c"
+  "gui/preferences_p2p.c"
   "gui/presets.c"
   "gui/splash.c"
   "gui/welcome.c"

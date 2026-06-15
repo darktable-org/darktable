@@ -790,3 +790,9 @@ gboolean dt_p2p_is_running(void)
   g_mutex_unlock(&_p2p.lock);
   return ok;
 }
+
+void dt_p2p_restart(void)
+{
+  dt_p2p_cleanup();
+  dt_p2p_init();
+}
