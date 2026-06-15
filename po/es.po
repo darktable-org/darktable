@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-13 14:49-0600\n"
-"PO-Revision-Date: 2026-06-15 02:30-0600\n"
+"PO-Revision-Date: 2026-06-15 03:04-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -148,10 +148,9 @@ msgstr "Nombre de carpeta"
 
 # dt•v5.0*dt•v5.2
 #: ../build/bin/conf_gen.h:1066
-#, fuzzy
 msgctxt "preferences"
 msgid "display name"
-msgstr "mostrar nombre"
+msgstr "nombre para mostrar"
 
 #: ../build/bin/conf_gen.h:1085
 msgctxt "preferences"
@@ -731,17 +730,15 @@ msgstr "gris"
 
 # dt•v5.6
 #: ../build/bin/conf_gen.h:4667 ../build/bin/preferences_gen.h:238
-#, fuzzy
 msgctxt "preferences"
 msgid "dark"
-msgstr "oscuridad"
+msgstr "oscuro"
 
 # dt•v5.6
 #: ../build/bin/conf_gen.h:4668 ../build/bin/preferences_gen.h:239
-#, fuzzy
 msgctxt "preferences"
 msgid "darker"
-msgstr "oscurecer"
+msgstr "más oscuro"
 
 #: ../build/bin/conf_gen.h:4675 ../build/bin/preferences_gen.h:4580
 msgctxt "preferences"
@@ -874,9 +871,8 @@ msgstr "No disponible en este sistema"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:235
-#, fuzzy
 msgid "darktable theme"
-msgstr "darktable"
+msgstr "tema de darktable"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:236
@@ -1154,9 +1150,10 @@ msgstr "miniaturas"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:2855
-#, fuzzy
 msgid "for unaltered images, use raw file instead of embedded JPEG from size"
-msgstr "Emplear el archivo RAW en lugar de la imagen JPEG incrustada"
+msgstr ""
+"Para imágenes sin alterar, emplear el archivo RAW en lugar de la imagen JPEG "
+"incrustada"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:2864
@@ -1749,9 +1746,8 @@ msgstr ""
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:3636
-#, fuzzy
 msgid "OpenCL fast mode"
-msgstr "modelo de lente"
+msgstr "Modo rápido de OpenCL"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:3644
@@ -2268,9 +2264,8 @@ msgstr ""
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:4458
-#, fuzzy
 msgid "enable touchpad gestures in darkroom"
-msgstr "abrir imagen en el cuarto oscuro"
+msgstr "Activar los gestos del panel táctil en el cuarto oscuro"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:4466
@@ -2326,9 +2321,10 @@ msgstr ""
 
 # dt•v5.0
 #: ../build/bin/preferences_gen.h:4538
-#, fuzzy
 msgid "auto-scroll filmstrip to center on selected image"
-msgstr "Establecer los metadatos en las imágenes seleccionadas"
+msgstr ""
+"Desplazamiento automático de la tira de imágenes para centrar la imagen "
+"seleccionada"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:4546
@@ -6401,21 +6397,24 @@ msgstr "Advertencia: Opción desconocida «%s»\n"
 
 # dt•v5.6
 #: ../src/cli/main.c:468 ../src/cli/main.c:476
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "error: output file or directory must be specified\n"
 "\n"
 msgstr ""
-"Error: el archivo de salida es un directorio. Especifique un nombre de archivo"
+"Error: especifique un nombre de archivo o directorio de salida\n"
+"\n"
+"\n"
 
 # dt•v5.6
 #: ../src/cli/main.c:474
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "error: input file and output file must be specified\n"
 "\n"
 msgstr ""
-"Error: se han especificado opciones de entrada e importación no admitidas\n"
+"Error: especifique un nombre de archivo o directorio de entrada\n"
+"\n"
 
 # dt•v5.6
 #: ../src/cli/main.c:481
@@ -6584,9 +6583,9 @@ msgstr "parámetros no válidos"
 
 # dt•v5.0
 #: ../src/common/ai_models.c:1398
-#, fuzzy, c-format
+#, c-format
 msgid "file not found: %s"
-msgstr "Archivo no encontrado"
+msgstr "Archivo no encontrado: %s"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:1406
@@ -6645,9 +6644,8 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/common/ai_models.c:1581
-#, fuzzy
 msgid "failed to build download url"
-msgstr "Falló al descargar los guiones"
+msgstr "No se ha podido generar la URL de descarga"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:1592
@@ -6657,9 +6655,8 @@ msgstr "No se pudo crear el archivo %s."
 
 # dt•v5.0
 #: ../src/common/ai_models.c:1616
-#, fuzzy
 msgid "failed to initialize download"
-msgstr "Falló al descargar los guiones"
+msgstr "No se ha podido iniciar la descarga"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:1636
@@ -6680,9 +6677,8 @@ msgstr "Error en http: %ld"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:1672
-#, fuzzy
 msgid "checksum verification failed"
-msgstr "Código de verificación:"
+msgstr "Error en la verificación de la suma de comprobación"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:1682
@@ -7333,9 +7329,8 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/common/colorspaces.c:1769
-#, fuzzy
 msgid "no filename"
-msgstr "nombre"
+msgstr "Sin nombre de archivo"
 
 #: ../src/common/colorspaces.c:1787
 msgid "embedded ICC profile"
@@ -7710,13 +7705,12 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/common/darktable.c:2615
-#, fuzzy
 msgid ""
 "OpenCL 'per device' settings have changed.\n"
 "\n"
 msgstr ""
-"Es posible que se haya actualizado la configuración del compilador OpenCL "
-"«por dispositivo».\n"
+"Los ajustes de OpenCL «por dispositivo» han cambiado.\n"
+"\n"
 
 # dt•v5.6
 #: ../src/common/darktable.c:2616
@@ -8408,15 +8402,15 @@ msgstr "Falta el perfil ICC «%s»"
 
 # dt•v5.6
 #: ../src/common/iop_profile.c:914
-#, fuzzy, c-format
+#, c-format
 msgid "input icc profile '%s' missing"
-msgstr "perfil de color de entrada"
+msgstr "Falta el perfil ICC de entrada «%s»"
 
 # dt•v5.6
 #: ../src/common/iop_profile.c:967
-#, fuzzy, c-format
+#, c-format
 msgid "output icc profile '%s' missing"
-msgstr "Perfiles de salida ICC en %s o %s"
+msgstr "Falta el perfil ICC de salida «%s»"
 
 #: ../src/common/iop_profile.c:1190
 #, c-format
@@ -10601,15 +10595,13 @@ msgstr "afinar máscara"
 
 # dt•v5.6
 #: ../src/develop/develop.c:450
-#, fuzzy
 msgid "unpin image"
-msgstr "imagen de entrada"
+msgstr "desfijar imagen"
 
 # dt•v5.6
 #: ../src/develop/develop.c:453
-#, fuzzy
 msgid "image pinned"
-msgstr "imagen"
+msgstr "Imagen fijada"
 
 # dt•v5.6
 #: ../src/develop/develop.c:464 ../src/develop/develop.c:566
@@ -10619,21 +10611,18 @@ msgstr "no se pudo crear la carpeta de sesión %s."
 
 # dt•v5.6
 #: ../src/develop/develop.c:512 ../src/views/darkroom.c:4768
-#, fuzzy
 msgid "pin current image"
-msgstr "desplazarse por la imagen designada"
+msgstr "Fijar la imagen actual"
 
 # dt•v5.6
 #: ../src/develop/develop.c:515
-#, fuzzy
 msgid "image unpinned"
-msgstr "imagen"
+msgstr "Imagen desfijada"
 
 # dt•v5.6
 #: ../src/develop/develop.c:527
-#, fuzzy
 msgid "no valid image to pin"
-msgstr "No hay ninguna imagen para abrir"
+msgstr "No hay ninguna imagen válida que se pueda fijar"
 
 # dt•v5.6
 #: ../src/develop/develop.c:533
@@ -11125,9 +11114,8 @@ msgstr "Máscara de matriz de pixeles guardada"
 
 # dt•v5.2
 #: ../src/develop/masks/object.c:928
-#, fuzzy
 msgid "failed to save raster mask"
-msgstr "máscara de matriz de pixeles externa"
+msgstr "Falló al guardar la máscara de matriz de pixeles"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1009
@@ -11136,9 +11124,8 @@ msgstr "No se extrajo ninguna máscara de la segmentación por IA"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1017
-#, fuzzy
 msgid "ai object group"
-msgstr "Grupo básico"
+msgstr "grupo de objetos de ia"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1018
@@ -11147,9 +11134,9 @@ msgstr "objeto de ia"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1146
-#, fuzzy, c-format
+#, c-format
 msgid "smoothing: %3.2f"
-msgstr "suavizado"
+msgstr "suavizado: %3.2f"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1157
@@ -11159,13 +11146,13 @@ msgstr "limpieza: %d"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1170
-#, fuzzy, c-format
+#, c-format
 msgid "opacity: %d%%"
-msgstr "opacidad: %.0f%%"
+msgstr "opacidad: %d%%"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1293
-#, fuzzy, c-format
+#, c-format
 msgid "group '%s'"
 msgstr "agrupar «%s»"
 
@@ -11208,15 +11195,13 @@ msgstr "[OBJETO] aplicar máscara"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1823
-#, fuzzy
 msgid "[OBJECT] change smoothing"
-msgstr "[RUTA] ajustar tamaño"
+msgstr "[OBJETO] ajustar suavizado"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1828
-#, fuzzy
 msgid "[OBJECT] change cleanup"
-msgstr "[RUTA] ajustar opacidad"
+msgstr "[OBJETO] ajustar limpieza"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1833
@@ -12806,15 +12791,13 @@ msgstr ""
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/auto_straighten.lua:138
-#, fuzzy
 msgid "automatic_cropping"
-msgstr "corte automático"
+msgstr "recorte_automático"
 
 # dt•v5.6
 #: ../src/external/lua-scripts/official/auto_straighten.lua:139
-#, fuzzy
 msgid "what automatic cropping to perform"
-msgstr "corte automático"
+msgstr "El recorte automático que se debe realizar"
 
 # dt•v5.0
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13523,15 +13506,13 @@ msgstr "La imagen «%s» no está disponible"
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:488
-#, fuzzy
 msgid "select burst roll images"
-msgstr "seleccionar imagen alternativa"
+msgstr "Seleccionar imágenes de ráfagas"
 
 # dt•v5.6
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:489
-#, fuzzy
 msgid "select burst roll image containers"
-msgstr "seleccionar imagen alternativa"
+msgstr "Seleccionar contenedores de imágenes en ráfaga"
 
 # dt•v5.6
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:498
@@ -13728,9 +13709,8 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/group_persistence.lua:120
-#, fuzzy
 msgid "group persistence"
-msgstr "portadas de grupo"
+msgstr "persistencia de grupo"
 
 # dt•v5.6
 #. name of script
@@ -14086,9 +14066,8 @@ msgstr ""
 #. ------------------
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:243
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:246
-#, fuzzy
 msgid "failed to open bookmark file"
-msgstr "Hubo un fallo al analizar el archivo GPX"
+msgstr "No se ha podido abrir el archivo de marcadores"
 
 # dt•v5.6
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14100,9 +14079,8 @@ msgstr " sólo  se ejecuta en GNU/Linux"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:281
-#, fuzzy
 msgid "recent bookmarks file not found"
-msgstr "Archivo no encontrado"
+msgstr "No se ha encontrado el archivo de marcadores recientes"
 
 # dt•v5.6
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14178,9 +14156,8 @@ msgstr "Archivo no encontrado"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:79
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:246
-#, fuzzy
 msgid "regenerate thumbnails"
-msgstr "Recomponer miniaturas en caché"
+msgstr "regenerar miniaturas"
 
 # dt•v5.0
 #. visible name of script
@@ -14220,9 +14197,8 @@ msgstr "Generar un archivo PDF a partir de las imágenes seleccionadas"
 #. helper functions
 #. -----------------
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:176
-#, fuzzy
 msgid "regenerating thumbnails"
-msgstr "ocultar navegación de miniaturas"
+msgstr "regenerando miniaturas"
 
 # dt•v5.6
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14233,9 +14209,8 @@ msgstr "ocultar navegación de miniaturas"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:215
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:219
-#, fuzzy
 msgid "generate thumbnails"
-msgstr "Generar miniaturas en segundo plano"
+msgstr "generar miniaturas"
 
 # dt•v5.0
 #.
@@ -14517,9 +14492,8 @@ msgstr "Intervalo de tiempo objetivo antes de la interrupción"
 #: ../src/external/lua-scripts/official/select_duplicates.lua:86
 #: ../src/external/lua-scripts/official/select_duplicates.lua:238
 #: ../src/external/lua-scripts/official/select_duplicates.lua:262
-#, fuzzy
 msgid "select duplicates"
-msgstr "eliminar duplicado"
+msgstr "seleccionar duplicados"
 
 # dt•v5.6
 #. visible name of script
@@ -14789,22 +14763,19 @@ msgstr "deseleccionar todo"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/select_unaltered.lua:78
 #: ../src/external/lua-scripts/official/select_unaltered.lua:151
-#, fuzzy
 msgid "select unaltered"
-msgstr "seleccionar no editadas"
+msgstr "seleccionar inalteradas"
 
 # dt•v5.6
 #. visible name of script
 #: ../src/external/lua-scripts/official/select_unaltered.lua:79
-#, fuzzy
 msgid "select images that have not been altered in any way"
-msgstr "Sólo se seleccionan las imágenes que aún no han sido importadas"
+msgstr "Sólo selecciona imágenes que no hayan sido modificadas de alguna manera"
 
 # dt•v5.6
 #: ../src/external/lua-scripts/official/select_unaltered.lua:152
-#, fuzzy
 msgid "select unaltered files"
-msgstr "seleccionar archivo LUT"
+msgstr "seleccionar archivos inalterados"
 
 # dt•v5.6
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14958,9 +14929,8 @@ msgstr ""
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/selection2collection.lua:300
-#, fuzzy
 msgid "create temporary collection"
-msgstr "navegar por la colección"
+msgstr "crear una colección temporal"
 
 # dt•v5.6
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14972,9 +14942,8 @@ msgstr "navegar por la colección"
 #. skip if shortcut already registered
 #: ../src/external/lua-scripts/official/selection2collection.lua:304
 #: ../src/external/lua-scripts/official/selection2collection.lua:335
-#, fuzzy
 msgid "convert selection to collection"
-msgstr "ir a la colección de etiquetas"
+msgstr "convertir la selección en una colección"
 
 # dt•v5.0
 #.
@@ -15019,7 +14988,6 @@ msgstr "Selección a PDF"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:57
-#, fuzzy
 msgid "generate a PDF file of selected images"
 msgstr "Generar un archivo PDF a partir de las imágenes seleccionadas"
 
@@ -15029,7 +14997,6 @@ msgstr "Generar un archivo PDF a partir de las imágenes seleccionadas"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:69
-#, fuzzy
 msgid "a PDF viewer"
 msgstr "Un visor PDF"
 
@@ -15068,7 +15035,6 @@ msgstr "miniaturas por fila:"
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:137
-#, fuzzy
 msgid "export thumbnails to PDF"
 msgstr "Exportar miniaturas a PDF"
 
@@ -15082,7 +15048,6 @@ msgstr "Problema al ejecutar pdflatex"
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:203
-#, fuzzy
 msgid "problem running PDF viewer"
 msgstr "Problema al ejecutar el visor de PDF"
 
@@ -16036,15 +16001,13 @@ msgstr "alternar"
 
 # dt•v5.6
 #: ../src/gui/accelerators.c:137
-#, fuzzy
 msgid "previous module"
-msgstr "módulo de enfoque"
+msgstr "módulo previo"
 
 # dt•v5.6
 #: ../src/gui/accelerators.c:138
-#, fuzzy
 msgid "next module"
-msgstr "activar módulo"
+msgstr "módulo siguiente"
 
 # dt•v5.6
 #: ../src/gui/accelerators.c:138
@@ -17624,15 +17587,13 @@ msgstr "id. cuando se cargue"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:163
-#, fuzzy
 msgid "update available"
-msgstr "No disponible"
+msgstr "Actualización disponible"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:165
-#, fuzzy
 msgid "update required"
-msgstr "actualizar preajuste"
+msgstr "Es necesario actualizar"
 
 # Traducción no literal: Se usa un mensaje con mejor sentido en español.
 #: ../src/gui/preferences_ai.c:167
@@ -17641,9 +17602,8 @@ msgstr "Descargando..."
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:171
-#, fuzzy
 msgid "not downloaded"
-msgstr "id. cuando se cargue"
+msgstr "no descargado"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:379
@@ -17667,21 +17627,19 @@ msgstr "Descargando módulos modelo de IA"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:848
-#, fuzzy, c-format
+#, c-format
 msgid "downloading: %s"
-msgstr "Cargando «%s» ..."
+msgstr "Descargando: %s"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:919
-#, fuzzy
 msgid "model download failed"
-msgstr "cargando: %s"
+msgstr "Error al descargar el modelo"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:994
-#, fuzzy
 msgid "install AI models"
-msgstr "modo de relleno"
+msgstr "Instalar modelos de IA"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1002
@@ -17690,25 +17648,23 @@ msgstr "Paquetes de modelos de IA (*.dtmodel)"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1093
-#, fuzzy
 msgid "delete model?"
 msgid_plural "delete models?"
-msgstr[0] "¿Desea eliminar el nodo?"
-msgstr[1] "¿Desea eliminar el nodo?"
+msgstr[0] "¿Eliminar el modelo?"
+msgstr[1] "¿Eliminar los modelos?"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1095
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to delete %d selected model?"
 msgid_plural "do you really want to delete %d selected models?"
-msgstr[0] "¿Desea realmente eliminar el historial de %d imagen seleccionada?"
-msgstr[1] "¿Desea realmente eliminar el historial de %d imágenes seleccionadas?"
+msgstr[0] "¿Desea realmente eliminar el modelo seleccionado %d?"
+msgstr[1] "¿Desea realmente eliminar los modelos seleccionados %d?"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1156
-#, fuzzy
 msgid "scope"
-msgstr "monitor de gráficos"
+msgstr "visor"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1156
@@ -17722,9 +17678,8 @@ msgstr "Fuente"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1157
-#, fuzzy
 msgid "paper"
-msgstr "formato de papel"
+msgstr "papel"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1158
@@ -17733,9 +17688,8 @@ msgstr "Licencia"
 
 # dt•v5.0
 #: ../src/gui/preferences_ai.c:1158
-#, fuzzy
 msgid "training data"
-msgstr "Preparando la base de datos"
+msgstr "datos de entrenamiento"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1159
@@ -17873,9 +17827,8 @@ msgstr "Selecciona una biblioteca compartida personalizada de ONNX Runtime"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1661
-#, fuzzy
 msgid "detect"
-msgstr "autodetectar"
+msgstr "detectar"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1663
@@ -17888,9 +17841,8 @@ msgstr "modelos"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1745
-#, fuzzy
 msgid "select/deselect all"
-msgstr "seleccionar todo"
+msgstr "seleccionar/deseleccionar todo"
 
 #: ../src/gui/preferences_ai.c:1792 ../src/libs/metadata_view.c:137
 msgid "version"
@@ -17936,9 +17888,8 @@ msgstr "¿eliminar duplicado?"
 # dt•v5.0
 #. import from file button
 #: ../src/gui/preferences_ai.c:1896
-#, fuzzy
 msgid "import from file…"
-msgstr "Filtro de importación"
+msgstr "Importar desde un archivo…"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1898
@@ -17948,9 +17899,8 @@ msgstr "Instalar un modelo a partir de un archivo local .dtmodel"
 # dt•v5.4
 #. delete selected button
 #: ../src/gui/preferences_ai.c:1904
-#, fuzzy
 msgid "delete selected"
-msgstr "eliminar duplicado"
+msgstr "eliminar seleccionado"
 
 # dt•v5.0
 #: ../src/gui/preferences_ai.c:1906
@@ -18317,15 +18267,13 @@ msgstr "Bienvenido a darktable"
 # dt•v5.6
 #. Navigation buttons (right-aligned)
 #: ../src/gui/welcome.c:739
-#, fuzzy
 msgid "_prev"
-msgstr "Vista previa"
+msgstr "_previo"
 
 # dt•v5.6
 #: ../src/gui/welcome.c:742
-#, fuzzy
 msgid "_next"
-msgstr "siguiente"
+msgstr "_siguiente"
 
 # dt•v5.6
 #: ../src/gui/welcome.c:796
@@ -18483,9 +18431,8 @@ msgstr "crear"
 # dt•v5.0
 # v5.4
 #: ../src/gui/workspace.c:655
-#, fuzzy
 msgid "copy settings from existing workspace"
-msgstr "Elija un espacio de trabajo existente"
+msgstr "Copiar la configuración de un espacio de trabajo existente"
 
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
@@ -23349,9 +23296,8 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:1513
-#, fuzzy
 msgid "vectorscope two-way sync"
-msgstr "cambiar vistas del vectorscopio"
+msgstr "sincronización bidireccional del vectorscopio"
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:1517
@@ -27558,9 +27504,8 @@ msgstr ""
 # dt•v5.6
 #. Vectorize button
 #: ../src/iop/rasterfile.c:764
-#, fuzzy
 msgid "vectorize"
-msgstr "colorear"
+msgstr "vectorizar"
 
 # dt•v5.6
 #: ../src/iop/rasterfile.c:767
@@ -32840,9 +32785,9 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:846
-#, fuzzy, c-format
+#, c-format
 msgid "failed to open TIFF for writing: %s"
-msgstr "No se pudo importar el preajuste %s"
+msgstr "No se pudo abrir el archivo TIFF para escribir: %s"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:897
@@ -33094,9 +33039,8 @@ msgstr "Procesar imágenes seleccionadas"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4289
-#, fuzzy
 msgid "output parameters"
-msgstr "parámetros"
+msgstr "parámetros de salida"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4300
@@ -33111,9 +33055,8 @@ msgstr "Perfil de color integrado en el archivo TIFF de salida"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4352
-#, fuzzy
 msgid "preserve wide-gamut colors"
-msgstr "preservar los colores"
+msgstr "preservar los colores de amplia gama"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4359
@@ -33129,15 +33072,13 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4368
-#, fuzzy
 msgid "add to the current collection"
-msgstr "%s en la colección actual"
+msgstr "añadir a la colección actual"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4374
-#, fuzzy
 msgid "automatically import the output image into the current collection"
-msgstr "Seleccionar todas las imágenes en la colección actual"
+msgstr "Importar automáticamente la imagen resultante a la colección actual"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4390
@@ -33768,9 +33709,8 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/libs/styles.c:1017
-#, fuzzy
 msgid "style preview settings"
-msgstr "configuración de previsualización de la máscara"
+msgstr "Configuración de la vista previa de estilos"
 
 # dt•v5.6
 #: ../src/libs/styles.c:1025
@@ -34207,9 +34147,8 @@ msgstr "Establecer la diferencia horaria en las imágenes seleccionadas"
 
 # dt•v5.6
 #: ../src/libs/tools/filmstrip.c:154
-#, fuzzy
 msgid "center on selected image"
-msgstr "imagen seleccionada"
+msgstr "centrar en la imagen seleccionada"
 
 #: ../src/libs/tools/filter.c:42
 msgid "filter"
@@ -34700,9 +34639,8 @@ msgstr "opciones de Lua"
 
 # dt•v5.6
 #: ../src/lua/preferences.c:919
-#, fuzzy
 msgid "per-script configuration options"
-msgstr "Información sobre la configuración"
+msgstr "opciones de configuración por guion"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:626
