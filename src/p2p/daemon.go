@@ -84,8 +84,11 @@ type daemon struct {
 	syncedPeers   map[string]bool
 
 	// xmp dedup: canonical_path → last mtime synced
-	xmpMu   sync.Mutex
-	xmpSeen map[string]time.Time
+	xmpMu          sync.Mutex
+	xmpSeen        map[string]time.Time
+	// xmpSuppressFrom: after applying inbound XMP, suppress echo to the sender
+	// for a short window so we don't bounce the edit back to whoever sent it.
+	xmpSuppressFrom map[string]xmpSuppressEntry
 
 	// local file index: basename → []canonical-path, rebuilt on start and on import
 	localIndexMu sync.RWMutex
@@ -109,14 +112,21 @@ type socketMsg struct {
 	Data json.RawMessage `json:"data,omitempty"`
 }
 
+// xmpSuppressEntry records the peer URL to exclude from the next push for a path.
+type xmpSuppressEntry struct {
+	url   string
+	until time.Time
+}
+
 // XMP sync envelope published on xmpTopic.
 type xmpMsg struct {
 	SenderID    string `json:"sender"`
-	Path        string `json:"path"`         // sender's canonical raw path
-	Filename    string `json:"filename"`     // basename for cross-machine matching
-	CaptureDate string `json:"capture_date"` // exif:DateTimeOriginal for disambiguation
-	Content     string `json:"content"`      // full XMP text
-	Mtime       int64  `json:"mtime"`        // unix ns
+	SenderURL   string `json:"sender_url,omitempty"` // HTTP base URL of the sender
+	Path        string `json:"path"`                 // sender's canonical raw path
+	Filename    string `json:"filename"`             // basename for cross-machine matching
+	CaptureDate string `json:"capture_date"`         // exif:DateTimeOriginal for disambiguation
+	Content     string `json:"content"`              // full XMP text
+	Mtime       int64  `json:"mtime"`                // unix ns
 }
 
 // Proxy announce published on proxyTopic.
@@ -298,7 +308,8 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		proxyTop:    proxyTop,
 		peers:       make(map[peer.ID]string),
 		syncedPeers: make(map[string]bool),
-		xmpSeen:     make(map[string]time.Time),
+		xmpSeen:         make(map[string]time.Time),
+		xmpSuppressFrom: make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
 		announcedProxies: make(map[string]struct{}),
 	}
@@ -548,6 +559,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 				continue
 			}
 			x.SenderID    = d.host.ID().String()
+			x.SenderURL   = d.localProxyURL()
 			x.Filename    = filepath.Base(x.Path)
 			x.CaptureDate = xmpCaptureDate(x.Content)
 
@@ -557,6 +569,13 @@ func (d *daemon) handleConn(conn net.Conn) {
 			dup := !t.After(d.xmpSeen[x.Path])
 			if !dup {
 				d.xmpSeen[x.Path] = t
+			}
+			// Check if we recently received this path from a peer; if so, exclude
+			// that peer from the push to avoid bouncing the edit back to them.
+			var excludeURL string
+			if e, ok := d.xmpSuppressFrom[x.Path]; ok && time.Now().Before(e.until) {
+				excludeURL = e.url
+				delete(d.xmpSuppressFrom, x.Path)
 			}
 			d.xmpMu.Unlock()
 			if dup {
@@ -573,7 +592,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 			if b, err := json.Marshal(x); err == nil {
 				d.xmpTop.Publish(d.ctx, b)
 			}
-			go d.pushXMPToPeers(x)
+			go d.pushXMPToPeers(x, excludeURL)
 
 		case "announce_proxy":
 			var req struct {
@@ -655,6 +674,16 @@ func (d *daemon) applyInboundXMP(x xmpMsg, from string) {
 	} else {
 		result, _ := json.Marshal(map[string]string{"path": localPath})
 		d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
+		// Record suppress entry so any immediate echo from our darktable
+		// doesn't bounce the edit back to the peer who sent it.
+		if x.SenderURL != "" {
+			d.xmpMu.Lock()
+			d.xmpSuppressFrom[localPath] = xmpSuppressEntry{
+				url:   x.SenderURL,
+				until: time.Now().Add(15 * time.Second),
+			}
+			d.xmpMu.Unlock()
+		}
 	}
 }
 
@@ -664,12 +693,17 @@ func (d *daemon) subscribeXMP() {
 		if err != nil {
 			return
 		}
+		// m.ReceivedFrom is the last-hop peer, not the originator.
+		// Also check SenderID to drop our own messages that routed back via gossip.
 		if m.ReceivedFrom == d.host.ID() {
 			continue
 		}
 		var x xmpMsg
 		if err := json.Unmarshal(m.Data, &x); err != nil {
 			continue
+		}
+		if x.SenderID == d.host.ID().String() {
+			continue // own message routed back via intermediate peer
 		}
 		d.applyInboundXMP(x, m.ReceivedFrom.ShortString())
 	}
@@ -679,14 +713,15 @@ var xmpPushClient = &http.Client{Timeout: 10 * time.Second}
 
 // pushXMPToPeers sends x directly via HTTP POST to every known reachable peer.
 // This ensures delivery even when gossipsub has not yet established peer
-// connections (peers=0).
-func (d *daemon) pushXMPToPeers(x xmpMsg) {
+// connections (peers=0).  excludeURL, if non-empty, is skipped — used to avoid
+// bouncing an edit back to the peer we just received it from.
+func (d *daemon) pushXMPToPeers(x xmpMsg, excludeURL string) {
 	myURL := d.localProxyURL()
 	myLANURL := fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
 	seen := make(map[string]bool)
 	var targets []string
 	collect := func(u string) {
-		if u != "" && u != myURL && u != myLANURL && !seen[u] {
+		if u != "" && u != myURL && u != myLANURL && u != excludeURL && !seen[u] {
 			seen[u] = true
 			targets = append(targets, u)
 		}

@@ -464,6 +464,13 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
       image->matrixCoefficients      = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
       image->yuvRange = AVIF_RANGE_FULL;
 
+      // Embed the camera's ICC profile (if the RAW file contains one) so
+      // darktable's colorin can use DT_COLORSPACE_EMBEDDED_ICC for the proxy.
+      if(lr->color.profile && lr->color.profile_length > 0)
+        avifImageSetProfileICC(image,
+                               (const uint8_t *)lr->color.profile,
+                               lr->color.profile_length);
+
 #if AVIF_VERSION >= 1000000
       if(avifImageAllocatePlanes(image, AVIF_PLANES_YUV) != AVIF_RESULT_OK) continue;
 #else
@@ -521,6 +528,17 @@ gboolean dt_imageio_create_proxy(const char *raw_path, int quality)
     if(!f) goto out;
     if(fwrite(output.data, 1, output.size, f) != output.size)
       goto out;
+
+    // Close before exiv2 re-opens the file to embed camera EXIF.
+    fclose(f); f = NULL;
+
+    // Embed camera Make/Model so darktable can look up the correct colorin
+    // camera matrix when the original RAW is absent on a remote machine.
+    // Without this the proxy renders with a generic input profile, producing
+    // a visible color mismatch versus the original.
+    dt_imageio_proxy_write_camera_exif(proxy_path,
+                                       lr->idata.make,
+                                       lr->idata.model);
 
     ok = TRUE;
     dt_print(DT_DEBUG_IMAGEIO, "[proxy] created '%s' (%zu KB, quality %d)",

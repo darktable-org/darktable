@@ -43,6 +43,21 @@ gboolean dt_imageio_proxy_path(const char *raw_path, char *buf, size_t buflen);
  */
 gboolean dt_imageio_create_proxy(const char *raw_path, int quality);
 
+/*
+ * Embed minimal camera identification EXIF (Make + Model) into an already-
+ * written proxy AVIF.  Without this, darktable cannot look up the camera's
+ * color matrix in colorin when the original RAW is absent, causing a visible
+ * color mismatch between the proxy and the original render.
+ *
+ * Called automatically by dt_imageio_create_proxy.  Exposed here for
+ * external callers that create or re-export proxy files independently.
+ *
+ * Returns 1 on success, 0 on error (non-fatal).
+ */
+int dt_imageio_proxy_write_camera_exif(const char *proxy_path,
+                                       const char *make,
+                                       const char *model);
+
 #ifdef __cplusplus
 }
 #endif

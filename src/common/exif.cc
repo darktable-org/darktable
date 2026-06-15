@@ -2693,6 +2693,34 @@ int dt_exif_write_blob(uint8_t *blob,
   return 1;
 }
 
+// Write minimal camera identification EXIF (Make + Model) into a proxy AVIF so
+// that darktable can look up the correct colorin camera matrix when the original
+// RAW is absent.  Called from imageio/proxy.c after the AVIF is written to disk.
+int dt_imageio_proxy_write_camera_exif(const char *proxy_path,
+                                       const char *make,
+                                       const char *model)
+{
+  if(!proxy_path || (!make && !model)) return 0;
+  try
+  {
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(proxy_path)));
+    assert(image.get() != 0);
+    read_metadata_threadsafe(image);
+    Exiv2::ExifData &exif = image->exifData();
+    if(make  && *make)  exif["Exif.Image.Make"]  = std::string(make);
+    if(model && *model) exif["Exif.Image.Model"] = std::string(model);
+    exif.sortByTag();
+    write_metadata_threadsafe(image);
+    return 1;
+  }
+  catch(const Exiv2::AnyError &e)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[proxy] exif write failed for '%s': %s", proxy_path, e.what());
+    return 0;
+  }
+}
+
 static void _remove_exif_geotag(Exiv2::ExifData &exifData)
 {
   static const char *keys[] =
