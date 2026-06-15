@@ -2221,7 +2221,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   {
     col = 0;
     GtkWidget *hide_duplicates =
-      dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, FALSE);
+      dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, TRUE);
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
     g_signal_connect(G_OBJECT(hide_duplicates), "toggled",
                      G_CALLBACK(_hide_duplicates_toggled), self);
