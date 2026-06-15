@@ -369,7 +369,9 @@ static void dt_camera_import_cleanup(void *p)
 {
   dt_camera_import_t *params = p;
 
-  g_list_free(params->images);
+  // Free the dynamically allocated filename strings in the list, then the list itself.
+  // These strings were allocated by gtk_tree_model_get in import.c:_import_from_dialog_run.
+  g_list_free_full(params->images, g_free);
 
   dt_import_session_destroy(params->shared.session);
 
