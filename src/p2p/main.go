@@ -112,23 +112,24 @@ func defaultSocketPath() string {
 	return "/tmp/darktable-p2p.sock"
 }
 
-// normalizePeerURL accepts bare IPs, IP:port, or full http:// URLs and
-// returns a canonical http://host:port string.
+// normalizePeerURL accepts bare IPs, IP:port, or full http(s):// URLs and
+// returns a canonical https://host:port string.
 //
-//	192.168.1.108          → http://192.168.1.108:17842
-//	192.168.1.108:8080     → http://192.168.1.108:8080
-//	http://192.168.1.108   → http://192.168.1.108:17842
+//	192.168.1.108          → https://192.168.1.108:17842
+//	192.168.1.108:8080     → https://192.168.1.108:8080
+//	http://192.168.1.108   → https://192.168.1.108:17842
 func normalizePeerURL(s string) string {
 	if s == "" {
 		return ""
 	}
 	if !strings.Contains(s, "://") {
-		s = "http://" + s
+		s = "https://" + s
 	}
 	u, err := url.Parse(s)
 	if err != nil || u.Host == "" {
 		return ""
 	}
+	u.Scheme = "https"
 	if u.Port() == "" {
 		u.Host = fmt.Sprintf("%s:%d", u.Hostname(), proxyHTTPPort)
 	}

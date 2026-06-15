@@ -3,11 +3,18 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/ed25519"
+	"crypto/rand"
 	"crypto/sha256"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"math/big"
 	"net"
 	"net/http"
 	"os"
@@ -26,7 +33,6 @@ import (
 	multiaddr "github.com/multiformats/go-multiaddr"
 	"golang.org/x/crypto/pbkdf2"
 	gocrypto "crypto"
-	_ "crypto/sha256"
 	"net/url"
 
 	"github.com/huin/goupnp/dcps/internetgateway1"
@@ -35,13 +41,159 @@ import (
 )
 
 const (
-	xmpTopic       = "darktable/xmp/v1"
-	proxyTopic     = "darktable/proxy-announce/v1"
-	mdnsServiceTag = "darktable-p2p"
-	pbkdf2Iter     = 100000
-	keyLen         = 32
-	proxyHTTPPort  = 17842
+	xmpTopic        = "darktable/xmp/v1"
+	proxyTopic      = "darktable/proxy-announce/v1"
+	mdnsServiceTag  = "darktable-p2p"
+	pbkdf2Iter      = 100000
+	keyLen          = 32
+	proxyHTTPPort   = 17842
+	// passphraseHeader is required on every inbound HTTP request.
+	passphraseHeader = "X-DT-Auth"
 )
+
+// ---------------------------------------------------------------------------
+// TLS helpers
+// ---------------------------------------------------------------------------
+
+// tlsCertFromKey derives a self-signed TLS certificate from the p2p identity
+// key (itself derived from the shared passphrase).  All peers with the same
+// passphrase share the same key and therefore the same certificate fingerprint,
+// so the fingerprint doubles as a shared secret for peer identification.
+func tlsCertFromKey(priv crypto.PrivKey) (tls.Certificate, error) {
+	raw, err := priv.Raw()
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("key raw: %w", err)
+	}
+	var edPriv ed25519.PrivateKey
+	switch len(raw) {
+	case ed25519.PrivateKeySize: // 64 bytes — full key
+		edPriv = ed25519.PrivateKey(raw)
+	case ed25519.SeedSize: // 32 bytes — seed only
+		edPriv = ed25519.NewKeyFromSeed(raw)
+	default:
+		return tls.Certificate{}, fmt.Errorf("unexpected Ed25519 key length %d", len(raw))
+	}
+
+	serial, err := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+	tmpl := &x509.Certificate{
+		SerialNumber: serial,
+		Subject:      pkix.Name{CommonName: "darktable-p2p"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(100 * 365 * 24 * time.Hour),
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+	}
+	certDER, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, edPriv.Public(), edPriv)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("create cert: %w", err)
+	}
+	return tls.Certificate{
+		Certificate: [][]byte{certDER},
+		PrivateKey:  edPriv,
+	}, nil
+}
+
+// pubkeyFingerprint returns the lowercase hex SHA256 of the certificate's
+// SubjectPublicKeyInfo (SPKI) DER bytes — stable across certificate re-issuance.
+func pubkeyFingerprint(cert *x509.Certificate) string {
+	spki, err := x509.MarshalPKIXPublicKey(cert.PublicKey)
+	if err != nil {
+		// Fallback: hash the raw SPKI field embedded in the cert.
+		h := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
+		return hex.EncodeToString(h[:])
+	}
+	h := sha256.Sum256(spki)
+	return hex.EncodeToString(h[:])
+}
+
+// passphraseToken derives a fixed-length authentication token from the
+// passphrase.  Sent as an HTTP header; TLS encryption protects it in transit.
+func passphraseToken(passphrase string) string {
+	h := sha256.Sum256([]byte("darktable-p2p-auth\x00" + passphrase))
+	return hex.EncodeToString(h[:])
+}
+
+// peerKeysPath returns the path of the allowed-fingerprints file.
+func peerKeysPath() string {
+	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
+		return dir + "/darktable/peer.keys"
+	}
+	if home, err := os.UserHomeDir(); err == nil {
+		return home + "/.config/darktable/peer.keys"
+	}
+	return ""
+}
+
+// loadAllowedKeyHashes returns the set of accepted server TLS public key
+// fingerprints.  ownFP is always included so nodes on the same passphrase
+// accept each other by default.  Additional fingerprints may be listed in
+// ~/.config/darktable/peer.keys, one per line (plain hex or "sha256:<hex>").
+func loadAllowedKeyHashes(ownFP string) map[string]bool {
+	allowed := map[string]bool{ownFP: true}
+	data, err := os.ReadFile(peerKeysPath())
+	if err != nil {
+		return allowed
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.ToLower(strings.TrimSpace(line))
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		line = strings.TrimPrefix(line, "sha256:")
+		if len(line) == 64 { // SHA256 = 32 bytes = 64 hex chars
+			allowed[line] = true
+		}
+	}
+	return allowed
+}
+
+// newServerTLSConfig returns a TLS config for the HTTP server.
+// Client certificates are not required; authentication is via the
+// passphraseHeader checked at the HTTP handler layer.
+func newServerTLSConfig(cert tls.Certificate) *tls.Config {
+	return &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS13,
+		ClientAuth:   tls.NoClientCert,
+	}
+}
+
+// newClientTLSConfig returns a TLS config for outbound peer connections.
+// Chain validation is skipped; instead the server's public key fingerprint
+// must be in the allowed set.
+func newClientTLSConfig(cert tls.Certificate, allowed map[string]bool) *tls.Config {
+	return &tls.Config{
+		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: true, //nolint:gosec — deliberate; fingerprint-pinned below
+		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+			for _, raw := range rawCerts {
+				c, err := x509.ParseCertificate(raw)
+				if err != nil {
+					continue
+				}
+				if allowed[pubkeyFingerprint(c)] {
+					return nil
+				}
+			}
+			return fmt.Errorf("server TLS public key not in allowed list")
+		},
+	}
+}
+
+// requireAuth is HTTP middleware that rejects requests without the correct
+// passphrase token in passphraseHeader.
+func requireAuth(next http.Handler, token string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get(passphraseHeader) != token {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
 // reDatetime matches exif:DateTimeOriginal (and similar) in XMP XML.
 var reDatetime = regexp.MustCompile(
@@ -82,6 +234,12 @@ type daemon struct {
 	// gossip and reverse connections don't create infinite loops.
 	syncedPeersMu sync.Mutex
 	syncedPeers   map[string]bool
+
+	// TLS identity and authentication.
+	tlsCert      tls.Certificate
+	authToken    string          // passphraseToken(passphrase) — sent as X-DT-Auth header
+	allowedKeyFPs map[string]bool // SHA256 SPKI fingerprints of trusted peer servers
+	tlsClient    *http.Client    // TLS-configured client for all outbound peer requests
 
 	// xmp dedup: canonical_path → last mtime synced
 	xmpMu          sync.Mutex
@@ -267,6 +425,29 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		return nil, fmt.Errorf("key derivation: %w", err)
 	}
 
+	// Build TLS identity from the passphrase-derived key.
+	tlsCert, err := tlsCertFromKey(priv)
+	if err != nil {
+		return nil, fmt.Errorf("tls cert: %w", err)
+	}
+	parsed, err := x509.ParseCertificate(tlsCert.Certificate[0])
+	if err != nil {
+		return nil, fmt.Errorf("parse own cert: %w", err)
+	}
+	ownFP := pubkeyFingerprint(parsed)
+	allowed := loadAllowedKeyHashes(ownFP)
+	log.Printf("[tls] own fingerprint (sha256): %s", ownFP)
+	log.Printf("[tls] %d key(s) in allowed list (add extras to ~/.config/darktable/peer.keys)", len(allowed))
+
+	authTok := passphraseToken(passphrase)
+
+	tlsClient := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: newClientTLSConfig(tlsCert, allowed),
+		},
+	}
+
 	h, err := libp2p.New(
 		libp2p.Identity(priv),
 		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"),
@@ -308,6 +489,10 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		proxyTop:    proxyTop,
 		peers:       make(map[peer.ID]string),
 		syncedPeers: make(map[string]bool),
+		tlsCert:         tlsCert,
+		authToken:       authTok,
+		allowedKeyFPs:   allowed,
+		tlsClient:       tlsClient,
 		xmpSeen:         make(map[string]time.Time),
 		xmpSuppressFrom: make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
@@ -370,7 +555,7 @@ func (d *daemon) initExternalAccess() {
 		if err == nil && extIP != "" && extIP != "0.0.0.0" {
 			_ = mapper.AddPortMapping("", uint16(proxyHTTPPort), "TCP",
 				uint16(proxyHTTPPort), d.localIP(), true, "darktable-p2p", 3600)
-			d.externalURL = fmt.Sprintf("http://%s:%d", extIP, proxyHTTPPort)
+			d.externalURL = fmt.Sprintf("https://%s:%d", extIP, proxyHTTPPort)
 			log.Printf("[upnp] external URL: %s", d.externalURL)
 			go d.renewUPnP(mapper)
 			return
@@ -387,7 +572,7 @@ func (d *daemon) initExternalAccess() {
 		extIP := net.IP(ext.ExternalIPAddress[:]).String()
 		if extIP != "" && extIP != "0.0.0.0" {
 			_, _ = pmp.AddPortMapping("tcp", proxyHTTPPort, proxyHTTPPort, 3600)
-			d.externalURL = fmt.Sprintf("http://%s:%d", extIP, proxyHTTPPort)
+			d.externalURL = fmt.Sprintf("https://%s:%d", extIP, proxyHTTPPort)
 			log.Printf("[nat-pmp] external URL: %s", d.externalURL)
 		}
 	}
@@ -709,15 +894,13 @@ func (d *daemon) subscribeXMP() {
 	}
 }
 
-var xmpPushClient = &http.Client{Timeout: 10 * time.Second}
-
 // pushXMPToPeers sends x directly via HTTP POST to every known reachable peer.
 // This ensures delivery even when gossipsub has not yet established peer
 // connections (peers=0).  excludeURL, if non-empty, is skipped — used to avoid
 // bouncing an edit back to the peer we just received it from.
 func (d *daemon) pushXMPToPeers(x xmpMsg, excludeURL string) {
 	myURL := d.localProxyURL()
-	myLANURL := fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
+	myLANURL := fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort)
 	seen := make(map[string]bool)
 	var targets []string
 	collect := func(u string) {
@@ -745,7 +928,7 @@ func (d *daemon) pushXMPToPeers(x xmpMsg, excludeURL string) {
 	for _, baseURL := range targets {
 		baseURL := baseURL
 		go func() {
-			resp, err := xmpPushClient.Post(baseURL+"/xmp", "application/json", bytes.NewReader(b))
+			resp, err := d.httpPost(baseURL+"/xmp", "application/json", bytes.NewReader(b))
 			if err != nil {
 				log.Printf("[xmp] direct push to %s: %v", baseURL, err)
 				return
@@ -777,7 +960,7 @@ func (d *daemon) fetchAndImport(remotePath, xmpContent, filename, captureDate st
 
 	if baseURL == "" {
 		myURL := d.localProxyURL()
-		myLANURL := fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
+		myLANURL := fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort)
 		for _, u := range d.peersToSync() {
 			if u != myURL && u != myLANURL {
 				baseURL = u
@@ -872,7 +1055,7 @@ func (d *daemon) localDestination(remotePath string) string {
 // and returns true on success.
 func (d *daemon) downloadProxy(remotePath, localPath, baseURL string) bool {
 	url := baseURL + "/proxy?path=" + remotePath
-	resp, err := http.Get(url)
+	resp, err := d.httpGet(url)
 	if err != nil {
 		log.Printf("[proxy] fetch '%s' from %s: %v", filepath.Base(remotePath), baseURL, err)
 		return false
@@ -929,7 +1112,7 @@ func (d *daemon) fetchProxyFromPeer(canonicalPath string, enc *json.Encoder) {
 
 	for _, baseURL := range urls {
 		url := baseURL + "/proxy?path=" + canonicalPath
-		resp, err := http.Get(url)
+		resp, err := d.httpGet(url)
 		if err != nil || resp.StatusCode != 200 {
 			if resp != nil { resp.Body.Close() }
 			continue
@@ -1050,7 +1233,7 @@ func (d *daemon) syncWithPeer(baseURL string) {
 
 	// Never connect to ourselves.
 	myURL := d.localProxyURL()
-	if baseURL == myURL || baseURL == fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort) {
+	if baseURL == myURL || baseURL == fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort) {
 		return
 	}
 
@@ -1066,7 +1249,7 @@ func (d *daemon) syncWithPeer(baseURL string) {
 		manifestURL += "?from=" + url.QueryEscape(myURL)
 	}
 
-	resp, err := http.Get(manifestURL)
+	resp, err := d.httpGet(manifestURL)
 	if err != nil {
 		log.Printf("[peer] manifest from %s: %v", baseURL, err)
 		d.pdb.markFailure(baseURL)
@@ -1163,24 +1346,48 @@ func (d *daemon) syncWithPeer(baseURL string) {
 }
 
 // ---------------------------------------------------------------------------
-// HTTP server
+// Outbound HTTP helpers — always include auth header and use TLS client
+// ---------------------------------------------------------------------------
+
+func (d *daemon) httpGet(url string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set(passphraseHeader, d.authToken)
+	return d.tlsClient.Do(req)
+}
+
+func (d *daemon) httpPost(url, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set(passphraseHeader, d.authToken)
+	req.Header.Set("Content-Type", contentType)
+	return d.tlsClient.Do(req)
+}
+
+// ---------------------------------------------------------------------------
+// HTTPS server
 // ---------------------------------------------------------------------------
 
 func (d *daemon) startProxyHTTP() error {
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", proxyHTTPPort))
+	tlsCfg := newServerTLSConfig(d.tlsCert)
+	ln, err := tls.Listen("tcp", fmt.Sprintf(":%d", proxyHTTPPort), tlsCfg)
 	if err != nil {
-		ln, err = net.Listen("tcp", ":0")
+		ln, err = tls.Listen("tcp", ":0", tlsCfg)
 		if err != nil {
-			return fmt.Errorf("proxy http listen: %w", err)
+			return fmt.Errorf("proxy https listen: %w", err)
 		}
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/proxy", d.serveProxy)
 	mux.HandleFunc("/manifest", d.serveManifest)
 	mux.HandleFunc("/xmp", d.serveXMP)
-	d.httpSrv = &http.Server{Handler: mux}
+	d.httpSrv = &http.Server{Handler: requireAuth(mux, d.authToken)}
 	go d.httpSrv.Serve(ln)
-	log.Printf("[http] proxy server on %s", ln.Addr())
+	log.Printf("[https] proxy server on %s", ln.Addr())
 	return nil
 }
 
@@ -1225,7 +1432,7 @@ func (d *daemon) localProxyURL() string {
 	if d.externalURL != "" {
 		return d.externalURL
 	}
-	return fmt.Sprintf("http://%s:%d", d.localIP(), proxyHTTPPort)
+	return fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort)
 }
 
 func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
