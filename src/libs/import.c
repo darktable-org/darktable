@@ -63,6 +63,7 @@ static void _do_select_none(dt_lib_module_t* self);
 static uint32_t _do_select_new(dt_lib_module_t* self);
 static void _update_places_list(dt_lib_module_t* self);
 static gboolean _update_files_list(dt_lib_module_t* self);
+static void _import_resolve_duplicates(dt_lib_module_t *self);
 static void _update_folders_list(dt_lib_module_t* self);
 static void _update_images_number(dt_lib_module_t* self,
                                   const guint nb_sel);
@@ -84,6 +85,7 @@ typedef enum dt_import_cols_t
   DT_IMPORT_DATETIME,           // file datetime
   DT_IMPORT_UI_DUPLICATE,       // whether the image is a duplicate
   DT_IMPORT_TOOLTIP,            // tooltip text
+  DT_IMPORT_FILESIZE,           // file size in bytes
   DT_IMPORT_NUM_COLS
 } dt_import_cols_t;
 
@@ -369,75 +371,6 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
   int nb = 0;
   const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
 
-  // Metadata duplicate pre-pass: check files by size and timestamp.
-  // Group files with the same size and timestamp using a hash table.
-  // When a duplicate pair is found, flag the one with the lexicographically
-  // higher filename as a possible duplicate, referencing the primary file.
-  GHashTable *metadata_hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-  for(GList *img = imgs; img; img = g_list_next(img))
-  {
-    dt_camera_files_t *file = img->data;
-    const char *ext = g_strrstr(file->filename, ".");
-    if(include_nonraws ||
-       (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
-                !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
-    {
-      // Only perform duplicate checking if valid metadata (size and timestamp) is present.
-      // If either is missing (0), we cannot reliably identify duplicates.
-      if(file->size > 0 && file->timestamp > 0)
-      {
-        char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, (uint64_t)file->size, (uint64_t)file->timestamp);
-        dt_camera_files_t *existing = g_hash_table_lookup(metadata_hash, key);
-        if(existing == NULL)
-        {
-          g_hash_table_insert(metadata_hash, key, file);
-          file->possible_duplicate = FALSE;
-        }
-        else
-        {
-          if(strcmp(file->filename, existing->filename) > 0)
-          {
-            file->possible_duplicate = TRUE;
-            g_free(file->duplicate_of);
-            file->duplicate_of = g_strdup(existing->filename);
-            g_free(key);
-          }
-          else
-          {
-            existing->possible_duplicate = TRUE;
-            g_free(existing->duplicate_of);
-            existing->duplicate_of = g_strdup(file->filename);
-            g_hash_table_insert(metadata_hash, key, file);
-          }
-        }
-      }
-      else
-      {
-        file->possible_duplicate = FALSE;
-      }
-    }
-  }
-
-  // Resolve duplicate chains so every duplicate points to the ultimate primary file.
-  for(GList *img = imgs; img; img = g_list_next(img))
-  {
-    dt_camera_files_t *file = img->data;
-    if(file->possible_duplicate && file->size > 0 && file->timestamp > 0)
-    {
-      char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, (uint64_t)file->size, (uint64_t)file->timestamp);
-      dt_camera_files_t *primary = g_hash_table_lookup(metadata_hash, key);
-      if(primary && primary != file)
-      {
-        g_free(file->duplicate_of);
-        file->duplicate_of = g_strdup(primary->filename);
-      }
-      g_free(key);
-    }
-  }
-  g_hash_table_destroy(metadata_hash);
-
-  const gboolean hide_duplicates = dt_conf_get_bool("ui_last/import_hide_duplicates");
-
   for(GList *img = imgs; img; img = g_list_next(img))
   {
     dt_camera_files_t *file = img->data;
@@ -448,11 +381,6 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
        (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
                 !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
     {
-      // If configured to hide duplicate camera images, skip adding them to the UI list store
-      if(hide_duplicates && file->possible_duplicate)
-      {
-        continue;
-      }
       const time_t datetime = file->timestamp;
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
@@ -462,13 +390,6 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
 
-      // Generate a tooltip indicating the primary file of which this is a duplicate
-      gchar *tooltip = NULL;
-      if(file->possible_duplicate && file->duplicate_of)
-      {
-        tooltip = g_strdup_printf(_("possible duplicate of %s"), file->duplicate_of);
-      }
-
       gtk_list_store_insert_with_values(d->from.store, NULL, -1,
                          DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                          DT_IMPORT_UI_FILENAME, file->filename,
@@ -476,11 +397,8 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
                          DT_IMPORT_UI_DATETIME, dt_txt,
                          DT_IMPORT_DATETIME, datetime,
                          DT_IMPORT_THUMB, d->from.eye,
-                         // Columns showing duplicate indicator and mouseover tooltip
-                         DT_IMPORT_UI_DUPLICATE, file->possible_duplicate ? "⧉" : " ",
-                         DT_IMPORT_TOOLTIP, tooltip,
+                         DT_IMPORT_FILESIZE, file->size,
                          -1);
-      g_free(tooltip);
       nb++;
       g_free(dt_txt);
       g_date_time_unref(dt_datetime);
@@ -835,6 +753,9 @@ static void _import_add_file_callback(GObject *direnum,
     }
     else
     {
+      // Scanning is complete; resolve duplicates in the store.
+      _import_resolve_duplicates(self);
+
       // Nothing more to parse, do select the images
       // according to the preference.
       uint32_t count_sel = 0;
@@ -896,6 +817,8 @@ static void _import_add_file_callback(GObject *direnum,
       const GFileType filetype = g_file_info_get_file_type(info);
       const time_t datetime =
         g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      const uint64_t size =
+        g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_STANDARD_SIZE);
 
       /* g_file_info_get_is_hidden() always returns 0 on macOS, so we
          check if the filename starts with a '.' */
@@ -955,6 +878,7 @@ static void _import_add_file_callback(GObject *direnum,
                              DT_IMPORT_UI_DATETIME, dt_txt,
                              DT_IMPORT_DATETIME, datetime,
                              DT_IMPORT_THUMB, d->from.eye,
+                             DT_IMPORT_FILESIZE, size,
                              -1);
           d->from.nb++;
           g_free(dt_txt);
@@ -1014,7 +938,8 @@ static void _import_set_file_list(const gchar *folder,
                                   G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
                                   G_FILE_ATTRIBUTE_TIME_MODIFIED ","
                                   G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
-                                  G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                                  G_FILE_ATTRIBUTE_STANDARD_TYPE ","
+                                  G_FILE_ATTRIBUTE_STANDARD_SIZE,
                                   G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
                                   G_PRIORITY_LOW,
                                   d->cancel_iter,
@@ -1093,6 +1018,170 @@ static void _usefn_toggled(GtkWidget *widget,
   _update_layout(self);
 }
 
+/* Unified post-pass duplicate detector.
+ * Iterates through all rows currently in d->from.store, identifies groups of
+ * files with identical sizes and modification timestamps, and marks them.
+ * The lexicographically smallest filename in each group is treated as the primary file,
+ * and all others are flagged as duplicates. If "hide duplicates" is enabled, duplicate
+ * rows are removed from the store; otherwise, they are marked in the UI with a ⧉ symbol
+ * and a tooltip pointing to their primary file.
+ */
+static void _import_resolve_duplicates(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = self->data;
+  const gboolean hide_duplicates = dt_conf_get_bool("ui_last/import_hide_duplicates");
+
+  // Hash table to group files by size and timestamp.
+  // Key: "size:timestamp", Value: primary_info_t struct of the current primary.
+  GHashTable *metadata_hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+  typedef struct {
+    char *filename;
+    GtkTreeRowReference *row_ref;
+  } primary_info_t;
+
+  GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+  GtkTreeIter iter;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+
+  // Keep a list of duplicate row references so we can update or remove them in a separate pass.
+  GList *duplicate_rows = NULL;
+
+  // Pass 1: Identify all duplicates and track the lexicographical minimum filename for each size/timestamp.
+  while(valid)
+  {
+    char *filename = NULL;
+    uint64_t timestamp = 0;
+    uint64_t size = 0;
+
+    gtk_tree_model_get(model, &iter,
+                       DT_IMPORT_FILENAME, &filename,
+                       DT_IMPORT_DATETIME, &timestamp,
+                       DT_IMPORT_FILESIZE, &size,
+                       -1);
+
+    if(size > 0 && timestamp > 0 && filename)
+    {
+      char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, size, timestamp);
+      primary_info_t *primary = g_hash_table_lookup(metadata_hash, key);
+
+      GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+      GtkTreeRowReference *row_ref = gtk_tree_row_reference_new(model, path);
+      gtk_tree_path_free(path);
+
+      if(primary == NULL)
+      {
+        // First time seeing this size/timestamp. Mark this file as the primary.
+        primary = g_malloc0(sizeof(primary_info_t));
+        primary->filename = g_strdup(filename);
+        primary->row_ref = row_ref;
+        g_hash_table_insert(metadata_hash, key, primary);
+      }
+      else
+      {
+        // Existing primary found. Compare filenames to find the lexicographically smaller one.
+        if(strcmp(filename, primary->filename) > 0)
+        {
+          // New file has a larger name; it is a duplicate of the existing primary.
+          duplicate_rows = g_list_append(duplicate_rows, row_ref);
+          g_free(key);
+        }
+        else
+        {
+          // New file has a smaller name; it becomes the new primary, and the old primary is demoted to a duplicate.
+          duplicate_rows = g_list_append(duplicate_rows, primary->row_ref);
+
+          g_free(primary->filename);
+          primary->filename = g_strdup(filename);
+          primary->row_ref = row_ref;
+          g_hash_table_insert(metadata_hash, key, primary);
+        }
+      }
+    }
+    g_free(filename);
+    valid = gtk_tree_model_iter_next(model, &iter);
+  }
+
+  // Pass 2: Update UI details or remove rows for duplicates.
+  for(GList *node = duplicate_rows; node; node = g_list_next(node))
+  {
+    GtkTreeRowReference *ref = node->data;
+    if(gtk_tree_row_reference_valid(ref))
+    {
+      GtkTreePath *path = gtk_tree_row_reference_get_path(ref);
+      gtk_tree_model_get_iter(model, &iter, path);
+      gtk_tree_path_free(path);
+
+      char *filename = NULL;
+      uint64_t timestamp = 0;
+      uint64_t size = 0;
+      gtk_tree_model_get(model, &iter,
+                         DT_IMPORT_FILENAME, &filename,
+                         DT_IMPORT_DATETIME, &timestamp,
+                         DT_IMPORT_FILESIZE, &size,
+                         -1);
+
+      if(size > 0 && timestamp > 0)
+      {
+        char *key = g_strdup_printf("%" PRIu64 ":%" PRIu64, size, timestamp);
+        primary_info_t *primary = g_hash_table_lookup(metadata_hash, key);
+        
+        // Ensure every duplicate links directly to the resolved primary (resolves duplicate chains).
+        if(primary && strcmp(filename, primary->filename) != 0)
+        {
+          if(!hide_duplicates)
+          {
+            // Update the duplicate indicator and mouseover tooltip.
+            char *tooltip = g_strdup_printf(_("possible duplicate of %s"), primary->filename);
+            gtk_list_store_set(d->from.store, &iter,
+                               DT_IMPORT_UI_DUPLICATE, "⧉",
+                               DT_IMPORT_TOOLTIP, tooltip,
+                               -1);
+            g_free(tooltip);
+          }
+        }
+        g_free(key);
+      }
+      g_free(filename);
+    }
+  }
+
+  // Pass 3: If configured to hide duplicates, remove them from the list store.
+  if(hide_duplicates)
+  {
+    for(GList *node = duplicate_rows; node; node = g_list_next(node))
+    {
+      GtkTreeRowReference *ref = node->data;
+      if(gtk_tree_row_reference_valid(ref))
+      {
+        GtkTreePath *path = gtk_tree_row_reference_get_path(ref);
+        gtk_tree_model_get_iter(model, &iter, path);
+        gtk_tree_path_free(path);
+        gtk_list_store_remove(d->from.store, &iter);
+      }
+    }
+  }
+
+  // Cleanup duplicate row references.
+  g_list_free_full(duplicate_rows, (GDestroyNotify)gtk_tree_row_reference_free);
+
+  // Cleanup hash table keys and custom structures.
+  GHashTableIter hash_iter;
+  gpointer key, value;
+  g_hash_table_iter_init(&hash_iter, metadata_hash);
+  while(g_hash_table_iter_next(&hash_iter, &key, &value))
+  {
+    primary_info_t *p = value;
+    g_free(p->filename);
+    gtk_tree_row_reference_free(p->row_ref);
+    g_free(p);
+  }
+  g_hash_table_destroy(metadata_hash);
+
+  // Sync d->from.nb with the final populated row count in the store.
+  d->from.nb = gtk_tree_model_iter_n_children(model, NULL);
+}
+
 static gboolean _update_files_list(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = self->data;
@@ -1117,6 +1206,7 @@ static gboolean _update_files_list(dt_lib_module_t *self)
   {
     d->from.nb = _import_from_camera_set_file_list(self);
     gtk_widget_hide(d->from.info);
+    _import_resolve_duplicates(self);
     // Restore the user-selected sort column and sort order if available,
     // otherwise fallback to filename sorting.
     if(has_sort && sort_column_id != GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID)
@@ -1956,7 +2046,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
                                      G_TYPE_STRING, G_TYPE_STRING,
                                      G_TYPE_STRING, G_TYPE_STRING,
                                      G_TYPE_UINT64, G_TYPE_STRING,
-                                     G_TYPE_STRING);
+                                     G_TYPE_STRING, G_TYPE_UINT64);
   d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, 0,
                                         dtgtk_cairo_paint_eye);
 
@@ -1977,7 +2067,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header, _("mark already imported images"));
 
-  // Add a skinny 25px duplicate column next to the exists column (only visible for camera imports)
+  // Add a skinny 25px duplicate column next to the exists column
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes("⧉", renderer, "text",
                                                      DT_IMPORT_UI_DUPLICATE, NULL);
@@ -1985,7 +2075,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_alignment(column, 0.5);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(25));
-  gtk_tree_view_column_set_visible(column, d->import_case == DT_IMPORT_CAMERA);
+  gtk_tree_view_column_set_visible(column, TRUE);
   header = gtk_tree_view_column_get_button(column);
   if(header)
     gtk_widget_set_tooltip_text(header, _("mark possible duplicate images"));
@@ -2216,16 +2306,13 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   g_signal_connect(G_OBJECT(ignore_nonraws), "toggled",
                    G_CALLBACK(_ignore_nonraws_toggled), self);
 
-  // For camera imports, add a checkbox to hide duplicate images and connect its toggled signal
-  if(d->import_case == DT_IMPORT_CAMERA)
-  {
-    col = 0;
-    GtkWidget *hide_duplicates =
-      dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, TRUE);
-    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
-    g_signal_connect(G_OBJECT(hide_duplicates), "toggled",
-                     G_CALLBACK(_hide_duplicates_toggled), self);
-  }
+  // Add a checkbox to hide duplicate images and connect its toggled signal
+  col = 0;
+  GtkWidget *hide_duplicates =
+    dt_gui_preferences_bool(grid, "ui_last/import_hide_duplicates", col++, line, TRUE);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
+  g_signal_connect(G_OBJECT(hide_duplicates), "toggled",
+                   G_CALLBACK(_hide_duplicates_toggled), self);
 
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
 
