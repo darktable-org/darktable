@@ -129,12 +129,16 @@ static void _set_module_preset_label(dt_lib_module_t *module,
 {
   if(!module->expander || !module->has_preset_label(module))
     return;
-
+  
+  const gchar *current_preset_label_text = gtk_label_get_text(GTK_LABEL(module->preset_label));
   gchar *preset_label_text =
     (*preset_name == '\0' || (!dt_conf_get_bool("darkroom/ui/auto_module_name_update")))?
     g_strdup("") : g_strdup_printf("• %s", preset_name);
 
-  gtk_label_set_text(GTK_LABEL(module->preset_label), preset_label_text);
+  if(g_strcmp0(current_preset_label_text, preset_label_text))
+    // update the preset label only if changed to avoid infinite loop
+    gtk_label_set_text(GTK_LABEL(module->preset_label), preset_label_text);
+
   g_free(preset_label_text);
 }
 
