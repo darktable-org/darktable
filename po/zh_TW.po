@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 21:46+0200\n"
-"PO-Revision-Date: 2026-06-10 16:19+0800\n"
+"POT-Creation-Date: 2026-06-10 23:06+0200\n"
+"PO-Revision-Date: 2026-06-15 09:41+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -1247,13 +1247,13 @@ msgstr "縮圖尺寸分組"
 #: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
-"depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
-">400px"
+"depending on the size of the thumbnail, separated by |.\n"
+"for example, 120|400 means 3 categories of thumbnails: up to 120px, "
+"120-400px, more than 400px"
 msgstr ""
 "尺寸分組設定用於根據縮圖大小顯示不同的縮圖\n"
 "一組以豎線分隔的值定義更改分組的縮圖尺寸\n"
-"預設值「120|400」表示縮圖被分為三組：0-120px、120-400px 和 >400px"
+"預設值「120|400」表示縮圖被分為三組：低於 120px、120 ~ 400px 和大於 400px"
 
 #: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
@@ -6084,7 +6084,7 @@ msgstr "下拉選單"
 #: ../src/libs/tagging.c:1790 ../src/libs/tagging.c:1882
 #: ../src/libs/tagging.c:2011 ../src/libs/tagging.c:2320
 #: ../src/libs/tagging.c:2835 ../src/libs/tagging.c:2877
-#: ../src/libs/tagging.c:3975
+#: ../src/libs/tagging.c:3981
 msgid "_cancel"
 msgstr "取消（_C）"
 
@@ -6094,7 +6094,7 @@ msgstr "取消（_C）"
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1883
 #: ../src/libs/tagging.c:2012 ../src/libs/tagging.c:2321
-#: ../src/libs/tagging.c:3976
+#: ../src/libs/tagging.c:3982
 msgid "_save"
 msgstr "儲存（_S）"
 
@@ -7726,7 +7726,7 @@ msgstr ""
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "無法讀取 XMP 檔案「%s」：「%s」"
 
-#: ../src/common/exif.cc:6121
+#: ../src/common/exif.cc:6121 ../src/common/exif.cc:6134
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "無法寫入 XMP 檔案「%s」：「%s」"
@@ -28710,7 +28710,7 @@ msgstr "相冊設定"
 #: ../src/libs/collect.c:3554 ../src/libs/export.c:1428
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
-#: ../src/libs/tagging.c:3999
+#: ../src/libs/tagging.c:4005
 msgid "preferences..."
 msgstr "模組設定…"
 
@@ -33032,7 +33032,7 @@ msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr "標籤快速鍵在不能在標籤樹狀圖中使用，請切換到清單檢視"
 
-#: ../src/libs/tagging.c:3973
+#: ../src/libs/tagging.c:3979
 msgid "tagging settings"
 msgstr "標籤設定"
 
