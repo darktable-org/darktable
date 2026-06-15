@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-13 14:49-0600\n"
-"PO-Revision-Date: 2026-06-15 01:03-0600\n"
+"PO-Revision-Date: 2026-06-15 02:30-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6534,12 +6534,13 @@ msgstr ""
 #, c-format
 msgid "raw denoise model %s: incompatible input_kind"
 msgstr ""
+"Modelo de reducción de ruido sin procesar %s: tipo de entrada incompatible"
 
 # dt•v5.6
 #: ../src/common/ai/restore.c:309
 #, c-format
 msgid "AI model %s: missing input_sizes in manifest"
-msgstr ""
+msgstr "Modelo de IA %s: faltan los tamaños de entrada en el manifiesto"
 
 # dt•v5.6
 #: ../src/common/ai/restore_raw_bayer.c:523
@@ -6592,6 +6593,8 @@ msgstr "Archivo no encontrado"
 #, c-format
 msgid "archive top-level directory is not a valid model id: \"%s\""
 msgstr ""
+"El directorio de nivel superior del archivo no es un identificador de modelo "
+"válido: «%s»"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:1415
@@ -17752,6 +17755,8 @@ msgid ""
 "ONNX Runtime %s detected.\n"
 "Restart darktable to apply."
 msgstr ""
+"Se ha detectado ONNX Runtime %s.\n"
+"Reinicia darktable para aplicar los cambios."
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1330
@@ -17760,6 +17765,8 @@ msgid ""
 "not a valid ONNX Runtime library:\n"
 "%s"
 msgstr ""
+"Biblioteca de tiempo de ejecución ONNX no válida:\n"
+"%s"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1358
@@ -17769,6 +17776,10 @@ msgid ""
 "install one via your package manager or use\n"
 "the browse button to select a custom build."
 msgstr ""
+"No se ha encontrado ninguna biblioteca ONNX Runtime.\n"
+"\n"
+"Instale a través del gestor de paquetes o utilice\n"
+"el botón «Examinar» para seleccionar una versión personalizada."
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1373
@@ -17779,11 +17790,15 @@ msgid ""
 "\n"
 "Restart darktable to apply."
 msgstr ""
+"ONNX Runtime %s [%s]\n"
+"%s\n"
+"\n"
+"Reinicia darktable para aplicar los cambios."
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1381 ../src/gui/preferences_ai.c:1464
 msgid "select ONNX Runtime library"
-msgstr ""
+msgstr "Selecciona la biblioteca ONNX Runtime"
 
 #: ../src/gui/preferences_ai.c:1385 ../src/iop/lut3d.c:1576
 #: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4137
@@ -17793,17 +17808,17 @@ msgstr "seleccionar"
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1391
 msgid "multiple ONNX Runtime libraries found:"
-msgstr ""
+msgstr "Se han encontrado varias bibliotecas de ONNX Runtime:"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1472
 msgid "ONNX Runtime (onnxruntime*.dll)"
-msgstr ""
+msgstr "ONNX Runtime (onnxruntime*.dll)"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1475
 msgid "ONNX Runtime (libonnxruntime.so*)"
-msgstr ""
+msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 # dt•v5.6
 #. enable AI toggle
@@ -17822,12 +17837,12 @@ msgstr "Aceleración de GPU para OpenCL"
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1584
 msgid "select which GPU to use when the active provider supports more than one"
-msgstr ""
+msgstr "Seleccionar la GPU cuando el proveedor activo permita más de una"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1630
 msgid "ONNX Runtime library"
-msgstr ""
+msgstr "Biblioteca de ONNX Runtime"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1644
@@ -17847,11 +17862,14 @@ msgid ""
 "leave empty to use the bundled library.\n"
 "requires restart to take effect."
 msgstr ""
+"Ruta a una biblioteca ONNX compatible con GPU.\n"
+"Dejarlo en blanco para utilizar la biblioteca incluida.\n"
+"Es necesario reiniciar para que los cambios surtan efecto."
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1659
 msgid "select a custom ONNX Runtime shared library"
-msgstr ""
+msgstr "Selecciona una biblioteca compartida personalizada de ONNX Runtime"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1661
@@ -17862,7 +17880,7 @@ msgstr "autodetectar"
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1663
 msgid "search for a system-installed ONNX Runtime library"
-msgstr ""
+msgstr "Buscar una biblioteca de ONNX instalada en el sistema"
 
 #: ../src/gui/preferences_ai.c:1698
 msgid "models"
@@ -17925,7 +17943,7 @@ msgstr "Filtro de importación"
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1898
 msgid "install a model from a local .dtmodel file"
-msgstr ""
+msgstr "Instalar un modelo a partir de un archivo local .dtmodel"
 
 # dt•v5.4
 #. delete selected button
@@ -18312,7 +18330,7 @@ msgstr "siguiente"
 # dt•v5.6
 #: ../src/gui/welcome.c:796
 msgid "let's set up a few options to get you started."
-msgstr ""
+msgstr "Vamos a configurar algunas opciones para empezar."
 
 # dt•v5.6
 #: ../src/gui/welcome.c:799
@@ -18320,6 +18338,8 @@ msgid ""
 "if you are unsure, don't worry! just go ahead with the default, you can "
 "always change all values later in the <b>preferences</b>."
 msgstr ""
+"Si existen dudas, simplemente utilice los valores predeterminados. Siempre "
+"será posible modificarlos más adelante en <b>Preferencias</b>."
 
 # dt•v5.6
 #: ../src/gui/welcome.c:804
@@ -18327,6 +18347,8 @@ msgid ""
 "you can close this window at any time, in which case the defaults will be "
 "applied."
 msgstr ""
+"Puede cerrar esta ventana en cualquier momento. En dado caso, se aplicarán "
+"los valores predeterminados."
 
 # dt•v5.6
 #: ../src/gui/welcome.c:837
@@ -18352,6 +18374,8 @@ msgid ""
 "Read the <a href=\"%s\">user manual</a> to learn more and make the most of "
 "darktable."
 msgstr ""
+"Lea el <a href=\"%s\">manual de usuario</a> para obtener más información y "
+"sacar el máximo provecho de darktable."
 
 # dt•v5.6
 #: ../src/gui/welcome.c:859
@@ -18359,6 +18383,8 @@ msgid ""
 "And remember that you can always click on the <b>?</b> on the top toolbar to "
 "get help right where you need it."
 msgstr ""
+"Y recuerde que siempre se puede pulsar <b>?</b> en la barra superior de "
+"herramientas para obtener ayuda justo cuando se necesite."
 
 # dt•v5.6
 #: ../src/gui/welcome.c:864
@@ -18407,6 +18433,11 @@ msgid ""
 "\n"
 "choose a different name."
 msgstr ""
+"ADVERTENCIA:\n"
+"\n"
+"Los nombres «predefinido» y «memoria» están reservados.\n"
+"\n"
+"Elija otro nombre."
 
 # dt•v5.6
 #: ../src/gui/workspace.c:419
@@ -18418,6 +18449,11 @@ msgid ""
 "\n"
 "choose a different name."
 msgstr ""
+"ADVERTENCIA:\n"
+"\n"
+"Ya existe un espacio de trabajo llamado «%s».\n"
+"\n"
+"Elija otro nombre."
 
 # dt•v5.4
 #: ../src/gui/workspace.c:569
@@ -18433,7 +18469,7 @@ msgstr "Elija un espacio de trabajo existente"
 # dt•v5.6
 #: ../src/gui/workspace.c:617
 msgid "remember selection and don't ask again"
-msgstr ""
+msgstr "Recordar la selección y no volver a preguntar"
 
 # dt•v5.4
 #: ../src/gui/workspace.c:632
@@ -18613,6 +18649,8 @@ msgid ""
 "the selected output profile isn't linear, expect incorrect display by image "
 "viewers"
 msgstr ""
+"El perfil de salida seleccionado no es lineal; es posible que los visores de "
+"imágenes no muestren la imagen correctamente."
 
 #: ../src/imageio/format/exr.cc:596
 msgid "OpenEXR"
@@ -19045,6 +19083,7 @@ msgstr ""
 #, c-format
 msgid "export reduced to %dx%d because of memory restrictions"
 msgstr ""
+"La exportación se ha reducido a %dx%d debido a restricciones de memoria."
 
 #: ../src/imageio/imageio_libraw.c:348
 msgid ""
@@ -22736,6 +22775,11 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the shadows sliders in the other tabs"
 msgstr ""
+"Muestra una máscara de sombras, superpuesta en forma de tablero de ajedrez.\n"
+"El área de la imagen que sigue siendo visible (la que no queda oculta por la "
+"máscara) es la zona\\n\n"
+"que se verá afectada por los controles deslizantes de sombras de las otras "
+"pestañas."
 
 #: ../src/iop/colorbalancergb.c:1994
 msgid "position of the middle-gray reference for masking"
@@ -22748,6 +22792,12 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the mid-tones sliders in the other tabs"
 msgstr ""
+"Muestra una máscara de tonos medios, superpuesta en forma de tablero de "
+"ajedrez.\n"
+"El área de la imagen que sigue siendo visible (la que no queda oculta por la "
+"máscara) es la zona\\n\n"
+"que se verá afectada por los controles deslizantes de tonos medios de las "
+"otras pestañas."
 
 #: ../src/iop/colorbalancergb.c:2007
 msgid "weights of highlights over the whole tonal range"
@@ -22760,6 +22810,11 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the highlights sliders in the other tabs"
 msgstr ""
+"Muestra una máscara de luces, superpuesta en forma de tablero de ajedrez.\n"
+"El área de la imagen que sigue siendo visible (la que no queda oculta por la "
+"máscara) es la zona\\n\n"
+"que se verá afectada por los controles deslizantes de luces de las otras "
+"pestañas."
 
 #: ../src/iop/colorbalancergb.c:2017
 msgctxt "section"
@@ -23192,6 +23247,7 @@ msgstr "armonías de color"
 #: ../src/iop/colorharmonizer.c:132
 msgid "harmonize colors toward a selected palette in perceptual space"
 msgstr ""
+"Armoniza los colores con una paleta seleccionada en el espacio perceptiva"
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:133
@@ -23280,6 +23336,8 @@ msgid ""
 "number of active harmony nodes in custom mode (2–4).\n"
 "nodes are numbered from the top; inactive nodes are hidden."
 msgstr ""
+"Número de nodos de armonía activos en el modo personalizado (2-4).\n"
+"Los nodos se numeran empezando por arriba; los nodos inactivos están ocultos."
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:1494
@@ -27438,14 +27496,16 @@ msgid ""
 "no mask extracted from the raster file\n"
 "make sure the masks have proper contrast"
 msgstr ""
+"No se ha extraído ninguna máscara del archivo de matriz de pixeles.\n"
+"Verifique que las máscaras tengan el contraste adecuado."
 
 # dt•v5.6
 #: ../src/iop/rasterfile.c:183
 #, c-format
 msgid "%d mask extracted from the raster file"
 msgid_plural "%d masks extracted from the raster file"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d máscara extraída del archivo de matriz de pixeles"
+msgstr[1] "%d máscaras extraídas del archivo de matriz de pixeles"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:210 ../src/iop/rasterfile.c:221
@@ -27508,6 +27568,8 @@ msgid ""
 "vectorize the current bitmap and create corresponding path masks in the mask "
 "manager"
 msgstr ""
+"Vectorizar la imagen de mapa de bits actual y crear las máscaras de trazado "
+"correspondientes en el gestor de máscaras"
 
 #. raw denoise sits first: it runs earliest in the denoise workflow
 #. (before demosaic-stage processing). bayer / linear variant selection
@@ -30589,6 +30651,8 @@ msgid ""
 "filter by capture month\n"
 "click to toggle month selection"
 msgstr ""
+"Filtrar por mes de captura\n"
+"Pulse para cambiar el mes seleccionado"
 
 #. predefined selections
 #: ../src/libs/filters/duplicates.c:38 ../src/libs/filters/history.c:38
@@ -32771,6 +32835,8 @@ msgstr "restauración neural"
 #: ../src/libs/neural_restore.c:457
 msgid "AI-based image restoration: denoise and upscale"
 msgstr ""
+"Restauración de imágenes basada en IA: reducción de ruido y aumento de "
+"resolución"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:846
@@ -32855,25 +32921,25 @@ msgstr "Restauración neural: demasiados archivos de salida"
 #: ../src/libs/neural_restore.c:1515
 #, c-format
 msgid "denoising image %d/%d..."
-msgstr ""
+msgstr "Reducción de ruido de la imagen %d/%d..."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1516
 #, c-format
 msgid "raw denoising image %d/%d..."
-msgstr ""
+msgstr "Reducción de ruido de la imagen en bruto %d/%d..."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1517
 #, c-format
 msgid "upscaling 2x image %d/%d..."
-msgstr ""
+msgstr "Ampliando la imagen 2× %d/%d..."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1518
 #, c-format
 msgid "upscaling 4x image %d/%d..."
-msgstr ""
+msgstr "Ampliando la imagen 4× %d/%d..."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1527
@@ -32891,8 +32957,8 @@ msgstr "Restauración neural: error al exportar"
 #, c-format
 msgid "neural %s: %d image processed"
 msgid_plural "neural %s: %d images processed"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "neural %s: %d imagen procesada"
+msgstr[1] "neural %s: %d imágenes procesadas"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1661
@@ -32902,17 +32968,17 @@ msgstr "Gran volumen de datos: el procesamiento será lento"
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1677
 msgid "output: Bayer CFA DNG"
-msgstr ""
+msgstr "Formato de salida: DNG con filtro CFA de Bayer"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1678
 msgid "output: LinearRaw DNG"
-msgstr ""
+msgstr "formato de salida: DNG LinearRaw"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1697
 msgid "wide-gamut preserved, not denoised"
-msgstr ""
+msgstr "Se mantiene la amplia gama cromática sin reducción de ruido"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1698
@@ -32984,7 +33050,7 @@ msgstr "redimensionado con IA"
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4194
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
-msgstr ""
+msgstr "Mezcla entre el CFA de origen (0 %) y la salida sin ruido (100 %)"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4212
@@ -32993,6 +33059,9 @@ msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
 "texture and grain while keeping color noise suppressed"
 msgstr ""
+"El valor 100 % aplica el resultado completo del modelo de IA; los valores más "
+"bajos recuperan la textura de luminancia y el grano, al tiempo que mantienen "
+"suprimido el ruido de color."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4221
@@ -33015,6 +33084,8 @@ msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr ""
+"Pulse para seleccionar el área de vista previa en la miniatura de la imagen\n"
+"Pulse doble para volver a centrar."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4271
@@ -33051,6 +33122,10 @@ msgid ""
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
 "affects denoise"
 msgstr ""
+"Cuando está activada, los pixeles que se encuentran fuera de la gama sRGB "
+"pasan sin que se les aplique la reducción de ruido; cuando está desactivada, "
+"se aplica la reducción de ruido a todos los pixeles, aunque los colores de "
+"gama amplia pueden verse recortados. Solo afecta a la reducción de ruido."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4368
@@ -33070,6 +33145,8 @@ msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
 msgstr ""
+"Carpeta de salida: admite variables de darktable\\n\n"
+"$(FILE_FOLDER) = carpeta de imágenes de origen"
 
 #: ../src/libs/print_settings.c:48
 msgid "print settings"
