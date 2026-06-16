@@ -3,25 +3,28 @@
 #include <QProcess>
 #include <QString>
 #include <QStringList>
+#include <QVariantMap>
 
 // Manages the lifecycle of the dt-p2p-daemon subprocess.
 class DaemonManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool        running     READ isRunning    NOTIFY runningChanged)
-    Q_PROPERTY(QString     status      READ status       NOTIFY statusChanged)
-    Q_PROPERTY(QString     passphrase  READ passphrase   NOTIFY passphraseChanged)
-    Q_PROPERTY(QStringList staticPeers READ staticPeers  NOTIFY staticPeersChanged)
-    Q_PROPERTY(QStringList logLines    READ logLines     NOTIFY logLinesChanged)
+    Q_PROPERTY(bool        running      READ isRunning     NOTIFY runningChanged)
+    Q_PROPERTY(QString     status       READ status        NOTIFY statusChanged)
+    Q_PROPERTY(QString     passphrase   READ passphrase    NOTIFY passphraseChanged)
+    Q_PROPERTY(QStringList staticPeers  READ staticPeers   NOTIFY staticPeersChanged)
+    Q_PROPERTY(QStringList logLines     READ logLines      NOTIFY logLinesChanged)
+    Q_PROPERTY(QVariantMap peerStatuses READ peerStatuses  NOTIFY peerStatusesChanged)
 
 public:
     explicit DaemonManager(QObject *parent = nullptr);
     ~DaemonManager();
 
-    bool        isRunning()   const { return m_running;      }
-    QString     status()      const { return m_status;       }
-    QStringList staticPeers() const { return m_staticPeers;  }
-    QStringList logLines()    const { return m_logLines;     }
+    bool        isRunning()    const { return m_running;       }
+    QString     status()       const { return m_status;        }
+    QStringList staticPeers()  const { return m_staticPeers;   }
+    QStringList logLines()     const { return m_logLines;      }
+    QVariantMap peerStatuses() const { return m_peerStatuses;  }
 
     QString socketPath() const;
     QString proxyDir()   const;
@@ -43,6 +46,7 @@ signals:
     void passphraseChanged();
     void staticPeersChanged();
     void logLinesChanged();
+    void peerStatusesChanged();
     void deepLinkReceived(const QString &url);
 
 private slots:
@@ -57,13 +61,15 @@ private:
     void    setStatus(const QString &s);
     void    setRunning(bool r);
     void    appendLog(const QString &line);
+    void    updatePeerStatus(const QString &line);
 
     static constexpr int kMaxLogLines = 300;
 
-    QProcess   *m_proc       = nullptr;
-    bool        m_running    = false;
+    QProcess   *m_proc        = nullptr;
+    bool        m_running     = false;
     QString     m_status;
     QString     m_passphrase;
     QStringList m_staticPeers;
     QStringList m_logLines;
+    QVariantMap m_peerStatuses;
 };

@@ -44,29 +44,58 @@ Page {
                 }
             }
 
-            // Configured static peers the daemon is attempting to reach.
+            // Per-peer connection status as reported by daemon stderr.
             SettingsRow {
-                label: "Attempting"
-                content: Label {
-                    text: daemon.staticPeers.length > 0
-                          ? daemon.staticPeers.join("\n")
-                          : "None configured (mDNS auto-discovery active)"
-                    color: "#888"
-                    font.pixelSize: 12
-                    wrapMode: Text.WrapAnywhere
-                }
-            }
+                label: "Peers"
+                content: Column {
+                    spacing: 6
+                    topPadding: 4; bottomPadding: 4
 
-            // Peers confirmed connected (libp2p peer IDs from the daemon socket).
-            SettingsRow {
-                label: "Connected"
-                content: Label {
-                    text: p2p.peers.length > 0
-                          ? p2p.peers.join("\n")
-                          : "None yet"
-                    color: p2p.peers.length > 0 ? "#20e020" : "#888"
-                    font.pixelSize: 12
-                    wrapMode: Text.WrapAnywhere
+                    Repeater {
+                        model: Object.keys(daemon.peerStatuses)
+
+                        delegate: Row {
+                            required property string modelData
+                            spacing: 8
+
+                            Rectangle {
+                                width: 8; height: 8; radius: 4
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: {
+                                    const s = daemon.peerStatuses[modelData]
+                                    if (s === "ok")       return "#20e020"
+                                    if (s === "refused")  return "#e02020"
+                                    if (s === "timeout")  return "#e0a020"
+                                    if (s === "no-route") return "#606060"
+                                    return "#444"
+                                }
+                            }
+                            Label {
+                                text: {
+                                    const s = daemon.peerStatuses[modelData]
+                                    const tag = s === "ok" ? " ✓"
+                                              : s === "refused"  ? " ✗ refused"
+                                              : s === "timeout"  ? " ✗ timeout"
+                                              : s === "no-route" ? " ✗ no route"
+                                              : ""
+                                    return modelData + tag
+                                }
+                                color: daemon.peerStatuses[modelData] === "ok" ? "#20e020" : "#888"
+                                font.pixelSize: 11
+                                wrapMode: Text.WrapAnywhere
+                                width: 260
+                            }
+                        }
+                    }
+
+                    Label {
+                        visible: Object.keys(daemon.peerStatuses).length === 0
+                        text: daemon.staticPeers.length > 0
+                              ? "Waiting for first sync cycle…"
+                              : "No static peers (mDNS auto-discovery active)"
+                        color: "#666"
+                        font.pixelSize: 12
+                    }
                 }
             }
 

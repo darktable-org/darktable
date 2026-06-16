@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 
+#include "avifimageprovider.h"
 #include "daemonmanager.h"
 #include "imagemodel.h"
 #include "p2pclient.h"
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
                      });
 
     QQmlApplicationEngine engine;
+    engine.addImageProvider(QStringLiteral("avif"), new AvifImageProvider);
     auto *ctx = engine.rootContext();
     ctx->setContextProperty("daemon",     &daemon);
     ctx->setContextProperty("p2p",        &client);

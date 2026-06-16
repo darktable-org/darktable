@@ -60,7 +60,7 @@ Page {
 
         Image {
             id: image
-            source: root.hasProxy ? ("file://" + root.proxyPath) : ""
+            source: root.hasProxy ? ("image://avif" + root.proxyPath) : ""
             anchors.centerIn: parent
             fillMode: Image.PreserveAspectFit
             width:  flick.width

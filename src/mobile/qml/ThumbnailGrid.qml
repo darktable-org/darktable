@@ -4,6 +4,7 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 Page {
+    id: rootPage
     objectName: "gallery"
     background: Rectangle { color: "#111111" }
 
@@ -44,7 +45,7 @@ Page {
                 // ── proxy image ───────────────────────────────────────────────
                 Image {
                     anchors.fill: parent
-                    source:       model.hasProxy ? ("file://" + model.proxyPath) : ""
+                    source:       model.hasProxy ? ("image://avif" + model.proxyPath) : ""
                     fillMode:     Image.PreserveAspectCrop
                     asynchronous: true
                     smooth:       true
@@ -102,7 +103,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        StackView.view.push("DarkroomView.qml", {
+                        rootPage.StackView.view?.push("DarkroomView.qml", {
                             rawPath:    model.rawPath,
                             proxyPath:  model.proxyPath,
                             filename:   model.filename,

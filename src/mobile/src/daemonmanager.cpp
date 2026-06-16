@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QHostAddress>
 #include <QNetworkInterface>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
@@ -195,6 +196,42 @@ void DaemonManager::appendLog(const QString &line)
         m_logLines.removeFirst();
     m_logLines.append(line);
     emit logLinesChanged();
+    updatePeerStatus(line);
+}
+
+void DaemonManager::updatePeerStatus(const QString &line)
+{
+    // Match "[peer] https://HOST:PORT: peerID=..." — successful connection
+    static QRegularExpression reOk(R"(\[peer\] (https://[\w.\-]+:\d+): peerID=)");
+    // Match "[peer] manifest from https://HOST:PORT: ..." — failed connection attempt
+    static QRegularExpression reErr(R"(\[peer\] manifest from (https://[\w.\-]+:\d+):)");
+
+    QRegularExpressionMatch m;
+    if ((m = reOk.match(line)).hasMatch()) {
+        const QString url = m.captured(1);
+        if (m_peerStatuses.value(url).toString() != QLatin1String("ok")) {
+            m_peerStatuses[url] = QLatin1String("ok");
+            emit peerStatusesChanged();
+        }
+        return;
+    }
+    if ((m = reErr.match(line)).hasMatch()) {
+        const QString url = m.captured(1);
+        QString status;
+        if (line.contains(QLatin1String("connection refused")))
+            status = QLatin1String("refused");
+        else if (line.contains(QLatin1String("no route to host")))
+            status = QLatin1String("no-route");
+        else if (line.contains(QLatin1String("context deadline exceeded"))
+                 || line.contains(QLatin1String("i/o timeout")))
+            status = QLatin1String("timeout");
+        else
+            status = QLatin1String("error");
+        if (m_peerStatuses.value(url).toString() != status) {
+            m_peerStatuses[url] = status;
+            emit peerStatusesChanged();
+        }
+    }
 }
 
 void DaemonManager::clearLog()

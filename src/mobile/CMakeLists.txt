@@ -7,7 +7,8 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Quick QuickControls2 Network Xml Multimedia)
 # CorePrivate for qcoreapplication_platform.h (QAndroidApplication / JNI context)
-find_package(Qt6 QUIET COMPONENTS CorePrivate)
+# ImageFormats for AVIF/WebP/TIFF plugin support
+find_package(Qt6 QUIET COMPONENTS CorePrivate ImageFormats)
 qt_standard_project_setup(REQUIRES 6.5)
 
 # ── ZXingCpp (QR code decoding) ────────────────────────────────────────────────
@@ -41,12 +42,13 @@ set(DAEMON_ASSET "${CMAKE_CURRENT_SOURCE_DIR}/assets/dt-p2p-daemon")
 # ── sources ────────────────────────────────────────────────────────────────────
 set(CPP_SOURCES
     src/main.cpp
-    src/daemonmanager.cpp   src/daemonmanager.h
-    src/p2pclient.cpp       src/p2pclient.h
-    src/imagemodel.cpp      src/imagemodel.h
-    src/xmpio.cpp           src/xmpio.h
-    src/pairingmanager.cpp  src/pairingmanager.h
-    src/qrscanner.cpp       src/qrscanner.h
+    src/avifimageprovider.cpp  src/avifimageprovider.h
+    src/daemonmanager.cpp      src/daemonmanager.h
+    src/p2pclient.cpp          src/p2pclient.h
+    src/imagemodel.cpp         src/imagemodel.h
+    src/xmpio.cpp              src/xmpio.h
+    src/pairingmanager.cpp     src/pairingmanager.h
+    src/qrscanner.cpp          src/qrscanner.h
 )
 
 qt_add_executable(darktable-mobile ${CPP_SOURCES})
@@ -98,6 +100,10 @@ target_link_libraries(darktable-mobile PRIVATE
 
 if(ANDROID AND TARGET Qt6::CorePrivate)
     target_link_libraries(darktable-mobile PRIVATE Qt6::CorePrivate)
+endif()
+
+if(TARGET Qt6::ImageFormats)
+    target_link_libraries(darktable-mobile PRIVATE Qt6::ImageFormats)
 endif()
 
 if(DEFINED _ZXING_EXTRA_INCLUDE)

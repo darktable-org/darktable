@@ -129,9 +129,12 @@ ApplicationWindow {
 
         Text {
             anchors.centerIn: parent
-            text: p2p.connected
-                  ? "Connected  •  " + p2p.peers.length + " peer" + (p2p.peers.length === 1 ? "" : "s")
-                  : daemon.status
+            text: {
+                if (!p2p.connected) return daemon.status
+                const s = daemon.peerStatuses
+                const n = Object.keys(s).filter(k => s[k] === "ok").length
+                return "Connected  •  " + n + " peer" + (n === 1 ? "" : "s")
+            }
             color:    "white"
             font.pixelSize: 11
         }
