@@ -1,6 +1,10 @@
 src/p2p/pep
 *.so
 src/mobile/assets
+**/*.so
+src/mobile/android/libs/arm64-v8a/*
+src/mobile/android/libs
+src/mobile/assets/dt-p2p-daemon
 aqtinstall.log
 src/p2p/p2p
 build*/
