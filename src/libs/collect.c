@@ -1381,6 +1381,25 @@ static void _expand_select_tree_path(GtkTreePath *path1,
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 
+static void _update_parent_count(GtkTreeModel *model,
+                                 GtkTreeIter *iter,
+                                 const int count)
+{
+  GtkTreeIter parent = *iter;
+  GtkTreeIter child;
+  guint parentcount;
+
+  do
+  {
+    gtk_tree_model_get(model, &parent,
+                       DT_LIB_COLLECT_COL_COUNT, &parentcount, -1);
+
+    gtk_tree_store_set(GTK_TREE_STORE(model), &parent,
+                       DT_LIB_COLLECT_COL_COUNT, parentcount + count, -1);
+    child = parent;
+  } while (gtk_tree_model_iter_parent(model, &parent, &child));
+}
+
 static void _tree_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
@@ -1758,6 +1777,14 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
           for(int i = 0; i < common_length; i++)
             dt_util_str_cat(&pth, format_separator, tokens[i]);
 
+          // if we are at the end of the path, and this is a folder, we need to
+          // add the count to all parents.
+          if(!tokens[common_length]
+             && property == DT_COLLECTION_PROP_FOLDERS)
+          {
+            _update_parent_count(model, &parent, count);
+          }
+
           for(char **token = &tokens[common_length]; *token; token++)
           {
             GtkTreeIter iter;
@@ -1777,19 +1804,12 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
             index++;
             // also add the item count to parents
             if((property == DT_COLLECTION_PROP_DAY
+                || property == DT_COLLECTION_PROP_FOLDERS
                 || _is_time_property(property)) && !*(token + 1))
             {
-              guint parentcount;
-              GtkTreeIter parent2, child = iter;
-
-              while(gtk_tree_model_iter_parent(model, &parent2, &child))
-              {
-                gtk_tree_model_get(model, &parent2,
-                                   DT_LIB_COLLECT_COL_COUNT, &parentcount, -1);
-                gtk_tree_store_set(GTK_TREE_STORE(model), &parent2,
-                                   DT_LIB_COLLECT_COL_COUNT, count + parentcount, -1);
-                child = parent2;
-              }
+              GtkTreeIter p;
+              gtk_tree_model_iter_parent(model, &p, &iter);
+              _update_parent_count(model, &p, count);
             }
 
             common_length++;
