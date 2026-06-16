@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 21:46+0200\n"
-"PO-Revision-Date: 2026-06-07 08:39+0300\n"
+"POT-Creation-Date: 2026-06-10 23:06+0200\n"
+"PO-Revision-Date: 2026-06-16 17:58+0300\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -1280,9 +1280,9 @@ msgstr "Erottimet koon kategorioille"
 #: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
-"depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
-">400px"
+"depending on the size of the thumbnail, separated by |.\n"
+"for example, 120|400 means 3 categories of thumbnails: up to 120px, "
+"120-400px, more than 400px"
 msgstr ""
 "Koon kategorioita käytetään asettamaan erilaiset kuvapeitteet ja CSS-arvot "
 "esikatselukuvan koon mukaan. Koot erotetaan |\n"
@@ -3583,7 +3583,7 @@ msgstr "Viisi kertaa"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:61
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:128
 msgid "guide"
-msgstr "Opas"
+msgstr "Ohjauskanava"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
@@ -5012,12 +5012,12 @@ msgstr "Ei kiertoa"
 #: ../build/lib/darktable/plugins/introspection_flip.c:102 ../src/iop/flip.c:461
 #: ../src/iop/flip.c:617
 msgid "flip vertically"
-msgstr "Käännä pystysuunnassa"
+msgstr "Käännä pystysuunnassa."
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:103 ../src/iop/flip.c:457
 #: ../src/iop/flip.c:613
 msgid "flip horizontally"
-msgstr "Käännä vaakasuunnassa"
+msgstr "Käännä vaakasuunnassa."
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:104
 msgid "transpose"
@@ -5614,7 +5614,7 @@ msgstr "Leiman korkeus"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:160
 #: ../src/iop/primaries.c:395
 msgid "tint hue"
-msgstr "Sävyn sävy"
+msgstr "Sävy"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:81
 #: ../build/lib/darktable/plugins/introspection_primaries.c:164
@@ -6208,7 +6208,7 @@ msgstr "Alasveto"
 #: ../src/libs/tagging.c:1790 ../src/libs/tagging.c:1882
 #: ../src/libs/tagging.c:2011 ../src/libs/tagging.c:2320
 #: ../src/libs/tagging.c:2835 ../src/libs/tagging.c:2877
-#: ../src/libs/tagging.c:3975
+#: ../src/libs/tagging.c:3981
 msgid "_cancel"
 msgstr "_Peruuta"
 
@@ -6218,7 +6218,7 @@ msgstr "_Peruuta"
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1883
 #: ../src/libs/tagging.c:2012 ../src/libs/tagging.c:2321
-#: ../src/libs/tagging.c:3976
+#: ../src/libs/tagging.c:3982
 msgid "_save"
 msgstr "_Tallenna"
 
@@ -7893,7 +7893,7 @@ msgstr ""
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "XMP-tiedoston luku ei onnistu '%s': '%s'"
 
-#: ../src/common/exif.cc:6121
+#: ../src/common/exif.cc:6121 ../src/common/exif.cc:6134
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "XMP-tiedoston kirjoitus ei onnistu '%s': '%s'"
@@ -10053,62 +10053,62 @@ msgstr "Näytä ja muokkaa maskin elementtejä."
 #: ../src/develop/blend_gui.c:2788
 msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
-"Näytä ja muokkaa rajoitetussa tilassa (ei muotojen siirtoa/koon muuttamista)"
+"Näytä ja muokkaa rajoitetussa tilassa (ei muotojen siirtoa/koon muuttamista)."
 
 #: ../src/develop/blend_gui.c:2796 ../src/libs/masks.c:1880
 msgid "add AI object"
-msgstr "Lisää tekoälykohde"
+msgstr "Lisää tekoälykohde."
 
 #: ../src/develop/blend_gui.c:2805 ../src/libs/masks.c:1041
 #: ../src/libs/masks.c:1835 ../src/libs/masks.c:1839
 msgid "add gradient"
-msgstr "Lisää liukuväri"
+msgstr "Lisää liukuväri."
 
 #: ../src/develop/blend_gui.c:2806
 msgid "add multiple gradients"
-msgstr "lisää useita liukuvärejä"
+msgstr "lisää useita liukuvärejä."
 
 #: ../src/develop/blend_gui.c:2813 ../src/iop/retouch.c:2446
 #: ../src/iop/spots.c:877 ../src/libs/masks.c:1036 ../src/libs/masks.c:1843
 #: ../src/libs/masks.c:1847
 msgid "add path"
-msgstr "Lisää polku"
+msgstr "Lisää polku."
 
 #: ../src/develop/blend_gui.c:2814 ../src/iop/retouch.c:2446
 #: ../src/iop/spots.c:877
 msgid "add multiple paths"
-msgstr "lisää useita polkuja"
+msgstr "lisää useita polkuja."
 
 #: ../src/develop/blend_gui.c:2821 ../src/iop/retouch.c:2451
 #: ../src/iop/spots.c:882 ../src/libs/masks.c:1031 ../src/libs/masks.c:1851
 #: ../src/libs/masks.c:1855
 msgid "add ellipse"
-msgstr "Lisää ellipsi"
+msgstr "Lisää ellipsi."
 
 #: ../src/develop/blend_gui.c:2822 ../src/iop/retouch.c:2451
 #: ../src/iop/spots.c:882
 msgid "add multiple ellipses"
-msgstr "lisää useita ellipsejä"
+msgstr "lisää useita ellipsejä."
 
 #: ../src/develop/blend_gui.c:2829 ../src/iop/retouch.c:2456
 #: ../src/iop/spots.c:887 ../src/libs/masks.c:1026 ../src/libs/masks.c:1859
 #: ../src/libs/masks.c:1863
 msgid "add circle"
-msgstr "Lisää ympyrä"
+msgstr "Lisää ympyrä."
 
 #: ../src/develop/blend_gui.c:2830 ../src/iop/retouch.c:2456
 #: ../src/iop/spots.c:887
 msgid "add multiple circles"
-msgstr "lisää useita ympyröitä"
+msgstr "lisää useita ympyröitä."
 
 #: ../src/develop/blend_gui.c:2837 ../src/iop/retouch.c:2441
 #: ../src/libs/masks.c:1021 ../src/libs/masks.c:1867 ../src/libs/masks.c:1871
 msgid "add brush"
-msgstr "Lisää sivellin"
+msgstr "Lisää sivellin."
 
 #: ../src/develop/blend_gui.c:2838 ../src/iop/retouch.c:2441
 msgid "add multiple brush strokes"
-msgstr "lisää useita siveltimen vetoja"
+msgstr "lisää useita siveltimen vetoja."
 
 #: ../src/develop/blend_gui.c:2984
 msgid "toggle polarity of raster mask"
@@ -10397,7 +10397,7 @@ msgstr "'%s' on käytössä."
 #: ../src/develop/imageop.c:1152 ../src/develop/imageop.c:3030
 #, c-format
 msgid "'%s' is switched off"
-msgstr "'%s' on pois käytöstä."
+msgstr "'%s' ei ole käytöstä."
 
 #: ../src/develop/imageop.c:1718 ../src/libs/lib.c:939
 #, c-format
@@ -15502,7 +15502,7 @@ msgstr "(numeronäppäimistö)"
 
 #: ../src/gui/accelerators.c:677
 msgid "tablet button"
-msgstr "Tabletin nappi"
+msgstr "Sivunappi"
 
 #: ../src/gui/accelerators.c:686
 msgid "unknown driver"
@@ -17443,7 +17443,7 @@ msgstr "Poista tämä esiasetus"
 
 #: ../src/gui/presets.c:1802 ../src/libs/lib.c:595
 msgid "store new preset.."
-msgstr "Tallenna uusi esiasetus.."
+msgstr "Tallenna uusi esiasetus."
 
 #: ../src/gui/presets.c:1812 ../src/libs/lib.c:609
 msgid "update preset"
@@ -17668,7 +17668,7 @@ msgstr "Luo"
 
 #: ../src/gui/workspace.c:655
 msgid "copy settings from existing workspace"
-msgstr "Kopio asetukset olemassa olevasta työtilasta"
+msgstr "Kopioi asetukset olemassa olevasta työtilasta"
 
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
@@ -18746,7 +18746,7 @@ msgstr "Vähennä tai lisää värikylläisyyttä."
 
 #: ../src/iop/agx.c:1917
 msgid "increase to bring hues closer to the original"
-msgstr "Lisää tuodaksesi sävyt lähemmäksi alkuperäistä."
+msgstr "Lisää arvoa tuodaksesi sävyt lähemmäksi alkuperäistä."
 
 #: ../src/iop/agx.c:1927
 msgctxt "section"
@@ -18833,7 +18833,7 @@ msgstr "Suhteellinen valotus keskiharmaan yläpuolella (valkoinen piste)."
 
 #: ../src/iop/agx.c:2048
 msgid "pick the white point"
-msgstr "Poimi valkoinen piste"
+msgstr "Poimi valkoinen piste."
 
 #: ../src/iop/agx.c:2056
 msgid "relative exposure below mid-gray (black point)"
@@ -18841,7 +18841,7 @@ msgstr "Suhteellinen valotus keskiharmaan alapuolella (musta piste)."
 
 #: ../src/iop/agx.c:2057
 msgid "pick the black point"
-msgstr "Poimi musta piste"
+msgstr "Poimi musta piste."
 
 #: ../src/iop/agx.c:2065 ../src/iop/filmicrgb.c:4408
 msgid ""
@@ -18867,7 +18867,7 @@ msgstr "Valotuksen alue"
 
 #: ../src/iop/agx.c:2079
 msgid "read exposure from metadata and exposure module"
-msgstr "Lue valotus metatiedoista ja valotus-moduulista"
+msgstr "Lue valotus metatiedoista ja valotus-moduulista."
 
 #: ../src/iop/agx.c:2081
 msgid "read exposure"
@@ -19156,7 +19156,7 @@ msgid ""
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
-"Kierrä kuva\n"
+"Kierrä kuva.\n"
 "Kakkospainikkeen napsautus ja raahaus määrittää vaaka- tai pystysuuntaisen "
 "linjan piirtämisen kuvaan."
 
@@ -19233,7 +19233,7 @@ msgid ""
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
 "Korjaa automaattisesti vaaka- ja pystysuuntaiset perspektiivivirheet; sovita "
-"kierto, linssin siirto molempiin suuntiin ja leikkaus.\n"
+"kierto, linssin siirto molempiin suuntiin sekä leikkaus.\n"
 "CTRL+napsautus sovittaa ainoastaan kierron.\n"
 "SHIFT+napsautus sovittaa ainoastaan linssin siirron.\n"
 "CTRL+SHIFT+napsautus sovittaa ainoastaan kierron ja linssin siirron."
@@ -19252,11 +19252,11 @@ msgstr ""
 
 #: ../src/iop/ashift.c:6110
 msgid "manually define perspective rectangle"
-msgstr "Määritä manuaalisesti perspektiivin suorakulmio"
+msgstr "Määritä perspektiivin suorakulmio käsin."
 
 #: ../src/iop/ashift.c:6111
 msgid "manually draw structure lines"
-msgstr "Piirrä käsin rakenteelliset viivat"
+msgstr "Piirrä käsin rakenteelliset viivat."
 
 #: ../src/iop/ashift.c:6140
 msgid "rectangle"
@@ -22132,15 +22132,15 @@ msgstr ""
 
 #: ../src/iop/colorequal.c:3030
 msgid "change hue hue-wise"
-msgstr "Muuta sävyä sävyn mukaan"
+msgstr "Muuta sävyä sävyn mukaan."
 
 #: ../src/iop/colorequal.c:3048
 msgid "change saturation hue-wise"
-msgstr "Muuta värikylläisyyttä sävyn mukaan"
+msgstr "Muuta värikylläisyyttä sävyn mukaan."
 
 #: ../src/iop/colorequal.c:3066
 msgid "change brightness hue-wise"
-msgstr "Muuta kirkkautta sävyn mukaan"
+msgstr "Muuta kirkkautta sävyn mukaan."
 
 #: ../src/iop/colorequal.c:3099
 msgid ""
@@ -25065,7 +25065,7 @@ msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
-"Lisää korjataksesi laajoja leikkautuneita alueita.\n"
+"Lisää arvoa korjataksesi laajoja leikkautuneita alueita.\n"
 "Suuret arvot vaativat erittäin paljon laskentatehoa."
 
 #: ../src/iop/highlights.c:1339
@@ -25201,7 +25201,7 @@ msgid ""
 "crop factor:\t%.1f"
 msgstr ""
 "Valmistaja:\t\t%s\n"
-"Malli:\t\t%s%s\n"
+"Malli:\t\t\t%s%s\n"
 "Kiinnitys:\t\t%s\n"
 "Rajauskerroin:\t%.1f"
 
@@ -25217,12 +25217,12 @@ msgid ""
 "mounts:\t%s"
 msgstr ""
 "Valmistaja:\t\t%s\n"
-"Malli:\t\t%s\n"
+"Malli:\t\t\t%s\n"
 "Polttovälialue:\t%s\n"
-"Aukko:\t%s\n"
+"Aukko:\t\t\t%s\n"
 "Rajauskerroin:\t%.1f\n"
-"Tyyppi:\t\t%s\n"
-"Kiinnitys:\t%s"
+"Tyyppi:\t\t\t%s\n"
+"Kiinnitys:\t\t%s"
 
 #: ../src/iop/lens.cc:4070
 msgid "f/"
@@ -25354,9 +25354,9 @@ msgid ""
 " a) data and algorithms provided by the Lensfun project\n"
 " b) embedded metadata provided by the camera or software vendor"
 msgstr ""
-"Valitse korjauksen tila joka perustuu joko\n"
-" a) Lensfun projektin tuottamaan tietoon ja algoritmeihin\n"
-" b) Kameran- tai ohjelmistonvalmistajan kuvaan lisäämiin metatietoihin"
+"Valitse korjauksen tila joka perustuu joko:\n"
+" a) Lensfun projektin tuottamaan tietoon ja algoritmeihin.\n"
+" b) Kameran- tai ohjelmistonvalmistajan kuvaan lisäämiin metatietoihin."
 
 #: ../src/iop/lens.cc:4546
 msgid "which corrections to apply"
@@ -25521,27 +25521,27 @@ msgstr "Muodot"
 
 #: ../src/iop/liquify.c:3633
 msgid "draw curves"
-msgstr "Piirrä käyriä"
+msgstr "Piirrä käyriä."
 
 #: ../src/iop/liquify.c:3633
 msgid "draw multiple curves"
-msgstr "Piirrä useita käyriä"
+msgstr "Piirrä useita käyriä."
 
 #: ../src/iop/liquify.c:3639
 msgid "draw lines"
-msgstr "Piirrä viivoja"
+msgstr "Piirrä viivoja."
 
 #: ../src/iop/liquify.c:3639
 msgid "draw multiple lines"
-msgstr "Piirrä useita viivoja"
+msgstr "Piirrä useita viivoja."
 
 #: ../src/iop/liquify.c:3645
 msgid "draw points"
-msgstr "Piirrä pisteitä"
+msgstr "Piirrä pisteitä."
 
 #: ../src/iop/liquify.c:3645
 msgid "draw multiple points"
-msgstr "Piirrä useita pisteitä"
+msgstr "Piirrä useita pisteitä."
 
 #: ../src/iop/liquify.c:3651
 msgid ""
@@ -26660,11 +26660,11 @@ msgstr "Muokkaus"
 
 #: ../src/iop/retouch.c:2434
 msgid "show and edit shapes on the current scale"
-msgstr "Näytä ja muokkaa muotoja nykyisellä asteikolla"
+msgstr "Näytä ja muokkaa muotoja nykyisellä asteikolla."
 
 #: ../src/iop/retouch.c:2435
 msgid "show and edit shapes in restricted mode"
-msgstr "Näytä ja muokkaa muotoja rajoitetussa tilassa"
+msgstr "Näytä ja muokkaa muotoja rajoitetussa tilassa."
 
 #. algorithm toolbar
 #: ../src/iop/retouch.c:2461
@@ -28390,7 +28390,7 @@ msgstr "Kokoelmien asetukset"
 #: ../src/libs/collect.c:3554 ../src/libs/export.c:1428
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
-#: ../src/libs/tagging.c:3999
+#: ../src/libs/tagging.c:4005
 msgid "preferences..."
 msgstr "Asetukset..."
 
@@ -28896,7 +28896,7 @@ msgstr "Korkealaatuinen uudelleennäytteistäminen"
 
 #: ../src/libs/export.c:1584
 msgid "do high quality resampling during export"
-msgstr "Tee korkean laadun uudelleen näytteistäminen kuvien viennissä."
+msgstr "Tee korkean laadun uudelleennäytteistäminen kuvien viennissä."
 
 #: ../src/libs/export.c:1591
 msgid "store masks"
@@ -31775,8 +31775,7 @@ msgstr "Lisää nykyiseen kokoelmaan"
 
 #: ../src/libs/neural_restore.c:4361
 msgid "automatically import the output image into the current collection"
-msgstr ""
-"Tuo viennin kuva automaattisesti Darktablen kirjaston nykyiseen kokoelmaan."
+msgstr "Tuo käsitelty kuva automaattisesti nykyiseen kokoelmaan."
 
 #: ../src/libs/neural_restore.c:4377
 msgid ""
@@ -32751,7 +32750,7 @@ msgstr ""
 "Tunnisteen pikavalinta ei ole aktiivinen tunnisteiden puu-näkymässä. Ole hyvä "
 "ja vaihda lista-näkymään."
 
-#: ../src/libs/tagging.c:3973
+#: ../src/libs/tagging.c:3979
 msgid "tagging settings"
 msgstr "Tunnisteiden asetukset"
 
@@ -33202,7 +33201,7 @@ msgstr "Lokin historia"
 
 #: ../src/libs/tools/log_history.c:188
 msgid "view log history"
-msgstr "Näytä historian loki"
+msgstr "Näytä historian loki."
 
 #: ../src/libs/tools/midi.c:41
 msgid "midi"
