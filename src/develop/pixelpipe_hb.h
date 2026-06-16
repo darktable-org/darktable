@@ -127,6 +127,9 @@ typedef enum dt_dev_pixelpipe_status_t
     Used to switch between darkroom HQ modes.
     Requires a restart of the pipe but pixelpipe cache can stay.
 
+    DT_DEV_PIXELPIPE_STOP_ZOOM
+    As we stopped inside a module the output cacheline must be invalidated.
+
     DT_DEV_PIXELPIPE_STOP_LAST
     If the shutdown value is >= DT_DEV_PIXELPIPE_STOP_LAST it is understood as the iop_order
     of a module. Any module can use dt_dev_pixelpipe_set_shutdown() to it's iop_order at runtime,
@@ -141,6 +144,7 @@ typedef enum dt_dev_pixelpipe_stopper_t
   DT_DEV_PIXELPIPE_PROCESSING,
   DT_DEV_PIXELPIPE_STOP_NODES,
   DT_DEV_PIXELPIPE_STOP_HQ,
+  DT_DEV_PIXELPIPE_STOP_ZOOM,
   DT_DEV_PIXELPIPE_STOP_LAST,
 } dt_dev_pixelpipe_stopper_t;
 

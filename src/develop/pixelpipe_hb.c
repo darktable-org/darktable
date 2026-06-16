@@ -49,7 +49,8 @@
 
 static inline gboolean _pipe_has_shutdown(dt_dev_pixelpipe_t *pipe)
 {
-  return dt_atomic_get_int(&pipe->shutdown) > DT_DEV_PIXELPIPE_PROCESSING;
+  const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
+  return stopper > DT_DEV_PIXELPIPE_PROCESSING && stopper != DT_DEV_PIXELPIPE_STOP_ZOOM;
 }
 
 // benchmarking and pfm dumps should happen for these pipes if there is no shutdown request
@@ -109,6 +110,7 @@ const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t st
   case DT_DEV_PIXELPIPE_PROCESSING: return "DT_DEV_PIXELPIPE_PROCESSING";
   case DT_DEV_PIXELPIPE_STOP_NODES: return "DT_DEV_PIXELPIPE_STOP_NODES";
   case DT_DEV_PIXELPIPE_STOP_HQ:    return "DT_DEV_PIXELPIPE_STOP_HQ";
+  case DT_DEV_PIXELPIPE_STOP_ZOOM:  return "DT_DEV_PIXELPIPE_STOP_ZOOM";
   case DT_DEV_PIXELPIPE_STOP_LAST:  return "DT_DEV_PIXELPIPE_STOP_LAST";
   default:                          return "DT_DEV_PIXELPIPE_STOP_MODULE";
   }
@@ -1324,8 +1326,11 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe,
   }
 #endif
 
-  // stopper reflects the iop_order of the stopping mode so we must invalidate output cachelines.
-  dt_dev_pixelpipe_cache_invalidate_iop(pipe, stopper, "module pipe stop: ");
+  if(stopper == DT_DEV_PIXELPIPE_STOP_ZOOM)
+    dt_dev_pixelpipe_cache_invalidate_iop(pipe, module->iop_order, "zoomed pipe stop: ");
+  else
+    // stopper reflects the iop_order of the stopping mode so we must invalidate output cachelines.
+    dt_dev_pixelpipe_cache_invalidate_iop(pipe, stopper, "module pipe stop: ");
 
   return TRUE;
 }

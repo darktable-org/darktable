@@ -3268,7 +3268,11 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
 
   if(port->widget)
+  {
+    if(dt_pipe_processing(port->pipe))
+      dt_dev_pixelpipe_set_shutdown(port->pipe, DT_DEV_PIXELPIPE_STOP_ZOOM);
     dt_control_queue_redraw_widget(port->widget);
+  }
   if(port == &dev->full)
     dt_control_navigation_redraw();
 }
