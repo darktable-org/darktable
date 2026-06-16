@@ -1330,6 +1330,31 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe,
   return TRUE;
 }
 
+gboolean dt_dev_pixelpipe_piece_shutdown(dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
+  if(stopper <= DT_DEV_PIXELPIPE_PROCESSING)
+    return FALSE;
+
+  /* We check for any UI action requesting an early pipe shutdown as
+      DT_DEV_PIXELPIPE_STOP_NODES or DT_DEV_PIXELPIPE_STOP_HQ, we
+      - stop further processing the module thus it's output will be incorrect
+      - change the shutdown mode to the modules's iop_order so _module_pipe_stop()
+        can take care of cacheline validation.
+  */
+  if(stopper == DT_DEV_PIXELPIPE_STOP_NODES || stopper == DT_DEV_PIXELPIPE_STOP_HQ)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "modify piece shutdown",
+      pipe, piece->module, pipe->devid, NULL, NULL, "%s",
+      dt_dev_pixelpipe_shutdown_to_str(stopper));
+
+    dt_atomic_set_int(&pipe->shutdown, piece->module->iop_order);
+  }
+
+  return TRUE;
+}
+
 void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
 {
   dt_iop_module_t *module = piece->module;

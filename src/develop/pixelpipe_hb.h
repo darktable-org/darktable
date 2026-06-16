@@ -422,6 +422,9 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
 // disable given op and all that comes before it in the pipe:
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 
+// pieces can test for a pipe shutdown request within module->process().
+gboolean dt_dev_pixelpipe_piece_shutdown(dt_dev_pixelpipe_iop_t *piece);
+
 // helper function to pass a raster mask through a (so far) processed pipe
 float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
                               const struct dt_iop_module_t *raster_mask_source,
