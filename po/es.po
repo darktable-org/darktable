@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-15 12:08-0600\n"
-"PO-Revision-Date: 2026-06-15 13:39-0600\n"
+"PO-Revision-Date: 2026-06-16 00:57-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -872,7 +872,7 @@ msgstr "No disponible en este sistema"
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:235
 msgid "darktable theme"
-msgstr "tema de darktable"
+msgstr "Tema de darktable"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:236
@@ -887,6 +887,15 @@ msgid ""
 "\n"
 "<b>darker:</b> good for dimly-lit rooms"
 msgstr ""
+"El color de fondo de la imagen influye en cómo se ven sus colores y tonos al "
+"revelarla. El gris es recomendado porque es el más neutro y evita las "
+"distracciones.\n"
+"\n"
+"<b>gris:</b> ideal para trabajos en los que se requiere precisión cromática\n"
+"\n"
+"<b>oscuro:</b> distrae menos la atención el entorno de la imagen\n"
+"\n"
+"<b>más oscuro:</b> ideal para habitaciones con poca luz"
 
 #: ../build/bin/preferences_gen.h:2598 ../src/control/jobs/control_jobs.c:3118
 #: ../src/libs/import.c:183
@@ -966,6 +975,10 @@ msgid ""
 "(PICTURES_FOLDER)</b>, which expands to your system's pictures folder: <i>~/"
 "Pictures</i> on macOS and Linux, <i>C:/Users/username/Pictures</i> on Windows"
 msgstr ""
+"Directorio en donde se almacenan los carretes recién importados. De manera "
+"predeterminada es <b>$(PICTURES_FOLDER)</b>, que se sustituye por la carpeta "
+"de imágenes del sistema: <i>~/Imágenes</i> en GNU/Linux y macOS, <i>C:"
+"\\Usuarios\\TuNombredeUsuario\\Imágenes</i> en Windows"
 
 # dt•v5.0
 #: ../build/bin/preferences_gen.h:2635
@@ -1095,6 +1108,15 @@ msgid ""
 "\n"
 "<b>disabled</b> actions apply to the current selection (less error prone)"
 msgstr ""
+"En la mesa de luz, donde se lleva a cabo la selección, hay acciones (por "
+"ejemplo, asignar valoraciones) que se pueden aplicar a la imagen sobre la que "
+"pase el cursor o mediante la selección de una o varias imágenes.\n"
+"\n"
+"Las acciones <b>habilitadas</b> se aplican a la imagen sobre la que pase el "
+"cursor (sin necesidad de pulsar sobre la misma).\n"
+"\n"
+"Las acciones <b>deshabilitadas</b> se aplican a la selección actual (lo que "
+"evita la posibilidad de cometer errores)."
 
 #: ../build/bin/preferences_gen.h:2763
 msgid "expand a single utility module at a time"
@@ -1638,6 +1660,21 @@ msgid ""
 "\n"
 "<b>none</b> do not use a predefined workflow"
 msgstr ""
+"Seleccione el flujo de trabajo se utilizará por defecto en el cuarto oscuro\n"
+"\n"
+"<b>Basado en la escena (sigmoidal)</b> moderno flujo de trabajo de mapeo "
+"tonal con control minimalista\n"
+"\n"
+"<b>Basado en la escena (película rgb)</b> moderno flujo de trabajo de mapeo "
+"tonal con mayor control de detalle\n"
+"\n"
+"<b>Basado en la escena (agx)</b> moderno flujo de trabajo de mapeo tonal con "
+"control máximo de detalle\n"
+"\n"
+"<b>Basado en la pantalla (heredado)</b> flujo de trabajo antiguo (no "
+"recomendado)\n"
+"\n"
+"<b>Ninguno</b> Se omite el utilizar cualquiera de los anteriores"
 
 #: ../build/bin/preferences_gen.h:3531
 msgid "auto-apply per camera basecurve presets"
@@ -2097,6 +2134,22 @@ msgid ""
 "<b>on import:</b> an XMP file is created when the image is imported, and "
 "updated after each change"
 msgstr ""
+"Los archivos XMP almacenan cada paso de edición, valoraciones, etiquetas y "
+"marcas de color asociado uno con cada imagen en un formato abierto y legible "
+"por otras aplicaciones. Funcionan como copia de seguridad para casos de "
+"emergencia como en el caso de que la base de datos y sus copias de seguridad "
+"sean inaccesibles.\n"
+"\n"
+"<b>Nunca:</b> La información se almacena únicamente en la base de datos de "
+"darktable. Al perderse o dañarse, no será posible recuperar las "
+"modificaciones de los archivos\n"
+"\n"
+"<b>Después de editar:</b> El archivo XMP se crea tras la primera edición "
+"intencionada (es decir, no aplicada automáticamente) y se actualiza tras cada "
+"sesión de edición.\n"
+"\n"
+"<b>Al importar:</b> Al importar la imagen se crea un archivo XMP, que se "
+"actualiza tras cada modificación."
 
 #: ../build/bin/preferences_gen.h:4226
 msgid "store XMP tags in compressed format"
@@ -2163,16 +2216,14 @@ msgstr ""
 
 # dt•v5.0
 #: ../build/bin/preferences_gen.h:4321
-#, fuzzy
 msgid "show welcome screen on next run"
-msgstr "Activar la pantalla de bienvenida"
+msgstr "Mostrar la pantalla de bienvenida la próxima vez que se ejecute"
 
 # dt•v5.0
 #: ../build/bin/preferences_gen.h:4329
-#, fuzzy
 msgid "display the welcome setup screen the next time darktable is launched"
 msgstr ""
-"Los guiones de Lua no se ejecutarán la próxima vez que se inicie darktable"
+"Mostrar la pantalla de configuración de bienvenida al reiniciar darktable"
 
 #: ../build/bin/preferences_gen.h:4338
 msgid "load default shortcuts at startup"
@@ -2264,6 +2315,19 @@ msgid ""
 "<b>disabled:</b> the mouse wheel adjusts the control under the pointer and "
 "with <i>Ctrl+Alt</i> scrolls the panel."
 msgstr ""
+"En el cuarto oscuro de darktable, donde se realizan las ediciones, los "
+"controles aparecen en un panel situado a la derecha. Se puede elegir entre "
+"usar la rueda de desplazamiento o el panel táctil con el gesto de "
+"desplazamiento para moverse por el panel o, por otro lado, para modificar los "
+"valores del control situado bajo el puntero (esta última opción permite "
+"editar más rápido, aunque se corre el riesgo de modificar los valores de los "
+"controles del módulo sin percatarse de ello).\n"
+"\n"
+"<b>activado:</b> La rueda del ratón permite desplazarse por el panel de "
+"módulos y, con <i>Ctrl+Alt</i>, se ajusta el valor de un control.\n"
+"\n"
+"<b>desactivado:</b> La rueda del ratón ajusta el control situado debajo del "
+"puntero y, con <i>Ctrl+Alt</i>, se desplaza por el panel."
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:4458
@@ -4186,9 +4250,8 @@ msgstr "desplazamiento de nodos"
 # dt•v5.6
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:90
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:193
-#, fuzzy
 msgid "harmony rule"
-msgstr "reglas de nombrado"
+msgstr "regla de armonía"
 
 # dt•v5.6
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:96
@@ -7711,12 +7774,11 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/common/darktable.c:2616
-#, fuzzy
 msgid ""
 "you will find 'per device' data in 'cldevice_v6_canonical-name'. content is:"
 msgstr ""
-"Sin embargo, encontrará los datos «por dispositivo» en "
-"\"cldevice_v5_canonical-name\". El contenido es :"
+"Encontrará los datos «por dispositivo» en \"cldevice_v6_canonical-name\". El "
+"contenido es :"
 
 # dt•v5.6
 #: ../src/common/darktable.c:2618
@@ -18255,7 +18317,7 @@ msgstr ""
 # dt•v5.6
 #: ../src/gui/welcome.c:837
 msgid "<b>You are all set!</b>"
-msgstr "<b>Ya se encuentra todo listo</b>"
+msgstr "<b>¡Todo está listo!</b>"
 
 # dt•v5.6
 #: ../src/gui/welcome.c:840
@@ -18265,8 +18327,8 @@ msgid ""
 "<b>preferences</b> to get the full picture."
 msgstr ""
 "darktable es un programa altamente personalizable y cuenta con bastantes "
-"opciones. Aquí sólo se han mencionado las más básicas. Explore las "
-"<b>preferencias</b> para conocer todo el potencial."
+"opciones. Aquí sólo se han presentado y configurado las más básicas. Explore "
+"las <b>preferencias</b> para conocer todo el potencial."
 
 # dt•v5.6
 #. xgettext: %s is a URL; keep <a href="%s"> and </a> unchanged
@@ -18285,13 +18347,13 @@ msgid ""
 "And remember that you can always click on the <b>?</b> on the top toolbar to "
 "get help right where you need it."
 msgstr ""
-"Y recuerde que siempre se puede pulsar <b>?</b> en la barra superior de "
-"herramientas para obtener ayuda justo cuando se necesite."
+"Y cuando lo requiera, puede obtener ayuda al pulsar <b>?</b> en la barra "
+"superior de herramientas."
 
 # dt•v5.6
 #: ../src/gui/welcome.c:864
 msgid "Happy editing with darktable!"
-msgstr "¡Disfruta revelando con darktable!"
+msgstr "¡Disfrute revelando con darktable!"
 
 # dt•v5.4
 #. add a memory workspace just after default one
@@ -23140,9 +23202,8 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:125
-#, fuzzy
 msgid "color harmonizer"
-msgstr "armonías de color"
+msgstr "armonizador cromático"
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:132
