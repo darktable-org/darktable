@@ -49,7 +49,7 @@
 
 static inline gboolean _pipe_has_shutdown(dt_dev_pixelpipe_t *pipe)
 {
-  return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
+  return dt_atomic_get_int(&pipe->shutdown) > DT_DEV_PIXELPIPE_PROCESSING;
 }
 
 // benchmarking and pfm dumps should happen for these pipes if there is no shutdown request
@@ -106,6 +106,7 @@ const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t st
   switch(stopper)
   {
   case DT_DEV_PIXELPIPE_STOP_NO:    return "DT_DEV_PIXELPIPE_STOP_NO";
+  case DT_DEV_PIXELPIPE_PROCESSING: return "DT_DEV_PIXELPIPE_PROCESSING";
   case DT_DEV_PIXELPIPE_STOP_NODES: return "DT_DEV_PIXELPIPE_STOP_NODES";
   case DT_DEV_PIXELPIPE_STOP_HQ:    return "DT_DEV_PIXELPIPE_STOP_HQ";
   case DT_DEV_PIXELPIPE_STOP_LAST:  return "DT_DEV_PIXELPIPE_STOP_LAST";
@@ -282,7 +283,6 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
 
-  pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   pipe->opencl_error = FALSE;
   pipe->tiling = FALSE;
@@ -372,9 +372,9 @@ void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe,
 
 #else
 
-  int expected = DT_DEV_PIXELPIPE_STOP_NO;
+  int expected = DT_DEV_PIXELPIPE_PROCESSING;
   const gboolean new = dt_atomic_CAS_int(&pipe->shutdown, &expected, stopper);
-  if(new && pipe->processing) // don't be too noisy
+  if(new)
     dt_print_pipe(DT_DEBUG_PIPE, "pipe shutdown request",
       pipe, NULL, pipe->devid, NULL, NULL,
       "%s", dt_dev_pixelpipe_shutdown_to_str(stopper));
@@ -383,7 +383,7 @@ void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe,
       pipe, NULL, pipe->devid, NULL, NULL,
       "to %s %s. was %s",
       dt_dev_pixelpipe_shutdown_to_str(stopper),
-      new ? "done" : "failed",
+      expected == DT_DEV_PIXELPIPE_STOP_NO ? "ignored" : "failed",
       dt_dev_pixelpipe_shutdown_to_str(expected));
 
 #endif
@@ -1299,7 +1299,7 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe,
                                          void *cl_in)
 {
   const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-  if(stopper <= DT_DEV_PIXELPIPE_STOP_NO)
+  if(stopper <= DT_DEV_PIXELPIPE_PROCESSING)
     return FALSE;
 
   dt_print_pipe(DT_DEBUG_PIPE, "module pipe stop",
@@ -3041,7 +3041,7 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   const float scale,
                                   const int devid)
 {
-  pipe->processing = TRUE;
+  dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_PROCESSING);
   pipe->nocache = dt_pipe_is_image(pipe);
   pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
@@ -3188,10 +3188,7 @@ restart:
 
   // ... and in case of other errors ...
   if(err)
-  {
-    pipe->processing = FALSE;
     return TRUE;
-  }
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
@@ -3229,7 +3226,6 @@ restart:
                 pipe->image.filename, pipe->image.id);
   dt_print_mem_usage("after pixelpipe process");
 
-  pipe->processing = FALSE;
   return FALSE;
 }
 

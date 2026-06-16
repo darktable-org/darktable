@@ -138,6 +138,7 @@ typedef enum dt_dev_pixelpipe_status_t
 typedef enum dt_dev_pixelpipe_stopper_t
 {
   DT_DEV_PIXELPIPE_STOP_NO = 0,
+  DT_DEV_PIXELPIPE_PROCESSING,
   DT_DEV_PIXELPIPE_STOP_NODES,
   DT_DEV_PIXELPIPE_STOP_HQ,
   DT_DEV_PIXELPIPE_STOP_LAST,
@@ -212,16 +213,7 @@ typedef struct dt_dev_pixelpipe_t
   gboolean nocache;
 
   dt_imgid_t output_imgid;
-  // working?
-  gboolean processing;
-  /* shutting down?
-     can be used in various ways defined in dt_dev_pixelpipe_stopper_t, in all cases the
-       running pipe is stopped asap
-     If we don't use one of the enum values this is interpreted as the iop_order of the module
-     that has set this in case of an error condition or other reasons that request a re-run of the pipe.
-     In those cases we assume cachelines after this module and the input of the stopper module
-     are not valid cachelines any more so the pixelpipe takes care of this.
-  */
+  // pipe running & shutdown modes defined as dt_dev_pixelpipe_stopper_t
   dt_atomic_int shutdown;
   // opencl enabled for this pixelpipe?
   gboolean opencl_enabled;
@@ -318,6 +310,14 @@ static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
 {
   return pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
 }
+static inline gboolean dt_pipe_processing(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) == DT_DEV_PIXELPIPE_PROCESSING;
+}
+static inline gboolean dt_pipe_started(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) >= DT_DEV_PIXELPIPE_PROCESSING;
+}
 
 // report pipe->type as textual string
 const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type);
@@ -325,7 +325,6 @@ const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type
 const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t stopper);
 
 // sets pipe->shutdown in atomic mode
-// If DT_PIPE_CAS_SHUTDOWN is defined do that only if shutdown was DT_DEV_PIXELPIPE_STOP_NO
 void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe, const dt_dev_pixelpipe_stopper_t stopper);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.

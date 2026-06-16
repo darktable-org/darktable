@@ -1758,13 +1758,10 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
   dt_conf_set_bool("darkroom/ui/late_scaling/enabled", dev->late_scaling.enabled);
 
   // we just toggled off and had one of HQ pipelines running
-  if(!dev->late_scaling.enabled
-      && (dev->full.pipe->processing
-          || (dev->second_wnd && dev->preview2.pipe->processing)))
+  if(!dev->late_scaling.enabled)
   {
-    if(dev->full.pipe->processing)
-      dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_HQ);
-    if(dev->second_wnd && dev->preview2.pipe->processing)
+    dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_HQ);
+    if(dev->second_wnd)
       dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_HQ);
 
     // do it the hard way for safety
@@ -3449,14 +3446,6 @@ void enter(dt_view_t *self)
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
-
-  // Reset shutdown flags on all pipes - they may still be set from previous session
-  if(dev->full.pipe)
-    dt_atomic_set_int(&dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-  if(dev->preview_pipe)
-    dt_atomic_set_int(&dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-  if(dev->preview2.pipe)
-    dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
 
   if(!dev->form_gui)
   {
