@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-15 12:08-0600\n"
-"PO-Revision-Date: 2026-06-16 00:57-0600\n"
+"PO-Revision-Date: 2026-06-16 16:24-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1179,7 +1179,6 @@ msgstr ""
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:2864
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1193,8 +1192,11 @@ msgstr ""
 "Si el tamaño de la miniatura es mayor que este valor, se procesará utilizando "
 "el archivo en bruto en lugar de la previsualización incrustada JPEG (mejor, "
 "pero más lento).\n"
-"Si se desea generar todas las miniaturas e imágenes en la mayor calidad, "
-"elija la opción *Siempre*\n"
+"Si se desea generar todas las miniaturas e imágenes preprocesadas en la mayor "
+"calidad, elija la opción «Siempre»\n"
+"Para que se muestre lo más rápido posible, seleccione la opción «Nunca».\n"
+"La opción «Automático» da prioridad al JPEG incrustado, salvo cuando el "
+"tamaño de la miniatura supera la resolución del JPEG incrustado\n"
 "(para más información, consulte el manual)."
 
 #: ../build/bin/preferences_gen.h:2873
@@ -1203,7 +1205,6 @@ msgstr "Procesamiento de alta calidad a partir de el tamaño"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:2882
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1213,8 +1214,8 @@ msgid ""
 msgstr ""
 "Si el tamaño de la miniatura es mayor que este valor, se procesará utilizando "
 "la ruta de procesamiento de máxima calidad (mejor, pero más lento).\n"
-"Si se desea generar todas las miniaturas e imágenes en la mayor calidad, "
-"elija la opción *Siempre*\n"
+"Si se desea generar todas las miniaturas e imágenes preprocesadas en la mayor "
+"calidad, elija la opción «Siempre»\n"
 "(para más información, consulte el manual)."
 
 #: ../build/bin/preferences_gen.h:2891
@@ -1316,7 +1317,6 @@ msgstr "Delimitadores de categorías de tamaño"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:2990
-#, fuzzy
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending on the size of the thumbnail, separated by |.\n"
@@ -1325,8 +1325,8 @@ msgid ""
 msgstr ""
 "Las categorías de tamaño se utilizan para poder establecer diferentes "
 "superposiciones y valores CSS en función del tamaño de la miniatura, "
-"separadas por |. Por ejemplo, 120|400 indican 3 categorías de miniaturas: 0 "
-"px → 120 px, 120 px → 400 px y mayor a 400 px."
+"separadas por |. Por ejemplo, 120|400 indican 3 categorías de miniaturas: 120 "
+"px o menos, 120 px → 400 px y mayor a 400 px."
 
 #: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
@@ -1632,12 +1632,11 @@ msgstr "Carpeta raíz de archivos de máscaras de matriz de pixeles"
 
 # dt•v5.2
 #: ../build/bin/preferences_gen.h:3504
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains PFM/PNG files used by the raster mask "
 "import module. (restart required)"
 msgstr ""
-"Esta carpeta (y subcarpetas) contienen los archivos PFM utilizados por el "
+"Esta carpeta (y subcarpetas) contienen los archivos PFM/PNG utilizados por el "
 "módulo de importación de máscaras de matriz de pixeles. Es necesario "
 "reiniciar darktable."
 
@@ -1944,15 +1943,15 @@ msgstr "Preguntar siempre antes de descartar el historial de acciones."
 
 #: ../build/bin/preferences_gen.h:3917
 msgid "try to use trash when deleting images"
-msgstr "Al eliminar las imágenes, se opta enviarlas a la papelera"
+msgstr "Optar por enviar a la papelera al eliminar las imágenes"
 
 #: ../build/bin/preferences_gen.h:3925
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
 msgstr ""
-"Envía los archivos a la papelera en vez de borrarlos permanentemente en los "
-"sistemas que cuenten con esa opción"
+"Envía los archivos a la papelera en vez de borrarlos permanentemente (en los "
+"sistemas que cuenten con esta opción)"
 
 #: ../build/bin/preferences_gen.h:3934
 msgid "ask before moving images from film roll folder"
@@ -2262,13 +2261,12 @@ msgstr ""
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:4390
 msgid "condensed panels' controls"
-msgstr "controles de los paneles compactos"
+msgstr "Condensar los controles de los paneles"
 
 # dt•v5.0
 #: ../build/bin/preferences_gen.h:4398
-#, fuzzy
 msgid "use condensed panels' controls in all views"
-msgstr "Restablecer paneles en todas las vistas"
+msgstr "Compacta los controles en los paneles en todas las vistas"
 
 #: ../build/bin/preferences_gen.h:4407
 msgid "automatically update module name"
@@ -2432,7 +2430,6 @@ msgstr "Ordenar o excluir dispositivos MIDI"
 
 # dt•v5.6
 #: ../build/bin/preferences_gen.h:4604
-#, fuzzy
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
@@ -2444,7 +2441,10 @@ msgstr ""
 "Lista de fragmentos de nombres de dispositivos MIDI separada por comas, que "
 "al coincidir, se cargan con el id. dado por la ubicación en la lista.\n"
 "Los dispositivos precedidos por '-' no serán cargados. Se añade la "
-"codificación y el número de mandos como «BeatStep:63:16»."
+"codificación y el número de mandos como \"Loupedeck:127,BeatStep:63:16\".\n"
+"Añade el prefijo ' - ' para ignorar los dispositivos que coincidan.\n"
+"El simple uso de ' - ' detiene la carga de todos los dispositivos restantes "
+"o, por sí solo, desactiva el MIDI por completo."
 
 #. tags
 #: ../build/bin/preferences_gen.h:4614 ../src/develop/lightroom.c:1573
@@ -4283,9 +4283,8 @@ msgstr "amplitud de desplazamiento"
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:126
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:213
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:217
-#, fuzzy
 msgid "custom node hue"
-msgstr "orden personalizado"
+msgstr "tono de nodo personalizado"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:132
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:221
@@ -6627,9 +6626,10 @@ msgstr "Error de red: %s"
 
 # dt•v5.6
 #: ../src/common/ai_models.c:202
-#, fuzzy, c-format
+#, c-format
 msgid "model repository \"%s\" missing releases-index.json"
-msgstr "Color no encontrado"
+msgstr ""
+"Falta el archivo \"releases-index.json\" en el repositorio de modelos \"%s\""
 
 # dt•v5.6
 #: ../src/common/ai_models.c:206
@@ -7782,14 +7782,12 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/common/darktable.c:2618
-#, fuzzy
 msgid ""
 " 'micro_nap' 'pinned_memory' 'eventhandles' 'async' 'disabled' 'advantage' "
 "'unified_fraction'"
 msgstr ""
-" \"avoid_atomics\" \"micro_nap\" \"pinned_memory\" \"roundupwd\" "
-"\"roundupht\" \"eventhandles\" \"async\" \"disable\" \"magic\" \"advantage\" "
-"\"unified\""
+" \"micro_nap\" \"pinned_memory\" \"eventhandles\" \"async\" \"disabled\" "
+"\"advantage\" \"unified_fraction\""
 
 #: ../src/common/database.c:3236
 msgid "creator"
@@ -7833,7 +7831,7 @@ msgstr "Nombre de archivo conservado"
 
 # dt•v5.0
 #: ../src/common/database.c:3854
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -7886,7 +7884,7 @@ msgstr ""
 "ejecutando en segundo plano\n"
 "       para exportar imágenes, actualizar archivos asociados o realizar el "
 "mantenimiento de la base de datos.\n"
-"       Inténte de nuevo una vez termine este proceso.\n"
+"       Inténte de nuevo una vez terminado ese proceso.\n"
 "\n"
 "  3.  Si no está en sus posibilidades gestionar los procesos del sistema "
 "operativo, intente reiniciar la sesión de usuario o el ordenador pasado "
@@ -7900,7 +7898,7 @@ msgstr ""
 "      significa probablemente que la última ejecución de darktable fue "
 "terminada abruptamente. \n"
 "      Pulse el botón «Borrar los archivos de bloqueo de las bases de datos» y "
-"con eso se eliminarán <i>data.db.lock</i> y <i>library.db.lock</i>.  \n"
+"con eso se eliminarán <i>data.db.lock</i> y <i>%s</i>.  \n"
 "\n"
 "\n"
 "      <i><u>Advertencia:</u> No elimine estos archivos sin antes realizar las "
@@ -7963,7 +7961,7 @@ msgstr "Error"
 
 # dt•v5.0
 #: ../src/common/database.c:3913
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "at least one file could not be deleted.\n"
@@ -7973,7 +7971,7 @@ msgstr ""
 "\n"
 "Al menos uno de los archivos no pudo ser eliminado.\n"
 "Puede intentarse eliminar manualmente los archivos <i>data.db.lock</i> y "
-"<i>library.db.lock</i>\n"
+"<i>%s</i>\n"
 "en la carpeta <a href=\"file:///%s\">%s</a>.\n"
 
 #: ../src/common/database.c:4040
@@ -10656,33 +10654,32 @@ msgstr "afinar máscara"
 # dt•v5.6
 #: ../src/develop/develop.c:450
 msgid "unpin image"
-msgstr "desfijar imagen"
+msgstr "desanclar imagen"
 
 # dt•v5.6
 #: ../src/develop/develop.c:453
 msgid "image pinned"
-msgstr "Imagen fijada"
+msgstr "Imagen anclada"
 
 # dt•v5.6
 #: ../src/develop/develop.c:464 ../src/develop/develop.c:566
-#, fuzzy
 msgid "failed to create pinned develop"
-msgstr "no se pudo crear la carpeta de sesión %s."
+msgstr "No se pudo crear el revelado anclado"
 
 # dt•v5.6
 #: ../src/develop/develop.c:512 ../src/views/darkroom.c:4768
 msgid "pin current image"
-msgstr "Fijar la imagen actual"
+msgstr "Anclar la imagen actual"
 
 # dt•v5.6
 #: ../src/develop/develop.c:515
 msgid "image unpinned"
-msgstr "Imagen desfijada"
+msgstr "Imagen desanclada"
 
 # dt•v5.6
 #: ../src/develop/develop.c:527
 msgid "no valid image to pin"
-msgstr "No hay ninguna imagen válida que se pueda fijar"
+msgstr "No hay ninguna imagen válida que se pueda anclar"
 
 # dt•v5.6
 #: ../src/develop/develop.c:533
@@ -11050,15 +11047,15 @@ msgstr "<b>Rotar</b>: Ctrl+Arrastre"
 
 # dt•v5.6
 #: ../src/develop/masks/ellipse.c:2021
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag\n"
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Modo de difuminado</b>: Mayús+Clic, <b>Rotación</b>: Ctrl+Arrastre\n"
-"<b>Tamaño</b>: Desplazamiento, <b>Difuminado</b>: Mayús+Desplazamiento, "
-"<b>Opacidad</b>: Ctrl+Desplazamiento (%d%%)"
+"<b>Modo de difuminado</b>: Alt+Clic, <b>Rotación</b>: Ctrl+Arrastre\n"
+"<b>Tamaño</b>: Desplazamiento, <b>Tamaño de difuminado</b>: "
+"Mayús+Desplazamiento, <b>Opacidad</b>: Ctrl+Desplazamiento (%d%%)"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:174
 #, c-format
@@ -11156,10 +11153,10 @@ msgstr "Las máscaras no pueden contenerse a sí mismas"
 
 # dt•v5.2
 #: ../src/develop/masks/object.c:852
-#, fuzzy
 msgid "set raster mask root folder in preferences"
 msgstr ""
-"La carpeta raíz de archivos de máscaras de matriz de pixeles no está definida"
+"Configure la carpeta raíz de archivos de máscaras de matriz de pixeles en las "
+"preferencias"
 
 # dt•v5.2
 #: ../src/develop/masks/object.c:860
@@ -11283,17 +11280,17 @@ msgid ""
 "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Modo de difuminado</b>: Mayús+Clic, <b>Rotación</b>: Ctrl+Arrastre\n"
+"<b>Añadir</b>: Pulsación, <b>Rotación</b>: Ctrl+Arrastre\n"
 "<b>Tamaño</b>: Desplazamiento, <b>Difuminado</b>: Mayús+Desplazamiento, "
 "<b>Opacidad</b>: Ctrl+Desplazamiento (%d%%)"
 
 # dt•v5.6
 #: ../src/develop/masks/object.c:1869
-#, fuzzy, c-format
+#, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Tamaño</b>: Rueda del Ratón, <b>Difuminado</b>: Mayús+Rueda del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+"<b>Seleccionar</b>: pulse en un objeto, <b>Opacidad</b>: Ctrl+Rueda del Ratón "
+"(%d%%)"
 
 #: ../src/develop/masks/path.c:3943
 msgid "[PATH creation] add a smooth node"
@@ -11461,13 +11458,13 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/develop/tiling.c:809 ../src/develop/tiling.c:1146
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "tiling failed for module '%s%s'. the output most likely will be OK, but you "
 "might want to check."
 msgstr ""
-"El proceso por bandas ha fallado para el módulo «%s». Es muy probable que la "
-"salida sea correcta, aunque quizá desee comprobarlo."
+"El proceso por bandas ha fallado para el módulo «%s%s». Es muy probable que "
+"la salida sea correcta, aunque quizá desee comprobarlo."
 
 #: ../src/dtgtk/culling.c:225
 msgid "you have reached the start of your selection"
@@ -13547,9 +13544,9 @@ msgstr " No hay ningún lector de etiquetas EXIF disponible. Cerrando..."
 
 # dt•v5.6
 #: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:475
-#, fuzzy, lua-format
+#, lua-format
 msgid " selected tag reader %s not available"
-msgstr "La imagen «%s» no está disponible"
+msgstr " El lector de etiquetas seleccionado %s no está disponible"
 
 # dt•v5.6
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13765,9 +13762,8 @@ msgstr "persistencia de grupo"
 # dt•v5.6
 #. name of script
 #: ../src/external/lua-scripts/official/group_persistence.lua:121
-#, fuzzy
 msgid "preserve groups between darktable instances"
-msgstr "Módulos activados"
+msgstr "Conservar los grupos entre instancias de darktable"
 
 # dt•v5.0
 #. purpose of script
@@ -14068,9 +14064,8 @@ msgstr "Filtrar las importaciones"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:82
-#, fuzzy
 msgid "recent_bookmarks"
-msgstr "porcentaje debajo"
+msgstr "marcadores recientes"
 
 # dt•v5.6
 #. visible name of script
@@ -14212,9 +14207,8 @@ msgstr "regenerar miniaturas"
 # dt•v5.0
 #. visible name of script
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:80
-#, fuzzy
 msgid "regenerate mipmap cache for selected images"
-msgstr "Generar un archivo PDF a partir de las imágenes seleccionadas"
+msgstr "Regenerar la caché de mapas MIP de las imágenes seleccionadas"
 
 # dt•v5.6
 #. purpose of script
@@ -15030,13 +15024,14 @@ msgstr "Un visor PDF"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
-#, fuzzy
 msgid ""
 "can be an absolute pathname or the tool may be in the PATH\n"
 "if not specified the system default will be used to open the PDF"
 msgstr ""
 "Puede ser una ruta absoluta o la herramienta la que puede estar en la ruta de "
-"búsqueda (PATH)"
+"búsqueda (PATH).\n"
+"Si no se especifica nada, se utilizará la configuración predeterminada del "
+"sistema para abrir el PDF."
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:78
@@ -15204,9 +15199,8 @@ msgstr "No hay pares de archivos RAW+JPEG que procesar"
 
 # dt•v5.6
 #: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:244
-#, fuzzy
 msgid "Generating cache from jpgs"
-msgstr "Creando directorio para la caché «%s»\n"
+msgstr "Generar la caché a partir de archivos JPG"
 
 # dt•v5.0
 #. v["raw"]:generate_cache(true, 6, 6)
@@ -15611,9 +15605,9 @@ msgstr "La carpeta %s ya está en uso. Indique otro nombre de carpeta."
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:939
-#, fuzzy, lua-format
+#, lua-format
 msgid "scripts successfully installed into folder %s"
-msgstr "Los guiones de Lua fueron actualizados correctamente"
+msgstr "Los guiones se han instalado correctamente en la carpeta %s"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:957
@@ -17897,9 +17891,8 @@ msgstr "descargar / actualizar selección"
 
 # dt•v5.4
 #: ../src/gui/preferences_ai.c:1886
-#, fuzzy
 msgid "download or update the selected models"
-msgstr "¿eliminar duplicado?"
+msgstr "Descargar o actualizar los modelos seleccionados"
 
 # dt•v5.0
 #. import from file button
@@ -17920,15 +17913,13 @@ msgstr "eliminar seleccionado"
 
 # dt•v5.0
 #: ../src/gui/preferences_ai.c:1906
-#, fuzzy
 msgid "remove the selected models from disk"
-msgstr "Eliminar el lugar personalizado seleccionado"
+msgstr "Eliminar los modelos seleccionados del disco de almacenamiento"
 
 # dt•v5.6
 #: ../src/gui/preferences_ai.c:1917
-#, fuzzy
 msgid "open help page for AI settings"
-msgstr "Abrir la página de ayuda para atajos de teclado"
+msgstr "Abrir la página de ayuda para la configuración de la IA"
 
 # dt•v5.6
 #. add to stack
@@ -18682,7 +18673,6 @@ msgstr "HTJ2K32"
 
 # dt•v5.6
 #: ../src/imageio/format/heif.c:723
-#, fuzzy
 msgid ""
 "chroma subsampling setting for HEIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -18690,10 +18680,9 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"Ajuste de submuestreo de crominancia para el codificador JPEG.\n"
+"Ajuste de submuestreo de crominancia para el codificador HEIF.\n"
 "automático → utiliza el submuestreo determinado por el valor de calidad\n"
 "4:4:4 → sin submuestreo de crominancia\n"
-"4:4:0 → frecuencia de muestreo del color reducida a la mitad verticalmente\n"
 "4:2:2 → frecuencia de muestreo del color reducida a la mitad horizontalmente\n"
 "4:2:0 → frecuencia de muestreo del color reducida a la mitad horizontal y "
 "verticalmente"
@@ -19827,9 +19816,8 @@ msgstr ""
 
 # dt•v5.4
 #: ../src/iop/agx.c:2354
-#, fuzzy
 msgid "reverse pre-mapping primaries"
-msgstr "reiniciar colores primarios"
+msgstr "revertir el premapeo de los colores primarios"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2366
@@ -19908,9 +19896,8 @@ msgstr "estilo Blender|intenso"
 
 # dt•v5.6
 #: ../src/iop/agx.c:2608
-#, fuzzy
 msgid "sigmoid-like|default"
-msgstr "módulos: predeterminados"
+msgstr "sigmoidal|predeterminado"
 
 # dt•v5.6
 #: ../src/iop/agx.c:2621
@@ -23218,9 +23205,8 @@ msgstr "Gradación de color creativa"
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:135
-#, fuzzy
 msgid "darktable UCS / JCH (perceptual)"
-msgstr "Espacio de Color Unificado darktable (2022)"
+msgstr "darktable UCS / JCH (perceptivo)"
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:1337
@@ -23268,12 +23254,11 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/iop/colorharmonizer.c:1446 ../src/iop/colorharmonizer.c:1501
-#, fuzzy
 msgid ""
 "pick hue from image.\n"
 "ctrl+click to select an area"
 msgstr ""
-"Elija el color desde la imagen para visualizarlo.\n"
+"Elija el tono desde la imagen para visualizarlo.\n"
 "Use Ctrl+clic para seleccionar un área."
 
 # dt•v5.6
@@ -23872,9 +23857,8 @@ msgstr "65:24, XPan"
 
 # dt•v5.6
 #: ../src/iop/crop.c:1403
-#, fuzzy
 msgid "flip crop orientation between horizontal and vertical"
-msgstr "Espejar la imagen horizontal o verticalmente"
+msgstr "Espejar la orientación del recorte horizontal o verticalmente"
 
 #: ../src/iop/crop.c:1834
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
@@ -23960,7 +23944,6 @@ msgstr "«%s» matriz de color no encontrada para imagen tipo Bayer"
 
 # dt•v5.2
 #: ../src/iop/demosaic.c:1738
-#, fuzzy
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -23972,6 +23955,8 @@ msgstr ""
 "Para los sensores tipo Bayer, los métodos de interpolación cromática rápidos "
 "son PPG y RCD y los lentos son AMaZE y LMMSE.\n"
 "LMMSE es el más adecuado para imágenes con ISO alto.\n"
+"VNG4 funciona bien para los contados casos en los que se produce el efecto "
+"Moiré cuando hay patrones entramados.\n"
 "El tiempo de procesado aumenta con la interpolación cromática dual integrando "
 "una variante VNG en la segunda pasada."
 
@@ -24042,9 +24027,10 @@ msgstr ""
 
 # dt•v5.6
 #: ../src/iop/demosaic.c:1774
-#, fuzzy
 msgid "green channels matching method. only applies for some old sensors"
-msgstr "Método de correspondencia para los canales verdes"
+msgstr ""
+"Método de correspondencia para los canales verdes. Solo es aplicable para "
+"algunos sensores antiguos."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1777
@@ -27455,10 +27441,10 @@ msgstr "matriz de pixeles | máscara"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:105
-#, fuzzy
 msgid "read PFM/PNG files recorded for use as raster masks"
 msgstr ""
-"Lee los archivos PFM guardados para usarse como máscaras de matriz de pixeles"
+"Lee los archivos PFM/PNG guardados para usarse como máscaras de matriz de "
+"pixeles"
 
 # dt•v5.6
 #: ../src/iop/rasterfile.c:178
@@ -27510,12 +27496,11 @@ msgstr "Seleccione el canal RGB para generar la máscara de matriz de pixeles"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:749
-#, fuzzy
 msgid ""
 "select the PFM/PNG file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
-"Elegir un archivo PFM como máscara de matriz de pixeles. \n"
+"Elegir un archivo PFM/PNG como máscara de matriz de pixeles. \n"
 "ADVERTENCIA: antes de elegir el archivo, la carpeta raíz se debe indicar en "
 "Preferencias→procesamiento→procesamiento de imagen."
 
@@ -29737,14 +29722,14 @@ msgstr "Elegir el modo de color que se va a utilizar"
 
 # dt•v5.6
 #: ../src/libs/colorpicker.c:778
-#, fuzzy
 msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area\n"
 "ctrl+click on canvas to switch between point/area"
 msgstr ""
-"Pulse para activar el selector de color puntual.\n"
-"Para seleccionar un área, pulse con el botón secundario o con Ctrl+Clic."
+"Activar el selector de color.\n"
+"Para seleccionar un área, use Ctrl+Clic o pulse con el botón secundario. \n"
+"Para alternar entre selección de punto y de área, use Ctrl+Clic en el lienzo."
 
 #: ../src/libs/colorpicker.c:820
 msgid "add sample"
@@ -32546,9 +32531,8 @@ msgstr "acceso rápido"
 
 # dt•v5.6
 #: ../src/libs/modulegroups.c:2865
-#, fuzzy
 msgid "active pipeline"
-msgstr "ícono de activos"
+msgstr "procesado activo"
 
 # dt•v5.6
 #: ../src/libs/modulegroups.c:2909 ../src/libs/modulegroups.c:2927
@@ -32877,9 +32861,8 @@ msgstr "No se ha podido cargar el modelo de IA %s"
 
 # dt•v5.4
 #: ../src/libs/neural_restore.c:1474
-#, fuzzy
 msgid "neural restore: cannot create output directory"
-msgstr "Error: no se puede leer la carpeta %s"
+msgstr "Restauración neural: no se pudo crear el directorio de salida"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1506
@@ -32912,9 +32895,9 @@ msgstr "Ampliando la imagen 4× %d/%d..."
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1527
-#, fuzzy, c-format
+#, c-format
 msgid "raw denoise failed for image %d"
-msgstr "Error al obtener el perfil de salida para la imagen %d"
+msgstr "Error para la reducción de ruido de la imagen en bruto %d"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1556
@@ -32962,9 +32945,8 @@ msgstr "ampliación: %.0f%%"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:3666
-#, fuzzy
 msgid "click to select preview area"
-msgstr "Pulse para activar el modo vista previa completa"
+msgstr "Pulse para seleccionar el área de vista previa"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:3691
@@ -33068,9 +33050,8 @@ msgstr "parámetros de salida"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4300
-#, fuzzy
 msgid "output TIFF bit depth"
-msgstr "salida"
+msgstr "profundidad de bits del archivo TIFF de salida"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4342
@@ -34165,9 +34146,8 @@ msgstr "fijar en la 2ª ventana"
 
 # dt•v5.6
 #: ../src/libs/tools/filmstrip.c:152
-#, fuzzy
 msgid "auto-scroll to selected image"
-msgstr "Establecer la diferencia horaria en las imágenes seleccionadas"
+msgstr "Desplazamiento automático hasta la imagen seleccionada"
 
 # dt•v5.6
 #: ../src/libs/tools/filmstrip.c:154
