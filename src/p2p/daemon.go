@@ -212,6 +212,8 @@ type daemon struct {
 	proxyDir    string
 	importDir   string   // default folder for importing remote images
 	staticPeers []string // http base URLs from --peers flag
+	passphrase  string
+	ownFP       string
 
 	host     host.Host
 	ps       *pubsub.PubSub
@@ -486,6 +488,8 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		proxyDir:    proxyDir,
 		importDir:   importDir,
 		staticPeers: staticPeers,
+		passphrase:  passphrase,
+		ownFP:       ownFP,
 		host:        h,
 		ps:          ps,
 		xmpSub:      xmpSub,
@@ -636,6 +640,13 @@ func (d *daemon) HandlePeerFound(pi peer.AddrInfo) {
 func (d *daemon) run() error {
 	if err := d.startProxyHTTP(); err != nil {
 		return err
+	}
+
+	// Write our own HTTP URL so the UI can include it in the pairing QR even
+	// when reading from files rather than querying the socket.
+	if cfgDir, err := os.UserConfigDir(); err == nil {
+		_ = os.WriteFile(filepath.Join(cfgDir, "darktable", "peer.localurl"),
+			[]byte(d.localProxyURL()+"\n"), 0644)
 	}
 
 	os.Remove(d.socketPath)
@@ -818,6 +829,39 @@ func (d *daemon) handleConn(conn net.Conn) {
 
 		case "ping":
 			enc.Encode(socketMsg{Type: "pong"})
+
+		case "get_pairing_info":
+			// Always include this machine's own URL first so the mobile phone
+			// knows where to reach us; then add discovered and static peers.
+			ownURL := d.localProxyURL()
+			seen := map[string]bool{ownURL: true}
+			peerURLs := []string{ownURL}
+			add := func(u string) {
+				if u != "" && !seen[u] {
+					seen[u] = true
+					peerURLs = append(peerURLs, u)
+				}
+			}
+			d.peersMu.RLock()
+			for _, u := range d.peers {
+				add(u)
+			}
+			d.peersMu.RUnlock()
+			for _, u := range d.staticPeers {
+				add(u)
+			}
+			resp, _ := json.Marshal(struct {
+				V           int      `json:"v"`
+				Passphrase  string   `json:"pp"`
+				Fingerprint string   `json:"fpr"`
+				Peers       []string `json:"peers"`
+			}{
+				V:           1,
+				Passphrase:  d.passphrase,
+				Fingerprint: d.ownFP,
+				Peers:       peerURLs,
+			})
+			enc.Encode(socketMsg{Type: "pairing_info", Data: resp})
 		}
 	}
 }

@@ -17,6 +17,7 @@
 */
 
 #include "gui/preferences_p2p.h"
+#include "gui/pairing_qr.h"
 #include "common/darktable.h"
 #include "common/p2p.h"
 #include "control/conf.h"
@@ -109,6 +110,12 @@ static void _on_copy_fingerprint(GtkButton *btn, gpointer user_data)
     GtkClipboard *clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_set_text(clip, fp, -1);
   }
+}
+
+static void _on_show_pairing_qr(GtkButton *btn, gpointer user_data)
+{
+  (void)user_data;
+  dt_p2p_show_pairing_qr(GTK_WIDGET(btn));
 }
 
 static void _on_apply_clicked(GtkButton *btn, gpointer user_data)
@@ -230,7 +237,13 @@ void init_tab_p2p(GtkWidget *dialog, GtkWidget *stack)
   g_signal_connect(copy_btn, "clicked",
                    G_CALLBACK(_on_copy_fingerprint), d->fingerprint_label);
 
-  GtkWidget *fp_box = dt_gui_hbox(d->fingerprint_label, copy_btn);
+  GtkWidget *qr_btn = gtk_button_new_with_label(_("pair QR"));
+  gtk_widget_set_tooltip_text(qr_btn,
+    _("Show a QR code containing the passphrase and peer addresses.\n"
+      "Scan it with darktable mobile to configure sync pairing."));
+  g_signal_connect(qr_btn, "clicked", G_CALLBACK(_on_show_pairing_qr), NULL);
+
+  GtkWidget *fp_box = dt_gui_hbox(d->fingerprint_label, copy_btn, qr_btn);
   gtk_widget_set_hexpand(fp_box, TRUE);
   GtkWidget *fp_label = gtk_label_new(_("fingerprint"));
   gtk_widget_set_halign(fp_label, GTK_ALIGN_START);

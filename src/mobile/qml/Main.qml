@@ -12,6 +12,61 @@ ApplicationWindow {
     Material.theme:  Material.Dark
     Material.accent: Material.Orange
 
+    // Handle darktable://pair?d=... deep links from the Android intent system.
+    // The link text is delivered via the DaemonManager (which monitors the
+    // intent via QtAndroid / Activity.onNewIntent) or via initial URL on start.
+    Connections {
+        target: daemon
+        function onDeepLinkReceived(url) {
+            stack.push(pairingPage)
+            // QrScanner isn't needed — parse the URL directly.
+            if(pairing.parseUrl(url))
+                pairingConfirmLoader.active = true
+        }
+    }
+
+    // ── pairing confirm loader (used for deep-link flow) ──────────────────────
+    Loader {
+        id: pairingConfirmLoader
+        active: false
+        sourceComponent: Dialog {
+            id: dlinkDialog
+            visible: true
+            modal: true
+            title: "Accept Pairing?"
+            Material.theme: Material.Dark
+            anchors.centerIn: Overlay.overlay
+
+            contentItem: Column {
+                spacing: 12
+                topPadding: 8; bottomPadding: 8
+                leftPadding: 16; rightPadding: 16
+                Label {
+                    text: "Apply the scanned passphrase and connect to:"
+                    color: "#ccc"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: 260
+                }
+                Label {
+                    text: pairing.pendingPeers.length > 0
+                          ? pairing.pendingPeers
+                          : "(no static peers — mDNS will discover nearby desktops)"
+                    color: Material.accentColor; font.pixelSize: 12; wrapMode: Text.WrapAnywhere; width: 260
+                }
+            }
+            footer: DialogButtonBox {
+                Button {
+                    text: "Accept"; highlighted: true
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                }
+                Button {
+                    text: "Cancel"; flat: true
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                }
+            }
+            onAccepted: { pairing.accept(); pairingConfirmLoader.active = false }
+            onRejected: { pairing.reject(); pairingConfirmLoader.active = false }
+        }
+    }
+
     // ── navigation stack ──────────────────────────────────────────────────────
     StackView {
         id: stack
@@ -26,6 +81,7 @@ ApplicationWindow {
 
     Component { id: galleryPage;   ThumbnailGrid  {} }
     Component { id: settingsPage;  SettingsView   {} }
+    Component { id: pairingPage;   PairingView    { onDone: stack.pop() } }
 
     // ── bottom navigation bar ─────────────────────────────────────────────────
     TabBar {
@@ -40,6 +96,14 @@ ApplicationWindow {
                 while (stack.depth > 1) stack.pop()
                 if (stack.currentItem?.objectName !== "gallery")
                     stack.replace(galleryPage)
+            }
+        }
+        TabButton {
+            text: "Pair"
+            icon.name: "qr_code_scanner"
+            onClicked: {
+                while (stack.depth > 1) stack.pop()
+                stack.push(pairingPage)
             }
         }
         TabButton {

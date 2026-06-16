@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # ── configuration ──────────────────────────────────────────────────────────────
-: "${QT_ANDROID_ROOT:?Set QT_ANDROID_ROOT to Qt's Android arm64-v8a kit, e.g. ~/Qt/6.7.0/android_arm64_v8a}"
+: "${QT_ANDROID_ROOT:?Set QT_ANDROID_ROOT to the Qt Android arm64-v8a kit, e.g. ~/Qt/6.7.0/android_arm64_v8a}"
 : "${ANDROID_NDK:?Set ANDROID_NDK to your NDK root, e.g. ~/Android/Sdk/ndk/25.2.9519653}"
 : "${ANDROID_SDK:?Set ANDROID_SDK to your SDK root, e.g. ~/Android/Sdk}"
 
@@ -38,10 +38,18 @@ DAEMON_OUT="$ASSETS_DIR/dt-p2p-daemon"
 echo "==> Building dt-p2p-daemon for android/arm64…"
 mkdir -p "$ASSETS_DIR"
 
-GOOS=android GOARCH=arm64 CGO_ENABLED=0 \
-    go build -o "$DAEMON_OUT" "$DAEMON_SRC"
+( cd "$DAEMON_SRC" && GOOS=android GOARCH=arm64 CGO_ENABLED=0 \
+    go build -o "$DAEMON_OUT" . )
 
 echo "    daemon → $DAEMON_OUT ($(du -sh "$DAEMON_OUT" | cut -f1))"
+
+# Android only allows execution of files in the native-library directory
+# (extracted from the APK's lib/arm64-v8a/ folder at install time).
+# Ship the daemon as libdt-p2p-daemon.so so the OS grants it execute permission.
+ANDROID_JNILIB_DIR="$SCRIPT_DIR/android/libs/arm64-v8a"
+mkdir -p "$ANDROID_JNILIB_DIR"
+cp "$DAEMON_OUT" "$ANDROID_JNILIB_DIR/libdt-p2p-daemon.so"
+echo "    jnilib → $ANDROID_JNILIB_DIR/libdt-p2p-daemon.so"
 
 # ── 2. configure ──────────────────────────────────────────────────────────────
 echo "==> Configuring with qt-cmake…"

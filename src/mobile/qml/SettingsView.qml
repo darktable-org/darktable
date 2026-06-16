@@ -44,13 +44,27 @@ Page {
                 }
             }
 
+            // Configured static peers the daemon is attempting to reach.
             SettingsRow {
-                label: "Peers"
+                label: "Attempting"
+                content: Label {
+                    text: daemon.staticPeers.length > 0
+                          ? daemon.staticPeers.join("\n")
+                          : "None configured (mDNS auto-discovery active)"
+                    color: "#888"
+                    font.pixelSize: 12
+                    wrapMode: Text.WrapAnywhere
+                }
+            }
+
+            // Peers confirmed connected (libp2p peer IDs from the daemon socket).
+            SettingsRow {
+                label: "Connected"
                 content: Label {
                     text: p2p.peers.length > 0
                           ? p2p.peers.join("\n")
-                          : "None discovered yet"
-                    color: "#888"
+                          : "None yet"
+                    color: p2p.peers.length > 0 ? "#20e020" : "#888"
                     font.pixelSize: 12
                     wrapMode: Text.WrapAnywhere
                 }
@@ -112,9 +126,12 @@ Page {
                         text: "Add"
                         highlighted: true
                         onClicked: {
-                            if (peerField.text.trim()) {
-                                const current = p2p.peers.slice()
-                                current.push(peerField.text.trim())
+                            const url = peerField.text.trim()
+                            if (url) {
+                                const full = url.startsWith("https://") ? url
+                                           : "https://" + url + ":17842"
+                                const current = daemon.staticPeers.slice()
+                                current.push(full)
                                 daemon.setStaticPeers(current)
                                 peerField.text = ""
                             }
@@ -154,6 +171,11 @@ Page {
                         visible: daemon.running
                         onClicked: daemon.stop()
                     }
+                    Button {
+                        text: "P2P Log"
+                        flat: true
+                        onClicked: logDrawer.open()
+                    }
                     Label {
                         Layout.fillWidth: true
                         text: "Changes to the passphrase take effect after a restart."
@@ -165,6 +187,147 @@ Page {
             }
 
             Item { height: 40; width: 1 }  // bottom padding
+        }
+    }
+
+    // ── P2P log drawer ────────────────────────────────────────────────────────
+    Drawer {
+        id: logDrawer
+        width: parent.width
+        height: parent.height * 0.72
+        edge: Qt.BottomEdge
+        Material.theme: Material.Dark
+
+        background: Rectangle { color: "#181818" }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 0
+            spacing: 0
+
+            // Header bar
+            Rectangle {
+                Layout.fillWidth: true
+                height: 48
+                color: "#1e1e1e"
+                RowLayout {
+                    anchors { fill: parent; leftMargin: 16; rightMargin: 8 }
+                    Label {
+                        Layout.fillWidth: true
+                        text: "P2P Activity Log"
+                        font { pixelSize: 14; bold: true }
+                        color: "#fff"
+                    }
+                    ToolButton {
+                        text: "✕"
+                        font.pixelSize: 16
+                        onClicked: logDrawer.close()
+                    }
+                }
+            }
+
+            // Filter chips
+            Row {
+                id: logFilterButtons
+                Layout.fillWidth: true
+                Layout.leftMargin: 12
+                Layout.topMargin: 6
+                Layout.bottomMargin: 4
+                spacing: 6
+
+                property string active: "all"
+
+                Repeater {
+                    model: ["all", "peer", "xmp", "proxy", "import"]
+                    delegate: Rectangle {
+                        required property string modelData
+
+                        width: chipLabel.implicitWidth + 20
+                        height: 26
+                        radius: 13
+                        color: logFilterButtons.active === modelData
+                               ? Material.accentColor : "#2a2a2a"
+
+                        Label {
+                            id: chipLabel
+                            anchors.centerIn: parent
+                            text: parent.modelData
+                            font.pixelSize: 11
+                            color: logFilterButtons.active === parent.modelData ? "#000" : "#888"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: logFilterButtons.active = parent.modelData
+                        }
+                    }
+                }
+            }
+
+            // Log list
+            ListView {
+                id: logView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                spacing: 0
+
+                model: {
+                    const filter = logFilterButtons.active
+                    if (filter === "all") return daemon.logLines
+                    return daemon.logLines.filter(l => l.includes("[" + filter + "]"))
+                }
+
+                onCountChanged: if (atYEnd || count <= 1) positionViewAtEnd()
+
+                delegate: Rectangle {
+                    required property string modelData
+                    required property int index
+                    width: logView.width
+                    height: logText.implicitHeight + 8
+                    color: index % 2 === 0 ? "#181818" : "#1a1a1a"
+
+                    property color lineColor: {
+                        if (modelData.includes("[peer]"))   return "#6af"
+                        if (modelData.includes("[xmp]"))    return "#af8"
+                        if (modelData.includes("[proxy]"))  return "#fa8"
+                        if (modelData.includes("[import]")) return "#f8f"
+                        if (modelData.includes("[https]"))  return "#888"
+                        return "#999"
+                    }
+
+                    Label {
+                        id: logText
+                        anchors { left: parent.left; right: parent.right;
+                                  leftMargin: 10; rightMargin: 10; verticalCenter: parent.verticalCenter }
+                        text: parent.modelData
+                        color: parent.lineColor
+                        font { pixelSize: 10; family: "monospace" }
+                        wrapMode: Text.WrapAnywhere
+                    }
+                }
+
+                ScrollBar.vertical: ScrollBar {}
+            }
+
+            // Bottom bar with clear button
+            Rectangle {
+                Layout.fillWidth: true
+                height: 44
+                color: "#1e1e1e"
+                Button {
+                    anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+                    text: "Clear log"
+                    flat: true
+                    font.pixelSize: 12
+                    onClicked: daemon.clearLog()
+                }
+                Label {
+                    anchors.centerIn: parent
+                    text: daemon.logLines.length + " lines"
+                    color: "#555"
+                    font.pixelSize: 11
+                }
+            }
         }
     }
 

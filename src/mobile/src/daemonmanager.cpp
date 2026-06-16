@@ -8,12 +8,17 @@
 #include <QStandardPaths>
 #include <QTimer>
 
+#ifdef Q_OS_ANDROID
+#  include <QtCore/qcoreapplication_platform.h>
+#  include <QJniObject>
+#endif
+
 DaemonManager::DaemonManager(QObject *parent)
     : QObject(parent)
 {
     QSettings s;
-    m_passphrase = s.value("p2p/passphrase").toString();
-    m_peers      = s.value("p2p/staticPeers").toStringList();
+    m_passphrase  = s.value("p2p/passphrase").toString();
+    m_staticPeers = s.value("p2p/staticPeers").toStringList();
 }
 
 DaemonManager::~DaemonManager()
@@ -50,14 +55,17 @@ QString DaemonManager::passphrase() const { return m_passphrase; }
 
 void DaemonManager::setPassphrase(const QString &passphrase)
 {
+    if(m_passphrase == passphrase) return;
     m_passphrase = passphrase;
     QSettings().setValue("p2p/passphrase", passphrase);
+    emit passphraseChanged();
 }
 
 void DaemonManager::setStaticPeers(const QStringList &peers)
 {
-    m_peers = peers;
+    m_staticPeers = peers;
     QSettings().setValue("p2p/staticPeers", peers);
+    emit staticPeersChanged();
 }
 
 void DaemonManager::start()
@@ -68,7 +76,8 @@ void DaemonManager::start()
     }
 
 #ifdef Q_OS_ANDROID
-    extractIfNeeded();
+    // Nothing to extract — daemon is in the JNI native-library directory.
+    (void)0;
 #else
     // On desktop, darktable manages its own daemon.  If the socket exists we
     // just attach; if not, we try to spawn the system-installed binary.
@@ -102,8 +111,8 @@ void DaemonManager::start()
         "-proxy-dir",  proxyDir(),
         "-import-dir", importDir(),
     };
-    if (!m_peers.isEmpty())
-        args << "-peers" << m_peers.join(',');
+    if (!m_staticPeers.isEmpty())
+        args << "-peers" << m_staticPeers.join(',');
 
     m_proc->start(exe, args);
     setStatus("Starting…");
@@ -151,18 +160,57 @@ void DaemonManager::onFinished(int code, QProcess::ExitStatus)
 
 void DaemonManager::onStderr()
 {
-    if (m_proc)
-        qDebug().noquote() << "[dt-p2p-daemon]" << m_proc->readAllStandardError().trimmed();
+    if (!m_proc) return;
+    const QByteArray raw = m_proc->readAllStandardError();
+    const QString text = QString::fromUtf8(raw).trimmed();
+    qDebug().noquote() << "[dt-p2p-daemon]" << text;
+    for (const QString &line : text.split('\n', Qt::SkipEmptyParts))
+        appendLog(line.trimmed());
+}
+
+void DaemonManager::appendLog(const QString &line)
+{
+    if (line.isEmpty()) return;
+    while (m_logLines.size() >= kMaxLogLines)
+        m_logLines.removeFirst();
+    m_logLines.append(line);
+    emit logLinesChanged();
+}
+
+void DaemonManager::clearLog()
+{
+    if (!m_logLines.isEmpty()) {
+        m_logLines.clear();
+        emit logLinesChanged();
+    }
 }
 
 QString DaemonManager::executablePath() const
 {
+#ifdef Q_OS_ANDROID
+    // Android extracts APK native libraries to a directory that is marked
+    // executable by the OS.  The daemon is packaged as libdt-p2p-daemon.so
+    // (in android/libs/arm64-v8a/) so it ends up there at install time.
+    //
+    // QAndroidApplication::context() returns QtJniTypes::Context in Qt 6.7+.
+    // QtJniTypes::JObjectBase exposes operator QJniObject(), so assigning to a
+    // QJniObject gives us the full callObjectMethod / getObjectField API.
+    QJniObject ctx = QNativeInterface::QAndroidApplication::context();
+    QJniObject appInfo = ctx.callObjectMethod(
+        "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
+    return appInfo.getObjectField<jstring>("nativeLibraryDir").toString()
+           + "/libdt-p2p-daemon.so";
+#else
     return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
            + "/dt-p2p-daemon";
+#endif
 }
 
 void DaemonManager::extractIfNeeded()
 {
+#ifndef Q_OS_ANDROID
+    // On Android the daemon lives in the JNI lib dir (executable by the OS).
+    // On other platforms, extract it from Qt resources if not already present.
     const QString dest = executablePath();
     if (QFileInfo::exists(dest))
         return;
@@ -181,6 +229,7 @@ void DaemonManager::extractIfNeeded()
     } else {
         qWarning("[daemon] failed to extract binary: %s", qPrintable(src.errorString()));
     }
+#endif
 }
 
 void DaemonManager::setStatus(const QString &s)

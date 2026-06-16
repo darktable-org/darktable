@@ -159,6 +159,7 @@ FILE(GLOB SOURCE_FILES
   "gui/metadata_tags.c"
   "gui/preferences.c"
   "gui/preferences_p2p.c"
+  "gui/pairing_qr.c"
   "gui/presets.c"
   "gui/splash.c"
   "gui/welcome.c"
@@ -493,6 +494,18 @@ endif()
 # Use imported target for curl
 find_package(CURL 7.56 REQUIRED)
 list(APPEND LIBS CURL::libcurl)
+
+# libqrencode — for the pairing QR code dialog (preferences → P2P tab)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(Qrencode IMPORTED_TARGET libqrencode)
+endif()
+if(Qrencode_FOUND)
+  list(APPEND LIBS PkgConfig::Qrencode)
+  add_compile_definitions(HAVE_QRENCODE=1)
+else()
+  message(WARNING "libqrencode not found — pairing QR code will show an error. Install libqrencode-dev.")
+endif()
 
 if(USE_AI)
   # libarchive for AI model ZIP extraction
