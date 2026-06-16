@@ -4661,7 +4661,6 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     // pipe needs to be reconstructed
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview2.pipe->cache_obsolete = TRUE;
 
     // If we have a pinned image, update its viewport dimensions too
     dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
@@ -4674,7 +4673,6 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
       pinned_port->orig_height = event->height;
       pinned_port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       pinned_port->pipe->changed |= DT_DEV_PIPE_REMOVE;
-      pinned_port->pipe->cache_obsolete = TRUE;
     }
   }
 

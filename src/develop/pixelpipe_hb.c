@@ -276,7 +276,6 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = pipe->final_height = 0;
   pipe->nodes = NULL;
   pipe->backbuf_size = size;
-  pipe->cache_obsolete = FALSE;
   pipe->backbuf = NULL;
   pipe->backbuf_scale = 0.0f;
   memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
@@ -472,10 +471,6 @@ void dt_dev_pixelpipe_rebuild(dt_develop_t *dev)
   dev->full.pipe->changed |= DT_DEV_PIPE_REMOVE;
   dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
   dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
-
-  dev->full.pipe->cache_obsolete = TRUE;
-  dev->preview_pipe->cache_obsolete = TRUE;
-  dev->preview2.pipe->cache_obsolete = TRUE;
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
@@ -3107,11 +3102,6 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
 // re-entry point: in case of late opencl errors we start all over
 // again with opencl-support disabled
 restart:
-
-  // check if we should obsolete caches
-  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(pipe);
-  pipe->cache_obsolete = FALSE;
-
   // mask display off as a starting point
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   // and blendif active

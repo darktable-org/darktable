@@ -300,7 +300,6 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
   // will set the work_profile if needed.
   // FIXME: is this overdoing it? see #14812
   pipe->changed |= DT_DEV_PIPE_REMOVE;
-  pipe->cache_obsolete = TRUE;
 
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))
