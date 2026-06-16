@@ -4,6 +4,8 @@
 #include <QProcessEnvironment>
 #include <QFile>
 #include <QFileInfo>
+#include <QHostAddress>
+#include <QNetworkInterface>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
@@ -105,12 +107,30 @@ void DaemonManager::start()
     connect(m_proc, QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished),
             this, &DaemonManager::onFinished);
 
+    // Detect LAN IP via Qt so the Go daemon doesn't need raw netlink sockets
+    // (which Android's SELinux blocks for untrusted apps).
+    QString lanIP;
+    for (const QNetworkInterface &iface : QNetworkInterface::allInterfaces()) {
+        if (iface.flags() & QNetworkInterface::IsLoopBack) continue;
+        if (!(iface.flags() & QNetworkInterface::IsUp)) continue;
+        for (const QNetworkAddressEntry &entry : iface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol
+                && !entry.ip().isLoopback()) {
+                lanIP = entry.ip().toString();
+                break;
+            }
+        }
+        if (!lanIP.isEmpty()) break;
+    }
+
     QStringList args {
         "-socket",     socketPath(),
         "-passphrase", m_passphrase,
         "-proxy-dir",  proxyDir(),
         "-import-dir", importDir(),
     };
+    if (!lanIP.isEmpty())
+        args << "-local-ip" << lanIP;
     if (!m_staticPeers.isEmpty())
         args << "-peers" << m_staticPeers.join(',');
 

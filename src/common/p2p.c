@@ -477,9 +477,13 @@ static gpointer _announce_existing_proxies(gpointer _unused)
   // Small delay so the daemon socket is fully ready before we flood it.
   g_usleep(2 * G_USEC_PER_SEC);
 
+  // images.filename is the basename only; join film_rolls for the full path.
   sqlite3_stmt *stmt;
   const int rc = sqlite3_prepare_v2(dt_database_get(darktable.db),
-    "SELECT filename FROM main.images", -1, &stmt, NULL);
+    "SELECT r.folder || '/' || i.filename"
+    "  FROM main.images i"
+    "  JOIN main.film_rolls r ON i.film_id = r.id",
+    -1, &stmt, NULL);
   if(rc != SQLITE_OK) return NULL;
 
   int count = 0;

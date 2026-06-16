@@ -224,6 +224,9 @@ type daemon struct {
 
 	// externalURL is set when UPnP/NAT-PMP port mapping succeeds.
 	externalURL string
+	// localIPOverride, when non-empty, replaces the netlink-detected LAN IP.
+	// Used on Android where SELinux blocks raw netlink route sockets.
+	localIPOverride string
 
 	// pdb is the persistent peer registry; nil if the DB could not be opened.
 	pdb *peerDB
@@ -421,7 +424,7 @@ func deriveKey(passphrase string) (crypto.PrivKey, error) {
 	return priv, err
 }
 
-func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir string, staticPeers []string) (*daemon, error) {
+func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir string, staticPeers []string, localIPOverride string) (*daemon, error) {
 	priv, err := deriveKey(passphrase)
 	if err != nil {
 		return nil, fmt.Errorf("key derivation: %w", err)
@@ -482,14 +485,15 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 	dctx, cancel := context.WithCancel(ctx)
 
 	d := &daemon{
-		ctx:         dctx,
-		cancel:      cancel,
-		socketPath:  socketPath,
-		proxyDir:    proxyDir,
-		importDir:   importDir,
-		staticPeers: staticPeers,
-		passphrase:  passphrase,
-		ownFP:       ownFP,
+		ctx:             dctx,
+		cancel:          cancel,
+		socketPath:      socketPath,
+		proxyDir:        proxyDir,
+		importDir:       importDir,
+		staticPeers:     staticPeers,
+		passphrase:      passphrase,
+		ownFP:           ownFP,
+		localIPOverride: localIPOverride,
 		host:        h,
 		ps:          ps,
 		xmpSub:      xmpSub,
@@ -1441,6 +1445,9 @@ func (d *daemon) startProxyHTTP() error {
 }
 
 func (d *daemon) localIP() string {
+	if d.localIPOverride != "" {
+		return d.localIPOverride
+	}
 	for _, ma := range d.host.Addrs() {
 		s := ma.String()
 		if strings.HasPrefix(s, "/ip4/127.") {
