@@ -1173,7 +1173,7 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
   // FIXME: if have own drawable for vectorscope can set scroll handler directly
   // clamp as mouse wheel scrolls sometimes report a delta of 2
   const gdouble dominant_axis_delta = fabs(delta_x) > fabs(delta_y) ? -delta_x : delta_y;
-  const int delta = CLAMP(dominant_axis_delta, -1.0, 1.0);
+  const int delta = (int) CLAMP(dominant_axis_delta, -1.0, 1.0);
   if(dt_modifier_is(state, GDK_SHIFT_MASK)) //( SHIFT+SCROLL
   {
     d->harmony_guide.width = (d->harmony_guide.width + delta + DT_COLOR_HARMONY_WIDTH_N)
@@ -1181,8 +1181,12 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
   }
   else if(dt_modifier_is(state, GDK_MOD1_MASK)) // ALT+SCROLL
   {
+    // we want up, left: previous type; down, right: next type
+    const gdouble dominant_axis_selection_delta = fabs(delta_x) > fabs(delta_y) ? delta_x : delta_y;
+    const int selection_delta = (int) CLAMP(dominant_axis_selection_delta, -1.0, 1.0);
+
     const dt_color_harmony_type_t new_type =
-      (d->harmony_guide.type + delta + DT_COLOR_HARMONY_N) % DT_COLOR_HARMONY_N;
+      (d->harmony_guide.type + selection_delta + DT_COLOR_HARMONY_N) % DT_COLOR_HARMONY_N;
     if(new_type == DT_COLOR_HARMONY_NONE)
       // turn all buttons off
       gtk_toggle_button_set_active
