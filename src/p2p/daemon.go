@@ -270,6 +270,13 @@ type daemon struct {
 	announcedProxiesMu sync.RWMutex
 	announcedProxies   map[string]struct{}
 
+	// localToRemote maps a phone-local path (importDir/file.CR3) back to the
+	// peer's canonical path (/home/.../.../file.CR3) so that explicit
+	// fetch_proxy commands (which arrive with local paths) can request the
+	// correct path from the peer's HTTP server.
+	localToRemoteMu sync.RWMutex
+	localToRemote   map[string]string
+
 	// darktable clients subscribed to push events
 	subsMu sync.Mutex
 	subs   []*eventSub
@@ -519,6 +526,7 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		xmpSuppressFrom: make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
 		announcedProxies: make(map[string]struct{}),
+		localToRemote:    make(map[string]string),
 		displayICC:       loadDisplayICC(displayICCPath),
 	}
 
@@ -1220,6 +1228,14 @@ func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
 func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 	localPath := d.localDestination(remotePath)
 
+	// On the phone, localPath differs from remotePath (importDir vs desktop path).
+	// Remember the mapping so explicit fetch_proxy commands can resolve it back.
+	if localPath != remotePath {
+		d.localToRemoteMu.Lock()
+		d.localToRemote[localPath] = remotePath
+		d.localToRemoteMu.Unlock()
+	}
+
 	// Fetch the thumbnail JPEG first — it's small and lets the mobile gallery
 	// show a preview immediately, even while the larger AVIF is still downloading.
 	d.fetchPreviewJPEG(remotePath, localPath, baseURL, "thumb")
@@ -1291,7 +1307,17 @@ func (d *daemon) fetchPreviewJPEG(remotePath, localPath, baseURL, size string) {
 }
 
 // fetchProxyFromPeer handles an explicit "fetch_proxy" command from darktable.
-func (d *daemon) fetchProxyFromPeer(canonicalPath string, enc *json.Encoder) {
+func (d *daemon) fetchProxyFromPeer(localPath string, enc *json.Encoder) {
+	// On the phone, the command arrives with the local importDir path.
+	// Resolve it back to the peer's canonical path for the HTTP request,
+	// but always write the result to the local path.
+	requestPath := localPath
+	d.localToRemoteMu.RLock()
+	if remote, ok := d.localToRemote[localPath]; ok {
+		requestPath = remote
+	}
+	d.localToRemoteMu.RUnlock()
+
 	d.peersMu.RLock()
 	urls := make([]string, 0, len(d.peers))
 	for _, u := range d.peers {
@@ -1300,8 +1326,8 @@ func (d *daemon) fetchProxyFromPeer(canonicalPath string, enc *json.Encoder) {
 	d.peersMu.RUnlock()
 
 	for _, baseURL := range urls {
-		url := baseURL + "/proxy?path=" + canonicalPath
-		resp, err := d.httpGet(url)
+		fetchURL := baseURL + "/proxy?path=" + url.QueryEscape(requestPath)
+		resp, err := d.httpGet(fetchURL)
 		if err != nil || resp.StatusCode != 200 {
 			if resp != nil { resp.Body.Close() }
 			continue
@@ -1311,18 +1337,18 @@ func (d *daemon) fetchProxyFromPeer(canonicalPath string, enc *json.Encoder) {
 		if err != nil {
 			continue
 		}
-		dst := canonicalPath + ".proxy.avif"
+		dst := localPath + ".proxy.avif"
 		if err := os.MkdirAll(filepath.Dir(dst), 0755); err == nil {
 			if err := os.WriteFile(dst, data, 0644); err == nil {
 				log.Printf("[proxy] explicit fetch '%s' from %s (%d KB)",
-					filepath.Base(canonicalPath), baseURL, len(data)/1024)
+					filepath.Base(localPath), baseURL, len(data)/1024)
 				result, _ := json.Marshal(map[string]string{"path": dst, "status": "ok"})
 				enc.Encode(socketMsg{Type: "proxy_fetched", Data: result})
 				return
 			}
 		}
 	}
-	result, _ := json.Marshal(map[string]string{"path": canonicalPath, "status": "not_found"})
+	result, _ := json.Marshal(map[string]string{"path": localPath, "status": "not_found"})
 	enc.Encode(socketMsg{Type: "proxy_fetched", Data: result})
 }
 

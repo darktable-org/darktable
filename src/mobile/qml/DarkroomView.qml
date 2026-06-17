@@ -121,7 +121,7 @@ Page {
             Label {
                 anchors.centerIn: parent
                 text: "No proxy available\nTap ↓ to request from peers"
-                visible: !root.hasProxy && image.status !== Image.Loading
+                visible: !root.hasProxy && root.previewKey <= 0
                 color: "#888"
                 font.pixelSize: 14
                 horizontalAlignment: Text.AlignHCenter
@@ -230,10 +230,10 @@ Page {
                         }
                     }
                 }
-                // Fetch proxy button (shown when no proxy yet)
+                // Fetch proxy button (shown only when no preview exists yet)
                 ToolButton {
                     text: "⬇ Fetch"
-                    visible: !root.hasProxy
+                    visible: !root.hasProxy && root.previewKey <= 0
                     Layout.alignment: Qt.AlignRight
                     onClicked: p2p.fetchProxy(root.rawPath)
                 }
