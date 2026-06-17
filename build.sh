@@ -265,7 +265,7 @@ max_jobs_for_ram()
 		;;
 	esac
 
-	local jobs=$(( ram_kb / 3145728 ))  # 3 GB in kB = 3*1024*1024
+	local jobs=$(( ram_kb / 1048576 ))  # 1 GB in kB = 1*1024*1024
 	[ "$jobs" -lt 1 ] && jobs=1
 	printf "$jobs"
 }
