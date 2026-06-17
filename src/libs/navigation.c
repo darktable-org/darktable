@@ -544,8 +544,13 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
       if(_lib_navigation_widget_to_center(GTK_EVENT_CONTROLLER(controller),
                                           event->scroll.x, event->scroll.y,
                                           &x, &y))
+      {
+        const double delta = fabs(dx) > fabs(dy) ? -dx : dy;
+        const gboolean zoom_in = delta < 0;
+
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
-                         0.0f, dy < 0, x, y, constrain);
+                         0.0f, zoom_in, x, y, constrain);
+      }
     }
     gdk_event_free(event);
   }
