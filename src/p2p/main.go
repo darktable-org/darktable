@@ -33,12 +33,13 @@ import (
 )
 
 func main() {
-	socketPath  := flag.String("socket", defaultSocketPath(), "Unix socket path")
-	passphrase  := flag.String("passphrase", "", "Shared passphrase (derives Ed25519 identity)")
-	proxyDir    := flag.String("proxy-dir", "", "Directory to walk for proxy files to announce and serve")
-	importDir   := flag.String("import-dir", "", "Directory to place remote images that don't exist locally")
-	peersFlag   := flag.String("peers", "", "Comma-separated HTTP base URLs of static peers, e.g. http://192.168.1.108:17842")
-	localIPFlag := flag.String("local-ip", "", "Override auto-detected LAN IP (useful on Android where netlink is blocked)")
+	socketPath    := flag.String("socket", defaultSocketPath(), "Unix socket path")
+	passphrase    := flag.String("passphrase", "", "Shared passphrase (derives Ed25519 identity)")
+	proxyDir      := flag.String("proxy-dir", "", "Directory to walk for proxy files to announce and serve")
+	importDir     := flag.String("import-dir", "", "Directory to place remote images that don't exist locally")
+	peersFlag     := flag.String("peers", "", "Comma-separated HTTP base URLs of static peers, e.g. http://192.168.1.108:17842")
+	localIPFlag   := flag.String("local-ip", "", "Override auto-detected LAN IP (useful on Android where netlink is blocked)")
+	displayICCFlag := flag.String("display-icc", "", "Path to the desktop display ICC profile; embedded in thumbnail JEPGs so the mobile renders with the correct colour transform. Auto-detected via colord when omitted.")
 	flag.Parse()
 
 	if *passphrase == "" {
@@ -73,7 +74,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	d, err := newDaemon(ctx, *socketPath, *passphrase, *proxyDir, *importDir, staticPeers, *localIPFlag)
+	d, err := newDaemon(ctx, *socketPath, *passphrase, *proxyDir, *importDir, staticPeers, *localIPFlag, *displayICCFlag)
 	if err != nil {
 		log.Fatalf("daemon init: %v", err)
 	}

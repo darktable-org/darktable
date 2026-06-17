@@ -29,12 +29,19 @@ Page {
             p2p.fetchPreview(root.rawPath, "full")
     }
 
-    // Reload the image when a fresher preview arrives from peers.
+    // Reload the image when a fresher preview arrives from peers,
+    // or when the proxy AVIF is fetched for the first time.
     Connections {
         target: p2p
         function onPreviewUpdated(path) {
             if (path === root.rawPath)
                 root.previewKey++
+        }
+        function onProxyFetched(rawPath, proxyPath, ok) {
+            if (rawPath !== root.rawPath || !ok) return
+            root.hasProxy = true
+            // Immediately request the full-res preview so the image shows up.
+            p2p.fetchPreview(root.rawPath, "full")
         }
     }
 
@@ -59,8 +66,11 @@ Page {
                 font.pixelSize: 14
             }
             ToolButton {
-                text: "⬆"
-                font.pixelSize: 20
+                icon.source: "icons/share.svg"
+                icon.color:  "white"
+                icon.width:  24
+                icon.height: 24
+                display: AbstractButton.IconOnly
                 visible: root.hasProxy || root.previewKey > 0
                 onClicked: shareHelper.shareRawPaths([root.rawPath])
             }

@@ -218,6 +218,12 @@ type daemon struct {
 	passphrase  string
 	ownFP       string
 
+	// displayICC is the raw bytes of the desktop monitor's ICC profile,
+	// injected into thumbnail JEPGs so the mobile renders them correctly.
+	// Loaded from --display-icc or auto-detected via colord at startup.
+	// Falls back to a compact sRGB profile when detection fails.
+	displayICC []byte
+
 	host     host.Host
 	ps       *pubsub.PubSub
 	xmpSub   *pubsub.Subscription
@@ -427,7 +433,7 @@ func deriveKey(passphrase string) (crypto.PrivKey, error) {
 	return priv, err
 }
 
-func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir string, staticPeers []string, localIPOverride string) (*daemon, error) {
+func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir string, staticPeers []string, localIPOverride, displayICCPath string) (*daemon, error) {
 	priv, err := deriveKey(passphrase)
 	if err != nil {
 		return nil, fmt.Errorf("key derivation: %w", err)
@@ -513,6 +519,7 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		xmpSuppressFrom: make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
 		announcedProxies: make(map[string]struct{}),
+		displayICC:       loadDisplayICC(displayICCPath),
 	}
 
 	go d.initExternalAccess()
@@ -836,6 +843,26 @@ func (d *daemon) handleConn(conn net.Conn) {
 				req.Size = "thumb"
 			}
 			go d.fetchPreviewFromPeers(req.Path, req.Size)
+
+		// Desktop darktable calls this after finishing an edit so paired phones
+		// receive an updated preview without having to request one manually.
+		case "push_preview":
+			var req struct {
+				Path string `json:"path"`
+				Size string `json:"size"`
+			}
+			if err := json.Unmarshal(msg.Data, &req); err != nil {
+				continue
+			}
+			if req.Size == "" {
+				req.Size = "full"
+			}
+			go func(path, size string) {
+				// Delete the cached preview so fetchPreviewFromPeers re-downloads it.
+				cached := path + ".preview-" + size + ".jpg"
+				os.Remove(cached)
+				d.fetchPreviewFromPeers(path, size)
+			}(req.Path, req.Size)
 
 		case "list_peers":
 			d.peersMu.RLock()
@@ -1726,12 +1753,37 @@ func (d *daemon) servePreview(w http.ResponseWriter, r *http.Request) {
 
 	cachePath := rawPath + cacheSuffix
 
+	// Delete a stale cache file that lacks an ICC profile so it is regenerated
+	// with the correct color metadata on this request.
+	if fileExists(cachePath) {
+		if existing, err := os.ReadFile(cachePath); err == nil && !hasJPEGICCProfile(existing) {
+			os.Remove(cachePath)
+			log.Printf("[preview] removed ICC-less cache for '%s' size=%s; regenerating",
+				filepath.Base(rawPath), sizeParam)
+		}
+	}
+
 	// Populate the cache file if it doesn't exist yet.
 	if !fileExists(cachePath) {
-		if data := d.findMipmapJPEG(rawPath, mipmapSizes); data != nil {
-			if err := os.WriteFile(cachePath, data, 0644); err == nil {
-				log.Printf("[preview] mipmap → cache '%s' size=%s (%d KB)",
-					filepath.Base(rawPath), sizeParam, len(data)/1024)
+		mipmapData := d.findMipmapJPEG(rawPath, mipmapSizes)
+
+		// For full-size previews, mipmap cache JEPGs must go through
+		// darktable-cli to guarantee ICC profile + full Exif metadata (camera
+		// make/model/lens/exposure/GPS) so sharing to other apps is complete.
+		if sizeParam == "full" && mipmapData != nil {
+			log.Printf("[preview] full size: skipping mipmap for '%s'; using darktable-cli for ICC+Exif",
+				filepath.Base(rawPath))
+			mipmapData = nil
+		}
+
+		if mipmapData != nil {
+			// Thumbnails: mipmap JPEG is fine for display but lacks the sRGB
+			// ICC marker. Inject it in-process so Qt/Android renders with the
+			// correct colour transform.
+			mipmapData = d.injectDisplayICC(mipmapData)
+			if err := os.WriteFile(cachePath, mipmapData, 0644); err == nil {
+				log.Printf("[preview] mipmap+ICC → cache '%s' size=%s (%d KB)",
+					filepath.Base(rawPath), sizeParam, len(mipmapData)/1024)
 			}
 		} else if _, err := exportWithDarktableCLI(rawPath, cachePath, maxDim); err != nil {
 			http.Error(w, "preview not available", http.StatusNotFound)
@@ -1839,6 +1891,11 @@ func lookupDarktableImageID(libPath, rawPath string) (int64, error) {
 
 // exportWithDarktableCLI renders rawPath to outPath via darktable-cli and
 // returns the JPEG bytes. Applies the XMP sidecar if present.
+//
+// Produces sRGB output with relative-colorimetric rendering intent (the
+// standard choice for photographic output), then copies the full Exif block
+// from the raw file into the JPEG using exiftool so the recipient has all
+// camera metadata (make, model, lens, exposure, GPS, etc.).
 func exportWithDarktableCLI(rawPath, outPath string, maxDim int) ([]byte, error) {
 	args := []string{rawPath}
 	if xmp := rawPath + ".xmp"; fileExists(xmp) {
@@ -1847,12 +1904,216 @@ func exportWithDarktableCLI(rawPath, outPath string, maxDim int) ([]byte, error)
 	args = append(args, outPath,
 		"--width", fmt.Sprintf("%d", maxDim),
 		"--height", fmt.Sprintf("%d", maxDim),
+		"--icc-type", "SRGB",
+		"--icc-intent", "RELATIVE_COLORIMETRIC",
 	)
 	cmd := exec.Command("darktable-cli", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("darktable-cli: %w\n%s", err, out)
 	}
+
+	// Copy all Exif tags from the raw source into the rendered JPEG.
+	// darktable-cli strips Exif from exports; exiftool restores it.
+	// -overwrite_original avoids leaving a _original backup file.
+	// -tagsFromFile copies all tags; -m ignores minor errors.
+	if exiftoolPath, err := exec.LookPath("exiftool"); err == nil {
+		exif := exec.Command(exiftoolPath,
+			"-overwrite_original",
+			"-m",
+			"-tagsFromFile", rawPath,
+			"-Exif:All",        // all Exif tags (camera make/model/lens/exposure/GPS…)
+			"-IPTC:All",        // keywords, caption, copyright
+			outPath,
+		)
+		if out, err := exif.CombinedOutput(); err != nil {
+			log.Printf("[preview] exiftool copy from %s: %v\n%s", filepath.Base(rawPath), err, out)
+			// Non-fatal: JPEG is still usable, just lacks full Exif.
+		}
+	} else {
+		log.Printf("[preview] exiftool not found; skipping Exif copy for %s", filepath.Base(rawPath))
+	}
+
 	return os.ReadFile(outPath)
+}
+
+// loadDisplayICC returns the bytes of the desktop monitor's ICC profile.
+// Resolution order:
+//  1. Explicit path from --display-icc flag.
+//  2. Active display profile from colord (colormgr CLI).
+//  3. First 'mntr'-class ICC file found in ~/.local/share/icc/.
+//  4. Hardcoded compact sRGB profile as a universal fallback.
+func loadDisplayICC(explicitPath string) []byte {
+	if explicitPath != "" {
+		if data, err := os.ReadFile(explicitPath); err == nil {
+			log.Printf("[color] display ICC from --display-icc (%d bytes)", len(data))
+			return data
+		} else {
+			log.Printf("[color] --display-icc %s: %v; trying auto-detect", explicitPath, err)
+		}
+	}
+
+	if p := findDisplayICCViaColormgr(); p != "" {
+		if data, err := os.ReadFile(p); err == nil {
+			log.Printf("[color] display ICC from colord: %s (%d bytes)", filepath.Base(p), len(data))
+			return data
+		}
+	}
+
+	if home, err := os.UserHomeDir(); err == nil {
+		iccDir := filepath.Join(home, ".local", "share", "icc")
+		entries, _ := os.ReadDir(iccDir)
+		for _, e := range entries {
+			if !strings.HasSuffix(e.Name(), ".icc") {
+				continue
+			}
+			p := filepath.Join(iccDir, e.Name())
+			data, err := os.ReadFile(p)
+			if err != nil || len(data) < 16 {
+				continue
+			}
+			if string(data[12:16]) == "mntr" { // ICC profile class = display
+				log.Printf("[color] display ICC from %s (%d bytes)", e.Name(), len(data))
+				return data
+			}
+		}
+	}
+
+	log.Printf("[color] display ICC not detected; using compact sRGB fallback")
+	return compactSRGBICC()
+}
+
+// findDisplayICCViaColormgr asks colord for the active display profile path.
+func findDisplayICCViaColormgr() string {
+	out, err := exec.Command("colormgr", "get-devices").Output()
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "Object Path:") || !strings.Contains(line, "display") {
+			continue
+		}
+		devicePath := strings.TrimSpace(strings.TrimPrefix(line, "Object Path:"))
+		prof, err := exec.Command("colormgr", "device-get-default-profile", devicePath).Output()
+		if err != nil {
+			continue
+		}
+		for _, pl := range strings.Split(string(prof), "\n") {
+			pl = strings.TrimSpace(pl)
+			if strings.HasPrefix(pl, "Filename:") {
+				return strings.TrimSpace(strings.TrimPrefix(pl, "Filename:"))
+			}
+		}
+	}
+	return ""
+}
+
+// injectICCProfile inserts icc as an APP2 ICC_PROFILE segment immediately
+// after the JPEG SOI marker. Returns data unchanged if it already has a profile.
+func injectICCProfile(data, icc []byte) []byte {
+	if len(data) < 2 || data[0] != 0xFF || data[1] != 0xD8 {
+		return data
+	}
+	if hasJPEGICCProfile(data) {
+		return data
+	}
+	const iccHeader = "ICC_PROFILE\x00\x01\x01" // single chunk
+	segPayload := append([]byte(iccHeader), icc...)
+	segLen := len(segPayload) + 2
+	app2 := []byte{0xFF, 0xE2, byte(segLen >> 8), byte(segLen)}
+	app2 = append(app2, segPayload...)
+	result := make([]byte, 0, len(data)+len(app2))
+	result = append(result, data[:2]...)
+	result = append(result, app2...)
+	result = append(result, data[2:]...)
+	return result
+}
+
+// injectDisplayICC embeds the daemon's display ICC into a JPEG (for thumbnails).
+func (d *daemon) injectDisplayICC(data []byte) []byte {
+	return injectICCProfile(data, d.displayICC)
+}
+
+// compactSRGBICC returns a compact IEC 61966-2-1 sRGB ICC v2 profile (~212 bytes)
+// used as a fallback when no system display profile can be detected.
+func compactSRGBICC() []byte {
+	return []byte{
+		0x00, 0x00, 0x00, 0xd4, 0x6c, 0x63, 0x6d, 0x73, 0x02, 0x10, 0x00, 0x00,
+		0x6d, 0x6e, 0x74, 0x72, 0x52, 0x47, 0x42, 0x20, 0x58, 0x59, 0x5a, 0x20,
+		0x07, 0xe7, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x61, 0x63, 0x73, 0x70, 0x4d, 0x53, 0x46, 0x54, 0x00, 0x00, 0x00, 0x00,
+		0x73, 0x61, 0x77, 0x73, 0x63, 0x74, 0x72, 0x6c, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf6, 0xd6,
+		0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0xd3, 0x2d, 0x6c, 0x63, 0x6d, 0x73,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09,
+		0x64, 0x65, 0x73, 0x63, 0x00, 0x00, 0x00, 0xf0, 0x00, 0x00, 0x00, 0x12,
+		0x77, 0x74, 0x70, 0x74, 0x00, 0x00, 0x01, 0x04, 0x00, 0x00, 0x00, 0x14,
+		0x72, 0x58, 0x59, 0x5a, 0x00, 0x00, 0x01, 0x18, 0x00, 0x00, 0x00, 0x14,
+		0x67, 0x58, 0x59, 0x5a, 0x00, 0x00, 0x01, 0x2c, 0x00, 0x00, 0x00, 0x14,
+		0x62, 0x58, 0x59, 0x5a, 0x00, 0x00, 0x01, 0x40, 0x00, 0x00, 0x00, 0x14,
+		0x72, 0x54, 0x52, 0x43, 0x00, 0x00, 0x01, 0x54, 0x00, 0x00, 0x00, 0x28,
+		0x67, 0x54, 0x52, 0x43, 0x00, 0x00, 0x01, 0x54, 0x00, 0x00, 0x00, 0x28,
+		0x62, 0x54, 0x52, 0x43, 0x00, 0x00, 0x01, 0x54, 0x00, 0x00, 0x00, 0x28,
+		0x63, 0x70, 0x72, 0x74, 0x00, 0x00, 0x01, 0x7c, 0x00, 0x00, 0x00, 0x58,
+		// desc "sRGB"
+		0x6d, 0x6c, 0x75, 0x63, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x0c, 0x65, 0x6e, 0x55, 0x53, 0x00, 0x00, 0x00, 0x04,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x73, 0x00, 0x52, 0x00, 0x47, 0x00, 0x42,
+		// wtpt D50
+		0x58, 0x59, 0x5a, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf3, 0x52,
+		0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x16, 0xcc,
+		// rXYZ
+		0x58, 0x59, 0x5a, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6f, 0xa0,
+		0x00, 0x00, 0x38, 0xf5, 0x00, 0x00, 0x03, 0x90,
+		// gXYZ
+		0x58, 0x59, 0x5a, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x62, 0x97,
+		0x00, 0x00, 0xb7, 0x87, 0x00, 0x00, 0x18, 0xda,
+		// bXYZ
+		0x58, 0x59, 0x5a, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0xa0,
+		0x00, 0x00, 0x0f, 0x84, 0x00, 0x00, 0xb6, 0xc4,
+		// TRC (parametric curve for sRGB gamma)
+		0x70, 0x61, 0x72, 0x61, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00,
+		0x00, 0x02, 0x4c, 0x1d, 0x00, 0x0a, 0x92, 0x6b, 0x00, 0x01, 0x4a, 0xb6,
+		0x00, 0x00, 0x40, 0x6e, 0x00, 0x00, 0x09, 0x6c,
+		// cprt
+		0x74, 0x65, 0x78, 0x74, 0x00, 0x00, 0x00, 0x00, 0x43, 0x72, 0x65, 0x61,
+		0x74, 0x65, 0x64, 0x20, 0x62, 0x79, 0x20, 0x6c, 0x63, 0x6d, 0x73, 0x20,
+		0x32, 0x2e, 0x31, 0x30, 0x20, 0x28, 0x63, 0x29, 0x20, 0x32, 0x30, 0x31,
+		0x32, 0x2e, 0x20, 0x49, 0x45, 0x43, 0x20, 0x36, 0x31, 0x39, 0x36, 0x36,
+		0x2d, 0x32, 0x2d, 0x31, 0x20, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74,
+		0x20, 0x52, 0x47, 0x42, 0x20, 0x43, 0x6f, 0x6c, 0x6f, 0x75, 0x72, 0x20,
+		0x53, 0x70, 0x61, 0x63, 0x65, 0x20, 0x2d, 0x20, 0x73, 0x52, 0x47, 0x42,
+		0x00, 0x00, 0x00, 0x00,
+	}
+}
+
+// hasJPEGICCProfile reports whether the JPEG byte slice contains an APP2
+// segment whose payload begins with the "ICC_PROFILE\x00" signature.
+func hasJPEGICCProfile(data []byte) bool {
+	const iccSig = "ICC_PROFILE\x00"
+	// Walk APP markers. JPEG starts with FF D8; APP markers are FF Ex/FF Ex.
+	for i := 2; i+4 < len(data); {
+		if data[i] != 0xFF {
+			break
+		}
+		marker := data[i+1]
+		segLen := int(data[i+2])<<8 | int(data[i+3]) // includes 2-byte length field
+		if segLen < 2 {
+			break
+		}
+		payloadStart := i + 4
+		payloadLen := segLen - 2
+		// APP2 = 0xE2
+		if marker == 0xE2 && payloadLen >= len(iccSig) {
+			if string(data[payloadStart:payloadStart+len(iccSig)]) == iccSig {
+				return true
+			}
+		}
+		i += 2 + segLen
+	}
+	return false
 }
 
 func fileExists(p string) bool {

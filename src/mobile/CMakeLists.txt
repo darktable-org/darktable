@@ -63,6 +63,8 @@ qt_add_qml_module(darktable-mobile
         qml/DarkroomView.qml
         qml/SettingsView.qml
         qml/PairingView.qml
+    RESOURCES
+        qml/icons/share.svg
 )
 
 # Bundle the daemon binary as a Qt resource for non-Android builds (desktop preview).

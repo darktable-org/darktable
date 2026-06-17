@@ -73,7 +73,12 @@ Page {
 
             // Share selected
             ToolButton {
-                text: "⬆ Share"
+                icon.source: "icons/share.svg"
+                icon.color:  "white"
+                icon.width:  24
+                icon.height: 24
+                text: "Share"
+                display: AbstractButton.TextBesideIcon
                 visible: rootPage.selectionMode && rootPage.selectedCount > 0
                 Material.accent: Material.Blue
                 highlighted: true
