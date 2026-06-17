@@ -120,15 +120,17 @@ typedef struct _import_ctx_t
   char path[PATH_MAX];
 } _import_ctx_t;
 
-// Main-thread callback: raises the import signals after the DB write is done.
-// GTK/GLib signal handlers must run on the main thread to avoid data races
-// with the GTK rendering pipeline (gtk_render_background etc.).
-static gboolean _import_raise_signals_main_thread(gpointer data)
+// Coalescing flag: 0 = no callback pending, 1 = callback already queued.
+// Prevents queueing 30 identical idle callbacks when a full manifest syncs.
+static gint _filmrolls_refresh_pending = 0;
+
+// Main-thread callback: refresh film rolls after a batch of p2p imports.
+// Only one of these is ever queued at a time (see _filmrolls_refresh_pending).
+static gboolean _import_refresh_filmrolls_main_thread(gpointer data)
 {
-  const dt_imgid_t imgid = GPOINTER_TO_INT(data);
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_IMPORT, imgid);
-  GList *imgs = g_list_prepend(NULL, GINT_TO_POINTER(imgid));
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
+  (void)data;
+  g_atomic_int_set(&_filmrolls_refresh_pending, 0);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
   return G_SOURCE_REMOVE;
 }
 
@@ -160,13 +162,15 @@ static int32_t _import_image_job_run(dt_job_t *job)
 
   if(dt_is_valid_filmid(fid))
   {
-    // raise_signals=FALSE: GTK signal handlers must run on the main thread.
-    // We dispatch them via g_idle_add after the DB write completes.
+    // raise_signals=FALSE: we dispatch a single coalesced filmrolls signal
+    // via g_idle_add instead of one DT_SIGNAL_IMAGE_IMPORT per image.
     const dt_imgid_t imgid = dt_image_import(fid, ctx->path, TRUE, FALSE);
     if(dt_is_valid_imgid(imgid))
     {
       dt_print(DT_DEBUG_IMAGEIO, "[p2p] imported image id=%d '%s'", imgid, ctx->path);
-      g_idle_add(_import_raise_signals_main_thread, GINT_TO_POINTER(imgid));
+      // Only queue one refresh callback regardless of how many images import in parallel.
+      if(g_atomic_int_compare_and_exchange(&_filmrolls_refresh_pending, 0, 1))
+        g_idle_add(_import_refresh_filmrolls_main_thread, NULL);
     }
     dt_film_cleanup(&film);
   }
