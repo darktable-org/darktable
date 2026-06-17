@@ -92,6 +92,57 @@ static gboolean _send_json(const char *json)
   return TRUE;
 }
 
+// Open a fresh socket, send one JSON command, read one newline-terminated JSON
+// response, close, and return it.  Caller must g_free() the result.
+// Returns NULL when the daemon is not running or the send/read fails.
+static gchar *_p2p_request(const gchar *cmd_json)
+{
+  char sock_path[256];
+  _socket_path(sock_path, sizeof(sock_path));
+
+  int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if(fd < 0) return NULL;
+
+  struct sockaddr_un addr = { .sun_family = AF_UNIX };
+  g_strlcpy(addr.sun_path, sock_path, sizeof(addr.sun_path));
+
+  struct timeval tv = { .tv_sec = 2, .tv_usec = 0 };
+  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+  if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+  {
+    close(fd);
+    return NULL;
+  }
+
+  gchar *line = g_strdup_printf("%s\n", cmd_json);
+  ssize_t len  = (ssize_t)strlen(line);
+  ssize_t sent = send(fd, line, len, MSG_NOSIGNAL);
+  g_free(line);
+
+  if(sent != len)
+  {
+    close(fd);
+    return NULL;
+  }
+
+  // Read until newline or EOF (response is one JSON line).
+  GString *buf = g_string_new(NULL);
+  char tmp[4096];
+  ssize_t n;
+  while((n = recv(fd, tmp, sizeof(tmp) - 1, 0)) > 0)
+  {
+    tmp[n] = '\0';
+    g_string_append(buf, tmp);
+    if(strchr(buf->str, '\n')) break;
+  }
+  close(fd);
+
+  gchar *result = g_strdup(buf->str);
+  g_string_free(buf, TRUE);
+  return result;
+}
+
 static gboolean _connect_socket(void)
 {
   if(_p2p.sockfd >= 0) return TRUE;
@@ -557,6 +608,12 @@ void dt_p2p_init(void)
   g_mutex_init(&_p2p.lock);
   _socket_path(_p2p.socket_path, sizeof(_p2p.socket_path));
 
+  if(!dt_conf_get_bool("plugins/p2p/enabled"))
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] disabled — enable in preferences to start daemon");
+    return;
+  }
+
   const char *cfg_dir = g_get_user_config_dir();
   char pw_file[PATH_MAX];
   g_snprintf(pw_file, sizeof(pw_file), "%s/darktable/peer.pw", cfg_dir);
@@ -857,6 +914,11 @@ void dt_p2p_accept_peer(const char *fingerprint)
 
   g_free(json);
   g_string_free(ep, TRUE);
+}
+
+gchar *dt_p2p_query_peer_status(void)
+{
+  return _p2p_request("{\"type\":\"list_peer_status\",\"data\":null}");
 }
 
 void dt_p2p_restart(void)

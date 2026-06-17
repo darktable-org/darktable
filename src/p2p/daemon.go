@@ -959,6 +959,35 @@ func (d *daemon) handleConn(conn net.Conn) {
 			resp, _ := json.Marshal(ids)
 			enc.Encode(socketMsg{Type: "peers", Data: resp})
 
+		case "list_peer_status":
+			d.syncedPeersMu.Lock()
+			syncedURLs := make(map[string]bool, len(d.syncedPeers))
+			for u := range d.syncedPeers {
+				syncedURLs[u] = true
+			}
+			d.syncedPeersMu.Unlock()
+
+			type peerStatus struct {
+				URL          string `json:"url"`
+				PeerID       string `json:"peer_id"`
+				LastSeenUnix int64  `json:"last_seen"`
+				FailureCount int    `json:"failure_count"`
+				Synced       bool   `json:"synced"`
+			}
+			records := d.pdb.allRecords()
+			statuses := make([]peerStatus, 0, len(records))
+			for _, r := range records {
+				statuses = append(statuses, peerStatus{
+					URL:          r.URL,
+					PeerID:       r.PeerID,
+					LastSeenUnix: r.LastSeen.Unix(),
+					FailureCount: r.FailureCount,
+					Synced:       syncedURLs[r.URL],
+				})
+			}
+			resp, _ := json.Marshal(statuses)
+			enc.Encode(socketMsg{Type: "peer_status", Data: resp})
+
 		case "list_candidates":
 			d.candidatesMu.RLock()
 			snapshot := make([]candidatePeer, 0, len(d.candidatePeers))

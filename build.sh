@@ -14,7 +14,7 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 # ---------------------------------------------------------------------------
 
 INSTALL_PREFIX_DEFAULT="/opt/darktable"
-INSTALL_PREFIX="$INSTALL_PREFIX_DEFAULT"
+INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX:-$INSTALL_PREFIX_DEFAULT}"
 BUILD_TYPE_DEFAULT="RelWithDebInfo"
 BUILD_TYPE="$BUILD_TYPE_DEFAULT"
 BUILD_DIR_DEFAULT="$DT_SRC_DIR/build"

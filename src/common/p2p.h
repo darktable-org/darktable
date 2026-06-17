@@ -50,6 +50,11 @@ gboolean dt_p2p_is_running(void);
 // fingerprint — the raw hex SHA256 string as shown in the preferences UI.
 void dt_p2p_accept_peer(const char *fingerprint);
 
+// Query the running daemon for all known peer statuses.
+// Returns a JSON string (one socketMsg line) that the caller must g_free().
+// Returns NULL if the daemon is not running.
+gchar *dt_p2p_query_peer_status(void);
+
 // Tear down the running daemon and restart it with the current darktablerc
 // settings.  Blocks for up to ~2 s while the new daemon binds its socket.
 // Must be called from the GTK main thread.

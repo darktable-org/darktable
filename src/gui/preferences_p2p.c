@@ -29,6 +29,8 @@
 
 typedef struct _p2p_prefs_t
 {
+  GtkWidget *enable_check;
+  GtkWidget *settings_box;     // container for everything except the enable row
   GtkWidget *passphrase_entry;
   GtkWidget *fingerprint_label;
   GtkWidget *address_label;    // own https://host:port
@@ -40,6 +42,8 @@ typedef struct _p2p_prefs_t
   GtkWidget *import_dir_btn;
   GtkWidget *candidates_list; // GtkListBox showing untrusted peers
   GtkWidget *candidates_empty_label;
+  GtkWidget *peer_status_list;         // known peers with live connection status
+  GtkWidget *peer_status_empty_label;
 } _p2p_prefs_t;
 
 // ---------------------------------------------------------------------------
@@ -105,6 +109,127 @@ static void _save_text_view(GtkWidget *view, const gchar *path)
   gchar *text = gtk_text_buffer_get_text(buf, &start, &end, FALSE);
   g_file_set_contents(path, text, -1, NULL);
   g_free(text);
+}
+
+// ---------------------------------------------------------------------------
+// peer status helpers
+// ---------------------------------------------------------------------------
+
+// Relative time string — caller must g_free().
+static gchar *_relative_time(gint64 unix_ts)
+{
+  gint64 now  = (gint64)g_get_real_time() / 1000000;
+  gint64 diff = now - unix_ts;
+  if(diff < 0)              return g_strdup(_("just now"));
+  if(diff < 60)             return g_strdup_printf(_("%llds ago"), (long long)diff);
+  if(diff < 3600)           return g_strdup_printf(_("%lld min ago"), (long long)(diff / 60));
+  if(diff < 86400)          return g_strdup_printf(_("%lld h ago"),   (long long)(diff / 3600));
+  return                           g_strdup_printf(_("%lld d ago"),   (long long)(diff / 86400));
+}
+
+static void _refresh_peer_status(_p2p_prefs_t *d)
+{
+  // Clear old rows.
+  GList *children = gtk_container_get_children(GTK_CONTAINER(d->peer_status_list));
+  for(GList *l = children; l; l = l->next)
+    gtk_widget_destroy(GTK_WIDGET(l->data));
+  g_list_free(children);
+
+  gchar *raw = dt_p2p_query_peer_status();
+  gboolean any = FALSE;
+
+  if(raw && *raw)
+  {
+    // Response is a socketMsg JSON line: {"type":"peer_status","data":[...]}
+    JsonParser *parser = json_parser_new();
+    if(json_parser_load_from_data(parser, raw, -1, NULL))
+    {
+      JsonNode   *root = json_parser_get_root(parser);
+      JsonObject *msg  = root ? json_node_get_object(root) : NULL;
+      JsonNode   *data_node = msg ? json_object_get_member(msg, "data") : NULL;
+      if(data_node && JSON_NODE_TYPE(data_node) == JSON_NODE_ARRAY)
+      {
+        JsonArray *arr = json_node_get_array(data_node);
+        for(guint i = 0; i < json_array_get_length(arr); i++)
+        {
+          JsonObject *obj = json_array_get_object_element(arr, i);
+          const gchar *url     = json_object_get_string_member_with_default(obj, "url", "");
+          gint64 last_seen     = (gint64)json_object_get_int_member_with_default(obj, "last_seen", 0);
+          gint64 failure_count = (gint64)json_object_get_int_member_with_default(obj, "failure_count", 0);
+          gboolean synced      = json_object_get_boolean_member_with_default(obj, "synced", FALSE);
+
+          const gchar *status_icon;
+          const gchar *status_color;
+          if(synced)
+          {
+            status_icon  = "✓";
+            status_color = "#4caf50"; // green
+          }
+          else if(failure_count > 0)
+          {
+            status_icon  = "✗";
+            status_color = "#f44336"; // red
+          }
+          else
+          {
+            status_icon  = "?";
+            status_color = "#9e9e9e"; // grey
+          }
+
+          gchar *time_str = _relative_time(last_seen);
+          gchar *markup;
+          if(failure_count > 0)
+            markup = g_strdup_printf(
+              "<b>%s</b>  <small>%s — %lld failure(s)</small>",
+              url, time_str, (long long)failure_count);
+          else
+            markup = g_strdup_printf(
+              "<b>%s</b>  <small>%s</small>", url, time_str);
+          g_free(time_str);
+
+          GtkWidget *row = gtk_list_box_row_new();
+          gtk_list_box_row_set_selectable(GTK_LIST_BOX_ROW(row), FALSE);
+
+          GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
+          gtk_widget_set_margin_start(box,  DT_PIXEL_APPLY_DPI(6));
+          gtk_widget_set_margin_end(box,    DT_PIXEL_APPLY_DPI(6));
+          gtk_widget_set_margin_top(box,    DT_PIXEL_APPLY_DPI(3));
+          gtk_widget_set_margin_bottom(box, DT_PIXEL_APPLY_DPI(3));
+
+          // Status indicator pill.
+          gchar *pill_markup = g_strdup_printf(
+            "<span foreground='%s' weight='bold'>%s</span>", status_color, status_icon);
+          GtkWidget *icon_lbl = gtk_label_new(NULL);
+          gtk_label_set_markup(GTK_LABEL(icon_lbl), pill_markup);
+          g_free(pill_markup);
+
+          GtkWidget *info_lbl = gtk_label_new(NULL);
+          gtk_label_set_markup(GTK_LABEL(info_lbl), markup);
+          gtk_label_set_ellipsize(GTK_LABEL(info_lbl), PANGO_ELLIPSIZE_END);
+          gtk_label_set_xalign(GTK_LABEL(info_lbl), 0.0f);
+          gtk_widget_set_hexpand(info_lbl, TRUE);
+          g_free(markup);
+
+          gtk_box_pack_start(GTK_BOX(box), icon_lbl, FALSE, FALSE, 0);
+          gtk_box_pack_start(GTK_BOX(box), info_lbl, TRUE,  TRUE,  0);
+          gtk_container_add(GTK_CONTAINER(row), box);
+          gtk_container_add(GTK_CONTAINER(d->peer_status_list), row);
+          any = TRUE;
+        }
+      }
+    }
+    g_object_unref(parser);
+  }
+  g_free(raw);
+
+  gtk_widget_show_all(d->peer_status_list);
+  gtk_widget_set_visible(d->peer_status_empty_label, !any);
+}
+
+static void _on_refresh_peer_status(GtkButton *btn, gpointer user_data)
+{
+  (void)btn;
+  _refresh_peer_status((_p2p_prefs_t *)user_data);
 }
 
 // ---------------------------------------------------------------------------
@@ -234,6 +359,22 @@ static void _on_refresh_candidates(GtkButton *btn, gpointer user_data)
   _refresh_candidates((_p2p_prefs_t *)user_data);
 }
 
+static void _on_enable_toggled(GtkToggleButton *btn, gpointer user_data)
+{
+  _p2p_prefs_t *d = (_p2p_prefs_t *)user_data;
+  const gboolean enabled = gtk_toggle_button_get_active(btn);
+  dt_conf_set_bool("plugins/p2p/enabled", enabled);
+  gtk_widget_set_sensitive(d->settings_box, enabled);
+
+  if(enabled)
+    dt_p2p_restart();
+  else
+    dt_p2p_cleanup();
+
+  _refresh_status(d);
+  _refresh_fingerprint(d);
+}
+
 static void _on_show_passphrase_toggled(GtkToggleButton *btn, gpointer user_data)
 {
   GtkEntry *entry = GTK_ENTRY(user_data);
@@ -324,13 +465,34 @@ void init_tab_p2p(GtkWidget *dialog, GtkWidget *stack)
   _p2p_prefs_t *d = g_new0(_p2p_prefs_t, 1);
 
   GtkWidget *main_box = dt_gui_vbox();
+
+  // ---- enable row (always visible, outside the sensitive group) -----------
+  const gboolean enabled = dt_conf_get_bool("plugins/p2p/enabled");
+  d->enable_check = gtk_check_button_new_with_label(_("Enable P2P sync"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->enable_check), enabled);
+  gtk_widget_set_tooltip_text(d->enable_check,
+    _("Start the dt-p2p-daemon background process and enable all peer-to-peer "
+      "sync features. Uncheck to stop the daemon and disable all P2P activity."));
+  gtk_widget_set_margin_start(d->enable_check, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(d->enable_check,   DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(d->enable_check, DT_PIXEL_APPLY_DPI(4));
+  dt_gui_box_add(main_box, d->enable_check);
+
+  // ---- settings box: everything else (greyed when disabled) ---------------
+  d->settings_box = dt_gui_vbox();
+  gtk_widget_set_sensitive(d->settings_box, enabled);
+  dt_gui_box_add(main_box, d->settings_box);
+
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_start(grid, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(grid,   DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(grid,   DT_PIXEL_APPLY_DPI(8));
-  dt_gui_box_add(main_box, grid);
+  gtk_widget_set_margin_top(grid,   DT_PIXEL_APPLY_DPI(4));
+  dt_gui_box_add(d->settings_box, grid);
+
+  // Connect toggle after settings_box exists.
+  g_signal_connect(d->enable_check, "toggled", G_CALLBACK(_on_enable_toggled), d);
 
   int row = 0;
 
@@ -462,6 +624,27 @@ void init_tab_p2p(GtkWidget *dialog, GtkWidget *stack)
   gtk_grid_attach(GTK_GRID(grid), id_label,        0, row,   1, 1);
   gtk_grid_attach(GTK_GRID(grid), d->import_dir_btn, 2, row++, 2, 1);
 
+  // ---- peer connection status section -------------------------------------
+  _add_section(grid, &row, _("peer connection status"));
+
+  d->peer_status_empty_label = gtk_label_new(_("No known peers yet."));
+  gtk_widget_set_halign(d->peer_status_empty_label, GTK_ALIGN_START);
+  gtk_widget_set_margin_start(d->peer_status_empty_label, DT_PIXEL_APPLY_DPI(4));
+
+  GtkWidget *ps_refresh_btn = gtk_button_new_with_label(_("Refresh"));
+  gtk_widget_set_tooltip_text(ps_refresh_btn,
+    _("Query the running daemon for live peer connection status."));
+  g_signal_connect(ps_refresh_btn, "clicked",
+                   G_CALLBACK(_on_refresh_peer_status), d);
+
+  GtkWidget *ps_refresh_row = dt_gui_hbox(d->peer_status_empty_label);
+  gtk_box_pack_end(GTK_BOX(ps_refresh_row), ps_refresh_btn, FALSE, FALSE, 0);
+  gtk_grid_attach(GTK_GRID(grid), ps_refresh_row, 0, row++, 4, 1);
+
+  d->peer_status_list = gtk_list_box_new();
+  gtk_list_box_set_selection_mode(GTK_LIST_BOX(d->peer_status_list), GTK_SELECTION_NONE);
+  gtk_grid_attach(GTK_GRID(grid), d->peer_status_list, 0, row++, 4, 1);
+
   // ---- reachable peers section --------------------------------------------
   _add_section(grid, &row, _("reachable peers"));
 
@@ -540,7 +723,8 @@ void init_tab_p2p(GtkWidget *dialog, GtkWidget *stack)
   gtk_widget_set_hexpand(peers_scroll, TRUE);
   gtk_grid_attach(GTK_GRID(grid), peers_scroll, 0, row++, 4, 1);
 
-  // ---- load initial candidate peers --------------------------------------
+  // ---- load initial peer status and candidate peers -----------------------
+  _refresh_peer_status(d);
   _refresh_candidates(d);
 
   // ---- load initial values -----------------------------------------------

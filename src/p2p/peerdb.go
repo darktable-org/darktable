@@ -151,6 +151,31 @@ func (p *peerDB) allURLs() []string {
 	return urls
 }
 
+// allRecords returns every known peer record ordered by most-recently-seen first.
+func (p *peerDB) allRecords() []peerRecord {
+	if p == nil {
+		return nil
+	}
+	rows, err := p.db.Query(
+		`SELECT url, peer_id, created_at, last_seen, failure_count FROM peers ORDER BY last_seen DESC`)
+	if err != nil {
+		log.Printf("[peerdb] allRecords: %v", err)
+		return nil
+	}
+	defer rows.Close()
+	var records []peerRecord
+	for rows.Next() {
+		var r peerRecord
+		var createdAt, lastSeen int64
+		if err := rows.Scan(&r.URL, &r.PeerID, &createdAt, &lastSeen, &r.FailureCount); err == nil {
+			r.CreatedAt = time.Unix(createdAt, 0)
+			r.LastSeen  = time.Unix(lastSeen, 0)
+			records = append(records, r)
+		}
+	}
+	return records
+}
+
 func (p *peerDB) close() {
 	if p != nil {
 		p.db.Close()
