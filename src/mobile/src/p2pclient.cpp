@@ -74,8 +74,9 @@ void P2PClient::dispatchEvent(const QJsonObject &msg)
     const QJsonObject d  = QJsonDocument::fromJson(
         QJsonDocument(msg["data"].toObject()).toJson()).object();
 
-    if      (type == "xmp_updated")    emit xmpUpdated(d["path"].toString());
-    else if (type == "image_imported") emit imageImported(d["path"].toString());
+    if      (type == "xmp_updated")     emit xmpUpdated(d["path"].toString());
+    else if (type == "image_imported")  emit imageImported(d["path"].toString());
+    else if (type == "preview_updated") emit previewUpdated(d["path"].toString());
     else if (type == "peers") {
         QStringList list;
         for (const auto &v : msg["data"].toArray())
@@ -157,6 +158,14 @@ void P2PClient::announceProxy(const QString &rawPath)
     sendFireAndForget({
         {"type", "announce_proxy"},
         {"data", QJsonObject{{"path", rawPath}}}
+    });
+}
+
+void P2PClient::fetchPreview(const QString &rawPath, const QString &size)
+{
+    sendFireAndForget({
+        {"type", "fetch_preview"},
+        {"data", QJsonObject{{"path", rawPath}, {"size", size}}}
     });
 }
 

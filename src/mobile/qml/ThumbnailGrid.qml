@@ -45,7 +45,17 @@ Page {
                 // ── proxy image ───────────────────────────────────────────────
                 Image {
                     anchors.fill: parent
-                    source:       model.hasProxy ? ("image://avif" + model.proxyPath) : ""
+                    // Route all display through the avif provider using the
+                    // canonical raw path. The provider checks for a peer-
+                    // fetched JPEG preview first; on desktop it falls back to
+                    // the Qt AVIF plugin. ?k= cache-busts when a preview
+                    // refresh arrives (previewKey is bumped by updatePreview).
+                    source: (model.previewThumbPath || model.hasProxy)
+                            ? "image://avif" + model.rawPath + "?k=" + model.previewKey
+                            : ""
+                    // sourceSize hint tells the provider this is a thumbnail
+                    // request (≤480 px) so it picks the thumb JPEG variant.
+                    sourceSize.width: 400
                     fillMode:     Image.PreserveAspectCrop
                     asynchronous: true
                     smooth:       true
@@ -61,14 +71,15 @@ Page {
                             spacing: 6
                             BusyIndicator {
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                running: model.hasProxy && parent.parent.status === Image.Loading
+                                running: (model.previewThumbPath || model.hasProxy)
+                                         && parent.parent.status === Image.Loading
                                 visible: running
                             }
                             Label {
-                                text: model.hasProxy ? "" : "No proxy"
-                                color: "#888"
+                                text: "…"
+                                color: "#555"
                                 font.pixelSize: 10
-                                visible: !model.hasProxy
+                                visible: !model.previewThumbPath && !model.hasProxy
                             }
                         }
                     }
@@ -110,6 +121,7 @@ Page {
                             rating:     model.rating,
                             colorLabel: model.colorLabel,
                             hasProxy:   model.hasProxy,
+                            previewKey: model.previewKey,
                         })
                     }
                 }

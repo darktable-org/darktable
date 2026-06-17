@@ -36,7 +36,14 @@ int main(int argc, char *argv[])
                      [&model](const QString &rawPath, const QString &proxyPath, bool ok) {
                          model.updateProxy(rawPath, proxyPath, ok);
                      });
-    QObject::connect(&client, &P2PClient::xmpUpdated, &model, &ImageModel::updateXmp);
+    QObject::connect(&client, &P2PClient::xmpUpdated,      &model,  &ImageModel::updateXmp);
+    QObject::connect(&client, &P2PClient::previewUpdated,  &model,  &ImageModel::updatePreview);
+
+    // When an image has a proxy but no local preview JPEG, request one from peers.
+    QObject::connect(&model,  &ImageModel::previewNeeded,  &client,
+                     [&client](const QString &rawPath) {
+                         client.fetchPreview(rawPath, QStringLiteral("thumb"));
+                     });
 
     // Start daemon then connect the client socket.
     QObject::connect(&daemon, &DaemonManager::ready, &client,

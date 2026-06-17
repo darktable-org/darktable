@@ -14,10 +14,29 @@ Page {
     required property int    colorLabel
     required property bool   hasProxy
 
+    // Bumped when a refreshed preview JPEG arrives; triggers image reload.
+    property int previewKey: 0
+
     // Local copies of editable fields so we can diff before pushing
     property int  localRating:     rating
     property int  localColorLabel: colorLabel
     property bool dirty: localRating !== rating || localColorLabel !== colorLabel
+
+    // On open: fetch the full-size preview from peers so the darkroom shows a
+    // full-resolution JPEG instead of falling back to MediaCodec AVIF decode.
+    Component.onCompleted: {
+        if (root.hasProxy)
+            p2p.fetchPreview(root.rawPath, "full")
+    }
+
+    // Reload the image when a fresher preview arrives from peers.
+    Connections {
+        target: p2p
+        function onPreviewUpdated(path) {
+            if (path === root.rawPath)
+                root.previewKey++
+        }
+    }
 
     background: Rectangle { color: "black" }
 
@@ -60,7 +79,11 @@ Page {
 
         Image {
             id: image
-            source: root.hasProxy ? ("image://avif" + root.proxyPath) : ""
+            // No sourceSize → provider picks the full-res preview JPEG,
+            // falling back to the desktop AVIF plugin on non-Android.
+            source: (root.hasProxy || root.previewKey > 0)
+                    ? ("image://avif" + root.rawPath + "?k=" + root.previewKey)
+                    : ""
             anchors.centerIn: parent
             fillMode: Image.PreserveAspectFit
             width:  flick.width

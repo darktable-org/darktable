@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -38,6 +40,7 @@ import (
 	"github.com/huin/goupnp/dcps/internetgateway1"
 	"github.com/huin/goupnp/dcps/internetgateway2"
 	natpmp "github.com/jackpal/go-nat-pmp"
+	_ "modernc.org/sqlite"
 )
 
 const (
@@ -821,6 +824,19 @@ func (d *daemon) handleConn(conn net.Conn) {
 			}
 			go d.fetchProxyFromPeer(req.Path, enc)
 
+		case "fetch_preview":
+			var req struct {
+				Path string `json:"path"`
+				Size string `json:"size"`
+			}
+			if err := json.Unmarshal(msg.Data, &req); err != nil {
+				continue
+			}
+			if req.Size == "" {
+				req.Size = "thumb"
+			}
+			go d.fetchPreviewFromPeers(req.Path, req.Size)
+
 		case "list_peers":
 			d.peersMu.RLock()
 			ids := make([]string, 0, len(d.peers))
@@ -1137,6 +1153,26 @@ func (d *daemon) downloadProxy(remotePath, localPath, baseURL string) bool {
 	return true
 }
 
+// fetchPreviewFromPeers tries every known peer until it obtains a JPEG preview
+// for canonicalPath at the requested size, then caches it locally.
+func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
+	localPath := d.localDestination(canonicalPath)
+
+	d.peersMu.RLock()
+	urls := make([]string, 0, len(d.peers))
+	for _, u := range d.peers {
+		urls = append(urls, u)
+	}
+	d.peersMu.RUnlock()
+
+	for _, baseURL := range urls {
+		d.fetchPreviewJPEG(canonicalPath, localPath, baseURL, size)
+		if fileExists(localPath + ".preview-" + size + ".jpg") {
+			return
+		}
+	}
+}
+
 // autoFetchProxy downloads a proxy and notifies darktable to import it.
 func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 	localPath := d.localDestination(remotePath)
@@ -1145,6 +1181,10 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 		return
 	}
 
+	// Fetch the thumbnail JPEG preview in the background so the mobile gallery
+	// can display images instantly without MediaCodec decoding.
+	go d.fetchPreviewJPEG(remotePath, localPath, baseURL, "thumb")
+
 	d.addToLocalIndex(localPath)
 
 	// Broadcast the canonical raw path so darktable imports 4F9A9030.CR3 and
@@ -1152,6 +1192,60 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 	// falls back to the .proxy.avif transparently when the raw is absent.
 	result, _ := json.Marshal(map[string]string{"path": localPath})
 	d.broadcast(socketMsg{Type: "image_imported", Data: result})
+}
+
+// fetchPreviewJPEG downloads a JPEG preview from a peer and caches it beside
+// the local proxy AVIF. size must be "thumb" or "full".
+//
+// Uses a conditional GET (If-Modified-Since) when a cached copy already exists,
+// so the file is only re-downloaded when the desktop has a fresher version.
+// Broadcasts preview_updated when an existing preview is replaced.
+func (d *daemon) fetchPreviewJPEG(remotePath, localPath, baseURL, size string) {
+	dst := localPath + ".preview-" + size + ".jpg"
+	previewURL := baseURL + "/preview?path=" + url.QueryEscape(remotePath) + "&size=" + size
+
+	req, err := http.NewRequest(http.MethodGet, previewURL, nil)
+	if err != nil {
+		return
+	}
+	req.Header.Set(passphraseHeader, d.authToken)
+
+	// Conditional GET: ask the server to skip the body if nothing changed.
+	hadCached := false
+	if fi, err := os.Stat(dst); err == nil {
+		hadCached = true
+		req.Header.Set("If-Modified-Since", fi.ModTime().UTC().Format(http.TimeFormat))
+	}
+
+	resp, err := d.tlsClient.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotModified {
+		return // our copy is still current
+	}
+	if resp.StatusCode != http.StatusOK {
+		return
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil || len(data) == 0 {
+		return
+	}
+
+	if err := os.WriteFile(dst, data, 0644); err != nil {
+		return
+	}
+
+	verb := "fetched"
+	if hadCached {
+		verb = "refreshed"
+	}
+	log.Printf("[preview] %s %s preview for '%s' (%d KB)", verb, size, filepath.Base(remotePath), len(data)/1024)
+	result, _ := json.Marshal(map[string]string{"path": localPath})
+	d.broadcast(socketMsg{Type: "preview_updated", Data: result})
 }
 
 // fetchProxyFromPeer handles an explicit "fetch_proxy" command from darktable.
@@ -1364,11 +1458,13 @@ func (d *daemon) syncWithPeer(baseURL string) {
 		}
 	}
 
-	// Download any proxy the peer has that we don't.
+	// Download any proxy the peer has that we don't.  For proxies we already
+	// have, check whether the peer's JPEG preview is fresher than ours.
 	missing := 0
 	for _, path := range m.Paths {
 		localPath := d.localDestination(path)
 		if _, err := os.Stat(localPath + ".proxy.avif"); err == nil {
+			go d.fetchPreviewJPEG(path, localPath, baseURL, "thumb")
 			continue
 		}
 		missing++
@@ -1438,6 +1534,7 @@ func (d *daemon) startProxyHTTP() error {
 	mux.HandleFunc("/proxy", d.serveProxy)
 	mux.HandleFunc("/manifest", d.serveManifest)
 	mux.HandleFunc("/xmp", d.serveXMP)
+	mux.HandleFunc("/preview", d.servePreview)
 	d.httpSrv = &http.Server{Handler: requireAuth(mux, d.authToken)}
 	go d.httpSrv.Serve(ln)
 	log.Printf("[https] proxy server on %s", ln.Addr())
@@ -1585,6 +1682,182 @@ func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
+}
+
+// ---------------------------------------------------------------------------
+// JPEG preview endpoint
+// ---------------------------------------------------------------------------
+
+// servePreview serves JPEG previews for raw images.
+//
+// GET /preview?path=<canonical-raw-path>&size=thumb|full
+//
+// Sources, in priority order:
+//  1. Cached preview JPEG beside the proxy AVIF (.preview-thumb.jpg / .preview-full.jpg)
+//  2. darktable's mipmap cache (~/.cache/darktable/mipmaps-*.d/)
+//  3. darktable-cli export (desktop only; slow but guaranteed)
+//
+// size=thumb picks mipmap sizes [1,2] (~337–450 px wide).
+// size=full  picks mipmap sizes [4,6,3] (~1800/3800/1350 px wide).
+//
+// Uses http.ServeContent so clients get proper Last-Modified and 304 support.
+func (d *daemon) servePreview(w http.ResponseWriter, r *http.Request) {
+	rawPath := r.URL.Query().Get("path")
+	if rawPath == "" || strings.Contains(rawPath, "..") {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	sizeParam := r.URL.Query().Get("size")
+	var (
+		cacheSuffix string
+		mipmapSizes []int
+		maxDim      int
+	)
+	if sizeParam == "full" {
+		cacheSuffix = ".preview-full.jpg"
+		mipmapSizes = []int{4, 6, 3}
+		maxDim = 1920
+	} else {
+		cacheSuffix = ".preview-thumb.jpg"
+		mipmapSizes = []int{1, 2}
+		maxDim = 480
+	}
+
+	cachePath := rawPath + cacheSuffix
+
+	// Populate the cache file if it doesn't exist yet.
+	if !fileExists(cachePath) {
+		if data := d.findMipmapJPEG(rawPath, mipmapSizes); data != nil {
+			if err := os.WriteFile(cachePath, data, 0644); err == nil {
+				log.Printf("[preview] mipmap → cache '%s' size=%s (%d KB)",
+					filepath.Base(rawPath), sizeParam, len(data)/1024)
+			}
+		} else if _, err := exportWithDarktableCLI(rawPath, cachePath, maxDim); err != nil {
+			http.Error(w, "preview not available", http.StatusNotFound)
+			return
+		} else {
+			log.Printf("[preview] cli export '%s' size=%s", filepath.Base(rawPath), sizeParam)
+		}
+	}
+
+	// Serve the cache file. http.ServeContent handles Last-Modified and 304.
+	f, err := os.Open(cachePath)
+	if err != nil {
+		http.Error(w, "preview not available", http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil {
+		http.Error(w, "stat failed", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	http.ServeContent(w, r, "", fi.ModTime(), f)
+}
+
+// findMipmapJPEG looks up the image ID in darktable's library.db and returns
+// the first mipmap JPEG found for the given size preference list.
+func (d *daemon) findMipmapJPEG(rawPath string, sizes []int) []byte {
+	mipmapDir, err := darktableMipmapDir()
+	if err != nil {
+		return nil
+	}
+	libPath := darktableLibraryPath()
+	if libPath == "" {
+		return nil
+	}
+	imgID, err := lookupDarktableImageID(libPath, rawPath)
+	if err != nil || imgID == 0 {
+		return nil
+	}
+	for _, sz := range sizes {
+		p := filepath.Join(mipmapDir, fmt.Sprintf("%d", sz), fmt.Sprintf("%d.jpg", imgID))
+		if data, err := os.ReadFile(p); err == nil {
+			return data
+		}
+	}
+	return nil
+}
+
+// darktableLibraryPath returns the path to darktable's library.db, or "".
+func darktableLibraryPath() string {
+	cfgDir, err := os.UserConfigDir()
+	if err != nil {
+		return ""
+	}
+	p := filepath.Join(cfgDir, "darktable", "library.db")
+	if _, err := os.Stat(p); err == nil {
+		return p
+	}
+	return ""
+}
+
+// darktableMipmapDir returns the path to the darktable mipmap cache directory.
+func darktableMipmapDir() (string, error) {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+	dtCache := filepath.Join(cacheDir, "darktable")
+	entries, err := os.ReadDir(dtCache)
+	if err != nil {
+		return "", err
+	}
+	for _, e := range entries {
+		if e.IsDir() && strings.HasPrefix(e.Name(), "mipmaps-") && strings.HasSuffix(e.Name(), ".d") {
+			return filepath.Join(dtCache, e.Name()), nil
+		}
+	}
+	return "", fmt.Errorf("no mipmaps directory in %s", dtCache)
+}
+
+// lookupDarktableImageID queries library.db for the image ID matching rawPath.
+func lookupDarktableImageID(libPath, rawPath string) (int64, error) {
+	// Open read-only; WAL mode so we don't interfere with a running darktable.
+	db, err := sql.Open("sqlite", libPath+"?mode=ro&_journal=WAL")
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	dir := filepath.Dir(rawPath)
+	name := filepath.Base(rawPath)
+	var id int64
+	err = db.QueryRow(`
+		SELECT img.id
+		FROM images img
+		JOIN film_rolls f ON img.film_id = f.id
+		WHERE img.filename = ? AND f.folder = ?`,
+		name, dir).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+// exportWithDarktableCLI renders rawPath to outPath via darktable-cli and
+// returns the JPEG bytes. Applies the XMP sidecar if present.
+func exportWithDarktableCLI(rawPath, outPath string, maxDim int) ([]byte, error) {
+	args := []string{rawPath}
+	if xmp := rawPath + ".xmp"; fileExists(xmp) {
+		args = append(args, xmp)
+	}
+	args = append(args, outPath,
+		"--width", fmt.Sprintf("%d", maxDim),
+		"--height", fmt.Sprintf("%d", maxDim),
+	)
+	cmd := exec.Command("darktable-cli", args...)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("darktable-cli: %w\n%s", err, out)
+	}
+	return os.ReadFile(outPath)
+}
+
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
 }
 
 // ---------------------------------------------------------------------------

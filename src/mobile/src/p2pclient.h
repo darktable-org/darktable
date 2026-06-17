@@ -32,6 +32,7 @@ public slots:
     // Fire-and-forget commands
     void pushXmp(const QString &rawPath, const QString &xmpContent);
     void announceProxy(const QString &rawPath);
+    void fetchPreview(const QString &rawPath, const QString &size = QLatin1String("thumb"));
 
     // Commands with a response — result arrives via signal
     void fetchProxy(const QString &rawPath);
@@ -44,6 +45,7 @@ signals:
     void imageImported(const QString &path);
     void proxyFetched(const QString &rawPath, const QString &proxyPath, bool ok);
     void xmpUpdated(const QString &path);
+    void previewUpdated(const QString &rawPath);
 
 private slots:
     void onEventConnected();

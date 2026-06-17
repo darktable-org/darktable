@@ -15,7 +15,10 @@
 #   2. Runs qt-cmake to configure the project
 #   3. Builds and packages the APK via androiddeployqt
 set -euo pipefail
-
+if [ -f .env ]
+then
+source .env
+fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 

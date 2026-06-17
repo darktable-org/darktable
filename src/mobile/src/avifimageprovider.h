@@ -1,9 +1,11 @@
 #pragma once
 #include <QQuickImageProvider>
 
-// Image provider registered as "image://avif/<absolute-path>".
-// On Android it delegates to BitmapFactory (supports AVIF, JPEG, WebP, PNG
-// natively; AVIF requires API 31+).  On other platforms falls back to QImage.
+// Image provider registered as "image://avif/<raw-path>?k=<cache-key>".
+// Serves JPEG previews fetched from the desktop peer (instant, no codec).
+// On Android: returns null if no JPEG exists — show placeholder until the
+// daemon delivers one via the preview_updated event.
+// On desktop: falls back to Qt's native AVIF plugin (raw + ".proxy.avif").
 class AvifImageProvider : public QQuickImageProvider
 {
 public:

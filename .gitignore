@@ -1,5 +1,7 @@
 src/p2p/pep
 *.so
+.env
+*/.env
 src/mobile/android/libs
 src/mobile/assets
 src/mobile/android/libs/arm64-v8a/libdt-p2p-daemon.so

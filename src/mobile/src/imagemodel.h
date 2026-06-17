@@ -5,12 +5,14 @@
 
 struct ImageEntry
 {
-    QString rawPath;      // canonical path used for XMP push
-    QString proxyPath;    // local .proxy.avif file path
-    QString filename;     // display name (basename of rawPath)
+    QString rawPath;          // canonical path used for XMP push
+    QString proxyPath;        // local .proxy.avif file path
+    QString previewThumbPath; // local .preview-thumb.jpg path (preferred for display)
+    QString filename;         // display name (basename of rawPath)
     int     rating     = 0;   // 0–5
     int     colorLabel = -1;  // -1=none  0=red 1=yellow 2=green 3=blue 4=purple
     bool    hasProxy   = false;
+    int     previewKey = 0;   // bumped when a cached preview JPEG is refreshed
 };
 
 class ImageModel : public QAbstractListModel
@@ -22,10 +24,12 @@ public:
     enum Roles {
         RawPathRole = Qt::UserRole + 1,
         ProxyPathRole,
+        PreviewThumbPathRole,
         FilenameRole,
         RatingRole,
         ColorLabelRole,
         HasProxyRole,
+        PreviewKeyRole,
     };
 
     explicit ImageModel(QObject *parent = nullptr);
@@ -44,9 +48,11 @@ public slots:
     void addImage(const QString &rawPath);
     void updateProxy(const QString &rawPath, const QString &proxyPath, bool ok);
     void updateXmp(const QString &rawPath);
+    void updatePreview(const QString &rawPath);
 
 signals:
     void countChanged();
+    void previewNeeded(const QString &rawPath);
 
 private:
     int findByRaw(const QString &rawPath) const;

@@ -2,6 +2,7 @@
 #include "xmpio.h"
 #include <QDir>
 #include <QFileInfo>
+#include <QSet>
 
 ImageModel::ImageModel(QObject *parent) : QAbstractListModel(parent) {}
 
@@ -16,25 +17,29 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
         return {};
     const ImageEntry &e = m_entries.at(index.row());
     switch (role) {
-    case RawPathRole:    return e.rawPath;
-    case ProxyPathRole:  return e.proxyPath;
-    case FilenameRole:   return e.filename;
-    case RatingRole:     return e.rating;
-    case ColorLabelRole: return e.colorLabel;
-    case HasProxyRole:   return e.hasProxy;
-    default:             return {};
+    case RawPathRole:         return e.rawPath;
+    case ProxyPathRole:       return e.proxyPath;
+    case PreviewThumbPathRole:return e.previewThumbPath;
+    case FilenameRole:        return e.filename;
+    case RatingRole:          return e.rating;
+    case ColorLabelRole:      return e.colorLabel;
+    case HasProxyRole:        return e.hasProxy;
+    case PreviewKeyRole:      return e.previewKey;
+    default:                  return {};
     }
 }
 
 QHash<int,QByteArray> ImageModel::roleNames() const
 {
     return {
-        {RawPathRole,    "rawPath"},
-        {ProxyPathRole,  "proxyPath"},
-        {FilenameRole,   "filename"},
-        {RatingRole,     "rating"},
-        {ColorLabelRole, "colorLabel"},
-        {HasProxyRole,   "hasProxy"},
+        {RawPathRole,          "rawPath"},
+        {ProxyPathRole,        "proxyPath"},
+        {PreviewThumbPathRole, "previewThumbPath"},
+        {FilenameRole,         "filename"},
+        {RatingRole,           "rating"},
+        {ColorLabelRole,       "colorLabel"},
+        {HasProxyRole,         "hasProxy"},
+        {PreviewKeyRole,       "previewKey"},
     };
 }
 
@@ -49,10 +54,14 @@ void ImageModel::addImage(const QString &rawPath)
     e.rawPath  = rawPath;
     e.filename = QFileInfo(rawPath).fileName();
 
-    // Check if a proxy already exists beside the raw or in the same dir
-    const QString candidate = rawPath + ".proxy.avif";
-    if (QFileInfo::exists(candidate)) {
-        e.proxyPath = candidate;
+    // Prefer an existing JPEG thumb preview for display; fall back to AVIF proxy.
+    const QString thumbCandidate = rawPath + ".preview-thumb.jpg";
+    if (QFileInfo::exists(thumbCandidate))
+        e.previewThumbPath = thumbCandidate;
+
+    const QString avifCandidate = rawPath + ".proxy.avif";
+    if (QFileInfo::exists(avifCandidate)) {
+        e.proxyPath = avifCandidate;
         e.hasProxy  = true;
         loadXmpFields(e);
     }
@@ -61,6 +70,10 @@ void ImageModel::addImage(const QString &rawPath)
     m_entries.append(e);
     endInsertRows();
     emit countChanged();
+
+    // If we have a proxy but no JPEG preview yet, ask the daemon to fetch one.
+    if (e.hasProxy && e.previewThumbPath.isEmpty())
+        emit previewNeeded(rawPath);
 }
 
 void ImageModel::updateProxy(const QString &rawPath, const QString &proxyPath, bool ok)
@@ -71,6 +84,19 @@ void ImageModel::updateProxy(const QString &rawPath, const QString &proxyPath, b
     m_entries[i].proxyPath = ok ? proxyPath : QString{};
     const QModelIndex idx = index(i);
     emit dataChanged(idx, idx, {ProxyPathRole, HasProxyRole});
+
+    if (ok && !QFileInfo::exists(rawPath + ".preview-thumb.jpg"))
+        emit previewNeeded(rawPath);
+}
+
+void ImageModel::updatePreview(const QString &rawPath)
+{
+    const int i = findByRaw(rawPath);
+    if (i < 0) return;
+    m_entries[i].previewThumbPath = rawPath + ".preview-thumb.jpg";
+    m_entries[i].previewKey++;
+    const QModelIndex idx = index(i);
+    emit dataChanged(idx, idx, {PreviewThumbPathRole, PreviewKeyRole});
 }
 
 void ImageModel::updateXmp(const QString &rawPath)
@@ -105,14 +131,23 @@ void ImageModel::scanDirectory(const QString &dir)
     const QDir d(dir);
     if (!d.exists()) return;
 
-    const QStringList proxies = d.entryList({"*.proxy.avif"}, QDir::Files);
-    for (const QString &name : proxies) {
-        // Strip ".proxy.avif" to recover the raw filename
-        QString rawName = name;
-        rawName.chop(QStringLiteral(".proxy.avif").length());
-        const QString rawPath = dir + "/" + rawName;
-        addImage(rawPath);
+    // Collect unique raw basenames from both proxy AVIFs and JPEG previews so
+    // images without a local AVIF (fetched via peer preview) are also shown.
+    QSet<QString> rawNames;
+
+    for (const QString &name : d.entryList({"*.proxy.avif"}, QDir::Files)) {
+        QString raw = name;
+        raw.chop(QStringLiteral(".proxy.avif").length());
+        rawNames.insert(raw);
     }
+    for (const QString &name : d.entryList({"*.preview-thumb.jpg"}, QDir::Files)) {
+        QString raw = name;
+        raw.chop(QStringLiteral(".preview-thumb.jpg").length());
+        rawNames.insert(raw);
+    }
+
+    for (const QString &rawName : rawNames)
+        addImage(dir + "/" + rawName);
 }
 
 // ── private ───────────────────────────────────────────────────────────────────
