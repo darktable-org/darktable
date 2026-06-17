@@ -126,6 +126,121 @@ repository. Requirements for the decoder export:
 
 ---
 
+## Raw Denoise
+
+Sensor-level denoise on the raw CFA mosaic, before darktable's pipeline.
+Output is a DNG that re-imports as a normal raw and is graded with the
+full pipeline as usual. Two pipeline variants share the task key:
+
+| Variant | API | Sensors | Output |
+|---------|-----|---------|--------|
+| Bayer | `src/common/ai/restore_raw_bayer.h` | RGGB / BGGR / GRBG / GBRG (force-cropped to RGGB origin) | CFA Bayer DNG (uint16, same CFA pattern) |
+| Linear | `src/common/ai/restore_raw_linear.h` | X-Trans, Foveon, monochrome-CFA, anything that can't be packed as 4ch Bayer | LinearRaw DNG (3ch float demosaicked) |
+
+**Task key**: `"rawdenoise"`
+**Shared API**: `src/common/ai/restore.h` (loaders: `dt_restore_load_rawdenoise_bayer`, `dt_restore_load_rawdenoise_xtrans`, `dt_restore_load_rawdenoise_linear`)
+**Consumer**: `src/libs/neural_restore.c`
+
+The X-Trans loader currently falls through to the linear variant; it
+exists so a future dedicated X-Trans model can be picked up via a
+manifest-only change.
+
+### How It Works
+
+**Bayer variant** (RGGB family):
+
+1. raw CFA mosaic is loaded straight from rawspeed (no demosaic, no
+   darktable pre-processing other than rawprepare)
+2. preprocessing: per-channel black-level subtract, per-channel WB
+   normalisation (default: daylight derived from `adobe_XYZ_to_CAM`),
+   normalise by per-site range
+3. pack the 2T × 2T CFA tile into a 4-channel T × T tensor (R, G1, G2, B
+   in RGGB order; non-RGGB sensors are force-cropped to an RGGB origin)
+4. tiled inference; the model demosaics internally via PixelShuffle and
+   returns a 3-channel 2T × 2T tile in camRGB
+5. postprocessing: invert the normalisation and WB, optional scalar
+   mean-match (`match_gain`) to keep tile gain consistent
+6. re-mosaic back to the same CFA layout, write uint16 mosaic to a
+   CFA Bayer DNG via `dt_imageio_dng_write_cfa_bayer`
+
+**Linear variant** (X-Trans, Foveon, etc.):
+
+1. run a minimal darktable pipeline (`rawprepare → highlights →
+   demosaic`) with temperature disabled, producing a 3ch float buffer
+   at full sensor resolution in camRGB raw-ADC units. this reuses
+   darktable's sensor-aware demosaic (AMaZE / VNG / Markesteijn / …)
+   instead of rolling our own
+2. apply daylight WB and the `camRGB → lin_rec2020` matrix
+3. optional scalar exposure boost to `target_mean` (default 0.30 for
+   the training distribution)
+4. tiled inference with per-tile `match_gain`
+5. invert the exposure boost, matrix, and WB to recover a camRGB raw
+6. write a LinearRaw DNG via `dt_imageio_dng_write_linear`
+
+Both variants then auto-import into the library, group with the source
+image, and inherit user tags (same `_import_image` path as denoise /
+upscale).
+
+### Model Requirements
+
+**Bayer (`input_kind: bayer_v1`):**
+
+| Tensor | Name | Shape | Type | Description |
+|--------|------|-------|------|-------------|
+| Input 0 | `input` | `[1, 4, T, T]` | float32 | packed CFA half-resolution tile, channel order R G1 G2 B, values `(raw - black) / range * wb_norm` |
+| Output 0 | `output` | `[1, 3, 2T, 2T]` | float32 | demosaicked camRGB in same WB/exposure frame |
+
+**Linear (`input_kind: linear_v1`):**
+
+| Tensor | Name | Shape | Type | Description |
+|--------|------|-------|------|-------------|
+| Input 0 | `input` | `[1, 3, T, T]` | float32 | planar 3-channel tile, default colorspace `lin_rec2020` |
+| Output 0 | `output` | `[1, 3, T, T]` | float32 | denoised tile in same input space |
+
+A declared-but-mismatched `input_kind` is a hard load error (no silent
+fallback). Manifests predating the contract label are treated as
+`bayer_v1` for back-compat.
+
+### Tiling
+
+- tile sizes (tried in order, half-resolution for bayer): 512, 384, 256, 192
+- overlap: 16 packed pixels (= 32 sensor pixels) on each edge
+- corner tiles in the Bayer path are mirror-padded *inside* the
+  effective-RGGB-cropped rectangle (`variants.bayer.edge_pad:
+  mirror_cropped` — matches RawNIND training)
+
+### config.json Example
+
+```json
+{
+  "id": "rawdenoise-nind",
+  "name": "raw denoise NIND",
+  "description": "RawNIND raw-domain denoise (Bayer + Linear)",
+  "task": "rawdenoise",
+  "github_asset": "rawdenoise-nind.dtmodel",
+  "default": true,
+  "variants": {
+    "bayer":  { "input_kind": "bayer_v1",  "onnx": "model_bayer.onnx",
+                "bayer_orientation": "force_rggb", "wb_norm": "daylight",
+                "edge_pad": "mirror_cropped" },
+    "linear": { "input_kind": "linear_v1", "onnx": "model_linear.onnx",
+                "input_colorspace": "lin_rec2020", "wb_norm": "as_shot",
+                "target_mean": 0.30 }
+  }
+}
+```
+
+### Directory Layout
+
+```
+rawdenoise-nind/
+  config.json
+  model_bayer.onnx
+  model_linear.onnx
+```
+
+---
+
 ## Denoise
 
 Removes noise from developed images using neural network inference.
@@ -145,6 +260,10 @@ Removes noise from developed images using neural network inference.
 4. optionally, DWT-based detail recovery blends fine texture from the
    original back into the denoised result
 5. the result is written as TIFF with embedded ICC profile and EXIF
+6. the TIFF is auto-imported into the library, grouped with the source
+   image, and inherits the source's user-applied tags (internal
+   `darktable|*` auto-tags are skipped) so the output stays visible in
+   tag-based collections
 
 ### Model Requirements
 

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 21:46+0200\n"
-"PO-Revision-Date: 2026-06-07 13:13+0300\n"
+"POT-Creation-Date: 2026-06-10 23:06+0200\n"
+"PO-Revision-Date: 2026-06-11 00:30+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1285,14 +1285,14 @@ msgstr "Роздільники для категорій розміру"
 #: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
-"depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
-">400px"
+"depending on the size of the thumbnail, separated by |.\n"
+"for example, 120|400 means 3 categories of thumbnails: up to 120px, "
+"120-400px, more than 400px"
 msgstr ""
 "Категорії розміру використовуються для того, щоб мати можливість "
 "встановлювати різні інформаційні накладання та значення CSS залежно\n"
 "від розміру мініатюри. Вони розділяються знаком '|'. Наприклад, 120|400 "
-"означає 3 категорії мініатюр: <120px, від 120px до 400px, >400px."
+"означає 3 категорії мініатюр: до 120px, від 120px до 400px, понад 400px"
 
 #: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
@@ -6228,7 +6228,7 @@ msgstr "Спадне меню"
 #: ../src/libs/tagging.c:1790 ../src/libs/tagging.c:1882
 #: ../src/libs/tagging.c:2011 ../src/libs/tagging.c:2320
 #: ../src/libs/tagging.c:2835 ../src/libs/tagging.c:2877
-#: ../src/libs/tagging.c:3975
+#: ../src/libs/tagging.c:3981
 msgid "_cancel"
 msgstr "_Скасувати"
 
@@ -6238,7 +6238,7 @@ msgstr "_Скасувати"
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1883
 #: ../src/libs/tagging.c:2012 ../src/libs/tagging.c:2321
-#: ../src/libs/tagging.c:3976
+#: ../src/libs/tagging.c:3982
 msgid "_save"
 msgstr "_Зберегти"
 
@@ -7904,7 +7904,7 @@ msgstr ""
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Не вдається прочитати файл XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:6121
+#: ../src/common/exif.cc:6121 ../src/common/exif.cc:6134
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Не вдається записати в файл XMP '%s': '%s'"
@@ -10099,6 +10099,8 @@ msgid ""
 "adjust the channel boost factor.\n"
 "increase to allow matching values over 100%"
 msgstr ""
+"Відрегулювати коефіцієнт посилення каналу.\n"
+"Збільште його, щоб забезпечити доступ до значень понад 100%"
 
 #: ../src/develop/blend_gui.c:2714
 #, c-format
@@ -28512,7 +28514,7 @@ msgstr "Налаштування колекцій зображень"
 #: ../src/libs/collect.c:3554 ../src/libs/export.c:1428
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
-#: ../src/libs/tagging.c:3999
+#: ../src/libs/tagging.c:4005
 msgid "preferences..."
 msgstr "Уподобання..."
 
@@ -32883,7 +32885,7 @@ msgstr ""
 "Прискорювач неактивний при перегляді тегів у вигляді дерева. Будь ласка, "
 "перейдіть до перегляду у вигляді списку."
 
-#: ../src/libs/tagging.c:3973
+#: ../src/libs/tagging.c:3979
 msgid "tagging settings"
 msgstr "Налаштування тегів"
 
