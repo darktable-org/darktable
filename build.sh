@@ -244,32 +244,6 @@ num_cpu()
 	printf "$ncpu"
 }
 
-max_jobs_for_ram()
-{
-	local ram_kb=0
-	local platform=$(uname -s)
-
-	case "$platform" in
-	Linux|MINGW64*)
-		if [ -r /proc/meminfo ]; then
-			ram_kb=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
-		fi
-		;;
-	Darwin)
-		local ram_bytes=$(/usr/sbin/sysctl -n hw.memsize 2>/dev/null || echo 0)
-		ram_kb=$(( ram_bytes / 1024 ))
-		;;
-	SunOS)
-		local ram_mb=$(prtconf 2>/dev/null | awk '/Memory size:/ {print $3}')
-		ram_kb=$(( ${ram_mb:-0} * 1024 ))
-		;;
-	esac
-
-	local jobs=$(( ram_kb / 3145728 ))  # 3 GB in kB = 3*1024*1024
-	[ "$jobs" -lt 1 ] && jobs=1
-	printf "$jobs"
-}
-
 make_name()
 {
 	local make="make"
@@ -326,9 +300,7 @@ clean()
 # Let's process the user's wishes
 # ---------------------------------------------------------------------------
 
-_cpu=$(num_cpu)
-_ram=$(max_jobs_for_ram)
-MAKE_TASKS=$(( _cpu < _ram ? _cpu : _ram ))
+MAKE_TASKS=$(num_cpu)
 MAKE=$(make_name)
 
 # In WSL, Windows paths containing parentheses (e.g. "Program Files (x86)") get
