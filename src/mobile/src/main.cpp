@@ -9,6 +9,7 @@
 #include "p2pclient.h"
 #include "pairingmanager.h"
 #include "qrscanner.h"
+#include "sharehelper.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
     ImageModel    model;
     PairingManager pairing(&daemon);
     QrScanner     qrScanner;
+    ShareHelper   shareHelper;
 
     // When a new image arrives, ensure we have a proxy for it.
     QObject::connect(&client, &P2PClient::imageImported,
@@ -59,8 +61,9 @@ int main(int argc, char *argv[])
     ctx->setContextProperty("daemon",     &daemon);
     ctx->setContextProperty("p2p",        &client);
     ctx->setContextProperty("imageModel", &model);
-    ctx->setContextProperty("pairing",    &pairing);
+    ctx->setContextProperty("pairing",     &pairing);
     ctx->setContextProperty("qrScanner",  &qrScanner);
+    ctx->setContextProperty("shareHelper",&shareHelper);
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, []() { QCoreApplication::exit(-1); },

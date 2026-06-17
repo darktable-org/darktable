@@ -59,6 +59,12 @@ Page {
                 font.pixelSize: 14
             }
             ToolButton {
+                text: "⬆"
+                font.pixelSize: 20
+                visible: root.hasProxy || root.previewKey > 0
+                onClicked: shareHelper.shareRawPaths([root.rawPath])
+            }
+            ToolButton {
                 text: "Push"
                 visible: root.dirty
                 Material.accent: Material.Orange

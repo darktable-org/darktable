@@ -49,6 +49,7 @@ set(CPP_SOURCES
     src/xmpio.cpp              src/xmpio.h
     src/pairingmanager.cpp     src/pairingmanager.h
     src/qrscanner.cpp          src/qrscanner.h
+    src/sharehelper.cpp        src/sharehelper.h
 )
 
 qt_add_executable(darktable-mobile ${CPP_SOURCES})

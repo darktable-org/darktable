@@ -117,6 +117,15 @@ void ImageModel::setRating(const QString &rawPath, int rating)
     emit dataChanged(idx, idx, {RatingRole});
 }
 
+QStringList ImageModel::allRawPaths() const
+{
+    QStringList result;
+    result.reserve(m_entries.size());
+    for (const ImageEntry &e : m_entries)
+        result << e.rawPath;
+    return result;
+}
+
 void ImageModel::setColorLabel(const QString &rawPath, int label)
 {
     const int i = findByRaw(rawPath);

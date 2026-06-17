@@ -71,7 +71,7 @@ ApplicationWindow {
     StackView {
         id: stack
         anchors {
-            top:    parent.top
+            top:    statusBanner.bottom
             left:   parent.left
             right:  parent.right
             bottom: navBar.top
