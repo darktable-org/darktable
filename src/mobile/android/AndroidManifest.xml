@@ -28,6 +28,8 @@
     <application
         android:name="org.qtproject.qt.android.bindings.QtApplication"
         android:label="Darktable Mobile"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:requestLegacyExternalStorage="false"
         android:allowBackup="false">

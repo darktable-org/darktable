@@ -7,6 +7,7 @@ import DarktableMobile
 Page {
     id: root
 
+    required property int    modelIndex
     required property string rawPath
     required property string proxyPath
     required property string filename
@@ -145,13 +146,31 @@ Page {
 
             MouseArea {
                 anchors.fill: parent
+
+                property real swipePressX: 0
+
                 onDoubleClicked: {
                     image.scale = image.scale > 1.0 ? 1.0 : 2.5
                     flick.contentX = 0
                     flick.contentY = 0
                 }
-                // Allow Flickable to handle single-tap drag
-                onPressed: mouse.accepted = false
+                onPressed: (mouse) => {
+                    if (image.scale <= 1.0) {
+                        // Track horizontal position to detect navigation swipes.
+                        // Accept the press so we get the release; at 1× there is
+                        // nothing for the Flickable to pan anyway.
+                        swipePressX = mouse.x
+                        mouse.accepted = true
+                    } else {
+                        // Zoomed in — let the Flickable handle panning.
+                        mouse.accepted = false
+                    }
+                }
+                onReleased: (mouse) => {
+                    const dx = mouse.x - swipePressX
+                    if (dx < -60)       root.navigateNext()
+                    else if (dx > 60)   root.navigatePrev()
+                }
             }
         }
     }
@@ -240,6 +259,24 @@ Page {
             }
         }
     }
+
+    // ── swipe navigation ──────────────────────────────────────────────────────
+    function navigateTo(idx) {
+        if (idx < 0 || idx >= imageModel.count) return
+        const m = imageModel.get(idx)
+        root.StackView.view.replace(null, "DarkroomView.qml", {
+            modelIndex: idx,
+            rawPath:    m.rawPath,
+            proxyPath:  m.proxyPath,
+            filename:   m.filename,
+            rating:     m.rating,
+            colorLabel: m.colorLabel,
+            hasProxy:   m.hasProxy,
+            previewKey: m.previewKey,
+        }, StackView.Immediate)
+    }
+    function navigateNext() { navigateTo(root.modelIndex + 1) }
+    function navigatePrev() { navigateTo(root.modelIndex - 1) }
 
     // ── edit push logic ───────────────────────────────────────────────────────
     function pushEdits() {

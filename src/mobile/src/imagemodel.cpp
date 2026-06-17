@@ -153,6 +153,23 @@ void ImageModel::syncMissingPreviews()
     }
 }
 
+QVariantMap ImageModel::get(int index) const
+{
+    if (index < 0 || index >= m_entries.size())
+        return {};
+    const ImageEntry &e = m_entries.at(index);
+    return {
+        {"rawPath",          e.rawPath},
+        {"proxyPath",        e.proxyPath},
+        {"previewThumbPath", e.previewThumbPath},
+        {"filename",         e.filename},
+        {"rating",           e.rating},
+        {"colorLabel",       e.colorLabel},
+        {"hasProxy",         e.hasProxy},
+        {"previewKey",       e.previewKey},
+    };
+}
+
 QStringList ImageModel::allRawPaths() const
 {
     QStringList result;

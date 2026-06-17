@@ -233,6 +233,7 @@ Page {
                                 rootPage.selectionMode = false
                         } else {
                             rootPage.StackView.view?.push("DarkroomView.qml", {
+                                modelIndex: index,
                                 rawPath:    model.rawPath,
                                 proxyPath:  model.proxyPath,
                                 filename:   model.filename,

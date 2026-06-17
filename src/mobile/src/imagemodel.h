@@ -41,6 +41,8 @@ public:
     Q_INVOKABLE void setRating(const QString &rawPath, int rating);
     Q_INVOKABLE void setColorLabel(const QString &rawPath, int label);
     Q_INVOKABLE QStringList allRawPaths() const;
+    // Return all fields for the entry at index as a QVariantMap (for QML darkroom navigation).
+    Q_INVOKABLE QVariantMap get(int index) const;
 
     // Scan an existing directory for *.proxy.avif files on startup
     void scanDirectory(const QString &dir);
