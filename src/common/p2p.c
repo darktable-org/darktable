@@ -120,12 +120,11 @@ typedef struct _import_ctx_t
   char path[PATH_MAX];
 } _import_ctx_t;
 
-// Coalescing flag: 0 = no callback pending, 1 = callback already queued.
-// Prevents queueing 30 identical idle callbacks when a full manifest syncs.
+// Coalescing flag: 0 = no filmrolls signal pending, 1 = already queued.
+// Prevents 30 rapid-fire DT_SIGNAL_FILMROLLS_CHANGED when a manifest syncs.
 static gint _filmrolls_refresh_pending = 0;
 
-// Main-thread callback: refresh film rolls after a batch of p2p imports.
-// Only one of these is ever queued at a time (see _filmrolls_refresh_pending).
+// Main-thread callback: one-shot filmrolls refresh after a p2p import batch.
 static gboolean _import_refresh_filmrolls_main_thread(gpointer data)
 {
   (void)data;
@@ -134,16 +133,19 @@ static gboolean _import_refresh_filmrolls_main_thread(gpointer data)
   return G_SOURCE_REMOVE;
 }
 
-// Background job: imports a remote image into the darktable library.
-static int32_t _import_image_job_run(dt_job_t *job)
+// Main-thread callback: import one image into the darktable library.
+//
+// Running on the main thread (via g_main_context_invoke_full) serializes all
+// dt_image_import calls through the GTK event loop, eliminating the data races
+// that occur when the job queue runs multiple _import_image_job_run calls
+// concurrently — those concurrent calls corrupt the image/mipmap caches that
+// the main thread reads while rendering, causing SIGSEGV.
+static gboolean _import_on_main_thread(gpointer data)
 {
-  _import_ctx_t *ctx = dt_control_job_get_params(job);
+  _import_ctx_t *ctx = data;
 
-  // Bail out before touching the filesystem if the file isn't present locally.
-  // Importing a non-existent path can trigger NFS/autofs mounts that stall
-  // the main thread via GUnixMountMonitor → dt_film_set_folder_status.
-  // Exception: if a .proxy.avif sidecar exists, proceed — _image_import_internal
-  // will fall back to the proxy transparently and record the canonical raw name.
+  // Skip if neither the raw nor the .proxy.avif sidecar is present locally.
+  // Avoids NFS/autofs stalls from probing non-existent paths.
   if(!g_file_test(ctx->path, G_FILE_TEST_EXISTS))
   {
     char proxy_path[PATH_MAX];
@@ -151,7 +153,8 @@ static int32_t _import_image_job_run(dt_job_t *job)
     if(!g_file_test(proxy_path, G_FILE_TEST_EXISTS))
     {
       dt_print(DT_DEBUG_IMAGEIO, "[p2p] import skipped, file not found: '%s'", ctx->path);
-      return 0;
+      free(ctx);
+      return G_SOURCE_REMOVE;
     }
   }
 
@@ -162,13 +165,12 @@ static int32_t _import_image_job_run(dt_job_t *job)
 
   if(dt_is_valid_filmid(fid))
   {
-    // raise_signals=FALSE: we dispatch a single coalesced filmrolls signal
-    // via g_idle_add instead of one DT_SIGNAL_IMAGE_IMPORT per image.
+    // raise_signals=FALSE: we raise a coalesced DT_SIGNAL_FILMROLLS_CHANGED
+    // via idle callback instead of one DT_SIGNAL_IMAGE_IMPORT per image.
     const dt_imgid_t imgid = dt_image_import(fid, ctx->path, TRUE, FALSE);
     if(dt_is_valid_imgid(imgid))
     {
       dt_print(DT_DEBUG_IMAGEIO, "[p2p] imported image id=%d '%s'", imgid, ctx->path);
-      // Only queue one refresh callback regardless of how many images import in parallel.
       if(g_atomic_int_compare_and_exchange(&_filmrolls_refresh_pending, 0, 1))
         g_idle_add(_import_refresh_filmrolls_main_thread, NULL);
     }
@@ -179,6 +181,22 @@ static int32_t _import_image_job_run(dt_job_t *job)
     dt_print(DT_DEBUG_IMAGEIO, "[p2p] could not find/create film for '%s'", ctx->path);
   }
 
+  free(ctx);
+  return G_SOURCE_REMOVE;
+}
+
+// Shim so _xmp_reload_job_run can fall back to importing on the main thread
+// when the image isn't in the library yet (same path as _import_on_main_thread).
+static int32_t _import_image_job_run(dt_job_t *job)
+{
+  _import_ctx_t *ctx = dt_control_job_get_params(job);
+  _import_ctx_t *copy = malloc(sizeof(*copy));
+  if(copy)
+  {
+    g_strlcpy(copy->path, ctx->path, sizeof(copy->path));
+    g_main_context_invoke_full(NULL, G_PRIORITY_LOW,
+                               _import_on_main_thread, copy, NULL);
+  }
   return 0;
 }
 
@@ -248,10 +266,11 @@ static void _p2p_queue_import(const char *path)
   _import_ctx_t *ctx = malloc(sizeof(*ctx));
   if(!ctx) return;
   g_strlcpy(ctx->path, path, sizeof(ctx->path));
-  dt_job_t *job = dt_control_job_create(&_import_image_job_run, "p2p import");
-  if(!job) { free(ctx); return; }
-  dt_control_job_set_params(job, ctx, free);
-  dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
+  // Run on the main thread at low priority so concurrent manifest syncs are
+  // serialized through the GTK event loop rather than running simultaneously
+  // in the job pool (concurrent dt_image_import calls corrupt shared caches).
+  g_main_context_invoke_full(NULL, G_PRIORITY_LOW,
+                             _import_on_main_thread, ctx, NULL);
 }
 
 static void _p2p_queue_xmp_reload(const char *path)
