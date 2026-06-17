@@ -836,6 +836,29 @@ gboolean dt_p2p_is_running(void)
   return ok;
 }
 
+void dt_p2p_accept_peer(const char *fingerprint)
+{
+  if(!fingerprint || !fingerprint[0]) return;
+
+  GString *ep = g_string_new(NULL);
+  for(const char *p = fingerprint; *p; p++)
+  {
+    if(*p == '"' || *p == '\\') g_string_append_c(ep, '\\');
+    g_string_append_c(ep, *p);
+  }
+
+  char *json = g_strdup_printf(
+    "{\"type\":\"accept_peer\",\"data\":{\"fingerprint\":\"%s\"}}", ep->str);
+
+  g_mutex_lock(&_p2p.lock);
+  if(_connect_socket())
+    _send_json(json);
+  g_mutex_unlock(&_p2p.lock);
+
+  g_free(json);
+  g_string_free(ep, TRUE);
+}
+
 void dt_p2p_restart(void)
 {
   dt_p2p_cleanup();

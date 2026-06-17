@@ -165,11 +165,12 @@ func newServerTLSConfig(cert tls.Certificate) *tls.Config {
 }
 
 // newClientTLSConfig returns a TLS config for outbound peer connections.
-// Chain validation is skipped; instead the server's public key fingerprint
-// must be in the allowed set.
-func newClientTLSConfig(cert tls.Certificate, allowed map[string]bool) *tls.Config {
+// Chain validation is skipped; instead the server's public key fingerprint is
+// checked against the daemon's live allowedKeyFPs map under its mutex, so newly
+// accepted peers are trusted immediately without restarting the daemon.
+func (d *daemon) newClientTLS() *tls.Config {
 	return &tls.Config{
-		Certificates:       []tls.Certificate{cert},
+		Certificates:       []tls.Certificate{d.tlsCert},
 		InsecureSkipVerify: true, //nolint:gosec — deliberate; fingerprint-pinned below
 		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
 			for _, raw := range rawCerts {
@@ -177,12 +178,73 @@ func newClientTLSConfig(cert tls.Certificate, allowed map[string]bool) *tls.Conf
 				if err != nil {
 					continue
 				}
-				if allowed[pubkeyFingerprint(c)] {
+				fp := pubkeyFingerprint(c)
+				d.allowedKeyFPsMu.RLock()
+				ok := d.allowedKeyFPs[fp]
+				d.allowedKeyFPsMu.RUnlock()
+				if ok {
 					return nil
 				}
 			}
 			return fmt.Errorf("server TLS public key not in allowed list")
 		},
+	}
+}
+
+// probePeerFingerprint dials the peer's HTTPS endpoint without certificate
+// verification and returns the server's public key fingerprint.  Used to
+// identify untrusted peers so the user can choose to accept them.
+func probePeerFingerprint(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil || u.Scheme != "https" {
+		return ""
+	}
+	host := u.Host
+	if _, _, err := net.SplitHostPort(host); err != nil {
+		host = fmt.Sprintf("%s:%d", host, proxyHTTPPort)
+	}
+	conn, err := tls.DialWithDialer(
+		&net.Dialer{Timeout: 3 * time.Second}, "tcp", host,
+		&tls.Config{InsecureSkipVerify: true}, //nolint:gosec — fingerprint probe only
+	)
+	if err != nil {
+		return ""
+	}
+	defer conn.Close()
+	certs := conn.ConnectionState().PeerCertificates
+	if len(certs) == 0 {
+		return ""
+	}
+	return pubkeyFingerprint(certs[0])
+}
+
+// recordCandidatePeer stores a discovered-but-untrusted peer and persists the
+// list to ~/.config/darktable/peer.candidates so the preferences UI can read it.
+func (d *daemon) recordCandidatePeer(peerURL, fp string) {
+	d.allowedKeyFPsMu.RLock()
+	already := d.allowedKeyFPs[fp]
+	d.allowedKeyFPsMu.RUnlock()
+	if already {
+		return
+	}
+
+	d.candidatesMu.Lock()
+	if d.candidatePeers == nil {
+		d.candidatePeers = make(map[string]candidatePeer)
+	}
+	if _, exists := d.candidatePeers[fp]; !exists {
+		d.candidatePeers[fp] = candidatePeer{URL: peerURL, Fingerprint: fp, SeenAt: time.Now()}
+		log.Printf("[peer] candidate (untrusted) peer %s  fp=%s", peerURL, fp)
+	}
+	snapshot := make([]candidatePeer, 0, len(d.candidatePeers))
+	for _, c := range d.candidatePeers {
+		snapshot = append(snapshot, c)
+	}
+	d.candidatesMu.Unlock()
+
+	if cfgDir, err := os.UserConfigDir(); err == nil {
+		data, _ := json.Marshal(snapshot)
+		_ = os.WriteFile(filepath.Join(cfgDir, "darktable", "peer.candidates"), data, 0644)
 	}
 }
 
@@ -203,6 +265,14 @@ var reDatetime = regexp.MustCompile(
 	`<(?:exif:DateTimeOriginal|exif:DateTimeDigitized|xmp:CreateDate)[^>]*>([^<]+)<`)
 
 // eventSub is a darktable client subscribed to push events.
+// candidatePeer is a peer whose TLS fingerprint was seen but is not yet in the
+// allowed list.  Stored so the preferences UI can offer the user an Accept button.
+type candidatePeer struct {
+	URL         string    `json:"url"`
+	Fingerprint string    `json:"fingerprint"`
+	SeenAt      time.Time `json:"seen_at"`
+}
+
 type eventSub struct {
 	ch chan socketMsg
 }
@@ -250,10 +320,16 @@ type daemon struct {
 	syncedPeers   map[string]bool
 
 	// TLS identity and authentication.
-	tlsCert      tls.Certificate
-	authToken    string          // passphraseToken(passphrase) — sent as X-DT-Auth header
-	allowedKeyFPs map[string]bool // SHA256 SPKI fingerprints of trusted peer servers
-	tlsClient    *http.Client    // TLS-configured client for all outbound peer requests
+	tlsCert       tls.Certificate
+	authToken     string          // passphraseToken(passphrase) — sent as X-DT-Auth header
+	allowedKeyFPsMu sync.RWMutex
+	allowedKeyFPs  map[string]bool // SHA256 SPKI fingerprints of trusted peer servers
+	tlsClient     *http.Client    // TLS-configured client for all outbound peer requests
+
+	// Candidate peers: discovered but not yet trusted (fingerprint not in allowed set).
+	// Presented to the user in the preferences UI for explicit acceptance.
+	candidatesMu   sync.RWMutex
+	candidatePeers map[string]candidatePeer // fingerprint → candidate
 
 	// xmp dedup: canonical_path → last mtime synced
 	xmpMu          sync.Mutex
@@ -467,13 +543,6 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 
 	authTok := passphraseToken(passphrase)
 
-	tlsClient := &http.Client{
-		Timeout: 10 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: newClientTLSConfig(tlsCert, allowed),
-		},
-	}
-
 	h, err := libp2p.New(
 		libp2p.Identity(priv),
 		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"),
@@ -521,13 +590,21 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		tlsCert:         tlsCert,
 		authToken:       authTok,
 		allowedKeyFPs:   allowed,
-		tlsClient:       tlsClient,
 		xmpSeen:         make(map[string]time.Time),
 		xmpSuppressFrom: make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
 		announcedProxies: make(map[string]struct{}),
 		localToRemote:    make(map[string]string),
 		displayICC:       loadDisplayICC(displayICCPath),
+	}
+
+	// Build TLS client after d is created so newClientTLS can close over d
+	// and read allowedKeyFPs dynamically (enabling live accept_peer updates).
+	d.tlsClient = &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: d.newClientTLS(),
+		},
 	}
 
 	go d.initExternalAccess()
@@ -881,6 +958,59 @@ func (d *daemon) handleConn(conn net.Conn) {
 			d.peersMu.RUnlock()
 			resp, _ := json.Marshal(ids)
 			enc.Encode(socketMsg{Type: "peers", Data: resp})
+
+		case "list_candidates":
+			d.candidatesMu.RLock()
+			snapshot := make([]candidatePeer, 0, len(d.candidatePeers))
+			for _, c := range d.candidatePeers {
+				snapshot = append(snapshot, c)
+			}
+			d.candidatesMu.RUnlock()
+			resp, _ := json.Marshal(snapshot)
+			enc.Encode(socketMsg{Type: "candidates", Data: resp})
+
+		case "accept_peer":
+			var req struct {
+				Fingerprint string `json:"fingerprint"`
+			}
+			if err := json.Unmarshal(msg.Data, &req); err != nil || req.Fingerprint == "" {
+				continue
+			}
+			// Add to the live allowed set so the TLS client trusts it immediately.
+			d.allowedKeyFPsMu.Lock()
+			d.allowedKeyFPs[req.Fingerprint] = true
+			d.allowedKeyFPsMu.Unlock()
+			// Persist to peer.keys.
+			if cfgDir, err := os.UserConfigDir(); err == nil {
+				keysPath := filepath.Join(cfgDir, "darktable", "peer.keys")
+				f, ferr := os.OpenFile(keysPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if ferr == nil {
+					fmt.Fprintln(f, req.Fingerprint)
+					f.Close()
+				}
+			}
+			// Remove from candidates and update the file.
+			d.candidatesMu.Lock()
+			var peerURL string
+			if c, ok := d.candidatePeers[req.Fingerprint]; ok {
+				peerURL = c.URL
+				delete(d.candidatePeers, req.Fingerprint)
+			}
+			remaining := make([]candidatePeer, 0, len(d.candidatePeers))
+			for _, c := range d.candidatePeers {
+				remaining = append(remaining, c)
+			}
+			d.candidatesMu.Unlock()
+			if cfgDir, err := os.UserConfigDir(); err == nil {
+				data, _ := json.Marshal(remaining)
+				_ = os.WriteFile(filepath.Join(cfgDir, "darktable", "peer.candidates"), data, 0644)
+			}
+			log.Printf("[peer] accepted fp=%s  url=%s", req.Fingerprint, peerURL)
+			// Immediately attempt a sync now that the peer is trusted.
+			if peerURL != "" {
+				go d.syncWithPeer(peerURL)
+			}
+			enc.Encode(socketMsg{Type: "accepted", Data: json.RawMessage(`{"ok":true}`)})
 
 		case "request_sync":
 			// Mobile app requests a full re-sync (e.g. after clearing local cache or
@@ -1475,6 +1605,15 @@ func (d *daemon) syncWithPeer(baseURL string) {
 		d.syncedPeersMu.Lock()
 		delete(d.syncedPeers, baseURL)
 		d.syncedPeersMu.Unlock()
+		// If the failure is a fingerprint rejection, probe the peer's cert so
+		// we can present it to the user for acceptance in preferences.
+		if strings.Contains(err.Error(), "not in allowed list") {
+			go func(u string) {
+				if fp := probePeerFingerprint(u); fp != "" {
+					d.recordCandidatePeer(u, fp)
+				}
+			}(baseURL)
+		}
 		return
 	}
 	if resp.StatusCode != 200 {
