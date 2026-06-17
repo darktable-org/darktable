@@ -160,6 +160,7 @@ static gboolean _import_on_main_thread(gpointer data)
 
   char *dir = g_path_get_dirname(ctx->path);
   dt_film_t film;
+  dt_film_init(&film);
   dt_filmid_t fid = dt_film_new(&film, dir);
   g_free(dir);
 
