@@ -33,6 +33,8 @@ public slots:
     void pushXmp(const QString &rawPath, const QString &xmpContent);
     void announceProxy(const QString &rawPath);
     void fetchPreview(const QString &rawPath, const QString &size = QLatin1String("thumb"));
+    // Ask daemon to re-sync with all known peers (discover new images, refresh previews).
+    void requestSync();
 
     // Commands with a response — result arrives via signal
     void fetchProxy(const QString &rawPath);

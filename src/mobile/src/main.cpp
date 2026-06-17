@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QTimer>
 
 #include "avifimageprovider.h"
 #include "daemonmanager.h"
@@ -53,6 +54,26 @@ int main(int argc, char *argv[])
                          client.setSocketPath(daemon.socketPath());
                          client.connectToDaemon();
                          model.scanDirectory(daemon.importDir());
+                         // Trigger an immediate peer sync so images appear without
+                         // waiting for the first gossip announce or manifest poll.
+                         QTimer::singleShot(3000, &client, [&client]() {
+                             client.requestSync();
+                         });
+                     });
+
+    // Periodic background sync: every 45 s ask the daemon to re-check peers for
+    // new images and fresher previews, then scan the model for any entries that
+    // still have no local thumbnail and request them.
+    auto *syncTimer = new QTimer(&app);
+    syncTimer->setInterval(45 * 1000);
+    QObject::connect(syncTimer, &QTimer::timeout, &client, [&client, &model]() {
+        client.requestSync();
+        model.syncMissingPreviews();
+    });
+    QObject::connect(&client, &P2PClient::connectedChanged, syncTimer,
+                     [&client, syncTimer]() {
+                         if (client.isConnected()) syncTimer->start();
+                         else syncTimer->stop();
                      });
 
     QQmlApplicationEngine engine;

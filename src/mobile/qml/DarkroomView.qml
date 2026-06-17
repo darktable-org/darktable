@@ -54,10 +54,14 @@ Page {
             anchors.fill: parent
             anchors.leftMargin: 4
             ToolButton {
-                icon.name: "arrow-back"
-                text: "‹"
-                font.pixelSize: 22
-                onClicked: StackView.view.pop()
+                icon.source: "icons/back.svg"
+                icon.color:  "white"
+                icon.width:  24
+                icon.height: 24
+                display: AbstractButton.IconOnly
+                // StackView.view is only attached to the Page itself, not to
+                // items inside header:. Reference it via the page id.
+                onClicked: root.StackView.view.pop()
             }
             Label {
                 Layout.fillWidth: true

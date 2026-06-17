@@ -874,6 +874,16 @@ func (d *daemon) handleConn(conn net.Conn) {
 			resp, _ := json.Marshal(ids)
 			enc.Encode(socketMsg{Type: "peers", Data: resp})
 
+		case "request_sync":
+			// Mobile app requests a full re-sync (e.g. after clearing local cache or
+			// on periodic background refresh). Re-visits every known peer so any new
+			// images are announced and missing previews are re-fetched.
+			go func() {
+				for _, u := range d.peersToSync() {
+					go d.syncWithPeer(u)
+				}
+			}()
+
 		case "ping":
 			enc.Encode(socketMsg{Type: "pong"})
 
@@ -1115,6 +1125,12 @@ func (d *daemon) subscribeProxy() {
 		log.Printf("[proxy] peer %s announced %d proxies at %s",
 			m.ReceivedFrom.ShortString(), len(ann.Paths), ann.BaseURL)
 
+		// Notify the gallery immediately for every announced path, then fetch.
+		for _, path := range ann.Paths {
+			localPath := d.localDestination(path)
+			result, _ := json.Marshal(map[string]string{"path": localPath})
+			d.broadcast(socketMsg{Type: "image_imported", Data: result})
+		}
 		for _, path := range ann.Paths {
 			localPath := d.localDestination(path)
 			if _, err := os.Stat(localPath + ".proxy.avif"); err == nil {
@@ -1204,19 +1220,18 @@ func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
 func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 	localPath := d.localDestination(remotePath)
 
+	// Fetch the thumbnail JPEG first — it's small and lets the mobile gallery
+	// show a preview immediately, even while the larger AVIF is still downloading.
+	d.fetchPreviewJPEG(remotePath, localPath, baseURL, "thumb")
+
 	if !d.downloadProxy(remotePath, localPath, baseURL) {
 		return
 	}
 
-	// Fetch the thumbnail JPEG preview in the background so the mobile gallery
-	// can display images instantly without MediaCodec decoding.
-	go d.fetchPreviewJPEG(remotePath, localPath, baseURL, "thumb")
-
 	d.addToLocalIndex(localPath)
 
-	// Broadcast the canonical raw path so darktable imports 4F9A9030.CR3 and
-	// reads 4F9A9030.CR3.xmp for develop settings.  _image_import_internal
-	// falls back to the .proxy.avif transparently when the raw is absent.
+	// Re-broadcast so darktable (desktop) imports the proxy path and the mobile
+	// model updates hasProxy = true once the AVIF is locally present.
 	result, _ := json.Marshal(map[string]string{"path": localPath})
 	d.broadcast(socketMsg{Type: "image_imported", Data: result})
 }
@@ -1330,19 +1345,37 @@ func (d *daemon) announceProxies() {
 }
 
 func (d *daemon) publishProxyAnnounce() {
-	if d.proxyDir == "" {
-		return
-	}
+	seen := make(map[string]struct{})
 	var paths []string
-	filepath.Walk(d.proxyDir, func(p string, fi os.FileInfo, err error) error {
-		if err != nil || fi.IsDir() {
+
+	addPath := func(raw string) {
+		if _, dup := seen[raw]; dup {
+			return
+		}
+		if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
+			seen[raw] = struct{}{}
+			paths = append(paths, raw)
+		}
+	}
+
+	if d.proxyDir != "" {
+		filepath.Walk(d.proxyDir, func(p string, fi os.FileInfo, err error) error {
+			if err != nil || fi.IsDir() {
+				return nil
+			}
+			if strings.HasSuffix(p, ".proxy.avif") {
+				addPath(strings.TrimSuffix(p, ".proxy.avif"))
+			}
 			return nil
-		}
-		if strings.HasSuffix(p, ".proxy.avif") {
-			paths = append(paths, strings.TrimSuffix(p, ".proxy.avif"))
-		}
-		return nil
-	})
+		})
+	}
+
+	d.announcedProxiesMu.RLock()
+	for raw := range d.announcedProxies {
+		addPath(raw)
+	}
+	d.announcedProxiesMu.RUnlock()
+
 	ann := proxyAnnounce{
 		SenderID: d.host.ID().String(),
 		BaseURL:  d.localProxyURL(),
@@ -1485,12 +1518,22 @@ func (d *daemon) syncWithPeer(baseURL string) {
 		}
 	}
 
-	// Download any proxy the peer has that we don't.  For proxies we already
-	// have, check whether the peer's JPEG preview is fresher than ours.
+	// Immediately notify subscribers of every image the peer knows about so the
+	// mobile gallery populates at once without waiting for AVIF downloads.
+	// image_imported deduplicates on the receiver side, so re-announcing on
+	// every sync is harmless.
+	for _, path := range m.Paths {
+		localPath := d.localDestination(path)
+		result, _ := json.Marshal(map[string]string{"path": localPath})
+		d.broadcast(socketMsg{Type: "image_imported", Data: result})
+	}
+
+	// Now start background downloads: thumbnail JPEG (fast) then AVIF proxy.
 	missing := 0
 	for _, path := range m.Paths {
 		localPath := d.localDestination(path)
 		if _, err := os.Stat(localPath + ".proxy.avif"); err == nil {
+			// AVIF already present; just refresh the thumbnail if it changed.
 			go d.fetchPreviewJPEG(path, localPath, baseURL, "thumb")
 			continue
 		}
@@ -1777,12 +1820,13 @@ func (d *daemon) servePreview(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if mipmapData != nil {
-			// Thumbnails: mipmap JPEG is fine for display but lacks the sRGB
-			// ICC marker. Inject it in-process so Qt/Android renders with the
-			// correct colour transform.
-			mipmapData = d.injectDisplayICC(mipmapData)
+			// Thumbnails: mipmap JPEG lacks an ICC marker. Inject sRGB so mobile
+			// apps render consistently with the full preview (also sRGB). Using
+			// the desktop display ICC here would make the gallery look vivid but
+			// sharing would appear muted by comparison in non-colour-managed apps.
+			mipmapData = injectICCProfile(mipmapData, compactSRGBICC())
 			if err := os.WriteFile(cachePath, mipmapData, 0644); err == nil {
-				log.Printf("[preview] mipmap+ICC → cache '%s' size=%s (%d KB)",
+				log.Printf("[preview] mipmap+sRGB-ICC → cache '%s' size=%s (%d KB)",
 					filepath.Base(rawPath), sizeParam, len(mipmapData)/1024)
 			}
 		} else if _, err := exportWithDarktableCLI(rawPath, cachePath, maxDim); err != nil {

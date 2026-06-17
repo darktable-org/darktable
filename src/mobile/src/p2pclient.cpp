@@ -182,6 +182,11 @@ void P2PClient::fetchProxy(const QString &rawPath)
         });
 }
 
+void P2PClient::requestSync()
+{
+    sendFireAndForget({{"type", "request_sync"}});
+}
+
 void P2PClient::listPeers()
 {
     sendWithResponse(

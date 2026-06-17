@@ -71,8 +71,9 @@ void ImageModel::addImage(const QString &rawPath)
     endInsertRows();
     emit countChanged();
 
-    // If we have a proxy but no JPEG preview yet, ask the daemon to fetch one.
-    if (e.hasProxy && e.previewThumbPath.isEmpty())
+    // Always request a thumbnail when we don't have one locally — the daemon
+    // can fetch it from a peer even if the full AVIF isn't downloaded yet.
+    if (e.previewThumbPath.isEmpty())
         emit previewNeeded(rawPath);
 }
 
@@ -115,6 +116,14 @@ void ImageModel::setRating(const QString &rawPath, int rating)
     m_entries[i].rating = rating;
     const QModelIndex idx = index(i);
     emit dataChanged(idx, idx, {RatingRole});
+}
+
+void ImageModel::syncMissingPreviews()
+{
+    for (const ImageEntry &e : m_entries) {
+        if (e.previewThumbPath.isEmpty() || !QFileInfo::exists(e.previewThumbPath))
+            emit previewNeeded(e.rawPath);
+    }
 }
 
 QStringList ImageModel::allRawPaths() const

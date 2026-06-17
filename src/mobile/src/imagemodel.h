@@ -50,6 +50,9 @@ public slots:
     void updateProxy(const QString &rawPath, const QString &proxyPath, bool ok);
     void updateXmp(const QString &rawPath);
     void updatePreview(const QString &rawPath);
+    // Emit previewNeeded for every entry that has no local thumbnail JPEG.
+    // Call periodically to recover from missed updates.
+    void syncMissingPreviews();
 
 signals:
     void countChanged();
