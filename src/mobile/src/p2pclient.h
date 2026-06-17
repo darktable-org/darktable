@@ -35,6 +35,8 @@ public slots:
     void fetchPreview(const QString &rawPath, const QString &size = QLatin1String("thumb"));
     // Ask daemon to re-sync with all known peers (discover new images, refresh previews).
     void requestSync();
+    // Delete local preview cache and re-download from peer (used when XMP is newer than JPEG).
+    void forceRefreshPreview(const QString &rawPath);
 
     // Commands with a response — result arrives via signal
     void fetchProxy(const QString &rawPath);

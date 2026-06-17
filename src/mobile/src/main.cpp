@@ -48,6 +48,11 @@ int main(int argc, char *argv[])
                          client.fetchPreview(rawPath, QStringLiteral("thumb"));
                      });
 
+    // When the XMP sidecar is newer than the cached JPEG, force a fresh render
+    // from the peer desktop (which has processed the latest edits).
+    QObject::connect(&model, &ImageModel::previewStale, &client,
+                     &P2PClient::forceRefreshPreview);
+
     // Start daemon then connect the client socket.
     QObject::connect(&daemon, &DaemonManager::ready, &client,
                      [&daemon, &client, &model]() {

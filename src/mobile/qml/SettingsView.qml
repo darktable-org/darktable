@@ -7,6 +7,15 @@ Page {
     objectName: "settings"
     background: Rectangle { color: "#111111" }
 
+    // Refresh peer statuses while this tab is visible.
+    Timer {
+        interval: 30000
+        repeat: true
+        running: parent.visible && p2p.connected
+        triggeredOnStart: true
+        onTriggered: p2p.requestSync()
+    }
+
     header: ToolBar {
         Material.background: "#1e1e1e"
         Label {

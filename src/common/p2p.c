@@ -120,6 +120,18 @@ typedef struct _import_ctx_t
   char path[PATH_MAX];
 } _import_ctx_t;
 
+// Main-thread callback: raises the import signals after the DB write is done.
+// GTK/GLib signal handlers must run on the main thread to avoid data races
+// with the GTK rendering pipeline (gtk_render_background etc.).
+static gboolean _import_raise_signals_main_thread(gpointer data)
+{
+  const dt_imgid_t imgid = GPOINTER_TO_INT(data);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_IMPORT, imgid);
+  GList *imgs = g_list_prepend(NULL, GINT_TO_POINTER(imgid));
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
+  return G_SOURCE_REMOVE;
+}
+
 // Background job: imports a remote image into the darktable library.
 static int32_t _import_image_job_run(dt_job_t *job)
 {
@@ -148,9 +160,14 @@ static int32_t _import_image_job_run(dt_job_t *job)
 
   if(dt_is_valid_filmid(fid))
   {
-    const dt_imgid_t imgid = dt_image_import(fid, ctx->path, TRUE, TRUE);
+    // raise_signals=FALSE: GTK signal handlers must run on the main thread.
+    // We dispatch them via g_idle_add after the DB write completes.
+    const dt_imgid_t imgid = dt_image_import(fid, ctx->path, TRUE, FALSE);
     if(dt_is_valid_imgid(imgid))
+    {
       dt_print(DT_DEBUG_IMAGEIO, "[p2p] imported image id=%d '%s'", imgid, ctx->path);
+      g_idle_add(_import_raise_signals_main_thread, GINT_TO_POINTER(imgid));
+    }
     dt_film_cleanup(&film);
   }
   else

@@ -169,6 +169,20 @@ void P2PClient::fetchPreview(const QString &rawPath, const QString &size)
     });
 }
 
+void P2PClient::forceRefreshPreview(const QString &rawPath)
+{
+    // push_preview deletes the local cache then re-downloads from the peer,
+    // so the desktop's latest render (reflecting recent XMP edits) is fetched.
+    sendFireAndForget({
+        {"type", "push_preview"},
+        {"data", QJsonObject{{"path", rawPath}, {"size", "full"}}}
+    });
+    sendFireAndForget({
+        {"type", "push_preview"},
+        {"data", QJsonObject{{"path", rawPath}, {"size", "thumb"}}}
+    });
+}
+
 void P2PClient::fetchProxy(const QString &rawPath)
 {
     sendWithResponse(

@@ -1371,34 +1371,19 @@ func (d *daemon) announceProxies() {
 }
 
 func (d *daemon) publishProxyAnnounce() {
+	// Only publish what darktable has explicitly announced — no directory scan.
+	// proxyDir is a download destination only, not a discovery source.
 	seen := make(map[string]struct{})
 	var paths []string
 
-	addPath := func(raw string) {
-		if _, dup := seen[raw]; dup {
-			return
-		}
-		if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
-			seen[raw] = struct{}{}
-			paths = append(paths, raw)
-		}
-	}
-
-	if d.proxyDir != "" {
-		filepath.Walk(d.proxyDir, func(p string, fi os.FileInfo, err error) error {
-			if err != nil || fi.IsDir() {
-				return nil
-			}
-			if strings.HasSuffix(p, ".proxy.avif") {
-				addPath(strings.TrimSuffix(p, ".proxy.avif"))
-			}
-			return nil
-		})
-	}
-
 	d.announcedProxiesMu.RLock()
 	for raw := range d.announcedProxies {
-		addPath(raw)
+		if _, dup := seen[raw]; !dup {
+			if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
+				seen[raw] = struct{}{}
+				paths = append(paths, raw)
+			}
+		}
 	}
 	d.announcedProxiesMu.RUnlock()
 
@@ -1684,6 +1669,17 @@ func (d *daemon) localProxyURL() string {
 	return fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort)
 }
 
+// isAnnouncedPath reports whether rawPath was announced by darktable, meaning
+// it exists in the darktable database. Only announced paths may be served to
+// peers — this prevents the daemon from acting as a general-purpose file
+// server even for authenticated callers.
+func (d *daemon) isAnnouncedPath(rawPath string) bool {
+	d.announcedProxiesMu.RLock()
+	_, ok := d.announcedProxies[rawPath]
+	d.announcedProxiesMu.RUnlock()
+	return ok
+}
+
 func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -1700,17 +1696,16 @@ func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
 
 func (d *daemon) serveProxy(w http.ResponseWriter, r *http.Request) {
 	canonicalPath := r.URL.Query().Get("path")
-	if canonicalPath == "" {
-		http.Error(w, "missing path", 400)
+	if canonicalPath == "" || strings.Contains(canonicalPath, "..") {
+		http.Error(w, "bad request", 400)
 		return
 	}
-	proxyPath := canonicalPath + ".proxy.avif"
-	if strings.Contains(proxyPath, "..") {
-		http.Error(w, "forbidden", 403)
+	if !d.isAnnouncedPath(canonicalPath) {
+		http.Error(w, "not found", 404)
 		return
 	}
 	log.Printf("[http] serve proxy '%s' to %s", filepath.Base(canonicalPath), r.RemoteAddr)
-	http.ServeFile(w, r, proxyPath)
+	http.ServeFile(w, r, canonicalPath+".proxy.avif")
 }
 
 func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
@@ -1725,34 +1720,19 @@ func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Only serve what darktable has explicitly announced — no directory scan.
+	// proxyDir is a download destination only, not a discovery source.
 	seen := make(map[string]struct{})
 	var paths []string
 
-	addPath := func(raw string) {
-		if _, dup := seen[raw]; dup {
-			return
-		}
-		if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
-			seen[raw] = struct{}{}
-			paths = append(paths, raw)
-		}
-	}
-
-	if d.proxyDir != "" {
-		filepath.Walk(d.proxyDir, func(p string, fi os.FileInfo, err error) error {
-			if err != nil || fi.IsDir() {
-				return nil
-			}
-			if strings.HasSuffix(p, ".proxy.avif") {
-				addPath(strings.TrimSuffix(p, ".proxy.avif"))
-			}
-			return nil
-		})
-	}
-
 	d.announcedProxiesMu.RLock()
 	for raw := range d.announcedProxies {
-		addPath(raw)
+		if _, dup := seen[raw]; !dup {
+			if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
+				seen[raw] = struct{}{}
+				paths = append(paths, raw)
+			}
+		}
 	}
 	d.announcedProxiesMu.RUnlock()
 
@@ -1801,6 +1781,10 @@ func (d *daemon) servePreview(w http.ResponseWriter, r *http.Request) {
 	rawPath := r.URL.Query().Get("path")
 	if rawPath == "" || strings.Contains(rawPath, "..") {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !d.isAnnouncedPath(rawPath) {
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 

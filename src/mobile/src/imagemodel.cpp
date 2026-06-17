@@ -47,20 +47,45 @@ QHash<int,QByteArray> ImageModel::roleNames() const
 
 void ImageModel::addImage(const QString &rawPath)
 {
-    if (findByRaw(rawPath) >= 0)
-        return;  // already known
+    const QString thumbCandidate = rawPath + ".preview-thumb.jpg";
+    const QString avifCandidate  = rawPath + ".proxy.avif";
+    const bool thumbExists = QFileInfo::exists(thumbCandidate);
+    const bool avifExists  = QFileInfo::exists(avifCandidate);
+
+    const int existing = findByRaw(rawPath);
+    if (existing >= 0) {
+        // Update proxy/preview state for files that arrived since first add.
+        ImageEntry &e = m_entries[existing];
+        QVector<int> changed;
+
+        if (!e.hasProxy && avifExists) {
+            e.hasProxy  = true;
+            e.proxyPath = avifCandidate;
+            loadXmpFields(e);
+            changed << HasProxyRole << ProxyPathRole << RatingRole << ColorLabelRole;
+        }
+        if (e.previewThumbPath.isEmpty() && thumbExists) {
+            e.previewThumbPath = thumbCandidate;
+            e.previewKey++;
+            changed << PreviewThumbPathRole << PreviewKeyRole;
+        }
+        if (!changed.isEmpty())
+            emit dataChanged(index(existing), index(existing), changed);
+
+        if (e.previewThumbPath.isEmpty())
+            emit previewNeeded(rawPath);
+        return;
+    }
 
     ImageEntry e;
     e.rawPath  = rawPath;
     e.filename = QFileInfo(rawPath).fileName();
 
-    // Prefer an existing JPEG thumb preview for display; fall back to AVIF proxy.
-    const QString thumbCandidate = rawPath + ".preview-thumb.jpg";
-    if (QFileInfo::exists(thumbCandidate))
+    if (thumbExists) {
         e.previewThumbPath = thumbCandidate;
-
-    const QString avifCandidate = rawPath + ".proxy.avif";
-    if (QFileInfo::exists(avifCandidate)) {
+        e.previewKey = 1;  // thumb on disk → show immediately without waiting for preview_updated
+    }
+    if (avifExists) {
         e.proxyPath = avifCandidate;
         e.hasProxy  = true;
         loadXmpFields(e);
@@ -71,10 +96,10 @@ void ImageModel::addImage(const QString &rawPath)
     endInsertRows();
     emit countChanged();
 
-    // Always request a thumbnail when we don't have one locally — the daemon
-    // can fetch it from a peer even if the full AVIF isn't downloaded yet.
     if (e.previewThumbPath.isEmpty())
         emit previewNeeded(rawPath);
+    else
+        checkPreviewStaleness(rawPath);
 }
 
 void ImageModel::updateProxy(const QString &rawPath, const QString &proxyPath, bool ok)
@@ -107,6 +132,8 @@ void ImageModel::updateXmp(const QString &rawPath)
     loadXmpFields(m_entries[i]);
     const QModelIndex idx = index(i);
     emit dataChanged(idx, idx, {RatingRole, ColorLabelRole});
+    // XMP just arrived/updated — check if the cached preview is now stale.
+    checkPreviewStaleness(rawPath);
 }
 
 void ImageModel::setRating(const QString &rawPath, int rating)
@@ -188,4 +215,14 @@ void ImageModel::loadXmpFields(ImageEntry &e)
         e.rating     = rating;
         e.colorLabel = colorLabel;
     }
+}
+
+void ImageModel::checkPreviewStaleness(const QString &rawPath)
+{
+    const QString xmpPath   = rawPath + ".xmp";
+    const QString thumbPath = rawPath + ".preview-thumb.jpg";
+    if (!QFileInfo::exists(xmpPath) || !QFileInfo::exists(thumbPath))
+        return;
+    if (QFileInfo(xmpPath).lastModified() > QFileInfo(thumbPath).lastModified())
+        emit previewStale(rawPath);
 }

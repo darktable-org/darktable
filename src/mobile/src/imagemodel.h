@@ -57,10 +57,14 @@ public slots:
 signals:
     void countChanged();
     void previewNeeded(const QString &rawPath);
+    // Emitted when the .xmp sidecar is newer than the cached preview JPEG,
+    // meaning the desktop has unapplied edits that should trigger a re-render.
+    void previewStale(const QString &rawPath);
 
 private:
     int findByRaw(const QString &rawPath) const;
     void loadXmpFields(ImageEntry &e);
+    void checkPreviewStaleness(const QString &rawPath);
 
     QList<ImageEntry> m_entries;
 };

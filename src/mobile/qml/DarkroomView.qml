@@ -22,10 +22,10 @@ Page {
     property int  localColorLabel: colorLabel
     property bool dirty: localRating !== rating || localColorLabel !== colorLabel
 
-    // On open: fetch the full-size preview from peers so the darkroom shows a
-    // full-resolution JPEG instead of falling back to MediaCodec AVIF decode.
+    // On open: fetch full-size preview from peers. Works whether we have the
+    // AVIF proxy or just a thumbnail — display is JPEG-only on mobile.
     Component.onCompleted: {
-        if (root.hasProxy)
+        if (root.hasProxy || root.previewKey > 0)
             p2p.fetchPreview(root.rawPath, "full")
     }
 
@@ -75,7 +75,7 @@ Page {
                 icon.width:  24
                 icon.height: 24
                 display: AbstractButton.IconOnly
-                visible: root.hasProxy || root.previewKey > 0
+                visible: root.previewKey > 0
                 onClicked: shareHelper.shareRawPaths([root.rawPath])
             }
             ToolButton {
@@ -99,9 +99,9 @@ Page {
 
         Image {
             id: image
-            // No sourceSize → provider picks the full-res preview JPEG,
-            // falling back to the desktop AVIF plugin on non-Android.
-            source: (root.hasProxy || root.previewKey > 0)
+            // Display is JPEG-only on mobile: provider serves .preview-full.jpg
+            // falling back to .preview-thumb.jpg. AVIF decoding is not used.
+            source: root.previewKey > 0
                     ? ("image://avif" + root.rawPath + "?k=" + root.previewKey)
                     : ""
             anchors.centerIn: parent
@@ -120,8 +120,8 @@ Page {
 
             Label {
                 anchors.centerIn: parent
-                text: "No proxy available\nTap ↓ to request from peers"
-                visible: !root.hasProxy && root.previewKey <= 0
+                text: "No preview available\nTap ↓ to request from peers"
+                visible: root.previewKey <= 0
                 color: "#888"
                 font.pixelSize: 14
                 horizontalAlignment: Text.AlignHCenter
