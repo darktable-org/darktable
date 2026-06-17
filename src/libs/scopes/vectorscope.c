@@ -1172,7 +1172,8 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
 
   // FIXME: if have own drawable for vectorscope can set scroll handler directly
   // clamp as mouse wheel scrolls sometimes report a delta of 2
-  const int delta = CLAMP(delta_y, -1.0, 1.0);
+  const gdouble dominant_axis_delta = fabs(delta_x) > fabs(delta_y) ? -delta_x : delta_y;
+  const int delta = CLAMP(dominant_axis_delta, -1.0, 1.0);
   if(dt_modifier_is(state, GDK_SHIFT_MASK)) //( SHIFT+SCROLL
   {
     d->harmony_guide.width = (d->harmony_guide.width + delta + DT_COLOR_HARMONY_WIDTH_N)
