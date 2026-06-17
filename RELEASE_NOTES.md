@@ -86,12 +86,12 @@ changes (where available).
   split preview with area picker, a strength slider (DWT-based texture
   recovery for RGB denoise; linear source/denoised blend for raw
   denoise), batch processing with tiled inference, and automatic
-  library re-import with image grouping. Raw denoise writes a DNG (CFA
-  Bayer or LinearRaw); image denoise and upscale write a TIFF
-  embedding the output ICC profile. GPU acceleration is inherited from
-  the AI backend. If GPU inference fails (out of memory, unsupported
-  operator, execution provider crash), darktable automatically retries
-  on CPU.
+  library re-import with image grouping and tag propagation from the
+  source image. Raw denoise writes a DNG (CFA Bayer or LinearRaw);
+  image denoise and upscale write a TIFF embedding the output ICC profile.
+  GPU acceleration is inherited from the AI backend. If GPU inference
+  fails (out of memory, unsupported operator, execution provider crash),
+  darktable automatically retries on CPU.
 
 - Added `colorharmonizer` module that applies color harmony
   corrections in UCS color space, rotating hues toward a target

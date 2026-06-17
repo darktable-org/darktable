@@ -202,6 +202,7 @@
 #include "common/grouping.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/tags.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
 #include "develop/develop.h"
@@ -1003,6 +1004,18 @@ static void _import_image(const char *filename,
       dt_image_cache_read_release(src);
       if(source_is_leader)
         dt_grouping_change_representative(newid);
+
+      // propagate the source's user tags so the output stays visible
+      // in tag-based collections (TRUE = skip darktable|* auto-tags)
+      GList *src_tags = NULL;
+      if(dt_tag_get_attached(source_imgid, &src_tags, TRUE))
+      {
+        GList *targets = g_list_prepend(NULL, GINT_TO_POINTER(newid));
+        for(GList *t = src_tags; t; t = t->next)
+          dt_tag_attach_images(((dt_tag_t *)t->data)->id, targets, FALSE);
+        g_list_free(targets);
+      }
+      dt_tag_free_result(&src_tags);
     }
     // refresh the collection so the new image appears in the thumb grid
     dt_collection_update_query(darktable.collection,
