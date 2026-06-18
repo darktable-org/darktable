@@ -26,16 +26,17 @@ import (
 	"sync"
 	"time"
 
+	gocrypto "crypto"
+	"net/url"
+
 	libp2p "github.com/libp2p/go-libp2p"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	multiaddr "github.com/multiformats/go-multiaddr"
 	"golang.org/x/crypto/pbkdf2"
-	gocrypto "crypto"
-	"net/url"
 
 	"github.com/huin/goupnp/dcps/internetgateway1"
 	"github.com/huin/goupnp/dcps/internetgateway2"
@@ -44,12 +45,12 @@ import (
 )
 
 const (
-	xmpTopic        = "darktable/xmp/v1"
-	proxyTopic      = "darktable/proxy-announce/v1"
-	mdnsServiceTag  = "darktable-p2p"
-	pbkdf2Iter      = 100000
-	keyLen          = 32
-	proxyHTTPPort   = 17842
+	xmpTopic       = "darktable/xmp/v1"
+	proxyTopic     = "darktable/proxy-announce/v1"
+	mdnsServiceTag = "darktable-p2p"
+	pbkdf2Iter     = 100000
+	keyLen         = 32
+	proxyHTTPPort  = 17842
 	// passphraseHeader is required on every inbound HTTP request.
 	passphraseHeader = "X-DT-Auth"
 )
@@ -320,11 +321,11 @@ type daemon struct {
 	syncedPeers   map[string]bool
 
 	// TLS identity and authentication.
-	tlsCert       tls.Certificate
-	authToken     string          // passphraseToken(passphrase) — sent as X-DT-Auth header
+	tlsCert         tls.Certificate
+	authToken       string // passphraseToken(passphrase) — sent as X-DT-Auth header
 	allowedKeyFPsMu sync.RWMutex
-	allowedKeyFPs  map[string]bool // SHA256 SPKI fingerprints of trusted peer servers
-	tlsClient     *http.Client    // TLS-configured client for all outbound peer requests
+	allowedKeyFPs   map[string]bool // SHA256 SPKI fingerprints of trusted peer servers
+	tlsClient       *http.Client    // TLS-configured client for all outbound peer requests
 
 	// Candidate peers: discovered but not yet trusted (fingerprint not in allowed set).
 	// Presented to the user in the preferences UI for explicit acceptance.
@@ -332,8 +333,8 @@ type daemon struct {
 	candidatePeers map[string]candidatePeer // fingerprint → candidate
 
 	// xmp dedup: canonical_path → last mtime synced
-	xmpMu          sync.Mutex
-	xmpSeen        map[string]time.Time
+	xmpMu   sync.Mutex
+	xmpSeen map[string]time.Time
 	// xmpSuppressFrom: after applying inbound XMP, suppress echo to the sender
 	// for a short window so we don't bounce the edit back to whoever sent it.
 	xmpSuppressFrom map[string]xmpSuppressEntry
@@ -558,40 +559,52 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 	}
 
 	xmpTop, err := ps.Join(xmpTopic)
-	if err != nil { h.Close(); return nil, err }
+	if err != nil {
+		h.Close()
+		return nil, err
+	}
 	xmpSub, err := xmpTop.Subscribe()
-	if err != nil { h.Close(); return nil, err }
+	if err != nil {
+		h.Close()
+		return nil, err
+	}
 
 	proxyTop, err := ps.Join(proxyTopic)
-	if err != nil { h.Close(); return nil, err }
+	if err != nil {
+		h.Close()
+		return nil, err
+	}
 	proxySub, err := proxyTop.Subscribe()
-	if err != nil { h.Close(); return nil, err }
+	if err != nil {
+		h.Close()
+		return nil, err
+	}
 
 	dctx, cancel := context.WithCancel(ctx)
 
 	d := &daemon{
-		ctx:             dctx,
-		cancel:          cancel,
-		socketPath:      socketPath,
-		proxyDir:        proxyDir,
-		importDir:       importDir,
-		staticPeers:     staticPeers,
-		passphrase:      passphrase,
-		ownFP:           ownFP,
-		localIPOverride: localIPOverride,
-		host:        h,
-		ps:          ps,
-		xmpSub:      xmpSub,
-		xmpTop:      xmpTop,
-		proxySub:    proxySub,
-		proxyTop:    proxyTop,
-		peers:       make(map[peer.ID]string),
-		syncedPeers: make(map[string]bool),
-		tlsCert:         tlsCert,
-		authToken:       authTok,
-		allowedKeyFPs:   allowed,
-		xmpSeen:         make(map[string]time.Time),
-		xmpSuppressFrom: make(map[string]xmpSuppressEntry),
+		ctx:              dctx,
+		cancel:           cancel,
+		socketPath:       socketPath,
+		proxyDir:         proxyDir,
+		importDir:        importDir,
+		staticPeers:      staticPeers,
+		passphrase:       passphrase,
+		ownFP:            ownFP,
+		localIPOverride:  localIPOverride,
+		host:             h,
+		ps:               ps,
+		xmpSub:           xmpSub,
+		xmpTop:           xmpTop,
+		proxySub:         proxySub,
+		proxyTop:         proxyTop,
+		peers:            make(map[peer.ID]string),
+		syncedPeers:      make(map[string]bool),
+		tlsCert:          tlsCert,
+		authToken:        authTok,
+		allowedKeyFPs:    allowed,
+		xmpSeen:          make(map[string]time.Time),
+		xmpSuppressFrom:  make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
 		announcedProxies: make(map[string]struct{}),
 		localToRemote:    make(map[string]string),
@@ -867,9 +880,9 @@ func (d *daemon) handleConn(conn net.Conn) {
 				log.Printf("[xmp] parse error: %v", err)
 				continue
 			}
-			x.SenderID    = d.host.ID().String()
-			x.SenderURL   = d.localProxyURL()
-			x.Filename    = filepath.Base(x.Path)
+			x.SenderID = d.host.ID().String()
+			x.SenderURL = d.localProxyURL()
+			x.Filename = filepath.Base(x.Path)
 			x.CaptureDate = xmpCaptureDate(x.Content)
 
 			// Dedup: darktable may send the same XMP twice (debounce + sidecar job).
@@ -1648,7 +1661,9 @@ func (d *daemon) fetchProxyFromPeer(localPath string, enc *json.Encoder) {
 		fetchURL := baseURL + "/proxy?path=" + url.QueryEscape(requestPath)
 		resp, err := d.httpGet(fetchURL)
 		if err != nil || resp.StatusCode != 200 {
-			if resp != nil { resp.Body.Close() }
+			if resp != nil {
+				resp.Body.Close()
+			}
 			continue
 		}
 		data, err := io.ReadAll(resp.Body)
@@ -2338,8 +2353,8 @@ func exportWithDarktableCLI(rawPath, outPath string, maxDim int) ([]byte, error)
 			"-overwrite_original",
 			"-m",
 			"-tagsFromFile", rawPath,
-			"-Exif:All",        // all Exif tags (camera make/model/lens/exposure/GPS…)
-			"-IPTC:All",        // keywords, caption, copyright
+			"-Exif:All", // all Exif tags (camera make/model/lens/exposure/GPS…)
+			"-IPTC:All", // keywords, caption, copyright
 			outPath,
 		)
 		if out, err := exif.CombinedOutput(); err != nil {
