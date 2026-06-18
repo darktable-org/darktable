@@ -22,6 +22,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -347,12 +348,32 @@ type daemon struct {
 	announcedProxiesMu sync.RWMutex
 	announcedProxies   map[string]struct{}
 
+	// manifest cache: rebuilt lazily when announcedProxies changes.
+	// manifestHash == "" means the cache is invalid and must be rebuilt.
+	manifestMu    sync.Mutex
+	manifestPaths []string
+	manifestHash  string
+
+	// per-peer manifest hash seen on the last successful sync; used to skip
+	// the expensive per-path broadcast+stat work when nothing changed.
+	peerHashMu   sync.Mutex
+	peerLastHash map[string]string
+
 	// localToRemote maps a phone-local path (importDir/file.CR3) back to the
 	// peer's canonical path (/home/.../.../file.CR3) so that explicit
 	// fetch_proxy commands (which arrive with local paths) can request the
 	// correct path from the peer's HTTP server.
 	localToRemoteMu sync.RWMutex
 	localToRemote   map[string]string
+
+	// pathMapDirty / pathMapMu: true when localToRemote was modified but not
+	// yet flushed.  Actual write happens at most once every 5 s.
+	pathMapMu    sync.Mutex
+	pathMapDirty bool
+
+	// downloadSem limits concurrent proxy/preview fetches so a large library
+	// does not spawn thousands of goroutines at once.
+	downloadSem chan struct{}
 
 	// darktable clients subscribed to push events
 	subsMu sync.Mutex
@@ -400,6 +421,7 @@ type manifestResp struct {
 	BaseURL     string   `json:"base_url"`
 	ExternalURL string   `json:"external_url,omitempty"` // public URL if UPnP succeeded
 	Paths       []string `json:"paths"`
+	Hash        string   `json:"hash,omitempty"`        // sha256 of sorted path list; clients skip sync when unchanged
 	KnownPeers  []string `json:"known_peers,omitempty"` // HTTP URLs of other known peers
 }
 
@@ -607,7 +629,9 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 		xmpSuppressFrom:  make(map[string]xmpSuppressEntry),
 		localIndex:       make(map[string][]string),
 		announcedProxies: make(map[string]struct{}),
+		peerLastHash:     make(map[string]string),
 		localToRemote:    make(map[string]string),
+		downloadSem:      make(chan struct{}, 8),
 		displayICC:       loadDisplayICC(displayICCPath),
 	}
 
@@ -776,6 +800,7 @@ func (d *daemon) run() error {
 	go d.subscribeXMP()
 	go d.subscribeProxy()
 	go d.announceProxies()
+	go d.runPathMapFlusher()
 
 	if len(d.staticPeers) > 0 {
 		go d.syncStaticPeers()
@@ -941,6 +966,10 @@ func (d *daemon) handleConn(conn net.Conn) {
 				d.announcedProxiesMu.Lock()
 				d.announcedProxies[req.Path] = struct{}{}
 				d.announcedProxiesMu.Unlock()
+				// Invalidate manifest cache so the next /manifest request rebuilds it.
+				d.manifestMu.Lock()
+				d.manifestHash = ""
+				d.manifestMu.Unlock()
 				// Index by basename so resolveLocalPath can find this file when
 				// an inbound XMP push from mobile arrives with the mobile local path.
 				d.addToLocalIndex(req.Path)
@@ -1574,7 +1603,7 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 		d.localToRemoteMu.Lock()
 		d.localToRemote[localPath] = remotePath
 		d.localToRemoteMu.Unlock()
-		d.savePathMap()
+		d.markPathMapDirty()
 	}
 
 	// Fetch the thumbnail JPEG first — it's small and lets the mobile gallery
@@ -1711,21 +1740,12 @@ func (d *daemon) announceProxies() {
 }
 
 func (d *daemon) publishProxyAnnounce() {
-	// Only publish what darktable has explicitly announced — no directory scan.
-	// proxyDir is a download destination only, not a discovery source.
-	seen := make(map[string]struct{})
-	var paths []string
-
-	d.announcedProxiesMu.RLock()
-	for raw := range d.announcedProxies {
-		if _, dup := seen[raw]; !dup {
-			if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
-				seen[raw] = struct{}{}
-				paths = append(paths, raw)
-			}
-		}
+	d.manifestMu.Lock()
+	if d.manifestHash == "" {
+		d.rebuildManifestLocked()
 	}
-	d.announcedProxiesMu.RUnlock()
+	paths := d.manifestPaths
+	d.manifestMu.Unlock()
 
 	ann := proxyAnnounce{
 		SenderID: d.host.ID().String(),
@@ -1857,6 +1877,23 @@ func (d *daemon) syncWithPeer(baseURL string) {
 	if len(peerShort) > 12 {
 		peerShort = peerShort[:12]
 	}
+
+	// Skip the expensive per-path broadcast + stat work when the remote's
+	// manifest content hasn't changed since our last successful sync.
+	// (Hash is non-empty only on daemons that support this field.)
+	d.peerHashMu.Lock()
+	sameHash := m.Hash != "" && m.Hash == d.peerLastHash[baseURL]
+	if m.Hash != "" {
+		d.peerLastHash[baseURL] = m.Hash
+	}
+	d.peerHashMu.Unlock()
+
+	if sameHash && !firstVisit {
+		log.Printf("[peer] %s: manifest unchanged (hash=%s), skipping per-path work (%d proxies)",
+			baseURL, m.Hash, len(m.Paths))
+		return
+	}
+
 	log.Printf("[peer] %s: peerID=%s  proxies=%d  indirect=%d",
 		baseURL, peerShort, len(m.Paths), len(m.KnownPeers))
 
@@ -1889,16 +1926,26 @@ func (d *daemon) syncWithPeer(baseURL string) {
 	}
 
 	// Now start background downloads: thumbnail JPEG (fast) then AVIF proxy.
+	// downloadSem caps concurrency so a large library doesn't spawn thousands
+	// of goroutines simultaneously.
 	missing := 0
 	for _, path := range m.Paths {
 		localPath := d.localDestination(path)
 		if _, err := os.Stat(localPath + ".proxy.avif"); err == nil {
 			// AVIF already present; just refresh the thumbnail if it changed.
-			go d.fetchPreviewJPEG(path, localPath, baseURL, "thumb")
+			go func(p, lp, bu string) {
+				d.downloadSem <- struct{}{}
+				defer func() { <-d.downloadSem }()
+				d.fetchPreviewJPEG(p, lp, bu, "thumb")
+			}(path, localPath, baseURL)
 			continue
 		}
 		missing++
-		go d.autoFetchProxy(path, baseURL)
+		go func(p, bu string) {
+			d.downloadSem <- struct{}{}
+			defer func() { <-d.downloadSem }()
+			d.autoFetchProxy(p, bu)
+		}(path, baseURL)
 	}
 	if missing > 0 {
 		log.Printf("[peer] fetching %d missing proxies from %s", missing, baseURL)
@@ -2078,6 +2125,23 @@ func (d *daemon) serveProxy(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, canonicalPath+".proxy.avif")
 }
 
+// rebuildManifestLocked rebuilds d.manifestPaths and d.manifestHash.
+// Must be called with d.manifestMu held.
+func (d *daemon) rebuildManifestLocked() {
+	d.announcedProxiesMu.RLock()
+	paths := make([]string, 0, len(d.announcedProxies))
+	for raw := range d.announcedProxies {
+		if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
+			paths = append(paths, raw)
+		}
+	}
+	d.announcedProxiesMu.RUnlock()
+	sort.Strings(paths)
+	h := sha256.Sum256([]byte(strings.Join(paths, "\n")))
+	d.manifestPaths = paths
+	d.manifestHash = hex.EncodeToString(h[:8]) // 16-char hex, sufficient for change detection
+}
+
 func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 	// If the caller passes ?from=URL, record them and trigger a reverse connection.
 	if fromURL := r.URL.Query().Get("from"); fromURL != "" {
@@ -2090,21 +2154,15 @@ func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Only serve what darktable has explicitly announced — no directory scan.
-	// proxyDir is a download destination only, not a discovery source.
-	seen := make(map[string]struct{})
-	var paths []string
-
-	d.announcedProxiesMu.RLock()
-	for raw := range d.announcedProxies {
-		if _, dup := seen[raw]; !dup {
-			if _, err := os.Stat(raw + ".proxy.avif"); err == nil {
-				seen[raw] = struct{}{}
-				paths = append(paths, raw)
-			}
-		}
+	// Use cached manifest path list (rebuilt on first call and whenever
+	// announcedProxies changes); avoids O(N) os.Stat per request.
+	d.manifestMu.Lock()
+	if d.manifestHash == "" {
+		d.rebuildManifestLocked()
 	}
-	d.announcedProxiesMu.RUnlock()
+	paths := d.manifestPaths
+	hash := d.manifestHash
+	d.manifestMu.Unlock()
 
 	// Collect all HTTP base URLs we know about so the caller can gossip.
 	d.peersMu.RLock()
@@ -2121,6 +2179,7 @@ func (d *daemon) serveManifest(w http.ResponseWriter, r *http.Request) {
 		BaseURL:     d.localProxyURL(),
 		ExternalURL: d.externalURL,
 		Paths:       paths,
+		Hash:        hash,
 		KnownPeers:  knownPeers,
 	}
 	if resp.Paths == nil {
@@ -2609,7 +2668,13 @@ func pathMapPath() string {
 
 // savePathMap persists localToRemote to disk so fetch_proxy / fetch_preview
 // survive a daemon restart.
-func (d *daemon) savePathMap() {
+func (d *daemon) markPathMapDirty() {
+	d.pathMapMu.Lock()
+	d.pathMapDirty = true
+	d.pathMapMu.Unlock()
+}
+
+func (d *daemon) flushPathMap() {
 	p := pathMapPath()
 	if p == "" {
 		return
@@ -2619,6 +2684,34 @@ func (d *daemon) savePathMap() {
 	d.localToRemoteMu.RUnlock()
 	if err == nil {
 		_ = os.WriteFile(p, data, 0644)
+	}
+}
+
+// runPathMapFlusher writes localToRemote to disk at most once every 5 seconds,
+// collapsing the O(N²) write amplification from per-download saves.
+func (d *daemon) runPathMapFlusher() {
+	tick := time.NewTicker(5 * time.Second)
+	defer tick.Stop()
+	for {
+		select {
+		case <-d.ctx.Done():
+			d.pathMapMu.Lock()
+			dirty := d.pathMapDirty
+			d.pathMapDirty = false
+			d.pathMapMu.Unlock()
+			if dirty {
+				d.flushPathMap()
+			}
+			return
+		case <-tick.C:
+			d.pathMapMu.Lock()
+			dirty := d.pathMapDirty
+			d.pathMapDirty = false
+			d.pathMapMu.Unlock()
+			if dirty {
+				d.flushPathMap()
+			}
+		}
 	}
 }
 
