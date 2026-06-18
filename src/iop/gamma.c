@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "common/colorspaces_inline_conversions.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"
@@ -292,6 +293,17 @@ void process(dt_iop_module_t *self,
   // this module also expects the same size of input image as the output image
   if(roi_in->width != roi_out->width || roi_in->height != roi_out->height)
     return;
+
+  // dt_dev_image(want_float): the caller wants the scene-referred linear float
+  // working RGB, not display-encoded 8-bit ARGB. Pass the 4-channel float buffer
+  // straight through (the output buffer is already allocated 16 B/px). gamma
+  // stays the terminal module so backbuf dimensions remain consistent.
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT)
+  {
+    dt_iop_image_copy_by_size(
+      (float *const restrict)o, (const float *const restrict)i, roi_out->width, roi_out->height, 4);
+    return;
+  }
 
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
   const gboolean fcolor = dt_conf_is_equal("channel_display", "false color");

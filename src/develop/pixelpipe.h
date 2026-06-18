@@ -40,20 +40,25 @@ typedef struct dt_iop_roi_t
 /* The pixelpipe types here are all defined as a bit mask to ensure easy testing via & operator */
 typedef enum dt_dev_pixelpipe_type_t
 {
-  DT_DEV_PIXELPIPE_NONE      = 0,
-  DT_DEV_PIXELPIPE_EXPORT    = 1 << 0,
-  DT_DEV_PIXELPIPE_FULL      = 1 << 1,
-  DT_DEV_PIXELPIPE_PREVIEW   = 1 << 2,
+  DT_DEV_PIXELPIPE_NONE = 0,
+  DT_DEV_PIXELPIPE_EXPORT = 1 << 0,
+  DT_DEV_PIXELPIPE_FULL = 1 << 1,
+  DT_DEV_PIXELPIPE_PREVIEW = 1 << 2,
   DT_DEV_PIXELPIPE_THUMBNAIL = 1 << 3,
-  DT_DEV_PIXELPIPE_PREVIEW2  = 1 << 4,
-  DT_DEV_PIXELPIPE_SCREEN    = DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2,
-  DT_DEV_PIXELPIPE_CANVAS    = DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2,
-  DT_DEV_PIXELPIPE_ANY       = DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
-                               | DT_DEV_PIXELPIPE_THUMBNAIL | DT_DEV_PIXELPIPE_PREVIEW2,
-  DT_DEV_PIXELPIPE_FAST      = 1 << 8,
-  DT_DEV_PIXELPIPE_IMAGE     = 1 << 9,    // special additional flag used by dt_dev_image()
-  DT_DEV_PIXELPIPE_IMAGE_FINAL = 1 << 10, // special additional flag used by dt_dev_image(), mark to use finalscale
-  DT_DEV_PIXELPIPE_BASIC     = DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
+  DT_DEV_PIXELPIPE_PREVIEW2 = 1 << 4,
+  DT_DEV_PIXELPIPE_SCREEN =
+    DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2,
+  DT_DEV_PIXELPIPE_CANVAS = DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2,
+  DT_DEV_PIXELPIPE_ANY = DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FULL |
+                         DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL |
+                         DT_DEV_PIXELPIPE_PREVIEW2,
+  DT_DEV_PIXELPIPE_FAST = 1 << 8,
+  DT_DEV_PIXELPIPE_IMAGE = 1 << 9, // special additional flag used by dt_dev_image()
+  DT_DEV_PIXELPIPE_IMAGE_FINAL =
+    1 << 10, // special additional flag used by dt_dev_image(), mark to use finalscale
+  DT_DEV_PIXELPIPE_IMAGE_FLOAT =
+    1 << 11, // dt_dev_image() want_float: gamma passes float through instead of packing 8-bit
+  DT_DEV_PIXELPIPE_BASIC = DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
 } dt_dev_pixelpipe_type_t;
 
 /** when to collect histogram */
