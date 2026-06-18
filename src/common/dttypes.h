@@ -62,14 +62,7 @@ typedef DT_ALIGNED_PIXEL float dt_aligned_pixel_t[4];
 // a 3x3 matrix, padded to permit SSE instructions to be used for multiplication and addition
 typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 
-// To be able to vectorize per-pixel loops, we need to operate on all four channels, but if the compiler does
-// not auto-vectorize, doing so increases computation by 1/3 for a channel which typically is ignored anyway.
-// Select the appropriate number of channels over which to loop to produce the fastest code.
-#ifdef DT_NO_VECTORIZATION
-#define DT_PIXEL_SIMD_CHANNELS 3
-#else
 #define DT_PIXEL_SIMD_CHANNELS 4
-#endif
 
 // A function to compute how many pixels each thread should process in a parallelized for loop.
 // For very small RoIs on a CPU with lots of threads, the last one or two hardware threads can end
@@ -91,7 +84,7 @@ static inline size_t dt_cacheline_chunks(const size_t npixels, const size_t nthr
 //         {
 //           src[k] = dest[k] / 3.0f;
 //         }
-#if defined(_OPENMP) && defined(OPENMP_SIMD_) && !defined(DT_NO_SIMD_HINTS)
+#if defined(OPENMP_SIMD_)
 //https://stackoverflow.com/questions/45762357/how-to-concatenate-strings-in-the-arguments-of-pragma
 #define _DT_Pragma_(x) _Pragma(#x)
 #define _DT_Pragma(x) _DT_Pragma_(x)

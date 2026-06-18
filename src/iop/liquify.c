@@ -35,9 +35,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 // this is the version of the modules parameters, and includes version
 // information about compile-time dt

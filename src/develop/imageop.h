@@ -650,11 +650,7 @@ static inline void dt_sfence()
 // parallelization, we should play it safe and emit a memory fence.
 // This function should be used right after a parallelized for loop,
 // where it will produce a barrier only if needed.
-#ifdef _OPENMP
 #define dt_omploop_sfence()
-#else
-#define dt_omploop_sfence() dt_sfence()
-#endif
 
 #ifdef __SSE2__
 static inline unsigned int dt_mm_enable_flush_zero()

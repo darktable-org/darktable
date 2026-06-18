@@ -273,25 +273,23 @@ list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
 # Need to explicitly link against math library.
 list(APPEND LIBS "-lm")
 
-if(USE_OPENMP)
-  if(OpenMP_C_FLAGS)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  endif()
+if(OpenMP_C_FLAGS)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+endif()
 
-  if(OpenMP_CXX_FLAGS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  endif()
+if(OpenMP_CXX_FLAGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
-  if(OpenMP_C_INCLUDE_DIRS)
-    include_directories(${OpenMP_C_INCLUDE_DIRS})
-  endif()
+if(OpenMP_C_INCLUDE_DIRS)
+  include_directories(${OpenMP_C_INCLUDE_DIRS})
+endif()
 
-  if(OpenMP_CXX_INCLUDE_DIRS)
-    include_directories(${OpenMP_CXX_INCLUDE_DIRS})
-  endif()
+if(OpenMP_CXX_INCLUDE_DIRS)
+  include_directories(${OpenMP_CXX_INCLUDE_DIRS})
+endif()
 
-  list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
-endif(USE_OPENMP)
+list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
 
 if(USE_DARKTABLE_PROFILING)
 	add_definitions(-DUSE_DARKTABLE_PROFILING)
@@ -1134,9 +1132,6 @@ set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)
 
 if(USE_LIBRAW AND NOT (DONT_USE_INTERNAL_LIBRAW AND libraw_FOUND))
   set(LIBRAW_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw" CACHE STRING "Relative path to libraw directory (default=CMAKE_CURRENT_SOURCE_DIR)")
-  if(NOT USE_OPENMP)
-    set(ENABLE_OPENMP OFF CACHE BOOL "")
-  endif()
   set(ENABLE_LCMS OFF CACHE BOOL "")
   set(ENABLE_JASPER OFF CACHE BOOL "")
 

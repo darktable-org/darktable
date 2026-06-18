@@ -119,9 +119,7 @@
 #include "iop/choleski.h"
 #include "common/iop_group.h"
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 
 DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)

@@ -119,9 +119,7 @@
 #include <sys/varargs.h>
 #endif
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 #ifdef USE_LUA
 #include "lua/configuration.h"
@@ -841,18 +839,6 @@ char *version = g_strdup_printf(
                "  Debug                  -> DISABLED\n"
 #endif
 
-#if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimizations     -> ENABLED\n"
-#else
-               "  SSE2 optimizations     -> DISABLED\n"
-#endif
-
-#ifdef _OPENMP
-               "  OpenMP                 -> ENABLED\n"
-#else
-               "  OpenMP                 -> DISABLED\n"
-#endif
-
 #ifdef HAVE_OPENCL
                "  OpenCL                 -> ENABLED\n"
 #else
@@ -1285,12 +1271,10 @@ int dt_init(int argc,
           dt_print(DT_DEBUG_ALWAYS,
                    "[dt_init --threads] requested %d ompthreads restricted to %d",
                    desired, possible);
-#ifdef _OPENMP
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_init --threads] using %d threads of %d for openmp parallel sections %s",
                  darktable.num_openmp_threads, (int)dt_get_num_procs(),
                  omp_get_dynamic() ? "(dynamic)" : "(static)");
-#endif
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1555,10 +1539,8 @@ int dt_init(int argc,
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
   }
 
-#ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
   omp_set_dynamic(FALSE);
-#endif
 
 #ifdef USE_LUA
   dt_lua_init_early(L);
