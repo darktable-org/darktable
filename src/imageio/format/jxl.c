@@ -434,14 +434,9 @@ int levels(dt_imageio_module_data_t *data)
 
 int flags(dt_imageio_module_data_t *data)
 {
-  /*
-   * As of exiv2 0.27.5 there is no write support for the JXL BMFF format,
-   * so we do not return the XMP supported flag currently.
-   * Once exiv2 write support is there, the flag can be returned, and the
-   * direct XMP embedding workaround using JxlEncoderAddBox("xml ") above
-   * can be removed.
-   */
-  return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
+  // exiv2 >= 0.28 supports JXL BMFF format for metadata, allowing
+  // fine-grained metadata control like other formats
+  return FORMAT_FLAGS_SUPPORT_XMP;
 }
 
 static inline int _bpp_to_enum(int bpp)

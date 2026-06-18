@@ -1464,7 +1464,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  // Check if all the metadata export flags are set for AVIF/EXR/HEIF/JPEG XL/XCF (opt-in)
+  // Check if all the metadata export flags are set for AVIF/EXR/HEIF/XCF (opt-in)
   //
   // TODO: this is a workaround as these formats do not support fine
   // grained metadata control through dt_exif_xmp_attach_export()
@@ -1477,7 +1477,6 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
      && (!strcmp(format->mime(NULL), "image/avif")
          || !strcmp(format->mime(NULL), "image/heif")
          || !strcmp(format->mime(NULL), "image/x-exr")
-        //  || !strcmp(format->mime(NULL), "image/jxl")
          || !strcmp(format->mime(NULL), "image/x-xcf")))
   {
     const int32_t meta_all =
