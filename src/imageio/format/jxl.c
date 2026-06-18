@@ -324,6 +324,18 @@ int write_image(struct dt_imageio_module_data_t *data,
     LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_TRUE));
   }
 
+  if(exif && exif_len > 0) // TODO separate signal for "include XMP"
+  {
+    xmp_string = dt_exif_xmp_read_string(imgid);
+    size_t xmp_len;
+    if(xmp_string
+       && (xmp_len = strlen(xmp_string)) > 0)
+    {
+      LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ",
+                                     (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
+    }
+  }
+
   JxlPixelFormat pixel_format = { 3, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0 };
 
   // Fix pixel stride

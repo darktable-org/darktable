@@ -1510,14 +1510,6 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   }
   free(exif_profile0);
 
-  // For formats that support XMP, attach it if requested
-  if(copy_metadata
-     && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
-  {
-    // TODO: Attach XMP to filtered_exif if needed
-    // dt_exif_xmp_attach_export(imgid, ..., metadata, &dev, &pipe);
-  }
-
   // write image with filtered metadata
   if(!ignore_exif && md_flags_set && filtered_exif_len > 0)
   {
@@ -1536,6 +1528,14 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(res)
     goto error;
+
+  /* now write xmp into that container, if possible */
+  if(copy_metadata
+     && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
+  {
+    dt_exif_xmp_attach_export(imgid, filename, metadata, &dev, &pipe);
+    // no need to cancel the export if this fail
+  }
 
 
   dt_dev_pixelpipe_cleanup(&pipe);
