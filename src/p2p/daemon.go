@@ -2188,10 +2188,24 @@ func (d *daemon) servePreview(w http.ResponseWriter, r *http.Request) {
 				log.Printf("[preview] mipmap+sRGB-ICC → cache '%s' size=%s (%d KB)",
 					filepath.Base(rawPath), sizeParam, len(mipmapData)/1024)
 			}
-		} else if _, err := exportWithDarktableCLI(rawPath, cachePath, maxDim); err != nil {
-			http.Error(w, "preview not available", http.StatusNotFound)
-			return
 		} else {
+			// Skip darktable-cli when the GUI is running — it would open its own
+			// database connection and race with the GUI's writers causing
+			// SQLITE_BUSY assertions.  The GUI regenerates its mipmap cache on
+			// its own after an XMP reload; mobile can retry in a few seconds.
+			d.subsMu.Lock()
+			darktableRunning := len(d.subs) > 0
+			d.subsMu.Unlock()
+			if darktableRunning {
+				log.Printf("[preview] cli skipped for '%s' (darktable running); mobile will retry",
+					filepath.Base(rawPath))
+				http.Error(w, "preview regenerating", http.StatusServiceUnavailable)
+				return
+			}
+			if _, err := exportWithDarktableCLI(rawPath, cachePath, maxDim); err != nil {
+				http.Error(w, "preview not available", http.StatusNotFound)
+				return
+			}
 			log.Printf("[preview] cli export '%s' size=%s", filepath.Base(rawPath), sizeParam)
 		}
 	}
