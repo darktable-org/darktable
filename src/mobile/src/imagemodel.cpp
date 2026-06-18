@@ -121,8 +121,16 @@ void ImageModel::updatePreview(const QString &rawPath)
     if (i < 0) return;
     m_entries[i].previewThumbPath = rawPath + ".preview-thumb.jpg";
     m_entries[i].previewKey++;
+    m_entries[i].previewIsStale = false; // fresh preview arrived; stop retrying
     const QModelIndex idx = index(i);
     emit dataChanged(idx, idx, {PreviewThumbPathRole, PreviewKeyRole});
+}
+
+void ImageModel::markPreviewStale(const QString &rawPath)
+{
+    const int i = findByRaw(rawPath);
+    if (i >= 0)
+        m_entries[i].previewIsStale = true;
 }
 
 void ImageModel::updateXmp(const QString &rawPath)
@@ -150,6 +158,8 @@ void ImageModel::syncMissingPreviews()
     for (const ImageEntry &e : m_entries) {
         if (e.previewThumbPath.isEmpty() || !QFileInfo::exists(e.previewThumbPath))
             emit previewNeeded(e.rawPath);
+        else if (e.previewIsStale)
+            emit previewStale(e.rawPath);
     }
 }
 

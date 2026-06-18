@@ -51,7 +51,11 @@ int main(int argc, char *argv[])
                      });
 
     // When the XMP sidecar is newer than the cached JPEG, force a fresh render
-    // from the peer desktop (which has processed the latest edits).
+    // from the peer desktop (which has processed the latest edits).  The old
+    // preview stays visible until the new one lands; markPreviewStale ensures
+    // the periodic sync keeps retrying until it succeeds.
+    QObject::connect(&model, &ImageModel::previewStale, &model,
+                     &ImageModel::markPreviewStale);
     QObject::connect(&model, &ImageModel::previewStale, &client,
                      &P2PClient::forceRefreshPreview);
 

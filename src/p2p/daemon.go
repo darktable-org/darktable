@@ -1014,9 +1014,11 @@ func (d *daemon) handleConn(conn net.Conn) {
 				req.Size = "full"
 			}
 			go func(path, size string) {
-				// Delete the cached preview so fetchPreviewFromPeers re-downloads it.
-				cached := path + ".preview-" + size + ".jpg"
-				os.Remove(cached)
+				// Fetch a fresh preview from peers.  We do NOT delete the cached
+				// copy first — the old JPEG stays visible in the gallery until the
+				// new download atomically overwrites it.  fetchPreviewJPEG uses a
+				// conditional GET (If-Modified-Since) so the desktop only returns
+				// a body when it has re-rendered something newer.
 				d.fetchPreviewFromPeers(path, size)
 			}(req.Path, req.Size)
 
@@ -2113,15 +2115,23 @@ func (d *daemon) localProxyURL() string {
 	return fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort)
 }
 
-// isAnnouncedPath reports whether rawPath was announced by darktable, meaning
-// it exists in the darktable database. Only announced paths may be served to
-// peers — this prevents the daemon from acting as a general-purpose file
-// server even for authenticated callers.
+// isAnnouncedPath reports whether rawPath is a darktable-managed file that
+// may be served to peers.  Two sources are accepted:
+//
+//  1. d.announcedProxies — explicitly announced by darktable via the socket.
+//  2. A .proxy.avif sidecar on disk — a proxy AVIF is only ever created by
+//     darktable's export process, so its presence is proof of ownership.
+//     This fallback handles the window after a daemon restart before darktable
+//     has finished re-announcing all paths via the socket.
 func (d *daemon) isAnnouncedPath(rawPath string) bool {
 	d.announcedProxiesMu.RLock()
 	_, ok := d.announcedProxies[rawPath]
 	d.announcedProxiesMu.RUnlock()
-	return ok
+	if ok {
+		return true
+	}
+	_, err := os.Stat(rawPath + ".proxy.avif")
+	return err == nil
 }
 
 func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {

@@ -11,8 +11,9 @@ struct ImageEntry
     QString filename;         // display name (basename of rawPath)
     int     rating     = 0;   // 0–5
     int     colorLabel = -1;  // -1=none  0=red 1=yellow 2=green 3=blue 4=purple
-    bool    hasProxy   = false;
-    int     previewKey = 0;   // bumped when a cached preview JPEG is refreshed
+    bool    hasProxy        = false;
+    int     previewKey      = 0;     // bumped when a cached preview JPEG is refreshed
+    bool    previewIsStale  = false; // XMP newer than preview; fresh fetch pending
 };
 
 class ImageModel : public QAbstractListModel
@@ -52,8 +53,10 @@ public slots:
     void updateProxy(const QString &rawPath, const QString &proxyPath, bool ok);
     void updateXmp(const QString &rawPath);
     void updatePreview(const QString &rawPath);
-    // Emit previewNeeded for every entry that has no local thumbnail JPEG.
-    // Call periodically to recover from missed updates.
+    // Mark this entry's preview as stale so syncMissingPreviews will retry it.
+    void markPreviewStale(const QString &rawPath);
+    // Emit previewNeeded for entries with no thumbnail, and previewStale for
+    // entries whose preview is stale.  Call periodically to recover from failures.
     void syncMissingPreviews();
 
 signals:
