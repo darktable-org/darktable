@@ -381,7 +381,7 @@ type xmpMsg struct {
 	Filename    string `json:"filename"`             // basename for cross-machine matching
 	CaptureDate string `json:"capture_date"`         // exif:DateTimeOriginal for disambiguation
 	Content     string `json:"content"`              // full XMP text
-	Mtime       int64  `json:"mtime"`                // unix ns
+	Mtime       int64  `json:"mtime"`                // unix ms
 }
 
 // Proxy announce published on proxyTopic.
@@ -808,6 +808,10 @@ func (d *daemon) handleEventSub(enc *json.Encoder) {
 	d.subs = append(d.subs, sub)
 	d.subsMu.Unlock()
 
+	// Ask darktable to re-announce its proxies so our localIndex is populated
+	// even when the daemon was (re)started after darktable was already running.
+	ch <- socketMsg{Type: "request_announce"}
+
 	defer func() {
 		d.subsMu.Lock()
 		for i, s := range d.subs {
@@ -860,6 +864,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 		case "xmp_push":
 			var x xmpMsg
 			if err := json.Unmarshal(msg.Data, &x); err != nil {
+				log.Printf("[xmp] parse error: %v", err)
 				continue
 			}
 			x.SenderID    = d.host.ID().String()
@@ -868,7 +873,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 			x.CaptureDate = xmpCaptureDate(x.Content)
 
 			// Dedup: darktable may send the same XMP twice (debounce + sidecar job).
-			t := time.Unix(0, x.Mtime)
+			t := time.UnixMilli(x.Mtime)
 			d.xmpMu.Lock()
 			dup := !t.After(d.xmpSeen[x.Path])
 			if !dup {
@@ -897,14 +902,14 @@ func (d *daemon) handleConn(conn net.Conn) {
 			// This covers the mobile-app-on-same-machine case; remote machines get it
 			// via gossipsub / HTTP push below.
 			localPath := d.resolveLocalPath(x.Path, x.Filename, x.CaptureDate)
-			if localPath != "" {
-				if err := writeXMP(localPath, x.Content); err != nil {
-					log.Printf("[xmp] local write '%s': %v", localPath, err)
-				} else {
-					invalidatePreviewCache(localPath)
-					result, _ := json.Marshal(map[string]string{"path": localPath})
-					d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
-				}
+			if localPath == "" {
+				log.Printf("[xmp] send: '%s' — no local path found (not yet indexed?)", x.Filename)
+			} else if err := writeXMP(localPath, x.Content); err != nil {
+				log.Printf("[xmp] local write '%s': %v", localPath, err)
+			} else {
+				invalidatePreviewCache(localPath)
+				result, _ := json.Marshal(map[string]string{"path": localPath})
+				d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
 			}
 
 			if b, err := json.Marshal(x); err == nil {
@@ -1120,7 +1125,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 func (d *daemon) applyInboundXMP(x xmpMsg, from string) {
 	d.xmpMu.Lock()
 	last := d.xmpSeen[x.Path]
-	t := time.Unix(0, x.Mtime)
+	t := time.UnixMilli(x.Mtime)
 	shouldProcess := t.After(last)
 	if !shouldProcess {
 		if _, statErr := os.Stat(x.Path + ".xmp"); os.IsNotExist(statErr) {
@@ -1425,42 +1430,34 @@ func (d *daemon) fetchXMPSidecar(remotePath, localPath, baseURL string) {
 // from src. Used when src is a thin mobile-edit push (no darktable history)
 // and dst is the full desktop XMP so the history stack is not overwritten.
 func mergeXMPMeta(dst, src string) string {
-	// Patch attribute-form rating: xmp:Rating="N"
 	reAttr := regexp.MustCompile(`\bxmp:Rating\s*=\s*"[^"]*"`)
-	reElem := regexp.MustCompile(`<xmp:Rating>\s*\d+\s*</xmp:Rating>`)
+	reElem := regexp.MustCompile(`<xmp:Rating>\s*(\d+)\s*</xmp:Rating>`)
 	reColor := regexp.MustCompile(`(?s)<darktable:colorlabels>.*?</darktable:colorlabels>`)
 
 	result := dst
-	// Prefer updating attribute form if present; fall back to element form.
-	if attrSrc := reAttr.FindString(src); attrSrc != "" {
-		if reAttr.MatchString(result) {
-			result = reAttr.ReplaceAllLiteralString(result, attrSrc)
-		} else if elemSrc := reElem.FindString(src); elemSrc != "" {
-			if reElem.MatchString(result) {
-				result = reElem.ReplaceAllLiteralString(result, elemSrc)
-			} else {
-				pos := strings.Index(result, "</rdf:Description>")
-				if pos >= 0 {
-					result = result[:pos] + "  " + elemSrc + "\n" + result[pos:]
-				}
-			}
-		} else {
-			result = reAttr.ReplaceAllLiteralString(result, attrSrc)
+
+	// Extract the rating value from src — prefer attribute form, fall back to element.
+	ratingVal := ""
+	if m := reAttr.FindString(src); m != "" {
+		// m is e.g. `xmp:Rating="3"` — extract just the number
+		inner := regexp.MustCompile(`"([^"]*)"`)
+		if sub := inner.FindStringSubmatch(m); len(sub) == 2 {
+			ratingVal = sub[1]
 		}
-	} else if elemSrc := reElem.FindString(src); elemSrc != "" {
+	} else if m := reElem.FindStringSubmatch(src); len(m) == 2 {
+		ratingVal = m[1]
+	}
+
+	if ratingVal != "" {
+		// Apply to dst: update attribute form if present, else element form, else insert.
 		if reAttr.MatchString(result) {
-			// Local has attribute form; replace with the new value extracted from element
-			rating := reElem.FindStringSubmatch(src)
-			if len(rating) == 0 {
-				result = reAttr.ReplaceAllLiteralString(result, `xmp:Rating="`+extractTagValue(elemSrc)+`"`)
-			}
-			_ = rating
+			result = reAttr.ReplaceAllLiteralString(result, `xmp:Rating="`+ratingVal+`"`)
 		} else if reElem.MatchString(result) {
-			result = reElem.ReplaceAllLiteralString(result, elemSrc)
+			result = reElem.ReplaceAllLiteralString(result, "<xmp:Rating>"+ratingVal+"</xmp:Rating>")
 		} else {
 			pos := strings.Index(result, "</rdf:Description>")
 			if pos >= 0 {
-				result = result[:pos] + "  " + elemSrc + "\n" + result[pos:]
+				result = result[:pos] + "  <xmp:Rating>" + ratingVal + "</xmp:Rating>\n" + result[pos:]
 			}
 		}
 	}

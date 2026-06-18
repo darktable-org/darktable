@@ -269,7 +269,7 @@ static gboolean _xmp_reload_on_main_thread(gpointer data)
     dt_image_t *img = dt_image_cache_get(imgid, 'w');
     if(img)
     {
-      dt_exif_xmp_read(img, xmp_path, TRUE);
+      dt_exif_xmp_read(img, xmp_path, FALSE);
       dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "p2p xmp reload");
     }
     dt_unlock_image(imgid);
@@ -281,6 +281,8 @@ static gboolean _xmp_reload_on_main_thread(gpointer data)
     dt_image_update_final_size(imgid);
     dt_image_cache_set_change_timestamp(imgid);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+    GList *_p2p_imgs = g_list_prepend(NULL, GINT_TO_POINTER(imgid));
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, _p2p_imgs);
     dt_print(DT_DEBUG_IMAGEIO, "[p2p] applied XMP for '%s' id=%d", ctx->path, imgid);
   }
   else
@@ -338,29 +340,36 @@ static gboolean _extract_path(const char *json_fragment, char *out, size_t out_s
   return (i > 0);
 }
 
+static gpointer _announce_existing_proxies(gpointer arg);  // defined below
+
 // Background thread: maintains a persistent event connection to the daemon
-// and dispatches push events to the GTK main thread.
+// and dispatches push events to the GTK main thread.  Automatically reconnects
+// when the daemon restarts (e.g. after a daemon update).
 static gpointer _event_thread_func(gpointer user_data)
 {
   (void)user_data;
 
-  int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if(fd < 0) return NULL;
-
   struct sockaddr_un addr = { .sun_family = AF_UNIX };
   g_strlcpy(addr.sun_path, _p2p.socket_path, sizeof(addr.sun_path));
+
+  while(!g_atomic_int_get(&_p2p_evt.stop))
+  {
+  int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if(fd < 0) return NULL;
 
   if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
   {
     close(fd);
-    dt_print(DT_DEBUG_IMAGEIO, "[p2p] event thread: connect failed");
-    return NULL;
+    // Daemon not yet ready; wait and retry.
+    g_usleep(2 * G_USEC_PER_SEC);
+    continue;
   }
   _p2p_evt.sockfd = fd;
 
   // Tell the daemon we want push events on this connection.
   const char *sub = "{\"type\":\"subscribe_events\"}\n";
   send(fd, sub, strlen(sub), MSG_NOSIGNAL);
+  dt_print(DT_DEBUG_IMAGEIO, "[p2p] event thread: connected to daemon");
 
   // Use read() directly rather than fdopen()+fgets() to avoid holding a FILE
   // _IO_lock during a blocking read.  fgets holds the lock for the entire
@@ -406,6 +415,15 @@ static gpointer _event_thread_func(gpointer user_data)
           _p2p_queue_xmp_reload(path);
         }
       }
+      else if(strstr(line, "\"request_announce\""))
+      {
+        // Daemon (re)started while we were running: re-announce all proxy
+        // sidecars so the daemon's localIndex is repopulated.
+        dt_print(DT_DEBUG_IMAGEIO, "[p2p] daemon requested re-announce");
+        GThread *t = g_thread_try_new("p2p-reannounce",
+                                      _announce_existing_proxies, (gpointer)1, NULL);
+        if(t) g_thread_unref(t);
+      }
     }
 
     // Shift remaining partial line to the front; discard if buffer is full.
@@ -415,8 +433,16 @@ static gpointer _event_thread_func(gpointer user_data)
     buflen = ((int)(sizeof(buf) - 1) == remaining) ? 0 : remaining;
   }
 
+  // Inner read loop exited: connection dropped (daemon restarted or shut down).
   close(fd);
   _p2p_evt.sockfd = -1;
+  if(!g_atomic_int_get(&_p2p_evt.stop))
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] event thread: connection lost, reconnecting in 2s");
+    g_usleep(2 * G_USEC_PER_SEC);
+  }
+  } // outer reconnect loop
+
   return NULL;
 }
 
@@ -531,11 +557,13 @@ static gboolean _p2p_keepalive(gpointer user_data)
 
 // Walk the darktable DB and announce every raw file that already has a
 // .proxy.avif sidecar on disk so the daemon can serve it to peers.
-static gpointer _announce_existing_proxies(gpointer _unused)
+// Pass (gpointer)1 as argument to skip the startup delay (re-announce path).
+static gpointer _announce_existing_proxies(gpointer arg)
 {
-  (void)_unused;
-  // Small delay so the daemon socket is fully ready before we flood it.
-  g_usleep(2 * G_USEC_PER_SEC);
+  // On first startup the daemon needs a moment to finish binding the socket.
+  // On re-announce (daemon reconnect) we skip the delay — socket is ready.
+  if(arg == NULL)
+    g_usleep(2 * G_USEC_PER_SEC);
 
   // images.filename is the basename only; join film_rolls for the full path.
   sqlite3_stmt *stmt;

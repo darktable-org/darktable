@@ -179,7 +179,7 @@ void P2PClient::pushXmp(const QString &rawPath, const QString &xmpContent)
         {"data", QJsonObject{
             {"path",    rawPath},
             {"content", xmpContent},
-            {"mtime",   QString::number(QDateTime::currentMSecsSinceEpoch() * 1'000'000LL)},
+            {"mtime",   QJsonValue(QDateTime::currentMSecsSinceEpoch())},
         }}
     });
 }
