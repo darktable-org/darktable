@@ -309,8 +309,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   if(exif && exif_len > 0)
     LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
 
-  /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and use dt_exif_write_blob() after
-   * closing file instead */
+  // Embed metadata into JXL BMFF container
+  // Note: exif must be provided already filtered from imageio.c
   if(exif && exif_len > 0)
   {
     // Prepend the 4 byte (zero) offset to the blob before writing
@@ -319,20 +319,16 @@ int write_image(struct dt_imageio_module_data_t *data,
     if(!exif_buf)
       JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
     memmove(exif_buf + 4, exif, exif_len);
-    // Exiv2 < 0.28 doesn't support Brotli compressed boxes
-    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_FALSE));
+    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_TRUE));
   }
 
-  /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and update flags() */
-  /* TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested */
-  if(exif && exif_len > 0)
+  if(exif && exif_len > 0) // TODO separate signal for "include XMP"
   {
     xmp_string = dt_exif_xmp_read_string(imgid);
     size_t xmp_len;
     if(xmp_string
        && (xmp_len = strlen(xmp_string)) > 0)
     {
-      // Exiv2 < 0.28 doesn't support Brotli compressed boxes
       LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ",
                                      (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
     }
@@ -434,14 +430,12 @@ int levels(dt_imageio_module_data_t *data)
 
 int flags(dt_imageio_module_data_t *data)
 {
-  /*
-   * As of exiv2 0.27.5 there is no write support for the JXL BMFF format,
-   * so we do not return the XMP supported flag currently.
-   * Once exiv2 write support is there, the flag can be returned, and the
-   * direct XMP embedding workaround using JxlEncoderAddBox("xml ") above
-   * can be removed.
-   */
-  return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
+#if defined(EXV_ENABLE_BMFF) && defined(EXV_HAVE_BROTLI)
+  // exiv2 >= 0.28 with JXL BMFF format and Brotli compression
+  return FORMAT_FLAGS_SUPPORT_XMP;
+#else
+  return 0;
+#endif
 }
 
 static inline int _bpp_to_enum(int bpp)
