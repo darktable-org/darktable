@@ -1,3 +1,4 @@
+.claude
 src/p2p/pep
 *.so
 .env
