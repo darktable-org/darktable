@@ -143,6 +143,25 @@ static int floor_log2(int i)
   return floor_log2_table[i];
 }
 
+/*
+ * SMPTE ST 2084 (PQ) EOTF: map a normalized PQ-encoded value in [0, 1] to
+ * absolute luminance in cd/m^2 (nits), peak white = 10000 nits.
+ */
+static float _pq_to_nits(const float e)
+{
+  const float m1 = 0.1593017578125f;   /* 2610 / 16384      */
+  const float m2 = 78.84375f;          /* 2523 / 4096 * 128 */
+  const float c1 = 0.8359375f;         /* 3424 / 4096       */
+  const float c2 = 18.8515625f;        /* 2413 / 4096 * 32  */
+  const float c3 = 18.6875f;           /* 2392 / 4096 * 32  */
+
+  const float ep = powf(CLAMP(e, 0.0f, 1.0f), 1.0f / m2);
+  const float num = fmaxf(ep - c1, 0.0f);
+  const float den = c2 - c3 * ep;
+  if(den <= 0.0f) return 10000.0f;
+  return 10000.0f * powf(num / den, 1.0f / m1);
+}
+
 void init(dt_imageio_module_format_t *self)
 {
   const char *codecName = avifCodecName(AVIF_CODEC_CHOICE_AUTO,
@@ -405,6 +424,43 @@ int write_image(struct dt_imageio_module_data_t *data,
     image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
 
   dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]", dt_colorspaces_get_name(cp->type, filename));
+
+  /*
+   * HDR10 content light level (clli) metadata.
+   *
+   * For PQ (SMPTE ST 2084) output the float samples are absolute-luminance
+   * encoded, so we can derive the real content light levels from the pixels:
+   *   - MaxCLL  = the brightest single sample (max RGB component) in nits,
+   *   - MaxFALL = the brightest picture's average light level; for a still this
+   *               is the mean over all samples of that per-sample peak.
+   * Players and HDR displays use these to tone-map appropriately. We only write
+   * them for PQ; HLG is relative and has no fixed nit scale.
+   */
+  if(have_nclx
+     && image->transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084)
+  {
+    const float *const restrict cll_in = (const float *)in;
+    const size_t npixels = width * height;
+    float max_cll = 0.0f;
+    double sum_fall = 0.0;
+
+    DT_OMP_FOR_SIMD(reduction(max : max_cll) reduction(+ : sum_fall))
+    for(size_t k = 0; k < npixels; k++)
+    {
+      const float *const px = &cll_in[4 * k];
+      const float e_max = fmaxf(fmaxf(px[0], px[1]), px[2]);
+      const float nits = _pq_to_nits(e_max);
+      max_cll = fmaxf(max_cll, nits);
+      sum_fall += nits;
+    }
+    const float max_fall = npixels ? (float)(sum_fall / (double)npixels) : 0.0f;
+
+    image->clli.maxCLL  = (uint16_t)CLAMP(roundf(max_cll),  0.0f, 65535.0f);
+    image->clli.maxPALL = (uint16_t)CLAMP(roundf(max_fall), 0.0f, 65535.0f);
+
+    dt_print(DT_DEBUG_IMAGEIO, "[avif HDR10 clli: MaxCLL=%u nits, MaxFALL=%u nits]",
+             image->clli.maxCLL, image->clli.maxPALL);
+  }
 
   if(!have_nclx)
   {
