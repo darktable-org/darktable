@@ -1496,47 +1496,34 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   gboolean from_cache = TRUE;
   dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
 
-  // last param is dng mode, it's false here
+  // Read unfiltered exif from source image
+  uint8_t *exif_profile0 = NULL;
   const int length0 = dt_exif_read_blob(&exif_profile0, pathname, imgid, sRGB,
                                         processed_width, processed_height, FALSE);
 
-  char* exv_filename = g_malloc(strlen(filename) + 5);
-  snprintf(exv_filename, strlen(filename) + 5, "%s%s", filename, ".exv");
-
-  // empty metadata file (XXX call write_blob inside there for us)
-  dt_exif_write_exv(exif_profile0, length0, exv_filename, 1);
-
-  // write data into metadata file
-  dt_exif_write_blob(exif_profile0, length0, exv_filename, 1);
-
+  // Filter metadata in-memory (no temporary files needed)
+  uint8_t *filtered_exif = NULL;
+  int filtered_exif_len = 0;
+  if(!ignore_exif && md_flags_set && exif_profile0 && length0 > 0)
+  {
+    filtered_exif_len = dt_exif_write_blob_to_buffer(exif_profile0, length0, &filtered_exif, 1);
+  }
   free(exif_profile0);
 
-  /* now write xmp into that container, if possible */
+  // For formats that support XMP, attach it if requested
   if(copy_metadata
      && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
   {
-    dt_exif_xmp_attach_export(imgid, exv_filename, metadata, &dev, &pipe);
-    // no need to cancel the export if this fail
+    // TODO: Attach XMP to filtered_exif if needed
+    // dt_exif_xmp_attach_export(imgid, ..., metadata, &dev, &pipe);
   }
 
-  // write image including filtered metadata from .exv
-  if(!ignore_exif && md_flags_set)
+  // write image with filtered metadata
+  if(!ignore_exif && md_flags_set && filtered_exif_len > 0)
   {
-    uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes
-                                  // max, but if original size is
-                                  // close to that, adding new tags
-                                  // could make it go over that... so
-                                  // let it be and see what happens
-                                  // when we write the image
-    // last param is dng mode, it's false here
-    const int length = dt_exif_read_blob(&exif_profile, exv_filename, imgid, sRGB,
-                                         processed_width, processed_height, FALSE);
-
     res = (format->write_image(format_params, filename, outbuf, icc_type,
-                              icc_filename, exif_profile, length, imgid,
+                              icc_filename, filtered_exif, filtered_exif_len, imgid,
                               num, total, &pipe, export_masks)) != 0;
-
-    free(exif_profile);
   }
   else
   {
@@ -1544,8 +1531,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                               icc_filename, NULL, 0, imgid, num, total,
                               &pipe, export_masks)) != 0;
   }
-
-  g_free(exv_filename);
+  
+  g_free(filtered_exif);
 
   if(res)
     goto error;

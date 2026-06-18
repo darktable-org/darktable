@@ -101,6 +101,11 @@ int dt_exif_write_exv(uint8_t *blob,
 /** write blob to file exif. merges with existing exif information.*/
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
+/** write filtered exif blob to memory buffer (in-memory filtering, no temporary files).
+ * caller must free output_blob with g_free().
+ * returns size of output buffer, or 0 on error. */
+int dt_exif_write_blob_to_buffer(uint8_t *input_blob, uint32_t input_size, uint8_t **output_blob, const int compressed);
+
 /** write xmp sidecar file. */
 /** if force_write is FALSE, the current contents of the sidecar file are compared against what
     would be written, and the write is skipped if they are the same.  This preserves the sidecar

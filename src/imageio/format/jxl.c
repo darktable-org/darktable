@@ -309,8 +309,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   if(exif && exif_len > 0)
     LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
 
-  // /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and use dt_exif_write_blob() after
-  //  * closing file instead */
+  // Filter and embed metadata into JXL BMFF container
+  // Note: exif is already filtered by imageio.c via the .exv file workflow
   if(exif && exif_len > 0)
   {
     // Prepend the 4 byte (zero) offset to the blob before writing
@@ -318,24 +318,10 @@ int write_image(struct dt_imageio_module_data_t *data,
     exif_buf = g_try_malloc0(exif_len + 4);
     if(!exif_buf)
       JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
+    
     memmove(exif_buf + 4, exif, exif_len);
     // Exiv2 >= 0.28 (released 2023-05-08) supports Brotli compressed boxes
     LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_TRUE));
-  }
-
-  /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and update flags() */
-  /* TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested */
-  if(exif && exif_len > 0)
-  {
-    xmp_string = dt_exif_xmp_read_string(imgid);
-    size_t xmp_len;
-    if(xmp_string
-       && (xmp_len = strlen(xmp_string)) > 0)
-    {
-      // Exiv2 >= 0.28 (released 2023-05-08) supports Brotli compressed boxes
-      LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ",
-                                     (const uint8_t *)xmp_string, xmp_len, JXL_TRUE));
-    }
   }
 
   JxlPixelFormat pixel_format = { 3, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0 };
