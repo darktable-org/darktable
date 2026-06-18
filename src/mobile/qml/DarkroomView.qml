@@ -18,10 +18,8 @@ Page {
     // Bumped when a refreshed preview JPEG arrives; triggers image reload.
     property int previewKey: 0
 
-    // Local copies of editable fields so we can diff before pushing
     property int  localRating:     rating
     property int  localColorLabel: colorLabel
-    property bool dirty: localRating !== rating || localColorLabel !== colorLabel
 
     // On open: fetch full-size preview from peers. Works whether we have the
     // AVIF proxy or just a thumbnail — display is JPEG-only on mobile.
@@ -78,13 +76,6 @@ Page {
                 display: AbstractButton.IconOnly
                 visible: root.previewKey > 0
                 onClicked: shareHelper.shareRawPaths([root.rawPath])
-            }
-            ToolButton {
-                text: "Push"
-                visible: root.dirty
-                Material.accent: Material.Orange
-                highlighted: true
-                onClicked: root.pushEdits()
             }
         }
     }
@@ -246,7 +237,10 @@ Page {
                         border { color: "white"; width: root.localColorLabel === index ? 2 : 0 }
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: root.localColorLabel = (root.localColorLabel === index) ? -1 : index
+                            onClicked: {
+                                root.localColorLabel = (root.localColorLabel === index) ? -1 : index
+                                root.pushEdits()
+                            }
                         }
                     }
                 }
