@@ -1258,21 +1258,11 @@ func (d *daemon) subscribeXMP() {
 func (d *daemon) pushXMPToPeers(x xmpMsg, excludeURL string) {
 	myURL := d.localProxyURL()
 	myLANURL := fmt.Sprintf("https://%s:%d", d.localIP(), proxyHTTPPort)
-	seen := make(map[string]bool)
 	var targets []string
-	collect := func(u string) {
-		if u != "" && u != myURL && u != myLANURL && u != excludeURL && !seen[u] {
-			seen[u] = true
+	for _, u := range d.allPeerURLs() {
+		if u != "" && u != myURL && u != myLANURL && u != excludeURL {
 			targets = append(targets, u)
 		}
-	}
-	d.peersMu.RLock()
-	for _, u := range d.peers {
-		collect(u)
-	}
-	d.peersMu.RUnlock()
-	for _, u := range d.peersToSync() {
-		collect(u)
 	}
 	log.Printf("[xmp] push targets: myURL=%s  targets=%v", myURL, targets)
 	if len(targets) == 0 {
@@ -1373,6 +1363,17 @@ func (d *daemon) subscribeProxy() {
 		d.peers[m.ReceivedFrom] = ann.BaseURL
 		d.peersMu.Unlock()
 		d.pdb.touch(ann.BaseURL, ann.SenderID) // persist gossipsub-discovered peer
+
+		// If we haven't successfully synced with this peer yet, verify it
+		// immediately so it enters d.syncedPeers and becomes a fetch target.
+		// (Without this, a new peer would wait up to 60 s for the sync ticker.)
+		d.syncedPeersMu.Lock()
+		alreadySynced := d.syncedPeers[ann.BaseURL]
+		d.syncedPeersMu.Unlock()
+		if !alreadySynced {
+			go d.syncWithPeer(ann.BaseURL)
+		}
+
 		log.Printf("[proxy] peer %s announced %d proxies at %s",
 			m.ReceivedFrom.ShortString(), len(ann.Paths), ann.BaseURL)
 
@@ -1525,32 +1526,20 @@ func extractTagValue(elem string) string {
 	return ""
 }
 
-// allPeerURLs returns the union of libp2p-connected peer URLs and
-// static/peerDB peers we have successfully synced with via HTTP.
-// Using the combined set means preview/proxy fetches succeed even when
-// the libp2p mesh is not yet established (e.g. fresh start or mobile).
+// allPeerURLs returns base URLs of peers that have recently responded to a
+// manifest sync (the periodic "hello").  Only entries in d.syncedPeers are
+// returned — peers that failed their last sync, or that have been discovered
+// via gossipsub but not yet HTTP-verified, are excluded.  This keeps preview
+// and proxy fetch attempts from going to stale or unreachable addresses.
 func (d *daemon) allPeerURLs() []string {
-	seen := make(map[string]bool)
-	var urls []string
-
-	d.peersMu.RLock()
-	for _, u := range d.peers {
-		if !seen[u] {
-			seen[u] = true
-			urls = append(urls, u)
-		}
-	}
-	d.peersMu.RUnlock()
-
 	d.syncedPeersMu.Lock()
+	defer d.syncedPeersMu.Unlock()
+	urls := make([]string, 0, len(d.syncedPeers))
 	for u, ok := range d.syncedPeers {
-		if ok && !seen[u] {
-			seen[u] = true
+		if ok {
 			urls = append(urls, u)
 		}
 	}
-	d.syncedPeersMu.Unlock()
-
 	return urls
 }
 

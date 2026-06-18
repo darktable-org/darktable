@@ -149,6 +149,17 @@ Page {
                 return model.rawPath in rootPage.selectedSet
             }
 
+            // Retry preview fetch every 30 s while this cell is on screen and
+            // has no preview yet.  Stops automatically when previewKey goes > 0
+            // (preview arrived) or the daemon disconnects.  Destroyed with the
+            // delegate when the cell scrolls out of the GridView's cull rect.
+            Timer {
+                interval: 30000
+                repeat:   true
+                running:  model.previewKey <= 0 && p2p.connected
+                onTriggered: p2p.fetchPreview(model.rawPath, "thumb")
+            }
+
             Rectangle {
                 id: cellBg
                 anchors { fill: parent; margins: 2 }
