@@ -163,8 +163,37 @@ static gboolean _connect_socket(void)
 }
 
 // ---------------------------------------------------------------------------
-// Push-event handling (image_imported, xmp_updated)
+// Push-event handling (image_imported, xmp_updated, generate_preview)
 // ---------------------------------------------------------------------------
+
+typedef struct _gen_preview_ctx_t
+{
+  dt_imgid_t imgid;
+} _gen_preview_ctx_t;
+
+// Background thread: generate DT_MIPMAP_1 via a blocking get, then evict to
+// flush it from the in-memory LRU to the mipmap disk cache.  The desktop
+// daemon's findMipmapJPEG looks for the disk file; PREFETCH alone is not enough
+// because it only populates the in-memory cache (disk write happens on eviction).
+static gpointer _generate_preview_thread(gpointer data)
+{
+  _gen_preview_ctx_t *ctx = data;
+  const dt_imgid_t imgid = ctx->imgid;
+  free(ctx);
+
+  dt_mipmap_buffer_t mbuf;
+  dt_mipmap_cache_get(&mbuf, imgid, DT_MIPMAP_1, DT_MIPMAP_BLOCKING, 'r');
+  if(mbuf.buf)
+    dt_mipmap_cache_release(&mbuf);
+
+  // Evicting forces _mipmap_cache_deallocate_dynamic which writes the JPEG
+  // to the disk cache at mipmaps-*.d/1/<imgid>.jpg where the daemon can find it.
+  dt_mipmap_cache_evict_at_size(imgid, DT_MIPMAP_1);
+  dt_mipmap_cache_evict_at_size(imgid, DT_MIPMAP_2);
+
+  dt_print(DT_DEBUG_IMAGEIO, "[p2p] generate_preview: mipmap flushed to disk for id=%d", imgid);
+  return NULL;
+}
 
 typedef struct _import_ctx_t
 {
@@ -413,6 +442,30 @@ static gpointer _event_thread_func(gpointer user_data)
         {
           dt_print(DT_DEBUG_IMAGEIO, "[p2p] received xmp_updated: %s", path);
           _p2p_queue_xmp_reload(path);
+        }
+      }
+      else if(strstr(line, "\"generate_preview\""))
+      {
+        const char *data = strstr(line, "\"data\"");
+        if(!data) continue;
+        char path[PATH_MAX];
+        if(_extract_path(data, path, sizeof(path)))
+        {
+          const dt_imgid_t imgid = dt_image_get_id_full_path(path);
+          if(dt_is_valid_imgid(imgid))
+          {
+            dt_print(DT_DEBUG_IMAGEIO, "[p2p] generate_preview for '%s' id=%d happened",
+                     path, imgid);
+            _gen_preview_ctx_t *ctx = malloc(sizeof(*ctx));
+            if(ctx)
+            {
+              ctx->imgid = imgid;
+              GThread *t = g_thread_try_new("p2p-gen-preview",
+                                            _generate_preview_thread, ctx, NULL);
+              if(t) g_thread_unref(t);
+              else   free(ctx);
+            }
+          }
         }
       }
       else if(strstr(line, "\"request_announce\""))

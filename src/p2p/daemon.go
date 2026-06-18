@@ -1548,8 +1548,8 @@ func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
 
 	dst := localPath + ".preview-" + size + ".jpg"
 
-	const maxAttempts = 4
-	const retryDelay = 3 * time.Second
+	const maxAttempts = 8
+	const retryDelay = 4 * time.Second
 
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
@@ -2218,7 +2218,15 @@ func (d *daemon) servePreview(w http.ResponseWriter, r *http.Request) {
 			darktableRunning := len(d.subs) > 0
 			d.subsMu.Unlock()
 			if darktableRunning {
-				log.Printf("[preview] cli skipped for '%s' (darktable running); mobile will retry",
+				// Ask darktable to generate the mipmap in the background.
+				// It will write the file to its mipmap cache; the retry loop
+				// in fetchPreviewFromPeers will pick it up a few seconds later.
+				pathJSON, _ := json.Marshal(rawPath)
+				d.broadcast(socketMsg{
+					Type: "generate_preview",
+					Data: json.RawMessage(`{"path":` + string(pathJSON) + `}`),
+				})
+				log.Printf("[preview] requested mipmap generation for '%s' from darktable",
 					filepath.Base(rawPath))
 				http.Error(w, "preview regenerating", http.StatusServiceUnavailable)
 				return

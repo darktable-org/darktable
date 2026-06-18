@@ -276,7 +276,7 @@ Page {
                 property string active: "all"
 
                 Repeater {
-                    model: ["all", "peer", "xmp", "proxy", "import"]
+                    model: ["all", "peer", "xmp", "proxy", "preview", "import"]
                     delegate: Rectangle {
                         required property string modelData
 
