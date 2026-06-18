@@ -1492,11 +1492,11 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if (!ignore_exif && md_encoder_adds_exif)
   {
     uint8_t *exif_profile0 = NULL; // Exif data should be 65536 bytes
-                                  // max, but if original size is
-                                  // close to that, adding new tags
-                                  // could make it go over that... so
-                                  // let it be and see what happens
-                                  // when we write the image
+                                   // max, but if original size is
+                                   // close to that, adding new tags
+                                   // could make it go over that... so
+                                   // let it be and see what happens
+                                   // when we write the image
     char pathname[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
