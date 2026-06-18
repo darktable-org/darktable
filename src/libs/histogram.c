@@ -750,9 +750,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_left);
   gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_right);
   gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), outer_box_split);
-  // allow for dragging to change exposure in spaces where not buttons
-  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), s->button_box_left, TRUE);
-  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), outer_box_split, TRUE);
+  // FALSE to keep mode selector (vectorscope, waveform etc.) tooltips
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), s->button_box_left, FALSE);
+  // FALSE to "switch to vertical/horizontal" and RGB channel tooltips
+  // but breaks exposure adjustment by dragging in "split" mode
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), outer_box_split, FALSE);
 
   // FIXME: the button transitions when they appear on mouseover
   // (mouse enters scope widget) or change (mouse click) cause redraws
