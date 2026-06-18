@@ -517,6 +517,22 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
   gdk_event_free(event);
 }
 
+// TRUE if the point (x, y) -- given in `from` widget coordinates -- lies
+// over the visible widget `w`.
+static gboolean _pointer_over_widget(GtkWidget *from,
+                                     GtkWidget *w,
+                                     const double x,
+                                     const double y)
+{
+  if(!w || !gtk_widget_is_visible(w)) return FALSE;
+  gint tx, ty;
+  if(!gtk_widget_translate_coordinates(from, w, (gint)x, (gint)y, &tx, &ty))
+    return FALSE;
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(w, &alloc);
+  return tx >= 0 && tx < alloc.width && ty >= 0 && ty < alloc.height;
+}
+
 static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controller,
                                              const double x,
                                              const double y,
@@ -528,6 +544,20 @@ static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controlle
   // main widget tooltip has changed, but calling this only at the end
   // of lib_histogram_update_tooltip() doesn't work
   dt_scopes_call_if_exists(s->cur_mode, update_buttons);
+
+  // overlay pass-through OFF for a button box while the
+  // pointer is over its buttons -> tooltips
+  // pass-through on otherwise -> exposure dragging reaches scope.
+  // For the split option we test the inner button_box_split, not the full-width
+  // outer_box_split, so dragging still works across the rest of the top.
+  GtkWidget *eb = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  gtk_overlay_set_overlay_pass_through
+    (GTK_OVERLAY(s->overlay), s->button_box_left,
+     !_pointer_over_widget(eb, s->button_box_left, x, y));
+  if(s->outer_box_split)
+    gtk_overlay_set_overlay_pass_through
+      (GTK_OVERLAY(s->overlay), s->outer_box_split,
+       !_pointer_over_widget(eb, s->button_box_split, x, y));
 }
 
 static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller,
@@ -572,6 +602,11 @@ static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller
   gtk_widget_hide(s->button_box_left);
   gtk_widget_hide(s->button_box_right);
   gtk_widget_hide(s->button_box_split);
+  // a fast exit can skip the motion event that would restore pass-through,
+  // make sure dragging is re-enabled when the pointer leaves
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(s->overlay), s->button_box_left, TRUE);
+  if(s->outer_box_split)
+    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(s->overlay), s->outer_box_split, TRUE);
 }
 
 static void _lib_histogram_collapse_callback(dt_action_t *action)
@@ -750,11 +785,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_left);
   gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_right);
   gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), outer_box_split);
-  // FALSE to keep mode selector (vectorscope, waveform etc.) tooltips
-  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), s->button_box_left, FALSE);
-  // FALSE to "switch to vertical/horizontal" and RGB channel tooltips
-  // but breaks exposure adjustment by dragging in "split" mode
-  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), outer_box_split, FALSE);
+  s->outer_box_split = outer_box_split;
+  // Pass-through by default to allow exposure-dragging reach the scope.
+  // Set to FALSE on hover to allow tooltips, see _eventbox_motion_notify_callback()
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), s->button_box_left, TRUE);
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), outer_box_split, TRUE);
 
   // FIXME: the button transitions when they appear on mouseover
   // (mouse enters scope widget) or change (mouse click) cause redraws
