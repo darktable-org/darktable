@@ -1,4 +1,5 @@
 #include "p2pclient.h"
+#include "xmpio.h"
 #include <QDateTime>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -140,6 +141,36 @@ void P2PClient::sendWithResponse(const QJsonObject &cmd,
 }
 
 // ── public commands ───────────────────────────────────────────────────────────
+
+void P2PClient::applyAndPushEdits(const QString &rawPath, int rating, int colorLabel)
+{
+    const QString xmpPath = rawPath + ".xmp";
+    QString xmp = XmpIO::load(xmpPath);
+
+    if (xmp.isEmpty()) {
+        // Create a minimal skeleton when no XMP exists yet.
+        xmp = QString(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\">\n"
+            " <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n"
+            "  <rdf:Description rdf:about=\"\"\n"
+            "    xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\"\n"
+            "    xmlns:darktable=\"http://darktable.sf.net/\">\n"
+            "  </rdf:Description>\n"
+            " </rdf:RDF>\n"
+            "</x:xmpmeta>\n");
+    }
+
+    xmp = XmpIO::setRating(xmp, rating);
+    xmp = XmpIO::setColorLabel(xmp, colorLabel);
+
+    if (!XmpIO::save(xmpPath, xmp)) {
+        qWarning() << "[p2p] applyAndPushEdits: failed to write" << xmpPath;
+        return;
+    }
+
+    pushXmp(rawPath, xmp);
+}
 
 void P2PClient::pushXmp(const QString &rawPath, const QString &xmpContent)
 {

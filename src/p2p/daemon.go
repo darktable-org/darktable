@@ -609,6 +609,10 @@ func newDaemon(ctx context.Context, socketPath, passphrase, proxyDir, importDir 
 
 	go d.initExternalAccess()
 
+	// Restore local→remote path mapping from previous session so fetch_proxy
+	// and fetch_preview work correctly after a daemon restart on mobile.
+	d.loadPathMap()
+
 	// Open peer DB and seed it with the static peers passed in.
 	var dbErr error
 	d.pdb, dbErr = openPeerDB()
@@ -889,6 +893,20 @@ func (d *daemon) handleConn(conn net.Conn) {
 			log.Printf("[xmp] send: '%s'  capture=%s  peers=%d",
 				x.Filename, x.CaptureDate, nPeers)
 
+			// Write XMP to the local file so darktable on this machine picks it up.
+			// This covers the mobile-app-on-same-machine case; remote machines get it
+			// via gossipsub / HTTP push below.
+			localPath := d.resolveLocalPath(x.Path, x.Filename, x.CaptureDate)
+			if localPath != "" {
+				if err := writeXMP(localPath, x.Content); err != nil {
+					log.Printf("[xmp] local write '%s': %v", localPath, err)
+				} else {
+					invalidatePreviewCache(localPath)
+					result, _ := json.Marshal(map[string]string{"path": localPath})
+					d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
+				}
+			}
+
 			if b, err := json.Marshal(x); err == nil {
 				d.xmpTop.Publish(d.ctx, b)
 			}
@@ -905,6 +923,9 @@ func (d *daemon) handleConn(conn net.Conn) {
 				d.announcedProxiesMu.Lock()
 				d.announcedProxies[req.Path] = struct{}{}
 				d.announcedProxiesMu.Unlock()
+				// Index by basename so resolveLocalPath can find this file when
+				// an inbound XMP push from mobile arrives with the mobile local path.
+				d.addToLocalIndex(req.Path)
 			}
 
 		case "fetch_proxy":
@@ -1127,9 +1148,22 @@ func (d *daemon) applyInboundXMP(x xmpMsg, from string) {
 		log.Printf("[xmp] recv: '%s' from %s — applying to '%s'",
 			x.Filename, from, localPath)
 	}
-	if err := writeXMP(localPath, x.Content); err != nil {
+	// If the incoming XMP has no darktable history (thin mobile push) but the
+	// local file does, merge only the rating/colorlabels so the processing
+	// pipeline is not overwritten.
+	contentToWrite := x.Content
+	if !strings.Contains(x.Content, "darktable:history") {
+		if existing, err := os.ReadFile(localPath + ".xmp"); err == nil &&
+			strings.Contains(string(existing), "darktable:history") {
+			contentToWrite = mergeXMPMeta(string(existing), x.Content)
+		}
+	}
+	if err := writeXMP(localPath, contentToWrite); err != nil {
 		log.Printf("[xmp] write '%s': %v", localPath, err)
 	} else {
+		// Invalidate preview caches so the next fetch regenerates them from
+		// the updated XMP rather than serving the pre-edit stale files.
+		invalidatePreviewCache(localPath)
 		result, _ := json.Marshal(map[string]string{"path": localPath})
 		d.broadcast(socketMsg{Type: "xmp_updated", Data: result})
 		// Record suppress entry so any immediate echo from our darktable
@@ -1363,22 +1397,153 @@ func (d *daemon) downloadProxy(remotePath, localPath, baseURL string) bool {
 	return true
 }
 
-// fetchPreviewFromPeers tries every known peer until it obtains a JPEG preview
-// for canonicalPath at the requested size, then caches it locally.
-func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
-	localPath := d.localDestination(canonicalPath)
+// fetchXMPSidecar downloads the XMP sidecar for remotePath from baseURL and
+// writes it to localPath+".xmp". Called after proxy download so mobile starts
+// edits from the full darktable XMP (preserving history and existing rating)
+// rather than from an empty skeleton. Skips silently if the server has no XMP.
+func (d *daemon) fetchXMPSidecar(remotePath, localPath, baseURL string) {
+	xmpURL := baseURL + "/xmp?path=" + url.QueryEscape(remotePath)
+	resp, err := d.httpGet(xmpURL)
+	if err != nil || resp.StatusCode != 200 {
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return
+	}
+	data, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil || len(data) == 0 {
+		return
+	}
+	dst := localPath + ".xmp"
+	if err := os.WriteFile(dst, data, 0644); err != nil {
+		log.Printf("[xmp] write sidecar '%s': %v", filepath.Base(localPath), err)
+	}
+}
+
+// mergeXMPMeta returns dst with xmp:Rating and darktable:colorlabels patched
+// from src. Used when src is a thin mobile-edit push (no darktable history)
+// and dst is the full desktop XMP so the history stack is not overwritten.
+func mergeXMPMeta(dst, src string) string {
+	// Patch attribute-form rating: xmp:Rating="N"
+	reAttr := regexp.MustCompile(`\bxmp:Rating\s*=\s*"[^"]*"`)
+	reElem := regexp.MustCompile(`<xmp:Rating>\s*\d+\s*</xmp:Rating>`)
+	reColor := regexp.MustCompile(`(?s)<darktable:colorlabels>.*?</darktable:colorlabels>`)
+
+	result := dst
+	// Prefer updating attribute form if present; fall back to element form.
+	if attrSrc := reAttr.FindString(src); attrSrc != "" {
+		if reAttr.MatchString(result) {
+			result = reAttr.ReplaceAllLiteralString(result, attrSrc)
+		} else if elemSrc := reElem.FindString(src); elemSrc != "" {
+			if reElem.MatchString(result) {
+				result = reElem.ReplaceAllLiteralString(result, elemSrc)
+			} else {
+				pos := strings.Index(result, "</rdf:Description>")
+				if pos >= 0 {
+					result = result[:pos] + "  " + elemSrc + "\n" + result[pos:]
+				}
+			}
+		} else {
+			result = reAttr.ReplaceAllLiteralString(result, attrSrc)
+		}
+	} else if elemSrc := reElem.FindString(src); elemSrc != "" {
+		if reAttr.MatchString(result) {
+			// Local has attribute form; replace with the new value extracted from element
+			rating := reElem.FindStringSubmatch(src)
+			if len(rating) == 0 {
+				result = reAttr.ReplaceAllLiteralString(result, `xmp:Rating="`+extractTagValue(elemSrc)+`"`)
+			}
+			_ = rating
+		} else if reElem.MatchString(result) {
+			result = reElem.ReplaceAllLiteralString(result, elemSrc)
+		} else {
+			pos := strings.Index(result, "</rdf:Description>")
+			if pos >= 0 {
+				result = result[:pos] + "  " + elemSrc + "\n" + result[pos:]
+			}
+		}
+	}
+
+	// Patch colorlabels block.
+	if colorSrc := reColor.FindString(src); colorSrc != "" {
+		if reColor.MatchString(result) {
+			result = reColor.ReplaceAllLiteralString(result, colorSrc)
+		}
+	}
+	return result
+}
+
+// extractTagValue returns the text content of an XML element like <Tag>value</Tag>.
+func extractTagValue(elem string) string {
+	re := regexp.MustCompile(`>([^<]*)<`)
+	if m := re.FindStringSubmatch(elem); len(m) == 2 {
+		return strings.TrimSpace(m[1])
+	}
+	return ""
+}
+
+// allPeerURLs returns the union of libp2p-connected peer URLs and
+// static/peerDB peers we have successfully synced with via HTTP.
+// Using the combined set means preview/proxy fetches succeed even when
+// the libp2p mesh is not yet established (e.g. fresh start or mobile).
+func (d *daemon) allPeerURLs() []string {
+	seen := make(map[string]bool)
+	var urls []string
 
 	d.peersMu.RLock()
-	urls := make([]string, 0, len(d.peers))
 	for _, u := range d.peers {
-		urls = append(urls, u)
+		if !seen[u] {
+			seen[u] = true
+			urls = append(urls, u)
+		}
 	}
 	d.peersMu.RUnlock()
 
-	for _, baseURL := range urls {
-		d.fetchPreviewJPEG(canonicalPath, localPath, baseURL, size)
-		if fileExists(localPath + ".preview-" + size + ".jpg") {
-			return
+	d.syncedPeersMu.Lock()
+	for u, ok := range d.syncedPeers {
+		if ok && !seen[u] {
+			seen[u] = true
+			urls = append(urls, u)
+		}
+	}
+	d.syncedPeersMu.Unlock()
+
+	return urls
+}
+
+// fetchPreviewFromPeers tries every known peer until it obtains a JPEG preview
+// for canonicalPath at the requested size, then caches it locally.
+// Retries up to 3 additional times with a short delay so that a preview that
+// is still being generated on the desktop side (common right after an edit)
+// will eventually arrive without manual intervention.
+func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
+	localPath := d.localDestination(canonicalPath)
+
+	// On mobile, canonicalPath is the local import-dir path which differs from
+	// the desktop's original path.  Use localToRemote to get the path the
+	// desktop knows about (same logic fetchProxyFromPeer uses).
+	remotePath := canonicalPath
+	d.localToRemoteMu.RLock()
+	if r, ok := d.localToRemote[canonicalPath]; ok {
+		remotePath = r
+	}
+	d.localToRemoteMu.RUnlock()
+
+	dst := localPath + ".preview-" + size + ".jpg"
+
+	const maxAttempts = 4
+	const retryDelay = 3 * time.Second
+
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		if attempt > 0 {
+			time.Sleep(retryDelay)
+		}
+		for _, baseURL := range d.allPeerURLs() {
+			d.fetchPreviewJPEG(remotePath, localPath, baseURL, size)
+			if fileExists(dst) {
+				return
+			}
 		}
 	}
 }
@@ -1388,11 +1553,12 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 	localPath := d.localDestination(remotePath)
 
 	// On the phone, localPath differs from remotePath (importDir vs desktop path).
-	// Remember the mapping so explicit fetch_proxy commands can resolve it back.
+	// Remember the mapping so fetch_proxy and fetch_preview can resolve it back.
 	if localPath != remotePath {
 		d.localToRemoteMu.Lock()
 		d.localToRemote[localPath] = remotePath
 		d.localToRemoteMu.Unlock()
+		d.savePathMap()
 	}
 
 	// Fetch the thumbnail JPEG first — it's small and lets the mobile gallery
@@ -1402,6 +1568,10 @@ func (d *daemon) autoFetchProxy(remotePath, baseURL string) {
 	if !d.downloadProxy(remotePath, localPath, baseURL) {
 		return
 	}
+
+	// Download the XMP sidecar so mobile always starts edits from the full
+	// darktable XMP (preserving history stack and existing rating).
+	d.fetchXMPSidecar(remotePath, localPath, baseURL)
 
 	d.addToLocalIndex(localPath)
 
@@ -1477,14 +1647,7 @@ func (d *daemon) fetchProxyFromPeer(localPath string, enc *json.Encoder) {
 	}
 	d.localToRemoteMu.RUnlock()
 
-	d.peersMu.RLock()
-	urls := make([]string, 0, len(d.peers))
-	for _, u := range d.peers {
-		urls = append(urls, u)
-	}
-	d.peersMu.RUnlock()
-
-	for _, baseURL := range urls {
+	for _, baseURL := range d.allPeerURLs() {
 		fetchURL := baseURL + "/proxy?path=" + url.QueryEscape(requestPath)
 		resp, err := d.httpGet(fetchURL)
 		if err != nil || resp.StatusCode != 200 {
@@ -1849,6 +2012,27 @@ func (d *daemon) isAnnouncedPath(rawPath string) bool {
 }
 
 func (d *daemon) serveXMP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		// GET /xmp?path=<canonical> — serve the XMP sidecar for an announced path.
+		canonicalPath := r.URL.Query().Get("path")
+		if canonicalPath == "" || strings.Contains(canonicalPath, "..") {
+			http.Error(w, "bad request", 400)
+			return
+		}
+		if !d.isAnnouncedPath(canonicalPath) {
+			http.Error(w, "not found", 404)
+			return
+		}
+		xmpPath := canonicalPath + ".xmp"
+		data, err := os.ReadFile(xmpPath)
+		if err != nil {
+			http.Error(w, "not found", 404)
+			return
+		}
+		w.Header().Set("Content-Type", "application/xml")
+		w.Write(data)
+		return
+	}
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -2370,4 +2554,59 @@ func writeXMP(rawPath, content string) error {
 		return err
 	}
 	return os.Rename(tmp, xmpPath)
+}
+
+// pathMapPath returns the config-dir path for the persisted local→remote map.
+func pathMapPath() string {
+	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
+		return filepath.Join(dir, "darktable", "peer.pathmap")
+	}
+	if home, err := os.UserHomeDir(); err == nil {
+		return filepath.Join(home, ".config", "darktable", "peer.pathmap")
+	}
+	return ""
+}
+
+// savePathMap persists localToRemote to disk so fetch_proxy / fetch_preview
+// survive a daemon restart.
+func (d *daemon) savePathMap() {
+	p := pathMapPath()
+	if p == "" {
+		return
+	}
+	d.localToRemoteMu.RLock()
+	data, err := json.Marshal(d.localToRemote)
+	d.localToRemoteMu.RUnlock()
+	if err == nil {
+		_ = os.WriteFile(p, data, 0644)
+	}
+}
+
+// loadPathMap restores the localToRemote map saved by a previous session.
+func (d *daemon) loadPathMap() {
+	p := pathMapPath()
+	if p == "" {
+		return
+	}
+	data, err := os.ReadFile(p)
+	if err != nil {
+		return
+	}
+	var m map[string]string
+	if json.Unmarshal(data, &m) == nil && len(m) > 0 {
+		d.localToRemoteMu.Lock()
+		for k, v := range m {
+			d.localToRemote[k] = v
+		}
+		d.localToRemoteMu.Unlock()
+		log.Printf("[pathmap] restored %d local→remote path entries", len(m))
+	}
+}
+
+// invalidatePreviewCache removes the JPEG preview files cached beside a raw so
+// that the next /preview request regenerates them from the current XMP/mipmap
+// instead of serving the pre-edit stale version.
+func invalidatePreviewCache(rawPath string) {
+	os.Remove(rawPath + ".preview-thumb.jpg")
+	os.Remove(rawPath + ".preview-full.jpg")
 }

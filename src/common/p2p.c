@@ -237,82 +237,6 @@ static gboolean _import_on_main_thread(gpointer data)
   return G_SOURCE_REMOVE;
 }
 
-// Shim so _xmp_reload_job_run can fall back to importing on the main thread
-// when the image isn't in the library yet (same path as _import_on_main_thread).
-static int32_t _import_image_job_run(dt_job_t *job)
-{
-  _import_ctx_t *ctx = dt_control_job_get_params(job);
-  _import_ctx_t *copy = malloc(sizeof(*copy));
-  if(copy)
-  {
-    g_strlcpy(copy->path, ctx->path, sizeof(copy->path));
-    g_main_context_invoke_full(NULL, G_PRIORITY_LOW,
-                               _import_on_main_thread, copy, NULL);
-  }
-  return 0;
-}
-
-typedef struct { dt_imgid_t imgid; } _apply_xmp_ctx_t;
-
-// Runs on GTK main thread: reload darkroom pipeline and refresh lighttable.
-// The XMP has already been written to the DB by the background job.
-static gboolean _apply_xmp_main_thread(gpointer data)
-{
-  _apply_xmp_ctx_t *ctx = data;
-  const dt_imgid_t imgid = ctx->imgid;
-  g_free(ctx);
-
-  if(darktable.develop && dt_dev_is_current_image(darktable.develop, imgid))
-    dt_dev_reload_history_items(darktable.develop);
-
-  dt_mipmap_cache_remove(imgid);
-  dt_image_update_final_size(imgid);
-  dt_image_cache_set_change_timestamp(imgid);
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
-  return G_SOURCE_REMOVE;
-}
-
-// Background job: reads XMP sidecar into DB, then dispatches UI refresh to
-// the main thread.  Splitting the two steps avoids the deadlock that results
-// from dt_history_load_and_apply holding dt_lock_image while calling
-// dt_dev_reload_history_items (which also tries to acquire the same lock).
-static int32_t _xmp_reload_job_run(dt_job_t *job)
-{
-  _import_ctx_t *ctx = dt_control_job_get_params(job);
-
-  dt_imgid_t imgid = dt_image_get_id_full_path(ctx->path);
-  if(dt_is_valid_imgid(imgid))
-  {
-    char xmp_path[PATH_MAX];
-    g_snprintf(xmp_path, sizeof(xmp_path), "%s.xmp", ctx->path);
-
-    // Write XMP history into SQLite on this background thread.  Release the
-    // image lock before dispatching to the main thread so dt_dev_reload_history_items
-    // can acquire it without deadlocking.
-    dt_lock_image(imgid);
-    dt_image_t *img = dt_image_cache_get(imgid, 'w');
-    if(img)
-    {
-      dt_exif_xmp_read(img, xmp_path, TRUE);
-      dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "p2p xmp reload");
-    }
-    dt_unlock_image(imgid);
-
-    _apply_xmp_ctx_t *actx = g_malloc(sizeof(*actx));
-    actx->imgid = imgid;
-    g_main_context_invoke_full(NULL, G_PRIORITY_DEFAULT,
-                               _apply_xmp_main_thread, actx, NULL);
-    dt_print(DT_DEBUG_IMAGEIO, "[p2p] queued XMP reload for '%s' id=%d", ctx->path, imgid);
-  }
-  else
-  {
-    // Image not in library yet — import it (the proxy and XMP are both on disk).
-    _import_image_job_run(job);
-  }
-
-  return 0;
-}
-
 static void _p2p_queue_import(const char *path)
 {
   _import_ctx_t *ctx = malloc(sizeof(*ctx));
@@ -325,15 +249,59 @@ static void _p2p_queue_import(const char *path)
                              _import_on_main_thread, ctx, NULL);
 }
 
+// Runs on GTK main thread: reads XMP sidecar into SQLite then refreshes the
+// UI.  Running on the main thread (which is single-threaded) prevents the
+// concurrent-writer race that caused COMMIT→SQLITE_BUSY→assert when two XMP
+// updates arrived simultaneously on background job threads.
+static gboolean _xmp_reload_on_main_thread(gpointer data)
+{
+  _import_ctx_t *ctx = data;
+
+  const dt_imgid_t imgid = dt_image_get_id_full_path(ctx->path);
+  if(dt_is_valid_imgid(imgid))
+  {
+    char xmp_path[PATH_MAX];
+    g_snprintf(xmp_path, sizeof(xmp_path), "%s.xmp", ctx->path);
+
+    // Write XMP history.  Release image lock before the UI refresh so
+    // dt_dev_reload_history_items can re-acquire it without deadlocking.
+    dt_lock_image(imgid);
+    dt_image_t *img = dt_image_cache_get(imgid, 'w');
+    if(img)
+    {
+      dt_exif_xmp_read(img, xmp_path, TRUE);
+      dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "p2p xmp reload");
+    }
+    dt_unlock_image(imgid);
+
+    if(darktable.develop && dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items(darktable.develop);
+
+    dt_mipmap_cache_remove(imgid);
+    dt_image_update_final_size(imgid);
+    dt_image_cache_set_change_timestamp(imgid);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] applied XMP for '%s' id=%d", ctx->path, imgid);
+  }
+  else
+  {
+    // Image not in library yet — import it.
+    _p2p_queue_import(ctx->path);
+  }
+
+  free(ctx);
+  return G_SOURCE_REMOVE;
+}
+
 static void _p2p_queue_xmp_reload(const char *path)
 {
   _import_ctx_t *ctx = malloc(sizeof(*ctx));
   if(!ctx) return;
   g_strlcpy(ctx->path, path, sizeof(ctx->path));
-  dt_job_t *job = dt_control_job_create(&_xmp_reload_job_run, "p2p xmp reload");
-  if(!job) { free(ctx); return; }
-  dt_control_job_set_params(job, ctx, free);
-  dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
+  // Dispatch to the main thread so SQLite writes are serialized —
+  // concurrent background writes caused COMMIT→SQLITE_BUSY→assert.
+  g_main_context_invoke_full(NULL, G_PRIORITY_DEFAULT,
+                             _xmp_reload_on_main_thread, ctx, NULL);
 }
 
 // Extract the value of the first "path":"..." field found in json_fragment.

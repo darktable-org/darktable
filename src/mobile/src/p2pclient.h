@@ -31,6 +31,8 @@ public slots:
 
     // Fire-and-forget commands
     void pushXmp(const QString &rawPath, const QString &xmpContent);
+    // Write rating + colorLabel into the local .xmp sidecar and push to peers.
+    Q_INVOKABLE void applyAndPushEdits(const QString &rawPath, int rating, int colorLabel);
     void announceProxy(const QString &rawPath);
     void fetchPreview(const QString &rawPath, const QString &size = QLatin1String("thumb"));
     // Ask daemon to re-sync with all known peers (discover new images, refresh previews).

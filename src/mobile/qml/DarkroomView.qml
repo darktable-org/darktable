@@ -280,35 +280,14 @@ Page {
 
     // ── edit push logic ───────────────────────────────────────────────────────
     function pushEdits() {
-        // Load current XMP from disk, patch the two fields, save, and push.
-        // The XmpIO helpers are not directly callable from QML, so we route
-        // through a small helper exposed on the p2p context object.
-        // For the prototype we call the C++ slot via Connections.
-        editWorker.apply()
-    }
-
-    // A thin bridge to C++ for the file-patching work that can't be done in QML.
-    // In production this would be a proper QML-exposed helper; for the prototype
-    // it's a placeholder that the developer wires up in main.cpp or a plugin.
-    QtObject {
-        id: editWorker
-        function apply() {
-            // Signal intent to C++ via a dummy property write so main.cpp can
-            // listen and do the actual XmpIO work.  This keeps all file I/O
-            // out of the QML engine.
-            editPendingChanged()
-        }
-    }
-
-    signal editPendingChanged()
-
-    // Update model immediately so the grid reflects the change before the
-    // network round-trip completes.
-    onEditPendingChanged: {
+        // Update model immediately so the grid reflects the change before the
+        // network round-trip completes.
         imageModel.setRating(root.rawPath, root.localRating)
         imageModel.setColorLabel(root.rawPath, root.localColorLabel)
-        // Sync rating and colorLabel back so dirty clears
         root.rating     = root.localRating
         root.colorLabel = root.localColorLabel
+
+        // Write XMP sidecar to disk and push to peers via the daemon.
+        p2p.applyAndPushEdits(root.rawPath, root.localRating, root.localColorLabel)
     }
 }

@@ -33,14 +33,17 @@ bool XmpIO::readFields(const QString &xmpPath, int &rating, int &colorLabel)
                 inBagLi = true;
                 firstLi = (colorLabel == -1);
             }
+            // darktable writes xmp:Rating as an attribute on rdf:Description.
+            if (name == u"Description") {
+                const QString attr = xml.attributes().value(u"xmp:Rating").toString();
+                if (!attr.isEmpty())
+                    rating = attr.toInt();
+            }
         }
 
         if (xml.isCharacters() && !xml.isWhitespace()) {
             const QString text = xml.text().toString().trimmed();
-            // xmp:Rating
             if (xml.tokenType() == QXmlStreamReader::Characters) {
-                // Walk up via name of the parent element
-                // (QXmlStreamReader doesn't track parent, so we key on context flags)
                 if (inBagLi && firstLi) {
                     colorLabel = text.toInt();
                     firstLi    = false;
@@ -54,14 +57,18 @@ bool XmpIO::readFields(const QString &xmpPath, int &rating, int &colorLabel)
         }
     }
 
-    // Simpler fallback for xmp:Rating — use QRegularExpression since
-    // QXmlStreamReader doesn't surface parent element names directly.
+    // Also check element form <xmp:Rating>N</xmp:Rating> (written by mobile).
+    // If we already got a non-zero rating from the attribute form, keep that
+    // unless the element form has a higher value (element form is the edit).
     f.seek(0);
     const QString text = QString::fromUtf8(f.readAll());
-    static const QRegularExpression re(R"(<xmp:Rating>\s*(\d+)\s*</xmp:Rating>)");
-    const auto m = re.match(text);
-    if (m.hasMatch())
-        rating = m.captured(1).toInt();
+    static const QRegularExpression reElem(R"(<xmp:Rating>\s*(\d+)\s*</xmp:Rating>)");
+    const auto m = reElem.match(text);
+    if (m.hasMatch()) {
+        const int elemRating = m.captured(1).toInt();
+        if (elemRating != 0 || rating == 0)
+            rating = elemRating;
+    }
 
     return true;
 }
@@ -76,39 +83,27 @@ QString XmpIO::load(const QString &xmpPath)
 
 // ── write helpers ─────────────────────────────────────────────────────────────
 
-static QString replaceOrInsert(const QString &xml,
-                               const QRegularExpression &pattern,
-                               const QString &replacement,
-                               const QString &insertBefore)
-{
-    if (pattern.match(xml).hasMatch())
-        return xml.size() ? xml : xml;  // handled below
-
-    QString result = xml;
-    const auto m = pattern.match(result);
-    if (m.hasMatch())
-        return result.replace(m.capturedStart(), m.capturedLength(), replacement);
-
-    // Insert before the closing tag of rdf:Description
-    const int pos = result.indexOf(insertBefore);
-    if (pos >= 0)
-        return result.insert(pos, replacement + "\n");
-    return result;
-}
-
 QString XmpIO::setRating(const QString &xmpText, int rating)
 {
-    static const QRegularExpression re(
-        R"(<xmp:Rating>\s*\d+\s*</xmp:Rating>)");
-    const QString replacement = QString("<xmp:Rating>%1</xmp:Rating>").arg(rating);
     QString result = xmpText;
-    const auto m = re.match(result);
+
+    // darktable writes Rating as an attribute on rdf:Description; update in-place
+    // to avoid creating a duplicate element that conflicts with the attribute.
+    static const QRegularExpression reAttr(R"(\bxmp:Rating\s*=\s*"[^"]*")");
+    if (reAttr.match(result).hasMatch())
+        return result.replace(reAttr, QString("xmp:Rating=\"%1\"").arg(rating));
+
+    // Mobile-written element form <xmp:Rating>N</xmp:Rating>.
+    static const QRegularExpression reElem(R"(<xmp:Rating>\s*\d+\s*</xmp:Rating>)");
+    const QString elemReplacement = QString("<xmp:Rating>%1</xmp:Rating>").arg(rating);
+    const auto m = reElem.match(result);
     if (m.hasMatch())
-        return result.replace(m.capturedStart(), m.capturedLength(), replacement);
-    // Insert before </rdf:Description>
+        return result.replace(m.capturedStart(), m.capturedLength(), elemReplacement);
+
+    // No rating yet — insert element form before </rdf:Description>.
     const int pos = result.indexOf("</rdf:Description>");
     if (pos >= 0)
-        return result.insert(pos, "  " + replacement + "\n");
+        return result.insert(pos, "  " + elemReplacement + "\n");
     return result;
 }
 
