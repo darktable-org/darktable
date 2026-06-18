@@ -2629,6 +2629,37 @@ gboolean dt_exif_read(dt_image_t *img,
   }
 }
 
+// Filter unwanted Exif tags for export (thumbnails and pixel dimensions for non-compressed)
+static void _filter_exif_for_export(Exiv2::ExifData &exifData, const int compressed)
+{
+  // Remove thumbnail
+  {
+    static const char *keys[] = {
+      "Exif.Thumbnail.Compression",
+      "Exif.Thumbnail.XResolution",
+      "Exif.Thumbnail.YResolution",
+      "Exif.Thumbnail.ResolutionUnit",
+      "Exif.Thumbnail.JPEGInterchangeFormat",
+      "Exif.Thumbnail.JPEGInterchangeFormatLength"
+    };
+    static const guint n_keys = G_N_ELEMENTS(keys);
+    _remove_exif_keys(exifData, keys, n_keys);
+  }
+
+  // Only compressed images may set PixelXDimension and PixelYDimension
+  if(!compressed)
+  {
+    static const char *keys[] = {
+      "Exif.Photo.PixelXDimension",
+      "Exif.Photo.PixelYDimension"
+    };
+    static const guint n_keys = G_N_ELEMENTS(keys);
+    _remove_exif_keys(exifData, keys, n_keys);
+  }
+
+  exifData.sortByTag();
+}
+
 int dt_exif_write_blob(uint8_t *blob,
                        uint32_t size,
                        const char *path,
@@ -2653,32 +2684,7 @@ int dt_exif_write_blob(uint8_t *blob,
       imgExifData.add(Exiv2::ExifKey(i->key()), &i->value());
     }
 
-    {
-      // Remove thumbnail
-      static const char *keys[] = {
-        "Exif.Thumbnail.Compression",
-        "Exif.Thumbnail.XResolution",
-        "Exif.Thumbnail.YResolution",
-        "Exif.Thumbnail.ResolutionUnit",
-        "Exif.Thumbnail.JPEGInterchangeFormat",
-        "Exif.Thumbnail.JPEGInterchangeFormatLength"
-      };
-      static const guint n_keys = G_N_ELEMENTS(keys);
-      _remove_exif_keys(imgExifData, keys, n_keys);
-    }
-
-    // Only compressed images may set PixelXDimension and PixelYDimension.
-    if(!compressed)
-    {
-      static const char *keys[] = {
-        "Exif.Photo.PixelXDimension",
-        "Exif.Photo.PixelYDimension"
-      };
-      static const guint n_keys = G_N_ELEMENTS(keys);
-      _remove_exif_keys(imgExifData, keys, n_keys);
-    }
-
-    imgExifData.sortByTag();
+    _filter_exif_for_export(imgExifData, compressed);
     write_metadata_threadsafe(image);
   }
   catch(const Exiv2::AnyError &e)
@@ -2690,6 +2696,50 @@ int dt_exif_write_blob(uint8_t *blob,
     return 0;
   }
   return 1;
+}
+
+int dt_exif_write_blob_to_buffer(uint8_t *input_blob,
+                                  uint32_t input_size,
+                                  uint8_t **output_blob,
+                                  const int compressed)
+{
+  *output_blob = NULL;
+
+  try
+  {
+    // Decode input Exif blob into memory
+    Exiv2::ExifData exifData;
+    Exiv2::ExifParser::decode(exifData, input_blob, input_size);
+
+    _filter_exif_for_export(exifData, compressed);
+
+    // Encode to buffer
+    Exiv2::Blob blob;
+    Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
+
+    const size_t output_size = blob.size();
+    *output_blob = (uint8_t *)g_malloc(output_size);
+    if(!*output_blob)
+    {
+      dt_print(DT_DEBUG_IMAGEIO, "[exif] could not allocate output buffer of size %zu", output_size);
+      return 0;
+    }
+
+    memcpy(*output_blob, blob.data(), output_size);
+    return (int)output_size;
+  }
+  catch(const Exiv2::AnyError &e)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_write_blob_to_buffer] %s",
+             e.what());
+    if(*output_blob)
+    {
+      g_free(*output_blob);
+      *output_blob = NULL;
+    }
+    return 0;
+  }
 }
 
 static void _remove_exif_geotag(Exiv2::ExifData &exifData)
