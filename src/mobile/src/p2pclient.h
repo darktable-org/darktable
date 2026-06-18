@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QLocalSocket>
 #include <QByteArray>
+#include <QDateTime>
+#include <QHash>
 #include <QJsonObject>
 #include <QStringList>
 
@@ -71,4 +73,7 @@ private:
     bool          m_connected = false;
     QStringList   m_peers;
     QByteArray    m_readBuf;
+    // Epoch-ms timestamp of the last xmp_updated received per raw path.
+    // Used by applyAndPushEdits to suppress echoing back a peer's edit.
+    QHash<QString, qint64> m_xmpReceivedAt;
 };

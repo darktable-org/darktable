@@ -75,7 +75,11 @@ void P2PClient::dispatchEvent(const QJsonObject &msg)
     const QJsonObject d  = QJsonDocument::fromJson(
         QJsonDocument(msg["data"].toObject()).toJson()).object();
 
-    if      (type == "xmp_updated")     emit xmpUpdated(d["path"].toString());
+    if      (type == "xmp_updated") {
+        const QString path = d["path"].toString();
+        m_xmpReceivedAt[path] = QDateTime::currentMSecsSinceEpoch();
+        emit xmpUpdated(path);
+    }
     else if (type == "image_imported")  emit imageImported(d["path"].toString());
     else if (type == "preview_updated") emit previewUpdated(d["path"].toString());
     else if (type == "peers") {
@@ -166,6 +170,14 @@ void P2PClient::applyAndPushEdits(const QString &rawPath, int rating, int colorL
 
     if (!XmpIO::save(xmpPath, xmp)) {
         qWarning() << "[p2p] applyAndPushEdits: failed to write" << xmpPath;
+        return;
+    }
+
+    // If we received an xmp_updated for this path recently (within 5 s), skip
+    // the push — we would just be echoing back a peer's edit.
+    const qint64 receivedAt = m_xmpReceivedAt.value(rawPath, 0);
+    if (receivedAt > 0 && QDateTime::currentMSecsSinceEpoch() - receivedAt < 5000) {
+        qDebug() << "[p2p] applyAndPushEdits: skipping push (echo suppress) for" << rawPath;
         return;
     }
 

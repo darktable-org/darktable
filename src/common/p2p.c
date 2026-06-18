@@ -62,6 +62,14 @@ static struct
   gint     stop;        // atomic flag
 } _p2p_evt = { .sockfd = -1, .thread = NULL, .stop = 0 };
 
+// Echo-suppress: after we push XMP for a path, ignore the daemon's xmp_updated
+// echo for that same path for 10 seconds.  Without this the echo triggers
+// _xmp_reload_on_main_thread → dt_dev_reload_history_items →
+// DT_SIGNAL_DEVELOP_HISTORY_CHANGE → another push 3 s later, ad infinitum.
+static char   _p2p_push_echo_path[PATH_MAX] = { 0 };
+static gint64 _p2p_push_echo_until_ms = 0;  // g_get_monotonic_time()/1000
+static GMutex _p2p_push_echo_mu;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -285,6 +293,22 @@ static void _p2p_queue_import(const char *path)
 static gboolean _xmp_reload_on_main_thread(gpointer data)
 {
   _import_ctx_t *ctx = data;
+
+  // Discard the daemon's echo of our own most-recent push.  Darktable is
+  // already in the correct state (it wrote this XMP), so the reload is a
+  // no-op that would needlessly re-arm the debounce and cause an edit loop.
+  g_mutex_lock(&_p2p_push_echo_mu);
+  const gboolean suppress =
+      _p2p_push_echo_path[0] &&
+      strcmp(ctx->path, _p2p_push_echo_path) == 0 &&
+      g_get_monotonic_time() / 1000 < _p2p_push_echo_until_ms;
+  g_mutex_unlock(&_p2p_push_echo_mu);
+  if(suppress)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[p2p] xmp_updated echo suppressed for '%s'", ctx->path);
+    free(ctx);
+    return G_SOURCE_REMOVE;
+  }
 
   const dt_imgid_t imgid = dt_image_get_id_full_path(ctx->path);
   if(dt_is_valid_imgid(imgid))
@@ -655,6 +679,7 @@ static gpointer _announce_existing_proxies(gpointer arg)
 void dt_p2p_init(void)
 {
   g_mutex_init(&_p2p.lock);
+  g_mutex_init(&_p2p_push_echo_mu);
   _socket_path(_p2p.socket_path, sizeof(_p2p.socket_path));
 
   if(!dt_conf_get_bool("plugins/p2p/enabled"))
@@ -812,6 +837,8 @@ void dt_p2p_init(void)
 
 void dt_p2p_cleanup(void)
 {
+  g_mutex_clear(&_p2p_push_echo_mu);
+
   // Cancel any pending debounce timer.
   if(_p2p_debounce_src)
   {
@@ -879,9 +906,17 @@ void dt_p2p_push_xmp(const char *raw_path, const char *xmp_path)
     ep->str, escaped->str, now_ns);
 
   g_mutex_lock(&_p2p.lock);
-  if(_connect_socket())
-    _send_json(json);
+  const gboolean sent = _connect_socket() && _send_json(json);
   g_mutex_unlock(&_p2p.lock);
+
+  if(sent)
+  {
+    // Record the push so the daemon's echo is ignored (see _xmp_reload_on_main_thread).
+    g_mutex_lock(&_p2p_push_echo_mu);
+    g_strlcpy(_p2p_push_echo_path, raw_path, sizeof(_p2p_push_echo_path));
+    _p2p_push_echo_until_ms = g_get_monotonic_time() / 1000 + 10000; // 10 s
+    g_mutex_unlock(&_p2p_push_echo_mu);
+  }
 
   g_free(json);
   g_string_free(escaped, TRUE);

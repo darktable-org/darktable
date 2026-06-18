@@ -244,12 +244,17 @@ Page {
                         }
                     }
                 }
-                // Fetch proxy button (shown only when no preview exists yet)
+                // Fetch / retry button: visible whenever no preview is showing.
+                // When the proxy AVIF is already on disk (hasProxy=true), skip
+                // straight to re-requesting the preview JPEG; otherwise fetch
+                // the proxy first, which triggers a preview fetch on success.
                 ToolButton {
                     text: "⬇ Fetch"
-                    visible: !root.hasProxy && root.previewKey <= 0
+                    visible: root.previewKey <= 0
                     Layout.alignment: Qt.AlignRight
-                    onClicked: p2p.fetchProxy(root.rawPath)
+                    onClicked: root.hasProxy
+                        ? p2p.fetchPreview(root.rawPath, "full")
+                        : p2p.fetchProxy(root.rawPath)
                 }
             }
         }
