@@ -242,10 +242,20 @@ void gui_post_expose(dt_lib_module_t *self,
     if(d->buf)
       dt_free_align(d->buf);
 
-    dt_dev_image(d->imgid, width, height, -1,
-                 &d->buf, &d->scale,
-                 &d->buf_width, &d->buf_height, d->zoom_pos,
-                 -1, NULL, DT_DEVICE_NONE, FALSE);
+    dt_dev_image(d->imgid,
+                 width,
+                 height,
+                 -1,
+                 &d->buf,
+                 &d->scale,
+                 &d->buf_width,
+                 &d->buf_height,
+                 d->zoom_pos,
+                 -1,
+                 NULL,
+                 DT_DEVICE_NONE,
+                 FALSE,
+                 FALSE);
 
     d->preview_id = d->imgid;
   }
