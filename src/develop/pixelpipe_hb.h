@@ -31,7 +31,7 @@ G_BEGIN_DECLS
 
 #define DT_PIPECACHE_MIN 2
 
-// #define DT_PIPE_CAS_SHUTDOWN
+#define DT_PIPE_CAS_SHUTDOWN
 
 /** cached distorted mask at a geometric module's output boundary.
  *  used to avoid re-distorting masks from scratch when multiple
@@ -107,11 +107,12 @@ typedef enum dt_dev_pixelpipe_status_t
     This requires special care in
       - _dev_pixelpipe_process_rec()
       - dt_dev_process_image_job()
-    possibly invalidating wrong module input/output data in the pixelpipe cache,
-    ensure either an immediate restart of the pipe or exit of dt_dev_process_image_job()
+    possibly invalidating wrong output data in the pixelpipe cache and ensuring
+    either an immediate restart of the pipe or exit of dt_dev_process_image_job()
     with an error flag.
-    A reminder, when setting pipe->shutdown we might have to do that via dt_atomic_CAS_int()
-    with wxpected DT_DEV_PIXELPIPE_STOP_NO to avoid overwriting an earlier shutdown writing.
+
+    When setting pipe->shutdown from outside of pixelpipe internals we should use
+    dt_dev_pixelpipe_set_shutdown() for logs and making sure we don't overwrite shutdown.
 
     A summary about how these shutdown modes are supposed to work.
 
@@ -128,10 +129,10 @@ typedef enum dt_dev_pixelpipe_status_t
 
     DT_DEV_PIXELPIPE_STOP_LAST
     If the shutdown value is >= DT_DEV_PIXELPIPE_STOP_LAST it is understood as the iop_order
-    of a module.
-    Any module might set pipe->shutdown to it's iop_order, this is checked while processing
-    the pipe and if detected the piece input data and all pipe cachelines with at least
-    this iop_order will be invalidated.
+    of a module. Any module can use dt_dev_pixelpipe_set_shutdown() to it's iop_order at runtime,
+    this is checked in _module_pipe_stop() while processing the pipe.
+
+    _module_pipe_stop() ensures valid input cache data and possibly invalidates output cachelines.
 */
 
 typedef enum dt_dev_pixelpipe_stopper_t

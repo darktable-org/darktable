@@ -4850,7 +4850,7 @@ static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev)
   // Signal main preview2 pipe to stop and wait for any pending jobs
   if(dev->preview2.pipe)
   {
-    dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
     dt_pthread_mutex_lock(&dev->preview2.pipe->mutex);
     dt_pthread_mutex_unlock(&dev->preview2.pipe->mutex);
     dt_pthread_mutex_lock(&dev->preview2.pipe->busy_mutex);

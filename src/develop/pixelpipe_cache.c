@@ -388,17 +388,32 @@ void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
       invalidated++;
     }
   }
-
-  const gboolean bcache = pipe->bcache_data != NULL && pipe->bcache_hash != DT_INVALID_HASH;
   pipe->bcache_hash = DT_INVALID_HASH;
 
-  if(invalidated || bcache)
-    dt_print_pipe(DT_DEBUG_PIPE,
-    order ? "pipecache invalidate" : "pipecache flush",
-    pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%s%i cachelines after ioporder=%i%s",
-    info ? info : "",
-    invalidated, order, bcache ? ", blend cache" : "");
+  if(invalidated)
+    dt_print_pipe(DT_DEBUG_PIPE, "pipecache invalidate", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+    "%s%i cachelines after ioporder=%i", info ? info : "", invalidated, order);
+}
+
+void dt_dev_pixelpipe_cache_invalidate_iop(dt_dev_pixelpipe_t *pipe,
+                                           const int32_t order,
+                                           const char *info)
+{
+  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  int invalidated = 0;
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+  {
+    if((cache->ioporder[k] == order) && (cache->hash[k] != DT_INVALID_HASH))
+    {
+      _mark_invalid_cacheline(cache, k);
+      invalidated++;
+    }
+  }
+  pipe->bcache_hash = DT_INVALID_HASH;
+
+  if(invalidated)
+    dt_print_pipe(DT_DEBUG_PIPE, "pipecache invalidate", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+    "%s%i cachelines for ioporder=%i", info ? info : "", invalidated, order);
 }
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_t *pipe)
