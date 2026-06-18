@@ -210,6 +210,7 @@ Page {
                         }
                         onClicked: {
                             root.localRating = (root.localRating === starValue) ? 0 : starValue
+                            root.pushEdits()
                         }
                     }
                 }
@@ -223,7 +224,7 @@ Page {
                         verticalAlignment: Text.AlignVCenter
                     }
                     visible: root.localRating > 0
-                    onClicked: root.localRating = 0
+                    onClicked: { root.localRating = 0; root.pushEdits() }
                 }
             }
 
