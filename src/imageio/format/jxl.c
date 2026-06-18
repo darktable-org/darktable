@@ -318,7 +318,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     exif_buf = g_try_malloc0(exif_len + 4);
     if(!exif_buf)
       JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
-    
+
     memmove(exif_buf + 4, exif, exif_len);
     // Exiv2 >= 0.28 (released 2023-05-08) supports Brotli compressed boxes
     LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_TRUE));
@@ -420,9 +420,12 @@ int levels(dt_imageio_module_data_t *data)
 
 int flags(dt_imageio_module_data_t *data)
 {
-  // exiv2 >= 0.28 supports JXL BMFF format for metadata, allowing
-  // fine-grained metadata control like other formats
+#if defined(EXV_ENABLE_BMFF) && defined(EXV_HAVE_BROTLI)
+  // exiv2 >= 0.28 with JXL BMFF format and Brotli compression
   return FORMAT_FLAGS_SUPPORT_XMP;
+#else
+  return 0;
+#endif
 }
 
 static inline int _bpp_to_enum(int bpp)
