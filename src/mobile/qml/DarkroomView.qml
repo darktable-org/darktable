@@ -257,8 +257,8 @@ Page {
 
     // ── swipe navigation ──────────────────────────────────────────────────────
     function navigateTo(idx) {
-        if (idx < 0 || idx >= imageModel.count) return
-        const m = imageModel.get(idx)
+        if (idx < 0 || idx >= filterModel.count) return
+        const m = filterModel.get(idx)
         root.StackView.view.replace(null, "DarkroomView.qml", {
             modelIndex: idx,
             rawPath:    m.rawPath,

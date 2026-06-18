@@ -46,6 +46,7 @@ set(CPP_SOURCES
     src/daemonmanager.cpp      src/daemonmanager.h
     src/p2pclient.cpp          src/p2pclient.h
     src/imagemodel.cpp         src/imagemodel.h
+    src/filteredmodel.cpp      src/filteredmodel.h
     src/xmpio.cpp              src/xmpio.h
     src/pairingmanager.cpp     src/pairingmanager.h
     src/qrscanner.cpp          src/qrscanner.h

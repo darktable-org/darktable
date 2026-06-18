@@ -6,6 +6,7 @@
 
 #include "avifimageprovider.h"
 #include "daemonmanager.h"
+#include "filteredmodel.h"
 #include "imagemodel.h"
 #include "p2pclient.h"
 #include "pairingmanager.h"
@@ -21,9 +22,10 @@ int main(int argc, char *argv[])
 
     QQuickStyle::setStyle("Material");
 
-    DaemonManager daemon;
-    P2PClient     client;
-    ImageModel    model;
+    DaemonManager   daemon;
+    P2PClient       client;
+    ImageModel      model;
+    FilterSortModel filterModel;
     PairingManager pairing(&daemon);
     QrScanner     qrScanner;
     ShareHelper   shareHelper;
@@ -81,12 +83,15 @@ int main(int argc, char *argv[])
                          else syncTimer->stop();
                      });
 
+    filterModel.setSourceModel(&model);
+
     QQmlApplicationEngine engine;
     engine.addImageProvider(QStringLiteral("avif"), new AvifImageProvider);
     auto *ctx = engine.rootContext();
-    ctx->setContextProperty("daemon",     &daemon);
-    ctx->setContextProperty("p2p",        &client);
-    ctx->setContextProperty("imageModel", &model);
+    ctx->setContextProperty("daemon",       &daemon);
+    ctx->setContextProperty("p2p",          &client);
+    ctx->setContextProperty("imageModel",   &model);
+    ctx->setContextProperty("filterModel",  &filterModel);
     ctx->setContextProperty("pairing",     &pairing);
     ctx->setContextProperty("qrScanner",  &qrScanner);
     ctx->setContextProperty("shareHelper",&shareHelper);
