@@ -1651,6 +1651,7 @@ func (d *daemon) fetchPreviewJPEG(remotePath, localPath, baseURL, size string) {
 
 	resp, err := d.tlsClient.Do(req)
 	if err != nil {
+		log.Printf("[preview] fetch %s from %s: %v", filepath.Base(remotePath), baseURL, err)
 		return
 	}
 	defer resp.Body.Close()
@@ -1659,6 +1660,7 @@ func (d *daemon) fetchPreviewJPEG(remotePath, localPath, baseURL, size string) {
 		return // our copy is still current
 	}
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("[preview] fetch %s from %s: HTTP %d", filepath.Base(remotePath), baseURL, resp.StatusCode)
 		return
 	}
 
@@ -2018,10 +2020,67 @@ func (d *daemon) startProxyHTTP() error {
 	return nil
 }
 
+// lanPriority returns a sort key for IPv4 addresses: lower is better.
+// 1 = 192.168.x.x, 2 = 172.16-31.x.x, 3 = 10.x.x.x, 0 = not RFC-1918.
+func lanPriority(ip net.IP) int {
+	ip4 := ip.To4()
+	if ip4 == nil {
+		return 0
+	}
+	switch {
+	case ip4[0] == 192 && ip4[1] == 168:
+		return 1
+	case ip4[0] == 172 && ip4[1] >= 16 && ip4[1] <= 31:
+		return 2
+	case ip4[0] == 10:
+		return 3
+	}
+	return 0
+}
+
 func (d *daemon) localIP() string {
 	if d.localIPOverride != "" {
 		return d.localIPOverride
 	}
+
+	// Prefer RFC-1918 LAN addresses from OS interfaces (192.168 > 172.16 > 10.x).
+	// Using net.Interfaces() instead of d.host.Addrs() avoids picking a VPN
+	// address (e.g. Tailscale CGNAT 100.64+, or WireGuard on a p2p interface)
+	// when a real LAN interface is also present.
+	best := ""
+	bestPri := 0
+	ifaces, _ := net.Interfaces()
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		// Point-to-point flag indicates a tunnel (OpenVPN tun, some WireGuard).
+		if iface.Flags&net.FlagPointToPoint != 0 {
+			continue
+		}
+		addrs, _ := iface.Addrs()
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			if pri := lanPriority(ip); pri > 0 && (best == "" || pri < bestPri) {
+				best = ip.To4().String()
+				bestPri = pri
+			}
+		}
+	}
+	if best != "" {
+		return best
+	}
+
+	// Fallback: first non-loopback IPv4 from libp2p's address list.
 	for _, ma := range d.host.Addrs() {
 		s := ma.String()
 		if strings.HasPrefix(s, "/ip4/127.") {

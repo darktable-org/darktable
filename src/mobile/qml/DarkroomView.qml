@@ -21,26 +21,15 @@ Page {
     property int  localRating:     rating
     property int  localColorLabel: colorLabel
 
-    // On open: fetch full-size preview from peers. Works whether we have the
-    // AVIF proxy or just a thumbnail — display is JPEG-only on mobile.
-    Component.onCompleted: {
-        if (root.hasProxy || root.previewKey > 0)
-            p2p.fetchPreview(root.rawPath, "full")
-    }
+    // On open: always request the full-size JPEG preview from peers.
+    // Mobile display is JPEG-only; the AVIF proxy is irrelevant here.
+    Component.onCompleted: p2p.fetchPreview(root.rawPath, "full")
 
-    // Reload the image when a fresher preview arrives from peers,
-    // or when the proxy AVIF is fetched for the first time.
     Connections {
         target: p2p
         function onPreviewUpdated(path) {
             if (path === root.rawPath)
                 root.previewKey++
-        }
-        function onProxyFetched(rawPath, proxyPath, ok) {
-            if (rawPath !== root.rawPath || !ok) return
-            root.hasProxy = true
-            // Immediately request the full-res preview so the image shows up.
-            p2p.fetchPreview(root.rawPath, "full")
         }
     }
 
@@ -244,17 +233,11 @@ Page {
                         }
                     }
                 }
-                // Fetch / retry button: visible whenever no preview is showing.
-                // When the proxy AVIF is already on disk (hasProxy=true), skip
-                // straight to re-requesting the preview JPEG; otherwise fetch
-                // the proxy first, which triggers a preview fetch on success.
                 ToolButton {
                     text: "⬇ Fetch"
                     visible: root.previewKey <= 0
                     Layout.alignment: Qt.AlignRight
-                    onClicked: root.hasProxy
-                        ? p2p.fetchPreview(root.rawPath, "full")
-                        : p2p.fetchProxy(root.rawPath)
+                    onClicked: p2p.fetchPreview(root.rawPath, "full")
                 }
             }
         }
