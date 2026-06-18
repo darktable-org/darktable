@@ -953,6 +953,7 @@ func (d *daemon) handleConn(conn net.Conn) {
 			if err := json.Unmarshal(msg.Data, &req); err != nil {
 				continue
 			}
+			log.Printf("[proxy] explicit fetch request for '%s'", filepath.Base(req.Path))
 			go d.fetchProxyFromPeer(req.Path, enc)
 
 		case "fetch_preview":
@@ -966,6 +967,8 @@ func (d *daemon) handleConn(conn net.Conn) {
 			if req.Size == "" {
 				req.Size = "thumb"
 			}
+			log.Printf("[preview] explicit fetch request for '%s' size=%s",
+				filepath.Base(req.Path), req.Size)
 			go d.fetchPreviewFromPeers(req.Path, req.Size)
 
 		// Desktop darktable calls this after finishing an edit so paired phones
@@ -1529,6 +1532,9 @@ func (d *daemon) allPeerURLs() []string {
 // will eventually arrive without manual intervention.
 func (d *daemon) fetchPreviewFromPeers(canonicalPath, size string) {
 	localPath := d.localDestination(canonicalPath)
+
+	log.Printf("[preview] fetching '%s' size=%s from peers",
+		filepath.Base(canonicalPath), size)
 
 	// On mobile, canonicalPath is the local import-dir path which differs from
 	// the desktop's original path.  Use localToRemote to get the path the
