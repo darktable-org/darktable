@@ -643,8 +643,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   const int32_t snapshot_id,
                   GList *module_filter_out,
                   const int devid,
-                  const gboolean finalscale);
-
+                  const gboolean finalscale,
+                  const gboolean want_float);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

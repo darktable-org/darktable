@@ -235,11 +235,20 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->buf = NULL;
 
       // export image with proper size
-      dt_dev_image(snap->imgid, width, height,
+      dt_dev_image(snap->imgid,
+                   width,
+                   height,
                    snap->history_end,
-                   &snap->buf, &snap->scale,
-                   &snap->width, &snap->height, snap->zoom_pos,
-                   snap->id, NULL, DT_DEVICE_NONE, FALSE);
+                   &snap->buf,
+                   &snap->scale,
+                   &snap->width,
+                   &snap->height,
+                   snap->zoom_pos,
+                   snap->id,
+                   NULL,
+                   DT_DEVICE_NONE,
+                   FALSE,
+                   FALSE);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }

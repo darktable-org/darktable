@@ -3281,16 +3281,22 @@ restart:
   //FIXME lock/release cache line instead of copying
   if(dt_pipe_is_screen(pipe))
   {
-    if(pipe->backbuf == NULL
-       || pipe->backbuf_width * pipe->backbuf_height != width * height)
+    // dt_dev_image(want_float) keeps gamma terminal but lets it pass the
+    // 4-channel linear float working RGB through unpacked. In that case the
+    // backbuf is 16 B/px (4 floats) rather than the usual 8-bit ARGB.
+    const size_t bbpp =
+      (pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT) ? 4 * sizeof(float) : 4 * sizeof(uint8_t);
+    if(pipe->backbuf == NULL || pipe->backbuf_width * pipe->backbuf_height != width * height ||
+       pipe->backbuf_size != bbpp * width * height)
     {
       g_free(pipe->backbuf);
-      pipe->backbuf = g_malloc0(sizeof(uint8_t) * 4 * width * height);
+      pipe->backbuf = g_malloc0(bbpp * width * height);
+      pipe->backbuf_size = bbpp * width * height;
     }
 
     if(pipe->backbuf)
     {
-      memcpy(pipe->backbuf, buf, sizeof(uint8_t) * 4 * width * height);
+      memcpy(pipe->backbuf, buf, bbpp * width * height);
       pipe->backbuf_scale = scale;
       for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
       pipe->output_imgid = pipe->image.id;

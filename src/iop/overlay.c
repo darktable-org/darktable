@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/interpolation.h"
 #include "common/math.h"
 #include "common/overlay.h"
 #include "control/control.h"
@@ -38,7 +39,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-DT_MODULE_INTROSPECTION(1, dt_iop_overlay_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_overlay_params_t)
+
+// Compositing precision. Not exposed in the UI: every new edit uses the
+// high-precision float path, while edits created before it existed are pinned
+// to LEGACY by legacy_params() so their rendering never changes.
+typedef enum dt_iop_overlay_compositing_t
+{
+  DT_OVERLAY_COMPOSITE_HQ = 0,
+  DT_OVERLAY_COMPOSITE_LEGACY = 1
+} dt_iop_overlay_compositing_t;
 
 typedef enum dt_iop_overlay_base_scale_t
 {
@@ -84,8 +94,9 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
   dt_imgid_t imgid; // overlay image id $DESCRIPTION: "image id"
   char filename[1024]; // full overlay's filename
-  // keep parameter struct to avoid a version bump
-  size_t dummy0;
+  // compositing precision, not user-settable (see dt_iop_overlay_compositing_t)
+  dt_iop_overlay_compositing_t compositing; // $DEFAULT: DT_OVERLAY_COMPOSITE_HQ
+  // reserved (kept to allow future fields without a version bump)
   size_t dummy1;
   int64_t dummy2;
 } dt_iop_overlay_params_t;
@@ -103,17 +114,29 @@ typedef struct dt_iop_overlay_data_t
   dt_iop_overlay_img_scale_t scale_img;
   dt_imgid_t imgid;
   char filename[1024];
+  dt_iop_overlay_compositing_t compositing;
 } dt_iop_overlay_data_t;
 
 #define MAX_OVERLAY 50
 
 typedef struct dt_iop_overlay_global_data_t
 {
-  uint8_t *cache[MAX_OVERLAY];
+  // Cached overlay buffer, one slot per instance (index = multi_priority).
+  // The stored format depends on the instance's compositing mode:
+  //  - HQ: 4-channel float in the pipe's scene-referred linear working RGB
+  //    (colorout filtered out, gamma terminal but passing the float through),
+  //    so compositing stays high-precision and colour-matched to the host pipe.
+  //  - LEGACY: 8-bit Cairo ARGB32 (the original behaviour), kept for backward
+  //    compatibility with edits made before the float path existed.
+  // cache_legacy[] records which format the slot currently holds, so a mode
+  // change invalidates and re-renders it.
+  void *cache[MAX_OVERLAY];
   size_t cwidth[MAX_OVERLAY];
   size_t cheight[MAX_OVERLAY];
+  gboolean cache_legacy[MAX_OVERLAY];
   dt_pthread_mutex_t overlay_threadsafe;
-  int kernel_overlay_blend;
+  int kernel_overlay_blend;        // float RGBA blend (HQ)
+  int kernel_overlay_blend_legacy; // 8-bit Cairo ARGB blend (legacy)
 } dt_iop_overlay_global_data_t;
 
 typedef struct dt_iop_overlay_gui_data_t
@@ -149,14 +172,12 @@ const char *name()
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description
-    (self,
-     _("combine the image with elements from another processed image\n"
-       "(move this module to after output color profile if you see banding)"),
-     _("corrective and creative"),
-     _("linear, RGB, scene-referred"),
-     _("linear, RGB"),
-     _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self,
+                                _("combine the image with elements from another processed image"),
+                                _("corrective and creative"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
+                                _("linear, RGB, scene-referred"));
 }
 
 const char *aliases()
@@ -192,6 +213,11 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
      There are some exceptions:
        - gamma and finalscale are required
        - crop and &ashift make sense
+     colorout is *not* an exception: keeping it filtered out (as it always was)
+     means the overlay is rendered in the pipe's scene-referred linear working
+     RGB. Combined with the want_float passthrough render in dt_dev_image(), the
+     overlay reaches process() as linear float instead of a posterized 8-bit
+     linear buffer, matching the host pipe at this module's position.
      The list order does not matter
   */
 
@@ -263,7 +289,8 @@ static void _module_remove_callback(gpointer instance,
 
 static void _setup_overlay(dt_iop_module_t *self,
                            const dt_dev_pixelpipe_iop_t *piece,
-                           uint8_t **pbuf,
+                           const gboolean legacy,
+                           void **pbuf,
                            size_t *pwidth,
                            size_t *pheight)
 {
@@ -314,21 +341,41 @@ static void _setup_overlay(dt_iop_module_t *self,
 
     GList *disabled_modules = _get_disabled_modules(self, imgid);
 
+    // HQ (legacy == FALSE): render scene-referred linear float (want_float):
+    // colorout is filtered out by _get_disabled_modules() while gamma stays the
+    // terminal module and passes the 4-channel float straight through (see
+    // gamma.c process()), so the overlay arrives in the working RGB space rather
+    // than as an 8-bit ARGB display backbuf.
+    // LEGACY (legacy == TRUE): render the 8-bit ARGB display backbuf (want_float
+    // FALSE), the original behaviour that the Cairo compositing path expects.
+    const gboolean want_float = !legacy;
+
     // Render at the parent image's storage resolution. The result is
-    // scale-stable and cached across host-pipe zoom changes; Cairo handles
-    // any final downscaling at composite time. Rendering at a smaller,
+    // scale-stable and cached across host-pipe zoom changes; the float
+    // resampler in _get_overlay_rgba_f() handles any final downscaling at
+    // composite time. Rendering at a smaller,
     // zoom-dependent target would change the output of scale-dependent
     // modules in the overlay's pipeline (sharpen, denoise, local contrast,
     // lens correction, ...) and break preview/export consistency.
     const size_t width  = dev->image_storage.width;
     const size_t height = dev->image_storage.height;
 
-    dt_dev_image(imgid, width, height,
+    dt_dev_image(imgid,
+                 width,
+                 height,
                  -1,
-                 &buf, NULL, &bw, &bh, NULL,
-                 -1, disabled_modules, piece->pipe->devid, TRUE);
+                 &buf,
+                 NULL,
+                 &bw,
+                 &bh,
+                 NULL,
+                 -1,
+                 disabled_modules,
+                 piece->pipe->devid,
+                 TRUE,
+                 want_float);
 
-    uint8_t *old_buf = *pbuf;
+    void *old_buf = *pbuf;
 
     *pwidth = bw;
     *pheight = bh;
@@ -341,119 +388,32 @@ static void _setup_overlay(dt_iop_module_t *self,
   }
 }
 
-/* Render the composite overlay into an ARGB32 Cairo buffer at roi_out dimensions.
- *
- * Locking: overlay_threadsafe is held until cairo_paint() returns so that the
- * cached overlay pixel buffer (*pbuf) stays stable while Cairo reads it.
- * plugin_threadsafe guards the Cairo call (not thread-safe).  The two mutexes
- * are always acquired in the order overlay_threadsafe → plugin_threadsafe, so
- * there is no deadlock risk.
- *
- * Returns a g_malloc'd ARGB32 buffer of roi_out->height × (*out_stride) bytes
- * that the caller must g_free(), or NULL on failure.
- */
-static guint8 *_get_overlay_argb(dt_iop_module_t *self,
-                                  dt_dev_pixelpipe_iop_t *piece,
-                                  const dt_iop_roi_t *const roi_in,
-                                  const dt_iop_roi_t *const roi_out,
-                                  int *out_stride)
+// Placement geometry shared by the HQ (float) and legacy (Cairo) compositors.
+// All of this math is identical between the two paths; only the final
+// resampling/blend differs.
+typedef struct _overlay_geometry_t
 {
-  dt_iop_overlay_data_t *data = piece->data;
-  dt_iop_overlay_global_data_t *gd = self->global_data;
-  const int index = self->multi_priority;
-  const float angle = deg2radf(-data->rotate);
+  float scale;  // net scale, including roi_out->scale and the user scale
+  float tx, ty; // image-space translation (x/y offset folded in), pre roi_out->scale
+  float cX, cY; // rotation centre, in output (device) pixels
+} _overlay_geometry_t;
 
-  // ── Acquire / refresh the scaled overlay buffer ──────────────────────────
-  dt_pthread_mutex_lock(&gd->overlay_threadsafe);
-
-  const gboolean use_cache =
-    (self->dev->image_storage.id == darktable.develop->image_storage.id);
-
-  uint8_t *cbuf    = NULL;
-  size_t   cwidth  = 0;
-  size_t   cheight = 0;
-  uint8_t **pbuf   = use_cache ? &gd->cache[index]   : &cbuf;
-  size_t  *pwidth  = use_cache ? &gd->cwidth[index]  : &cwidth;
-  size_t  *pheight = use_cache ? &gd->cheight[index] : &cheight;
-
-  if(!dt_is_valid_imgid(data->imgid))
-    _clear_cache_entry(self, index);
-
-  // The overlay is rendered once at parent-image resolution and reused
-  // across zoom levels; Cairo handles any final scaling below.
-  if(!*pbuf)
-    _setup_overlay(self, piece, pbuf, pwidth, pheight);
-
-  if(!*pbuf)
+static _overlay_geometry_t _overlay_compute_geometry(const dt_iop_overlay_data_t *data,
+                                                     const dt_dev_pixelpipe_iop_t *piece,
+                                                     const dt_iop_roi_t *const roi_out,
+                                                     const size_t bw,
+                                                     const size_t bh,
+                                                     const float angle)
+{
+  // overlay source dimensions (named 'dimension' so the placement math below
+  // stays verbatim from the original implementation)
+  struct
   {
-    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
-    return NULL;
-  }
-
-  // ── Allocate the Cairo output canvas ─────────────────────────────────────
-  // overlay_threadsafe is held on every path below through cairo_paint() so
-  // that *pbuf stays valid while Cairo reads it. For the scratch
-  // path this is slightly conservative but harmless: cbuf is local and cannot
-  // be freed by another thread, yet holding the same lock keeps the analysis
-  // uniform and avoids the -Wthread-safety-analysis fatal error.
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
-  if(stride < 0)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo stride error");
-    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
-    return NULL;
-  }
-
-  guint8 *image = (guint8 *)g_try_malloc0_n(roi_out->height, stride);
-  if(!image)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] out of memory %d*%d", roi_out->height, stride);
-    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
-    return NULL;
-  }
-
-  cairo_surface_t *surface = cairo_image_surface_create_for_data(
-    image, CAIRO_FORMAT_ARGB32, roi_out->width, roi_out->height, stride);
-
-  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo surface error: %s",
-             cairo_status_to_string(cairo_surface_status(surface)));
-    cairo_surface_destroy(surface);
-    g_free(image);
-    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
-    return NULL;
-  }
-
-  // ── Cairo rendering ───────────────────────────────────────────────────────
-  // plugin_threadsafe guards Cairo/rsvg.  Ordering: overlay_threadsafe first,
-  // then plugin_threadsafe — consistent everywhere, no deadlock risk.
-  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-
-  const size_t bw = *pwidth;
-  const size_t bh = *pheight;
-
-  // Wrap *pbuf directly — no memcpy of the (potentially large) buffer.
-  cairo_surface_t *surface_two = dt_view_create_surface(*pbuf, bw, bh);
-
-  if(cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo overlay surface error: %s",
-             cairo_status_to_string(cairo_surface_status(surface_two)));
-    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
-    cairo_surface_destroy(surface_two);
-    cairo_surface_destroy(surface);
-    if(!use_cache) dt_free_align(cbuf);
-    g_free(image);
-    return NULL;
-  }
-
-  RsvgDimensionData dimension;
-  dimension.width  = cairo_image_surface_get_width(surface_two);
-  dimension.height = cairo_image_surface_get_height(surface_two);
-  if(!dimension.width)  dimension.width  = 1;
-  if(!dimension.height) dimension.height = 1;
+    int width;
+    int height;
+  } dimension;
+  dimension.width = (int)bw ? (int)bw : 1;
+  dimension.height = (int)bh ? (int)bh : 1;
 
   const float iw     = piece->buf_in.width;
   const float ih     = piece->buf_in.height;
@@ -599,20 +559,308 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   else if(data->alignment == 2 || data->alignment == 5 || data->alignment == 8)
     tx = iw - svg_width - bX;
 
+  tx += data->xoffset * wbase;
+  ty += data->yoffset * hbase;
+
+  _overlay_geometry_t geo;
+  geo.scale = scale;
+  geo.tx = tx;
+  geo.ty = ty;
+  // Centre of rotation, in output (device) pixels. Matches the Cairo chain:
+  //   translate(-roi_in) · translate(t*scale) · translate(c) · rotate · translate(-c) · scale
+  geo.cX = svg_width / 2.0f * roi_out->scale;
+  geo.cY = svg_height / 2.0f * roi_out->scale;
+  return geo;
+}
+
+/* Composite the overlay into a straight-alpha float RGBA buffer at roi_out
+ * dimensions, in the host pipe's scene-referred linear working RGB.
+ *
+ * The cached overlay (*pbuf) is rendered once at parent-image storage
+ * resolution and reused across zoom levels. Placement / scale / rotation are
+ * applied here with a two-stage float resampler: anti-aliased minification
+ * (dt_interpolation_resample) followed by per-pixel bicubic sampling of the
+ * rotated placement. This is the high-precision counterpart to the 8-bit Cairo
+ * path (_get_overlay_argb), which posterizes smooth gradients because the
+ * overlay is quantized to a linear 8-bit buffer before compositing; that path
+ * is kept selectable (DT_OVERLAY_COMPOSITE_LEGACY) for backward compatibility.
+ *
+ * Locking: overlay_threadsafe is held for the whole resample so the cached
+ * buffer stays stable while it is read.
+ *
+ * Returns a dt_alloc_align_float'd buffer of 4 * roi_out->width *
+ * roi_out->height floats (R, G, B, coverage per pixel) that the caller must
+ * dt_free_align(), or NULL on failure.
+ */
+static float *_get_overlay_rgba_f(dt_iop_module_t *self,
+                                  dt_dev_pixelpipe_iop_t *piece,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_overlay_data_t *data = piece->data;
+  dt_iop_overlay_global_data_t *gd = self->global_data;
+  const int index = self->multi_priority;
+  const float angle = deg2radf(-data->rotate);
+
+  // ── Acquire / refresh the overlay buffer ─────────────────────────────────
+  dt_pthread_mutex_lock(&gd->overlay_threadsafe);
+
+  const gboolean use_cache = (self->dev->image_storage.id == darktable.develop->image_storage.id);
+
+  void *cbuf = NULL;
+  size_t cwidth = 0;
+  size_t cheight = 0;
+  void **pbuf = use_cache ? &gd->cache[index] : &cbuf;
+  size_t *pwidth = use_cache ? &gd->cwidth[index] : &cwidth;
+  size_t *pheight = use_cache ? &gd->cheight[index] : &cheight;
+
+  if(!dt_is_valid_imgid(data->imgid))
+    _clear_cache_entry(self, index);
+
+  // drop a cached buffer left over from the other compositing mode
+  if(use_cache && gd->cache[index] && gd->cache_legacy[index])
+    _clear_cache_entry(self, index);
+
+  if(!*pbuf)
+  {
+    _setup_overlay(self, piece, FALSE /* legacy */, pbuf, pwidth, pheight);
+    if(use_cache)
+      gd->cache_legacy[index] = FALSE;
+  }
+
+  if(!*pbuf)
+  {
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
+  }
+
+  const size_t bw = *pwidth;
+  const size_t bh = *pheight;
+
+  const _overlay_geometry_t geo = _overlay_compute_geometry(data, piece, roi_out, bw, bh, angle);
+  const float scale = geo.scale;
+  const float tx = geo.tx;
+  const float ty = geo.ty;
+  const float cX = geo.cX;
+  const float cY = geo.cY;
+
+  // ── Two-stage float resample ─────────────────────────────────────────────
+  // Stage 1: anti-aliased minification of the source down to roughly its
+  // displayed footprint, so the per-pixel sampling below runs near 1:1 and does
+  // not alias on heavy downscales (storage resolution → preview).
+  const float *src = *pbuf;
+  size_t sw = bw;
+  size_t sh = bh;
+  float *mip = NULL;
+  if(scale < 1.0f)
+  {
+    const int mw = MAX(1, (int)roundf((float)bw * scale));
+    const int mh = MAX(1, (int)roundf((float)bh * scale));
+    mip = dt_alloc_align_float((size_t)4 * mw * mh);
+    if(mip)
+    {
+      const dt_iop_roi_t rin = { 0, 0, (int)bw, (int)bh, 1.0f };
+      const dt_iop_roi_t rout = { 0, 0, mw, mh, (float)mw / (float)bw };
+      const dt_interpolation_t *down = dt_interpolation_new(DT_INTERPOLATION_LANCZOS3);
+      dt_interpolation_resample(down, mip, &rout, *pbuf, &rin);
+      src = mip;
+      sw = mw;
+      sh = mh;
+    }
+  }
+
+  const int ow = roi_out->width;
+  const int oh = roi_out->height;
+  float *canvas = dt_alloc_align_float((size_t)4 * ow * oh);
+  if(!canvas)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] out of memory %d*%d", ow, oh);
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    dt_free_align(mip);
+    if(!use_cache)
+      dt_free_align(cbuf);
+    return NULL;
+  }
+
+  // Stage 2: inverse-map each output pixel back to source coordinates, applying
+  // the same translate / rotate / scale chain Cairo used, then sample.
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_BICUBIC);
+  const float ca = cosf(angle);
+  const float sa = sinf(angle);
+  const float t2x = tx * roi_out->scale;
+  const float t2y = ty * roi_out->scale;
+  const float msx = (float)sw / (float)bw; // mip scale (1.0 when no prefilter)
+  const float msy = (float)sh / (float)bh;
+  // dt_interpolation_compute_pixel4c expects the line stride in floats
+  // (elements), not bytes — it indexes a float* as `in + linestride * iy`.
+  const int src_stride = (int)(sw * 4);
+  const float fsw = (float)sw;
+  const float fsh = (float)sh;
+
+  DT_OMP_FOR(collapse(2))
+  for(int y = 0; y < oh; y++)
+    for(int x = 0; x < ow; x++)
+    {
+      // device → pre-scale frame (inverse translate/rotate)
+      const float dvx = (float)x + (float)roi_in->x - t2x - cX;
+      const float dvy = (float)y + (float)roi_in->y - t2y - cY;
+      const float rx = ca * dvx + sa * dvy; // inverse rotation (by -angle)
+      const float ry = -sa * dvx + ca * dvy;
+      // → full-res source coordinates → mip coordinates
+      const float u = (rx + cX) / scale;
+      const float v = (ry + cY) / scale;
+      const float mu = u * msx;
+      const float mv = v * msy;
+
+      float *const o = canvas + (size_t)4 * ((size_t)y * ow + x);
+
+      // antialiased rectangle coverage (~1px ramps at the source borders)
+      const float covu = CLAMP(mu + 0.5f, 0.0f, 1.0f) - CLAMP(mu - (fsw - 1.5f), 0.0f, 1.0f);
+      const float covv = CLAMP(mv + 0.5f, 0.0f, 1.0f) - CLAMP(mv - (fsh - 1.5f), 0.0f, 1.0f);
+      const float cov = covu * covv;
+
+      if(cov <= 0.0f)
+      {
+        o[0] = o[1] = o[2] = o[3] = 0.0f;
+        continue;
+      }
+
+      float px[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_interpolation_compute_pixel4c(itor, src, px, mu, mv, (int)sw, (int)sh, src_stride);
+      o[0] = px[0];
+      o[1] = px[1];
+      o[2] = px[2];
+      o[3] = cov;
+    }
+
+  dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+
+  dt_free_align(mip);
+  // Scratch overlay was local to this call; free it now that the resample is done.
+  if(!use_cache) dt_free_align(cbuf);
+
+  return canvas;
+}
+
+/* Legacy (8-bit) compositor: the original behaviour, kept so edits made before
+ * the float path existed render identically. The overlay is rendered to an
+ * 8-bit Cairo ARGB32 surface (display-encoded sRGB, BGRA), scaled/rotated by
+ * Cairo, and returned as a Cairo ARGB32 buffer (row pitch = *out_stride bytes)
+ * that the caller must g_free(), or NULL on failure. Placement geometry is the
+ * same _overlay_compute_geometry() used by the float path.
+ */
+static guint8 *_get_overlay_argb(dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_iop_t *piece,
+                                 const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out,
+                                 int *out_stride)
+{
+  dt_iop_overlay_data_t *data = piece->data;
+  dt_iop_overlay_global_data_t *gd = self->global_data;
+  const int index = self->multi_priority;
+  const float angle = deg2radf(-data->rotate);
+
+  // ── Acquire / refresh the overlay buffer ─────────────────────────────────
+  dt_pthread_mutex_lock(&gd->overlay_threadsafe);
+
+  const gboolean use_cache = (self->dev->image_storage.id == darktable.develop->image_storage.id);
+
+  void *cbuf = NULL;
+  size_t cwidth = 0;
+  size_t cheight = 0;
+  void **pbuf = use_cache ? &gd->cache[index] : &cbuf;
+  size_t *pwidth = use_cache ? &gd->cwidth[index] : &cwidth;
+  size_t *pheight = use_cache ? &gd->cheight[index] : &cheight;
+
+  if(!dt_is_valid_imgid(data->imgid))
+    _clear_cache_entry(self, index);
+
+  // drop a cached buffer left over from the HQ float mode
+  if(use_cache && gd->cache[index] && !gd->cache_legacy[index])
+    _clear_cache_entry(self, index);
+
+  if(!*pbuf)
+  {
+    _setup_overlay(self, piece, TRUE /* legacy */, pbuf, pwidth, pheight);
+    if(use_cache)
+      gd->cache_legacy[index] = TRUE;
+  }
+
+  if(!*pbuf)
+  {
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
+  }
+
+  // ── Allocate the Cairo output canvas ─────────────────────────────────────
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
+  if(stride < 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo stride error");
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
+  }
+
+  guint8 *image = (guint8 *)g_try_malloc0_n(roi_out->height, stride);
+  if(!image)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] out of memory %d*%d", roi_out->height, stride);
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
+  }
+
+  cairo_surface_t *surface = cairo_image_surface_create_for_data(
+    image, CAIRO_FORMAT_ARGB32, roi_out->width, roi_out->height, stride);
+
+  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[overlay] cairo surface error: %s",
+             cairo_status_to_string(cairo_surface_status(surface)));
+    cairo_surface_destroy(surface);
+    g_free(image);
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
+  }
+
+  // ── Cairo rendering ───────────────────────────────────────────────────────
+  // plugin_threadsafe guards Cairo/rsvg.  Ordering: overlay_threadsafe first,
+  // then plugin_threadsafe — consistent everywhere, no deadlock risk.
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+
+  const size_t bw = *pwidth;
+  const size_t bh = *pheight;
+
+  // Wrap *pbuf directly — no memcpy of the (potentially large) buffer.
+  cairo_surface_t *surface_two = dt_view_create_surface(*pbuf, bw, bh);
+
+  if(cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[overlay] cairo overlay surface error: %s",
+             cairo_status_to_string(cairo_surface_status(surface_two)));
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    cairo_surface_destroy(surface_two);
+    cairo_surface_destroy(surface);
+    if(!use_cache)
+      dt_free_align(cbuf);
+    g_free(image);
+    return NULL;
+  }
+
+  const _overlay_geometry_t geo = _overlay_compute_geometry(data, piece, roi_out, bw, bh, angle);
+
   cairo_t *cr = cairo_create(surface);
 
   cairo_translate(cr, -roi_in->x, -roi_in->y);
-  tx += data->xoffset * wbase;
-  ty += data->yoffset * hbase;
-  cairo_translate(cr, tx * roi_out->scale, ty * roi_out->scale);
+  cairo_translate(cr, geo.tx * roi_out->scale, geo.ty * roi_out->scale);
 
-  const float cX = svg_width  / 2.0f * roi_out->scale;
-  const float cY = svg_height / 2.0f * roi_out->scale;
-  cairo_translate(cr, cX, cY);
+  cairo_translate(cr, geo.cX, geo.cY);
   cairo_rotate(cr, angle);
-  cairo_translate(cr, -cX, -cY);
+  cairo_translate(cr, -geo.cX, -geo.cY);
 
-  cairo_scale(cr, scale, scale);
+  cairo_scale(cr, geo.scale, geo.scale);
   cairo_surface_flush(surface_two);
   cairo_set_source_surface(cr, surface_two, 0.0, 0.0);
   cairo_paint(cr);
@@ -624,10 +872,11 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   cairo_destroy(cr);
   cairo_surface_flush(surface);
   cairo_surface_destroy(surface);
-  cairo_surface_destroy(surface_two);  // drops reference to *pbuf, not ownership
+  cairo_surface_destroy(surface_two); // drops reference to *pbuf, not ownership
 
   // Scratch overlay was local to this call; free it now that Cairo is done.
-  if(!use_cache) dt_free_align(cbuf);
+  if(!use_cache)
+    dt_free_align(cbuf);
 
   *out_stride = stride;
   return image;
@@ -644,17 +893,49 @@ void process(dt_iop_module_t *self,
   const int ch = piece->colors;
   const float *const in  = (const float *)ivoid;
   float *const       out = (float *)ovoid;
+  const float opacity = data->opacity / 100.0f;
 
-  int stride = 0;
-  guint8 *image = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
+  if(data->compositing == DT_OVERLAY_COMPOSITE_LEGACY)
+  {
+    // legacy 8-bit Cairo ARGB32 overlay (display-encoded sRGB, BGRA byte order)
+    int stride = 0;
+    guint8 *image = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
+
+    if(!image)
+    {
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      return;
+    }
+
+    DT_OMP_FOR(collapse(2))
+    for(int y = 0; y < roi_out->height; y++)
+      for(int x = 0; x < roi_out->width; x++)
+      {
+        const int j = y * roi_out->width + x;
+        const float *i = in + ch * j;
+        float *o = out + ch * j;
+        // Cairo ARGB32 (little-endian): byte order is [B, G, R, A]
+        const guint8 *s = image + (size_t)y * stride + (size_t)x * 4;
+
+        const float alpha = (s[3] / 255.0f) * opacity;
+        o[0] = (1.0f - alpha) * i[0] + opacity * s[2] / 255.0f;
+        o[1] = (1.0f - alpha) * i[1] + opacity * s[1] / 255.0f;
+        o[2] = (1.0f - alpha) * i[2] + opacity * s[0] / 255.0f;
+        o[3] = i[3];
+      }
+
+    g_free(image);
+    return;
+  }
+
+  // HQ: straight-alpha float RGBA overlay (R,G,B linear working RGB, A=coverage)
+  float *const image = _get_overlay_rgba_f(self, piece, roi_in, roi_out);
 
   if(!image)
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
-
-  const float opacity = data->opacity / 100.0f;
 
   DT_OMP_FOR(collapse(2))
   for(int y = 0; y < roi_out->height; y++)
@@ -663,21 +944,20 @@ void process(dt_iop_module_t *self,
       const int    j = y * roi_out->width + x;
       const float *i = in  + ch * j;
       float       *o = out + ch * j;
-      // Cairo ARGB32 (little-endian): byte order is [B, G, R, A]
-      const guint8 *s = image + (size_t)y * stride + (size_t)x * 4;
+      const float *s = image + (size_t)4 * j;
 
-      const float alpha = (s[3] / 255.0f) * opacity;
-      o[0] = (1.0f - alpha) * i[0] + opacity * s[2] / 255.0f;
-      o[1] = (1.0f - alpha) * i[1] + opacity * s[1] / 255.0f;
-      o[2] = (1.0f - alpha) * i[2] + opacity * s[0] / 255.0f;
+      const float alpha = s[3] * opacity;
+      o[0] = (1.0f - alpha) * i[0] + alpha * s[0];
+      o[1] = (1.0f - alpha) * i[1] + alpha * s[1];
+      o[2] = (1.0f - alpha) * i[2] + alpha * s[2];
       o[3] = i[3];
     }
 
-  g_free(image);
+  dt_free_align(image);
 }
 
 #ifdef HAVE_OPENCL
-// GPU alpha-blend path. Cairo still runs on CPU (_get_overlay_argb),
+// GPU alpha-blend path. The overlay resample runs on CPU (_get_overlay_rgba_f),
 // but the pixel-blending of the full output image runs on the GPU.
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
@@ -688,9 +968,48 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const int devid  = piece->pipe->devid;
   const int width  = roi_out->width;
   const int height = roi_out->height;
+  const float opacity = data->opacity / 100.0f;
 
-  int stride = 0;
-  guint8 *image = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
+  if(data->compositing == DT_OVERLAY_COMPOSITE_LEGACY)
+  {
+    // legacy 8-bit Cairo ARGB32 overlay, blended by the legacy kernel (stride)
+    int stride = 0;
+    guint8 *limage = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
+
+    if(!limage)
+      return dt_opencl_enqueue_copy_image(
+        devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, (size_t[2]){ width, height });
+
+    cl_int lerr = DT_OPENCL_SYSMEM_ALLOCATION;
+    const size_t lsize = (size_t)height * stride;
+    cl_mem dev_lov = dt_opencl_alloc_device_buffer(devid, lsize);
+    if(!dev_lov)
+      goto legacy_cleanup;
+
+    lerr = dt_opencl_write_buffer_to_device(devid, limage, dev_lov, 0, lsize, TRUE);
+    if(lerr != CL_SUCCESS)
+      goto legacy_cleanup;
+
+    lerr = dt_opencl_enqueue_kernel_2d_args(devid,
+                                            gd->kernel_overlay_blend_legacy,
+                                            width,
+                                            height,
+                                            CLARG(dev_in),
+                                            CLARG(dev_lov),
+                                            CLARG(dev_out),
+                                            CLARG(width),
+                                            CLARG(height),
+                                            CLARG(opacity),
+                                            CLARG(stride));
+
+  legacy_cleanup:
+    dt_opencl_release_mem_object(dev_lov);
+    g_free(limage);
+    return lerr;
+  }
+
+  // HQ: straight-alpha float RGBA overlay (R,G,B linear working RGB, A=coverage)
+  float *image = _get_overlay_rgba_f(self, piece, roi_in, roi_out);
 
   if(!image)
   {
@@ -701,22 +1020,28 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
 
-  // Upload the Cairo ARGB32 buffer to GPU as a plain byte buffer
-  const size_t overlay_size = (size_t)height * stride;
+  // Upload the float RGBA overlay (4 floats/pixel) to GPU as a plain buffer
+  const size_t overlay_size = (size_t)width * height * 4 * sizeof(float);
   cl_mem dev_overlay = dt_opencl_alloc_device_buffer(devid, overlay_size);
   if(!dev_overlay) goto cleanup;
 
   err = dt_opencl_write_buffer_to_device(devid, image, dev_overlay, 0, overlay_size, TRUE);
   if(err != CL_SUCCESS) goto cleanup;
 
-  const float opacity = data->opacity / 100.0f;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_overlay_blend, width, height,
-    CLARG(dev_in), CLARG(dev_overlay), CLARG(dev_out),
-    CLARG(width), CLARG(height), CLARG(opacity), CLARG(stride));
+  err = dt_opencl_enqueue_kernel_2d_args(devid,
+                                         gd->kernel_overlay_blend,
+                                         width,
+                                         height,
+                                         CLARG(dev_in),
+                                         CLARG(dev_overlay),
+                                         CLARG(dev_out),
+                                         CLARG(width),
+                                         CLARG(height),
+                                         CLARG(opacity));
 
 cleanup:
   dt_opencl_release_mem_object(dev_overlay);
-  g_free(image);
+  dt_free_align(image);
   return err;
 }
 #endif
@@ -826,6 +1151,61 @@ static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  if(old_version == 1)
+  {
+    // v1 had no compositing option: it always used the 8-bit Cairo path.
+    // Migrate to LEGACY so existing edits keep their original appearance.
+    typedef struct dt_iop_overlay_params_v1_t
+    {
+      float opacity;
+      float scale;
+      float xoffset;
+      float yoffset;
+      int alignment;
+      float rotate;
+      dt_iop_overlay_base_scale_t scale_base;
+      dt_iop_overlay_img_scale_t scale_img;
+      dt_iop_overlay_svg_scale_t scale_svg;
+      dt_imgid_t imgid;
+      char filename[1024];
+      size_t dummy0;
+      size_t dummy1;
+      int64_t dummy2;
+    } dt_iop_overlay_params_v1_t;
+
+    const dt_iop_overlay_params_v1_t *o = old_params;
+    dt_iop_overlay_params_t *n = malloc(sizeof(dt_iop_overlay_params_t));
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = o->rotate;
+    n->scale_base = o->scale_base;
+    n->scale_img = o->scale_img;
+    n->scale_svg = o->scale_svg;
+    n->imgid = o->imgid;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->compositing = DT_OVERLAY_COMPOSITE_LEGACY;
+    n->dummy1 = 0;
+    n->dummy2 = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_overlay_params_t);
+    *new_version = 2;
+    return 0;
+  }
+  return 1;
+}
+
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -844,6 +1224,7 @@ void commit_params(dt_iop_module_t *self,
   d->scale_img  = p->scale_img;
   d->scale_svg  = p->scale_svg;
   d->imgid      = p->imgid;
+  d->compositing = p->compositing;
   g_strlcpy(d->filename, p->filename, sizeof(p->filename));
 }
 
@@ -946,8 +1327,10 @@ void init_global(dt_iop_module_so_t *self)
 #ifdef HAVE_OPENCL
   const int program = 41; // overlay.cl
   gd->kernel_overlay_blend = dt_opencl_create_kernel(program, "overlay_blend");
+  gd->kernel_overlay_blend_legacy = dt_opencl_create_kernel(program, "overlay_blend_legacy");
 #else
   gd->kernel_overlay_blend = -1;
+  gd->kernel_overlay_blend_legacy = -1;
 #endif
 
   self->data = gd;
@@ -964,6 +1347,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 #ifdef HAVE_OPENCL
   dt_opencl_free_kernel(gd->kernel_overlay_blend);
+  dt_opencl_free_kernel(gd->kernel_overlay_blend_legacy);
 #endif
 
   free(gd);

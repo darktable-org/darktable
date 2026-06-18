@@ -18,20 +18,54 @@
 
 #include "common.h"
 
-// Alpha-blend a Cairo ARGB32 overlay onto a float4 image.
+// Alpha-blend a straight-alpha float RGBA overlay onto a float4 image.
 //
-// overlay_argb is a flat byte buffer (Cairo ARGB32, little-endian byte order
-// [B, G, R, A] at each pixel), with row pitch = stride bytes.
+// overlay_rgba is a flat float buffer, 4 floats per pixel [R, G, B, coverage],
+// in the pipe's scene-referred linear working RGB, row pitch = width*4 floats.
 // The blend formula matches the CPU path in overlay.c:
-//   alpha  = (s_a / 255) * opacity
-//   out_c  = (1 - alpha) * in_c + opacity * s_c / 255
+//   alpha  = coverage * opacity
+//   out_c  = (1 - alpha) * in_c + alpha * s_c
 kernel void overlay_blend(read_only  image2d_t in,
-                          __global const uchar *overlay_argb,
+                          __global const float *overlay_rgba,
                           write_only image2d_t out,
                           const int   width,
                           const int   height,
-                          const float opacity,
-                          const int   stride)
+                          const float opacity)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 i   = Areadpixel(in, x, y);
+  const int    off = (y * width + x) * 4;
+
+  const float r = overlay_rgba[off + 0];
+  const float g = overlay_rgba[off + 1];
+  const float b = overlay_rgba[off + 2];
+  const float a = overlay_rgba[off + 3] * opacity;
+
+  float4 o;
+  o.x = (1.f - a) * i.x + a * r;
+  o.y = (1.f - a) * i.y + a * g;
+  o.z = (1.f - a) * i.z + a * b;
+  o.w = i.w;
+  write_imagef(out, (int2)(x, y), o);
+}
+
+// Legacy alpha-blend of a Cairo ARGB32 overlay onto a float4 image.
+//
+// overlay_argb is a flat byte buffer (Cairo ARGB32, little-endian byte order
+// [B, G, R, A] at each pixel), with row pitch = stride bytes. This reproduces
+// the original 8-bit compositing for edits made before the float path existed:
+//   alpha  = (s_a / 255) * opacity
+//   out_c  = (1 - alpha) * in_c + opacity * s_c / 255
+kernel void overlay_blend_legacy(read_only  image2d_t in,
+                                 __global const uchar *overlay_argb,
+                                 write_only image2d_t out,
+                                 const int   width,
+                                 const int   height,
+                                 const float opacity,
+                                 const int   stride)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
