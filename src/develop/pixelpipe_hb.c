@@ -1240,7 +1240,7 @@ static inline dt_hash_t _piece_process_hash(const dt_dev_pixelpipe_iop_t *piece,
 static inline gboolean _piece_fast_blend(const dt_dev_pixelpipe_iop_t *piece,
                                          const dt_iop_module_t *module)
 {
-  return dt_pipe_is_screen(piece->pipe)
+  return dt_pipe_is_canvas(piece->pipe)
       && darktable.pipe_cache
       && module->dev
       && module->dev->gui_attached
