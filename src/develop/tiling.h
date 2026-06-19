@@ -71,15 +71,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 gboolean dt_tiling_piece_fits_host_memory(const struct dt_dev_pixelpipe_iop_t *piece, const size_t width, const size_t height, const unsigned bpp,
                                      const float factor, const size_t overhead);
 
-float dt_tiling_estimate_cpumem(const dt_develop_tiling_t *tiling, const struct dt_dev_pixelpipe_iop_t *piece,
-                                        const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                        const int max_bpp);
-
-#ifdef HAVE_OPENCL
-float dt_tiling_estimate_clmem(const dt_develop_tiling_t *tiling, const struct dt_dev_pixelpipe_iop_t *piece,
-                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                          const int max_bpp);
-#endif
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

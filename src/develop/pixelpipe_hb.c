@@ -1695,6 +1695,13 @@ static void _opencl_dump_diff_pipe_pfm(dt_dev_pixelpipe_t *pipe,
     dt_free_align(clin);
   }
 }
+
+static inline gboolean _avoid_cl_module(const dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_opencl_device_t *cldid = &darktable.opencl->dev[piece->pipe->devid];
+  return cldid->avoid && dt_str_commasubstring(cldid->avoid, piece->module->op);
+}
+
 #endif
 
 static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
@@ -2141,7 +2148,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     gboolean possible_cl =
         module->process_cl
         && piece->process_cl_ready
-        && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL));
+        && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
+        && !_avoid_cl_module(piece);
 
     const uint32_t m_bpp = MAX(in_bpp, bpp);
     const size_t m_width = MAX(roi_in.width, roi_out->width);
@@ -2155,24 +2163,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     {
       if(!_piece_may_tile(piece))
         possible_cl = FALSE;
-
-      const float advantage = darktable.opencl->dev[pipe->devid].advantage;
-      if(possible_cl && (advantage > 0.0f))
-      {
-        const float tilemem_cl = dt_tiling_estimate_clmem(&tiling, piece,
-                                                          &roi_in, roi_out, m_bpp);
-        const float tilemem_cpu = dt_tiling_estimate_cpumem(&tiling, piece,
-                                                            &roi_in, roi_out, m_bpp);
-        if((tilemem_cpu * advantage) < tilemem_cl)
-        {
-          dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-                   "[dt_dev_pixelpipetiling_cl] [%s] estimates cpu"
-                   " advantage in `%s', (dev=%i, adv=%.2f, GPU %.2f CPU %.2f)",
-                   dt_dev_pixelpipe_type_to_str(pipe->type), module->op, pipe->devid,
-                   advantage, tilemem_cl / 1e9, tilemem_cpu / 1e9);
-          possible_cl = FALSE;
-        }
-      }
     }
 
     if(possible_cl)
