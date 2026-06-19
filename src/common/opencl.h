@@ -572,9 +572,6 @@ gboolean dt_opencl_image_fits_device(const int devid,
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
 
-/** check tuning settings and available memory for the device */
-void dt_opencl_check_tuning(const int devid);
-
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
 

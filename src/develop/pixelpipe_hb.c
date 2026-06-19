@@ -3113,25 +3113,15 @@ restart:
   dt_iop_buffer_dsc_t _out_format = { 0 };
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
-#ifdef HAVE_OPENCL
-  dt_opencl_check_tuning(pipe->devid);
-  if(pipe->devid > DT_DEVICE_CPU)
-    dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                  pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i, %s using %luMB%s%s",
-                  pipe->image.filename, pipe->image.id,
-                  darktable.opencl->dev[pipe->devid].cname,
-                  darktable.opencl->dev[pipe->devid].used_available / DT_MEGA,
-                  darktable.opencl->dev[pipe->devid].tunehead ? ", tuned" : "",
-                  darktable.opencl->dev[pipe->devid].pinned_memory ? ", pinned": "");
-  else
-    dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                  pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i using %luMB",
-                  pipe->image.filename, pipe->image.id, dt_get_available_mem() / DT_MEGA);
-#else
+  const size_t avail_mem =
+  #ifdef HAVE_OPENCL
+    pipe->devid > DT_DEVICE_CPU ? dt_opencl_get_device_available(pipe->devid) : dt_get_available_mem();
+  #else
+    dt_get_available_mem();
+  #endif
   dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i using %luMB",
-                pipe->image.filename, pipe->image.id, dt_get_available_mem() / DT_MEGA);
-#endif
+                  pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i using %luMB",
+                  pipe->image.filename, pipe->image.id, avail_mem / DT_MEGA);
   dt_print_mem_usage("before pixelpipe process");
 
   // run pixelpipe recursively and get error status
