@@ -1614,23 +1614,6 @@ finally:
     // priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = _opencl_get_scheduling_profile();
     _opencl_apply_scheduling_profile(profile);
-
-    // let's keep track on unified memory devices
-    dt_sys_resources_t *res = &darktable.dtresources;
-    for(int i = 0; i < cl->num_devs; i++)
-    {
-      if(cl->dev[i].unified_memory)
-      {
-        const size_t reserved = MIN(cl->dev[i].max_global_mem, res->total_memory * cl->dev[i].unified_fraction);
-        cl->dev[i].max_global_mem = reserved;
-        cl->dev[i].max_mem_alloc = MIN(cl->dev[i].max_mem_alloc, reserved);
-        dt_print_nts(DT_DEBUG_OPENCL,
-               "   UNIFIED MEM SIZE:         %.0f MB (%i%%) reserved for '%s' id=%d\n",
-               (double)reserved / 1024.0 / 1024.0, (int)(100.0f * cl->dev[i].unified_fraction),
-               cl->dev[i].cname, i);
-        res->total_memory -= reserved;
-      }
-    }
   }
   else // initialization failed
   {
@@ -3420,13 +3403,19 @@ void *dt_opencl_alloc_device(const int devid,
   return dev;
 }
 
+static cl_ulong _opencl_get_device_memalloc(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  return MIN(cl->dev[devid].used_available, cl->dev[devid].max_mem_alloc);
+}
+
 void *dt_opencl_alloc_device_buffer(const int devid,
                                     const size_t size)
 {
   if(!_cldev_running(devid))
     return NULL;
   dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].max_mem_alloc < size)
+  if(_opencl_get_device_memalloc(devid) < size)
     return NULL;
   cl_int err = CL_SUCCESS;
 
@@ -3451,7 +3440,7 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
   if(!_cldev_running(devid))
     return NULL;
   dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].max_mem_alloc < size)
+  if(_opencl_get_device_memalloc(devid) < size)
     return NULL;
 
   cl_int err = CL_SUCCESS;
@@ -3618,59 +3607,10 @@ void dt_opencl_memory_statistics(int devid,
   }
 }
 
-/* amount of graphics memory declared as available depends on max_global_mem and
-   "resourcelevel". We garantee
-   - a headroom of DT_OPENCL_DEFAULT_HEADROOM MB in all cases not using tuned cl
-   - 256MB to simulate a minimum system
-   - 2GB to simulate a reference system
-*/
-void dt_opencl_check_tuning(const int devid)
-{
-  dt_sys_resources_t *res = &darktable.dtresources;
-  dt_opencl_t *cl = darktable.opencl;
-  if(!_cldev_running(devid)) return;
-
-  const int level = res->level;
-  const gboolean tunehead = cl->num_devs > 1
-                          && level >= 0
-                          && !dt_gimpmode()
-                          && dt_conf_get_bool("opencl_tune_headroom");
-
-  cl->dev[devid].tunehead = tunehead;
-
-  if(level < 0)
-  {
-    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * DT_MEGA;
-  }
-  else
-  {
-    const size_t allmem = cl->dev[devid].max_global_mem;
-    const size_t lowmem = 256ul * DT_MEGA;
-    const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * DT_MEGA;
-    if(cl->dev[devid].tunehead)
-    {
-      const size_t headroom = (cl->dev[devid].headroom ? DT_MEGA * cl->dev[devid].headroom : dhead)
-                            + (cl->dev[devid].clmem_error ? dhead : 0);
-      cl->dev[devid].used_available = allmem > headroom ? allmem - headroom : lowmem;
-    }
-    else
-    {
-      const size_t disposable = allmem > dhead ? allmem - dhead : 0;
-      const int fraction = MIN(1024, res->fractions[4*res->level + 3]);
-      cl->dev[devid].used_available = MAX(lowmem, disposable / 1024ul * fraction);
-    }
-  }
-}
-
 cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid <= DT_DEVICE_CPU) return 0;
   return darktable.opencl->dev[devid].used_available;
-}
-
-static cl_ulong _opencl_get_device_memalloc(const int devid)
-{
-  return darktable.opencl->dev[devid].max_mem_alloc;
 }
 
 cl_ulong dt_opencl_get_device_memalloc(const int devid)
@@ -3764,6 +3704,59 @@ void dt_opencl_update_settings(void)
   const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_update_settings] scheduling profile set to %s", pstr);
+
+  dt_sys_resources_t *res = &darktable.dtresources;
+  /* If we have cl devices with unified memery we should not use that part
+     for general dt use.
+     As that part might change with a different resource level we have to
+     fix that whenever that changes.
+  */
+  res->cl_uni_memory = 0;
+  const int level = res->level;
+  const gboolean tunehead = cl->num_devs > 1
+                          && level >= 0
+                          && !dt_gimpmode()
+                          && dt_conf_get_bool("opencl_tune_headroom");
+
+  for(int i = 0; i < cl->num_devs; i++)
+  {
+    cl->dev[i].tunehead = tunehead;
+    if(level < 0)
+    {
+      cl->dev[i].used_available = res->refresource[4*(-level-1) + 3] * DT_MEGA;
+    }
+    else
+    {
+      const size_t allmem = cl->dev[i].max_global_mem;
+      const size_t lowmem = 256ul * DT_MEGA;
+      const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * DT_MEGA;
+      if(cl->dev[i].tunehead)
+      {
+        const size_t headroom = cl->dev[i].headroom ? DT_MEGA * cl->dev[i].headroom : dhead;
+        cl->dev[i].used_available = allmem > headroom ? allmem - headroom : lowmem;
+      }
+      else
+      {
+        const size_t disposable = allmem > dhead ? allmem - dhead : 0;
+        const int fraction = MIN(1024, res->fractions[4*res->level + 3]);
+        cl->dev[i].used_available = MAX(lowmem, disposable / 1024ul * fraction);
+      }
+    }
+
+    if(cl->dev[i].unified_memory)
+    {
+      cl->dev[i].used_available = MIN(cl->dev[i].used_available, res->total_memory * cl->dev[i].unified_fraction);
+      res->cl_uni_memory += cl->dev[i].used_available;
+    }
+    dt_print_nts(DT_DEBUG_OPENCL,
+         "   AVAILABLE CLMEM SIZE:     %zu MB%s%s\n",
+              (size_t)(cl->dev[i].used_available / DT_MEGA),
+              cl->dev[i].tunehead ? ", tuned" : "",
+              cl->dev[i].pinned_memory ? ", pinned": "");
+  }
+  if(res->cl_uni_memory)
+    dt_print_nts(DT_DEBUG_OPENCL,
+         "   UNIFIED SYSMEM SIZE:      %zu MB\n", (size_t)(res->cl_uni_memory / DT_MEGA));
 }
 
 /** read scheduling profile for config variables */

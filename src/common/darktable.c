@@ -1845,6 +1845,7 @@ int dt_init(int argc,
   size_t total_mb = _get_total_memory() / 1024lu;
   if(total_mb < 8192) total_mb -= 1024;
   res->total_memory = total_mb * DT_MEGA;
+  res->cl_uni_memory = 0;
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
@@ -2474,7 +2475,7 @@ size_t dt_get_available_mem()
     return res->refresource[4*(-level-1)] * DT_MEGA;
 
   const int fraction = res->fractions[4*level];
-  return MAX(512lu * DT_MEGA, res->total_memory / 1024lu * fraction);
+  return MAX(512lu * DT_MEGA, (res->total_memory - res->cl_uni_memory) / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()
