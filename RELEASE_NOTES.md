@@ -663,4 +663,21 @@ Support for the following cameras is suspended because no samples are available 
 
 ## Translations
 
-- ???
+- Czech
+- German
+- European Spanish
+- Finnish
+- French
+- Hungarian
+- Japanese
+- Norwegian Bokmål
+- Dutch
+- Polish
+- Brazilian Portuguese
+- Russian
+- Slovenian
+- Albanian
+- Swedish
+- Ukrainian
+- Chinese (Simplified)
+- Chinese (Traditional)
