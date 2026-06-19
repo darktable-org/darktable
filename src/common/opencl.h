@@ -153,6 +153,7 @@ typedef struct dt_opencl_device_t
   const char *cname;
   const char *options;
   const char *cflags;
+  const char *avoid;
   cl_int summary;
   size_t memory_in_use;
   size_t peak_memory;
@@ -213,8 +214,6 @@ typedef struct dt_opencl_device_t
 
   // lets keep the vendor for runtime checks
   int vendor_id;
-
-  float advantage;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
