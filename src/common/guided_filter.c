@@ -484,10 +484,8 @@ static int _guided_filter_cl_impl(int devid,
   const gboolean tiling = num_tiles > 1;
 
   // When should we avoid internal tiling and thus use CPU fallback code? 
-  // Lets use advantage hint if provided or assume OpenCL is 10 times faster
-  const float hint = darktable.opencl->dev[devid].advantage;
-  const float advantage = hint > 1.0f ? 1.0f / hint : 0.1f;
-  const gboolean possible = ((float)valid_rows / (float)tile_height) > advantage;
+  // Lets assume OpenCL is 10 times faster
+  const gboolean possible = ((float)valid_rows / (float)tile_height) > 0.1f;
 
   if(tiling || (darktable.unmuted & DT_DEBUG_VERBOSE))
     dt_print(DT_DEBUG_PIPE | DT_DEBUG_TILING,

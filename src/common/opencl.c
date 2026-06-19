@@ -363,8 +363,8 @@ static void _opencl_write_device_config(const int devid)
 
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
+  g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  g_snprintf(dat, sizeof(dat), "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
 
@@ -372,17 +372,24 @@ static void _opencl_write_device_config(const int devid)
     cl->dev[devid].use_events ? 1 : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
-    cl->dev[devid].advantage,
+    0.0f,
     cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "\n[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+           "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+  dt_conf_set_string(key, dat);
+
+  // write per device list of modules that should not use OpenCL
+  g_snprintf(key, sizeof(key), "%s%s_nocl", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  g_snprintf(dat, sizeof(dat), "%s", cl->dev[devid].avoid ? cl->dev[devid].avoid : "");
+  dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+           "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid to support systems with two
   // similar cards.
-  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
-  g_snprintf(dat, 510, "%i", cl->dev[devid].headroom);
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
+  g_snprintf(dat, sizeof(dat), "%i", cl->dev[devid].headroom);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -417,7 +424,7 @@ static gboolean _opencl_read_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   dt_opencl_device_t *cldid = &cl->dev[devid];
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
 
   const gboolean existing_device = dt_conf_key_not_empty(key);
   gboolean safety_ok = TRUE;
@@ -439,7 +446,6 @@ static gboolean _opencl_read_device_config(const int devid)
     cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
     cldid->asyncmode = asyncmode ? TRUE : FALSE;
     cldid->disabled = disabled && dt_conf_get_int("performance_configuration_version_completed") != 19 ? TRUE : FALSE;
-    cldid->advantage = advantage;
     cldid->unified_fraction = unified_fraction;
   }
 
@@ -448,12 +454,14 @@ static gboolean _opencl_read_device_config(const int devid)
     cldid->unified_fraction = 0.25f;
   if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
     cldid->micro_nap = 250;
-  if((cldid->advantage < 0.0f) || (cldid->advantage > 10000.0f))
-    cldid->advantage = 0.0f;
+
+  // Also read the per-device list of modules to be avoided for OpenCL
+  g_snprintf(key, sizeof(key), "%s%s_nocl", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  cldid->avoid = dt_conf_key_not_empty(key) ? dt_conf_get_string(key) : NULL;
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid
-  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
+  g_snprintf(key, sizeof(key), "%s%s_id%i", DT_CLDEVICE_HEAD, cldid->cname, devid);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
@@ -520,6 +528,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
   cl->dev[dev].cflags = NULL;
+  cl->dev[dev].avoid = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].used_available = 0;
@@ -532,7 +541,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].clmem_error = FALSE;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
-  cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = TRUE;
   cl->dev[dev].asyncmode = FALSE;
   cl->dev[dev].disabled = FALSE;
@@ -857,8 +865,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(cl->dev[dev].max_global_mem < (uint64_t)800ul * DT_MEGA)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "   *** insufficient global memory (%" PRIu64 "MB) ***\n",
-                 cl->dev[dev].max_global_mem / DT_MEGA);
+                 "   *** insufficient global memory %zu MB) ***\n",
+                 (size_t)cl->dev[dev].max_global_mem / DT_MEGA);
     res = TRUE;
     cl->dev[dev].disabled |= TRUE;
     goto end;
@@ -879,18 +887,15 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
 
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   GLOBAL MEM SIZE:          %.0f MB\n",
-               (double)cl->dev[dev].max_global_mem / (double)DT_MEGA);
+               "   GLOBAL MEM SIZE:          %zu MB\n", (size_t)(cl->dev[dev].max_global_mem / DT_MEGA));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX IMAGE ALLOC:          %.0f MB\n",
-               (double)cl->dev[dev].max_mem_alloc / (double)DT_MEGA);
+               "   MAX IMAGE ALLOC:          %zu MB\n", (size_t)(cl->dev[dev].max_mem_alloc / DT_MEGA));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX IMAGE SIZE:           %zd x %zd\n",
-               cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
+               "   MAX IMAGE SIZE:           %zu x %zu\n", cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX CONSTANT BUFFER:      %.0f KB\n", (double)cl->dev[dev].max_mem_constant / 1024.0);
+               "   MAX CONSTANT BUFFER:      %zu KB\n", (size_t)(cl->dev[dev].max_mem_constant / 1024));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   LOCAL MEM SIZE:           %zu KB\n", cl->dev[dev].local_size / 1024lu);
+               "   LOCAL MEM SIZE:           %zu KB\n", (size_t)(cl->dev[dev].local_size / 1024));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ADDRESS ALIGN:            %d B\n", cl->dev[dev].alignsize / 8);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -966,9 +971,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   OPENCL FAST MODE:         %s\n", STR_YESNO(fastopencl));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
-  dt_print_nts(DT_DEBUG_OPENCL,
                "   DEFAULT DEVICE:           %s\n", STR_YESNO(type & CL_DEVICE_TYPE_DEFAULT));
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   AVOIDED MODULES:          %s\n", cl->dev[dev].avoid ? cl->dev[dev].avoid : "none");
 
   if(cl->dev[dev].disabled)
   {
@@ -1225,6 +1230,7 @@ static void _cleanup_cl_device_mem(dt_opencl_t *cl, const int i)
   free((void *)(cl->dev[i].cname));
   free((void *)(cl->dev[i].options));
   free((void *)(cl->dev[i].cflags));
+  g_free((void *)(cl->dev[i].avoid));
 }
 
 void dt_opencl_init(dt_opencl_t *cl,
@@ -3595,9 +3601,9 @@ void dt_opencl_memory_statistics(int devid,
   {
     dt_print(DT_DEBUG_OPENCL,"[opencl memory] device '%s' id=%d: %.1fMB in use, %.1fMB available GPU mem of %.1fMB",
              cl->dev[devid].fullname, devid,
-             (float)cl->dev[devid].memory_in_use/(1024*1024),
-             (float)cl->dev[devid].used_available/(1024*1024),
-             (float)cl->dev[devid].max_global_mem/(1024*1024));
+             (float)cl->dev[devid].memory_in_use / DT_MEGA,
+             (float)cl->dev[devid].used_available / DT_MEGA,
+             (float)cl->dev[devid].max_global_mem / DT_MEGA);
       if(cl->dev[devid].memory_in_use > darktable.opencl->dev[devid].used_available)
       {
         dt_print(DT_DEBUG_OPENCL,
