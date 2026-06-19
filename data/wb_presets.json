@@ -12478,6 +12478,65 @@
           ]
         },
         {
+          "model": "EOS 90D",
+          "presets": [
+            {
+              "name": "Daylight",
+              "channels": [
+                1.7412109375,
+                1,
+                1.5419921875,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                2.0361328125,
+                1,
+                1.3232421875,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                1.87890625,
+                1,
+                1.427734375,
+                0
+              ]
+            },
+            {
+              "name": "Tungsten",
+              "channels": [
+                1.2001953125,
+                1,
+                2.2861328125,
+                0
+              ]
+            },
+            {
+              "name": "Cool White Fluorescent",
+              "channels": [
+                1.4794921875,
+                1,
+                2.15625,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "channels": [
+                1.939453125,
+                1,
+                1.412109375,
+                0
+              ]
+            }
+          ]
+        },
+        {
           "model": "EOS 100D",
           "presets": [
             {
