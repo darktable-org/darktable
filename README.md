@@ -109,7 +109,7 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
   * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads)
 * **AMD (ROCm):** Linux only.
   * Supported AMD GPU with up-to-date drivers (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
-  * [ROCm 6+](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/) 
+  * [ROCm 6+](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/)
   * [MIGraphX](https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/install/install-migraphx.html) (may require separate install, e.g. `apt install migraphx migraphx-dev` on Ubuntu)
 * **Intel (OpenVINO):** Linux and Windows.
   * Supported Intel GPU with up-to-date drivers (integrated Gen9+, discrete Arc, or NPU Meteor Lake+)
@@ -155,12 +155,12 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-5.4.1 (stable)
+5.6.0 (stable)
 
-* [Download package for Windows](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/darktable-5.4.1-win64.exe)
-* [Download disk image for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/darktable-5.4.1-arm64.dmg)
-* [Download disk image for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/darktable-5.4.1-x86_64.dmg)
-* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/Darktable-5.4.1-x86_64.AppImage)
+* [Download package for Windows](https://github.com/darktable-org/darktable/releases/download/release-5.6.0/darktable-5.6.0-win64.exe)
+* [Download disk image for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.6.0/darktable-5.6.0-arm64.dmg)
+* [Download disk image for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-5.6.0/darktable-5.6.0-x86_64.dmg)
+* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-5.6.0/Darktable-5.6.0-x86_64.AppImage)
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -334,7 +334,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-5.4.1
+5.6.0
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.2, 4.4, 4.6, 4.8).
 Minor revisions are tagged with a third digit (e.g. 4.4.1, 4.4.2) and mostly provide bug fixes and camera support.
@@ -344,7 +344,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-5.4.1
+git checkout tags/release-5.6.0
 ```
 
 ### Get submodules

@@ -1,61 +1,72 @@
 * Developers:
 Pascal Obry
-Victor Forsiuk
 Hanno Schwalm
+Victor Forsiuk
 Mario Zimmermann
 Ralf Brown
-Roman Lebedev
-Kofa
-Diederik ter Rahe
+Andrii Ryzhkov
+Dan Torop
 Jeronimo Pellegrini
-Martin Straeten
+Philipp Lutz
+Robert Mongold
+Daniele Pighin
 Bill Ferguson
+Kofa
+Martin Straeten
 Miloš Komarčević
-Vladimir Tyrtov
+Diederik ter Rahe
 EdgarLux
-Marko Vertainen
+Ryo Shinozaki
+masterpiga
 Matjaž Jeran
-Jonas Schäfer
-Hwanyong Lee
-bajdero
+deekayhd
+esq4
+David Smith
+Hpbirkeland
+Marko Vertainen
 
 * Translators:
 Victor Forsiuk
 Pascal Obry
 Jeronimo Pellegrini
 Martin Straeten
-EdgarLux
-Marko Vertainen
-Matjaž Jeran
-Hwanyong Lee
-bajdero
-Besmir Godolja
-Elia Devito
-Kang-Wei Hsu
-Яна Тунгушпаева
-Báthory Péter
-Jan Šmucr
-Johan Schiff
-Reinder Mulder
 Ryo Shinozaki
+EdgarLux
+Matjaž Jeran
+esq4
+Hpbirkeland
+Marko Vertainen
+RIM
+Andrii Ryzhkov
+Besmir Godolja
+Báthory Péter
+Johan Schiff
+Kang-Wei Hsu
 Tianhao Chai
+Elia Devito
+GameMaster0x
+Jan Šmucr
+zxs-un
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Miloš Komarčević
 Roman Lebedev
-Jonas Schäfer
+Sidhartha
+Steven Le Rouzic
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
-ralfbrown
+yuri
 
 * Sub-module lua-scripts contributors (at least 1 commit):
-wpferguson
 Bill Ferguson
-Michael Reiger
-Tasos Bakogiannis
+Tino Mettler
 deekayhd
-Balázs Dura-Kovács
-sjjh
+Andrii Ryzhkov
+Ilya Palopezhentsev
+Martin Straeten
+Björn Lindström
+Dan Zwell
+dterrahe
 
 And all those of you that made previous releases possible
