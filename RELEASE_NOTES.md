@@ -140,7 +140,7 @@ changes (where available).
   easier to differentiate from the other labels.
 
 - Introduce a condensed mode for the panel's controls widgets. This
-  mode is off by default ans can be select in miscellaneous interface
+  mode is off by default and can be select in miscellaneous interface
   preference.
 
 - Added a 2-up scope showing both the waveform and vectorscope. This
