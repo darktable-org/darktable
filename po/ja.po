@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 21:46+0200\n"
-"PO-Revision-Date: 2026-06-07 11:03+0900\n"
+"POT-Creation-Date: 2026-06-10 23:06+0200\n"
+"PO-Revision-Date: 2026-06-19 13:36+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1280,14 +1280,14 @@ msgstr "サイズカテゴリの区切り"
 #: ../build/bin/preferences_gen.h:2990
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
-"depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
-">400px"
+"depending on the size of the thumbnail, separated by |.\n"
+"for example, 120|400 means 3 categories of thumbnails: up to 120px, "
+"120-400px, more than 400px"
 msgstr ""
 "サイズカテゴリは、|で区切られたサムネイルのサイズに応じて、異なるオーバーレイ"
 "やCSS値を設定できるようにするために使用されます\n"
-"例えば、120 | 400は、サムネイルの3つのカテゴリ（<120px, 120-400px, >400px）を"
-"意味します"
+"例えば、120 | 400は、サムネイルの3つのカテゴリ（120px未満, 120-400px, 400px"
+"超）を意味します"
 
 #: ../build/bin/preferences_gen.h:2999
 msgid "pattern for the thumbnail extended overlay text"
@@ -6195,7 +6195,7 @@ msgstr "ドロップ ダウン"
 #: ../src/libs/tagging.c:1790 ../src/libs/tagging.c:1882
 #: ../src/libs/tagging.c:2011 ../src/libs/tagging.c:2320
 #: ../src/libs/tagging.c:2835 ../src/libs/tagging.c:2877
-#: ../src/libs/tagging.c:3975
+#: ../src/libs/tagging.c:3981
 msgid "_cancel"
 msgstr "_キャンセル"
 
@@ -6205,7 +6205,7 @@ msgstr "_キャンセル"
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1883
 #: ../src/libs/tagging.c:2012 ../src/libs/tagging.c:2321
-#: ../src/libs/tagging.c:3976
+#: ../src/libs/tagging.c:3982
 msgid "_save"
 msgstr "_保存"
 
@@ -7870,7 +7870,7 @@ msgstr ""
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "XMPファイル'%s': '%s'を読み取ることが出来ません"
 
-#: ../src/common/exif.cc:6121
+#: ../src/common/exif.cc:6121 ../src/common/exif.cc:6134
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "XMPファイル'%s': '%s'を書き込むことが出来ません"
@@ -28371,7 +28371,7 @@ msgstr "コレクション設定"
 #: ../src/libs/collect.c:3554 ../src/libs/export.c:1428
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
-#: ../src/libs/tagging.c:3999
+#: ../src/libs/tagging.c:4005
 msgid "preferences..."
 msgstr "設定"
 
@@ -32691,7 +32691,7 @@ msgstr ""
 "タグツリービューではタグのショートカットがアクティブでありません。 リスト"
 "ビューに切り替えてください"
 
-#: ../src/libs/tagging.c:3973
+#: ../src/libs/tagging.c:3979
 msgid "tagging settings"
 msgstr "タグ付け設定"
 
