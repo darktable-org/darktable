@@ -16,11 +16,11 @@ $ sha256sum darktable-5.6.0-x86_64.dmg
 $ sha256sum darktable-5.6.0-arm64.dmg
 ??? darktable-5.6.0-arm64.dmg
 
-$ sha256sum darktable-5.6.0-arm64-13.5.dmg
-??? darktable-5.6.0-arm64-13.5.dmg
-
 $ sha256sum darktable-5.6.0-win64.exe
 ??? darktable-5.6.0-win64.exe
+
+$ sha256sum darktable-5.6.0-woa64.exe
+??? darktable-5.6.0-woa64.exe
 
 $ sha256sum darktable-5.6.0-x86_64.AppImage
 ???  darktable-5.6.0-x86_64.AppImage
@@ -35,12 +35,13 @@ You are strongly advised to take a backup first.
 Since darktable 5.4:
 
 - 1546 commits to darktable+rawspeed
--  699 pull requests handled
+-  704 pull requests handled
 -   63 issues closed
 
-_Please note that the darktable documentation is not currently complete for release 5.4
-and contributions are greatly appreciated. Please see the
-[project documentation](https://github.com/darktable-org/dtdocs#contributing)
+_Please note that the darktable documentation is not currently
+complete for release 5.6 and contributions are greatly
+appreciated. Please see the [project
+documentation](https://github.com/darktable-org/dtdocs#contributing)
 for more information on how to contribute._
 
 ## The Big Ones
@@ -140,7 +141,7 @@ changes (where available).
   easier to differentiate from the other labels.
 
 - Introduce a condensed mode for the panel's controls widgets. This
-  mode is off by default ans can be select in miscellaneous interface
+  mode is off by default and can be select in miscellaneous interface
   preference.
 
 - Added a 2-up scope showing both the waveform and vectorscope. This
@@ -610,6 +611,7 @@ changes (where available).
 
 ### White Balance Presets
 
+- Canon EOS 90D
 - Nikon Coolpix P1100
 - Nikon D2Hs
 - Nikon Df
@@ -618,6 +620,7 @@ changes (where available).
 - Ricoh GR IV HDF
 - Sony ILCE-1M2
 - Sony ILCE-7CR
+- Sony ILCE-9M2
 
 ### Noise Profiles
 
