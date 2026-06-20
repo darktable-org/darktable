@@ -249,15 +249,6 @@ for dtSharedObj in $dtSharedObjDirs; do
     cp -LR "$homebrewHome"/lib/"$dtSharedObj"/* "$dtResourcesDir"/lib/"$dtSharedObj"/
 done
 
-# Homebrew's `sdl2` is sdl2-compat, which dlopen()s libSDL3 at runtime —
-# otool can't see that, so install_dependencies misses it; copy explicitly
-sdl3Source="$homebrewHome/opt/sdl3/lib/libSDL3.dylib"
-if [[ -f "$sdl3Source" ]]; then
-    cp -L "$sdl3Source" "$dtResourcesDir"/lib/libSDL3.dylib
-    install_name_tool -id "@executable_path/../Resources/lib/libSDL3.dylib" \
-        "$dtResourcesDir"/lib/libSDL3.dylib || true
-fi
-
 dtSharedObjDirs="libgphoto2 libgphoto2_port"
 for dtSharedObj in $dtSharedObjDirs; do
     mkdir "$dtResourcesDir"/lib/"$dtSharedObj"

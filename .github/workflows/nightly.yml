@@ -80,7 +80,7 @@ jobs:
             libpugixml-dev \
             librsvg2-dev \
             libsaxon-java \
-            libsdl2-dev \
+            libsdl3-dev \
             libsecret-1-dev \
             libsqlite3-dev \
             libtiff5-dev \
@@ -264,7 +264,7 @@ jobs:
             portmidi:p
             potrace:p
             pugixml:p
-            SDL2:p
+            sdl3:p
             sqlite3:p
             webp-pixbuf-loader:p
             zlib:p
