@@ -583,18 +583,6 @@ static void get_blocksizes(
   return;
 }
 
-// zero output pixels, as we will be accumulating them one patch at a time
-static inline cl_int nlmeans_cl_init(
-        const int devid,
-        const int kernel,
-        cl_mem dev_out,
-        const int height,
-        const int width)
-{
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(dev_out), CLARG(width), CLARG(height));
-}
-
 // horizontal pass, add together columns of each patch
 static inline cl_int nlmeans_cl_horiz(
         const int devid,
@@ -663,7 +651,7 @@ int nlmeans_denoise_cl(
   get_blocksizes(&hblocksize, &vblocksize, P, devid, params->kernel_horiz, params->kernel_vert);
 
   // zero the output buffer into which we will be accumulating results
-  err = nlmeans_cl_init(devid,params->kernel_init,dev_out,height,width);
+  err = dt_opencl_fill_buffer(devid, dev_out, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
@@ -748,7 +736,7 @@ int nlmeans_denoiseprofile_cl(
   get_blocksizes(&hblocksize, &vblocksize, P, devid, params->kernel_horiz, params->kernel_vert);
 
   // zero the output buffer into which we will be accumulating results
-  err = nlmeans_cl_init(devid,params->kernel_init,dev_out,height,width);
+  err = dt_opencl_fill_buffer(devid, dev_out, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
   const size_t bwidth = ROUNDUP(width, hblocksize);

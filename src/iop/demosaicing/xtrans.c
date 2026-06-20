@@ -1991,9 +1991,10 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto error;
     }
 
-    // initialize output buffer to zero
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_zero, width, height,
-        CLARG(dev_out), CLARG(width), CLARG(height), CLARG(pad_tile));
+    // initialize output image inner part to zero
+    const size_t corigin[2] = { pad_tile, pad_tile };
+    const size_t carea[2] = { width - 2*pad_tile, height - 2*pad_tile};
+    err = dt_opencl_fill_image(devid, dev_out, corigin, carea, 0.0f);
     if(err != CL_SUCCESS) goto error;
 
     // need to get another temp image for the output image

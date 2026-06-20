@@ -3359,6 +3359,58 @@ int dt_opencl_unmap_mem_object(const int devid,
   return err;
 }
 
+int dt_opencl_fill_buffer(const int devid,
+                          cl_mem buffer,
+                          const size_t pts,
+                          const size_t ch,
+                          const float val)
+{
+  if(!_cldev_running(devid))
+    return DT_OPENCL_NODEVICE;
+  if(ch < 1 || ch > 4)
+    return DT_OPENCL_PROCESS_CL;
+
+  cl_event *eventp = _opencl_events_get_slot(devid, "[Fill Float Buffer]");
+  const float filler[4] = { val, val, val, val };
+  const size_t psize = sizeof(float) * ch;
+
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueFillBuffer)
+    (darktable.opencl->dev[devid].cmd_queue, buffer,
+      &filler, psize, 0, pts * psize, 0, NULL, eventp);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_fill_float%i_buffer] could not fill buffer on device '%s' id=%d: %s",
+             (int)ch, darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  return err;
+}
+
+int dt_opencl_fill_image(const int devid,
+                         cl_mem image,
+                         const size_t *origin,
+                         const size_t *region,
+                         const float val)
+{
+  if(!_cldev_running(devid))
+    return DT_OPENCL_NODEVICE;
+
+  cl_event *eventp = _opencl_events_get_slot(devid, "[Fill Image]");
+  const float filler[4] = { val, val, val, val };
+
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
+
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueFillImage)
+    (darktable.opencl->dev[devid].cmd_queue, image, filler,
+      org, reg, 0, NULL, eventp);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_fill_image] could not fill image on device '%s' id=%d: %s",
+             darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  return err;
+}
+
 void *dt_opencl_alloc_device(const int devid,
                              const int width,
                              const int height,

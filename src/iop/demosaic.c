@@ -217,7 +217,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_markesteijn_homo_max;
   int kernel_markesteijn_homo_max_corr;
   int kernel_markesteijn_homo_quench;
-  int kernel_markesteijn_zero;
   int kernel_markesteijn_accu;
   int kernel_markesteijn_final;
   int kernel_rcd_populate;
@@ -233,7 +232,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
   int gaussian_9x9_div;
-  int prefill_clip_mask;
   int prepare_blend;
   int modify_blend;
   int show_blend_mask;
@@ -1260,7 +1258,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_markesteijn_homo_max = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_max");
   gd->kernel_markesteijn_homo_max_corr = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_max_corr");
   gd->kernel_markesteijn_homo_quench = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_quench");
-  gd->kernel_markesteijn_zero = dt_opencl_create_kernel(markesteijn, "markesteijn_zero");
   gd->kernel_markesteijn_accu = dt_opencl_create_kernel(markesteijn, "markesteijn_accu");
   gd->kernel_markesteijn_final = dt_opencl_create_kernel(markesteijn, "markesteijn_final");
 
@@ -1280,7 +1277,6 @@ void init_global(dt_iop_module_so_t *self)
   const int capt = 38; // capture.cl, from programs.conf
   gd->gaussian_9x9_mul = dt_opencl_create_kernel(capt, "kernel_9x9_mul");
   gd->gaussian_9x9_div = dt_opencl_create_kernel(capt, "kernel_9x9_div");
-  gd->prefill_clip_mask = dt_opencl_create_kernel(capt, "prefill_clip_mask");
   gd->prepare_blend = dt_opencl_create_kernel(capt, "prepare_blend");
   gd->modify_blend = dt_opencl_create_kernel(capt, "modify_blend");
   gd->show_blend_mask = dt_opencl_create_kernel(capt, "show_blend_mask");
@@ -1326,7 +1322,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_markesteijn_homo_max);
   dt_opencl_free_kernel(gd->kernel_markesteijn_homo_max_corr);
   dt_opencl_free_kernel(gd->kernel_markesteijn_homo_quench);
-  dt_opencl_free_kernel(gd->kernel_markesteijn_zero);
   dt_opencl_free_kernel(gd->kernel_markesteijn_accu);
   dt_opencl_free_kernel(gd->kernel_markesteijn_final);
   dt_opencl_free_kernel(gd->kernel_rcd_populate);
@@ -1342,7 +1337,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
   dt_opencl_free_kernel(gd->gaussian_9x9_div);
-  dt_opencl_free_kernel(gd->prefill_clip_mask);
   dt_opencl_free_kernel(gd->prepare_blend);
   dt_opencl_free_kernel(gd->modify_blend);
   dt_opencl_free_kernel(gd->show_blend_mask);

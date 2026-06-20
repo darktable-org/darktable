@@ -340,7 +340,6 @@ typedef struct dt_iop_basecurve_data_t
 typedef struct dt_iop_basecurve_global_data_t
 {
   int kernel_basecurve_lut;
-  int kernel_basecurve_zero;
   int kernel_basecurve_legacy_lut;
   int kernel_basecurve_compute_features;
   int kernel_basecurve_blur_h;
@@ -712,6 +711,7 @@ int process_cl_fusion(dt_iop_module_t *self,
   // allocate buffers for wavelet transform and blending
   for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
   {
+    const size_t area[2] = { w, h };
     // coarsest step is some % of image width.
     dev_col[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_col[k] == NULL) goto error;
@@ -719,8 +719,7 @@ int process_cl_fusion(dt_iop_module_t *self,
     dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_zero, w, h,
-      CLARG(dev_comb[k]), CLARG(w), CLARG(h));
+    err = dt_opencl_fill_image(devid, dev_comb[k], CLIMG_ORIGIN, area, 0.0f);
     if(err != CL_SUCCESS) goto error;
 
     w = (w - 1) / 2 + 1;
@@ -1494,7 +1493,6 @@ void init_global(dt_iop_module_so_t *self)
   dt_iop_basecurve_global_data_t *gd = malloc(sizeof(dt_iop_basecurve_global_data_t));
   self->data = gd;
   gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
-  gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
   gd->kernel_basecurve_legacy_lut = dt_opencl_create_kernel(program, "basecurve_legacy_lut");
   gd->kernel_basecurve_compute_features = dt_opencl_create_kernel(program, "basecurve_compute_features");
   gd->kernel_basecurve_blur_h = dt_opencl_create_kernel(program, "basecurve_blur_h");
@@ -1514,7 +1512,6 @@ void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_basecurve_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_basecurve_lut);
-  dt_opencl_free_kernel(gd->kernel_basecurve_zero);
   dt_opencl_free_kernel(gd->kernel_basecurve_legacy_lut);
   dt_opencl_free_kernel(gd->kernel_basecurve_compute_features);
   dt_opencl_free_kernel(gd->kernel_basecurve_blur_h);

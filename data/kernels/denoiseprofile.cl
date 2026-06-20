@@ -113,20 +113,6 @@ kernel void denoiseprofile_precondition_Y0U0V0(read_only image2d_t in,
   write_imagef (out, (int2)(x, y), outpx);
 }
 
-
-kernel void
-denoiseprofile_init(global float4* out, const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  const int gidx = mad24(y, width, x);
-
-  if(x >= width || y >= height) return;
-
-  out[gidx] = (float4)0.0f;
-}
-
-
 kernel void
 denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, const int height,
              const int2 q)

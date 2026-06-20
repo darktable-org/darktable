@@ -63,7 +63,6 @@ typedef dt_iop_nlmeans_params_t dt_iop_nlmeans_data_t;
 
 typedef struct dt_iop_nlmeans_global_data_t
 {
-  int kernel_nlmeans_init;
   int kernel_nlmeans_dist;
   int kernel_nlmeans_horiz;
   int kernel_nlmeans_vert;
@@ -201,7 +200,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     .decimate = 0,
     .norm = norm2,
     .pipetype = piece->pipe->type,
-    .kernel_init = gd->kernel_nlmeans_init,
     .kernel_dist = gd->kernel_nlmeans_dist,
     .kernel_horiz = gd->kernel_nlmeans_horiz,
     .kernel_vert = gd->kernel_nlmeans_vert,
@@ -261,8 +259,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   size_t sizesl[2];
   size_t local[2];
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_nlmeans_init, width, height,
-          CLARG(dev_U2), CLARG(width), CLARG(height));
+  err = dt_opencl_fill_buffer(devid, dev_U2, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
@@ -389,7 +386,6 @@ void init_global(dt_iop_module_so_t *self)
   const int program = 5; // nlmeans.cl, from programs.conf
   dt_iop_nlmeans_global_data_t *gd = malloc(sizeof(dt_iop_nlmeans_global_data_t));
   self->data = gd;
-  gd->kernel_nlmeans_init = dt_opencl_create_kernel(program, "nlmeans_init");
   gd->kernel_nlmeans_dist = dt_opencl_create_kernel(program, "nlmeans_dist");
   gd->kernel_nlmeans_horiz = dt_opencl_create_kernel(program, "nlmeans_horiz");
   gd->kernel_nlmeans_vert = dt_opencl_create_kernel(program, "nlmeans_vert");
@@ -400,7 +396,6 @@ void init_global(dt_iop_module_so_t *self)
 void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_nlmeans_global_data_t *gd = self->data;
-  dt_opencl_free_kernel(gd->kernel_nlmeans_init);
   dt_opencl_free_kernel(gd->kernel_nlmeans_dist);
   dt_opencl_free_kernel(gd->kernel_nlmeans_horiz);
   dt_opencl_free_kernel(gd->kernel_nlmeans_vert);
