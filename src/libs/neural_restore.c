@@ -1075,8 +1075,10 @@ static void _import_image(const char *filename,
       }
 
       const dt_image_t *src = dt_image_cache_get(source_imgid, 'r');
-      // get source image group ID; fallback to source_imgid if cache miss to avoid invalid 0 (NO_IMGID) group ID
-      const dt_imgid_t grpid = (src && dt_is_valid_imgid(src->group_id)) ? src->group_id : source_imgid;
+      // get source image group ID; fallback to source_imgid if cache miss to
+      // avoid invalid 0 (NO_IMGID) group ID
+      const dt_imgid_t grpid = (src && dt_is_valid_imgid(src->group_id)) ?
+        src->group_id : source_imgid;
       dt_image_cache_read_release(src);
       dt_grouping_add_to_group(grpid, newid);
 
