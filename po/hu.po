@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-10 23:06+0200\n"
-"PO-Revision-Date: 2026-06-18 12:15+0200\n"
+"PO-Revision-Date: 2026-06-20 08:23+0200\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -17924,7 +17924,7 @@ msgstr ""
 "a HEIF kódoló krominancia-almintavételezési beállítása.\n"
 "automatikus – a minőség értéktől függő almintavételezés használata\n"
 "4:4:4 – nincs krominancia-almintavételezés\n"
-"4:2:2 – vízszintesen megfelezett szín-mintavételezési ráta\r\n"
+"4:2:2 – vízszintesen megfelezett szín-mintavételezési ráta\n"
 "4:2:0 – vízszintesen és függőlegesen megfelezett szín-mintavételezési ráta"
 
 #: ../src/imageio/format/j2k.c:448
@@ -18745,15 +18745,15 @@ msgid ""
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
-"a lábujj energiája nem alkalmazható, mert a görbe elvesztette „S” alakját\r\n"
+"a lábujj energiája nem alkalmazható, mert a görbe elvesztette „S” alakját\n"
 "a fehér relatív expozíciója, a kontraszt és a forgáspont jelenlegi "
-"beállításai miatt.\r\n"
-"az újbóli engedélyezéshez hajtsa végre az alábbiak egyikét:\r\n"
-" – növelje a kontrasztot\r\n"
-" – csökkentse a forgáspont célértékét\r\n"
-" – csökkentse a fekete relatív expozícióját (negatívabbá tétel)\r\n"
-" – csökkentse a görbe y-gamma értékét (a speciális görbeparamétereknél)\r\n"
-"\r\n"
+"beállításai miatt.\n"
+"az újbóli engedélyezéshez hajtsa végre az alábbiak egyikét:\n"
+" – növelje a kontrasztot\n"
+" – csökkentse a forgáspont célértékét\n"
+" – csökkentse a fekete relatív expozícióját (negatívabbá tétel)\n"
+" – csökkentse a görbe y-gamma értékét (a speciális görbeparamétereknél)\n"
+"\n"
 "nyissa meg a „görbe megjelenítése” szakaszt a fenti beállítások "
 "ellenőrzéséhez."
 
@@ -21355,8 +21355,8 @@ msgstr "színegyensúly"
 #: ../src/iop/colorbalance.c:154
 msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
 msgstr ""
-"gamma|emelés|erő|színosztályozás|kontraszt|telítettség|árnyalat|lift gamma "
-"gain|cdl|color grading|contrast|saturation|hue"
+"gamma|emelés|erő|fényelés|színosztályozás|kontraszt|telítettség|árnyalat|lift "
+"gamma gain|cdl|color grading|contrast|saturation|hue"
 
 #: ../src/iop/colorbalance.c:159
 msgid "shift colors selectively by luminance range"
@@ -21576,16 +21576,16 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"teljesítménygörbe eltolása|színáarnylás|kontrasz|krominancia csúcsfények|"
-"árnyalat|vibrancia|telítettség|offset power slope|cdl|color grading|contrast|"
-"chroma_highlights|hue|vibrance|saturation"
+"teljesítménygörbe eltolása|fényelés|színáarnylás|kontrasz|krominancia "
+"csúcsfények|árnyalat|vibrancia|telítettség|offset power slope|cdl|color "
+"grading|contrast|chroma_highlights|hue|vibrance|saturation"
 
 #: ../src/iop/colorbalancergb.c:179
 msgid ""
 "color grading tools using alpha masks to separate\n"
 "shadows, mid-tones and highlights"
 msgstr ""
-"a színosztályozó eszközök alfa maszk segítségével választják el az\n"
+"a fényelő eszközök alfa maszk segítségével választják el az\n"
 "árnyékokat, középtónusokat és csúcsfényeket"
 
 #: ../src/iop/colorbalancergb.c:524
@@ -21705,7 +21705,7 @@ msgstr "4-utas"
 
 #: ../src/iop/colorbalancergb.c:1873
 msgid "selective color grading"
-msgstr "szelektív színosztályozás"
+msgstr "szelektív fényelés"
 
 #: ../src/iop/colorbalancergb.c:1875
 msgid ""
@@ -21820,8 +21820,8 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the shadows sliders in the other tabs"
 msgstr ""
-"egy sakktáblamintás árnyékmaszkot vetít rá a képre.\r\n"
-"a kép még látható része (amelyet a maszk nem takar el) az a terület,\r\n"
+"egy sakktáblamintás árnyékmaszkot vetít rá a képre.\n"
+"a kép még látható része (amelyet a maszk nem takar el) az a terület,\n"
 "amelyre a többi fülön található árnyékcsúszkák hatással lesznek"
 
 #: ../src/iop/colorbalancergb.c:1994
@@ -21834,8 +21834,8 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the mid-tones sliders in the other tabs"
 msgstr ""
-"egy sakktáblamintás középtónus-maszkot vetít rá a képre.\r\n"
-"a kép még látható része (amelyet a maszk nem takar el) az a terület,\r\n"
+"egy sakktáblamintás középtónus-maszkot vetít rá a képre.\n"
+"a kép még látható része (amelyet a maszk nem takar el) az a terület,\n"
 "amelyre a többi fülön található középtónus-csúszkák hatással lesznek"
 
 #: ../src/iop/colorbalancergb.c:2007
@@ -21848,8 +21848,8 @@ msgid ""
 "the still-visible area of the image (not hidden by the mask) is the area\n"
 "that will be affected by the highlights sliders in the other tabs"
 msgstr ""
-"egy sakktáblamintás csúcsfénymaszkot vetít rá a képre.\r\n"
-"a kép még látható része (amelyet a maszk nem takar el) az a terület,\r\n"
+"egy sakktáblamintás csúcsfénymaszkot vetít rá a képre.\n"
+"a kép még látható része (amelyet a maszk nem takar el) az a terület,\n"
 "amelyre a többi fülön található csúcsfénycsúszkák hatással lesznek"
 
 #: ../src/iop/colorbalancergb.c:2017
@@ -21894,7 +21894,7 @@ msgstr "color look up table"
 
 #: ../src/iop/colorchecker.c:123
 msgid "profile|lut|color grading"
-msgstr "profil|színosztályzás|profile|lut|color grading"
+msgstr "profil|fényelés|színosztályzás|profile|lut|color grading"
 
 #: ../src/iop/colorchecker.c:129
 msgid "perform color space corrections and apply looks"
@@ -22269,7 +22269,7 @@ msgstr ""
 
 #: ../src/iop/colorharmonizer.c:133
 msgid "creative color grading"
-msgstr "kreatív színosztályozás"
+msgstr "kreatív fényelés"
 
 #: ../src/iop/colorharmonizer.c:135
 msgid "darktable UCS / JCH (perceptual)"
@@ -26324,7 +26324,7 @@ msgstr "RGB elsődleges színek"
 
 #: ../src/iop/primaries.c:72
 msgid "adjustment of the RGB color primaries for color grading"
-msgstr "a színosztályzás RGB elsődleges színeinek szabályozása"
+msgstr "az RGB elsődleges színeinek szabályozása a fényelés során"
 
 #: ../src/iop/primaries.c:384
 msgid "shift red towards yellow or magenta"
@@ -32489,7 +32489,7 @@ msgstr[0] ""
 "biztosan törölni szeretné a(z) „%s” címkét?\n"
 "<u>%d</u> kép van ehhez a címkéhez rendelve!"
 msgstr[1] ""
-"biztosan törölni szeretné a(z) „%s” címkét?\r\n"
+"biztosan törölni szeretné a(z) „%s” címkét?\n"
 "<u>%d</u> kép van ehhez a címkéhez rendelve!"
 
 #: ../src/libs/tagging.c:1748
