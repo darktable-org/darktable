@@ -1146,6 +1146,17 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
     img->exif_highlight_preservation = 0.0f;
 
     Exiv2::ExifData::const_iterator pos;
+	
+	// Canon Highlight Tone Priority: checked independently of ALO since both tags
+    // can be set simultaneously on modern Canon bodies.
+    // D+ (1) and D+2 (2) both apply ~1 EV sensor underexposure; D+2 is scene dependent
+	// according to Canon but start with 1 EV here as well.
+    if(FIND_EXIF_TAG("Exif.CanonLiOp.HighlightTonePriority"))
+    {
+       const long state = pos->toLong(0);
+       if(state > 0)
+          img->exif_highlight_preservation = 1.0f;      // D+ or D+2: ~1 EV underexposure
+    }
     if(FIND_EXIF_TAG("Exif.Canon.LightingOpt"))  // Active Lighting Optimization
     {
        // tag consists of an array of long values
