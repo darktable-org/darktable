@@ -103,7 +103,6 @@ typedef struct dt_iop_atrous_gui_data_t
 
 typedef struct dt_iop_atrous_global_data_t
 {
-  int kernel_zero;
   int kernel_decompose;
   int kernel_synthesize;
   int kernel_addbuffers;
@@ -412,8 +411,8 @@ int process_cl(dt_iop_module_t *self,
   if(!dev_detail || !dev_tmp || !dev_tmp2 || !dev_filter) goto error;
 
   // clear dev_out to zeros, as we will be incrementally accumulating results there
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zero, width, height,
-    CLARG(dev_out), CLARG(width), CLARG(height));
+  const size_t area[2] = { width, height };
+  err = dt_opencl_fill_image(devid, dev_out, CLIMG_ORIGIN, area, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
   // the buffers for the buffer ping-pong.  We start with dev_in as
@@ -627,7 +626,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_decompose = dt_opencl_create_kernel(program, "eaw_decompose");
   gd->kernel_synthesize = dt_opencl_create_kernel(program, "eaw_synthesize");
 #ifdef USE_NEW_CL
-  gd->kernel_zero = dt_opencl_create_kernel(program, "eaw_zero");
   gd->kernel_addbuffers = dt_opencl_create_kernel(program, "eaw_addbuffers");
 #endif
 }
@@ -638,7 +636,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_decompose);
   dt_opencl_free_kernel(gd->kernel_synthesize);
 #ifdef USE_NEW_CL
-  dt_opencl_free_kernel(gd->kernel_zero);
   dt_opencl_free_kernel(gd->kernel_addbuffers);
 #endif
   free(self->data);

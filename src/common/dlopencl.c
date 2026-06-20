@@ -225,6 +225,12 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
                                            (void (**)(void)) & ocl->symbols->dt_clGetMemObjectInfo);
     success = success && dt_gmodule_symbol(module, "clGetImageInfo",
                                            ((void (**)(void)) & ocl->symbols->dt_clGetImageInfo));
+    success = success && dt_gmodule_symbol(module, "clEnqueueMigrateMemObjects",
+                                           ((void (**)(void)) & ocl->symbols->dt_clEnqueueMigrateMemObjects));
+    success = success && dt_gmodule_symbol(module, "clEnqueueFillBuffer",
+                                           ((void (**)(void)) & ocl->symbols->dt_clEnqueueFillBuffer));
+    success = success && dt_gmodule_symbol(module, "clEnqueueFillImage",
+                                           ((void (**)(void)) & ocl->symbols->dt_clEnqueueFillImage));
   }
 
   ocl->have_opencl = success;
