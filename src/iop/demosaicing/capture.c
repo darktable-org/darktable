@@ -1062,8 +1062,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   if(!blendmask || !luminance || !tmp2 || !tmp1 || !dev_rgb) goto finish;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prefill_clip_mask, width, height,
-          CLARG(tmp2), CLARG(width), CLARG(height));
+  err = dt_opencl_fill_buffer(devid, tmp2, pixels, 1, 1.0f);
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prepare_blend, width, height,

@@ -114,16 +114,3 @@ dwt_hat_transform_col(global float4 *lpass, int width, int height, const int sc,
                                       * lpass_mult;
   }
 }
-
-kernel void
-dwt_init_buffer(global float4 *buffer, int width, int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  const int idx = mad24(y, width, x);
-
-  buffer[idx] = 0.f;
-}

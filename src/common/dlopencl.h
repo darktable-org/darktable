@@ -133,6 +133,10 @@ typedef cl_int (*dt_clEnqueueNativeKernel_t)(cl_command_queue, void (*user_func)
 typedef cl_int (*dt_clEnqueueMarker_t)(cl_command_queue, cl_event *);
 typedef cl_int (*dt_clEnqueueWaitForEvents_t)(cl_command_queue, cl_uint, const cl_event *);
 
+typedef cl_int (*dt_clEnqueueMigrateMemObjects_t)(cl_command_queue, cl_uint, const cl_mem*, cl_mem_migration_flags, cl_uint, const cl_event*, cl_event*);
+typedef cl_int (*dt_clEnqueueFillBuffer_t)(cl_command_queue, cl_mem, const void *, size_t, size_t, size_t, cl_uint, const cl_event *, cl_event *);
+typedef cl_int (*dt_clEnqueueFillImage_t)(cl_command_queue, cl_mem, const void *, const size_t *, const size_t *, cl_uint, const cl_event *, cl_event *);
+
 typedef struct dt_dlopencl_symbols_t
 {
   dt_clGetPlatformIDs_t dt_clGetPlatformIDs;
@@ -206,6 +210,9 @@ typedef struct dt_dlopencl_symbols_t
   dt_clEnqueueNativeKernel_t dt_clEnqueueNativeKernel;
   dt_clEnqueueMarker_t dt_clEnqueueMarker;
   dt_clEnqueueWaitForEvents_t dt_clEnqueueWaitForEvents;
+  dt_clEnqueueMigrateMemObjects_t dt_clEnqueueMigrateMemObjects;
+  dt_clEnqueueFillBuffer_t dt_clEnqueueFillBuffer;
+  dt_clEnqueueFillImage_t dt_clEnqueueFillImage;
 } dt_dlopencl_symbols_t;
 
 

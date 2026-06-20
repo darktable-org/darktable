@@ -167,18 +167,6 @@ __kernel void kernel_9x9_div(global float *in,
   out[i] = luminance[i] / fmax(val, CAPTURE_YMIN);
 }
 
-__kernel void prefill_clip_mask(global float *mask,
-                                const int width,
-                                const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if(col >= width || row >= height) return;
-
-  const int i = mad24(row, width, col);
-  mask[i] = 1.0f;
-}
-
 __kernel void prepare_blend(__read_only image2d_t cfa,
                             __read_only image2d_t dev_out,
                             const int filters,

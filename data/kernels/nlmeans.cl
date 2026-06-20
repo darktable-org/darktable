@@ -34,18 +34,6 @@ static inline float ddirac(const int2 q)
   return ((q.x || q.y) ? 1.0f : 0.0f);
 }
 
-kernel void nlmeans_init(global float4* out,
-                         const int width,
-                         const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  out[mad24(y, width, x)] = (float4)0.0f;
-}
-              
-
 kernel void nlmeans_dist(read_only image2d_t in,
                          global float *U4,
                          const int width,
