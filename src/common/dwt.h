@@ -106,7 +106,6 @@ typedef struct dt_dwt_cl_global_t
   int kernel_dwt_subtract_layer;
   int kernel_dwt_hat_transform_col;
   int kernel_dwt_hat_transform_row;
-  int kernel_dwt_init_buffer;
 } dt_dwt_cl_global_t;
 
 typedef struct dwt_params_cl_t

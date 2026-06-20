@@ -469,6 +469,16 @@ int dt_opencl_write_host_to_image_raw(const int devid,
                                        const int rowpitch,
                                        const gboolean blocking);
 
+int dt_opencl_fill_buffer(const int devid,
+                          cl_mem buffer,
+                          const size_t pts,
+                          const size_t ch,
+                          const float val);
+int dt_opencl_fill_image(const int devid,
+                         cl_mem image,
+                         const size_t *orig,
+                         const size_t *area,
+                         const float val);
 void *dt_opencl_copy_host_to_image(const int devid,
                                     void *host,
                                     const int width,

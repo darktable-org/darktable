@@ -198,7 +198,6 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_precondition;
   int kernel_denoiseprofile_precondition_v2;
   int kernel_denoiseprofile_precondition_Y0U0V0;
-  int kernel_denoiseprofile_init;
   int kernel_denoiseprofile_dist;
   int kernel_denoiseprofile_horiz;
   int kernel_denoiseprofile_vert;
@@ -2028,7 +2027,6 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
         .decimate = 0,
         .norm = norm2,
         .pipetype = piece->pipe->type,
-        .kernel_init = gd->kernel_denoiseprofile_init,
         .kernel_dist = gd->kernel_denoiseprofile_dist,
         .kernel_horiz = gd->kernel_denoiseprofile_horiz,
         .kernel_vert = gd->kernel_denoiseprofile_vert,
@@ -2080,8 +2078,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
   else
     vblocksize = 1;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_init, width, height,
-            CLARG(dev_U2), CLARG(width), CLARG(height));
+  err = dt_opencl_fill_buffer(devid, dev_U2, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
@@ -2748,8 +2745,6 @@ void init_global(dt_iop_module_so_t *self)
     dt_opencl_create_kernel(program, "denoiseprofile_precondition_v2");
   gd->kernel_denoiseprofile_precondition_Y0U0V0 =
     dt_opencl_create_kernel(program, "denoiseprofile_precondition_Y0U0V0");
-  gd->kernel_denoiseprofile_init =
-    dt_opencl_create_kernel(program, "denoiseprofile_init");
   gd->kernel_denoiseprofile_dist =
     dt_opencl_create_kernel(program, "denoiseprofile_dist");
   gd->kernel_denoiseprofile_horiz =
@@ -2783,7 +2778,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_iop_denoiseprofile_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition_v2);
-  dt_opencl_free_kernel(gd->kernel_denoiseprofile_init);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_dist);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_horiz);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_vert);

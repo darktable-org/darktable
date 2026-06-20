@@ -55,18 +55,6 @@ basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width,
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-
-kernel void
-basecurve_zero(write_only image2d_t out, const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  write_imagef (out, (int2)(x, y), (float4)0.0f);
-}
-
 /*
   Original basecurve implementation.  Applies a LUT on a per-channel basis which can cause color shifts.
 

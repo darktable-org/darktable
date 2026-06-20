@@ -869,20 +869,6 @@ markesteijn_homo_quench(global uchar *homosum1, global uchar *homosum2, const in
   homosum2[glidx] = hmo2;
 }
 
-// Initialize output image to zero
-kernel void
-markesteijn_zero(write_only image2d_t out, const int width, const int height, const int border)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  // take sufficient border into account
-  if(x < border || x >= width-border || y < border || y >= height-border) return;
-
-  write_imagef(out, (int2)(x, y), (float4)0.0f);
-}
-
-
 // accumulate contributions of all directions into output image
 kernel void
 markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float *rgb,
