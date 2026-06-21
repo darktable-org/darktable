@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build from (defaults to the branch the workflow is run on)"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -159,7 +165,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the AppImage filename
-          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
+          git clone -b ${{ inputs.branch || github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -169,7 +175,7 @@ jobs:
         run: |
           sudo lensfun-update-data
       - name: Set correct AppImage update info for release build
-        if: github.ref_name != 'master' # will be true only for not nightly builds
+        if: (inputs.branch || github.ref_name) != 'master' # will be true only for not nightly builds
         run: |
           # Set the environment variable for build step. This is only needed
           # for release builds, for nightly builds the build script does the
@@ -293,7 +299,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the installation package filename
-          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
+          git clone -b ${{ inputs.branch || github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -368,7 +374,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the disk image filename
-          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
+          git clone -b ${{ inputs.branch || github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -422,7 +428,7 @@ jobs:
     needs: [AppImage, Windows, macOS]
     steps:
       - name: Checkout master to update 'nightly' tag
-        if: github.ref_name == 'master' # will be true only for nightly builds
+        if: (inputs.branch || github.ref_name) == 'master' # will be true only for nightly builds
         uses: actions/checkout@v6
         with:
           ref: master
@@ -430,7 +436,7 @@ jobs:
           path: src
           fetch-depth: 1
       - name: Force move 'nightly' tag
-        if: github.ref_name == 'master' # will be true only for nightly builds
+        if: (inputs.branch || github.ref_name) == 'master' # will be true only for nightly builds
         run: |
           pushd src
           # Delete and recreate nightly tag instead of just force retargeting.
