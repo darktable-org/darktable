@@ -522,8 +522,8 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
   for_four_channels(k)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
-    piece->pipe->dsc.processed_maximum[k] =
-      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+    // As there are no modules changing processed_maximum this is safe
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k];
     chr->wb_coeffs[k] = d->coeffs[k];
   }
   chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
