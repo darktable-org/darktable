@@ -344,7 +344,7 @@ static float *_process_opposed(dt_iop_module_t *self,
       }
 
       dt_print_pipe(DT_DEBUG_PIPE,
-          "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
+          "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL,
            "%12.7f (%d)%12.7f (%d)%12.7f (%d)%s%s",
           chrominance[0], (int)cnts[0],
           chrominance[1], (int)cnts[1],
@@ -544,7 +544,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     }
 
     dt_print_pipe(DT_DEBUG_PIPE,
-        "opposed chroma", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
+        "opposed chroma", piece->pipe, self, piece->pipe->devid, NULL, NULL,
         "%12.7f (%d)%12.7f (%d)%12.7f (%d)%s%s",
         chrominance[0], (int)cnts[0],
         chrominance[1], (int)cnts[1],
