@@ -2028,6 +2028,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   // NOTE: the socket calls below must remain outside any OMP parallel section.
   if(dev->gui_attached && !dev->gui_leaving
      && pipe == dev->preview_pipe
+     // host `input` must actually hold this frame's pixels. If the upstream
+     // module ran on OpenCL its result is left GPU-resident (cl_mem_input set)
+     // and the host buffer is stale, so skip this frame rather than forward
+     // garbage to the viewer (it keeps its last good frame).
+     && cl_mem_input == NULL
      && dt_iop_module_is(module, "colorout")
      && input_format->datatype == TYPE_FLOAT && input_format->channels == 4
      && dt_conf_get_bool("plugins/darkroom/hdr_viewer_enabled")
