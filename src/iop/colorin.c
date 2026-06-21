@@ -661,17 +661,17 @@ int process_cl(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = chr->D65coeffs[k];
+      // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
-  }
-  dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
-      corrected ? "coeff correction" : "coeff report",
+    dt_print_pipe(DT_DEBUG_PIPE, "coeff correction",
       pipe, self, devid, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
       pipe->dsc.temperature.coeffs[0], coeffs[0],
       pipe->dsc.temperature.coeffs[1], coeffs[1],
       pipe->dsc.temperature.coeffs[2], coeffs[2]);
+  }
 
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
@@ -1208,17 +1208,17 @@ void process(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      pipe->dsc.temperature.coeffs[k] = chr->D65coeffs[k];
+      // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
-  }
-  dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
-      corrected ? "coeff correction" : "coeff report",
+    dt_print_pipe(DT_DEBUG_PIPE, "coeff correction",
       pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
       pipe->dsc.temperature.coeffs[0], coeffs[0],
       pipe->dsc.temperature.coeffs[1], coeffs[1],
       pipe->dsc.temperature.coeffs[2], coeffs[2]);
+  }
 
   const gboolean blue_mapping =
     d->blue_mapping && dt_image_is_matrix_correction_supported(&pipe->image);
