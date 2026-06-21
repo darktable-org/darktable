@@ -404,6 +404,9 @@ changes (where available).
   WB. This was due to a missing reset letting the Color Calibration
   module starting with a wrong WB.
 
+- Fixed wrong color coefficients and pipe processed_maximum due to tiling
+  in temperature and colorin modules.
+
 - Avoid speckles when creating drawn masks using the vectorize option
   in the Raster File module.
 
