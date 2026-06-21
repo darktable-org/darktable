@@ -584,9 +584,6 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   }
 }
 
-static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
-static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
-
 static float lerp_lut(const float *const lut, const float v)
 {
   // TODO: check if optimization is worthwhile!
