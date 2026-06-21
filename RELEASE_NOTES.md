@@ -34,8 +34,8 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.4:
 
-- 1546 commits to darktable+rawspeed
--  704 pull requests handled
+- 1561 commits to darktable+rawspeed
+-  705 pull requests handled
 -   63 issues closed
 
 _Please note that the darktable documentation is not currently
