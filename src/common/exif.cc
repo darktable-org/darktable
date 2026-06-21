@@ -1145,18 +1145,8 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
     // Compute exposure bias applied by HDR/highlight-preservation/Dynamic Range Expansion/HLG-tone modes
     img->exif_highlight_preservation = 0.0f;
 
-    Exiv2::ExifData::const_iterator pos;
-	
-	// Canon Highlight Tone Priority: checked independently of ALO since both tags
-    // can be set simultaneously on modern Canon bodies.
-    // D+ (1) and D+2 (2) both apply ~1 EV sensor underexposure; D+2 is scene dependent
-	// according to Canon but start with 1 EV here as well.
-    if(FIND_EXIF_TAG("Exif.CanonLiOp.HighlightTonePriority"))
-    {
-       const long state = pos->toLong(0);
-       if(state > 0)
-          img->exif_highlight_preservation = 1.0f;      // D+ or D+2: ~1 EV underexposure
-    }
+    Exiv2::ExifData::const_iterator pos;	
+
     if(FIND_EXIF_TAG("Exif.Canon.LightingOpt"))  // Active Lighting Optimization
     {
        // tag consists of an array of long values
@@ -1182,6 +1172,17 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
           img->exif_highlight_preservation = 0.33f;     // estimated strength for Low
        else if(state == 2)
           img->exif_highlight_preservation = 0.66f;     // estimated strength for Strong
+    }
+    // Canon Highlight Tone Priority overrides ALO if active -- both tags can be set
+    // simultaneously, and HTP represents a deliberate sensor underexposure that takes 
+	// priority.
+    // D+ (1) and D+2 (2) both apply ~1 EV sensor underexposure; D+2 differs mainly
+    // in its stronger in-camera JPEG tone curve, not additional raw underexposure.
+    if(FIND_EXIF_TAG("Exif.CanonLiOp.HighlightTonePriority"))
+    {
+       const long state = pos->toLong(0);
+       if(state > 0)
+          img->exif_highlight_preservation = 1.0f;      // D+ or D+2: ~1 EV underexposure
     }
     else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
        || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
