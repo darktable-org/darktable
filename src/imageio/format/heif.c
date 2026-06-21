@@ -366,7 +366,10 @@ int write_image(dt_imageio_module_data_t *data,
     {
       const float *const px = &in_data[4 * k];
       const float e_max = fmaxf(fmaxf(px[0], px[1]), px[2]);
-      const float nits = _pq_to_nits(e_max);
+      const float nits_raw = _pq_to_nits(e_max);
+      // ignore NaN/Inf samples: they would poison the MaxFALL sum and make the
+      // final 16-bit clli cast undefined.
+      const float nits = isfinite(nits_raw) ? nits_raw : 0.0f;
       max_cll = fmaxf(max_cll, nits);
       sum_fall += nits;
     }
