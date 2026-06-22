@@ -423,7 +423,7 @@ jobs:
     steps:
       - name: Checkout master to update 'nightly' tag
         if: github.ref_name == 'master' # will be true only for nightly builds
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: master
           submodules: false
