@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "common/image.h"
 #include "common/metadata.h"
 #include "common/mipmap_cache.h"
 #include "common/selection.h"
@@ -96,11 +97,9 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget,
   return FALSE;
 }
 
-static void _lib_duplicate_new_clicked_callback(GtkWidget *widget,
-                                                GdkEventButton *event,
-                                                dt_lib_module_t *self)
+// create a 'virgin' duplicate of imgid, without any development
+static void _lib_duplicate_original(const dt_imgid_t imgid)
 {
-  const dt_imgid_t imgid = darktable.develop->image_storage.id;
   const dt_imgid_t newid = dt_image_duplicate(imgid);
   if(!dt_is_valid_imgid(newid))
     return;
@@ -110,11 +109,10 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
-static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
-                                                      GdkEventButton *event,
-                                                      dt_lib_module_t *self)
+
+// create a duplicate of imgid with the same history stack
+static void _lib_duplicate_duplicate(const dt_imgid_t imgid)
 {
-  const dt_imgid_t imgid = darktable.develop->image_storage.id;
   const dt_imgid_t newid = dt_image_duplicate(imgid);
   if(!dt_is_valid_imgid(newid))
     return;
@@ -122,6 +120,26 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
+}
+
+// per-row buttons: act on the duplicate the button belongs to
+static void _lib_duplicate_original_clicked_callback(GtkButton *button, dt_lib_module_t *self)
+{
+  _lib_duplicate_original(GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid")));
+}
+static void _lib_duplicate_duplicate_clicked_callback(GtkButton *button, dt_lib_module_t *self)
+{
+  _lib_duplicate_duplicate(GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid")));
+}
+
+// actions (keyboard shortcuts): act on the currently selected duplicate
+static void _lib_duplicate_original_action_callback(dt_action_t *action)
+{
+  _lib_duplicate_original(darktable.develop->image_storage.id);
+}
+static void _lib_duplicate_duplicate_action_callback(dt_action_t *action)
+{
+  _lib_duplicate_duplicate(darktable.develop->image_storage.id);
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
@@ -324,22 +342,48 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_add_events(tb, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(G_OBJECT(tb), "focus-out-event",
                      G_CALLBACK(_lib_duplicate_caption_out_callback), self);
-    GtkWidget *lb = gtk_label_new (g_strdup(chl));
+    GtkWidget *lb = gtk_label_new(chl);
     gtk_widget_set_hexpand(lb, TRUE);
+
+    // duplicate this image with its history stack; only useful once the image
+    // has actually been developed - otherwise it is equivalent to "original"
+    const gboolean altered = dt_image_altered(imgid);
+    GtkWidget *bt_dup = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
+    dt_gui_add_class(bt_dup, "dt_duplicate_duplicate");
+    gtk_widget_set_tooltip_text(bt_dup,
+                                _("create a duplicate of this image with same history stack"));
+    g_object_set_data(G_OBJECT(bt_dup), "imgid", GINT_TO_POINTER(imgid));
+    g_signal_connect(
+      G_OBJECT(bt_dup), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
+
+    // create a 'virgin' duplicate of this image, without any development
+    GtkWidget *bt_orig = dtgtk_button_new(dtgtk_cairo_paint_plus, 0, NULL);
+    dt_gui_add_class(bt_orig, "dt_duplicate_original");
+    gtk_widget_set_tooltip_text(
+      bt_orig, _("create a 'virgin' duplicate of this image without any development"));
+    g_object_set_data(G_OBJECT(bt_orig), "imgid", GINT_TO_POINTER(imgid));
+    g_signal_connect(
+      G_OBJECT(bt_orig), "clicked", G_CALLBACK(_lib_duplicate_original_clicked_callback), self);
+
     bt = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    dt_gui_add_class(bt, "dt_duplicate_delete");
     gtk_widget_set_tooltip_text(bt, _("delete this duplicate"));
     //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
     gtk_grid_attach(GTK_GRID(hb), thumb->w_main, 0, 0, 1, 2);
-    gtk_grid_attach(GTK_GRID(hb), bt, 2, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 2, 1);
+    gtk_grid_attach(GTK_GRID(hb), bt_dup, 2, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(hb), bt_orig, 3, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(hb), bt, 4, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 4, 1);
 
     gtk_widget_show(hb);
     gtk_widget_show(lb);
     gtk_widget_show(tb);
+    gtk_widget_set_visible(bt_dup, altered);
+    gtk_widget_show(bt_orig);
     gtk_widget_show(bt);
 
     dt_gui_box_add(d->duplicate_box, hb);
@@ -400,21 +444,19 @@ void gui_init(dt_lib_module_t *self)
   d->view_ctx = 0;
 
   d->duplicate_box = dt_gui_vbox();
-  self->widget = dt_gui_vbox
-                   (dt_ui_resize_wrap(d->duplicate_box, 1,
-                                      "plugins/darkroom/duplicate/windowheight"),
-                    dt_gui_hbox
-                      (dt_action_button_new
-                         (self, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
-                          _("create a duplicate of the image with same history stack"), 0, 0),
-                       dt_action_button_new
-                         (self, N_("original"),
-                          _lib_duplicate_new_clicked_callback, self,
-                          _("create a 'virgin' duplicate of the image without any development"), 0, 0)));
+  self->widget =
+    dt_gui_vbox(dt_ui_resize_wrap(d->duplicate_box, 1, "plugins/darkroom/duplicate/windowheight"));
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
   dt_act_on_set_class(self->widget);
   gtk_widget_show_all(self->widget);
   gtk_widget_set_sensitive(self->widget, !dt_check_gimpmode_ok("file"));
+
+  // the per-duplicate buttons act on their own row; these actions act on the
+  // currently selected duplicate, retaining the previous bottom-button behaviour
+  dt_action_register(
+    DT_ACTION(self), N_("duplicate"), _lib_duplicate_duplicate_action_callback, 0, 0);
+  dt_action_register(
+    DT_ACTION(self), N_("original"), _lib_duplicate_original_action_callback, 0, 0);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_duplicate_init_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_duplicate_init_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_duplicate_collection_changed);
