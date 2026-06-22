@@ -599,6 +599,19 @@ dialog .sidebar row:selected:hover label,
   margin: 1em 0 1em 0.5em;
 }
 
+/* per-duplicate action buttons - styled independently via their classes */
+.dt_duplicate_ui .dt_duplicate_duplicate,
+.dt_duplicate_ui .dt_duplicate_original
+{
+  margin: 0;
+}
+
+/* space the delete button apart from the duplicate buttons */
+.dt_duplicate_ui .dt_duplicate_delete
+{
+  margin-left: 0.5em;
+}
+
 /* Set modules name header */
 #module-header
 {
