@@ -1182,7 +1182,7 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
     {
        const long state = pos->toLong(0);
        if(state > 0)
-          img->exif_highlight_preservation = 1.0f;      // D+ or D+2: ~1 EV underexposure
+          img->exif_highlight_preservation += 1.0f;      // D+ or D+2: ~1 EV underexposure
     }
     else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
        || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
