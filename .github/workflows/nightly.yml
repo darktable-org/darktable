@@ -459,7 +459,7 @@ jobs:
         with:
           allowUpdates: true     # required to allow nightly release updates
           removeArtifacts: true  # we don't want to pile up old artifacts in the nightly release
-          tag: nightly
+          tag: ${{ github.ref_name == 'master' && 'nightly' || github.ref_name }}
           prerelease: true
           # We don't want a stable release that is in the process of being prepared
           # and not yet ready for publication to be visible
