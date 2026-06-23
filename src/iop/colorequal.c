@@ -298,6 +298,10 @@ typedef struct dt_iop_colorequal_gui_data_t
   float *preview_hue_buf;
   int    preview_hue_buf_width;
   int    preview_hue_buf_height;
+
+  // Cumulative pipe hash at the time preview_hue_buf was last filled.
+  // Used in mouse_moved() to validate buffer freshness.
+  dt_hash_t preview_pipe_hash;
 } dt_iop_colorequal_gui_data_t;
 
 void init_global(dt_iop_module_so_t *self)
@@ -1125,6 +1129,7 @@ void process(dt_iop_module_t *self,
       DT_OMP_FOR()
       for(size_t k = 0; k < npixels; k++)
         gui->preview_hue_buf[k] = out[k * 4]; // pix_out[0] = HSB hue (radians UCS)
+      gui->preview_pipe_hash = dt_dev_pixelpipe_piece_hash(piece, &piece->processed_roi_out, TRUE);
     }
     dt_iop_gui_leave_critical_section(self);
   }
@@ -2285,6 +2290,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     dt_bauhaus_widget_set_quad_active(g->hue_shift, FALSE);
     g->mask_mode = 0;
     g->cursor_valid = FALSE; // disables Gaussian mode when module loses focus
+    g->preview_pipe_hash = DT_INVALID_HASH;
     if(buttons) dt_dev_reprocess_center(self->dev);
     dt_control_queue_redraw_center();
   }
@@ -2649,9 +2655,31 @@ int mouse_moved(dt_iop_module_t *self,
   g->cursor_pos_x = pzx;
   g->cursor_pos_y = pzy;
 
-  g->cursor_valid = TRUE;
-
-  dt_control_queue_redraw_center();
+  // Validate buffer freshness against the cumulative pipe hash.
+  // cursor_valid is set TRUE only when the hash matches, so the GUI
+  // indicator (gui_post_expose) and the graph Gaussian mode
+  // (_area_scrolled_callback) never see stale pipeline data.
+  g->cursor_valid = FALSE;
+  dt_dev_pixelpipe_t *pp = self->dev->preview_pipe;
+  if(pp)
+  {
+    GList *iter = pp->nodes;
+    while(iter)
+    {
+      dt_dev_pixelpipe_iop_t *p = (dt_dev_pixelpipe_iop_t *)iter->data;
+      if(p->module == self)
+      {
+        const dt_hash_t cur_hash = dt_dev_pixelpipe_piece_hash(p, &p->processed_roi_out, TRUE);
+        if(cur_hash == g->preview_pipe_hash)
+        {
+          g->cursor_valid = TRUE;
+          dt_control_queue_redraw_center();
+        }
+        break;
+      }
+      iter = g_list_next(iter);
+    }
+  }
   return 0;
 }
 
@@ -2875,7 +2903,8 @@ static gboolean _adjust_params_gaussian(dt_iop_module_t *self,
  * Returning 0 lets darktable zoom normally.
  *
  * Logic:
- *   - mouse_moved() reads the hue from the preview buffer
+ *   - Reads the hue directly from the cached preview buffer
+ *     (not via mouse_moved, to avoid gating on pipeline hash)
  *   - If a valid hue is available under the cursor
  *     → applies Gaussian weighting to the active channel's sliders
  *     → returns 1 to block zoom
@@ -2891,12 +2920,35 @@ int scrolled(dt_iop_module_t *self,
 
   if(!g) return 0;
 
-  // Force a fresh hue reading from the color picker.
-  // mouse_moved is not always called before scrolled, so we
-  // re-trigger the read here to ensure fresh color data.
-  mouse_moved(self, x, y, 0.0, 0, 1.0f);
+  // Read the hue directly from the cached preview buffer (race-safe).
+  // We do NOT call mouse_moved() here because that would gate on the
+  // pipeline hash — scroll-based adjustment should work even with
+  // slightly stale data rather than falling through to image zoom.
+  float hue_rad = 0.f;
+  gboolean have_hue = FALSE;
+  dt_iop_gui_enter_critical_section(self);
+  const float *buf    = g->preview_hue_buf;
+  const int    bwidth  = g->preview_hue_buf_width;
+  const int    bheight = g->preview_hue_buf_height;
+  if(buf != NULL && bwidth > 0 && bheight > 0)
+  {
+    const int cx = CLAMP((int)(x * bwidth),  0, bwidth  - 1);
+    const int cy = CLAMP((int)(y * bheight), 0, bheight - 1);
+    hue_rad = buf[(size_t)cy * bwidth + cx];
+    have_hue = TRUE;
+  }
+  dt_iop_gui_leave_critical_section(self);
+  if(!have_hue) return 0;
 
-  if(!g->cursor_valid) return 0; // no valid hue: normal zoom
+  // Convert UCS hue → GUI degrees
+  if(hue_rad < 0.f) hue_rad += DT_2PI_F;
+  float hue_deg = hue_rad * (180.f / M_PI_F) - ANGLE_SHIFT;
+  if(hue_deg < 0.f)    hue_deg += 360.f;
+  if(hue_deg >= 360.f) hue_deg -= 360.f;
+  g->cursor_hue = hue_deg;
+  g->cursor_pos_x = x;
+  g->cursor_pos_y = y;
+  g->cursor_valid = TRUE;
 
   // Step: 1.0 for hue (°), 0.01 for sat/bright (%)
   // Ctrl for fine precision (÷10)
@@ -3048,16 +3100,16 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
 
 /* _area_scrolled_callback — scroll wheel handling on the graph.
  *
- * Behavior depending on color picker state:
+ * Behavior depending on preview buffer state:
  *
- * A) Picker ACTIVE (cursor_valid == TRUE) → Gaussian mode
+ * A) Buffer exists (preview_hue_buf != NULL) → Gaussian mode
  *    The scroll wheel modifies all sliders of the active channel based on
  *    their angular distance to the hue under the cursor. Weight follows a
  *    Gaussian with sigma=35°: the closest node receives maximum movement,
  *    neighbors receive a decreasing fraction. This ensures smooth transitions
  *    with no dead zones.
  *
- * B) Picker INACTIVE (cursor_valid == FALSE) → original behavior
+ * B) No buffer yet → classic single-node behavior
  *    The scroll wheel is forwarded to the slider of the selected node in the graph.
  *
  * C) Alt+scroll: switch page (original behavior unchanged).
@@ -3079,9 +3131,11 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   // cursor_hue is updated by mouse_moved() when the mouse is over the image.
   // On the graph, we use the last known value.
 
-  // If no valid hue, classic behavior:
-  // adjust the selected node's slider directly
-  if(!g->cursor_valid)
+  // If no preview buffer has been allocated yet, fall back to classic
+  // single-node adjustment.  Otherwise use Gaussian weighting — we
+  // check buffer existence rather than cursor_valid (which gates on
+  // pipe hash) so that the graph remains usable with slightly stale data.
+  if(g->preview_hue_buf == NULL)
   {
     double delta_x = 0.0, delta_y = 0.0;
     switch(event->direction)
@@ -3403,6 +3457,7 @@ void gui_init(dt_iop_module_t *self)
   g->preview_hue_buf = NULL;
   g->preview_hue_buf_width  = 0;
   g->preview_hue_buf_height = 0;
+  g->preview_pipe_hash = DT_INVALID_HASH;
   for(dt_iop_colorequal_channel_t chan = 0; chan < NUM_CHANNELS; chan++)
   {
     g->b_data[chan] = NULL;
