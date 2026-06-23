@@ -601,12 +601,6 @@ void expose(dt_view_t *self,
       cairo_surface_destroy(darktable.gui->surface);
       darktable.gui->surface = NULL;
     }
-    if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
-    {
-      // cache the rendered bitmap for use while loading the next image
-      darktable.gui->surface = cairo_get_target(cri);
-      cairo_surface_reference(darktable.gui->surface);
-    }
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
@@ -687,56 +681,37 @@ void expose(dt_view_t *self,
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      if(dt_conf_get_bool("darkroom/ui/loading_screen"))
-        load_txt = g_strdup_printf(C_("darkroom", "loading `%s' ..."),
+      load_txt = g_strdup_printf(C_("darkroom", "loading `%s' ..."),
                                    dev->image_storage.filename);
-      else
-        load_txt = g_strdup(dev->image_storage.filename);
     }
 
-    if(dt_conf_get_bool("darkroom/ui/loading_screen"))
-    {
-      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-      cairo_paint(cri);
+    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cri);
 
-      // waiting message
-      PangoRectangle ink;
-      PangoLayout *layout;
-      PangoFontDescription *desc =
+    // waiting message
+    PangoRectangle ink;
+    PangoLayout *layout;
+    PangoFontDescription *desc =
         pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-      pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-      pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      layout = pango_cairo_create_layout(cri);
-      pango_layout_set_font_description(layout, desc);
-      pango_layout_set_text(layout, load_txt, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
-      const double xc = width / 2.0;
-      const double yc = height * 0.88 - DT_PIXEL_APPLY_DPI(10);
-      const double wd = ink.width * 0.5;
-      cairo_move_to(cri, xc - wd, yc + 1.0 / 3.0 * fontsize - fontsize);
-      pango_cairo_layout_path(cri, layout);
-      cairo_set_line_width(cri, 2.0);
-      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_LOG_BG);
-      cairo_stroke_preserve(cri);
-      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_LOG_FG);
-      cairo_fill(cri);
-      pango_font_description_free(desc);
-      g_object_unref(layout);
-    }
-    else
-    {
-      // repaint the image we are switching away from, to avoid a
-      // flash of the background color
-      if(darktable.gui->surface)
-      {
-        cairo_save(cri);
-        cairo_identity_matrix(cri);
-        cairo_set_source_surface(cri, darktable.gui->surface, 0, 0);
-        cairo_paint(cri);
-        cairo_restore(cri);
-      }
-      dt_toast_log("%s", load_txt);
-    }
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    layout = pango_cairo_create_layout(cri);
+    pango_layout_set_font_description(layout, desc);
+    pango_layout_set_text(layout, load_txt, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const double xc = width / 2.0;
+    const double yc = height * 0.88 - DT_PIXEL_APPLY_DPI(10);
+    const double wd = ink.width * 0.5;
+    cairo_move_to(cri, xc - wd, yc + 1.0 / 3.0 * fontsize - fontsize);
+    pango_cairo_layout_path(cri, layout);
+    cairo_set_line_width(cri, 2.0);
+    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_LOG_BG);
+    cairo_stroke_preserve(cri);
+    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_LOG_FG);
+    cairo_fill(cri);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+
     g_free(load_txt);
   }
 
