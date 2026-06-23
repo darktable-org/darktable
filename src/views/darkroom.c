@@ -27,7 +27,9 @@
 #include "common/file_location.h"
 #include "common/focus_peaking.h"
 #include "common/history.h"
+#include "common/image.h"
 #include "common/image_cache.h"
+#include "common/metadata.h"
 #include "common/overlay.h"
 #include "common/selection.h"
 #include "common/styles.h"
@@ -532,6 +534,129 @@ static void _view_paint_surface(cairo_t *cr,
   dt_pthread_mutex_unlock(&p->backbuf_mutex);
 }
 
+/* drag&drop hint overlays
+   When an external file drag enters the darkroom, we paint a hint on the
+   center view ("drop XMP sidecars here") and on the filmstrip ("drop images
+   here"). We can only detect the drag once its pointer enters one of our drop
+   targets (the app isn't focused when the drag starts), so the state is driven
+   by the "drag-motion"/"drag-leave" signals of those two widgets. */
+static gboolean _darkroom_dnd_active = FALSE;
+static guint _darkroom_dnd_clear_timeout = 0;
+
+static void _darkroom_dnd_queue_redraw(void)
+{
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  const dt_thumbtable_t *tt = dt_ui_thumbtable(darktable.gui->ui);
+  if(tt)
+    gtk_widget_queue_draw(tt->widget);
+}
+
+static void _darkroom_dnd_set_active(const gboolean active)
+{
+  if(_darkroom_dnd_active == active)
+    return;
+  _darkroom_dnd_active = active;
+  _darkroom_dnd_queue_redraw();
+}
+
+static gboolean _darkroom_dnd_clear_timeout_cb(gpointer user_data)
+{
+  _darkroom_dnd_clear_timeout = 0;
+  _darkroom_dnd_set_active(FALSE);
+  return G_SOURCE_REMOVE;
+}
+
+static void _darkroom_dnd_stop(void)
+{
+  if(_darkroom_dnd_clear_timeout)
+  {
+    g_source_remove(_darkroom_dnd_clear_timeout);
+    _darkroom_dnd_clear_timeout = 0;
+  }
+  _darkroom_dnd_set_active(FALSE);
+}
+
+// whether the drag comes from outside the application (a file manager) rather
+// than being an internal thumbnail or module reorder - only external file drags
+// should trigger the hint. We key off the (absent) in-app source widget rather
+// than the offered targets, as macOS doesn't reliably expose those during
+// drag-motion (they only resolve at drop time).
+static gboolean _darkroom_dnd_is_external(GdkDragContext *context)
+{
+  return gtk_drag_get_source_widget(context) == NULL;
+}
+
+// arm the hint while a file drag hovers the center view or the filmstrip
+static gboolean _darkroom_dnd_motion(GtkWidget *widget,
+                                     GdkDragContext *context,
+                                     const gint x,
+                                     const gint y,
+                                     const guint time,
+                                     gpointer user_data)
+{
+  if(_darkroom_dnd_is_external(context))
+  {
+    if(_darkroom_dnd_clear_timeout)
+    {
+      g_source_remove(_darkroom_dnd_clear_timeout);
+      _darkroom_dnd_clear_timeout = 0;
+    }
+    _darkroom_dnd_set_active(TRUE);
+  }
+  return FALSE; // let the widget's default destination handler accept the drop
+}
+
+// disarm the hint, but with a small delay so moving the drag between the
+// center and the filmstrip (leave on one immediately followed by motion on the
+// other) doesn't make it flicker
+static void _darkroom_dnd_leave(GtkWidget *widget,
+                                GdkDragContext *context,
+                                const guint time,
+                                gpointer user_data)
+{
+  if(_darkroom_dnd_active && !_darkroom_dnd_clear_timeout)
+    _darkroom_dnd_clear_timeout = g_timeout_add(200, _darkroom_dnd_clear_timeout_cb, NULL);
+}
+
+// paint a dimmed overlay with a centered hint label
+static void
+_darkroom_draw_dnd_hint(cairo_t *cr, const int width, const int height, const char *text)
+{
+  cairo_save(cr);
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+
+  PangoFontDescription *desc =
+    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(18) * PANGO_SCALE);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  pango_layout_set_text(layout, text, -1);
+  PangoRectangle ink, logical;
+  pango_layout_get_pixel_extents(layout, &ink, &logical);
+  cairo_move_to(cr, (width - logical.width) * 0.5, (height - logical.height) * 0.5);
+  cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+  pango_cairo_show_layout(cr, layout);
+
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+  cairo_restore(cr);
+}
+
+// connected (after) to the filmstrip thumbtable "draw" so the hint paints on
+// top of the thumbnails
+static gboolean _darkroom_filmstrip_draw_hint(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+  if(_darkroom_dnd_active)
+    _darkroom_draw_dnd_hint(cr,
+                            gtk_widget_get_allocated_width(widget),
+                            gtk_widget_get_allocated_height(widget),
+                            _("drop image files here to add them to the collection"));
+  return FALSE;
+}
+
 void expose(dt_view_t *self,
             cairo_t *cri,
             const int32_t width,
@@ -947,6 +1072,10 @@ void expose(dt_view_t *self,
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
+
+  // hint shown while an external file drag hovers the darkroom
+  if(_darkroom_dnd_active)
+    _darkroom_draw_dnd_hint(cri, width, height, _("drop XMP sidecar files here to apply edits"));
 }
 
 void reset(dt_view_t *self)
@@ -3430,6 +3559,199 @@ void gui_init(dt_view_t *self)
                      GDK_KEY_x, GDK_CONTROL_MASK);
 }
 
+/* drag&drop of XMP sidecar files onto the darkroom canvas */
+
+// custom dialog responses for the single-XMP dialog
+enum
+{
+  _DND_XMP_REPLACE = 1,
+  _DND_XMP_DUPLICATE = 2,
+};
+
+static gboolean _path_is_xmp(const gchar *path)
+{
+  const gchar *dot = strrchr(path, '.');
+  return dot && !g_ascii_strcasecmp(dot, ".xmp");
+}
+
+// switch the darkroom to a freshly created duplicate so the dropped
+// history becomes visible
+static void _darkroom_show_image(dt_develop_t *dev, const dt_imgid_t imgid)
+{
+  _dev_change_image(dev, imgid);
+  if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+  dt_control_queue_redraw();
+}
+
+// build a question dialog parented to and centered on the main window, with
+// the given primary text. The caller adds the buttons and runs it.
+static GtkWidget *_darkroom_dnd_dialog_new(const char *title, const char *text)
+{
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  GtkWidget *dialog = gtk_message_dialog_new(
+    win, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s", text);
+  gtk_window_set_title(GTK_WINDOW(dialog), title);
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  return dialog;
+}
+
+// create a duplicate of imgid and apply the sidecar to it, returning the new
+// imgid (or NO_IMGID on failure)
+static dt_imgid_t _darkroom_duplicate_with_xmp(const dt_imgid_t imgid, gchar *path)
+{
+  const dt_imgid_t newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+    return NO_IMGID;
+  if(dt_history_load_and_apply(newid, path, TRUE))
+    return NO_IMGID; // sidecar could not be read
+
+  // label the duplicate with the sidecar name (without extension) so the
+  // versions are easy to tell apart
+  gchar *name = g_path_get_basename(path);
+  gchar *dot = strrchr(name, '.');
+  if(dot)
+    *dot = '\0';
+  dt_metadata_set(newid, "Xmp.darktable.version_name", name, FALSE);
+  dt_image_synch_xmp(newid);
+  g_free(name);
+
+  return newid;
+}
+
+// apply the dropped XMP sidecar(s) to the current darkroom image. With a
+// single file the user is asked whether to replace the current history or
+// create a duplicate; with several files one duplicate is created per file.
+static void _darkroom_apply_dropped_xmps(dt_develop_t *dev, GList *xmps)
+{
+  const dt_imgid_t imgid = dev->image_storage.id;
+  if(!dt_is_valid_imgid(imgid) || !xmps)
+    return;
+
+  const guint nb = g_list_length(xmps);
+
+  if(nb == 1)
+  {
+    gchar *path = xmps->data;
+    gchar *name = g_path_get_basename(path);
+
+    gchar *text = g_strdup_printf(_("apply the dropped sidecar '%s'?"), name);
+    GtkWidget *dialog = _darkroom_dnd_dialog_new(_("apply sidecar"), text);
+    g_free(text);
+    gtk_message_dialog_format_secondary_text(
+      GTK_MESSAGE_DIALOG(dialog),
+      _("replace the history of the current image, or create a duplicate"
+        " and apply the history to it?"));
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_cancel"), GTK_RESPONSE_CANCEL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("create _duplicate"), _DND_XMP_DUPLICATE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_replace history"), _DND_XMP_REPLACE);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), _DND_XMP_REPLACE);
+    const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if(res == _DND_XMP_REPLACE)
+    {
+      // dt_history_load_and_apply reloads the darkroom history for the
+      // current image internally; non-zero means an error occurred
+      if(dt_history_load_and_apply(imgid, path, TRUE))
+        dt_control_log(_("error loading sidecar '%s'"), name);
+      else
+        dt_control_log(_("applied '%s' to the current image"), name);
+    }
+    else if(res == _DND_XMP_DUPLICATE)
+    {
+      const dt_imgid_t newid = _darkroom_duplicate_with_xmp(imgid, path);
+      if(dt_is_valid_imgid(newid))
+        _darkroom_show_image(dev, newid);
+      else
+        dt_control_log(_("error loading sidecar '%s'"), name);
+    }
+    g_free(name);
+  }
+  else
+  {
+    gchar *text = g_strdup_printf(ngettext("%d duplicate of the current image will be created,"
+                                           " one per dropped sidecar.",
+                                           "%d duplicates of the current image will be created,"
+                                           " one per dropped sidecar.",
+                                           nb),
+                                  nb);
+    GtkWidget *dialog = _darkroom_dnd_dialog_new(_("create duplicates"), text);
+    g_free(text);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_cancel"), GTK_RESPONSE_CANCEL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_create"), GTK_RESPONSE_OK);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+    const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if(res == GTK_RESPONSE_OK)
+    {
+      guint applied = 0;
+      dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+      for(GList *l = xmps; l; l = g_list_next(l))
+        if(dt_is_valid_imgid(_darkroom_duplicate_with_xmp(imgid, l->data)))
+          applied++;
+      dt_undo_end_group(darktable.undo);
+
+      if(applied)
+        dt_control_log(ngettext("created %u duplicate from dropped sidecars",
+                                "created %u duplicates from dropped sidecars",
+                                applied),
+                       applied);
+      else
+        dt_control_log(_("error loading the dropped sidecars"));
+    }
+  }
+}
+
+static void _darkroom_dnd_xmp_received(GtkWidget *widget,
+                                       GdkDragContext *context,
+                                       const gint x,
+                                       const gint y,
+                                       GtkSelectionData *selection_data,
+                                       const guint target_type,
+                                       const guint time,
+                                       gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  gboolean success = FALSE;
+
+  // the drop ends the drag: clear the hint overlay before the dialog runs
+  _darkroom_dnd_stop();
+
+  if(selection_data != NULL && target_type == DND_TARGET_URI &&
+     gtk_selection_data_get_length(selection_data) >= 0)
+  {
+    GList *xmps = NULL;
+    gchar **uris = gtk_selection_data_get_uris(selection_data);
+    if(uris)
+    {
+      for(int i = 0; uris[i]; i++)
+      {
+        gchar *path = g_filename_from_uri(uris[i], NULL, NULL);
+        if(path && _path_is_xmp(path) && g_file_test(path, G_FILE_TEST_IS_REGULAR))
+          xmps = g_list_prepend(xmps, path);
+        else
+          g_free(path);
+      }
+      g_strfreev(uris);
+    }
+    xmps = g_list_reverse(xmps);
+
+    if(xmps)
+    {
+      _darkroom_apply_dropped_xmps(dev, xmps);
+      success = TRUE;
+      g_list_free_full(xmps, g_free);
+    }
+  }
+
+  gtk_drag_finish(context, success, FALSE, time);
+}
+
 void enter(dt_view_t *self)
 {
   // prevent accels_window to refresh
@@ -3580,6 +3902,32 @@ void enter(dt_view_t *self)
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
 
+  /* accept XMP sidecar files dropped onto the center view; we draw our own
+     drag hint so don't request GTK's default highlight */
+  GtkWidget *center = dt_ui_center(darktable.gui->ui);
+  gtk_drag_dest_set(center,
+                    GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP,
+                    target_list_external,
+                    n_targets_external,
+                    GDK_ACTION_COPY);
+  g_signal_connect(
+    G_OBJECT(center), "drag-data-received", G_CALLBACK(_darkroom_dnd_xmp_received), dev);
+
+  /* show drop hints while a file drag hovers the center view or the filmstrip.
+     the filmstrip thumbtable is already a drop target, so we just listen to the
+     drag-motion/drag-leave of both widgets and paint a hint accordingly */
+  _darkroom_dnd_active = FALSE;
+  g_signal_connect(G_OBJECT(center), "drag-motion", G_CALLBACK(_darkroom_dnd_motion), NULL);
+  g_signal_connect(G_OBJECT(center), "drag-leave", G_CALLBACK(_darkroom_dnd_leave), NULL);
+  dt_thumbtable_t *tt = dt_ui_thumbtable(darktable.gui->ui);
+  if(tt)
+  {
+    g_signal_connect(G_OBJECT(tt->widget), "drag-motion", G_CALLBACK(_darkroom_dnd_motion), NULL);
+    g_signal_connect(G_OBJECT(tt->widget), "drag-leave", G_CALLBACK(_darkroom_dnd_leave), NULL);
+    g_signal_connect_after(
+      G_OBJECT(tt->widget), "draw", G_CALLBACK(_darkroom_filmstrip_draw_hint), NULL);
+  }
+
 #ifdef USE_LUA
 
   _fire_darkroom_image_loaded_event(TRUE, dev->image_storage.id);
@@ -3595,6 +3943,27 @@ void leave(dt_view_t *self)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "darkroom");
+
+  // stop accepting XMP sidecar drops and tear down the drop-hint machinery on
+  // the (shared) center view and filmstrip
+  _darkroom_dnd_stop();
+  GtkWidget *center = dt_ui_center(darktable.gui->ui);
+  g_signal_handlers_disconnect_by_func(
+    G_OBJECT(center), G_CALLBACK(_darkroom_dnd_xmp_received), self->data);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(center), G_CALLBACK(_darkroom_dnd_motion), NULL);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(center), G_CALLBACK(_darkroom_dnd_leave), NULL);
+  gtk_drag_dest_unset(center);
+
+  dt_thumbtable_t *tt = dt_ui_thumbtable(darktable.gui->ui);
+  if(tt)
+  {
+    g_signal_handlers_disconnect_by_func(
+      G_OBJECT(tt->widget), G_CALLBACK(_darkroom_dnd_motion), NULL);
+    g_signal_handlers_disconnect_by_func(
+      G_OBJECT(tt->widget), G_CALLBACK(_darkroom_dnd_leave), NULL);
+    g_signal_handlers_disconnect_by_func(
+      G_OBJECT(tt->widget), G_CALLBACK(_darkroom_filmstrip_draw_hint), NULL);
+  }
 
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));

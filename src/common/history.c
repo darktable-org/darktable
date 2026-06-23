@@ -203,10 +203,6 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                    dt_history_snapshot_undo_lt_history_data_free);
     dt_undo_end_group(darktable.undo);
 
-    /* if current image in develop reload history */
-    if(dt_dev_is_current_image(darktable.develop, imgid))
-      dt_dev_reload_history_items(darktable.develop);
-
     dt_image_cache_write_release_info(img,
        // ugly but if not history_only => called from crawler - do not write the xmp
        history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
@@ -214,6 +210,13 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
     dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
     dt_image_cache_set_change_timestamp(imgid);
+
+    /* if current image in develop reload history. this must happen only
+       after the image cache write lock taken above has been released:
+       reloading re-enters dt_image_cache_get() for the same image (e.g. from
+       a module's reload_defaults) and would otherwise deadlock. */
+    if(dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items(darktable.develop);
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
