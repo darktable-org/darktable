@@ -28,7 +28,6 @@ static const gchar *bad_opencl_drivers[] =
 
   "beignet",
   "clover",
-  "amd-app",
 /*
   Neo was originally blacklisted due to improper cache invalidation, but this has been fixed.
   Per Issue 20104, enabling neo for Windows.
