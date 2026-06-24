@@ -434,7 +434,7 @@ static gboolean _opencl_read_device_config(const int devid)
     cldid->micro_nap = micro_nap;
     cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
     cldid->asyncmode = asyncmode ? TRUE : FALSE;
-    cldid->disabled = disabled ? TRUE : FALSE;
+    cldid->disabled = disabled && dt_conf_get_int("performance_configuration_version_completed") != 19 ? TRUE : FALSE;
     cldid->advantage = advantage;
     cldid->unified_fraction = unified_fraction;
   }
