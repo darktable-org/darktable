@@ -69,7 +69,7 @@ changes (where available).
 
 ## Bug Fixes
 
-- N/A
+- Fixed a bug that left OpenCL AMD devices disabled on Windows systems.
 
 ## Lua
 
