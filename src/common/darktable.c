@@ -264,9 +264,9 @@ static int usage(const char *argv0)
          "    Enable debug output to the terminal (or to the log file if on Windows).\n"
          "    Valid channels are:\n\n"
          "    act_on, ai, cache, camctl, camsupport, control, dev, expose,\n"
-         "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
-         "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
-         "    sql, tiling, picker, undo\n"
+         "    hdr_merge, imageio, input, ioporder, lighttable, lua, masks,\n"
+         "    memory, nan, opencl, params, perf, pipe, print, pwstorage,\n"
+         "    signal, sql, tiling, picker, undo\n"
          "\n"
          "    It is also possible to specify names that activate all channels\n"
          "    or a certain subset, as well as increase verbosity:\n"
@@ -1172,6 +1172,7 @@ int dt_init(int argc,
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
+          !strcmp(darg, "hdr_merge") ? DT_DEBUG_HDR_MERGE : // HDR bracket merge + auto-alignment
           0;
         if(dadd)
           darktable.unmuted |= dadd;

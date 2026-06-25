@@ -89,6 +89,11 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     liblua5.2-dev \
     liblua5.3-dev \
     libomp-$LLVM_VER-dev \
+    libopencv-calib3d-dev \
+    libopencv-core-dev \
+    libopencv-features2d-dev \
+    libopencv-flann-dev \
+    libopencv-imgproc-dev \
     libopenexr-dev \
     libopenjp2-7-dev \
     libosmgpsmap-1.0-dev \

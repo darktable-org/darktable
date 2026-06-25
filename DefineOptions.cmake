@@ -35,6 +35,7 @@ option(BUILD_NOISE_TOOLS "Build tools for generating noise profiles" OFF)
 option(BUILD_CURVE_TOOLS "Build tools for generating base and tone curves" OFF)
 option(USE_GMIC "Use G'MIC image processing framework." ON)
 option(USE_ICU "Use ICU - International Components for Unicode." ON)
+option(USE_OPENCV "Use OpenCV for HDR exposure-bracket auto-alignment." ON)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." OFF)
 option(USE_SDL2 "Enable SDL2 support" ON)
 
