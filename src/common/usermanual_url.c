@@ -236,7 +236,8 @@ char *dt_get_manual_base_url()
   //   <lang> = en / fr ...              (default = en)
 
   // in case of a standard release, append the dt version to the url
-  if(dt_is_dev_version())
+  //TODO: drop the "TRUE ||" if dtdocs resumes per-release snapshots
+  if(TRUE || dt_is_dev_version())
   {
     dt_util_str_cat(&base_url, "development/");
   }
