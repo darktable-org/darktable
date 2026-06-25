@@ -117,61 +117,19 @@ changes (where available).
 
 - libarchive for AI model extraction
 
-## Camera support, compared to 5.4
+## Camera support, compared to 5.6.0
 
 ### Base Support
 
-- Canon EOS Hi
-- Fujifilm X-T30 III (compressed)
-- Hasselblad H4D-40
-- Hasselblad H6D-100c
-- Hasselblad X2D II 100C
-- Leica M Monochrom (DNG)
-- Nikon Coolpix B700 (12bit-uncompressed)
-- Nikon Coolpix P1000 (12bit-uncompressed)
-- Nikon Coolpix P1100 (12bit-uncompressed)
-- Nikon Coolpix P950 (12bit-uncompressed)
-- Nikon D2X (12bit-compressed)
-- Nikon E5000 (12bit-uncompressed)
-- Panasonic DC-GF90 (4:3)
-- Panasonic DC-TZ92 (4:3)
-- Panasonic DC-TZ93 (4:3)
-- Panasonic DC-TZ96D (4:3)
-- Panasonic DC-ZS80D (4:3)
-- Ricoh GR IV HDF (DNG)
-- Ricoh GR IV Monochrome (DNG)
-- Sony ILCE-7M5
-- Sony ILME-FX2
+- N/A
 
 ### White Balance Presets
 
-- Canon EOS 90D
-- Nikon Coolpix P1100
-- Nikon D2Hs
-- Nikon Df
-- Nikon Z f
-- Ricoh GR IV
-- Ricoh GR IV HDF
-- Sony ILCE-1M2
-- Sony ILCE-7CR
-- Sony ILCE-9M2
+- N/A
 
 ### Noise Profiles
 
-- Canon EOS 3000D
-- Canon EOS 4000D
-- Canon EOS Rebel T100
-- Fujifilm X-T30 II
-- Leica M9
-- Nikon Coolpix P1100
-- Nikon Df
-- Nikon Z50_2
-- Nikon Z5_2
-- Panasonic DC-S5M2
-- Pentax K-500
-- Ricoh GR IV
-- Ricoh GR IV HDF
-- Sony ILCE-7M5
+- N/A
 
 ### Missing Compression Mode Support
 
