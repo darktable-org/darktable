@@ -1,4 +1,4 @@
-We're proud to announce the new feature release of darktable, 5.6.1!
+We're proud to announce the bug-fix release of darktable, 5.6.1!
 
 The github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-5.6.1](https://github.com/darktable-org/darktable/releases/tag/release-5.6.1).
 
@@ -8,25 +8,25 @@ The checksums are:
 
 ```
 $ sha256sum darktable-5.6.1.tar.xz
-157d6d3847af8afcabe78944454786f73a886e08a504b4bd6114c2065fe006e4  darktable-5.6.1.tar.xz
+  darktable-5.6.1.tar.xz
 
 $ sha256sum darktable-5.6.1-x86_64.AppImage
-cbad7bf4be2607e1725db156d73c799d267a79fc29a572c3136a5deb9c9be948  Darktable-5.6.1-x86_64.AppImage
+  Darktable-5.6.1-x86_64.AppImage
 
 $ sha256sum darktable-5.6.1-aarch64.AppImage
-147943bd2eedc33c8d31eb3e6b87b591ac9ca285d00282b2655d8d19caecfca0  Darktable-5.6.1-aarch64.AppImage
+  Darktable-5.6.1-aarch64.AppImage
 
 $ sha256sum darktable-5.6.1-x86_64.dmg
-24c83655af0d81c2f8cb78b97531a03bb6a650349b7fd49c1679080db675cbcb  darktable-5.6.1-x86_64.dmg
+  darktable-5.6.1-x86_64.dmg
 
 $ sha256sum darktable-5.6.1-arm64.dmg
-49aec447e891ab481e436b4c0231fc3c8d0001aad220762ae8e765d3bda5d102  darktable-5.6.1-arm64.dmg
+  darktable-5.6.1-arm64.dmg
 
 $ sha256sum darktable-5.6.1-win64.exe
-b42989195dfff44540c0b767b407987329ca99853612304cbbf14c48d1d3f803  darktable-5.6.1-win64.exe
+  darktable-5.6.1-win64.exe
 
 $ sha256sum darktable-5.6.1-woa64.exe
-b7737d54d6ee007816ae0a1fad3ca3677588735e1432887a917bc55f818f5268  darktable-5.6.1-woa64.exe
+  darktable-5.6.1-woa64.exe
 ```
 
 When updating from the stable 5.4 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 5.4.
