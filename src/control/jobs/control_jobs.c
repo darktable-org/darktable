@@ -23,6 +23,7 @@
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/gpx.h"
+#include "common/hdr_alignment.h"
 #include "common/history.h"
 #include "common/history_snapshot.h"
 #include "common/image.h"
@@ -404,7 +405,7 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
 
 typedef struct dt_control_merge_hdr_t
 {
-  uint32_t first_imgid;
+  dt_imgid_t first_imgid;
   uint32_t first_filter;
   uint8_t first_xtrans[6][6];
 
@@ -419,6 +420,18 @@ typedef struct dt_control_merge_hdr_t
   dt_aligned_pixel_t wb_coeffs;
   float adobe_XYZ_to_CAM[4][3];
   char camera_makermodel[128];
+
+  // auto-alignment of exposure brackets (handheld / shaky tripod). When
+  // enabled, the first frame seeds the reference and every later frame is
+  // registered onto it before accumulation. NULL/disabled => legacy behavior.
+  dt_hdr_align_t *align;
+  gboolean align_enabled;
+  float *aligned_buf;  // scratch holding the warped moving frame (wd*ht)
+
+  // auto-reference pre-pass: pick the richest-feature frame as the reference.
+  gboolean probe_mode;          // set during the feature-probe pre-pass
+  int probe_best_count;         // best SIFT feature count seen so far
+  dt_imgid_t probe_best_imgid;  // imgid of the richest frame
 
   // 0 - ok; 1 - errors, abort
   gboolean abort;
@@ -486,6 +499,27 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   const dt_image_t image = *img;
   dt_image_cache_read_release(img);
 
+  // Auto-reference pre-pass: just probe each frame's feature richness and keep
+  // the richest as the reference; do not accumulate anything.
+  if(d->probe_mode)
+  {
+    if(image.buf_dsc.filters != 0u
+       && image.buf_dsc.channels == 1
+       && image.buf_dsc.datatype == TYPE_UINT16)
+    {
+      const int n = dt_hdr_alignment_probe_features((const float *)ivoid,
+                                                    datai->width, datai->height);
+      dt_print(DT_DEBUG_HDR_MERGE,
+               "[hdr merge] auto-reference probe: imgid %d -> %d features", imgid, n);
+      if(n > d->probe_best_count)
+      {
+        d->probe_best_count = n;
+        d->probe_best_imgid = imgid;
+      }
+    }
+    return 0;
+  }
+
   if(!d->pixels)
   {
     d->first_imgid = imgid;
@@ -532,6 +566,14 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
     return 1;
   }
 
+  // Authoritative per-frame guard on the *decoded* buffer.
+  // _control_merge_hdr_validate() gives a friendly early failure, but it can only
+  // see the cached image flags, which are derived from metadata and can lag what
+  // rawspeed actually decodes here: DT_IMAGE_MONOCHROME / DT_IMAGE_HDR and the CFA
+  // layout are only settled during the load. A monochrome raw in particular
+  // carries DT_IMAGE_RAW yet decodes to filters == 0. The accumulation loop below
+  // indexes the raw CFA mosaic and the result is written as a CFA DNG, so a
+  // non-CFA / non-uint16 buffer here must abort rather than corrupt the output.
   if(image.buf_dsc.filters == 0u
      || image.buf_dsc.channels != 1
      || image.buf_dsc.datatype != TYPE_UINT16)
@@ -540,9 +582,11 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
     d->abort = TRUE;
     return 1;
   }
-  else if(datai->width != d->wd
-          || datai->height != d->ht
-          || d->orientation != image.orientation)
+  // Re-check size / orientation too: the accumulation loop indexes the current
+  // frame's buffer with the first frame's stride.
+  if(datai->width != d->wd
+     || datai->height != d->ht
+     || d->orientation != image.orientation)
   {
     dt_control_log(_("images have to be of same size and orientation!"));
     d->abort = TRUE;
@@ -562,13 +606,39 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   const float photoncnt = 100.0f * aperture * exp / iso;
   float saturation = 1.0f;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
+
+  // Auto-align this frame onto the reference before accumulation.  The first
+  // frame becomes the reference; every later frame is registered onto it and
+  // accumulated from a warped scratch buffer.  On any failure (or when
+  // alignment is disabled / built without OpenCV) we fall back to the raw
+  // unaligned mosaic, i.e. the legacy behavior.
+  const float *in_buf = (const float *)ivoid;
+  if(d->align_enabled && d->align)
+  {
+    dt_print(DT_DEBUG_HDR_MERGE, "Processing image %d/%d: imgid %d", num, total, imgid);
+    if(imgid == d->first_imgid)
+    {
+      dt_print(DT_DEBUG_HDR_MERGE, "  Reference image (no alignment needed)");
+      if(dt_hdr_alignment_set_reference(d->align, (const float *)ivoid, d->wd, d->ht,
+                                        d->first_filter, d->first_xtrans))
+        d->aligned_buf = dt_alloc_align_float((size_t)d->wd * d->ht);
+    }
+    else if(d->aligned_buf)
+    {
+      if(dt_hdr_alignment_align_frame(d->align, (const float *)ivoid, d->aligned_buf,
+                                      d->wd, d->ht, d->first_filter, d->first_xtrans, NULL))
+        in_buf = d->aligned_buf;
+    }
+  }
+
   DT_OMP_FOR(collapse(2))
   for(int y = 0; y < d->ht; y++)
     for(int x = 0; x < d->wd; x++)
     {
       // read unclamped raw value with subtracted black and rescaled
-      // to 1.0 saturation.  this is the output of the rawprepare iop.
-      const float in = ((float *)ivoid)[x + d->wd * y];
+      // to 1.0 saturation.  this is the output of the rawprepare iop
+      // (optionally registered onto the reference frame, see in_buf above).
+      const float in = in_buf[x + d->wd * y];
       // weights based on siggraph 12 poster zijian zhu, zhengguo li,
       // susanto rahardja, pasi fraenti 2d denoising factor for high
       // dynamic range imaging
@@ -588,8 +658,8 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
         for(int i = 0; i < 3; i++)
           for(int j = 0; j < 3; j++)
           {
-            M = MAX(M, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
-            m = MIN(m, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
+            M = MAX(M, in_buf[xx + i + d->wd * (yy + j)]);
+            m = MIN(m, in_buf[xx + i + d->wd * (yy + j)]);
           }
         // move envelope a little to allow non-zero weight even for
         // clipped regions.  this is because even if the 2x2 block is
@@ -631,16 +701,101 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   return 0;
 }
 
+// Validate that the selected images form a consistent raw exposure bracket.
+// Reject non-raw inputs, already-merged HDR DNGs, or images with mismatched
+// resolution/orientation before expensive decode/align work. Returns TRUE if
+// mergeable, otherwise logs the odd file and returns FALSE.
+static gboolean _control_merge_hdr_validate(GList *images)
+{
+  gboolean have_ref = FALSE;
+  int32_t ref_width = 0, ref_height = 0;
+  dt_image_orientation_t ref_orientation = ORIENTATION_NONE;
+
+  for(GList *l = images; l; l = g_list_next(l))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+    if(!img) continue;
+
+    const int32_t flags = img->flags;
+    const int32_t width = img->width;
+    const int32_t height = img->height;
+    const dt_image_orientation_t orientation = img->orientation;
+    char filename[DT_MAX_FILENAME_LEN];
+    g_strlcpy(filename, img->filename, sizeof(filename));
+    dt_image_cache_read_release(img);
+
+    // exposure bracketing operates on the raw CFA mosaic; reject anything that
+    // is not raw, reject already-merged HDR DNGs (floating point raws carry the
+    // DT_IMAGE_HDR flag) which look like raws but are not exposure brackets, and
+    // reject monochrome raws (no CFA -> filters == 0, cannot be merged as a CFA
+    // mosaic). These flags are extension/metadata derived and may not yet be set
+    // for a not-yet-decoded frame; _control_merge_hdr_process() re-checks the
+    // decoded buffer as the authoritative guard.
+    if(!(flags & DT_IMAGE_RAW) || (flags & DT_IMAGE_HDR) || (flags & DT_IMAGE_MONOCHROME))
+    {
+      dt_control_log(_("HDR merge aborted: `%s' is not a raw exposure"
+                       " (already merged HDR, monochrome or non-raw image)"), filename);
+      return FALSE;
+    }
+
+    if(!have_ref)
+    {
+      ref_width = width;
+      ref_height = height;
+      ref_orientation = orientation;
+      have_ref = TRUE;
+    }
+    else if(width != ref_width
+            || height != ref_height
+            || orientation != ref_orientation)
+    {
+      dt_control_log(_("HDR merge aborted: `%s' has a different size"
+                       " or orientation"), filename);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
 static int32_t _control_merge_hdr_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   const guint total = g_list_length(t);
   double fraction = 0;
+
+  // reject mismatched selections (already-merged HDR DNGs, differing resolution
+  // or orientation) before doing any expensive decode / alignment work
+  if(!_control_merge_hdr_validate(t))
+    return 0;
+
   dt_control_job_set_progress_message(job, ngettext("merging %d image",
                                                     "merging %d images", total), total);
 
   dt_control_merge_hdr_t d = (dt_control_merge_hdr_t){.epsw = 1e-8f, .abort = FALSE };
+
+  // Opt-in auto-alignment of the brackets (only when built with OpenCV).
+#ifdef HAVE_OPENCV
+  d.align_enabled = dt_conf_get_bool("plugins/lighttable/hdr_merge_auto_align");
+  if(d.align_enabled)
+  {
+    // Seed the runtime parameters from preferences (falling back to the built-in
+    // defaults for any value the user has not changed).
+    dt_hdr_align_params_t align_params;
+    dt_hdr_alignment_default_params(&align_params);
+    align_params.proxy_scale = dt_conf_get_float("plugins/lighttable/hdr_merge_proxy_scale");
+    align_params.feature_gamma = dt_conf_get_float("plugins/lighttable/hdr_merge_feature_gamma");
+    align_params.clahe_clip = dt_conf_get_float("plugins/lighttable/hdr_merge_clahe_clip");
+    align_params.sift_keypoints = dt_conf_get_int("plugins/lighttable/hdr_merge_sift_keypoints");
+    align_params.debug_images = dt_conf_get_bool("plugins/lighttable/hdr_merge_debug_images");
+    d.align = dt_hdr_alignment_new(&align_params);
+    if(d.align)
+      dt_control_log(_("merging HDR: auto-aligning exposure brackets"));
+    else
+      d.align_enabled = FALSE;
+  }
+#endif
 
   dt_imageio_module_format_t buf = (dt_imageio_module_format_t)
     {.mime = _control_merge_hdr_mime,
@@ -650,6 +805,51 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
 
   dt_control_merge_hdr_format_t dat =
     (dt_control_merge_hdr_format_t){.parent = { 0 }, .d = &d };
+
+  // Auto-reference pre-pass: probe every frame's feature richness and move the
+  // richest one to the front, so it becomes both the geometry seed and the
+  // alignment reference (mirrors align_and_blend.py --auto-reference). Costs one
+  // extra decode pass, hence opt-in.
+#ifdef HAVE_OPENCV
+  if(d.align_enabled && total > 1
+     && dt_conf_get_bool("plugins/lighttable/hdr_merge_auto_reference"))
+  {
+    dt_control_job_set_progress_message(job, _("examining frames for HDR auto-reference"));
+    d.probe_mode = TRUE;
+    d.probe_best_count = -1;
+    d.probe_best_imgid = NO_IMGID;
+    int pnum = 1;
+    for(GList *p = t; p && !d.abort
+        && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED;
+        p = g_list_next(p))
+    {
+      const dt_imgid_t pimgid = GPOINTER_TO_INT(p->data);
+      dt_imageio_export_with_flags(pimgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
+                                   TRUE, FALSE, TRUE, TRUE, FALSE, 1.0,
+                                   FALSE, "pre:rawprepare", FALSE,
+                                   FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                   NULL, pnum, total, NULL, -1);
+      // the probe pre-pass is a full extra decode sweep; advance the bar over it
+      // so a large bracket does not look hung, and honor a cancel between frames
+      dt_control_job_set_progress(job, (double)pnum / (double)total);
+      pnum++;
+    }
+    d.probe_mode = FALSE;
+    if(d.abort || dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+      goto end;
+    if(dt_is_valid_imgid(d.probe_best_imgid))
+    {
+      params->index = g_list_remove(params->index, GINT_TO_POINTER(d.probe_best_imgid));
+      params->index = g_list_prepend(params->index, GINT_TO_POINTER(d.probe_best_imgid));
+      t = params->index;
+      dt_print(DT_DEBUG_HDR_MERGE,
+               "[hdr merge] auto-reference: imgid %d selected (%d features)",
+               d.probe_best_imgid, d.probe_best_count);
+    }
+    dt_control_job_set_progress_message(job, ngettext("merging %d image",
+                                                      "merging %d images", total), total);
+  }
+#endif
 
   int num = 1;
   while(t)
@@ -692,7 +892,15 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
   const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, FALSE, d.wd, d.ht, TRUE);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
-  g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
+  const size_t free_space = sizeof(pathname) - (c - pathname);
+
+  // don't overwrite an existing merge: append a numeric suffix
+  // (-hdr_01.dng, -hdr_02.dng, ...) until we find a free filename,
+  // matching the behavior of export and raw denoise
+  g_strlcpy(c, "-hdr.dng", free_space);
+  for(int seq = 1; g_file_test(pathname, G_FILE_TEST_EXISTS); seq++)
+    snprintf(c, free_space, "-hdr_%02d.dng", seq);
+
   dt_imageio_dng_write_float(pathname,
                              d.pixels,
                              d.wd,
@@ -728,6 +936,8 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
 end:
   free(d.pixels);
   free(d.weight);
+  if(d.aligned_buf) dt_free_align(d.aligned_buf);
+  if(d.align) dt_hdr_alignment_free(d.align);
 
   return 0;
 }
