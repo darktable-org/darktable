@@ -381,6 +381,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_EXPOSE         = 1 << 26,
   DT_DEBUG_PICKER         = 1 << 27,
   DT_DEBUG_AI             = 1 << 28,
+  DT_DEBUG_HDR_MERGE      = 1 << 29,  // HDR exposure-bracket merge + auto-alignment
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE | DT_DEBUG_LUA | DT_DEBUG_AI,
   DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,

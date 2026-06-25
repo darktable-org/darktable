@@ -72,6 +72,11 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
+            libopencv-calib3d-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-flann-dev \
+            libopencv-imgproc-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -258,6 +263,7 @@ jobs:
             libxml2:p
             lua54:p
             omp:p
+            opencv:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p

@@ -54,6 +54,8 @@ FILE(GLOB SOURCE_FILES
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"
+  "common/hdr_alignment.c"
+  "common/hdr_alignment_cv.cc"
   "common/heal.c"
   "common/histogram.c"
   "common/history.c"
@@ -667,6 +669,53 @@ if(USE_GMIC)
     message(FATAL_ERROR "No suitable GMIC development files found, please install them or disable GMIC support")
   endif(GMIC_FOUND)
 endif(USE_GMIC)
+
+if(USE_OPENCV)
+  # Only these OpenCV modules are needed (the "bare minimum"):
+  #   core/imgproc - image ops;  features2d - SIFT + FLANN matcher;
+  #   flann        - KD-tree index params;
+  #   calib3d      - findHomography / estimateAffine2D.
+  set(DT_OPENCV_MODULES core imgproc features2d flann calib3d)
+  # First try the standard config (custom builds, or distros shipping the
+  # unified OpenCVConfig.cmake).  QUIET: absence is fine, the HDR auto-alignment
+  # then compiles to a no-op (hdr_alignment_cv.cc is empty without HAVE_OPENCV).
+  find_package(OpenCV 4 COMPONENTS ${DT_OPENCV_MODULES} QUIET)
+  if(NOT OpenCV_FOUND)
+    # Fallback for distros (e.g. Debian/Ubuntu) that fragment OpenCV into
+    # per-module libopencv-<mod>-dev packages but keep OpenCVConfig.cmake only in
+    # the heavyweight libopencv-dev metapackage.  Discover the modules directly so
+    # users can install just the handful above instead of the whole library.
+    find_path(OpenCV_INCLUDE_DIRS NAMES opencv2/core.hpp PATH_SUFFIXES opencv4)
+    set(OpenCV_LIBS "")
+    set(_dt_opencv_ok TRUE)
+    foreach(_mod ${DT_OPENCV_MODULES})
+      find_library(DT_OPENCV_${_mod}_LIBRARY NAMES opencv_${_mod})
+      if(DT_OPENCV_${_mod}_LIBRARY)
+        list(APPEND OpenCV_LIBS ${DT_OPENCV_${_mod}_LIBRARY})
+      else()
+        set(_dt_opencv_ok FALSE)
+      endif()
+    endforeach()
+    if(OpenCV_INCLUDE_DIRS AND _dt_opencv_ok
+       AND EXISTS "${OpenCV_INCLUDE_DIRS}/opencv2/core/version.hpp")
+      file(STRINGS "${OpenCV_INCLUDE_DIRS}/opencv2/core/version.hpp" _dt_cv_major
+           REGEX "CV_VERSION_MAJOR[ \t]+[0-9]+")
+      string(REGEX MATCH "[0-9]+" _dt_cv_major "${_dt_cv_major}")
+      if(_dt_cv_major GREATER_EQUAL 4)
+        set(OpenCV_FOUND TRUE)
+        message(STATUS "OpenCV ${_dt_cv_major}.x found via per-module libraries")
+      endif()
+    endif()
+  endif()
+  if(OpenCV_FOUND)
+    add_definitions(-DHAVE_OPENCV)
+    include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+    list(APPEND LIBS ${OpenCV_LIBS})
+    message(STATUS "OpenCV: HDR exposure-bracket auto-alignment enabled")
+  else()
+    message(STATUS "OpenCV not found: HDR exposure-bracket auto-alignment disabled")
+  endif(OpenCV_FOUND)
+endif(USE_OPENCV)
 
 if(USE_ICU)
   find_package(ICU COMPONENTS i18n data uc)
