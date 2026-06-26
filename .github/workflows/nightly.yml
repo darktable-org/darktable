@@ -123,7 +123,7 @@ jobs:
             libxfixes-dev
       - name: Build and install fresh libheif with built-in decoders
         run: |
-          git clone --branch v1.23.0 --depth 1 https://github.com/strukturag/libheif src-libheif
+          git clone --branch v1.23.1 --depth 1 https://github.com/strukturag/libheif src-libheif
           cd src-libheif
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
