@@ -1,0 +1,4 @@
+
+@define-color plugin_focus_border_color @accent_yellow;
+
+@import url("chunk-focused-module-border.css");
