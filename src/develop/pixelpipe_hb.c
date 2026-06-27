@@ -3601,7 +3601,6 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
       // walk forward using ping-pong buffers
       int buf_idx = 0;
       const float *inmask = start_data;
-      gboolean distorted = FALSE;
 
       for(GList *iter = start_iter; iter; iter = g_list_next(iter))
       {
@@ -3644,7 +3643,6 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
             inmask = out;
             final_roi = roo;
             buf_idx = 1 - buf_idx;
-            distorted = TRUE;
           }
           else if(_distort_piece_roi(it_piece)) goto failure;
         }
@@ -3653,8 +3651,12 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
           break;
       }
 
-      // if we distorted, return a freshly allocated copy (ping-pong bufs are reused)
-      if(distorted)
+      // Any data that does not come from the source module's raster_masks
+      // table (ping-pong buffers and cached intermediate masks) has its
+      // lifetime managed by the pixelpipe, so we must not hand it out
+      // directly. Allocate our own copy and flag it via free_mask so the
+      // caller knows to free it.
+      if(inmask != raster_mask)
       {
         const size_t num_floats = (size_t)final_roi->width * final_roi->height;
         float *result = dt_iop_image_alloc(final_roi->width, final_roi->height, 1);
