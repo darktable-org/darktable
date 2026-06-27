@@ -427,7 +427,7 @@ dt_restore_context_t *dt_restore_load_denoise(dt_restore_env_t *env)
 
 dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img)
 {
-  if(!img || !(img->flags & DT_IMAGE_RAW))
+  if(!img || !(img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW)))
     return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
   if(img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER))
     return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
