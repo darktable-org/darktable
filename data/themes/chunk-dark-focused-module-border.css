@@ -1,0 +1,4 @@
+
+@define-color plugin_focus_border_color shade(@plugin_bg_color, 0.5);
+
+@import url("chunk-focused-module-border.css");

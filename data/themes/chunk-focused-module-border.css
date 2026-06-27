@@ -1,0 +1,13 @@
+
+/* ensure space for border is reserved for all modules */
+#iop-expander
+{
+  border: 0.1em solid @plugin_bg_color;
+  margin: 0.2em 0.2em 0 0.2em;
+}
+
+/* border for focused modules */
+#iop-expander.dt_module_expanded.dt_module_focus
+{
+  border: 0.1em solid @plugin_focus_border_color;
+}

@@ -34,3 +34,12 @@
    min-height: 12px;
    font-size: 0.95em;
 }
+
+#left #module-header,
+#right #module-header,
+#right #basics-header-box
+{
+  border-radius: 0px;
+  margin: 0px;
+  padding: 4px;
+}
