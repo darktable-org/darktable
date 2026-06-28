@@ -210,7 +210,7 @@ int legacy_params(dt_iop_module_t *self,
     {
        int checker_scale;
        float factor;
-    } dt_iop_basecurve_params_v5_t;
+    } dt_iop_useless_params_v2_t;
 
     dt_iop_useless_params_v2_t *o = (dt_iop_useless_params_v2_t *)old_params;
     dt_iop_useless_params_v3_t *n = malloc(sizeof(dt_iop_useless_params_v3_t));
