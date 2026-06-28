@@ -812,7 +812,15 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
   const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, FALSE, d.wd, d.ht, TRUE);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
-  g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
+  const size_t free_space = sizeof(pathname) - (c - pathname);
+
+  // don't overwrite an existing merge: append a numeric suffix
+  // (-hdr_01.dng, -hdr_02.dng, ...) until we find a free filename,
+  // matching the behavior of export and raw denoise
+  g_strlcpy(c, "-hdr.dng", free_space);
+  for(int seq = 1; g_file_test(pathname, G_FILE_TEST_EXISTS); seq++)
+    snprintf(c, free_space, "-hdr_%02d.dng", seq);
+
   dt_imageio_dng_write_float(pathname,
                              d.pixels,
                              d.wd,
