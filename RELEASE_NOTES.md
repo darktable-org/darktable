@@ -136,6 +136,10 @@ changes (where available).
   with their corners; previously produced wildly displaced border
   lines instead of a proper offset outline.
 
+- Fixed the on-screen rating message showing the wrong value when
+  rating multiple images at once (for example, clearing 1-star still
+  reported rating 1).
+
 ## Lua
 
 ### API Version
