@@ -16,7 +16,7 @@
 	url = https://github.com/darktable-org/darktable-tests.git
 [submodule "src/external/LibRaw"]
 	path = src/external/LibRaw
-	url = https://github.com/LibRaw/LibRaw.git
+	url = https://github.com/MStraeten/LibRaw.git
 [submodule "src/external/lua-scripts"]
 	path = src/external/lua-scripts
 	url = https://github.com/darktable-org/lua-scripts.git
