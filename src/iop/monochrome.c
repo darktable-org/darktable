@@ -326,7 +326,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->highlights = p->highlights;
 
 #ifdef HAVE_OPENCL
-  piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
+  if(dt_opencl_avoid_atomics(pipe->devid))
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: device avoids atomics",
+             self->op);
+    piece->process_cl_ready = FALSE;
+  }
 #endif
 }
 

@@ -735,7 +735,15 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
 #ifdef HAVE_OPENCL
   if(d->equalization > 0.1f)
-    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
+  {
+    if(dt_opencl_avoid_atomics(pipe->devid))
+    {
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: device avoids atomics",
+               self->op);
+      piece->process_cl_ready = FALSE;
+    }
+  }
 #endif
 }
 
@@ -1048,4 +1056,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -3161,6 +3161,9 @@ void commit_params(dt_iop_module_t *self,
 #endif
       )
     {
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: diagnostics require CPU",
+               self->op);
       piece->process_cl_ready = FALSE;
     }
   }

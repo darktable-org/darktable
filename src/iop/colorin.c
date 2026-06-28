@@ -1469,6 +1469,9 @@ void commit_params(dt_iop_module_t *self,
        (d->input, d->cmatrix,
         d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: input profile needs lcms2",
+               self->op);
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
@@ -1495,6 +1498,9 @@ void commit_params(dt_iop_module_t *self,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: input profile needs lcms2",
+               self->op);
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
@@ -1538,6 +1544,9 @@ void commit_params(dt_iop_module_t *self,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: input profile needs lcms2",
+               self->op);
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,

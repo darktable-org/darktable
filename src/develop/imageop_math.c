@@ -215,6 +215,9 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
   {
     // We ran into a "vertical number of taps exceeds the vertical workgroupsize" problem
     // Instead of redoing the whole thing later we do an internal fallback to cpu here
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] clip_and_zoom: vertical taps exceed"
+             " workgroup size, falling back to CPU");
     float *in = dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4);
     float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
     if(out && in)

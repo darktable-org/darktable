@@ -2804,7 +2804,11 @@ void commit_params(dt_iop_module_t *self,
 #endif
 
   // display selection don't work with opencl
-  piece->process_cl_ready = (g && g->display_mask) ? FALSE : TRUE;
+  if(g && g->display_mask)
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: mask display requires CPU",
+             self->op);
+  piece->process_cl_ready = !(g && g->display_mask);
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
 

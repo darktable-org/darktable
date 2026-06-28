@@ -301,8 +301,15 @@ void commit_params(dt_iop_module_t *self,
 
 #ifdef HAVE_OPENCL
   if(d->mode == s_mode_bilateral)
-    piece->process_cl_ready =
-      (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
+  {
+    if(dt_opencl_avoid_atomics(pipe->devid))
+    {
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: device avoids atomics",
+               self->op);
+      piece->process_cl_ready = FALSE;
+    }
+  }
 #endif
   if(d->mode == s_mode_local_laplacian)
     piece->process_tiling_ready = FALSE; // can't deal with tiles, sorry.

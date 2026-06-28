@@ -713,7 +713,12 @@ void commit_params(dt_iop_module_t *self,
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: 4Bayer input is not supported",
+             self->op);
     piece->process_cl_ready = FALSE;
+  }
 
   d->preset = p->preset;
 

@@ -708,6 +708,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                                       d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: output profile needs lcms2",
+             self->op);
     piece->process_cl_ready = FALSE;
     d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
@@ -727,6 +730,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                                                         d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: output profile needs lcms2",
+               self->op);
       piece->process_cl_ready = FALSE;
 
       d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,

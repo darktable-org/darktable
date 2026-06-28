@@ -1033,8 +1033,16 @@ void commit_params(dt_iop_module_t *self,
      FIXME the opposed preprocessing might be added as OpenCL too
   */
   const gboolean opplinear = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && linear;
+  const gboolean unsupported_cl =
+    (d->mode == DT_IOP_HIGHLIGHTS_INPAINT)
+    || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+    || opplinear;
 
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || opplinear) ? FALSE : TRUE;
+  if(unsupported_cl)
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: highlights mode is not supported",
+             self->op);
+  piece->process_cl_ready = !unsupported_cl;
 
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
     piece->process_tiling_ready = FALSE;
@@ -1043,7 +1051,12 @@ void commit_params(dt_iop_module_t *self,
 
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: clipped mask display requires CPU",
+             self->op);
     piece->process_cl_ready = FALSE;
+  }
 }
 
 void init_global(dt_iop_module_so_t *self)

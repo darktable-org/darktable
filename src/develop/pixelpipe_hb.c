@@ -2153,7 +2153,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     if(possible_cl && !fits_on_device)
     {
       if(!_piece_may_tile(piece))
+      {
+        dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+                      "opencl fallback", pipe, module, pipe->devid,
+                      &roi_in, roi_out, "%s",
+                      "no GPU path: data doesn't fit on device and module"
+                      " can't tile, falling back to CPU");
         possible_cl = FALSE;
+      }
 
       const float advantage = darktable.opencl->dev[pipe->devid].advantage;
       if(possible_cl && (advantage > 0.0f))
@@ -2184,7 +2191,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         {
           const dt_iop_order_iccprofile_info_t *profile = dt_ioppr_get_pipe_current_profile_info(module, pipe);
           if(profile && !dt_is_valid_colormatrix(profile->matrix_in[0][0]))
+          {
+            dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+                          "opencl fallback", pipe, module, pipe->devid,
+                          &roi_in, roi_out, "%s",
+                          "no GPU path: RGB scene blend needs a valid input"
+                          " colormatrix, falling back to CPU");
             possible_cl = FALSE;
+          }
         }
       }
     }

@@ -98,7 +98,12 @@ void modify_roi_in(dt_iop_module_t *self,
   // FIXME As long as we don't support upscaling via OpenCL we can & should disable OpenCL
   // here to avoid the costly later fallback to CPU upscaling
   if(roi_in->scale > 1.0f)
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: upscaling is not supported",
+             self->op);
     piece->process_cl_ready = FALSE;
+  }
 
   roi_in->scale = 1.0f;
 
@@ -151,7 +156,7 @@ int process_cl(dt_iop_module_t *self,
 {
   if(roi_out->scale > 1.0f) // trust cl code for 1:1 copy here or downscale
   {
-    dt_print(DT_DEBUG_OPENCL,
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
              "[opencl_finalscale] upscaling not yet supported by opencl code");
     return DT_OPENCL_PROCESS_CL;
   }

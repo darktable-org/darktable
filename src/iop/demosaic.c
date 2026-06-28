@@ -1419,15 +1419,27 @@ void commit_params(dt_iop_module_t *self,
   switch(d->demosaicing_method)
   {
     case DT_IOP_DEMOSAIC_AMAZE:
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: AMaZE is not supported",
+               self->op);
       piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_LMMSE:
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: LMMSE is not supported",
+               self->op);
       piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_AMAZE_DUAL:
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: dual AMaZE is not supported",
+               self->op);
       piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_FDC:
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[opencl_fallback] %s: no GPU path: FDC is not supported",
+               self->op);
       piece->process_cl_ready = FALSE;
       break;
     default:
@@ -1437,6 +1449,9 @@ void commit_params(dt_iop_module_t *self,
   if(bayer4)
   {
     // 4Bayer images not implemented in OpenCL yet
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: 4Bayer input is not supported",
+             self->op);
     piece->process_cl_ready = FALSE;
 
     // Get and store the matrix to go from camera to RGB for 4Bayer images

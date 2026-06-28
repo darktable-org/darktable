@@ -2076,9 +2076,12 @@ int dt_opencl_lock_device(const int pipetype)
       heavy = darktable.develop->late_scaling.enabled;
       break;
     default:
+      // every DT_DEV_PIXELPIPE_ANY value is handled above; reaching here
+      // means a new pipe type was added without updating this switch
       free(priority);
       priority = NULL;
       mandatory = FALSE;
+      dt_unreachable_codepath_with_desc("unhandled pixelpipe type in dt_opencl_lock_device");
   }
 
   dt_pthread_mutex_unlock(&cl->lock);
@@ -2107,6 +2110,9 @@ int dt_opencl_lock_device(const int pipetype)
 
       if(!mandatory)
       {
+        dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+                 "[opencl_fallback] opencl_lock_device: no free opencl"
+                 " device for non-mandatory pipe, fallback to CPU");
         free(priority);
         return DT_DEVICE_CPU;
       }

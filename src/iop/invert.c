@@ -457,10 +457,22 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   for(int k = 0; k < 4; k++) d->color[k] = p->color[k];
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = FALSE;
+  if(pipe->image.buf_dsc.filters == 9u)
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: X-Trans input is not supported",
+             self->op);
+    piece->process_cl_ready = FALSE;
+  }
 
   // 4Bayer images not implemented in OpenCL yet
-  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = FALSE;
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fallback] %s: no GPU path: 4Bayer input is not supported",
+             self->op);
+    piece->process_cl_ready = FALSE;
+  }
 
   if(self->hide_enable_button) piece->enabled = FALSE;
 }
