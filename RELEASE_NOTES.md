@@ -83,7 +83,7 @@ changes (where available).
 
 ### Bug Fixes
 
-- N/A
+- Stop script_manager from starting twice and causing a stack overflow.
 
 ### New Scripts
 
