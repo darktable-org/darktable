@@ -316,6 +316,9 @@ typedef struct dt_lib_neural_restore_t
   // X-Trans / linear) so re-picking a new crop on the same image skips
   // the slow load + demosaic; freed on imgid or sensor-type change.
   dt_imgid_t preview_raw_imgid;
+  // imgid we last showed the "pre-demosaiced" warning for, so the
+  // toast doesn't fire every patch-click move during preview
+  dt_imgid_t preview_linear_warned_imgid;
   dt_restore_sensor_class_t preview_raw_sensor_class;
   float *preview_full_cfa;       // Bayer: full sensor (w*h floats)
   int preview_full_w;
@@ -391,6 +394,10 @@ typedef struct dt_neural_job_t
   char *icc_filename;  // only used when icc_type == DT_COLORSPACE_FILE
   // when TRUE, wide-gamut pixels pass through unchanged on denoise
   gboolean preserve_wide_gamut;
+  // raw denoise only: TRUE after we've toasted the "pre-demosaiced"
+  // caveat for any LINEAR image in this batch; avoids one warning
+  // per file when the user kicks off a multi-image job
+  gboolean linear_warned;
 } dt_neural_job_t;
 
 typedef struct dt_neural_format_params_t
@@ -1356,6 +1363,16 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
       return _process_raw_denoise_linear(j, imgid, out_filename,
                                          src_path, &img_meta);
     case DT_RESTORE_SENSOR_CLASS_LINEAR:
+      // most LINEAR-class inputs are computational raws (Apple
+      // ProRAW, Google HDR+, etc.) that have already been denoised
+      // on-device; the model will run but adds little; Canon/Nikon
+      // sRAW is the exception; warn once per job and proceed
+      if(!j->linear_warned)
+      {
+        j->linear_warned = TRUE;
+        dt_control_log(_("raw denoise: this image is already pre-demosaiced "
+                         "(sRaw / computational raw); results may be limited"));
+      }
       return _process_raw_denoise_linear(j, imgid, out_filename,
                                          src_path, &img_meta);
     default:
@@ -2676,23 +2693,41 @@ static gpointer _preview_thread_raw(gpointer data)
 
   const uint32_t filters = img_meta.buf_dsc.filters;
   const dt_restore_sensor_class_t cls = dt_restore_classify_sensor(&img_meta);
-  const gboolean is_xtrans = (cls == DT_RESTORE_SENSOR_CLASS_XTRANS);
-  if(cls != DT_RESTORE_SENSOR_CLASS_BAYER
-     && cls != DT_RESTORE_SENSOR_CLASS_XTRANS)
+  // today x-trans piggybacks on the linear pipeline because we don't
+  // ship a dedicated x-trans denoise model yet. when one lands, drop
+  // XTRANS from use_linear and add an x-trans branch alongside the
+  // use_linear and bayer paths (buffer fetch, preview pipe, max_disp)
+  const gboolean use_linear = (cls == DT_RESTORE_SENSOR_CLASS_XTRANS
+                               || cls == DT_RESTORE_SENSOR_CLASS_LINEAR);
+  if(cls != DT_RESTORE_SENSOR_CLASS_BAYER && !use_linear)
   {
     dt_print(DT_DEBUG_AI,
-             "[neural_restore] raw preview: imgid %d is not bayer/xtrans "
+             "[neural_restore] raw preview: imgid %d unsupported "
              "(filters=0x%x class=%d)",
              pd->imgid, filters, cls);
     bail_err = DT_NR_PREVIEW_ERR_UNSUPPORTED;
     goto cleanup;
   }
+  const char *cls_name = (cls == DT_RESTORE_SENSOR_CLASS_XTRANS) ? "x-trans"
+                       : use_linear                              ? "linear"
+                       :                                           "bayer";
   dt_print(DT_DEBUG_AI,
            "[neural_restore] raw preview: imgid=%d %s patch=(%.3f,%.3f) "
            "widget=%dx%d filters=0x%x",
-           pd->imgid, is_xtrans ? "x-trans" : "bayer",
+           pd->imgid, cls_name,
            pd->patch_center[0], pd->patch_center[1],
            pd->preview_w, pd->preview_h, filters);
+
+  // same caveat as the batch path: LINEAR is usually a computational
+  // raw that's already been denoised on-device. warn once per imgid
+  // so picking a different patch doesn't re-toast
+  if(cls == DT_RESTORE_SENSOR_CLASS_LINEAR
+     && d->preview_linear_warned_imgid != pd->imgid)
+  {
+    d->preview_linear_warned_imgid = pd->imgid;
+    dt_control_log(_("raw denoise: this image is already pre-demosaiced "
+                     "(sRaw / computational raw); results may be limited"));
+  }
 
   // 2. ensure the right ctx is loaded (matches batch logic in
   //    _ensure_raw_ctx). reload if cached_task is wrong or if the
@@ -2714,6 +2749,9 @@ static gpointer _preview_thread_raw(gpointer data)
           break;
         case DT_RESTORE_SENSOR_CLASS_XTRANS:
           d->cached_ctx = dt_restore_load_rawdenoise_xtrans(pd->env);
+          break;
+        case DT_RESTORE_SENSOR_CLASS_LINEAR:
+          d->cached_ctx = dt_restore_load_rawdenoise_linear(pd->env);
           break;
         default:
           d->cached_ctx = NULL;
@@ -2753,12 +2791,12 @@ static gpointer _preview_thread_raw(gpointer data)
   const gboolean cache_matches
     = d->preview_raw_imgid == pd->imgid
       && d->preview_raw_sensor_class == cls
-      && ((is_xtrans && d->preview_full_lin)
-          || (!is_xtrans && d->preview_full_cfa));
+      && ((use_linear && d->preview_full_lin)
+          || (!use_linear && d->preview_full_cfa));
 
   if(cache_matches)
   {
-    if(is_xtrans)
+    if(use_linear)
     {
       full_lin_use = d->preview_full_lin;
       full_w = d->preview_lin_w;
@@ -2771,7 +2809,7 @@ static gpointer _preview_thread_raw(gpointer data)
       full_h = d->preview_full_h;
     }
   }
-  else if(is_xtrans)
+  else if(use_linear)
   {
     if(dt_restore_raw_linear_prepare(ctx, pd->imgid, &take_full_lin,
                                      &full_w, &full_h) != 0
@@ -2901,7 +2939,7 @@ static gpointer _preview_thread_raw(gpointer data)
   // crop in sensor pixels:
   //   bayer:  2*T - 4*overlap_packed = 2*T - 128  (for OVERLAP_PACKED=32)
   //   linear: T   - 2*overlap_linear = T   - 64   (for OVERLAP_LINEAR=32)
-  const int max_disp = is_xtrans ? (T - 64) : (2 * T - 128);
+  const int max_disp = use_linear ? (T - 64) : (2 * T - 128);
 
   // the raw buffer is always landscape (sensor layout), but the preview
   // thumbnail the user clicks on is oriented per EXIF. un-rotate the
@@ -2913,7 +2951,7 @@ static gpointer _preview_thread_raw(gpointer data)
   int crop_w = MIN(swap_xy ? pd->preview_h : pd->preview_w, max_disp);
   int crop_h = MIN(swap_xy ? pd->preview_w : pd->preview_h, max_disp);
   // Bayer: snap to mod 2 (CFA grid)
-  if(!is_xtrans)
+  if(!use_linear)
   {
     crop_w = (crop_w / 2) * 2;
     crop_h = (crop_h / 2) * 2;
@@ -2943,7 +2981,7 @@ static gpointer _preview_thread_raw(gpointer data)
   int crop_y = (int)sy - crop_h / 2;
   crop_x = CLAMP(crop_x, 0, full_w - crop_w);
   crop_y = CLAMP(crop_y, 0, full_h - crop_h);
-  if(!is_xtrans)
+  if(!use_linear)
   {
     crop_x = (crop_x / 2) * 2;
     crop_y = (crop_y / 2) * 2;
@@ -2954,8 +2992,7 @@ static gpointer _preview_thread_raw(gpointer data)
            "patch_center=(%.3f,%.3f) -> sensor=(%d,%d %dx%d) %s",
            full_w, full_h, (unsigned)ori,
            pd->patch_center[0], pd->patch_center[1],
-           crop_x, crop_y, crop_w, crop_h,
-           is_xtrans ? "linear" : "bayer");
+           crop_x, crop_y, crop_w, crop_h, cls_name);
 
   // 5. inference
   // Bayer path uses the _piped variant which runs darktable's full
@@ -2968,7 +3005,7 @@ static gpointer _preview_thread_raw(gpointer data)
   float *denoised_rgb = NULL;
   int actual_w = 0, actual_h = 0;
   int err;
-  if(is_xtrans)
+  if(use_linear)
     err = dt_restore_raw_linear_preview_piped(ctx, &img_meta, pd->imgid,
                                               full_lin_use,
                                               full_w, full_h,
