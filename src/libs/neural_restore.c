@@ -176,6 +176,7 @@
 //                            blend at the re-mosaic sample level)
 // CONF_ACTIVE_PAGE         — last active notebook tab
 // CONF_BIT_DEPTH           — output TIFF bit depth (0=8, 1=16, 2=32)
+// CONF_COMPRESSION         — output TIFF compression (0=none, 1=deflate, 2=deflate+predictor)
 // CONF_ADD_CATALOG         — auto-import output into library
 // CONF_OUTPUT_DIR          — output directory pattern (supports variables)
 // CONF_ICC_TYPE            — output ICC profile type (image settings by default)
@@ -227,6 +228,7 @@ DT_MODULE(1)
 #define CONF_RAW_STRENGTH "plugins/lighttable/neural_restore/raw_strength"
 #define CONF_ACTIVE_PAGE "plugins/lighttable/neural_restore/active_page"
 #define CONF_BIT_DEPTH "plugins/lighttable/neural_restore/bit_depth"
+#define CONF_COMPRESSION "plugins/lighttable/neural_restore/compression"
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
@@ -236,6 +238,8 @@ DT_MODULE(1)
 #define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
 #define CONF_PREVIEW_TOOLTIP_ZOOM \
   "plugins/lighttable/neural_restore/preview_tooltip_zoom"
+// default matches the TIFF export module: deflate + predictor
+#define COMPRESSION_DEFAULT NEURAL_COMPRESS_DEFLATE_PREDICTOR
 
 typedef enum dt_neural_task_t
 {
@@ -252,6 +256,13 @@ typedef enum dt_neural_bpp_t
   NEURAL_BPP_16 = 1,
   NEURAL_BPP_32 = 2,
 } dt_neural_bpp_t;
+
+typedef enum dt_neural_compress_t
+{
+  NEURAL_COMPRESS_NONE = 0,
+  NEURAL_COMPRESS_DEFLATE = 1,
+  NEURAL_COMPRESS_DEFLATE_PREDICTOR = 2,
+} dt_neural_compress_t;
 
 // preview-area placeholder state when no rendered preview exists
 typedef enum dt_nr_preview_err_t
@@ -361,6 +372,7 @@ typedef struct dt_lib_neural_restore_t
   // output settings (collapsible)
   dt_gui_collapsible_section_t cs_output;
   GtkWidget *bpp_combo;
+  GtkWidget *compress_combo;
   GtkWidget *profile_combo;
   GtkWidget *preserve_wide_gamut_toggle;
   GtkWidget *catalog_toggle;
@@ -384,6 +396,7 @@ typedef struct dt_neural_job_t
   dt_restore_sensor_class_t raw_ctx_sensor_class;
   dt_lib_module_t *self;
   dt_neural_bpp_t bpp;
+  dt_neural_compress_t compression;
   gboolean add_to_catalog;
   char *output_dir;  // NULL = same as source
   // output color profile. DT_COLORSPACE_NONE means "use image's working profile"
@@ -861,6 +874,27 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, sample_fmt);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
                TIFFDefaultStripSize(tif, 0));
+
+  // compression — mirrors src/imageio/format/tiff.c
+  const int zlevel
+    = dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel")
+        ? dt_conf_get_int("plugins/imageio/format/tiff/compresslevel")
+        : 6;
+  if(job->compression == NEURAL_COMPRESS_DEFLATE)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_NONE);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)zlevel);
+  }
+  else if(job->compression == NEURAL_COMPRESS_DEFLATE_PREDICTOR)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    if(sample_fmt == SAMPLEFORMAT_IEEEFP)
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_FLOATINGPOINT);
+    else
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)zlevel);
+  }
 
   // embed destination profile so re-import / external viewers
   // interpret the saved pixels correctly
@@ -1768,6 +1802,8 @@ static void _task_changed(dt_lib_neural_restore_t *d)
     = (d->task == NEURAL_TASK_DENOISE);
   if(d->bpp_combo)
     gtk_widget_set_visible(d->bpp_combo, tiff_knobs_visible);
+  if(d->compress_combo)
+    gtk_widget_set_visible(d->compress_combo, tiff_knobs_visible);
   if(d->profile_combo)
     gtk_widget_set_visible(d->profile_combo, tiff_knobs_visible);
   if(d->preserve_wide_gamut_toggle)
@@ -3290,6 +3326,9 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->bpp = dt_conf_key_exists(CONF_BIT_DEPTH)
     ? dt_conf_get_int(CONF_BIT_DEPTH)
     : NEURAL_BPP_16;
+  job_data->compression = dt_conf_key_exists(CONF_COMPRESSION)
+    ? dt_conf_get_int(CONF_COMPRESSION)
+    : COMPRESSION_DEFAULT;
   job_data->add_to_catalog
     = dt_conf_key_exists(CONF_ADD_CATALOG)
       ? dt_conf_get_bool(CONF_ADD_CATALOG)
@@ -4067,6 +4106,13 @@ static void _bpp_combo_changed(GtkWidget *w,
   dt_conf_set_int(CONF_BIT_DEPTH, idx);
 }
 
+static void _compress_combo_changed(GtkWidget *w,
+                                    dt_lib_module_t *self)
+{
+  const int idx = dt_bauhaus_combobox_get(w);
+  dt_conf_set_int(CONF_COMPRESSION, idx);
+}
+
 // mirror of export.c: combo index 0 = "image settings", 1..N = profiles
 // with out_pos >= 0 ordered by out_pos
 static void _profile_combo_changed(GtkWidget *w,
@@ -4301,6 +4347,17 @@ void gui_init(dt_lib_module_t *self)
                                saved_bpp, _bpp_combo_changed, self,
                                N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
   dt_gui_box_add(cs_box, d->bpp_combo);
+
+  // compression — same options as the TIFF export module
+  const int saved_compress = dt_conf_key_exists(CONF_COMPRESSION)
+    ? dt_conf_get_int(CONF_COMPRESSION)
+    : COMPRESSION_DEFAULT;
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->compress_combo, self, NULL, N_("compression"),
+                               _("output TIFF compression"),
+                               saved_compress, _compress_combo_changed, self,
+                               N_("uncompressed"), N_("deflate"),
+                               N_("deflate with predictor"));
+  dt_gui_box_add(cs_box, d->compress_combo);
 
   // output color profile: 0 = image settings (working profile), then the
   // same list the standard export dialog uses; out-of-gamut colors are
