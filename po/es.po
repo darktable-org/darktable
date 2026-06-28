@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 5.6.0\n"
+"Project-Id-Version: darktable 5.6.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-15 12:08-0600\n"
-"PO-Revision-Date: 2026-06-17 03:35-0600\n"
+"PO-Revision-Date: 2026-06-28 01:52-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2060,14 +2060,13 @@ msgstr "base de datos"
 # dt•v5.4
 #: ../build/bin/preferences_gen.h:4139
 msgid "allow for multiple workspaces"
-msgstr "habilitar espacios de trabajo múltiples"
+msgstr "Múltiples espacios de trabajo "
 
 # dt•v5.4
 #: ../build/bin/preferences_gen.h:4147
 msgid "allow multiple workspaces which can be selected at startup"
 msgstr ""
-"Permite tener múltiples espacios de trabajo que se pueden seleccionar al "
-"iniciar el sistema"
+"Permite crear y elegir diferentes espacios de trabajo al iniciar darktable"
 
 #: ../build/bin/preferences_gen.h:4156
 msgid "create database snapshot"
@@ -10798,7 +10797,7 @@ msgstr "finalidad\t"
 #. process button
 #: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4269
 msgid "process"
-msgstr "proceso"
+msgstr "procesamiento"
 
 #: ../src/develop/imageop.c:3046
 msgid ""
@@ -17810,7 +17809,7 @@ msgstr "ONNX Runtime (libonnxruntime.so*)"
 #. enable AI toggle
 #: ../src/gui/preferences_ai.c:1528
 msgid "enable AI features"
-msgstr "habilitar funciones de IA"
+msgstr "Habilitar funciones de IA"
 
 # dt•v5.0
 #. provider dropdown
@@ -33061,8 +33060,8 @@ msgstr "Restauración neural: error al exportar"
 #, c-format
 msgid "neural %s: %d image processed"
 msgid_plural "neural %s: %d images processed"
-msgstr[0] "neural %s: %d imagen procesada"
-msgstr[1] "neural %s: %d imágenes procesadas"
+msgstr[0] "%s neural: %d imagen procesada"
+msgstr[1] "%s neural: %d imágenes procesadas"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:1661
@@ -33138,17 +33137,17 @@ msgstr "Seleccionar la carpeta destino"
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4178
 msgid "AI raw denoising"
-msgstr "reducción de ruido en bruto con IA"
+msgstr "Reducción de ruido sobre imagen en bruto con IA"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4180
 msgid "AI denoising"
-msgstr "reducción de ruido con IA"
+msgstr "Reducción de ruido con IA"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4182
 msgid "AI upscaling"
-msgstr "redimensionado con IA"
+msgstr "Redimensionado con IA"
 
 # dt•v5.6
 #: ../src/libs/neural_restore.c:4194
