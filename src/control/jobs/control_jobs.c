@@ -566,17 +566,13 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
     return 1;
   }
 
-  if(image.buf_dsc.filters == 0u
-     || image.buf_dsc.channels != 1
-     || image.buf_dsc.datatype != TYPE_UINT16)
-  {
-    dt_control_log(_("exposure bracketing only works on raw images."));
-    d->abort = TRUE;
-    return 1;
-  }
-  else if(datai->width != d->wd
-          || datai->height != d->ht
-          || d->orientation != image.orientation)
+  // raw / HDR / non-uint16 frames are already rejected up front by
+  // _control_merge_hdr_validate(); this guards the accumulation loop below,
+  // which indexes the current frame's buffer with the first frame's stride,
+  // against an actual buffer-size mismatch the metadata pre-check could miss.
+  if(datai->width != d->wd
+     || datai->height != d->ht
+     || d->orientation != image.orientation)
   {
     dt_control_log(_("images have to be of same size and orientation!"));
     d->abort = TRUE;
@@ -691,12 +687,71 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   return 0;
 }
 
+// Validate that the selected images form a consistent raw exposure bracket.
+// Reject non-raw inputs, already-merged HDR DNGs, or images with mismatched
+// resolution/orientation before expensive decode/align work. Returns TRUE if
+// mergeable, otherwise logs the odd file and returns FALSE.
+static gboolean _control_merge_hdr_validate(GList *images)
+{
+  gboolean have_ref = FALSE;
+  int32_t ref_width = 0, ref_height = 0;
+  dt_image_orientation_t ref_orientation = ORIENTATION_NONE;
+
+  for(GList *l = images; l; l = g_list_next(l))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+    if(!img) continue;
+
+    const int32_t flags = img->flags;
+    const int32_t width = img->width;
+    const int32_t height = img->height;
+    const dt_image_orientation_t orientation = img->orientation;
+    char filename[DT_MAX_FILENAME_LEN];
+    g_strlcpy(filename, img->filename, sizeof(filename));
+    dt_image_cache_read_release(img);
+
+    // exposure bracketing operates on the raw mosaic; reject anything that is
+    // not raw, and reject already-merged HDR DNGs (floating point raws carry the
+    // DT_IMAGE_HDR flag) which look like raws but are not exposure brackets.
+    if(!(flags & DT_IMAGE_RAW) || (flags & DT_IMAGE_HDR))
+    {
+      dt_control_log(_("HDR merge aborted: `%s' is not a raw exposure"
+                       " (already merged HDR or non-raw image)"), filename);
+      return FALSE;
+    }
+
+    if(!have_ref)
+    {
+      ref_width = width;
+      ref_height = height;
+      ref_orientation = orientation;
+      have_ref = TRUE;
+    }
+    else if(width != ref_width
+            || height != ref_height
+            || orientation != ref_orientation)
+    {
+      dt_control_log(_("HDR merge aborted: `%s' has a different size"
+                       " or orientation"), filename);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
 static int32_t _control_merge_hdr_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   const guint total = g_list_length(t);
   double fraction = 0;
+
+  // reject mismatched selections (already-merged HDR DNGs, differing resolution
+  // or orientation) before doing any expensive decode / alignment work
+  if(!_control_merge_hdr_validate(t))
+    return 0;
+
   dt_control_job_set_progress_message(job, ngettext("merging %d image",
                                                     "merging %d images", total), total);
 
