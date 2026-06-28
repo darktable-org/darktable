@@ -106,6 +106,73 @@ static void _ratings_undo_data_free(gpointer data)
   g_list_free(l);
 }
 
+static int _ratings_effective(const int old_rating,
+                              const int rating,
+                              const gboolean toggle)
+{
+  if(old_rating == DT_VIEW_REJECT && rating < DT_VIEW_DESERT)
+    return DT_VIEW_REJECT;
+  if(rating == DT_RATINGS_UPGRADE)
+    return MIN(DT_VIEW_STAR_5, old_rating + 1);
+  if(rating == DT_RATINGS_DOWNGRADE)
+    return MAX(DT_VIEW_DESERT, old_rating -1);
+  if(rating == DT_VIEW_STAR_1 && toggle)
+    return DT_VIEW_DESERT;
+  if(rating ==DT_VIEW_REJECT && toggle)
+    return DT_RATINGS_UNREJECT;
+  if(rating == DT_VIEW_REJECT && !toggle)
+    return DT_RATINGS_REJECT;
+  return rating;
+}
+
+static void _ratings_log_multi(const GList *imgs,
+                               const int rating,
+                               const gboolean toggle)
+{
+  const guint count = g_list_length((GList *)imgs);
+  int effective = -1;
+  gboolean mixed = FALSE;
+
+  for(const GList *images = imgs; images; images = g_list_next(images))
+  {
+    const int old_rating = dt_ratings_get(GPOINTER_TO_INT(images->data));
+    const int e = _ratings_effective(old_rating, rating, toggle);
+
+    if(effective == -1)
+      effective = e;
+    else if(effective != e)
+      mixed = TRUE;
+  }
+
+  if(rating == DT_VIEW_REJECT)
+  {
+    if(toggle) /* all were rejected → un-reject */
+      dt_control_log(ngettext("unrejecting %d image",
+                              "unrejecting %d images", count), count);
+    else
+      dt_control_log(ngettext("rejecting %d image",
+                              "rejecting %d images", count), count);
+  }
+  else if(mixed)
+  {
+    dt_control_log(ngettext("applying ratings to %d image",
+                            "applying ratings to %d images", count), count);
+  }
+  else
+  {
+    /* Map internal effective values to display star number */
+    int display = effective;
+    if(effective == DT_RATINGS_UNREJECT)
+      display = DT_VIEW_DESERT;
+
+    dt_control_log(ngettext("applying rating %d to %d image",
+                            "applying rating %d to %d images", count),
+                   display, count);
+  }
+
+  dt_gui_process_events();
+}
+
 // wrapper that does some precalculation to deal with toggle effects
 // and rating increase/decrease.
 static void _ratings_apply(const GList *imgs,
@@ -143,20 +210,8 @@ static void _ratings_apply(const GList *imgs,
     }
   }
 
-  if(!g_list_shorter_than(imgs, 2)) // pop up a toast if rating multiple images at once
-  {
-    const guint count = g_list_length((GList *)imgs);
-    if(rating == DT_VIEW_REJECT)
-      dt_control_log(ngettext("rejecting %d image",
-                              "rejecting %d images", count), count);
-    else
-      dt_control_log(ngettext("applying rating %d to %d image",
-                              "applying rating %d to %d images", count),
-                     rating, count);
-    // process all pending events to ensure that the toast is actually
-    // shown right away
-    dt_gui_process_events();
-  }
+  if(!g_list_shorter_than(imgs, 2))
+    _ratings_log_multi(imgs, rating, toggle);
 
   for(const GList *images = imgs;
       images;
@@ -173,21 +228,7 @@ static void _ratings_apply(const GList *imgs,
       *undo = g_list_append(*undo, undoratings);
     }
 
-    int new_rating = rating;
-    // do not 'DT_RATINGS_UPGRADE' or 'DT_RATINGS_UPGRADE' if image was rejected
-    if(old_rating == DT_VIEW_REJECT && rating < DT_VIEW_DESERT)
-      new_rating = DT_VIEW_REJECT;
-    else if(rating == DT_RATINGS_UPGRADE)
-      new_rating = MIN(DT_VIEW_STAR_5, old_rating + 1);
-    else if(rating == DT_RATINGS_DOWNGRADE)
-      new_rating = MAX(DT_VIEW_DESERT, old_rating - 1);
-    else if(rating == DT_VIEW_STAR_1 && toggle)
-      new_rating = DT_VIEW_DESERT;
-    else if(rating == DT_VIEW_REJECT && toggle)
-      new_rating = DT_RATINGS_UNREJECT;
-    else if(rating == DT_VIEW_REJECT && !toggle)
-      new_rating = DT_RATINGS_REJECT;
-
+    const int new_rating = _ratings_effective(old_rating, rating, toggle);
     _ratings_apply_to_image(image_id, new_rating);
   }
 }

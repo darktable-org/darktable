@@ -68,7 +68,8 @@ changes (where available).
 
 ## Bug Fixes
 
-- N/A
+- Clarified multi-image rating toasts for un-reject and for mixed
+  upgrade/downgrade results across the selection.
 
 ## Lua
 
