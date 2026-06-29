@@ -177,6 +177,7 @@
 // CONF_ACTIVE_PAGE         — last active notebook tab
 // CONF_BIT_DEPTH           — output TIFF bit depth (0=8, 1=16, 2=32)
 // CONF_COMPRESSION         — output TIFF compression (0=none, 1=deflate, 2=deflate+predictor)
+// CONF_DNG_COMPRESSION     — output DNG compression (0=none, 1=lossless JPEG)
 // CONF_ADD_CATALOG         — auto-import output into library
 // CONF_OUTPUT_DIR          — output directory pattern (supports variables)
 // CONF_ICC_TYPE            — output ICC profile type (image settings by default)
@@ -229,6 +230,7 @@ DT_MODULE(1)
 #define CONF_ACTIVE_PAGE "plugins/lighttable/neural_restore/active_page"
 #define CONF_BIT_DEPTH "plugins/lighttable/neural_restore/bit_depth"
 #define CONF_COMPRESSION "plugins/lighttable/neural_restore/compression"
+#define CONF_DNG_COMPRESSION "plugins/lighttable/neural_restore/dng_compression"
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
@@ -240,6 +242,8 @@ DT_MODULE(1)
   "plugins/lighttable/neural_restore/preview_tooltip_zoom"
 // default matches the TIFF export module: deflate + predictor
 #define COMPRESSION_DEFAULT NEURAL_COMPRESS_DEFLATE_PREDICTOR
+// DNG default: lossless JPEG (spec-canonical, universally supported)
+#define DNG_COMPRESSION_DEFAULT DT_IMAGEIO_DNG_COMPRESS_LOSSLESS_JPEG
 
 typedef enum dt_neural_task_t
 {
@@ -373,6 +377,7 @@ typedef struct dt_lib_neural_restore_t
   dt_gui_collapsible_section_t cs_output;
   GtkWidget *bpp_combo;
   GtkWidget *compress_combo;
+  GtkWidget *dng_compress_combo;
   GtkWidget *profile_combo;
   GtkWidget *preserve_wide_gamut_toggle;
   GtkWidget *catalog_toggle;
@@ -397,6 +402,7 @@ typedef struct dt_neural_job_t
   dt_lib_module_t *self;
   dt_neural_bpp_t bpp;
   dt_neural_compress_t compression;
+  dt_imageio_dng_compress_t dng_compression;
   gboolean add_to_catalog;
   char *output_dir;  // NULL = same as source
   // output color profile. DT_COLORSPACE_NONE means "use image's working profile"
@@ -1267,7 +1273,8 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
   res = dt_imageio_dng_write_cfa_bayer(out_filename, cfa_out,
                                        width, height, img_meta,
                                        exif_blob, exif_len,
-                                       jpeg_buf ? &preview : NULL);
+                                       jpeg_buf ? &preview : NULL,
+                                       j->dng_compression);
   g_free(jpeg_buf);
   g_free(exif_blob);
   g_free(cfa_out);
@@ -1319,7 +1326,8 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
   }
   res = dt_imageio_dng_write_linear(out_filename, rgb, w, h, img_meta,
                                     exif_blob, exif_len,
-                                    jpeg_buf ? &preview : NULL);
+                                    jpeg_buf ? &preview : NULL,
+                                    j->dng_compression);
   g_free(jpeg_buf);
   g_free(exif_blob);
   dt_free_align(rgb);
@@ -1804,6 +1812,8 @@ static void _task_changed(dt_lib_neural_restore_t *d)
     gtk_widget_set_visible(d->bpp_combo, tiff_knobs_visible);
   if(d->compress_combo)
     gtk_widget_set_visible(d->compress_combo, tiff_knobs_visible);
+  if(d->dng_compress_combo)
+    gtk_widget_set_visible(d->dng_compress_combo, !tiff_knobs_visible);
   if(d->profile_combo)
     gtk_widget_set_visible(d->profile_combo, tiff_knobs_visible);
   if(d->preserve_wide_gamut_toggle)
@@ -3329,6 +3339,9 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->compression = dt_conf_key_exists(CONF_COMPRESSION)
     ? dt_conf_get_int(CONF_COMPRESSION)
     : COMPRESSION_DEFAULT;
+  job_data->dng_compression = dt_conf_key_exists(CONF_DNG_COMPRESSION)
+    ? dt_conf_get_int(CONF_DNG_COMPRESSION)
+    : DNG_COMPRESSION_DEFAULT;
   job_data->add_to_catalog
     = dt_conf_key_exists(CONF_ADD_CATALOG)
       ? dt_conf_get_bool(CONF_ADD_CATALOG)
@@ -4113,6 +4126,13 @@ static void _compress_combo_changed(GtkWidget *w,
   dt_conf_set_int(CONF_COMPRESSION, idx);
 }
 
+static void _dng_compress_combo_changed(GtkWidget *w,
+                                        dt_lib_module_t *self)
+{
+  const int idx = dt_bauhaus_combobox_get(w);
+  dt_conf_set_int(CONF_DNG_COMPRESSION, idx);
+}
+
 // mirror of export.c: combo index 0 = "image settings", 1..N = profiles
 // with out_pos >= 0 ordered by out_pos
 static void _profile_combo_changed(GtkWidget *w,
@@ -4358,6 +4378,18 @@ void gui_init(dt_lib_module_t *self)
                                N_("uncompressed"), N_("deflate"),
                                N_("deflate with predictor"));
   dt_gui_box_add(cs_box, d->compress_combo);
+
+  // DNG compression — raw denoise only (mutually exclusive with the
+  // TIFF compress combo above via the task visibility toggle)
+  const int saved_dng_compress = dt_conf_key_exists(CONF_DNG_COMPRESSION)
+    ? dt_conf_get_int(CONF_DNG_COMPRESSION)
+    : DNG_COMPRESSION_DEFAULT;
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dng_compress_combo, self, NULL,
+                               N_("compression"),
+                               _("output DNG compression"),
+                               saved_dng_compress, _dng_compress_combo_changed, self,
+                               N_("uncompressed"), N_("lossless JPEG"));
+  dt_gui_box_add(cs_box, d->dng_compress_combo);
 
   // output color profile: 0 = image settings (working profile), then the
   // same list the standard export dialog uses; out-of-gamut colors are
