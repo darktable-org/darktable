@@ -734,10 +734,15 @@ void dt_mipmap_cache_init()
     { 7680, 4320 },           // mip9 - covers 8K
     { 999999999, 999999999 }, // mip10 - used for full preview at full size
   };
-  // Set mipf to mip3 size assuming the user will be using an 6K screen and
-  // have a preview that's ~4x smaller
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][0];
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][1];
+
+  /* define preview pipe dimension, this should
+     - fit at least a quarter of a 6k monitor
+     - be enough for current 50mpix images for positioning precision
+     - also work on CPU bound preview pipes
+  */
+  const dt_mipmap_size_t prev_mip = dt_conf_get_bool("highres_preview_mip") ? DT_MIPMAP_4 : DT_MIPMAP_3;
+  cache->max_width[DT_MIPMAP_F] = mipsizes[prev_mip][0];
+  cache->max_height[DT_MIPMAP_F] = mipsizes[prev_mip][1];
   for(int k = DT_MIPMAP_LDR_MAX; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
@@ -1368,13 +1373,9 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
   dt_iop_roi_t roi_out;
   roi_out.x = roi_out.y = 0;
 
-  // now let's figure out the scaling...
-
-  // MIP_F is 4 channels, and we do not demosaic here
-  const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
-
-  roi_out.scale = fminf((coeff * (float)wd) / (float)image->width,
-                        (coeff * (float)ht) / (float)image->height);
+  // now let's figure out the scaling,
+  roi_out.scale = fminf((float)wd / (float)image->width,
+                        (float)ht / (float)image->height);
   roi_out.width = roi_out.scale * roi_in.width;
   roi_out.height = roi_out.scale * roi_in.height;
 
@@ -1587,7 +1588,7 @@ static void _init_8(uint8_t *buf,
         const gboolean always_use_thumb = (min_s == DT_MIPMAP_NONE);
         const gboolean thumb_lt_mip = ((thumb_width < wd) && (thumb_height < ht));
         const gboolean thumb_lt_raw = ((thumb_width < imgwd - 4) && (thumb_height < imght - 4));
-        if (!always_use_thumb && thumb_lt_mip && thumb_lt_raw) 
+        if (!always_use_thumb && thumb_lt_mip && thumb_lt_raw)
         {
           res = TRUE;
         }
