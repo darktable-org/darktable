@@ -1404,11 +1404,17 @@ void commit_params(dt_iop_module_t *self,
   if(use_method != DT_IOP_DEMOSAIC_PPG)
     d->median_thrs = 0.0f;
 
-  if(passing || bayer4 || true_monochrome)
-  {
+  // make sure we have no crazy stuff
+  if(d->green_eq < DT_IOP_GREEN_EQ_NO || d->green_eq > DT_IOP_GREEN_EQ_BOTH)
     d->green_eq = DT_IOP_GREEN_EQ_NO;
+
+  // only bayer have green equil
+  if(passing || !bayer)
+    d->green_eq = DT_IOP_GREEN_EQ_NO;
+
+  // color smoothing for bayer and xtrans
+  if(passing || bayer4 || true_monochrome)
     d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
-  }
 
   if(use_method & DT_DEMOSAIC_DUAL)
     d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
