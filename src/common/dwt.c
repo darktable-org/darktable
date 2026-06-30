@@ -151,7 +151,11 @@ static void dwt_decompose_horiz(
     const size_t width,
     const size_t lev)
 {
-  const int hscale = MIN(1 << lev, width);  //(int because we need a signed difference below)
+  // cap at width-1 (not width): the right-edge reflection below computes
+  // 2*width-2-(col+hscale), which underflows for the last column when hscale==width.
+  // this mirrors the vertical pass, which caps vscale at height-1 for the same reason.
+  const int hscale =
+    MIN(1 << lev, (int)width - 1); //(int because we need a signed difference below)
   DT_OMP_FOR()
   for(int row = 0; row < height ; row++)
   {
@@ -382,7 +386,10 @@ static void dwt_denoise_vert_1ch(
     const size_t width,
     const size_t lev)
 {
-  const int vscale = MIN(1 << lev, height);
+  // cap at height-1 (not height): the top-edge reflection below reads
+  // abs(row-vscale), which lands one row past the buffer at row 0 once
+  // vscale == height. (matches dwt_decompose_vert.)
+  const int vscale = MIN(1 << lev, (int)height - 1);
   DT_OMP_FOR()
   for(int rowid = 0; rowid < height ; rowid++)
   {
@@ -418,7 +425,9 @@ static void dwt_denoise_horiz_1ch(
     const float thold,
     const int last)
 {
-  const int hscale = MIN(1 << lev, width);
+  // cap at width-1 (not width): the reflected neighbour indices below read out
+  // of bounds once hscale == width. (matches dwt_decompose_horiz.)
+  const int hscale = MIN(1 << lev, (int)width - 1);
   DT_OMP_FOR()
   for(int row = 0; row < height ; row++)
   {
@@ -431,23 +440,31 @@ static void dwt_denoise_horiz_1ch(
     float *const restrict details = in + rowindex;
     float *const restrict coarse = out + rowindex;
     float *const restrict accum_row = accum + rowindex;
-    // handle reflection at left edge
-    DT_OMP_SIMD()
-    for(int col = 0; col < hscale; col++)
+    // the row splits into three regions: a left edge where the left neighbour
+    // (and, once 2*hscale > width, the right one too) needs reflection, a
+    // branch-free middle where both neighbours are in bounds, and a right edge
+    // where the right neighbour needs reflection. clamp the boundaries with
+    // MIN/MAX so the regions stay a non-overlapping partition for small images
+    // / large scales (2*hscale > width); otherwise they would overlap and
+    // double-process columns, and the middle loop would index out of bounds.
+    const int left_end = MIN(hscale, (int)width);
+    const int right_start = MAX((int)width - hscale, left_end);
+    // left edge: left neighbour reflects about column 0 (abs(col-hscale) == hscale-col
+    // here); guard the right neighbour explicitly since it can also fall off the end.
+    for(int col = 0; col < left_end; col++)
     {
+      const int rightpos =
+        (col + hscale < (int)width) ? (col + hscale) : 2 * ((int)width - 1) - (col + hscale);
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
-      const float hat = (2.f * coarse[col] + coarse[hscale-col] + coarse[col+hscale]) / 16.f;
-      // the normalized value is our 'coarse' result; 'diff' is the difference between original input and 'coarse'
-      // (which would ordinarily be stored as the details scale, but we don't need it any further)
+      const float hat = (2.f * coarse[col] + coarse[hscale - col] + coarse[rightpos]) / 16.f;
+      // the normalized value is our 'coarse' result; 'diff' is the difference between original
+      // input and 'coarse'
       const float diff = details[col] - hat;
-      details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
-      // GCC8 won't vectorize if we use the following line, but it turns out that just adding the two conditional
-      // alternatives produces exactly the same result, and *that* does get vectorized
-      //const float excess = diff < 0.0 ? MIN(diff + thold, 0.0f) : MAX(diff - thold, 0.0f);
+      details[col] = hat; // done with original input, so we can overwrite it with 'coarse'
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
     DT_OMP_SIMD()
-    for(int col = hscale; col < width - hscale; col++)
+    for(int col = left_end; col < right_start; col++)
     {
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
       const float hat = (2.f * coarse[col] + coarse[col-hscale] + coarse[col+hscale]) / 16.f;
@@ -460,15 +477,15 @@ static void dwt_denoise_horiz_1ch(
       //const float excess = diff < 0.0 ? MIN(diff + thold, 0.0f) : MAX(diff - thold, 0.0f);
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
-    // handle reflection at right edge
-    DT_OMP_SIMD()
-    for(int col = width - hscale; col < width; col++)
+    // right edge: right neighbour reflects about the last column. col >= right_start
+    // >= hscale here, so the left neighbour (col-hscale) is always in bounds.
+    for(int col = right_start; col < width; col++)
     {
-      const float right = coarse[2*width - 2 - (col+hscale)];
+      const float right = coarse[2 * ((int)width - 1) - (col + hscale)];
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
       const float hat = (2.f * coarse[col] + coarse[col-hscale] + right) / 16.f;
-      // the normalized value is our 'coarse' result; 'diff' is the difference between original input and 'coarse'
-      // (which would ordinarily be stored as the details scale, but we don't need it any further)
+      // the normalized value is our 'coarse' result; 'diff' is the difference between original
+      // input and 'coarse'
       const float diff = details[col] - hat;
       details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
@@ -686,7 +703,10 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     {
       int sc = 1 << lev;
       sc = (int)(sc * p->preview_scale);
-      if(sc > p->width) sc = p->width;
+      // cap at width-1 (not width): the kernel's reflected neighbour indices
+      // read out of bounds once sc == width. (matches the CPU path.)
+      if(sc > p->width - 1)
+        sc = p->width - 1;
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_hat_transform_row, p->width, p->height,
         CLARG(temp), CLARG((buffer[hpass])), CLARG(p->width), CLARG(p->height), CLARG(sc));
@@ -697,7 +717,9 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     {
       int sc = 1 << lev;
       sc = (int)(sc * p->preview_scale);
-      if(sc > p->height) sc = p->height;
+      // cap at height-1 (not height): see the row pass above.
+      if(sc > p->height - 1)
+        sc = p->height - 1;
       const float lpass_mult = (1.f / 16.f);
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_hat_transform_col, p->width, p->height,
