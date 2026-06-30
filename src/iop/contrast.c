@@ -99,7 +99,8 @@ typedef struct dt_iop_contrast_params_t
 typedef enum dt_iop_contrast_mask_t
 {
   DT_LC_MASK_OFF = -1,
-  DT_LC_MASK_LOCAL = 0
+  DT_LC_MASK_LOCAL = 0,
+  DT_LC_MASK_LAST = 1
 } dt_iop_contrast_mask_t;
 
 typedef struct dt_iop_contrast_data_t
@@ -123,9 +124,6 @@ typedef struct dt_iop_contrast_gui_data_t
   GtkWidget *edge_protection;
   GtkWidget *filter_iterations;
   GtkWidget *noise_bias;
-
-  // New buttons for mask display in expanders
-  GtkWidget *f_view_local;
 } dt_iop_contrast_gui_data_t;
 
 
@@ -409,10 +407,9 @@ static void _update_mask_buttons_state(dt_iop_contrast_gui_data_t *g)
   if(darktable.gui->reset) return;
   ++darktable.gui->reset;
 
-  dt_bauhaus_widget_set_quad_active(g->gain_local_contrast, g->mask_display == DT_LC_MASK_LOCAL);
+  if(g->gain_local_contrast)
+    dt_bauhaus_widget_set_quad_active(g->gain_local_contrast, g->mask_display == DT_LC_MASK_LOCAL);
 
-  if(g->f_view_local)
-     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_local), g->mask_display == DT_LC_MASK_LOCAL);
   --darktable.gui->reset;
 }
 
@@ -422,7 +419,8 @@ static void _set_mask_display(dt_iop_module_t *self, dt_iop_contrast_mask_t mask
 
   if(darktable.gui->reset) return;
 
-  // If blend module is displaying mask, don't display here
+  const dt_iop_contrast_mask_t old_mask_display = g->mask_display;
+
   if(self->request_mask_display)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
@@ -430,18 +428,14 @@ static void _set_mask_display(dt_iop_module_t *self, dt_iop_contrast_mask_t mask
   }
   else
   {
-    // Toggle logic
-    if(g->mask_display == mask_type)
-    {
-      g->mask_display = DT_LC_MASK_OFF;
-    }
-    else
-    {
-      g->mask_display = mask_type;
-    }
+    g->mask_display = (g->mask_display == mask_type) ? DT_LC_MASK_OFF : mask_type;
   }
 
-  _update_mask_buttons_state(g);
+  if(g->mask_display != old_mask_display)
+  {
+    _update_mask_buttons_state(g);
+    if(self->dev) dt_dev_reprocess_center(self->dev);
+  }
 }
 
 
@@ -483,6 +477,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   dt_iop_contrast_gui_data_t *g = self->gui_data;
   if(!in)
   {
+    // Lost focus, reset mask display to off
     const gboolean mask_was_shown = (g->mask_display != DT_LC_MASK_OFF);
     g->mask_display = DT_LC_MASK_OFF;
 
@@ -506,6 +501,8 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *main_box = dt_gui_vbox();
   self->widget = main_box;
   
+  g->mask_display = DT_LC_MASK_OFF;
+
   // Local boost slider
   g->gain_local_contrast = dt_bauhaus_slider_from_params(self, "gain_local_contrast");
   dt_bauhaus_slider_set_soft_range(g->gain_local_contrast, 0.0, 2.0);
@@ -513,7 +510,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->gain_local_contrast, "%");
   dt_bauhaus_slider_set_factor(g->gain_local_contrast, 100.0);
   dt_bauhaus_slider_set_offset(g->gain_local_contrast, -100.0);
-  gtk_widget_set_tooltip_text (g->gain_local_contrast,
+  gtk_widget_set_tooltip_text(g->gain_local_contrast,
                               _("amount of local contrast enhancement"));
   dt_bauhaus_widget_set_quad(g->gain_local_contrast, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
                              _("visualize local contrast mask"));
