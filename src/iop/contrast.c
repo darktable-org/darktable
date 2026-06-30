@@ -117,23 +117,6 @@ typedef struct dt_iop_contrast_gui_data_t
   // Flags
   dt_iop_contrast_mask_t mask_display;
 
-  int pipe_order;
-
-  // Hash for cache invalidation
-  dt_hash_t ui_preview_hash;
-  dt_hash_t thumb_preview_hash;
-  size_t full_preview_buf_width, full_preview_buf_height;
-  size_t thumb_preview_buf_width, thumb_preview_buf_height;
-
-  // Cached luminance buffers
-  float *thumb_preview_buf_pixel;     // pixel-wise luminance (no blur)
-  float *thumb_preview_buf_smoothed_local;  // smoothed luminance
-  float *full_preview_buf_pixel;
-  float *full_preview_buf_smoothed_local;
-
-  // Cache validity
-  gboolean luminance_valid;
-
   // GTK widgets
   GtkWidget *gain_local_contrast;
   GtkWidget *detail_level;
@@ -191,30 +174,6 @@ int legacy_params(dt_iop_module_t *self,
                   int *new_version)
 {
   return 1;
-}
-
-/*
-static void hash_set_get(const dt_hash_t *hash_in,
-                         dt_hash_t *hash_out,
-                         dt_pthread_mutex_t *lock)
-{
-  dt_pthread_mutex_lock(lock);
-  *hash_out = *hash_in;
-  dt_pthread_mutex_unlock(lock);
-}
-*/
-
-
-static void invalidate_luminance_cache(dt_iop_module_t *const self)
-{
-  dt_iop_contrast_gui_data_t *const restrict g = self->gui_data;
-
-  dt_iop_gui_enter_critical_section(self);
-  g->luminance_valid = FALSE;
-  g->thumb_preview_hash = DT_INVALID_HASH;
-  g->ui_preview_hash = DT_INVALID_HASH;
-  dt_iop_gui_leave_critical_section(self);
-  dt_iop_refresh_all(self);
 }
 
 // Compute smoothed luminance mask using edge-aware filters
@@ -328,178 +287,6 @@ static inline void display_local_mask(const float *const restrict luminance_pixe
   }
 }
 
-
-// Main processing function
-/*
-__DT_CLONE_TARGETS__
-static void spatial_contrast_process(dt_iop_module_t *self,
-                                       dt_dev_pixelpipe_iop_t *piece,
-                                       const void *const restrict ivoid,
-                                       void *const restrict ovoid,
-                                       const dt_iop_roi_t *const roi_in,
-                                       const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_contrast_data_t *const d = piece->data;
-  dt_iop_contrast_gui_data_t *const g = self->gui_data;
-
-  const float *const restrict in = (float *const)ivoid;
-  float *const restrict out = (float *const)ovoid;
-  float *restrict luminance_pixel = NULL;
-  float *restrict luminance_smoothed_local = NULL;
-
-  const size_t width = roi_in->width;
-  const size_t height = roi_in->height;
-  const size_t num_elem = width * height;
-
-  // Get the hash of the upstream pipe to track changes
-  const dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, TRUE);
-
-  // Sanity checks
-  if(width < 1 || height < 1) return;
-  if(roi_in->width < roi_out->width || roi_in->height < roi_out->height) return;
-  if(piece->colors != 4) return;
-
-  // Init the luminance mask buffers
-  gboolean cached = FALSE;
-
-  if(self->dev->gui_attached)
-  {
-    // If the module instance has changed order in the pipe, invalidate caches
-    if(g->pipe_order != piece->module->iop_order)
-    {
-      dt_iop_gui_enter_critical_section(self);
-      g->ui_preview_hash = DT_INVALID_HASH;
-      g->thumb_preview_hash = DT_INVALID_HASH;
-      g->pipe_order = piece->module->iop_order;
-      g->luminance_valid = FALSE;
-      dt_iop_gui_leave_critical_section(self);
-    }
-
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
-    {
-      // Re-allocate buffers if size changed
-      if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
-      {
-        dt_free_align(g->full_preview_buf_pixel);
-        dt_free_align(g->full_preview_buf_smoothed_local);
-        g->full_preview_buf_pixel = dt_alloc_align_float(num_elem);
-        g->full_preview_buf_width = width;
-        g->full_preview_buf_height = height;
-      }
-
-      luminance_pixel = g->full_preview_buf_pixel;
-      luminance_smoothed_local = g->full_preview_buf_smoothed_local;
-      cached = TRUE;
-    }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      dt_iop_gui_enter_critical_section(self);
-      if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
-      {
-        dt_free_align(g->thumb_preview_buf_pixel);
-        dt_free_align(g->thumb_preview_buf_smoothed_local);
-        g->thumb_preview_buf_pixel = dt_alloc_align_float(num_elem);
-        g->thumb_preview_buf_width = width;
-        g->thumb_preview_buf_height = height;
-        g->luminance_valid = FALSE;
-      }
-
-      luminance_pixel = g->thumb_preview_buf_pixel;
-      luminance_smoothed_local = g->thumb_preview_buf_smoothed_local;
-      cached = TRUE;
-      dt_iop_gui_leave_critical_section(self);
-    }
-    else
-    {
-      luminance_pixel = dt_alloc_align_float(num_elem);
-      luminance_smoothed_local = dt_alloc_align_float(num_elem);
-    }
-  }
-  else
-  {
-    // No interactive editing: allocate local temp buffers
-    luminance_pixel = dt_alloc_align_float(num_elem);
-    luminance_smoothed_local = dt_alloc_align_float(num_elem);
-  }
-
-  // Check buffer allocation
-  if(!luminance_pixel || !luminance_smoothed_local)
-  {
-    dt_control_log(_("local contrast failed to allocate memory, check your RAM settings"));
-    if(!cached) { dt_free_align(luminance_pixel); dt_free_align(luminance_smoothed_local); }
-    return;
-  }
-
-  // Compute luminance masks
-  // Calculate base epsilon for guided filter: higher f_mult reduces epsilon (stricter filter)
-  const float base_eps = d->feathering * d->feathering;
-  
-  if(cached)
-  {
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
-    {
-      dt_hash_t saved_hash;
-      hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
-
-      dt_iop_gui_enter_critical_section(self);
-      const gboolean luminance_valid = g->luminance_valid;
-      dt_iop_gui_leave_critical_section(self);
-
-      if(hash != saved_hash || !luminance_valid)
-      {
-        compute_pixel_luminance_mask(in, luminance_pixel, width, height, d->method);
-        if(d->gain_local != 1.0f || g->mask_display == DT_LC_MASK_LOCAL)
-          compute_smoothed_luminance_mask(in, luminance_smoothed_local, width, height, d, d->radius_local, base_eps * fmaxf(d->f_mult_local, 0.5f));
-        hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
-      }
-    }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      dt_hash_t saved_hash;
-      hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
-
-      dt_iop_gui_enter_critical_section(self);
-      const gboolean luminance_valid = g->luminance_valid;
-      dt_iop_gui_leave_critical_section(self);
-
-      if(saved_hash != hash || !luminance_valid)
-      {
-        dt_iop_gui_enter_critical_section(self);
-        g->thumb_preview_hash = hash;
-        compute_pixel_luminance_mask(in, luminance_pixel, width, height, d->method);
-        if(d->gain_local != 1.0f || g->mask_display == DT_LC_MASK_LOCAL)
-          compute_smoothed_luminance_mask(in, luminance_smoothed_local, width, height, d, d->radius_local, base_eps * fmaxf(d->f_mult_local, 0.5f));
-        g->luminance_valid = TRUE;
-        dt_iop_gui_leave_critical_section(self);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
-      }
-    }
-    else
-    {
-      compute_pixel_luminance_mask(in, luminance_pixel, width, height, d->method);
-      compute_smoothed_luminance_mask(in, luminance_smoothed_local, width, height, d, d->radius_local, base_eps * fmaxf(1.0f, 0.5f));
-    }
-  }
-  else
-  {
-    compute_pixel_luminance_mask(in, luminance_pixel, width, height, d->method);
-    compute_smoothed_luminance_mask(in, luminance_smoothed_local, width, height, d, d->radius_local, base_eps * fmaxf(1.0f, 0.5f));
-  }
-
-  // Display output
-  if(g && g->mask_display != DT_LC_MASK_OFF)
-  {
-    display_local_mask(luminance_pixel, luminance_smoothed_local, out, width, height);
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-  }
-  else
-  {
-    apply_local_contrast(in, luminance_pixel, luminance_smoothed_local, out, roi_in, roi_out, d);
-  }
-
-  if(!cached) { dt_free_align(luminance_pixel); dt_free_align(luminance_smoothed_local); }
-}
-*/
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -617,27 +404,6 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-
-static void gui_cache_init(dt_iop_module_t *self)
-{
-  dt_iop_contrast_gui_data_t *g = self->gui_data;
-  if(g == NULL) return;
-
-  dt_iop_gui_enter_critical_section(self);
-  g->ui_preview_hash = DT_INVALID_HASH;
-  g->thumb_preview_hash = DT_INVALID_HASH;
-  g->mask_display = DT_LC_MASK_OFF;
-  g->luminance_valid = FALSE;
-
-  g->full_preview_buf_pixel = NULL;
-  g->full_preview_buf_smoothed_local = NULL;
-
-  g->thumb_preview_buf_pixel = NULL;
-  g->thumb_preview_buf_smoothed_local = NULL;
-
-  g->pipe_order = 0;
-  dt_iop_gui_leave_critical_section(self);
-}
 static void _update_mask_buttons_state(dt_iop_contrast_gui_data_t *g)
 {
   if(darktable.gui->reset) return;
@@ -676,17 +442,6 @@ static void _set_mask_display(dt_iop_module_t *self, dt_iop_contrast_mask_t mask
   }
 
   _update_mask_buttons_state(g);
-
-  invalidate_luminance_cache(self);
-}
-
-static void show_guiding_controls(const dt_iop_module_t *self)
-{
-  const dt_iop_contrast_gui_data_t *g = self->gui_data;
-
-  // All filters need these controls
-  gtk_widget_set_visible(g->detail_level, TRUE);
-  gtk_widget_set_visible(g->edge_protection, TRUE);
 }
 
 
@@ -694,21 +449,15 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  const dt_iop_contrast_gui_data_t *g = self->gui_data;
-
-  if(w == g->detail_level || w == g->edge_protection)
-  {
-    invalidate_luminance_cache(self);
-  }
-
+  (void)self;
+  (void)w;
+  (void)previous;
 }
 
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_contrast_gui_data_t *g = self->gui_data;
 
-  show_guiding_controls(self);
-  invalidate_luminance_cache(self);
   _update_mask_buttons_state(g);
 
   gui_changed(self, NULL, NULL);
@@ -728,28 +477,6 @@ static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
     _set_mask_display(self, mask_type);
   }
 }
-
-
-static void _develop_ui_pipe_started_callback(gpointer instance,
-                                              dt_iop_module_t *self)
-{
-  dt_iop_contrast_gui_data_t *g = self->gui_data;
-  if(g == NULL) return;
-
-  if(!self->expanded || !self->enabled)
-  {
-    dt_iop_gui_enter_critical_section(self);
-    g->mask_display = DT_LC_MASK_OFF;
-    dt_iop_gui_leave_critical_section(self);
-  }
-
-  ++darktable.gui->reset;
-  dt_iop_gui_enter_critical_section(self);
-  _update_mask_buttons_state(g);
-  dt_iop_gui_leave_critical_section(self);
-  --darktable.gui->reset;
-}
-
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
@@ -774,8 +501,6 @@ void gui_reset(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_contrast_gui_data_t *g = IOP_GUI_ALLOC(contrast);
-
-  gui_cache_init(self);
 
   // Main container
   GtkWidget *main_box = dt_gui_vbox();
@@ -828,21 +553,8 @@ void gui_init(dt_iop_module_t *self)
 
   // Restore main widget
   self->widget = main_box;
-
-  // Connect signals for pipe events
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _develop_ui_pipe_started_callback);
 }
 
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  dt_iop_contrast_gui_data_t *g = self->gui_data;
-
-  dt_free_align(g->thumb_preview_buf_pixel);
-  dt_free_align(g->thumb_preview_buf_smoothed_local);
-  dt_free_align(g->full_preview_buf_pixel);
-  dt_free_align(g->full_preview_buf_smoothed_local);
-}
 
 
 // clang-format off
