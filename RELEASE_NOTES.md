@@ -69,7 +69,11 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fixed a bug that left OpenCL AMD devices disabled on Windows systems.
+- Fixed a bug that left OpenCL AMD devices disabled on Windows
+  systems.
+
+- Fixed a bug in demosaic module resulting from bad green
+  equilibration data.
 
 ## Lua
 
