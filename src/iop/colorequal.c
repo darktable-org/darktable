@@ -1632,6 +1632,44 @@ int process_cl(dt_iop_module_t *self,
                 CLARG(width),  CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
+  // On the preview pipe, read the original (uncorrected) hue back from the
+  // GPU pixout buffer to populate preview_hue_buf for mouse_moved/scrolled.
+  // pixout[k].x contains the raw HSB hue (same as the CPU process() path).
+  if(self->gui_data && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  {
+    dt_iop_colorequal_gui_data_t *gui = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+    const size_t npixels = (size_t)width * height;
+    const size_t px_sz = 4 * npixels * sizeof(float);
+    float *host_pixout = dt_alloc_align_float(4 * npixels);
+    if(host_pixout)
+    {
+      err = dt_opencl_read_buffer_from_device(devid, host_pixout, pixout, 0, px_sz, TRUE);
+      if(err == CL_SUCCESS)
+      {
+        dt_iop_gui_enter_critical_section(self);
+        if(gui->preview_hue_buf_width != width || gui->preview_hue_buf_height != height)
+        {
+          dt_free_align(gui->preview_hue_buf);
+          gui->preview_hue_buf = dt_alloc_align_float(npixels);
+          if(gui->preview_hue_buf)
+          {
+            gui->preview_hue_buf_width  = width;
+            gui->preview_hue_buf_height = height;
+          }
+        }
+        if(gui->preview_hue_buf)
+        {
+          DT_OMP_FOR()
+          for(size_t k = 0; k < npixels; k++)
+            gui->preview_hue_buf[k] = host_pixout[k * 4]; // hue
+          gui->preview_pipe_hash = dt_dev_pixelpipe_piece_hash(piece, &piece->processed_roi_out, TRUE);
+        }
+        dt_iop_gui_leave_critical_section(self);
+      }
+      dt_free_align(host_pixout);
+    }
+  }
+
   if(guiding && !run_fast)
   {
     err = dt_gaussian_mean_blur_cl(devid, Lscharr, width, height, 1, scharr_sigma);
