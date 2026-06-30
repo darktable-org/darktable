@@ -90,7 +90,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_contrast_params_t)
 typedef struct dt_iop_contrast_params_t
 {
   float gain_local_contrast;  // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
-  float detail_level;       // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 4.0 $DESCRIPTION: "detail level"
+  float detail_level;         // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 4.0 $DESCRIPTION: "detail level"
   float edge_protection;      // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "adjust edge protection"
   int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"  
   float noise_bias;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.001 $DESCRIPTION: "noise bias"
@@ -174,8 +174,19 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-// Compute smoothed luminance mask using edge-aware filters
 
+void init_global(dt_iop_module_so_t *self)
+{
+  self->data = NULL;
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  self->data = NULL;
+}
+
+
+// Compute smoothed luminance mask using edge-aware filters
 __DT_CLONE_TARGETS__
 static inline void compute_luminance_and_mask(const float *const restrict in,
                                                    float *const restrict luminance,
@@ -207,7 +218,6 @@ static inline void compute_luminance_and_mask(const float *const restrict in,
 // Apply local contrast enhancement
 // The detail (local contrast) is the log-space difference between pixel luminance
 // and smoothed luminance. Boosting this difference amplifies local details.
-
 __DT_CLONE_TARGETS__
 static inline void apply_local_contrast(const float *const restrict in,
                                         const float *const restrict luminance_pixel,
@@ -223,8 +233,8 @@ static inline void apply_local_contrast(const float *const restrict in,
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    const float lum_pixel = fmaxf(luminance_pixel[k], MIN_FLOAT);
-    const float lum_smoothed = fmaxf(luminance_smoothed[k], MIN_FLOAT);
+    const float lum_pixel = fmaxf(luminance_pixel[k], NORM_MIN);
+    const float lum_smoothed = fmaxf(luminance_smoothed[k], NORM_MIN);
 
     // Detail in log space (EV): how much brighter/darker is this pixel
     // compared to its local neighborhood
@@ -267,8 +277,8 @@ static inline void display_local_mask(const float *const restrict luminance_pixe
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    const float lum_pixel = fmaxf(luminance_pixel[k], MIN_FLOAT);
-    const float lum_smoothed = fmaxf(luminance_smoothed[k], MIN_FLOAT);
+    const float lum_pixel = fmaxf(luminance_pixel[k], NORM_MIN);
+    const float lum_smoothed = fmaxf(luminance_smoothed[k], NORM_MIN);
 
     // Detail in log space, mapped to [0, 1] for display
     // Detail range roughly [-2, +2] EV mapped to [0, 1]
@@ -286,17 +296,6 @@ static inline void display_local_mask(const float *const restrict luminance_pixe
 }
 
 
-void init_global(dt_iop_module_so_t *self)
-{
-  self->data = NULL;
-}
-
-void cleanup_global(dt_iop_module_so_t *self)
-{
-  self->data = NULL;
-}
-
-
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid,
@@ -304,8 +303,6 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  //spatial_contrast_process(self, piece, ivoid, ovoid, roi_in, roi_out);
-
   const dt_iop_contrast_data_t *const d = piece->data;
   dt_iop_contrast_gui_data_t *const g = self->gui_data;
 
@@ -402,6 +399,7 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+
 static void _update_mask_buttons_state(dt_iop_contrast_gui_data_t *g)
 {
   if(darktable.gui->reset) return;
@@ -412,6 +410,7 @@ static void _update_mask_buttons_state(dt_iop_contrast_gui_data_t *g)
 
   --darktable.gui->reset;
 }
+
 
 static void _set_mask_display(dt_iop_module_t *self, dt_iop_contrast_mask_t mask_type)
 {
@@ -439,25 +438,6 @@ static void _set_mask_display(dt_iop_module_t *self, dt_iop_contrast_mask_t mask
 }
 
 
-void gui_changed(dt_iop_module_t *self,
-                 GtkWidget *w,
-                 void *previous)
-{
-  (void)self;
-  (void)w;
-  (void)previous;
-}
-
-void gui_update(dt_iop_module_t *self)
-{
-  dt_iop_contrast_gui_data_t *g = self->gui_data;
-
-  _update_mask_buttons_state(g);
-
-  gui_changed(self, NULL, NULL);
-}
-
-
 static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -470,6 +450,13 @@ static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
   {
     _set_mask_display(self, mask_type);
   }
+}
+
+
+void gui_update(dt_iop_module_t *self)
+{
+  dt_iop_contrast_gui_data_t *g = self->gui_data;
+  _update_mask_buttons_state(g);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -496,12 +483,10 @@ void gui_reset(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_contrast_gui_data_t *g = IOP_GUI_ALLOC(contrast);
-
-  // Main container
-  GtkWidget *main_box = dt_gui_vbox();
-  self->widget = main_box;
-  
   g->mask_display = DT_LC_MASK_OFF;
+    
+  // Main container
+  self->widget = dt_gui_vbox();
 
   // Local boost slider
   g->gain_local_contrast = dt_bauhaus_slider_from_params(self, "gain_local_contrast");
@@ -515,9 +500,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad(g->gain_local_contrast, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
                              _("visualize local contrast mask"));
 
-  // filter settings
+  // Filter settings section
   GtkWidget *filter_label = dt_ui_section_label_new(C_("section", "filter settings"));
-  dt_gui_box_add(main_box, filter_label);
+  dt_gui_box_add(self->widget, filter_label);
   
   g->detail_level = dt_bauhaus_slider_from_params(self, "detail_level");
   dt_bauhaus_slider_set_soft_range(g->detail_level, 2.0, 10.0);
@@ -547,11 +532,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->noise_bias, 0.0001);
   gtk_widget_set_tooltip_text(g->noise_bias, _("add bias to reduce shadow noise amplification.\n"
                                                "Only affects dark parts of the image."));
-
-  // Restore main widget
-  self->widget = main_box;
 }
-
 
 
 // clang-format off
