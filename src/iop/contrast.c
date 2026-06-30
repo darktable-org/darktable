@@ -329,7 +329,7 @@ void process(dt_iop_module_t *self,
   compute_luminance_and_mask(in, luminance_pixel, luminance_smoothed_local, width, height, d);
   
   // Display output
-  if(g && g->mask_display != DT_LC_MASK_OFF)
+  if(g && g->mask_display != DT_LC_MASK_OFF && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     display_local_mask(luminance_pixel, luminance_smoothed_local, out, width, height);
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
