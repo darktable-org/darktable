@@ -58,9 +58,11 @@ dwt_hat_transform_row(global float4 *lpass, global float4 *hpass, int width, int
   if(x < sc)
   {
     const int h_idx = mad24(y, width, x);
+    // the right neighbour also needs reflection once 2*sc > size
+    const int rightpos = (x + sc < size) ? (x + sc) : (2 * size - 2 - (x + sc));
 
     lpass[h_idx] = hat_mult * hpass[mad24(y, width, x)] + hpass[mad24(y, width, (sc - x))]
-                   + hpass[mad24(y, width, (x + sc))];
+                   + hpass[mad24(y, width, rightpos)];
   }
   else if(x + sc < size)
   {
@@ -92,8 +94,11 @@ dwt_hat_transform_col(global float4 *lpass, int width, int height, const int sc,
 
   if(y < sc)
   {
+    // the lower neighbour also needs reflection once 2*sc > size
+    const int belowpos = (y + sc < size) ? (y + sc) : (2 * size - 2 - (y + sc));
+
     temp_buffer[mad24(y, width, x)] = (hat_mult * lpass[mad24(y, width, x)] + lpass[mad24((sc - y), width, x)]
-                                       + lpass[mad24((y + sc), width, x)])
+                                       + lpass[mad24(belowpos, width, x)])
                                       * lpass_mult;
   }
   else if(y + sc < size)
