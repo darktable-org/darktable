@@ -75,6 +75,9 @@ changes (where available).
 - Fixed a bug in demosaic module resulting from bad green
   equilibration data.
 
+- Fixed a bug preventing the tether mode to connect when using a non
+  English UI.
+
 ## Lua
 
 ### API Version
