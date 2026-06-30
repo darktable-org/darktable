@@ -1366,8 +1366,10 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
       // most LINEAR-class inputs are computational raws (Apple
       // ProRAW, Google HDR+, etc.) that have already been denoised
       // on-device; the model will run but adds little; Canon/Nikon
-      // sRAW is the exception; warn once per job and proceed
-      if(!j->linear_warned)
+      // sRAW is the exception; warn once per job and proceed.
+      // 4BAYER (CYGM/RGBE) piggybacks on LINEAR class but isn't a
+      // computational raw — skip the misleading toast
+      if(!j->linear_warned && !(flags & DT_IMAGE_4BAYER))
       {
         j->linear_warned = TRUE;
         dt_control_log(_("raw denoise: this image is already pre-demosaiced "
@@ -2720,8 +2722,10 @@ static gpointer _preview_thread_raw(gpointer data)
 
   // same caveat as the batch path: LINEAR is usually a computational
   // raw that's already been denoised on-device. warn once per imgid
-  // so picking a different patch doesn't re-toast
+  // so picking a different patch doesn't re-toast. 4BAYER piggybacks
+  // on LINEAR class but isn't computational — skip the toast for it
   if(cls == DT_RESTORE_SENSOR_CLASS_LINEAR
+     && !(img_meta.flags & DT_IMAGE_4BAYER)
      && d->preview_linear_warned_imgid != pd->imgid)
   {
     d->preview_linear_warned_imgid = pd->imgid;
