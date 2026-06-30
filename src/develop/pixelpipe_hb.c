@@ -1241,12 +1241,13 @@ static inline gboolean _piece_fast_blend(const dt_dev_pixelpipe_iop_t *piece,
                                          const dt_iop_module_t *module)
 {
   return dt_pipe_is_canvas(piece->pipe)
-      && darktable.pipe_cache
-      && module->dev
-      && module->dev->gui_attached
-      && module == module->dev->gui_module
-      && dt_dev_modulegroups_test_activated(darktable.develop)
-      && _transform_for_blend(module, piece);
+         && darktable.pipe_cache
+         && dt_iop_has_focus(module)
+         // IOP_FLAGS_NO_MASKS modules (retouch, spots) consume their drawn forms
+         // inside process(), so the cached output depends on shape geometry that
+         // the fast-blend hash ignores. Skip the fast path for them.
+         && !(module->flags() & IOP_FLAGS_NO_MASKS)
+         && _transform_for_blend(module, piece);
 }
 
 static inline float *_get_fast_blendcache(const size_t nfloats,
