@@ -1117,7 +1117,7 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
       }
       const size_t pix = (size_t)sr_raw * raw_w + sc_raw;
 
-      if(is_linear)
+      if(is_linear && mip_channels >= 3)
       {
         // float mipmaps are already in [0, 1]; uint16 needs un-prepare
         for(int c = 0; c < 3; c++)
@@ -1135,6 +1135,12 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
             ((float *)patched)[off] = cam[c];
           }
         }
+      }
+      else if(is_linear)
+      {
+        // 4BAYER (CYGM/RGBE) classified as LINEAR but has mip_channels==1.
+        // no canonical RGB→CYGM/RGBE mapping; leave the original mosaic
+        // pixel untouched (already in `patched` from the memcpy above)
       }
       else
       {
