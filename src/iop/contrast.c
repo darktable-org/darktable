@@ -18,35 +18,17 @@
 
 /*
 DOCUMENTATION
-This module performs advanced multi-scale contrast processing in scene-referred linear RGB space, 
-designed for wide-gamut workflows in any linear RGB working space.
+This module implements a scene-referred local contrast enhancement algorithm,
+designed to enhance local details while preserving edges and avoiding artifacts.
 
 It builds upon the original proof-of-concept algorithm proposed by WileCoyote:  
 https://discuss.pixls.us/t/experiments-with-a-scene-referred-local-contrast-module-proof-of-concept/55402
 
-The module automatically adapts to the native sensor resolution.
-A 36 MP sensor is used as reference. 
-The contrast scale and spatial edge protection parameters are normalized accordingly, 
-the default settings provide a coherent starting point regardless of resolution, from 6 MP to 60 MP.
+And then further explored and optimized by Christian Bouhon
+https://discuss.pixls.us/t/contrast-management-rgb-a-new-scene-referred-approach-poc/56004
 
-Architecture
-The module decomposes the image into five interdependent frequency scales using edge-aware spatial filtering (EIGF).
-Contrast is modeled through three complementary components:
-
-1. Global Contrast  
-    Adjusted via a Contrast Sensitivity Function (CSF) centered around middle gray (0.1845), approximating human visual response.
-    
-2. Multi-scale Local Contrast  
-    A harmonic five-layer frequency (micro to coarse), driven by a spatial blending parameter.  
-    Due to the nature of spatial decomposition, frequency bands are structurally interdependent.
-    
-3. Chromatic Contrast  
-    _Colorimetric Contrast_: Modulates luminance contrast based on the red/blue channel
-    difference, normalized by mean brightness. Space-agnostic — works in any linear RGB
-    working space.
-    _Colorful Contrast_: Enhances color separation between warm and cool tones while
-    preserving overall luminance. The green channel compensation is derived from the
-    pipe working profile luminance coefficients.
+Current status as implemented by Jandren:
+- Local contrast in log space based on the eigf surface blur filter.
 */
 
 
