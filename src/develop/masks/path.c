@@ -604,6 +604,17 @@ static void _path_points_fill_border_gaps(float *cmax,
                                           dt_masks_intbuf_t *fill_seg_indexes,
                                           const gboolean clockwise)
 {
+  // Degenerate geometry (e.g. a freshly-added node whose control points
+  // coincide with its corner) can leave a border or center point unset
+  // (DT_INVALID_COORDINATE == -FLT_MAX). Computing an arc through such a point
+  // yields an infinite radius and an arc length `l` that saturates to INT_MAX;
+  // 2*(l-1) then overflows to a negative reserve count, defeating the dynbuf
+  // growth check and driving the fill loop below into an unbounded
+  // out-of-bounds write. Bail out on such input.
+  if(bmin[0] == DT_INVALID_COORDINATE || bmax[0] == DT_INVALID_COORDINATE
+     || cmax[0] == DT_INVALID_COORDINATE)
+    return;
+
   // we want to find the start and end angles
   double a1 = angle_2d(bmin[0], bmin[1], cmax[0], cmax[1]);
   double a2 = angle_2d(bmax[0], bmax[1], cmax[0], cmax[1]);
@@ -625,12 +636,13 @@ static void _path_points_fill_border_gaps(float *cmax,
   const float r2 = dt_fast_hypotf(bmax[1] - cmax[1], bmax[0] - cmax[0]);
 
   // and the max length of the circle arc
-  int l = 0;
-  if(a2 > a1)
-    l = (a2 - a1) * fmaxf(r1, r2);
-  else
-    l = (a1 - a2) * fmaxf(r1, r2);
-  if(l < 2) return;
+  const float radius = fmaxf(r1, r2);
+  // a non-finite radius would make `arc_len` saturate to INT_MAX and overflow
+  // the `2*(l-1)` reserve count below; reject it defensively
+  if(!isfinite(radius)) return;
+  const double arc_len = (a2 > a1 ? (a2 - a1) : (a1 - a2)) * (double)radius;
+  if(arc_len < 2.0 || arc_len > (double)(INT_MAX / 4)) return;
+  const int l = (int)arc_len;
 
   // and now we add the points
   const float incra = (a2 - a1) / l;
