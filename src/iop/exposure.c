@@ -1203,10 +1203,7 @@ void gui_init(dt_iop_module_t *self)
     (self, "compensate_hilite_pres");
   gtk_widget_set_tooltip_text(g->compensate_hilite_preserv,
                               _("remove the camera's hidden exposure bias in\n"
-                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
-                                "\n"
-                                "when enabled on an image with nonzero bias, tone mapping\n"
-                                "(e.g. sigmoid) is required to avoid blown-out highlights."));
+                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));
