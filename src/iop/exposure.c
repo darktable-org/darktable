@@ -585,11 +585,9 @@ static float _get_highlight_bias(const dt_iop_module_t *self)
 {
   float bias = 0.0f;
 
-  // Nikon: Exif.Nikon3.Colorspace==4  --> +2 EV
-  // Fuji:  Exif.Fujifilm.DevelopmentDynamicRange
-  //             100 --> no comp
-  //             200 --> +1 EV
-  //             400 --> +2 EV
+  // exif_highlight_preservation holds the exposure (EV) that the camera withheld
+  // in an HDR / dynamic-range / HLG tone mode; so we compensate for it in exposure.
+  // Per-camera detection happens in _check_highlight_preservation() in common/exif.cc.
 
   if(self->dev && self->dev->image_storage.exif_highlight_preservation > 0.0f)
     bias = self->dev->image_storage.exif_highlight_preservation;
