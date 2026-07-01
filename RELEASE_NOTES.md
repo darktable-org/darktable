@@ -78,6 +78,18 @@ changes (where available).
 - Fixed a bug preventing the tether mode to connect when using a non
   English UI.
 
+- Fixed an out-of-bounds read in wavelet decomposition that could
+  occasionally crash darktable when generating previews.
+
+- Fixed an out-of-bounds write in path masks that could lead to
+  crashes when two nodes overlapped exactly.
+
+- Fixed a bug in the retouch module that would prevent cache
+  invalidation after shape changes when blending is active.
+
+- Fixed an out-of-bounds read in the code responsible for raster
+  mask caching.
+
 ## Lua
 
 ### API Version
