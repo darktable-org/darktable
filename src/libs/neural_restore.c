@@ -994,7 +994,7 @@ static void _import_image(const char *filename,
   char *dir = g_path_get_dirname(filename);
   const dt_filmid_t filmid = dt_film_new(&film, dir);
   g_free(dir);
-  const dt_imgid_t newid = dt_image_import(filmid, filename, FALSE, FALSE);
+  const dt_imgid_t newid = dt_image_import(filmid, filename, TRUE, FALSE);
   dt_film_cleanup(&film);
 
   if(dt_is_valid_imgid(newid))
