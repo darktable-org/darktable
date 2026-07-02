@@ -307,14 +307,16 @@ void dt_history_snapshot_undo_pop(gpointer user_data,
   {
     dt_undo_lt_history_t *hist = (dt_undo_lt_history_t *)data;
 
+    /* Prevent the develop-history recording callbacks from creating
+     * additional DT_UNDO_HISTORY entries when restoring the DB/XMP
+     * snapshot. This keeps the undo/redo stacks coherent so redo
+     * remains available after undo. */
+    dt_undo_disable_next(darktable.undo);
+
     if(action == DT_ACTION_UNDO)
-    {
       _history_snapshot_restore(hist->imgid, hist->before, hist->before_history_end);
-    }
     else
-    {
       _history_snapshot_restore(hist->imgid, hist->after, hist->after_history_end);
-    }
 
     *imgs = g_list_append(*imgs, GINT_TO_POINTER(hist->imgid));
   }

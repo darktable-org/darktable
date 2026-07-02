@@ -1342,11 +1342,16 @@ void gui_reset(dt_lib_module_t *self)
           (_("delete image's history?"), "",
            _("do you really want to clear history of current image?")))
   {
+    /* Record a lighttable-history undo so the user can undo a full
+     * history reset (this writes DB/XMP and must be revertible).
+     * Also record a develop (in-memory) history snapshot inside the
+     * same undo group so undo restores both DB/XMP and the current
+     * develop state (including the auto-applied defaults). */
+    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
     dt_dev_undo_start_record(darktable.develop);
-
-    dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
-
+    dt_history_delete(imgid, TRUE);
     dt_dev_undo_end_record(darktable.develop);
+    dt_undo_end_group(darktable.undo);
 
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 
