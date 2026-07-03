@@ -591,6 +591,12 @@ void expose(dt_view_t *self,
         port->pipe->backbuf                                // do we have an image?
      && port->pipe->output_imgid == dev->image_storage.id; // same image?
 
+  const gboolean use_loading_screen =
+#ifdef _WIN32
+    TRUE;
+#else
+    dt_conf_get_bool("darkroom/ui/loading_screen");
+#endif
   if(expose_full)
   {
     // draw image
@@ -601,7 +607,7 @@ void expose(dt_view_t *self,
       cairo_surface_destroy(darktable.gui->surface);
       darktable.gui->surface = NULL;
     }
-    if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
+    if(!use_loading_screen)
     {
       // cache the rendered bitmap for use while loading the next image
       darktable.gui->surface = cairo_get_target(cri);
@@ -687,14 +693,14 @@ void expose(dt_view_t *self,
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      if(dt_conf_get_bool("darkroom/ui/loading_screen"))
+      if(use_loading_screen)
         load_txt = g_strdup_printf(C_("darkroom", "loading `%s' ..."),
                                    dev->image_storage.filename);
       else
         load_txt = g_strdup(dev->image_storage.filename);
     }
 
-    if(dt_conf_get_bool("darkroom/ui/loading_screen"))
+    if(use_loading_screen)
     {
       dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
       cairo_paint(cri);
