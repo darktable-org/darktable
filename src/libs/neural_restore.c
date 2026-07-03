@@ -1697,6 +1697,19 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
                           : _("output: LinearRaw DNG"));
   }
 
+  // 4BAYER preview shows no denoise effect (no RGB→CFA mapping)
+  if(d->task == NEURAL_TASK_RAW_DENOISE && dt_is_valid_imgid(imgid))
+  {
+    const dt_image_t *cached = dt_image_cache_get(imgid, 'r');
+    if(cached)
+    {
+      if(cached->flags & DT_IMAGE_4BAYER)
+        snprintf(d->warning_text, sizeof(d->warning_text), "%s",
+                 _("preview unavailable – process to save result"));
+      dt_image_cache_read_release(cached);
+    }
+  }
+
   // gamut note (informational, not a warning): reuse the same info
   // line as the upscale size display. for denoise, shows standalone
   // in info_text_left; for upscale, appended to the size info. not
