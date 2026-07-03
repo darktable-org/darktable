@@ -90,6 +90,9 @@ changes (where available).
 - Fixed an out-of-bounds read in the code responsible for raster
   mask caching.
 
+- Enforce darktable loading screen on windowes system to avoid
+  darkroom refreshing issues.
+
 ## Lua
 
 ### API Version
