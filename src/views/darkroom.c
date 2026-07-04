@@ -4217,12 +4217,14 @@ gboolean gesture_pan(dt_view_t *self,
   (void)state;
   if(!dev) return FALSE;
 
-  // Mask editing (brush etc.) uses scroll for tool parameters.
+  // If pointer is over an active mask, let scroll go to the mask handler;
+  // otherwise allow two-finger scroll to pan the image.
   if(dev->form_visible
-     && !darktable.develop->darkroom_skip_mouse_events)
+     && !darktable.develop->darkroom_skip_mouse_events
+     && dt_masks_scroll_over_mask())
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pan] ignored: mask form active");
+             "[darkroom pan] ignored: pointer over active mask");
     return FALSE;
   }
 
