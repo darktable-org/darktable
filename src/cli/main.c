@@ -95,6 +95,8 @@ fprintf(stderr, "darktable %s\n"
                 "                          multiple times instead of input file\n"
                 "   --library <path> read the history stack from library database\n"
                 "                    instead of XMP sidecar files\n"
+                "                    using ':memory:' for an empty in-memory library\n"
+                "                    is useless for darktable cli export\n"
                 "   --icc-type <type> specify icc type, default to NONE\n"
                 "                     use --help icc-type for list of supported types\n"
                 "   --icc-file <file> specify icc filename, default to NONE\n"
@@ -384,6 +386,13 @@ int main(int argc, char *arg[])
       {
         k++;
         library = arg[k];
+        if(!strcmp(library, ":memory:"))
+        {
+          fprintf(stderr, _("empty in-memory library is useless for darktable cli export\n"));
+          usage(arg[0]);
+          exit(1);
+        }
+
       }
       else if(!strcmp(arg[k], "--icc-type") && argc > k + 1)
       {
