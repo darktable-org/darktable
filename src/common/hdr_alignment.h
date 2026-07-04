@@ -101,9 +101,14 @@ gboolean dt_hdr_alignment_set_reference(dt_hdr_align_t *a,
  *
  *  - On success: writes the warped mosaic into `out` (caller-allocated,
  *    width*height floats) and returns TRUE.
- *  - On failure / no reliable warp: copies `mosaic` into `out` unchanged and
- *    returns FALSE, so the caller can accumulate the unaligned frame (never
- *    worse than the current, alignment-free behavior).
+ *  - Otherwise returns FALSE and the caller must accumulate the original
+ *    `mosaic` (never worse than the current, alignment-free behavior).  `out` is
+ *    NOT guaranteed to be populated when FALSE is returned: for a reliable but
+ *    sub-pixel (static) frame it is deliberately left untouched to skip a
+ *    redundant full-frame copy, and on some early rejections it holds a copy of
+ *    `mosaic`.  Callers must therefore read `mosaic`, not `out`, whenever FALSE
+ *    is returned.  `info->status` (if non-NULL) still carries the alignment
+ *    decision (OK / IDENTITY / DISABLED) regardless of the return value.
  *
  * `out` may not alias `mosaic`.  `info` may be NULL. */
 gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,

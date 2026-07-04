@@ -328,16 +328,27 @@ a plain copy to avoid needlessly resampling a frame that did not move.
 |-------|------|-----------|
 | `_build_proxy`, `_proxy_to_u8`, `_percentile_bounds` | full-res read | `DT_OMP_FOR` (C) |
 | SIFT detect/describe + RANSAC | seconds (proxy res) | OpenCV internal |
-| FLANN kNN (two directions) | proxy res | `omp parallel sections` (two sections) |
+| FLANN kNN (two directions) | proxy res | `omp parallel sections num_threads(2)` |
 | `_warp_mosaic_cfa` | full-res, the hotspot | `DT_OMP_FOR collapse(2)` (C) |
 
 The SIFT detect/describe and RANSAC steps run on OpenCV's own internal threading.
 The two FLANN match directions (image→template and template→image, for the
 mutual-NN test) are independent, so darktable runs them concurrently in an `omp
-parallel sections` block, each building its own matcher. darktable's `DT_OMP_FOR`
-covers the per-pixel C hot paths, the heaviest of which is the full-resolution CFA
-warp. The `_percentile_bounds` stretch used by `_proxy_to_u8` is two O(n) parallel
-reductions (min/max, then a histogram array-reduction) rather than a serial sort.
+parallel sections` block capped to two threads. Their KD-trees are **not** rebuilt
+symmetrically per frame: the reference (template) index is trained **once** in
+`dt_hdr_cv_features_create()` and cached on `RefFeatures`, so the image→template
+direction reuses it and only the template→image direction builds a fresh index
+over the moving descriptors. darktable's `DT_OMP_FOR` covers the per-pixel C hot
+paths, the heaviest of which is the full-resolution CFA warp. The
+`_percentile_bounds` stretch used by `_proxy_to_u8` is two O(n) parallel reductions
+(min/max, then a histogram array-reduction) rather than a serial sort.
+
+A per-frame that does not move (reliable warp, sub-pixel corner motion) is
+accumulated straight from the caller's source buffer — `align_frame` returns
+FALSE and skips the full-resolution copy into the scratch buffer. The
+auto-reference probe builds its proxy directly at the probe resolution
+(`AUTO_REFERENCE_PROBE_DIM`) instead of the full `DT_HDR_PROXY_SCALE` proxy, since
+SIFT there runs at the smaller size anyway.
 
 ---
 

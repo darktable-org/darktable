@@ -819,14 +819,23 @@ int dt_hdr_alignment_probe_features(const float *mosaic, int width, int height)
   return 0;
 #else
   if(!mosaic) return 0;
-  // The probe ranks frames before any state exists, so it uses the default
-  // proxy scale / gamma (the ranking only needs to be self-consistent).
+  // The probe ranks frames before any state exists, so it uses the default gamma
+  // (the ranking only needs to be self-consistent).  SIFT runs at the probe
+  // resolution (longest side <= AUTO_REFERENCE_PROBE_DIM), so build the proxy
+  // directly at that scale instead of building the full DT_HDR_PROXY_SCALE proxy
+  // and letting the backend downscale it -- for a large raw that avoids building
+  // (and normalizing) a proxy several times bigger than the probe ever uses.
+  const int max_side = (width > height) ? width : height;
+  double probe_scale = (double)DT_HDR_AUTO_REFERENCE_PROBE_DIM / (double)(max_side > 0 ? max_side : 1);
+  if(probe_scale > DT_HDR_PROXY_SCALE) probe_scale = DT_HDR_PROXY_SCALE;
   int pw = 0, ph = 0;
-  float *proxy = _build_proxy(mosaic, width, height, DT_HDR_PROXY_SCALE, &pw, &ph);
+  float *proxy = _build_proxy(mosaic, width, height, probe_scale, &pw, &ph);
   if(!proxy) return 0;
   uint8_t *u8 = _proxy_to_u8(proxy, pw, ph, DT_HDR_PROXY_FEATURE_GAMMA);
   dt_free_align(proxy);
   if(!u8) return 0;
+  // Pass the probe dim through as a safety cap; the proxy is already at or below
+  // it, so this normally does not resize again.
   const int n = dt_hdr_cv_count_features(u8, pw, ph, DT_HDR_AUTO_REFERENCE_PROBE_DIM);
   dt_free_align(u8);
   return n;
@@ -894,9 +903,9 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
     return FALSE;
   }
   uint8_t *mov_u8 = _proxy_to_u8(mov_f, pw, ph, a->params.feature_gamma);
+  dt_free_align(mov_f);  // float proxy is only an intermediate for the u8 proxy
   if(!mov_u8)
   {
-    dt_free_align(mov_f);
     memcpy(out, mosaic, (size_t)width * height * sizeof(float));
     return FALSE;
   }
@@ -918,7 +927,6 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
   // (the per-stage SIFT / match / inlier lines come from the backend; the
   //  structured metrics block is emitted below.)
 
-  dt_free_align(mov_f);
   dt_free_align(mov_u8);
 
   // --- Stage 2: choose and apply the warp ----------------------------------
@@ -967,10 +975,13 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
 
   if(status == DT_HDR_ALIGN_IDENTITY || corner_motion < DT_HDR_NOOP_MAX_CORNER_PX)
   {
-    // No reliable warp, or no measurable motion: pass the frame through without
-    // resampling (avoids softening a static frame).
-    memcpy(out, mosaic, (size_t)width * height * sizeof(float));
-    return status != DT_HDR_ALIGN_IDENTITY;
+    // No reliable warp, or motion below the resample threshold: the caller's
+    // original `mosaic` is already the correct data to accumulate (an identity /
+    // sub-pixel warp we deliberately do not resample -- see DT_HDR_NOOP_MAX_...).
+    // Return FALSE so the caller uses its own source buffer and skip the
+    // full-frame copy into `out` (a static frame is otherwise a pure ~w*h*4-byte
+    // memcpy per frame).  `info->status` still reports the OK/IDENTITY decision.
+    return FALSE;
   }
 
   _warp_mosaic_cfa(mosaic, out, width, height, filters, xtrans, H_final);

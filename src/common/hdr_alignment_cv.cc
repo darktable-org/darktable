@@ -400,6 +400,15 @@ void detectDescribe(const uint8_t *proxy, int width, int height, int balance_tar
   gatherKpDesc(kp, des, spatialBalanceKeep(kp, width, height, balance_target));
 }
 
+// Build a FLANN KD-tree matcher (5 randomized trees, 50 checks) -- the same
+// parameters used for the per-frame matching.  Factored out so the reference
+// index and the per-frame moving index are built identically.
+cv::Ptr<cv::FlannBasedMatcher> makeFlann()
+{
+  return cv::makePtr<cv::FlannBasedMatcher>(cv::makePtr<cv::flann::KDTreeIndexParams>(5),
+                                            cv::makePtr<cv::flann::SearchParams>(50));
+}
+
 // Cached reference features: detected once per merge (dt_hdr_cv_features_create)
 // and matched against by every moving frame, so the reference SIFT pass is not
 // repeated for all N-1 moving frames.  Holds the CLAHE'd reference image too, for
@@ -411,6 +420,9 @@ struct RefFeatures
   cv::Mat des;                   // matching descriptor rows
   int kp_raw = 0;                // detections before the scale floor
   int kp_floor = 0;              // kept after the scale floor (balance input)
+  // FLANN index over `des`, trained once.  Every moving frame's image->template
+  // match reuses this instead of rebuilding the reference KD-tree N-1 times.
+  cv::Ptr<cv::FlannBasedMatcher> matcher;
 };
 
 } // namespace
@@ -426,6 +438,13 @@ void *dt_hdr_cv_features_create(const uint8_t *proxy, int width, int height,
     RefFeatures *f = new RefFeatures();
     detectDescribe(proxy, width, height, balance_target, clahe_clip,
                    f->kp, f->des, f->image, f->kp_raw, f->kp_floor);
+    // Train the reference-side FLANN index once; every moving frame reuses it.
+    if(!f->des.empty())
+    {
+      f->matcher = makeFlann();
+      f->matcher->add(std::vector<cv::Mat>{ f->des });
+      f->matcher->train();
+    }
     return f;
   }
   catch(const std::exception &e)
@@ -493,47 +512,57 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
 
     // FLANN kNN match with Lowe's ratio test, in both directions, then keep
     // only the mutually-best correspondences (FEATURE_REQUIRE_MUTUAL_CONSISTENCY).
-    // The two directions are independent, so they run in parallel sections; each
-    // builds its own matcher (FlannBasedMatcher caches per-call train index state).
-    // query = moving image (des_i), train = template (des_t): yields
-    // image->template matches, i.e. queryIdx in image, trainIdx in template
-    // (the Python convention).
+    //   it (image->template): query = moving (des_i), train = the cached
+    //      reference index -> queryIdx in image, trainIdx in template (the Python
+    //      convention).  Reuses ref->matcher, so the reference KD-tree is built
+    //      once per merge, not once per moving frame.
+    //   ti (template->image): query = reference (des_t), train = a fresh index
+    //      over the moving descriptors (rebuilt every frame, unavoidable).
+    // The two directions are independent, so they run in two parallel sections;
+    // the team is capped to 2 threads (only two sections do work).
     std::vector<std::vector<cv::DMatch>> knn_it, knn_ti;
     bool match_failed = false;
     std::string match_err;
-    auto knn = [&](const cv::Mat &q, const cv::Mat &train,
-                   std::vector<std::vector<cv::DMatch>> &out)
+    auto capture_err = [&](const cv::Exception &e)
     {
-      try
-      {
-        cv::FlannBasedMatcher matcher(cv::makePtr<cv::flann::KDTreeIndexParams>(5),
-                                      cv::makePtr<cv::flann::SearchParams>(50));
-        matcher.knnMatch(q, train, out, 2);
-      }
-      catch(const cv::Exception &e)
-      {
 #ifdef _OPENMP
 #pragma omp critical(hdr_match_err)
 #endif
-        {
-          match_failed = true;
-          match_err = e.what();
-        }
+      {
+        match_failed = true;
+        match_err = e.what();
       }
     };
 
 #ifdef _OPENMP
-#pragma omp parallel sections
+#pragma omp parallel sections num_threads(2)
 #endif
     {
 #ifdef _OPENMP
 #pragma omp section
 #endif
-      knn(des_i, des_t, knn_it);
+      {
+        try
+        {
+          // Reuse the trained reference index; fall back to a fresh one only if
+          // the cache is somehow absent (defensive -- des_t is non-empty here).
+          if(ref->matcher)
+            ref->matcher->knnMatch(des_i, knn_it, 2);
+          else
+            makeFlann()->knnMatch(des_i, des_t, knn_it, 2);
+        }
+        catch(const cv::Exception &e) { capture_err(e); }
+      }
 #ifdef _OPENMP
 #pragma omp section
 #endif
-      knn(des_t, des_i, knn_ti);
+      {
+        try
+        {
+          makeFlann()->knnMatch(des_t, des_i, knn_ti, 2);
+        }
+        catch(const cv::Exception &e) { capture_err(e); }
+      }
     }
     if(match_failed)
     {
