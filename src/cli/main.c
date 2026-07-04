@@ -575,6 +575,9 @@ int main(int argc, char *arg[])
     exit(1);
   }
 
+  // When --library was provided, use the DB history; otherwise keep XMP override mode.
+  darktable.prefer_library_history = (library != NULL);
+
   GList *id_list = NULL;
 
   for(GList *l = inputs; l != NULL; l=g_list_next(l))

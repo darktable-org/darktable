@@ -486,6 +486,9 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   gboolean pipe_cache;
+  // Keep database history for known images rather than replacing it from XMP.
+  // Set by darktable-cli with explicit --library <db>; GUI and CLI use XMP by default.
+  gboolean prefer_library_history;
   int gui_running;		// atomic, access with g_atomic_int_*()
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;
