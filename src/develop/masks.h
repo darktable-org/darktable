@@ -603,6 +603,10 @@ gboolean dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
                                         const float y,
                                         const gboolean up,
                                         const uint32_t state);
+// Return TRUE if scrolling over the center view should adjust the visible
+// mask (size/border/opacity) instead of zoom/pan. Returns FALSE while drawing
+// a path, since path creation has no scroll-adjustable parameter.
+gboolean dt_masks_scroll_over_mask(void);
 void dt_masks_events_post_expose(const struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
