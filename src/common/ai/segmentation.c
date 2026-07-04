@@ -28,8 +28,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-// SAM encoder expects 1024x1024 input
+// SAM2 encoder expects 1024x1024 input; SAM3 uses 1008x1008
 #define SAM_INPUT_SIZE 1024
+#define SAM3_INPUT_SIZE 1008
+#define SAM3_MASK_SIZE 288
 
 // ImageNet normalization constants
 static const float IMG_MEAN[3] = {123.675f, 116.28f, 103.53f};
@@ -49,6 +51,7 @@ static const float IMG_STD[3] = {58.395f, 57.12f, 57.375f};
 typedef enum dt_seg_model_type_t
 {
   DT_SEG_MODEL_SAM,     // SAM/SAM2: multi-mask + IoU + low_res refinement
+  DT_SEG_MODEL_SAM3,    // SAM3: SAM-style decoder with native 1008px input
   DT_SEG_MODEL_SEGNEXT  // SegNext: single mask, full-res prev_mask refinement
 } dt_seg_model_type_t;
 
@@ -78,7 +81,7 @@ struct dt_seg_context_t
   size_t enc_sizes[MAX_ENCODER_OUTPUTS];
 
   // previous mask for iterative refinement
-  // SAM: low-res [1][1][prev_mask_dim][prev_mask_dim] (typically 256x256)
+  // SAM: low-res [1][1][prev_mask_dim][prev_mask_dim]
   // SegNext: full-res [1][1][prev_mask_dim][prev_mask_dim] (typically 1024x1024)
   float *prev_mask;
   int prev_mask_dim;
@@ -87,7 +90,8 @@ struct dt_seg_context_t
   // image dimensions that were encoded
   int encoded_width;
   int encoded_height;
-  float scale; // SAM_INPUT_SIZE / max(w, h)
+  int input_size;
+  float scale; // input_size / max(w, h)
   gboolean image_encoded;
 
   // RGB at encoded resolution, used as JBU guide when upsampling
@@ -100,19 +104,19 @@ struct dt_seg_context_t
 
 /* --- preprocessing --- */
 
-// resize RGB image so longest side = SAM_INPUT_SIZE, pad with zeros,
+// resize RGB image so longest side = target, pad with zeros,
 // convert HWC -> CHW.  When normalize=TRUE, applies ImageNet mean/std
 // (SAM models).  When FALSE, scales to [0,1] only (SegNext bakes
 // normalization into the ONNX encoder graph).
-// output: float buffer [1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE]
+// output: float buffer [1, 3, target, target]
 static float *
 _preprocess_image(const uint8_t *rgb_data,
                   const int width,
                   const int height,
                   const gboolean normalize,
+                  const int target,
                   float *out_scale)
 {
-  const int target = SAM_INPUT_SIZE;
   const float scale = (float)target / (float)(width > height ? width : height);
   const int new_w = MIN((int)(width * scale + 0.5f), target);
   const int new_h = MIN((int)(height * scale + 0.5f), target);
@@ -432,6 +436,8 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
 
   if(strcmp(arch, "sam2") == 0)
     ctx->model_type = DT_SEG_MODEL_SAM;
+  else if(strcmp(arch, "sam3") == 0)
+    ctx->model_type = DT_SEG_MODEL_SAM3;
   else if(strcmp(arch, "segnext") == 0)
     ctx->model_type = DT_SEG_MODEL_SEGNEXT;
   else
@@ -443,16 +449,22 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
-  // SAM requires external ImageNet normalization; SegNext bakes it into the encoder
-  ctx->normalize = (ctx->model_type == DT_SEG_MODEL_SAM);
+  const gboolean is_sam_model = ctx->model_type == DT_SEG_MODEL_SAM
+                                || ctx->model_type == DT_SEG_MODEL_SAM3;
+  ctx->input_size = ctx->model_type == DT_SEG_MODEL_SAM3
+                    ? SAM3_INPUT_SIZE
+                    : SAM_INPUT_SIZE;
+
+  // SAM models require external ImageNet normalization; SegNext bakes it into the encoder
+  ctx->normalize = is_sam_model;
 
   // query decoder mask output shape: [1, N, H, W] (SAM) or [1, 1, H, W] (SegNext)
   int64_t dec_out_shape[MAX_TENSOR_DIMS];
   const int dec_out_ndim = dt_ai_get_output_shape(decoder, 0, dec_out_shape, MAX_TENSOR_DIMS);
 
-  if(ctx->model_type == DT_SEG_MODEL_SAM)
+  if(is_sam_model)
   {
-    // SAM path
+    // SAM/SAM3 path
     ctx->num_masks = (dec_out_ndim >= 4 && dec_out_shape[1] > 1) ? (int)dec_out_shape[1] : 0;
 
     if(ctx->num_masks == 0)
@@ -517,20 +529,22 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
                ctx->dec_mask_h, ctx->dec_mask_w, ctx->num_masks);
     }
 
-    // if dims are still dynamic after override, fall back to SAM_INPUT_SIZE,
+    // if dims are still dynamic after override, fall back to input_size,
     // the backend uses ORT-allocated outputs for dynamic shapes and reports
     // actual dims after inference via the shape array
     if(ctx->dec_mask_h <= 0 || ctx->dec_mask_w <= 0)
     {
       dt_print(DT_DEBUG_AI,
                "[segmentation] using fallback mask dims %dx%d (runtime-resolved)",
-               SAM_INPUT_SIZE, SAM_INPUT_SIZE);
-      ctx->dec_mask_h = SAM_INPUT_SIZE;
-      ctx->dec_mask_w = SAM_INPUT_SIZE;
+               ctx->input_size, ctx->input_size);
+      ctx->dec_mask_h = ctx->input_size;
+      ctx->dec_mask_w = ctx->input_size;
     }
 
     // query low_res mask spatial dimensions from decoder output 2
-    ctx->prev_mask_dim = 256; // default
+    ctx->prev_mask_dim = ctx->model_type == DT_SEG_MODEL_SAM3
+                         ? SAM3_MASK_SIZE
+                         : 256;
     {
       int64_t lr_shape[MAX_TENSOR_DIMS];
       const int lr_ndim = dt_ai_get_output_shape(decoder, 2, lr_shape, MAX_TENSOR_DIMS);
@@ -559,7 +573,10 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
-  const char *type_name = (ctx->model_type == DT_SEG_MODEL_SAM) ? "SAM" : "SegNext";
+  const char *type_name = ctx->model_type == DT_SEG_MODEL_SAM3
+                          ? "SAM3"
+                          : (ctx->model_type == DT_SEG_MODEL_SAM
+                             ? "SAM" : "SegNext");
   dt_print(DT_DEBUG_AI,
            "[segmentation] model loaded: %s [%s] (enc_outputs=%d, num_masks=%d, "
            "dec_dims=%dx%d, prev_mask_dim=%d)",
@@ -595,7 +612,8 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
 
   dt_print(DT_DEBUG_AI, "[segmentation] warming up decoder...");
   const double t0 = dt_get_wtime();
-  const gboolean is_sam = (ctx->model_type == DT_SEG_MODEL_SAM);
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM
+                          || ctx->model_type == DT_SEG_MODEL_SAM3;
   const int pm_dim = ctx->prev_mask_dim;
   const int nm = ctx->num_masks;
   const int dec_h = ctx->dec_mask_h;
@@ -730,12 +748,13 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
     return TRUE;
 
   float scale;
-  float *preprocessed = _preprocess_image(rgb_data, width, height, ctx->normalize, &scale);
+  float *preprocessed = _preprocess_image(rgb_data, width, height,
+                                          ctx->normalize, ctx->input_size, &scale);
   if(!preprocessed)
     return FALSE;
 
   // run encoder
-  int64_t input_shape[4] = {1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE};
+  int64_t input_shape[4] = {1, 3, ctx->input_size, ctx->input_size};
   dt_ai_tensor_t input
     = { .data = preprocessed,
        .type  = DT_AI_FLOAT,
@@ -865,7 +884,8 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   if(!ctx || !ctx->image_encoded || !points || n_points <= 0)
     return NULL;
 
-  const gboolean is_sam = (ctx->model_type == DT_SEG_MODEL_SAM);
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM
+                          || ctx->model_type == DT_SEG_MODEL_SAM3;
 
   // build point prompts
   // SAM ONNX requires a padding point (0,0) with label -1 appended
@@ -1093,7 +1113,7 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
     return NULL;
   }
 
-  const float mask_scale = ctx->scale * (float)dec_h / (float)SAM_INPUT_SIZE;
+  const float mask_scale = ctx->scale * (float)dec_h / (float)ctx->input_size;
   _crop_resize_mask(masks + (size_t)best * per_mask,
                     dec_w, dec_h,
                     result, final_w, final_h,
@@ -1122,7 +1142,8 @@ gboolean dt_seg_is_encoded(dt_seg_context_t *ctx)
 
 gboolean dt_seg_supports_box(dt_seg_context_t *ctx)
 {
-  return ctx ? (ctx->model_type == DT_SEG_MODEL_SAM) : FALSE;
+  return ctx ? (ctx->model_type == DT_SEG_MODEL_SAM
+                || ctx->model_type == DT_SEG_MODEL_SAM3) : FALSE;
 }
 
 void dt_seg_reset_prev_mask(dt_seg_context_t *ctx)
