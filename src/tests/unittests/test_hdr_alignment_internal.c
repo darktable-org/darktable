@@ -132,6 +132,47 @@ static void test_bayer_sampler_bit_exact(void **state)
       }
   free(m);
 }
+
+// The general (X-Trans-capable) same-color sampler must never mix colours: with
+// a mosaic where only one colour's photosites are non-zero, sampling that colour
+// anywhere in-bounds (including the borders that exercise the outward-search
+// fallback) returns that value, and sampling a different colour returns zero.
+// This is the invariant that keeps a warped mosaic a valid CFA in the reference
+// frame's phase.
+static void test_xtrans_sampler_same_color_only(void **state)
+{
+  (void)state;
+  const int W = 48, H = 42;
+  // A valid X-Trans 6x6 layout (8 R, 20 G, 8 B per tile).
+  static const uint8_t xtrans[6][6] = {
+    { 1, 1, 0, 1, 1, 2 },
+    { 0, 2, 1, 2, 0, 1 },
+    { 1, 1, 2, 1, 1, 0 },
+    { 1, 1, 0, 1, 1, 2 },
+    { 2, 0, 1, 0, 2, 1 },
+    { 1, 1, 2, 1, 1, 0 },
+  };
+  float *m = malloc(sizeof(float) * W * H);
+  assert_non_null(m);
+
+  // Only green (colour 1) photosites carry signal; R and B are zero.
+  const int target = 1;
+  for(int y = 0; y < H; y++)
+    for(int x = 0; x < W; x++)
+      m[y * W + x] = (_fcol(y, x, 9u, xtrans) == target) ? 1.0f : 0.0f;
+
+  for(double sy = -1.0; sy <= H + 1.0; sy += 0.5)
+    for(double sx = -1.0; sx <= W + 1.0; sx += 0.5)
+    {
+      // sampling green sees only green (all 1.0) -> exactly 1.0
+      const float g = _sample_cfa_same_color(m, W, H, 9u, xtrans, target, sx, sy);
+      assert_true(g > 0.999f && g < 1.001f);
+      // sampling red sees only red photosites, all of which are 0.0
+      const float r = _sample_cfa_same_color(m, W, H, 9u, xtrans, 0, sx, sy);
+      assert_true(r >= 0.0f && r < 0.001f);
+    }
+  free(m);
+}
 #endif // HAVE_OPENCV
 
 int main(void)
@@ -142,6 +183,7 @@ int main(void)
     cmocka_unit_test(test_proxy_to_u8_monotone),
 #ifdef HAVE_OPENCV
     cmocka_unit_test(test_bayer_sampler_bit_exact),
+    cmocka_unit_test(test_xtrans_sampler_same_color_only),
 #endif
   };
   return cmocka_run_group_tests(tests, NULL, NULL);

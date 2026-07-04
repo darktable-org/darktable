@@ -13,6 +13,7 @@ lighttable selected-images menu
                    └─ _control_merge_hdr_process()   control_jobs.c:468   (per-image callback)
             └─ normalize accumulator by white level  control_jobs.c:678
             └─ dt_imageio_dng_write_float()          → "<name>-hdr.dng"
+                                                        (or "<name>-hdr_NN.dng" if it exists)
             └─ dt_image_import() + collection reload
 ```
 
@@ -120,9 +121,13 @@ weighted average — documented as an approximation.
 ### 2.3 Streaming reference model
 
 The merge processes frames one at a time and never holds all frames in memory.
-The alignment state therefore caches **only the reference proxy** (the reduced-res
-8-bit luma fed to SIFT) plus CFA metadata. Each non-reference frame is aligned
-against that cached proxy and accumulated immediately.
+The alignment state therefore caches the reference's **detected SIFT features**
+(keypoints + descriptors, plus the CLAHE'd 8-bit proxy for the optional debug
+visuals) and CFA metadata — not the raw proxy. `dt_hdr_alignment_set_reference()`
+runs SIFT on the reference **once**, and every non-reference frame matches its own
+descriptors against that cache (so the reference is detected once per merge, not
+N−1 times) and is accumulated immediately. Both float and 8-bit proxy buffers are
+freed after the reference features are built.
 
 **Auto-reference adaptation.** The Python preset picks the richest-feature frame as
 reference via a pre-pass (`--auto-reference`). darktable's streaming export does
@@ -220,11 +225,17 @@ flowchart TD
 
 ### 3.4 Stage 1 — feature initialization (`hdr_alignment_cv.cc`, OpenCV)
 
-Mirrors `estimate_initial_warp_feature_ransac()` for the HDR path:
+Mirrors `estimate_initial_warp_feature_ransac()` for the HDR path. The reference
+side of the pipeline (CLAHE → detect → describe → scale floor → spatial balance)
+runs **once** in `dt_hdr_cv_features_create()` (called from `set_reference`) and is
+cached; only the **moving** frame is detected per call in
+`dt_hdr_cv_feature_homography()`. So in the diagram below the "SIFT detect …
+balance" chain executes per frame only for the moving proxy — the reference
+keypoints/descriptors come straight from the cache:
 
 ```mermaid
 flowchart TD
-    A[R2 reference + moving<br/>display-gamma encoded] --> A2[CLAHE local-contrast<br/>optional, off by default]
+    A[moving R2 proxy<br/>display-gamma encoded<br/>+ cached reference features] --> A2[CLAHE local-contrast<br/>optional, off by default]
     A2 --> B[SIFT detect<br/>contrastThreshold 0.04]
     B --> C[scale floor: drop kp.size < 6px]
     C --> C2[spatial balance keypoints<br/>to 5000 each]
@@ -315,13 +326,18 @@ a plain copy to avoid needlessly resampling a frame that did not move.
 
 | Stage | Cost | Threading |
 |-------|------|-----------|
-| `_build_proxy`, `_proxy_to_u8` | full-res read | `DT_OMP_FOR` (C) |
-| SIFT + FLANN + RANSAC | seconds (proxy res) | OpenCV internal |
+| `_build_proxy`, `_proxy_to_u8`, `_percentile_bounds` | full-res read | `DT_OMP_FOR` (C) |
+| SIFT detect/describe + RANSAC | seconds (proxy res) | OpenCV internal |
+| FLANN kNN (two directions) | proxy res | `omp parallel sections` (two sections) |
 | `_warp_mosaic_cfa` | full-res, the hotspot | `DT_OMP_FOR collapse(2)` (C) |
 
-The SIFT/FLANN/RANSAC feature stage runs on OpenCV's own internal threading;
-darktable's OMP covers the per-pixel C hot paths, the heaviest of which is the
-full-resolution CFA warp.
+The SIFT detect/describe and RANSAC steps run on OpenCV's own internal threading.
+The two FLANN match directions (image→template and template→image, for the
+mutual-NN test) are independent, so darktable runs them concurrently in an `omp
+parallel sections` block, each building its own matcher. darktable's `DT_OMP_FOR`
+covers the per-pixel C hot paths, the heaviest of which is the full-resolution CFA
+warp. The `_percentile_bounds` stretch used by `_proxy_to_u8` is two O(n) parallel
+reductions (min/max, then a histogram array-reduction) rather than a serial sort.
 
 ---
 
@@ -348,19 +364,32 @@ The proposed resolution is a **narrow C-ABI seam**:
   proxy extraction, percentile normalization, warp matrix algebra, the CFA-aware
   warp, the reliability gate and the per-frame orchestration.
 - The primitives that genuinely need OpenCV are declared `extern "C"` in
-  `hdr_alignment.h` and implemented in `hdr_alignment_cv.cc`:
+  `hdr_alignment.h` and implemented in `hdr_alignment_cv.cc`. The reference is
+  detected once and cached behind an opaque handle, so the seam is four functions
+  rather than a single symmetric detect-both call:
 
   ```c
-  int    dt_hdr_cv_feature_homography(const uint8_t *tmpl, const uint8_t *img,
-                                      int w, int h, int balance_target,
-                                      double clahe_clip, double H[9],
+  // Detect + cache the reference frame's SIFT features (once per merge).
+  void  *dt_hdr_cv_features_create(const uint8_t *proxy, int width, int height,
+                                   int balance_target, double clahe_clip);
+  void   dt_hdr_cv_features_destroy(void *features);
+
+  // Match a moving proxy against the cached reference features -> homography.
+  int    dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
+                                      int width, int height, int balance_target,
+                                      double clahe_clip, const char *debug_dir,
+                                      int frame_index, double H[9],
                                       dt_hdr_cv_feature_stats_t *stats);
-  int    dt_hdr_cv_count_features(const uint8_t *luma, int w, int h, int probe_dim);
+
+  // Auto-reference probe: SIFT keypoint count on a low-res copy.
+  int    dt_hdr_cv_count_features(const uint8_t *luma, int width, int height, int probe_dim);
   ```
 
   All image data crosses the seam as plain pointers + dimensions; the homography
-  crosses as a `double[9]` (row-major). No OpenCV type appears in any `.c` or
-  public header.
+  crosses as a `double[9]` (row-major); the cached reference crosses as an opaque
+  `void *`. No OpenCV type appears in any `.c` or public header. `debug_dir` /
+  `frame_index` are owned by the per-merge caller, so no global debug state is
+  kept and concurrent merges stay independent.
 
 ```mermaid
 flowchart TD
@@ -372,11 +401,14 @@ flowchart TD
         P6 --> P7[CFA-aware same-color warp]
     end
     subgraph CC [hdr_alignment_cv.cc — OpenCV C++]
-        B1[SIFT detect+compute]
+        B0[(cached reference features<br/>detected once in set_reference)]
+        B1[SIFT detect+compute<br/>moving proxy only]
         B2[FLANN kNN + Lowe + mutual]
-        B3[findHomography RANSAC + affine fallback]
+        B3[findHomography RANSAC + affine fallback<br/>+ cluster→translation degrade]
     end
-    P3 -- "u8 proxies" --> B1
+    P3 -- "reference u8 proxy (once)" --> B0
+    P3 -- "moving u8 proxy" --> B1
+    B0 --> B2
     B1 --> B2 --> B3 -- "H, inliers" --> P3
 ```
 
@@ -385,10 +417,28 @@ flowchart TD
 ```c
 typedef struct dt_hdr_align_t dt_hdr_align_t;   // opaque alignment state
 
-dt_hdr_align_t *dt_hdr_alignment_new(void);
+// Runtime-tunable parameters, seeded from the compile-time defaults and
+// overridable per run from the user's preferences (see §5).
+typedef struct dt_hdr_align_params_t
+{
+  double proxy_scale;    // feature-proxy size as a fraction of full res
+  double feature_gamma;  // display-gamma applied to the 8-bit SIFT proxy (1.0 = off)
+  double clahe_clip;     // pre-SIFT CLAHE clip limit (0 = off)
+  int    sift_keypoints; // per-frame SIFT budget after spatial balancing
+  int    debug_images;   // write per-frame alignment debug visuals (0 = off)
+} dt_hdr_align_params_t;
+
+void dt_hdr_alignment_default_params(dt_hdr_align_params_t *p);
+
+// Create/destroy the per-merge state. `params` may be NULL (use defaults); the
+// values are clamped to sane ranges and copied. Registration always uses a
+// projective (homography) model with an affine fallback on weak support — there
+// is no motion-model argument.
+dt_hdr_align_t *dt_hdr_alignment_new(const dt_hdr_align_params_t *params);
 void            dt_hdr_alignment_free(dt_hdr_align_t *a);
 
-// Cache the reference frame: builds and stores the reduced-res luma proxy.
+// Cache the reference frame: builds the reduced-res 8-bit luma proxy and runs
+// SIFT on it once, storing the detected features (see §2.3).
 gboolean dt_hdr_alignment_set_reference(dt_hdr_align_t *a,
                                         const float *mosaic, int width, int height,
                                         uint32_t filters, const uint8_t (*xtrans)[6]);
@@ -402,6 +452,10 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
                                        int width, int height,
                                        uint32_t filters, const uint8_t (*xtrans)[6],
                                        dt_hdr_align_result_t *info);
+
+// Auto-reference pre-pass: SIFT keypoint count of a frame's proxy at the probe
+// resolution, used to pick the richest-feature frame as reference.
+int dt_hdr_alignment_probe_features(const float *mosaic, int width, int height);
 ```
 
 ### 4.4 Proxy → full-resolution homography rescale
@@ -428,12 +482,12 @@ H[2][0] /= sx ;     H[2][1] /= sy                    (perspective)
 the isotropic case (`sx = sy`) reduces to the same translation×k / perspective÷k
 scaling between resolution levels.
 
-### 4.5 Reliability gate (`_warp_sanity_check`)
+### 4.5 Reliability gate (`_warp_is_sane`)
 
 Applied in `hdr_alignment.c` before committing the feature-init warp:
 
-- **Reliable**: at least `FEATURE_HOMOGRAPHY_MIN_INLIERS` (50) RANSAC inliers.
-- **Sanity** (`_warp_sanity_check`): translation < 0.30 × image diagonal, and the
+- **Reliable**: at least `DT_HDR_FEATURE_MIN_INLIERS` (50) RANSAC inliers.
+- **Sanity** (`_warp_is_sane`): translation < 0.30 × image diagonal, and the
   upper-left 2×2 column-norm scale within [0.5, 2.0].
 - If either fails the frame falls back to **identity** (i.e. accumulate unaligned —
   never worse than today's behavior).
@@ -446,24 +500,42 @@ The patch to `_control_merge_hdr_process()` / `_control_merge_hdr_job_run()`
 (`src/control/jobs/control_jobs.c`) is additive and behavior-preserving:
 
 1. `dt_control_merge_hdr_t` gains `dt_hdr_align_t *align`, `gboolean
-   align_enabled`, and a `float *aligned_buf` scratch. (`first_imgid` was also
-   retyped `uint32_t → dt_imgid_t`, which it always semantically was.)
-2. `_control_merge_hdr_job_run()` reads the opt-in preference and, only under
-   `#ifdef HAVE_OPENCV`, creates the state:
+   align_enabled`, a `float *aligned_buf` scratch, and the auto-reference probe
+   fields (`probe_mode`, `probe_best_count`, `probe_best_imgid`). (`first_imgid`
+   was also retyped `uint32_t → dt_imgid_t`, which it always semantically was.)
+2. `_control_merge_hdr_job_run()` first calls `_control_merge_hdr_validate()` on
+   the selection, giving a friendly early failure on a non-raw / already-merged /
+   monochrome / mismatched-geometry selection before any decode. It then reads the
+   opt-in preferences and, only under `#ifdef HAVE_OPENCV`, creates the state,
+   seeding the runtime parameters from preferences:
    ```c
    #ifdef HAVE_OPENCV
      d.align_enabled = dt_conf_get_bool("plugins/lighttable/hdr_merge_auto_align");
-     if(d.align_enabled) d.align = dt_hdr_alignment_new(DT_HDR_WARP_HOMOGRAPHY);
+     if(d.align_enabled)
+     {
+       dt_hdr_align_params_t p;
+       dt_hdr_alignment_default_params(&p);
+       p.proxy_scale    = dt_conf_get_float("plugins/lighttable/hdr_merge_proxy_scale");
+       p.feature_gamma  = dt_conf_get_float("plugins/lighttable/hdr_merge_feature_gamma");
+       p.clahe_clip     = dt_conf_get_float("plugins/lighttable/hdr_merge_clahe_clip");
+       p.sift_keypoints = dt_conf_get_int  ("plugins/lighttable/hdr_merge_sift_keypoints");
+       p.debug_images   = dt_conf_get_bool ("plugins/lighttable/hdr_merge_debug_images");
+       d.align = dt_hdr_alignment_new(&p);
+     }
    #endif
    ```
-3. In `_control_merge_hdr_process()`, just before the accumulation loop, a single
-   `const float *in_buf` selects the source buffer:
+3. In `_control_merge_hdr_process()`, an authoritative per-frame guard re-checks
+   the *decoded* descriptor (`filters != 0`, single channel, `TYPE_UINT16`) — the
+   flags-only pre-check can lag the decode (§2 of the review). Then, just before
+   the accumulation loop, a single `const float *in_buf` selects the source:
    - first frame (`imgid == d->first_imgid`): `dt_hdr_alignment_set_reference()`
      and allocate `aligned_buf`; `in_buf = ivoid`.
    - later frames: `dt_hdr_alignment_align_frame(ivoid → aligned_buf)`; on success
      `in_buf = aligned_buf`, else `in_buf = ivoid`.
    The three existing `((float *)ivoid)[…]` reads in the loop now read `in_buf[…]`.
-4. `_control_merge_hdr_job_run()` cleanup frees `aligned_buf` and `align`.
+4. The output filename is de-duplicated: `-hdr.dng`, then `-hdr_01.dng`,
+   `-hdr_02.dng`, … so a re-merge never overwrites an earlier result.
+5. `_control_merge_hdr_job_run()` cleanup frees `aligned_buf` and `align`.
 
 ```mermaid
 flowchart TD
@@ -488,5 +560,44 @@ X-Trans it is `9u` and `first_xtrans` is the crop-adjusted 6×6, which is exactl
 what the CFA color lookup needs.
 
 Per-frame diagnostics are emitted via `dt_print(DT_DEBUG_HDR_MERGE, …)`
-(inliers / corner drift), and a one-shot `dt_control_log()` informs the user
-when auto-align is active.
+(inliers / corner drift; enable with `-d hdr_merge`), and a one-shot
+`dt_control_log()` informs the user when auto-align is active.
+
+### 5.1 Preferences
+
+All keys live under `plugins/lighttable/` and are registered in
+`data/darktableconfig.xml.in` (section *processing → HDR alignment*). The four
+numeric knobs seed `dt_hdr_align_params_t` and are clamped in
+`dt_hdr_alignment_new()` to the `DT_HDR_*_MIN/MAX` ranges, which are kept in sync
+with the `min`/`max` advertised in the XML.
+
+| Key | Type (range) | Default | Effect |
+|-----|--------------|---------|--------|
+| `hdr_merge_auto_align` | bool | **true** | master switch for the whole feature |
+| `hdr_merge_auto_reference` | bool | false | run the auto-reference probe pre-pass (§5.2) |
+| `hdr_merge_proxy_scale` | float [0.25, 1.0] | 0.625 | feature-proxy scale (`DT_HDR_PROXY_SCALE`) |
+| `hdr_merge_feature_gamma` | float [1.0, 6.0] | 2.2 | proxy display-gamma (`1.0` = off) |
+| `hdr_merge_clahe_clip` | float [0.0, 16.0] | 0.0 | pre-SIFT CLAHE clip (`0` = off) |
+| `hdr_merge_sift_keypoints` | int [500, 20000] | 5000 | per-frame SIFT budget after balancing |
+| `hdr_merge_debug_images` | bool | false | write per-frame debug visuals (§5.3) |
+
+### 5.2 Auto-reference pre-pass
+
+When `hdr_merge_auto_reference` is on and there is more than one frame, an extra
+decode sweep runs the export in `probe_mode`: the process callback only calls
+`dt_hdr_alignment_probe_features()` and tracks the richest-feature `imgid`, which
+is then moved to the front of `params->index` so it becomes both the geometry seed
+and the alignment reference (mirrors `align_and_blend.py --auto-reference`). The
+sweep advances the progress bar and honors cancellation between frames; it is
+opt-in because it doubles the raw-decode cost.
+
+### 5.3 Debug visuals
+
+With `hdr_merge_debug_images` on (or the `DT_HDR_DEBUG_IMAGE_DIR` environment
+override), each aligned moving frame writes a numbered set of Netpbm images
+(feature-detection input, detected keypoints, and colour-coded matches — green =
+inlier, red = outlier) to a per-merge directory resolved once in
+`dt_hdr_alignment_new()`. The directory (env or the default under the system temp
+dir) is created if missing; the reference-side visuals are written once. The path
+and frame index are threaded through the seam, so no global debug state is kept
+and concurrent merges do not interfere. Entirely diagnostic.

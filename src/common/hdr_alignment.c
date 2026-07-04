@@ -155,8 +155,6 @@ static inline int _fcol(const int row, const int col, const uint32_t filters,
 
 struct dt_hdr_align_t
 {
-  dt_hdr_align_warp_mode_t mode;
-
   // Runtime-tunable parameters (proxy scale, feature gamma, CLAHE clip, SIFT
   // budget), seeded from the compile-time defaults and overridable per run.
   dt_hdr_align_params_t params;
@@ -492,10 +490,39 @@ static inline float _sample_cfa_same_color(const float *mosaic, int w, int h,
   }
   if(wsum > 0.0) return (float)(acc / wsum);
 
-  // Degenerate fallback (e.g. no same-color site found): nearest photosite.
-  const int ix = (int)(sx + 0.5);
-  const int iy = (int)(sy + 0.5);
-  return mosaic[(size_t)iy * w + ix];
+  // Degenerate fallback: no same-color tap had positive tent weight.  This only
+  // happens at extreme X-Trans borders, where the clamped tent window can shrink
+  // to a patch that carries none of colour c.  Search outward in rings for the
+  // nearest in-bounds photosite that *does* carry colour c, so we never write a
+  // different-colour sample into a cell declared colour c (which would corrupt
+  // the mosaic phase).  The X-Trans period is 6, so a same-colour site is always
+  // found within a few rings; the loop is bounded for safety regardless.
+  int bx = (int)(sx + 0.5);
+  int by = (int)(sy + 0.5);
+  if(bx < 0) bx = 0; else if(bx > w - 1) bx = w - 1;
+  if(by < 0) by = 0; else if(by > h - 1) by = h - 1;
+  for(int rad = 0; rad <= 8; rad++)
+  {
+    float best = 0.0f;
+    double best_d2 = 0.0;
+    gboolean found = FALSE;
+    for(int j = by - rad; j <= by + rad; j++)
+    {
+      if(j < 0 || j >= h) continue;
+      for(int i = bx - rad; i <= bx + rad; i++)
+      {
+        if(i < 0 || i >= w) continue;
+        // ring only: skip interior cells already searched at a smaller radius
+        if(rad > 0 && abs(i - bx) != rad && abs(j - by) != rad) continue;
+        if(_fcol(j, i, filters, xtrans) != c) continue;
+        const double d2 = (sx - i) * (sx - i) + (sy - j) * (sy - j);
+        if(!found || d2 < best_d2) { best_d2 = d2; best = mosaic[(size_t)j * w + i]; found = TRUE; }
+      }
+    }
+    if(found) return best;
+  }
+  // Should be unreachable for a valid CFA; keep a defined result just in case.
+  return mosaic[(size_t)by * w + bx];
 }
 
 // Bayer fast path for the same-color sampler.  A Bayer CFA is period-2, so in a
@@ -653,7 +680,8 @@ static void _log_feature_stats(const dt_hdr_cv_feature_stats_t *s)
   else
     dt_print(DT_DEBUG_HDR_MERGE, "    reproj mean/median/max: n/a");
   dt_print(DT_DEBUG_HDR_MERGE, "    transform model: %s",
-           s->used_affine ? "affine-fallback" : "homography");
+           s->used_translation ? "translation (cluster-degraded)"
+                               : (s->used_affine ? "affine-fallback" : "homography"));
 }
 #endif // HAVE_OPENCV
 
@@ -685,11 +713,15 @@ static int _clampi(int v, int lo, int hi)
 static gchar *_resolve_debug_dir(int debug_images)
 {
   const char *env = getenv("DT_HDR_DEBUG_IMAGE_DIR");
-  if(env && env[0])
-    return g_strdup(env);
-  if(!debug_images)
-    return NULL;
-  gchar *dir = g_build_filename(g_get_tmp_dir(), "darktable_hdr_align_debug", NULL);
+  gchar *dir = (env && env[0])
+                   ? g_strdup(env)
+                   : (debug_images
+                          ? g_build_filename(g_get_tmp_dir(), "darktable_hdr_align_debug", NULL)
+                          : NULL);
+  if(!dir) return NULL;
+
+  // Ensure the directory exists (the env override may name a path that does not
+  // yet exist); otherwise the backend would silently fail to write every dump.
   if(g_mkdir_with_parents(dir, 0755) != 0)
   {
     dt_print(DT_DEBUG_HDR_MERGE,
@@ -702,12 +734,10 @@ static gchar *_resolve_debug_dir(int debug_images)
   return dir;
 }
 
-dt_hdr_align_t *dt_hdr_alignment_new(dt_hdr_align_warp_mode_t mode,
-                                     const dt_hdr_align_params_t *params)
+dt_hdr_align_t *dt_hdr_alignment_new(const dt_hdr_align_params_t *params)
 {
   dt_hdr_align_t *a = calloc(1, sizeof(dt_hdr_align_t));
   if(!a) return NULL;
-  a->mode = mode;
   dt_hdr_alignment_default_params(&a->params);
   if(params)
   {

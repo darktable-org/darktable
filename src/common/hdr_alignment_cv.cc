@@ -467,11 +467,11 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
     const std::vector<cv::KeyPoint> &kp_t = ref->kp;
     const cv::Mat &des_t = ref->des;
 
-    cv::Mat i, des_i;
+    cv::Mat mov_img, des_i;
     std::vector<cv::KeyPoint> kp_i;
     int ki_raw = 0, ki_floor = 0;
     detectDescribe(img, width, height, balance_target, clahe_clip,
-                   kp_i, des_i, i, ki_raw, ki_floor);
+                   kp_i, des_i, mov_img, ki_raw, ki_floor);
 
     if(stats) { stats->kp_template_raw = ref->kp_raw; stats->kp_image_raw = ki_raw; }
     dt_print(DT_DEBUG_HDR_MERGE,
@@ -495,8 +495,9 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
     // only the mutually-best correspondences (FEATURE_REQUIRE_MUTUAL_CONSISTENCY).
     // The two directions are independent, so they run in parallel sections; each
     // builds its own matcher (FlannBasedMatcher caches per-call train index state).
-    // query = image (i), train = template (t): yields image->template matches,
-    // i.e. queryIdx in image, trainIdx in template (the Python convention).
+    // query = moving image (des_i), train = template (des_t): yields
+    // image->template matches, i.e. queryIdx in image, trainIdx in template
+    // (the Python convention).
     std::vector<std::vector<cv::DMatch>> knn_it, knn_ti;
     bool match_failed = false;
     std::string match_err;
@@ -635,10 +636,11 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
     // frame; if the inlier displacements agree, refit as a robust translation.
     double Htrans[9];
     cv::Mat reproj_H = chosen;
+    bool used_translation = false;
     if(degradeClusteredToTranslation(src, dst, chosen_inl, width, height, Htrans))
     {
       for(int k = 0; k < 9; k++) H[k] = Htrans[k];
-      used_affine = false;
+      used_translation = true;
       reproj_H = (cv::Mat_<double>(3, 3) << 1, 0, Htrans[2], 0, 1, Htrans[5], 0, 0, 1);
       dt_print(DT_DEBUG_HDR_MERGE,
                "SIFT init: inliers cluster in <= %d cells; refitting as translation-only "
@@ -646,7 +648,12 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
                kClusterDegradeMaxCells, Htrans[2], Htrans[5]);
     }
 
-    if(stats) { stats->inliers = n_in; stats->used_affine = used_affine ? 1 : 0; }
+    if(stats)
+    {
+      stats->inliers = n_in;
+      stats->used_affine = used_affine ? 1 : 0;
+      stats->used_translation = used_translation ? 1 : 0;
+    }
     reprojStats(src, dst, chosen_inl, reproj_H, stats);
 
     // Optional debug visuals: the (CLAHE'd) SIFT input, the kept keypoints, and
@@ -657,14 +664,20 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
     {
       const char *dir = debug_dir;
       const int fr = frame_index;
-      writeDebugImage(dir, fr, "1_template_sift_input", t);
-      writeDebugImage(dir, fr, "2_image_sift_input", i);
-      cv::Mat kt_vis, ki_vis;
-      cv::drawKeypoints(t, kp_t, kt_vis, cv::Scalar::all(-1),
+      // The reference (template) visuals are identical for every moving frame,
+      // so write them once (on the first aligned frame) instead of per frame.
+      if(frame_index <= 1)
+      {
+        writeDebugImage(dir, fr, "1_template_sift_input", t);
+        cv::Mat kt_vis;
+        cv::drawKeypoints(t, kp_t, kt_vis, cv::Scalar::all(-1),
+                          cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        writeDebugImage(dir, fr, "3_template_keypoints", kt_vis);
+      }
+      writeDebugImage(dir, fr, "2_image_sift_input", mov_img);
+      cv::Mat ki_vis;
+      cv::drawKeypoints(mov_img, kp_i, ki_vis, cv::Scalar::all(-1),
                         cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-      cv::drawKeypoints(i, kp_i, ki_vis, cv::Scalar::all(-1),
-                        cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-      writeDebugImage(dir, fr, "3_template_keypoints", kt_vis);
       writeDebugImage(dir, fr, "4_image_keypoints", ki_vis);
       // All matches, colour-coded: red = RANSAC outlier, green = inlier.  `good`
       // matches have queryIdx -> kp_i (image), trainIdx -> kp_t (template), and
@@ -679,9 +692,9 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
       }
       const cv::Scalar red(0, 0, 255), green(0, 255, 0);   // BGR
       cv::Mat match_vis;
-      cv::drawMatches(i, kp_i, t, kp_t, good, match_vis, red, red, outlier_mask,
+      cv::drawMatches(mov_img, kp_i, t, kp_t, good, match_vis, red, red, outlier_mask,
                       cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-      cv::drawMatches(i, kp_i, t, kp_t, good, match_vis, green, green, inlier_mask,
+      cv::drawMatches(mov_img, kp_i, t, kp_t, good, match_vis, green, green, inlier_mask,
                       cv::DrawMatchesFlags::DRAW_OVER_OUTIMG
                           | cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
       writeDebugImage(dir, fr, "5_all_matches_green_inlier_red_outlier", match_vis);
@@ -700,18 +713,18 @@ int dt_hdr_cv_count_features(const uint8_t *luma, int width, int height, int pro
   try
   {
     cv::Mat in = wrapU8(luma, width, height);
-    cv::Mat probe;
+    cv::Mat resized;
     const int max_side = std::max(width, height);
     if(probe_dim > 0 && max_side > probe_dim)
     {
       const double s = (double)probe_dim / (double)max_side;
-      cv::resize(in, probe, cv::Size(), s, s, cv::INTER_AREA);
+      cv::resize(in, resized, cv::Size(), s, s, cv::INTER_AREA);
     }
-    else
-      probe = in.clone();
-    // The probe ranks the gamma-encoded proxies as detection sees them by
-    // default (CLAHE off); the ranking only needs to be self-consistent.
-    applyClahe(probe, 0.0);
+    // The probe ranks the gamma-encoded proxies as detection sees them (CLAHE
+    // off by default); the ranking only needs to be self-consistent.  Detect
+    // directly on the wrapped (or resized) buffer -- SIFT does not modify its
+    // input, so no defensive copy is needed.
+    const cv::Mat &probe = resized.empty() ? in : resized;
 
     cv::Ptr<cv::SIFT> sift = makeSift();
     std::vector<cv::KeyPoint> kps;

@@ -44,14 +44,6 @@
 extern "C" {
 #endif
 
-/* Motion model used for registration.  The HDR preset uses HOMOGRAPHY; AFFINE is
- * exposed for completeness / a possible UI choice. */
-typedef enum dt_hdr_align_warp_mode_t
-{
-  DT_HDR_WARP_HOMOGRAPHY = 0,
-  DT_HDR_WARP_AFFINE = 1
-} dt_hdr_align_warp_mode_t;
-
 /* Outcome of aligning a single frame, for logging / diagnostics. */
 typedef enum dt_hdr_align_status_t
 {
@@ -88,9 +80,10 @@ typedef struct dt_hdr_align_params_t
 void dt_hdr_alignment_default_params(dt_hdr_align_params_t *p);
 
 /* Create / destroy the alignment state for one HDR merge run.  `params` may be
- * NULL (use defaults); the values are clamped to sane ranges and copied. */
-dt_hdr_align_t *dt_hdr_alignment_new(dt_hdr_align_warp_mode_t mode,
-                                     const dt_hdr_align_params_t *params);
+ * NULL (use defaults); the values are clamped to sane ranges and copied.
+ * Registration uses a projective (homography) motion model with an affine
+ * fallback on weak support -- see hdr_alignment_cv.cc. */
+dt_hdr_align_t *dt_hdr_alignment_new(const dt_hdr_align_params_t *params);
 void dt_hdr_alignment_free(dt_hdr_align_t *a);
 
 /* Cache the reference frame.  Builds the reduced-resolution 8-bit SIFT luma
@@ -147,6 +140,8 @@ typedef struct dt_hdr_cv_feature_stats_t
   int good_matches;     // mutual-consistent matches fed to RANSAC
   int inliers;          // RANSAC inliers supporting the returned homography
   int used_affine;      // 1 if the affine fallback produced the result
+  int used_translation; // 1 if the result was refit to a pure translation
+                        //   (cluster-degradation); takes precedence over used_affine
   // inlier reprojection error (pixels) in proxy coords; < 0 if unavailable
   double reproj_mean;
   double reproj_median;

@@ -566,10 +566,24 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
     return 1;
   }
 
-  // raw / HDR / non-uint16 frames are already rejected up front by
-  // _control_merge_hdr_validate(); this guards the accumulation loop below,
-  // which indexes the current frame's buffer with the first frame's stride,
-  // against an actual buffer-size mismatch the metadata pre-check could miss.
+  // Authoritative per-frame guard on the *decoded* buffer.
+  // _control_merge_hdr_validate() gives a friendly early failure, but it can only
+  // see the cached image flags, which are derived from metadata and can lag what
+  // rawspeed actually decodes here: DT_IMAGE_MONOCHROME / DT_IMAGE_HDR and the CFA
+  // layout are only settled during the load. A monochrome raw in particular
+  // carries DT_IMAGE_RAW yet decodes to filters == 0. The accumulation loop below
+  // indexes the raw CFA mosaic and the result is written as a CFA DNG, so a
+  // non-CFA / non-uint16 buffer here must abort rather than corrupt the output.
+  if(image.buf_dsc.filters == 0u
+     || image.buf_dsc.channels != 1
+     || image.buf_dsc.datatype != TYPE_UINT16)
+  {
+    dt_control_log(_("exposure bracketing only works on raw images."));
+    d->abort = TRUE;
+    return 1;
+  }
+  // Re-check size / orientation too: the accumulation loop indexes the current
+  // frame's buffer with the first frame's stride.
   if(datai->width != d->wd
      || datai->height != d->ht
      || d->orientation != image.orientation)
@@ -711,13 +725,17 @@ static gboolean _control_merge_hdr_validate(GList *images)
     g_strlcpy(filename, img->filename, sizeof(filename));
     dt_image_cache_read_release(img);
 
-    // exposure bracketing operates on the raw mosaic; reject anything that is
-    // not raw, and reject already-merged HDR DNGs (floating point raws carry the
-    // DT_IMAGE_HDR flag) which look like raws but are not exposure brackets.
-    if(!(flags & DT_IMAGE_RAW) || (flags & DT_IMAGE_HDR))
+    // exposure bracketing operates on the raw CFA mosaic; reject anything that
+    // is not raw, reject already-merged HDR DNGs (floating point raws carry the
+    // DT_IMAGE_HDR flag) which look like raws but are not exposure brackets, and
+    // reject monochrome raws (no CFA -> filters == 0, cannot be merged as a CFA
+    // mosaic). These flags are extension/metadata derived and may not yet be set
+    // for a not-yet-decoded frame; _control_merge_hdr_process() re-checks the
+    // decoded buffer as the authoritative guard.
+    if(!(flags & DT_IMAGE_RAW) || (flags & DT_IMAGE_HDR) || (flags & DT_IMAGE_MONOCHROME))
     {
       dt_control_log(_("HDR merge aborted: `%s' is not a raw exposure"
-                       " (already merged HDR or non-raw image)"), filename);
+                       " (already merged HDR, monochrome or non-raw image)"), filename);
       return FALSE;
     }
 
@@ -771,7 +789,7 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
     align_params.clahe_clip = dt_conf_get_float("plugins/lighttable/hdr_merge_clahe_clip");
     align_params.sift_keypoints = dt_conf_get_int("plugins/lighttable/hdr_merge_sift_keypoints");
     align_params.debug_images = dt_conf_get_bool("plugins/lighttable/hdr_merge_debug_images");
-    d.align = dt_hdr_alignment_new(DT_HDR_WARP_HOMOGRAPHY, &align_params);
+    d.align = dt_hdr_alignment_new(&align_params);
     if(d.align)
       dt_control_log(_("merging HDR: auto-aligning exposure brackets"));
     else
@@ -801,7 +819,9 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
     d.probe_best_count = -1;
     d.probe_best_imgid = NO_IMGID;
     int pnum = 1;
-    for(GList *p = t; p && !d.abort; p = g_list_next(p))
+    for(GList *p = t; p && !d.abort
+        && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED;
+        p = g_list_next(p))
     {
       const dt_imgid_t pimgid = GPOINTER_TO_INT(p->data);
       dt_imageio_export_with_flags(pimgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
@@ -809,9 +829,14 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
                                    FALSE, "pre:rawprepare", FALSE,
                                    FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                    NULL, pnum, total, NULL, -1);
+      // the probe pre-pass is a full extra decode sweep; advance the bar over it
+      // so a large bracket does not look hung, and honor a cancel between frames
+      dt_control_job_set_progress(job, (double)pnum / (double)total);
       pnum++;
     }
     d.probe_mode = FALSE;
+    if(d.abort || dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+      goto end;
     if(dt_is_valid_imgid(d.probe_best_imgid))
     {
       params->index = g_list_remove(params->index, GINT_TO_POINTER(d.probe_best_imgid));
