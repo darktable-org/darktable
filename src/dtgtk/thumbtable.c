@@ -1121,7 +1121,7 @@ static gboolean _event_scroll(GtkWidget *widget,
                               dt_thumbtable_t *table)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
-  int delta_x, delta_y;
+  int delta;
 
   // file manager can either scroll fractionally and smoothly for precision
   // touch pads, or in one-thumbnail increments for clicky scroll wheels,
@@ -1129,16 +1129,25 @@ static gboolean _event_scroll(GtkWidget *widget,
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
       && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
-    gdouble deltaf_x, deltaf_y;
+    gdouble deltaf = 0.f;
     gboolean did_scroll;
     if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
     {
+      gdouble deltaf_x, deltaf_y;
       did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
+      if (did_scroll) {
+        // file manager scroll: tilt right (delta_x >) 0 or scroll down (delta_y > 0) -> down (towards the last image)
+        deltaf = fabs(deltaf_x) > fabs(deltaf_y) ? deltaf_x : deltaf_y;
+      }
     }
     else
     {
+      int delta_x, delta_y;
       did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
-      deltaf_y = (float)delta_y;
+      if (did_scroll)
+      {
+        deltaf = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      }
     }
     if(did_scroll)
     {
@@ -1148,14 +1157,14 @@ static gboolean _event_scroll(GtkWidget *widget,
       {
         table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
       }
-      table->scroll_value += deltaf_y;
+      table->scroll_value += deltaf;
     }
     // we stop here to avoid scrolledwindow to move
     return TRUE;
   }
 
   // filmstrip and zoom mode always use clicky scroll:
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
@@ -1163,7 +1172,7 @@ static gboolean _event_scroll(GtkWidget *widget,
     {
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       {
-        const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + (delta_x+delta_y)) * 2 + 1),
+        const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta) * 2 + 1),
                              dt_conf_get_int("min_panel_height"),
                              dt_conf_get_int("max_panel_height"));
         dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
@@ -1171,13 +1180,17 @@ static gboolean _event_scroll(GtkWidget *widget,
       else
       {
         const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
-        const int new = CLAMP(old + delta_y, 1, DT_LIGHTTABLE_MAX_ZOOM);
+        const int new = CLAMP(old + delta, 1, DT_LIGHTTABLE_MAX_ZOOM);
         dt_thumbtable_zoom_changed(table, old, new);
       }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      _move(table, -(delta_x+delta_y) * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
+      int delta_x, delta_y;
+      dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
+      // filmstrip scroll: tilt right (delta_x >) 0 or scroll down (delta_y > 0) -> down (towards the last image)
+      delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      _move(table, -delta * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
                   ? table->view_width - table->thumb_size
                   : table->thumb_size), 0, TRUE);
 
@@ -1187,7 +1200,7 @@ static gboolean _event_scroll(GtkWidget *widget,
         dt_control_set_mouse_over_id(th->imgid);
     }
   }
-  // we stop here to avoid scrolledwindow to move
+  // we stop here to avoid scrolled window to move
   return TRUE;
 }
 
@@ -1527,7 +1540,7 @@ static gboolean _event_motion_notify(GtkWidget *widget,
     table->drag_dy += dy;
     if(table->drag_thumb && !table->drag_thumb->moved)
     {
-      // we only considers that this is a real move if the total
+      // we only consider that this is a real move if the total
       // distance is not too low
       table->drag_thumb->moved =
         ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
