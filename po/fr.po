@@ -7586,7 +7586,7 @@ msgid ""
 "'unified_fraction'"
 msgstr ""
 "« micro_nap »  « pinned_memory »  « eventhandles »  « async »  « disabled »  "
-"« advantage » « unified_faction »"
+"« advantage » « unified_fraction »"
 
 #: ../src/common/database.c:3236
 msgid "creator"
