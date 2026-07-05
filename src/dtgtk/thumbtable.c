@@ -1121,7 +1121,6 @@ static gboolean _event_scroll(GtkWidget *widget,
                               dt_thumbtable_t *table)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
-  int delta;
 
   // file manager can either scroll fractionally and smoothly for precision
   // touch pads, or in one-thumbnail increments for clicky scroll wheels,
@@ -1164,12 +1163,16 @@ static gboolean _event_scroll(GtkWidget *widget,
   }
 
   // filmstrip and zoom mode always use clicky scroll:
-  if(dt_gui_get_scroll_unit_delta(e, &delta))
+  int delta_x, delta_y;
+
+  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
        || dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
+      // up==right==zoom in
+      const int delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       {
         const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta) * 2 + 1),
@@ -1186,10 +1189,8 @@ static gboolean _event_scroll(GtkWidget *widget,
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      int delta_x, delta_y;
-      dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
       // filmstrip scroll: tilt right (delta_x >) 0 or scroll down (delta_y > 0) -> down (towards the last image)
-      delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
       _move(table, -delta * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
                   ? table->view_width - table->thumb_size
                   : table->thumb_size), 0, TRUE);
