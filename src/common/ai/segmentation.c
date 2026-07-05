@@ -307,11 +307,39 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   if(!env || !model_id)
     return NULL;
 
+  // detect model type from arch field in model registry before loading
+  // sessions, since SAM3 encoder graphs may need conservative ORT options
+  const dt_ai_model_info_t *minfo
+    = dt_ai_get_model_info_by_id(env, model_id);
+  const char *arch = minfo ? minfo->arch : "";
+  dt_seg_model_type_t model_type;
+
+  if(strcmp(arch, "sam2") == 0)
+    model_type = DT_SEG_MODEL_SAM;
+  else if(strcmp(arch, "sam3") == 0)
+    model_type = DT_SEG_MODEL_SAM3;
+  else if(strcmp(arch, "segnext") == 0)
+    model_type = DT_SEG_MODEL_SEGNEXT;
+  else
+  {
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] unknown arch '%s' for %s",
+             arch, model_id);
+    return NULL;
+  }
+
+  const gboolean is_sam_model = model_type == DT_SEG_MODEL_SAM
+                                || model_type == DT_SEG_MODEL_SAM3;
+
   // honour explicit env override (e.g. CPU fallback after a CoreML failure);
   // CONFIGURED would re-read conf and lose the override
   const dt_ai_provider_t enc_provider = dt_ai_env_get_provider(env);
+  const dt_ai_opt_level_t enc_opt = model_type == DT_SEG_MODEL_SAM3
+                                    ? DT_AI_OPT_DISABLED
+                                    : DT_AI_OPT_ALL;
   dt_ai_context_t *encoder
-    = dt_ai_load_model(env, model_id, "encoder.onnx", enc_provider);
+    = dt_ai_load_model_ext(env, model_id, "encoder.onnx", enc_provider,
+                           enc_opt, NULL, 0);
   if(!encoder)
   {
     dt_print(DT_DEBUG_AI, "[segmentation] failed to load encoder for %s", model_id);
@@ -354,6 +382,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   dt_seg_context_t *ctx = g_new0(dt_seg_context_t, 1);
   ctx->encoder = encoder;
   ctx->decoder = decoder;
+  ctx->model_type = model_type;
   ctx->model_id = g_strdup(model_id);
   ctx->model_version = g_strdup(version);
 
@@ -429,28 +458,6 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
                     di ? ", " : "", di, ctx->enc_order[di]);
   dt_print(DT_DEBUG_AI, "[segmentation] tensor routing: %s", map);
 
-  // detect model type from arch field in model registry
-  const dt_ai_model_info_t *minfo
-    = dt_ai_get_model_info_by_id(env, model_id);
-  const char *arch = minfo ? minfo->arch : "";
-
-  if(strcmp(arch, "sam2") == 0)
-    ctx->model_type = DT_SEG_MODEL_SAM;
-  else if(strcmp(arch, "sam3") == 0)
-    ctx->model_type = DT_SEG_MODEL_SAM3;
-  else if(strcmp(arch, "segnext") == 0)
-    ctx->model_type = DT_SEG_MODEL_SEGNEXT;
-  else
-  {
-    dt_print(DT_DEBUG_AI,
-             "[segmentation] unknown arch '%s' for %s",
-             arch, model_id);
-    dt_seg_free(ctx);
-    return NULL;
-  }
-
-  const gboolean is_sam_model = ctx->model_type == DT_SEG_MODEL_SAM
-                                || ctx->model_type == DT_SEG_MODEL_SAM3;
   ctx->input_size = ctx->model_type == DT_SEG_MODEL_SAM3
                     ? SAM3_INPUT_SIZE
                     : SAM_INPUT_SIZE;
