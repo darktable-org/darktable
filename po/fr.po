@@ -5219,11 +5219,11 @@ msgstr "1024 px (très lent)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:305
 msgid "2048 px (insanely slow)"
-msgstr "2048 px (très très lent)"
+msgstr "2048 px (extrêmement lent)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:306
 msgid "4096 px (insanely slow)"
-msgstr "4096 px (très très lent)"
+msgstr "4096 px (extrêmement lent)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:312
 msgid "flat generic"
