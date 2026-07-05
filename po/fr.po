@@ -973,7 +973,7 @@ msgstr "Nom de la pellicule"
 
 #: ../build/bin/preferences_gen.h:2648
 msgid "name of the imported filmroll"
-msgstr "Nom de de la pellicule imortée"
+msgstr "Nom de la pellicule importée"
 
 #: ../build/bin/preferences_gen.h:2657
 msgid "keep original filename"
