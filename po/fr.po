@@ -7504,7 +7504,7 @@ msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 msgstr ""
-"« avoid_atomics »  « micro_nap »  « pinned_memory »  « roundupwd »  "
+"« avoid_atomics »  « micro_nap »  « pinned_memory »  « roundupwd »  "
 "« roundupht »  « eventhandles »  « async »  « disable »  « magic » "
 "« advantage » « unified »"
 
@@ -7585,7 +7585,7 @@ msgid ""
 " 'micro_nap' 'pinned_memory' 'eventhandles' 'async' 'disabled' 'advantage' "
 "'unified_fraction'"
 msgstr ""
-"« micro_nap »  « pinned_memory »  « eventhandles »  « async »  « disabled »  "
+"« micro_nap »  « pinned_memory »  « eventhandles »  « async »  « disabled »  "
 "« advantage » « unified_faction »"
 
 #: ../src/common/database.c:3236
