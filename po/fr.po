@@ -284,7 +284,7 @@ msgstr "Nom de l’importation"
 
 #: ../build/bin/conf_gen.h:1572
 msgid "override today's date"
-msgstr "Surcharger la date d’aujourd’hui"
+msgstr "Date à utiliser pour le nommage"
 
 #: ../build/bin/conf_gen.h:1573
 msgid ""
