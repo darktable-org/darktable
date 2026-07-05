@@ -210,7 +210,7 @@ msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
 msgstr ""
-"If activé seulement les fichiers raw seront importés. Les autres fichiers ne "
+"Si activé seulement les fichiers raw seront importés. Les autres fichiers ne "
 "seront pas visibles dans le dialogue et ne seront pas importés."
 
 #: ../build/bin/conf_gen.h:1455
