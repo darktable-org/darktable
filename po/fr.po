@@ -37,7 +37,7 @@ msgstr "Cercle"
 #: ../build/bin/conf_gen.h:214
 msgctxt "preferences"
 msgid "diamond"
-msgstr "Diamant"
+msgstr "Losange"
 
 #: ../build/bin/conf_gen.h:215
 msgctxt "preferences"
