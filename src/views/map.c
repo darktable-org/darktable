@@ -2020,30 +2020,32 @@ static gboolean _view_map_scroll_event(GtkWidget *w,
   osm_gps_map_point_get_degrees(p, &lat, &lon);
   if(lib->loc.main.id > 0)
   {
+    const gboolean increase = event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT;
+    const gboolean decrease = event->direction == GDK_SCROLL_DOWN || event->direction == GDK_SCROLL_LEFT;
     if(dt_map_location_included(lon, lat, &lib->loc.main.data))
     {
       if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(increase)
           lib->loc.main.data.delta1 *= 1.1;
-        else
+        else if(decrease)
           lib->loc.main.data.delta1 /= 1.1;
       }
       else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(increase)
           lib->loc.main.data.delta2 *= 1.1;
-        else
+        else if(decrease)
           lib->loc.main.data.delta2 /= 1.1;
       }
       else
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(increase)
         {
           lib->loc.main.data.delta1 *= 1.1;
           lib->loc.main.data.delta2 *= 1.1;
         }
-        else
+        else if (decrease)
         {
           lib->loc.main.data.delta1 /= 1.1;
           lib->loc.main.data.delta2 /= 1.1;
