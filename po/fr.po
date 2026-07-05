@@ -11177,11 +11177,11 @@ msgstr ""
 
 #: ../src/dtgtk/culling.c:225
 msgid "you have reached the start of your selection"
-msgstr "Début de la sélection atteinte"
+msgstr "Début de la sélection atteint"
 
 #: ../src/dtgtk/culling.c:234
 msgid "you have reached the start of your collection"
-msgstr "Début de la collection atteinte"
+msgstr "Début de la collection atteint"
 
 #: ../src/dtgtk/culling.c:281
 msgid "you have reached the end of your selection"
