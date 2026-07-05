@@ -1911,8 +1911,8 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
     }
     else
     {
-      delta_y *= -DT_IOP_COLORZONES_DEFAULT_STEP;
-      return _move_point_internal(self, widget, g->selected, 0.f, delta_y, event->state);
+      const float dy = delta_y * -DT_IOP_COLORZONES_DEFAULT_STEP;
+      return _move_point_internal(self, widget, g->selected, 0.f, dy, event->state);
     }
   }
 
