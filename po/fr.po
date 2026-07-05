@@ -9108,7 +9108,7 @@ msgstr[1] "Suppression de %d images"
 msgid "not deleting image '%s' used as overlay in %d image"
 msgid_plural "not deleting image '%s' used as overlay in %d images"
 msgstr[0] ""
-"Image « %s » non supprimée car utilisée comme superposition dans %d image "
+"Image « %s » non supprimée car utilisée comme superposition dans %d image"
 msgstr[1] ""
 "Image « %s » non supprimée car utilisée comme superposition dans %d images"
 
