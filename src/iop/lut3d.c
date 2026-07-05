@@ -483,7 +483,8 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
 
   _get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align_float(buf_size_lut);
+  // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+  lclut = dt_alloc_align_float(buf_size_lut + 1);
   if(!lclut)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error allocating buffer for gmz LUT");
@@ -500,6 +501,7 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
       lut3d_decompress_clut((const unsigned char *const)c_clut, p->nb_keypoints,
         level, lclut, cache_filename);
     }
+    lclut[buf_size_lut] = 0.0f; // padding
   }
   *clut = lclut;
   return level;
@@ -821,11 +823,13 @@ static uint16_t _calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube LUT - level %d", buf_size, level);
-        lclut = dt_alloc_align_float(buf_size);
+        // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+        lclut = dt_alloc_align_float(buf_size + 1);
         if(!lclut)
         {
           dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for cube LUT");
           dt_control_log(_("error - allocating buffer for cube LUT"));
+          dt_free_align(lclut);
           free(line);
           fclose(cube_file);
           return 0;
@@ -875,6 +879,7 @@ static uint16_t _calculate_clut_cube(const char *const filepath, float **clut)
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] warning - %u values out of range [0,1]", out_of_range_nb);
     dt_control_log(_("warning - cube LUT has %d values out of range [0,1]"), out_of_range_nb);
   }
+  lclut[buf_size] = 0.0f; // padding
   *clut = lclut;
   free(line);
   fclose(cube_file);
@@ -926,7 +931,8 @@ static uint16_t _calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for 3dl LUT - level %d", buf_size, level);
-            lclut = dt_alloc_align_float(buf_size);
+            // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+            lclut = dt_alloc_align_float(buf_size + 1);
             if(!lclut)
             {
               dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for 3dl LUT");
@@ -995,6 +1001,7 @@ static uint16_t _calculate_clut_3dl(const char *const filepath, float **clut)
   // normalize the lut
   for(i =0; i < buf_size; i++)
     lclut[i] = CLAMP(lclut[i] * norm, 0.0f, 1.0f);
+  lclut[buf_size] = 0.0f; // padding
   *clut = lclut;
   return level;
 }
