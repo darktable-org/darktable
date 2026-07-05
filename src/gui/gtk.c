@@ -4022,16 +4022,19 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
 
 static gboolean _notebook_scroll_callback(GtkNotebook *notebook,
                                           GdkEventScroll *event,
-                                          gpointer user_data)
-{
+                                          gpointer user_data) {
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  int delta = 0;
-  if(dt_gui_get_scroll_unit_delta(event, &delta) && delta)
+  int delta_x = 0, delta_y = 0;
+  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
+  {
+    // RIGHT: delta_x > 0, DOWN: delta_y > 0 -> next, like in filmstrip and lists
+    const int delta = abs(delta_x) > abs(delta_y) ? -delta_x : -delta_y;
     _action_process_tabs(notebook, DT_ACTION_EFFECT_DEFAULT_KEY,
                          delta < 0
                          ? DT_ACTION_EFFECT_NEXT
                          : DT_ACTION_EFFECT_PREVIOUS, delta);
+  }
 
   return TRUE;
 }
