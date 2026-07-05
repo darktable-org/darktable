@@ -28,10 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// SAM2 encoder expects 1024x1024 input; SAM3 uses 1008x1008
+// default SAM-style encoder input size
 #define SAM_INPUT_SIZE 1024
-#define SAM3_INPUT_SIZE 1008
-#define SAM3_MASK_SIZE 288
 
 // ImageNet normalization constants
 static const float IMG_MEAN[3] = {123.675f, 116.28f, 103.53f};
@@ -50,8 +48,7 @@ static const float IMG_STD[3] = {58.395f, 57.12f, 57.375f};
 // model architecture type, determines preprocessing, decoder I/O, and refinement
 typedef enum dt_seg_model_type_t
 {
-  DT_SEG_MODEL_SAM,     // SAM/SAM2: multi-mask + IoU + low_res refinement
-  DT_SEG_MODEL_SAM3,    // SAM3: SAM-style decoder with native 1008px input
+  DT_SEG_MODEL_SAM,     // SAM-style: multi-mask + IoU + low_res refinement
   DT_SEG_MODEL_SEGNEXT  // SegNext: single mask, full-res prev_mask refinement
 } dt_seg_model_type_t;
 
@@ -101,6 +98,29 @@ struct dt_seg_context_t
   char *model_id;      // model identifier (for cache validation)
   char *model_version; // model version (for cache validation)
 };
+
+static dt_ai_opt_level_t
+_seg_encoder_optimization(const dt_ai_model_info_t *info)
+{
+  dt_ai_opt_level_t opt = DT_AI_OPT_ALL;
+  char *opt_str = dt_ai_model_attribute_string(info, "encoder_optimization");
+
+  if(opt_str)
+  {
+    if(g_strcmp0(opt_str, "disabled") == 0
+       || g_strcmp0(opt_str, "none") == 0)
+      opt = DT_AI_OPT_DISABLED;
+    else if(g_strcmp0(opt_str, "basic") == 0)
+      opt = DT_AI_OPT_BASIC;
+    else if(g_strcmp0(opt_str, "all") != 0)
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] unknown encoder_optimization '%s', using all",
+               opt_str);
+    g_free(opt_str);
+  }
+
+  return opt;
+}
 
 /* --- preprocessing --- */
 
@@ -307,17 +327,15 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   if(!env || !model_id)
     return NULL;
 
-  // detect model type from arch field in model registry before loading
-  // sessions, since SAM3 encoder graphs may need conservative ORT options
+  // detect model type before loading sessions so manifest attributes can
+  // influence backend options
   const dt_ai_model_info_t *minfo
     = dt_ai_get_model_info_by_id(env, model_id);
   const char *arch = minfo ? minfo->arch : "";
   dt_seg_model_type_t model_type;
 
-  if(strcmp(arch, "sam2") == 0)
+  if(strcmp(arch, "sam") == 0 || strcmp(arch, "sam2") == 0)
     model_type = DT_SEG_MODEL_SAM;
-  else if(strcmp(arch, "sam3") == 0)
-    model_type = DT_SEG_MODEL_SAM3;
   else if(strcmp(arch, "segnext") == 0)
     model_type = DT_SEG_MODEL_SEGNEXT;
   else
@@ -328,15 +346,12 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
-  const gboolean is_sam_model = model_type == DT_SEG_MODEL_SAM
-                                || model_type == DT_SEG_MODEL_SAM3;
+  const gboolean is_sam_model = model_type == DT_SEG_MODEL_SAM;
 
   // honour explicit env override (e.g. CPU fallback after a CoreML failure);
   // CONFIGURED would re-read conf and lose the override
   const dt_ai_provider_t enc_provider = dt_ai_env_get_provider(env);
-  const dt_ai_opt_level_t enc_opt = model_type == DT_SEG_MODEL_SAM3
-                                    ? DT_AI_OPT_DISABLED
-                                    : DT_AI_OPT_ALL;
+  const dt_ai_opt_level_t enc_opt = _seg_encoder_optimization(minfo);
   dt_ai_context_t *encoder
     = dt_ai_load_model_ext(env, model_id, "encoder.onnx", enc_provider,
                            enc_opt, NULL, 0);
@@ -458,9 +473,14 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
                     di ? ", " : "", di, ctx->enc_order[di]);
   dt_print(DT_DEBUG_AI, "[segmentation] tensor routing: %s", map);
 
-  ctx->input_size = ctx->model_type == DT_SEG_MODEL_SAM3
-                    ? SAM3_INPUT_SIZE
-                    : SAM_INPUT_SIZE;
+  ctx->input_size = dt_ai_model_attribute_int(minfo, "input_size", SAM_INPUT_SIZE);
+  if(ctx->input_size <= 0)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] invalid input_size %d, using %d",
+             ctx->input_size, SAM_INPUT_SIZE);
+    ctx->input_size = SAM_INPUT_SIZE;
+  }
 
   // SAM models require external ImageNet normalization; SegNext bakes it into the encoder
   ctx->normalize = is_sam_model;
@@ -471,7 +491,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
 
   if(is_sam_model)
   {
-    // SAM/SAM3 path
+    // SAM-style path
     ctx->num_masks = (dec_out_ndim >= 4 && dec_out_shape[1] > 1) ? (int)dec_out_shape[1] : 0;
 
     if(ctx->num_masks == 0)
@@ -549,9 +569,14 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     }
 
     // query low_res mask spatial dimensions from decoder output 2
-    ctx->prev_mask_dim = ctx->model_type == DT_SEG_MODEL_SAM3
-                         ? SAM3_MASK_SIZE
-                         : 256;
+    ctx->prev_mask_dim = dt_ai_model_attribute_int(minfo, "prev_mask_size", 256);
+    if(ctx->prev_mask_dim <= 0)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] invalid prev_mask_size %d, using 256",
+               ctx->prev_mask_dim);
+      ctx->prev_mask_dim = 256;
+    }
     {
       int64_t lr_shape[MAX_TENSOR_DIMS];
       const int lr_ndim = dt_ai_get_output_shape(decoder, 2, lr_shape, MAX_TENSOR_DIMS);
@@ -580,10 +605,8 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
-  const char *type_name = ctx->model_type == DT_SEG_MODEL_SAM3
-                          ? "SAM3"
-                          : (ctx->model_type == DT_SEG_MODEL_SAM
-                             ? "SAM" : "SegNext");
+  const char *type_name = ctx->model_type == DT_SEG_MODEL_SAM
+                          ? "SAM" : "SegNext";
   dt_print(DT_DEBUG_AI,
            "[segmentation] model loaded: %s [%s] (enc_outputs=%d, num_masks=%d, "
            "dec_dims=%dx%d, prev_mask_dim=%d)",
@@ -619,8 +642,7 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
 
   dt_print(DT_DEBUG_AI, "[segmentation] warming up decoder...");
   const double t0 = dt_get_wtime();
-  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM
-                          || ctx->model_type == DT_SEG_MODEL_SAM3;
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM;
   const int pm_dim = ctx->prev_mask_dim;
   const int nm = ctx->num_masks;
   const int dec_h = ctx->dec_mask_h;
@@ -891,8 +913,7 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   if(!ctx || !ctx->image_encoded || !points || n_points <= 0)
     return NULL;
 
-  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM
-                          || ctx->model_type == DT_SEG_MODEL_SAM3;
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM;
 
   // build point prompts
   // SAM ONNX requires a padding point (0,0) with label -1 appended
@@ -1149,8 +1170,7 @@ gboolean dt_seg_is_encoded(dt_seg_context_t *ctx)
 
 gboolean dt_seg_supports_box(dt_seg_context_t *ctx)
 {
-  return ctx ? (ctx->model_type == DT_SEG_MODEL_SAM
-                || ctx->model_type == DT_SEG_MODEL_SAM3) : FALSE;
+  return ctx ? (ctx->model_type == DT_SEG_MODEL_SAM) : FALSE;
 }
 
 void dt_seg_reset_prev_mask(dt_seg_context_t *ctx)
