@@ -32610,7 +32610,7 @@ msgstr "Cacher aperçu"
 
 #: ../src/libs/styles.c:897
 msgid "hide preview of style on tooltip"
-msgstr "Cacher les aperçus des styles dans dans l’info bulle"
+msgstr "Cacher les aperçus des styles dans l’info bulle"
 
 #: ../src/libs/styles.c:899 ../src/libs/styles.c:900
 msgid "create duplicate"
