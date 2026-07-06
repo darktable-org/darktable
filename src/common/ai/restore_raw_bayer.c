@@ -597,11 +597,16 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
         }
       }
 
-      // extended extent = core ± seam where a neighbor exists; matches model-output validity
-      const int ext_y0 = has_top  ? sensor_py_base - sensor_O : sensor_py_base;
-      const int ext_y1 = has_bot  ? sensor_py_end + sensor_O  : sensor_py_end;
-      const int ext_x0 = has_left ? sensor_px_base - sensor_O : sensor_px_base;
-      const int ext_x1 = has_right? sensor_px_end + sensor_O  : sensor_px_end;
+      // extended extent = core ± seam where a neighbor exists; matches
+      // model-output validity; clamped to the CFA buffer bounds
+      const int ext_y0 = MAX(0,
+                             has_top? sensor_py_base - sensor_O : sensor_py_base);
+      const int ext_y1 = MIN(height,
+                             has_bot  ? sensor_py_end + sensor_O  : sensor_py_end);
+      const int ext_x0 = MAX(0,
+                             has_left ? sensor_px_base - sensor_O : sensor_px_base);
+      const int ext_x1 = MIN(width,
+                             has_right? sensor_px_end + sensor_O  : sensor_px_end);
 
       for(int sr = ext_y0; sr < ext_y1; sr++)
       {
