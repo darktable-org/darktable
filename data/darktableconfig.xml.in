@@ -1165,6 +1165,13 @@
     <longdescription>recursive directory traversal when importing filmrolls</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
+    <name>ui_last/import_copy_source_xmp</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>import XMP sidecar files</shortdescription>
+    <longdescription>if XMP sidecar files are found next to the source images (darktable 'image.ext.xmp' or Lightroom 'image.xmp' naming), import their metadata - replacing any default import metadata - and write darktable XMP files alongside the copied images</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_last_creator</name>
     <type>string</type>
     <default/>

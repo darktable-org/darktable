@@ -2798,6 +2798,73 @@ void dt_control_write_sidecar_files()
                                           FALSE));
 }
 
+static void _import_copy_sidecar_file(const char *src,
+                                      const char *dest)
+{
+  char *content = NULL;
+  gsize size = 0;
+  GError *error = NULL;
+  if(!g_file_get_contents(src, &content, &size, &error)
+     || !g_file_set_contents(dest, content, size, &error))
+  {
+    dt_print(DT_DEBUG_CONTROL, "[import_from] failed to copy sidecar `%s` to `%s`: %s",
+             src, dest, error ? error->message : "unknown error");
+    g_clear_error(&error);
+  }
+  g_free(content);
+}
+
+static void _import_copy_source_sidecars(const char *filename,
+                                         const char *output)
+{
+  if(!dt_conf_get_bool("ui_last/import_copy_source_xmp")
+     || dt_image_get_xmp_mode() != DT_WRITE_XMP_ALWAYS)
+    return;
+
+  const char *ext = strrchr(filename, '.');
+  const size_t ext_offset = ext ? (size_t)(ext - filename) : strlen(filename);
+
+  GList *sidecars = dt_image_find_duplicates(filename);
+  if(sidecars)
+  {
+    // darktable-form sidecars: file.ext.xmp and versioned file_NN.ext.xmp
+    const char *oext = strrchr(output, '.');
+    for(GList *iter = sidecars; iter; iter = g_list_next(iter))
+    {
+      const char *src_xmp = iter->data;
+      // the version suffix ("" or "_NN") sits at the source extension position
+      const char *sfx_start = src_xmp + ext_offset;
+      const char *sfx_end = strchr(sfx_start, '.');
+      gchar *sfx = g_strndup(sfx_start, sfx_end ? (gsize)(sfx_end - sfx_start) : 0);
+      gchar *dest_xmp = oext
+        ? g_strdup_printf("%.*s%s%s.xmp", (int)(oext - output), output, sfx, oext)
+        : g_strconcat(output, sfx, ".xmp", NULL);
+      _import_copy_sidecar_file(src_xmp, dest_xmp);
+      g_free(sfx);
+      g_free(dest_xmp);
+    }
+    g_list_free_full(sidecars, g_free);
+    return;
+  }
+
+  // Lightroom-form fallback: source extension replaced by .xmp / .XMP
+  if(!ext) return;
+  static const char *xmp_ext[] = { ".xmp", ".XMP" };
+  for(int i = 0; i < 2; i++)
+  {
+    gchar *cand = g_strdup_printf("%.*s%s", (int)ext_offset, filename, xmp_ext[i]);
+    const gboolean found = g_file_test(cand, G_FILE_TEST_IS_REGULAR);
+    if(found)
+    {
+      gchar *dest_xmp = g_strconcat(output, ".xmp", NULL);
+      _import_copy_sidecar_file(cand, dest_xmp);
+      g_free(dest_xmp);
+    }
+    g_free(cand);
+    if(found) break;
+  }
+}
+
 static int _control_import_image_copy(const char *filename,
                                       char **prev_filename,
                                       char **prev_output,
@@ -2871,6 +2938,8 @@ static int _control_import_image_copy(const char *filename,
 #endif
     utimes(output, times); // set origin file timestamps
 #endif
+
+    _import_copy_source_sidecars(filename, output);
 
     const dt_imgid_t imgid = dt_image_import(dt_import_session_film_id(session),
                                              output, FALSE, FALSE);

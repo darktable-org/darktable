@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "common/exif.h"
+#include "common/image.h"
 #include "common/metadata.h"
 #include "common/datetime.h"
 #include "control/conf.h"
@@ -2078,6 +2079,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
     g_signal_connect(G_OBJECT(d->recursive), "toggled",
                      G_CALLBACK(_recursive_toggled), self);
+  }
+  if(d->import_case == DT_IMPORT_COPY
+     && dt_image_get_xmp_mode() == DT_WRITE_XMP_ALWAYS)
+  {
+    dt_gui_preferences_bool(grid, "ui_last/import_copy_source_xmp", col++, line, TRUE);
+    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
   }
   GtkWidget *ignore_nonraws =
     dt_gui_preferences_bool(grid, "ui_last/import_ignore_nonraws", col++, line, TRUE);
