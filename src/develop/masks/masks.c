@@ -319,6 +319,37 @@ static dt_masks_form_t *_group_from_module(const dt_develop_t *dev,
   return dt_masks_get_from_id(dev, module->blend_params->mask_id);
 }
 
+static gboolean _form_is_in_group(const dt_develop_t *dev,
+                                  const dt_masks_form_t *group,
+                                  const dt_mask_id_t maskid)
+{
+  for(const GList *iter = group->points; iter; iter = g_list_next(iter))
+  {
+    const dt_masks_point_group_t *pt = iter->data;
+    if(pt->formid == maskid) return TRUE;
+
+    const dt_masks_form_t *child = dt_masks_get_from_id(dev, pt->formid);
+    if(child && (child->type & DT_MASKS_GROUP))
+    {
+      if(_form_is_in_group(dev, child, maskid)) return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+gboolean dt_masks_is_in_module(const dt_mask_id_t maskid, const dt_iop_module_t *module)
+{
+  if(!dt_is_valid_maskid(maskid) || !module) return FALSE;
+
+  if(maskid == module->blend_params->mask_id) return TRUE;
+
+  const dt_masks_form_t *root = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
+  if(root && (root->type & DT_MASKS_GROUP))
+    return _form_is_in_group(module->dev, root, maskid);
+
+  return FALSE;
+}
+
 void dt_masks_register_forms(dt_develop_t *dev,
                              GList *forms)
 {
