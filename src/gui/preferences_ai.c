@@ -272,6 +272,19 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
 #endif
 }
 
+static void _ai_models_changed_cb(gpointer instance, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  if(data) _refresh_model_list(data);
+}
+
+// disconnect before free so a late signal dispatch can't touch freed data
+static void _prefs_ai_data_free(gpointer user_data)
+{
+  DT_CONTROL_SIGNAL_DISCONNECT(_ai_models_changed_cb, user_data);
+  g_free(user_data);
+}
+
 static void _update_controls_sensitivity(dt_prefs_ai_data_t *data, gboolean enabled)
 {
   // grey out settings grid rows below the enable toggle
@@ -1931,8 +1944,11 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   // populate model list
   _refresh_model_list(data);
 
-  // store data pointer for cleanup (attach to container)
-  g_object_set_data_full(G_OBJECT(tab_box), "prefs-ai-data", data, g_free);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_AI_MODELS_CHANGED,
+                            _ai_models_changed_cb, data);
+
+  g_object_set_data_full(G_OBJECT(tab_box), "prefs-ai-data",
+                         data, _prefs_ai_data_free);
 }
 
 // clang-format off
