@@ -36,6 +36,11 @@ DT_MODULE(1)
 
 static void _lib_masks_recreate_list(dt_lib_module_t *self);
 static void _lib_masks_update_list(dt_lib_module_t *self);
+static void _lib_masks_get_values(GtkTreeModel *model,
+                                  GtkTreeIter *iter,
+                                  dt_iop_module_t **module,
+                                  dt_mask_id_t *groupid,
+                                  dt_mask_id_t *formid);
 
 typedef struct dt_lib_masks_t
 {
@@ -80,6 +85,68 @@ uint32_t container(dt_lib_module_t *self)
 int position(const dt_lib_module_t *self)
 {
   return 10;
+}
+
+static gboolean _selected_masks_are_used(GtkTreeModel *model,
+                                         GList *selected,
+                                         dt_iop_module_t *module)
+{
+  for(GList *item = selected; item; item = g_list_next(item))
+  {
+    GtkTreePath *ipath = (GtkTreePath *)item->data;
+    GtkTreeIter iter;
+    if(gtk_tree_model_get_iter(model, &iter, ipath))
+    {
+      dt_mask_id_t id = INVALID_MASKID;
+      _lib_masks_get_values(model, &iter, NULL, NULL, &id);
+
+      if(dt_is_valid_maskid(id)
+         && dt_masks_is_in_module(id, module))
+      {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+void expanded_state(dt_lib_module_t *self,
+                    const gboolean expanded)
+{
+  // if not expanded we may want to disable the mask
+
+  if (!expanded)
+  {
+    dt_develop_t *dev = darktable.develop;
+    dt_iop_module_t *mod = dev->gui_module;
+    const dt_iop_gui_blend_data_t *bd = mod ? mod->blend_data : NULL;
+
+    /*
+      We hide the masks if:
+      - If the active module is not enabled
+      - If the active module is enabled but has no mask
+      - There is some selected masks in mask manage
+      - If the active module is enabled but the selected masks are not used by the
+        module.
+    */
+
+    dt_lib_masks_t *lm = self->data;
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+    GtkTreeModel *model = NULL;
+    GList *selected = gtk_tree_selection_get_selected_rows(selection, &model);
+
+    if (!(mod
+          && mod->enabled
+          && (mod->blend_params->mask_mode & DEVELOP_MASK_MASK)
+          && bd->masks_shown != DT_MASKS_EDIT_OFF
+          && selected
+          && _selected_masks_are_used(model, selected, mod)))
+    {
+      dt_masks_change_form_gui(NULL);
+      dt_control_queue_redraw_center();
+    }
+  }
 }
 
 typedef enum dt_masks_tree_cols_t
