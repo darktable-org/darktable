@@ -575,6 +575,8 @@ void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id);
 /** returns a form with formid == id from dev->forms */
 dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, dt_mask_id_t id);
+/** check if a form is used by a given module (directly or as a child of its group) */
+gboolean dt_masks_is_in_module(dt_mask_id_t maskid, const struct dt_iop_module_t *module);
 /** register forms into the mask manager */
 void dt_masks_register_forms(dt_develop_t *dev,
                              GList *forms);
