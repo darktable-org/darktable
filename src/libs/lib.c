@@ -129,7 +129,7 @@ static void _set_module_preset_label(dt_lib_module_t *module,
 {
   if(!module->expander || !module->has_preset_label(module))
     return;
-  
+
   const gchar *current_preset_label_text = gtk_label_get_text(GTK_LABEL(module->preset_label));
   gchar *preset_label_text =
     (*preset_name == '\0' || (!dt_conf_get_bool("darkroom/ui/auto_module_name_update")))?
@@ -382,8 +382,8 @@ gboolean dt_lib_presets_apply(const gchar *preset,
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const void *blob = sqlite3_column_blob(stmt, 0);
-    int length = sqlite3_column_bytes(stmt, 0);
-    int writeprotect = sqlite3_column_int(stmt, 1);
+    const int length = sqlite3_column_bytes(stmt, 0);
+    const int writeprotect = sqlite3_column_int(stmt, 1);
     if(blob)
     {
       for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
@@ -987,7 +987,7 @@ static gboolean _presets_popup_callback(GtkButton *button,
   return TRUE;
 }
 
-void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
+void dt_lib_gui_set_expanded(dt_lib_module_t *module, const gboolean expanded)
 {
   if(!module->expander || !module->arrow) return;
 
