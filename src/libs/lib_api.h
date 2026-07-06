@@ -53,6 +53,8 @@ REQUIRED(uint32_t, container, struct dt_lib_module_t *self);
     if not the module will always be shown without the expander. */
 DEFAULT(gboolean, expandable, struct dt_lib_module_t *self);
 
+OPTIONAL(void, expanded_state, struct dt_lib_module_t *self, const gboolean expanded);
+
 /** constructor */
 OPTIONAL(void, init, struct dt_lib_module_t *self);
 /** callback methods for gui. */
