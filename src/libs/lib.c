@@ -1000,6 +1000,10 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, const gboolean expanded)
 
   darktable.lib->gui_module = expanded ? module : NULL;
 
+  /* if expanded, make sure the module is visible */
+  if(module->expanded_state)
+    module->expanded_state(module, expanded);
+
   /* store expanded state of module */
   char var[1024];
   const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
