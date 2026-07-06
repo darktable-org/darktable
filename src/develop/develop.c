@@ -1464,17 +1464,9 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
   gboolean enable = _enable;
 
   // no module means that is called from the mask manager, so find the iop
-  if(module == NULL)
+  if (module == NULL)
   {
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *mod = modules->data;
-      if(dt_iop_module_is(mod, "mask_manager"))
-      {
-        module = mod;
-        break;
-      }
-    }
+    module = dt_iop_get_module("mask_manager");
     enable = FALSE;
   }
   if(module)
