@@ -1160,8 +1160,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
     1. a module and it's not enabled
     2. the mask manager and it is not expanded
 */
-  const gboolean skipped = (module && !module->enabled)
-                        && !dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+  const gboolean skipped = (module && !module->enabled);
 
   dt_print(DT_DEBUG_VERBOSE,
     "[dt_masks_events_mouse_moved] %s %s",
