@@ -180,7 +180,8 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
 
   CURLcode res = curl_easy_perform(curl);
   long http_code = 0;
@@ -300,7 +301,8 @@ static char *_fetch_asset_digest(
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
 
   CURLcode res = curl_easy_perform(curl);
   long http_code = 0;
@@ -822,95 +824,16 @@ void dt_ai_models_refresh_status(void)
   g_mutex_unlock(&registry->lock);
 }
 
-void dt_ai_models_check_updates(void)
+// takes ownership of `parser`
+static gboolean _apply_updates_idle(gpointer user_data)
 {
+  JsonParser *parser = (JsonParser *)user_data;
   dt_ai_registry_t *registry = darktable.ai_registry;
-  if(!registry) return;
-
-  // only check once per session
-  g_mutex_lock(&registry->lock);
-  if(registry->updates_checked)
-  {
-    g_mutex_unlock(&registry->lock);
-    return;
-  }
-  registry->updates_checked = TRUE;
-  const char *repository = g_strdup(registry->repository);
-  g_mutex_unlock(&registry->lock);
-
-  if(!repository || !repository[0])
-  {
-    g_free((char *)repository);
-    return;
-  }
-
-  // find the latest compatible release tag
-  char *error_msg = NULL;
-  char *release_tag
-    = _find_latest_compatible_release(repository, &error_msg);
-  if(!release_tag)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] check_updates: no compatible release found%s%s",
-             error_msg ? ": " : "", error_msg ? error_msg : "");
-    g_free(error_msg);
-    g_free((char *)repository);
-    return;
-  }
-  g_free(error_msg);
-
-  // fetch versions.json from the release
-  char *url = g_strdup_printf(
-    "https://github.com/%s/releases/download/%s/versions.json",
-    repository, release_tag);
-
-  CURL *curl = curl_easy_init();
-  if(!curl)
-  {
-    g_free(url);
-    g_free(release_tag);
-    g_free((char *)repository);
-    return;
-  }
-  dt_curl_init(curl, FALSE);
-
-  GString *response = g_string_new(NULL);
-  curl_easy_setopt(curl, CURLOPT_URL, url);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-  CURLcode res = curl_easy_perform(curl);
-  long http_code = 0;
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-  curl_easy_cleanup(curl);
-  g_free(url);
-  g_free(release_tag);
-  g_free((char *)repository);
-
-  if(res != CURLE_OK || http_code != 200)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] check_updates: failed to fetch versions.json"
-             " (curl=%d, http=%ld)",
-             res, http_code);
-    g_string_free(response, TRUE);
-    return;
-  }
-
-  // parse versions.json
-  JsonParser *parser = json_parser_new();
-  if(!json_parser_load_from_data(parser, response->str,
-                                 response->len, NULL))
+  if(!registry)
   {
     g_object_unref(parser);
-    g_string_free(response, TRUE);
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] check_updates: failed to parse versions.json");
-    return;
+    return G_SOURCE_REMOVE;
   }
-  g_string_free(response, TRUE);
 
   JsonNode *root = json_parser_get_root(parser);
   JsonObject *root_obj = json_node_get_object(root);
@@ -925,7 +848,7 @@ void dt_ai_models_check_updates(void)
     dt_print(DT_DEBUG_AI,
              "[ai_models] check_updates: no 'models' object in "
              "versions.json");
-    return;
+    return G_SOURCE_REMOVE;
   }
 
   // populate model->checksum from sha256 so downloads skip re-fetching
@@ -964,6 +887,115 @@ void dt_ai_models_check_updates(void)
   }
   g_mutex_unlock(&registry->lock);
   g_object_unref(parser);
+
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+  return G_SOURCE_REMOVE;
+}
+
+// takes ownership of `repository`; no registry access
+static gpointer _check_updates_worker(gpointer data)
+{
+  char *repository = (char *)data;
+
+  // find the latest compatible release tag
+  char *error_msg = NULL;
+  char *release_tag
+    = _find_latest_compatible_release(repository, &error_msg);
+  if(!release_tag)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: no compatible release found%s%s",
+             error_msg ? ": " : "", error_msg ? error_msg : "");
+    g_free(error_msg);
+    g_free(repository);
+    return NULL;
+  }
+  g_free(error_msg);
+
+  // fetch versions.json from the release
+  char *url = g_strdup_printf(
+    "https://github.com/%s/releases/download/%s/versions.json",
+    repository, release_tag);
+
+  CURL *curl = curl_easy_init();
+  if(!curl)
+  {
+    g_free(url);
+    g_free(release_tag);
+    g_free(repository);
+    return NULL;
+  }
+  dt_curl_init(curl, FALSE);
+
+  GString *response = g_string_new(NULL);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  curl_easy_cleanup(curl);
+  g_free(url);
+  g_free(release_tag);
+  g_free(repository);
+
+  if(res != CURLE_OK || http_code != 200)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: failed to fetch versions.json"
+             " (curl=%d, http=%ld)",
+             res, http_code);
+    g_string_free(response, TRUE);
+    return NULL;
+  }
+
+  // parse versions.json
+  JsonParser *parser = json_parser_new();
+  if(!json_parser_load_from_data(parser, response->str,
+                                 response->len, NULL))
+  {
+    g_object_unref(parser);
+    g_string_free(response, TRUE);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: failed to parse versions.json");
+    return NULL;
+  }
+  g_string_free(response, TRUE);
+
+  g_idle_add(_apply_updates_idle, parser);
+  return NULL;
+}
+
+void dt_ai_models_check_updates(void)
+{
+  dt_ai_registry_t *registry = darktable.ai_registry;
+  if(!registry) return;
+
+  // only check once per session
+  g_mutex_lock(&registry->lock);
+  if(registry->updates_checked)
+  {
+    g_mutex_unlock(&registry->lock);
+    return;
+  }
+  registry->updates_checked = TRUE;
+  char *repository = g_strdup(registry->repository);
+  g_mutex_unlock(&registry->lock);
+
+  if(!repository || !repository[0])
+  {
+    g_free(repository);
+    return;
+  }
+
+  // detached: worker owns `repository`, off the GTK main thread
+  GThread *t = g_thread_new("ai-model-updates",
+                            _check_updates_worker, repository);
+  g_thread_unref(t);
 }
 
 void dt_ai_models_cleanup(void)
