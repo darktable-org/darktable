@@ -795,6 +795,20 @@ static char *_get_version_string(void)
   const char *libraw_version = LIBRAW_VERSION_STR "\n";
 #endif
 
+#ifdef _WIN32
+  const char *system_name = "windows";
+#else
+  #ifdef __APPLE__
+    const char *system_name = "mac";
+  #else
+    #ifdef __linux__
+      const char *system_name = "linux";
+    #else
+      const char *system_name = "other";
+    #endif
+  #endif
+#endif
+
 #ifdef USE_LUA
   const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
                                        STR(LUA_API_VERSION_MAJOR) "."
@@ -807,7 +821,7 @@ static char *_get_version_string(void)
 #endif
 
 char *version = g_strdup_printf(
-               "darktable %s\n"
+               "darktable %s [%s]\n"
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "  Bit depth              -> %zu bit\n"
@@ -815,6 +829,7 @@ char *version = g_strdup_printf(
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
                darktable_package_version,
+               system_name,
                darktable_last_commit_year,
                CHAR_BIT * sizeof(void *),
 
