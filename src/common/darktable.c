@@ -2127,14 +2127,14 @@ void dt_get_sysresource_level()
   if(level != oldlevel)
   {
     oldlevel = res->level = level;
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "[dt_get_sysresource_level] switched to `%s'", config);
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  total mem:       %luMB", res->total_memory / DT_MEGA);
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  available mem:   %luMB", dt_get_available_mem() / DT_MEGA);
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / DT_MEGA);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "[dt_get_sysresource_level] switched to `%s'\n", config);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "  total mem:       %luMB\n", res->total_memory / DT_MEGA);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "  available mem:   %luMB\n", dt_get_available_mem() / DT_MEGA);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / DT_MEGA);
   }
 }
 
