@@ -257,13 +257,32 @@ static void _stderr_suppress_end(int saved)
 #endif
 }
 
-// probe a shared library for OrtGetApiBase to verify it's a valid ORT build;
-// returns the version string (caller must g_free) or NULL on failure;
-// uses BIND_LOCAL to avoid polluting the global symbol namespace
-char *dt_ai_ort_probe_library(const char *path)
-{
-  if(!path || !path[0]) return NULL;
+// catch crashes in foreign ORT DLLs so darktable survives probing;
+// main-thread only, so the module-static jmp_buf is safe
+#ifdef _WIN32
+#include <setjmp.h>
+static jmp_buf g_probe_jmp;
+static gboolean g_probe_active = FALSE;
 
+static LONG WINAPI _probe_veh(EXCEPTION_POINTERS *ep)
+{
+  if(!g_probe_active) return EXCEPTION_CONTINUE_SEARCH;
+  const DWORD code = ep->ExceptionRecord->ExceptionCode;
+  // deliberately not catching STACK_OVERFLOW: the recovery would run
+  // with a consumed guard page and no safe way to reset it
+  if(code == EXCEPTION_ACCESS_VIOLATION
+     || code == EXCEPTION_ILLEGAL_INSTRUCTION
+     || code == EXCEPTION_INT_DIVIDE_BY_ZERO)
+  {
+    g_probe_active = FALSE;
+    longjmp(g_probe_jmp, 1);
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+#endif
+
+static char *_do_probe_library(const char *path)
+{
   GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!mod)
   {
@@ -287,9 +306,36 @@ char *dt_ai_ort_probe_library(const char *path)
   return version;
 }
 
-// probe a library and return version + comma-separated list of supported EPs.
-// both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
-// FALSE before ORT is loaded (no comparison reference yet)
+// probe a shared library for OrtGetApiBase to verify it's a valid ORT build;
+// returns the version string (caller must g_free) or NULL on failure;
+// uses BIND_LOCAL to avoid polluting the global symbol namespace
+char *dt_ai_ort_probe_library(const char *path)
+{
+  if(!path || !path[0]) return NULL;
+
+  char * volatile version = NULL;
+#ifdef _WIN32
+  PVOID veh = AddVectoredExceptionHandler(1, _probe_veh);
+  if(veh)
+  {
+    g_probe_active = TRUE;
+    if(setjmp(g_probe_jmp) == 0)
+      version = _do_probe_library(path);
+    else
+      dt_print(DT_DEBUG_ALWAYS,
+               "[darktable_ai] probe: exception while probing '%s' (leaving loaded)",
+               path);
+    g_probe_active = FALSE;
+    RemoveVectoredExceptionHandler(veh);
+  }
+  else
+    version = _do_probe_library(path);  // unprotected fallback
+#else
+  version = _do_probe_library(path);
+#endif
+  return (char *)version;
+}
+
 // snapshot the conf values that determine which library / EP / device
 // the in-process ORT will be bound to. idempotent — subsequent calls
 // are no-ops so the snapshot reflects whichever state existed first.
@@ -643,12 +689,8 @@ GList *dt_ai_enum_devices_for_provider(const dt_ai_provider_t provider)
   }
 }
 
-int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
+static int _do_probe_library_full(const char *path, char **out_version, char **out_eps)
 {
-  if(!path || !path[0]) return FALSE;
-  if(out_version) *out_version = NULL;
-  if(out_eps) *out_eps = NULL;
-
   GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!mod) return FALSE;
 
@@ -765,6 +807,42 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
 
   g_module_close(mod);
   return TRUE;
+}
+
+// probe a library and return version + comma-separated list of supported EPs.
+// both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
+int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
+{
+  if(!path || !path[0]) return FALSE;
+  if(out_version) *out_version = NULL;
+  if(out_eps) *out_eps = NULL;
+
+  volatile int result = FALSE;
+#ifdef _WIN32
+  PVOID veh = AddVectoredExceptionHandler(1, _probe_veh);
+  if(veh)
+  {
+    g_probe_active = TRUE;
+    if(setjmp(g_probe_jmp) == 0)
+      result = _do_probe_library_full(path, out_version, out_eps);
+    else
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[darktable_ai] probe: exception while probing '%s' (leaving loaded)",
+               path);
+      if(out_version) { g_free(*out_version); *out_version = NULL; }
+      if(out_eps) { g_free(*out_eps); *out_eps = NULL; }
+      result = FALSE;
+    }
+    g_probe_active = FALSE;
+    RemoveVectoredExceptionHandler(veh);
+  }
+  else
+    result = _do_probe_library_full(path, out_version, out_eps);  // unprotected fallback
+#else
+  result = _do_probe_library_full(path, out_version, out_eps);
+#endif
+  return result;
 }
 
 // g_ptr_array_sort passes pointer-to-pointer, hence the double-deref
