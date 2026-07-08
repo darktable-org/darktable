@@ -93,6 +93,9 @@ changes (where available).
 - Enforce darktable loading screen on windowes system to avoid
   darkroom refreshing issues.
 
+- Fixed a bug in CPU opposed highlights code that could lead to out of
+  memory crashes.
+
 ## Lua
 
 ### API Version
