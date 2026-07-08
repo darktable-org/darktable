@@ -96,6 +96,35 @@ changes (where available).
 - Fixed a bug in CPU opposed highlights code that could lead to out of
   memory crashes.
 
+- Fixed a crash on Windows when auto-detecting an incompatible ONNX
+  Runtime library, or when reopening preferences after configuring
+  one.
+
+- Fixed the preferences dialog blocking when opened on a slow or
+  unreachable network. The AI model update check now runs in the
+  background.
+
+- Fixed a crash in neural restore raw denoise on raws where the
+  visible area extends to the sensor edge, e.g. some phone
+  tele-lens DNGs.
+
+- Fixed the "add to the current collection" checkbox in neural
+  restore being ignored when the global "ignore non-raw images"
+  import filter is enabled.
+
+- Fixed neural restore writing past the CFA buffer on 4-Bayer
+  sensors (CYGM, RGBE). Output is now a Linear DNG.
+
+- Fixed Sony embedded lens-correction tags being stripped from
+  exported TIFF and DNG files. Re-imported files now offer the
+  "embedded metadata" lens-correction mode again.
+
+- Fixed a crash and white cast in neural restore preview on
+  LINEAR-class images (Apple ProRAW, computational raws).
+
+- Fixed sRaw images being rejected as unsupported by neural
+  restore. They now route through the LINEAR pipeline.
+
 ## Lua
 
 ### API Version
@@ -134,13 +163,11 @@ changes (where available).
 
 ### Mandatory
 
-- potrace 1.16 is a new requirement
+- N/A
 
 ### Optional
 
-- ONNX Runtime 1.18+ for AI features
-
-- libarchive for AI model extraction
+- N/A
 
 ## Camera support, compared to 5.6.0
 
