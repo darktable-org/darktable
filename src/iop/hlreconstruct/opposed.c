@@ -117,7 +117,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   }
   else
   {
-    char *mask = (quality) ? dt_calloc_align_type(char, 6 * msize) : NULL;
+    char *mask = (quality) ? dt_calloc_aligned(6 * msize) : NULL;
     if(mask)
     {
       gboolean anyclipped = FALSE;
@@ -243,7 +243,8 @@ static float *_process_opposed(dt_iop_module_t *self,
 
   const size_t mwidth  = roi_in->width / 3;
   const size_t mheight = roi_in->height / 3;
-  const size_t msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
+  // we have to over-allocate making sure all later tests fit for all width&height combinations
+  const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
 
   const dt_hash_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -260,7 +261,7 @@ static float *_process_opposed(dt_iop_module_t *self,
   }
   else
   {
-    char *mask = (quality) ? dt_calloc_align_type(char, 6 * msize) : NULL;
+    char *mask = (quality) ? dt_calloc_aligned(6 * msize) : NULL;
     if(mask)
     {
       gboolean anyclipped = FALSE;
