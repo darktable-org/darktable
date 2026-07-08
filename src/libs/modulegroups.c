@@ -810,8 +810,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   if(d->current == DT_MODULEGROUP_BASICS && !d->basics_show) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
   _basics_hide(self);
 
-  // if we have a module to force, set d-current to active pipe
-  if(d->current == DT_MODULEGROUP_INVALID) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
+  // if we have a module to force or still have none selected, set d-current to active pipe
+  if(d->current == DT_MODULEGROUP_INVALID || d->current == DT_MODULEGROUP_NONE)
+    d->current = DT_MODULEGROUP_ACTIVE_PIPE;
 
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
