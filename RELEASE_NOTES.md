@@ -61,7 +61,7 @@ changes (where available).
 
 ## Performance Improvements
 
-- N/A
+- Reverted increased preview pipe dimension for UI performance.
 
 ## Other Changes
 
@@ -124,6 +124,10 @@ changes (where available).
 
 - Fixed sRaw images being rejected as unsupported by neural
   restore. They now route through the LINEAR pipeline.
+
+- Fixed wrong blue colors for 16bit png exports.
+
+- Fixed some subtle segment issues in highlights segmentation mode.
 
 ## Lua
 
