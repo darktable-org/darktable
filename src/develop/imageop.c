@@ -79,7 +79,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   dt_develop_blend_colorspace_t cst =
     dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
-  dt_iop_commit_blend_params(module, module->default_blendop_params);
+  dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
   dt_iop_gui_blending_reload_defaults(module);
 }
 
@@ -428,7 +428,7 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
   dt_develop_blend_colorspace_t cst =
     dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
-  dt_iop_commit_blend_params(module, module->default_blendop_params);
+  dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
 
   if(module->params_size == 0)
   {
@@ -759,7 +759,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
       memcpy(module->params, base->params, module->params_size);
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       {
-        dt_iop_commit_blend_params(module, base->blend_params);
+        dt_iop_commit_blend_params(module, base->blend_params, NULL);
         if(dt_is_valid_maskid(base->blend_params->mask_id))
         {
           module->blend_params->mask_id = NO_MASKID;
@@ -1916,12 +1916,17 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
    1. Handling of raster mask users must only be done if we don't use module's default
       blending parameters.
    2. Also watch out for a raster mask source module to get it's first `target`
-      entry, if so we should invalidate all cachelines from modules with a higher iop order
-      in dt_iop_commit_blend_params() callers.
-      To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
+      entry: a source that gains a new user doesn't change its own params, so its
+      cacheline hash is unchanged and it could be served from cache without ever
+      writing the raster mask the new user depends on. When that happens and `pipe`
+      is given, invalidate that source's cachelines onward so it re-runs and writes
+      the mask. This must fire only for a genuinely new registration, not on every
+      commit, or every edit downstream of an early raster source forces a full
+      re-render of the pipe tail.
 */
-dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
-                                            const dt_develop_blend_params_t *blendop_params)
+void dt_iop_commit_blend_params(dt_iop_module_t *module,
+                                const dt_develop_blend_params_t *blendop_params,
+                                dt_dev_pixelpipe_t *pipe)
 {
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
@@ -1938,7 +1943,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   {
     module->raster_mask.sink.source = NULL;
     module->raster_mask.sink.id = INVALID_MASKID;
-    return NULL;
+    return;
   }
 
   for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
@@ -1953,13 +1958,27 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                             GINT_TO_POINTER(blendop_params->raster_mask_id));
         module->raster_mask.sink.source = candidate;
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
-        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
-                      "request raster mask",
-                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s' %s",
-                      candidate->op, dt_iop_get_instance_id(candidate),
-                      new ? "new" : "replaced");
 
-        return candidate;
+        // Only the genuinely-new case is interesting: it's the one time this
+        // source's cache needs invalidating. Logging every "replaced" would just
+        // repeat on every commit for as long as the raster mask is in use.
+        if(new)
+        {
+          dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+                        "request raster mask",
+                        NULL,
+                        module,
+                        DT_DEVICE_NONE,
+                        NULL,
+                        NULL,
+                        "from '%s%s' new",
+                        candidate->op,
+                        dt_iop_get_instance_id(candidate));
+          if(pipe)
+            dt_dev_pixelpipe_cache_invalidate_later(
+              pipe, candidate->iop_order, "blend new raster: ");
+        }
+        return;
       }
     }
   }
@@ -1979,7 +1998,6 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
-  return NULL;
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -2177,13 +2195,24 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 {
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
 
-  /* 1. make blendop_params available dt_iop_module_t struct.
-        Also checks for a new source raster mask module.
-        This is important as we can't know from here if that raster mask is actually
-        available.
-        We handle this case by partly invalidating the cache to enforce a valid raster.
+  /* We have to take blending parameters into account for the hash if
+      a) there is some blending active detected via the mask_mode or
+      b) we have a blending module in focus so we have valid cachelines
   */
-  dt_iop_module_t *new_raster = dt_iop_commit_blend_params(module, blendop_params);
+  const gboolean is_blending =
+    piece->enabled && module->flags() & IOP_FLAGS_SUPPORTS_BLENDING &&
+    (blendop_params->mask_mode != DEVELOP_MASK_DISABLED || dt_dev_gui_module() == module);
+
+  /* 1. make blendop_params available dt_iop_module_t struct.
+        Also checks for a new source raster mask module. This is important as we
+        can't know from here if that raster mask is actually available: we handle
+        this case by having dt_iop_commit_blend_params() partly invalidate the cache
+        to enforce a valid raster, but only when the raster mask is actually in use.
+  */
+  dt_iop_commit_blend_params(
+    module,
+    blendop_params,
+    (blendop_params->mask_mode & DEVELOP_MASK_RASTER) && is_blending ? pipe : NULL);
 
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
@@ -2221,13 +2250,6 @@ void dt_iop_commit_params(dt_iop_module_t *module,
     phash = dt_hash(phash, &module->instance, sizeof(int32_t));
     phash = dt_hash(phash, module->params, module->params_size);
 
-    /* We have to take blending parameters into account for the hash if
-        a) there is some blending active detected via the mask_mode or
-        b) we have a blending module in focus so we have valid cachelines
-    */
-    const gboolean is_blending = module->flags() & IOP_FLAGS_SUPPORTS_BLENDING
-          && (blendop_params->mask_mode != DEVELOP_MASK_DISABLED
-              || dt_dev_gui_module() == module);
     if(is_blending)
     {
       phash = dt_hash(phash, blendop_params, sizeof(dt_develop_blend_params_t));
@@ -2237,9 +2259,6 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       {
         phash = dt_masks_group_hash(phash, grp);
       }
-
-      if(blendop_params->mask_mode & DEVELOP_MASK_RASTER && new_raster)
-        dt_dev_pixelpipe_cache_invalidate_later(pipe, new_raster->iop_order, "blend new raster: ");
     }
   }
   piece->hash = phash;
@@ -2327,7 +2346,7 @@ static gboolean _gui_reset_callback(GtkButton *button,
     }
     /* reset to default params */
     dt_iop_reload_defaults(module);
-    dt_iop_commit_blend_params(module, module->default_blendop_params);
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
 
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);

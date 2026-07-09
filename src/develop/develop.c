@@ -1624,7 +1624,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
   {
     dt_iop_module_t *module = modules->data;
     memcpy(module->params, module->default_params, module->params_size);
-    dt_iop_commit_blend_params(module, module->default_blendop_params);
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     module->enabled = module->default_enabled;
 
     if(module->multi_priority == 0)
@@ -1646,7 +1646,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
       memcpy(hist->module->params, hist->module->default_params, hist->module->params_size);
     else
       memcpy(hist->module->params, hist->params, hist->module->params_size);
-    dt_iop_commit_blend_params(hist->module, hist->blend_params);
+    dt_iop_commit_blend_params(hist->module, hist->blend_params, NULL);
 
     hist->module->iop_order = hist->iop_order;
     hist->module->enabled = hist->enabled;

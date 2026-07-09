@@ -1088,7 +1088,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
        && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
-      dt_iop_commit_blend_params(module, blendop_params);
+      dt_iop_commit_blend_params(module, blendop_params, NULL);
     }
     else if(blendop_params
             && dt_develop_blend_legacy_params(module, blendop_params,
@@ -1099,7 +1099,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
     }
     else
     {
-      dt_iop_commit_blend_params(module, module->default_blendop_params);
+      dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     }
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);

@@ -385,12 +385,15 @@ void dt_iop_commit_params(dt_iop_module_t *module,
                           struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
 
-/** make sure that blend_params are in sync with the iop struct
-   Also watch out for a raster mask source module to get it's first `target`,
-   dt_iop_commit_blend_params() either returns NULL or the source module.
+/** make sure that blend_params are in sync with the iop struct.
+   Also watch out for a raster mask source module to get its first `target`: if `pipe`
+   is non-NULL and the registration is genuinely new, invalidates that source's
+   cachelines onward, since the source's own hash didn't change but it now has to
+   write a mask for the new user.
 */
-dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
-                                            const struct dt_develop_blend_params_t *blendop_params);
+void dt_iop_commit_blend_params(dt_iop_module_t *module,
+                                const struct dt_develop_blend_params_t *blendop_params,
+                                struct dt_dev_pixelpipe_t *pipe);
 /** make sure the raster mask is advertised if available */
 void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
