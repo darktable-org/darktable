@@ -100,7 +100,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   const size_t height = roi_in->height;
   const size_t mwidth  = width / 3;
   const size_t mheight = height / 3;
-  const size_t msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
+  const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
 
   const dt_hash_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
