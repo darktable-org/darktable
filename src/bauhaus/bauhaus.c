@@ -1803,7 +1803,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget,
                                   const char *text)
 {
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
-  if(!d || !d->editable) return;
+  if(!d || !d->editable || !text) return;
 
   g_strlcpy(d->text, text, DT_BAUHAUS_MAX_TEXT);
   gtk_widget_queue_draw(GTK_WIDGET(widget));

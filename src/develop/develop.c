@@ -3524,7 +3524,10 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   // we create the new module
   dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, base->so, base->dev))
+  {
+    free(module);
     return NULL;
+  }
   module->instance = base->instance;
 
   // we set the multi-instance priority and the iop order
