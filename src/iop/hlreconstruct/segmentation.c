@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -203,7 +203,7 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
            img[i+w4-8] | img[i+w4-7] | img[i+w4+7] | img[i+w4+8] |
            img[i+w5-7] | img[i+w5+7] |
            img[i+w6-6] | img[i+w6-5] | img[i+w6+5] | img[i+w6+6] |
-           img[i+w7-6] | img[i+w7-5] | img[i+w7-4] | img[i+w7+4] | img[i+w7+5] | img[i-w7+6] |
+           img[i+w7-6] | img[i+w7-5] | img[i+w7-4] | img[i+w7+4] | img[i+w7+5] | img[i+w7+6] |
            img[i+w8-4] | img[i+w8-3] | img[i+w8-2] | img[i+w8-1] | img[i+w8] | img[i+w8+1] | img[i+w8+2] | img[i+w8+3] | img[i+w8+4];
   return retval;
 }
@@ -639,7 +639,7 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
 
   if(!seg->data || !seg->size
                 || !seg->xmin || !seg->xmax || !seg->ymin || !seg->ymax
-                || !seg->val2 || !seg->val2)
+                || !seg->val1 || !seg->val2)
   {
     dt_segmentation_free_struct(seg);
     return TRUE;
