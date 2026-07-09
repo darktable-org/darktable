@@ -614,7 +614,8 @@ void dt_control_jobs_init()
   // start threads
   control->num_threads = dt_worker_threads();
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
-  control->job = (dt_job_t **)calloc(control->num_threads, sizeof(dt_job_t *));
+  // allocate enough jobs to match _control_get_threadid()
+  control->job = (dt_job_t **)calloc(control->num_threads+1, sizeof(dt_job_t *));
 
   dt_atomic_set_int(&control->running, DT_CONTROL_STATE_RUNNING);
 
