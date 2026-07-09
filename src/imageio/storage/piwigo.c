@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2025 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx,
                              char *filename,
                              const gboolean isauth);
 
-static size_t curl_write_data_cb(void *ptr,
+static size_t _curl_write_data_cb(void *ptr,
                                  const size_t size,
                                  const size_t nmemb,
                                  void *data)
@@ -289,7 +289,7 @@ static void _piwigo_free_account(void *data)
 
 static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
 {
-  if(!ui->accounts)
+  if(ui->accounts)
   {
     g_list_free_full(ui->accounts, _piwigo_free_account);
     ui->accounts = NULL;
@@ -407,7 +407,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx,
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1L);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
   if(isauth)
