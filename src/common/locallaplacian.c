@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -243,7 +243,7 @@ static inline float *ll_pad_input(
 #define LL_FILL(fallback) do {\
     float isx = ((i - max_supp) + b->roi->x)/b->roi->scale;\
     float isy = ((j - max_supp) + b->roi->y)/b->roi->scale;\
-    if(isx < 0 || isy >= b->buf->width\
+    if(isx < 0 || isx >= b->buf->width\
     || isy < 0 || isy >= b->buf->height)\
       out[*wd2*j+i] = (fallback);\
     else\

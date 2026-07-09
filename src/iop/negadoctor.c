@@ -326,7 +326,7 @@ void process(dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_negadoctor_data_t *const d = piece->data;
-  assert(piece->colors = 4);
+  assert(piece->colors == 4);
 
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
