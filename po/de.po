@@ -30336,7 +30336,7 @@ msgstr "RAW-Entrauschen: Bild entspricht keinem unterstützten RAW-Sensorformat"
 
 #: ../src/libs/neural_restore.c:1359 ../src/libs/neural_restore.c:4168
 msgid "upscale"
-msgstr "Hochkalieren"
+msgstr "Hochskalieren"
 
 #: ../src/libs/neural_restore.c:1361
 #, c-format
