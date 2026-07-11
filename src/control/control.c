@@ -315,7 +315,8 @@ void dt_control_set_temp_cursor(const char *cursor_name)
   if(!_prev_cursor)
   {
     _prev_cursor = gdk_window_get_cursor(window);
-    g_object_ref(_prev_cursor);
+    if(_prev_cursor)
+      g_object_ref(_prev_cursor);
   }
   _change_cursor_with_fallback(cursor_name, TRUE);
 }
