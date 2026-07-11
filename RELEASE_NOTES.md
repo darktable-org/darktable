@@ -129,6 +129,9 @@ changes (where available).
 
 - Fixed some subtle segment issues in highlights segmentation mode.
 
+- Fixed two-finger scrolling falling through to zoom when drawing masks,
+  scrolling now pans unless the active mask consumes the gesture.
+
 ## Lua
 
 ### API Version
