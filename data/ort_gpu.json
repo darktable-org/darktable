@@ -13,12 +13,11 @@
       "cuda_min": "12.0",
       "cuda_max": "12.99",
       "source": {
-        "type": "pypi",
-        "package": "onnxruntime-gpu",
-        "platform_tags": ["manylinux_2_28_x86_64", "manylinux_2_27_x86_64"],
-        "python_tag": "cp312"
+        "type": "github_release",
+        "repo": "microsoft/onnxruntime",
+        "asset_pattern": "onnxruntime-linux-x64-gpu_cuda12-{version}.tgz"
       },
-      "format": "whl",
+      "format": "tgz",
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-cuda",
       "requirements": "CUDA 12, cuDNN 9"
@@ -30,11 +29,12 @@
       "cuda_min": "13.0",
       "cuda_max": "13.99",
       "source": {
-        "type": "github_release",
-        "repo": "microsoft/onnxruntime",
-        "asset_pattern": "onnxruntime-linux-x64-gpu_cuda13-{version}.tgz"
+        "type": "pypi",
+        "package": "onnxruntime-gpu",
+        "platform_tags": ["manylinux_2_28_x86_64", "manylinux_2_27_x86_64"],
+        "python_tag": "cp312"
       },
-      "format": "tgz",
+      "format": "whl",
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-cuda",
       "requirements": "CUDA 13, cuDNN 9"
@@ -46,12 +46,11 @@
       "cuda_min": "12.0",
       "cuda_max": "12.99",
       "source": {
-        "type": "pypi",
-        "package": "onnxruntime-gpu",
-        "platform_tags": ["win_amd64"],
-        "python_tag": "cp312"
+        "type": "github_release",
+        "repo": "microsoft/onnxruntime",
+        "asset_pattern": "onnxruntime-win-x64-gpu_cuda12-{version}.zip"
       },
-      "format": "whl",
+      "format": "zip",
       "lib_pattern": "onnxruntime",
       "install_subdir": "onnxruntime-cuda",
       "requirements": "CUDA 12, cuDNN 9"
@@ -63,11 +62,12 @@
       "cuda_min": "13.0",
       "cuda_max": "13.99",
       "source": {
-        "type": "github_release",
-        "repo": "microsoft/onnxruntime",
-        "asset_pattern": "onnxruntime-win-x64-gpu_cuda13-{version}.zip"
+        "type": "pypi",
+        "package": "onnxruntime-gpu",
+        "platform_tags": ["win_amd64"],
+        "python_tag": "cp312"
       },
-      "format": "zip",
+      "format": "whl",
       "lib_pattern": "onnxruntime",
       "install_subdir": "onnxruntime-cuda",
       "requirements": "CUDA 13, cuDNN 9"
