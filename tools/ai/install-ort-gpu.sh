@@ -239,17 +239,24 @@ resolve_github_release_source() {
   [ -n "${GITHUB_TOKEN:-}" ] && hdr=(-H "Authorization: Bearer $GITHUB_TOKEN")
 
   tmp=$(mktemp)
-  http_code=$(curl -fsS -o "$tmp" -w '%{http_code}' \
-    "${hdr[@]}" -H 'Accept: application/vnd.github+json' "$api_url" || echo "$?")
+  http_code=$(curl -sS -o "$tmp" -w '%{http_code}' \
+    "${hdr[@]}" -H 'Accept: application/vnd.github+json' "$api_url") || {
+    echo "Error: failed to reach $api_url" >&2
+    rm -f "$tmp"
+    exit 1
+  }
 
   if [ "$http_code" = "403" ] || [ "$http_code" = "429" ]; then
     rm -f "$tmp"
+    local install_subdir hint_dir
+    install_subdir=$(echo "$PKG_JSON" | jq -r '.install_subdir // "onnxruntime"')
+    hint_dir="$HOME/.local/lib/$install_subdir"
     cat <<EOF >&2
 
 GitHub API rate limit hit (60 req/hr per IP, unauthenticated).
 
 You're seeing this because the install script needs api.github.com to
-discover the latest CUDA 13 release. Shared NAT (corporate networks,
+discover the latest ONNX Runtime release. Shared NAT (corporate networks,
 VPNs, cloud VMs) often blows through 60/hr from one source IP.
 
 Workarounds, easiest first:
@@ -268,7 +275,7 @@ Workarounds, easiest first:
        d. tar xzf <file>.tgz
        e. Copy the extracted lib/libonnxruntime.so.* (and LICENSE,
           ThirdPartyNotices.txt from the extracted root) into:
-            $INSTALL_DIR
+            $hint_dir
        f. Open darktable -> Preferences -> AI tab -> point at the .so
 
 EOF
