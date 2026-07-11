@@ -322,8 +322,9 @@ static dt_iop_module_t *_find_cloned_module(dt_develop_t *dev, dt_iop_module_t *
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)iter->data;
     // During cloning we preserve the instance ID and other unique fields
-    if(mod->instance == src_mod->instance && g_strcmp0(mod->op, src_mod->op) == 0 &&
-       mod->multi_priority == src_mod->multi_priority)
+    if(mod->instance == src_mod->instance
+       && g_strcmp0(mod->op, src_mod->op) == 0
+       && mod->multi_priority == src_mod->multi_priority)
       return mod;
   }
   return NULL;
