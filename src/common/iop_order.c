@@ -144,6 +144,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {45.5f }, "agx", 0},
   { {46.0f }, "filmic", 0},
   { {46.5f }, "filmicrgb", 0},
+  { { 46.7f }, "spektrafilm", 0 },
   { {47.0f }, "colisa", 0},
   { {48.0f }, "zonesystem", 0},
   { {49.0f }, "tonecurve", 0},
@@ -258,6 +259,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {45.3f }, "sigmoid", 0},
   { {45.5f }, "agx", 0},
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
+  { { 46.7f }, "spektrafilm", 0 },
   { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
   { {48.0f }, "tonecurve", 0},       // same
@@ -377,6 +379,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { {45.3f }, "sigmoid", 0},
   { {45.5f }, "agx", 0},
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
+  { { 46.7f }, "spektrafilm", 0 },
   { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
   { {48.0f }, "tonecurve", 0},       // same
@@ -497,6 +500,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { {45.5f }, "agx", 0},
   { { 45.3f }, "sigmoid", 0},
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
+  { { 46.7f }, "spektrafilm", 0 },
   { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
   { { 48.0f }, "tonecurve", 0 },     // same
@@ -619,6 +623,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 45.3f }, "sigmoid", 0},
   { {45.5f }, "agx", 0},
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
+  { { 46.7f }, "spektrafilm", 0 },
   { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
   { { 48.0f }, "tonecurve", 0 },     // same
