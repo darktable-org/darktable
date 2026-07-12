@@ -682,29 +682,45 @@ sf_profile_t *sf_profile_load(const char *path, char **errmsg)
     JsonNode *cnode = (m && json_object_has_member(m, "centers"))
                           ? json_object_get_member(m, "centers") : NULL;
     JsonArray *centers = (cnode && JSON_NODE_HOLDS_ARRAY(cnode)) ? json_node_get_array(cnode) : NULL;
-    if(centers && json_array_get_length(centers) == 3)
+    /* The reference package's own DensityCurvesModel stores centers/
+       amplitudes/sigmas as (n_channels=3, n_layers) -- confirmed directly
+       against its bundled kodak_portra_endura.json, byte-identical to our
+       copy, and against apply_print_curves_morph's own
+       "n_channels = model.centers.shape[0]". That's the normal,
+       channel-major case (outer array length 3) and every profile checked
+       against the reference package matches it.
+       kodak_2302.json (not part of the reference package's own bundled
+       profiles -- a separately-authored addition) stores it transposed:
+       (n_layers=5, n_channels=3), outer length 5. Rather than assume one
+       convention universally (an earlier version of this fix did, and
+       broke every normal profile by mis-transposing correctly-shaped
+       data), detect orientation per-profile from the one invariant that
+       always holds: there are exactly 3 channels. */
+    const int outer_len = centers ? MIN((int)json_array_get_length(centers), 8) : 0;
+    JsonArray *row0 = (outer_len > 0) ? json_array_get_array_element(centers, 0) : NULL;
+    const int inner_len = row0 ? (int)json_array_get_length(row0) : 0;
+    const gboolean channel_major = (outer_len == 3);              /* centers[channel][layer]: normal */
+    const gboolean layer_major = (!channel_major && inner_len == 3); /* centers[layer][channel]: e.g. kodak_2302 */
+    if(channel_major || layer_major)
     {
-      JsonArray *row0 = json_array_get_array_element(centers, 0);
-      const int nl = MIN((int)json_array_get_length(row0), 8);
+      const int nl = channel_major ? inner_len : outer_len;
       p->curves_model.n_layers = nl;
-      json_read_dmatrix(m, "centers", &p->curves_model.centers[0][0], 3, nl);
-      json_read_dmatrix(m, "amplitudes", &p->curves_model.amplitudes[0][0], 3, nl);
-      json_read_dmatrix(m, "sigmas", &p->curves_model.sigmas[0][0], 3, nl);
-      /* json_read_dmatrix packed rows tightly into an 3×8 array — repack */
-      if(nl != 8)
+      double c[24], a[24], s[24];
+      if(json_read_dmatrix(m, "centers", c, outer_len, inner_len)
+         && json_read_dmatrix(m, "amplitudes", a, outer_len, inner_len)
+         && json_read_dmatrix(m, "sigmas", s, outer_len, inner_len))
       {
-        double c[24], a[24], s[24];
-        json_read_dmatrix(m, "centers", c, 3, nl);
-        json_read_dmatrix(m, "amplitudes", a, 3, nl);
-        json_read_dmatrix(m, "sigmas", s, 3, nl);
         for(int ch = 0; ch < 3; ch++)
           for(int l = 0; l < nl; l++)
           {
-            p->curves_model.centers[ch][l] = c[ch * nl + l];
-            p->curves_model.amplitudes[ch][l] = a[ch * nl + l];
-            p->curves_model.sigmas[ch][l] = s[ch * nl + l];
+            const int idx = channel_major ? (ch * nl + l) : (l * 3 + ch);
+            p->curves_model.centers[ch][l] = c[idx];
+            p->curves_model.amplitudes[ch][l] = a[idx];
+            p->curves_model.sigmas[ch][l] = s[idx];
           }
       }
+      else
+        p->curves_model.n_layers = 0; /* malformed data: don't leave partial state */
     }
   }
 
