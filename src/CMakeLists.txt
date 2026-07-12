@@ -88,6 +88,8 @@ FILE(GLOB SOURCE_FILES
   "common/ratings.c"
   "common/resource_limits.c"
   "common/selection.c"
+  "common/spektra_core.c"
+  "common/spektra_sim.c"
   "common/splines.cpp"
   "common/styles.c"
   "common/system_signal_handling.c"

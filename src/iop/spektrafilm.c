@@ -81,8 +81,8 @@
 #define SF_FREE_FILE(buf) g_free(buf)
 #define SF_DIAG_LOG(...) dt_print(DT_DEBUG_DEV, __VA_ARGS__)
 #define SF_STRTOD(s, end) g_ascii_strtod((s), (end))
-#include "spektra_core.h"
-#include "spektra_sim.h"
+#include "common/spektra_core.h"
+#include "common/spektra_sim.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
 
