@@ -21,8 +21,7 @@
  * Film modeling powered by spektrafilm (https://github.com/andreavolpato/spektrafilm),
  * GPLv3, © Andrea Volpato. Film/paper profile data CC BY-SA 4.0.
  *
- * Unlike the earlier LUT-bundle module, this module computes the full
- * spektrafilm colour pipeline natively per pixel:
+ * This module computes the full spektrafilm colour pipeline natively per pixel:
  *
  *   scene-linear work RGB
  *     -> CAT16 to the film's reference illuminant, xy -> spectral upsampling
