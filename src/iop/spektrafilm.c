@@ -1361,8 +1361,20 @@ void gui_update(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->paper, g->entries[g->paper_entry[k]].name);
 
   int fi = 0;
+  gboolean film_matched = FALSE;
   for(int f = 0; f < g->n_films; f++)
-    if(g->entries[g->film_entry[f]].hash == p->film_hash) fi = f;
+    if(g->entries[g->film_entry[f]].hash == p->film_hash) { fi = f; film_matched = TRUE; }
+  if(!film_matched)
+  {
+    /* no hash match (fresh param with film_hash==0, or the saved stock
+       vanished from the pack) -- mirror sf_resolve_stock's fallback so the
+       combobox agrees with what the pixel pipeline actually renders, instead
+       of silently landing on whatever sorts first (e.g. "Fujifilm C200"
+       alphabetically before "Kodak Portra 400") while the pipe renders the
+       real default. */
+    for(int f = 0; f < g->n_films; f++)
+      if(!strcmp(g->entries[g->film_entry[f]].stock, "kodak_portra_400")) fi = f;
+  }
   dt_bauhaus_combobox_set(g->film, fi);
   int pi = 0;
   const char *target = (fi < g->n_films) ? g->entries[g->film_entry[fi]].target_print : NULL;
