@@ -197,12 +197,14 @@ function Resolve-GitHubReleaseSource($source) {
         $code = $null
         if ($_.Exception.Response) { $code = [int]$_.Exception.Response.StatusCode }
         if ($code -eq 403 -or $code -eq 429) {
+            $installSubdir = if ($Package.install_subdir) { $Package.install_subdir } else { 'onnxruntime' }
+            $hintDir = Join-Path $env:LOCALAPPDATA $installSubdir
             Write-Host @"
 
 GitHub API rate limit hit (60 req/hr per IP, unauthenticated).
 
 You're seeing this because the install script needs api.github.com to
-discover the latest CUDA 13 release. Shared NAT (corporate networks,
+discover the latest ONNX Runtime release. Shared NAT (corporate networks,
 VPNs, cloud VMs) often blows through 60/hr from one source IP.
 
 Workarounds, easiest first:
@@ -222,7 +224,7 @@ Workarounds, easiest first:
        d. Expand-Archive <file>.zip -DestinationPath .
        e. Copy the extracted lib\onnxruntime.dll (and LICENSE,
           ThirdPartyNotices.txt from the extracted root) into:
-            $InstallDir
+            $hintDir
        f. Open darktable -> Preferences -> AI tab -> point at the .dll
 
 "@ -ForegroundColor Yellow
