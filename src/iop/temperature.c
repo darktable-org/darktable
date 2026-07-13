@@ -917,21 +917,6 @@ static void _color_rgb_sliders(dt_iop_module_t *self)
   // there are 3 ways to do colored sliders: naive (independent 0->1),
   // smart(er) (dependent 0->1) and real (coeff)
 
-  if(FALSE)
-  {
-  //naive:
-    dt_bauhaus_slider_set_stop(g->scale_r, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_r, 1.0, 1.0, 0.0, 0.0);
-
-    dt_bauhaus_slider_set_stop(g->scale_g, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_g, 1.0, 0.0, 1.0, 0.0);
-
-    dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
-
-    dt_bauhaus_slider_set_stop(g->scale_y, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_y, 1.0, 0.0, 1.0, 0.0);
-  }
   if(!g->blackbody_is_confusing)
   {
     //smart(er) than naive
