@@ -231,14 +231,17 @@ GList *dt_styles_module_order_list(const char *name)
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
-  if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *iop_list_txt = (char *)sqlite3_column_text(stmt, 0);
-    iop_list = dt_ioppr_deserialize_text_iop_order_list(iop_list_txt);
+    if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+    {
+      const char *iop_list_txt = (char *)sqlite3_column_text(stmt, 0);
+      iop_list = dt_ioppr_deserialize_text_iop_order_list(iop_list_txt);
 
-    // we need to migrate legacy iop order list that may not contains all
-    // modules of the style.
-    dt_ioppr_migrate_legacy_iop_order_list(iop_list);
+      // we need to migrate legacy iop order list that may not contains all
+      // modules of the style.
+      dt_ioppr_migrate_legacy_iop_order_list(iop_list);
+    }
   }
   sqlite3_finalize(stmt);
   return iop_list;
