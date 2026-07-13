@@ -1432,10 +1432,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->paper), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->paper, TRUE, TRUE, 0);
 
-  g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
-  gtk_widget_set_tooltip_text(g->scan_film,
-                              _("view the developed film directly (no print stage)"));
-
   g->exposure_ev = dt_bauhaus_slider_from_params(self, "exposure_ev");
   dt_bauhaus_slider_set_format(g->exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(
@@ -1458,6 +1454,9 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *sf_main_box = self->widget; /* restored after the advanced widgets below */
   self->widget = GTK_WIDGET(g->cs.container);
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print")));
+  g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
+  gtk_widget_set_tooltip_text(g->scan_film,
+                              _("view the developed film directly (no print stage)"));
   g->print_contrast = dt_bauhaus_slider_from_params(self, "print_contrast");
   gtk_widget_set_tooltip_text(g->print_contrast,
                               _("print contrast (morphs the paper's density curves)"));
