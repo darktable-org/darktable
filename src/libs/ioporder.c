@@ -31,7 +31,6 @@ DT_MODULE(1)
 typedef struct dt_lib_ioporder_t
 {
   int current_mode;
-  GList *last_custom_iop_order;
 } dt_lib_ioporder_t;
 
 const char *name(dt_lib_module_t *self)
@@ -135,7 +134,6 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   d->current_mode = -1;
-  d->last_custom_iop_order = NULL;
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_loaded_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _image_loaded_callback);
