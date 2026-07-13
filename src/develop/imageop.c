@@ -1915,14 +1915,16 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
 /* make sure that blend_params are in sync with the iop struct
    1. Handling of raster mask users must only be done if we don't use module's default
       blending parameters.
-   2. Also watch out for a raster mask source module to get it's first `target`
-      entry: a source that gains a new user doesn't change its own params, so its
-      cacheline hash is unchanged and it could be served from cache without ever
-      writing the raster mask the new user depends on. When that happens and `pipe`
-      is given, invalidate that source's cachelines onward so it re-runs and writes
-      the mask. This must fire only for a genuinely new registration, not on every
-      commit, or every edit downstream of an early raster source forces a full
-      re-render of the pipe tail.
+   2. Also watch out for a raster mask source module: gaining a user doesn't change
+      the source's own params, so its cacheline hash is unchanged and it could be
+      served from cache without ever writing the raster mask its consumer needs.
+      When `pipe` is given, check that pipe's own source piece: if it has never
+      stored a mask for this id, invalidate the source's cachelines onward so it
+      re-runs and writes one. This is deliberately per-pipe state, not the
+      module-global "is this registration new" flag from the users hash table:
+      GUI code and history replay register a consumer in that shared table before
+      any pipe commits, so a global flag is already consumed by the time a real
+      per-pipe commit happens and would never fire.
 */
 void dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const dt_develop_blend_params_t *blendop_params,
@@ -1959,11 +1961,11 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
         module->raster_mask.sink.source = candidate;
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
 
-        // Only the genuinely-new case is interesting: it's the one time this
-        // source's cache needs invalidating. Logging every "replaced" would just
-        // repeat on every commit for as long as the raster mask is in use.
+        // Only the genuinely-new case is interesting for the debug log: it's the
+        // one time this exact user/source pairing gets registered. Logging every
+        // "replaced" would just repeat on every commit for as long as the raster
+        // mask is in use.
         if(new)
-        {
           dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
                         "request raster mask",
                         NULL,
@@ -1974,7 +1976,33 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
                         "from '%s%s' new",
                         candidate->op,
                         dt_iop_get_instance_id(candidate));
-          if(pipe)
+
+        // Whether *this pipe* needs to invalidate the source's cacheline must
+        // not be decided from `new`: that flag is shared across all pipes via
+        // `candidate->raster_mask.source.users`, and GUI code
+        // (_raster_value_changed_callback) as well as history replay register
+        // the consumer there before any pipe ever commits, so by the time a
+        // real per-pipe commit runs, `new` is already false everywhere and no
+        // pipe would invalidate -- silently starving the consumer of a mask
+        // that was never actually computed. Instead check this pipe's own
+        // state: has its source piece already stored a mask for this id? If
+        // not, the source must (re-)run so it writes one.
+        if(pipe)
+        {
+          dt_dev_pixelpipe_iop_t *source_piece = NULL;
+          for(GList *n = pipe->nodes; n; n = g_list_next(n))
+          {
+            dt_dev_pixelpipe_iop_t *p = n->data;
+            if(p->module == candidate)
+            {
+              source_piece = p;
+              break;
+            }
+          }
+          const gboolean mask_missing =
+            !source_piece || !g_hash_table_lookup(source_piece->raster_masks,
+                                                  GINT_TO_POINTER(blendop_params->raster_mask_id));
+          if(mask_missing)
             dt_dev_pixelpipe_cache_invalidate_later(
               pipe, candidate->iop_order, "blend new raster: ");
         }
