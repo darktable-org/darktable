@@ -544,12 +544,19 @@ static void _window_position(const int offset)
       pop->offcut += offset;
       return;
     }
+    pop->offcut = -height;
+    height *= 2;
+    // In GTK4 all visuals are RGBA and GdkVisual/GdkScreen no longer exist.
+    // The RGBA visual setup below is only needed on GTK3 Wayland where
+    // gdk_screen_is_composited() returns TRUE but popups would otherwise be
+    // opaque. At switch time the entire Wayland workaround block must be
+    // reworked (GdkWindow -> GdkSurface, gdk_window_resize removed, etc.).
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gtk_widget_set_app_paintable(pop->window, TRUE);
     GdkScreen *screen = gtk_widget_get_screen(pop->window);
     GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
-    pop->offcut = -height;
-    height *= 2;
     gtk_widget_set_visual(pop->window, visual);
+#endif
   }
 #endif
 
