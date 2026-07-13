@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/debug.h"
 #include "common/file_location.h"
@@ -564,7 +565,7 @@ static void _refresh_display_all_tracks(GtkWidget *widget, dt_lib_module_t *self
 
 static gboolean _click_for_entire_track(GtkEntry *spin, GdkEventButton *event, dt_lib_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     _refresh_display_all_tracks(NULL, self);
   }
@@ -1567,7 +1568,7 @@ static GtkWidget *_gui_init_datetime(gchar *text,
 static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = self->data;
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Escape:
     {
@@ -1656,7 +1657,7 @@ static void _timezone_save(dt_lib_module_t *self)
 
 static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:

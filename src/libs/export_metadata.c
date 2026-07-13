@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "common/darktable.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -131,7 +132,7 @@ static void _delete_tag_button_clicked(GtkButton *button, dt_lib_export_metadata
 
 static gboolean _key_press_on_list(GtkWidget *widget, GdkEventKey *event, dt_lib_export_metadata_t *d)
 {
-  if(event->type == GDK_KEY_PRESS && event->keyval == GDK_KEY_Delete && !event->state)
+  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS && dt_gdk_event_get_keyval(event) == GDK_KEY_Delete && !dt_gdk_event_get_state(event))
   {
     _remove_tag_from_list(d);
     return TRUE;

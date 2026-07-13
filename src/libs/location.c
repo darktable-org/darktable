@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
 #include "common/geo.h"
@@ -159,7 +160,7 @@ static gboolean _event_box_enter_leave(GtkWidget *widget,
                                        GdkEventCrossing *event,
                                        gpointer user_data)
 {
-  if(event->type == GDK_ENTER_NOTIFY)
+  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY)
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
   else
     gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
