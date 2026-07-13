@@ -163,6 +163,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   int n_entries;
   int film_entry[SF_MAX_PROFILES], n_films;   /* indices into entries[] */
   int paper_entry[SF_MAX_PROFILES], n_papers;
+  dt_gui_collapsible_section_t cs;
 } dt_iop_spektrafilm_gui_data_t;
 
 /* per-piece data: parameter snapshot + a lazily (re)built simulation.
@@ -1343,6 +1344,7 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  dt_gui_update_collapsible_section(&g->cs);
 
   _rescan(self);
   dt_bauhaus_combobox_clear(g->film);
@@ -1435,6 +1437,13 @@ void gui_init(dt_iop_module_t *self)
       _("automatically compensate print exposure for film exposure changes, as a real"
         " printer would print to a fixed density; disable for film exposure to affect"
         " brightness directly, same as a fixed enlarger exposure time"));
+  g->grain_on = dt_bauhaus_toggle_from_params(self, "grain_on");
+  g->halation_on = dt_bauhaus_toggle_from_params(self, "halation_on");
+  dt_gui_new_collapsible_section(&g->cs, "plugins/darkroom/spektrafilm/expand_advanced",
+                                 _("advanced"), GTK_BOX(self->widget), DT_ACTION(self));
+  GtkWidget *sf_main_box = self->widget; /* restored after the advanced widgets below */
+  self->widget = GTK_WIDGET(g->cs.container);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print")));
   g->print_contrast = dt_bauhaus_slider_from_params(self, "print_contrast");
   gtk_widget_set_tooltip_text(g->print_contrast,
                               _("print contrast (morphs the paper's density curves)"));
@@ -1450,18 +1459,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->couplers_amount,
                               _("DIR coupler strength: inter-layer inhibition drives saturation"
                                 " and edge effects (1.0 = film-accurate, 0 = off)"));
-  g->quality = dt_bauhaus_combobox_from_params(self, "quality");
-  gtk_widget_set_tooltip_text(g->quality,
-                              _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
-                                " and validated against the reference"));
 
-  g->grain_on = dt_bauhaus_toggle_from_params(self, "grain_on");
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "grain")));
   g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
   g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
   gtk_widget_set_tooltip_text(g->grain_size,
                               _("grain particle size (1.0 = film default; higher = coarser)"));
 
-  g->halation_on = dt_bauhaus_toggle_from_params(self, "halation_on");
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "halation")));
   g->halation_amount = dt_bauhaus_slider_from_params(self, "halation_amount");
   dt_bauhaus_slider_set_soft_range(g->halation_amount, 0.0f, 2.0f);
   gtk_widget_set_tooltip_text(g->halation_amount,
@@ -1481,6 +1486,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->protect_ev, _(" EV"));
   gtk_widget_set_tooltip_text(g->protect_ev,
                               _("protect tones below this many stops over mid-grey from the boost"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "diffusion")));
   g->diffusion_on = dt_bauhaus_toggle_from_params(self, "diffusion_on");
   g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
   gtk_widget_set_tooltip_text(g->diffusion_strength,
@@ -1490,10 +1496,16 @@ void gui_init(dt_iop_module_t *self)
   g->diffusion_warmth = dt_bauhaus_slider_from_params(self, "diffusion_warmth");
   gtk_widget_set_tooltip_text(g->diffusion_warmth,
                               _("diffusion halo warmth: >0 warm outer halo, <0 cool"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "settings")));
+  g->quality = dt_bauhaus_combobox_from_params(self, "quality");
+  gtk_widget_set_tooltip_text(g->quality,
+                              _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
+                                " and validated against the reference"));
   g->film_format_mm = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm, _(" mm"));
   gtk_widget_set_tooltip_text(g->film_format_mm,
                               _("physical film width; sets the scale of grain and halation"));
+  self->widget = sf_main_box;
 }
 
 // clang-format off
