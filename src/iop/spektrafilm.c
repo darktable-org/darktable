@@ -1035,7 +1035,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         const float sigma = fmaxf(plan.sigma_um[j] * dsc / pixel_um, 1e-3f);
         err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, tmpa, 0, 0, npix * f * 4);
         if(err != CL_SUCCESS) break;
-        err = dt_gaussian_fast_blur_cl_buffer(devid, tmpa, tmpa, w, h, sigma, 4, -1e9f, 1e9f);
+        err = dt_gaussian_mean_blur_cl(devid, tmpa, w, h, 4, sigma);
         if(err != CL_SUCCESS) break;
         const int reset = (j == 0);
         const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
@@ -1062,16 +1062,15 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     const float amp[3] = { 0.1633f, 0.6496f, 0.1870f }, rat[3] = { 0.5360f, 1.5236f, 2.7684f };
     err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, tmpa, 0, 0, npix * f * 4);
     SF_CL_STEP("halation core copy");
-    err = dt_gaussian_fast_blur_cl_buffer(devid, tmpa, tmpa, w, h,
-                                          fmaxf(core_um * hscl / pixel_um, 1e-3f), 4, -1e9f, 1e9f);
+    err = dt_gaussian_mean_blur_cl(devid, tmpa, w, h, 4,
+                                   fmaxf(core_um * hscl / pixel_um, 1e-3f));
     SF_CL_STEP("halation core blur");
     for(int g3 = 0; g3 < 3; g3++)
     {
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, tmpb, 0, 0, npix * f * 4);
       SF_CL_STEP("halation tail copy");
-      err = dt_gaussian_fast_blur_cl_buffer(devid, tmpb, tmpb, w, h,
-                                            fmaxf(rat[g3] * tail_um * hscl / pixel_um, 1e-3f), 4,
-                                            -1e9f, 1e9f);
+      err = dt_gaussian_mean_blur_cl(devid, tmpb, w, h, 4,
+                                     fmaxf(rat[g3] * tail_um * hscl / pixel_um, 1e-3f));
       SF_CL_STEP("halation tail blur");
       const int reset = (g3 == 0);
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(tmpb),
@@ -1099,9 +1098,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     {
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, tmpb, 0, 0, npix * f * 4);
       SF_CL_STEP("halation bounce copy");
-      err = dt_gaussian_fast_blur_cl_buffer(
-          devid, tmpb, tmpb, w, h, fmaxf(first_sigma * hscl * sqrtf((float)k) / pixel_um, 1e-3f),
-          4, -1e9f, 1e9f);
+      err = dt_gaussian_mean_blur_cl(
+          devid, tmpb, w, h, 4, fmaxf(first_sigma * hscl * sqrtf((float)k) / pixel_um, 1e-3f));
       SF_CL_STEP("halation bounce blur");
       const int reset = (k == 1);
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(tmpb),
@@ -1148,7 +1146,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         SF_CL_STEP("coupler tail copy");
         if(sig[g3] > 0.1f)
         {
-          err = dt_gaussian_fast_blur_cl_buffer(devid, tmpb, tmpb, w, h, sig[g3], 4, -1e9f, 1e9f);
+          err = dt_gaussian_mean_blur_cl(devid, tmpb, w, h, 4, sig[g3]);
           SF_CL_STEP("coupler tail blur");
         }
         const int reset = (g3 == 0);
@@ -1163,7 +1161,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     }
     else if(csigma > 0.1f)
     {
-      err = dt_gaussian_fast_blur_cl_buffer(devid, acc, acc, w, h, csigma, 4, -1e9f, 1e9f);
+      err = dt_gaussian_mean_blur_cl(devid, acc, w, h, 4, csigma);
       SF_CL_STEP("coupler blur");
     }
   }
@@ -1193,7 +1191,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     SF_CL_STEP("grain gen");
     const float gsigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
                               * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN) / fmaxf(pixel_um, 1e-3f);
-    err = dt_gaussian_fast_blur_cl_buffer(devid, tmpa, tmpa, w, h, gsigma, 4, -1000.0f, 1000.0f);
+    err = dt_gaussian_mean_blur_cl(devid, tmpa, w, h, 4, gsigma);
     SF_CL_STEP("grain blur");
     const float grenorm = sqrtf(2.0f * sqrtf((float)M_PI) * fmaxf(gsigma, 0.3f));
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
