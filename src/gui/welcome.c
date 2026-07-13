@@ -677,7 +677,6 @@ void dt_welcome_screen_show(dt_welcome_screen_t *ws)
 #endif
 
   gtk_window_set_default_size(GTK_WINDOW(window), 500, -1);
-  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
 
   GtkWidget *content = dt_gui_vbox();
   gtk_widget_set_name(content, "welcome-content");

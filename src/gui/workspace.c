@@ -572,8 +572,6 @@ gboolean dt_workspace_create(const char *datadir)
                                 GTK_RESPONSE_NONE,
                                 NULL);
 
-  gtk_window_set_position(GTK_WINDOW(session->db_screen), GTK_WIN_POS_CENTER);
-
   GList *dbs = dt_read_file_pattern(datadir, "library-*.db");
   if(dbs)
     dbs = g_list_sort(dbs, _workspace_library_db_compare);

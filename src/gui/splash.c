@@ -112,7 +112,6 @@ void dt_splash_screen_create(const gboolean force)
   darktable.splash.start_screen = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_decorated(GTK_WINDOW(darktable.splash.start_screen), FALSE);
   gtk_window_set_resizable(GTK_WINDOW(darktable.splash.start_screen), FALSE);
-  gtk_window_set_position(GTK_WINDOW(darktable.splash.start_screen), GTK_WIN_POS_CENTER);
 
   gtk_widget_set_name(darktable.splash.start_screen, "splashscreen");
   darktable.splash.progress_text = gtk_label_new(_("initializing"));

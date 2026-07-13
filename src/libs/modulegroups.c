@@ -4189,7 +4189,6 @@ static void _manage_show_window(dt_lib_module_t *self)
   g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);
 
-  gtk_window_set_position(GTK_WINDOW(d->dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show(d->dialog);
 }
 

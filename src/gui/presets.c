@@ -1528,7 +1528,6 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
 
   gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
 
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show_all(dialog);
 }
 

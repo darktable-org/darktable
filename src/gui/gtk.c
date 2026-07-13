@@ -3317,16 +3317,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
     if(win && gtk_widget_get_visible(GTK_WIDGET(win)))
     {
       gtk_window_set_transient_for(GTK_WINDOW(window), win);
-      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
     }
-    else
-    {
-      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
-    }
-  }
-  else
-  {
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
   }
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, padding);
@@ -3406,18 +3397,6 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
   {
     GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
     gtk_window_set_transient_for(GTK_WINDOW(window), win);
-    if(gtk_widget_get_visible(GTK_WIDGET(win)))
-    {
-      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
-    }
-    else
-    {
-      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
-    }
-  }
-  else
-  {
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
   }
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -5076,8 +5055,6 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
   const int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
   if(x && y)
     gtk_window_move(GTK_WINDOW(dialog), x, y);
-  else
-    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   g_signal_connect(dialog, "configure-event", G_CALLBACK(_resize_dialog), (gpointer)conf);
 }
 
