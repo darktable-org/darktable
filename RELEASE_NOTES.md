@@ -146,6 +146,8 @@ changes (where available).
 
 - Stop script_manager from starting twice and causing a stack overflow.
 
+- Change to user installed scripts directory before updating.
+
 ### New Scripts
 
 - N/A
