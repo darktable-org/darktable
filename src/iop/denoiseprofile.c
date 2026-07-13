@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/eaw.h"
@@ -3447,8 +3448,8 @@ static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
   if(g->dragging)
   {
     *p = g->drag_params;
@@ -3474,7 +3475,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   const int ch = g->channel;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == 1 && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_denoiseprofile_params_t *p = self->params;
@@ -3488,7 +3489,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_denoiseprofile_params_t *)self->params;
     const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -3497,8 +3498,8 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
     g->mouse_pick
         = dt_draw_curve_calc_value(g->transition_curve,
-                                   CLAMP(event->x - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+                                   CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
     g->dragging = 1;
     return TRUE;
   }
@@ -3509,7 +3510,7 @@ static gboolean denoiseprofile_button_release(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -3536,7 +3537,7 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget,
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  if(dt_modifier_is(event->state, GDK_MOD1_MASK))
+  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK))
     return gtk_widget_event(GTK_WIDGET(g->channel > DT_DENOISE_PROFILE_B ? g->channel_tabs_Y0U0V0 : g->channel_tabs), (GdkEvent*)event);
 
   int delta_y;

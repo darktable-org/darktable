@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/iop_profile.h"
 #include "bauhaus/bauhaus.h"
@@ -560,16 +561,16 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!g->dragging)
   {
-    g->mouse_x = CLAMP(event->x - inset, 0, width);
+    g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
     g->drag_start_percentage = (p->levels[g->channel][1] - p->levels[g->channel][0]) / (p->levels[g->channel][2] - p->levels[g->channel][0]);
   }
-  g->mouse_y = CLAMP(event->y - inset, 0, height);
+  g->mouse_y = CLAMP(dt_gdk_event_get_y(event) - inset, 0, height);
 
   if(g->dragging)
   {
     if(g->handle_move >= 0 && g->handle_move < 3)
     {
-      const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
+      const float mx = (CLAMP(dt_gdk_event_get_x(event) - inset, 0, width)) / (float)width;
 
       _rgblevels_move_handle(self, g->handle_move, mx, p->levels[g->channel], g->drag_start_percentage);
     }
@@ -577,7 +578,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   else
   {
     g->handle_move = 0;
-    const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+    const float mx = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
     float dist = fabsf(p->levels[g->channel][0] - mx);
     for(int k = 1; k < 3; k++)
     {
@@ -602,11 +603,11 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
                                             dt_iop_module_t *self)
 {
   // set active point
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-    if(event->type == GDK_2BUTTON_PRESS)
+    if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       _turn_selregion_picker_off(self);
 
@@ -640,7 +641,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_rgblevels_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -667,7 +668,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget,
 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state);
+  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, dt_gdk_event_get_state(event));
   // Distance moved for each scroll event
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))

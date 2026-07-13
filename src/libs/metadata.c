@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/metadata.h"
 #include "common/collection.h"
@@ -425,18 +426,18 @@ static gboolean _key_pressed(GtkWidget *textview,
 {
   dt_lib_metadata_t *d = self->data;
 
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
-      if(!dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      if(!dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
       {
         gtk_button_clicked(GTK_BUTTON(d->apply_button));
         return TRUE;
       }
       break;
     case GDK_KEY_Escape:
-      if(dt_modifier_is(event->state, 0))
+      if(dt_modifier_is(dt_gdk_event_get_state(event), 0))
       {
         gtk_button_clicked(GTK_BUTTON(d->cancel_button));
         return TRUE;
@@ -572,7 +573,7 @@ static gboolean _metadata_reset(GtkWidget *label,
                                 GdkEventButton *event,
                                 GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     g_object_set_data(G_OBJECT(widget), "tv_multiple", GINT_TO_POINTER(FALSE));
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));

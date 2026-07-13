@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/debug.h"
 #include "common/metadata.h"
@@ -70,7 +71,7 @@ static gboolean _import_metadata_reset(GtkWidget *label,
                                        GdkEventButton *event,
                                        GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), "");
   }
@@ -108,7 +109,7 @@ static gboolean _import_metadata_reset_all(GtkWidget *label,
                                            GdkEventButton *event,
                                            dt_import_metadata_t *metadata)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     _metadata_reset_all(metadata, FALSE);
   }

@@ -15,6 +15,7 @@
   You should have received a copy of the GNU General Public License
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
@@ -5323,13 +5324,13 @@ static int _event_fit_v_button_clicked(GtkWidget *widget,
 {
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
+    const int control = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5371,13 +5372,13 @@ static int _event_fit_h_button_clicked(GtkWidget *widget,
 {
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
+    const int control = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5419,13 +5420,13 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
 {
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
+    const int control = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5469,15 +5470,15 @@ static int _event_structure_auto_clicked(GtkWidget *widget,
 {
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
     _do_clean_structure(self, p, TRUE);
 
-    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
+    const int control = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(dt_gdk_event_get_state(event), GDK_SHIFT_MASK);
 
     dt_iop_ashift_enhance_t enhance;
 

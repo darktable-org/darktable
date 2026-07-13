@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 /** Note :
  * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
@@ -4175,7 +4176,7 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
   if(g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
   {
 
-    if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+    if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       // double click resets view
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4190,7 +4191,7 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
         return FALSE;
       }
     }
-    else if(event->button == GDK_BUTTON_PRIMARY)
+    else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
     {
       // simple left click cycles through modes in positive direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4219,7 +4220,7 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
         return FALSE;
       }
     }
-    else if(event->button == GDK_BUTTON_SECONDARY)
+    else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
     {
       // simple right click cycles through modes in negative direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4253,7 +4254,7 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
 static gboolean area_enter_leave_notify(GtkWidget *widget, const GdkEventCrossing *event, const dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
-  g->gui_hover = event->type == GDK_ENTER_NOTIFY;
+  g->gui_hover = dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return FALSE;
 }
@@ -4266,8 +4267,8 @@ static gboolean area_motion_notify(GtkWidget *widget, const GdkEventMotion *even
   if(!g->gui_sizes_inited) return FALSE;
 
   // get in-widget coordinates
-  const float y = event->y;
-  const float x = event->x;
+  const float y = dt_gdk_event_get_y(event);
+  const float x = dt_gdk_event_get_x(event);
 
   if(x > 0. && x < g->allocation.width && y > 0. && y < g->allocation.height) g->gui_hover = TRUE;
 
