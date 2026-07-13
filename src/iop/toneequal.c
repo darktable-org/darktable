@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 /*** DOCUMENTATION
  *
@@ -2959,8 +2960,8 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
   dt_iop_gui_enter_critical_section(self);
-  g->area_x = (event->x - g->inset);
-  g->area_y = (event->y - g->inset);
+  g->area_x = (dt_gdk_event_get_x(event) - g->inset);
+  g->area_y = (dt_gdk_event_get_y(event) - g->inset);
   g->area_dragging = FALSE;
   g->area_active_node = -1;
   g->area_cursor_valid = (g->area_x > 0.0f
@@ -2985,7 +2986,7 @@ static gboolean area_button_press(GtkWidget *widget,
 
   dt_iop_request_focus(self);
 
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = self->params;
     const dt_iop_toneequalizer_params_t *const d = self->default_params;
@@ -3009,7 +3010,7 @@ static gboolean area_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     if(self->enabled)
     {
@@ -3045,7 +3046,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
     // vertical distance travelled since button_pressed event
     dt_iop_gui_enter_critical_section(self);
     // graph spans over 4 EV
-    const float offset = (-event->y + g->area_y) / g->graph_height * 4.0f;
+    const float offset = (-dt_gdk_event_get_y(event) + g->area_y) / g->graph_height * 4.0f;
     const float cursor_exposure = g->area_x / g->graph_width * 8.0f - 8.0f;
 
     // Get the desired correction on exposure channels
@@ -3055,8 +3056,8 @@ static gboolean area_motion_notify(GtkWidget *widget,
   }
 
   dt_iop_gui_enter_critical_section(self);
-  g->area_x = event->x - g->inset;
-  g->area_y = event->y;
+  g->area_x = dt_gdk_event_get_x(event) - g->inset;
+  g->area_y = dt_gdk_event_get_y(event);
   g->area_cursor_valid = (g->area_x > 0.0f
                           && g->area_x < g->graph_width
                           && g->area_y > 0.0f
@@ -3096,7 +3097,7 @@ static gboolean area_button_release(GtkWidget *widget,
   // Give focus to module
   dt_iop_request_focus(self);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     const dt_iop_toneequalizer_params_t *p = self->params;
 

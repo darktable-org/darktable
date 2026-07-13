@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
@@ -459,8 +460,8 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
-    const float mouse_x = CLAMP(event->x - inset, 0, width);
-    const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+    const float mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
+    const float mouse_y = CLAMP(height - 1 - dt_gdk_event_get_y(event) + inset, 0, height);
     p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
     p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
 
@@ -472,12 +473,12 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
 
 static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_monochrome_params_t *p = self->params;
     dt_iop_color_picker_reset(self, TRUE);
-    if(event->type == GDK_2BUTTON_PRESS)
+    if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       // reset
       const dt_iop_monochrome_params_t *const p0 = self->default_params;
@@ -491,8 +492,8 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
       int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
-      const float mouse_x = CLAMP(event->x - inset, 0, width);
-      const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+      const float mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
+      const float mouse_y = CLAMP(height - 1 - dt_gdk_event_get_y(event) + inset, 0, height);
       p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
       p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
       g->dragging = 1;
@@ -506,7 +507,7 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
 
 static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_color_picker_reset(self, TRUE);

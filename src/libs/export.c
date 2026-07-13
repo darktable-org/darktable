@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
@@ -570,7 +571,7 @@ static gboolean _scale_mdlclick(GtkEntry *spin,
                                 GdkEventButton *event,
                                 dt_lib_export_t *d)
 {
-  if(event->button == GDK_BUTTON_MIDDLE)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_string(CONFIG_PREFIX "resizing_factor", "1");
     g_signal_handlers_block_by_func(spin, _scale_changed, d);
@@ -588,7 +589,7 @@ static gboolean _widht_mdlclick(GtkEntry *spin,
                                 GdkEventButton *event,
                                 gpointer user_data)
 {
-  if(event->button == GDK_BUTTON_MIDDLE)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "width", 0);
     g_signal_handlers_block_by_func(spin, _width_changed, user_data);
@@ -607,7 +608,7 @@ static gboolean _height_mdlclick(GtkEntry *spin,
                                  GdkEventButton *event,
                                  gpointer user_data)
 {
-  if(event->button == GDK_BUTTON_MIDDLE)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "height", 0);
     g_signal_handlers_block_by_func(spin, _height_changed, user_data);
@@ -1188,7 +1189,7 @@ static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
   GdkEvent *event = gtk_get_current_event();
-  if(event && event->type == GDK_KEY_PRESS)
+  if(event && dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
   {
     _update_style(menu_data);
   }
@@ -1199,7 +1200,7 @@ static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
                                              GdkEventButton *event,
                                              const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     _update_style(menu_data);
   }

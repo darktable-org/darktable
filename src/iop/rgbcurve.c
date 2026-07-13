@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/iop_profile.h"
@@ -692,7 +693,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -RGBCURVE_DEFAULT_STEP;
-    return _move_point_internal(self, widget, 0.0, delta_y, event->state);
+    return _move_point_internal(self, widget, 0.0, delta_y, dt_gdk_event_get_state(event));
   }
 
   return TRUE;
@@ -716,22 +717,22 @@ static gboolean _area_key_press_callback(GtkWidget *widget,
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
-  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Up || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Up)
   {
     handled = 1;
     dy = RGBCURVE_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Down || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Down)
   {
     handled = 1;
     dy = -RGBCURVE_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Right || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Right)
   {
     handled = 1;
     dx = RGBCURVE_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Left || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Left)
   {
     handled = 1;
     dx = -RGBCURVE_DEFAULT_STEP;
@@ -740,7 +741,7 @@ static gboolean _area_key_press_callback(GtkWidget *widget,
   if(!handled) return FALSE;
 
   dt_iop_color_picker_reset(self, TRUE);
-  return _move_point_internal(self, widget, dx, dy, event->state);
+  return _move_point_internal(self, widget, dx, dy, dt_gdk_event_get_state(event));
 }
 
 #undef RGBCURVE_DEFAULT_STEP
@@ -750,7 +751,7 @@ static gboolean _area_leave_notify_callback(GtkWidget *widget,
                                             dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
-  if(!(event->state & GDK_BUTTON1_MASK))
+  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK))
     g->selected = -1;
 
   gtk_widget_queue_draw(widget);
@@ -1185,10 +1186,10 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
     const float mx = g->mouse_x;
     const float my = g->mouse_y;
 
-    g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-    g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+    g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
+    g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
 
-    if(event->state & GDK_BUTTON1_MASK)
+    if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
     {
       g->offset_x += (mx - g->mouse_x) / g->zoom_factor;
       g->offset_y += (my - g->mouse_y) / g->zoom_factor;
@@ -1217,15 +1218,15 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   const double old_m_x = g->mouse_x;
   const double old_m_y = g->mouse_y;
 
-  g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
 
   const float mx = g->mouse_x;
   const float my = g->mouse_y;
   const float linx = _mouse_to_curve(mx, g->zoom_factor, g->offset_x),
               liny = _mouse_to_curve(my, g->zoom_factor, g->offset_y);
 
-  if(event->state & GDK_BUTTON1_MASK)
+  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(g->selected >= 0)
@@ -1249,7 +1250,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
                                          g->zoom_factor, g->offset_y);
 
       dt_iop_color_picker_reset(self, TRUE);
-      return _move_point_internal(self, widget, dx, dy, event->state);
+      return _move_point_internal(self, widget, dx, dy, dt_gdk_event_get_state(event));
     }
     else if(nodes < DT_IOP_RGBCURVE_MAXNODES && g->selected >= -1)
     {
@@ -1304,10 +1305,10 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_rgbcurve_node_t *curve_nodes = p->curve_nodes[ch];
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
-    if(event->type == GDK_BUTTON_PRESS
-       && dt_modifier_is(event->state, GDK_CONTROL_MASK)
+    if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
+       && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)
        && nodes < DT_IOP_RGBCURVE_MAXNODES && g->selected == -1)
     {
       // if we are not on a node -> add a new node at the current x of
@@ -1318,8 +1319,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       const int width = allocation.width - 2 * inset;
       const int height = allocation.height - 2 * inset;
 
-      g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-      g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+      g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
+      g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
 
       const float mx = g->mouse_x;
       const float linx = _mouse_to_curve(mx, g->zoom_factor, g->offset_x);
@@ -1369,7 +1370,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
       return TRUE;
     }
-    else if(event->type == GDK_2BUTTON_PRESS)
+    else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       // reset current curve
       // if autoscale is on: allow only reset of L curve
@@ -1403,7 +1404,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if(g->selected == 0 || g->selected == nodes - 1)
     {
