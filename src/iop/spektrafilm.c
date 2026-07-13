@@ -1337,7 +1337,21 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
   if(!w || w == g->scan_film) _update_print_sensitivity(self);
+  if(w == g->print_auto_exposure && !*(gboolean *)previous && p->print_auto_exposure)
+  {
+    /* print_exposure_ev (manual) and print_auto_exposure (automatic) are
+       independent, always-additive factors -- matching the reference app's
+       own architecture (raw *= exposure_factor; raw *= enlarger.print_exposure,
+       two separate multiplications) rather than a mutually-exclusive pair.
+       Left alone, re-enabling auto stacks on top of whatever manual EV was
+       dialed in while it was off, which reads as "auto exposure is now
+       offset by the old manual value". Reset the manual slider on OFF->ON
+       so re-enabling auto gives a clean auto result to fine-tune from. */
+    p->print_exposure_ev = 0.0f;
+    dt_bauhaus_slider_set(g->print_exposure_ev, 0.0f);
+  }
 }
 
 void gui_update(dt_iop_module_t *self)
