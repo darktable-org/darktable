@@ -1331,6 +1331,18 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->print_contrast, printing);
   gtk_widget_set_sensitive(g->filter_m, printing);
   gtk_widget_set_sensitive(g->filter_y, printing);
+  /* toggle_from_params checkboxes keep showing their tick even when made
+     insensitive -- GTK just dims the whole widget, so a checked-but-grayed
+     box can read as "this is still on" when it has no effect at all (no
+     print stage on positive/reversal film). Blank the tick while
+     insensitive and restore the real value once re-enabled. Wrapped in
+     DT_ENTER/LEAVE_GUI_UPDATE -- the same guard dt_iop_gui_update's own
+     programmatic widget syncs rely on -- so this is purely visual and
+     never writes back into the param. */
+  DT_ENTER_GUI_UPDATE();
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_auto_exposure),
+                               printing && p->print_auto_exposure);
+  DT_LEAVE_GUI_UPDATE();
 }
 
 /* called by the core whenever a params-linked widget changed */
