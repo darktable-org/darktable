@@ -4144,10 +4144,7 @@ static gint _get_container_row_heigth(GtkWidget *w)
                                         NULL, NULL, NULL, NULL, &cell_height);
       if(cell_height > row_height) row_height = cell_height;
     }
-    GValue separation = { G_TYPE_INT };
-    gtk_widget_style_get_property(w, "vertical-separator", &separation);
-
-    if(row_height > 0) height = row_height + g_value_get_int(&separation);
+    if(row_height > 0) height = row_height + 2;
   }
   else if(GTK_IS_TEXT_VIEW(w))
   {
