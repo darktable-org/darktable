@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include <glib.h>
 
@@ -1211,7 +1212,7 @@ static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
   GdkEvent *event = gtk_get_current_event();
-  if(event && event->type == GDK_KEY_PRESS)
+  if(event && dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
   {
     _update_style(menu_data);
   }
@@ -1222,7 +1223,7 @@ static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
                                              GdkEventButton *event,
                                              const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     _update_style(menu_data);
   }

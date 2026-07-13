@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
@@ -1254,7 +1255,7 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget,
   const int inset = round(RT_WDBAR_INSET * allocation.height);
   const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     if(g->lower_margin) // bottom slider
     {
@@ -1284,7 +1285,7 @@ static gboolean rt_wdbar_button_release(GtkWidget *widget,
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
     g->is_dragging = 0;
 
   gtk_widget_queue_draw(g->wd_bar);
@@ -1336,8 +1337,8 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget,
 
 
   /* record mouse position within control */
-  g->wdbar_mouse_x = CLAMP(event->x - inset, 0, allocation.width - 2.0f * inset - 1.0f);
-  g->wdbar_mouse_y = event->y;
+  g->wdbar_mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, allocation.width - 2.0f * inset - 1.0f);
+  g->wdbar_mouse_y = dt_gdk_event_get_y(event);
 
   g->curr_scale = g->wdbar_mouse_x / box_w;
   g->lower_cursor = g->upper_cursor = FALSE;
@@ -1840,7 +1841,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     DT_ENTER_GUI_UPDATE();
 
@@ -1851,7 +1852,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
       const gboolean control_button_pressed =
-        dt_modifier_is(event->state, GDK_CONTROL_MASK);
+        dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
 
       switch(bd->masks_shown)
       {

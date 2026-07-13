@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "control/signal.h"
 #include "control/control.h"
@@ -140,7 +141,7 @@ static gboolean _label_button_press(GtkWidget *widget,
                                     GdkEventButton *event,
                                     gpointer user_data)
 {
-  if(event->button == GDK_BUTTON_SECONDARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
     return TRUE;
   return FALSE;
 }
@@ -154,11 +155,11 @@ static gboolean _button_press_release(GtkWidget *button,
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if((event->type == GDK_BUTTON_PRESS
-      && (event->button == GDK_BUTTON_PRIMARY
-          || event->button == GDK_BUTTON_SECONDARY))
-     || (event->type == GDK_BUTTON_RELEASE
-         && event->time - start_time > delay))
+  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
+      && (dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
+          || dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY))
+     || (dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE
+         && dt_gdk_event_get_time(event) - start_time > delay))
   {
     dt_lib_log_history_t *d = self->data;
     if(gtk_widget_is_visible(d->popover))
@@ -174,7 +175,7 @@ static gboolean _button_press_release(GtkWidget *button,
   }
   else
   {
-    start_time = event->time;
+    start_time = dt_gdk_event_get_time(event);
     return FALSE;
   }
 }

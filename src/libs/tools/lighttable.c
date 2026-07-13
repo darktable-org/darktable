@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -222,12 +223,12 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
     // that means we want to activate the button
     if(w == d->layout_preview)
     {
-      d->fullpreview_focus = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+      d->fullpreview_focus = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
       new_layout = DT_LIGHTTABLE_LAYOUT_PREVIEW;
     }
     else if(w == d->layout_culling_fix)
     {
-      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
         d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
       else
         d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;

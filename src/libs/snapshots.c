@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
 #include "bauhaus/bauhaus.h"
@@ -560,7 +561,7 @@ static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
 
   const int index = _look_for_widget(self, widget, FALSE);
 
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
   {
     gtk_widget_hide(d->snapshot[index].name);
     gtk_widget_show(d->snapshot[index].entry);

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -1393,8 +1394,8 @@ static gboolean checker_motion_notify(
   const int width = allocation.width;
   const int height = allocation.height;
 
-  const float mouse_x = CLAMP(event->x, 0, width);
-  const float mouse_y = CLAMP(event->y, 0, height);
+  const float mouse_x = CLAMP(dt_gdk_event_get_x(event), 0, width);
+  const float mouse_y = CLAMP(dt_gdk_event_get_y(event), 0, height);
   int cells_x = 6, cells_y = 4;
   if(p->num_patches > 24)
   {
@@ -1428,8 +1429,8 @@ static gboolean checker_button_press(
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
-  const float mouse_x = CLAMP(event->x, 0, width);
-  const float mouse_y = CLAMP(event->y, 0, height);
+  const float mouse_x = CLAMP(dt_gdk_event_get_x(event), 0, width);
+  const float mouse_y = CLAMP(dt_gdk_event_get_y(event), 0, height);
   int cells_x = 6, cells_y = 4;
   if(p->num_patches > 24)
   {
@@ -1439,7 +1440,7 @@ static gboolean checker_button_press(
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
   int patch = (int)mx + cells_x*(int)my;
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   { // reset on double click
     if(patch < 0 || patch >= p->num_patches) return FALSE;
     p->target_L[patch] = p->source_L[patch];
@@ -1452,7 +1453,7 @@ static gboolean checker_button_press(
     gtk_widget_queue_draw(g->area);
     return TRUE;
   }
-  else if(event->button == GDK_BUTTON_SECONDARY && (patch < p->num_patches))
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && (patch < p->num_patches))
   {
     // right click: delete patch, move others up
     if(patch < 0 || patch >= p->num_patches) return FALSE;
@@ -1477,8 +1478,8 @@ static gboolean checker_button_press(
     gtk_widget_queue_draw(g->area);
     return TRUE;
   }
-  else if((event->button == GDK_BUTTON_PRIMARY) &&
-          dt_modifier_is(event->state, GDK_SHIFT_MASK) &&
+  else if((dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY) &&
+          dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK) &&
           (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
   {
     // shift-left while colour picking: replace source colour

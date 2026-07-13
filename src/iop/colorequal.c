@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 /* Midi mapping is supported, here is the reference for loupedeck+
 midi:D7=iop/colorequal/page;hue
@@ -2702,7 +2703,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 {
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  GtkWidget *w = dt_modifier_is(event->state, GDK_MOD1_MASK)
+  GtkWidget *w = dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK)
                ? GTK_WIDGET(g->notebook)
                : _get_slider(g, g->selected);
   return gtk_widget_event(w, (GdkEvent*)event);
@@ -2715,16 +2716,16 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(g->dragging && g->on_node)
-    _area_set_pos(g, event->y);
+    _area_set_pos(g, dt_gdk_event_get_y(event));
   else
   {
     // look if close to a node
     const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
     const int oldsel = g->selected;
     const int oldon = g->on_node;
-    g->selected = (int)(((float)event->x - g->points[0][0])
+    g->selected = (int)(((float)dt_gdk_event_get_x(event) - g->points[0][0])
                         / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
-    g->on_node = fabsf(g->points[g->selected][1] - (float)event->y) < epsilon;
+    g->on_node = fabsf(g->points[g->selected][1] - (float)dt_gdk_event_get_y(event)) < epsilon;
     darktable.control->element = g->selected;
     if(oldsel != g->selected || oldon != g->on_node)
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -2739,17 +2740,17 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  if(event->button == GDK_BUTTON_MIDDLE
-     || (event->button == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
-         && dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE
+     || (dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
+         && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)))
   {
     dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
                      gtk_notebook_get_n_pages(g->notebook) != 4);
     gui_update(self);
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
-    if(event->type == GDK_2BUTTON_PRESS)
+    if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       _area_reset_nodes(g);
       return TRUE;
@@ -2771,7 +2772,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     g->dragging = FALSE;
     return TRUE;

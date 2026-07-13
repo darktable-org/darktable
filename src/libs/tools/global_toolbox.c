@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -562,7 +563,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
 
   gboolean handled = FALSE;
 
-  switch(event->type)
+  switch(dt_gdk_event_get_type(event))
   {
     case GDK_BUTTON_PRESS:
     {
@@ -597,7 +598,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
         if(dt_gui_get_help_url(event_widget))
         {
           // TODO: find a better way to tell the user that the hovered widget has a help link
-          const char *cursor = event->type == GDK_ENTER_NOTIFY ? "help" : "not-allowed";
+          const char *cursor = dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY ? "help" : "not-allowed";
           dt_control_allow_change_cursor();
           dt_control_set_temp_cursor(cursor);
           dt_control_forbid_change_cursor();
@@ -686,7 +687,7 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
   GtkWidget *event_widget = gtk_get_event_widget(event);
   static guint click_time = 0;
 
-  switch(event->type)
+  switch(dt_gdk_event_get_type(event))
   {
   case GDK_LEAVE_NOTIFY:
   case GDK_ENTER_NOTIFY:
@@ -699,7 +700,7 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     _set_mapping_mode_cursor(event_widget);
     break;
   case GDK_BUTTON_PRESS:
-    if(gdk_display_device_is_grabbed(gdk_window_get_display(event->button.window), event->button.device))
+    if(gdk_display_device_is_grabbed(gdk_window_get_display(dt_gdk_event_get_window(event)), dt_gdk_event_get_device(event)))
       break;
 
     GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
@@ -715,13 +716,13 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(GTK_IS_ENTRY(event_widget))
       break;
 
-    if(event->button.button == GDK_BUTTON_SECONDARY)
-      click_time = event->button.time;
-    else if(event->button.button == GDK_BUTTON_MIDDLE)
+    if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+      click_time = dt_gdk_event_get_time(event);
+    else if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
       dt_shortcut_dispatcher(event_widget, event, data);
-    else if(event->button.button > 7)
+    else if(dt_gdk_event_get_button(event) > 7)
       break;
-    else if(dt_modifier_is(event->button.state, GDK_CONTROL_MASK))
+    else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
     {
       if(darktable.develop)
       {
@@ -742,10 +743,10 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 
     return;
   case GDK_BUTTON_RELEASE:
-    if(event->button.button != GDK_BUTTON_SECONDARY)
+    if(dt_gdk_event_get_button(event) != GDK_BUTTON_SECONDARY)
       break;
 
-    if(dt_gui_long_click(event->button.time, click_time))
+    if(dt_gui_long_click(dt_gdk_event_get_time(event), click_time))
       dt_shortcut_copy_lua(NULL, NULL);
     else
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
@@ -795,20 +796,20 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
 {
   static guint start_time = 0;
 
-  darktable.control->confirm_mapping = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  darktable.control->confirm_mapping = !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
 
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY) ||
-     (event->type == GDK_BUTTON_RELEASE && event->time - start_time > delay))
+  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY) ||
+     (dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE && dt_gdk_event_get_time(event) - start_time > delay))
   {
     _show_shortcuts_prefs(NULL);
     return TRUE;
   }
   else
   {
-    start_time = event->time;
+    start_time = dt_gdk_event_get_time(event);
     return FALSE;
   }
 }

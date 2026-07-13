@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -562,13 +563,13 @@ static gboolean _files_button_press(GtkWidget *view,
                                     dt_lib_module_t *self)
 {
   dt_lib_import_t *d = self->data;
-  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
+  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY))
   {
     GtkTreePath *path = NULL;
     GtkTreeViewColumn *column = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)event->x, (gint)event->y,
+                                     (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                      &path, &column, NULL, NULL))
     {
       if(column == d->from.pixcol)
@@ -585,12 +586,12 @@ static gboolean _files_button_press(GtkWidget *view,
     }
     gtk_tree_path_free(path);
   }
-  else if((event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
+  else if((dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY))
   {
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)event->x, (gint)event->y,
+                                     (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                      &path, NULL, NULL, NULL))
     {
       GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -1270,7 +1271,7 @@ static gboolean _places_button_press(GtkWidget *view,
   gboolean res = FALSE;
   GtkTreePath *path = NULL;
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                   (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
+                                   (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event), &path, NULL, NULL, NULL))
   {
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
     GtkTreeIter iter;
@@ -1279,7 +1280,7 @@ static gboolean _places_button_press(GtkWidget *view,
     char *folder_name, *folder_path;
     gtk_tree_model_get(model, &iter, 0, &folder_name, 1, &folder_path, -1);
 
-    const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
+    const int button_pressed = (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS) ? dt_gdk_event_get_button(event) : 0;
 
     // left-click: set as new root
     if(button_pressed == GDK_BUTTON_PRIMARY)
@@ -1309,21 +1310,21 @@ static gboolean _folders_button_press(GtkWidget *view,
 {
   dt_lib_import_t *d = self->data;
   gboolean res = FALSE;
-  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
-  const gboolean modifier = dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK);
+  const int button_pressed = (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS) ? dt_gdk_event_get_button(event) : 0;
+  const gboolean modifier = dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK | GDK_CONTROL_MASK);
   if((button_pressed == GDK_BUTTON_PRIMARY) && !modifier)
   {
     GtkTreePath *path = NULL;
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     event->x, event->y, &path, NULL, NULL, NULL))
+                                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), &path, NULL, NULL, NULL))
     {
       GdkRectangle rect;
       gtk_tree_view_get_cell_area(GTK_TREE_VIEW(view), path, d->from.foldercol, &rect);
       const gboolean blank = gtk_tree_view_is_blank_at_pos(GTK_TREE_VIEW(view),
-                                                           event->x, event->y,
+                                                           dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
                                                            NULL, NULL, NULL, NULL);
       // select and save new folder only if not click on expander
-      if(blank || (event->x > rect.x))
+      if(blank || (dt_gdk_event_get_x(event) > rect.x))
       {
         GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
         gtk_tree_selection_select_path(selection, path);
@@ -1342,11 +1343,11 @@ static gboolean _folders_button_press(GtkWidget *view,
     gtk_tree_path_free(path);
   }
 
-  if(event->type == GDK_DOUBLE_BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_DOUBLE_BUTTON_PRESS)
   {
     GtkTreePath *path = NULL;
     gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                  event->x, event->y, &path, NULL, NULL, NULL);
+                                  dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), &path, NULL, NULL, NULL);
     if(gtk_tree_view_row_expanded(d->from.folderview, path))
       gtk_tree_view_collapse_row (d->from.folderview, path);
     else

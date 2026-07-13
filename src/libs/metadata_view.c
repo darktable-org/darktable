@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -1155,7 +1156,7 @@ static void _jump_to()
 
 static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
 {
-  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  if(dt_gdk_event_get_type(event) != GDK_2BUTTON_PRESS) return FALSE;
   _jump_to();
   return TRUE;
 }

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "thumbnail_btn.h"
 #include "gui/gtk.h"
 #include <string.h>
@@ -103,7 +104,7 @@ static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, Gd
 {
   g_return_val_if_fail(widget != NULL, FALSE);
 
-  if(event->type == GDK_ENTER_NOTIFY)
+  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY)
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
   else
     gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);

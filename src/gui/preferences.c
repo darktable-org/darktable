@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <strings.h>
@@ -284,7 +285,7 @@ static gboolean reset_language_widget(GtkWidget *label,
                                       GdkEventButton *event,
                                       GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     dt_bauhaus_combobox_set(widget, darktable.l10n->sys_default);
     return TRUE;
@@ -1163,7 +1164,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget,
   // We can just ignore mod key presses outright
   if(event->is_modifier) return FALSE;
 
-  if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_BackSpace)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Delete || dt_gdk_event_get_keyval(event) == GDK_KEY_BackSpace)
   {
     // If a leaf node is selected, delete that preset
 
@@ -1349,13 +1350,13 @@ _gui_preferences_bool_click(GtkWidget *label,
                             GdkEventButton *event,
                             GtkWidget *widget)
 {
-  if(event->type == GDK_BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
   {
     const gboolean cur = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), !cur);
     return TRUE;
   }
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     dt_gui_preferences_bool_reset(widget);
     return TRUE;
@@ -1414,7 +1415,7 @@ _gui_preferences_int_reset(GtkWidget *label,
                            GdkEventButton *event,
                            GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     dt_gui_preferences_int_reset(widget);
     return TRUE;
@@ -1525,7 +1526,7 @@ _gui_preferences_string_reset(GtkWidget *label,
                               GdkEventButton *event,
                               GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     dt_gui_preferences_string_reset(widget);
     return TRUE;

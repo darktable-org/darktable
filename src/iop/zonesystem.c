@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -591,7 +592,7 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
   if((g->mouse_x / width) > zonemap[k] + (zw / 2)) k++;
 
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     if(p->zone[k] == -1)
     {
@@ -601,7 +602,7 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
     g->is_dragging = TRUE;
     g->current_zone = k;
   }
-  else if(event->button == GDK_BUTTON_SECONDARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     /* clear the controlpoint */
     p->zone[k] = -1;
@@ -615,7 +616,7 @@ static gboolean dt_iop_zonesystem_bar_button_release(GtkWidget *widget, GdkEvent
                                                      dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     g->is_dragging = FALSE;
   }
@@ -665,8 +666,8 @@ static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventM
   _iop_zonesystem_calculate_zonemap(p, zonemap);
 
   /* record mouse position within control */
-  g->mouse_x = CLAMP(event->x - inset, 0, width);
-  g->mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+  g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
+  g->mouse_y = CLAMP(height - 1 - dt_gdk_event_get_y(event) + inset, 0, height);
 
   if(g->is_dragging)
   {

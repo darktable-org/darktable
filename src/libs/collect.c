@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "libs/collect.h"
 #include "bauhaus/bauhaus.h"
@@ -638,24 +639,24 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   /* Get tree path for row that was clicked */
   GtkTreePath *path = NULL;
   const gboolean get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                                          (gint)event->x, (gint)event->y,
+                                                          (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                                           &path, NULL, NULL, NULL);
 
-  if(event->type == GDK_DOUBLE_BUTTON_PRESS || d->singleclick)
+  if(dt_gdk_event_get_type(event) == GDK_DOUBLE_BUTTON_PRESS || d->singleclick)
   {
-    if(event->state == last_state && path)
+    if(dt_gdk_event_get_state(event) == last_state && path)
     {
       if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
         gtk_tree_view_collapse_row(GTK_TREE_VIEW(treeview), path);
       else
         gtk_tree_view_expand_row(GTK_TREE_VIEW(treeview), path, FALSE);
     }
-    last_state = event->state;
+    last_state = dt_gdk_event_get_state(event);
   }
 
   // case of a range selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  if(get_path && dt_modifier_is(event->state, GDK_SHIFT_MASK)
+  if(get_path && dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
      && gtk_tree_selection_count_selected_rows(selection) > 0
      && (d->view_rule == DT_COLLECTION_PROP_DAY
          || d->view_rule == DT_COLLECTION_PROP_MONTH 
@@ -692,9 +693,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   // case of a context-menu (folder/filmroll)
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
       || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
-     && (event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
-     && !(dt_modifier_is(event->state, GDK_SHIFT_MASK)
-          || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+     && (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+     && !(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
+          || dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
     view_popup_menu(treeview, event, d);
@@ -704,13 +705,13 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   }
 
   // case of a activation
-  if((!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
-     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
-     || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY
-         && (dt_modifier_is(event->state, GDK_SHIFT_MASK)
-             || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+  if((!d->singleclick && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+     || (d->singleclick && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+     || (!d->singleclick && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
+         && (dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
+             || dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)))
      || (d->view_rule == DT_COLLECTION_PROP_MONTH
-         && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
+         && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
 
@@ -2875,7 +2876,7 @@ static void row_activated_with_event(GtkTreeView *view,
 
   if(text && strlen(text) > 0)
   {
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       if(item == DT_COLLECTION_PROP_FILMROLL)
       {
@@ -2927,7 +2928,7 @@ static void row_activated_with_event(GtkTreeView *view,
       {
         /* if a tag has children, ctrl-clicking on a parent node
          * should display all images under this hierarchy. */
-        if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+        if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
         {
           gchar *n_text = g_strconcat(text, "|%", NULL);
           g_free(text);
@@ -2935,7 +2936,7 @@ static void row_activated_with_event(GtkTreeView *view,
         }
         /* if a tag has children, left-clicking on a parent node
          * should display all images in and under this hierarchy. */
-        else if(!dt_modifier_is(event->state, GDK_SHIFT_MASK))
+        else if(!dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
         {
           gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
@@ -3387,7 +3388,7 @@ static gboolean popup_button_callback(GtkWidget *widget,
                                       GdkEventButton *event,
                                       dt_lib_collect_rule_t *d)
 {
-  if(event->button != 1)
+  if(dt_gdk_event_get_button(event) != 1)
     return FALSE;
 
   GtkWidget *menu = gtk_menu_new();

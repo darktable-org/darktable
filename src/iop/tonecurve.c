@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
@@ -1181,7 +1182,7 @@ static gboolean _scrolled(GtkWidget *widget,
   if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -TONECURVE_DEFAULT_STEP;
-    return _move_point_internal(self, widget, 0.0, delta_y, event->state);
+    return _move_point_internal(self, widget, 0.0, delta_y, dt_gdk_event_get_state(event));
   }
 
   return TRUE;
@@ -1206,22 +1207,22 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
 
-  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Up || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Up)
   {
     handled = 1;
     dy = TONECURVE_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Down || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Down)
   {
     handled = 1;
     dy = -TONECURVE_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Right || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Right)
   {
     handled = 1;
     dx = TONECURVE_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Left || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Left)
   {
     handled = 1;
     dx = -TONECURVE_DEFAULT_STEP;
@@ -1229,7 +1230,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
 
   if(!handled) return FALSE;
 
-  return _move_point_internal(self, widget, dx, dy, event->state);
+  return _move_point_internal(self, widget, dx, dy, dt_gdk_event_get_state(event));
 }
 
 #undef TONECURVE_DEFAULT_STEP
@@ -1348,7 +1349,7 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget,
                                               dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
-  if(!(event->state & GDK_BUTTON1_MASK))
+  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK))
     g->selected = -1;
   gtk_widget_queue_draw(widget);
   return FALSE;
@@ -1772,15 +1773,15 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
   double old_m_x = g->mouse_x;
   double old_m_y = g->mouse_y;
-  g->mouse_x = event->x - inset;
-  g->mouse_y = event->y - inset;
+  g->mouse_x = dt_gdk_event_get_x(event) - inset;
+  g->mouse_y = dt_gdk_event_get_y(event) - inset;
 
   const float mx = CLAMP(g->mouse_x, 0, width) / width;
   const float my = 1.0f - CLAMP(g->mouse_y, 0, height) / height;
   const float linx = to_lin(mx, g->loglogscale, ch, g->semilog, 0),
               liny = to_lin(my, g->loglogscale, ch, g->semilog, 1);
 
-  if(event->state & GDK_BUTTON1_MASK)
+  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(g->selected >= 0)
@@ -1794,7 +1795,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
                        - to_lin(old_m_x / width - translate_mouse_x, g->loglogscale, ch, g->semilog, 0);
       const float dy = to_lin(1 - g->mouse_y / height - translate_mouse_y, g->loglogscale, ch, g->semilog, 1)
                        - to_lin(1 - old_m_y / height - translate_mouse_y, g->loglogscale, ch, g->semilog, 1);
-      return _move_point_internal(self, widget, dx, dy, event->state);
+      return _move_point_internal(self, widget, dx, dy, dt_gdk_event_get_state(event));
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && g->selected >= -1)
     {
@@ -1841,10 +1842,10 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
-    if(event->type == GDK_BUTTON_PRESS
-       && dt_modifier_is(event->state, GDK_CONTROL_MASK)
+    if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
+       && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)
        && nodes < DT_IOP_TONECURVE_MAXNODES
        && g->selected == -1)
     {
@@ -1854,8 +1855,8 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
       int width = allocation.width - 2 * inset;
-      g->mouse_x = event->x - inset;
-      g->mouse_y = event->y - inset;
+      g->mouse_x = dt_gdk_event_get_x(event) - inset;
+      g->mouse_y = dt_gdk_event_get_y(event) - inset;
 
       const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
       const float linx = to_lin(mx, g->loglogscale, ch, g->semilog, 0);
@@ -1905,7 +1906,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
       }
       return TRUE;
     }
-    else if(event->type == GDK_2BUTTON_PRESS)
+    else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       // reset current curve
       // if autoscale_ab is on: allow only reset of L curve
@@ -1937,7 +1938,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if(g->selected == 0 || g->selected == nodes - 1)
     {

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
@@ -671,14 +672,14 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
   if(g->dragging)
   {
     *p = g->drag_params;
     if(g->x_move >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+      const float mx = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
       if(g->x_move > 0 && g->x_move < DT_IOP_LOWLIGHT_BANDS - 1)
       {
         const float minx = p->transition_x[g->x_move - 1] + 0.001f;
@@ -693,7 +694,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
     gtk_widget_queue_draw(widget);
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   }
-  else if(event->y > height)
+  else if(dt_gdk_event_get_y(event) > height)
   {
     g->x_move = 0;
     float dist = fabs(p->transition_x[0] - g->mouse_x);
@@ -719,7 +720,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
 static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = self->params;
@@ -732,7 +733,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;
@@ -740,8 +741,8 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     gtk_widget_get_allocation(widget, &allocation);
     int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
     g->mouse_pick
-        = dt_draw_curve_calc_value(g->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+        = dt_draw_curve_calc_value(g->transition_curve, CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
     g->dragging = 1;
     return TRUE;
   }
@@ -750,7 +751,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
 
 static gboolean lowlight_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_lowlight_gui_data_t *g = self->gui_data;
     g->dragging = 0;

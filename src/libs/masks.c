@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "develop/masks.h"
 #include "bauhaus/bauhaus.h"
@@ -340,7 +341,7 @@ static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer
 {
   DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
 #ifdef HAVE_AI
     if(GPOINTER_TO_INT(shape) == DT_MASKS_OBJECT && !dt_masks_object_available())
@@ -351,7 +352,7 @@ static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer
 #endif
     _tree_add_shape(NULL, shape);
 
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
     {
       darktable.develop->form_gui->creation_continuous = TRUE;
       darktable.develop->form_gui->creation_continuous_module =
@@ -907,7 +908,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
   dt_iop_module_t *module = NULL;
   gboolean on_row = FALSE;
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                   (gint)event->x, (gint)event->y, &mouse_path, NULL,
+                                   (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event), &mouse_path, NULL,
                                    NULL, NULL))
   {
     on_row = TRUE;
@@ -918,7 +919,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
   }
   /* single click with the right mouse button? */
-  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     // if click on a blank space, then deselect all
     if(!on_row)
@@ -926,13 +927,13 @@ static int _tree_button_pressed(GtkWidget *treeview,
       gtk_tree_selection_unselect_all(selection);
     }
   }
-  else if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
+  else if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     // if we are already inside the selection, no change
     if(on_row
        && !gtk_tree_selection_path_is_selected(selection, mouse_path))
     {
-      if(!dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      if(!dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
         gtk_tree_selection_unselect_all(selection);
 
       gtk_tree_selection_select_path(selection, mouse_path);

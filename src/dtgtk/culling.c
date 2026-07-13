@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 /** a class to manage a collection of zoomable thumbnails for culling
  * or full preview.  */
@@ -632,7 +633,7 @@ static gboolean _event_gesture(GtkWidget *widget,
                                GdkEvent *event,
                                gpointer user_data)
 {
-  if(event->type != GDK_TOUCHPAD_PINCH) return FALSE;
+  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
   const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
   dt_print(DT_DEBUG_INPUT,
            "[culling gesture] pinch phase=%d x=%.1f y=%.1f dx=%.3f dy=%.3f scale=%.6f state=0x%x",
@@ -847,25 +848,25 @@ static gboolean _event_button_press(GtkWidget *widget,
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
 
-  if(event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
+     && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   }
 
-  if(event->button == GDK_BUTTON_MIDDLE)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
   {
     // convert screen coordinates to culling coordinates
     int ox = 0, oy = 0;
     GdkWindow *win = gtk_widget_get_window(table->widget);
     if(win)
       gdk_window_get_origin(win, &ox, &oy);
-    const float x_culling = event->x_root - ox;
-    const float y_culling = event->y_root - oy;
+    const float x_culling = dt_gdk_event_get_root_x(event) - ox;
+    const float y_culling = dt_gdk_event_get_root_y(event) - oy;
 
     // if shift is pressed, we work only with image hovered
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
       _toggle_zoom_current(table, x_culling, y_culling);
     else
       _toggle_zoom_all(table, x_culling, y_culling);
@@ -874,8 +875,8 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
   if(dt_is_valid_imgid(id)
-     && event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_2BUTTON_PRESS)
+     && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
+     && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     // we have to set again the selected image, because it was deselected
     // during the previous GDK_BUTTON_PRESS event
@@ -891,8 +892,8 @@ static gboolean _event_button_press(GtkWidget *widget,
     return TRUE;
   }
 
-  table->pan_x = event->x_root;
-  table->pan_y = event->y_root;
+  table->pan_x = dt_gdk_event_get_root_x(event);
+  table->pan_y = dt_gdk_event_get_root_y(event);
   table->panning = TRUE;
   return TRUE;
 }
@@ -905,8 +906,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
   table->mouse_inside = TRUE;
   if(!table->panning)
   {
-    table->pan_x = event->x_root;
-    table->pan_y = event->y_root;
+    table->pan_x = dt_gdk_event_get_root_x(event);
+    table->pan_y = dt_gdk_event_get_root_y(event);
     return FALSE;
   }
 
@@ -925,14 +926,14 @@ static gboolean _event_motion_notify(GtkWidget *widget,
 
   if(table->panning && fz > 1.0f)
   {
-    const double x = event->x_root;
-    const double y = event->y_root;
+    const double x = dt_gdk_event_get_root_x(event);
+    const double y = dt_gdk_event_get_root_y(event);
     // we want the images to stay in the screen
     const float scale = darktable.gui->ppd_thb / darktable.gui->ppd;
     const float valx = (x - table->pan_x) * scale;
     const float valy = (y - table->pan_y) * scale;
 
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
     {
       const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
@@ -1001,7 +1002,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
      && dt_is_valid_imgid(overid)
-     && event->button == GDK_BUTTON_PRIMARY)
+     && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     const dt_imgid_t old_sel = table->selection;
     if(table->selection == overid)

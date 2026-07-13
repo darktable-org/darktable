@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
 #include "common/color_picker.h"
@@ -350,7 +351,7 @@ static void _drawable_drag_update(GtkGestureDrag* gesture,
     const gdouble ox = offset_x - s->last_offset_x;
     const gdouble oy = offset_y - s->last_offset_y;
     const double delta = dt_scopes_call(cur_mode, get_exposure_delta, ox, oy);
-    dt_dev_exposure_handle_event(1, delta, event->motion.state,
+    dt_dev_exposure_handle_event(1, delta, dt_gdk_event_get_state(event),
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     s->last_offset_x = offset_x;
     s->last_offset_y = offset_y;
@@ -490,7 +491,7 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
     // FIXME: so long as we have event, test its flags -- and for GTK 4 we can
     // use gtk_get_current_event() and get flags -- make a helper function to do
     // this.
-    if(dt_modifier_is(event->scroll.state,
+    if(dt_modifier_is(dt_gdk_event_get_state(event),
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
       // bubble to adjusting the overall widget size
@@ -502,16 +503,16 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
       // FIXME: should handle smooth scrolling rather than discrete?
       // FIXME: should scrolling of scope be handled in the drawable rather than
       //        the eventbox.
-      dt_dev_exposure_handle_event(0, dy - dx, event->scroll.state,
+      dt_dev_exposure_handle_event(0, dy - dx, dt_gdk_event_get_state(event),
                                    s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     }
     else
     {
       int ebx, eby;
       gtk_widget_translate_coordinates(gtk_get_event_widget(event), s->scope_draw,
-                                       (int)event->scroll.x, (int)event->scroll.y, &ebx, &eby);
+                                       (int)dt_gdk_event_get_x(event), (int)dt_gdk_event_get_y(event), &ebx, &eby);
       dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, ebx, eby,
-                               dx, dy, event->scroll.state);
+                               dx, dy, dt_gdk_event_get_state(event));
     }
   }
   gdk_event_free(event);

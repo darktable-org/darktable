@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/ratings.h"
 #include "common/collection.h"
@@ -184,8 +185,8 @@ static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventM
 {
   dt_lib_ratings_t *d = self->data;
 
-  d->pointerx = event->x;
-  d->pointery = event->y;
+  d->pointerx = dt_gdk_event_get_x(event);
+  d->pointery = dt_gdk_event_get_y(event);
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }

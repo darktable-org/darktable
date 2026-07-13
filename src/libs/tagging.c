@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/selection.h"
@@ -1475,15 +1476,15 @@ static gboolean _click_on_view_attached(GtkWidget *view,
   dt_lib_tagging_t *d = self->data;
   _unselect_all_in_view(d->dictionary_view);
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
-    || (event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
-    || (event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
+  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+    || (dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+    || (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)event->x, (gint)event->y,
+                                     (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                      &path, NULL, NULL, NULL))
     {
       gboolean valid_tag = FALSE;
@@ -1496,15 +1497,15 @@ static gboolean _click_on_view_attached(GtkWidget *view,
       {
         gtk_tree_selection_select_path(selection, path);
         dt_lib_gui_queue_update(self);
-        if(event->type == GDK_BUTTON_PRESS
-           && event->button == GDK_BUTTON_SECONDARY)
+        if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
+           && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
         {
           _pop_menu_attached(view, event, self);
           gtk_tree_path_free(path);
           return TRUE;
         }
-        else if(event->type == GDK_2BUTTON_PRESS
-                && event->button == GDK_BUTTON_PRIMARY)
+        else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS
+                && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
         {
           _detach_selected_tag(d->attached_view, self);
           gtk_tree_path_free(path);
@@ -1535,7 +1536,7 @@ static gboolean _attached_key_pressed(GtkWidget *view,
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-    switch(event->keyval)
+    switch(dt_gdk_event_get_keyval(event))
     {
       case GDK_KEY_Delete:
       case GDK_KEY_KP_Delete:
@@ -1547,13 +1548,13 @@ static gboolean _attached_key_pressed(GtkWidget *view,
     }
     gtk_tree_path_free(path);
   }
-  if(event->keyval == GDK_KEY_Tab)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     gtk_widget_grab_focus(GTK_WIDGET(d->entry));
     return TRUE;
   }
-  else if(event->keyval == GDK_KEY_ISO_Left_Tab)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Left_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     return TRUE;
@@ -1607,7 +1608,7 @@ static gboolean _enter_key_pressed(GtkWidget *entry,
                                    dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
@@ -2641,17 +2642,17 @@ static gboolean _click_on_view_dictionary(GtkWidget *view,
   dt_lib_tagging_t *d = self->data;
   _unselect_all_in_view(d->attached_view);
 
-  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
-  const gboolean shift_pressed = dt_modifier_is(event->state, GDK_SHIFT_MASK);
+  const int button_pressed = (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS) ? dt_gdk_event_get_button(event) : 0;
+  const gboolean shift_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK);
   if((button_pressed == GDK_BUTTON_SECONDARY)                     // contextual menu
      || (d->tree_flag && button_pressed == GDK_BUTTON_PRIMARY)    // expand & drag
-     || (event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)) // attach
+     || (dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)) // attach
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)event->x, (gint)event->y,
+                                     (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                      &path, NULL, NULL, NULL))
     {
       if(d->tree_flag
@@ -2690,8 +2691,8 @@ static gboolean _click_on_view_dictionary(GtkWidget *view,
           gtk_tree_path_free(path);
           return TRUE;
         }
-        else if(event->type == GDK_2BUTTON_PRESS
-                && event->button == GDK_BUTTON_PRIMARY)
+        else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS
+                && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
         {
           _attach_selected_tag(self, d);
           gtk_tree_path_free(path);
@@ -2717,13 +2718,13 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-    switch(event->keyval)
+    switch(dt_gdk_event_get_keyval(event))
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
       {
         _attach_selected_tag(self, d);
-        if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+        if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
         {
           gtk_tree_selection_unselect_all(selection);
           gtk_entry_set_text(GTK_ENTRY(d->entry), "");
@@ -2735,7 +2736,7 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
       case GDK_KEY_Left:
         if(path)
         {
-          if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+          if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
             gtk_tree_view_collapse_all(GTK_TREE_VIEW(view));
           else
             gtk_tree_view_collapse_row(GTK_TREE_VIEW(view), path);
@@ -2746,7 +2747,7 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
         if(path)
         {
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path,
-                                   dt_modifier_is(event->state, GDK_SHIFT_MASK));
+                                   dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK));
           res = TRUE;
         }
         break;
@@ -2755,12 +2756,12 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
     }
     gtk_tree_path_free(path);
   }
-  if(event->keyval == GDK_KEY_Tab)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     res = TRUE;
   }
-  else if(event->keyval == GDK_KEY_ISO_Left_Tab)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Left_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     gtk_widget_grab_focus(GTK_WIDGET(d->entry));
@@ -3771,7 +3772,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry,
                                            dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Escape:
       g_list_free(d->floating_tag_imgs);

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -165,14 +166,14 @@ static gboolean _lib_duplicate_thumb_press_callback(GtkWidget *widget,
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
   const dt_imgid_t imgid = thumb->imgid;
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
-    if(event->type == GDK_BUTTON_PRESS)
+    if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
     {
       d->imgid = imgid;
       dt_control_queue_redraw_center();
     }
-    else if(event->type == GDK_2BUTTON_PRESS)
+    else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       // let's switch to the new image
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);

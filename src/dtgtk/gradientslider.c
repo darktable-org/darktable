@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -309,7 +310,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget,
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
   // reset slider
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS && gslider->is_resettable)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && gslider->is_resettable)
   {
     gslider->is_dragging = FALSE;
     gslider->do_reset = TRUE;
@@ -319,19 +320,19 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget,
     g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
     g_signal_emit_by_name(G_OBJECT(widget), "value-reset");
   }
-  else if((event->button == GDK_BUTTON_PRIMARY || event->button == GDK_BUTTON_SECONDARY) && event->type == GDK_BUTTON_PRESS)
+  else if((dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY || dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY) && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
   {
-    const gint lselected = _get_active_marker_from_screen(widget, event->x, event->y);
+    const gint lselected = _get_active_marker_from_screen(widget, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event));
 
     assert(lselected >= 0);
     assert(lselected <= gslider->positions - 1);
 
-    if(event->button == GDK_BUTTON_PRIMARY) // left mouse button : select and start dragging
+    if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY) // left mouse button : select and start dragging
     {
       gslider->selected = lselected;
       gslider->do_reset = FALSE;
 
-      const gdouble newposition = _get_position_from_screen(widget, event->x);
+      const gdouble newposition = _get_position_from_screen(widget, dt_gdk_event_get_x(event));
       const gint direction = gslider->position[gslider->selected] <= newposition ? MOVE_RIGHT : MOVE_LEFT;
 
       _slider_move(widget, gslider->selected, newposition, direction);
@@ -373,7 +374,7 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget,
   {
     assert(gslider->timeout_handle > 0);
 
-    const gdouble newposition = _get_position_from_screen(widget, event->x);
+    const gdouble newposition = _get_position_from_screen(widget, dt_gdk_event_get_x(event));
     const gint direction = gslider->position[gslider->selected] <= newposition ? MOVE_RIGHT : MOVE_LEFT;
 
     _slider_move(widget, gslider->selected, newposition, direction);
@@ -384,7 +385,7 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget,
   }
   else
   {
-    gslider->active = _get_active_marker_from_screen(widget, event->x, event->y);
+    gslider->active = _get_active_marker_from_screen(widget, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event));
   }
 
   if(gslider->selected != -1) gtk_widget_grab_focus(widget);
@@ -400,11 +401,11 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget,
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
   const gint selected = _get_active_marker(gslider);
 
-  if(event->button == GDK_BUTTON_PRIMARY && selected != -1 && gslider->do_reset == FALSE)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && selected != -1 && gslider->do_reset == FALSE)
   {
     // First get some dimension info
     gslider->is_changed = TRUE;
-    const gdouble newposition = _get_position_from_screen(widget, event->x);
+    const gdouble newposition = _get_position_from_screen(widget, dt_gdk_event_get_x(event));
     const gint direction = gslider->position[selected] <= newposition ? MOVE_RIGHT : MOVE_LEFT;
 
     _slider_move(widget, selected, newposition, direction);
@@ -437,7 +438,7 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget,
   {
     gdouble delta = delta_y * -gslider->increment;
     return _gradient_slider_add_delta_internal(widget, delta,
-                                               event->state, selected);
+                                               dt_gdk_event_get_state(event), selected);
   }
 
   return TRUE;
@@ -452,7 +453,7 @@ static gboolean _gradient_slider_key_press_event(GtkWidget *widget,
 
   int handled = FALSE;
   float delta = -gslider->increment;
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Up:
     case GDK_KEY_KP_Up:
@@ -472,7 +473,7 @@ static gboolean _gradient_slider_key_press_event(GtkWidget *widget,
   if(selected == -1) return TRUE;
 
   return _gradient_slider_add_delta_internal(widget, delta,
-                                             event->state, selected);
+                                             dt_gdk_event_get_state(event), selected);
 }
 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
