@@ -1214,7 +1214,7 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
                         | GDK_LEAVE_NOTIFY_MASK
                         | GDK_TOUCHPAD_GESTURE_MASK);
 
-  gtk_widget_set_app_paintable(table->widget, TRUE);
+  dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);
 
   g_signal_connect(G_OBJECT(table->widget), "event",

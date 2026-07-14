@@ -544,7 +544,7 @@ static void _window_position(const int offset)
       pop->offcut += offset;
       return;
     }
-    gtk_widget_set_app_paintable(pop->window, TRUE);
+    dt_gui_add_class(pop->window, "dt_transparent_background");
     GdkScreen *screen = gtk_widget_get_screen(pop->window);
     GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
     pop->offcut = -height;
