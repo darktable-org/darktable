@@ -82,7 +82,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void _process_common_setup(const dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_rawoverexposed_data_t *d = piece->data;
@@ -107,12 +107,16 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_rawoverexposed_data_t *const d = piece->data;
 
-  process_common_setup(self, piece);
+  _process_common_setup(self, piece);
 
   dt_develop_t *dev = self->dev;
   const dt_image_t *const image = &(dev->image_storage);
@@ -134,15 +138,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     dt_mipmap_cache_release(&buf);
     return;
   }
-
-#if 0
-  const float in_scale = roi_in->scale;
-  dt_boundingbox_t pts = {(float)(roi_out->x) / in_scale, (float)(roi_out->y) / in_scale,
-                          (float)(roi_out->x + roi_out->width) / in_scale, (float)(roi_out->y + roi_out->height) / in_scale};
-  printf("in  %f %f %f %f\n", pts[0], pts[1], pts[2], pts[3]);
-  dt_dev_distort_backtransform_plus(dev, dev->full.pipe, 0, priority, pts, 2);
-  printf("out %f %f %f %f\n\n", pts[0], pts[1], pts[2], pts[3]);
-#endif
 
   const uint16_t *const raw = (const uint16_t *const)buf.buf;
   float *const restrict out = DT_IS_ALIGNED((float *const)ovoid);
@@ -253,8 +248,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   const size_t region[2] = { width, height };
 
-  process_common_setup(self, piece);
+  _process_common_setup(self, piece);
 
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS) goto error;
 
@@ -267,7 +263,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int raw_width = buf.width;
   const int raw_height = buf.height;
 
-  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_raw = dt_opencl_copy_host_to_image(devid, buf.buf, raw_width, raw_height, sizeof(uint16_t));
   if(dev_raw == NULL) goto error;
 
@@ -293,7 +288,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
 
   dev_coord = dt_opencl_copy_host_to_device_constant(devid, coordbufsize, coordbuf);
-  if(err != CL_SUCCESS) goto error;
+  if(dev_coord == NULL) goto error;
 
   int kernel;
   switch(dev->rawoverexposed.mode)
@@ -301,9 +296,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
       kernel = gd->kernel_rawoverexposed_mark_cfa;
 
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_rawoverexposed_colors), (void *)dt_iop_rawoverexposed_colors);
-      if(err != CL_SUCCESS) goto error;
+      if(dev_colors == NULL) goto error;
 
       break;
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
@@ -315,11 +309,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       break;
   }
 
-  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(filters == 9u)
   {
-    dev_xtrans
-        = dt_opencl_copy_host_to_device_constant(devid, sizeof(image->buf_dsc.xtrans), (void *)image->buf_dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(image->buf_dsc.xtrans), (void *)image->buf_dsc.xtrans);
     if(dev_xtrans == NULL) goto error;
   }
 
@@ -339,7 +331,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
               CLARG(width), CLARG(height),
               CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
               CLARG(dev_thresholds), CLARG(color));
-
+   else
+     err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+              CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
+              CLARG(width), CLARG(height),
+              CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
+              CLARG(dev_thresholds));
 error:
   dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_colors);
