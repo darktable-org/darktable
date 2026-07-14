@@ -225,6 +225,7 @@ typedef struct dt_camctl_listener_t
                            const char *filename,
                            void *data);
 
+
   /** Invoked when a image is found on storage.. such as from
    * dt_camctl_get_previews(), if 0 is returned the recurse is
    * stopped.. */
@@ -270,6 +271,12 @@ typedef struct dt_camera_files_t
   char *filename;
   /** timestamp */
   time_t timestamp;
+  /** size */
+  uint64_t size;
+  /** possible duplicate flag */
+  gboolean possible_duplicate;
+  /** filename of the primary file this is a duplicate of */
+  char *duplicate_of;
 } dt_camera_files_t;
 
 /** Initializes the gphoto and cam control, returns NULL if failed */
