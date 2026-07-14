@@ -260,7 +260,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 const char *name(void)
 {
-  return _("Spektrafilm");
+  return _("spektrafilm");
 }
 const char *aliases(void)
 {
@@ -269,8 +269,11 @@ const char *aliases(void)
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(
-      self, _("spectral film + print simulation (spektrafilm)"), _("creative"),
-      _("linear, RGB, scene-referred"), _("non-linear, RGB"), _("non-linear, RGB, display-referred"));
+      self,
+      _("simulates the physical process of developing and printing analog film,\n"
+        "using spectral emulsion and paper data from the spektrafilm project"),
+      _("creative"), _("linear, RGB, scene-referred"), _("non-linear, RGB"),
+      _("non-linear, RGB, display-referred"));
 }
 int default_group(void)
 {
