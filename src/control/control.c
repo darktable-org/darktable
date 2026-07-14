@@ -401,7 +401,6 @@ void dt_control_quit()
   if(g_atomic_int_get(&darktable.gui_running))
   {
     dt_gui_gtk_quit();
-    gtk_main_quit();
   }
 }
 

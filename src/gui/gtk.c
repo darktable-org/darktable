@@ -1052,6 +1052,9 @@ void dt_gui_gtk_quit()
 
   // hide main window
   gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
+
+  if(darktable.gui->main_loop)
+    g_main_loop_quit(darktable.gui->main_loop);
 }
 
 static void _quit_callback(dt_action_t *action)
@@ -1817,7 +1820,10 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
-    gtk_main();
+    gui->main_loop = g_main_loop_new(NULL, FALSE);
+    g_main_loop_run(gui->main_loop);
+    g_main_loop_unref(gui->main_loop);
+    gui->main_loop = NULL;
     g_atomic_int_set(&darktable.gui_running, 0);
   }
   if(darktable.gui->surface)
@@ -3277,6 +3283,7 @@ typedef struct result_t
   enum {RESULT_NONE, RESULT_NO, RESULT_YES} result;
   char *entry_text;
   GtkWidget *window, *entry, *button_yes, *button_no;
+  GMainLoop *loop;
 } result_t;
 
 static void _yes_no_button_handler(GtkButton *button, const gpointer data)
@@ -3292,7 +3299,7 @@ static void _yes_no_button_handler(GtkButton *button, const gpointer data)
     result->entry_text = g_strdup(gtk_entry_get_text(GTK_ENTRY(result->entry)));
 
   gtk_widget_destroy(result->window);
-  gtk_main_quit();
+  g_main_loop_quit(result->loop);
 }
 
 gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
@@ -3310,7 +3317,8 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
 
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);
-  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+  g_signal_connect_swapped(window, "destroy", G_CALLBACK(g_main_loop_quit), loop);
 
   if(darktable.gui)
   {
@@ -3357,7 +3365,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
-  result_t result = {.result = RESULT_NONE, .window = window};
+  result_t result = {.result = RESULT_NONE, .window = window, .loop = loop};
 
   GtkWidget *button;
 
@@ -3385,7 +3393,8 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   dt_splash_screen_destroy();
 
   gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
-  gtk_main();
+  g_main_loop_run(loop);
+  g_main_loop_unref(loop);
 
   return result.result == RESULT_YES;
 }
@@ -3403,7 +3412,8 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
 
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);
-  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+  g_signal_connect_swapped(window, "destroy", G_CALLBACK(g_main_loop_quit), loop);
 
   if(darktable.gui)
   {
@@ -3444,7 +3454,7 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
   gtk_widget_set_margin_top(hbox, 10);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
-  result_t result = {.result = RESULT_NONE, .window = window, .entry = entry};
+  result_t result = {.result = RESULT_NONE, .window = window, .entry = entry, .loop = loop};
 
   GtkWidget *button;
 
@@ -3467,7 +3477,8 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
   }
 
   gtk_widget_show_all(window);
-  gtk_main();
+  g_main_loop_run(loop);
+  g_main_loop_unref(loop);
 
   if(result.result == RESULT_YES)
     return result.entry_text;
