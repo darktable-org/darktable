@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 03:44-0600\n"
-"PO-Revision-Date: 2026-07-10 01:28-0600\n"
+"POT-Creation-Date: 2026-07-14 01:06-0600\n"
+"PO-Revision-Date: 2026-07-14 01:11-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6824,7 +6824,7 @@ msgstr "carrete"
 
 #. manage the scripts
 #: ../src/common/collection.c:614
-#: ../src/external/lua-scripts/tools/script_manager.lua:1514
+#: ../src/external/lua-scripts/tools/script_manager.lua:1521
 msgid "folder"
 msgstr "carpeta"
 
@@ -8696,57 +8696,57 @@ msgstr "Cinco"
 msgid "reject"
 msgstr "Rechazar"
 
-#: ../src/common/styles.c:255
+#: ../src/common/styles.c:258
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "El estilo con nombre «%s» ya existe"
 
-#: ../src/common/styles.c:282 ../src/common/styles.c:1724
+#: ../src/common/styles.c:285 ../src/common/styles.c:1727
 #: ../src/libs/styles.c:53
 msgid "styles"
 msgstr "estilos"
 
-#: ../src/common/styles.c:560 ../src/gui/styles_dialog.c:252
+#: ../src/common/styles.c:563 ../src/gui/styles_dialog.c:252
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "El estilo nombrado «%s» ha sido creado correctamente"
 
-#: ../src/common/styles.c:664 ../src/dtgtk/culling.c:1338
+#: ../src/common/styles.c:667 ../src/dtgtk/culling.c:1338
 msgid "no image selected!"
 msgstr "Ninguna imagen ha sido seleccionada"
 
-#: ../src/common/styles.c:744
+#: ../src/common/styles.c:747
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "La versión del módulo «%s» no coincide: %d != %d"
 
-#: ../src/common/styles.c:1036
+#: ../src/common/styles.c:1039
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "El estilo «%s» se ha aplicado en la imagen actual"
 
-#: ../src/common/styles.c:1300
+#: ../src/common/styles.c:1303
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Falló al intentar sobrescribir el archivo del estilo para %s"
 
-#: ../src/common/styles.c:1306
+#: ../src/common/styles.c:1309
 #, c-format
 msgid "style file for %s exists"
 msgstr "Ya existe el archivo del estilo para %s"
 
 # dt•v5.4
-#: ../src/common/styles.c:1481 ../src/common/styles.c:1805
+#: ../src/common/styles.c:1484 ../src/common/styles.c:1808
 msgid "imported-style"
 msgstr "estilo del importado"
 
-#: ../src/common/styles.c:1614
+#: ../src/common/styles.c:1617
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "El estilo %s fue importado correctamente"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1659
+#: ../src/common/styles.c:1662
 #, c-format
 msgid "could not read file `%s'"
 msgstr "No es posible leer el archivo «%s»"
@@ -8974,14 +8974,14 @@ msgid "show accels window"
 msgstr "Mostrar la ventana de atajos"
 
 # dt•v5.2
-#: ../src/control/control.c:381
+#: ../src/control/control.c:382
 msgid "darktable will be locked until background work has been done"
 msgstr ""
 "darktable se bloqueará hasta que se hayan completado todas las tareas en "
 "segundo plano"
 
 # Traducción no literal: Se usa un mensaje con mejor sentido en español.
-#: ../src/control/control.c:491
+#: ../src/control/control.c:492
 msgid "working..."
 msgstr "Procesando..."
 
@@ -10713,7 +10713,7 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo «%s» versión incoincidente: %d != %d"
 
-#: ../src/develop/develop.c:3590
+#: ../src/develop/develop.c:3593
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Módulo duplicado: no es posible mover el duplicado después del módulo base.\n"
@@ -15658,7 +15658,7 @@ msgstr "página %d de %d"
 #. main menu
 #. Module name
 #: ../src/external/lua-scripts/tools/script_manager.lua:1280
-#: ../src/external/lua-scripts/tools/script_manager.lua:1577
+#: ../src/external/lua-scripts/tools/script_manager.lua:1584
 msgid "scripts"
 msgstr "guiones"
 
@@ -15710,73 +15710,73 @@ msgid "select the scripts installation to update"
 msgstr "Seleccione la instalación de guiones que desea actualizar"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1431
-#: ../src/external/lua-scripts/tools/script_manager.lua:1493
+#: ../src/external/lua-scripts/tools/script_manager.lua:1438
+#: ../src/external/lua-scripts/tools/script_manager.lua:1500
 msgid "update scripts"
 msgstr "actualizar guiones"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1432
+#: ../src/external/lua-scripts/tools/script_manager.lua:1439
 msgid "update the lua scripts from the repository"
 msgstr "Actualizar los guiones de Lua desde el repositorio"
 
 # dt•v5.0
 #. add additional scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1443
+#: ../src/external/lua-scripts/tools/script_manager.lua:1450
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr ""
 "Ingresa la URL del repositorio Git que contiene los guiones que deseas agregar"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1448
+#: ../src/external/lua-scripts/tools/script_manager.lua:1455
 msgid "name of new folder"
 msgstr "Nombre de la nueva carpeta"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1449
+#: ../src/external/lua-scripts/tools/script_manager.lua:1456
 msgid "enter a folder name for the additional scripts"
 msgstr "introduzca un nombre para la carpeta de los guiones adicionales"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1454
+#: ../src/external/lua-scripts/tools/script_manager.lua:1461
 msgid "URL to download additional scripts from"
 msgstr "URL para descargar guiones adicionales"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1456
+#: ../src/external/lua-scripts/tools/script_manager.lua:1463
 msgid "new folder to place scripts in"
 msgstr "Nueva carpeta para colocar los guiones"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1459
+#: ../src/external/lua-scripts/tools/script_manager.lua:1466
 msgid "install additional scripts"
 msgstr "Instalar guiones adicionales"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1467
+#: ../src/external/lua-scripts/tools/script_manager.lua:1474
 msgid "enable \"disable scripts\" button"
 msgstr "Habilitar el botón \"deshabilitar guiones\""
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1479
-#: ../src/external/lua-scripts/tools/script_manager.lua:1504
+#: ../src/external/lua-scripts/tools/script_manager.lua:1486
+#: ../src/external/lua-scripts/tools/script_manager.lua:1511
 msgid "disable scripts"
 msgstr "desactivar guiones"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1485
+#: ../src/external/lua-scripts/tools/script_manager.lua:1492
 msgid "lua scripts will not run the next time darktable is started"
 msgstr ""
 "Los guiones de Lua no se ejecutarán la próxima vez que se inicie darktable"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1499
+#: ../src/external/lua-scripts/tools/script_manager.lua:1506
 msgid "add more scripts"
 msgstr "Añadir más guiones"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1515
+#: ../src/external/lua-scripts/tools/script_manager.lua:1522
 msgid "select the script folder"
 msgstr "Seleccionar la carpeta de guiones"
 
@@ -15784,7 +15784,7 @@ msgstr "Seleccionar la carpeta de guiones"
 #. a button to start and stop the script
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
-#: ../src/external/lua-scripts/tools/script_manager.lua:1546
+#: ../src/external/lua-scripts/tools/script_manager.lua:1553
 #: ../src/iop/agx.c:2456 ../src/iop/channelmixerrgb.c:4454
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
@@ -15796,45 +15796,45 @@ msgstr "página"
 
 # dt•v5.0
 #. configure options
-#: ../src/external/lua-scripts/tools/script_manager.lua:1586
+#: ../src/external/lua-scripts/tools/script_manager.lua:1593
 msgid "scripts per page"
 msgstr "pulsadores por página"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1587
+#: ../src/external/lua-scripts/tools/script_manager.lua:1594
 msgid "select number of start/stop buttons to display"
 msgstr "Determina la cantidad de pulsadores de inicio/parada listada por página"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1598
+#: ../src/external/lua-scripts/tools/script_manager.lua:1605
 msgid "change number of buttons"
 msgstr "guardar modificación"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1608
+#: ../src/external/lua-scripts/tools/script_manager.lua:1615
 msgid "configuration"
 msgstr "configuración"
 
 #. stack for the options
 #. main menu
-#: ../src/external/lua-scripts/tools/script_manager.lua:1630
+#: ../src/external/lua-scripts/tools/script_manager.lua:1637
 #: ../src/gui/accelerators.c:2922 ../src/gui/accelerators.c:3022
 #: ../src/views/view.c:1767
 msgid "action"
 msgstr "acción"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1636
+#: ../src/external/lua-scripts/tools/script_manager.lua:1643
 msgid "install/update scripts"
 msgstr "instalar/actualizar guiones"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1636
+#: ../src/external/lua-scripts/tools/script_manager.lua:1643
 msgid "configure"
 msgstr "configurar"
 
 # dt•v5.0
-#: ../src/external/lua-scripts/tools/script_manager.lua:1636
+#: ../src/external/lua-scripts/tools/script_manager.lua:1643
 msgid "start/stop scripts"
 msgstr "iniciar/detener guiones"
 
@@ -19675,7 +19675,7 @@ msgstr ""
 "El contraste inmediato alrededor del punto medio no se ve afectado,\n"
 "pero sí lo están las sombras y las luces; es posible que se tenga que "
 "contrarrestar\n"
-"con el control deslizante de contraste o con los controles de tremo "
+"con el control deslizante de contraste o con los controles de tramo "
 "inferior / superior."
 
 # dt•v5.4
