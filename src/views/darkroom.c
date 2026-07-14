@@ -1852,8 +1852,8 @@ static void _second_window_quickbutton_clicked(GtkWidget *w,
     gtk_widget_hide(wnd);
 
     // Flush pending events to let macOS process the hide before destroy
-    while(gtk_events_pending())
-      gtk_main_iteration_do(FALSE);
+    while(g_main_context_pending(NULL))
+      g_main_context_iteration(NULL, FALSE);
 
     gtk_widget_destroy(wnd);
 

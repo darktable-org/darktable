@@ -147,6 +147,8 @@ typedef struct dt_gui_gtk_t
   gint scroll_mask;
   guint sidebar_scroll_mask;
 
+  GMainLoop *main_loop;
+
   cairo_filter_t filter_image;    // filtering used to scale images to screen
 } dt_gui_gtk_t;
 
