@@ -1396,7 +1396,7 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget)
     if(style)
     {
       GdkRGBA *bg_color = NULL;
-      gtk_style_context_get(style, GTK_STATE_FLAG_NORMAL,
+      gtk_style_context_get(style, gtk_widget_get_state_flags(widget),
                             GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &bg_color, NULL);
       if(bg_color)
       {

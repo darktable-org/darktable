@@ -2536,6 +2536,21 @@ static gchar *_build_label(const dt_bauhaus_widget_t *w)
     return g_strdup(w->label);
 }
 
+// Helper: query CSS color for a specific pseudo-class state without passing a
+// non-current state to gtk_style_context_get_color() (which GTK4 rejects).
+//
+// GTK4 switch-time: remove the state argument from get_color() — the context
+// is already in the desired state via gtk_style_context_set_state().
+static void _popup_get_state_color(GtkStyleContext *context,
+                                    GtkStateFlags state,
+                                    GdkRGBA *color)
+{
+  gtk_style_context_save(context);
+  gtk_style_context_set_state(context, state);
+  gtk_style_context_get_color(context, state, color);
+  gtk_style_context_restore(context);
+}
+
 static gboolean _popup_draw(GtkWidget *widget,
                             cairo_t *cr,
                             gpointer user_data)
@@ -2553,19 +2568,18 @@ static gboolean _popup_draw(GtkWidget *widget,
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
-  // look up some colors once
-  GdkRGBA text_color, text_color_selected, text_color_hover, text_color_insensitive;
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &text_color);
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_SELECTED, &text_color_selected);
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_PRELIGHT, &text_color_hover);
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_INSENSITIVE, &text_color_insensitive);
-
   GdkRGBA *fg_color = _default_color_assign();
   GdkRGBA *bg_color;
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
   gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   gtk_style_context_get_color(context, state, fg_color);
+
+  GdkRGBA text_color, text_color_selected, text_color_hover, text_color_insensitive;
+  _popup_get_state_color(context, GTK_STATE_FLAG_NORMAL, &text_color);
+  _popup_get_state_color(context, GTK_STATE_FLAG_SELECTED, &text_color_selected);
+  _popup_get_state_color(context, GTK_STATE_FLAG_PRELIGHT, &text_color_hover);
+  _popup_get_state_color(context, GTK_STATE_FLAG_INSENSITIVE, &text_color_insensitive);
 
   // draw background
   gtk_render_background(context, cr, 0, - pop->offcut, width, pop->position.height);
