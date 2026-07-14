@@ -740,6 +740,7 @@ void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list)
   _insert_before(iop_order_list, "nlmeans", "blurs");
   _insert_before(iop_order_list, "filmicrgb", "sigmoid");
   _insert_before(iop_order_list, "filmicrgb", "agx");
+  _insert_before(iop_order_list, "colisa", "spektrafilm");
   _insert_before(iop_order_list, "colorbalancergb", "colorequal");
   _insert_before(iop_order_list, "highlights", "rasterfile");
   _insert_before(iop_order_list, "colorbalance", "colorharmonizer");
