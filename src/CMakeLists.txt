@@ -79,6 +79,7 @@ FILE(GLOB SOURCE_FILES
   "common/noiseprofiles.c"
   "common/opencl.c"
   "common/overlay.c"
+  "common/p2p.c"
   "common/pdf.c"
   "common/pfm.c"
   "common/presets.c"
@@ -157,12 +158,15 @@ FILE(GLOB SOURCE_FILES
   "gui/import_metadata.c"
   "gui/metadata_tags.c"
   "gui/preferences.c"
+  "gui/preferences_p2p.c"
+  "gui/pairing_qr.c"
   "gui/presets.c"
   "gui/splash.c"
   "gui/welcome.c"
   "gui/styles_dialog.c"
   "imageio/imageio.c"
   "imageio/imageio_dng.c"
+  "imageio/proxy.c"
   "imageio/imageio_jpeg.c"
   "imageio/imageio_module.c"
   "imageio/imageio_pfm.c"
@@ -490,6 +494,18 @@ endif()
 # Use imported target for curl
 find_package(CURL 7.56 REQUIRED)
 list(APPEND LIBS CURL::libcurl)
+
+# libqrencode — for the pairing QR code dialog (preferences → P2P tab)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(Qrencode IMPORTED_TARGET libqrencode)
+endif()
+if(Qrencode_FOUND)
+  list(APPEND LIBS PkgConfig::Qrencode)
+  add_compile_definitions(HAVE_QRENCODE=1)
+else()
+  message(WARNING "libqrencode not found — pairing QR code will show an error. Install libqrencode-dev.")
+endif()
 
 if(USE_AI)
   # libarchive for AI model ZIP extraction
@@ -1161,3 +1177,58 @@ add_custom_target(
   DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+#
+# P2P daemon (Go)
+#
+# Enumerate /usr/lib/go-*/bin (Ubuntu APT packages install here per-version)
+# and Go module-cache toolchains (go get golang.org/toolchain stores here).
+# pkg-config does not exist for Go; GOROOT is derived from `go env GOROOT`
+# after the binary is found, so no version number is ever hardcoded here.
+# Sort in reverse so newer versions (lexicographically larger) are tried first.
+file(GLOB _go_ubuntu_hints LIST_DIRECTORIES true "/usr/lib/go-*/bin")
+file(GLOB _go_toolchain_hints LIST_DIRECTORIES true
+  "$ENV{HOME}/go/pkg/mod/golang.org/toolchain@*/bin"
+  "/root/go/pkg/mod/golang.org/toolchain@*/bin")
+list(SORT _go_ubuntu_hints ORDER DESCENDING)
+list(SORT _go_toolchain_hints ORDER DESCENDING)
+find_program(GO_EXECUTABLE go
+  HINTS ${_go_toolchain_hints} /usr/local/go/bin ${_go_ubuntu_hints}
+  DOC "Go compiler (used to build dt-p2p-daemon)")
+
+if(GO_EXECUTABLE)
+  # Derive GOROOT from the found binary — works for tarball, snap, APT, etc.
+  execute_process(
+    COMMAND "${GO_EXECUTABLE}" env GOROOT
+    OUTPUT_VARIABLE GO_ROOT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  execute_process(
+    COMMAND "${GO_EXECUTABLE}" version
+    OUTPUT_VARIABLE _go_version_string
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  message(STATUS "Found Go: ${GO_EXECUTABLE} (${_go_version_string}), GOROOT=${GO_ROOT}")
+
+  file(GLOB_RECURSE P2P_GO_SOURCES "${CMAKE_SOURCE_DIR}/src/p2p/*.go")
+  add_custom_command(
+    OUTPUT "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+    DEPENDS ${P2P_GO_SOURCES} "${CMAKE_SOURCE_DIR}/src/p2p/go.mod"
+    COMMAND ${CMAKE_COMMAND} -E env
+      "GOROOT=${GO_ROOT}"
+      "PATH=${GO_ROOT}/bin:$ENV{PATH}"
+      "${GO_EXECUTABLE}" build -o "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+      "${CMAKE_SOURCE_DIR}/src/p2p"
+    COMMENT "Building dt-p2p-daemon with ${_go_version_string}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/p2p"
+  )
+  add_custom_target(dt-p2p-daemon ALL
+    DEPENDS "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+  )
+  install(PROGRAMS "${DARKTABLE_BINDIR}/dt-p2p-daemon"
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+  message(STATUS "Go not found — dt-p2p-daemon will not be built (P2P sync disabled)")
+endif()

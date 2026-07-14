@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x /home/steve/src/darktable/tools/make_proxy_avif.py)",
+      "Bash(cmake --build build --target darktable)",
+      "Bash(grep -n \"LIBRAW_CBLACK_SIZE\\\\|cblack_count\" /usr/include/libraw/libraw_types.h | head -5)",
+      "Read(//usr/include/libraw/**)",
+      "Bash(cmake --build build --target darktable-bin)",
+      "Bash(cmake --build build)",
+      "Bash(grep -E \"^.*error:.*$\")",
+      "Bash(make -C build -j4)",
+      "Bash(cmake .. -DCMAKE_BUILD_TYPE=Release)",
+      "Bash(cmake ..)",
+      "Bash(make -C build -j4 dt-p2p-daemon)",
+      "Bash(make -C /home/steve/src/darktable/build dt-p2p-daemon)",
+      "Bash(make -C /home/steve/src/darktable/build -j4)",
+      "Bash(ls -lh /home/steve/Pictures/Darktable/20260610_import1/20260610_0012.CR3 2>/dev/null || echo \"file not found\")",
+      "Read(//home/steve/Pictures/Darktable/20260610_import1/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(pkg-config --modversion libavif)",
+      "Read(//usr/include/avif/**)",
+      "Bash(mkdir -p build)",
+      "Bash(cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS=\"-Werror\" -DCMAKE_CXX_FLAGS=\"-Werror\" -DRAW_FILES_MODULE=ON -DBUILD_DARKTABLE=ON -G Ninja)",
+      "Bash(make bin/CMakeFiles/lib_darktable.dir/common/image.c.o)",
+      "Bash(make -C build bin/CMakeFiles/lib_darktable.dir/common/image.c.o bin/CMakeFiles/lib_darktable.dir/imageio/proxy.c.o)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(make -C /home/steve/src/darktable/build bin/CMakeFiles/lib_darktable.dir/common/image.c.o bin/CMakeFiles/lib_darktable.dir/imageio/proxy.c.o)"
+    ]
+  }
+}
