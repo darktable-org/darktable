@@ -560,7 +560,7 @@ static void _window_position(const int offset)
     // opaque. At switch time the entire Wayland workaround block must be
     // reworked (GdkWindow -> GdkSurface, gdk_window_resize removed, etc.).
 #if !GTK_CHECK_VERSION(4, 0, 0)
-    gtk_widget_set_app_paintable(pop->window, TRUE);
+    dt_gui_add_class(pop->window, "dt_transparent_background");
     GdkScreen *screen = gtk_widget_get_screen(pop->window);
     GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
     gtk_widget_set_visual(pop->window, visual);
