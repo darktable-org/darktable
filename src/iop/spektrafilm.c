@@ -148,7 +148,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float diffusion_scale;    // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "diffusion size"
   float diffusion_warmth;   // $MIN: -1.5 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "diffusion halo warmth"
   gboolean grain_on;        // $DEFAULT: TRUE $DESCRIPTION: "enable grain"
-  float grain_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "grain"
+  float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain"
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
@@ -1640,6 +1640,12 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("grain"), NULL);
   g->grain_on = dt_bauhaus_toggle_from_params(self, "grain_on");
   g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
+  dt_bauhaus_slider_set_soft_range(g->grain_amount, 0.0f, 2.0f);
+  gtk_widget_set_tooltip_text(g->grain_amount,
+                              _("grain strength (1.0 = film-accurate; drag up to 2,"
+                                " right-click to enter higher values -- useful for pushing"
+                                " naturally fine-grained stocks further than their"
+                                " catalogue amount allows)"));
   g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
   gtk_widget_set_tooltip_text(g->grain_size,
                               _("grain particle size (1.0 = film default; higher = coarser)"));
