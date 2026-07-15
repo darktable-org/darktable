@@ -1406,6 +1406,25 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(fi < 0 || fi >= g->n_films) return;
   const sf_prof_entry_t *e = &g->entries[g->film_entry[fi]];
   p->film_hash = e->hash;
+  /* Keep the "default" scan_film following this film's own positive/negative
+     type too, not just the live params -- so a double-click reset (which
+     resets to self->default_params, whether via darktable's own bauhaus
+     reset or a checkbox-reset mechanism for this field) means "what this
+     film actually needs" rather than the module's one-size-fits-all factory
+     default (FALSE). Without this, resetting scan_film on a positive/
+     reversal film would silently break it, since that film has no print
+     stage at all. */
+  if(self->default_params)
+    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
+  /* The core checkbox-reset mechanism (darktable-core-toggle-reset.patch)
+     doesn't re-read self->default_params live at reset time -- it captures
+     each checkbox's default once, at widget-creation time, as opaque
+     "dt-toggle-default" data on the button itself. So the update above
+     alone doesn't reach it; poke the widget's own cached value too,
+     otherwise a reset still uses whatever default_params->scan_film was
+     when the module GUI first built (before any film was ever selected). */
+  if(g->scan_film)
+    g_object_set_data(G_OBJECT(g->scan_film), "dt-toggle-default", GINT_TO_POINTER(e->positive));
   /* scan-film follows the film's natural mode on a film switch: slides and
      reversal stocks are viewed directly (scan), negatives go through the
      print stage. The user can still toggle freely afterwards -- this only
