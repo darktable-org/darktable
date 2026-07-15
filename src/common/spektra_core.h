@@ -34,7 +34,7 @@ void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
 void sf_halation(float *raw, int w, int h, double pixel_um, float amount, float spatial_scale);
 void sf_boost_highlights(float *raw, int w, int h, float boost_ev, float boost_range,
                          float protect_ev);
-void sf_diffusion_filter(float *raw, int w, int h, double pixel_um, float strength,
+void sf_diffusion_filter(float *raw, int w, int h, double pixel_um, int family, float strength,
                          float spatial_scale, float halo_warmth);
 
 /* Diffusion-filter Gaussian bank, built host-side and consumed by the GPU path
@@ -55,7 +55,7 @@ typedef struct sf_diffusion_plan_t
 /* Fill `plan` for the given strength/warmth. Returns 0 and sets plan->p_s=0 when
    the filter is a no-op. spatial_scale/pixel are applied by the caller (sigma_px
    = sigma_um * spatial_scale / pixel_um). */
-int sf_diffusion_build_plan(float strength, float halo_warmth, sf_diffusion_plan_t *plan);
+int sf_diffusion_build_plan(int family, float strength, float halo_warmth, sf_diffusion_plan_t *plan);
 
 
 /* Whole-file reader for the bundle loader (bundle.json and the .cube LUTs are

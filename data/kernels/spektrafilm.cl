@@ -522,6 +522,7 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __read_only image2d_t
                                const float hi2, __constant float *mats,
                                __global const float *cmax_table, const int cmax_nl,
                                const int cmax_nh, const int compress_mode,
+                               const float out_luminance_boost,
                                const int bw_on, const float bw_m, const float bw_q)
 {
   const int x = get_global_id(0), y = get_global_id(1);
@@ -534,6 +535,7 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __read_only image2d_t
   const float b = (c4.z - lo2) / (hi2 - lo2) * scale;
   float3 lx = sf_pchip3d(lut, sx, sy, sz, cmn, cmx, steps, r, g, b);
   float3 xyz = (float3)(exp10(lx.x), exp10(lx.y), exp10(lx.z));
+  if(out_luminance_boost != 1.0f) xyz *= out_luminance_boost;
   if(bw_on) /* scanner black/white point (positive film scans) */
   {
     const float yc = sf_clampf(bw_m * xyz.y + bw_q, 0.0f, 1.0f);
