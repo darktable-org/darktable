@@ -271,6 +271,7 @@ struct sf_sim_t
 
   /* output gamut compression */
   sf_output_compress_t out_compress;
+  double out_luminance_boost;
   double out_rgb2xyz[9], out_xyz2rgb[9];
   double oklab_m1inv[9], oklab_m2inv[9];
   float *cmax; /* SF_CMAX_NL × SF_CMAX_NH */
@@ -789,6 +790,7 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->lut_steps = 0;
   p->input_gamut_compress = true;
   p->output_compress = SF_OUTPUT_COMPRESS_OKLCH;
+  p->out_luminance_boost = 1.0;
   sf_sim_params_set_input_prophoto(p); /* reference IOParams default */
   sf_sim_params_set_output_srgb(p);
 }
@@ -1589,6 +1591,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
   s->print_positive = (print && print->type && strcmp(print->type, "positive") == 0);
   s->has_print = !p->scan_film;
   s->out_compress = p->output_compress;
+  s->out_luminance_boost = p->out_luminance_boost;
   s->print_exposure = p->print_exposure;
   s->lut_steps = p->lut_steps;
   if(s->lut_steps == 1) s->lut_steps = 0;
@@ -2260,6 +2263,8 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t n
     }
     double xyz[3], rgb[3];
     for(int m = 0; m < 3; m++) xyz[m] = pow(10.0, lx[m]);
+    if(sim->out_luminance_boost != 1.0)
+      for(int m = 0; m < 3; m++) xyz[m] *= sim->out_luminance_boost;
     if(sim->scan_bw_on)
     {
       /* scanner black/white point (positive film): scale toward Y in [0,1] */
@@ -2411,6 +2416,7 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   }
 
   g->out_compress = s->out_compress;
+  g->out_luminance_boost = (float)s->out_luminance_boost;
   cp9f(g->out_rgb2xyz, s->out_rgb2xyz);
   cp9f(g->out_xyz2rgb, s->out_xyz2rgb);
   cp9f(g->oklab_m1, SF_OKLAB_M1);
