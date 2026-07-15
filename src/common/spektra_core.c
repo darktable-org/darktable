@@ -258,12 +258,35 @@ typedef struct sf_diff_family_t
   sf_diff_group_t core, halo, bloom;
   double w_c, w_h, w_b;
   double total_gain; /* family scatter gain in strength->p_s */
+  double halo_warmth_base; /* per-family halo warmth bias, added to the
+                               user's own warmth slider before redistribution
+                               (spektrafilm's DIFFUSION_FILTER_SHAPES
+                               halo_warmth_base) */
 } sf_diff_family_t;
 
+/* All four families spektrafilm ships, values ported exactly from
+   model/diffusion.py's _DIFFUSION_FILTER_SHAPES / _DIFFUSION_FAMILY_TOTAL_GAIN. */
+static const sf_diff_family_t SF_FAMILY_GLIMMERGLASS = {
+  { 10.0, 1.5, 2, 0.0 }, { 50.0, 2.0, 3, 0.0 }, { 260.0, 2.5, 4, 3.2 },
+  0.60, 0.30, 0.10, 0.65, 0.0
+};
 /* Black Pro-Mist (the app default family). */
 static const sf_diff_family_t SF_FAMILY_BPM = {
   { 16.0, 1.5, 2, 0.0 }, { 95.0, 2.0, 3, 0.0 }, { 380.0, 2.5, 4, 3.5 },
-  0.40, 0.47, 0.13, 0.75
+  0.40, 0.47, 0.13, 0.75, 0.65
+};
+/* Classic Pro-Mist. */
+static const sf_diff_family_t SF_FAMILY_PRO_MIST = {
+  { 14.0, 1.5, 2, 0.0 }, { 150.0, 2.0, 3, 0.0 }, { 650.0, 2.5, 4, 2.9 },
+  0.28, 0.42, 0.30, 1.05, 0.40
+};
+static const sf_diff_family_t SF_FAMILY_CINEBLOOM = {
+  { 20.0, 1.5, 2, 0.0 }, { 200.0, 2.0, 3, 0.0 }, { 1000.0, 2.5, 4, 2.5 },
+  0.22, 0.30, 0.48, 1.00, 0.85
+};
+/* Index order must match dt_iop_spektrafilm_diffusion_family_t in spektrafilm.c. */
+static const sf_diff_family_t *const SF_DIFF_FAMILIES[4] = {
+  &SF_FAMILY_BPM, &SF_FAMILY_GLIMMERGLASS, &SF_FAMILY_PRO_MIST, &SF_FAMILY_CINEBLOOM
 };
 
 static const double SF_DIFF_BREAKS[5] = { 0.125, 0.25, 0.5, 1.0, 2.0 };
@@ -351,11 +374,12 @@ static void sf_diff_halo_warmth(const double *wgt, int n, double warmth, double 
 }
 
 /* Build the shared Gaussian bank (used by both CPU and GPU). */
-int sf_diffusion_build_plan(float strength, float halo_warmth, sf_diffusion_plan_t *plan)
+int sf_diffusion_build_plan(int family, float strength, float halo_warmth, sf_diffusion_plan_t *plan)
 {
   plan->n = 0;
   plan->p_s = 0.0f;
-  const sf_diff_family_t *fam = &SF_FAMILY_BPM;
+  const int nfam = (int)(sizeof(SF_DIFF_FAMILIES) / sizeof(SF_DIFF_FAMILIES[0]));
+  const sf_diff_family_t *fam = SF_DIFF_FAMILIES[(family >= 0 && family < nfam) ? family : 0];
   const double p_s = sf_diff_strength_to_ps((double)strength, fam);
   if(p_s <= 0.0) return 0;
 
@@ -366,7 +390,9 @@ int sf_diffusion_build_plan(float strength, float halo_warmth, sf_diffusion_plan
   const int nh = sf_diff_expand(&fam->halo, 0, hlam, hw);
   const int nb = sf_diff_expand(&fam->bloom, 1, blam, bw);
   double hch[3][SF_DIFFUSION_MAX_COMP];
-  sf_diff_halo_warmth(hw, nh, (double)halo_warmth, hch);
+  /* effective_warmth = family base + user knob, matching
+     diffusion_filter_radial_profile()'s own "cfg base + halo_warmth". */
+  sf_diff_halo_warmth(hw, nh, fam->halo_warmth_base + (double)halo_warmth, hch);
 
   const double L2 = 1.4142135623730951; /* exp(-r/lambda) ~ Gaussian sigma=lambda*sqrt(2) */
   int idx = 0;
@@ -397,11 +423,12 @@ int sf_diffusion_build_plan(float strength, float halo_warmth, sf_diffusion_plan
 
 /* Apply the diffusion filter in place on a linear w*h*3 plane. */
 void sf_diffusion_filter(float *const raw, const int w, const int h, const double pixel_um,
-                         const float strength, const float spatial_scale, const float halo_warmth)
+                         const int family, const float strength, const float spatial_scale,
+                         const float halo_warmth)
 {
   if(strength <= 0.0f || spatial_scale <= 0.0f) return;
   sf_diffusion_plan_t plan;
-  if(!sf_diffusion_build_plan(strength, halo_warmth, &plan) || plan.p_s <= 0.0f) return;
+  if(!sf_diffusion_build_plan(family, strength, halo_warmth, &plan) || plan.p_s <= 0.0f) return;
 
   const double sc = fmax((double)spatial_scale, 1e-6);
   const size_t npix = (size_t)w * h, nn = npix * 3;

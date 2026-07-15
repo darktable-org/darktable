@@ -155,6 +155,7 @@ typedef struct sf_sim_gpu_t
   float grain_rms[3], grain_uniformity[3], grain_dmin[3];
   /* output gamut compression */
   int out_compress; /* sf_output_compress_t */
+  float out_luminance_boost;
   float out_rgb2xyz[9], out_xyz2rgb[9];
   float oklab_m1[9], oklab_m2[9], oklab_m1inv[9], oklab_m2inv[9];
   const float *cmax_table; /* cmax_nl * cmax_nh, borrowed from the sim */
@@ -258,6 +259,7 @@ typedef struct sf_sim_params_t
   double output_xyz_to_rgb[9];
   double output_white_xy[2];
   sf_output_compress_t output_compress; /* SF_OUTPUT_COMPRESS_OKLCH */
+  double out_luminance_boost;  /* 1.0 = pre-gamut XYZ multiplier before OkLCh compressor */
 } sf_sim_params_t;
 
 void sf_sim_params_defaults(sf_sim_params_t *p);
