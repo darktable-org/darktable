@@ -53,6 +53,8 @@ static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *dat
 
   if(*field != previous)
   {
+    dt_bauhaus_highlight_changed_notebook_tab(
+        togglebutton, GINT_TO_POINTER(dt_bauhaus_toggle_widget_is_changed(togglebutton)));
     dt_iop_gui_changed(DT_ACTION(self), togglebutton, &previous);
   }
 }
@@ -246,6 +248,13 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     DT_IOP_SECTION_FOR_PARAMS_UNWIND(module_param->module);
     module_param->param = (uint8_t *)p + f->header.offset;
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+    // Stash a second, non-owning reference to the same module_param so
+    // dt_bauhaus_toggle_widget_reset()/dt_bauhaus_toggle_widget_is_changed()
+    // can find it from just the widget (e.g. from generic group/page reset
+    // or tab-changed-tracking code with no other context available). Freed
+    // together with module_param by the "toggled" signal's GClosureNotify
+    // above when the button is destroyed; nothing here takes ownership.
+    g_object_set_data(G_OBJECT(button), "dt-toggle-module-param", module_param);
 
     dt_action_define_iop(module_param->module, section, str, button, &dt_action_def_toggle);
   }
@@ -261,6 +270,52 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   dt_gui_box_add(self->widget, button);
 
   return button;
+}
+
+// Both functions below read the module's current default_params live, at
+// call time, rather than any value captured when the checkbox was first
+// created -- some modules recompute their real defaults per-image (in
+// reload_defaults(), which can run again long after the checkbox already
+// exists), and a stale snapshot would silently go wrong for exactly those
+// modules: resetting, or reporting "changed", against whatever the default
+// used to be instead of what it actually is for the image currently loaded.
+static gboolean _toggle_widget_default(GtkWidget *togglebutton, gboolean *out_default)
+{
+  dt_module_param_t *data = g_object_get_data(G_OBJECT(togglebutton), "dt-toggle-module-param");
+  if(!data || !data->module || !data->module->default_params) return FALSE;
+
+  const size_t offset = (uint8_t *)data->param - (uint8_t *)data->module->params;
+  *out_default = *(gboolean *)((uint8_t *)data->module->default_params + offset);
+  return TRUE;
+}
+
+void dt_bauhaus_toggle_widget_reset(GtkWidget *togglebutton)
+{
+  // An insensitive checkbox isn't in effect right now -- some modules also
+  // blank a checkbox's displayed tick while insensitive without touching
+  // the actual stored value, so there's nothing meaningful to reset, and
+  // forcing the display back to "checked" would only undo that module's
+  // own display logic for no reason.
+  if(!gtk_widget_get_sensitive(togglebutton)) return;
+
+  gboolean default_value;
+  if(!_toggle_widget_default(togglebutton, &default_value)) return; // not one of ours
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(togglebutton), default_value);
+  // if the value was already at default, the "toggled" signal (and with it
+  // _iop_toggle_callback's own highlight call) never fired -- make sure the
+  // tab indicator still gets re-evaluated regardless, matching how
+  // dt_bauhaus_widget_reset()'s callers already expect group/page resets to
+  // always leave the "changed" state correct.
+  dt_bauhaus_highlight_changed_notebook_tab(togglebutton, GINT_TO_POINTER(FALSE));
+}
+
+gboolean dt_bauhaus_toggle_widget_is_changed(GtkWidget *togglebutton)
+{
+  gboolean default_value;
+  if(!_toggle_widget_default(togglebutton, &default_value)) return FALSE;
+
+  return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)) != default_value;
 }
 
 GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, const gchar *label, const gchar *ctrl_label,

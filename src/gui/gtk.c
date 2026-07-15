@@ -31,6 +31,7 @@
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/sidepanel.h"
@@ -3837,13 +3838,32 @@ GdkModifierType dt_key_modifier_state()
 static void _reset_all_bauhaus(GtkNotebook *notebook,
                                GtkWidget *box)
 {
+  // Two passes rather than one: some modules react to a slider/combobox
+  // changing by programmatically changing a checkbox too (e.g. turning a
+  // feature back on when one of its own settings is touched). If a
+  // checkbox were reset in the same pass as sliders/comboboxes, a slider
+  // reset that runs afterwards could still trigger that kind of side
+  // effect and silently undo the checkbox reset that already ran earlier
+  // in the same pass. Resetting every checkbox only after every slider/
+  // combobox on the page has already settled avoids that regardless of
+  // what order the widgets happen to appear in.
+  GList *toggles = NULL;
   for(GList *c = gtk_container_get_children(GTK_CONTAINER(box));
       c;
       c = g_list_delete_link(c, c))
   {
     if(DT_IS_BAUHAUS_WIDGET(c->data))
       dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
+    // dt_bauhaus_toggle_from_params() checkbuttons are plain GtkCheckButtons,
+    // not bauhaus widgets, so they're otherwise silently skipped by the
+    // check above; dt_bauhaus_toggle_widget_reset() no-ops for any other
+    // GtkToggleButton (e.g. one not created by that function).
+    else if(GTK_IS_TOGGLE_BUTTON(c->data))
+      toggles = g_list_prepend(toggles, c->data);
   }
+  for(GList *c = toggles; c; c = c->next)
+    dt_bauhaus_toggle_widget_reset(GTK_WIDGET(c->data));
+  g_list_free(toggles);
 
   dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
 }

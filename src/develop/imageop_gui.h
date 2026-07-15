@@ -28,6 +28,21 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param);
 
+// reset a dt_bauhaus_toggle_from_params() checkbutton to its param's current
+// default value (read live from the module's default_params at the moment
+// of the call, so this stays correct even if the module recomputes its
+// defaults per-image after the checkbox was created). No-op if
+// `togglebutton` wasn't created by dt_bauhaus_toggle_from_params(), or if
+// it's currently insensitive (an insensitive control isn't in effect right
+// now, so there's nothing meaningful to reset).
+void dt_bauhaus_toggle_widget_reset(GtkWidget *togglebutton);
+
+// true if a dt_bauhaus_toggle_from_params() checkbutton's current value
+// differs from its param's current default (read live, same as above).
+// False (not changed) if `togglebutton` wasn't created by
+// dt_bauhaus_toggle_from_params().
+gboolean dt_bauhaus_toggle_widget_is_changed(GtkWidget *togglebutton);
+
 // package dt_iop_module_t pointer and section name to pass to a _from_params function
 // it will then create a widget action in a section, rather than top level in the module
 // optionally pass a box to add the widgets to
