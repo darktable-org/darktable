@@ -622,7 +622,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)p1;
   dt_iop_crop_data_t *d = piece->data;
 
-  if(dt_iop_has_focus(self) && (pipe->type & DT_DEV_PIXELPIPE_BASIC))
+  if(dt_iop_has_focus(self) && dt_pipe_is_basic(pipe))
   {
     d->cx = 0.0f;
     d->cy = 0.0f;
@@ -1388,13 +1388,19 @@ void gui_init(dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed",
                    G_CALLBACK(_event_aspect_presets_changed), self);
+
   gtk_widget_set_tooltip_text
     (g->aspect_presets,
      _("set the aspect ratio\n"
        "the list is sorted: from most square to least square\n"
        "to enter custom aspect ratio open the combobox and type ratio in x:y"
        " or decimal format"));
-  dt_bauhaus_widget_set_quad(g->aspect_presets, self, dtgtk_cairo_paint_aspectflip, FALSE, _event_aspect_flip, NULL);
+  dt_bauhaus_widget_set_quad(g->aspect_presets,
+                             self,
+                             dtgtk_cairo_paint_aspectflip,
+                             FALSE,
+                             _event_aspect_flip,
+                             _("flip crop orientation between horizontal and vertical"));
 
   GtkWidget *box_enabled = dt_gui_vbox(g->aspect_presets);
 

@@ -72,6 +72,12 @@ typedef struct dt_culling_t
   double pan_y;          //
   gboolean mouse_inside; // is the mouse inside culling center view ?
 
+  // Safety-net timer that finalises a deferred zoom gesture (reloads the
+  // surface at the correct resolution) shortly after the last zoom event.
+  // Smooth-scroll "stop" events are not reliably delivered by every device,
+  // so we cannot depend on them alone to trigger dt_culling_zoom_end().
+  guint zoom_finalize_timeout_id;
+
   gboolean focus; // do we show focus rectangles on images ?
 
   dt_thumbnail_overlay_t overlays; // overlays type
@@ -104,6 +110,17 @@ void dt_culling_change_offset_image(dt_culling_t *table,
 
 void dt_culling_zoom_max(dt_culling_t *table);
 void dt_culling_zoom_fit(dt_culling_t *table);
+
+// zoom by zoom_delta (in th->zoom units) centered on culling-local (x_culling, y_culling).
+// equivalent to _thumbs_zoom_add.
+gboolean dt_culling_zoom_add(dt_culling_t *table, float zoom_delta, float x_culling, float y_culling, int state);
+// Finalise a zoom gesture: reload surfaces at the correct resolution for thumbnails
+// that were in deferred-preview mode during the gesture.
+void dt_culling_zoom_end(dt_culling_t *table);
+
+// translate all zoomed thumbnails by (dx, dy) screen pixels.
+// state is used to optionally restrict panning to the hovered image (GDK_SHIFT_MASK).
+gboolean dt_culling_pan_move(dt_culling_t *table, float dx, float dy, int state);
 
 // set the overlays type
 void dt_culling_set_overlays_mode(dt_culling_t *table,

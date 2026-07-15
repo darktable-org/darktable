@@ -831,7 +831,7 @@ void process(dt_iop_module_t *self,
     if(out_height > 0)
     {
       if(tiling)
-        dt_print(DT_DEBUG_TILING, "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
+        dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
                tile_nr, num_tiles, group, first_in, last_in, t_rows);
 
       float *t_in = in + width * first_in * ch;
@@ -1104,7 +1104,7 @@ int process_cl(dt_iop_module_t *self,
     {
       if(tiling)
       {
-        dt_print(DT_DEBUG_TILING,
+        dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
               "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
                tile_nr, num_tiles, group, first_in, last_in, t_rows);
 
@@ -1404,11 +1404,17 @@ void commit_params(dt_iop_module_t *self,
   if(use_method != DT_IOP_DEMOSAIC_PPG)
     d->median_thrs = 0.0f;
 
-  if(passing || bayer4 || true_monochrome)
-  {
+  // make sure we have no crazy stuff
+  if(d->green_eq < DT_IOP_GREEN_EQ_NO || d->green_eq > DT_IOP_GREEN_EQ_BOTH)
     d->green_eq = DT_IOP_GREEN_EQ_NO;
+
+  // only bayer have green equil
+  if(passing || !bayer)
+    d->green_eq = DT_IOP_GREEN_EQ_NO;
+
+  // color smoothing for bayer and xtrans
+  if(passing || bayer4 || true_monochrome)
     d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
-  }
 
   if(use_method & DT_DEMOSAIC_DUAL)
     d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
@@ -1672,9 +1678,10 @@ static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
 static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  if(!g || DT_IN_GUI_UPDATE()) return;
+  if(!g) return;
 
-  DT_ENTER_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
+
   const gboolean new_radius = g->new_radius > 0.0f;
   const gboolean new_thrs = g->new_thrs > 0.0f;
   if(new_radius)

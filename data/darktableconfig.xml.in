@@ -425,6 +425,13 @@
     <longdescription>GitHub repository for downloading AI models (format: owner/repo)</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/ai/models_path</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>custom AI models folder</shortdescription>
+    <longdescription>folder where AI models are stored. leave empty for the default location. existing models in the default location are not migrated automatically</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/ai/cuda_device_id</name>
     <type min="0" max="15">int</type>
     <default>0</default>
@@ -496,14 +503,14 @@
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_amdacceleratedparallelprocessing</name>
     <type>bool</type>
-    <default>${DEFCONFIG_NONAPPLE}</default>
+    <default>false</default>
     <shortdescription>AMD ROCm</shortdescription>
     <longdescription>AMD Accelerated Parallel Processing (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_rusticl</name>
     <type>bool</type>
-    <default>false</default>
+    <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>RustiCL</shortdescription>
     <longdescription>RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
@@ -1519,7 +1526,7 @@
     <type>string</type>
     <default>120|400</default>
     <shortdescription>delimiters for size categories</shortdescription>
-    <longdescription>size categories are used to be able to set different overlays and CSS values depending of the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: &lt;120px, 120-400px, >400px</longdescription>
+    <longdescription>size categories are used to be able to set different overlays and CSS values depending on the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: up to 120px, 120-400px, more than 400px</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
@@ -2433,6 +2440,13 @@
     <shortdescription>enable touchpad gestures in darkroom</shortdescription>
     <longdescription><![CDATA[use two-finger touchpad gestures in darkroom for panning and pinch-to-zoom. <b>enabled:</b> touchpad pinch gestures zoom the image and two-finger touchpad scrolling pans it; <i>Ctrl+scroll</i> still uses the legacy zoom behavior. <b>disabled:</b> touchpad gestures are ignored and darkroom falls back to the legacy scroll behavior, including <i>Ctrl+scroll</i> for zooming in and out.]]></longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>darkroom/ui/constrain_zoom</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>constrain darkroom zoom between screen fit and 100%</shortdescription>
+    <longdescription><![CDATA[limits scroll-wheel and pinch-to-zoom in the darkroom to the range between screen fit (zoom out) and 100% (zoom in). <b>enabled:</b> zoom is constrained; hold <i>Ctrl</i> while zooming to temporarily lift the limit and zoom beyond 100%. <b>disabled:</b> zoom is never constrained and the additional <i>Ctrl</i> key press is not needed to zoom beyond 100%.]]></longdescription>
+  </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
@@ -2631,7 +2645,7 @@
     <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
+  <dtconfig prefs="darkroom" capability="nonwindows" section="general">
     <name>darkroom/ui/loading_screen</name>
     <type>bool</type>
     <default>true</default>
@@ -3027,6 +3041,47 @@
     <type min="0" max="3">int</type>
     <default>0</default>
     <shortdescription>AVIF chroma subsampling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/heif/bitdepth</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>HEIF bit depth (bpc)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/heif/color_mode</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/heif/compression_type</name>
+    <type min="0" max="1">int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/heif/quality</name>
+    <type min="0" max="100">int</type>
+    <default>50</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/heif/subsample</name>
+    <type min="0" max="3">int</type>
+    <default>0</default>
+    <shortdescription>HEIF chroma subsampling</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>

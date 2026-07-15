@@ -197,9 +197,11 @@ static void _bayer_gain_match(const float *tile_in,
   const double out_mean = out_sum / (double)(3 * tile_out_plane);
   // allow negative gain too: the RawNIND model output scale is
   // arbitrary by design (match_gain post-step during training absorbs
-  // it); in some variants the sign is also inverted. guard only
-  // against near-zero mean
-  const float gain = (fabsf((float)out_mean) > 1e-8f)
+  // it); in some variants the sign is also inverted. guard against
+  // near-zero out_mean relative to in_mean — an absolute threshold
+  // is useless because out_mean is typically ~10^6 * in_mean
+  const double thr = 1e-6 * fabs(in_mean);
+  const float gain = (fabs(out_mean) > thr)
     ? (float)(in_mean / out_mean) : 1.0f;
   if(gain != 1.0f)
   {
@@ -230,6 +232,8 @@ static void _bayer_tile_geometry(const dt_restore_context_t *ctx,
                                  const _bayer_prep_t *prep,
                                  int sr0_base, int sc0_base,
                                  int width, int height,
+                                 int vis_y_lo, int vis_y_hi,
+                                 int vis_x_lo, int vis_x_hi,
                                  int *sr0_origin, int *sc0_origin,
                                  int *mir_y_lo, int *mir_y_hi,
                                  int *mir_x_lo, int *mir_x_hi)
@@ -241,13 +245,34 @@ static void _bayer_tile_geometry(const dt_restore_context_t *ctx,
   *sr0_origin = sr0_base + y0;
   *sc0_origin = sc0_base + x0;
 
+  // bound reflection by the visible region so OB rows past the visible
+  // edges don't leak into the model input and bias the gain match
+  int eff_y_lo = vis_y_lo;
+  int eff_y_hi = vis_y_hi;
+  int eff_x_lo = vis_x_lo;
+  int eff_x_hi = vis_x_hi;
+
   const gboolean cropped_mirror
     = ctx && force_rggb
       && ctx->edge_pad == DT_RESTORE_EDGE_MIRROR_CROPPED;
-  *mir_y_lo = cropped_mirror ? y0 : 0;
-  *mir_x_lo = cropped_mirror ? x0 : 0;
-  *mir_y_hi = cropped_mirror ? (height - (y0 ? 1 : 0)) : height;
-  *mir_x_hi = cropped_mirror ? (width  - (x0 ? 1 : 0)) : width;
+  if(cropped_mirror)
+  {
+    // shift to the CFA R origin so reflected 2x2 blocks align with RGGB
+    eff_y_lo += y0;
+    eff_x_lo += x0;
+    // keep the reflection span even so it stays CFA-aligned
+    if((eff_y_hi - eff_y_lo) & 1) eff_y_hi -= 1;
+    if((eff_x_hi - eff_x_lo) & 1) eff_x_hi -= 1;
+  }
+  if(eff_y_lo < 0) eff_y_lo = 0;
+  if(eff_x_lo < 0) eff_x_lo = 0;
+  if(eff_y_hi > height) eff_y_hi = height;
+  if(eff_x_hi > width)  eff_x_hi = width;
+
+  *mir_y_lo = eff_y_lo;
+  *mir_y_hi = eff_y_hi;
+  *mir_x_lo = eff_x_lo;
+  *mir_x_hi = eff_x_hi;
 }
 
 // sr0_origin / sc0_origin are sensor-space top-left coords of the packed
@@ -339,9 +364,14 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
     cfa_out[i] = (uint16_t)(cv + 0.5f);
   }
 
-  // working region in sensor coords: [y0..y0+2*Hh) x [x0..x0+2*Wh)
-  const int Hh = (height - y0) / 2;
-  const int Wh = (width - x0) / 2;
+  // working region in sensor coords: [y0..y0+2*Hh) x [x0..x0+2*Wh),
+  // bounded by the metadata-reported visible region
+  const int vis_x_lo  = (img->p_width  > 0) ? img->crop_x : 0;
+  const int vis_y_lo  = (img->p_height > 0) ? img->crop_y : 0;
+  const int vis_end_x = (img->p_width  > 0) ? (img->crop_x + img->p_width)  : width;
+  const int vis_end_y = (img->p_height > 0) ? (img->crop_y + img->p_height) : height;
+  const int Hh = (vis_end_y - y0) / 2;
+  const int Wh = (vis_end_x - x0) / 2;
   if(Hh <= 0 || Wh <= 0) return 0;  // too small; output == input
 
   // tile setup in packed (half-res) space
@@ -359,10 +389,12 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
   const int total_tiles = cols * rows;
 
   dt_print(DT_DEBUG_AI,
-           "[restore_raw_bayer] %dx%d sensor (CFA origin %d,%d), "
-           "working %dx%d packed, tile T=%d, %dx%d grid (%d tiles)",
-           width, height, y0, x0, Wh, Hh,
-           T, cols, rows, total_tiles);
+           "[restore_raw_bayer] %dx%d sensor, visible %dx%d at (%d,%d), "
+           "CFA origin (%d,%d), working %dx%d packed, T=%d, "
+           "%dx%d grid (%d tiles)",
+           width, height, img->p_width, img->p_height,
+           img->crop_x, img->crop_y,
+           y0, x0, Wh, Hh, T, cols, rows, total_tiles);
 
   // diagnostic: raw CFA range and preprocessing params
   {
@@ -448,6 +480,7 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
       _bayer_tile_geometry(ctx, &prep,
                            2 * (py_base - O), 2 * (px_base - O),
                            width, height,
+                           vis_y_lo, vis_end_y, vis_x_lo, vis_end_x,
                            &sr0_origin, &sc0_origin,
                            &mir_y_lo, &mir_y_hi, &mir_x_lo, &mir_x_hi);
       _pack_bayer_tile(cfa_in, width, height,
@@ -564,11 +597,16 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
         }
       }
 
-      // extended extent = core ± seam where a neighbor exists; matches model-output validity
-      const int ext_y0 = has_top  ? sensor_py_base - sensor_O : sensor_py_base;
-      const int ext_y1 = has_bot  ? sensor_py_end + sensor_O  : sensor_py_end;
-      const int ext_x0 = has_left ? sensor_px_base - sensor_O : sensor_px_base;
-      const int ext_x1 = has_right? sensor_px_end + sensor_O  : sensor_px_end;
+      // extended extent = core ± seam where a neighbor exists; matches
+      // model-output validity; clamped to the CFA buffer bounds
+      const int ext_y0 = MAX(0,
+                             has_top? sensor_py_base - sensor_O : sensor_py_base);
+      const int ext_y1 = MIN(height,
+                             has_bot  ? sensor_py_end + sensor_O  : sensor_py_end);
+      const int ext_x0 = MAX(0,
+                             has_left ? sensor_px_base - sensor_O : sensor_px_base);
+      const int ext_x1 = MIN(width,
+                             has_right? sensor_px_end + sensor_O  : sensor_px_end);
 
       for(int sr = ext_y0; sr < ext_y1; sr++)
       {
@@ -807,7 +845,12 @@ int dt_restore_raw_bayer_preview_piped(dt_restore_context_t *ctx,
   // even-snapped inference tile origin in sensor coords
   int pp_sr0 = 0, pp_sc0 = 0;
   int pp_mir_y_lo, pp_mir_y_hi, pp_mir_x_lo, pp_mir_x_hi;
+  const int pp_vis_x_lo = (img->p_width  > 0) ? img->crop_x : 0;
+  const int pp_vis_y_lo = (img->p_height > 0) ? img->crop_y : 0;
+  const int pp_vis_x_hi = (img->p_width  > 0) ? (img->crop_x + img->p_width)  : width;
+  const int pp_vis_y_hi = (img->p_height > 0) ? (img->crop_y + img->p_height) : height;
   _bayer_tile_geometry(ctx, &prep, inf_y, inf_x, width, height,
+                       pp_vis_y_lo, pp_vis_y_hi, pp_vis_x_lo, pp_vis_x_hi,
                        &pp_sr0, &pp_sc0,
                        &pp_mir_y_lo, &pp_mir_y_hi,
                        &pp_mir_x_lo, &pp_mir_x_hi);

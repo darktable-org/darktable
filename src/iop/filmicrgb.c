@@ -2063,7 +2063,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const int scales = get_scales(roi_in, piece);
   const int max_filter_radius = (1 << scales);
   const dt_iop_filmicrgb_data_t *const data = piece->data;
-  const gboolean run_fast = !data->enable_highlight_reconstruction || piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = !data->enable_highlight_reconstruction || dt_pipe_is_fast(piece->pipe);
 
   // without reconstruction: in + out + 1ch_mask
   // with reconstruction: in + out + reconst + inpaint + 2 * scales + temp + 1ch_mask
@@ -2128,7 +2128,7 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
   // allocate reconstruction buffer, but only if we actually want to use it
   float *const restrict reconstructed
     = run_fast ? NULL : dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
@@ -2463,7 +2463,7 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   if(!run_fast && is_clipped > 0 && d->enable_highlight_reconstruction)
   {
@@ -2581,7 +2581,6 @@ static inline void _compute_output_power(const dt_iop_module_t *self,
 
 static void apply_auto_grey(dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
   dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
@@ -2596,7 +2595,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   p->white_point_source = p->white_point_source + grey_var;
   _compute_output_power(self, p);
 
-  DT_ENTER_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);

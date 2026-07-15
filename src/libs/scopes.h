@@ -147,6 +147,7 @@ typedef struct dt_scopes_t
   GtkWidget *overlay;                           // GtkOverlay -- scope and buttons
   GtkWidget *button_box_left;                   // GtkBox -- scope mode buttons
   GtkWidget *button_box_split;                  // GtkBox -- option buttons for left scope
+  GtkWidget *outer_box_split;                   // GtkBox -- full-width wrapper positioning button_box_split
   GtkWidget *button_box_right;                  // GtkBox -- option buttons for main scope
   GtkWidget *button_box_rgb;                    // GtkBox -- RGB channels buttons
   GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channels

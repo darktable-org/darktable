@@ -985,9 +985,13 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
    * Sony lens correction data
    */
   if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
-    && _exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
-    && _exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
-    && _exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
+    && ((_exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
+         && _exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
+         && _exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
+        // DNG round-trip: dt_exif_read_blob copies these to IFD0 by numeric ID
+        || (_exif_read_exif_tag(exifData, &posd, "Exif.Image.0x7037")
+            && _exif_read_exif_tag(exifData, &posc, "Exif.Image.0x7035")
+            && _exif_read_exif_tag(exifData, &posv, "Exif.Image.0x7032"))))
   {
     // Validate
     const int nc = posd->toLong(0);
@@ -2754,13 +2758,45 @@ int dt_exif_read_blob(uint8_t **buf,
     // also for DNG files.
 
     // Remove subimage* trees, related to thumbnails or HDR usually; also UserCrop.
+    // Keep Sony lens-correction tags that live in SubImage1
     for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
     {
       static const std::string needle = "Exif.SubImage";
-      if(i->key().compare(0, needle.length(), needle) == 0)
+      const std::string &key = i->key();
+      if(key.compare(0, needle.length(), needle) == 0
+         && key != "Exif.SubImage1.DistortionCorrParams"
+         && key != "Exif.SubImage1.ChromaticAberrationCorrParams"
+         && key != "Exif.SubImage1.VignettingCorrParams")
         i = exifData.erase(i);
       else
         ++i;
+    }
+
+    // copy Sony SubImage1 lens-correction tags to IFD0 by numeric ID.
+    // exiv2 knows the Sony tag names only via its Sony parser, so it
+    // silently drops Exif.SubImage1.*CorrParams when writing into
+    // generic TIFF/DNG containers; the numeric Exif.Image.0xNNNN form
+    // survives as an unknown TIFF tag with its original type preserved
+    static const struct { const char *src; const char *dst; } sony_copies[] = {
+      { "Exif.SubImage1.DistortionCorrParams",          "Exif.Image.0x7037" },
+      { "Exif.SubImage1.ChromaticAberrationCorrParams", "Exif.Image.0x7035" },
+      { "Exif.SubImage1.VignettingCorrParams",          "Exif.Image.0x7032" },
+    };
+    for(size_t k = 0; k < G_N_ELEMENTS(sony_copies); k++)
+    {
+      try
+      {
+        Exiv2::ExifData::iterator src =
+          exifData.findKey(Exiv2::ExifKey(sony_copies[k].src));
+        if(src != exifData.end())
+          exifData.add(Exiv2::ExifKey(sony_copies[k].dst), &src->value());
+      }
+      catch(const Exiv2::AnyError &e)
+      {
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "[exiv2 dt_exif_read_blob] failed to copy %s -> %s: %s",
+                 sony_copies[k].src, sony_copies[k].dst, e.what());
+      }
     }
 
     {
@@ -6127,10 +6163,11 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
              filename,
              e.what());
+    dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, e.what());
     return TRUE;
   }
 }

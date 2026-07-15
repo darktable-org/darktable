@@ -60,10 +60,11 @@ target_link_libraries(darktable_ai PUBLIC
   ${JSON_GLIB_LIBRARIES}
 )
 
-# DirectML device enumeration uses DXGI (Windows 10 1803+ for IDXGIFactory6).
-# dxguid provides GUID constants (IID_IDXGIFactory6, IID_IDXGIAdapter1, ...).
+# DirectML adapter selection: DXGI (IDXGIFactory6, Win10 1803+) + D3D12
+# (D3D12CreateDevice); dxguid provides GUID constants. DirectML.dll itself
+# is loaded at runtime via LoadLibrary so no dml import lib is needed.
 if(WIN32)
-  target_link_libraries(darktable_ai PUBLIC dxgi dxguid)
+  target_link_libraries(darktable_ai PUBLIC dxgi dxguid d3d12)
 endif()
 
 # Install the bundled ONNX Runtime shared library alongside darktable_ai

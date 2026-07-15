@@ -1204,7 +1204,7 @@ static gboolean _camera_initialize(const dt_camctl_t *c,
     _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
     setlocale(LC_ALL, "C");
 #else
-    locale_t nlocale = newlocale(LC_ALL, "C", (locale_t) 0);
+    locale_t nlocale = newlocale(LC_ALL_MASK, "C", (locale_t) 0);
     locale_t locale = uselocale(nlocale);
 #endif
     // read a full copy of config to configuration cache
@@ -1256,7 +1256,11 @@ void dt_camctl_import(const dt_camctl_t *c,
                       const dt_camera_t *cam,
                       GList *images)
 {
-  GList *ifiles = g_list_sort(images, (GCompareFunc)_sort_filename);
+  // Copy the list structure first. g_list_sort sorts in-place and modifies the list nodes,
+  // which would change the head pointer seen by the caller (params->images).
+  // Copying preserves the original list structure so the caller can successfully free it.
+  GList *ifiles = g_list_copy(images);
+  ifiles = g_list_sort(ifiles, (GCompareFunc)_sort_filename);
   char *prev_file = NULL;
   char *prev_output = NULL;
 
@@ -1340,6 +1344,11 @@ void dt_camctl_import(const dt_camctl_t *c,
     prev_file = file;
   }
   g_free(prev_output);
+
+  // Free only the copied list nodes. The actual filename strings are still owned
+  // by the original list 'images' and will be freed by the caller's cleanup handler.
+  // Using g_list_free_full here would result in a use-after-free or double-free.
+  g_list_free(ifiles);
 
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
   _camctl_unlock(c);
@@ -2242,13 +2251,14 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c,
       // https://redmine.darktable.org/issues/12004 for the crash
       // resulting from that.
 
-      // Get new_config and old_config value to be compared
+      // Get new_config and old_config value to be compared independent from locale
       if(new_config_type == GP_WIDGET_RANGE)
       {
         float value;
         if(gp_widget_get_value(new_config, &value) != GP_OK)
           goto end;
-        new_config_value = g_strdup_printf("%.0f", value);
+        new_config_value = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+        g_ascii_dtostr(new_config_value, G_ASCII_DTOSTR_BUF_SIZE, value);
       }
       else
         if(gp_widget_get_value(new_config, &new_config_value) != GP_OK)
@@ -2259,7 +2269,8 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c,
         float value;
         if(gp_widget_get_value(old_config_child, &value) != GP_OK)
           goto end;
-        old_config_value = g_strdup_printf("%.0f", value);
+        old_config_value = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+        g_ascii_dtostr(old_config_value, G_ASCII_DTOSTR_BUF_SIZE, value);
       }
       else
         if(gp_widget_get_value(old_config_child, &old_config_value) != GP_OK)

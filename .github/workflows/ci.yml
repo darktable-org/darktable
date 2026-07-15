@@ -168,7 +168,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: false
           path: src
@@ -281,7 +281,7 @@ jobs:
           update: true
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: false
           path: src
@@ -343,7 +343,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: false
           path: src
@@ -360,7 +360,7 @@ jobs:
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --quiet || true
+          brew bundle --verbose || true
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";

@@ -611,9 +611,9 @@ int process_cl(dt_iop_module_t *self,
     ? gd->kernel_colorzones_v3
     : gd->kernel_colorzones;
 
-  dev_L = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
-  dev_a = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
-  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+  dev_L = dt_opencl_copy_host_to_image(devid, d->lut[0], 256, 256, sizeof(float));
+  dev_a = dt_opencl_copy_host_to_image(devid, d->lut[1], 256, 256, sizeof(float));
+  dev_b = dt_opencl_copy_host_to_image(devid, d->lut[2], 256, 256, sizeof(float));
 
   if(dev_L == NULL || dev_a == NULL || dev_b == NULL)
     goto error;

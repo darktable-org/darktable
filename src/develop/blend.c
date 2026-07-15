@@ -1086,7 +1086,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1); //mask[k] = value;
     }
 
-    err = dt_opencl_write_host_to_device(devid, mask, dev_mask, owidth, oheight, sizeof(float));
+    err = dt_opencl_write_host_to_image(devid, mask, dev_mask, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
   }
   else
@@ -1131,7 +1131,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
 
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
-    err = dt_opencl_write_host_to_device(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
+    err = dt_opencl_write_host_to_image(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
 
     // The following call to clFinish() works around a bug in some OpenCL
@@ -1331,8 +1331,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     // get back final mask from the device as the raster mask
     if(!raster)
     {
-      err = dt_opencl_copy_device_to_host(devid, mask, dev_mask,
-                                          owidth, oheight, sizeof(float));
+      err = dt_opencl_copy_image_to_host(devid, mask, dev_mask, owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS)
       {
         dt_iop_piece_clear_raster(piece, _mask);
@@ -1461,40 +1460,48 @@ void tiling_callback_blendop(dt_iop_module_t *self,
                              dt_develop_tiling_t *tiling)
 {
   tiling->factor = 0.0f;
+  tiling->factor_cl = 0.0f;
   tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
   tiling->align = 1;
 
   dt_develop_blend_params_t *const bldata = piece->blendop_data;
-  if(bldata)
-  {
-    if(bldata->details != 0.0f)
-    {
-      // details mask requires 2 additional quarter buffers of details data size
-      // so normalize to roi_size
-      dt_dev_detail_mask_t *details = &piece->pipe->scharr;
-      if(details->data)
-        tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
-     }
+  if(bldata == NULL)
+    return;
 
-    if(bldata->feathering_radius > 0.1f) // we don't feather below that
+  if(bldata->details != 0.0f)
+  {
+    // details mask requires 2 additional quarter buffers of details data size
+    // so normalize to roi_size
+    dt_dev_detail_mask_t *details = &piece->pipe->scharr;
+    if(details->data)
     {
-      const int devid = piece->pipe->devid;
-      if(devid > DT_DEVICE_CPU)
-      {
-        /* OpenCL feathering does simple internal tiling for less mem pressure,
-           we still need some mem here for this.
-        */
-        tiling->factor_cl = MAX(tiling->factor, 1.0f);
-      }
-      tiling->factor = MAX(tiling->factor, 18.0f * 0.25f); // we need all 18 intermediate guided filter mask buffers
+      tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
+      tiling->factor_cl = tiling->factor;
     }
   }
+
+  if(bldata->feathering_radius > 0.1f) // we don't feather below that
+  {
+    const int devid = piece->pipe->devid;
+    if(devid > DT_DEVICE_CPU)
+    {
+      /* OpenCL feathering does simple internal tiling for less mem pressure,
+         we still need some mem here for this.
+      */
+      tiling->factor_cl = MAX(tiling->factor_cl, 1.0f);
+    }
+    tiling->factor = MAX(tiling->factor, 18.0f * 0.25f); // we need all 18 intermediate guided filter mask buffers
+
+    tiling->factor += 1.5f; // in + (guide, tmp) + two quarter buffers for the mask
+    tiling->factor_cl += 1.5f;
+  }
+
   const float outnorm = (float)(roi_out->width * roi_out->height) / (roi_in->width * roi_in->height);
-  const float basic = 2.5f + outnorm; // in + out + (guide, tmp) + two quarter buffers for the mask
-  tiling->factor += basic;
-  tiling->factor_cl += basic;
+  tiling->factor += outnorm;
+  tiling->factor_cl += outnorm;
 }
 
 /** check if content of params is all zero, indicating a

@@ -307,8 +307,8 @@ static int _run_demosaic_pipe(const dt_imgid_t imgid,
   for(GList *n = pipe.nodes; n; n = g_list_next(n))
   {
     dt_dev_pixelpipe_iop_t *piece = n->data;
-    if(dt_iop_module_is(piece->module->so, "temperature")
-       || dt_iop_module_is(piece->module->so, "rawdenoise"))
+    if(dt_iop_module_is(piece->module, "temperature")
+       || dt_iop_module_is(piece->module, "rawdenoise"))
       piece->enabled = FALSE;
   }
 
@@ -1061,19 +1061,20 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
     g_free(tile_out);
     return 1;
   }
-  const size_t pixel_sz = is_uint16 ? 2 : 4;
+  // classify (not filters==0) so 4BAYER routes as LINEAR like upstream
+  const uint32_t mip_channels = img->buf_dsc.channels;
+  const gboolean is_linear =
+    (dt_restore_classify_sensor(img) == DT_RESTORE_SENSOR_CLASS_LINEAR);
+  const size_t pixel_sz = mip_channels * (is_uint16 ? 2 : 4);
   const size_t total_bytes = (size_t)raw_w * raw_h * pixel_sz;
 
-  // rawprepare's normalisation: pipe will do (value - sub) / div where
-  // sub is per-CFA-site black level and div is (white - black). to get
-  // back to raw ADC space we compute per-site (value * range[idx]) + black[idx]
-  // NOTE: raw_black_level_separate is indexed by CFA position k in 0..3
-  // (even if X-Trans has 6 colours, darktable's per-sensel black is 4-
-  // entry; typical cameras use one value for all positions anyway)
+  // black[]/range[] are CFA-parity indexed; LINEAR uses scalar pair
   float black[4], range[4], white;
   _compute_cfa_black_range(img, black, range, &white);
+  const float lin_black = (float)img->raw_black_level;
+  const float lin_range
+    = (white - lin_black > 0.0f) ? (white - lin_black) : 1.0f;
 
-  // build patched CFA: copy original, overwrite crop with re-mosaiced denoised
   void *patched = g_try_malloc(total_bytes);
   if(!patched)
   {
@@ -1087,7 +1088,7 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
   // buffer extent) rather than just the display crop. this gives the
   // pipe's geometry chain ~tile-size/2 pixels of slop on each side so
   // any residual coordinate drift falls inside denoised data instead of
-  // showing original CFA at the preview edge
+  // showing original at the preview edge
   const int patch_x0 = (inf_x < 0) ? 0 : inf_x;
   const int patch_y0 = (inf_y < 0) ? 0 : inf_y;
   const int patch_x1 = (inf_x + T > width)  ? width  : inf_x + T;
@@ -1114,20 +1115,46 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
         if(cam[c] < 0.0f) cam[c] = 0.0f;
         if(cam[c] > 1.0f) cam[c] = 1.0f;
       }
-      // re-mosaic: pick the single colour that the X-Trans pattern
-      // wants at this sensor position, scaled back to raw ADC range.
-      // FCxtrans uses raw-sensor parity (since xtrans[6][6] is aligned
-      // with the raw, not the post-crop buffer)
-      const int ch = FCxtrans(sr_raw, sc_raw, NULL, img->buf_dsc.xtrans);
-      const int bl_idx = ((sr_raw & 1) << 1) | (sc_raw & 1);
-      const float adc = cam[ch] * range[bl_idx] + black[bl_idx];
-      const float clipped
-        = adc < 0.0f ? 0.0f : (adc > white ? white : adc);
-      const size_t idx = (size_t)sr_raw * raw_w + sc_raw;
-      if(is_uint16)
-        ((uint16_t *)patched)[idx] = (uint16_t)(clipped + 0.5f);
+      const size_t pix = (size_t)sr_raw * raw_w + sc_raw;
+
+      if(is_linear && mip_channels >= 3)
+      {
+        // float mipmaps are already in [0, 1]; uint16 needs un-prepare
+        for(int c = 0; c < 3; c++)
+        {
+          const size_t off = pix * mip_channels + c;
+          if(is_uint16)
+          {
+            const float adc = cam[c] * lin_range + lin_black;
+            const float clipped
+              = adc < 0.0f ? 0.0f : (adc > white ? white : adc);
+            ((uint16_t *)patched)[off] = (uint16_t)(clipped + 0.5f);
+          }
+          else
+          {
+            ((float *)patched)[off] = cam[c];
+          }
+        }
+      }
+      else if(is_linear)
+      {
+        // 4BAYER (CYGM/RGBE) classified as LINEAR but has mip_channels==1.
+        // no canonical RGB→CYGM/RGBE mapping; leave the original mosaic
+        // pixel untouched (already in `patched` from the memcpy above)
+      }
       else
-        ((float *)patched)[idx] = clipped;
+      {
+        // X-Trans: re-mosaic
+        const int ch = FCxtrans(sr_raw, sc_raw, NULL, img->buf_dsc.xtrans);
+        const int bl_idx = ((sr_raw & 1) << 1) | (sc_raw & 1);
+        const float adc = cam[ch] * range[bl_idx] + black[bl_idx];
+        const float clipped
+          = adc < 0.0f ? 0.0f : (adc > white ? white : adc);
+        if(is_uint16)
+          ((uint16_t *)patched)[pix] = (uint16_t)(clipped + 0.5f);
+        else
+          ((float *)patched)[pix] = clipped;
+      }
     }
   }
 

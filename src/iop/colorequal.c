@@ -989,7 +989,7 @@ void process(dt_iop_module_t *self,
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
-  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
@@ -1531,7 +1531,7 @@ int process_cl(dt_iop_module_t *self,
   const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const int guiding = d->use_filter;
-  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = dt_pipe_is_fast(piece->pipe);
 
   float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
   _prepare_process(roi_in->scale / piece->iscale, d,

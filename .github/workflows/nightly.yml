@@ -46,7 +46,6 @@ jobs:
         run: |
           sudo apt-get -y install \
             build-essential \
-            appstream-util \
             desktop-file-utils \
             gettext \
             git \
@@ -124,7 +123,7 @@ jobs:
             libxfixes-dev
       - name: Build and install fresh libheif with built-in decoders
         run: |
-          git clone --branch v1.21.2 --depth 1 https://github.com/strukturag/libheif src-libheif
+          git clone --branch v1.23.1 --depth 1 https://github.com/strukturag/libheif src-libheif
           cd src-libheif
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -380,9 +379,9 @@ jobs:
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --quiet || true
+          brew bundle --verbose || true
 
-          # rebuild graphicsmagick for macOS bundling
+          # Rebuild GraphicsMagick for macOS bundling
           export HOMEBREW_NO_INSTALL_FROM_API=1
           brew developer on
           gm_formula=`brew edit --quiet --print-path graphicsmagick`
@@ -424,7 +423,7 @@ jobs:
     steps:
       - name: Checkout master to update 'nightly' tag
         if: github.ref_name == 'master' # will be true only for nightly builds
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: master
           submodules: false
@@ -460,7 +459,7 @@ jobs:
         with:
           allowUpdates: true     # required to allow nightly release updates
           removeArtifacts: true  # we don't want to pile up old artifacts in the nightly release
-          tag: nightly
+          tag: ${{ github.ref_name == 'master' && 'nightly' || github.ref_name }}
           prerelease: true
           # We don't want a stable release that is in the process of being prepared
           # and not yet ready for publication to be visible

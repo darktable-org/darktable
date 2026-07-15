@@ -39,6 +39,7 @@
 #include "gui/gtk.h"
 
 #include "common/styles.h"
+#include "common/usermanual_url.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
@@ -726,20 +727,13 @@ static gboolean _draw(GtkWidget *da,
 }
 
 static GdkDevice *_touchpad = NULL;
-static gboolean _touchpad_gestures_enabled(void)
+
+static void _touchpad_gestures_pref_changed(gpointer instance,
+                                            gpointer user_data)
 {
-  // If conf_gen.h was built before darktableconfig.xml.in gained this key
-  // (incremental build without cmake reconfigure), dt_confgen_value_exists
-  // returns FALSE and dt_conf_get_bool gets an empty string → FALSE.
-  // Default to enabled in that case so a stale build doesn't silently break gestures.
-  if(!dt_confgen_value_exists("darkroom/ui/touchpad_gestures", DT_DEFAULT))
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] 'darkroom/ui/touchpad_gestures' missing from confgen"
-             " (stale conf_gen.h — run cmake reconfigure), defaulting to enabled");
-    return TRUE;
-  }
-  return dt_conf_get_bool("darkroom/ui/touchpad_gestures");
+  (void)instance;
+  dt_gui_gtk_t *gui = user_data;
+  gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
 }
 
 static gboolean _input_event(GtkWidget *widget,
@@ -772,13 +766,13 @@ static gboolean _input_event(GtkWidget *widget,
       break;
   }
 
-  if(event->type == GDK_TOUCHPAD_PINCH && _touchpad_gestures_enabled())
+  if(event->type == GDK_TOUCHPAD_PINCH && darktable.gui->touchpad_gestures_enabled)
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] pinch x=%.2f y=%.2f phase=%d scale=%.6f state=0x%x",
              pinch->x, pinch->y, pinch->phase, pinch->scale, pinch->state);
-    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
+    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x_root, pinch->y_root,
                                      pinch->dx, pinch->dy, pinch->phase,
                                      pinch->scale, pinch->state & 0xf))
     {
@@ -804,7 +798,7 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-  const gboolean touchpad_enabled = _touchpad_gestures_enabled();
+  const gboolean touchpad_enabled = darktable.gui->touchpad_gestures_enabled;
   const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
   dt_print(DT_DEBUG_INPUT,
@@ -898,21 +892,13 @@ static gboolean _scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static void _panel_scrolled(GtkEventControllerScroll *controller,
-                            double dx, double dy,
-                            GtkAdjustment *adj)
+static gboolean
+_borders_scrolled(GtkWidget *widget, GdkEventScroll *event, const gpointer user_data)
 {
-  // GTK4: don't need to clamp to upper/lower
-  const double lower = gtk_adjustment_get_lower(adj);
-  const double upper = gtk_adjustment_get_upper(adj)
-                       - gtk_adjustment_get_page_size(adj);
-  const double step = gtk_adjustment_get_step_increment(adj);
-  const double old_val = gtk_adjustment_get_value(adj);
-  const double new_val = CLAMPF(old_val + dy * step, lower, upper);
-  gtk_adjustment_set_value(adj, new_val);
-  // GTK3: explicitly consume the scroll
-  g_signal_stop_emission_by_name(controller, "scroll");
-  // GTK4: return GDK_EVENT_STOP;
+  // pass the scroll event to the matching side panel
+  gtk_widget_event(GTK_WIDGET(user_data), (GdkEvent *)event);
+
+  return TRUE;
 }
 
 static void _scrollbar_changed(GtkWidget *widget,
@@ -1521,6 +1507,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
+  gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _touchpad_gestures_pref_changed, gui);
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
@@ -2755,14 +2745,11 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                  : GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
 
-  // scrolling the left/right window border scrolls the module lists,
-  // passing on scroll via gtk_widget_event() breaks kinetic scrolling
-  // and isn't GTK4 ready, so directly change GtkAdjustment
-  dt_gui_connect_scroll(left
-                        ? darktable.gui->widgets.right_border
-                        : darktable.gui->widgets.left_border,
-                        GTK_EVENT_CONTROLLER_SCROLL_VERTICAL,
-                        _panel_scrolled, vadj);
+  g_signal_connect(
+    G_OBJECT(left ? darktable.gui->widgets.right_border : darktable.gui->widgets.left_border),
+    "scroll-event",
+    G_CALLBACK(_borders_scrolled),
+    sw);
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over
    * a control, and scroll it's value), only scroll on modifier */
@@ -3571,23 +3558,6 @@ void dt_gui_dialog_add_help(GtkDialog *dialog,
   g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
 }
 
-static char *_get_base_url()
-{
-  const gboolean use_default_url =
-    dt_conf_get_bool("context_help/use_default_url");
-  const char *c_base_url = dt_confgen_get("context_help/url", DT_DEFAULT);
-  char *base_url = dt_conf_get_string("context_help/url");
-
-  if(use_default_url)
-  {
-    // want to use default URL, reset darktablerc
-    dt_conf_set_string("context_help/url", c_base_url);
-    return g_strdup(c_base_url);
-  }
-  else
-    return base_url;
-}
-
 void dt_gui_show_help(GtkWidget *widget)
 {
   // TODO: When the widget doesn't have a help url set we should
@@ -3596,26 +3566,7 @@ void dt_gui_show_help(GtkWidget *widget)
   if(help_url && *help_url)
   {
     dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'", help_url);
-    char *base_url = _get_base_url();
-
-    // The base_url is: docs.darktable.org/usermanual
-    // The full format for the documentation pages is:
-    //    <base-url>/<ver>/<lang>[/path/to/page]
-    // Where:
-    //   <ver>  = development | 3.6 | 3.8 ...
-    //   <lang> = en / fr ...              (default = en)
-
-    // in case of a standard release, append the dt version to the url
-    if(dt_is_dev_version())
-    {
-      dt_util_str_cat(&base_url, "development/");
-    }
-    else
-    {
-      char *ver = dt_version_major_minor();
-      dt_util_str_cat(&base_url, "%s/", ver);
-      g_free(ver);
-    }
+    char *base_url = dt_get_manual_base_url();
 
     char *last_base_url = dt_conf_get_string("context_help/last_url");
 
@@ -3642,58 +3593,7 @@ void dt_gui_show_help(GtkWidget *widget)
     }
     if(base_url)
     {
-      const char *lang = "en";
-
-      // array of languages the usermanual supports.
-      // NULL MUST remain the last element of the array
-      const char *supported_languages[] =
-        { "en", "fr", "de", "eo", "es", "gl", "it", "nl", "pl", "pt-br", "uk", NULL };
-      int lang_index = 0;
-      gboolean is_language_supported = FALSE;
-
-      if(darktable.l10n != NULL)
-      {
-        const dt_l10n_language_t *language = NULL;
-        if(darktable.l10n->selected != -1)
-            language = (dt_l10n_language_t *)
-              g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
-        if(language != NULL)
-          lang = language->code;
-
-        while(supported_languages[lang_index])
-        {
-          gchar *nlang = g_strdup(lang);
-
-          // try lang as-is
-          if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
-          {
-            is_language_supported = TRUE;
-          }
-
-          if(!is_language_supported)
-          {
-            // keep only first part up to _
-            for(gchar *p = nlang; *p; p++)
-              if(*p == '_') *p = '\0';
-
-            if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
-            {
-              is_language_supported = TRUE;
-            }
-          }
-
-          g_free(nlang);
-          if(is_language_supported) break;
-
-          lang_index++;
-        }
-      }
-
-      // language not found, default to EN
-      if(!is_language_supported) lang_index = 0;
-
-      char *url = g_build_path("/", base_url,
-                               supported_languages[lang_index], help_url, NULL);
+      char *url = dt_get_manual_url(help_url);
 
       dt_open_url(url);
 
@@ -4908,8 +4808,7 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
     GtkWidget *const sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
     if(sw)
     {
-      GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-      _panel_scrolled(controller, 0.0, dy, vadj);
+      gtk_widget_event(sw, event);
       return TRUE;
     }
   }

@@ -1225,10 +1225,25 @@ gboolean dt_masks_events_button_pressed(dt_iop_module_t *module,
   if(form->functions)
     return form->functions->button_pressed(module, pzx, pzy, pressure,
                                            which, type, state, form, 0, gui, 0)
-      || which == 3; // swallow right-clicks even when not handled so
-                     // right-drag rotate is disabled when forms
-                     // visible
+      || which == 3; // swallow right-clicks so right-drag rotate is disabled
   return FALSE;
+}
+
+gboolean dt_masks_scroll_over_mask(void)
+{
+  const dt_masks_form_t *form = darktable.develop->form_visible;
+  const dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  if(!form || !gui)
+    return FALSE;
+
+  // During shape creation, scroll adjusts size/border and stays over the mask.
+  // Paths/polygons are built node by node and do not use scroll here.
+  if(gui->creation)
+    return !(form->type & DT_MASKS_PATH);
+
+  // Otherwise form_visible is the group. group_edited is the active sub-form or
+  // -1 when none. Scroll should count only when a sub-form is active.
+  return gui->group_edited >= 0;
 }
 
 gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
@@ -1250,8 +1265,7 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
 
   if(gui)
   {
-    // for brush, the opacity is the density of the masks, do not
-    // update opacity here for the brush.
+    // Do not update brush opacity here; it is mask density.
     if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");

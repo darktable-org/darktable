@@ -105,7 +105,7 @@ struct dt_control_t;
 /** sets the hinter message */
 void dt_control_hinter_message(const char *message);
 
-#define DT_CTL_LOG_SIZE 8 // must be power-of-2
+#define DT_CTL_LOG_SIZE 2 // must be power-of-2
 #define DT_CTL_TOAST_SIZE 2
 
 #define DT_CTL_LOG_MSG_SIZE 1000

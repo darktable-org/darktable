@@ -116,36 +116,74 @@ Source: "AUTHORS";  DestDir: "{app}"; DestName: "AUTHORS.txt"; Flags: ignorevers
 Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Registry]
+;
+; Add "Import folder into darktable" menu item to the right-click context menu on folders.
+;
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueData: "Import folder into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
   ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
 
+;
+; Add "Import into darktable" menu item to the right-click context menu on images.
+; Files that are not images will not be affected due to the "AppliesTo" filter.
+;
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "Import into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
+;
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
+;
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
   ValueType: string; Flags: uninsdeletevalue; \
   ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
 
+;
+; The variable below will be substituted by CMake with a list of those Inno Setup
+; Script commands that add in Registry items to the "Open with" menu for extensions
+; that this darktable build actually supports.
+;
 ${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
 
+;
+; Registering the app in "App Paths" is critical for GIMP to find darktable to open raw files.
+; This also allows us to launch the app by name only in the Run dialog (Win+R) and the taskbar
+; search bar (Win+S) without adding the darktable executable directory to the system PATH.
+;
 Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; \
   ValueType: string; \
   ValueData: "{app}\bin\{#MyAppExeName}"; \
   Flags: uninsdeletekey
-
 Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; \
   ValueType: string; \
   ValueData: "{app}\bin\{#MyAppCliExeName}"; \
   Flags: uninsdeletekey
 
+;
+; Add environment variables to the appropriate environment (system or user) for tethering
+; to work correctly via gphoto2. They tell the app from where to load the dynamic libraries
+; with the code for working with ports and cameras.
+;
 Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueType: string; \
   ValueName: "CAMLIBS"; \
   ValueData: "{app}\lib\libgphoto2\${CPACK_NSIS_GPHOTO2_VERSION}"; \
   Flags: uninsdeletevalue
-
 Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueType: string; \
   ValueName: "IOLIBS"; \
@@ -162,7 +200,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
 [Run]
 Filename: "https://docs.darktable.org/usermanual/development/"; \
   Description: "Open darktable user manual"; \
-  Flags: postinstall shellexec runasoriginaluser
+  Flags: postinstall shellexec runasoriginaluser skipifsilent
 
 Filename: "{app}\bin\{#MyAppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \

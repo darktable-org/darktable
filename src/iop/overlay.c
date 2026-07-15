@@ -208,17 +208,17 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     if((after
           && !dt_iop_module_is_gamma(mod)
           && !dt_iop_module_is_finalscale(mod)
-          && !dt_iop_module_is(mod->so, "crop")
-          && !dt_iop_module_is(mod->so, "ashift"))
+          && !dt_iop_module_is(mod, "crop")
+          && !dt_iop_module_is(mod, "ashift"))
     || (is_current
-         && ( dt_iop_module_is(mod->so, "overlay")
-           || dt_iop_module_is(mod->so, "enlargecanvas"))))
+         && ( dt_iop_module_is(mod, "overlay")
+           || dt_iop_module_is(mod, "enlargecanvas"))))
     {
       result = g_list_prepend(result, mod->op);
     }
 
     // look for ourself, disable all modules after this point
-    if(dt_iop_module_is(mod->so, self_module->op)
+    if(dt_iop_module_is(mod, self_module->op)
          && mod->multi_priority == multi_priority)
       after = TRUE;
   }
@@ -1032,6 +1032,9 @@ static void _drag_and_drop_received(GtkWidget *widget,
 
         dt_overlay_record(imgid_target_image, imgid_intended_overlay);
 
+        // zero-fill so trailing bytes of any previous image path do not bleed
+        // into piece->hash (params are hashed by full buffer length)
+        memset(p->filename, 0, sizeof(p->filename));
         dt_image_full_path(imgid_intended_overlay, p->filename, sizeof(p->filename), NULL);
 
         dt_dev_add_history_item(darktable.develop, self, TRUE);

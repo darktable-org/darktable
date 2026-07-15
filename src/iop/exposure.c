@@ -1154,7 +1154,7 @@ static void _paint_hue(dt_iop_module_t *self)
 static void _spot_settings_changed_callback(GtkWidget *slider,
                                             dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE();
+  DT_TRY_GUI_UPDATE();
 
   dt_iop_exposure_gui_data_t *g = self->gui_data;
 
@@ -1165,12 +1165,12 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   // Save the color on change
   dt_conf_set_float("darkroom/modules/exposure/lightness", Lch_target[0]);
 
-  DT_ENTER_GUI_UPDATE();
   _paint_hue(self);
-  DT_LEAVE_GUI_UPDATE();
 
   // Re-run auto compute if color picker active and mode is correct
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
+  DT_LEAVE_GUI_UPDATE();
+
   if(mode == DT_SPOT_MODE_CORRECT)
     _auto_set_exposure(self, darktable.develop->full.pipe);
   // else : just record new values and do nothing

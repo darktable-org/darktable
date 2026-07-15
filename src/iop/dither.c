@@ -671,7 +671,7 @@ void process(
     _process_posterize(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
-    const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+    const gboolean fastmode = dt_pipe_is_fast(piece->pipe);
     _process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
 }

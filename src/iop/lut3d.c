@@ -22,6 +22,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
 #include "common/iop_profile.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
@@ -185,7 +186,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lut3d_params_v1_t;
 
     const dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
-    dt_iop_lut3d_params_v3_t *n = malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    dt_iop_lut3d_params_v3_t *n = calloc(1, sizeof(dt_iop_lut3d_params_v3_t));
     g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
     n->colorspace = o->colorspace;
     n->interpolation = o->interpolation;
@@ -212,7 +213,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lut3d_params_v2_t;
 
     const dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
-    dt_iop_lut3d_params_v3_t *n = malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    dt_iop_lut3d_params_v3_t *n = calloc(1, sizeof(dt_iop_lut3d_params_v3_t));
     memcpy(n, o, sizeof(dt_iop_lut3d_params_v3_t)); // v3 is smaller
 
     *new_params = n;
@@ -482,7 +483,8 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
 
   _get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align_float(buf_size_lut);
+  // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+  lclut = dt_alloc_align_float(buf_size_lut + 1);
   if(!lclut)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error allocating buffer for gmz LUT");
@@ -499,6 +501,7 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
       lut3d_decompress_clut((const unsigned char *const)c_clut, p->nb_keypoints,
         level, lclut, cache_filename);
     }
+    lclut[buf_size_lut] = 0.0f; // padding
   }
   *clut = lclut;
   return level;
@@ -820,11 +823,13 @@ static uint16_t _calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube LUT - level %d", buf_size, level);
-        lclut = dt_alloc_align_float(buf_size);
+        // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+        lclut = dt_alloc_align_float(buf_size + 1);
         if(!lclut)
         {
           dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for cube LUT");
           dt_control_log(_("error - allocating buffer for cube LUT"));
+          dt_free_align(lclut);
           free(line);
           fclose(cube_file);
           return 0;
@@ -874,6 +879,7 @@ static uint16_t _calculate_clut_cube(const char *const filepath, float **clut)
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] warning - %u values out of range [0,1]", out_of_range_nb);
     dt_control_log(_("warning - cube LUT has %d values out of range [0,1]"), out_of_range_nb);
   }
+  lclut[buf_size] = 0.0f; // padding
   *clut = lclut;
   free(line);
   fclose(cube_file);
@@ -925,7 +931,8 @@ static uint16_t _calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for 3dl LUT - level %d", buf_size, level);
-            lclut = dt_alloc_align_float(buf_size);
+            // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+            lclut = dt_alloc_align_float(buf_size + 1);
             if(!lclut)
             {
               dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for 3dl LUT");
@@ -994,6 +1001,7 @@ static uint16_t _calculate_clut_3dl(const char *const filepath, float **clut)
   // normalize the lut
   for(i =0; i < buf_size; i++)
     lclut[i] = CLAMP(lclut[i] * norm, 0.0f, 1.0f);
+  lclut[buf_size] = 0.0f; // padding
   *clut = lclut;
   return level;
 }
@@ -1425,12 +1433,12 @@ static void _filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
       p->lutname[0] = 0;
       _lut3d_clear_lutname_list(g);
     }
-    g_strlcpy(p->filepath, filepath, sizeof(p->filepath));
+    dt_strlcpy_to_fixed(p->filepath, filepath, sizeof(p->filepath));
     _get_compressed_clut(self, FALSE);
     _show_hide_controls(self);
     gtk_entry_set_text(GTK_ENTRY(g->lutentry), "");
 #else
-    g_strlcpy(p->filepath, filepath, sizeof(p->filepath));
+    dt_strlcpy_to_fixed(p->filepath, filepath, sizeof(p->filepath));
 #endif // HAVE_GMIC
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -1456,7 +1464,7 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
     gtk_tree_model_get(model, &iter, DT_LUT3D_COL_NAME, &lutname, -1);
     if(lutname[0] && strcmp(lutname, p->lutname) != 0)
     {
-      g_strlcpy(p->lutname, lutname, sizeof(p->lutname));
+      dt_strlcpy_to_fixed(p->lutname, lutname, sizeof(p->lutname));
       _get_compressed_clut(self, TRUE);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }

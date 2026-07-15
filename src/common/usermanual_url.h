@@ -21,6 +21,8 @@
 #include <string.h>
 
 char *dt_get_help_url(const char *name);
+char *dt_get_manual_base_url();
+char *dt_get_manual_url(const char *topic);
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

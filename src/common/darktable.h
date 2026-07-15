@@ -196,7 +196,7 @@ typedef int32_t dt_mask_id_t;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 19
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 20
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -382,7 +382,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PICKER         = 1 << 27,
   DT_DEBUG_AI             = 1 << 28,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
-  DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
+  DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE | DT_DEBUG_LUA | DT_DEBUG_AI,
   DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
 } dt_debug_thread_t;
 

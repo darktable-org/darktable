@@ -16,9 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "imageio/imageio_dng.h"
-#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
+#include "imageio/imageio_dng.h"
+#include "imageio/imageio_jpeg.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/exif.h"
 #include "common/image.h"
 #include "develop/imageop_math.h"
@@ -178,13 +179,88 @@ static void _set_dng_shared_metadata(TIFF *tif, const dt_image_t *img)
   TIFFSetField(tif, TIFFTAG_CALIBRATIONILLUMINANT1, (uint16_t)21);
 }
 
-// write IFD0 as the canonical Adobe-layout JPEG preview: small YCbCr
-// thumbnail + shared DNG metadata + SubIFD pointer to the raw payload
-// that the caller will write next. caller must follow with
-// TIFFCreateDirectory + raw-IFD population + TIFFWriteDirectory
-static int _write_jpeg_preview_ifd(TIFF *tif,
-                                   const dt_image_t *img,
-                                   const dt_imageio_dng_preview_t *p)
+// Adobe DNG IFD0 thumbnail convention: ~256 px long-edge JPEG.
+// decode supplied preview, downsample, re-encode. returns g_malloc'd
+// bytes (caller frees) or NULL on failure
+#define DNG_THUMB_MAX_DIM 256
+#define DNG_THUMB_JPEG_QUALITY 85
+static uint8_t *_make_thumb_jpeg(const uint8_t *src_jpeg,
+                                 const int src_len,
+                                 int *out_w,
+                                 int *out_h,
+                                 int *out_len)
+{
+  dt_imageio_jpeg_t jpg;
+  if(dt_imageio_jpeg_decompress_header(src_jpeg, (size_t)src_len, &jpg))
+    return NULL;
+  if(jpg.width <= 0 || jpg.height <= 0) return NULL;
+
+  uint8_t *rgbx = dt_alloc_align_uint8((size_t)4 * jpg.width * jpg.height);
+  if(!rgbx) return NULL;
+  if(dt_imageio_jpeg_decompress(&jpg, rgbx))
+  {
+    dt_free_align(rgbx);
+    return NULL;
+  }
+
+  const int sw = jpg.width, sh = jpg.height;
+  const int long_edge = sw > sh ? sw : sh;
+  const int dw = (long_edge <= DNG_THUMB_MAX_DIM)
+    ? sw : (sw * DNG_THUMB_MAX_DIM + long_edge / 2) / long_edge;
+  const int dh = (long_edge <= DNG_THUMB_MAX_DIM)
+    ? sh : (sh * DNG_THUMB_MAX_DIM + long_edge / 2) / long_edge;
+
+  uint8_t *small = dt_alloc_align_uint8((size_t)4 * dw * dh);
+  if(!small) { dt_free_align(rgbx); return NULL; }
+
+  for(int y = 0; y < dh; y++)
+  {
+    const int sy0 = y * sh / dh;
+    const int sy1 = (y + 1) * sh / dh;
+    for(int x = 0; x < dw; x++)
+    {
+      const int sx0 = x * sw / dw;
+      const int sx1 = (x + 1) * sw / dw;
+      uint32_t r = 0, g = 0, b = 0, n = 0;
+      for(int sy = sy0; sy < sy1; sy++)
+        for(int sx = sx0; sx < sx1; sx++)
+        {
+          const uint8_t *p = rgbx + 4 * ((size_t)sy * sw + sx);
+          r += p[0]; g += p[1]; b += p[2]; n++;
+        }
+      if(n == 0) n = 1;
+      uint8_t *dst = small + 4 * ((size_t)y * dw + x);
+      dst[0] = (uint8_t)(r / n);
+      dst[1] = (uint8_t)(g / n);
+      dst[2] = (uint8_t)(b / n);
+      dst[3] = 0;
+    }
+  }
+  dt_free_align(rgbx);
+
+  const size_t max_out = (size_t)4 * dw * dh + 1024;
+  uint8_t *jpeg = g_try_malloc(max_out);
+  if(!jpeg) { dt_free_align(small); return NULL; }
+  const int written = dt_imageio_jpeg_compress(small, jpeg, dw, dh,
+                                               DNG_THUMB_JPEG_QUALITY);
+  dt_free_align(small);
+  if(written <= 0 || written > (int)max_out)
+  {
+    g_free(jpeg);
+    return NULL;
+  }
+  *out_w = dw;
+  *out_h = dh;
+  *out_len = written;
+  return jpeg;
+}
+
+// write canonical Adobe-layout IFD0: JPEG thumbnail + DNG metadata +
+// SubIFD pointer table (n_subifds = 1 raw-only, or 2 with full preview)
+static int _write_thumb_ifd0(TIFF *tif,
+                             const dt_image_t *img,
+                             const dt_imageio_dng_preview_t *p,
+                             const int n_subifds)
 {
   TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_REDUCEDIMAGE);
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)p->width);
@@ -196,29 +272,56 @@ static int _write_jpeg_preview_ifd(TIFF *tif,
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_JPEG);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)p->height);
-  // 2 = sRGB. camera previews are sRGB; tag prevents reader guessing
   TIFFSetField(tif, TIFFTAG_PREVIEWCOLORSPACE, (uint32_t)2);
 
   _set_dng_shared_metadata(tif, img);
 
-  // SubIFD pointer with one slot. libtiff fills the actual offset
-  // when the SubIFD is later written via TIFFCreateDirectory + ...
-  toff_t sub_offsets[1] = { 0 };
-  TIFFSetField(tif, TIFFTAG_SUBIFD, (uint16_t)1, sub_offsets);
+  toff_t sub_offsets[2] = { 0, 0 };
+  TIFFSetField(tif, TIFFTAG_SUBIFD, (uint16_t)n_subifds, sub_offsets);
 
-  // pre-encoded JPEG written as a single raw strip (libtiff does not
-  // re-encode when COMPRESSION_JPEG is paired with TIFFWriteRawStrip)
   if(TIFFWriteRawStrip(tif, 0, (void *)p->data, (tmsize_t)p->len) < 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_dng] TIFFWriteRawStrip failed for JPEG preview "
+             "[imageio_dng] TIFFWriteRawStrip failed for JPEG thumbnail "
              "(%d bytes, %dx%d)", p->len, p->width, p->height);
     return 1;
   }
   if(!TIFFWriteDirectory(tif))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_dng] TIFFWriteDirectory failed for JPEG preview IFD0");
+             "[imageio_dng] TIFFWriteDirectory failed for JPEG thumbnail IFD0");
+    return 1;
+  }
+  return 0;
+}
+
+// write SubIFD1: full-res JPEG preview, no DNG tags (they live on IFD0)
+static int _write_full_preview_subifd(TIFF *tif,
+                                      const dt_imageio_dng_preview_t *p)
+{
+  TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_REDUCEDIMAGE);
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)p->width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)p->height);
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)8);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_YCBCR);
+  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_JPEG);
+  TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)p->height);
+  TIFFSetField(tif, TIFFTAG_PREVIEWCOLORSPACE, (uint32_t)2);
+
+  if(TIFFWriteRawStrip(tif, 0, (void *)p->data, (tmsize_t)p->len) < 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[imageio_dng] TIFFWriteRawStrip failed for full preview "
+             "(%d bytes, %dx%d)", p->len, p->width, p->height);
+    return 1;
+  }
+  if(!TIFFWriteDirectory(tif))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[imageio_dng] TIFFWriteDirectory failed for full preview SubIFD");
     return 1;
   }
   return 0;
@@ -248,17 +351,32 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   if(!tif) return 1;
   _register_extra_dng_fields(tif);
 
-  // canonical Adobe layout when a preview is provided: IFD0 holds the
-  // JPEG thumbnail + DNG identification metadata, the raw payload
-  // moves into SubIFD0
+  // canonical Adobe layout: IFD0=thumb, SubIFD0=raw, SubIFD1=full preview.
+  // on thumb generation failure fall back to preview-as-IFD0 (old behavior)
   const gboolean canonical = (preview && preview->data && preview->len > 0
                               && preview->width > 0 && preview->height > 0);
+  uint8_t *thumb_jpeg = NULL;
+  int thumb_w = 0, thumb_h = 0, thumb_len = 0;
+  if(canonical)
+    thumb_jpeg = _make_thumb_jpeg(preview->data, preview->len,
+                                  &thumb_w, &thumb_h, &thumb_len);
+  const gboolean have_thumb = (thumb_jpeg != NULL);
+
   if(canonical)
   {
-    if(_write_jpeg_preview_ifd(tif, img, preview) != 0)
+    dt_imageio_dng_preview_t ifd0;
+    if(have_thumb)
+      ifd0 = (dt_imageio_dng_preview_t){
+        .data = thumb_jpeg, .len = thumb_len,
+        .width = thumb_w, .height = thumb_h };
+    else
+      ifd0 = *preview;
+
+    if(_write_thumb_ifd0(tif, img, &ifd0, have_thumb ? 2 : 1) != 0)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_dng] write_cfa_bayer: preview IFD0 failed, aborting");
+               "[imageio_dng] write_cfa_bayer: thumbnail IFD0 failed, aborting");
+      g_free(thumb_jpeg);
       TIFFClose(tif);
       g_unlink(filename);
       return 1;
@@ -365,7 +483,25 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
       res = 1;
   }
 
+  // SubIFD1 = full-res preview when we have both thumb and original
+  if(res == 0 && have_thumb)
+  {
+    if(!TIFFWriteDirectory(tif))
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_dng] TIFFWriteDirectory failed closing raw SubIFD0");
+      res = 1;
+    }
+    else
+    {
+      TIFFCreateDirectory(tif);
+      _register_extra_dng_fields(tif);
+      if(_write_full_preview_subifd(tif, preview) != 0) res = 1;
+    }
+  }
+
   TIFFClose(tif);
+  g_free(thumb_jpeg);
 
   // embed source EXIF (datetime, ISO, shutter, etc.)
   // dt_exif_write_blob takes a non-const pointer; we don't modify it
@@ -406,12 +542,28 @@ int dt_imageio_dng_write_linear(const char *filename,
   // canonical layout when a preview is provided (see write_cfa_bayer)
   const gboolean canonical = (preview && preview->data && preview->len > 0
                               && preview->width > 0 && preview->height > 0);
+  uint8_t *thumb_jpeg = NULL;
+  int thumb_w = 0, thumb_h = 0, thumb_len = 0;
+  if(canonical)
+    thumb_jpeg = _make_thumb_jpeg(preview->data, preview->len,
+                                  &thumb_w, &thumb_h, &thumb_len);
+  const gboolean have_thumb = (thumb_jpeg != NULL);
+
   if(canonical)
   {
-    if(_write_jpeg_preview_ifd(tif, img, preview) != 0)
+    dt_imageio_dng_preview_t ifd0;
+    if(have_thumb)
+      ifd0 = (dt_imageio_dng_preview_t){
+        .data = thumb_jpeg, .len = thumb_len,
+        .width = thumb_w, .height = thumb_h };
+    else
+      ifd0 = *preview;
+
+    if(_write_thumb_ifd0(tif, img, &ifd0, have_thumb ? 2 : 1) != 0)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_dng] write_linear: preview IFD0 failed, aborting");
+               "[imageio_dng] write_linear: thumbnail IFD0 failed, aborting");
+      g_free(thumb_jpeg);
       TIFFClose(tif);
       g_unlink(filename);
       return 1;
@@ -491,7 +643,25 @@ int dt_imageio_dng_write_linear(const char *filename,
   }
   g_free(scan);
 
+  // SubIFD1 = full-res preview when we have both thumb and original
+  if(res == 0 && have_thumb)
+  {
+    if(!TIFFWriteDirectory(tif))
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_dng] TIFFWriteDirectory failed closing linear SubIFD0");
+      res = 1;
+    }
+    else
+    {
+      TIFFCreateDirectory(tif);
+      _register_extra_dng_fields(tif);
+      if(_write_full_preview_subifd(tif, preview) != 0) res = 1;
+    }
+  }
+
   TIFFClose(tif);
+  g_free(thumb_jpeg);
 
   if(res == 0 && exif_blob && exif_len > 0)
     dt_exif_write_blob((uint8_t *)exif_blob, (uint32_t)exif_len,

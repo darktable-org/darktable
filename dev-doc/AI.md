@@ -485,14 +485,20 @@ dt_your_task_free(ctx);
 | Task | Key | API | Consumer |
 |------|-----|-----|----------|
 | Object Mask | `"mask"` | `src/common/ai/segmentation.h` | `src/develop/masks/object.c` |
+| Raw Denoise (Bayer) | `"rawdenoise"` | `src/common/ai/restore_raw_bayer.h` | `src/libs/neural_restore.c` |
+| Raw Denoise (Linear) | `"rawdenoise"` | `src/common/ai/restore_raw_linear.h` | `src/libs/neural_restore.c` |
 | Denoise | `"denoise"` | `src/common/ai/restore_rgb.h` | `src/libs/neural_restore.c` |
 | Upscale | `"upscale"` | `src/common/ai/restore_rgb.h` | `src/libs/neural_restore.c` |
-| Raw Denoise (Bayer)   | `"rawdenoise"` | `src/common/ai/restore_raw_bayer.h`  | `src/libs/neural_restore.c` |
-| Raw Denoise (Linear)  | `"rawdenoise"` | `src/common/ai/restore_raw_linear.h` | `src/libs/neural_restore.c` |
 
 For model requirements, I/O specifications, tiling strategies, color
 space conventions, ONNX export instructions, and config.json examples
 for each task, see **[AI_Tasks.md](AI_Tasks.md)**.
+
+The neural-restore consumer (denoise / upscale / rawdenoise) writes
+its output to a sibling file (TIFF or DNG), then auto-imports it via
+`_import_image` in `neural_restore.c`. The new image is grouped with
+its source and inherits the source's user-applied tags so the output
+shows up in tag-based collections that contained the source.
 
 ---
 

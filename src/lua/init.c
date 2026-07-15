@@ -47,6 +47,9 @@
 #include "lua/util.h"
 #include "lua/view.h"
 #include "lua/widget/widget.h"
+#ifdef HAVE_AI
+#include "lua/ai.h"
+#endif
 
 static int _lua_fully_initialized = false;
 
@@ -136,7 +139,11 @@ static lua_CFunction init_funcs[]
         dt_lua_init_luastorages,   dt_lua_init_tags,        dt_lua_init_film,     dt_lua_init_call,
         dt_lua_init_view,          dt_lua_init_events,      dt_lua_init_init,     dt_lua_init_widget,
         dt_lua_init_lualib,        dt_lua_init_gettext,     dt_lua_init_guides,   dt_lua_init_cairo,
-        dt_lua_init_password,      dt_lua_init_util,        dt_lua_init_metadata, NULL };
+        dt_lua_init_password,      dt_lua_init_util,        dt_lua_init_metadata,
+#ifdef HAVE_AI
+        dt_lua_init_ai,
+#endif
+        NULL };
 
 
 void dt_lua_init(lua_State *L, const char *lua_command)

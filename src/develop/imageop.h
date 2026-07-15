@@ -106,7 +106,7 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_WRITE_DETAILS = 1 << 18,     // provides the scharr mask used by details
   IOP_FLAGS_WRITE_RASTER = 1 << 19,      // modules not supporting blending might still advertise a raster mask
   IOP_FLAGS_WRITE_PIPECACHE = 1 << 20,   // enforce pipecache writing
-  IOP_FLAGS_WRITE_PIPECACHECL = 1 << 21, // enforce pipecache writing for OpenCL code
+  IOP_FLAGS_WRITE_PIPECACHE_IN = 1 << 21, // makes input cacheline important, also ensure input pipecache writing for OpenCL code
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -336,10 +336,10 @@ void dt_iop_init_pipe(dt_iop_module_t *module,
                       struct dt_dev_pixelpipe_t *pipe,
                       struct dt_dev_pixelpipe_iop_t *piece);
 /** checks if iop do have an ui */
-gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module);
-gboolean dt_iop_is_hidden(dt_iop_module_t *module);
+gboolean dt_iop_so_is_hidden(const dt_iop_module_so_t *module);
+gboolean dt_iop_is_hidden(const dt_iop_module_t *module);
 /** checks whether iop is shown in specified group */
-gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
+gboolean dt_iop_shown_in_group(dt_iop_module_t *module, const uint32_t group);
 /** enter a GUI critical section by acquiring gui_data->lock **/
 static inline void dt_iop_gui_enter_critical_section(dt_iop_module_t *const module)
   ACQUIRE(&module->gui_lock)
@@ -389,9 +389,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
    Also watch out for a raster mask source module to get it's first `target`,
    dt_iop_commit_blend_params() either returns NULL or the source module.
 */
-dt_iop_module_t *dt_iop_commit_blend_params
-  (dt_iop_module_t *module,
-   const struct dt_develop_blend_params_t *blendop_params);
+dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
+                                            const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
 void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
@@ -429,9 +428,6 @@ extern const struct dt_action_def_t dt_action_def_iop;
  */
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data);
 
-/** let plugins have breakpoints: */
-gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
-
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
 
@@ -452,19 +448,25 @@ dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
                                                     const char *operation,
                                                     const char *multi_name);
 /** check for module name */
-static inline gboolean dt_iop_module_is(const dt_iop_module_so_t *module,
-                                        const char*operation)
+static inline gboolean dt_iop_module_is(const dt_iop_module_t *module,
+                                        const char* operation)
+{
+  return !g_strcmp0(module->so->op, operation);
+}
+
+static inline gboolean dt_iop_module_so_is(const dt_iop_module_so_t *module,
+                                           const char* operation)
 {
   return !g_strcmp0(module->op, operation);
 }
 
 static inline gboolean dt_iop_module_is_gamma(const dt_iop_module_t *module)
 {
-  return dt_iop_module_is(module->so, "gamma");
+  return dt_iop_module_is(module, "gamma");
 }
 static inline gboolean dt_iop_module_is_finalscale(const dt_iop_module_t *module)
 {
-  return dt_iop_module_is(module->so, "finalscale");
+  return dt_iop_module_is(module, "finalscale");
 }
 
 /** count instances of a module **/

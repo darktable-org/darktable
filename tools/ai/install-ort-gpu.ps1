@@ -29,22 +29,29 @@
 .PARAMETER Yes
     Skip the interactive "Continue?" prompt.
 
-.PARAMETER Force
-    Skip the vendor-specific dependency check (CUDA toolkit, cuDNN).
-    The download proceeds regardless; if dependencies are missing at
-    runtime, ORT will fall back to CPU.
+.PARAMETER Ep
+    Force a specific execution provider, skipping auto-detection.
+    One EP per install. Values:
 
-.PARAMETER Vendor
-    Force a specific GPU vendor and skip auto-detection.
-    Valid values: "nvidia", "intel".
+      cuda12    NVIDIA, CUDA 12 (onnxruntime-gpu from PyPI)
+      cuda13    NVIDIA, CUDA 13 (onnxruntime release zip from GitHub)
+      openvino  Intel,  OpenVINO (onnxruntime-openvino from PyPI)
+
+    AMD ROCm / MIGraphX are not available on Windows. Without this flag
+    the script auto-detects vendor (nvidia-smi / Win32_VideoController)
+    and CUDA version (nvcc), and prompts when more than one GPU vendor
+    is present.
 
 .PARAMETER Manifest
-    Use a custom ort_gpu.json manifest.  Default search order:
-        <script>\..\..\data\ort_gpu.json
-        <script>\..\..\share\darktable\ort_gpu.json
-        $env:ProgramFiles\darktable\share\darktable\ort_gpu.json
-        $env:LOCALAPPDATA\darktable\share\darktable\ort_gpu.json
-        https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json (fallback)
+    Use a custom ort_gpu.json manifest. Without this flag the script
+    picks the first found:
+      1. <script>\..\..\{data,share\darktable}\ort_gpu.json
+         (source checkout or installed-alongside-script layout)
+      2. $env:ProgramFiles\darktable\share\darktable\ort_gpu.json
+      3. $env:LOCALAPPDATA\darktable\share\darktable\ort_gpu.json
+         (system or per-user installs of darktable)
+      4. https://raw.githubusercontent.com/.../master/data/ort_gpu.json
+         (fetched as fallback for the `irm ... | iex` one-liner)
 
 .EXAMPLE
     .\install-ort-gpu.ps1
@@ -55,20 +62,25 @@
     Same as above without confirmation.
 
 .EXAMPLE
-    .\install-ort-gpu.ps1 -Vendor nvidia -Yes
-    Install the NVIDIA package without GPU detection.
-
-.EXAMPLE
-    .\install-ort-gpu.ps1 -Force -Yes
-    Install without checking dependencies.
+    .\install-ort-gpu.ps1 -Ep cuda13 -Yes
+    Install the NVIDIA CUDA 13 package without GPU detection.
 #>
 param(
     [switch]$Yes,
-    [switch]$Force,
-    [string]$Vendor = "",
+    [ValidateSet("", "cuda12", "cuda13", "openvino")]
+    [string]$Ep = "",
     [string]$Manifest = "",
     [switch]$Help
 )
+
+# Map -Ep to internal vendor + CUDA version overrides.
+$Vendor = ""
+$CudaForce = ""
+switch ($Ep) {
+    "cuda12"   { $Vendor = "nvidia"; $CudaForce = "12" }
+    "cuda13"   { $Vendor = "nvidia"; $CudaForce = "13" }
+    "openvino" { $Vendor = "intel" }
+}
 
 if ($Help) {
     Get-Help $MyInvocation.MyCommand.Path -Detailed
@@ -126,25 +138,147 @@ $Arch = "x86_64"
 
 # --- Load manifest ---
 $ManifestData = Get-Content $Manifest -Raw | ConvertFrom-Json
+$MinOrtVersion = $ManifestData.min_ort_version
 
-# --- Detect GPU (skipped with -Vendor) ---
+# Resolve a PyPI source block to (url, sha256, version, size_mb).
+function Resolve-PypiSource($source) {
+    $url = "https://pypi.org/pypi/$($source.package)/json"
+    Write-Host "Resolving latest $($source.package) ..."
+    try {
+        $data = Invoke-RestMethod -Uri $url -UseBasicParsing
+    } catch {
+        Write-Host "Error: failed to query PyPI for $($source.package)" -ForegroundColor Red
+        exit 1
+    }
+    $ver = $data.info.version
+    if ($MinOrtVersion -and ([version]$ver -lt [version]$MinOrtVersion)) {
+        Write-Host "Error: PyPI $($source.package) latest ($ver) is below min_ort_version ($MinOrtVersion)" -ForegroundColor Red
+        exit 1
+    }
+    $pythonTag = if ($source.python_tag) { $source.python_tag } else { "cp312" }
+    $files = $data.releases.$ver
+
+    $wheel = $null
+    foreach ($tag in $source.platform_tags) {
+        $wheel = $files | Where-Object {
+            $_.packagetype -eq "bdist_wheel" -and
+            $_.filename -like "*$pythonTag*" -and
+            $_.filename -like "*$tag*"
+        } | Select-Object -First 1
+        if ($wheel) { break }
+    }
+
+    if (-not $wheel) {
+        Write-Host "Error: no matching wheel in $($source.package) $ver" -ForegroundColor Red
+        exit 1
+    }
+
+    return @{
+        url = $wheel.url
+        sha256 = $wheel.digests.sha256
+        version = $ver
+        size_mb = [int]([math]::Ceiling($wheel.size / 1MB / 10) * 10)
+    }
+}
+
+# Resolve a github_release source block. SHA is empty — GitHub doesn't
+# publish per-asset SHAs in the API response; file-magic check catches
+# HTML error pages at extract time.
+function Resolve-GitHubReleaseSource($source) {
+    $apiUrl = "https://api.github.com/repos/$($source.repo)/releases/latest"
+    Write-Host "Resolving latest $($source.repo) ..."
+
+    $headers = @{ 'Accept' = 'application/vnd.github+json' }
+    if ($env:GITHUB_TOKEN) { $headers['Authorization'] = "Bearer $env:GITHUB_TOKEN" }
+
+    try {
+        $data = Invoke-RestMethod -Uri $apiUrl -Headers $headers -UseBasicParsing
+    } catch {
+        $code = $null
+        if ($_.Exception.Response) { $code = [int]$_.Exception.Response.StatusCode }
+        if ($code -eq 403 -or $code -eq 429) {
+            $installSubdir = if ($Package.install_subdir) { $Package.install_subdir } else { 'onnxruntime' }
+            $hintDir = Join-Path $env:LOCALAPPDATA $installSubdir
+            Write-Host @"
+
+GitHub API rate limit hit (60 req/hr per IP, unauthenticated).
+
+You're seeing this because the install script needs api.github.com to
+discover the latest ONNX Runtime release. Shared NAT (corporate networks,
+VPNs, cloud VMs) often blows through 60/hr from one source IP.
+
+Workarounds, easiest first:
+
+  1. Wait ~1 hour for the limit to reset and re-run this script.
+
+  2. Set GITHUB_TOKEN with any personal access token (no scopes
+     required for public repos) - bumps the limit to 5000 req/hr:
+       `$env:GITHUB_TOKEN = 'ghp_yourtoken'
+       .\install-ort-gpu.ps1
+
+  3. Install manually - easy for this package:
+       a. Open https://github.com/$($source.repo)/releases/latest in a browser
+       b. Find the asset named like: $($source.asset_pattern)
+          (where {version} is whatever release tag is shown at the top)
+       c. Download it (zip, no auth needed)
+       d. Expand-Archive <file>.zip -DestinationPath .
+       e. Copy the extracted lib\onnxruntime.dll (and LICENSE,
+          ThirdPartyNotices.txt from the extracted root) into:
+            $hintDir
+       f. Open darktable -> Preferences -> AI tab -> point at the .dll
+
+"@ -ForegroundColor Yellow
+        } else {
+            Write-Host "Error: GitHub API request failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        exit 1
+    }
+
+    $tag = $data.tag_name
+    $ver = $tag -replace '^v', ''
+
+    if ($MinOrtVersion -and ([version]$ver -lt [version]$MinOrtVersion)) {
+        Write-Host "Error: latest $($source.repo) release ($ver) is below min_ort_version ($MinOrtVersion)" -ForegroundColor Red
+        exit 1
+    }
+
+    $expected = $source.asset_pattern -replace '\{version\}', $ver
+    $asset = $data.assets | Where-Object { $_.name -eq $expected } | Select-Object -First 1
+    if (-not $asset) {
+        Write-Host "Error: no asset named '$expected' in release $tag of $($source.repo)" -ForegroundColor Red
+        exit 1
+    }
+
+    # GitHub's `digest` field arrived in 2024; older releases may not have it,
+    # in which case sha256 stays empty and the file-magic check kicks in.
+    $sha = ""
+    if ($asset.digest -and $asset.digest.StartsWith("sha256:")) {
+        $sha = $asset.digest.Substring(7)
+    }
+
+    return @{
+        url = $asset.browser_download_url
+        sha256 = $sha
+        version = $ver
+        size_mb = [int]([math]::Ceiling($asset.size / 1MB / 10) * 10)
+    }
+}
+
+# --- Detect GPU (skipped with -Ep) ---
 $Vendors = @()
 $Selected = $null
 
 if ($Vendor) {
-    if ($Vendor -notin @("nvidia", "intel")) {
-        Write-Host "Error: unknown vendor '$Vendor'. Use: nvidia, intel" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "Vendor override: $Vendor (skipping GPU detection)"
+    Write-Host "EP override: forcing $Ep (skipping GPU detection)"
     $Selected = @{ vendor = $Vendor; label = $Vendor; driver = "" }
 } else {
     # NVIDIA
     $NvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
     if ($NvidiaSmi) {
+        # nvidia-smi writes "driver not loaded" to stdout; require CSV
         $NvidiaInfo = (nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>$null |
                        Select-Object -First 1)
-        if ($NvidiaInfo) {
+        if ($NvidiaInfo -and $NvidiaInfo.Contains(",")) {
             $fields = $NvidiaInfo -split ","
             $Vendors += @{
                 vendor = "nvidia"
@@ -170,7 +304,7 @@ if ($Vendor) {
         Write-Host "No supported GPU detected." -ForegroundColor Red
         Write-Host ""
         Write-Host "Supported: NVIDIA (CUDA), Intel (OpenVINO)"
-        Write-Host "Ensure GPU drivers are installed, or use -Vendor <nvidia|intel>."
+        Write-Host "Ensure GPU drivers are installed, or use -Ep <cuda12|cuda13|openvino>."
         Write-Host ""
         exit 1
     }
@@ -207,6 +341,8 @@ if ($Selected.vendor -eq "nvidia") {
         if ($nvccOut) { $CudaMM = $nvccOut }
     }
 }
+# Apply EP-driven CUDA override (set by -Ep cuda12/cuda13).
+if ($CudaForce -and $Selected.vendor -eq "nvidia") { $CudaMM = "$CudaForce.0" }
 
 # --- Find matching package in manifest ---
 $Package = $null
@@ -228,6 +364,24 @@ if (-not $Package) {
     Write-Host "Error: no matching package found for $($Selected.vendor)/$Platform/$Arch" -ForegroundColor Red
     if ($CudaMM) { Write-Host "  CUDA version: $CudaMM" }
     exit 1
+}
+
+# Resolve source blocks to concrete URL/SHA/version at install time.
+if ($Package.source) {
+    $r = switch ($Package.source.type) {
+        'pypi'           { Resolve-PypiSource          $Package.source }
+        'github_release' { Resolve-GitHubReleaseSource $Package.source }
+        default { Write-Host "Error: unknown source type '$($Package.source.type)'" -ForegroundColor Red; exit 1 }
+    }
+    $Package | Add-Member -NotePropertyName url          -NotePropertyValue $r.url     -Force
+    $Package | Add-Member -NotePropertyName sha256       -NotePropertyValue $r.sha256  -Force
+    $Package | Add-Member -NotePropertyName ort_version  -NotePropertyValue $r.version -Force
+    $Package | Add-Member -NotePropertyName size_mb      -NotePropertyValue $r.size_mb -Force
+}
+if ($Package.runtime_source -and $Package.runtime_source.type -eq "pypi") {
+    $r = Resolve-PypiSource $Package.runtime_source
+    $Package | Add-Member -NotePropertyName runtime_url    -NotePropertyValue $r.url    -Force
+    $Package | Add-Member -NotePropertyName runtime_sha256 -NotePropertyValue $r.sha256 -Force
 }
 
 $InstallDir = Join-Path $env:LOCALAPPDATA $Package.install_subdir
@@ -282,6 +436,19 @@ if ($Package.sha256) {
         exit 1
     }
     Write-Host "Checksum OK."
+} else {
+    # GitHub source has no published SHA; catch HTML error pages with file magic
+    $magic = [System.IO.File]::ReadAllBytes($ArchivePath)[0..3]
+    $isZip = ($magic[0] -eq 0x50 -and $magic[1] -eq 0x4B -and $magic[2] -eq 0x03 -and $magic[3] -eq 0x04)
+    $isGz  = ($magic[0] -eq 0x1F -and $magic[1] -eq 0x8B)
+    $ok = switch ($Package.format) {
+        'zip' { $isZip } 'whl' { $isZip } 'tgz' { $isGz } default { $true }
+    }
+    if (-not $ok) {
+        Write-Host "Error: download is not a $($Package.format) (file magic mismatch)" -ForegroundColor Red
+        Remove-Item -Recurse -Force $TempDir
+        exit 1
+    }
 }
 
 # --- Extract ---
@@ -339,6 +506,28 @@ function Copy-MatchingLibs([string]$searchRoot, [string[]]$patterns, [bool]$pres
     return $count
 }
 
+# Copy LICENSE / NOTICE / ThirdPartyNotices alongside the libs so the
+# install directory is self-documenting and MIT/Apache-2.0 attribution
+# travels with the binaries. Prefixed with the wheel's top-level package
+# directory so multiple wheels (e.g. onnxruntime + openvino on Intel
+# Windows) don't overwrite each other's notices.
+function Copy-Licenses([string]$searchRoot) {
+    Get-ChildItem -Path $searchRoot -Recurse -File -Depth 4 |
+        Where-Object {
+            # skip *.dist-info/ — pip-generated duplicates of the same files in the package root
+            $_.FullName -notmatch '\.dist-info[\\/]' -and
+            $_.Name -match '^(LICENSE|NOTICE|ThirdPartyNotices|COPYING)' -and
+            $_.Extension -in @('', '.txt', '.md')
+        } |
+        ForEach-Object {
+            $parent = Split-Path -Leaf (Split-Path -Parent $_.FullName)
+            $dest = Join-Path $InstallDir ("$parent-$($_.Name)")
+            if (-not (Test-Path $dest)) {
+                Copy-Item $_.FullName -Destination $dest -Force
+            }
+        }
+}
+
 switch ($Package.format) {
     "zip" {
         Expand-Archive -Path $ArchivePath -DestinationPath $ExtractDir -Force
@@ -367,6 +556,7 @@ switch ($Package.format) {
 }
 
 $copied = Copy-MatchingLibs $ExtractDir $libPatterns $preserveLayout
+Copy-Licenses $ExtractDir
 
 # Clean up
 Remove-Item -Recurse -Force $TempDir
@@ -407,6 +597,7 @@ if ($Package.runtime_url) {
             $rtPattern = if ($Package.runtime_lib_pattern) { $Package.runtime_lib_pattern } else { "openvino" }
             $rtPatterns = @($rtPattern) + @($Package.runtime_extra_patterns | Where-Object { $_ })
             $rtCopied = Copy-MatchingLibs $rtExtract $rtPatterns $preserveLayout
+            Copy-Licenses $rtExtract
             if ($rtCopied -gt 0) {
                 Write-Host "Bundled $rtCopied runtime DLLs."
             }
@@ -523,6 +714,3 @@ Write-Host "     or set 'ONNX Runtime library' to:"
 Write-Host "     $($ortDll.FullName)"
 Write-Host "  4. Restart darktable"
 Write-Host ""
-Write-Host "Or via command line:"
-Write-Host ""
-Write-Host "  `$env:DT_ORT_LIBRARY=`"$($ortDll.FullName)`"; darktable"

@@ -452,7 +452,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  dev_lut = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
+  dev_lut = dt_opencl_copy_host_to_image(devid, d->lut, 256, 256, sizeof(float));
   if(dev_lut == NULL) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_levels, width, height,

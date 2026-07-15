@@ -637,9 +637,8 @@ void process(dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
-  // so we at least leave a note to the user
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE) && !hq)
+  // As we can't receive data from preview we at least leave a note to the user
+  if(dt_pipe_is_image(piece->pipe) && !hq)
     dt_control_log(_("inconsistent output"));
 
   // In all other cases we calculate distance_max and A0 here.
@@ -715,7 +714,7 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
   float *in = dt_alloc_aligned((size_t)width * height * element_size);
-  cl_int err = dt_opencl_copy_device_to_host(devid, in, img, width, height, element_size);
+  cl_int err = dt_opencl_copy_image_to_host(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
 
   const const_rgb_image img_in = (const_rgb_image) {in, width, height, element_size / sizeof(float)};
@@ -907,9 +906,8 @@ int process_cl(dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
 
-  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
-  // so we at least leave a note to the user
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE) && !hq)
+  // As we can't receive data from preview we at least leave a note to the user
+  if(dt_pipe_is_image(piece->pipe) && !hq)
     dt_control_log(_("inconsistent output"));
 
   // In all other cases we calculate distance_max and A0 here.

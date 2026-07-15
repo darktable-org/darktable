@@ -826,6 +826,12 @@ static void add_hdr_patches(int *N, double **target_L, double **target_a, double
     *target_b = realloc(*target_b, sizeof(double) * (*N + n_extra_patches + 4));
     *colorchecker_Lab = realloc(*colorchecker_Lab, sizeof(double) * 3 * (*N + n_extra_patches));
 
+    if(!*target_L || !*target_a || !*target_b || !*colorchecker_Lab)
+    {
+      fprintf(stderr, "error: failed to allocate memory for extra patches\n");
+      exit(EXIT_FAILURE);
+    }
+
     memmove(&(*target_L)[n_extra_patches], *target_L, sizeof(double) * *N);
     memmove(&(*target_a)[n_extra_patches], *target_a, sizeof(double) * *N);
     memmove(&(*target_b)[n_extra_patches], *target_b, sizeof(double) * *N);
@@ -958,9 +964,9 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
                          double *colorchecker_Lab, int N, int sparsity)
 {
   // get all the memory, just in case:
-  double *cx = malloc(sizeof(double)*N);
-  double *cy = malloc(sizeof(double)*N);
-  double *grays = malloc(sizeof(double) * 6 * N);
+  double *cx = calloc(N, sizeof(double));
+  double *cy = calloc(N, sizeof(double));
+  double *grays = calloc(N, 6 * sizeof(double));
   tonecurve_t tonecurve;
   int num_tonecurve = 0;
   {
@@ -1013,8 +1019,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 #else // rgb tonecurve affecting colours, too
   tonecurve_t rgbcurve;
   // ownership transferred to tonecurve object, so we just alloc without free here:
-  cx = malloc(sizeof(double)*num_tonecurve);
-  cy = malloc(sizeof(double)*num_tonecurve);
+  cx = calloc(num_tonecurve, sizeof(double));
+  cy = calloc(num_tonecurve, sizeof(double));
   cx[0] = cy[0] = 0.0;                           // fix black
   cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
   for(int k = 1; k < num_tonecurve-1; k++)
@@ -1050,11 +1056,11 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 #endif
 
   const double *target[3] = { target_L, target_a, target_b };
-  double *coeff_L = malloc(sizeof(double) * (N + 4) );
-  double *coeff_a = malloc(sizeof(double) * (N + 4) );
-  double *coeff_b = malloc(sizeof(double) * (N + 4) );
+  double *coeff_L = calloc(N + 4, sizeof(double));
+  double *coeff_a = calloc(N + 4, sizeof(double));
+  double *coeff_b = calloc(N + 4, sizeof(double));
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
-  int *perm = malloc(sizeof(int) * (N + 4));
+  int *perm = calloc(N + 4, sizeof(int));
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
@@ -1108,7 +1114,7 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
   double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *colorchecker_Lab = (double *)calloc(sizeof(double) * 3, N);
+  double *colorchecker_Lab = (double *)calloc(N, sizeof(double) * 3);
 
   GHashTableIter table_iter;
   gpointer set_key, value;
@@ -1796,7 +1802,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
   double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *source_Lab = (double *)calloc(sizeof(double) * 3, N);
+  double *source_Lab = (double *)calloc(N, sizeof(double) * 3);
   *target_L_ptr = target_L;
   *target_a_ptr = target_a;
   *target_b_ptr = target_b;

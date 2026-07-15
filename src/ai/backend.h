@@ -52,13 +52,20 @@ typedef struct dt_ai_provider_desc_t {
   dt_ai_provider_t value;
   const char *config_string;
   const char *display_name;
-  int available;
+  gboolean available;
 } dt_ai_provider_desc_t;
 
 extern const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT];
 
 /** Config key for the AI execution provider preference */
 #define DT_AI_CONF_PROVIDER "plugins/ai/provider"
+
+/* CoreML EP flag bits, mirroring values from ORT's
+ * coreml_provider_factory.h. defined here so the backend layer doesn't
+ * need to drag the EP header into either file; single source of truth
+ * if Apple ever renumbers the enum. */
+#define DT_COREML_FLAG_USE_CPU_ONLY     0x001u
+#define DT_COREML_FLAG_CREATE_MLPROGRAM 0x010u
 
 /** Get display name for a provider enum value */
 const char *dt_ai_provider_to_string(dt_ai_provider_t provider);
@@ -78,9 +85,21 @@ guint dt_ai_providers_from_eps(const char *eps);
 guint dt_ai_providers_bundled(void);
 
 /** Snapshot the conf state (ORT path, provider, device ids) for the
- *  *_changed_since_load() helpers.  Call once at darktable startup so
- *  the snapshot is independent of when ORT is lazily initialized. */
+ *  *_changed_since_load() helpers. Idempotent — subsequent calls are
+ *  no-ops. Recommended to call once at darktable startup so the
+ *  snapshot reflects pre-modification state; if forgotten, the
+ *  *_changed_since_load() helpers auto-snapshot on first use. */
 void dt_ai_snapshot_conf_state(void);
+
+/** Free heap-allocated backend globals (cached strings, conf snapshot).
+ *  Call once from dt_cleanup; OrtApi/OrtEnv/GModule are released through
+ *  their own paths (or leak at process exit, which is fine). */
+void dt_ai_backend_cleanup_globals(void);
+
+/** Read plugins/ai/models_path and expand ~ if present. Returns a
+ *  newly-allocated path, or NULL if the conf key is empty/unset.
+ *  Caller frees with g_free(). */
+gchar *dt_ai_resolve_models_path_override(void);
 
 /** TRUE if plugins/ai/ort_library_path differs from the value seen
  *  when ORT was loaded — the in-process ORT is stale, restart needed. */
@@ -188,6 +207,9 @@ typedef struct dt_ai_model_info_t {
                            ///< Consumed internally by the load function to
                            ///< override the provider when the model declares
                            ///< the configured EP unsafe.
+  const char *coreml_format; ///< CoreML model format (JSON: string or
+                             ///< stem-keyed object). "neuralnetwork"
+                             ///< (default) or "mlprogram".
 } dt_ai_model_info_t;
 
 /* --- Model "attributes" lookup ---
@@ -301,10 +323,14 @@ dt_ai_provider_t dt_ai_env_get_provider(dt_ai_environment_t *env);
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
                                   const char *model_id,
                                   const char *model_file,
-                                  dt_ai_provider_t provider);
+                                  const dt_ai_provider_t provider);
 
 /**
  * @brief Symbolic dimension override for models with dynamic shapes.
+ *
+ * The `name` pointer is only read during the dt_ai_load_model_ext call
+ * — the backend copies anything it needs to keep. Caller may free the
+ * string (or let it go out of scope) immediately after load returns.
  */
 typedef struct {
   const char *name;  ///< Symbolic dimension name (e.g. "num_labels")
@@ -327,19 +353,15 @@ typedef struct {
  * @param opt_level Graph optimization level.
  * @param dim_overrides Array of symbolic dimension overrides (NULL = none).
  * @param n_overrides Number of overrides.
- * @param ep_flags EP-specific flag bitmask. Callers should pass 0; the
- *                 load function adds bits internally based on the model's
- *                 cpu_only declaration (e.g. COREML_FLAG_USE_CPU_ONLY).
  * @return dt_ai_context_t* Context ready for inference, or NULL.
  */
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                        const char *model_id,
                                        const char *model_file,
-                                       dt_ai_provider_t provider,
-                                       dt_ai_opt_level_t opt_level,
+                                       const dt_ai_provider_t provider,
+                                       const dt_ai_opt_level_t opt_level,
                                        const dt_ai_dim_override_t *dim_overrides,
-                                       int n_overrides,
-                                       uint32_t ep_flags);
+                                       const int n_overrides);
 
 /**
  * @brief Tensor Data Types
@@ -354,7 +376,14 @@ typedef enum {
 } dt_ai_dtype_t;
 
 /**
- * @brief Tensor descriptor for I/O
+ * @brief Tensor descriptor for I/O.
+ *
+ * No explicit byte-size field — the buffer length is implied by
+ * `shape[0] * shape[1] * ... * shape[ndim-1] * sizeof(elem)` where
+ * `sizeof(elem)` is derived from `type`. Caller owns the buffer and
+ * is responsible for allocating enough space. Both `data` and `shape`
+ * pointers are borrowed for the duration of dt_ai_run; the backend
+ * does not copy them.
  */
 typedef struct dt_ai_tensor_t {
   void *data;         ///< Pointer to raw data buffer
@@ -362,6 +391,14 @@ typedef struct dt_ai_tensor_t {
   int64_t *shape;     ///< Array of dimensions
   int ndim;           ///< Number of dimensions
 } dt_ai_tensor_t;
+
+/**
+ * @brief Number of elements implied by a shape (product of all dims).
+ *        Multiply by the element size (sizeof(float), etc.) to get
+ *        the buffer byte length. Returns 0 if any dim is non-positive
+ *        or if ndim is 0.
+ */
+size_t dt_ai_tensor_element_count(const int64_t *shape, const int ndim);
 
 /**
  * @brief Run inference through the loaded model.
@@ -441,3 +478,23 @@ int dt_ai_get_output_shape(dt_ai_context_t *ctx, int index,
  * @param ctx The AI context to unload.
  */
 void dt_ai_unload_model(dt_ai_context_t *ctx);
+
+// compile-cache layout: <user_cache>/ai_v<SCHEMA>_<ep>_<fingerprint>/<model_id>/
+// bump SCHEMA when the layout changes incompatibly; old caches are skipped.
+#define DT_AI_CACHE_SCHEMA 1
+
+// build the compile-cache directory for (provider, fingerprint, model_id)
+// and mkdir -p it. pass model_id = "_shared" for caches without per-model
+// granularity. returns TRUE on success, FALSE on path overflow or mkdir failure.
+gboolean dt_ai_backend_cache_dir(dt_ai_provider_t provider,
+                                 const char *fingerprint,
+                                 const char *model_id,
+                                 char *out, size_t size);
+
+// remove every compile-cache subdir matching model_id across all providers
+// and schemas. called after a model is deleted or replaced.
+void dt_ai_backend_cache_invalidate(const char *model_id);
+
+// remove the entire compile-cache tree. exposed for a future user action;
+// not used internally.
+void dt_ai_backend_cache_invalidate_all(void);

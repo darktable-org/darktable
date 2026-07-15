@@ -23,6 +23,12 @@ if(JXL_FOUND)
   set_target_properties(jxl_format PROPERTIES OUTPUT_NAME jpegxl)
 endif(JXL_FOUND)
 
+if(libheif_FOUND)
+  list(APPEND MODULES "heif_format")
+  add_library(heif_format MODULE "heif.c")
+  set_target_properties(heif_format PROPERTIES OUTPUT_NAME heif)
+endif()
+
 if(WebP_FOUND)
   list(APPEND MODULES "webp")
   add_library(webp MODULE "webp.c")

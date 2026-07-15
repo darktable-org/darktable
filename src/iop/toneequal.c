@@ -1053,9 +1053,9 @@ void toneeq_process(dt_iop_module_t *self,
     }
     else if(dt_pipe_is_preview(piece->pipe))
     {
-      // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache it too to
-      // compute the full image stats upon user request in GUI threads
-      // locks are required since GUI reads and writes on that buffer.
+      // For preview pipe we need to cache it too because we have to
+      // compute the full image stats upon user request in GUI threads.
+      // Locks are required since GUI reads and writes on that buffer.
 
       // Re-allocate a new buffer if the thumb preview size has changed
       dt_iop_gui_enter_critical_section(self);

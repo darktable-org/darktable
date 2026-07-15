@@ -4,14 +4,21 @@
 
 set -euo pipefail
 
+# Surface where the script failed instead of exiting silently. `set -e`
+# otherwise just walks off the end of the world when any command fails.
+trap 'rc=$?; echo "" >&2;
+      echo "Error: install-ort-gpu.sh aborted at line $LINENO (exit $rc)" >&2;
+      echo "  failing command: $BASH_COMMAND" >&2;
+      echo "  Please report at https://github.com/darktable-org/darktable/issues" >&2' ERR
+
 usage() {
   cat <<EOF
 NAME
     install-ort-gpu.sh – install GPU-accelerated ONNX Runtime for darktable
 
 SYNOPSIS
-    install-ort-gpu.sh [-y|--yes] [-f|--force]
-                       [--vendor <nvidia|amd|intel>]
+    install-ort-gpu.sh [-y|--yes]
+                       [--ep <cuda12|cuda13|rocm|migraphx|openvino>]
                        [--manifest <path>]
                        [-h|--help]
 
@@ -39,21 +46,29 @@ OPTIONS
     -y, --yes
         Skip the interactive "Continue?" prompt.
 
-    -f, --force
-        Skip the vendor-specific dependency check (CUDA toolkit, cuDNN
-        SO, ROCm install, OpenCL ICD).  The download proceeds regardless;
-        if dependencies are missing at runtime, ORT will fall back to CPU.
+    --ep <name>
+        Force a specific execution provider, skipping auto-detection.
+        One EP per install. Values:
 
-    --vendor <nvidia|amd|intel>
-        Force a specific GPU vendor and skip auto-detection.
+          cuda12    NVIDIA, CUDA 12 (onnxruntime-gpu from PyPI)
+          cuda13    NVIDIA, CUDA 13 (onnxruntime release tarball from GitHub)
+          rocm      AMD,    ROCm 6.x (onnxruntime-rocm from PyPI)
+          migraphx  AMD,    ROCm 7.x (onnxruntime-migraphx from PyPI)
+          openvino  Intel,  OpenVINO (onnxruntime-openvino from PyPI)
+
+        Without this flag the script auto-detects vendor (nvidia-smi /
+        rocminfo / lspci) and version (nvcc / /opt/rocm/.info/version),
+        and prompts when more than one GPU vendor is present.
 
     --manifest <path>
-        Use a custom ort_gpu.json manifest.  Default search order:
-            <script>/../../data/ort_gpu.json
-            <script>/../../share/darktable/ort_gpu.json
-            /usr/share/darktable/ort_gpu.json
-            /usr/local/share/darktable/ort_gpu.json
-            https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json (fallback)
+        Use a custom ort_gpu.json manifest. Without this flag the
+        script picks the first found:
+          1. <script>/../../{data,share/darktable}/ort_gpu.json
+             (source checkout or installed-alongside-script layout)
+          2. /usr/{share,local/share}/darktable/ort_gpu.json
+             (system install of darktable)
+          3. https://raw.githubusercontent.com/.../master/data/ort_gpu.json
+             (fetched as fallback for the "curl ... | bash" one-liner)
 
     -h, --help
         Show this help and exit.
@@ -65,18 +80,31 @@ EXAMPLES
     install-ort-gpu.sh -y
         Same as above without confirmation.
 
-    install-ort-gpu.sh --vendor amd -y
+    install-ort-gpu.sh --ep migraphx -y
         Install the AMD/MIGraphX package without GPU detection.
 
-    install-ort-gpu.sh --force -y
-        Install without checking dependencies.
+    install-ort-gpu.sh --ep cuda13 -y
+        Install the NVIDIA CUDA 13 package without GPU detection.
 EOF
 }
 
 YES=false
-FORCE=false
 MANIFEST=""
 VENDOR_OVERRIDE=""
+CUDA_OVERRIDE=""
+ROCM_OVERRIDE=""
+
+# Map an --ep value to internal vendor + version overrides.
+parse_ep() {
+  case "$1" in
+    cuda12)   VENDOR_OVERRIDE=nvidia; CUDA_OVERRIDE=12 ;;
+    cuda13)   VENDOR_OVERRIDE=nvidia; CUDA_OVERRIDE=13 ;;
+    rocm)     VENDOR_OVERRIDE=amd;    ROCM_OVERRIDE=6  ;;
+    migraphx) VENDOR_OVERRIDE=amd;    ROCM_OVERRIDE=7  ;;
+    openvino) VENDOR_OVERRIDE=intel ;;
+    *) echo "Error: --ep requires one of: cuda12, cuda13, rocm, migraphx, openvino (got '$1')" >&2; exit 1 ;;
+  esac
+}
 
 # read user input from the controlling tty, not stdin -- when run via
 # `curl ... | bash`, stdin is the pipe and `read` returns immediately
@@ -86,20 +114,42 @@ ask() {
   if [ -r /dev/tty ]; then
     read -rp "$prompt" "$var" </dev/tty
   else
-    echo "Cannot prompt for input (no tty). Re-run with --vendor and -y" >&2
+    echo "Cannot prompt for input (no tty). Re-run with --ep and -y" >&2
     exit 1
   fi
 }
 while [ $# -gt 0 ]; do
   case "$1" in
     -y|--yes) YES=true; shift ;;
-    -f|--force) FORCE=true; shift ;;
-    --manifest) MANIFEST="$2"; shift 2 ;;
-    --vendor) VENDOR_OVERRIDE="$2"; shift 2 ;;
+    --manifest)
+      [ $# -ge 2 ] || { echo "Error: --manifest requires a path argument" >&2; exit 1; }
+      MANIFEST="$2"; shift 2 ;;
+    --ep)
+      [ $# -ge 2 ] || { echo "Error: --ep requires one of: cuda12, cuda13, rocm, migraphx, openvino" >&2; exit 1; }
+      parse_ep "$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) break ;;
   esac
 done
+
+# --- Platform checks ---
+if [ "$(uname -s)" != "Linux" ]; then
+  echo "Error: this script is for Linux only." >&2
+  exit 1
+fi
+
+# --- Prerequisite check ---
+check_prereqs() {
+  local missing=() cmd
+  for cmd in jq curl tar unzip; do
+    command -v "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
+  done
+  [ ${#missing[@]} -eq 0 ] && return
+  echo "Error: missing required commands: ${missing[*]}" >&2
+  echo "Install them via your distro's package manager and re-run." >&2
+  exit 1
+}
+check_prereqs
 
 # --- Locate manifest ---
 if [ -z "$MANIFEST" ]; then
@@ -118,11 +168,6 @@ if [ -z "$MANIFEST" ]; then
     # downloaded and run directly from a raw GitHub URL.
     GH_MANIFEST_URL="https://raw.githubusercontent.com/darktable-org/darktable/refs/heads/master/data/ort_gpu.json"
     MANIFEST="$(mktemp --suffix=.json)"
-    if ! command -v curl >/dev/null 2>&1; then
-      echo "Error: cannot find ort_gpu.json manifest and curl is not available." >&2
-      echo "  Use --manifest <path> to specify it manually." >&2
-      exit 1
-    fi
     curl -fsSL "$GH_MANIFEST_URL" -o "$MANIFEST" || { echo "Error: cannot download ort_gpu.json from GitHub." >&2; exit 1; }
   fi
 fi
@@ -132,11 +177,146 @@ if [ ! -f "$MANIFEST" ]; then
   exit 1
 fi
 
-# --- Platform checks ---
-if [ "$(uname -s)" != "Linux" ]; then
-  echo "Error: this script is for Linux only." >&2
-  exit 1
-fi
+MIN_ORT_VERSION=$(jq -r '.min_ort_version // ""' "$MANIFEST" 2>/dev/null || true)
+
+# Compare semver-ish strings: returns 0 iff $1 >= $2.
+_version_ge() {
+  [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -1)" = "$2" ]
+}
+
+# Resolve a PyPI source block in $PKG_JSON to concrete URL/SHA/version.
+# Sets PKG_URL, PKG_SHA256, PKG_ORT_VERSION, PKG_SIZE_MB.
+resolve_pypi_source() {
+  local pkg python_tag json ver wheel size tag
+  pkg=$(echo "$PKG_JSON" | jq -r '.source.package')
+  python_tag=$(echo "$PKG_JSON" | jq -r '.source.python_tag // "cp312"')
+
+  echo "Resolving latest $pkg ..."
+  json=$(curl -fsSL "https://pypi.org/pypi/$pkg/json") || {
+    echo "Error: failed to query PyPI for $pkg" >&2; exit 1; }
+
+  ver=$(echo "$json" | jq -r '.info.version')
+  if [ -n "$MIN_ORT_VERSION" ] && ! _version_ge "$ver" "$MIN_ORT_VERSION"; then
+    echo "Error: PyPI $pkg latest ($ver) is below min_ort_version ($MIN_ORT_VERSION)" >&2
+    exit 1
+  fi
+
+  # Walk platform_tags newest-first; first match wins.
+  wheel=""
+  while IFS= read -r tag; do
+    wheel=$(echo "$json" | jq -c --arg v "$ver" --arg pt "$python_tag" --arg t "$tag" '
+      [.releases[$v][] | select(.packagetype == "bdist_wheel")
+                       | select(.filename | contains($pt))
+                       | select(.filename | contains($t))][0]
+    ')
+    [ -n "$wheel" ] && [ "$wheel" != "null" ] && break
+    wheel=""
+  done < <(echo "$PKG_JSON" | jq -r '.source.platform_tags[]')
+
+  if [ -z "$wheel" ]; then
+    echo "Error: no matching wheel in $pkg $ver for $python_tag + platform tags" >&2
+    exit 1
+  fi
+
+  PKG_URL=$(echo "$wheel" | jq -r '.url')
+  PKG_SHA256=$(echo "$wheel" | jq -r '.digests.sha256')
+  PKG_ORT_VERSION="$ver"
+  size=$(echo "$wheel" | jq -r '.size')
+  PKG_SIZE_MB=$(( (size / (1024*1024) + 9) / 10 * 10 ))
+}
+
+# Resolve a github_release source block in $PKG_JSON. Sets PKG_URL,
+# PKG_ORT_VERSION, PKG_SIZE_MB. PKG_SHA256 is left empty — GitHub does
+# not publish per-asset SHA256 in the API response, so we fall back to
+# file-magic verification at extract time.
+resolve_github_release_source() {
+  local repo asset_pattern api_url tmp http_code json tag ver expected url size hdr=()
+  repo=$(echo "$PKG_JSON" | jq -r '.source.repo')
+  asset_pattern=$(echo "$PKG_JSON" | jq -r '.source.asset_pattern')
+  api_url="https://api.github.com/repos/$repo/releases/latest"
+
+  echo "Resolving latest $repo ..."
+  [ -n "${GITHUB_TOKEN:-}" ] && hdr=(-H "Authorization: Bearer $GITHUB_TOKEN")
+
+  tmp=$(mktemp)
+  http_code=$(curl -sS -o "$tmp" -w '%{http_code}' \
+    "${hdr[@]}" -H 'Accept: application/vnd.github+json' "$api_url") || {
+    echo "Error: failed to reach $api_url" >&2
+    rm -f "$tmp"
+    exit 1
+  }
+
+  if [ "$http_code" = "403" ] || [ "$http_code" = "429" ]; then
+    rm -f "$tmp"
+    local install_subdir hint_dir
+    install_subdir=$(echo "$PKG_JSON" | jq -r '.install_subdir // "onnxruntime"')
+    hint_dir="$HOME/.local/lib/$install_subdir"
+    cat <<EOF >&2
+
+GitHub API rate limit hit (60 req/hr per IP, unauthenticated).
+
+You're seeing this because the install script needs api.github.com to
+discover the latest ONNX Runtime release. Shared NAT (corporate networks,
+VPNs, cloud VMs) often blows through 60/hr from one source IP.
+
+Workarounds, easiest first:
+
+  1. Wait ~1 hour for the limit to reset and re-run this script.
+
+  2. Set GITHUB_TOKEN with any personal access token (no scopes
+     required for public repos) — bumps the limit to 5000 req/hr:
+       GITHUB_TOKEN=ghp_yourtoken ./install-ort-gpu.sh
+
+  3. Install manually — easy for this package:
+       a. Open https://github.com/$repo/releases/latest in a browser
+       b. Find the asset named like: $asset_pattern
+          (where {version} is whatever release tag is shown at the top)
+       c. Download it (tarball, no auth needed)
+       d. tar xzf <file>.tgz
+       e. Copy the extracted lib/libonnxruntime.so.* (and LICENSE,
+          ThirdPartyNotices.txt from the extracted root) into:
+            $hint_dir
+       f. Open darktable -> Preferences -> AI tab -> point at the .so
+
+EOF
+    exit 1
+  fi
+
+  if [ "$http_code" != "200" ]; then
+    echo "Error: GitHub API returned HTTP $http_code for $api_url" >&2
+    rm -f "$tmp"
+    exit 1
+  fi
+
+  json=$(cat "$tmp"); rm -f "$tmp"
+  tag=$(echo "$json" | jq -r '.tag_name')
+  ver="${tag#v}"
+
+  if [ -n "$MIN_ORT_VERSION" ] && ! _version_ge "$ver" "$MIN_ORT_VERSION"; then
+    echo "Error: latest $repo release ($ver) is below min_ort_version ($MIN_ORT_VERSION)" >&2
+    exit 1
+  fi
+
+  expected="${asset_pattern//\{version\}/$ver}"
+  local asset
+  asset=$(echo "$json" | jq -c --arg n "$expected" '.assets[] | select(.name == $n)')
+  if [ -z "$asset" ] || [ "$asset" = "null" ]; then
+    echo "Error: no asset named '$expected' in release $tag of $repo" >&2
+    exit 1
+  fi
+  url=$(echo "$asset" | jq -r '.browser_download_url')
+  size=$(echo "$asset" | jq -r '.size')
+  # GitHub's `digest` field arrived in 2024; older releases may not have it,
+  # in which case PKG_SHA256 stays empty and the file-magic check kicks in.
+  local digest
+  digest=$(echo "$asset" | jq -r '.digest // ""')
+  PKG_SHA256="${digest#sha256:}"
+  [ "$PKG_SHA256" = "$digest" ] && PKG_SHA256=""  # non-sha256 digest → don't trust
+
+  PKG_URL="$url"
+  PKG_ORT_VERSION="$ver"
+  PKG_SIZE_MB=$(( (size / (1024*1024) + 9) / 10 * 10 ))
+}
 
 ARCH=$(uname -m)
 PLATFORM="linux"
@@ -145,7 +325,7 @@ echo ""
 echo "ONNX Runtime GPU acceleration installer"
 echo "========================================"
 
-# --- Detect GPU (skipped with --vendor) ---
+# --- Detect GPU (skipped with --ep) ---
 VENDOR=""
 GPU_LABEL=""
 DRIVER_VERSION=""
@@ -197,6 +377,9 @@ detect_rocm_version() {
   if [ -n "$ROCM_VERSION" ]; then
     ROCM_MM=$(echo "$ROCM_VERSION" | grep -oP '^\d+\.\d+')
   fi
+  # always succeed — empty ROCM_VERSION/ROCM_MM signal "not found" without
+  # tripping `set -e` at the call site
+  return 0
 }
 
 # Detect installed CUDA toolkit version. Sets CUDA_MM (major.minor) if found.
@@ -220,36 +403,28 @@ detect_cuda_version() {
   # libcudart.so major version from ldconfig — works regardless of install method
   v=$(ldconfig -p 2>/dev/null | grep -oP 'libcudart\.so\.\K\d+' | sort -V | tail -1 || true)
   [[ "$v" =~ ^[0-9]+$ ]] && { CUDA_MM="${v}.0"; return; }
+  # always succeed — empty CUDA_MM signals "not found" without tripping
+  # `set -e` at the call site
+  return 0
 }
 
 if [ -n "$VENDOR_OVERRIDE" ]; then
-  case "$VENDOR_OVERRIDE" in
-    nvidia|amd|intel) VENDOR="$VENDOR_OVERRIDE" ;;
-    *)
-      echo "Error: unknown vendor '$VENDOR_OVERRIDE'. Use: nvidia, amd, intel" >&2
-      exit 1
-      ;;
-  esac
-  echo "Vendor override: $VENDOR_OVERRIDE (skipping GPU detection)"
-  # still collect version info for package matching
-  if [ "$VENDOR_OVERRIDE" = "amd" ]; then
-    detect_rocm_version
-  fi
-  if [ "$VENDOR_OVERRIDE" = "nvidia" ]; then
-    detect_cuda_version
-  fi
+  VENDOR="$VENDOR_OVERRIDE"
+  echo "EP override: forcing $VENDOR_OVERRIDE (skipping GPU detection)"
 else
   # NVIDIA
   if command -v nvidia-smi &>/dev/null; then
+    # nvidia-smi writes "driver not loaded" to stdout; require CSV
     NVIDIA_INFO=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>/dev/null || true)
-    if [ -n "$NVIDIA_INFO" ]; then
+    if [ -n "$NVIDIA_INFO" ] && echo "$NVIDIA_INFO" | head -1 | grep -q ','; then
       # comma-join names across all detected GPUs; driver version is
       # identical per row, take from the first
       GPU_LABEL=$(echo "$NVIDIA_INFO" | awk -F, '{
           gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
           printf "%s%s", (NR>1 ? ", " : ""), $1
         }')
-      DRIVER_VERSION=$(echo "$NVIDIA_INFO" | head -1 | cut -d, -f2 | xargs)
+      DRIVER_VERSION=$(echo "$NVIDIA_INFO" | head -1 | cut -d, -f2 \
+        | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
       VENDOR="nvidia"
       detect_cuda_version
     fi
@@ -257,7 +432,7 @@ else
 
   # AMD
   detect_rocm_version
-  if [ -n "$ROCM_VERSION" ] || command -v rocminfo &>/dev/null; then
+  if [ -n "$ROCM_VERSION" ]; then
     # rocminfo lists multiple agents (CPU, GPU, sometimes NPU on Ryzen AI);
     # use Device Type to pick the GPU. Marketing Name appears before Device
     # Type within each agent block, so we hold the most recent name and
@@ -300,7 +475,7 @@ else
     echo "No supported GPU detected."
     echo ""
     echo "Supported: NVIDIA (CUDA), AMD (ROCm/MIGraphX), Intel (OpenVINO)"
-    echo "Ensure GPU drivers are installed, or use --vendor <nvidia|amd|intel>."
+    echo "Ensure GPU drivers are installed, or use --ep <cuda12|cuda13|rocm|migraphx|openvino>."
     echo ""
     exit 1
   fi
@@ -333,20 +508,19 @@ else
   SELECTED="${VENDORS[$idx]}"
 fi
 
-# set labels for selected vendor (with fallbacks for --vendor override)
+# set labels for selected vendor (with fallbacks for --ep override)
 case "$SELECTED" in
   nvidia) SEL_LABEL="${GPU_LABEL:-NVIDIA GPU}"; SEL_DRIVER="$DRIVER_VERSION" ;;
   amd)    SEL_LABEL="${GPU_LABEL_AMD:-AMD GPU}"; SEL_DRIVER="${DRIVER_VERSION_AMD:-}" ;;
   intel)  SEL_LABEL="${GPU_LABEL_INTEL:-Intel GPU}"; SEL_DRIVER="" ;;
 esac
 
-# --- Find matching package in manifest ---
-if ! command -v jq &>/dev/null; then
-  echo "Error: jq is required to parse the manifest." >&2
-  echo "  Install with: sudo apt install jq" >&2
-  exit 1
-fi
+# Apply EP-driven version overrides (set by parse_ep). Both are no-ops
+# when --ep wasn't given or the selected vendor doesn't match.
+[ -n "$CUDA_OVERRIDE" ] && [ "$SELECTED" = "nvidia" ] && CUDA_MM="${CUDA_OVERRIDE}.0"
+[ -n "$ROCM_OVERRIDE" ] && [ "$SELECTED" = "amd"    ] && ROCM_MM="${ROCM_OVERRIDE}.0"
 
+# --- Find matching package in manifest ---
 PKG_JSON=$(jq -c --arg v "$SELECTED" --arg p "$PLATFORM" --arg a "$ARCH" \
   --arg r "${ROCM_MM:-}" --arg c "${CUDA_MM:-}" \
   '[.packages[] | select(.vendor==$v and .platform==$p and (.arch // "x86_64")==$a) |
@@ -354,7 +528,7 @@ PKG_JSON=$(jq -c --arg v "$SELECTED" --arg p "$PLATFORM" --arg a "$ARCH" \
    if ($c != "" and .cuda_min != null) then select(.cuda_min <= $c and (.cuda_max // "99") >= $c) else . end] | first' \
   "$MANIFEST" 2>/dev/null || true)
 
-if [ -z "$PKG_JSON" ]; then
+if [ -z "$PKG_JSON" ] || [ "$PKG_JSON" = "null" ]; then
   echo ""
   echo "Error: no matching package found in manifest for $SELECTED/$PLATFORM/$ARCH"
   [ -n "${ROCM_MM:-}" ] && echo "  ROCm version: $ROCM_MM"
@@ -364,12 +538,14 @@ if [ -z "$PKG_JSON" ]; then
   exit 1
 fi
 
-# Warn when CUDA version could not be detected — package was selected
-# without version filtering and may not match the installed toolkit.
-if [ "$SELECTED" = "nvidia" ] && [ -z "${CUDA_MM:-}" ]; then
-  echo "Warning: could not detect installed CUDA toolkit version."
-  echo "  Proceeding with: Requirements: $(_field requirements '')"
+# Refuse to proceed when the CUDA toolkit version could not be detected —
+# without it we cannot pick the right ONNX Runtime build, and guessing would
+# silently install one that does not match the installed toolkit.
+if [ "$SELECTED" = "nvidia" ] && [ -z "${CUDA_MM:-}" ] && [ -z "$CUDA_OVERRIDE" ]; then
+  echo "Error: could not detect installed CUDA toolkit version."
+  echo "  Re-run with --ep cuda12 or --ep cuda13 to pick the CUDA major explicitly."
   echo ""
+  exit 1
 fi
 
 # Extract fields from JSON
@@ -388,11 +564,18 @@ PKG_LIB_EXTRA_PATTERNS=$(echo "$PKG_JSON" | jq -r '.lib_extra_patterns // [] | .
 # whose providers .so RPATH is `$ORIGIN/../../<ep>.libs` (e.g. AMD MIGraphX).
 # default flat extraction matches OpenVINO's $ORIGIN-only RPATH
 PKG_PRESERVE_LAYOUT=$(echo "$PKG_JSON" | jq -r '.preserve_layout // false' 2>/dev/null || echo false)
-PKG_INSTALL_SUBDIR=$(_field install_subdir "onnxruntime-gpu")
+PKG_INSTALL_SUBDIR=$(_field install_subdir "onnxruntime")
 PKG_SIZE_MB=$(_field size_mb "0")
 PKG_ORT_VERSION=$(_field ort_version "")
 PKG_REQUIREMENTS=$(_field requirements "")
 PKG_SHA256=$(_field sha256 "")
+
+# If entry uses a source block, resolve URL/SHA/version at install time.
+PKG_SOURCE_TYPE=$(echo "$PKG_JSON" | jq -r '.source.type // ""')
+case "$PKG_SOURCE_TYPE" in
+  pypi)           resolve_pypi_source ;;
+  github_release) resolve_github_release_source ;;
+esac
 
 INSTALL_DIR="$HOME/.local/lib/$PKG_INSTALL_SUBDIR"
 
@@ -422,10 +605,6 @@ trap 'rm -rf "$TMPDIR"' EXIT
 ARCHIVE="$TMPDIR/ort-package"
 
 echo "Downloading..."
-if ! command -v curl &>/dev/null; then
-  echo "Error: curl not found." >&2
-  exit 1
-fi
 curl -fL --progress-bar -o "$ARCHIVE" "$PKG_URL"
 
 if [ ! -s "$ARCHIVE" ]; then
@@ -444,6 +623,14 @@ if [ -n "$PKG_SHA256" ]; then
     exit 1
   fi
   echo "Checksum OK."
+else
+  # GitHub source has no published SHA; catch HTML error pages with file magic.
+  # Use od (coreutils, always present) rather than xxd (vim-common, often missing).
+  MAGIC=$(head -c 4 "$ARCHIVE" | od -An -tx1 | tr -d ' \n')
+  case "$PKG_FORMAT" in
+    whl|zip) [ "$MAGIC" = "504b0304" ] || { echo "Error: download is not a zip/wheel (magic=$MAGIC)" >&2; exit 1; } ;;
+    tgz)     [[ "$MAGIC" =~ ^1f8b ]]   || { echo "Error: download is not a gzip tarball (magic=$MAGIC)" >&2; exit 1; } ;;
+  esac
 fi
 
 # --- Extract ---
@@ -473,14 +660,29 @@ _extract_libs() {
   done
 }
 
+# Copy LICENSE / NOTICE / ThirdPartyNotices alongside the libs so the
+# install directory is self-documenting and MIT/Apache-2.0 attribution
+# travels with the binaries.
+_copy_licenses() {
+  local search_root="$1"
+  # skip *.dist-info/ — pip-generated duplicates of the same files in the package root
+  find "$search_root" -maxdepth 4 -type f -not -path '*/*.dist-info/*' \
+    \( -iname 'LICENSE' -o -iname 'LICENSE.txt' \
+       -o -iname 'NOTICE' -o -iname 'NOTICE.txt' \
+       -o -iname 'ThirdPartyNotices*' -o -iname 'COPYING' \) \
+    -exec cp -n {} "$INSTALL_DIR/" \; 2>/dev/null || true
+}
+
 case "$PKG_FORMAT" in
   tgz)
     tar xzf "$ARCHIVE" -C "$TMPDIR"
     _extract_libs "$TMPDIR"
+    _copy_licenses "$TMPDIR"
     ;;
   zip|whl)
     unzip -q -o "$ARCHIVE" -d "$TMPDIR/extracted"
     _extract_libs "$TMPDIR/extracted"
+    _copy_licenses "$TMPDIR/extracted"
     ;;
   *)
     echo "Error: unsupported archive format: $PKG_FORMAT" >&2
@@ -570,6 +772,3 @@ echo "     or set 'ONNX Runtime library' to:"
 echo "     $ORT_SO"
 echo "  4. Restart darktable"
 echo ""
-echo "Or via command line:"
-echo ""
-echo "  DT_ORT_LIBRARY=$ORT_SO darktable"

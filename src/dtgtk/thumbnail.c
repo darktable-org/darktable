@@ -337,6 +337,24 @@ static void _thumb_set_image_size(dt_thumbnail_t *thumb,
                               MIN(image_h, imgbox_h));
 }
 
+static void _thumb_update_zoom_label(dt_thumbnail_t *thumb)
+{
+  if(!thumb->zoomable
+     || thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK
+     || !thumb->w_zoom)
+    return;
+  if(thumb->zoom_100 < 1.0f || thumb->zoom <= 1.0f)
+  {
+    gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("fit"));
+  }
+  else
+  {
+    gchar *z = g_strdup_printf("%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
+    gtk_label_set_text(GTK_LABEL(thumb->w_zoom), z);
+    g_free(z);
+  }
+}
+
 static void _thumb_draw_image(dt_thumbnail_t *thumb,
                               cairo_t *cr)
 {
@@ -353,10 +371,25 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb,
   {
     cairo_save(cr);
     const float scaler = 1.0f / darktable.gui->ppd_thb;
+
+    // During an active zoom gesture (zoom_preview_pending) the surface was rendered
+    // at thumb->img_surf_zoom while thumb->zoom has already advanced.  Compute an extra
+    // scale factor so the stale surface is displayed at the correct visual size without
+    // reloading it.  When img_surf_zoom == thumb->zoom (normal case) extra_scale collapses
+    // to 1.0 and the code path is identical to before.
+    float extra_scale = 1.0f;
+    if(thumb->img_surf_zoom > 0.0f && thumb->zoom > 0.0f)
+      extra_scale = CLAMP(thumb->zoom / thumb->img_surf_zoom, 0.1f, 20.0f);
+
+    // Apply outer scaler (handles HiDPI) for frame; apply extra_scale inner for image.
     cairo_scale(cr, scaler, scaler);
 
-    cairo_set_source_surface(cr, thumb->img_surf, thumb->zoomx * darktable.gui->ppd,
-                             thumb->zoomy * darktable.gui->ppd);
+    // Draw the image with the zoom-corrected scale.
+    cairo_save(cr);
+    cairo_scale(cr, extra_scale, extra_scale);
+    cairo_set_source_surface(cr, thumb->img_surf,
+                             thumb->zoomx * darktable.gui->ppd / extra_scale,
+                             thumb->zoomy * darktable.gui->ppd / extra_scale);
 
     // get the transparency value
     GdkRGBA im_color;
@@ -364,8 +397,9 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb,
                                 gtk_widget_get_state_flags(thumb->w_image),
                                 &im_color);
     cairo_paint_with_alpha(cr, im_color.alpha);
+    cairo_restore(cr);
 
-    // and eventually the image border
+    // and eventually the image border (at scaler-only, not affected by extra_scale)
     gtk_render_frame(context, cr, 0, 0,
                      w * darktable.gui->ppd_thb,
                      h * darktable.gui->ppd_thb);
@@ -625,6 +659,56 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb,
   gtk_widget_set_margin_top(thumb->w_image_box, posy);
 }
 
+// Resize the image box (w_image — the rectangle the grey frame is drawn around)
+// so it hugs the visible image at the current zoom, and recenter the pan to
+// account for the size change. The visible extent is the rendered surface size
+// (img_width/img_height, produced at img_surf_zoom) scaled to the current
+// thumb->zoom. In the surface-reload path img_surf_zoom has just been set equal
+// to thumb->zoom so the scale is 1; during a deferred zoom gesture (surface not
+// yet reloaded) the scale tracks how far the zoom has advanced past the surface,
+// so the box still grows/shrinks live with the gesture instead of snapping only
+// when the surface is finally reloaded.
+static void _thumb_update_image_box(dt_thumbnail_t *thumb)
+{
+  if(!thumb->img_surf) return;
+
+  const float scale =
+    (thumb->img_surf_zoom > 0.0f) ? thumb->zoom / thumb->img_surf_zoom : 1.0f;
+
+  int image_w = 0;
+  int image_h = 0;
+  gtk_widget_get_size_request(thumb->w_image_box, &image_w, &image_h);
+
+  // the box hugs the image but never exceeds the available image area
+  const int imgbox_w =
+    MIN(image_w, (int)(thumb->img_width * scale / darktable.gui->ppd_thb));
+  const int imgbox_h =
+    MIN(image_h, (int)(thumb->img_height * scale / darktable.gui->ppd_thb));
+
+  // record the box size before the change so we can recenter the pan
+  int ww = 0;
+  int hh = 0;
+  gtk_widget_get_size_request(thumb->w_image, &ww, &hh);
+  _thumb_set_image_size(thumb, imgbox_w, imgbox_h);
+  // the box size may have been slightly sanitized, so we read it back
+  int nwi = 0;
+  int nhi = 0;
+  gtk_widget_get_size_request(thumb->w_image, &nwi, &nhi);
+
+  // panning value needs to be adjusted if the box size changed
+  thumb->zoomx = thumb->zoomx + (nwi - ww) / 2.0;
+  thumb->zoomy = thumb->zoomy + (nhi - hh) / 2.0;
+  // sanitize against the (scaled) real image extent, accounting for ppd
+  thumb->zoomx =
+    CLAMP(thumb->zoomx,
+          (nwi * darktable.gui->ppd_thb - thumb->img_width * scale)
+          / darktable.gui->ppd_thb, 0);
+  thumb->zoomy =
+    CLAMP(thumb->zoomy,
+          (nhi * darktable.gui->ppd_thb - thumb->img_height * scale)
+          / darktable.gui->ppd_thb, 0);
+}
+
 static gboolean _event_image_draw(GtkWidget *widget,
                                   cairo_t *cr,
                                   gpointer user_data)
@@ -744,10 +828,16 @@ static gboolean _event_image_draw(GtkWidget *widget,
           if(zoom100 > 1.0f)
             thumb->zoom = MIN(thumb->zoom, zoom100);
         }
-        res = dt_view_image_get_surface(thumb->imgid,
-                                        image_w * thumb->zoom,
-                                        image_h * thumb->zoom,
-                                        &img_surf, FALSE);
+        // Use the cached variant: on zoom events where image content
+        // hasn't changed, this reuses the native-resolution
+        // color-converted surface and only re-scales it, skipping the
+        // expensive mipmap fetch + calloc + color transform.
+        res = dt_view_image_get_surface_cached(thumb->imgid,
+                                               image_w * thumb->zoom,
+                                               image_h * thumb->zoom,
+                                               &img_surf, FALSE,
+                                               &thumb->img_surf_mip_native,
+                                               &thumb->img_surf_mip_level);
       }
       else
       {
@@ -769,36 +859,13 @@ static gboolean _event_image_draw(GtkWidget *widget,
     {
       thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
       thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-      // and we want to resize the imagebox to fit in the imagearea
-      const int imgbox_w = MIN(image_w, thumb->img_width / darktable.gui->ppd_thb);
-      const int imgbox_h = MIN(image_h, thumb->img_height / darktable.gui->ppd_thb);
-      // we record the imagebox size before the change
-      int hh = 0;
-      int ww = 0;
-      gtk_widget_get_size_request(thumb->w_image, &ww, &hh);
-      // and we set the new size of the imagebox
-      _thumb_set_image_size(thumb, imgbox_w, imgbox_h);
-      // the imagebox size may have been slightly sanitized, so we get it again
-      int nhi = 0;
-      int nwi = 0;
-      gtk_widget_get_size_request(thumb->w_image, &nwi, &nhi);
-
-      // panning value need to be adjusted if the imagebox size as changed
-      thumb->zoomx = thumb->zoomx + (nwi - ww) / 2.0;
-      thumb->zoomy = thumb->zoomy + (nhi - hh) / 2.0;
-      // let's sanitize and apply panning values as we are sure the
-      // zoomed image is loaded now here we have to make sure to
-      // properly align according to ppd
-      thumb->zoomx
-          = CLAMP(thumb->zoomx,
-                  (nwi * darktable.gui->ppd_thb - thumb->img_width)
-                  / darktable.gui->ppd_thb,
-                  0);
-      thumb->zoomy
-          = CLAMP(thumb->zoomy,
-                  (nhi * darktable.gui->ppd_thb - thumb->img_height)
-                  / darktable.gui->ppd_thb,
-                  0);
+      // record the zoom this surface was rendered at, so deferred-gesture bound
+      // math can scale the real surface extent to the current (advancing) zoom.
+      thumb->img_surf_zoom = thumb->zoom;
+      // resize the image box to hug the freshly-loaded surface and recenter the
+      // pan for the size change (scale collapses to 1 here as img_surf_zoom was
+      // just set to thumb->zoom)
+      _thumb_update_image_box(thumb);
 
       // for overlay block, we need to resize it
       if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
@@ -854,21 +921,8 @@ static gboolean _event_image_draw(GtkWidget *widget,
     }
 
     // and we can also set the zooming level if needed
-    if(res == DT_VIEW_SURFACE_OK
-       && thumb->zoomable
-       && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-    {
-      if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
-      {
-        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("fit"));
-      }
-      else
-      {
-        gchar *z = g_strdup_printf("%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
-        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), z);
-        g_free(z);
-      }
-    }
+    if(res == DT_VIEW_SURFACE_OK)
+      _thumb_update_zoom_label(thumb);
   }
 
   _thumb_draw_image(thumb, cr);
@@ -1223,8 +1277,12 @@ static void _dt_preview_updated_callback(gpointer instance,
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
      && darktable.develop->preview_pipe->backbuf)
   {
-    // reset surface
+    // reset surface and invalidate native mipmap cache (content changed)
     thumb->img_surf_dirty = TRUE;
+    if(thumb->img_surf_mip_native
+       && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+      cairo_surface_destroy(thumb->img_surf_mip_native);
+    thumb->img_surf_mip_native = NULL;
     gtk_widget_queue_draw(thumb->w_main);
   }
 }
@@ -1240,8 +1298,12 @@ static void _dt_mipmaps_updated_callback(gpointer instance,
   // we recompte the history tooltip if needed
   _thumb_update_altered_tooltip(thumb);
 
-  // reset surface
+  // reset surface and invalidate native mipmap cache (content changed)
   thumb->img_surf_dirty = TRUE;
+  if(thumb->img_surf_mip_native
+     && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+    cairo_surface_destroy(thumb->img_surf_mip_native);
+  thumb->img_surf_mip_native = NULL;
   gtk_widget_queue_draw(thumb->w_main);
 }
 
@@ -1694,6 +1756,7 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
   thumb->zoomable = (container == DT_THUMBNAIL_CONTAINER_CULLING
                      || container == DT_THUMBNAIL_CONTAINER_PREVIEW);
   thumb->zoom = 1.0f;
+  thumb->img_surf_zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
   thumb->tooltip = tooltip;
   thumb->expose_again_timeout_id = 0;
@@ -2189,6 +2252,13 @@ void dt_thumbnail_set_drop(dt_thumbnail_t *thumb,
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
 {
   thumb->img_surf_dirty = TRUE;
+  // Invalidate the native mipmap surface cache: the image content may
+  // have changed (edit, processing, profile change) so any cached
+  // color-converted surface is now stale.
+  if(thumb->img_surf_mip_native
+     && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+    cairo_surface_destroy(thumb->img_surf_mip_native);
+  thumb->img_surf_mip_native = NULL;
 
   // we ensure that the image is not completely outside the thumbnail,
   // otherwise the image_draw is not triggered
@@ -2198,6 +2268,55 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_image_box, 0);
     gtk_widget_set_margin_top(thumb->w_image_box, 0);
   }
+  gtk_widget_queue_draw(thumb->w_main);
+}
+
+// force redraw for zoom-only changes: marks the surface dirty but keeps
+// the native mipmap surface cache so the expensive calloc + color-transform
+// is skipped on the next draw if the zoom stays in the same mipmap bucket.
+void dt_thumbnail_image_refresh_zoom(dt_thumbnail_t *thumb)
+{
+  thumb->img_surf_dirty = TRUE;
+  thumb->zoom_preview_pending = FALSE;
+  // img_surf_mip_native is intentionally NOT cleared here — the mipmap
+  // content hasn't changed, only the zoom level.
+
+  // we ensure that the image is not completely outside the thumbnail,
+  // otherwise the image_draw is not triggered
+  if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
+     || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
+  {
+    gtk_widget_set_margin_start(thumb->w_image_box, 0);
+    gtk_widget_set_margin_top(thumb->w_image_box, 0);
+  }
+  _thumb_update_zoom_label(thumb);
+  gtk_widget_queue_draw(thumb->w_main);
+}
+
+// Instant zoom preview: does NOT set img_surf_dirty, so the expensive
+// mipmap reload is skipped.  _thumb_draw_image will scale the existing
+// surface via an extra cairo transform to show the new zoom immediately.
+// Call dt_culling_zoom_end() when the gesture finishes to trigger the
+// proper surface reload at the final zoom level.
+void dt_thumbnail_image_preview_zoom(dt_thumbnail_t *thumb)
+{
+  thumb->zoom_preview_pending = TRUE;
+
+  // resize the image box (grey frame) to track the new zoom even though the
+  // surface reload is deferred — otherwise the box only resizes when the gesture
+  // ends and the surface is finally reloaded, leaving the frame stuck at the
+  // previous zoom's size mid-gesture.
+  _thumb_update_image_box(thumb);
+
+  // we ensure that the image is not completely outside the thumbnail,
+  // otherwise the image_draw is not triggered
+  if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
+     || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
+  {
+    gtk_widget_set_margin_start(thumb->w_image_box, 0);
+    gtk_widget_set_margin_top(thumb->w_image_box, 0);
+  }
+  _thumb_update_zoom_label(thumb);
   gtk_widget_queue_draw(thumb->w_main);
 }
 
@@ -2275,17 +2394,23 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb,
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
 {
   // let's sanitize and apply panning values
-  // here we have to make sure to properly align according to ppd
+  // Bound the pan to the real rendered image extent (img_width/img_height), which
+  // accounts for letterboxing when the image aspect ratio differs from the box.
+  // During a deferred gesture the surface is still at img_surf_zoom while thumb->zoom
+  // has advanced, so we scale the extent by (zoom / img_surf_zoom). When the surface
+  // is current this ratio is 1.0 and the bound is the exact image edge.
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(thumb->w_image, &iw, &ih);
+  const float zr =
+    (thumb->img_surf_zoom > 0.0f) ? thumb->zoom / thumb->img_surf_zoom : 1.0f;
   thumb->zoomx =
     CLAMP(thumb->zoomx,
-          (iw * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb,
+          (iw * darktable.gui->ppd_thb - thumb->img_width * zr) / darktable.gui->ppd_thb,
           0);
   thumb->zoomy =
     CLAMP(thumb->zoomy,
-          (ih * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb,
+          (ih * darktable.gui->ppd_thb - thumb->img_height * zr) / darktable.gui->ppd_thb,
           0);
   gtk_widget_queue_draw(thumb->w_main);
 }
@@ -2376,6 +2501,11 @@ void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
     cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
   thumb->img_surf_dirty = TRUE;
+  // Also free the cached native mipmap surface.
+  if(thumb->img_surf_mip_native
+     && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+    cairo_surface_destroy(thumb->img_surf_mip_native);
+  thumb->img_surf_mip_native = NULL;
 }
 
 void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
