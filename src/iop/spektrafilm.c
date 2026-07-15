@@ -85,7 +85,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -111,6 +111,15 @@ typedef enum dt_iop_spektrafilm_quality_t
   DT_SPEKTRAFILM_Q_EXACT = 3,    // $DESCRIPTION: "exact spectral (very slow)"
 } dt_iop_spektrafilm_quality_t;
 
+/* order must match SF_DIFF_FAMILIES[] in spektra_core.c */
+typedef enum dt_iop_spektrafilm_diffusion_family_t
+{
+  DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST = 0, // $DESCRIPTION: "black pro-mist"
+  DT_SPEKTRAFILM_DIFF_GLIMMERGLASS = 1,   // $DESCRIPTION: "glimmerglass"
+  DT_SPEKTRAFILM_DIFF_PRO_MIST = 2,       // $DESCRIPTION: "pro-mist"
+  DT_SPEKTRAFILM_DIFF_CINEBLOOM = 3,      // $DESCRIPTION: "cinebloom"
+} dt_iop_spektrafilm_diffusion_family_t;
+
 typedef struct dt_iop_spektrafilm_params_t
 {
   uint32_t film_hash;       // $DEFAULT: 0  (0 = first available filming stock)
@@ -122,6 +131,9 @@ typedef struct dt_iop_spektrafilm_params_t
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
+  float preflash_exposure;  // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash exposure"
+  float preflash_m_shift;   // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash M filter shift"
+  float preflash_y_shift;   // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash Y filter shift"
   gboolean scan_film;       // $DEFAULT: FALSE $DESCRIPTION: "scan the film (skip print)"
   dt_iop_spektrafilm_quality_t quality; // $DEFAULT: DT_SPEKTRAFILM_Q_STANDARD $DESCRIPTION: "quality"
   gboolean halation_on;     // $DEFAULT: TRUE $DESCRIPTION: "enable halation"
@@ -131,6 +143,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float boost_range;        // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.3 $DESCRIPTION: "boost range"
   float protect_ev;         // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 4.0 $DESCRIPTION: "boost protect"
   gboolean diffusion_on;    // $DEFAULT: FALSE $DESCRIPTION: "enable diffusion filter"
+  dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family; // $DEFAULT: DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST $DESCRIPTION: "diffusion filter type"
   float diffusion_strength; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.5 $DESCRIPTION: "diffusion strength"
   float diffusion_scale;    // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "diffusion size"
   float diffusion_warmth;   // $MIN: -1.5 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "diffusion halo warmth"
@@ -138,6 +151,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float grain_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "grain"
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
+  float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -156,10 +170,11 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *film, *paper;
   GtkWidget *exposure_ev, *print_exposure_ev, *print_auto_exposure, *print_contrast, *filter_m, *filter_y;
   GtkWidget *couplers_amount, *scan_film, *quality;
+  GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *halation_on, *halation_amount, *halation_scale;
   GtkWidget *boost_ev, *boost_range, *protect_ev;
-  GtkWidget *diffusion_on, *diffusion_strength, *diffusion_scale, *diffusion_warmth;
-  GtkWidget *grain_on, *grain_amount, *grain_size, *film_format_mm;
+  GtkWidget *diffusion_on, *diffusion_filter_family, *diffusion_strength, *diffusion_scale, *diffusion_warmth;
+  GtkWidget *grain_on, *grain_amount, *grain_size, *film_format_mm, *output_luminance_boost;
   sf_prof_entry_t entries[SF_MAX_PROFILES];
   int n_entries;
   int film_entry[SF_MAX_PROFILES], n_films;   /* indices into entries[] */
@@ -288,6 +303,101 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelp
                                             dt_dev_pixelpipe_iop_t *pi)
 {
   return IOP_CS_RGB;
+}
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void **new_params, int32_t *new_params_size, int *new_version)
+{
+  /* v1 -> v2: added preflash_exposure/preflash_m_shift/preflash_y_shift,
+     diffusion_filter_family, and output_luminance_boost (Arecsu's
+     pre-compression boost patch). v1 here is the module's true original params
+     shape -- confirmed directly against the live, unmodified upstream
+     source, not reconstructed from memory -- covering every params layout
+     this module has shipped with so far: the introspection version was
+     never bumped through several earlier field additions (print_auto_exposure
+     among them) during this module's fast-moving initial development, so
+     this migration also recovers any history saved against those earlier
+     shapes, same reasoning as the previous v1->v2 migration this one
+     replaces: the struct has only ever grown by appending fields, so an
+     old, smaller saved blob still matches the leading fields of the
+     current struct, and the trailing fields (this migration's job) are
+     exactly what's missing. From this version onward, any further params
+     struct change should bump the version and add another case here rather
+     than silently drift again. */
+  typedef struct dt_iop_spektrafilm_params_v1_t
+  {
+    uint32_t film_hash;
+    uint32_t paper_hash;
+    float exposure_ev;
+    float print_exposure_ev;
+    gboolean print_auto_exposure;
+    float print_contrast;
+    float filter_m;
+    float filter_y;
+    float couplers_amount;
+    gboolean scan_film;
+    dt_iop_spektrafilm_quality_t quality;
+    gboolean halation_on;
+    float halation_amount;
+    float halation_scale;
+    float boost_ev;
+    float boost_range;
+    float protect_ev;
+    gboolean diffusion_on;
+    float diffusion_strength;
+    float diffusion_scale;
+    float diffusion_warmth;
+    gboolean grain_on;
+    float grain_amount;
+    float grain_size;
+    float film_format_mm;
+  } dt_iop_spektrafilm_params_v1_t;
+
+  if(old_version == 1)
+  {
+    const dt_iop_spektrafilm_params_v1_t *o = (dt_iop_spektrafilm_params_v1_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->film_hash;
+    n->paper_hash = o->paper_hash;
+    n->exposure_ev = o->exposure_ev;
+    n->print_exposure_ev = o->print_exposure_ev;
+    n->print_auto_exposure = o->print_auto_exposure;
+    n->print_contrast = o->print_contrast;
+    n->filter_m = o->filter_m;
+    n->filter_y = o->filter_y;
+    n->couplers_amount = o->couplers_amount;
+    n->preflash_exposure = 0.0f; /* new field: neutral default, no-op (matches upstream) */
+    n->preflash_m_shift = 0.0f;  /* new field: neutral default, no-op */
+    n->preflash_y_shift = 0.0f;  /* new field: neutral default, no-op */
+    n->scan_film = o->scan_film;
+    n->quality = o->quality;
+    n->halation_on = o->halation_on;
+    n->halation_amount = o->halation_amount;
+    n->halation_scale = o->halation_scale;
+    n->boost_ev = o->boost_ev;
+    n->boost_range = o->boost_range;
+    n->protect_ev = o->protect_ev;
+    n->diffusion_on = o->diffusion_on;
+    /* new field: the engine was hardcoded to Black Pro-Mist before the
+       family selector existed, so this exactly reproduces old saved
+       diffusion settings rather than just picking a neutral default. */
+    n->diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
+    n->diffusion_strength = o->diffusion_strength;
+    n->diffusion_scale = o->diffusion_scale;
+    n->diffusion_warmth = o->diffusion_warmth;
+    n->grain_on = o->grain_on;
+    n->grain_amount = o->grain_amount;
+    n->grain_size = o->grain_size;
+    n->film_format_mm = o->film_format_mm;
+    n->output_luminance_boost = 1.0f; /* new field: neutral default, no-op (matches upstream) */
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 2;
+    return 0;
+  }
+  return 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -485,8 +595,12 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->filter_m, sizeof p->filter_m);
   key = _mix64(key, &p->filter_y, sizeof p->filter_y);
   key = _mix64(key, &p->couplers_amount, sizeof p->couplers_amount);
+  key = _mix64(key, &p->preflash_exposure, sizeof p->preflash_exposure);
+  key = _mix64(key, &p->preflash_m_shift, sizeof p->preflash_m_shift);
+  key = _mix64(key, &p->preflash_y_shift, sizeof p->preflash_y_shift);
   key = _mix64(key, &p->scan_film, sizeof p->scan_film);
   key = _mix64(key, &p->quality, sizeof p->quality);
+  key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
   key = _mix64(key, m_in, sizeof m_in);
   key = _mix64(key, m_out, sizeof m_out);
 
@@ -590,8 +704,12 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.y_filter_shift = p->filter_y;
     sp.couplers_active = (p->couplers_amount > 0.0f);
     sp.couplers_amount = p->couplers_amount;
+    sp.preflash_exposure = p->preflash_exposure;
+    sp.preflash_m_shift = p->preflash_m_shift;
+    sp.preflash_y_shift = p->preflash_y_shift;
     sp.scan_film = p->scan_film;
     sp.lut_steps = _quality_steps(p->quality);
+    sp.out_luminance_boost = p->output_luminance_boost;
     if(p->print_contrast != 1.0f)
     {
       sp.morph_active = true;
@@ -764,8 +882,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         highlight boost -> diffusion filter -> halation */
   sf_boost_highlights(plane, w, h, d->p.boost_ev, d->p.boost_range, d->p.protect_ev);
   if(d->p.diffusion_on)
-    sf_diffusion_filter(plane, w, h, (double)pixel_um, d->p.diffusion_strength,
-                        d->p.diffusion_scale, d->p.diffusion_warmth);
+    sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.diffusion_filter_family,
+                        d->p.diffusion_strength, d->p.diffusion_scale, d->p.diffusion_warmth);
   if(d->p.halation_on && d->p.halation_amount > 0.0f)
     sf_halation(plane, w, h, (double)pixel_um, d->p.halation_amount, d->p.halation_scale);
 
@@ -1031,7 +1149,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(d->p.diffusion_on)
   {
     sf_diffusion_plan_t plan;
-    if(sf_diffusion_build_plan(d->p.diffusion_strength, d->p.diffusion_warmth, &plan)
+    if(sf_diffusion_build_plan((int)d->p.diffusion_filter_family, d->p.diffusion_strength,
+                               d->p.diffusion_warmth, &plan)
        && plan.p_s > 0.0f)
     {
       const float dsc = fmaxf(d->p.diffusion_scale, 1e-6f);
@@ -1226,7 +1345,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       CLARG(sz_cl), CLARG(sn_cl), CLARG(sm_cl), CLARG(steps), CLARG(g->scan_lo[0]),
       CLARG(g->scan_lo[1]), CLARG(g->scan_lo[2]), CLARG(g->scan_hi[0]), CLARG(g->scan_hi[1]),
       CLARG(g->scan_hi[2]), CLARG(mats_cl), CLARG(cm_cl), CLARG(g->cmax_nl), CLARG(g->cmax_nh),
-      CLARG(g->out_compress), CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
+      CLARG(g->out_compress), CLARG(g->out_luminance_boost), CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
       CLARG(g->scan_bw_q));
   SF_CL_STEP("scan");
 
@@ -1457,6 +1576,7 @@ void gui_init(dt_iop_module_t *self)
 
   /* ---- tab: film and print ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("film and print"), NULL);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "film")));
   g->exposure_ev = dt_bauhaus_slider_from_params(self, "exposure_ev");
   dt_bauhaus_slider_set_format(g->exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(
@@ -1466,6 +1586,7 @@ void gui_init(dt_iop_module_t *self)
   g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
   gtk_widget_set_tooltip_text(g->scan_film,
                               _("view the developed film directly (no print stage)"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print")));
   g->print_exposure_ev = dt_bauhaus_slider_from_params(self, "print_exposure_ev");
   dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(g->print_exposure_ev, _("print brightness (enlarger exposure)"));
@@ -1490,6 +1611,26 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->couplers_amount,
                               _("DIR coupler strength: inter-layer inhibition drives saturation"
                                 " and edge effects (1.0 = film-accurate, 0 = off)"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "preflash")));
+  g->preflash_exposure = dt_bauhaus_slider_from_params(self, "preflash_exposure");
+  gtk_widget_set_tooltip_text(
+      g->preflash_exposure,
+      _("preflash exposure: a brief, uniform pre-exposure of the print through"
+        " the film's base density, before the main print exposure -- lifts"
+        " shadows and reduces contrast (0 = off)"));
+  g->preflash_m_shift = dt_bauhaus_slider_from_params(self, "preflash_m_shift");
+  dt_bauhaus_slider_set_format(g->preflash_m_shift, _(" CC"));
+  gtk_widget_set_tooltip_text(g->preflash_m_shift,
+                              _("magenta filtration for the preflash exposure only, Kodak CC"
+                                " units from neutral -- independent of the main enlarger"
+                                " filtration above"));
+  g->preflash_y_shift = dt_bauhaus_slider_from_params(self, "preflash_y_shift");
+  dt_bauhaus_slider_set_format(g->preflash_y_shift, _(" CC"));
+  gtk_widget_set_tooltip_text(g->preflash_y_shift,
+                              _("yellow filtration for the preflash exposure only, Kodak CC"
+                                " units from neutral -- independent of the main enlarger"
+                                " filtration above"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "format")));
   g->film_format_mm = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm, _(" mm"));
   gtk_widget_set_tooltip_text(g->film_format_mm,
@@ -1529,21 +1670,33 @@ void gui_init(dt_iop_module_t *self)
   /* ---- tab: diffusion ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("diffusion"), NULL);
   g->diffusion_on = dt_bauhaus_toggle_from_params(self, "diffusion_on");
+  g->diffusion_filter_family = dt_bauhaus_combobox_from_params(self, "diffusion_filter_family");
+  gtk_widget_set_tooltip_text(
+      g->diffusion_filter_family,
+      _("diffusion filter type: black pro-mist (concentrated, punchy halo, deep"
+        " blacks) / glimmerglass (tight, subtle, sharp-preserving) / pro-mist"
+        " (broader, pastel, atmospheric) / cinebloom (frame-wide, slow-decaying"
+        " veil)"));
   g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
-  gtk_widget_set_tooltip_text(g->diffusion_strength,
-                              _("diffusion (Black Pro-Mist) filter strength"));
+  gtk_widget_set_tooltip_text(g->diffusion_strength, _("diffusion filter strength"));
   g->diffusion_scale = dt_bauhaus_slider_from_params(self, "diffusion_scale");
   gtk_widget_set_tooltip_text(g->diffusion_scale, _("diffusion halo/bloom size"));
   g->diffusion_warmth = dt_bauhaus_slider_from_params(self, "diffusion_warmth");
   gtk_widget_set_tooltip_text(g->diffusion_warmth,
-                              _("diffusion halo warmth: >0 warm outer halo, <0 cool"));
+                              _("diffusion halo warmth: >0 warm outer halo, <0 cool"
+                                " (added on top of the selected filter's own warmth bias)"));
 
-  /* ---- tab: settings ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("settings"), NULL);
+  /* ---- tab: advanced ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
   gtk_widget_set_tooltip_text(g->quality,
                               _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
                                 " and validated against the reference"));
+  g->output_luminance_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
+  gtk_widget_set_tooltip_text(g->output_luminance_boost,
+                              _("pre-compression boost: multiplies XYZ luminance before the"
+                                " OkLCh gamut compressor, pushing the histogram right while"
+                                " preserving the film's natural shoulder rolloff"));
 
   self->widget = sf_main_box;
 }
