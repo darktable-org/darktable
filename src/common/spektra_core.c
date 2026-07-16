@@ -46,41 +46,163 @@
 #define SF_STRTOD(s, end) g_ascii_strtod((s), (end))
 #include "spektra_core.h"
 
-/* Blur one channel `c` of a packed w*h*3 float buffer in place, with the given
- * sigma (in pixels), using darktable's Gaussian. The channel is de-interleaved
- * into a scratch single-channel plane, blurred, and written back. Per-channel
- * sigmas (halation uses a different sigma per R/G/B) are handled by calling this
- * once per channel. */
+/* ------------------------------------------------------------------------ */
+/* Row-major Gaussian blur with transpose                                  */
+/* ------------------------------------------------------------------------ */
+/* The standard IIR column pass has stride = width*4 bytes per pixel access,
+   striding beyond cache-line reach at any realistic resolution. Instead:
+   1. Row-pass (causal + anticausal) — good stride, stays in cache
+   2. Cache-blocked transpose — temp → scratch, sequential access both ways
+   3. Row-pass again on transposed data — second dimension, also good stride
+   4. Transpose back
+   The transpose itself is tiled so it stays in L2. */
+
+/* IIR coefficients for Gaussian order-0 (the only order spektrafilm uses) */
+static void _sf_gauss_coeffs(const float sigma, float *a0, float *a1, float *a2,
+                             float *a3, float *b1, float *b2, float *coefp, float *coefn)
+{
+  const float alpha = 1.695f / sigma;
+  const float ema = expf(-alpha);
+  const float ema2 = expf(-2.0f * alpha);
+  *b1 = -2.0f * ema;
+  *b2 = ema2;
+  const float k = (1.0f - ema) * (1.0f - ema) / (1.0f + (2.0f * alpha * ema) - ema2);
+  *a0 = k;
+  *a1 = k * (alpha - 1.0f) * ema;
+  *a2 = k * (alpha + 1.0f) * ema;
+  *a3 = -k * ema2;
+  *coefp = (*a0 + *a1) / (1.0f + *b1 + *b2);
+  *coefn = (*a2 + *a3) / (1.0f + *b1 + *b2);
+}
+
+/* Single-channel causal IIR pass over `len` elements, row-major (stride=1).
+   `in` and `out` may alias (same pointer). Range clamping to [vmin, vmax]. */
+static void _sf_gauss_causal(const float *in, float *out, const int len,
+                             const float a0, const float a1,
+                             const float b1, const float b2,
+                             const float coefp, const float vmin, const float vmax)
+{
+  float xp = CLAMP(in[0], vmin, vmax);
+  float yb = xp * coefp;
+  float yp = yb;
+  out[0] = yp;
+  for(int i = 1; i < len; i++)
+  {
+    const float xc = CLAMP(in[i], vmin, vmax);
+    const float yc = a0 * xc + a1 * xp - b1 * yp - b2 * yb;
+    xp = xc;
+    yb = yp;
+    yp = yc;
+    out[i] = yc;
+  }
+}
+
+/* Single-channel anticausal IIR pass, merging into `out` (+=). Backward. */
+static void _sf_gauss_anticausal(const float *in, float *out, const int len,
+                                 const float a2, const float a3,
+                                 const float b1, const float b2,
+                                 const float coefn, const float vmin, const float vmax)
+{
+  float xn = CLAMP(in[len - 1], vmin, vmax);
+  float xa = xn;
+  float yn = xn * coefn;
+  float ya = yn;
+  out[len - 1] += yn;
+  for(int i = len - 2; i >= 0; i--)
+  {
+    const float xc = CLAMP(in[i], vmin, vmax);
+    const float yc = a2 * xn + a3 * xa - b1 * yn - b2 * ya;
+    xa = xn;
+    xn = xc;
+    ya = yn;
+    yn = yc;
+    out[i] += yc;
+  }
+}
+
+/* Cache-blocked transpose of a width×height float buffer to height×width.
+   Using BLOCK=64 keeps read/write working sets in L1/L2 during the pass. */
+#define SF_TRANSPOSE_BLOCK 64
+static void _sf_transpose(const float *const src, float *const dst,
+                          const int w, const int h)
+{
+  DT_OMP_FOR()
+  for(int j0 = 0; j0 < h; j0 += SF_TRANSPOSE_BLOCK)
+  {
+    const int jlim = (j0 + SF_TRANSPOSE_BLOCK < h) ? j0 + SF_TRANSPOSE_BLOCK : h;
+    for(int i0 = 0; i0 < w; i0 += SF_TRANSPOSE_BLOCK)
+    {
+      const int ilim = (i0 + SF_TRANSPOSE_BLOCK < w) ? i0 + SF_TRANSPOSE_BLOCK : w;
+      for(int j = j0; j < jlim; j++)
+        for(int i = i0; i < ilim; i++)
+          dst[(size_t)i * h + j] = src[(size_t)j * w + i];
+    }
+  }
+}
+
+/* Single-channel IIR blur with cache-blocked transpose. `trans` is a w*h
+   intermediate buffer for the transpose (may be NULL: falls back to the
+   standard dt_gaussian path when trans is unavailable or dimensions are small). */
 static void _blur_channel(float *const buf, const int w, const int h, const int c,
-                          const float sigma, float *const plane)
+                           const float sigma, float *const plane, float *const trans)
 {
   if(sigma < 1e-6f) return;
   const size_t npix = (size_t)w * h;
   for(size_t i = 0; i < npix; i++) plane[i] = buf[i * 3 + c];
+  const float vmin = -1.0e9f, vmax = 1.0e9f;
 
-  const float range = 1.0e9f; /* grain delta / linear light: effectively unbounded */
-  const float vmax = range, vmin = -range;
-  dt_gaussian_t *g = dt_gaussian_init(w, h, 1, &vmax, &vmin, sigma, DT_IOP_GAUSSIAN_ZERO);
-  if(g)
+  if(trans && w >= 16 && h >= 16)
   {
-    dt_gaussian_blur(g, plane, plane);
-    dt_gaussian_free(g);
+    float a0, a1, a2, a3, b1, b2, coefp, coefn;
+    _sf_gauss_coeffs(sigma, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+    float *const temp = trans;
+    /* Pass 1: row-major on each row → temp */
+    DT_OMP_FOR()
+    for(int j = 0; j < h; j++)
+    {
+      const size_t off = (size_t)j * w;
+      _sf_gauss_causal(plane + off, temp + off, w, a0, a1, b1, b2, coefp, vmin, vmax);
+      _sf_gauss_anticausal(plane + off, temp + off, w, a2, a3, b1, b2, coefn, vmin, vmax);
+    }
+    /* Transpose temp (w×h) → plane (h×w) */
+    _sf_transpose(temp, plane, w, h);
+    /* Pass 2: row-major on transposed data → temp */
+    DT_OMP_FOR()
+    for(int j = 0; j < w; j++)
+    {
+      const size_t off = (size_t)j * h;
+      _sf_gauss_causal(plane + off, temp + off, h, a0, a1, b1, b2, coefp, vmin, vmax);
+      _sf_gauss_anticausal(plane + off, temp + off, h, a2, a3, b1, b2, coefn, vmin, vmax);
+    }
+    /* Transpose back temp (h×w) → plane (w×h) */
+    _sf_transpose(temp, plane, h, w);
+  }
+  else
+  {
+    dt_gaussian_t *g = dt_gaussian_init(w, h, 1, &vmax, &vmin, sigma, DT_IOP_GAUSSIAN_ZERO);
+    if(g)
+    {
+      dt_gaussian_blur(g, plane, plane);
+      dt_gaussian_free(g);
+    }
   }
   for(size_t i = 0; i < npix; i++) buf[i * 3 + c] = plane[i];
 }
 
-/* Blur all three channels of a packed buffer with the same sigma (grain). */
+/* Blur all three channels with the same sigma (grain). Allocates trans buffer. */
 void sf_blur_plane3(float *const buf, const int w, const int h, const float sigma, float *const plane)
 {
   if(sigma < 0.3f) return;
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane);
+  float *const trans = dt_alloc_align_float((size_t)w * h);
+  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans);
+  dt_free_align(trans);
 }
 
-/* Blur a packed buffer with per-channel sigma (scatter / halation passes). */
+/* Blur packed buffer with per-channel sigma. `trans` is a w*h intermediate. */
 static void _blur_per_channel(float *const buf, const int w, const int h, const float sigma[3],
-                              float *const plane)
+                               float *const plane, float *const trans)
 {
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma[c], plane);
+  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma[c], plane, trans);
 }
 
 /* Apply halation + scatter to a w*h*3 LINEAR plane, in place.
@@ -156,8 +278,9 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
 
   const size_t npix = (size_t)w * h;
   const size_t nn = npix * 3;
-  float *const plane = dt_alloc_align_float(npix); /* scratch single-channel plane */
-  if(!plane) return;
+  float *const plane = dt_alloc_align_float(npix);
+  float *const trans = dt_alloc_align_float(npix);
+  if(!plane) { dt_free_align(trans); return; }
 
   /* --- stage 1: scatter PSF (core + 3-component tail) --- */
   {
@@ -169,7 +292,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
       dt_iop_image_copy(core, raw, nn);
       float sc[3];
       for(int c = 0; c < 3; c++) sc[c] = fmaxf((float)(sc_core[c] * scl / pixel_um), 1e-6f);
-      _blur_per_channel(core, w, h, sc, plane);
+      _blur_per_channel(core, w, h, sc, plane, trans);
 
       memset(tail, 0, sizeof(float) * nn);
       for(int g = 0; g < 3; g++)
@@ -178,7 +301,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
         float lt[3];
         for(int c = 0; c < 3; c++)
           lt[c] = fmaxf((float)(tail_rat[g] * (sc_tail[c] * scl / pixel_um)), 1e-6f);
-        _blur_per_channel(comp, w, h, lt, plane);
+        _blur_per_channel(comp, w, h, lt, plane, trans);
         for(size_t i = 0; i < nn; i++) tail[i] += (float)tail_amp[g] * comp[i];
       }
       for(size_t i = 0; i < nn; i++)
@@ -213,7 +336,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
         dt_iop_image_copy(comp, raw, nn);
         const float sk = fmaxf((float)((first_sigma_um * scl / pixel_um) * sqrt((double)k)), 1e-6f);
         const float sig3[3] = { sk, sk, sk };
-        _blur_per_channel(comp, w, h, sig3, plane);
+        _blur_per_channel(comp, w, h, sig3, plane, trans);
         const float wk = (float)decay[k - 1];
         for(size_t i = 0; i < nn; i++) blur[i] += wk * comp[i];
       }
@@ -228,6 +351,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
   }
 
   dt_free_align(plane);
+  dt_free_align(trans);
 }
 
 /* ---------------- diffusion filter (Black Pro-Mist family) ----------------
@@ -436,11 +560,13 @@ void sf_diffusion_filter(float *const raw, const int w, const int h, const doubl
   float *const acc = dt_alloc_align_float(nn);
   float *const comp = dt_alloc_align_float(nn);
   float *const plane1 = dt_alloc_align_float(npix);
+  float *const trans = dt_alloc_align_float(npix);
   if(!acc || !comp || !plane1)
   {
     dt_free_align(acc);
     dt_free_align(comp);
     dt_free_align(plane1);
+    dt_free_align(trans);
     return;
   }
   memset(acc, 0, sizeof(float) * nn);
@@ -449,7 +575,7 @@ void sf_diffusion_filter(float *const raw, const int w, const int h, const doubl
   {
     const float sigma = (float)(plan.sigma_um[j] * sc / fmax(pixel_um, 1e-3));
     dt_iop_image_copy(comp, raw, nn);
-    for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1);
+    for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans);
     const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
     for(size_t i = 0; i < npix; i++)
     {
@@ -465,4 +591,5 @@ void sf_diffusion_filter(float *const raw, const int w, const int h, const doubl
   dt_free_align(acc);
   dt_free_align(comp);
   dt_free_align(plane1);
+  dt_free_align(trans);
 }

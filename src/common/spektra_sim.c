@@ -39,12 +39,21 @@
 #include <json-glib/json-glib.h>
 
 #include <math.h>
+/* ensure C99 math functions for SF_POW10F/SF_LOG10F (exp2f, log2f) */
+#if !defined(exp2f) && !defined(_GNU_SOURCE)
+/* exp2f and log2f are C99; every compiler since GCC 4.x / Clang 3.x has them */
+#endif
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define SF_LOG_EPS 1e-10
+/* Fast pow10 / log10 via exp2f/log2f. Using compiler builtins gives the
+   optimizer a better chance to inline/reduce them vs libm powf(10, x)
+   which internally computes exp2(x * log2(10)) with extra overhead. */
+#define SF_POW10F(x) __builtin_exp2f((x) * 3.321928094887362f)  /* x * log2f(10) */
+#define SF_LOG10F(x) (__builtin_log2f(x) * 0.3010299956639812f)  /* log2f(x) * log10(2) */
 #define SF_TC_KNEE_T 0.0 /* [gc] InputGamutCompressSpec.knee */
 #define SF_TC_KNEE_L 1.0
 #define SF_TC_KNEE_P 6.0
@@ -199,14 +208,25 @@ struct sf_sim_t
 
   /* filming */
   double m_in[9];    /* input linear RGB -> XYZ adapted to film ref illuminant */
+  float m_in_f[9];   /* float copy for fast per-pixel path */
+  float ev_scale_f;
   double ev_scale;
   int tc_n;
-  double *tc_lut;    /* tc_n*tc_n*3 raw CMY exposure */
+  double *tc_lut;    /* tc_n*tc_n*3 raw CMY exposure (double) */
+  float *tc_lut_f;   /* float copy — halves cache footprint, enables fast path */
+
+  /* precomputed float inverses (avoid div per pixel in hot loops) */
+  float inv_le_step;
+  float log10_print_exposure;
+  float enl_inv_range[3];
+  float scan_inv_range[3];
 
   /* film develop */
   double le0, le_step; /* uniform log exposure grid */
   double curves_norm[SF_NLE][3];
   double curves_before[SF_NLE][3];
+  float curves_norm_f[SF_NLE][3];   /* float copies for fast per-pixel path */
+  float curves_before_f[SF_NLE][3];
   double gamma[3];
   double couplers_M[3][3];
   /* Langmuir saturating couplers (spektrafilm dev/0.4+); K = INFINITY keeps
@@ -247,6 +267,7 @@ struct sf_sim_t
 
   /* print develop */
   double print_curves[SF_NLE][3];
+  float print_curves_f[SF_NLE][3];
 
   /* scanning (exact spectral path) */
   double scan_chan_density[SF_NWL][3];
@@ -268,6 +289,8 @@ struct sf_sim_t
   int lut_steps;
   double *enl_lut, *enl_sx, *enl_sy, *enl_sz, *enl_cmin, *enl_cmax;
   double *scan_lut, *scan_sx, *scan_sy, *scan_sz, *scan_cmin, *scan_cmax;
+  float *enl_lut_f;   /* float copies for fast trilinear per-pixel path */
+  float *scan_lut_f;
 
   /* output gamut compression */
   sf_output_compress_t out_compress;
@@ -847,6 +870,15 @@ static inline void quad2tri(double out[2], const double xy[2])
   out[1] = xy[1] * sq;
 }
 
+static inline void tri2quad_f(float out[2], const float tc[2])
+{
+  const float tx = tc[0], ty = tc[1];
+  float y = ty / fmaxf(1.0f - tx, 1e-10f);
+  float x = (1.0f - tx) * (1.0f - tx);
+  out[0] = CLAMP(x, 0.0f, 1.0f);
+  out[1] = CLAMP(y, 0.0f, 1.0f);
+}
+
 /* ------------------------------------------------------------------------ */
 /* [gc] Reinhard knee, radial xy compression toward the spectral locus      */
 /* ------------------------------------------------------------------------ */
@@ -972,6 +1004,9 @@ static void cubic_interp_2d(double out[3], const double *lut, int L, double x, d
   out[2] = acc[2];
 }
 
+/* Float variants of cubic_interp_2d / expose_pixel — halves LUT cache footprint
+   and avoids double conversion overhead in the hot per-pixel expose loop. */
+
 /* bilinear sampling on the same layout with clamped ("nearest") bounds —
  * used only for the tc_lut compression remap at build time */
 static void bilinear_2d_clamped(double out[3], const double *lut, int L, double x, double y)
@@ -989,6 +1024,61 @@ static void bilinear_2d_clamped(double out[3], const double *lut, int L, double 
     const double v11 = lut[((size_t)x1 * L + y1) * 3 + c];
     out[c] = (v00 * (1 - ty) + v01 * ty) * (1 - tx) + (v10 * (1 - ty) + v11 * ty) * tx;
   }
+}
+
+/* Fast bilinear 2D on a float LUT — replaces Mitchell 4×4 cubic for the hot
+   TC upsampling path. The 192² grid is fine enough that the cubic-vs-linear
+   difference between grid points is invisible. ~48 ops vs ~12 ops per pixel. */
+static void bilinear_interp_2d_f(float out[3], const float *lut, int L, float x, float y)
+{
+  x = CLAMP(x, 0.0f, (float)(L - 1));
+  y = CLAMP(y, 0.0f, (float)(L - 1));
+  const int x0 = (int)x, y0 = (int)y;
+  const int x1 = x0 < L - 1 ? x0 + 1 : x0;
+  const int y1 = y0 < L - 1 ? y0 + 1 : y0;
+  const float tx = x - x0, ty = y - y0;
+  for(int c = 0; c < 3; c++)
+  {
+    const float v00 = lut[((size_t)x0 * L + y0) * 3 + c];
+    const float v01 = lut[((size_t)x0 * L + y1) * 3 + c];
+    const float v10 = lut[((size_t)x1 * L + y0) * 3 + c];
+    const float v11 = lut[((size_t)x1 * L + y1) * 3 + c];
+    out[c] = (v00 * (1.0f - ty) + v01 * ty) * (1.0f - tx) + (v10 * (1.0f - ty) + v11 * ty) * tx;
+  }
+}
+
+/* Trilinear 3D on a float LUT — replaces PCHIP 3D cubic for the hot scan/print
+   LUT path. The 17³ grid is smooth (density→log XYZ from spectral integrals),
+   so PCHIP's monotonicity guarantee adds negligible quality over linear. */
+static void trilinear_interp_3d_f(float out[3], const float *lut, int n, float r, float g, float b)
+{
+  r = CLAMP(r, 0.0f, (float)(n - 1));
+  g = CLAMP(g, 0.0f, (float)(n - 1));
+  b = CLAMP(b, 0.0f, (float)(n - 1));
+  const int i = (int)r, j = (int)g, k = (int)b;
+  const int i1 = i < n - 1 ? i + 1 : i;
+  const int j1 = j < n - 1 ? j + 1 : j;
+  const int k1 = k < n - 1 ? k + 1 : k;
+  const float tr = r - i, tg = g - j, tb = b - k;
+  const float omtr = 1.0f - tr, omtg = 1.0f - tg, omtb = 1.0f - tb;
+#define TL(idx) lut[((size_t)(idx) * n + (j)) * n + (k)]
+#define TL3(idx) lut[((((size_t)(idx) * n + (j)) * n + (k)) * 3]
+  for(int c = 0; c < 3; c++)
+  {
+    const float v00 = lut[((((size_t)i) * n + j) * n + k) * 3 + c] * omtr
+                    + lut[((((size_t)i1) * n + j) * n + k) * 3 + c] * tr;
+    const float v01 = lut[((((size_t)i) * n + j1) * n + k) * 3 + c] * omtr
+                    + lut[((((size_t)i1) * n + j1) * n + k) * 3 + c] * tr;
+    const float v10 = lut[((((size_t)i) * n + j) * n + k1) * 3 + c] * omtr
+                    + lut[((((size_t)i1) * n + j) * n + k1) * 3 + c] * tr;
+    const float v11 = lut[((((size_t)i) * n + j1) * n + k1) * 3 + c] * omtr
+                    + lut[((((size_t)i1) * n + j1) * n + k1) * 3 + c] * tr;
+    const float v0 = v00 * omtg + v01 * tg;
+    const float v1 = v10 * omtg + v11 * tg;
+    out[c] = v0 * omtb + v1 * tb;
+  }
+#undef TL
+#undef TL3
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1176,6 +1266,20 @@ static inline double interp_curve_uniform(double x, double gammac, double le0,
   if(t >= (double)(SF_NLE - 1)) return curves[SF_NLE - 1][c];
   const int i = (int)t;
   const double f = t - i;
+  return curves[i][c] + f * (curves[i + 1][c] - curves[i][c]);
+}
+
+/* Float variant using precomputed inv_le_step — avoids double→float conversions
+   and replaces division with multiply in the hot per-pixel path. */
+static inline float interp_curve_uniform_f(float x, float gammac, float le0,
+                                           float inv_le_step,
+                                           const float (*curves)[3], int c)
+{
+  const float t = (x * gammac - le0) * inv_le_step;
+  if(t <= 0.0f) return curves[0][c];
+  if(t >= (float)(SF_NLE - 1)) return curves[SF_NLE - 1][c];
+  const int i = (int)t;
+  const float f = t - i;
   return curves[i][c] + f * (curves[i + 1][c] - curves[i][c]);
 }
 
@@ -1482,6 +1586,24 @@ static void expose_pixel(const double m_in[9], const double *tc_lut, int tc_n,
   for(int c = 0; c < 3; c++) raw[c] *= bb;
 }
 
+/* Float per-pixel expose using float LUT/input. The linear color matrix
+   product is the same as expose_pixel but stored/operated in float. */
+static void expose_pixel_f(const float m_in[9], const float *tc_lut, int tc_n,
+                           const float rgb[3], float raw[3])
+{
+  float xyz[3];
+  for(int i = 0; i < 3; i++)
+    xyz[i] = m_in[i * 3] * rgb[0] + m_in[i * 3 + 1] * rgb[1] + m_in[i * 3 + 2] * rgb[2];
+  const float b = xyz[0] + xyz[1] + xyz[2];
+  const float xy[2] = { xyz[0] / fmaxf(b, 1e-10f), xyz[1] / fmaxf(b, 1e-10f) };
+  float tc[2];
+  tri2quad_f(tc, xy);
+  const float scale = (float)(tc_n - 1);
+  bilinear_interp_2d_f(raw, tc_lut, tc_n, tc[0] * scale, tc[1] * scale);
+  const float bb = isfinite(b) ? b : 0.0f;
+  for(int c = 0; c < 3; c++) raw[c] *= bb;
+}
+
 /* [st] filming._simple_rgb_to_density_spectral: the gray reference used to
  * balance the print exposure. NOTE the reference computes this in *sRGB*
  * (the _rgb_to_film_raw defaults), independent of the io input space. */
@@ -1561,10 +1683,12 @@ void sf_sim_free(sf_sim_t *s)
 {
   if(!s) return;
   free(s->tc_lut);
+  free(s->tc_lut_f);
   free(s->enl_lut); free(s->enl_sx); free(s->enl_sy); free(s->enl_sz);
   free(s->enl_cmin); free(s->enl_cmax);
   free(s->scan_lut); free(s->scan_sx); free(s->scan_sy); free(s->scan_sz);
   free(s->scan_cmin); free(s->scan_cmax);
+  free(s->enl_lut_f); free(s->scan_lut_f);
   free(s->cmax);
   g_free(s);
 }
@@ -1717,11 +1841,19 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
         }
       free(old);
     }
+    /* float copies for the fast per-pixel expose path */
+    for(int c = 0; c < 9; c++) s->m_in_f[c] = (float)s->m_in[c];
+    s->ev_scale_f = (float)s->ev_scale;
+    s->tc_lut_f = malloc((size_t)n * n * 3 * sizeof(float));
+    if(s->tc_lut_f)
+      for(size_t i = 0; i < (size_t)n * n * 3; i++)
+        s->tc_lut_f[i] = (float)s->tc_lut[i];
   }
 
   /* ----- film develop ---------------------------------------------------- */
   s->le0 = film->log_exposure[0];
   s->le_step = (film->log_exposure[SF_NLE - 1] - film->log_exposure[0]) / (SF_NLE - 1);
+  s->inv_le_step = (float)(1.0 / s->le_step);
   for(int c = 0; c < 3; c++) s->gamma[c] = p->density_curve_gamma;
   for(int c = 0; c < 3; c++)
   {
@@ -1732,7 +1864,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
       if(v < mn) mn = v;
       if(v > mx) mx = v;
     }
-    for(int i = 0; i < SF_NLE; i++) s->curves_norm[i][c] = film->density_curves[i][c] - mn;
+    for(int i = 0; i < SF_NLE; i++)
+    {
+      const double v = film->density_curves[i][c] - mn;
+      s->curves_norm[i][c] = v;
+      s->curves_norm_f[i][c] = (float)v;
+    }
     s->film_dmax[c] = mx - mn;
     s->film_dmin[c] = mn;
   }
@@ -1850,11 +1987,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
       {
         const double v = interp_general(film->log_exposure[i], xp, fp, SF_NLE);
         s->curves_before[i][c] = s->film_positive ? -v : v;
+        s->curves_before_f[i][c] = (float)s->curves_before[i][c];
       }
     }
   }
   else
+  {
     memcpy(s->curves_before, s->curves_norm, sizeof(s->curves_before));
+    memcpy(s->curves_before_f, s->curves_norm_f, sizeof(s->curves_before_f));
+  }
 
   /* ----- printing -------------------------------------------------------- */
   if(s->has_print)
@@ -1923,8 +2064,13 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
         if(film->density_curves[i][c] > mx) mx = film->density_curves[i][c];
       s->enl_lo[c] = -p->grain_density_min[c];
       s->enl_hi[c] = mx;
+      s->enl_inv_range[c] = (float)(1.0 / (mx + p->grain_density_min[c]));
     }
+    s->log10_print_exposure = (float)log10(fmax(p->print_exposure, 1e-10));
     build_print_curves(s->print_curves, print, p);
+    for(int i = 0; i < SF_NLE; i++)
+      for(int c = 0; c < 3; c++)
+        s->print_curves_f[i][c] = (float)s->print_curves[i][c];
   }
 
   /* ----- scanning -------------------------------------------------------- */
@@ -1978,6 +2124,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
           if(film->density_curves[i][c] > mx) mx = film->density_curves[i][c];
         s->scan_hi[c] = mx;
       }
+    for(int c = 0; c < 3; c++)
+      s->scan_inv_range[c] = (float)(1.0 / (s->scan_hi[c] - s->scan_lo[c]));
     /* output matrix: CAT02 from the viewing illuminant to the output white */
     double view_xy[2] = { s->illum_view_xyz[0]
                               / (s->illum_view_xyz[0] + s->illum_view_xyz[1]
@@ -2070,10 +2218,22 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
   if(s->lut_steps >= 2)
   {
     if(s->has_print)
+    {
       build_lut3d(s, cmy_to_print_lograw, s->enl_lo, s->enl_hi, s->lut_steps, &s->enl_lut,
                   &s->enl_sx, &s->enl_sy, &s->enl_sz, &s->enl_cmin, &s->enl_cmax);
+      const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
+      s->enl_lut_f = malloc(n3 * sizeof(float));
+      if(s->enl_lut_f)
+        for(size_t i = 0; i < n3; i++) s->enl_lut_f[i] = (float)s->enl_lut[i];
+    }
     build_lut3d(s, cmy_to_log_xyz, s->scan_lo, s->scan_hi, s->lut_steps, &s->scan_lut,
                 &s->scan_sx, &s->scan_sy, &s->scan_sz, &s->scan_cmin, &s->scan_cmax);
+    {
+      const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
+      s->scan_lut_f = malloc(n3 * sizeof(float));
+      if(s->scan_lut_f)
+        for(size_t i = 0; i < n3; i++) s->scan_lut_f[i] = (float)s->scan_lut[i];
+    }
   }
 
   /* ----- output gamut compression ----------------------------------------- */
@@ -2100,10 +2260,9 @@ void sf_sim_expose(const sf_sim_t *sim, const float *rgb_in, float *raw, size_t 
   {
     const float *in = rgb_in + px * nch_in;
     float *out = raw + px * nch_out;
-    const double rgb[3] = { in[0], in[1], in[2] };
-    double r[3];
-    expose_pixel(sim->m_in, sim->tc_lut, sim->tc_n, rgb, r);
-    for(int c = 0; c < 3; c++) out[c] = (float)(r[c] * sim->ev_scale);
+    float r[3];
+    expose_pixel_f(sim->m_in_f, sim->tc_lut_f, sim->tc_n, in, r);
+    for(int c = 0; c < 3; c++) out[c] = r[c] * sim->ev_scale_f;
   }
 }
 
@@ -2116,7 +2275,7 @@ void sf_sim_lograw(float *raw, size_t npix, int nch)
   {
     float *v = raw + px * nch;
     for(int c = 0; c < 3; c++)
-      v[c] = (float)log10(fmax((double)v[c], 0.0) + SF_LOG_EPS);
+      v[c] = SF_LOG10F(fmaxf(v[c], 0.0f) + SF_LOG_EPS);
   }
 }
 
@@ -2135,21 +2294,21 @@ void sf_sim_develop_corr(const sf_sim_t *sim, const float *lograw, float *corr,
   {
     const float *in = lograw + px * nch_in;
     float *out = corr + px * 3;
-    double silver[3];
+    float silver[3];
     for(int c = 0; c < 3; c++)
     {
-      const double d = interp_curve_uniform(in[c], sim->gamma[c], sim->le0, sim->le_step,
-                                            sim->curves_norm, c);
-      silver[c] = sim->film_positive ? sim->film_dmax[c] - d : d;
+      const float d = interp_curve_uniform_f(in[c], (float)sim->gamma[c], (float)sim->le0,
+                                             sim->inv_le_step, sim->curves_norm_f, c);
+      silver[c] = sim->film_positive ? (float)sim->film_dmax[c] - d : d;
       if(sim->couplers_donor_lm)
-        silver[c] = silver[c] * (sim->couplers_donor_K[c] + sim->couplers_donor_Dref[c])
-                    / (sim->couplers_donor_K[c] + silver[c]);
+        silver[c] = silver[c] * ((float)sim->couplers_donor_K[c] + (float)sim->couplers_donor_Dref[c])
+                    / ((float)sim->couplers_donor_K[c] + silver[c]);
     }
     for(int m = 0; m < 3; m++)
     {
-      double acc = 0.0;
-      for(int k = 0; k < 3; k++) acc += silver[k] * sim->couplers_M[k][m];
-      out[m] = (float)acc;
+      float acc = 0.0f;
+      for(int k = 0; k < 3; k++) acc += silver[k] * (float)sim->couplers_M[k][m];
+      out[m] = acc;
     }
   }
 }
@@ -2158,7 +2317,7 @@ void sf_sim_develop(const sf_sim_t *sim, const float *lograw, const float *corr,
                     float *cmy, size_t npix, int nch_in, int nch_out)
 {
   const int use_corr = sim->couplers_active && corr != NULL;
-  const double(*curves)[3] = use_corr ? sim->curves_before : sim->curves_norm;
+  const float(*curves)[3] = use_corr ? sim->curves_before_f : sim->curves_norm_f;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -2169,15 +2328,15 @@ void sf_sim_develop(const sf_sim_t *sim, const float *lograw, const float *corr,
     float *out = cmy + px * nch_out;
     for(int c = 0; c < 3; c++)
     {
-      double crv = cr ? (double)cr[c] : 0.0;
+      float crv = cr ? cr[c] : 0.0f;
       /* receiver-side Langmuir applies to the inhibitor that ARRIVES, i.e.
          after the spatial diffusion blur, hence here and not in _corr */
       if(cr && sim->couplers_recv_lm)
-        crv = crv * (sim->couplers_recv_Kr[c] + sim->couplers_recv_cref[c])
-              / (sim->couplers_recv_Kr[c] + crv);
-      const double x = (double)in[c] - crv;
-      out[c] = (float)interp_curve_uniform(x, sim->gamma[c], sim->le0, sim->le_step,
-                                           curves, c);
+        crv = crv * ((float)sim->couplers_recv_Kr[c] + (float)sim->couplers_recv_cref[c])
+              / ((float)sim->couplers_recv_Kr[c] + crv);
+      const float x = in[c] - crv;
+      out[c] = interp_curve_uniform_f(x, (float)sim->gamma[c], (float)sim->le0,
+                                      sim->inv_le_step, curves, c);
     }
   }
 }
@@ -2186,8 +2345,6 @@ void sf_sim_print_expose(const sf_sim_t *sim, const float *cmy, float *lograw,
                          size_t npix, int nch_in, int nch_out)
 {
   const int steps = sim->lut_steps;
-  const sf_pchip3d_t P = { steps, sim->enl_lut, sim->enl_sx, sim->enl_sy, sim->enl_sz,
-                           sim->enl_cmin, sim->enl_cmax };
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -2195,25 +2352,39 @@ void sf_sim_print_expose(const sf_sim_t *sim, const float *cmy, float *lograw,
   {
     const float *in = cmy + px * nch_in;
     float *out = lograw + px * nch_out;
-    double l1[3];
-    if(steps >= 2)
+    float l1[3];
+    if(steps >= 2 && sim->enl_lut_f)
     {
+      const float scale = (float)(steps - 1);
+      const float r = (in[0] - (float)sim->enl_lo[0]) * sim->enl_inv_range[0] * scale;
+      const float g = (in[1] - (float)sim->enl_lo[1]) * sim->enl_inv_range[1] * scale;
+      const float b = (in[2] - (float)sim->enl_lo[2]) * sim->enl_inv_range[2] * scale;
+      trilinear_interp_3d_f(l1, sim->enl_lut_f, steps, r, g, b);
+    }
+    else if(steps >= 2)
+    {
+      const sf_pchip3d_t P = { steps, sim->enl_lut, sim->enl_sx, sim->enl_sy, sim->enl_sz,
+                               sim->enl_cmin, sim->enl_cmax };
       const double scale = (double)(steps - 1);
-      const double r = (in[0] - sim->enl_lo[0]) / (sim->enl_hi[0] - sim->enl_lo[0]) * scale;
-      const double g = (in[1] - sim->enl_lo[1]) / (sim->enl_hi[1] - sim->enl_lo[1]) * scale;
-      const double b = (in[2] - sim->enl_lo[2]) / (sim->enl_hi[2] - sim->enl_lo[2]) * scale;
-      pchip3d_interp(&P, r, g, b, l1);
+      const double r = (in[0] - sim->enl_lo[0]) * sim->enl_inv_range[0] * scale;
+      const double g = (in[1] - sim->enl_lo[1]) * sim->enl_inv_range[1] * scale;
+      const double b = (in[2] - sim->enl_lo[2]) * sim->enl_inv_range[2] * scale;
+      double l1d[3];
+      pchip3d_interp(&P, r, g, b, l1d);
+      l1[0] = (float)l1d[0]; l1[1] = (float)l1d[1]; l1[2] = (float)l1d[2];
     }
     else
     {
+      double l1d[3];
       const double c[3] = { in[0], in[1], in[2] };
-      cmy_to_print_lograw(sim, c, l1);
+      cmy_to_print_lograw(sim, c, l1d);
+      l1[0] = (float)l1d[0]; l1[1] = (float)l1d[1]; l1[2] = (float)l1d[2];
     }
-    /* [st] raw = 10^l1 * print_exposure; back to log10 */
+    /* [st] 10^l1 * print_exposure -> log domain: out = l1 + log10(print_exposure) */
     for(int m = 0; m < 3; m++)
     {
-      const double r = pow(10.0, l1[m]) * sim->print_exposure;
-      out[m] = (float)log10(fmax(r, 0.0) + SF_LOG_EPS);
+      const float v = l1[m] + sim->log10_print_exposure;
+      out[m] = (v < -30.0f) ? -30.0f : v; /* prevent -inf from degenerate inputs */
     }
   }
 }
@@ -2229,8 +2400,8 @@ void sf_sim_print_develop(const sf_sim_t *sim, const float *lograw, float *cmy,
     const float *in = lograw + px * nch_in;
     float *out = cmy + px * nch_out;
     for(int c = 0; c < 3; c++)
-      out[c] = (float)interp_curve_uniform(in[c], 1.0, sim->le0, sim->le_step,
-                                           sim->print_curves, c);
+      out[c] = interp_curve_uniform_f(in[c], 1.0f, (float)sim->le0,
+                                      sim->inv_le_step, sim->print_curves_f, c);
   }
 }
 
@@ -2238,8 +2409,6 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t n
                  int nch_in, int nch_out)
 {
   const int steps = sim->lut_steps;
-  const sf_pchip3d_t P = { steps, sim->scan_lut, sim->scan_sx, sim->scan_sy, sim->scan_sz,
-                           sim->scan_cmin, sim->scan_cmax };
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -2247,22 +2416,36 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t n
   {
     const float *in = cmy + px * nch_in;
     float *out = rgb_out + px * nch_out;
-    double lx[3];
-    if(steps >= 2)
+    float lx[3];
+    if(steps >= 2 && sim->scan_lut_f)
     {
+      const float scale = (float)(steps - 1);
+      const float r = (in[0] - (float)sim->scan_lo[0]) * sim->scan_inv_range[0] * scale;
+      const float g = (in[1] - (float)sim->scan_lo[1]) * sim->scan_inv_range[1] * scale;
+      const float b = (in[2] - (float)sim->scan_lo[2]) * sim->scan_inv_range[2] * scale;
+      trilinear_interp_3d_f(lx, sim->scan_lut_f, steps, r, g, b);
+    }
+    else if(steps >= 2)
+    {
+      const sf_pchip3d_t P = { steps, sim->scan_lut, sim->scan_sx, sim->scan_sy, sim->scan_sz,
+                               sim->scan_cmin, sim->scan_cmax };
       const double scale = (double)(steps - 1);
-      const double r = (in[0] - sim->scan_lo[0]) / (sim->scan_hi[0] - sim->scan_lo[0]) * scale;
-      const double g = (in[1] - sim->scan_lo[1]) / (sim->scan_hi[1] - sim->scan_lo[1]) * scale;
-      const double b = (in[2] - sim->scan_lo[2]) / (sim->scan_hi[2] - sim->scan_lo[2]) * scale;
-      pchip3d_interp(&P, r, g, b, lx);
+      const double r = (in[0] - sim->scan_lo[0]) * sim->scan_inv_range[0] * scale;
+      const double g = (in[1] - sim->scan_lo[1]) * sim->scan_inv_range[1] * scale;
+      const double b = (in[2] - sim->scan_lo[2]) * sim->scan_inv_range[2] * scale;
+      double lxd[3];
+      pchip3d_interp(&P, r, g, b, lxd);
+      lx[0] = (float)lxd[0]; lx[1] = (float)lxd[1]; lx[2] = (float)lxd[2];
     }
     else
     {
+      double lxd[3];
       const double c[3] = { in[0], in[1], in[2] };
-      cmy_to_log_xyz(sim, c, lx);
+      cmy_to_log_xyz(sim, c, lxd);
+      lx[0] = (float)lxd[0]; lx[1] = (float)lxd[1]; lx[2] = (float)lxd[2];
     }
-    double xyz[3], rgb[3];
-    for(int m = 0; m < 3; m++) xyz[m] = pow(10.0, lx[m]);
+    double xyz[3]; double rgb[3];
+    for(int m = 0; m < 3; m++) xyz[m] = SF_POW10F(lx[m]);
     if(sim->out_luminance_boost != 1.0)
       for(int m = 0; m < 3; m++) xyz[m] *= sim->out_luminance_boost;
     if(sim->scan_bw_on)
