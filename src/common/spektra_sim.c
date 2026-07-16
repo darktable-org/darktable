@@ -49,6 +49,31 @@
 #include <string.h>
 
 #define SF_LOG_EPS 1e-10
+
+/* NEON 3×3 matrix multiply for 4 pixels at once via vmlaq_n_f32 (fused
+   multiply-add by scalar broadcast). Pure NEON — works on any ARMv8 target. */
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+
+static inline void neon_mat3_mulv_batch(const float m[9], const float *in,
+                                         float out[12])
+{
+  float32x4x3_t rgb = vld3q_f32(in);
+  const float32x4_t r0 = rgb.val[0], r1 = rgb.val[1], r2 = rgb.val[2];
+  float32x4_t x0 = vmulq_n_f32(r0, m[0]);
+  x0 = vmlaq_n_f32(x0, r1, m[1]);
+  x0 = vmlaq_n_f32(x0, r2, m[2]);
+  float32x4_t x1 = vmulq_n_f32(r0, m[3]);
+  x1 = vmlaq_n_f32(x1, r1, m[4]);
+  x1 = vmlaq_n_f32(x1, r2, m[5]);
+  float32x4_t x2 = vmulq_n_f32(r0, m[6]);
+  x2 = vmlaq_n_f32(x2, r1, m[7]);
+  x2 = vmlaq_n_f32(x2, r2, m[8]);
+  rgb.val[0] = x0; rgb.val[1] = x1; rgb.val[2] = x2;
+  vst3q_f32(out, rgb);
+}
+#endif /* __ARM_NEON */
+
 /* Fast pow10 / log10 via exp2f/log2f. Using compiler builtins gives the
    optimizer a better chance to inline/reduce them vs libm powf(10, x)
    which internally computes exp2(x * log2(10)) with extra overhead. */
@@ -2253,6 +2278,45 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
 void sf_sim_expose(const sf_sim_t *sim, const float *rgb_in, float *raw, size_t npix,
                    int nch_in, int nch_out)
 {
+#if defined(__ARM_NEON)
+  if(nch_in == 3 && nch_out == 3 && sim->tc_lut_f && npix >= 4)
+  {
+    const size_t n4 = npix & ~(size_t)3; /* round down to multiple of 4 */
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for(size_t px = 0; px < n4; px += 4)
+    {
+      const float *in = rgb_in + px * 3;
+      float *out = raw + px * 3;
+      float xyz[12];
+      neon_mat3_mulv_batch(sim->m_in_f, in, xyz);
+      for(int k = 0; k < 4; k++)
+      {
+        const float *xyz_k = xyz + k * 3;
+        float r[3];
+        const float b = xyz_k[0] + xyz_k[1] + xyz_k[2];
+        const float xy[2] = { xyz_k[0] / fmaxf(b, 1e-10f), xyz_k[1] / fmaxf(b, 1e-10f) };
+        float tc[2];
+        tri2quad_f(tc, xy);
+        const float scale = (float)(sim->tc_n - 1);
+        bilinear_interp_2d_f(r, sim->tc_lut_f, sim->tc_n, tc[0] * scale, tc[1] * scale);
+        const float bb = isfinite(b) ? b : 0.0f;
+        for(int c = 0; c < 3; c++) out[k * 3 + c] = r[c] * bb * sim->ev_scale_f;
+      }
+    }
+    /* remainder (1-3 pixels, scalar fallback) */
+    for(size_t px = n4; px < npix; px++)
+    {
+      const float *in = rgb_in + px * 3;
+      float *out = raw + px * 3;
+      float r[3];
+      expose_pixel_f(sim->m_in_f, sim->tc_lut_f, sim->tc_n, in, r);
+      for(int c = 0; c < 3; c++) out[c] = r[c] * sim->ev_scale_f;
+    }
+    return;
+  }
+#endif
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -2450,7 +2514,6 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t n
       for(int m = 0; m < 3; m++) xyz[m] *= sim->out_luminance_boost;
     if(sim->scan_bw_on)
     {
-      /* scanner black/white point (positive film): scale toward Y in [0,1] */
       const double y = xyz[1];
       double yc = sim->scan_bw_m * y + sim->scan_bw_q;
       yc = yc < 0.0 ? 0.0 : (yc > 1.0 ? 1.0 : yc);
