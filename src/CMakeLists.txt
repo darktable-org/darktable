@@ -1020,6 +1020,14 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 # since this isn't the same directory we do have to manually set it
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
+# spektrafilm: -fno-math-errno tells the compiler math functions never set errno,
+# enabling more aggressive optimization around powf/exp2f/log10f calls.
+set_source_files_properties(
+  "common/spektra_core.c"
+  "common/spektra_sim.c"
+  PROPERTIES COMPILE_OPTIONS "-fno-math-errno"
+)
+
 add_dependencies(lib_darktable generate_styles_string)
 add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
