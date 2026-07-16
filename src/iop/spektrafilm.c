@@ -31,6 +31,7 @@
  *     -> CMY film density -> grain                          (density, spatial)
  *     -> enlarger (dichroic-filtered light through the negative,
  *        print paper sensitivity, midgray-balanced)         = print exposure
+ *     -> print diffusion filter (optional)                  (density, spatial)
  *     -> print density curves (with optional contrast morph)
  *     -> viewing illuminant through the print, CMFs -> XYZ
  *        -> CAT02 -> work RGB -> OkLCh gamut compression    = scanning
@@ -768,6 +769,9 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
   const float hal = (p->halation_on && p->halation_amount > 0.0f)
                         ? SF_HALATION_FIRST_SIGMA_UM * SF_HALATION_PSF_SIGMAS * inv_um
                         : 0.0f;
+  /* The widest of film-stage and print-stage diffusion determines the ROI
+     padding — both must fit in the expanded tile. Both stages use the same
+     bloom constant; only the user's scale slider differs between them. */
   const float diff_film = p->diffusion_on
                               ? SF_DIFFUSION_BLOOM_LAMBDA_MAX_UM * 1.41421356f * p->diffusion_scale * inv_um
                               : 0.0f;
@@ -1347,6 +1351,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         CLARG(steps), CLARG(g->enl_lo[0]), CLARG(g->enl_lo[1]), CLARG(g->enl_lo[2]),
         CLARG(g->enl_hi[0]), CLARG(g->enl_hi[1]), CLARG(g->enl_hi[2]), CLARG(g->print_exposure));
     SF_CL_STEP("print_expose");
+    /* ---- print diffusion (optional, on the exposed print density) ---- */
     if(d->p.print_diffusion_on)
     {
       sf_diffusion_plan_t pplan;
