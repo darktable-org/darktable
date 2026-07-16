@@ -67,6 +67,8 @@ extern "C" {
 #define SF_NWL 81  /* 380..780 nm in 5 nm steps — spektrafilm SPECTRAL_SHAPE */
 #define SF_NLE 256 /* log-exposure grid — spektrafilm LOG_EXPOSURE */
 
+
+
 typedef struct sf_pack_t sf_pack_t;
 typedef struct sf_profile_t sf_profile_t;
 typedef struct sf_sim_t sf_sim_t;
