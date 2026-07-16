@@ -645,13 +645,22 @@ __kernel void spektrafilm_max_partials(__global const float4 *plane, const int n
   partials[gid] = m;
 }
 
+__kernel void spektrafilm_max_reduce(__global const float *partials, __global float *maxv_buf,
+                                     const int npartials)
+{
+  float m = 0.0f;
+  for(int i = 0; i < npartials; i++) m = fmax(m, partials[i]);
+  maxv_buf[0] = m;
+}
+
 __kernel void spektrafilm_boost(__global float4 *plane, const int w, const int h,
                                 const float boost_ev, const float boost_range,
-                                const float protect_ev, const float maxv)
+                                const float protect_ev, __global const float *maxv_buf)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const int k = y * w + x;
+  const float maxv = maxv_buf[0];
   if(boost_ev <= 0.0f || maxv <= 0.0f) return;
 
   const float midgray = 0.184f;
