@@ -110,20 +110,23 @@ static void _path_border_get_XY(const float p0x,
   // paths with sharp corners we get the point
   _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t, xc, yc);
 
-  // now we get derivative points
-  const double ti = 1.0 - (double)t;
-
-  const double t_t = (double)t * t;
-  const double ti_ti = ti * ti;
-  const double t_ti = t * ti;
-
-  const double a = 3.0 * ti_ti;
-  const double b = 3.0 * (ti_ti - 2.0 * t_ti);
-  const double c = 3.0 * (2.0 * t_ti - t_t);
-  const double d = 3.0 * t_t;
-
-  const double dx = -p0x * a + p1x * b + p2x * c + p3x * d;
-  const double dy = -p0y * a + p1y * b + p2y * c + p3y * d;
+  // finite-difference tangent — the analytic derivative loses precision
+  // when ctrls are near corners (potrace output)
+  const double dt = 0.1;
+  float xc2, yc2;
+  double dx, dy;
+  if((double)t + dt <= 1.0)
+  {
+    _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t + (float)dt, &xc2, &yc2);
+    dx = (double)xc2 - (double)*xc;
+    dy = (double)yc2 - (double)*yc;
+  }
+  else
+  {
+    _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t - (float)dt, &xc2, &yc2);
+    dx = (double)*xc - (double)xc2;
+    dy = (double)*yc - (double)yc2;
+  }
 
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
