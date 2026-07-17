@@ -93,6 +93,17 @@ static inline void neon_mat3_mulv_batch(const float m[9], const float *in,
 #define SF_CMAX_NBISECT 18
 #define SF_MIDGRAY 0.184
 
+/* Generic (still film, strong-antihalation) halation baseline — the values
+ * spektra_core.c's sf_halation() used to hardcode unconditionally. Now the
+ * fallback used when a pack/stock has no film_render_defaults[stock].halation
+ * entry (see sf_sim_build() and sf_sim_halation_params() below). Mirrors
+ * upstream's ('still', 'strong') entry in params_builder.py's
+ * _HALATION_PRESETS. */
+#define SF_HALATION_STRENGTH_DEFAULT_R 0.05
+#define SF_HALATION_STRENGTH_DEFAULT_G 0.015
+#define SF_HALATION_STRENGTH_DEFAULT_B 0.0
+#define SF_HALATION_SIGMA_DEFAULT_UM 65.0
+
 /* ------------------------------------------------------------------------ */
 /* small linear algebra                                                     */
 /* ------------------------------------------------------------------------ */
@@ -277,6 +288,12 @@ struct sf_sim_t
      table-range code below). Defaults to the legacy fixed constants when the
      pack has no per-film grain entry (see sf_sim_build). */
   double grain_rms[3], grain_uniformity[3];
+
+  /* per-film halation preset (film_render_defaults[stock].halation in the
+     pack): back-reflection strength per channel + first-bounce sigma.
+     Defaults to SF_HALATION_STRENGTH_DEFAULT_* / SF_HALATION_SIGMA_DEFAULT_UM
+     when the pack has no per-stock entry (see sf_sim_build()). */
+  double halation_strength[3], halation_sigma_um;
 
   /* print exposure (exact spectral path) */
   int has_print;
@@ -1760,6 +1777,27 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
                             p->gamma_inter_g_rb, p->gamma_inter_b_rg, NULL, NULL, NULL,
                             NULL, NULL);
   }
+
+  /* per-film halation preset from the pack's film_render_defaults[stock].halation
+   * (upstream keys this off the profile's use/antihalation tags — modern
+   * strong-AH stocks get a much weaker, tighter halo than e.g. a rem-jet-removed
+   * or redscale stock). Seed with the generic still/strong-AH baseline first so
+   * a pack/stock without this data reproduces the previous fixed behaviour
+   * exactly; sf_pack_film_defaults() only overwrites entries it actually finds. */
+  {
+    s->halation_strength[0] = SF_HALATION_STRENGTH_DEFAULT_R;
+    s->halation_strength[1] = SF_HALATION_STRENGTH_DEFAULT_G;
+    s->halation_strength[2] = SF_HALATION_STRENGTH_DEFAULT_B;
+    double sigma3[3] = { SF_HALATION_SIGMA_DEFAULT_UM, SF_HALATION_SIGMA_DEFAULT_UM,
+                         SF_HALATION_SIGMA_DEFAULT_UM };
+    sf_pack_film_defaults(pack, film->stock, NULL, NULL, NULL, NULL, s->halation_strength,
+                          sigma3, NULL, NULL, NULL);
+    /* all known presets use one sigma for R/G/B (see _HALATION_PRESETS
+       upstream); take the first channel rather than plumb a 3-wide sigma
+       through sf_halation() for a split that doesn't currently exist. */
+    s->halation_sigma_um = sigma3[0];
+  }
+
   /* neutral enlarger filters from the release database */
   if(s->has_print && p->neutral_from_db)
   {
@@ -2606,7 +2644,9 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
     g->grain_uniformity[c] = (float)s->grain_uniformity[c];
     /* self-consistent with g->film_dmax: see sf_sim_film_grain3 */
     g->grain_dmin[c] = (float)s->film_dmin[c];
+    g->halation_strength[c] = (float)s->halation_strength[c];
   }
+  g->halation_first_sigma_um = (float)s->halation_sigma_um;
   g->film_positive = s->film_positive;
   g->couplers_active = s->couplers_active;
 
@@ -2697,6 +2737,17 @@ void sf_sim_coupler_diffusion(const sf_sim_t *sim, double *size_um, double *tail
   *size_um = sim ? sim->coupler_diff_um : SF_COUPLER_BLUR_UM;
   *tail_um = sim ? sim->coupler_tail_um : 0.0;
   *tail_w = sim ? sim->coupler_tail_w : 0.0;
+}
+
+void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *first_sigma_um)
+{
+  const double dflt[3] = { SF_HALATION_STRENGTH_DEFAULT_R, SF_HALATION_STRENGTH_DEFAULT_G,
+                           SF_HALATION_STRENGTH_DEFAULT_B };
+  if(strength)
+  {
+    for(int c = 0; c < 3; c++) strength[c] = sim ? sim->halation_strength[c] : dflt[c];
+  }
+  if(first_sigma_um) *first_sigma_um = sim ? sim->halation_sigma_um : SF_HALATION_SIGMA_DEFAULT_UM;
 }
 
 void sf_sim_film_dmax3(const sf_sim_t *sim, float dmax[3])
