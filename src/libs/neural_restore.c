@@ -999,17 +999,11 @@ static void _import_image(const char *filename,
     {
       // retrieve and copy image rating from the source image
       const dt_image_t *src_rate = dt_image_cache_get(source_imgid, 'r');
-      if(src_rate)
-      {
-        const int rating = dt_image_get_xmp_rating(src_rate);
-        dt_image_cache_read_release(src_rate);
-        dt_image_t *img = dt_image_cache_get(newid, 'w');
-        if(img)
-        {
-          dt_image_set_xmp_rating(img, rating);
-          dt_image_cache_write_release(img, DT_IMAGE_CACHE_SAFE);
-        }
-      }
+      const int rating = dt_image_get_xmp_rating(src_rate);
+      dt_image_cache_read_release(src_rate);
+      dt_image_t *img = dt_image_cache_get(newid, 'w');
+      dt_image_set_xmp_rating(img, rating);
+      dt_image_cache_write_release(img, DT_IMAGE_CACHE_SAFE);
 
       // retrieve and copy color labels from the source image
       const int color_labels = dt_colorlabels_get_labels(source_imgid);
@@ -1036,7 +1030,7 @@ static void _import_image(const char *filename,
       GList *meta = dt_metadata_get_list_id(source_imgid);
       if(meta)
       {
-        GList *imgs = g_list_append(NULL, GINT_TO_POINTER(newid));
+        GList *imgs = g_list_prepend(NULL, GINT_TO_POINTER(newid));
         dt_metadata_set_list_id(imgs, meta, FALSE, FALSE);
         g_list_free(imgs);
         g_list_free_full(meta, g_free);
@@ -1066,7 +1060,6 @@ static void _import_image(const char *filename,
 
       // sync metadata changes to sidecar files and trigger UI updates
       dt_image_synch_xmp(newid);
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
     }
     // refresh the collection so the new image appears in the thumb grid
     dt_collection_update_query(darktable.collection,
@@ -1115,6 +1108,8 @@ static gboolean _job_finished_idle(gpointer data)
     for(GList *l = fd->images; l; l = g_list_next(l))
       g_hash_table_remove(d->processing_images, l->data);
     _update_button_sensitivity(d);
+    if (fd->images)
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
   }
   g_list_free(fd->images);
   g_free(fd);
