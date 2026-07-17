@@ -2014,6 +2014,30 @@ void gui_update(dt_iop_module_t *self)
       if(!strcmp(g->entries[g->film_entry[f]].stock, "kodak_portra_400")) fi = f;
   }
   dt_bauhaus_combobox_set(g->film, fi);
+  /* _film_changed() is a no-op during the combobox-set above (it bails out
+     on darktable.gui->reset, which gui_update runs under, so programmatic
+     loads don't get treated as user edits / spawn spurious history items).
+     That means its scan_film "what should a reset target" bookkeeping --
+     self->default_params->scan_film and the checkbox's own cached
+     "dt-toggle-default" -- never gets re-baselined on a fresh module load,
+     only when the user actually interacts with the film combobox. Left
+     alone, both stay at the compiled FALSE default after e.g. closing and
+     reopening darktable on an image using a positive/reversal film (which
+     has no print stage and needs scan_film TRUE): the checkbox itself still
+     shows correctly checked here (synced from p->scan_film below), but a
+     later double-click reset on it would silently flip scan_film back off.
+     Re-baseline both here too, exactly like _film_changed does -- but
+     WITHOUT touching p->scan_film itself, since the just-loaded value may
+     be a deliberate user override away from the film's natural mode and
+     must be preserved on load; only the reset target needs fixing. */
+  if(fi < g->n_films)
+  {
+    const sf_prof_entry_t *e = &g->entries[g->film_entry[fi]];
+    if(self->default_params)
+      ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
+    if(g->scan_film)
+      g_object_set_data(G_OBJECT(g->scan_film), "dt-toggle-default", GINT_TO_POINTER(e->positive));
+  }
   int pi = 0;
   const char *target = (fi < g->n_films) ? g->entries[g->film_entry[fi]].target_print : NULL;
   for(int k = 0; k < g->n_papers; k++)
