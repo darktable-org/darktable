@@ -86,7 +86,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(2, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -317,22 +317,34 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelp
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void **new_params, int32_t *new_params_size, int *new_version)
 {
-  /* v1 -> v2: added preflash_exposure/preflash_m_shift/preflash_y_shift,
-     diffusion_filter_family, and output_luminance_boost (Arecsu's
-     pre-compression boost patch). v1 here is the module's true original params
-     shape -- confirmed directly against the live, unmodified upstream
-     source, not reconstructed from memory -- covering every params layout
-     this module has shipped with so far: the introspection version was
-     never bumped through several earlier field additions (print_auto_exposure
-     among them) during this module's fast-moving initial development, so
-     this migration also recovers any history saved against those earlier
-     shapes, same reasoning as the previous v1->v2 migration this one
-     replaces: the struct has only ever grown by appending fields, so an
-     old, smaller saved blob still matches the leading fields of the
-     current struct, and the trailing fields (this migration's job) are
-     exactly what's missing. From this version onward, any further params
-     struct change should bump the version and add another case here rather
-     than silently drift again. */
+  /* v1 -> v3 and v2 -> v3: each case below produces the current (v3)
+     struct directly, rather than chaining through v2 -- same convention
+     darktable's own modules use for multi-version migrations (see e.g.
+     exposure.c, where every old_version case sets *new_version straight
+     to its latest, not to old_version+1).
+
+     v1 is the module's true original params shape, confirmed directly
+     against the live, unmodified upstream source -- covering every params
+     layout this module shipped with before the version was first bumped
+     (the introspection version was never bumped through several early
+     field additions, print_auto_exposure among them, during this module's
+     fast-moving initial development, so v1 recovers history saved against
+     any of those shapes too: the struct has only ever grown by appending
+     fields, so an old, smaller saved blob still matches the leading
+     fields of the current struct).
+
+     v2 is the shape after the first proper version bump (preflash_*,
+     diffusion_filter_family, output_luminance_boost added) but before
+     print diffusion existed.
+
+     v3 adds print_diffusion_on/print_diffusion_filter_family/
+     print_diffusion_strength/print_diffusion_scale/print_diffusion_warmth
+     -- a second, independent diffusion filter applied at the print stage
+     rather than the film stage.
+
+     From this version onward, any further params struct change should
+     bump the version and add another case here rather than silently
+     drift again. */
   typedef struct dt_iop_spektrafilm_params_v1_t
   {
     uint32_t film_hash;
@@ -362,6 +374,40 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     float film_format_mm;
   } dt_iop_spektrafilm_params_v1_t;
 
+  typedef struct dt_iop_spektrafilm_params_v2_t
+  {
+    uint32_t film_hash;
+    uint32_t paper_hash;
+    float exposure_ev;
+    float print_exposure_ev;
+    gboolean print_auto_exposure;
+    float print_contrast;
+    float filter_m;
+    float filter_y;
+    float couplers_amount;
+    float preflash_exposure;
+    float preflash_m_shift;
+    float preflash_y_shift;
+    gboolean scan_film;
+    dt_iop_spektrafilm_quality_t quality;
+    gboolean halation_on;
+    float halation_amount;
+    float halation_scale;
+    float boost_ev;
+    float boost_range;
+    float protect_ev;
+    gboolean diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+    float diffusion_strength;
+    float diffusion_scale;
+    float diffusion_warmth;
+    gboolean grain_on;
+    float grain_amount;
+    float grain_size;
+    float film_format_mm;
+    float output_luminance_boost;
+  } dt_iop_spektrafilm_params_v2_t;
+
   if(old_version == 1)
   {
     const dt_iop_spektrafilm_params_v1_t *o = (dt_iop_spektrafilm_params_v1_t *)old_params;
@@ -376,9 +422,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->filter_m = o->filter_m;
     n->filter_y = o->filter_y;
     n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = 0.0f; /* new field: neutral default, no-op (matches upstream) */
-    n->preflash_m_shift = 0.0f;  /* new field: neutral default, no-op */
-    n->preflash_y_shift = 0.0f;  /* new field: neutral default, no-op */
+    n->preflash_exposure = 0.0f; /* new in v2: neutral default, no-op (matches upstream) */
+    n->preflash_m_shift = 0.0f;  /* new in v2: neutral default, no-op */
+    n->preflash_y_shift = 0.0f;  /* new in v2: neutral default, no-op */
     n->scan_film = o->scan_film;
     n->quality = o->quality;
     n->halation_on = o->halation_on;
@@ -388,22 +434,77 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->boost_range = o->boost_range;
     n->protect_ev = o->protect_ev;
     n->diffusion_on = o->diffusion_on;
-    /* new field: the engine was hardcoded to Black Pro-Mist before the
+    /* new in v2: the engine was hardcoded to Black Pro-Mist before the
        family selector existed, so this exactly reproduces old saved
        diffusion settings rather than just picking a neutral default. */
     n->diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
     n->diffusion_strength = o->diffusion_strength;
     n->diffusion_scale = o->diffusion_scale;
     n->diffusion_warmth = o->diffusion_warmth;
+    /* new in v3: print diffusion never existed for anything saved against
+       v1, so it defaults off, same $DEFAULT the param itself declares. */
+    n->print_diffusion_on = FALSE;
+    n->print_diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
+    n->print_diffusion_strength = 0.5f;
+    n->print_diffusion_scale = 1.0f;
+    n->print_diffusion_warmth = 0.0f;
     n->grain_on = o->grain_on;
     n->grain_amount = o->grain_amount;
     n->grain_size = o->grain_size;
     n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = 1.0f; /* new field: neutral default, no-op (matches upstream) */
+    n->output_luminance_boost = 1.0f; /* new in v2: neutral default, no-op (matches upstream) */
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 2;
+    *new_version = 3;
+    return 0;
+  }
+  if(old_version == 2)
+  {
+    const dt_iop_spektrafilm_params_v2_t *o = (dt_iop_spektrafilm_params_v2_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->film_hash;
+    n->paper_hash = o->paper_hash;
+    n->exposure_ev = o->exposure_ev;
+    n->print_exposure_ev = o->print_exposure_ev;
+    n->print_auto_exposure = o->print_auto_exposure;
+    n->print_contrast = o->print_contrast;
+    n->filter_m = o->filter_m;
+    n->filter_y = o->filter_y;
+    n->couplers_amount = o->couplers_amount;
+    n->preflash_exposure = o->preflash_exposure;
+    n->preflash_m_shift = o->preflash_m_shift;
+    n->preflash_y_shift = o->preflash_y_shift;
+    n->scan_film = o->scan_film;
+    n->quality = o->quality;
+    n->halation_on = o->halation_on;
+    n->halation_amount = o->halation_amount;
+    n->halation_scale = o->halation_scale;
+    n->boost_ev = o->boost_ev;
+    n->boost_range = o->boost_range;
+    n->protect_ev = o->protect_ev;
+    n->diffusion_on = o->diffusion_on;
+    n->diffusion_filter_family = o->diffusion_filter_family;
+    n->diffusion_strength = o->diffusion_strength;
+    n->diffusion_scale = o->diffusion_scale;
+    n->diffusion_warmth = o->diffusion_warmth;
+    /* new in v3: nothing saved against v2 ever had print diffusion, so it
+       defaults off, same $DEFAULT the param itself declares. */
+    n->print_diffusion_on = FALSE;
+    n->print_diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
+    n->print_diffusion_strength = 0.5f;
+    n->print_diffusion_scale = 1.0f;
+    n->print_diffusion_warmth = 0.0f;
+    n->grain_on = o->grain_on;
+    n->grain_amount = o->grain_amount;
+    n->grain_size = o->grain_size;
+    n->film_format_mm = o->film_format_mm;
+    n->output_luminance_boost = o->output_luminance_boost;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
