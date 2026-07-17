@@ -637,7 +637,7 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
   seg->val1 =   dt_alloc_align_float(slots);
   seg->val2 =   dt_alloc_align_float(slots);
 
-  if(!seg->data || !seg->size
+  if(!seg->data || !seg->tmp  || !seg->size
                 || !seg->xmin || !seg->xmax || !seg->ymin || !seg->ymax
                 || !seg->val1 || !seg->val2)
   {
