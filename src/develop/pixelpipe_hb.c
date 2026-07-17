@@ -54,7 +54,7 @@
 static inline gboolean _pipe_has_shutdown(dt_dev_pixelpipe_t *pipe)
 {
   const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-  return stopper > DT_DEV_PIXELPIPE_STOP_NO
+  return stopper > DT_DEV_PIXELPIPE_PROCESSING
       && stopper != DT_DEV_PIXELPIPE_STOP_ZOOM
       && stopper != DT_DEV_PIXELPIPE_STOP_DATA;
 }
@@ -63,7 +63,7 @@ static inline gboolean _pipe_has_shutdown(dt_dev_pixelpipe_t *pipe)
 static inline gboolean _is_debug_pipe(dt_dev_pixelpipe_t *pipe)
 {
   return (dt_pipe_is_full(pipe) || dt_pipe_is_export(pipe))
-      && (dt_atomic_get_int(&pipe->shutdown) <= DT_DEV_PIXELPIPE_STOP_NO);
+      && (dt_atomic_get_int(&pipe->shutdown) == DT_DEV_PIXELPIPE_PROCESSING);
 }
 
 // forward declarations for mask cache helpers
@@ -113,6 +113,7 @@ const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t st
   switch(stopper)
   {
   case DT_DEV_PIXELPIPE_STOP_NO:    return "DT_DEV_PIXELPIPE_STOP_NO";
+  case DT_DEV_PIXELPIPE_PROCESSING: return "DT_DEV_PIXELPIPE_PROCESSING";
   case DT_DEV_PIXELPIPE_STOP_NODES: return "DT_DEV_PIXELPIPE_STOP_NODES";
   case DT_DEV_PIXELPIPE_STOP_HQ:    return "DT_DEV_PIXELPIPE_STOP_HQ";
   case DT_DEV_PIXELPIPE_STOP_LAST:  return "DT_DEV_PIXELPIPE_STOP_LAST";
@@ -291,7 +292,6 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
 
-  pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   pipe->opencl_error = FALSE;
   pipe->tiling = FALSE;
@@ -373,9 +373,9 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe,
                                    const dt_dev_pixelpipe_stopper_t stopper)
 {
-  int expected = DT_DEV_PIXELPIPE_STOP_NO;
+  int expected = DT_DEV_PIXELPIPE_PROCESSING;
   const gboolean new = dt_atomic_CAS_int(&pipe->shutdown, &expected, stopper);
-  if(new && pipe->processing)
+  if(new)
     dt_print_pipe(DT_DEBUG_PIPE, "pipe shutdown request",
       pipe, NULL, pipe->devid, NULL, NULL,
       "%s", dt_dev_pixelpipe_shutdown_to_str(stopper));
@@ -1299,7 +1299,7 @@ static inline dt_dev_stoptest_t _module_pipe_stop(dt_dev_pixelpipe_t *pipe,
                                                   float *outcacheline)
 {
   const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-  if(stopper <= DT_DEV_PIXELPIPE_STOP_NO)
+  if(stopper <= DT_DEV_PIXELPIPE_PROCESSING)
     return DT_DEV_STOPTEST_NO;
 
   dt_print_pipe(DT_DEBUG_PIPE, "module pipe stop",
@@ -1442,23 +1442,41 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                   work_profile
                     ? dt_colorspaces_get_name(work_profile->type, work_profile->filename)
                     : "no work profile");
-  }
 
-  // transform to module input colorspace
-  dt_ioppr_transform_image_colorspace(module, input, input,
+    // transform to module input colorspace
+    dt_ioppr_transform_image_colorspace(module, input, input,
                                       roi_in->width, roi_in->height,
                                       cst_from, cst_to, &input_format->cst,
                                       work_profile);
-  /*  We just might have in-place changed the input data (cst_from != cst_to).
-      Please note that cacheline dt_dev_pixelpipe_cache_t dsc has been updated
-      via &input_format->cst so a cache hit in a following pipe won't convert
-      again.
-      FIXME: As some colorspace transforms clip data - this depends on settings in
-      colorin module and we don't know about this in current code and position in pipe -
-      we have to invalidate the cacheline for now.
+    /* We just have in-place changed the input data (cst_from != cst_to).
+        Please note that cacheline dt_dev_pixelpipe_cache_t dsc has been updated
+        via &input_format->cst so a cache hit in a following pipe won't convert
+        again. Reminders:
+      Above is principally safe since we have the pipe profiles integrated in
+        basic hash so any profile change means the cacheline won't be used.
+
+      But check this scenario having three modules A,B and C
+        1. A outputs RGB to cacheline X
+        2. B converts X to LAB this might include RGB clipping, hash does not change
+             and writes RGB output to cacheline Y
+        3. C expects RGB and takes Y as input
+
+      Now disable B -> hash for X stays, piece hash for C changes.
+      When restarting the pipe we might get a cache hit for line X as input for C,
+        4. C gets X and as finding LAB converts it to RGB,
+            now we have different RGB data in X compared with starting point 1.
+            Amount of diffs depends on conversions (non-linear, clipping).
+
+      Now enable B again ... input cacheline data are not stable!
+
+      So for now we have to disable the input cacheline for stability.
+      Fixme options:
+      1. colorspace transforms might report back about such instability
+      2. Use an extra transformed buffer
   */
-  if(cst_from != cst_to)
+
     dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+  }
 
   _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
 
@@ -1597,10 +1615,15 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   // blend needs input/output images with default colorspace
   if(_transform_for_blend(module, piece))
   {
-    dt_ioppr_transform_image_colorspace(module, input, input,
+    if(input_format->cst != blend_cst)
+    {
+      dt_ioppr_transform_image_colorspace(module, input, input,
                                         roi_in->width, roi_in->height,
                                         input_format->cst, blend_cst, &input_format->cst,
                                         work_profile);
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+    }
+
     dt_ioppr_transform_image_colorspace(module, *output, *output,
                                         roi_out->width, roi_out->height,
                                         pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
@@ -2637,10 +2660,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         // blend needs input/output images with default colorspace
         if(success_opencl && _transform_for_blend(module, piece))
         {
-          dt_ioppr_transform_image_colorspace(module, input, input,
+          if(input_format->cst != blend_cst)
+          {
+            dt_ioppr_transform_image_colorspace(module, input, input,
                                               roi_in.width, roi_in.height,
                                               input_format->cst, blend_cst, &input_format->cst,
                                               work_profile);
+            dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+          }
           dt_ioppr_transform_image_colorspace(module, *output, *output,
                                               roi_out->width, roi_out->height,
                                               pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
@@ -3040,7 +3067,12 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                                   const float scale,
                                   const int devid)
 {
-  pipe->processing = TRUE;
+  /* If there was a recent unserved DT_DEV_PIXELPIPE_STOP_NODES shutdown request
+     we should respect that for an early pipe exit,
+     otherwise we mark the pipe as processing
+  */
+  if(dt_atomic_get_int(&pipe->shutdown) !=  DT_DEV_PIXELPIPE_STOP_NODES)
+    dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_PROCESSING);
   pipe->nocache = dt_pipe_is_image(pipe);
   pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
@@ -3187,10 +3219,7 @@ restart:
 
   // ... and in case of other errors ...
   if(err)
-  {
-    pipe->processing = FALSE;
     return TRUE;
-  }
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
@@ -3228,7 +3257,6 @@ restart:
                 pipe->image.filename, pipe->image.id);
   dt_print_mem_usage("after pixelpipe process");
 
-  pipe->processing = FALSE;
   return FALSE;
 }
 

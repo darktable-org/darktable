@@ -1802,7 +1802,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
     return;
   }
 
-  if(!g->luminance_valid || self->dev->full.pipe->processing || !g->histogram_valid)
+  if(!g->luminance_valid || dt_pipe_processing(self->dev->full.pipe) || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
@@ -1868,7 +1868,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
     return;
   }
 
-  if(!g->luminance_valid || self->dev->full.pipe->processing || !g->histogram_valid)
+  if(!g->luminance_valid || dt_pipe_processing(self->dev->full.pipe) || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
@@ -1993,7 +1993,7 @@ static void switch_cursors(dt_iop_module_t *self)
     // do nothing and let the app decide
     return;
   }
-  else if((self->dev->full.pipe->processing
+  else if((dt_pipe_processing(self->dev->full.pipe)
            || self->dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
            || self->dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY)
           && g->cursor_valid)
@@ -2006,7 +2006,7 @@ static void switch_cursors(dt_iop_module_t *self)
 
     dt_control_queue_redraw_center();
   }
-  else if(g->cursor_valid && !self->dev->full.pipe->processing)
+  else if(g->cursor_valid && !dt_pipe_processing(self->dev->full.pipe))
   {
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
@@ -2078,7 +2078,7 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_gui_leave_critical_section(self);
 
   // store the actual exposure too, to spare I/O op
-  if(g->cursor_valid && !dev->full.pipe->processing && g->luminance_valid)
+  if(g->cursor_valid && !dt_pipe_processing(dev->full.pipe) && g->luminance_valid)
     g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
 
   switch_cursors(self);
@@ -2196,7 +2196,7 @@ int scrolled(dt_iop_module_t *self,
                      || !g->luminance_valid
                      || !g->interpolation_valid
                      || !g->user_param_valid
-                     || dev->full.pipe->processing
+                     || dt_pipe_processing(dev->full.pipe)
                      || !g->has_focus;
 
   dt_iop_gui_leave_critical_section(self);
@@ -2357,7 +2357,7 @@ void gui_post_expose(dt_iop_module_t *self,
 
   const gboolean fail = !g->cursor_valid
                      || !g->interpolation_valid
-                     || dev->full.pipe->processing
+                     || dt_pipe_processing(dev->full.pipe)
                      || !g->has_focus;
 
   dt_iop_gui_leave_critical_section(self);

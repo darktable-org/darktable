@@ -116,7 +116,10 @@ typedef enum dt_dev_pixelpipe_status_t
     A summary about how these shutdown modes are supposed to work.
 
     DT_DEV_PIXELPIPE_STOP_NO
-    Set whenever a pipe is started in _dev_pixelpipe_process_rec() as default.
+    Set whenever we initialize or clean up the pipe, should be understodd like "pipe is idle"
+
+    DT_DEV_PIXELPIPE_PROCESSING
+    Set whenever a pipe is started making this different from idling mode STOP_NO.
 
     DT_DEV_PIXELPIPE_STOP_NODES
     Set if the pipe should stop as the pipe nodes are changed
@@ -135,11 +138,13 @@ typedef enum dt_dev_pixelpipe_status_t
     of a module. Any module can use dt_dev_pixelpipe_set_shutdown() to it's iop_order at runtime,
     this is checked in _module_pipe_stop() while processing the pipe and currently ensures
     cacheline invalidation of all following modules.
+    Note: per design iop_order are at least 100
 */
 
 typedef enum dt_dev_pixelpipe_stopper_t
 {
   DT_DEV_PIXELPIPE_STOP_NO = 0,
+  DT_DEV_PIXELPIPE_PROCESSING,
   DT_DEV_PIXELPIPE_STOP_NODES,
   DT_DEV_PIXELPIPE_STOP_HQ,
   DT_DEV_PIXELPIPE_STOP_ZOOM,
@@ -216,9 +221,7 @@ typedef struct dt_dev_pixelpipe_t
   gboolean nocache;
 
   dt_imgid_t output_imgid;
-  // working?
-  gboolean processing;
-  /* shutting down?
+  /* Testing for shutting down and a running pixelpipe
      can be used in various ways defined in dt_dev_pixelpipe_stopper_t, in all cases the
        running pipe is stopped asap
      If we don't use one of the enum values this is interpreted as the iop_order of the module
@@ -321,6 +324,14 @@ static inline gboolean dt_pipe_no_mask_display(const dt_dev_pixelpipe_t *pipe)
 static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
 {
   return pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
+}
+static inline gboolean dt_pipe_processing(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) == DT_DEV_PIXELPIPE_PROCESSING;
+}
+static inline gboolean dt_pipe_started(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) >= DT_DEV_PIXELPIPE_PROCESSING;
 }
 
 // report pipe->type as textual string
