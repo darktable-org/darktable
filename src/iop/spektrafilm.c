@@ -86,13 +86,16 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(3, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
    tiling_callback() so the halo math stays in sync). */
 #define SF_HALATION_FIRST_SIGMA_UM 65.0f
 #define SF_HALATION_PSF_SIGMAS 1.7320508f /* sqrt(3) */
+/* widest stage-1 scatter component: max(sc_tail)*max(tail_rat) from
+   spektra_core.c's sf_halation() = 9.7 * 2.7684 um, rounded up */
+#define SF_SCATTER_TAIL_MAX_UM 27.0f
 #define SF_GRAIN_BLUR_FACTOR 0.8f
 #define SF_GRAIN_SIZE_MIN 0.05f
 #define SF_HALO_SIGMAS 4.0f
@@ -138,6 +141,8 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean scan_film;       // $DEFAULT: FALSE $DESCRIPTION: "scan the film (skip print)"
   dt_iop_spektrafilm_quality_t quality; // $DEFAULT: DT_SPEKTRAFILM_Q_STANDARD $DESCRIPTION: "quality"
   gboolean halation_on;     // $DEFAULT: TRUE $DESCRIPTION: "enable halation"
+  float scatter_amount;     // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter amount"
+  float scatter_scale;      // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter size"
   float halation_amount;    // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "halation"
   float halation_scale;     // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "halation size"
   float boost_ev;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "highlight boost"
@@ -177,7 +182,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *exposure_ev, *print_exposure_ev, *print_auto_exposure, *print_contrast, *filter_m, *filter_y;
   GtkWidget *couplers_amount, *scan_film, *quality;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
-  GtkWidget *halation_on, *halation_amount, *halation_scale;
+  GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
   GtkWidget *boost_ev, *boost_range, *protect_ev;
   GtkWidget *diffusion_on, *diffusion_filter_family, *diffusion_strength, *diffusion_scale, *diffusion_warmth;
   GtkWidget *print_diffusion_on, *print_diffusion_filter_family, *print_diffusion_strength, *print_diffusion_scale, *print_diffusion_warmth;
@@ -208,7 +213,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_expose, kernel_lograw, kernel_develop_corr, kernel_develop;
   int kernel_grain_gen, kernel_grain_add;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
-  int kernel_scatter_combine, kernel_accum, kernel_halation_apply;
+  int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_max_partials, kernel_max_reduce, kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
 } dt_iop_spektrafilm_global_data_t;
 
@@ -238,6 +243,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_passthrough = dt_opencl_create_kernel(program, "spektrafilm_passthrough");
   gd->kernel_scatter_combine = dt_opencl_create_kernel(program, "spektrafilm_scatter_combine");
   gd->kernel_accum = dt_opencl_create_kernel(program, "spektrafilm_accum");
+  gd->kernel_channel_extract = dt_opencl_create_kernel(program, "spektrafilm_channel_extract");
+  gd->kernel_channel_accum = dt_opencl_create_kernel(program, "spektrafilm_channel_accum");
   gd->kernel_halation_apply = dt_opencl_create_kernel(program, "spektrafilm_halation_apply");
   gd->kernel_max_partials = dt_opencl_create_kernel(program, "spektrafilm_max_partials");
   gd->kernel_max_reduce = dt_opencl_create_kernel(program, "spektrafilm_max_reduce");
@@ -263,6 +270,8 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_passthrough);
     dt_opencl_free_kernel(gd->kernel_scatter_combine);
     dt_opencl_free_kernel(gd->kernel_accum);
+    dt_opencl_free_kernel(gd->kernel_channel_extract);
+    dt_opencl_free_kernel(gd->kernel_channel_accum);
     dt_opencl_free_kernel(gd->kernel_halation_apply);
     dt_opencl_free_kernel(gd->kernel_max_partials);
     dt_opencl_free_kernel(gd->kernel_max_reduce);
@@ -317,11 +326,11 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelp
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void **new_params, int32_t *new_params_size, int *new_version)
 {
-  /* v1 -> v3 and v2 -> v3: each case below produces the current (v3)
-     struct directly, rather than chaining through v2 -- same convention
-     darktable's own modules use for multi-version migrations (see e.g.
-     exposure.c, where every old_version case sets *new_version straight
-     to its latest, not to old_version+1).
+  /* v1 -> v4, v2 -> v4, v3 -> v4: each case below produces the current (v4)
+     struct directly, rather than chaining through the intermediate versions --
+     same convention darktable's own modules use for multi-version migrations
+     (see e.g. exposure.c, where every old_version case sets *new_version
+     straight to its latest, not to old_version+1).
 
      v1 is the module's true original params shape, confirmed directly
      against the live, unmodified upstream source -- covering every params
@@ -341,6 +350,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
      print_diffusion_strength/print_diffusion_scale/print_diffusion_warmth
      -- a second, independent diffusion filter applied at the print stage
      rather than the film stage.
+
+     v4 splits what used to be one shared halation_amount/halation_scale
+     pair -- driving BOTH the in-emulsion scatter stage (always fully
+     engaged, s_amount==1 hardcoded) and the back-reflection halation stage
+     -- into two independent pairs: scatter_amount/scatter_scale (new) and
+     halation_amount/halation_scale (unchanged meaning, now stage-2 only).
+     Every case below sets scatter_amount = 1.0 (previously the implicit,
+     unconfigurable, always-on value) and scatter_scale = <old
+     halation_scale> (the spatial multiplier that value used to feed into
+     BOTH stages) so migrated params reproduce the old rendering exactly,
+     pixel for pixel, before the user ever touches the new sliders.
 
      From this version onward, any further params struct change should
      bump the version and add another case here rather than silently
@@ -408,6 +428,45 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     float output_luminance_boost;
   } dt_iop_spektrafilm_params_v2_t;
 
+  typedef struct dt_iop_spektrafilm_params_v3_t
+  {
+    uint32_t film_hash;
+    uint32_t paper_hash;
+    float exposure_ev;
+    float print_exposure_ev;
+    gboolean print_auto_exposure;
+    float print_contrast;
+    float filter_m;
+    float filter_y;
+    float couplers_amount;
+    float preflash_exposure;
+    float preflash_m_shift;
+    float preflash_y_shift;
+    gboolean scan_film;
+    dt_iop_spektrafilm_quality_t quality;
+    gboolean halation_on;
+    float halation_amount;
+    float halation_scale;
+    float boost_ev;
+    float boost_range;
+    float protect_ev;
+    gboolean diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+    float diffusion_strength;
+    float diffusion_scale;
+    float diffusion_warmth;
+    gboolean print_diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
+    float print_diffusion_strength;
+    float print_diffusion_scale;
+    float print_diffusion_warmth;
+    gboolean grain_on;
+    float grain_amount;
+    float grain_size;
+    float film_format_mm;
+    float output_luminance_boost;
+  } dt_iop_spektrafilm_params_v3_t;
+
   if(old_version == 1)
   {
     const dt_iop_spektrafilm_params_v1_t *o = (dt_iop_spektrafilm_params_v1_t *)old_params;
@@ -428,6 +487,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scan_film = o->scan_film;
     n->quality = o->quality;
     n->halation_on = o->halation_on;
+    /* new in v4: scatter used to be hardcoded fully-on and shared
+       halation_scale as its spatial multiplier -- reproduce that exactly. */
+    n->scatter_amount = 1.0f;
+    n->scatter_scale = o->halation_scale;
     n->halation_amount = o->halation_amount;
     n->halation_scale = o->halation_scale;
     n->boost_ev = o->boost_ev;
@@ -456,7 +519,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 3;
+    *new_version = 4;
     return 0;
   }
   if(old_version == 2)
@@ -479,6 +542,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scan_film = o->scan_film;
     n->quality = o->quality;
     n->halation_on = o->halation_on;
+    /* new in v4: scatter used to be hardcoded fully-on and shared
+       halation_scale as its spatial multiplier -- reproduce that exactly. */
+    n->scatter_amount = 1.0f;
+    n->scatter_scale = o->halation_scale;
     n->halation_amount = o->halation_amount;
     n->halation_scale = o->halation_scale;
     n->boost_ev = o->boost_ev;
@@ -504,7 +571,57 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 3;
+    *new_version = 4;
+    return 0;
+  }
+  if(old_version == 3)
+  {
+    const dt_iop_spektrafilm_params_v3_t *o = (dt_iop_spektrafilm_params_v3_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->film_hash;
+    n->paper_hash = o->paper_hash;
+    n->exposure_ev = o->exposure_ev;
+    n->print_exposure_ev = o->print_exposure_ev;
+    n->print_auto_exposure = o->print_auto_exposure;
+    n->print_contrast = o->print_contrast;
+    n->filter_m = o->filter_m;
+    n->filter_y = o->filter_y;
+    n->couplers_amount = o->couplers_amount;
+    n->preflash_exposure = o->preflash_exposure;
+    n->preflash_m_shift = o->preflash_m_shift;
+    n->preflash_y_shift = o->preflash_y_shift;
+    n->scan_film = o->scan_film;
+    n->quality = o->quality;
+    n->halation_on = o->halation_on;
+    /* new in v4: scatter used to be hardcoded fully-on and shared
+       halation_scale as its spatial multiplier -- reproduce that exactly. */
+    n->scatter_amount = 1.0f;
+    n->scatter_scale = o->halation_scale;
+    n->halation_amount = o->halation_amount;
+    n->halation_scale = o->halation_scale;
+    n->boost_ev = o->boost_ev;
+    n->boost_range = o->boost_range;
+    n->protect_ev = o->protect_ev;
+    n->diffusion_on = o->diffusion_on;
+    n->diffusion_filter_family = o->diffusion_filter_family;
+    n->diffusion_strength = o->diffusion_strength;
+    n->diffusion_scale = o->diffusion_scale;
+    n->diffusion_warmth = o->diffusion_warmth;
+    n->print_diffusion_on = o->print_diffusion_on;
+    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
+    n->print_diffusion_strength = o->print_diffusion_strength;
+    n->print_diffusion_scale = o->print_diffusion_scale;
+    n->print_diffusion_warmth = o->print_diffusion_warmth;
+    n->grain_on = o->grain_on;
+    n->grain_amount = o->grain_amount;
+    n->grain_size = o->grain_size;
+    n->film_format_mm = o->film_format_mm;
+    n->output_luminance_boost = o->output_luminance_boost;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 4;
     return 0;
   }
   return 1;
@@ -869,9 +986,20 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
 static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_um)
 {
   const float inv_um = 1.0f / fmaxf(pixel_um, 1e-3f);
+  /* halation stage: first-bounce radius, scaled by the user's halation_scale
+     (previously this padding ignored halation_scale entirely, silently
+     under-padding for anyone above the 1.0 default -- fixed here). */
+  const float hal_scale = fmaxf(p->halation_scale, 1e-3f);
   const float hal = (p->halation_on && p->halation_amount > 0.0f)
-                        ? SF_HALATION_FIRST_SIGMA_UM * SF_HALATION_PSF_SIGMAS * inv_um
+                        ? SF_HALATION_FIRST_SIGMA_UM * SF_HALATION_PSF_SIGMAS * hal_scale * inv_um
                         : 0.0f;
+  /* scatter stage: widest core+tail component, scaled by its own
+     scatter_scale (independent from halation_scale since the scatter_amount/
+     scatter_scale split). */
+  const float scat_scale = fmaxf(p->scatter_scale, 1e-3f);
+  const float scat = (p->halation_on && p->scatter_amount > 0.0f)
+                         ? SF_SCATTER_TAIL_MAX_UM * SF_HALATION_PSF_SIGMAS * scat_scale * inv_um
+                         : 0.0f;
   /* The widest of film-stage and print-stage diffusion determines the ROI
      padding — both must fit in the expanded tile. Both stages use the same
      bloom constant; only the user's scale slider differs between them. */
@@ -894,7 +1022,7 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
                             ? fmaxf((float)SF_COUPLER_BLUR_UM,
                                     (float)(SF_EXPTAIL_R2 * 200.0)) * inv_um
                             : 0.0f;
-  return fmaxf(fmaxf(hal, diff), fmaxf(grain, coupler));
+  return fmaxf(fmaxf(fmaxf(hal, scat), diff), fmaxf(grain, coupler));
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -929,7 +1057,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const float full_w = fmaxf((float)piece->buf_in.width * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_w;
   tiling->factor = 2.5f; /* 4 float4 buffers, but they alias in practice */
-  tiling->factor_cl = 2.5f;
+  tiling->factor_cl = 2.75f; /* + a 1ch scatter-stage scratch buffer (1/4 of a float4 buffer) */
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
@@ -1002,8 +1130,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(d->p.diffusion_on)
     sf_diffusion_filter(plane, w, h, (double)pixel_um, (int)d->p.diffusion_filter_family,
                         d->p.diffusion_strength, d->p.diffusion_scale, d->p.diffusion_warmth);
-  if(d->p.halation_on && d->p.halation_amount > 0.0f)
-    sf_halation(plane, w, h, (double)pixel_um, d->p.halation_amount, d->p.halation_scale);
+  if(d->p.halation_on && (d->p.scatter_amount > 0.0f || d->p.halation_amount > 0.0f))
+  {
+    double hal_strength[3], hal_sigma_um;
+    sf_sim_halation_params(sim, hal_strength, &hal_sigma_um);
+    /* modify_roi_in()/tiling_callback() already padded for at most
+       SF_HALATION_FIRST_SIGMA_UM (see _max_halo_sigma); clamp so a future
+       pack entry larger than that can't under-pad the halo. */
+    hal_sigma_um = fmin(hal_sigma_um, (double)SF_HALATION_FIRST_SIGMA_UM);
+    sf_halation(plane, w, h, (double)pixel_um, d->p.scatter_amount, d->p.scatter_scale,
+               d->p.halation_amount, d->p.halation_scale, hal_strength, hal_sigma_um);
+  }
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
         field diffuses in the emulsion: gaussian, sigma 20 um as in the
@@ -1222,20 +1359,29 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem plane2 = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
   cl_mem tmpa = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
   cl_mem acc = dt_opencl_alloc_device_buffer(devid, npix * f * 4);
+  /* single-channel scratch for the scatter stage's genuinely per-channel
+     blurs (spektrafilm_channel_extract + a 1ch Gaussian): 1/4 the size and
+     1/4 the per-blur cost of running the equivalent work on a float4
+     buffer, see the scatter stage below. */
+  cl_mem plane1 = dt_opencl_alloc_device_buffer(devid, npix * f);
   dt_gaussian_cl_t *gauss = NULL;
+  dt_gaussian_cl_t *gauss1 = NULL;
   if(!mats_cl || !tc_cl || !cn_cl || !cb_cl || !sl_cl || !sx_cl || !sy_cl || !sz_cl || !sn_cl
-     || !sm_cl || !cm_cl || !plane || !plane2 || !tmpa || !acc
+     || !sm_cl || !cm_cl || !plane || !plane2 || !tmpa || !acc || !plane1
      || (g->has_print && (!el_cl || !ex_cl || !ey_cl || !ez_cl || !en_cl || !em_cl || !pc_cl)))
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
 
-  /* pre-allocated gaussian blur object: avoids allocating 2 temp buffers per blur */
+  /* pre-allocated gaussian blur objects: avoids allocating temp buffers per
+     blur. gauss (4ch) serves everything except the scatter stage; gauss1
+     (1ch) serves the scatter stage's real per-channel blurs. */
   {
     const dt_aligned_pixel_t gmax = { 1e9f, 1e9f, 1e9f, 1e9f };
     const dt_aligned_pixel_t gmin = { -1e9f, -1e9f, -1e9f, -1e9f };
     gauss = dt_gaussian_init_cl(devid, w, h, 4, gmax, gmin, 1.0f, DT_IOP_GAUSSIAN_ZERO);
+    gauss1 = dt_gaussian_init_cl(devid, w, h, 1, gmax, gmin, 1.0f, DT_IOP_GAUSSIAN_ZERO);
   }
 #define SF_GAUSS_BLUR(buf, _sg, label) do { \
     if(gauss) { gauss->sigma = (_sg); err = dt_gaussian_blur_cl_buffer(gauss, (buf), (buf)); } \
@@ -1257,6 +1403,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     if(gauss) { gauss->sigma = (_sg); err = dt_gaussian_blur_cl_buffer(gauss, (src), (dst)); } \
     else { err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, (src), (dst), 0, 0, npix * f * 4); \
            if(err == CL_SUCCESS) err = dt_gaussian_mean_blur_cl(devid, (dst), w, h, 4, (_sg)); } \
+  } while(0)
+/* single-channel in-place blur (scatter stage only, on plane1) */
+#define SF_GAUSS_BLUR_1CH_L(buf, _sg) do { \
+    if(gauss1) { gauss1->sigma = (_sg); err = dt_gaussian_blur_cl_buffer(gauss1, (buf), (buf)); } \
+    else { err = dt_gaussian_mean_blur_cl(devid, (buf), w, h, 1, (_sg)); } \
   } while(0)
 
   /* ---- 1) expose: input image -> linear film raw exposure ---------------- */
@@ -1326,47 +1477,92 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     }
   }
 
-  if(d->p.halation_on && d->p.halation_amount > 0.0f)
+  if(d->p.halation_on && (d->p.scatter_amount > 0.0f || d->p.halation_amount > 0.0f))
   {
-    const float hscl = fmaxf(d->p.halation_scale, 1e-3f);
-    const float core_um = (2.2f + 2.0f + 1.6f) / 3.0f, tail_um = (9.3f + 9.7f + 9.1f) / 3.0f;
-    const float amp[3] = { 0.1633f, 0.6496f, 0.1870f }, rat[3] = { 0.5360f, 1.5236f, 2.7684f };
-    SF_GAUSS_BLUR_OP(plane, tmpa, fmaxf(core_um * hscl / pixel_um, 1e-3f), "halation core blur");
-    for(int g3 = 0; g3 < 3; g3++)
+    if(d->p.scatter_amount > 0.0f)
     {
-      SF_GAUSS_BLUR_OP_L(plane, plane2, fmaxf(rat[g3] * tail_um * hscl / pixel_um, 1e-3f));
-      if(err != CL_SUCCESS) break;
-      const int reset = (g3 == 0);
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
-                                             CLARG(acc), CLARG(w), CLARG(h), CLARG(amp[g3]),
-                                             CLARG(reset));
-      SF_CL_STEP("halation tail accum");
+      const float sscl = fmaxf(d->p.scatter_scale, 1e-3f);
+      /* per-channel scatter radii (um on film) and tail mixture, identical to
+         spektra_core.c's sf_halation() sc_core/sc_tail/tail_amp/tail_rat.
+         Each channel needs its OWN sigma (R/G/B differ): extract that
+         channel into the single-channel scratch buffer plane1, blur it
+         alone (1x the work of a same-size float4 blur, not 4x), then
+         kernel_channel_accum folds it into the target channel of tmpa/acc. */
+      const float sc_core[3] = { 2.2f, 2.0f, 1.6f };
+      const float sc_tail[3] = { 9.3f, 9.7f, 9.1f };
+      const float amp[3] = { 0.1633f, 0.6496f, 0.1870f }, rat[3] = { 0.5360f, 1.5236f, 2.7684f };
+      for(int c = 0; c < 3; c++)
+      {
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_channel_extract, w, h,
+                                               CLARG(plane), CLARG(plane1), CLARG(w), CLARG(h),
+                                               CLARG(c));
+        if(err != CL_SUCCESS) break;
+        SF_GAUSS_BLUR_1CH_L(plane1, fmaxf(sc_core[c] * sscl / pixel_um, 1e-6f));
+        if(err != CL_SUCCESS) break;
+        const float core_weight = 1.0f;
+        const int core_reset = (c == 0);
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_channel_accum, w, h,
+                                               CLARG(plane1), CLARG(tmpa), CLARG(w), CLARG(h),
+                                               CLARG(core_weight), CLARG(c), CLARG(core_reset));
+        SF_CL_STEP("scatter core blur");
+      }
+      for(int g3 = 0; g3 < 3 && err == CL_SUCCESS; g3++)
+        for(int c = 0; c < 3; c++)
+        {
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_channel_extract, w, h,
+                                                 CLARG(plane), CLARG(plane1), CLARG(w), CLARG(h),
+                                                 CLARG(c));
+          if(err != CL_SUCCESS) break;
+          const float sigma = fmaxf(rat[g3] * sc_tail[c] * sscl / pixel_um, 1e-6f);
+          SF_GAUSS_BLUR_1CH_L(plane1, sigma);
+          if(err != CL_SUCCESS) break;
+          const int reset = (g3 == 0 && c == 0);
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_channel_accum, w, h,
+                                                 CLARG(plane1), CLARG(acc), CLARG(w), CLARG(h),
+                                                 CLARG(amp[g3]), CLARG(c), CLARG(reset));
+          SF_CL_STEP("scatter tail accum");
+        }
+      const float ws_r = 0.78f, ws_g = 0.65f, ws_b = 0.67f;
+      /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
+         doubles as both the pre-scatter `raw` input and the `out` write
+         target -- safe since this is a purely per-pixel elementwise op. */
+      const float s_amount = d->p.scatter_amount;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scatter_combine, w, h, CLARG(plane),
+                                             CLARG(tmpa), CLARG(acc), CLARG(plane), CLARG(w),
+                                             CLARG(h), CLARG(s_amount), CLARG(ws_r), CLARG(ws_g),
+                                             CLARG(ws_b));
+      SF_CL_STEP("scatter combine");
     }
-    const float ws_r = 0.78f, ws_g = 0.65f, ws_b = 0.67f;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scatter_combine, w, h, CLARG(tmpa),
-                                           CLARG(acc), CLARG(plane), CLARG(w), CLARG(h),
-                                           CLARG(ws_r), CLARG(ws_g), CLARG(ws_b));
-    SF_CL_STEP("scatter combine");
 
-    const int N = 3;
-    const float first_sigma = SF_HALATION_FIRST_SIGMA_UM;
-    const float dec[3] = { 1.0f/1.75f, 0.5f/1.75f, 0.25f/1.75f };
-    for(int k = 1; k <= N; k++)
+    if(d->p.halation_amount > 0.0f)
     {
-      SF_GAUSS_BLUR_OP_L(plane, plane2, fmaxf(first_sigma * hscl * sqrtf((float)k) / pixel_um, 1e-3f));
-      if(err != CL_SUCCESS) break;
-      const int reset = (k == 1);
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
-                                             CLARG(acc), CLARG(w), CLARG(h), CLARG(dec[k - 1]),
-                                             CLARG(reset));
-      SF_CL_STEP("halation bounce accum");
+      const float hscl = fmaxf(d->p.halation_scale, 1e-3f);
+      const int N = 3;
+      /* per-film first-bounce radius (still ~65um / cine ~50um on real
+         stocks); clamped to what modify_roi_in()/tiling_callback() padded
+         for, see the matching comment in process(). */
+      const float first_sigma = fminf(g->halation_first_sigma_um, SF_HALATION_FIRST_SIGMA_UM);
+      const float dec[3] = { 1.0f/1.75f, 0.5f/1.75f, 0.25f/1.75f };
+      for(int k = 1; k <= N; k++)
+      {
+        SF_GAUSS_BLUR_OP_L(plane, plane2, fmaxf(first_sigma * hscl * sqrtf((float)k) / pixel_um, 1e-3f));
+        if(err != CL_SUCCESS) break;
+        const int reset = (k == 1);
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_accum, w, h, CLARG(plane2),
+                                               CLARG(acc), CLARG(w), CLARG(h), CLARG(dec[k - 1]),
+                                               CLARG(reset));
+        SF_CL_STEP("halation bounce accum");
+      }
+      const float h_eff = powf(d->p.halation_amount, 1.3f);
+      /* per-film halation strength (e.g. a strong-AH stock stays near-zero on
+         blue and much lower on red/green than a no-AH/redscale stock). */
+      const float a_r = g->halation_strength[0] * h_eff, a_g = g->halation_strength[1] * h_eff,
+                  a_b = g->halation_strength[2] * h_eff;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_halation_apply, w, h, CLARG(plane),
+                                             CLARG(acc), CLARG(w), CLARG(h), CLARG(a_r),
+                                             CLARG(a_g), CLARG(a_b));
+      SF_CL_STEP("halation apply");
     }
-    const float h_eff = powf(d->p.halation_amount, 1.3f);
-    const float a_r = 0.05f * h_eff, a_g = 0.015f * h_eff, a_b = 0.0f;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_halation_apply, w, h, CLARG(plane),
-                                           CLARG(acc), CLARG(w), CLARG(h), CLARG(a_r),
-                                           CLARG(a_g), CLARG(a_b));
-    SF_CL_STEP("halation apply");
   }
 
   /* ---- 3) film development ------------------------------------------------ */
@@ -1509,6 +1705,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 cleanup:
   if(gauss) dt_gaussian_free_cl(gauss);
+  if(gauss1) dt_gaussian_free_cl(gauss1);
   dt_opencl_release_mem_object(mats_cl);
   dt_opencl_release_mem_object(tc_cl);
   dt_opencl_release_mem_object(cn_cl);
@@ -1531,6 +1728,7 @@ cleanup:
   dt_opencl_release_mem_object(plane2);
   dt_opencl_release_mem_object(tmpa);
   dt_opencl_release_mem_object(acc);
+  dt_opencl_release_mem_object(plane1);
   return err;
 }
 #endif /* HAVE_OPENCL */
@@ -1838,6 +2036,14 @@ void gui_init(dt_iop_module_t *self)
   /* ---- tab: halation ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);
   g->halation_on = dt_bauhaus_toggle_from_params(self, "halation_on");
+  g->scatter_amount = dt_bauhaus_slider_from_params(self, "scatter_amount");
+  gtk_widget_set_tooltip_text(g->scatter_amount,
+                              _("in-emulsion light scatter, before the halation bounce"
+                                " (1.0 = film-accurate; 0 = off)"));
+  g->scatter_scale = dt_bauhaus_slider_from_params(self, "scatter_scale");
+  gtk_widget_set_tooltip_text(g->scatter_scale,
+                              _("scatter size: scales the in-emulsion scatter radius"
+                                " (1.0 = film-accurate)"));
   g->halation_amount = dt_bauhaus_slider_from_params(self, "halation_amount");
   dt_bauhaus_slider_set_soft_range(g->halation_amount, 0.0f, 2.0f);
   gtk_widget_set_tooltip_text(g->halation_amount,
