@@ -132,6 +132,10 @@ changes (where available).
 - Fixed two-finger scrolling falling through to zoom when drawing masks,
   scrolling now pans unless the active mask consumes the gesture.
 
+- Fix feather rendering on path masks whose control points coincide
+  with their corners; previously produced wildly displaced border
+  lines instead of a proper offset outline.
+
 ## Lua
 
 ### API Version
