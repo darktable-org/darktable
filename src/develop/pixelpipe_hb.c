@@ -1567,6 +1567,9 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                         roi_in->width, roi_in->height,
                                         input_format->cst, blend_cst, &input_format->cst,
                                         work_profile);
+    if(input_format->cst != blend_cst)
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+
     dt_ioppr_transform_image_colorspace(module, *output, *output,
                                         roi_out->width, roi_out->height,
                                         pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
@@ -2576,6 +2579,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                               roi_in.width, roi_in.height,
                                               input_format->cst, blend_cst, &input_format->cst,
                                               work_profile);
+          if(input_format->cst != blend_cst)
+            dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+
           dt_ioppr_transform_image_colorspace(module, *output, *output,
                                               roi_out->width, roi_out->height,
                                               pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
