@@ -209,6 +209,7 @@ const char *sf_profile_name(const sf_profile_t *p);
 const char *sf_profile_stage(const sf_profile_t *p);        /* "filming" / "printing" */
 const char *sf_profile_type(const sf_profile_t *p);         /* "negative" / "positive" */
 const char *sf_profile_target_print(const sf_profile_t *p); /* may be NULL */
+const char *sf_profile_channel_model(const sf_profile_t *p); /* "color" / "bw" / NULL */
 
 /* -------------------------------------------------------------- params -- */
 

@@ -50,8 +50,7 @@
 
 #define SF_LOG_EPS 1e-10
 
-/* NEON 3×3 matrix multiply for 4 pixels at once via vmlaq_n_f32 (fused
-   multiply-add by scalar broadcast). Pure NEON — works on any ARMv8 target. */
+/* 4-pixel NEON 3×3 matrix multiply: vld3q → vmlaq_n ×3 → vst3q. */
 #if defined(__ARM_NEON)
 #include <arm_neon.h>
 
@@ -799,6 +798,7 @@ const char *sf_profile_name(const sf_profile_t *p) { return p->name; }
 const char *sf_profile_stage(const sf_profile_t *p) { return p->stage; }
 const char *sf_profile_type(const sf_profile_t *p) { return p->type; }
 const char *sf_profile_target_print(const sf_profile_t *p) { return p->target_print; }
+const char *sf_profile_channel_model(const sf_profile_t *p) { return p->channel_model; }
 
 /* ------------------------------------------------------------------------ */
 /* parameter defaults & colour spaces                                       */
