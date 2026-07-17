@@ -284,10 +284,12 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
      upstream keys these off the profile's use/antihalation tags -- e.g. a
      modern strong-AH stock scatters far less red/green back than a
      rem-jet-removed one. hscl is halation's OWN spatial-scale multiplier,
-     independent from the scatter stage's scl above. */
-  const double eff = pow((double)halation_amount, 1.3);
-  const double a_tot[3] = { halation_strength[0] * eff, halation_strength[1] * eff,
-                            halation_strength[2] * eff };
+     independent from the scatter stage's scl above. halation_amount is a
+     direct linear multiplier on strength here, matching upstream's
+     a_tot = halation_strength * halation_amount exactly (no extra curve). */
+  const double a_tot[3] = { halation_strength[0] * (double)halation_amount,
+                            halation_strength[1] * (double)halation_amount,
+                            halation_strength[2] * (double)halation_amount };
   const double first_sigma_um = halation_first_sigma_um; /* base bounce radius */
   const double hscl = fmax((double)halation_scale, 1e-3);
   const int n_bounces = 3;

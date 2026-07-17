@@ -86,7 +86,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(4, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -326,11 +326,11 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelp
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void **new_params, int32_t *new_params_size, int *new_version)
 {
-  /* v1 -> v4, v2 -> v4, v3 -> v4: each case below produces the current (v4)
-     struct directly, rather than chaining through the intermediate versions --
-     same convention darktable's own modules use for multi-version migrations
-     (see e.g. exposure.c, where every old_version case sets *new_version
-     straight to its latest, not to old_version+1).
+  /* v1 -> v5, v2 -> v5, v3 -> v5, v4 -> v5: each case below produces the
+     current (v5) struct directly, rather than chaining through the
+     intermediate versions -- same convention darktable's own modules use for
+     multi-version migrations (see e.g. exposure.c, where every old_version
+     case sets *new_version straight to its latest, not to old_version+1).
 
      v1 is the module's true original params shape, confirmed directly
      against the live, unmodified upstream source -- covering every params
@@ -356,14 +356,29 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
      engaged, s_amount==1 hardcoded) and the back-reflection halation stage
      -- into two independent pairs: scatter_amount/scatter_scale (new) and
      halation_amount/halation_scale (unchanged meaning, now stage-2 only).
-     Every case below sets scatter_amount = 1.0 (previously the implicit,
+     Every v1/v2/v3 case sets scatter_amount = 1.0 (previously the implicit,
      unconfigurable, always-on value) and scatter_scale = <old
      halation_scale> (the spatial multiplier that value used to feed into
      BOTH stages) so migrated params reproduce the old rendering exactly,
      pixel for pixel, before the user ever touches the new sliders.
 
-     From this version onward, any further params struct change should
-     bump the version and add another case here rather than silently
+     v5 is a params-VALUE change, not a struct-shape change: sf_halation()
+     no longer applies eff = halation_amount^1.3 before scaling
+     halation_strength -- halation_amount is now a direct linear multiplier,
+     matching upstream's a_tot = halation_strength * halation_amount exactly.
+     Every version prior to v5 (v1 through v4, all of which share today's
+     dt_iop_spektrafilm_params_t layout for this field) rendered under the
+     ^1.3 curve, so every case below remaps
+     halation_amount := old_halation_amount^1.3 -- the exact inverse of
+     dropping the curve -- so a_tot stays numerically identical and every
+     migrated edit still renders pixel-for-pixel as before, even though nothing
+     about the struct's field layout changed. This is why a params version
+     bump is still required even for a pure algorithm/semantics change: without
+     it, darktable has no reason to call this function at all, and old edits
+     would silently double-apply/skip the curve on load.
+
+     From this version onward, any further params struct or semantics change
+     should bump the version and add another case here rather than silently
      drift again. */
   typedef struct dt_iop_spektrafilm_params_v1_t
   {
@@ -467,6 +482,47 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     float output_luminance_boost;
   } dt_iop_spektrafilm_params_v3_t;
 
+  typedef struct dt_iop_spektrafilm_params_v4_t
+  {
+    uint32_t film_hash;
+    uint32_t paper_hash;
+    float exposure_ev;
+    float print_exposure_ev;
+    gboolean print_auto_exposure;
+    float print_contrast;
+    float filter_m;
+    float filter_y;
+    float couplers_amount;
+    float preflash_exposure;
+    float preflash_m_shift;
+    float preflash_y_shift;
+    gboolean scan_film;
+    dt_iop_spektrafilm_quality_t quality;
+    gboolean halation_on;
+    float scatter_amount;
+    float scatter_scale;
+    float halation_amount;
+    float halation_scale;
+    float boost_ev;
+    float boost_range;
+    float protect_ev;
+    gboolean diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+    float diffusion_strength;
+    float diffusion_scale;
+    float diffusion_warmth;
+    gboolean print_diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
+    float print_diffusion_strength;
+    float print_diffusion_scale;
+    float print_diffusion_warmth;
+    gboolean grain_on;
+    float grain_amount;
+    float grain_size;
+    float film_format_mm;
+    float output_luminance_boost;
+  } dt_iop_spektrafilm_params_v4_t;
+
   if(old_version == 1)
   {
     const dt_iop_spektrafilm_params_v1_t *o = (dt_iop_spektrafilm_params_v1_t *)old_params;
@@ -491,7 +547,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
        halation_scale as its spatial multiplier -- reproduce that exactly. */
     n->scatter_amount = 1.0f;
     n->scatter_scale = o->halation_scale;
-    n->halation_amount = o->halation_amount;
+    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
     n->halation_scale = o->halation_scale;
     n->boost_ev = o->boost_ev;
     n->boost_range = o->boost_range;
@@ -519,7 +575,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 4;
+    *new_version = 5;
     return 0;
   }
   if(old_version == 2)
@@ -546,7 +602,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
        halation_scale as its spatial multiplier -- reproduce that exactly. */
     n->scatter_amount = 1.0f;
     n->scatter_scale = o->halation_scale;
-    n->halation_amount = o->halation_amount;
+    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
     n->halation_scale = o->halation_scale;
     n->boost_ev = o->boost_ev;
     n->boost_range = o->boost_range;
@@ -571,7 +627,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 4;
+    *new_version = 5;
     return 0;
   }
   if(old_version == 3)
@@ -598,7 +654,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
        halation_scale as its spatial multiplier -- reproduce that exactly. */
     n->scatter_amount = 1.0f;
     n->scatter_scale = o->halation_scale;
-    n->halation_amount = o->halation_amount;
+    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
     n->halation_scale = o->halation_scale;
     n->boost_ev = o->boost_ev;
     n->boost_range = o->boost_range;
@@ -621,7 +677,57 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 4;
+    *new_version = 5;
+    return 0;
+  }
+  if(old_version == 4)
+  {
+    const dt_iop_spektrafilm_params_v4_t *o = (dt_iop_spektrafilm_params_v4_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->film_hash;
+    n->paper_hash = o->paper_hash;
+    n->exposure_ev = o->exposure_ev;
+    n->print_exposure_ev = o->print_exposure_ev;
+    n->print_auto_exposure = o->print_auto_exposure;
+    n->print_contrast = o->print_contrast;
+    n->filter_m = o->filter_m;
+    n->filter_y = o->filter_y;
+    n->couplers_amount = o->couplers_amount;
+    n->preflash_exposure = o->preflash_exposure;
+    n->preflash_m_shift = o->preflash_m_shift;
+    n->preflash_y_shift = o->preflash_y_shift;
+    n->scan_film = o->scan_film;
+    n->quality = o->quality;
+    n->halation_on = o->halation_on;
+    /* v4 already had independent scatter_amount/scatter_scale -- carry them
+       over unchanged, only halation_amount's curve is being removed here. */
+    n->scatter_amount = o->scatter_amount;
+    n->scatter_scale = o->scatter_scale;
+    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
+    n->halation_scale = o->halation_scale;
+    n->boost_ev = o->boost_ev;
+    n->boost_range = o->boost_range;
+    n->protect_ev = o->protect_ev;
+    n->diffusion_on = o->diffusion_on;
+    n->diffusion_filter_family = o->diffusion_filter_family;
+    n->diffusion_strength = o->diffusion_strength;
+    n->diffusion_scale = o->diffusion_scale;
+    n->diffusion_warmth = o->diffusion_warmth;
+    n->print_diffusion_on = o->print_diffusion_on;
+    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
+    n->print_diffusion_strength = o->print_diffusion_strength;
+    n->print_diffusion_scale = o->print_diffusion_scale;
+    n->print_diffusion_warmth = o->print_diffusion_warmth;
+    n->grain_on = o->grain_on;
+    n->grain_amount = o->grain_amount;
+    n->grain_size = o->grain_size;
+    n->film_format_mm = o->film_format_mm;
+    n->output_luminance_boost = o->output_luminance_boost;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 5;
     return 0;
   }
   return 1;
@@ -1553,7 +1659,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                                CLARG(reset));
         SF_CL_STEP("halation bounce accum");
       }
-      const float h_eff = powf(d->p.halation_amount, 1.3f);
+      /* halation_amount is a direct linear multiplier on strength, matching
+         upstream's a_tot = halation_strength * halation_amount (no curve). */
+      const float h_eff = d->p.halation_amount;
       /* per-film halation strength (e.g. a strong-AH stock stays near-zero on
          blue and much lower on red/green than a no-AH/redscale stock). */
       const float a_r = g->halation_strength[0] * h_eff, a_g = g->halation_strength[1] * h_eff,
