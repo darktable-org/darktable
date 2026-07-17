@@ -155,6 +155,12 @@ typedef struct sf_sim_gpu_t
      pack): RMS-granularity, uniformity and density floor, replacing the
      earlier one-size-fits-all constants */
   float grain_rms[3], grain_uniformity[3], grain_dmin[3];
+  /* per-film halation preset (film_render_defaults[stock].halation in the
+     pack): back-reflection strength per channel and first-bounce radius;
+     falls back to SF_HALATION_STRENGTH_DEFAULT_* / SF_HALATION_SIGMA_DEFAULT_UM
+     (spektra_sim.c) when the pack has no per-stock entry. See
+     sf_sim_halation_params(). */
+  float halation_strength[3], halation_first_sigma_um;
   /* output gamut compression */
   int out_compress; /* sf_output_compress_t */
   float out_luminance_boost;
@@ -188,6 +194,15 @@ void sf_sim_coupler_diffusion(const sf_sim_t *sim, double *size_um, double *tail
                               double *tail_w);
 bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stock,
                                     double *size_um, double *tail_um, double *tail_w);
+
+/* per-film halation preset (film_render_defaults[stock].halation in the pack):
+ * back-reflection strength per channel (R/G/B) and the first-bounce Gaussian
+ * radius in micrometres. Both `strength` and `first_sigma_um` may be NULL if
+ * the caller only wants one. Falls back to the generic still-film /
+ * strong-antihalation baseline (SF_HALATION_STRENGTH_DEFAULT_* /
+ * SF_HALATION_SIGMA_DEFAULT_UM in spektra_sim.c) when `sim` is NULL or the
+ * pack predates per-stock halation data. */
+void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *first_sigma_um);
 
 const char *sf_profile_stock(const sf_profile_t *p);
 const char *sf_profile_name(const sf_profile_t *p);
