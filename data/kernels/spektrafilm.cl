@@ -588,18 +588,19 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
 /* spatial-effect kernels (identical to the LUT module's; blurs host-side)  */
 /* ======================================================================== */
 
-__kernel void spektrafilm_scatter_combine(__global const float4 *core, __global const float4 *tail,
-                                          __global float4 *out, const int w, const int h,
+__kernel void spektrafilm_scatter_combine(__global const float4 *raw, __global const float4 *core,
+                                          __global const float4 *tail, __global float4 *out,
+                                          const int w, const int h, const float s_amount,
                                           const float ws_r, const float ws_g, const float ws_b)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   size_t k = (size_t)y * w + x;
-  float4 c = core[k], t = tail[k], o;
-  o.x = (1.f - ws_r) * c.x + ws_r * t.x;
-  o.y = (1.f - ws_g) * c.y + ws_g * t.y;
-  o.z = (1.f - ws_b) * c.z + ws_b * t.z;
-  o.w = c.w;
+  float4 r = raw[k], c = core[k], t = tail[k], o;
+  o.x = r.x + s_amount * (((1.f - ws_r) * c.x + ws_r * t.x) - r.x);
+  o.y = r.y + s_amount * (((1.f - ws_g) * c.y + ws_g * t.y) - r.y);
+  o.z = r.z + s_amount * (((1.f - ws_b) * c.z + ws_b * t.z) - r.z);
+  o.w = r.w;
   out[k] = o;
 }
 
@@ -614,6 +615,43 @@ __kernel void spektrafilm_accum(__global const float4 *blurred, __global float4 
   a.x += wk * b.x;
   a.y += wk * b.y;
   a.z += wk * b.z;
+  acc[k] = a;
+}
+
+/* Pull one channel out of a float4 buffer into a packed single-channel
+ * buffer, so it can be blurred on its own (1 channel of work) instead of
+ * blurring all 4 channels of a float4 buffer just to keep 1 of them. */
+__kernel void spektrafilm_channel_extract(__global const float4 *src, __global float *dst,
+                                          const int w, const int h, const int channel)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  size_t k = (size_t)y * w + x;
+  float4 s = src[k];
+  dst[k] = (channel == 0) ? s.x : (channel == 1) ? s.y : s.z;
+}
+
+/* Accumulate weight*blurred[k] (a single-channel buffer, already blurred with
+ * that channel's own sigma via spektrafilm_channel_extract + a 1-channel
+ * Gaussian blur) into acc[.channel] only, leaving the other two channels of
+ * acc untouched (unless reset, which zeroes all of acc.xyz once up front).
+ * Used to assemble a genuinely per-channel-sigma blur: each channel gets its
+ * own extract + blur + accum, at 1x the per-channel blur cost instead of
+ * blurring a full float4 (4x the work) just to keep one channel of it.
+ * Channel is 0=R, 1=G, 2=B; alpha (.w) is left as acc's own, unset here
+ * since none of the scatter/tail stages carry alpha. */
+__kernel void spektrafilm_channel_accum(__global const float *blurred, __global float4 *acc,
+                                        const int w, const int h, const float weight,
+                                        const int channel, const int reset)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  size_t k = (size_t)y * w + x;
+  const float bv = blurred[k];
+  float4 a = reset ? (float4)(0.f) : acc[k];
+  const float av = (channel == 0) ? a.x : (channel == 1) ? a.y : a.z;
+  const float nv = av + weight * bv;
+  if(channel == 0) a.x = nv; else if(channel == 1) a.y = nv; else a.z = nv;
   acc[k] = a;
 }
 

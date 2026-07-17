@@ -31,7 +31,17 @@
 /* Spatial effects implemented in spektra_core.c (they use dt_gaussian and so
    need darktable linkage; everything else in this header is inline). */
 void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
-void sf_halation(float *raw, int w, int h, double pixel_um, float amount, float spatial_scale);
+/* Two independently-controllable stages, matching upstream's HalationParams:
+ *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
+ *   halation_amount / halation_scale -- stage 2, back-reflection multi-bounce
+ * halation_strength: per-channel (R,G,B) back-reflection strength at
+ * halation_amount==1.0; halation_first_sigma_um: first-bounce Gaussian radius
+ * in micrometres. Both come from sf_sim_halation_params() — per-film when the
+ * pack provides film_render_defaults[stock].halation, otherwise the generic
+ * still/strong-antihalation baseline. */
+void sf_halation(float *raw, int w, int h, double pixel_um, float scatter_amount,
+                 float scatter_scale, float halation_amount, float halation_scale,
+                 const double halation_strength[3], double halation_first_sigma_um);
 void sf_boost_highlights(float *raw, int w, int h, float boost_ev, float boost_range,
                          float protect_ev);
 void sf_diffusion_filter(float *raw, int w, int h, double pixel_um, int family, float strength,

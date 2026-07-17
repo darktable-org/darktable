@@ -256,23 +256,40 @@ void sf_boost_highlights(float *const raw, const int w, const int h, const float
   }
 }
 
-void sf_halation(float *const raw, const int w, const int h, const double pixel_um, const float amount,
-                 const float spatial_scale)
+void sf_halation(float *const raw, const int w, const int h, const double pixel_um,
+                 const float scatter_amount, const float scatter_scale,
+                 const float halation_amount, const float halation_scale,
+                 const double halation_strength[3], const double halation_first_sigma_um)
 {
-  if(amount <= 0.0f) return;
+  if(scatter_amount <= 0.0f && halation_amount <= 0.0f) return;
 
-  /* per-channel scatter radii (um on film) and core/tail mix weights */
+  /* per-channel scatter radii (um on film) and core/tail mix weights. These
+     are the reference model's schema defaults (upstream HalationParams) and,
+     unlike halation_strength/halation_first_sigma_um below, are NOT varied
+     per film stock upstream (every (use, antihalation) preset leaves them
+     alone), so they stay fixed constants here too. */
   static const double sc_core[3] = { 2.2, 2.0, 1.6 };
   static const double sc_tail[3] = { 9.3, 9.7, 9.1 };
   static const double w_s[3]     = { 0.78, 0.65, 0.67 };
   /* tail = sum of three Gaussians (amplitude, radius multiplier) */
   static const double tail_amp[3] = { 0.1633, 0.6496, 0.1870 };
   static const double tail_rat[3] = { 0.5360, 1.5236, 2.7684 };
-  /* per-channel halation strength: red/green only, blue has none on real film */
-  const double eff = pow((double)amount, 1.3);
-  const double a_tot[3] = { 0.05 * eff, 0.015 * eff, 0.0 };
-  const double first_sigma_um = 65.0; /* base bounce radius */
-  const double scl = fmax((double)spatial_scale, 1e-3); /* halation size multiplier */
+  /* stage 1 (scatter): s_amount is the (1-s)*raw + s*scattered blend weight,
+     matching upstream's scatter_amount 1:1 (no extra curve). scl is the
+     shared core/tail spatial-scale multiplier. */
+  const double s_amount = (double)scatter_amount;
+  const double scl = fmax((double)scatter_scale, 1e-3);
+  /* stage 2 (halation): per-channel strength at halation_amount==1.0, and the
+     first-bounce radius, both per-film (sf_sim_halation_params()) since
+     upstream keys these off the profile's use/antihalation tags -- e.g. a
+     modern strong-AH stock scatters far less red/green back than a
+     rem-jet-removed one. hscl is halation's OWN spatial-scale multiplier,
+     independent from the scatter stage's scl above. */
+  const double eff = pow((double)halation_amount, 1.3);
+  const double a_tot[3] = { halation_strength[0] * eff, halation_strength[1] * eff,
+                            halation_strength[2] * eff };
+  const double first_sigma_um = halation_first_sigma_um; /* base bounce radius */
+  const double hscl = fmax((double)halation_scale, 1e-3);
   const int n_bounces = 3;
   const double rho = 0.5;             /* bounce decay */
 
@@ -283,6 +300,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
   if(!plane) { dt_free_align(trans); return; }
 
   /* --- stage 1: scatter PSF (core + 3-component tail) --- */
+  if(s_amount > 0.0)
   {
     float *const core = dt_alloc_align_float(nn);
     float *const tail = dt_alloc_align_float(nn);
@@ -307,7 +325,8 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
       for(size_t i = 0; i < nn; i++)
       {
         const int c = i % 3;
-        raw[i] = (float)((1.0 - w_s[c]) * core[i] + w_s[c] * tail[i]);
+        const double scattered = (1.0 - w_s[c]) * core[i] + w_s[c] * tail[i];
+        raw[i] = (float)((1.0 - s_amount) * (double)raw[i] + s_amount * scattered);
       }
     }
     dt_free_align(core);
@@ -316,7 +335,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
   }
 
   /* --- stage 2: multi-bounce halation --- */
-  if(a_tot[0] > 0.0 || a_tot[1] > 0.0)
+  if(halation_amount > 0.0f && (a_tot[0] > 0.0 || a_tot[1] > 0.0 || a_tot[2] > 0.0))
   {
     double decay[8], dsum = 0.0;
     for(int k = 1; k <= n_bounces; k++)
@@ -334,7 +353,7 @@ void sf_halation(float *const raw, const int w, const int h, const double pixel_
       for(int k = 1; k <= n_bounces; k++)
       {
         dt_iop_image_copy(comp, raw, nn);
-        const float sk = fmaxf((float)((first_sigma_um * scl / pixel_um) * sqrt((double)k)), 1e-6f);
+        const float sk = fmaxf((float)((first_sigma_um * hscl / pixel_um) * sqrt((double)k)), 1e-6f);
         const float sig3[3] = { sk, sk, sk };
         _blur_per_channel(comp, w, h, sig3, plane, trans);
         const float wk = (float)decay[k - 1];
