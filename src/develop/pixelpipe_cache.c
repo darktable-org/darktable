@@ -23,11 +23,6 @@
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
-static inline int _to_mb(size_t m)
-{
-  return (int)((m + 0x80000lu) / 0x400lu / 0x400lu);
-}
-
 gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
                                      const int entries,
                                      const size_t size,
@@ -36,7 +31,7 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   cache->entries = entries;
-  cache->allmem = cache->hits = cache->calls = cache->tests = 0;
+  cache->allmem = cache->max_allmem = cache->hits = cache->calls = cache->tests = 0;
   cache->memlimit = limit;
 
   const size_t csize = sizeof(void *) + sizeof(size_t) + sizeof(dt_iop_buffer_dsc_t) + 2*sizeof(int32_t) + sizeof(uint64_t);
@@ -86,9 +81,10 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 
   if(dt_pipe_is_full(pipe))
   {
-    dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. hits/run=%.2f, hits/test=%.3f",
-    (double)(cache->hits) / fmax(1.0, pipe->runs),
-    (double)(cache->hits) / fmax(1.0, cache->tests));
+    dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. Maximum=%zuMB. hits/run=%.2f, hits/test=%.3f",
+      cache->max_allmem / DT_MEGA,
+      (double)(cache->hits) / fmax(1.0, pipe->runs),
+      (double)(cache->hits) / fmax(1.0, cache->tests));
   }
 
   for(int k = 0; k < cache->entries; k++)
@@ -311,7 +307,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
      && _get_by_hash(pipe, module, hash, size, data, dsc))
   {
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
-    dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "cache HIT",
           pipe, module, DT_DEVICE_NONE, NULL, NULL,
           "%s %.3f %.3f %.3f, hash=%" PRIx64,
           dt_iop_colorspace_to_name(cdsc->cst), cdsc->temperature.coeffs[0], cdsc->temperature.coeffs[1], cdsc->temperature.coeffs[2],
@@ -368,12 +364,9 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
   return TRUE;
 }
 
-static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const int k)
-{
-  cache->hash[k] = DT_INVALID_HASH;
-  cache->ioporder[k] = 0;
-}
-
+/* Note about cacheline invalidation, once allocated they will stay until the next
+   pipe run to be possibly freed via dt_dev_pixelpipe_cache_checkmem().
+*/
 void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
                                              const int32_t order,
                                              const char *info)
@@ -384,21 +377,19 @@ void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
   {
     if((cache->ioporder[k] >= order) && (cache->hash[k] != DT_INVALID_HASH))
     {
-      _mark_invalid_cacheline(cache, k);
+      cache->hash[k] = DT_INVALID_HASH;
       invalidated++;
     }
   }
 
-  const gboolean bcache = pipe->bcache_data != NULL && pipe->bcache_hash != DT_INVALID_HASH;
   pipe->bcache_hash = DT_INVALID_HASH;
-
-  if(invalidated || bcache)
+  if(invalidated)
     dt_print_pipe(DT_DEBUG_PIPE,
     order ? "pipecache invalidate" : "pipecache flush",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%s%i cachelines after ioporder=%i%s",
+    "%s%i cachelines after ioporder=%i",
     info ? info : "",
-    invalidated, order, bcache ? ", blend cache" : "");
+    invalidated, order);
 }
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_t *pipe)
@@ -426,7 +417,8 @@ void dt_dev_pixelpipe_invalidate_cacheline(const dt_dev_pixelpipe_t *pipe,
   const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if(cache->data[k] == data) _mark_invalid_cacheline(cache, k);
+    if(cache->data[k] == data)
+      cache->hash[k] = DT_INVALID_HASH;
   }
 }
 
@@ -438,25 +430,38 @@ static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k)
   cache->allmem -= removed;
   cache->size[k] = 0;
   cache->data[k] = NULL;
-  _mark_invalid_cacheline(cache, k);
+  cache->hash[k] = DT_INVALID_HASH;
+  cache->ioporder[k] = 0;
   return removed;
 }
 
-static void _cline_stats(dt_dev_pixelpipe_cache_t *cache)
+static inline int _used(const dt_dev_pixelpipe_cache_t *cache)
 {
-  cache->lused = cache->linvalid = cache->limportant = 0;
+  int cnt = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    if(cache->data[k]) cache->lused++;
-    if(cache->data[k] && (cache->hash[k] == DT_INVALID_HASH)) cache->linvalid++;
-    if(cache->used[k] < 0) cache->limportant++;
-  }
+    if(cache->data[k] && cache->hash[k] != DT_INVALID_HASH) cnt++;
+  return cnt;
+}
+static inline int _important(const dt_dev_pixelpipe_cache_t *cache)
+{
+  int cnt = 0;
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+    if(cache->used[k] < 0 && cache->data[k] && cache->hash[k] != DT_INVALID_HASH) cnt++;
+  return cnt;
+}
+static inline int _invalid(const dt_dev_pixelpipe_cache_t *cache)
+{
+  int cnt = 0;
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+    if(cache->data[k] && cache->hash[k] == DT_INVALID_HASH) cnt++;
+  return cnt;
 }
 
 void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
+  cache->max_allmem = MAX(cache->max_allmem, cache->allmem);
   // we have pixelpipes like export & thumbnail that just use
   // alternating buffers so no cleanup
   if(cache->entries == DT_PIPECACHE_MIN) return;
@@ -464,10 +469,15 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
   // We always free cachelines marked as not valid
   size_t freed = 0;
   size_t freed_invalid = 0;
+  int free_cnt = 0;
+  int free_invalid_cnt = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->hash[k] == DT_INVALID_HASH) && cache->data)
+    if(cache->hash[k] == DT_INVALID_HASH && cache->data[k])
+    {
       freed_invalid += _free_cacheline(cache, k);
+      free_invalid_cnt++;
+    }
   }
 
   while(cache->memlimit && (cache->memlimit < cache->allmem))
@@ -476,24 +486,22 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
     if(k == 0) break;
 
     freed += _free_cacheline(cache, k);
+    free_cnt++;
   }
 
-  _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i). Freed: invalid %iMB used %iMB. Using %iMB, limit=%iMB",
-    cache->entries, cache->limportant, cache->lused,
-    _to_mb(freed_invalid), _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
+    "Freed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB max=%zuMB",
+    free_invalid_cnt, free_cnt, freed_invalid/DT_MEGA, freed / DT_MEGA,
+    cache->allmem / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA);
 }
 
 void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-
-  _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i, invalid=%i). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f",
-    cache->entries, cache->limportant, cache->lused, cache->linvalid,
-    _to_mb(cache->allmem), _to_mb(cache->memlimit),
+    "Lines=%i important=%i used=%i invalid=%i. Now=%zuMB limit=%zuMB max=%zuMB. Hits/run=%.2f. Hits/test=%.3f",
+    cache->entries, _important(cache), _used(cache), _invalid(cache),
+    cache->allmem / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA,
     (double)(cache->hits) / fmax(1.0, pipe->runs),
     (double)(cache->hits) / fmax(1.0, cache->tests));
 }
@@ -503,4 +511,3 @@ void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

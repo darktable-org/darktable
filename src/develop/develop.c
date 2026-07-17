@@ -862,6 +862,8 @@ restart:
   dt_mipmap_cache_release(&buf);
   // if a widget needs to be redrawn there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_busy_leave();
+  if(dt_pipe_is_full(pipe))
+    dev->history_last_module = NULL;
   dt_pthread_mutex_unlock(&pipe->mutex);
 
   const gboolean signalling = dev->gui_attached && !dev->gui_leaving && signal != -1;

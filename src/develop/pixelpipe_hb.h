@@ -31,8 +31,6 @@ G_BEGIN_DECLS
 
 #define DT_PIPECACHE_MIN 2
 
-// #define DT_PIPE_CAS_SHUTDOWN
-
 /** cached distorted mask at a geometric module's output boundary.
  *  used to avoid re-distorting masks from scratch when multiple
  *  downstream modules request the same mask type. */
@@ -107,11 +105,13 @@ typedef enum dt_dev_pixelpipe_status_t
     This requires special care in
       - _dev_pixelpipe_process_rec()
       - dt_dev_process_image_job()
-    possibly invalidating wrong module input/output data in the pixelpipe cache,
-    ensure either an immediate restart of the pipe or exit of dt_dev_process_image_job()
-    with an error flag.
-    A reminder, when setting pipe->shutdown we might have to do that via dt_atomic_CAS_int()
-    with wxpected DT_DEV_PIXELPIPE_STOP_NO to avoid overwriting an earlier shutdown writing.
+    possibly
+      - invalidating cachelines
+      - ensure an immediate restart of the pipe or exit of dt_dev_process_image_job()
+        with an error flag.
+
+    When setting pipe->shutdown from outside of pixelpipe internals we should use
+    dt_dev_pixelpipe_set_shutdown() for logs and making sure we don't overwrite shutdown.
 
     A summary about how these shutdown modes are supposed to work.
 
@@ -119,19 +119,22 @@ typedef enum dt_dev_pixelpipe_status_t
     Set whenever a pipe is started in _dev_pixelpipe_process_rec() as default.
 
     DT_DEV_PIXELPIPE_STOP_NODES
-    Set if the pipe should stop as the pipe nodes are changed so a restart is desired asap.
-    As nodes are recreated, we don't have to fiddle with pixelpipe cache.
+    Set if the pipe should stop as the pipe nodes are changed
 
     DT_DEV_PIXELPIPE_STOP_HQ
     Used to switch between darkroom HQ modes.
-    Requires a restart of the pipe but pixelpipe cache can stay.
+
+    DT_DEV_PIXELPIPE_STOP_ZOOM
+    A request to restart with different darkroom position or scale
+
+    DT_DEV_PIXELPIPE_STOP_DATA
+    A request to restart with different module parameters, input data are saved
 
     DT_DEV_PIXELPIPE_STOP_LAST
     If the shutdown value is >= DT_DEV_PIXELPIPE_STOP_LAST it is understood as the iop_order
-    of a module.
-    Any module might set pipe->shutdown to it's iop_order, this is checked while processing
-    the pipe and if detected the piece input data and all pipe cachelines with at least
-    this iop_order will be invalidated.
+    of a module. Any module can use dt_dev_pixelpipe_set_shutdown() to it's iop_order at runtime,
+    this is checked in _module_pipe_stop() while processing the pipe and currently ensures
+    cacheline invalidation of all following modules.
 */
 
 typedef enum dt_dev_pixelpipe_stopper_t
@@ -139,6 +142,8 @@ typedef enum dt_dev_pixelpipe_stopper_t
   DT_DEV_PIXELPIPE_STOP_NO = 0,
   DT_DEV_PIXELPIPE_STOP_NODES,
   DT_DEV_PIXELPIPE_STOP_HQ,
+  DT_DEV_PIXELPIPE_STOP_ZOOM,
+  DT_DEV_PIXELPIPE_STOP_DATA,
   DT_DEV_PIXELPIPE_STOP_LAST,
 } dt_dev_pixelpipe_stopper_t;
 
@@ -323,8 +328,7 @@ const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type
 // return pipe->shutdown as textual
 const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t stopper);
 
-// sets pipe->shutdown in atomic mode
-// If DT_PIPE_CAS_SHUTDOWN is defined do that only if shutdown was DT_DEV_PIXELPIPE_STOP_NO
+// sets pipe->shutdown in atomic CAS mode so only one mode is possible per pipe run
 void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe, const dt_dev_pixelpipe_stopper_t stopper);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
