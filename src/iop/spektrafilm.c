@@ -173,6 +173,7 @@ typedef struct sf_prof_entry_t
   char target_print[SF_NAME_LEN];
   gboolean printing; /* stage == "printing" */
   gboolean positive; /* info.type == "positive" (slide / reversal) */
+  gboolean bw;       /* channel_model == "bw" */
   uint32_t hash;
 } sf_prof_entry_t;
 
@@ -795,6 +796,8 @@ static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
     if(tp) g_strlcpy(e->target_print, tp, SF_NAME_LEN);
     const char *type = sf_profile_type(prof);
     e->positive = (type && !strcmp(type, "positive"));
+    const char *cm = sf_profile_channel_model(prof);
+    e->bw = (cm && !strcmp(cm, "bw"));
     e->hash = sf_name_hash(e->stock);
     sf_profile_free(prof);
     n++;
@@ -1866,9 +1869,9 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  const int fi = dt_bauhaus_combobox_get(g->film);
-  if(fi < 0 || fi >= g->n_films) return;
-  const sf_prof_entry_t *e = &g->entries[g->film_entry[fi]];
+  const int fi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->film));
+  if(fi < 0) return;
+  const sf_prof_entry_t *e = &g->entries[fi];
   p->film_hash = e->hash;
   /* Keep the "default" scan_film following this film's own positive/negative
      type too, not just the live params -- so a double-click reset (which
@@ -1908,7 +1911,7 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
       if(!strcmp(g->entries[g->paper_entry[k]].stock, e->target_print))
       {
         ++darktable.gui->reset;
-        dt_bauhaus_combobox_set(g->paper, k);
+        dt_bauhaus_combobox_set_from_value(g->paper, g->paper_entry[k]);
         --darktable.gui->reset;
         break;
       }
@@ -1920,9 +1923,9 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  const int pi = dt_bauhaus_combobox_get(g->paper);
-  if(pi < 0 || pi >= g->n_papers) return;
-  p->paper_hash = g->entries[g->paper_entry[pi]].hash;
+  const int pi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper));
+  if(pi < 0) return;
+  p->paper_hash = g->entries[pi].hash;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1989,14 +1992,62 @@ void gui_update(dt_iop_module_t *self)
   if(g->n_films == 0)
     dt_bauhaus_combobox_add(g->film, _("(no profiles found)"));
   else
-    for(int f = 0; f < g->n_films; f++)
-      dt_bauhaus_combobox_add(g->film, g->entries[g->film_entry[f]].name);
+  {
+    static const struct { int pos; int bw; const char *label; } film_groups[] = {
+      { 0, 0, N_("negative color") },
+      { 1, 0, N_("positive color") },
+      { 0, 1, N_("negative monochrome") },
+      { 1, 1, N_("positive monochrome") },
+    };
+    for(int gi = 0; gi < 4; gi++)
+    {
+      gboolean first = TRUE;
+      for(int f = 0; f < g->n_films; f++)
+      {
+        const sf_prof_entry_t *e = &g->entries[g->film_entry[f]];
+        if(e->positive != film_groups[gi].pos || e->bw != film_groups[gi].bw)
+          continue;
+        if(first)
+        {
+          dt_bauhaus_combobox_add_section(g->film, _(film_groups[gi].label));
+          first = FALSE;
+        }
+        dt_bauhaus_combobox_add_full(g->film, e->name,
+                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                     GINT_TO_POINTER(g->film_entry[f]),
+                                     NULL, TRUE);
+      }
+    }
+  }
   dt_bauhaus_combobox_clear(g->paper);
   if(g->n_papers == 0)
     dt_bauhaus_combobox_add(g->paper, _("(none)"));
   else
-    for(int k = 0; k < g->n_papers; k++)
-      dt_bauhaus_combobox_add(g->paper, g->entries[g->paper_entry[k]].name);
+  {
+    static const struct { int bw; const char *label; } paper_groups[] = {
+      { 0, N_("color") },
+      { 1, N_("monochrome") },
+    };
+    for(int gi = 0; gi < 2; gi++)
+    {
+      gboolean first = TRUE;
+      for(int k = 0; k < g->n_papers; k++)
+      {
+        const sf_prof_entry_t *e = &g->entries[g->paper_entry[k]];
+        if(e->bw != paper_groups[gi].bw)
+          continue;
+        if(first)
+        {
+          dt_bauhaus_combobox_add_section(g->paper, _(paper_groups[gi].label));
+          first = FALSE;
+        }
+        dt_bauhaus_combobox_add_full(g->paper, e->name,
+                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                     GINT_TO_POINTER(g->paper_entry[k]),
+                                     NULL, TRUE);
+      }
+    }
+  }
 
   int fi = 0;
   gboolean film_matched = FALSE;
@@ -2013,7 +2064,7 @@ void gui_update(dt_iop_module_t *self)
     for(int f = 0; f < g->n_films; f++)
       if(!strcmp(g->entries[g->film_entry[f]].stock, "kodak_portra_400")) fi = f;
   }
-  dt_bauhaus_combobox_set(g->film, fi);
+  dt_bauhaus_combobox_set_from_value(g->film, g->film_entry[fi]);
   /* _film_changed() is a no-op during the combobox-set above (it bails out
      on darktable.gui->reset, which gui_update runs under, so programmatic
      loads don't get treated as user edits / spawn spurious history items).
@@ -2047,7 +2098,7 @@ void gui_update(dt_iop_module_t *self)
                      : (target && !strcmp(e->stock, target)))
       pi = k;
   }
-  dt_bauhaus_combobox_set(g->paper, pi);
+  dt_bauhaus_combobox_set_from_value(g->paper, g->paper_entry[pi]);
 
   /* toggle_from_params check buttons are NOT auto-synced by
      dt_bauhaus_update_from_field (it only handles sliders/combos), so set
