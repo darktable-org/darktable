@@ -90,7 +90,7 @@ changes (where available).
 - Fixed an out-of-bounds read in the code responsible for raster
   mask caching.
 
-- Enforce darktable loading screen on windowes system to avoid
+- Enforce darktable loading screen on windows systems to avoid
   darkroom refreshing issues.
 
 - Fixed a bug in CPU opposed highlights code that could lead to out of
@@ -139,6 +139,8 @@ changes (where available).
 - Fixed the on-screen rating message showing the wrong value when
   rating multiple images at once (for example, clearing 1-star still
   reported rating 1).
+
+- Fixed a bug leading to subtle color errors after history changes.
 
 ## Lua
 
