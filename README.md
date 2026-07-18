@@ -264,7 +264,7 @@ Optional dependencies (minimum version):
 Optional dependencies (no version requirement):
 * colord, Xatom *(for fetching the system display color profile)*
 * PortMidi *(for MIDI input support)*
-* SDL2 *(for gamepad input support)*
+* SDL3 *(for gamepad input support)*
 * CUPS *(for print mode support)*
 * OpenEXR *(for EXR import & export)*
 * OpenJPEG *(for JPEG 2000 import & export)*
