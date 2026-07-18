@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "gui/preferences_ai.h"
 #include "bauhaus/bauhaus.h"
@@ -609,7 +610,7 @@ static void _on_provider_changed(GtkWidget *widget, gpointer user_data)
 static gboolean
 _reset_enable_click(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     const gboolean def = dt_confgen_get_bool("plugins/ai/enabled", DT_DEFAULT);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), def);
@@ -622,7 +623,7 @@ _reset_enable_click(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 static gboolean
 _reset_provider_click(GtkWidget *label, GdkEventButton *event, gpointer user_data)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
     const char *def = dt_confgen_get(DT_AI_CONF_PROVIDER, DT_DEFAULT);
@@ -1264,15 +1265,15 @@ static gboolean _on_tree_motion(GtkWidget *widget,
   GdkWindow *bin = gtk_tree_view_get_bin_window(tv);
   if(!bin) return FALSE;
   gint bx, by;
-  if(event->window == bin)
+  if(dt_gdk_event_get_window(event) == bin)
   {
-    bx = (gint)event->x;
-    by = (gint)event->y;
+    bx = (gint)dt_gdk_event_get_x(event);
+    by = (gint)dt_gdk_event_get_y(event);
   }
   else
   {
     gtk_tree_view_convert_widget_to_bin_window_coords(
-      tv, (gint)event->x, (gint)event->y, &bx, &by);
+      tv, (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event), &bx, &by);
   }
   if(_info_active_at_bin(user_data, tv, bx, by))
   {
@@ -1292,8 +1293,8 @@ static gboolean _on_info_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       gpointer user_data)
 {
-  if(event->type != GDK_BUTTON_PRESS
-     || event->button != 1)
+  if(dt_gdk_event_get_type(event) != GDK_BUTTON_PRESS
+     || dt_gdk_event_get_button(event) != 1)
     return FALSE;
 
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
@@ -1301,7 +1302,7 @@ static gboolean _on_info_button_press(GtkWidget *widget,
   GtkTreePath *path = NULL;
   GtkTreeViewColumn *column = NULL;
 
-  if(!gtk_tree_view_get_path_at_pos(tv, (gint)event->x, (gint)event->y,
+  if(!gtk_tree_view_get_path_at_pos(tv, (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                     &path, &column, NULL, NULL))
     return FALSE;
 

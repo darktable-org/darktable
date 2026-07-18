@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -2008,10 +2009,10 @@ static gboolean _view_map_scroll_event(GtkWidget *w,
 {
   dt_map_t *lib = self->data;
   // check if the click was on image(s) or just some random position
-  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, event->x, event->y);
+  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event));
   if(entry)
   {
-    if(_display_next_image(self, entry, event->direction == GDK_SCROLL_DOWN))
+    if(_display_next_image(self, entry, dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_DOWN))
       return TRUE;
   }
 
@@ -2022,23 +2023,23 @@ static gboolean _view_map_scroll_event(GtkWidget *w,
   {
     if(dt_map_location_included(lon, lat, &lib->loc.main.data))
     {
-      if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_DOWN)
           lib->loc.main.data.delta1 *= 1.1;
         else
           lib->loc.main.data.delta1 /= 1.1;
       }
-      else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_DOWN)
           lib->loc.main.data.delta2 *= 1.1;
         else
           lib->loc.main.data.delta2 /= 1.1;
       }
       else
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_DOWN)
         {
           lib->loc.main.data.delta1 *= 1.1;
           lib->loc.main.data.delta2 *= 1.1;
@@ -2057,13 +2058,13 @@ static gboolean _view_map_scroll_event(GtkWidget *w,
     else  // scroll on the map. try to keep the map where it is
     {
       _toast_log_lat_lon(lat, lon);
-      return _zoom_and_center(event->x, event->y, event->direction, self);
+      return _zoom_and_center(dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), dt_gdk_event_get_scroll_direction(event), self);
     }
   }
   else
   {
     _toast_log_lat_lon(lat, lon);
-    return _zoom_and_center(event->x, event->y, event->direction, self);
+    return _zoom_and_center(dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), dt_gdk_event_get_scroll_direction(event), self);
   }
   return FALSE;
 }

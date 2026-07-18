@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "chart/dtcairo.h"
 #include "chart/colorchart.h"
@@ -195,7 +196,7 @@ static gboolean motion_notify_callback_reference(GtkWidget *widget, GdkEventMoti
 
 static gboolean handle_motion(GtkWidget *widget, GdkEventMotion *event, dt_lut_t *self, image_t *image)
 {
-  if(!(event->state & GDK_BUTTON1_MASK) || !image->image) return FALSE;
+  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK) || !image->image) return FALSE;
 
   // mouse -> 0..1
   float x, y;
@@ -259,8 +260,8 @@ static void map_mouse_to_0_1(GtkWidget *widget, GdkEventMotion *event, image_t *
   guint width = gtk_widget_get_allocated_width(widget);
   guint height = gtk_widget_get_allocated_height(widget);
 
-  *x = (event->x - image->offset_x) / (width - 2.0 * image->offset_x);
-  *y = (event->y - image->offset_y) / (height - 2.0 * image->offset_y);
+  *x = (dt_gdk_event_get_x(event) - image->offset_x) / (width - 2.0 * image->offset_x);
+  *y = (dt_gdk_event_get_y(event) - image->offset_y) / (height - 2.0 * image->offset_y);
 }
 
 static void update_corner(image_t *image, int which, float *x, float *y)

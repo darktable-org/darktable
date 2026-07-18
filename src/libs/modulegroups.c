@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
@@ -2661,7 +2662,7 @@ static gboolean _presets_pressed(GtkWidget *widget,
                                  GdkEventButton *event,
                                  dt_lib_module_t *self)
 {
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
   {
     manage_presets(self);
     return TRUE;
@@ -2673,7 +2674,7 @@ static gboolean _manage_direct_popup(GtkWidget *widget,
                                      GdkEventButton *event,
                                      dt_lib_module_t *self)
 {
-  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
     if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return FALSE;
@@ -2688,7 +2689,7 @@ static gboolean _manage_direct_basic_popup(GtkWidget *widget,
                                            GdkEventButton *event,
                                            dt_lib_module_t *self)
 {
-  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     _manage_basics_add_popup(widget, self, TRUE);
     return TRUE;
@@ -2702,7 +2703,7 @@ static gboolean _manage_direct_module_popup(GtkWidget *widget,
 {
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
-  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     int nba = 0; // nb of already present items
     GtkWidget *pop = gtk_menu_new();
@@ -2733,7 +2734,7 @@ static gboolean _manage_direct_active_popup(GtkWidget *widget,
                                             GdkEventButton *event,
                                             dt_lib_module_t *self)
 {
-  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     dt_lib_modulegroups_t *d = self->data;
     GtkWidget *pop = gtk_menu_new();

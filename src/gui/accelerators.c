@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "gui/accelerators.h"
 #include "common/action.h"
@@ -2001,7 +2002,7 @@ static gboolean _view_key_pressed(GtkWidget *widget,
     if(!strcmp(gtk_widget_get_name(widget), "actions_view"))
     {
       // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
       {
         dt_shortcut_t shortcut = { .speed = 1.0 };
         gtk_tree_model_get(model, &iter, 0, &shortcut.action, -1);
@@ -2019,13 +2020,13 @@ static gboolean _view_key_pressed(GtkWidget *widget,
         dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
         // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-        if(dt_modifier_is(event->state, GDK_CONTROL_MASK) && s->views)
+        if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK) && s->views)
         {
           _shortcut_copy_lua(NULL, s, NULL);
         }
 
         // GDK_KEY_BackSpace moves to parent in tree
-        if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
+        if(dt_gdk_event_get_keyval(event) == GDK_KEY_Delete || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Delete)
         {
           if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
                                        s->is_default ? s->views ?
@@ -2266,15 +2267,15 @@ static gboolean _action_view_click(GtkWidget *widget,
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(view);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
     GtkTreePath *path = NULL;
-    if(gtk_tree_view_get_path_at_pos(view, (gint)event->x, (gint)event->y,
+    if(gtk_tree_view_get_path_at_pos(view, (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
                                      &path, NULL, NULL, NULL))
     {
-      if(event->type == GDK_DOUBLE_BUTTON_PRESS)
+      if(dt_gdk_event_get_type(event) == GDK_DOUBLE_BUTTON_PRESS)
       {
         gtk_tree_selection_select_path(selection, path);
         _action_row_activated(view, path, NULL, model);
@@ -2295,7 +2296,7 @@ static gboolean _action_view_click(GtkWidget *widget,
     else
       gtk_tree_selection_unselect_all(selection);
   }
-  else if(event->button == GDK_BUTTON_SECONDARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     GtkTreeIter iter;
     gtk_tree_model_get_iter_first(model, &iter);
@@ -4521,7 +4522,7 @@ static guint _fix_keyval(GdkEvent *event)
 {
   guint keyval = 0;
   GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
-  gdk_keymap_translate_keyboard_state(keymap, event->key.hardware_keycode, 0, 0,
+  gdk_keymap_translate_keyboard_state(keymap, dt_gdk_event_get_keycode(event), 0, 0,
                                       &keyval, NULL, NULL, NULL);
   return keyval;
 }
@@ -4530,16 +4531,16 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
                                 GdkEvent *event,
                                 gpointer user_data)
 {
-  if((event->type ==  GDK_BUTTON_PRESS || event->type ==  GDK_BUTTON_RELEASE ||
-      event->type ==  GDK_DOUBLE_BUTTON_PRESS || event->type ==  GDK_TRIPLE_BUTTON_PRESS)
-     && event->button.button > 7)
+  if((dt_gdk_event_get_type(event) ==  GDK_BUTTON_PRESS || dt_gdk_event_get_type(event) ==  GDK_BUTTON_RELEASE ||
+      dt_gdk_event_get_type(event) ==  GDK_DOUBLE_BUTTON_PRESS || dt_gdk_event_get_type(event) ==  GDK_TRIPLE_BUTTON_PRESS)
+     && dt_gdk_event_get_button(event) > 7)
   {
-    if(event->type == GDK_BUTTON_RELEASE)
+    if(dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE)
       dt_shortcut_key_release(DT_SHORTCUT_DEVICE_TABLET,
-                              event->button.time, event->button.button - 7);
+                              dt_gdk_event_get_time(event), dt_gdk_event_get_button(event) - 7);
     else
       dt_shortcut_key_press  (DT_SHORTCUT_DEVICE_TABLET,
-                              event->button.time, event->button.button - 7);
+                              dt_gdk_event_get_time(event), dt_gdk_event_get_button(event) - 7);
 
     return TRUE;
   }
@@ -4547,10 +4548,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
   if(_pressed_keys == NULL)
   {
     dt_shortcut_t s = { .action = _sc.action };
-    gboolean middle_click = event->type == GDK_BUTTON_PRESS
-      && event->button.button == GDK_BUTTON_MIDDLE;
+    gboolean middle_click = dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
+      && dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE;
 
-    if((middle_click || event->type == GDK_SCROLL)
+    if((middle_click || dt_gdk_event_get_type(event) == GDK_SCROLL)
        && (s.action || (s.action = dt_action_widget(darktable.control->mapping_widget))))
     {
       int delta;
@@ -4567,19 +4568,19 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
       return TRUE;
     }
 
-    if(_grab_widget && event->type == GDK_BUTTON_PRESS)
+    if(_grab_widget && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
     {
       _ungrab_grab_widget();
       _sc = (dt_shortcut_t) { 0 };
       return TRUE;
     }
 
-    if(event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE &&
-       event->type != GDK_FOCUS_CHANGE)
+    if(dt_gdk_event_get_type(event) != GDK_KEY_PRESS && dt_gdk_event_get_type(event) != GDK_KEY_RELEASE &&
+       dt_gdk_event_get_type(event) != GDK_FOCUS_CHANGE)
       return FALSE;
 
     if(GTK_IS_WINDOW(w) &&
-       (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE))
+       (dt_gdk_event_get_type(event) == GDK_KEY_PRESS || dt_gdk_event_get_type(event) == GDK_KEY_RELEASE))
     {
       GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(w));
       if(focused_widget)
@@ -4588,23 +4589,23 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
           return TRUE;
 
         if((GTK_IS_ENTRY(focused_widget) || GTK_IS_TREE_VIEW(focused_widget)) &&
-           (event->key.keyval == GDK_KEY_Tab ||
-            event->key.keyval == GDK_KEY_KP_Tab ||
-            event->key.keyval == GDK_KEY_ISO_Left_Tab))
+           (dt_gdk_event_get_keyval(event) == GDK_KEY_Tab ||
+            dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Tab ||
+            dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Left_Tab))
           return FALSE;
       }
     }
   }
 
-  switch(event->type)
+  switch(dt_gdk_event_get_type(event))
   {
   case GDK_KEY_PRESS:
     if(event->key.is_modifier
-    // || event->key.keyval >= GDK_KEY_ModeLock (all hardware event "keys", including extra "media" keys)
-       || event->key.keyval == GDK_KEY_VoidSymbol
-       || event->key.keyval == GDK_KEY_Meta_L
-       || event->key.keyval == GDK_KEY_Meta_R
-       || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
+    // || dt_gdk_event_get_keyval(event) >= GDK_KEY_ModeLock (all hardware event "keys", including extra "media" keys)
+       || dt_gdk_event_get_keyval(event) == GDK_KEY_VoidSymbol
+       || dt_gdk_event_get_keyval(event) == GDK_KEY_Meta_L
+       || dt_gdk_event_get_keyval(event) == GDK_KEY_Meta_R
+       || dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Level3_Shift)
       return FALSE;
 
     dt_shortcut_t ko = { .key = _fix_keyval(event) - 1, .press = 0x7,
@@ -4619,23 +4620,23 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
         return FALSE;
     }
 
-    _sc.mods = _key_modifiers_clean(event->key.state);
+    _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
 
-    dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, ko.key + 1);
+    dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, dt_gdk_event_get_time(event), ko.key + 1);
     break;
   case GDK_KEY_RELEASE:
-    if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
+    if(event->key.is_modifier || dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Level3_Shift)
     {
       // are we defining shortcuts for fallbacks? just modifiers can be used.
       if(_sc.action && _sc.action->type == DT_ACTION_TYPE_FALLBACK)
       {
-        _sc.mods = _key_modifiers_clean(event->key.state);
+        _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
       }
       return FALSE;
     }
 
-    dt_shortcut_key_release(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, _fix_keyval(event));
+    dt_shortcut_key_release(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, dt_gdk_event_get_time(event), _fix_keyval(event));
     break;
   case GDK_GRAB_BROKEN:
     if(!event->grab_broken.implicit)
@@ -4652,16 +4653,16 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
       _ungrab_at_focus_loss();
     return FALSE;
   case GDK_SCROLL:
-    _sc.mods = _key_modifiers_clean(event->scroll.state);
+    _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
 
     int delta_x, delta_y;
     if(dt_gui_get_scroll_unit_deltas(&event->scroll, &delta_x, &delta_y))
     {
       if(delta_x)
-        dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->scroll.time,
+        dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, dt_gdk_event_get_time(event),
                          DT_SHORTCUT_MOVE_PAN, -delta_x);
       if(delta_y)
-        dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->scroll.time,
+        dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, dt_gdk_event_get_time(event),
                          DT_SHORTCUT_MOVE_SCROLL, -delta_y);
     }
     break;
@@ -4669,15 +4670,15 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
     ;
     static gdouble move_start_x = 0, move_start_y = 0, last_distance = 0;
 
-    const gdouble x_move = event->motion.x - move_start_x;
-    const gdouble y_move = event->motion.y - move_start_y;
+    const gdouble x_move = dt_gdk_event_get_x(event) - move_start_x;
+    const gdouble y_move = dt_gdk_event_get_y(event) - move_start_y;
     const gdouble new_distance = x_move * x_move + y_move * y_move;
 
     static int move_last_time = 0;
     if(move_last_time != _last_time || new_distance < last_distance)
     {
-      move_start_x = event->motion.x;
-      move_start_y = event->motion.y;
+      move_start_x = dt_gdk_event_get_x(event);
+      move_start_y = dt_gdk_event_get_y(event);
       move_last_time = _last_time;
       last_distance = 0;
       break;
@@ -4685,11 +4686,11 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
 
     // might just be an accidental move during a key press or button click
     // possibly different time sources from midi or other devices
-    if(event->motion.time > _last_time
-       && !dt_gui_long_click(event->motion.time, _last_time))
+    if(dt_gdk_event_get_time(event) > _last_time
+       && !dt_gui_long_click(dt_gdk_event_get_time(event), _last_time))
       break;
 
-    _sc.mods = _key_modifiers_clean(event->motion.state);
+    _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
 
     const gdouble step_size = 10;
 
@@ -4703,7 +4704,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
       if(fabs(angle) >= 2)
       {
         move_start_x += size * step_size;
-        move_start_y = event->motion.y;
+        move_start_y = dt_gdk_event_get_y(event);
       }
       else
       {
@@ -4711,7 +4712,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
         move_start_y -= size * step_size;
         if(fabs(angle) < .5)
         {
-          move_start_x = event->motion.x;
+          move_start_x = dt_gdk_event_get_x(event);
           move = DT_SHORTCUT_MOVE_VERTICAL;
         }
         else
@@ -4723,19 +4724,19 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
 
       if(_previous_move == move || _previous_move == DT_SHORTCUT_MOVE_NONE)
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE,
-                         event->motion.time, move, size);
+                         dt_gdk_event_get_time(event), move, size);
       else
         _previous_move = move;
     }
     break;
   case GDK_BUTTON_PRESS:
-    _sc.mods = _key_modifiers_clean(event->button.state);
+    _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
 
-    _pressed_button |= 1 << (event->button.button - 1);
+    _pressed_button |= 1 << (dt_gdk_event_get_button(event) - 1);
     _interrupt_delayed_release(_sc.button != _pressed_button);
     _sc.button = _pressed_button;
     _sc.click = 0;
-    _last_time = event->button.time;
+    _last_time = dt_gdk_event_get_time(event);
     break;
   case GDK_DOUBLE_BUTTON_PRESS:
     _sc.click |= DT_SHORTCUT_DOUBLE;
@@ -4744,11 +4745,11 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
     _sc.click |= DT_SHORTCUT_TRIPLE;
     break;
   case GDK_BUTTON_RELEASE:
-    _pressed_button &= ~(1 << (event->button.button - 1));
+    _pressed_button &= ~(1 << (dt_gdk_event_get_button(event) - 1));
 
     _interrupt_delayed_release(FALSE);
 
-    _delay_for_double_triple(event->button.time, 0);
+    _delay_for_double_triple(dt_gdk_event_get_time(event), 0);
 
     _last_time = 0; // important; otherwise releasing two buttons will trigger two actions
                     // also, we seem to be receiving presses and releases twice!?! FIXME

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "range.h"
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
@@ -1511,7 +1512,7 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  range->current_x_px = event->x - range->alloc_padding.x;
+  range->current_x_px = dt_gdk_event_get_x(event) - range->alloc_padding.x;
 
   // if we are outside the graph, don't go further
   const gboolean inside = (range->current_x_px >= 0 && range->current_x_px <= range->alloc_padding.width);
@@ -1526,7 +1527,7 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   // point the popup to the current position
   gint wx, wy;
   gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  GdkRectangle rect = { event->x, 0, 1, gtk_widget_get_allocated_height(range->band) };
+  GdkRectangle rect = { dt_gdk_event_get_x(event), 0, 1, gtk_widget_get_allocated_height(range->band) };
   gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;

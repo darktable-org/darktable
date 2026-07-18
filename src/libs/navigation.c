@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
@@ -427,7 +428,7 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  _lib_navigation_set_position(self, event->x, event->y,
+  _lib_navigation_set_position(self, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
                                allocation.width, allocation.height);
   return TRUE;
 }
@@ -532,7 +533,7 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
     GdkDevice *device = gdk_event_get_source_device(event);
     if(device
        && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
-       && event->scroll.direction == GDK_SCROLL_SMOOTH)
+       && dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH)
     {
       dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE,
                        15.0, 0, dx, dy, TRUE);
@@ -542,7 +543,7 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
       const gboolean constrain = !dt_modifier_eq(controller, GDK_CONTROL_MASK);
       gdouble x, y;
       if(_lib_navigation_widget_to_center(GTK_EVENT_CONTROLLER(controller),
-                                          event->scroll.x, event->scroll.y,
+                                          dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
                                           &x, &y))
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
                          0.0f, dy < 0, x, y, constrain);
@@ -593,10 +594,10 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
   dt_lib_navigation_t *d = self->data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(event->type == GDK_BUTTON_PRESS && event->button.button != 2)
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) != 2)
   {
     d->dragging = 1;
-    _lib_navigation_set_position(self, event->button.x, event->button.y,
+    _lib_navigation_set_position(self, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
                                  allocation.width, allocation.height);
 
     return TRUE;
@@ -606,8 +607,8 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
     GtkWidget *center = dt_ui_center(darktable.gui->ui);
     GtkAllocation center_alloc;
     gtk_widget_get_allocation(center, &center_alloc);
-    event->button.x *= (gdouble)center_alloc.width / allocation.width;
-    event->button.y *= (gdouble)center_alloc.height / allocation.height;
+    event->scroll.x *= (gdouble)center_alloc.width / allocation.width;
+    event->scroll.y *= (gdouble)center_alloc.height / allocation.height;
 
     return gtk_widget_event(center, event);
   }

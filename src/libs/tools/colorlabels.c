@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorlabels.h"
@@ -169,7 +170,7 @@ static gboolean _lib_colorlabels_key_press(GtkWidget *entry,
 {
   dt_lib_colorlabels_t *d = self->data;
 
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Escape:
       gtk_widget_destroy(d->floating_window);
@@ -247,8 +248,8 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   else
   {
     // Legacy/X11 path: keep undecorated popup GtkWindow
-    const gint x = event->x_root;
-    const gint y = event->y_root - DT_PIXEL_APPLY_DPI(50);
+    const gint x = dt_gdk_event_get_root_x(event);
+    const gint y = dt_gdk_event_get_root_y(event) - DT_PIXEL_APPLY_DPI(50);
 
     d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -275,8 +276,8 @@ static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
 
   const gint colorlabel = _get_colorlabel(self, w);
 
-  if(event->type == GDK_BUTTON_PRESS
-     && event->button == GDK_BUTTON_SECONDARY
+  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
+     && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY
      && colorlabel != 5)  // The button to reset colorlabels needs no description
   {
     d->colorlabel = colorlabel;

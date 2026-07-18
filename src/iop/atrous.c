@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
@@ -1032,7 +1033,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
                                         dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
-  g->in_curve = event->type == GDK_ENTER_NOTIFY;
+  g->in_curve = dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY;
   if(!g->dragging)
     g->x_move = -1;
 
@@ -1385,8 +1386,8 @@ static gboolean area_motion_notify(GtkWidget *widget,
   gtk_widget_get_allocation(widget, &allocation);
   const int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE;
   const int width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
 
   darktable.control->element = 0;
 
@@ -1400,7 +1401,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
     *p = g->drag_params;
     if(g->x_move >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+      const float mx = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
       if(g->x_move > 0 && g->x_move < BANDS - 1)
       {
         const float minx = p->x[g->channel][g->x_move - 1] + 0.001f;
@@ -1415,7 +1416,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
     gtk_widget_queue_draw(widget);
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel);
   }
-  else if(event->y > height)
+  else if(dt_gdk_event_get_y(event) > height)
   {
     // move x-positions
     g->x_move = 0;
@@ -1461,7 +1462,7 @@ static gboolean area_button_press(GtkWidget *widget,
                                   GdkEventButton *event,
                                   dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_atrous_params_t *p = self->params;
@@ -1475,7 +1476,7 @@ static gboolean area_button_press(GtkWidget *widget,
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     // set active point
     dt_iop_atrous_gui_data_t *g = self->gui_data;
@@ -1487,8 +1488,8 @@ static gboolean area_button_press(GtkWidget *widget,
     const int width = allocation.width - 2 * inset;
     g->mouse_pick
         = dt_draw_curve_calc_value(g->minmax_curve,
-                                   CLAMP(event->x - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+                                   CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
     g->dragging = 1;
     return TRUE;
   }
@@ -1499,7 +1500,7 @@ static gboolean area_button_release(GtkWidget *widget,
                                     GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -1517,7 +1518,7 @@ static gboolean area_scrolled(GtkWidget *widget,
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  if(dt_modifier_is(event->state, GDK_MOD1_MASK))
+  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK))
     return gtk_widget_event(GTK_WIDGET(g->channel_tabs), (GdkEvent*)event);
 
   int delta_y;

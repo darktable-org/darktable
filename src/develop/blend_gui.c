@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "develop/blend.h"
 #include "bauhaus/bauhaus.h"
@@ -1353,7 +1354,7 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
 {
   DT_GUARD_GUI_UPDATE(TRUE);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     const gboolean has_mask_display =
       module->request_mask_display
@@ -1365,12 +1366,12 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
         | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
         | DT_DEV_PIXELPIPE_DISPLAY_ANY);
 
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK | GDK_SHIFT_MASK))
       module->request_mask_display |=
         (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
-    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
-    else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
     else
       module->request_mask_display |=
@@ -1406,7 +1407,7 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
   DT_GUARD_GUI_UPDATE(TRUE);
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if(event->button == GDK_BUTTON_PRIMARY && data->selected_mask_mode != button)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && data->selected_mask_mode != button)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->selected_mask_mode),
                                  FALSE); // unsets currently toggled if any
@@ -1606,12 +1607,12 @@ static gboolean _blendop_masks_add_shape(GtkWidget *widget,
                                          dt_iop_module_t *self)
 {
   if(DT_IN_GUI_UPDATE()
-     || event->button != GDK_BUTTON_PRIMARY)
+     || dt_gdk_event_get_button(event) != GDK_BUTTON_PRIMARY)
     return TRUE;
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
 
-  const gboolean continuous = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  const gboolean continuous = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
 
   // find out who we are
   int this = -1;
@@ -1673,7 +1674,7 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(self);
 
@@ -1686,7 +1687,7 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
       const gboolean control_button_pressed =
-        dt_modifier_is(event->state, GDK_CONTROL_MASK);
+        dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
 
       switch(bd->masks_shown)
       {
@@ -2202,15 +2203,15 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget,
   dt_dev_pixelpipe_display_mask_t mode = DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // depending on shift modifiers we activate channel and/or mask display
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
     mode = (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
   }
-  else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+  else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
   {
     mode = DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
   }
-  else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
   {
     mode = DT_DEV_PIXELPIPE_DISPLAY_MASK;
   }
@@ -2299,7 +2300,7 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget,
   const int tab = data->tab;
   const int in_out = (widget == GTK_WIDGET(data->filter[1].slider)) ? 1 : 0;
 
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_a:
     case GDK_KEY_A:

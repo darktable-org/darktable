@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "libs/colorpicker.h"
@@ -524,12 +525,12 @@ static gboolean _live_sample_button(GtkWidget *widget,
                                     GdkEventButton *event,
                                     dt_colorpicker_sample_t *sample)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     sample->locked = !sample->locked;
     gtk_widget_queue_draw(widget);
   }
-  else if(event->button == GDK_BUTTON_SECONDARY)
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
   {
     // copy to active picker
     dt_lib_module_t *self = darktable.lib->proxy.colorpicker.module;

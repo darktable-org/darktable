@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 /** this is the view for the darkroom module.  */
 
 #include "common/extra_optimizations.h"
@@ -1620,7 +1621,7 @@ static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
                                                        const dt_stylemenu_data_t *menu_data)
 {
   GdkEvent *event = gtk_get_current_event();
-  if(event->type == GDK_KEY_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
   gdk_event_free(event);
 }
@@ -1630,7 +1631,7 @@ static gboolean _darkroom_ui_apply_style_button_callback
    GdkEventButton *event,
    const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
   else
     dt_shortcut_copy_lua(NULL, menu_data->name);
@@ -2586,8 +2587,8 @@ static gboolean _quickbutton_press_release(GtkWidget *button,
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY) ||
-     (event->type == GDK_BUTTON_RELEASE && event->time - start_time > delay))
+  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY) ||
+     (dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE && dt_gdk_event_get_time(event) - start_time > delay))
   {
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 
@@ -2598,7 +2599,7 @@ static gboolean _quickbutton_press_release(GtkWidget *button,
   }
   else
   {
-    start_time = event->time;
+    start_time = dt_gdk_event_get_time(event);
     return FALSE;
   }
 }
@@ -4574,9 +4575,9 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
     const gboolean constrained =
-      dev->constrain_zoom && !dt_modifier_is(event->state, GDK_CONTROL_MASK);
+      dev->constrain_zoom && !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
     dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
-                     event->x, event->y, constrained);
+                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), constrained);
   }
 
   return TRUE;
@@ -4595,24 +4596,24 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
   // Handle double-click to reset zoom and center
-  if(event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     dt_dev_zoom_move(port, DT_ZOOM_FIT, 0.0f, 0,
-                     event->x, event->y, TRUE);
+                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), TRUE);
     return TRUE;
   }
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     // store coordinates in logical pixels (as delivered by event)
-    darktable.control->button_x = event->x;
-    darktable.control->button_y = event->y;
+    darktable.control->button_x = dt_gdk_event_get_x(event);
+    darktable.control->button_y = dt_gdk_event_get_y(event);
     _dt_second_window_change_cursor(dev, "grabbing");
     return TRUE;
   }
-  if(event->button == GDK_BUTTON_MIDDLE)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
   {
     dt_dev_zoom_move(port, DT_ZOOM_1, 0.0f, -2,
-                     event->x, event->y, !dt_modifier_is(event->state, GDK_CONTROL_MASK));
+                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK));
     return TRUE;
   }
   return FALSE;
@@ -4622,7 +4623,7 @@ static gboolean _second_window_button_released_callback(GtkWidget *w,
                                                         GdkEventButton *event,
                                                         dt_develop_t *dev)
 {
-  if(event->button == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
 
   gtk_widget_queue_draw(w);
   return TRUE;
@@ -4634,7 +4635,7 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
 {
   if(dev->gui_leaving) return FALSE;
 
-  if(event->state & GDK_BUTTON1_MASK)
+  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
 
@@ -4645,9 +4646,9 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
     dt_dev_zoom_move(port, DT_ZOOM_MOVE, -1.f, 0,
-                     event->x - ctl->button_x, event->y - ctl->button_y, TRUE);
-    ctl->button_x = event->x;
-    ctl->button_y = event->y;
+                     dt_gdk_event_get_x(event) - ctl->button_x, dt_gdk_event_get_y(event) - ctl->button_y, TRUE);
+    ctl->button_x = dt_gdk_event_get_x(event);
+    ctl->button_y = dt_gdk_event_get_y(event);
     return TRUE;
   }
   return FALSE;

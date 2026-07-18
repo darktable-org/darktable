@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "libs/lib.h"
 #include "common/debug.h"
@@ -452,7 +453,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_lib_module_info_t *minfo)
 {
-  if(event->button == GDK_BUTTON_PRIMARY) return FALSE;
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY) return FALSE;
 
   dt_shortcut_copy_lua((dt_action_t*)minfo->module,
                         g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"));
@@ -1746,7 +1747,7 @@ gboolean dt_handle_dialog_enter(GtkWidget *widget,
                                 GdkEventKey *event,
                                 gpointer data)
 {
-  if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Return || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Enter)
   {
     gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_ACCEPT);
     return TRUE;

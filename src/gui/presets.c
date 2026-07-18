@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
@@ -1274,13 +1275,13 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module)
 {
-  gboolean long_click = dt_gui_long_click(event->time, _click_time);
+  gboolean long_click = dt_gui_long_click(dt_gdk_event_get_time(event), _click_time);
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
-    if(_click_time > event->time)
+    if(_click_time > dt_gdk_event_get_time(event))
     {
       if(_active_menu_item)
         gtk_check_menu_item_set_active(_active_menu_item, FALSE);
@@ -1290,8 +1291,8 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
       dt_gui_presets_apply_preset(name, module);
     }
   }
-  else if(event->button == GDK_BUTTON_SECONDARY
-          && event->type == GDK_BUTTON_RELEASE
+  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY
+          && dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE
           && _click_time)
   {
     if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
@@ -1313,7 +1314,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
     dt_iop_connect_accels_multi(module->so);
   }
 
-  _click_time = event->type == GDK_BUTTON_PRESS ? event->time : G_MAXUINT;
+  _click_time = dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS ? dt_gdk_event_get_time(event) : G_MAXUINT;
   return long_click; // keep menu open on long click
 }
 
@@ -1322,7 +1323,7 @@ static void _menuitem_activate_preset(GtkMenuItem *menuitem,
                                       dt_iop_module_t *module)
 {
   GdkEvent *event = gtk_get_current_event();
-  if(event->type == GDK_KEY_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
     dt_gui_presets_apply_preset(g_object_get_data(G_OBJECT(menuitem),
                                                   "dt-preset-name"), module);
   gdk_event_free(event);

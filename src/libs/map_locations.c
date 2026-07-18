@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/map_locations.h"
@@ -842,15 +843,15 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
     return TRUE;
   }
 
-  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
-  const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  const int button_pressed = (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS) ? dt_gdk_event_get_button(event) : 0;
+  const gboolean ctrl_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
   if(button_pressed == GDK_BUTTON_SECONDARY || button_pressed == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x,
-                                     (gint)event->y, &path, NULL, NULL, NULL))
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)dt_gdk_event_get_x(event),
+                                     (gint)dt_gdk_event_get_y(event), &path, NULL, NULL, NULL))
     {
       if(button_pressed == GDK_BUTTON_SECONDARY)
       {

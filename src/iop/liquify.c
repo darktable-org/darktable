@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
@@ -3535,7 +3536,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
     return TRUE;
   }
 
-  g->creation_continuous = event != NULL && dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  g->creation_continuous = event != NULL && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
 
   dt_control_hinter_message("");
 

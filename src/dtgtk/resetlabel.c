@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "dtgtk/resetlabel.h"
 
@@ -30,7 +31,7 @@ static void dtgtk_reset_label_init(GtkDarktableResetLabel *label)
 
 static gboolean _reset_label_callback(GtkDarktableResetLabel *label, GdkEventButton *event, gpointer user_data)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     memcpy(((char *)label->module->params) + label->offset,
            ((char *)label->module->default_params) + label->offset, label->size);

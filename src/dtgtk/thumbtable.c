@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
 
 #include "dtgtk/thumbtable.h"
@@ -1420,10 +1421,10 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY)
+  if(dt_is_valid_imgid(id) && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     //  double-click
-    if(event->type == GDK_2BUTTON_PRESS)
+    if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
     {
       switch(table->mode)
       {
@@ -1454,12 +1455,12 @@ static gboolean _event_button_press(GtkWidget *widget,
       }
     }
 
-    if(event->type == GDK_BUTTON_PRESS
+    if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
        && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       return FALSE;
   }
 
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -1467,8 +1468,8 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM
      && !dt_is_valid_imgid(id)
-     && event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_BUTTON_PRESS)
+     && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
+     && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
   {
     const dt_view_type_flags_t cv = dt_view_get_current();
 
@@ -1485,8 +1486,8 @@ static gboolean _event_button_press(GtkWidget *widget,
     }
 
     PangoRectangle *button = &table->manual_button;
-    if(event->x < button->x && event->x > button->x - button->width
-       && event->y < button->y && event->y > button->y - button->height)
+    if(dt_gdk_event_get_x(event) < button->x && dt_gdk_event_get_x(event) > button->x - button->width
+       && dt_gdk_event_get_y(event) < button->y && dt_gdk_event_get_y(event) > button->y - button->height)
     {
       dt_gui_show_help(NULL);
     }
@@ -1497,7 +1498,7 @@ static gboolean _event_button_press(GtkWidget *widget,
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return TRUE;
 
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
   {
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
@@ -1520,8 +1521,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
   gboolean ret = FALSE;
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    const int dx = ceil(event->x_root) - table->last_x;
-    const int dy = ceil(event->y_root) - table->last_y;
+    const int dx = ceil(dt_gdk_event_get_root_x(event)) - table->last_x;
+    const int dy = ceil(dt_gdk_event_get_root_y(event)) - table->last_y;
     _move(table, dx, dy, TRUE);
     table->drag_dx += dx;
     table->drag_dy += dy;
@@ -1535,8 +1536,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
     ret = TRUE;
   }
 
-  table->last_x = ceil(event->x_root);
-  table->last_y = ceil(event->y_root);
+  table->last_x = ceil(dt_gdk_event_get_root_x(event));
+  table->last_y = ceil(dt_gdk_event_get_root_y(event));
   return ret;
 }
 
@@ -1557,15 +1558,15 @@ static gboolean _event_button_release(GtkWidget *widget,
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(dt_is_valid_imgid(id)
-     && event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_BUTTON_RELEASE)
+     && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
+     && dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE)
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK)
-       || dt_modifier_is(event->state, GDK_MOD2_MASK)) // CMD key on macOS
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)
+       || dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD2_MASK)) // CMD key on macOS
     {
       dt_selection_toggle(darktable.selection, id);
     }
-    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
     {
       dt_selection_select_range(darktable.selection, id);
     }

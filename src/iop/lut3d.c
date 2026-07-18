@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
@@ -1480,7 +1481,7 @@ static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_mod
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gboolean next = FALSE;
-    if(event->delta_y > 0)
+    if(dt_gdk_event_get_scroll_delta_y(event) > 0)
       next = gtk_tree_model_iter_next(model, &iter);
     else
       next = gtk_tree_model_iter_previous(model, &iter);

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 /** this is the thumbnail class for the lighttable module.  */
 
 #include "common/extra_optimizations.h"
@@ -1055,7 +1056,7 @@ static gboolean _event_rating_release(GtkWidget *widget,
   if(dtgtk_thumbnail_btn_is_hidden(widget))
     return FALSE;
 
-  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && !thumb->moved)
   {
     dt_view_image_over_t rating = DT_VIEW_DESERT;
     if(widget == thumb->w_reject)
@@ -1093,12 +1094,12 @@ static gboolean _event_grouping_release(GtkWidget *widget,
   if(dtgtk_thumbnail_btn_is_hidden(widget))
     return FALSE;
 
-  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && !thumb->moved)
   {
     //TODO: will succeed if either or *both* of Shift and Control are
     //pressed.  Do we want this?
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK)
-       | dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
+       | dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
     {
       // just add the whole group to the selection. TODO: make this
       // also work for collapsed groups.
@@ -1143,7 +1144,7 @@ static gboolean _event_audio_release(GtkWidget *widget,
   if(dtgtk_thumbnail_btn_is_hidden(widget))
     return FALSE;
 
-  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && !thumb->moved)
   {
     gboolean start_audio = TRUE;
     if(darktable.view_manager->audio.audio_player_id != -1)
@@ -1313,12 +1314,12 @@ static gboolean _event_box_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
-  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
+  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY));
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT,
-            (event->type == GDK_ENTER_NOTIFY));
+            (dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY));
   return FALSE;
 }
 
@@ -1328,11 +1329,11 @@ static gboolean _event_image_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT,
-            (event->type == GDK_ENTER_NOTIFY));
+            (dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY));
   return FALSE;
 }
 
@@ -1342,7 +1343,7 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(event->type == GDK_ENTER_NOTIFY)
+  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY)
   {
     if(widget == thumb->w_reject)
       darktable.control->element = DT_VIEW_REJECT;
@@ -1355,7 +1356,7 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget,
     _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
     _thumb_update_tags_tooltip(thumb);
   }
-  else if(event->type == GDK_LEAVE_NOTIFY)
+  else if(dt_gdk_event_get_type(event) == GDK_LEAVE_NOTIFY)
   {
     if(widget == thumb->w_reject)
       darktable.control->element = -1;

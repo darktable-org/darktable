@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 // neural restore — lighttable module for AI-based image restoration
 //
@@ -3445,7 +3446,7 @@ static gboolean _pick_double_click(GtkWidget *widget,
                                    GdkEventButton *event,
                                    dt_lib_module_t *self)
 {
-  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  if(dt_gdk_event_get_type(event) != GDK_2BUTTON_PRESS) return FALSE;
   dt_lib_neural_restore_t *d = self->data;
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;

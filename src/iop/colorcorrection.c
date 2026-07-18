@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
@@ -355,11 +356,11 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
-  const float mouse_x = CLAMP(event->x - inset, 0, width);
-  const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+  const float mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
+  const float mouse_y = CLAMP(height - 1 - dt_gdk_event_get_y(event) + inset, 0, height);
   const float ma = (2.0 * mouse_x - width) * DT_COLORCORRECTION_MAX / (float)width;
   const float mb = (2.0 * mouse_y - height) * DT_COLORCORRECTION_MAX / (float)height;
-  if(event->state & GDK_BUTTON1_MASK)
+  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
   {
     if(g->selected == 1)
     {
@@ -393,7 +394,7 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
 static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event,
                                                     dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
   {
     // double click resets:
     dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
@@ -456,22 +457,22 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
-  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Up || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Up)
   {
     handled = 1;
     dy = COLORCORRECTION_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Down || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Down)
   {
     handled = 1;
     dy = -COLORCORRECTION_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Right || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Right)
   {
     handled = 1;
     dx = COLORCORRECTION_DEFAULT_STEP;
   }
-  else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Left || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Left)
   {
     handled = 1;
     dx = -COLORCORRECTION_DEFAULT_STEP;
@@ -479,7 +480,7 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
 
   if(!handled) return FALSE;
 
-  float multiplier = dt_accel_get_speed_multiplier(widget, event->state);
+  float multiplier = dt_accel_get_speed_multiplier(widget, dt_gdk_event_get_state(event));
   dx *= multiplier;
   dy *= multiplier;
 
