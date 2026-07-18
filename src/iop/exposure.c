@@ -585,11 +585,9 @@ static float _get_highlight_bias(const dt_iop_module_t *self)
 {
   float bias = 0.0f;
 
-  // Nikon: Exif.Nikon3.Colorspace==4  --> +2 EV
-  // Fuji:  Exif.Fujifilm.DevelopmentDynamicRange
-  //             100 --> no comp
-  //             200 --> +1 EV
-  //             400 --> +2 EV
+  // exif_highlight_preservation holds the exposure (EV) that the camera withheld
+  // in an HDR / dynamic-range / HLG tone mode; so we compensate for it in exposure.
+  // Per-camera detection happens in _check_highlight_preservation() in common/exif.cc.
 
   if(self->dev && self->dev->image_storage.exif_highlight_preservation > 0.0f)
     bias = self->dev->image_storage.exif_highlight_preservation;
@@ -1203,10 +1201,7 @@ void gui_init(dt_iop_module_t *self)
     (self, "compensate_hilite_pres");
   gtk_widget_set_tooltip_text(g->compensate_hilite_preserv,
                               _("remove the camera's hidden exposure bias in\n"
-                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
-                                "\n"
-                                "when enabled on an image with nonzero bias, tone mapping\n"
-                                "(e.g. sigmoid) is required to avoid blown-out highlights."));
+                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));
