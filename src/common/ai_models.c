@@ -1615,32 +1615,23 @@ char *dt_ai_models_download_sync(const char *model_id,
 
   dt_print(DT_DEBUG_AI, "[ai_models] downloading: %s", url);
 
-  // prepare download path using local copy
-  char *download_path = g_build_filename(registry->cache_dir, asset, NULL);
+  // write to a .part temp file so interrupted transfers can resume from
+  // the partial bytes; rename to final path only on success
+  char *final_path = g_build_filename(registry->cache_dir, asset, NULL);
+  char *download_path = g_strconcat(final_path, ".part", NULL);
 
-  FILE *file = g_fopen(download_path, "wb");
-  if(!file)
-  {
-    char *err = g_strdup_printf(_("failed to create file: %s"), download_path);
-    g_free(download_path);
-    g_free(url);
-    SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, err);
-  }
-
-  // set up download data (uses model_id copy, not model pointer)
   dt_ai_download_data_t dl = {
     .registry = registry,
     .model_id = (char *)model_id,
     .callback = callback,
     .user_data = user_data,
-    .file = file,
+    .file = NULL,
     .cancel_flag = cancel_flag};
 
-  // initialize curl
   CURL *curl = curl_easy_init();
   if(!curl)
   {
-    fclose(file);
+    g_free(final_path);
     g_free(download_path);
     g_free(url);
     SET_STATUS_AND_RETURN(
@@ -1655,39 +1646,109 @@ char *dt_ai_models_download_sync(const char *model_id,
   curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, _curl_progress_callback);
   curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &dl);
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+  // cap connect at 15s (default 300s is far too long for a UI path)
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 15L);
+  // stalled-transfer abort: < 1 KB/s for 60s -> CURLE_OPERATION_TIMEDOUT,
+  // caught by the retry loop. no overall CURLOPT_TIMEOUT: a slow but
+  // progressing transfer isn't broken
+  curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);
+  curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);
 
-  CURLcode res = curl_easy_perform(curl);
-
-  fclose(file);
-
+  // retry with exponential backoff on transient failures; each attempt
+  // resumes from the .part file's current size via CURLOPT_RESUME_FROM_LARGE
+  const int MAX_ATTEMPTS = 4;
+  const int BACKOFF_S[] = {2, 8, 30};
+  CURLcode res = CURLE_OK;
+  long http_code = 0;
   char *error = NULL;
+  int attempt = 0;
 
-  if(res != CURLE_OK)
+  while(attempt < MAX_ATTEMPTS)
   {
-    if(res == CURLE_ABORTED_BY_CALLBACK)
-      error = g_strdup(_("download cancelled"));
-    else
-      error = g_strdup_printf(_("download failed: %s"), curl_easy_strerror(res));
-    g_unlink(download_path);
-  }
-  else
-  {
-    // check http response code
-    long http_code = 0;
+    if(attempt > 0)
+    {
+      // sleep in 1s slices so cancel is honoured promptly
+      const int wait_s = BACKOFF_S[MIN(attempt - 1, (int)(sizeof(BACKOFF_S)/sizeof(BACKOFF_S[0])) - 1)];
+      for(int i = 0; i < wait_s; i++)
+      {
+        if(cancel_flag && g_atomic_int_get(cancel_flag))
+        {
+          res = CURLE_ABORTED_BY_CALLBACK;
+          goto retry_done;
+        }
+        g_usleep(G_USEC_PER_SEC);
+      }
+      dt_print(DT_DEBUG_AI, "[ai_models] retry %d/%d", attempt + 1, MAX_ATTEMPTS);
+    }
+
+    curl_off_t resume_from = 0;
+    {
+      GStatBuf st;
+      if(g_stat(download_path, &st) == 0 && st.st_size > 0)
+        resume_from = (curl_off_t)st.st_size;
+    }
+
+    FILE *file = g_fopen(download_path, resume_from > 0 ? "ab" : "wb");
+    if(!file)
+    {
+      error = g_strdup_printf(_("failed to open %s"), download_path);
+      goto retry_done;
+    }
+    dl.file = file;
+    curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, resume_from);
+
+    res = curl_easy_perform(curl);
+    fclose(file);
+    dl.file = NULL;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if(http_code != 200)
+    if(res == CURLE_ABORTED_BY_CALLBACK) break; // user cancelled
+
+    if(res == CURLE_OK && (http_code == 200 || http_code == 206))
     {
-      error = g_strdup_printf(_("http error: %ld"), http_code);
-      g_unlink(download_path);
+      // server returned full content despite our range request: the
+      // partial file is now appended to itself and corrupt
+      if(resume_from > 0 && http_code == 200)
+      {
+        dt_print(DT_DEBUG_AI, "[ai_models] server ignored range; discarding partial");
+        g_unlink(download_path);
+        attempt++;
+        continue;
+      }
+      break; // success
     }
+
+    const gboolean retryable =
+         res == CURLE_OPERATION_TIMEDOUT
+      || res == CURLE_COULDNT_CONNECT
+      || res == CURLE_COULDNT_RESOLVE_HOST
+      || res == CURLE_RECV_ERROR
+      || res == CURLE_SEND_ERROR
+      || res == CURLE_PARTIAL_FILE
+      || (res == CURLE_OK && (http_code >= 500 || http_code == 429));
+    if(!retryable) break;
+    attempt++;
   }
 
+retry_done:
   curl_easy_cleanup(curl);
   g_free(url);
 
+  if(!error)
+  {
+    if(res == CURLE_ABORTED_BY_CALLBACK)
+      error = g_strdup(_("download cancelled"));
+    else if(res != CURLE_OK)
+      error = g_strdup_printf(_("download failed after %d attempts: %s"),
+                              attempt + 1, curl_easy_strerror(res));
+    else if(http_code != 200 && http_code != 206)
+      error = g_strdup_printf(_("http error: %ld"), http_code);
+  }
+
   if(error)
   {
+    // leave .part in place so the next attempt can resume from it
+    g_free(final_path);
     g_free(download_path);
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, error);
   }
@@ -1697,7 +1758,9 @@ char *dt_ai_models_download_sync(const char *model_id,
   {
     if(!_verify_checksum(download_path, checksum_copy))
     {
+      // fully downloaded but corrupt — delete so the next try starts fresh
       g_unlink(download_path);
+      g_free(final_path);
       g_free(download_path);
       SET_STATUS_AND_RETURN(
         DT_AI_MODEL_ERROR,
@@ -1708,6 +1771,7 @@ char *dt_ai_models_download_sync(const char *model_id,
   {
     // should not reach here — checksum is now required before download
     g_unlink(download_path);
+    g_free(final_path);
     g_free(download_path);
     SET_STATUS_AND_RETURN(
       DT_AI_MODEL_ERROR,
@@ -1716,20 +1780,32 @@ char *dt_ai_models_download_sync(const char *model_id,
                       asset));
   }
 
+  // promote .part to its final name now that content is verified
+  if(g_rename(download_path, final_path) != 0)
+  {
+    g_unlink(download_path);
+    g_free(final_path);
+    g_free(download_path);
+    SET_STATUS_AND_RETURN(
+      DT_AI_MODEL_ERROR,
+      g_strdup(_("failed to finalize downloaded file")));
+  }
+  g_free(download_path);
+
   // extract to models directory (zip already contains model_id folder).
   // atomic: staging dir + rename, so a partial extract never leaves a
   // half-written model_id directory that refresh_status would treat as
   // DOWNLOADED.
-  if(!_extract_zip_atomic(download_path, registry->models_dir, model_id))
+  if(!_extract_zip_atomic(final_path, registry->models_dir, model_id))
   {
-    g_unlink(download_path);
-    g_free(download_path);
+    g_unlink(final_path);
+    g_free(final_path);
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, g_strdup(_("failed to extract archive")));
   }
 
   // clean up downloaded zip
-  g_unlink(download_path);
-  g_free(download_path);
+  g_unlink(final_path);
+  g_free(final_path);
 
   // invalidate before flipping status so the next session sees a fresh
   // compile, not a stale artifact from the previous model file
