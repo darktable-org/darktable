@@ -3078,7 +3078,7 @@ msgstr "Обертання синього"
 #: ../build/lib/darktable/plugins/introspection_agx.c:407
 #: ../build/lib/darktable/plugins/introspection_agx.c:606
 msgid "master purity boost"
-msgstr "Головне підвищення чистоти"
+msgstr "Головне підсилення чистоти"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:413
 #: ../build/lib/darktable/plugins/introspection_agx.c:610
