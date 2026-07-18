@@ -758,6 +758,35 @@ static void sf_pack_dir(char *dst, size_t dstsz)
   snprintf(dst, dstsz, "%s/spektrafilm", cfg);
 }
 
+/* natural (human) string compare: embedded numbers compared numerically
+   so "Vision3 50D" < "Vision3 200T" < "Vision3 500T" */
+static int sf_nat_cmp(const char *a, const char *b)
+{
+  for(;;)
+  {
+    if(*a == 0) return *b == 0 ? 0 : -1;
+    if(*b == 0) return 1;
+    int da = (unsigned)*a - '0' < 10u;
+    int db = (unsigned)*b - '0' < 10u;
+    if(da && db)
+    {
+      unsigned long va = 0, vb = 0;
+      while((unsigned)*a - '0' < 10u) { va = va * 10 + (*a - '0'); a++; }
+      while((unsigned)*b - '0' < 10u) { vb = vb * 10 + (*b - '0'); b++; }
+      if(va != vb) return va < vb ? -1 : 1;
+    }
+    else if(da != db)
+      return da ? -1 : 1;
+    else
+    {
+      int ca = g_ascii_tolower(*a);
+      int cb = g_ascii_tolower(*b);
+      if(ca != cb) return ca < cb ? -1 : 1;
+      a++; b++;
+    }
+  }
+}
+
 /* scan <config>/spektrafilm/profiles/ (all .json files); reads only the info header of
    each profile (stock / name / stage / target_print) */
 static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
@@ -803,10 +832,11 @@ static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
     n++;
   }
   g_dir_close(gd);
-  /* stable alphabetical order by display name */
+  /* natural order by display name (numbers compared numerically,
+     so "50D" < "200T" instead of lexicographic "200T" < "50D") */
   for(int i = 0; i < n; i++)
     for(int j = i + 1; j < n; j++)
-      if(g_ascii_strcasecmp(out[j].name, out[i].name) < 0)
+      if(sf_nat_cmp(out[j].name, out[i].name) < 0)
       {
         sf_prof_entry_t t = out[i];
         out[i] = out[j];
@@ -1993,7 +2023,7 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->film, _("(no profiles found)"));
   else
   {
-    static const struct { int pos; int bw; const char *label; } film_groups[] = {
+    static const struct { int pos; int bw; const char *label; } groups[] = {
       { 0, 0, N_("negative color") },
       { 1, 0, N_("positive color") },
       { 0, 1, N_("negative monochrome") },
@@ -2005,13 +2035,8 @@ void gui_update(dt_iop_module_t *self)
       for(int f = 0; f < g->n_films; f++)
       {
         const sf_prof_entry_t *e = &g->entries[g->film_entry[f]];
-        if(e->positive != film_groups[gi].pos || e->bw != film_groups[gi].bw)
-          continue;
-        if(first)
-        {
-          dt_bauhaus_combobox_add_section(g->film, _(film_groups[gi].label));
-          first = FALSE;
-        }
+        if(e->positive != groups[gi].pos || e->bw != groups[gi].bw) continue;
+        if(first) { dt_bauhaus_combobox_add_section(g->film, _(groups[gi].label)); first = FALSE; }
         dt_bauhaus_combobox_add_full(g->film, e->name,
                                      DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                      GINT_TO_POINTER(g->film_entry[f]),
@@ -2024,7 +2049,7 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->paper, _("(none)"));
   else
   {
-    static const struct { int bw; const char *label; } paper_groups[] = {
+    static const struct { int bw; const char *label; } pgroups[] = {
       { 0, N_("color") },
       { 1, N_("monochrome") },
     };
@@ -2034,13 +2059,8 @@ void gui_update(dt_iop_module_t *self)
       for(int k = 0; k < g->n_papers; k++)
       {
         const sf_prof_entry_t *e = &g->entries[g->paper_entry[k]];
-        if(e->bw != paper_groups[gi].bw)
-          continue;
-        if(first)
-        {
-          dt_bauhaus_combobox_add_section(g->paper, _(paper_groups[gi].label));
-          first = FALSE;
-        }
+        if(e->bw != pgroups[gi].bw) continue;
+        if(first) { dt_bauhaus_combobox_add_section(g->paper, _(pgroups[gi].label)); first = FALSE; }
         dt_bauhaus_combobox_add_full(g->paper, e->name,
                                      DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                      GINT_TO_POINTER(g->paper_entry[k]),
