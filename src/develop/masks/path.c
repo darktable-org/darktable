@@ -72,33 +72,29 @@ static void _path_get_XY(const float p0x,
 }
 
 /**
- * Get the point of the path at pos t [0,1]  AND the corresponding border point
+ * Get the point of the path at pos t [0,1] AND the corresponding border point
  *
- * The border point is rad units away in the perpendicular direction.
+ * The border point is rad units away in the perpendicular direction. The
+ * tangent used to derive that perpendicular comes from either the smoothed
+ * per-corner tangent field (dense masks) or a finite-difference sample of
+ * the curve (sparse masks) — see the body for the switch.
  *
- * @param p0x x coordinate of the first bezier point
- * @param p0y y coordinate of the first bezier point
- * @param p1x x coordinate of the second bezier point
- * @param p1y y coordinate of the second bezier point
- * @param p2x x coordinate of the third bezier point
- * @param p2y y coordinate of the third bezier point
- * @param p3x x coordinate of the fourth bezier point
- * @param p3y y coordinate of the fourth bezier point
- * @param t position on the path, between 0 and 1
- * @param rad radius of the border at t
- * @param xc x coordinate of the point on the path
- * @param yc y coordinate of the point on the path
- * @param xb x coordinate of the point on the border
- * @param yb y coordinate of the point on the border
+ * @param seg_start segment start data, 7 floats:
+ *                  [0..1] corner XY, [2..3] outgoing ctrl XY,
+ *                  [4] signed border radius,
+ *                  [5..6] smoothed unit tangent (0,0 if unset)
+ * @param seg_end   segment end data, same layout (with incoming ctrl at [2..3])
+ * @param t         position on the segment, between 0 and 1
+ * @param rad       border radius at t (interpolated from the two endpoint radii)
+ * @param xc        out: x coordinate of the point on the path
+ * @param yc        out: y coordinate of the point on the path
+ * @param xb        out: x coordinate of the point on the border
+ *                  (DT_INVALID_COORDINATE if degenerate)
+ * @param yb        out: y coordinate of the point on the border
+ *                  (DT_INVALID_COORDINATE if degenerate)
  */
-static void _path_border_get_XY(const float p0x,
-                                const float p0y,
-                                const float p1x,
-                                const float p1y,
-                                const float p2x,
-                                const float p2y,
-                                const float p3x,
-                                const float p3y,
+static void _path_border_get_XY(const float *seg_start,
+                                const float *seg_end,
                                 const float t,
                                 const float rad,
                                 float *xc,
@@ -106,46 +102,79 @@ static void _path_border_get_XY(const float p0x,
                                 float *xb,
                                 float *yb)
 {
-  // we use double precision math here to avoid rounding issues in
-  // paths with sharp corners we get the point
+  const float p0x = seg_start[0], p0y = seg_start[1];
+  const float p1x = seg_start[2], p1y = seg_start[3];
+  const float p2x = seg_end[2],   p2y = seg_end[3];
+  const float p3x = seg_end[0],   p3y = seg_end[1];
+
   _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t, xc, yc);
 
-  // now we get derivative points
-  const double ti = 1.0 - (double)t;
-
-  const double t_t = (double)t * t;
-  const double ti_ti = ti * ti;
-  const double t_ti = t * ti;
-
-  const double a = 3.0 * ti_ti;
-  const double b = 3.0 * (ti_ti - 2.0 * t_ti);
-  const double c = 3.0 * (2.0 * t_ti - t_t);
-  const double d = 3.0 * t_t;
-
-  double dx = -p0x * a + p1x * b + p2x * c + p3x * d;
-  double dy = -p0y * a + p1y * b + p2y * c + p3y * d;
-
-  // ctrl coincides with corner (common in potrace output): fall back to
-  // a finite-difference sample of the curve for a valid tangent direction
-  if(dx == 0 && dy == 0)
+  double dx, dy;
+  const gboolean have_smoothed = (seg_start[5] != 0.0f || seg_start[6] != 0.0f)
+                              && (seg_end[5]   != 0.0f || seg_end[6]   != 0.0f);
+  if(have_smoothed)
   {
-    const double dt = 0.1;
-    float xc2, yc2;
-    if((double)t + dt <= 1.0)
+    // slerp between smoothed per-corner tangents. keeps the vector on
+    // the unit circle so the border doesn't drift mid-segment
+    const double ax = (double)seg_start[5], ay = (double)seg_start[6];
+    const double bx = (double)seg_end[5],   by = (double)seg_end[6];
+    double dot = ax * bx + ay * by;
+    if(dot > 1.0) dot = 1.0;
+    else if(dot < -1.0) dot = -1.0;
+    const double theta = acos(dot);
+    const double sin_theta = sin(theta);
+    if(sin_theta < 1e-6)
     {
-      _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t + (float)dt, &xc2, &yc2);
-      dx = (double)xc2 - (double)*xc;
-      dy = (double)yc2 - (double)*yc;
+      const double ti = 1.0 - (double)t;
+      dx = ti * ax + (double)t * bx;
+      dy = ti * ay + (double)t * by;
     }
     else
     {
-      _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t - (float)dt, &xc2, &yc2);
-      dx = (double)*xc - (double)xc2;
-      dy = (double)*yc - (double)yc2;
+      const double wa = sin((1.0 - (double)t) * theta) / sin_theta;
+      const double wb = sin((double)t * theta) / sin_theta;
+      dx = wa * ax + wb * bx;
+      dy = wa * ay + wb * by;
+    }
+  }
+  else
+  {
+    // derivative in double precision to survive rounding on sharp corners
+    const double ti = 1.0 - (double)t;
+
+    const double t_t = (double)t * t;
+    const double ti_ti = ti * ti;
+    const double t_ti = t * ti;
+
+    const double a = 3.0 * ti_ti;
+    const double b = 3.0 * (ti_ti - 2.0 * t_ti);
+    const double c = 3.0 * (2.0 * t_ti - t_t);
+    const double d = 3.0 * t_t;
+
+    dx = -p0x * a + p1x * b + p2x * c + p3x * d;
+    dy = -p0y * a + p1y * b + p2y * c + p3y * d;
+
+    // ctrl coincides with corner (common in potrace output): fall back
+    // to a finite-difference sample of the curve for a valid tangent
+    if(dx == 0 && dy == 0)
+    {
+      const double dt = 0.1;
+      float xc2, yc2;
+      if((double)t + dt <= 1.0)
+      {
+        _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t + (float)dt, &xc2, &yc2);
+        dx = (double)xc2 - (double)*xc;
+        dy = (double)yc2 - (double)*yc;
+      }
+      else
+      {
+        _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t - (float)dt, &xc2, &yc2);
+        dx = (double)*xc - (double)xc2;
+        dy = (double)*yc - (double)yc2;
+      }
     }
   }
 
-  // so we can have the resulting point
   if(dx == 0 && dy == 0)
   {
     *xb = DT_INVALID_COORDINATE;
@@ -615,6 +644,8 @@ static int _path_fill_gaps(const int lastx,
  * @param fill_seg_indexes store the indexes of the points
  *                         added to the dynbufs
  * @param clockwise whether to turn clockwise or anti-clockwise
+ * @param dense enables dense-mask guards: sweep the shorter way and
+ *              skip < ~6 deg arcs
  */
 static void _path_points_fill_border_gaps(float *cmax,
                                           float *bmin,
@@ -622,7 +653,8 @@ static void _path_points_fill_border_gaps(float *cmax,
                                           dt_masks_dynbuf_t *dpoints,
                                           dt_masks_dynbuf_t *dborder,
                                           dt_masks_intbuf_t *fill_seg_indexes,
-                                          const gboolean clockwise)
+                                          const gboolean clockwise,
+                                          const gboolean dense)
 {
   // Degenerate geometry (e.g. a freshly-added node whose control points
   // coincide with its corner) can leave a border or center point unset
@@ -641,14 +673,22 @@ static void _path_points_fill_border_gaps(float *cmax,
 
   if(a1 == a2) return;
 
-  // we have to be sure that we turn in the correct direction
-  if(a2 < a1 && clockwise)
+  if(dense)
   {
-    a2 += 2.0 * M_PI;
+    // dense: sweep the shorter way and skip < ~6 deg arcs. avoids
+    // phantom near-2*pi wraps at corners where local geometry disagrees
+    // with the global winding, plus per-node noise bumps
+    if(a2 - a1 > M_PI)
+      a1 += 2.0 * M_PI;
+    else if(a1 - a2 > M_PI)
+      a2 += 2.0 * M_PI;
+    if(fabs(a2 - a1) < 0.1) return;
   }
-  if(a2 > a1 && !clockwise)
+  else
   {
-    a1 += 2.0 * M_PI;
+    // sparse: original clockwise-based logic; keeps concave features
+    if(a2 < a1 && clockwise) a2 += 2.0 * M_PI;
+    if(a2 > a1 && !clockwise) a1 += 2.0 * M_PI;
   }
 
   // we determine start and end radius too
@@ -724,14 +764,14 @@ static void _path_points_recurs(float *p1,
   //         that is offset from the bezier curve can make strange bends.
   if(path_min[0] == DT_INVALID_COORDINATE)
   {
-    _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmin,
+    _path_border_get_XY(p1, p2, tmin,
                         _smoothstep(p1[4], p2[4], tmin),
                         path_min, path_min + 1,
                         border_min, border_min + 1);
   }
   if(path_max[0] == DT_INVALID_COORDINATE)
   {
-    _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmax,
+    _path_border_get_XY(p1, p2, tmax,
                         _smoothstep(p1[4], p2[4], tmax),
                         path_max, path_max + 1,
                         border_max, border_max + 1);
@@ -1375,6 +1415,55 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_masks_dynbuf_add_zeros(dborder, 6 * nb);  // need six zeros for each border point
   }
 
+  // smoothed unit tangent per corner (chord across +/- N neighbours),
+  // consumed by _path_border_get_XY. decouples the feather from local
+  // per-node tangent noise on dense (AI-generated) paths. sparse masks
+  // skip it to preserve manual geometry
+  float *smoothed_tangents = NULL;
+  if(nb >= 30)
+  {
+    smoothed_tangents = dt_alloc_align_float(2 * nb);
+    if(smoothed_tangents)
+    {
+      float *corner_xy = dt_alloc_align_float(2 * nb);
+      if(corner_xy)
+      {
+        int i = 0;
+        for(const GList *l = form->points; l; l = g_list_next(l), i++)
+        {
+          const dt_masks_point_path_t *pt = l->data;
+          corner_xy[i * 2]     = pt->corner[0] * wd - dx;
+          corner_xy[i * 2 + 1] = pt->corner[1] * ht - dy;
+        }
+        const int N = MAX(1, (int)nb / 40);
+        for(int k = 0; k < (int)nb; k++)
+        {
+          const int kp = (k - N + (int)nb) % (int)nb;
+          const int kn = (k + N) % (int)nb;
+          const float tx = corner_xy[kn * 2]     - corner_xy[kp * 2];
+          const float ty = corner_xy[kn * 2 + 1] - corner_xy[kp * 2 + 1];
+          const float len = sqrtf(tx * tx + ty * ty);
+          if(len > 0.0f)
+          {
+            smoothed_tangents[k * 2]     = tx / len;
+            smoothed_tangents[k * 2 + 1] = ty / len;
+          }
+          else
+          {
+            smoothed_tangents[k * 2]     = 0.0f;
+            smoothed_tangents[k * 2 + 1] = 0.0f;
+          }
+        }
+        dt_free_align(corner_xy);
+      }
+      else
+      {
+        dt_free_align(smoothed_tangents);
+        smoothed_tangents = NULL;
+      }
+    }
+  }
+
   float *border_init = dt_alloc_align_float((size_t)6 * nb);
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
@@ -1396,26 +1485,37 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_masks_point_path_t *point1 = form_points->data;
     dt_masks_point_path_t *point2 = pt2->data;
     dt_masks_point_path_t *point3 = pt3->data;
-    float p1[5] = { point1->corner[0] * wd - dx,
+    const int k1 = k;
+    const int k2 = (k + 1) % (int)nb;
+    const int k3 = (k + 2) % (int)nb;
+    float p1[7] = { point1->corner[0] * wd - dx,
                     point1->corner[1] * ht - dy,
                     point1->ctrl2[0] * wd - dx,
                     point1->ctrl2[1] * ht - dy,
-                    cw * point1->border[1] * MIN(wd, ht) };
-    float p2[5] = { point2->corner[0] * wd - dx,
+                    cw * point1->border[1] * MIN(wd, ht),
+                    smoothed_tangents ? smoothed_tangents[k1 * 2]     : 0.0f,
+                    smoothed_tangents ? smoothed_tangents[k1 * 2 + 1] : 0.0f };
+    float p2[7] = { point2->corner[0] * wd - dx,
                     point2->corner[1] * ht - dy,
                     point2->ctrl1[0] * wd - dx,
                     point2->ctrl1[1] * ht - dy,
-                    cw * point2->border[0] * MIN(wd, ht) };
-    float p3[5] = { point2->corner[0] * wd - dx,
+                    cw * point2->border[0] * MIN(wd, ht),
+                    smoothed_tangents ? smoothed_tangents[k2 * 2]     : 0.0f,
+                    smoothed_tangents ? smoothed_tangents[k2 * 2 + 1] : 0.0f };
+    float p3[7] = { point2->corner[0] * wd - dx,
                     point2->corner[1] * ht - dy,
                     point2->ctrl2[0] * wd - dx,
                     point2->ctrl2[1] * ht - dy,
-                    cw * point2->border[1] * MIN(wd, ht) };
-    float p4[5] = { point3->corner[0] * wd - dx,
+                    cw * point2->border[1] * MIN(wd, ht),
+                    smoothed_tangents ? smoothed_tangents[k2 * 2]     : 0.0f,
+                    smoothed_tangents ? smoothed_tangents[k2 * 2 + 1] : 0.0f };
+    float p4[7] = { point3->corner[0] * wd - dx,
                     point3->corner[1] * ht - dy,
                     point3->ctrl1[0] * wd - dx,
                     point3->ctrl1[1] * ht - dy,
-                    cw * point3->border[0] * MIN(wd, ht) };
+                    cw * point3->border[0] * MIN(wd, ht),
+                    smoothed_tangents ? smoothed_tangents[k3 * 2]     : 0.0f,
+                    smoothed_tangents ? smoothed_tangents[k3 * 2 + 1] : 0.0f };
 
     // advance form_points for next iteration so that it tracks the
     // kth element of form->points
@@ -1472,12 +1572,10 @@ static int _path_get_pts_border(dt_develop_t *dev,
       // result in bmax[0] NOT being set to DT_INVALID_COORDINATE when
       // t=0 and the two points in p3 are identical (as is the case on
       // a control node set to sharp corner)
-      _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1],
-                          0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
+      _path_border_get_XY(p3, p4, 0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
       if(bmax[0] == DT_INVALID_COORDINATE)
       {
-        _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1],
-                            0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
+        _path_border_get_XY(p3, p4, 0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
       }
       if(bmax[0] - rb[0] > 1
          || bmax[0] - rb[0] < -1
@@ -1487,7 +1585,8 @@ static int _path_get_pts_border(dt_develop_t *dev,
 
         _path_points_fill_border_gaps(rc, rb, bmax,
                                       dpoints, dborder, gap_fill_segs,
-                                      _path_is_clockwise(form));
+                                      _path_is_clockwise(form),
+                                      smoothed_tangents != NULL);
       }
     }
   }
@@ -1562,6 +1661,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_masks_intbuf_free(gap_fill_segs);
 
     dt_free_align(border_init);
+    dt_free_align(smoothed_tangents);
     return 1;
   }
   // Note: the if(source) branch above always returns, so this is not really an else-if.
@@ -1617,6 +1717,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
       dt_masks_dynbuf_free(intersections);
       dt_masks_intbuf_free(gap_fill_segs);
       dt_free_align(border_init);
+      dt_free_align(smoothed_tangents);
       return 1;
     }
   }
@@ -1626,6 +1727,7 @@ fail:
   dt_masks_dynbuf_free(intersections);
   dt_masks_intbuf_free(gap_fill_segs);
   dt_free_align(border_init);
+  dt_free_align(smoothed_tangents);
   dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
@@ -2916,6 +3018,9 @@ static void _path_events_post_expose(cairo_t *cr,
       {
         if(gpt->border[i * 2 + 1] == DT_INVALID_COORDINATE) break;
         i = gpt->border[i * 2 + 1] - 1;
+        // break the polyline at each self-intersection cut so cairo
+        // doesn't draw a shortcut line_to across the invalid region
+        dep = 1;
         continue;
       }
       if(dep)
