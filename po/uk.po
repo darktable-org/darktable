@@ -119,12 +119,12 @@ msgstr "лише великі записи"
 #: ../build/bin/conf_gen.h:492
 msgctxt "preferences"
 msgid "sensitive"
-msgstr "чутливо"
+msgstr "Чутливо"
 
 #: ../build/bin/conf_gen.h:493 ../build/bin/preferences_gen.h:4848
 msgctxt "preferences"
 msgid "insensitive"
-msgstr "нечутливо"
+msgstr "Нечутливо"
 
 #: ../build/bin/conf_gen.h:594
 msgctxt "preferences"
@@ -144,12 +144,12 @@ msgstr "Час імпорту"
 #: ../build/bin/conf_gen.h:1065
 msgctxt "preferences"
 msgid "folder name"
-msgstr "імена каталогів"
+msgstr "Імена каталогів"
 
 #: ../build/bin/conf_gen.h:1066
 msgctxt "preferences"
 msgid "display name"
-msgstr "відображувані імена"
+msgstr "Відображувані імена"
 
 #: ../build/bin/conf_gen.h:1085
 msgctxt "preferences"
