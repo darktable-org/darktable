@@ -143,11 +143,11 @@ static void _dt_pref_changed(gpointer instance, gpointer user_data)
 }
 
 // cleanup everything when the widget is destroyed
-static void _range_select_destroy(GtkWidget *widget)
+static void _range_select_dispose(GObject *object)
 {
-  g_return_if_fail(DTGTK_IS_RANGE_SELECT(widget));
+  g_return_if_fail(DTGTK_IS_RANGE_SELECT(object));
 
-  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(widget);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(object);
 
   DT_CONTROL_SIGNAL_DISCONNECT(_dt_pref_changed, range);
 
@@ -171,13 +171,13 @@ static void _range_select_destroy(GtkWidget *widget)
     g_free(range->cur_help);
   range->cur_help = NULL;
 
-  GTK_WIDGET_CLASS(dtgtk_range_select_parent_class)->destroy(widget);
+  G_OBJECT_CLASS(dtgtk_range_select_parent_class)->dispose(object);
 }
 
 static void dtgtk_range_select_class_init(GtkDarktableRangeSelectClass *klass)
 {
-  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  widget_class->destroy = _range_select_destroy;
+  GObjectClass *object_class = (GObjectClass *)klass;
+  object_class->dispose = _range_select_dispose;
 
   _signals[VALUE_CHANGED] = g_signal_new("value-changed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0, NULL,
                                          NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);

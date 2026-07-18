@@ -43,7 +43,7 @@ static void _gradient_slider_get_preferred_width(GtkWidget *widget,
                                                  gint *min_width,
                                                  gint *nat_width);
 static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr);
-static void _gradient_slider_destroy(GtkWidget *widget);
+static void _gradient_slider_dispose(GObject *object);
 
 // Events
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget,
@@ -482,7 +482,8 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
   widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
   widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
   widget_class->draw = _gradient_slider_draw;
-  widget_class->destroy = _gradient_slider_destroy;
+  GObjectClass *object_class = (GObjectClass *)klass;
+  object_class->dispose = _gradient_slider_dispose;
 
   widget_class->enter_notify_event = _gradient_slider_enter_notify_event;
   widget_class->leave_notify_event = _gradient_slider_leave_notify_event;
@@ -565,11 +566,11 @@ static void _gradient_slider_get_preferred_width(GtkWidget *widget,
   DTGTK_GRADIENT_SLIDER(widget)->margin_right = padding.right + border.right + margin.right;
 }
 
-static void _gradient_slider_destroy(GtkWidget *widget)
+static void _gradient_slider_dispose(GObject *object)
 {
-  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
+  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(object));
 
-  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(object);
 
   if(gslider->timeout_handle)
     g_source_remove(gslider->timeout_handle);
@@ -581,7 +582,7 @@ static void _gradient_slider_destroy(GtkWidget *widget)
 
   gslider->colors = NULL;
 
-  GTK_WIDGET_CLASS(parent_class)->destroy(widget);
+  G_OBJECT_CLASS(parent_class)->dispose(object);
 }
 
 static gboolean _gradient_slider_draw(GtkWidget *widget,
