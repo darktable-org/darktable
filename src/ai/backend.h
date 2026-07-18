@@ -174,9 +174,13 @@ void dt_ai_ort_found_free(dt_ai_ort_found_t *f);
  * for such models to avoid internal shape validation errors.
  */
 typedef enum {
-  DT_AI_OPT_ALL = 0,      ///< All optimizations (default, fastest)
-  DT_AI_OPT_BASIC = 1,    ///< Basic only (constant folding, redundant node elimination)
-  DT_AI_OPT_DISABLED = 2, ///< No optimization (reserved for future use)
+  DT_AI_OPT_DEFAULT  = -1, ///< Read from the manifest's ort_optimization
+                           ///< (fallback: ALL). Passed by dt_ai_load_model;
+                           ///< dt_ai_load_model_ext callers set a concrete
+                           ///< level to override the manifest.
+  DT_AI_OPT_ALL      = 0,  ///< All optimizations (fastest)
+  DT_AI_OPT_BASIC    = 1,  ///< Basic only (constant folding, redundant node elimination)
+  DT_AI_OPT_DISABLED = 2,  ///< No optimization (reserved for future use)
 } dt_ai_opt_level_t;
 
 /**
@@ -210,6 +214,13 @@ typedef struct dt_ai_model_info_t {
   const char *coreml_format; ///< CoreML model format (JSON: string or
                              ///< stem-keyed object). "neuralnetwork"
                              ///< (default) or "mlprogram".
+  const char *ort_optimization; ///< ORT graph optimization level (JSON:
+                                ///< string or stem-keyed object). Values:
+                                ///< "all" | "basic" | "disabled".
+  const char *ort_optimization_provider; ///< Per-provider override for
+                                         ///< ort_optimization (JSON: object
+                                         ///< keyed by provider name, values
+                                         ///< as for ort_optimization).
 } dt_ai_model_info_t;
 
 /* --- Model "attributes" lookup ---
