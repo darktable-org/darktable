@@ -7,7 +7,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-10 23:06+0200\n"
 "PO-Revision-Date: 2026-06-11 10:37+0200\n"
-"Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
+"Last-Translator: Yannic Meyer <kathode@posteo.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -14486,7 +14486,7 @@ msgstr "Skripte"
 #. to use the latest version of script_manager to get the proper API
 #: ../src/external/lua-scripts/tools/script_manager.lua:1316
 msgid "lua API version reset, please restart darktable"
-msgstr "Lua API Version zurückgesetzt, bitte Darktable neu starten"
+msgstr "Lua API Version zurückgesetzt, bitte darktable neu starten"
 
 #. do nothing, we are fine
 #. we are on a dev API version, so checkout the dev
@@ -14509,7 +14509,7 @@ msgstr "Skripte zur Aktualisierung auswählen"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1409
 msgid "select the scripts installation to update"
-msgstr "Interpolationsverfahren wählen"
+msgstr "Wähle die zu aktualisierende Skript-Installation"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1418
 #: ../src/external/lua-scripts/tools/script_manager.lua:1480
@@ -14527,7 +14527,7 @@ msgstr "URL des Git-Repository eingeben, das die gewünschten Skripte enthält"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1435
 msgid "name of new folder"
-msgstr "Name de neuen Ordner"
+msgstr "Name des neuen Ordners"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1436
 msgid "enter a folder name for the additional scripts"
