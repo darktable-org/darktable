@@ -48,6 +48,17 @@ typedef struct dt_imageio_dng_preview_t
   int            height;   // declared image height
 } dt_imageio_dng_preview_t;
 
+// raw-payload compression for the uint16 DNG writers. lossless JPEG
+// (compression code 7) is the Adobe-spec canonical choice for raw
+// integer DNG and is universally supported by rawspeed, LibRaw, Adobe
+// Camera Raw, etc. deflate (8) is not allowed by the spec for ≤16-bit
+// integer data, so it's not exposed here.
+typedef enum dt_imageio_dng_compress_t
+{
+  DT_IMAGEIO_DNG_COMPRESS_NONE = 0,
+  DT_IMAGEIO_DNG_COMPRESS_LOSSLESS_JPEG = 1,
+} dt_imageio_dng_compress_t;
+
 // @brief Write a 32-bit float CFA DNG (Bayer or X-Trans).
 //
 // Used by HDR merge: pixel data is float pre-normalized to
@@ -105,7 +116,8 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
                                    const struct dt_image_t *img,
                                    const void *exif_blob,
                                    int exif_len,
-                                   const dt_imageio_dng_preview_t *preview);
+                                   const dt_imageio_dng_preview_t *preview,
+                                   dt_imageio_dng_compress_t compress);
 
 // @brief Write a demosaicked 3-channel linear DNG.
 //
@@ -137,7 +149,8 @@ int dt_imageio_dng_write_linear(const char *filename,
                                 const struct dt_image_t *img,
                                 const void *exif_blob,
                                 int exif_len,
-                                const dt_imageio_dng_preview_t *preview);
+                                const dt_imageio_dng_preview_t *preview,
+                                dt_imageio_dng_compress_t compress);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

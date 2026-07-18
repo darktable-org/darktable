@@ -1430,7 +1430,8 @@ static int _ai_save_dng(lua_State *L)
 
   const int rc = dt_imageio_dng_write_cfa_bayer(path, cfa, W, H,
                                                 img, exif_blob, exif_len,
-                                                NULL /* preview */);
+                                                NULL /* preview */,
+                                                DT_IMAGEIO_DNG_COMPRESS_NONE);
   dt_image_cache_read_release(img);
   g_free(cfa);
   g_free(exif_blob);
@@ -1488,7 +1489,8 @@ static int _ai_save_dng_linear(lua_State *L)
 
   const int rc = dt_imageio_dng_write_linear(path, rgb, W, H,
                                              img, exif_blob, exif_len,
-                                             NULL /* preview */);
+                                             NULL /* preview */,
+                                             DT_IMAGEIO_DNG_COMPRESS_NONE);
   dt_image_cache_read_release(img);
   g_free(rgb);
   g_free(exif_blob);
