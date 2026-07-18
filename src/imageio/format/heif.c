@@ -26,6 +26,7 @@
 
 #include <glib/gstdio.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -115,6 +116,25 @@ void init(dt_imageio_module_format_t *self)
 
 void cleanup(dt_imageio_module_format_t *self)
 {
+}
+
+/*
+ * SMPTE ST 2084 (PQ) EOTF: map a normalized PQ-encoded value in [0, 1] to
+ * absolute luminance in cd/m^2 (nits), peak white = 10000 nits.
+ */
+static float _pq_to_nits(const float e)
+{
+  const float m1 = 0.1593017578125f;   /* 2610 / 16384      */
+  const float m2 = 78.84375f;          /* 2523 / 4096 * 128 */
+  const float c1 = 0.8359375f;         /* 3424 / 4096       */
+  const float c2 = 18.8515625f;        /* 2413 / 4096 * 32  */
+  const float c3 = 18.6875f;           /* 2392 / 4096 * 32  */
+
+  const float ep = powf(CLAMP(e, 0.0f, 1.0f), 1.0f / m2);
+  const float num = fmaxf(ep - c1, 0.0f);
+  const float den = c2 - c3 * ep;
+  if(den <= 0.0f) return 10000.0f;
+  return 10000.0f * powf(num / den, 1.0f / m1);
 }
 
 int write_image(dt_imageio_module_data_t *data,
@@ -322,6 +342,47 @@ int write_image(dt_imageio_module_data_t *data,
       heif_image_set_raw_color_profile(image, "prof", icc_profile_data, icc_profile_len);
       free(icc_profile_data);
     }
+  }
+
+  /*
+   * HDR10 content light level (clli) metadata.
+   *
+   * For PQ (SMPTE ST 2084) output the float samples are absolute-luminance
+   * encoded, so we can derive the real content light levels from the pixels:
+   *   - MaxCLL  = the brightest single sample (max RGB component) in nits,
+   *   - MaxFALL = the mean over all samples of that per-sample peak.
+   * Players and HDR displays use these to tone-map appropriately. We only write
+   * them for PQ; HLG is relative and has no fixed nit scale.
+   */
+  if(!need_to_embed_icc
+     && nclx_profile->transfer_characteristics == heif_transfer_characteristic_ITU_R_BT_2100_0_PQ)
+  {
+    const size_t npixels = width * height;
+    float max_cll = 0.0f;
+    double sum_fall = 0.0;
+
+    DT_OMP_FOR_SIMD(reduction(max : max_cll) reduction(+ : sum_fall))
+    for(size_t k = 0; k < npixels; k++)
+    {
+      const float *const px = &in_data[4 * k];
+      const float e_max = fmaxf(fmaxf(px[0], px[1]), px[2]);
+      const float nits_raw = _pq_to_nits(e_max);
+      // ignore NaN/Inf samples: they would poison the MaxFALL sum and make the
+      // final 16-bit clli cast undefined.
+      const float nits = isfinite(nits_raw) ? nits_raw : 0.0f;
+      max_cll = fmaxf(max_cll, nits);
+      sum_fall += nits;
+    }
+    const float max_fall = npixels ? (float)(sum_fall / (double)npixels) : 0.0f;
+
+    const struct heif_content_light_level cll = {
+      .max_content_light_level     = (uint16_t)CLAMP(roundf(max_cll),  0.0f, 65535.0f),
+      .max_pic_average_light_level = (uint16_t)CLAMP(roundf(max_fall), 0.0f, 65535.0f),
+    };
+    heif_image_set_content_light_level(image, &cll);
+
+    dt_print(DT_DEBUG_IMAGEIO, "[heif HDR10 clli: MaxCLL=%u nits, MaxFALL=%u nits]",
+             cll.max_content_light_level, cll.max_pic_average_light_level);
   }
 
   struct heif_context* context = heif_context_alloc();
