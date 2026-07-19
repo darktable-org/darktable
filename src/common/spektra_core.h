@@ -31,6 +31,7 @@
 /* Spatial effects implemented in spektra_core.c (they need dt_alloc_align_float
    and OpenMP linkage; everything else in this header is inline). */
 void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
+void sf_blur_plane3_fast(float *buf, int w, int h, float sigma, float *plane);
 /* Two independently-controllable stages, matching upstream's HalationParams:
  *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
  *   halation_amount / halation_scale -- stage 2, back-reflection multi-bounce
@@ -547,6 +548,22 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
    convolution and spektrafilm.c's GPU host-side weight upload, so both
    dispatch the identical kernel for a given sigma. */
 #define SF_GAUSS_MAX_RADIUS 512
+
+/* Above this sigma, the recursive (Young-van Vliet IIR) approximation is
+   accurate enough to use as a fast path instead of the exact kernel below:
+   simulating its actual impulse response against the requested sigma shows
+   the effective-vs-requested ratio stabilizes at a stable 1.1799 for sigma
+   >= ~1.5px, correctable with the single constant factor below. Below that
+   threshold the ratio isn't flat (it drifts, and below ~0.5px flips to
+   UNDER-blurring), which is why the exact kernel exists at all -- so this
+   threshold routes only the large-radius blurs (halation's bounce
+   especially, where the exact kernel's O(radius) cost is worst) through the
+   O(1)-per-pixel fast path, recovering most of the performance the exact
+   kernel gave up without reintroducing the inaccuracy it fixed at small
+   sigma. Shared by spektra_core.c's CPU dispatch and spektrafilm.c's GPU
+   macros so both switch over at the same sigma. */
+#define SF_GAUSS_EXACT_MAX_SIGMA 2.0f
+#define SF_GAUSS_SIGMA_CORRECTION 0.8475f /* 1 / 1.1799 */
 
 /* Build a normalized, truncated 1D Gaussian kernel -- truncate=4 sigma,
  * matching scipy.ndimage.gaussian_filter's own default (what the reference

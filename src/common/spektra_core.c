@@ -110,6 +110,67 @@ float sf_gauss_grain_renorm(const float sigma)
   return (float)(1.0 / ss);
 }
 
+/* SF_GAUSS_EXACT_MAX_SIGMA / SF_GAUSS_SIGMA_CORRECTION are defined in
+   spektra_core.h, shared with spektrafilm.c's GPU macros. */
+
+/* IIR coefficients for Gaussian order-0 (Young-van Vliet). `sigma` here is
+ * already corrected (see SF_GAUSS_SIGMA_CORRECTION) -- this function has no
+ * opinion on that, it just builds the filter for whatever sigma it's given. */
+static void _sf_gauss_iir_coeffs(const float sigma, float *a0, float *a1, float *a2,
+                                 float *a3, float *b1, float *b2, float *coefp, float *coefn)
+{
+  const float alpha = 1.695f / sigma;
+  const float ema = expf(-alpha);
+  const float ema2 = expf(-2.0f * alpha);
+  *b1 = -2.0f * ema;
+  *b2 = ema2;
+  const float k = (1.0f - ema) * (1.0f - ema) / (1.0f + (2.0f * alpha * ema) - ema2);
+  *a0 = k;
+  *a1 = k * (alpha - 1.0f) * ema;
+  *a2 = k * (alpha + 1.0f) * ema;
+  *a3 = -k * ema2;
+  *coefp = (*a0 + *a1) / (1.0f + *b1 + *b2);
+  *coefn = (*a2 + *a3) / (1.0f + *b1 + *b2);
+}
+
+/* Causal + anticausal IIR pass over `len` elements (stride 1), combined into
+ * `out`. Range-clamped to [vmin, vmax] as a safety margin -- generation
+ * values here never approach the +-1e9 bounds in practice. */
+static void _sf_gauss_iir_1d(const float *const in, float *const out, const int len,
+                             const float a0, const float a1, const float a2, const float a3,
+                             const float b1, const float b2, const float coefp, const float coefn)
+{
+  const float vmin = -1.0e9f, vmax = 1.0e9f;
+  float xp = CLAMP(in[0], vmin, vmax);
+  float yb = xp * coefp;
+  float yp = yb;
+  out[0] = yp;
+  for(int i = 1; i < len; i++)
+  {
+    const float xc = CLAMP(in[i], vmin, vmax);
+    const float yc = a0 * xc + a1 * xp - b1 * yp - b2 * yb;
+    xp = xc;
+    yb = yp;
+    yp = yc;
+    out[i] = yc;
+  }
+  float xn = CLAMP(in[len - 1], vmin, vmax);
+  float xa = xn;
+  float yn = xn * coefn;
+  float ya = yn;
+  out[len - 1] += yn;
+  for(int i = len - 2; i >= 0; i--)
+  {
+    const float xc = CLAMP(in[i], vmin, vmax);
+    const float yc = a2 * xn + a3 * xa - b1 * yn - b2 * ya;
+    xa = xn;
+    xn = xc;
+    ya = yn;
+    yn = yc;
+    out[i] += yc;
+  }
+}
+
 /* Direct 1D convolution along stride-1 elements, clamp-to-edge boundary (a
    plain "hold the edge value" extension -- the exact boundary rule matters
    far less than the kernel itself once the kernel is exact). `in` and
@@ -155,14 +216,22 @@ static void _sf_transpose(const float *const src, float *const dst,
    passes then operate directly without the transpose, which is fine for
    small buffers where cache locality matters less). */
 static void _blur_channel(float *const buf, const int w, const int h, const int c,
-                          const float sigma, float *const plane, float *const trans)
+                          const float sigma, float *const plane, float *const trans,
+                          const int exact_only)
 {
   if(sigma < 1e-6f) return;
   const size_t npix = (size_t)w * h;
   for(size_t i = 0; i < npix; i++) plane[i] = buf[i * 3 + c];
 
+  const int use_iir = !exact_only && sigma >= SF_GAUSS_EXACT_MAX_SIGMA;
   float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
-  const int radius = sf_gauss_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
+  int radius = 0;
+  float a0 = 0, a1 = 0, a2 = 0, a3 = 0, b1 = 0, b2 = 0, coefp = 0, coefn = 0;
+  if(use_iir)
+    _sf_gauss_iir_coeffs(sigma * SF_GAUSS_SIGMA_CORRECTION, &a0, &a1, &a2, &a3, &b1, &b2, &coefp,
+                         &coefn);
+  else
+    radius = sf_gauss_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
 
   if(trans && w >= 16 && h >= 16)
   {
@@ -172,7 +241,8 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
     for(int j = 0; j < h; j++)
     {
       const size_t off = (size_t)j * w;
-      _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
+      if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, w, a0, a1, a2, a3, b1, b2, coefp, coefn);
+      else _sf_gauss_convolve_1d(plane + off, temp + off, w, kernel, radius);
     }
     /* Transpose temp (w×h) -> plane (h×w) */
     _sf_transpose(temp, plane, w, h);
@@ -181,7 +251,8 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
     for(int j = 0; j < w; j++)
     {
       const size_t off = (size_t)j * h;
-      _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
+      if(use_iir) _sf_gauss_iir_1d(plane + off, temp + off, h, a0, a1, a2, a3, b1, b2, coefp, coefn);
+      else _sf_gauss_convolve_1d(plane + off, temp + off, h, kernel, radius);
     }
     /* Transpose back temp (h×w) -> plane (w×h) */
     _sf_transpose(temp, plane, h, w);
@@ -194,7 +265,10 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
     {
       for(int j = 0; j < h; j++)
       {
-        _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
+        if(use_iir)
+          _sf_gauss_iir_1d(plane + (size_t)j * w, row_tmp, w, a0, a1, a2, a3, b1, b2, coefp, coefn);
+        else
+          _sf_gauss_convolve_1d(plane + (size_t)j * w, row_tmp, w, kernel, radius);
         memcpy(plane + (size_t)j * w, row_tmp, sizeof(float) * w);
       }
       float *const col_in = dt_alloc_align_float((size_t)h);
@@ -204,7 +278,8 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
         for(int i = 0; i < w; i++)
         {
           for(int j = 0; j < h; j++) col_in[j] = plane[(size_t)j * w + i];
-          _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
+          if(use_iir) _sf_gauss_iir_1d(col_in, col_out, h, a0, a1, a2, a3, b1, b2, coefp, coefn);
+          else _sf_gauss_convolve_1d(col_in, col_out, h, kernel, radius);
           for(int j = 0; j < h; j++) plane[(size_t)j * w + i] = col_out[j];
         }
       }
@@ -216,12 +291,30 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
   for(size_t i = 0; i < npix; i++) buf[i * 3 + c] = plane[i];
 }
 
-/* Blur all three channels with the same sigma (grain). Allocates trans buffer. */
+/* Blur all three channels with the same sigma (grain clumps). Always uses
+   the exact kernel regardless of sigma: sf_gauss_grain_renorm computes the
+   variance-restoration factor from that exact kernel's own coefficients, so
+   the blur actually applied must match it precisely -- the IIR fast path's
+   renormalization behavior hasn't been separately verified, so grain stays
+   on the one path its own math is derived from. Allocates trans buffer. */
 void sf_blur_plane3(float *const buf, const int w, const int h, const float sigma, float *const plane)
 {
   if(sigma < 0.3f) return;
   float *const trans = dt_alloc_align_float((size_t)w * h);
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans);
+  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/1);
+  dt_free_align(trans);
+}
+
+/* Same as sf_blur_plane3, but allows the fast IIR path at large sigma: for
+   callers with no downstream dependency on the exact kernel's shape (DIR
+   coupler correction-field diffusion, unlike grain, isn't renormalizing
+   against it -- it's just smoothing a density correction, not restoring a
+   noise buffer's variance). */
+void sf_blur_plane3_fast(float *const buf, const int w, const int h, const float sigma, float *const plane)
+{
+  if(sigma < 0.3f) return;
+  float *const trans = dt_alloc_align_float((size_t)w * h);
+  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/0);
   dt_free_align(trans);
 }
 
@@ -229,7 +322,7 @@ void sf_blur_plane3(float *const buf, const int w, const int h, const float sigm
 static void _blur_per_channel(float *const buf, const int w, const int h, const float sigma[3],
                                float *const plane, float *const trans)
 {
-  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma[c], plane, trans);
+  for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma[c], plane, trans, /*exact_only=*/0);
 }
 
 /* Apply halation + scatter to a w*h*3 LINEAR plane, in place.
@@ -624,7 +717,7 @@ void sf_diffusion_filter(float *const raw, const int w, const int h, const doubl
   {
     const float sigma = (float)(plan.sigma_um[j] * sc / fmax(pixel_um, 1e-3));
     dt_iop_image_copy(comp, raw, nn);
-    for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans);
+    for(int c = 0; c < 3; c++) _blur_channel(comp, w, h, c, sigma, plane1, trans, /*exact_only=*/0);
     const float wr = plan.wr[j], wg = plan.wg[j], wb = plan.wb[j];
     for(size_t i = 0; i < npix; i++)
     {
