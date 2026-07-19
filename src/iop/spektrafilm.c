@@ -207,12 +207,22 @@ typedef struct dt_iop_spektrafilm_data_t
   sf_sim_gpu_t *gpu; /* float tables for process_cl; NULL for exact quality */
   uint64_t sim_key;  /* hash of everything the sim build depends on */
   char sim_error[256];
+  /* multi-sublayer grain GPU constant buffers (see process_cl's grain
+     stage): built from d->gpu's grain_layer_* tables, which only change
+     when d->gpu itself is rebuilt (a new film/paper/quality choice), never
+     per-tile. Cached here and keyed on the `gpu` pointer they were built
+     from, instead of being re-uploaded on every process_cl() call --
+     tiled processing calls process_cl() once per tile, so uploading these
+     fresh every time was pure per-tile overhead for data that never
+     changes between tiles of the same image. */
+  const sf_sim_gpu_t *grain_cl_built_for;
+  cl_mem grain_cl_dmax, grain_cl_npart, grain_cl_dmin, grain_cl_total, grain_cl_curve;
 } dt_iop_spektrafilm_data_t;
 
 typedef struct dt_iop_spektrafilm_global_data_t
 {
   int kernel_expose, kernel_lograw, kernel_develop_corr, kernel_develop;
-  int kernel_grain_gen, kernel_grain_add;
+  int kernel_grain_gen, kernel_grain_gen_ml, kernel_grain_add;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
@@ -238,6 +248,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_develop_corr = dt_opencl_create_kernel(program, "spektrafilm_develop_corr");
   gd->kernel_develop = dt_opencl_create_kernel(program, "spektrafilm_develop");
   gd->kernel_grain_gen = dt_opencl_create_kernel(program, "spektrafilm_grain_gen");
+  gd->kernel_grain_gen_ml = dt_opencl_create_kernel(program, "spektrafilm_grain_gen_ml");
   gd->kernel_grain_add = dt_opencl_create_kernel(program, "spektrafilm_grain_add");
   gd->kernel_print_expose = dt_opencl_create_kernel(program, "spektrafilm_print_expose");
   gd->kernel_print_develop = dt_opencl_create_kernel(program, "spektrafilm_print_develop");
@@ -269,6 +280,7 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_develop_corr);
     dt_opencl_free_kernel(gd->kernel_develop);
     dt_opencl_free_kernel(gd->kernel_grain_gen);
+    dt_opencl_free_kernel(gd->kernel_grain_gen_ml);
     dt_opencl_free_kernel(gd->kernel_grain_add);
     dt_opencl_free_kernel(gd->kernel_print_expose);
     dt_opencl_free_kernel(gd->kernel_print_develop);
@@ -901,6 +913,11 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   {
     if(d->gpu) sf_sim_gpu_free(d->gpu);
     if(d->sim) sf_sim_free(d->sim);
+    if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
+    if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
+    if(d->grain_cl_dmin) dt_opencl_release_mem_object(d->grain_cl_dmin);
+    if(d->grain_cl_total) dt_opencl_release_mem_object(d->grain_cl_total);
+    if(d->grain_cl_curve) dt_opencl_release_mem_object(d->grain_cl_curve);
     dt_pthread_mutex_destroy(&d->lock);
   }
   free(piece->data);
@@ -992,6 +1009,15 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   {
     sf_sim_gpu_free(d->gpu);
     d->gpu = NULL;
+    /* these were uploaded from this gpu's grain_layer_* tables; release them
+       now so process_cl() re-uploads fresh ones from the new gpu instead of
+       reusing now-stale content. */
+    if(d->grain_cl_dmax) { dt_opencl_release_mem_object(d->grain_cl_dmax); d->grain_cl_dmax = NULL; }
+    if(d->grain_cl_npart) { dt_opencl_release_mem_object(d->grain_cl_npart); d->grain_cl_npart = NULL; }
+    if(d->grain_cl_dmin) { dt_opencl_release_mem_object(d->grain_cl_dmin); d->grain_cl_dmin = NULL; }
+    if(d->grain_cl_total) { dt_opencl_release_mem_object(d->grain_cl_total); d->grain_cl_total = NULL; }
+    if(d->grain_cl_curve) { dt_opencl_release_mem_object(d->grain_cl_curve); d->grain_cl_curve = NULL; }
+    d->grain_cl_built_for = NULL;
   }
   if(d->sim)
   {
@@ -1352,15 +1378,25 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                       (rms-granularity, uniformity, density
                                       floor) — Portra 400 no longer shares
                                       Tri-X's grain signature */
+    sf_grain_layers_t layers;
+    sf_sim_grain_layers(sim, &layers); /* n==1 for a single-layer curve fit:
+                                      the exact same case sf_grain_delta_dmax
+                                      already handles, called unchanged below
+                                      rather than routed through the
+                                      multi-sublayer lookup for no reason */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, gbuf, gdmax, grms, gunif, gdmin)              \
+#pragma omp parallel for default(none) shared(plane, gbuf, gdmax, grms, gunif, gdmin, layers)       \
     firstprivate(w, npix, roi_x, roi_y, amount, mono) schedule(static)
 #endif
     for(size_t k = 0; k < npix; k++)
     {
       const int x = (int)(k % (size_t)w), y = (int)(k / (size_t)w);
-      sf_grain_delta_dmax(plane + k * 3, amount, gbuf + k * 3, (uint32_t)(x + roi_x),
-                          (uint32_t)(y + roi_y), mono, gdmax, gdmin, grms, gunif);
+      if(layers.n > 1)
+        sf_grain_delta_ml(&layers, plane + k * 3, amount, gbuf + k * 3, (uint32_t)(x + roi_x),
+                          (uint32_t)(y + roi_y), mono, gdmin, gunif);
+      else
+        sf_grain_delta_dmax(plane + k * 3, amount, gbuf + k * 3, (uint32_t)(x + roi_x),
+                            (uint32_t)(y + roi_y), mono, gdmax, gdmin, grms, gunif);
     }
     const float sigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
                              * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN) / fmaxf(pixel_um, 1e-3f);
@@ -1809,16 +1845,59 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     const int roi_x = roi_in->x, roi_y = roi_in->y;
     const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_gen, w, h, CLARG(plane2),
-                                           CLARG(tmpa), CLARG(w), CLARG(h), CLARG(amount),
-                                           CLARG(roi_x), CLARG(roi_y), CLARG(mono),
-                                           CLARG(g->film_dmax[0]), CLARG(g->film_dmax[1]),
-                                           CLARG(g->film_dmax[2]), CLARG(g->grain_dmin[0]),
-                                           CLARG(g->grain_dmin[1]), CLARG(g->grain_dmin[2]),
-                                           CLARG(g->grain_rms[0]), CLARG(g->grain_rms[1]),
-                                           CLARG(g->grain_rms[2]), CLARG(g->grain_uniformity[0]),
-                                           CLARG(g->grain_uniformity[1]),
-                                           CLARG(g->grain_uniformity[2]));
+    if(g->grain_n_sublayers > 1)
+    {
+      /* multi-sublayer grain (see spektrafilm_grain_gen_ml, spektrafilm.cl):
+         a film whose own fitted density-curve model has more than one
+         emulsion sub-layer. Built once per d->gpu (see d->grain_cl_built_for
+         above) rather than re-uploaded on every process_cl() call: tiled
+         processing calls this once per tile, and this data never changes
+         between tiles of the same image, so re-uploading it per tile was
+         pure overhead -- exactly the kind that shows up as slower tiled
+         rendering, not slower per-pixel compute. */
+      const int nsub = g->grain_n_sublayers, nle = SF_NLE, maxsub = SF_GRAIN_MAX_SUBLAYERS;
+      if(d->grain_cl_built_for != g)
+      {
+        if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
+        if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
+        if(d->grain_cl_dmin) dt_opencl_release_mem_object(d->grain_cl_dmin);
+        if(d->grain_cl_total) dt_opencl_release_mem_object(d->grain_cl_total);
+        if(d->grain_cl_curve) dt_opencl_release_mem_object(d->grain_cl_curve);
+        d->grain_cl_dmax = dt_opencl_copy_host_to_device_constant(
+            devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmax);
+        d->grain_cl_npart = dt_opencl_copy_host_to_device_constant(
+            devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_npart);
+        d->grain_cl_dmin = dt_opencl_copy_host_to_device_constant(
+            devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmin);
+        d->grain_cl_total = dt_opencl_copy_host_to_device_constant(
+            devid, (size_t)nle * 3 * f, (void *)g->grain_layer_curve_total);
+        d->grain_cl_curve = dt_opencl_copy_host_to_device_constant(
+            devid, (size_t)nle * maxsub * 3 * f, (void *)g->grain_layer_curve);
+        d->grain_cl_built_for = g;
+      }
+      if(!d->grain_cl_dmax || !d->grain_cl_npart || !d->grain_cl_dmin || !d->grain_cl_total
+         || !d->grain_cl_curve)
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      else
+        err = dt_opencl_enqueue_kernel_2d_args(
+            devid, gd->kernel_grain_gen_ml, w, h, CLARG(plane2), CLARG(tmpa), CLARG(w), CLARG(h),
+            CLARG(amount), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(nsub), CLARG(nle),
+            CLARG(maxsub), CLARG(g->grain_dmin[0]), CLARG(g->grain_dmin[1]), CLARG(g->grain_dmin[2]),
+            CLARG(g->grain_uniformity[0]), CLARG(g->grain_uniformity[1]),
+            CLARG(g->grain_uniformity[2]), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
+            CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
+    }
+    else
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_gen, w, h, CLARG(plane2),
+                                             CLARG(tmpa), CLARG(w), CLARG(h), CLARG(amount),
+                                             CLARG(roi_x), CLARG(roi_y), CLARG(mono),
+                                             CLARG(g->film_dmax[0]), CLARG(g->film_dmax[1]),
+                                             CLARG(g->film_dmax[2]), CLARG(g->grain_dmin[0]),
+                                             CLARG(g->grain_dmin[1]), CLARG(g->grain_dmin[2]),
+                                             CLARG(g->grain_rms[0]), CLARG(g->grain_rms[1]),
+                                             CLARG(g->grain_rms[2]), CLARG(g->grain_uniformity[0]),
+                                             CLARG(g->grain_uniformity[1]),
+                                             CLARG(g->grain_uniformity[2]));
     SF_CL_STEP("grain gen");
     const float gsigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
                               * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN) / fmaxf(pixel_um, 1e-3f);

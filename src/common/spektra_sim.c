@@ -34,9 +34,22 @@
 
 #include "spektra_sim.h"
 
+#include "common/darktable.h"
+#include "common/imagebuf.h"
+
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
+
+/* spektra_core.h's bundle-loader half needs file-IO/locale helpers; darktable
+   poisons bare libc fopen, so map them to glib here (this .c does not itself
+   read bundles, but the shared header must compile in this translation
+   unit) -- same mapping spektra_core.c itself uses. */
+#define SF_READ_FILE(path, out, len) \
+  (g_file_get_contents((path), (out), (len), NULL) ? 0 : -1)
+#define SF_FREE_FILE(buf) g_free(buf)
+#define SF_STRTOD(s, end) g_ascii_strtod((s), (end))
+#include "spektra_core.h"
 
 #include <math.h>
 /* ensure C99 math functions for SF_POW10F/SF_LOG10F (exp2f, log2f) */
@@ -287,6 +300,41 @@ struct sf_sim_t
      table-range code below). Defaults to the legacy fixed constants when the
      pack has no per-film grain entry (see sf_sim_build). */
   double grain_rms[3], grain_uniformity[3];
+
+  /* Multi-sublayer grain model (matches spektrafilm's own "always multilayer"
+     particle model -- see grain.py's module doc and _realized_peak_correction:
+     summing several independent sub-layer particle draws, calibrated so their
+     combined peak variance matches the catalogue RMS-granularity, is what
+     keeps the realized grain amplitude correct; a single-layer approximation
+     alone was found to differ by as much as the ~1.5x the reference's own
+     docs warn a naive single-layer rule would carry). Active only when the
+     film's own fitted density-curve model (curves_model) has more than one
+     layer; grain_n_sublayers stays at 1 (the existing single-layer behavior,
+     using the plain film_dmax/film_dmin/curves_norm already computed above)
+     for every stock whose curve fit is single-layer to begin with -- which
+     is not an approximation in that case, since upstream treats a
+     single-layer curve model as the trivial one-sub-layer case of the same
+     general model, not a separate simplified path. */
+  int grain_n_sublayers;
+  double grain_particle_scale[SF_GRAIN_MAX_SUBLAYERS]; /* coarsest sub-layer == 1.0 */
+  /* per-sublayer absolute (fog-inclusive) Dmax and particle count, precomputed
+     once from the fitted curve model, same rms_granularity-driven area formula
+     as the single-layer path but corrected for how the sub-layers combine
+     (see spektra_sim.c's _sf_grain_layers_from_curves). */
+  double grain_layer_dmax[SF_GRAIN_MAX_SUBLAYERS][3];
+  double grain_layer_npart[SF_GRAIN_MAX_SUBLAYERS][3];
+  /* per-sublayer density floor (density_max_fractions[sl] * grain_density_min),
+     needed to convert the interpolated net sub-layer density back to the
+     absolute value sf_layer_particle() expects. */
+  double grain_layer_dmin[SF_GRAIN_MAX_SUBLAYERS][3];
+  /* raw (un-summed) per-sub-layer curve terms across the exposure grid, and
+     their sum (self-consistent by construction, used as the lookup axis to
+     recover each sub-layer's density from the already-computed *total*
+     density at render time -- the same inverse lookup spektrafilm's own
+     interp_density_cmy_layers_channel performs, just against a table built
+     here instead of scipy). Both indexed [le][sublayer][channel]. */
+  float grain_layer_curve[SF_NLE][SF_GRAIN_MAX_SUBLAYERS][3];
+  float grain_layer_curve_total[SF_NLE][3];
 
   /* per-film halation preset (film_render_defaults[stock].halation in the
      pack): back-reflection strength per channel + first-bounce sigma.
@@ -584,12 +632,16 @@ bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stoc
 
 /* Per-film grain catalogue data: film_render_defaults[stock].grain in the
    pack, exported verbatim from spektrafilm's GrainParams (rms_granularity,
-   uniformity, density_min — see spektrafilm_export_data.py's _grain_export).
-   Any output pointer may be NULL. Returns false and leaves outputs untouched
-   if the stock has no "grain" entry (older packs, or the stock predates
-   per-film grain), so the caller can keep its fallback constants. */
+   uniformity, density_min, particle_scale_sublayers — see
+   spektrafilm_export_data.py's _grain_export). Any output pointer may be
+   NULL. particle_scale[]/n_scale are optional (older packs, or stocks with
+   only one emulsion sub-layer, have no "particle_scale_sublayers" entry;
+   *n_scale is left at 0 in that case so the caller falls back to its
+   single-layer default). Returns false and leaves outputs untouched if the
+   stock has no "grain" entry at all. */
 bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
-                        double rms[3], double uniformity[3], double density_min[3])
+                        double rms[3], double uniformity[3], double density_min[3],
+                        double particle_scale[SF_GRAIN_MAX_SUBLAYERS], int *n_scale)
 {
   if(!pack || !pack->film_defaults) return false;
   JsonObject *db = json_node_get_object(pack->film_defaults);
@@ -607,6 +659,18 @@ bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
     ok = json_read_darray(gr, "uniformity", uniformity, 3) || ok;
   if(density_min && json_object_has_member(gr, "density_min"))
     ok = json_read_darray(gr, "density_min", density_min, 3) || ok;
+  if(n_scale) *n_scale = 0;
+  if(particle_scale && n_scale && json_object_has_member(gr, "particle_scale_sublayers"))
+  {
+    JsonNode *node = json_object_get_member(gr, "particle_scale_sublayers");
+    JsonArray *arr = (node && JSON_NODE_HOLDS_ARRAY(node)) ? json_node_get_array(node) : NULL;
+    const int n = arr ? MIN((int)json_array_get_length(arr), SF_GRAIN_MAX_SUBLAYERS) : 0;
+    if(n > 0)
+    {
+      for(int i = 0; i < n; i++) particle_scale[i] = json_array_get_double_element(arr, i);
+      *n_scale = n;
+    }
+  }
   return ok;
 }
 
@@ -1353,6 +1417,153 @@ static void eval_cdfs_channel(double *out, const double *le, int nle, const doub
 
 /* [mc] apply_print_curves_morph without developer exhaustion.
  * With morph inactive this reduces to a plain model evaluation. */
+/* Build the multi-sublayer grain model from a film's fitted density-curve
+ * model (sf_curves_model_t) -- spektrafilm's own grain.py documents the
+ * model as "always multilayer": several independent emulsion sub-layers are
+ * sampled separately and summed, calibrated (_realized_peak_correction /
+ * _coarsest_area_from_curves in grain.py) so their COMBINED peak variance
+ * matches the catalogue RMS-granularity. A single-sublayer curve fit is
+ * just the trivial one-sublayer case of the same model, so it needs no
+ * separate branch here beyond n_layers<=1 meaning the loops below run once.
+ *
+ * `density_min` is the film's overall (fog) floor per channel
+ * (p->grain_density_min, already updated in place by sf_pack_film_grain);
+ * `uniformity`/`rms` are that same per-film grain catalogue data;
+ * `particle_scale`/`n_scale` come from the pack's particle_scale_sublayers
+ * (falls back to a single coarsest layer, scale 1.0, if the pack has none or
+ * the stock's curve fit itself is single-layer).
+ *
+ * Writes s->grain_n_sublayers, grain_particle_scale, grain_layer_dmax,
+ * grain_layer_npart, grain_layer_dmin, grain_layer_curve and
+ * grain_layer_curve_total. */
+static void _sf_build_grain_layers(sf_sim_t *s, const sf_profile_t *film,
+                                   const double density_min[3], const double uniformity[3],
+                                   const double rms[3], const double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
+                                   int n_scale)
+{
+  const sf_curves_model_t *m = &film->curves_model;
+  const int nl = (m->n_layers > 1 && n_scale > 1) ? MIN(m->n_layers, MIN(n_scale, SF_GRAIN_MAX_SUBLAYERS))
+                                                   : 1;
+  s->grain_n_sublayers = nl;
+  const float ref_um = SF_GRAIN_REF_UM;
+  const double pix_ref = (double)ref_um * (double)ref_um;
+  const double A48 = 3.14159265358979 * 24.0 * 24.0;
+
+  if(nl <= 1)
+  {
+    /* trivial one-sublayer case: reuse the plain total curve already
+       computed above (s->curves_norm) verbatim, so behavior for any stock
+       whose own curve fit is single-layer (or has no fit / no per-stock
+       particle_scale_sublayers at all) is byte-for-byte identical to the
+       pre-existing single-layer path -- this is not an approximate
+       fallback, it's what upstream's own model reduces to in this case. */
+    s->grain_particle_scale[0] = 1.0;
+    for(int c = 0; c < 3; c++)
+    {
+      double mx = -1e300;
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double v = s->curves_norm[i][c];
+        s->grain_layer_curve[i][0][c] = (float)v;
+        s->grain_layer_curve_total[i][c] = (float)v;
+        if(v > mx) mx = v;
+      }
+      s->grain_layer_dmin[0][c] = density_min[c];
+      s->grain_layer_dmax[0][c] = mx + density_min[c];
+      const double d_ref_c = 1.0 + density_min[c];
+      const double sig = rms[c] / 1000.0;
+      const double denom = fmax(d_ref_c * (s->grain_layer_dmax[0][c] - uniformity[c] * d_ref_c), 1e-6);
+      const double a_grain = sig * sig * A48 / denom;
+      s->grain_layer_npart[0][c] = pix_ref / fmax(a_grain, 1e-4);
+    }
+    return;
+  }
+
+  /* multi-sublayer case: evaluate each sub-layer's CDF term separately (no
+     morph -- the film side has no live chemistry re-evaluation, only the
+     print does, see build_print_curves), matching grain.py's
+     interp_density_cmy_layers_channel/_coarsest_area_from_curves inputs. */
+  const int positive = s->film_positive;
+  double layer_curve[SF_NLE][SF_GRAIN_MAX_SUBLAYERS][3];
+  double layer_max_raw[SF_GRAIN_MAX_SUBLAYERS][3];
+  for(int c = 0; c < 3; c++)
+  {
+    double centers[8], amps[8], sigmas[8];
+    memcpy(centers, m->centers[c], sizeof(double) * nl);
+    memcpy(amps, m->amplitudes[c], sizeof(double) * nl);
+    memcpy(sigmas, m->sigmas[c], sizeof(double) * nl);
+    for(int l = 0; l < nl; l++)
+    {
+      double mx = -1e300;
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        double z = (film->log_exposure[i] - centers[l]) / sigmas[l];
+        if(positive) z = -z;
+        const double v = amps[l] * norm_cdf(z);
+        layer_curve[i][l][c] = v;
+        if(v > mx) mx = v;
+      }
+      layer_max_raw[l][c] = mx;
+    }
+  }
+
+  double density_max_total_raw[3], density_max_fractions[SF_GRAIN_MAX_SUBLAYERS][3];
+  double layer_dmin[SF_GRAIN_MAX_SUBLAYERS][3], layer_dmax[SF_GRAIN_MAX_SUBLAYERS][3];
+  for(int c = 0; c < 3; c++)
+  {
+    double tot = 0.0;
+    for(int l = 0; l < nl; l++) tot += layer_max_raw[l][c];
+    density_max_total_raw[c] = fmax(tot, 1e-9);
+    for(int l = 0; l < nl; l++)
+    {
+      density_max_fractions[l][c] = layer_max_raw[l][c] / density_max_total_raw[c];
+      layer_dmin[l][c] = density_max_fractions[l][c] * density_min[c];
+      layer_dmax[l][c] = layer_max_raw[l][c] + layer_dmin[l][c];
+    }
+  }
+
+  /* _coarsest_area_from_curves: peak (over the exposure grid) of the summed
+     per-sublayer variance shape, weighted by particle_scale/fraction. */
+  double peak[3] = { 0.0, 0.0, 0.0 };
+  for(int c = 0; c < 3; c++)
+  {
+    for(int i = 0; i < SF_NLE; i++)
+    {
+      double sum_sl = 0.0;
+      for(int l = 0; l < nl; l++)
+      {
+        const double d_abs = layer_curve[i][l][c] + layer_dmin[l][c];
+        const double weight = particle_scale[l] / density_max_fractions[l][c];
+        sum_sl += weight * d_abs * (layer_dmax[l][c] - uniformity[c] * d_abs);
+      }
+      if(sum_sl > peak[c]) peak[c] = sum_sl;
+    }
+    peak[c] = fmax(peak[c], 1e-9);
+  }
+
+  for(int c = 0; c < 3; c++)
+  {
+    const double sigma_in = rms[c] / 1000.0;
+    const double a_coarsest = sigma_in * sigma_in * A48 / peak[c];
+    for(int l = 0; l < nl; l++)
+    {
+      const double particle_area = a_coarsest * particle_scale[l];
+      s->grain_layer_npart[l][c] = pix_ref * density_max_fractions[l][c] / fmax(particle_area, 1e-9);
+      s->grain_layer_dmax[l][c] = layer_dmax[l][c];
+      s->grain_layer_dmin[l][c] = layer_dmin[l][c];
+      for(int i = 0; i < SF_NLE; i++) s->grain_layer_curve[i][l][c] = (float)layer_curve[i][l][c];
+    }
+    for(int i = 0; i < SF_NLE; i++)
+    {
+      double t = 0.0;
+      for(int l = 0; l < nl; l++) t += layer_curve[i][l][c];
+      s->grain_layer_curve_total[i][c] = (float)t;
+    }
+  }
+  for(int l = nl; l < SF_GRAIN_MAX_SUBLAYERS; l++) s->grain_particle_scale[l] = 0.0;
+  for(int l = 0; l < nl; l++) s->grain_particle_scale[l] = particle_scale[l];
+}
+
 static void build_print_curves(double (*curves)[3], const sf_profile_t *print,
                                const sf_sim_params_t *p)
 {
@@ -1951,8 +2162,18 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
       s->grain_rms[c] = legacy_rms[c];
       s->grain_uniformity[c] = legacy_unif[c];
     }
+    /* particle_scale_sublayers defaults to spektrafilm's own GrainParams
+       default [1.0, 0.5, 0.25] (coarsest == 1) when the pack has none for
+       this stock, so a film whose curve fit IS multilayer still gets a
+       physically reasonable sub-layer split rather than silently
+       collapsing to one layer for lack of catalogue data. */
+    double particle_scale[SF_GRAIN_MAX_SUBLAYERS] = { 1.0, 0.5, 0.25, 0, 0, 0, 0, 0 };
+    int n_scale = 3;
     sf_pack_film_grain(pack, film->stock, s->grain_rms, s->grain_uniformity,
-                       p->grain_density_min);
+                       p->grain_density_min, particle_scale, &n_scale);
+    if(n_scale <= 0) n_scale = 3; /* pack had a "grain" entry but no scale array */
+    _sf_build_grain_layers(s, film, p->grain_density_min, s->grain_uniformity,
+                           s->grain_rms, particle_scale, n_scale);
   }
   /* [cp] coupler matrix: donor row -> receiver column, scaled by amount */
   s->couplers_active = p->couplers_active;
@@ -2650,6 +2871,20 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   g->film_positive = s->film_positive;
   g->couplers_active = s->couplers_active;
 
+  g->grain_n_sublayers = s->grain_n_sublayers;
+  for(int l = 0; l < SF_GRAIN_MAX_SUBLAYERS; l++)
+  {
+    g->grain_particle_scale[l] = (float)s->grain_particle_scale[l];
+    for(int c = 0; c < 3; c++)
+    {
+      g->grain_layer_dmax[l][c] = (float)s->grain_layer_dmax[l][c];
+      g->grain_layer_npart[l][c] = (float)s->grain_layer_npart[l][c];
+      g->grain_layer_dmin[l][c] = (float)s->grain_layer_dmin[l][c];
+    }
+  }
+  g->grain_layer_curve = &s->grain_layer_curve[0][0][0];             /* borrowed */
+  g->grain_layer_curve_total = &s->grain_layer_curve_total[0][0];    /* borrowed */
+
   g->has_print = s->has_print;
   g->steps = s->lut_steps;
   const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
@@ -2772,6 +3007,131 @@ void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], 
        separate curve-fit pass upstream) breaks that identity and silently
        biases the particle count — see sf_grain_delta_dmax. */
     dmin[c] = sim ? (float)sim->film_dmin[c] : legacy_dmin[c];
+  }
+}
+
+void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out)
+{
+  if(!sim)
+  {
+    /* no sim: single trivial layer, empty lookup table (caller must guard
+       n==1 && layer_curve==NULL by using its own legacy single-layer path,
+       exactly as sf_sim_film_grain3's callers already do without a sim). */
+    out->n = 1;
+    out->particle_scale[0] = 1.0;
+    out->layer_curve = NULL;
+    out->layer_curve_total = NULL;
+    return;
+  }
+  out->n = sim->grain_n_sublayers;
+  for(int l = 0; l < SF_GRAIN_MAX_SUBLAYERS; l++)
+  {
+    out->particle_scale[l] = sim->grain_particle_scale[l];
+    for(int c = 0; c < 3; c++)
+    {
+      out->layer_dmax[l][c] = sim->grain_layer_dmax[l][c];
+      out->layer_npart[l][c] = sim->grain_layer_npart[l][c];
+      out->layer_dmin[l][c] = sim->grain_layer_dmin[l][c];
+    }
+  }
+  out->layer_curve = sim->grain_layer_curve;
+  out->layer_curve_total = sim->grain_layer_curve_total;
+}
+
+/* Given the already-computed NET total density `target` for one channel,
+ * find its fractional position on the [0, SF_NLE) exposure-grid axis by
+ * searching `arr` (assumed monotonic -- guaranteed here, since it's a sum of
+ * same-signed-CDF terms that all move the same direction over the grid) via
+ * binary search plus linear interpolation between the two straddling grid
+ * points. `stride` lets this walk a non-contiguous column of a [SF_NLE][..]
+ * array (e.g. one channel of grain_layer_curve_total) without copying it
+ * out first. This is the same "find where the total curve reads D" step
+ * spektrafilm's own interp_density_cmy_layers_channel performs (there, via
+ * a table built ad hoc each call; here, against grain_layer_curve_total,
+ * built once at sim-build time). */
+static float _sf_grain_curve_inverse(const float *arr, int n, int stride, float target)
+{
+  const int increasing = arr[(n - 1) * stride] >= arr[0];
+  int lo = 0, hi = n - 1;
+  while(hi - lo > 1)
+  {
+    const int mid = (lo + hi) / 2;
+    const float v = arr[mid * stride];
+    if((increasing && v <= target) || (!increasing && v >= target)) lo = mid;
+    else hi = mid;
+  }
+  const float v0 = arr[lo * stride], v1 = arr[hi * stride];
+  const float denom = v1 - v0;
+  float frac = (fabsf(denom) > 1e-9f) ? (target - v0) / denom : 0.0f;
+  if(frac < 0.0f) frac = 0.0f;
+  if(frac > 1.0f) frac = 1.0f;
+  return (float)lo + frac;
+}
+
+/* Linearly interpolate a (possibly strided) per-index array at the
+ * continuous index `pos` produced by _sf_grain_curve_inverse above. */
+static float _sf_grain_curve_sample(const float *arr, int n, int stride, float pos)
+{
+  int i0 = (int)pos;
+  if(i0 < 0) i0 = 0;
+  if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
+  const float frac = pos - (float)i0;
+  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
+}
+
+/* Multi-sublayer grain delta: like sf_grain_delta_dmax (spektra_core.h), but
+ * for a film whose own fitted density-curve model has more than one
+ * emulsion sub-layer (sf_sim_grain_layers().n > 1). Each sub-layer is drawn
+ * independently at its own precomputed dmax/npart, using its own density
+ * recovered by inverse-interpolating the self-consistent summed sub-layer
+ * curve at the exposure position the already-computed total density
+ * corresponds to -- exactly what spektrafilm's own
+ * interp_density_cmy_layers_channel does, just against a table built once
+ * at sim-build time instead of a per-pixel scipy call. The per-sublayer
+ * draws are SUMMED (not averaged) before taking the delta, matching
+ * upstream's _channel_sublayer_grain -- each draw already carries its own
+ * (smaller, for finer sub-layers) share of the total variance, so summing
+ * them reproduces the combined multilayer noise the catalogue RMS was
+ * calibrated against, rather than diluting it the way an average would. */
+void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], float amount,
+                       float out_delta[3], uint32_t xi, uint32_t yi, int mono,
+                       const float dmin_c[3], const float unif_c[3])
+{
+  const int nsub = layers->n;
+  const int nle = SF_NLE;
+  const int lstride = SF_GRAIN_MAX_SUBLAYERS * 3;
+
+  if(mono)
+  {
+    const float dm = (dens[0] + dens[1] + dens[2]) / 3.0f;
+    const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][1], nle, 3, dm);
+    float total_abs = 0.0f;
+    for(int sl = 0; sl < nsub; sl++)
+    {
+      const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][1], nle, lstride, pos);
+      const float d_abs = raw + (float)layers->layer_dmin[sl][1];
+      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][1], (float)layers->layer_npart[sl][1],
+                                     unif_c[1], sf_pixel_seed(xi, yi, (uint32_t)(sl * 10)));
+    }
+    const float g = total_abs - dmin_c[1];
+    const float d = (g - dm) * amount;
+    out_delta[0] = out_delta[1] = out_delta[2] = d;
+    return;
+  }
+
+  for(int c = 0; c < 3; c++)
+  {
+    const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][c], nle, 3, dens[c]);
+    float total_abs = 0.0f;
+    for(int sl = 0; sl < nsub; sl++)
+    {
+      const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][c], nle, lstride, pos);
+      const float d_abs = raw + (float)layers->layer_dmin[sl][c];
+      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][c], (float)layers->layer_npart[sl][c],
+                                     unif_c[c], sf_pixel_seed(xi, yi, (uint32_t)(c + sl * 10)));
+    }
+    const float g = total_abs - dmin_c[c];
+    out_delta[c] = (g - dens[c]) * amount;
   }
 }
 

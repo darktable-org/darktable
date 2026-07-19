@@ -59,6 +59,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +67,10 @@ extern "C" {
 
 #define SF_NWL 81  /* 380..780 nm in 5 nm steps — spektrafilm SPECTRAL_SHAPE */
 #define SF_NLE 256 /* log-exposure grid — spektrafilm LOG_EXPOSURE */
+/* max emulsion sub-layers a film's fitted density-curve model can have
+   (matches sf_curves_model_t's centers/amplitudes/sigmas[3][8] in
+   spektra_sim.c) and the max particle_scale_sublayers entries read below. */
+#define SF_GRAIN_MAX_SUBLAYERS 8
 
 
 
@@ -155,6 +160,19 @@ typedef struct sf_sim_gpu_t
      pack): RMS-granularity, uniformity and density floor, replacing the
      earlier one-size-fits-all constants */
   float grain_rms[3], grain_uniformity[3], grain_dmin[3];
+  /* multi-sublayer grain model (see sf_grain_layers_t / _sf_build_grain_layers
+     in spektra_sim.c): n==1 for a single-layer curve fit, the existing
+     single-layer behavior. The two per-exposure-grid tables are borrowed
+     pointers into the sim's own storage (same convention as cmax_table
+     below), not copied -- process_cl() turns them into a device constant
+     buffer the same way it already does for cmax_table. */
+  int grain_n_sublayers;
+  float grain_particle_scale[SF_GRAIN_MAX_SUBLAYERS];
+  float grain_layer_dmax[SF_GRAIN_MAX_SUBLAYERS][3];
+  float grain_layer_npart[SF_GRAIN_MAX_SUBLAYERS][3];
+  float grain_layer_dmin[SF_GRAIN_MAX_SUBLAYERS][3];
+  const float *grain_layer_curve;       /* [SF_NLE][SF_GRAIN_MAX_SUBLAYERS][3], borrowed */
+  const float *grain_layer_curve_total; /* [SF_NLE][3], borrowed */
   /* per-film halation preset (film_render_defaults[stock].halation in the
      pack): back-reflection strength per channel and first-bounce radius;
      falls back to SF_HALATION_STRENGTH_DEFAULT_* / SF_HALATION_SIGMA_DEFAULT_UM
@@ -179,8 +197,37 @@ void sf_sim_film_dmax3(const sf_sim_t *sim, float dmax[3]);
    falls back to the legacy fixed constants (SF_GRAIN_LEGACY_* in
    spektra_core.h) when sim is NULL or the pack predates per-film grain. */
 void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], float dmin[3]);
+
+/* Multi-sublayer grain model (see _sf_build_grain_layers in spektra_sim.c):
+ * n==1 for any stock whose own fitted density-curve model is single-layer
+ * (or the pack has no particle_scale_sublayers for it) -- the existing
+ * single-layer behavior, not a fallback approximation of a separate case.
+ * layer_curve/layer_curve_total point into the sim's own storage (valid for
+ * the sim's lifetime; not copied, since the table is a small but non-trivial
+ * SF_NLE*SF_GRAIN_MAX_SUBLAYERS*3 floats). */
+typedef struct sf_grain_layers_t
+{
+  int n;
+  double particle_scale[SF_GRAIN_MAX_SUBLAYERS];
+  double layer_dmax[SF_GRAIN_MAX_SUBLAYERS][3];
+  double layer_npart[SF_GRAIN_MAX_SUBLAYERS][3];
+  double layer_dmin[SF_GRAIN_MAX_SUBLAYERS][3];
+  const float (*layer_curve)[SF_GRAIN_MAX_SUBLAYERS][3]; /* [SF_NLE][sublayer][channel] */
+  const float (*layer_curve_total)[3];                   /* [SF_NLE][channel] */
+} sf_grain_layers_t;
+void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out);
+/* Multi-sublayer grain delta (see _sf_build_grain_layers / sf_grain_layers_t
+ * above): only call this when sf_sim_grain_layers()'s n > 1 -- for n==1,
+ * calling the existing single-layer sf_grain_delta_dmax() (spektra_core.h)
+ * directly is both simpler and avoids a redundant lookup round-trip. */
+void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], float amount,
+                       float out_delta[3], uint32_t xi, uint32_t yi, int mono,
+                       const float dmin_c[3], const float unif_c[3]);
+/* SF_GRAIN_MAX_SUBLAYERS is defined earlier in this header, next to SF_NLE
+   (both are needed by sf_sim_gpu_t above, which comes before this point). */
 bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
-                        double rms[3], double uniformity[3], double density_min[3]);
+                        double rms[3], double uniformity[3], double density_min[3],
+                        double particle_scale[SF_GRAIN_MAX_SUBLAYERS], int *n_scale);
 #define SF_COUPLER_BLUR_UM 20.0 /* gaussian core default when pack lacks it */
 /* exponential-tail gaussian mixture (upstream fit, n=3) — shared with halation */
 #define SF_EXPTAIL_A0 0.1633
