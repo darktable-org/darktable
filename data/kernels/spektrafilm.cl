@@ -571,6 +571,26 @@ __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const fl
   dens_buf[k] = (float4)(d.x + g.x * renorm, d.y + g.y * renorm, d.z + g.z * renorm, d.w);
 }
 
+/* Multiplicative unsharp mask after grain blur (study b80).
+   cmy = orig * (orig / G_sigma(orig))^amount. Caller saved orig in `orig`
+   buffer and blurred `cmy` in place before launching this kernel. */
+__kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 *orig,
+                                     const int w, const int h, const float amount)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 D = orig[k];
+  const float4 blur = cmy[k];
+  const float eps = 1e-6f;
+  float4 out;
+  out.x = D.x * pow(fmax(D.x / fmax(blur.x, eps), eps), amount);
+  out.y = D.y * pow(fmax(D.y / fmax(blur.y, eps), eps), amount);
+  out.z = D.z * pow(fmax(D.z / fmax(blur.z, eps), eps), amount);
+  out.w = 0.0f;
+  cmy[k] = out;
+}
+
 /* stage 5a: CMY film density -> print log exposure (sf_sim_print_expose) */
 __kernel void spektrafilm_print_expose(__global const float4 *cmy, __global float4 *loge,
                                        const int w, const int h,

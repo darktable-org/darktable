@@ -86,7 +86,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(5, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -177,6 +177,8 @@ typedef struct dt_iop_spektrafilm_params_t
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
+  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery sharpness"
+  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery strength"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -201,7 +203,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *boost_ev, *boost_range, *protect_ev;
   GtkWidget *diffusion_on, *diffusion_filter_family, *diffusion_strength, *diffusion_scale, *diffusion_warmth;
   GtkWidget *print_diffusion_on, *print_diffusion_filter_family, *print_diffusion_strength, *print_diffusion_scale, *print_diffusion_warmth;
-  GtkWidget *grain_on, *grain_amount, *grain_size, *film_format_mm, *output_luminance_boost;
+  GtkWidget *grain_on, *grain_amount, *grain_size, *grain_usm_sigma, *grain_usm_amount, *film_format_mm, *output_luminance_boost;
   sf_prof_entry_t entries[SF_MAX_PROFILES];
   int n_entries;
   int film_entry[SF_MAX_PROFILES], n_films;   /* indices into entries[] */
@@ -237,6 +239,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
 {
   int kernel_expose, kernel_lograw, kernel_develop_corr, kernel_develop;
   int kernel_grain_gen, kernel_grain_gen_ml, kernel_grain_add;
+  int kernel_grain_gen, kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
@@ -264,6 +267,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_grain_gen = dt_opencl_create_kernel(program, "spektrafilm_grain_gen");
   gd->kernel_grain_gen_ml = dt_opencl_create_kernel(program, "spektrafilm_grain_gen_ml");
   gd->kernel_grain_add = dt_opencl_create_kernel(program, "spektrafilm_grain_add");
+  gd->kernel_grain_usm = dt_opencl_create_kernel(program, "spektrafilm_grain_usm");
   gd->kernel_print_expose = dt_opencl_create_kernel(program, "spektrafilm_print_expose");
   gd->kernel_print_develop = dt_opencl_create_kernel(program, "spektrafilm_print_develop");
   gd->kernel_scan = dt_opencl_create_kernel(program, "spektrafilm_scan");
@@ -296,6 +300,7 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_grain_gen);
     dt_opencl_free_kernel(gd->kernel_grain_gen_ml);
     dt_opencl_free_kernel(gd->kernel_grain_add);
+    dt_opencl_free_kernel(gd->kernel_grain_usm);
     dt_opencl_free_kernel(gd->kernel_print_expose);
     dt_opencl_free_kernel(gd->kernel_print_develop);
     dt_opencl_free_kernel(gd->kernel_scan);
@@ -398,6 +403,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
      BOTH stages) so migrated params reproduce the old rendering exactly,
      pixel for pixel, before the user ever touches the new sliders.
 
+     v6 adds grain_usm_sigma and grain_usm_amount after grain blur (study b80).
      v5 is a params-VALUE change, not a struct-shape change: sf_halation()
      no longer applies eff = halation_amount^1.3 before scaling
      halation_strength -- halation_amount is now a direct linear multiplier,
@@ -608,10 +614,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grain_size = o->grain_size;
     n->film_format_mm = o->film_format_mm;
     n->output_luminance_boost = 1.0f; /* new in v2: neutral default, no-op (matches upstream) */
+    n->grain_usm_sigma = 0.8f;
+    n->grain_usm_amount = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 5;
+    *new_version = 6;
     return 0;
   }
   if(old_version == 2)
@@ -660,10 +668,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grain_size = o->grain_size;
     n->film_format_mm = o->film_format_mm;
     n->output_luminance_boost = o->output_luminance_boost;
+    n->grain_usm_sigma = 0.8f;
+    n->grain_usm_amount = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 5;
+    *new_version = 6;
     return 0;
   }
   if(old_version == 3)
@@ -710,10 +720,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grain_size = o->grain_size;
     n->film_format_mm = o->film_format_mm;
     n->output_luminance_boost = o->output_luminance_boost;
+    n->grain_usm_sigma = 0.8f;
+    n->grain_usm_amount = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 5;
+    *new_version = 6;
     return 0;
   }
   if(old_version == 4)
@@ -760,10 +772,24 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grain_size = o->grain_size;
     n->film_format_mm = o->film_format_mm;
     n->output_luminance_boost = o->output_luminance_boost;
+    n->grain_usm_sigma = 0.8f;
+    n->grain_usm_amount = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 5;
+    *new_version = 6;
+    return 0;
+  }
+  if(old_version == 5)
+  {
+    const dt_iop_spektrafilm_params_t *o = (dt_iop_spektrafilm_params_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+    *n = *o;
+    n->grain_usm_sigma = 0.8f;
+    n->grain_usm_amount = 0.0f;
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 6;
     return 0;
   }
   return 1;
@@ -1422,6 +1448,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     schedule(static)
 #endif
     for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k] * renorm;
+    if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
+      sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma,
+                                       d->p.grain_usm_amount, corr, scratch);
   }
 
   /* 5) print exposure + development (skipped in scan-film mode) */
@@ -1973,6 +2002,17 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
                                            CLARG(tmpa), CLARG(w), CLARG(h), CLARG(grenorm));
     SF_CL_STEP("grain add");
+    if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
+    {
+      err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
+      if(err != CL_SUCCESS) goto cleanup;
+      const float usig = d->p.grain_usm_sigma;
+      SF_GAUSS_BLUR4_FAST(plane2, usig, "grain USM blur");
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_usm, w, h, CLARG(plane2),
+                                             CLARG(acc), CLARG(w), CLARG(h),
+                                             CLARG(d->p.grain_usm_amount));
+      SF_CL_STEP("grain USM");
+    }
   }
 
   /* ---- 5) print ----------------------------------------------------------- */
@@ -2425,6 +2465,18 @@ void gui_init(dt_iop_module_t *self)
   g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
   gtk_widget_set_tooltip_text(g->grain_size,
                               _("grain particle size (1.0 = film default; higher = coarser)"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "acutance recovery")));
+  g->grain_usm_sigma = dt_bauhaus_slider_from_params(self, "grain_usm_sigma");
+  dt_bauhaus_slider_set_soft_range(g->grain_usm_sigma, 0.0f, 3.0f);
+  gtk_widget_set_tooltip_text(g->grain_usm_sigma,
+                              _("sharpening radius (0 = off). "
+                                "higher = wider halos, lower = finer detail"));
+  g->grain_usm_amount = dt_bauhaus_slider_from_params(self, "grain_usm_amount");
+  dt_bauhaus_slider_set_soft_range(g->grain_usm_amount, 0.0f, 2.0f);
+  gtk_widget_set_tooltip_text(g->grain_usm_amount,
+                              _("sharpening strength (0 = off). "
+                                "restores crispness that the grain blur softened; "
+                                "overdo it and grain starts to look crunchy"));
 
   /* ---- tab: halation ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);
