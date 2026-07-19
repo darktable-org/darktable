@@ -583,10 +583,11 @@ __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 
   const float4 D = orig[k];
   const float4 blur = cmy[k];
   const float eps = 1e-6f;
+  const float ratmax = 4.0f, ratmin = 1.0f / ratmax;
   float4 out;
-  out.x = D.x * pow(fmax(D.x / fmax(blur.x, eps), eps), amount);
-  out.y = D.y * pow(fmax(D.y / fmax(blur.y, eps), eps), amount);
-  out.z = D.z * pow(fmax(D.z / fmax(blur.z, eps), eps), amount);
+  out.x = fmax(D.x * pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount), 0.0f);
+  out.y = fmax(D.y * pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount), 0.0f);
+  out.z = fmax(D.z * pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount), 0.0f);
   out.w = 0.0f;
   cmy[k] = out;
 }
