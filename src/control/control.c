@@ -324,7 +324,12 @@ void dt_control_set_temp_cursor(const char *cursor_name)
 void dt_control_clear_temp_cursor()
 {
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(!_prev_cursor) return;
+  if(!_prev_cursor)
+  {
+    if(window)
+      gdk_window_set_cursor(window, NULL);
+    return;
+  }
   if(window)
     gdk_window_set_cursor(window, _prev_cursor);
   g_object_unref(_prev_cursor);
