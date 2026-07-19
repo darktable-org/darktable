@@ -530,6 +530,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   const dt_image_t *img      = &pipe->image;
   const dt_imgid_t imgid     = img->id;
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
+  const gboolean raw_img = dt_image_is_raw(img);
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
@@ -628,8 +629,12 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         const dt_develop_blend_params_t *const bp = piece->blendop_data;
         const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED;
 
-        if(!feqf(bp->details, 0.0f, 1e-6) && valid_mask)
-          dt_dev_pixelpipe_usedetails(piece);
+        if(!feqf(bp->details, 0.0f, 1e-6) && valid_mask && pipe->want_detail_mask == FALSE)
+        {
+          dt_iop_module_t *gen = raw_img ? dt_iop_get_module("demosaic") : NULL;
+          dt_dev_pixelpipe_cache_invalidate_later(pipe, gen ? gen->iop_order : 0, "usedetails ");
+          pipe->want_detail_mask = TRUE;
+        }
       }
     }
   }
@@ -664,11 +669,6 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   dt_dev_clear_scharr_mask(pipe);
   pipe->want_detail_mask = FALSE;
 
-  /* go through all history items and adjust params
-     We might call dt_dev_pixelpipe_usedetails() with want_detail_mask == FALSE
-     here resulting in a pipecache invalidation.
-     Can this somehow be avoided?
-  */
   GList *history = dev->history;
   for(int k = 0; k < dev->history_end && history; k++)
   {
@@ -747,17 +747,6 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                                   pipe->iwidth, pipe->iheight,
                                   &pipe->processed_width,
                                   &pipe->processed_height);
-}
-
-void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
-  if(!pipe->want_detail_mask)
-  {
-    dt_print_pipe(DT_DEBUG_PIPE, "details requested", pipe, piece->module, DT_DEVICE_NONE, NULL, NULL);
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, 0, "usedetails ");
-    pipe->want_detail_mask = TRUE;
-  }
 }
 
 static void _dump_pipe_pfm_diff(const char *mod,
