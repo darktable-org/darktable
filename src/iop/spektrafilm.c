@@ -98,6 +98,20 @@ DT_MODULE_INTROSPECTION(5, dt_iop_spektrafilm_params_t)
 #define SF_SCATTER_TAIL_MAX_UM 27.0f
 #define SF_GRAIN_BLUR_FACTOR 0.8f
 #define SF_GRAIN_SIZE_MIN 0.05f
+/* Calibration against the reference spektrafilm app's own rendered output,
+ * same film stock (Portra 400 / Portra Endura) and nominal (1.0, 1.0)
+ * sliders: even with the exact multi-sublayer particle model and exact
+ * Gaussian convolution, darktable's grain came out visually fainter and
+ * coarser than the reference at those defaults -- matching a stock-independent
+ * particle model has no free parameter left to soak up that gap, so these
+ * are a direct measured correction on the user-facing sliders rather than a
+ * further formula change. Applied only where grain_amount/grain_size feed
+ * the actual generation and clump blur (process()/process_cl()); left out of
+ * _max_halo_sigma's ROI/tiling padding, since a *smaller* effective size only
+ * needs less padding, not more, so the unscaled (larger) estimate there stays
+ * safely conservative. */
+#define SF_GRAIN_STRENGTH_CAL 1.20f
+#define SF_GRAIN_SIZE_CAL 0.65f
 #define SF_HALO_SIGMAS 4.0f
 #define SF_DIFFUSION_BLOOM_LAMBDA_MAX_UM 950.0f
 /* DIR coupler inhibitor diffusion; spektrafilm params_schema
@@ -1368,7 +1382,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const float amount = d->p.grain_amount;
+    const float amount = d->p.grain_amount * SF_GRAIN_STRENGTH_CAL;
     const int mono = sf_sim_film_bw(sim); /* B&W: achromatic grain */
     float gdmax[3], grms[3], gunif[3], gdmin[3];
     sf_sim_film_dmax3(sim, gdmax); /* the emulsion's own D-max: slide film
@@ -1399,7 +1413,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                             (uint32_t)(y + roi_y), mono, gdmax, gdmin, grms, gunif);
     }
     const float sigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
-                             * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN) / fmaxf(pixel_um, 1e-3f);
+                             * fmaxf(d->p.grain_size * SF_GRAIN_SIZE_CAL, SF_GRAIN_SIZE_MIN)
+                             / fmaxf(pixel_um, 1e-3f);
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
     const float renorm = sf_gauss_grain_renorm(fmaxf(sigma, 0.3f));
 #ifdef _OPENMP
@@ -1843,7 +1858,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const float amount = d->p.grain_amount;
+    const float amount = d->p.grain_amount * SF_GRAIN_STRENGTH_CAL;
     const int mono = g->film_bw; /* B&W: achromatic grain */
     if(g->grain_n_sublayers > 1)
     {
@@ -1900,7 +1915,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                              CLARG(g->grain_uniformity[2]));
     SF_CL_STEP("grain gen");
     const float gsigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
-                              * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN) / fmaxf(pixel_um, 1e-3f);
+                              * fmaxf(d->p.grain_size * SF_GRAIN_SIZE_CAL, SF_GRAIN_SIZE_MIN)
+                              / fmaxf(pixel_um, 1e-3f);
     SF_GAUSS_BLUR4(tmpa, gsigma, "grain blur");
     const float grenorm = sf_gauss_grain_renorm(fmaxf(gsigma, 0.3f));
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
