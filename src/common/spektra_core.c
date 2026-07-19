@@ -318,6 +318,37 @@ void sf_blur_plane3_fast(float *const buf, const int w, const int h, const float
   dt_free_align(trans);
 }
 
+/* Multiplicative (mass-conserving) unsharp mask on density (study b80).
+   out = D * (D / blur(D))^amount with per-channel mass renormalisation. */
+void sf_multiplicative_unsharp_mask3(float *const buf, const int w, const int h,
+                                      const float sigma, const float amount,
+                                      float *const orig, float *const work)
+{
+  if(sigma <= 0.0f || amount <= 0.0f) return;
+  const size_t npix = (size_t)w * h;
+  const size_t nn = npix * 3;
+  double sum_in[3] = { 0.0, 0.0, 0.0 };
+  for(size_t i = 0; i < nn; i++) { orig[i] = buf[i]; sum_in[i % 3] += (double)buf[i]; }
+  sf_blur_plane3(buf, w, h, sigma, work);
+  const float eps = 1e-6f;
+  for(size_t i = 0; i < nn; i++)
+  {
+    const float D = fmaxf(orig[i], 0.0f);
+    const float blur = fmaxf(buf[i], eps);
+    buf[i] = D * powf(fmaxf(D / blur, eps), amount);
+  }
+  double sum_out[3] = { 0.0, 0.0, 0.0 };
+  for(size_t i = 0; i < nn; i++) sum_out[i % 3] += (double)buf[i];
+  for(int c = 0; c < 3; c++)
+  {
+    if(sum_out[c] > 0.0 && sum_in[c] > 0.0)
+    {
+      const float scale = (float)(sum_in[c] / sum_out[c]);
+      for(size_t i = c; i < nn; i += 3) buf[i] *= scale;
+    }
+  }
+}
+
 /* Blur packed buffer with per-channel sigma. `trans` is a w*h intermediate. */
 static void _blur_per_channel(float *const buf, const int w, const int h, const float sigma[3],
                                float *const plane, float *const trans)
