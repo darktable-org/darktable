@@ -171,29 +171,31 @@ void cleanup_global(dt_iop_module_so_t *self)
 // Compute smoothed luminance mask using edge-aware filters
 __DT_CLONE_TARGETS__
 static inline void compute_luminance_and_mask(const float *const restrict in,
-                                                   float *const restrict luminance,
-                                                   float *const restrict smoothed_luminance,
-                                                   const size_t width,
-                                                   const size_t height,
-                                                   const dt_iop_contrast_data_t *const d)
+                                              float *const restrict luminance,
+                                              float *const restrict smoothed_luminance,
+                                              const dt_iop_roi_t *const roi_in,
+                                              const dt_iop_contrast_data_t *const d)
 {
-  // First compute pixel-wise luminance (no boost)
+  size_t width = (size_t)roi_in->width;
+  size_t height = (size_t)roi_in->height;
+  const size_t npixels = width * height;
+
+  // First compute pixel-wise luminance (no boost) and add noise bias
   luminance_mask(in, luminance, width, height, DT_TONEEQ_NORM_2, 1.0f, 0.0f, 1.0f);
 
-  const size_t npixels = width * height;
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
-  {    
-    luminance[k] = fmaxf(luminance[k], 0.0f) + d->noise_bias;
+  { 
+    luminance[k] += d->noise_bias;
   }
 
   // Then apply the smoothing filter on a copy
-  memcpy(smoothed_luminance, luminance, width * height * sizeof(float));
+  memcpy(smoothed_luminance, luminance, npixels * sizeof(float));
 
   fast_eigf_surface_blur(smoothed_luminance, width, height,
                          d->radius_local, d->feathering, d->iterations,
                          DT_GF_BLENDING_LINEAR, 1.0f,
-                         0.0f, exp2f(-14.0f), 4.0f);
+                         0.0f, NORM_MIN, 4.0f);
 }
 
 
@@ -206,7 +208,6 @@ static inline void apply_local_contrast(const float *const restrict in,
                                         const float *const restrict luminance_smoothed,
                                         float *const restrict out,
                                         const dt_iop_roi_t *const roi_in,
-                                        const dt_iop_roi_t *const roi_out,
                                         const dt_iop_contrast_data_t *const d)
 {
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
@@ -215,26 +216,20 @@ static inline void apply_local_contrast(const float *const restrict in,
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    const float lum_pixel = fmaxf(luminance_pixel[k], NORM_MIN);
-    const float lum_smoothed = fmaxf(luminance_smoothed[k], NORM_MIN);
+    const float log_pixel = log2f(fmaxf(luminance_pixel[k], NORM_MIN));
+    const float log_smoothed = log2f(fmaxf(luminance_smoothed[k], NORM_MIN));
 
-    // Detail in log space (EV): how much brighter/darker is this pixel
-    // compared to its local neighborhood
-    // detail = log2(pixel_lum / smoothed_lum) = log2(pixel_lum) - log2(smoothed_lum)
-    const float local_ev = log2f(lum_pixel / lum_smoothed);
+    // High pass detail in log space (EV):
+    // How much brighter/darker is this pixel compared to the smooth version
+    const float local_ev = fmaxf(fminf(log_pixel - log_smoothed, 5.0f), -5.0f);
 
-    // The correction is the sum of (gain - 1) * detail for each scale
+    // Correction as the scaled ev difference
     float correction_ev = (gain_local - 1.0f) * local_ev;
     
     // Apply correction in linear space
-    const float multiplier = exp2f(correction_ev);
-
-    const float L_final = lum_pixel * multiplier;
-    float ratio = L_final / fmaxf(lum_pixel, NORM_MIN);
-    ratio = fminf(ratio, 8.0f);
-
+    const float multiplier = exp2f(correction_ev);;
     for_each_channel(c)
-        out[4 * k + c] = in[4 * k + c] * ratio;
+      out[4 * k + c] = in[4 * k + c] * multiplier;
     out[4 * k + 3] = in[4 * k + 3];
   }
 }
@@ -251,10 +246,9 @@ __DT_CLONE_TARGETS__
 static inline void display_local_mask(const float *const restrict luminance_pixel,
                                       const float *const restrict luminance_smoothed,
                                       float *const restrict out,
-                                      const size_t width,
-                                      const size_t height)
+                                      const dt_iop_roi_t *const roi_in)
 {
-  const size_t npixels = width * height;
+  const size_t npixels = (size_t)roi_in->width * roi_in->height;
 
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
@@ -308,17 +302,17 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  compute_luminance_and_mask(in, luminance_pixel, luminance_smoothed_local, width, height, d);
+  compute_luminance_and_mask(in, luminance_pixel, luminance_smoothed_local, roi_in, d);
   
   // Display output
   if(g && g->mask_display != DT_LC_MASK_OFF && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    display_local_mask(luminance_pixel, luminance_smoothed_local, out, width, height);
+    display_local_mask(luminance_pixel, luminance_smoothed_local, out, roi_in);
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
   }
   else
   {
-    apply_local_contrast(in, luminance_pixel, luminance_smoothed_local, out, roi_in, roi_out, d);
+    apply_local_contrast(in, luminance_pixel, luminance_smoothed_local, out, roi_in, d);
   }
 
   dt_free_align(luminance_pixel);
