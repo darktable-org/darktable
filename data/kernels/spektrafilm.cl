@@ -588,6 +588,78 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
 /* spatial-effect kernels (identical to the LUT module's; blurs host-side)  */
 /* ======================================================================== */
 
+/* Direct (exact) separable Gaussian convolution, one pass along rows or
+ * columns. `weights` holds 2*radius+1 normalized taps built host-side by
+ * sf_gauss_kernel_1d() (spektra_core.c/.h) -- the same kernel the CPU path
+ * convolves with, so GPU and CPU renders match. Clamp-to-edge boundary.
+ * Separate _row/_col entry points (rather than a stride parameter) keep the
+ * inner loop's memory access pattern explicit at the call site. Separate
+ * _1c/_4c variants avoid packing a lone scatter-stage channel into an
+ * otherwise-wasted float4. */
+__kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global float4 *dst,
+                                       const int w, const int h,
+                                       __global const float *weights, const int radius)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  float4 acc = (float4)(0.0f);
+  for(int k = -radius; k <= radius; k++)
+  {
+    int xx = x + k;
+    xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
+    acc += weights[k + radius] * src[(size_t)y * w + xx];
+  }
+  dst[(size_t)y * w + x] = acc;
+}
+
+__kernel void spektrafilm_gauss_col_4c(__global const float4 *src, __global float4 *dst,
+                                       const int w, const int h,
+                                       __global const float *weights, const int radius)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  float4 acc = (float4)(0.0f);
+  for(int k = -radius; k <= radius; k++)
+  {
+    int yy = y + k;
+    yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
+    acc += weights[k + radius] * src[(size_t)yy * w + x];
+  }
+  dst[(size_t)y * w + x] = acc;
+}
+
+__kernel void spektrafilm_gauss_row_1c(__global const float *src, __global float *dst,
+                                       const int w, const int h,
+                                       __global const float *weights, const int radius)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  float acc = 0.0f;
+  for(int k = -radius; k <= radius; k++)
+  {
+    int xx = x + k;
+    xx = xx < 0 ? 0 : (xx >= w ? w - 1 : xx);
+    acc += weights[k + radius] * src[(size_t)y * w + xx];
+  }
+  dst[(size_t)y * w + x] = acc;
+}
+
+__kernel void spektrafilm_gauss_col_1c(__global const float *src, __global float *dst,
+                                       const int w, const int h,
+                                       __global const float *weights, const int radius)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  float acc = 0.0f;
+  for(int k = -radius; k <= radius; k++)
+  {
+    int yy = y + k;
+    yy = yy < 0 ? 0 : (yy >= h ? h - 1 : yy);
+    acc += weights[k + radius] * src[(size_t)yy * w + x];
+  }
+  dst[(size_t)y * w + x] = acc;
+}
+
 __kernel void spektrafilm_scatter_combine(__global const float4 *raw, __global const float4 *core,
                                           __global const float4 *tail, __global float4 *out,
                                           const int w, const int h, const float s_amount,
