@@ -271,10 +271,15 @@ static inline float sf_u01(uint s)
 {
   return (sf_h(s) & 0xffffff) / (float)0x1000000;
 }
+/* sf_nrm: sum-of-4-uniforms (Irwin-Hall) approximate standard normal,
+   instead of Box-Muller's sqrt+log+cos chain -- see spektra_core.h for the
+   full rationale (same formula, must match exactly so CPU and GPU renders
+   agree). */
 static inline float sf_nrm(uint s)
 {
-  float u1 = fmax(sf_u01(s), 1e-7f), u2 = sf_u01(s * 2654435761u + 1u);
-  return native_sqrt(-2.f * native_log(u1)) * native_cos(6.2831853f * u2);
+  const float u = sf_u01(s) + sf_u01(s * 2654435761u + 1u) + sf_u01(s * 2246822519u + 2u)
+                  + sf_u01(s * 3266489917u + 3u);
+  return (u - 2.0f) * 1.7320508f; /* sqrt(3) */
 }
 static inline uint sf_pixel_seed(uint xi, uint yi, uint chan)
 {
