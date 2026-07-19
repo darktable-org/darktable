@@ -177,8 +177,8 @@ typedef struct dt_iop_spektrafilm_params_t
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
-  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery sharpness"
-  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery strength"
+  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery sharpness"
+  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "grain recovery strength"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -238,8 +238,7 @@ typedef struct dt_iop_spektrafilm_data_t
 typedef struct dt_iop_spektrafilm_global_data_t
 {
   int kernel_expose, kernel_lograw, kernel_develop_corr, kernel_develop;
-  int kernel_grain_gen, kernel_grain_gen_ml, kernel_grain_add;
-  int kernel_grain_gen, kernel_grain_add, kernel_grain_usm;
+  int kernel_grain_gen, kernel_grain_gen_ml, kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
@@ -1442,6 +1441,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                              * fmaxf(d->p.grain_size * SF_GRAIN_SIZE_CAL, SF_GRAIN_SIZE_MIN)
                              / fmaxf(pixel_um, 1e-3f);
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
+    /* Centre grain delta: multi-sublayer model has positive DC bias (~0.07)
+       that renorm amplifies proportionally to sigma, making image brighter
+       at higher LOD. Remove bias before scaling. */
+    {
+      double gsum = 0.0;
+      for(size_t kk = 0; kk < npix * 3; kk++) gsum += (double)gbuf[kk];
+      const float gmean = (float)(gsum / (double)(npix * 3));
+      for(size_t kk = 0; kk < npix * 3; kk++) gbuf[kk] -= gmean;
+    }
     const float renorm = sf_gauss_grain_renorm(fmaxf(sigma, 0.3f));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix, renorm)              \
