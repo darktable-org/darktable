@@ -452,6 +452,109 @@ __kernel void spektrafilm_grain_gen(__global const float4 *dens, __global float4
   grain_buf[k] = (float4)(gd[0], gd[1], gd[2], 0.f);
 }
 
+/* Inverse-lookup: given the already-computed NET total density `target` for
+ * one channel, find its fractional position on the [0, n) exposure-grid
+ * axis by searching `arr` (assumed monotonic -- guaranteed for a sum of
+ * same-signed CDF terms) via binary search plus linear interpolation. Walks
+ * a strided (non-contiguous) column of a [n][...] table without copying it
+ * out first -- the same "find where the total curve reads D" step
+ * spektrafilm's own interp_density_cmy_layers_channel performs. */
+static float sf_cl_grain_curve_inverse(__global const float *arr, int n, int stride, float target)
+{
+  const int increasing = arr[(n - 1) * stride] >= arr[0];
+  int lo = 0, hi = n - 1;
+  while(hi - lo > 1)
+  {
+    const int mid = (lo + hi) / 2;
+    const float v = arr[mid * stride];
+    if((increasing && v <= target) || (!increasing && v >= target)) lo = mid;
+    else hi = mid;
+  }
+  const float v0 = arr[lo * stride], v1 = arr[hi * stride];
+  const float denom = v1 - v0;
+  float frac = (fabs(denom) > 1e-9f) ? (target - v0) / denom : 0.0f;
+  frac = clamp(frac, 0.0f, 1.0f);
+  return (float)lo + frac;
+}
+
+/* Linearly interpolate a strided per-index array at the continuous index
+ * `pos` produced by sf_cl_grain_curve_inverse above. */
+static float sf_cl_grain_curve_sample(__global const float *arr, int n, int stride, float pos)
+{
+  int i0 = (int)pos;
+  if(i0 < 0) i0 = 0;
+  if(i0 > n - 2) i0 = (n - 2 < 0) ? 0 : n - 2;
+  const float frac = pos - (float)i0;
+  return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
+}
+
+/* Multi-sublayer grain delta (see sf_grain_delta_ml, spektra_sim.c): only
+ * dispatched when n_sub > 1 -- a film whose own fitted density-curve model
+ * has more than one emulsion sub-layer. For n_sub<=1 the host dispatches
+ * spektrafilm_grain_gen above instead, unchanged. Sums each sub-layer's
+ * independent particle draw, recovering that sub-layer's own density by
+ * inverse-interpolating the self-consistent summed sub-layer curve at the
+ * exposure position the already-computed total density corresponds to.
+ * layer_curve is [nle][max_sub][3] row-major, layer_curve_total is
+ * [nle][3]; max_sub (SF_GRAIN_MAX_SUBLAYERS host-side) is the table's
+ * fixed stride regardless of how many sub-layers n_sub actually uses. */
+__kernel void spektrafilm_grain_gen_ml(__global const float4 *dens, __global float4 *grain_buf,
+                                       const int w, const int h, const float grain_amount,
+                                       const int roi_x, const int roi_y, const int mono,
+                                       const int n_sub, const int nle, const int max_sub,
+                                       const float dmin0, const float dmin1, const float dmin2,
+                                       const float unf0, const float unf1, const float unf2,
+                                       __global const float *layer_dmax,
+                                       __global const float *layer_npart,
+                                       __global const float *layer_dmin,
+                                       __global const float *layer_curve_total,
+                                       __global const float *layer_curve)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 d4 = dens[k];
+  const float dd[3] = { d4.x, d4.y, d4.z };
+  const float dmn[3] = { dmin0, dmin1, dmin2 };
+  const float unf[3] = { unf0, unf1, unf2 };
+  const int lstride = max_sub * 3;
+
+  if(mono)
+  {
+    const float dm = (dd[0] + dd[1] + dd[2]) / 3.0f;
+    const float pos = sf_cl_grain_curve_inverse(layer_curve_total + 1, nle, 3, dm);
+    float total_abs = 0.0f;
+    for(int sl = 0; sl < n_sub; sl++)
+    {
+      const float raw = sf_cl_grain_curve_sample(layer_curve + sl * 3 + 1, nle, lstride, pos);
+      const float d_abs = raw + layer_dmin[sl * 3 + 1];
+      const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), (uint)(sl * 10));
+      total_abs += sf_layer_particle(d_abs, layer_dmax[sl * 3 + 1], layer_npart[sl * 3 + 1], unf[1], seed);
+    }
+    const float gval = total_abs - dmn[1];
+    const float dl = (gval - dm) * grain_amount;
+    grain_buf[k] = (float4)(dl, dl, dl, 0.f);
+    return;
+  }
+
+  float gd[3];
+  for(int c = 0; c < 3; c++)
+  {
+    const float pos = sf_cl_grain_curve_inverse(layer_curve_total + c, nle, 3, dd[c]);
+    float total_abs = 0.0f;
+    for(int sl = 0; sl < n_sub; sl++)
+    {
+      const float raw = sf_cl_grain_curve_sample(layer_curve + sl * 3 + c, nle, lstride, pos);
+      const float d_abs = raw + layer_dmin[sl * 3 + c];
+      const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), (uint)(c + sl * 10));
+      total_abs += sf_layer_particle(d_abs, layer_dmax[sl * 3 + c], layer_npart[sl * 3 + c], unf[c], seed);
+    }
+    const float g = total_abs - dmn[c];
+    gd[c] = (g - dd[c]) * grain_amount;
+  }
+  grain_buf[k] = (float4)(gd[0], gd[1], gd[2], 0.f);
+}
+
 __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const float4 *grain_buf,
                                     const int w, const int h, const float renorm)
 {
