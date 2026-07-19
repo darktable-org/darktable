@@ -1,0 +1,190 @@
+[
+  {
+    "name": "list_modules",
+    "description": "List all darktable processing modules with their current param version and whether they expose introspection.",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "module_schema",
+    "description": "Describe a module's parameter layout: each field's name, type, byte offset, and min/max/default (enum values listed).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": { "type": "string", "description": "module op name, e.g. 'exposure', 'agx'" }
+      },
+      "required": ["operation"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "decode_params",
+    "description": "Decode a hex op_params blob into named field values for the given module (blob must match the module's current param size).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": { "type": "string" },
+        "blob_hex": { "type": "string" }
+      },
+      "required": ["operation", "blob_hex"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "encode_params",
+    "description": "Seed a module's default params, apply the given fields (numbers, or symbolic names for enums), and return a hex op_params blob.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": { "type": "string" },
+        "fields": { "type": "object" }
+      },
+      "required": ["operation"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "render",
+    "description": "Develop a raw (by input.path or input.imgid) through the base pipeline plus an optional module stack, returning a PNG preview. Each stack entry is {operation, params{} or blob_hex, multi_priority?, enabled?}. Renders on a throwaway duplicate so the source image is untouched.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "imgid": { "type": "integer" }
+          }
+        },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "stack": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operation": { "type": "string" },
+              "params": { "type": "object" },
+              "blob_hex": { "type": "string" },
+              "multi_priority": { "type": "integer" },
+              "enabled": { "type": "boolean" }
+            },
+            "required": ["operation"]
+          }
+        },
+        "disable_tone_mappers": { "type": "boolean" },
+        "history_end": { "type": "integer" }
+      },
+      "required": ["input"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "image_stats",
+    "description": "Like render, but returns per-channel statistics (min/max/mean/p1/p50/p99 + clip counts) of the developed preview instead of a PNG. Useful for measuring the tonal effect of a param change.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "imgid": { "type": "integer" }
+          }
+        },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "stack": { "type": "array", "items": { "type": "object" } },
+        "disable_tone_mappers": { "type": "boolean" },
+        "history_end": { "type": "integer" }
+      },
+      "required": ["input"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "list_images",
+    "description": "List images in the current darktable library ({imgid, path}). Use --core --library <catalog> to point at a real catalog.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "limit": { "type": "integer" } },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_history",
+    "description": "Return the current edit-history stack of a library image, decoded per module (num, operation, version, enabled, multi_priority, fields).",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "imgid": { "type": "integer" } },
+      "required": ["imgid"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "list_styles",
+    "description": "List saved darktable styles ({name, description}).",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "apply_style",
+    "description": "Apply a saved style to a library image's history.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "imgid": { "type": "integer" },
+        "overwrite": { "type": "boolean" }
+      },
+      "required": ["name", "imgid"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "save_style",
+    "description": "Create a new saved style from a library image's current history.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imgid": { "type": "integer" }
+      },
+      "required": ["name", "imgid"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "import_style",
+    "description": "Import a .dtstyle file into the styles database.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "path": { "type": "string" } },
+      "required": ["path"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "export",
+    "description": "Develop an image (with optional stack) and write a PNG to out_path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "imgid": { "type": "integer" }
+          }
+        },
+        "out_path": { "type": "string" },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "stack": { "type": "array", "items": { "type": "object" } },
+        "disable_tone_mappers": { "type": "boolean" },
+        "history_end": { "type": "integer" }
+      },
+      "required": ["input", "out_path"],
+      "additionalProperties": false
+    }
+  }
+]
