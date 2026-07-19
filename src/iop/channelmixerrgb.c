@@ -2914,7 +2914,7 @@ static void _run_profile_callback(GtkWidget *widget,
   g->run_profile = TRUE;
   dt_iop_gui_leave_critical_section(self);
 
-  dt_dev_reprocess_preview(self->dev);
+  dt_dev_reprocess_preview(self->dev, self->iop_order);
 }
 
 static void _run_validation_callback(GtkWidget *widget,
@@ -2927,7 +2927,7 @@ static void _run_validation_callback(GtkWidget *widget,
   g->run_validation = TRUE;
   dt_iop_gui_leave_critical_section(self);
 
-  dt_dev_reprocess_preview(self->dev);
+  dt_dev_reprocess_preview(self->dev, self->iop_order);
 }
 
 static void _commit_profile_callback(GtkWidget *widget,

@@ -1948,7 +1948,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
     g->mask_display = !g->mask_display;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
-//  dt_dev_reprocess_center(self->dev);
+//  dt_dev_reprocess_center(self->dev, self->iop_order);
   dt_iop_refresh_center(self);
 
   // Unlock the colour picker so we can display our own custom cursor
@@ -2517,7 +2517,7 @@ static void _develop_distort_callback(gpointer instance,
   /* we do reprocess the preview to get a new internal image buffer with the proper
      image geometry. */
   if(self->enabled)
-    dt_dev_reprocess_preview(darktable.develop);
+    dt_dev_reprocess_preview(darktable.develop, self->iop_order);
 }
 
 static void _set_distort_signal(dt_iop_module_t *self)
@@ -2554,7 +2554,7 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
     g->mask_display = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
     if(was_mask)
-      dt_dev_reprocess_center(self->dev);
+      dt_dev_reprocess_center(self->dev, self->iop_order);
     dt_collection_hint_message(darktable.collection);
 
     // no need for the distort signal anymore

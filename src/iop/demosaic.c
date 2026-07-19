@@ -1636,7 +1636,7 @@ static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
   g->cs_boost_mask = FALSE;
 
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1650,7 +1650,7 @@ static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
   g->cs_boost_mask = FALSE;
 
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1664,7 +1664,7 @@ static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
   g->cs_mask = FALSE;
 
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1672,7 +1672,7 @@ static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
   DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   g->new_radius = -1.0f;
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
@@ -1709,7 +1709,7 @@ static void _preset_applied_callback(gpointer instance, dt_iop_module_t *self)
   {
     dt_print(DT_DEBUG_PIPE, "demosaic auto preset applied, radius=%.3f thrs=%.3f",
       p->cs_radius, p->cs_thrs);
-    dt_dev_reprocess_center(self->dev);
+    dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
 
@@ -1726,7 +1726,7 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
     dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
     g->cs_boost_mask = FALSE;
 
-    if(was_masking) dt_dev_reprocess_center(self->dev);
+    if(was_masking) dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
 

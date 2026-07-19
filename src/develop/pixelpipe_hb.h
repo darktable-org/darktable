@@ -159,8 +159,8 @@ typedef struct dt_dev_pixelpipe_t
 {
   // store history/zoom caches
   dt_dev_pixelpipe_cache_t cache;
-  // set to TRUE in order to obsolete old cache entries on next pixelpipe run
-  gboolean cache_obsolete;
+  // set to an iop_order to invalidate cachelines >= given order before next pixelpipe run
+  uint32_t cache_obsolete_order;
   uint64_t runs; // used only for pixelpipe cache statistics
   // input buffer
   float *input;
