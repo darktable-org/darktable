@@ -32,6 +32,8 @@
    and OpenMP linkage; everything else in this header is inline). */
 void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
 void sf_blur_plane3_fast(float *buf, int w, int h, float sigma, float *plane);
+void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
+                                     float *orig, float *work);
 /* Two independently-controllable stages, matching upstream's HalationParams:
  *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
  *   halation_amount / halation_scale -- stage 2, back-reflection multi-bounce
