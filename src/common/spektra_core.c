@@ -330,13 +330,15 @@ void sf_multiplicative_unsharp_mask3(float *const buf, const int w, const int h,
   double sum_in[3] = { 0.0, 0.0, 0.0 };
   for(size_t i = 0; i < nn; i++) { orig[i] = buf[i]; sum_in[i % 3] += (double)buf[i]; }
   sf_blur_plane3(buf, w, h, sigma, work);
-  const float eps = 1e-6f;
-  for(size_t i = 0; i < nn; i++)
-  {
-    const float D = fmaxf(orig[i], 0.0f);
-    const float blur = fmaxf(buf[i], eps);
-    buf[i] = D * powf(fmaxf(D / blur, eps), amount);
-  }
+    const float eps = 1e-6f;
+    const float ratio_max = 4.0f;
+    for(size_t i = 0; i < nn; i++)
+    {
+      const float D = fmaxf(orig[i], 0.0f);
+      const float blur = fmaxf(buf[i], eps);
+      const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
+      buf[i] = fmaxf(D * powf(ratio, amount), 0.0f);
+    }
   double sum_out[3] = { 0.0, 0.0, 0.0 };
   for(size_t i = 0; i < nn; i++) sum_out[i % 3] += (double)buf[i];
   for(int c = 0; c < 3; c++)
