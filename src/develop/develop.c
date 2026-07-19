@@ -3526,7 +3526,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, base->so, base->dev))
   {
-    free(module);
+    // failed module already freed while failing to load
     return NULL;
   }
   module->instance = base->instance;
