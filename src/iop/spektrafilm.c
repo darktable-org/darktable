@@ -1354,25 +1354,25 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         const float wbase = 1.0f - (float)ctail_w;
         memcpy(tmp, corr, sizeof(float) * npix * 3);
-        if(csigma > 0.1f) sf_blur_plane3(tmp, w, h, csigma, scratch);
+        if(csigma > 0.1f) sf_blur_plane3_fast(tmp, w, h, csigma, scratch);
         for(size_t i = 0; i < npix * 3; i++) mix[i] = wbase * tmp[i];
         for(int g3 = 0; g3 < 3; g3++)
         {
           memcpy(tmp, corr, sizeof(float) * npix * 3);
           const float ts = rat[g3] * tail_px;
-          if(ts > 0.1f) sf_blur_plane3(tmp, w, h, ts, scratch);
+          if(ts > 0.1f) sf_blur_plane3_fast(tmp, w, h, ts, scratch);
           const float wk = (float)ctail_w * amp[g3];
           for(size_t i = 0; i < npix * 3; i++) mix[i] += wk * tmp[i];
         }
         memcpy(corr, mix, sizeof(float) * npix * 3);
       }
       else if(csigma > 0.1f)
-        sf_blur_plane3(corr, w, h, csigma, scratch); /* alloc failed: core only */
+        sf_blur_plane3_fast(corr, w, h, csigma, scratch); /* alloc failed: core only */
       dt_free_align(mix);
       dt_free_align(tmp);
     }
     else if(csigma > 0.1f)
-      sf_blur_plane3(corr, w, h, csigma, scratch);
+      sf_blur_plane3_fast(corr, w, h, csigma, scratch);
   }
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
 
@@ -1607,41 +1607,92 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     } \
     SF_CL_STEP(label); \
   } while(0)
+/* Same as SF_GAUSS_BLUR4, but above SF_GAUSS_EXACT_MAX_SIGMA falls back to
+   darktable's fast recursive blur (corrected -- see SF_GAUSS_SIGMA_CORRECTION)
+   instead of the exact row/col kernels: for callers with no downstream
+   dependency on the exact kernel's shape (unlike grain's SF_GAUSS_BLUR4
+   above, which stays on the exact path unconditionally since
+   sf_gauss_grain_renorm is computed from it), this recovers most of the
+   O(radius) cost the exact kernel pays at large sigma. */
+#define SF_GAUSS_BLUR4_FAST(buf, _sg, label) do { \
+    if(err == CL_SUCCESS) \
+    { \
+      if((_sg) >= SF_GAUSS_EXACT_MAX_SIGMA) \
+        err = dt_gaussian_mean_blur_cl(devid, (buf), w, h, 4, (_sg) * SF_GAUSS_SIGMA_CORRECTION); \
+      else \
+      { \
+        float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
+        const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+        err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
+                                               sizeof(float) * (2 * _kr + 1), TRUE); \
+        if(err == CL_SUCCESS) \
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, w, h, \
+                                                 CLARG(buf), CLARG(gtmp4), CLARG(w), CLARG(h), \
+                                                 CLARG(gauss_w), CLARG(_kr)); \
+        if(err == CL_SUCCESS) \
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, w, h, \
+                                                 CLARG(gtmp4), CLARG(buf), CLARG(w), CLARG(h), \
+                                                 CLARG(gauss_w), CLARG(_kr)); \
+      } \
+    } \
+    SF_CL_STEP(label); \
+  } while(0)
 /* loop-safe variant: sets err, caller checks err/breaks; src/dst may differ
-   (e.g. accumulating several blurred copies of the same source). */
+   (e.g. accumulating several blurred copies of the same source). Falls back
+   to the fast recursive blur above SF_GAUSS_EXACT_MAX_SIGMA, same rationale
+   as SF_GAUSS_BLUR4_FAST -- none of this macro's callers (halation bounce,
+   coupler tail, both diffusion filters) renormalize against the exact
+   kernel's shape. */
 #define SF_GAUSS_BLUR4_OP_L(src, dst, _sg) do { \
     if(err == CL_SUCCESS) \
     { \
-      float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-      const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
-      err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
-                                             sizeof(float) * (2 * _kr + 1), TRUE); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, w, h, \
-                                               CLARG(src), CLARG(gtmp4), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, w, h, \
-                                               CLARG(gtmp4), CLARG(dst), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
+      if((_sg) >= SF_GAUSS_EXACT_MAX_SIGMA) \
+      { \
+        err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, (src), (dst), 0, 0, npix * f * 4); \
+        if(err == CL_SUCCESS) \
+          err = dt_gaussian_mean_blur_cl(devid, (dst), w, h, 4, (_sg) * SF_GAUSS_SIGMA_CORRECTION); \
+      } \
+      else \
+      { \
+        float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
+        const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+        err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
+                                               sizeof(float) * (2 * _kr + 1), TRUE); \
+        if(err == CL_SUCCESS) \
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_4c, w, h, \
+                                                 CLARG(src), CLARG(gtmp4), CLARG(w), CLARG(h), \
+                                                 CLARG(gauss_w), CLARG(_kr)); \
+        if(err == CL_SUCCESS) \
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_4c, w, h, \
+                                                 CLARG(gtmp4), CLARG(dst), CLARG(w), CLARG(h), \
+                                                 CLARG(gauss_w), CLARG(_kr)); \
+      } \
     } \
   } while(0)
-/* single-channel in-place blur (scatter stage only, on plane1) */
+/* single-channel in-place blur (scatter stage only, on plane1). Same fast
+   fallback above SF_GAUSS_EXACT_MAX_SIGMA -- scatter's core/tail sigmas are
+   normally small (sub-few-px), but the fallback is here for whatever a user's
+   scatter_scale slider can push them to. */
 #define SF_GAUSS_BLUR1_L(buf, _sg) do { \
     if(err == CL_SUCCESS) \
     { \
-      float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
-      const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
-      err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
-                                             sizeof(float) * (2 * _kr + 1), TRUE); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_1c, w, h, \
-                                               CLARG(buf), CLARG(gtmp1), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
-      if(err == CL_SUCCESS) \
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_1c, w, h, \
-                                               CLARG(gtmp1), CLARG(buf), CLARG(w), CLARG(h), \
-                                               CLARG(gauss_w), CLARG(_kr)); \
+      if((_sg) >= SF_GAUSS_EXACT_MAX_SIGMA) \
+        err = dt_gaussian_mean_blur_cl(devid, (buf), w, h, 1, (_sg) * SF_GAUSS_SIGMA_CORRECTION); \
+      else \
+      { \
+        float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
+        const int _kr = sf_gauss_kernel_1d((_sg), _kw, SF_GAUSS_MAX_RADIUS); \
+        err = dt_opencl_write_buffer_to_device(devid, _kw, gauss_w, 0, \
+                                               sizeof(float) * (2 * _kr + 1), TRUE); \
+        if(err == CL_SUCCESS) \
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_row_1c, w, h, \
+                                                 CLARG(buf), CLARG(gtmp1), CLARG(w), CLARG(h), \
+                                                 CLARG(gauss_w), CLARG(_kr)); \
+        if(err == CL_SUCCESS) \
+          err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_gauss_col_1c, w, h, \
+                                                 CLARG(gtmp1), CLARG(buf), CLARG(w), CLARG(h), \
+                                                 CLARG(gauss_w), CLARG(_kr)); \
+      } \
     } \
   } while(0)
 
@@ -1844,7 +1895,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       }
     }
     else if(csigma > 0.1f)
-      SF_GAUSS_BLUR4(acc, csigma, "coupler blur");
+      SF_GAUSS_BLUR4_FAST(acc, csigma, "coupler blur");
   }
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, w, h, CLARG(plane),
