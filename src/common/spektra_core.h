@@ -505,13 +505,26 @@ SPEKTRA_INLINE float sf_u01(uint32_t s)
 {
   return (sf_h(s) & 0xffffff) / (float)0x1000000;
 }
-/* sf_nrm: two uniforms -> one standard-normal sample via the Box-Muller
-   transform. 6.2831853 is 2*pi; 2654435761 is Knuth's golden-ratio multiplier
-   (2^32 / phi), used only to decorrelate the second uniform from the first. */
+/* sf_nrm: one hash seed -> one approximate standard-normal sample via a
+   sum-of-4-uniforms (Irwin-Hall) approximation instead of Box-Muller's
+   sqrt+log+cos transcendental chain. Var[uniform(0,1)] = 1/12, so a sum of 4
+   has variance 4/12 = 1/3 and mean 2; rescaling by sqrt(3) and centering
+   gives unit variance, zero mean -- the two moments sf_layer_particle's
+   normal approximations actually rely on. The finite (not truly Gaussian)
+   tails this leaves behind aren't visually meaningful for film grain: real
+   emulsions don't have famously heavy statistical tails either, and the
+   difference from a true Gaussian only shows up several standard
+   deviations out, well past where grain is visible at all. Called twice per
+   particle draw, per sub-layer (up to SF_GRAIN_MAX_SUBLAYERS times for a
+   multi-sublayer film) -- worth being cheap. The four multipliers are
+   distinct, well-known odd hash constants (murmur3's c1/c2, Knuth's golden-
+   ratio multiplier, and one more), used only to decorrelate the four
+   uniform draws from each other. */
 SPEKTRA_INLINE float sf_nrm(uint32_t s)
 {
-  float u1 = fmaxf(sf_u01(s), 1e-7f), u2 = sf_u01(s * 2654435761u + 1u);
-  return sqrtf(-2.f * logf(u1)) * cosf(6.2831853f * u2);
+  const float u = sf_u01(s) + sf_u01(s * 2654435761u + 1u) + sf_u01(s * 2246822519u + 2u)
+                  + sf_u01(s * 3266489917u + 3u);
+  return (u - 2.0f) * 1.7320508f; /* sqrt(3) */
 }
 /* sf_layer_particle: draw the developed density of one emulsion layer as a
    doubly-stochastic process. First the number of developed grains in this pixel
