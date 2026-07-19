@@ -28,8 +28,8 @@
 #define SPEKTRA_INLINE static inline
 #endif
 
-/* Spatial effects implemented in spektra_core.c (they use dt_gaussian and so
-   need darktable linkage; everything else in this header is inline). */
+/* Spatial effects implemented in spektra_core.c (they need dt_alloc_align_float
+   and OpenMP linkage; everything else in this header is inline). */
 void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
 /* Two independently-controllable stages, matching upstream's HalationParams:
  *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
@@ -539,6 +539,31 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
    density[] is modified in place; d_ref is a representative mid density (mean of
    the film's d_min/d_max) used as the contrast pivot. */
 #define SF_PRINT_EV_TO_DENSITY 0.30103f /* log10(2): one stop == 0.301 density */
+
+/* Maximum kernel half-width (taps = 2*radius+1) for sf_gauss_kernel_1d below.
+   Caps cost for pathologically large sigma (very high film_format_mm
+   combined with very low resolution); every physically-plausible sigma this
+   module uses stays far under this. Shared by spektra_core.c's CPU direct
+   convolution and spektrafilm.c's GPU host-side weight upload, so both
+   dispatch the identical kernel for a given sigma. */
+#define SF_GAUSS_MAX_RADIUS 512
+
+/* Build a normalized, truncated 1D Gaussian kernel -- truncate=4 sigma,
+ * matching scipy.ndimage.gaussian_filter's own default (what the reference
+ * spektrafilm actually blurs with), so the blur is exact to kernel-
+ * truncation precision for any sigma. `kernel` must have room for
+ * 2*max_radius+1 taps; returns the radius actually used. Exported so both
+ * the CPU convolution (spektra_core.c) and the GPU host-side weight upload
+ * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
+int sf_gauss_kernel_1d(float sigma, float *kernel, int max_radius);
+
+/* Exact grain-clump variance-restoration factor for a separable 2D Gaussian
+ * blur of the given sigma (see _sf_gauss_kernel_1d / sf_gauss_grain_renorm
+ * in spektra_core.c): blurring the grain-delta buffer necessarily shrinks
+ * its variance, and this is the exact factor (1/sum(kernel^2), computed
+ * from the actual kernel used) that restores it to the intended RMS. */
+float sf_gauss_grain_renorm(float sigma);
+
 #define SF_FILTRATION_TO_DENSITY 0.30f  /* full filtration slider == 0.30 density */
 SPEKTRA_INLINE void sf_apply_print_grading(float density[3], float d_ref, float print_exposure,
                                            float print_contrast, float filtration_m,
