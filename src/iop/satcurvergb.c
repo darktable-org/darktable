@@ -1154,6 +1154,26 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
 
   return FALSE;
 }
+static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
+                             dt_iop_module_t *self)
+{
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
+
+  if(g->selected < 0) return FALSE; // nur wenn ein Knoten selektiert ist
+
+  int delta_y = 0;
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  {
+    const float step = 0.02f * (event->state & GDK_CONTROL_MASK ? 5.0f : 1.0f);
+    const int n = g->selected;
+    cp->curve[n].y = CLAMP(cp->curve[n].y - delta_y * step, 0.f, 1.f);
+
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+  }
+  return TRUE;
+}
 
 static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
@@ -1369,11 +1389,13 @@ void gui_init(dt_iop_module_t *self)
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/satcurve/graph_height"));
   gtk_widget_set_size_request(GTK_WIDGET(g->area), -1, DT_PIXEL_APPLY_DPI(180));
   gtk_widget_add_events(GTK_WIDGET(g->area),
-                        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
+                        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                        | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(area_release), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event",  G_CALLBACK(area_scroll), self);
   dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
 
   g->formula = dt_bauhaus_combobox_from_params(self, "formula");
