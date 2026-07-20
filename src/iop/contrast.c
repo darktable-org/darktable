@@ -182,11 +182,12 @@ static inline void compute_luminance_and_mask(const float *const restrict in,
 
   // First compute pixel-wise luminance (no boost) and add noise bias
   luminance_mask(in, luminance, width, height, DT_TONEEQ_NORM_2, 1.0f, 0.0f, 1.0f);
+  const float noise_bias = d->noise_bias;
 
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   { 
-    luminance[k] += d->noise_bias;
+    luminance[k] += noise_bias;
   }
 
   // Then apply the smoothing filter on a copy
@@ -198,6 +199,22 @@ static inline void compute_luminance_and_mask(const float *const restrict in,
                          0.0f, NORM_MIN, 4.0f);
 }
 
+
+// Extract logarithmic high pass detail in log space (EV):
+// How much brighter/darker is this pixel compared to the smooth version
+__DT_CLONE_TARGETS__
+static inline float extract_details(const float luminance_pixel,
+                                   const float luminance_smoothed,
+                                   const float noise_bias)
+{
+  const float log_pixel = log2f(fmaxf(luminance_pixel, NORM_MIN));
+  const float log_smoothed = log2f(fmaxf(luminance_smoothed, NORM_MIN));
+
+  const float noise_power = noise_bias * noise_bias;
+  const float combined_power = luminance_smoothed * luminance_smoothed;
+  const float weiner_gain = fmaxf(combined_power - noise_power, 0.0f) / fmaxf(combined_power, NORM_MIN);
+  return weiner_gain * fmaxf(fminf(log_pixel - log_smoothed, 5.0f), -5.0f);
+}
 
 // Apply local contrast enhancement
 // The detail (local contrast) is the log-space difference between pixel luminance
@@ -211,20 +228,18 @@ static inline void apply_local_contrast(const float *const restrict in,
                                         const dt_iop_contrast_data_t *const d)
 {
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
-  const float gain_local = d->gain_local_contrast;
+  const float gain_local = (d->gain_local_contrast - 1.0f);
+  const float noise_bias = d->noise_bias;
   
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    const float log_pixel = log2f(fmaxf(luminance_pixel[k], NORM_MIN));
-    const float log_smoothed = log2f(fmaxf(luminance_smoothed[k], NORM_MIN));
-
     // High pass detail in log space (EV):
     // How much brighter/darker is this pixel compared to the smooth version
-    const float local_ev = fmaxf(fminf(log_pixel - log_smoothed, 5.0f), -5.0f);
+    const float local_ev = extract_details(luminance_pixel[k], luminance_smoothed[k], noise_bias);
 
     // Correction as the scaled ev difference
-    float correction_ev = (gain_local - 1.0f) * local_ev;
+    const float correction_ev = gain_local * local_ev;
     
     // Apply correction in linear space
     const float multiplier = exp2f(correction_ev);;
@@ -246,19 +261,19 @@ __DT_CLONE_TARGETS__
 static inline void display_local_mask(const float *const restrict luminance_pixel,
                                       const float *const restrict luminance_smoothed,
                                       float *const restrict out,
-                                      const dt_iop_roi_t *const roi_in)
+                                      const dt_iop_roi_t *const roi_in,
+                                      const dt_iop_contrast_data_t *const d)
 {
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
+  const float noise_bias = d->noise_bias;
 
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
-    const float lum_pixel = fmaxf(luminance_pixel[k], NORM_MIN);
-    const float lum_smoothed = fmaxf(luminance_smoothed[k], NORM_MIN);
-
+    const float local_ev = extract_details(luminance_pixel[k], luminance_smoothed[k], noise_bias);
+    
     // Detail in log space, mapped to [0, 1] for display
     // Detail range roughly [-2, +2] EV mapped to [0, 1]
-    const float local_ev = log2f(lum_pixel / lum_smoothed);
     const float intensity = local_ev / sqrtf(local_ev * local_ev + 1.0f) * 0.5f + 0.5f; // Smooth mapping to [0, 1]
 
     // Set all RGB channels to the same intensity (grayscale)
@@ -307,7 +322,7 @@ void process(dt_iop_module_t *self,
   // Display output
   if(g && g->mask_display != DT_LC_MASK_OFF && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    display_local_mask(luminance_pixel, luminance_smoothed_local, out, roi_in);
+    display_local_mask(luminance_pixel, luminance_smoothed_local, out, roi_in, d);
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
   }
   else
