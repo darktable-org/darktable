@@ -211,6 +211,10 @@ const char *cl_errstr(cl_int error)
       return "DT_OPENCL_PROCESS_CL";
     case DT_OPENCL_NODEVICE:
       return "DT_OPENCL_NODEVICE";
+    case DT_OPENCL_SPURIOUS:
+      return "DT_OPENCL_SPURIOUS";
+    case DT_OPENCL_MIGRATE:
+      return "DT_OPENCL_MIGRATE";
     default:
       return "Unknown OpenCL error";
   }
@@ -1224,15 +1228,19 @@ static void _cleanup_cl_device_mem(dt_opencl_t *cl, const int i)
 }
 
 void dt_opencl_init(dt_opencl_t *cl,
-                    const gboolean exclude_opencl,
+                    const int options,
                     const gboolean print_statistics)
 {
+  const gboolean exclude_opencl = options & DT_OPENCL_OPTION_EXCLUDE;
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = FALSE;
   cl->enabled = FALSE;
   cl->stopped = FALSE;
   cl->error_count = 0;
   cl->fastcl = dt_conf_get_bool("opencl_fast");
+  cl->fast_tiling = options & DT_OPENCL_OPTION_FAST_TILE;
+  cl->spurious = options & DT_OPENCL_OPTION_SPURIOS;
+  cl->migrate = options & DT_OPENCL_OPTION_MIGRATE;
 #if CL_TARGET_OPENCL_VERSION == 300
   cl->api30 = TRUE;
 #else
@@ -1262,7 +1270,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   if(exclude_opencl)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-             "[opencl_init] opencl disabled due to explicit user request\n");
+             "[opencl_init] opencl disabled by --disable-opencl\n");
     goto finally;
   }
 
