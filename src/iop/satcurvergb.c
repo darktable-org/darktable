@@ -132,6 +132,7 @@ typedef struct dt_iop_satcurve_gui_data_t
 typedef struct dt_iop_satcurve_global_data_t
 {
   int kernel_satcurvergb;
+  int kernel_satcurve_histogram;
 } dt_iop_satcurve_global_data_t;
 
 typedef struct dt_iop_satcurve_factors_t
@@ -357,31 +358,19 @@ static inline dt_iop_satcurve_factors_t eval_curve_factors(const dt_iop_satcurve
   };
 }
 
-static void _update_sat_histogram(dt_iop_module_t *self,
-                                  const dt_iop_satcurve_data_t *d,
-                                  const dt_colormatrix_t inputmatrix_trans,
-                                  const float *const restrict in,
-                                  const size_t npixels)
+// applies log1p compression and publishes bin counts to the GUI histogram;
+// shared tail for both the CPU path (_update_sat_histogram) and the GPU path
+// (process_cl), which only differ in how they arrive at per-bin pixel counts
+static void _commit_sat_histogram(dt_iop_module_t *self, const int *const bins)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   if(!g) return;
 
-  float local_hist[DT_IOP_SATCURVE_HIST_RES] = { 0.f };
-  const float L_white = Y_to_dt_UCS_L_star(1.f);
-
-  DT_OMP_FOR(reduction(+ : local_hist[:DT_IOP_SATCURVE_HIST_RES]))
-  for(size_t k = 0; k < npixels; k++)
-  {
-    const float s_in_norm = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
-    const int bin = CLAMP((int)(s_in_norm * (DT_IOP_SATCURVE_HIST_RES - 1)),
-                          0, DT_IOP_SATCURVE_HIST_RES - 1);
-    local_hist[bin] += 1.f;
-  }
-
+  float local_hist[DT_IOP_SATCURVE_HIST_RES];
   float max_val = 0.f;
   for(int i = 0; i < DT_IOP_SATCURVE_HIST_RES; i++)
   {
-    local_hist[i] = log1pf(local_hist[i]);
+    local_hist[i] = log1pf((float)bins[i]);
     max_val = MAX(max_val, local_hist[i]);
   }
 
@@ -392,6 +381,31 @@ static void _update_sat_histogram(dt_iop_module_t *self,
 
   dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
 }
+
+static void _update_sat_histogram(dt_iop_module_t *self,
+                                  const dt_iop_satcurve_data_t *d,
+                                  const dt_colormatrix_t inputmatrix_trans,
+                                  const float *const restrict in,
+                                  const size_t npixels)
+{
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  if(!g) return;
+
+  int local_hist[DT_IOP_SATCURVE_HIST_RES] = { 0 };
+  const float L_white = Y_to_dt_UCS_L_star(1.f);
+
+  DT_OMP_FOR(reduction(+ : local_hist[:DT_IOP_SATCURVE_HIST_RES]))
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float s_in_norm = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
+    const int bin = CLAMP((int)(s_in_norm * (DT_IOP_SATCURVE_HIST_RES - 1)),
+                          0, DT_IOP_SATCURVE_HIST_RES - 1);
+    local_hist[bin]++;
+  }
+
+  _commit_sat_histogram(self, local_hist);
+}
+
 
 static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
                                                 dt_aligned_pixel_t xyz,
@@ -562,29 +576,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self)
-     && piece->pipe == self->dev->full.pipe)
-  {
-    dt_colormatrix_t hist_input_matrix = {{ 0.0f }};
-    dt_colormatrix_t hist_input_matrix_trans;
-    dt_colormatrix_mul(hist_input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
-    dt_colormatrix_transpose(hist_input_matrix_trans, hist_input_matrix);
-
-    float *host_in = dt_alloc_align_float((size_t)4 * width * height);
-    if(host_in)
-    {
-      cl_int hist_err = dt_opencl_copy_image_to_host(devid, host_in, dev_in, width, height, sizeof(float) * 4);
-      if(hist_err == CL_SUCCESS)
-        _update_sat_histogram(self, d, hist_input_matrix_trans, host_in, (size_t)width * height);
-      dt_free_align(host_in);
-    }
-  }
+  const gboolean want_histogram =
+    self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self)
+    && piece->pipe == self->dev->full.pipe;
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
   cl_mem sat_lut_cl = NULL;
   cl_mem bri_lut_cl = NULL;
   cl_mem gamut_lut_cl = NULL;
+  cl_mem hist_bins_cl = NULL;
 
   dt_colormatrix_t input_matrix = {{ 0.0f }};
   dt_colormatrix_t output_matrix = {{ 0.0f }};
@@ -611,6 +612,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   const float L_white = Y_to_dt_UCS_L_star(1.f);
 
+  // pipeline-critical kernel goes first: the histogram below is pure UI
+  // feedback and must never delay the actual image processing on the queue
   err = dt_opencl_enqueue_kernel_2d_args(
       devid, gd->kernel_satcurvergb, width, height,
       CLARG(dev_in), CLARG(dev_out),
@@ -619,12 +622,43 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       CLARG(sat_lut_cl), CLARG(bri_lut_cl), CLARG(gamut_lut_cl),
       CLARG(d->formula), CLARG(L_white));
 
+  if(err != CL_SUCCESS) goto error;
+
+  // GPU-side histogram reduction: only DT_IOP_SATCURVE_HIST_RES ints cross
+  // the PCIe bus, instead of the full width*height*4 floats of the old
+  // copy-to-host approach. Reuses input_matrix_cl/gamut_lut_cl already
+  // uploaded above -- no second matrix upload needed.
+  if(want_histogram)
+  {
+    int hist_bins_host[DT_IOP_SATCURVE_HIST_RES] = { 0 };
+    const size_t hist_bins_size = sizeof(int) * DT_IOP_SATCURVE_HIST_RES;
+
+    hist_bins_cl = dt_opencl_alloc_device_buffer(devid, hist_bins_size);
+    if(hist_bins_cl
+       && dt_opencl_write_buffer_to_device(devid, hist_bins_host, hist_bins_cl, 0,
+                                          hist_bins_size, TRUE) == CL_SUCCESS)
+    {
+      const cl_int hist_err = dt_opencl_enqueue_kernel_2d_args(
+          devid, gd->kernel_satcurve_histogram, width, height,
+          CLARG(dev_in), CLARG(width), CLARG(height),
+          CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
+          CLARG(d->formula), CLARG(L_white),
+          CLARG(hist_bins_cl));
+
+      if(hist_err == CL_SUCCESS
+         && dt_opencl_read_buffer_from_device(devid, hist_bins_host, hist_bins_cl, 0,
+                                             hist_bins_size, TRUE) == CL_SUCCESS)
+        _commit_sat_histogram(self, hist_bins_host);
+    }
+  }
+
 error:
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(sat_lut_cl);
   dt_opencl_release_mem_object(bri_lut_cl);
   dt_opencl_release_mem_object(gamut_lut_cl);
+  dt_opencl_release_mem_object(hist_bins_cl);
   return err;
 }
 
@@ -634,12 +668,14 @@ void init_global(dt_iop_module_so_t *self)
   dt_iop_satcurve_global_data_t *gd = malloc(sizeof(dt_iop_satcurve_global_data_t));
   self->data = gd;
   gd->kernel_satcurvergb = dt_opencl_create_kernel(program, "satcurvergb");
+  gd->kernel_satcurve_histogram = dt_opencl_create_kernel(program, "satcurve_histogram");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
   const dt_iop_satcurve_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_satcurvergb);
+  dt_opencl_free_kernel(gd->kernel_satcurve_histogram);
   free(self->data);
   self->data = NULL;
 }
@@ -914,12 +950,12 @@ static void _draw_sat_picker(cairo_t *cr, dt_iop_module_t *self, const int w, co
 
   cairo_save(cr);
 
-  cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.25);
-  cairo_rectangle(cr, x_min, 0, fmaxf(x_max - x_min, 0.f), h);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.20);
+  cairo_rectangle(cr, x_min, 0, MAX(1.f, x_max - x_min), h);
   cairo_fill(cr);
 
-  cairo_set_source_rgba(cr, 0.5, 0.9, 0.5, 0.9);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+  cairo_set_source_rgba(cr, 1.0, 0.6, 0.2, 0.9);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.2));
   cairo_move_to(cr, x_mean, 0);
   cairo_line_to(cr, x_mean, h);
   cairo_stroke(cr);
@@ -1315,14 +1351,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(page_sat, -1, 0);
   gtk_widget_set_size_request(page_bri, -1, 0);
 
-GtkWidget *tab_sat = gtk_label_new(_("saturation"));
-GtkWidget *tab_bri = gtk_label_new(_("brilliance"));
+  GtkWidget *tab_sat = gtk_label_new(_("saturation"));
+  GtkWidget *tab_bri = gtk_label_new(_("brilliance"));
 
-gtk_widget_set_size_request(tab_sat, DT_PIXEL_APPLY_DPI(130), -1);
-gtk_widget_set_size_request(tab_bri, DT_PIXEL_APPLY_DPI(130), -1);
+  gtk_widget_set_size_request(tab_sat, DT_PIXEL_APPLY_DPI(130), -1);
+  gtk_widget_set_size_request(tab_bri, DT_PIXEL_APPLY_DPI(130), -1);
 
-gtk_notebook_append_page(g->notebook, page_sat, tab_sat);
-gtk_notebook_append_page(g->notebook, page_bri, tab_bri);
+  gtk_notebook_append_page(g->notebook, page_sat, tab_sat);
+  gtk_notebook_append_page(g->notebook, page_bri, tab_bri);
   gtk_notebook_set_current_page(g->notebook, 0);
 
   g_signal_connect(G_OBJECT(g->notebook), "switch-page",

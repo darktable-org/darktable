@@ -104,6 +104,62 @@ static inline float satcurve_ucs_gamut_saturation_cl(const float J, const float 
   return fmax(HSB_gamut_boundary.y, FLT_MIN);
 }
 
+// s_in_norm only (no full pixel transform) -- used by the histogram
+// reduction kernel below. Mirrors the s_in_norm computation embedded in each
+// branch of satcurvergb() below and pixel_s_in_norm() on the CPU side.
+static inline float satcurve_s_in_norm_cl(const float4 rgb_in,
+                                          constant const float *const matrix_in,
+                                          global const float *const gamut_lut,
+                                          const int formula,
+                                          const float L_white)
+{
+  const float4 rgb = fmax(rgb_in, 0.f);
+  const float4 xyz = matrix_product_float4(rgb, matrix_in);
+
+  if(formula == DT_IOP_SATCURVE_DTUCS)
+  {
+    const float4 xyY = dt_D65_XYZ_to_xyY(xyz);
+    const float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
+    const float4 HCB = dt_UCS_JCH_to_HCB(JCH);
+    const float gamut_s = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
+    const float saturation = HCB.z > 0.f ? HCB.y / HCB.z : 0.f;
+    return saturation / gamut_s;
+  }
+  else
+  {
+    const float4 jab = XYZ_to_JzAzBz(xyz);
+    const float Jz = fmax(jab.x, 0.f);
+    const float Cz = hypot(jab.y, jab.z);
+    const float h = atan2(jab.z, jab.y);
+    const float gamut = fmax(satcurve_lookup_gamut_cl(gamut_lut, h), FLT_MIN);
+    return (Jz > 0.f ? Cz / Jz : 0.f) / gamut;
+  }
+}
+
+#define DT_IOP_SATCURVE_HIST_RES 256
+
+// on-device histogram reduction: accumulates per-pixel s_in_norm into
+// hist_bins so only DT_IOP_SATCURVE_HIST_RES ints need to cross the PCIe
+// bus, instead of copying the entire image back to the host. hist_bins must
+// be zeroed by the caller before this kernel runs.
+kernel void
+satcurve_histogram(read_only image2d_t in, const int width, const int height,
+                   constant const float *const matrix_in,
+                   global const float *const gamut_lut,
+                   const int formula, const float L_white,
+                   global int *const hist_bins)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 rgb_in = Areadpixel(in, x, y);
+  const float s_in_norm = satcurve_s_in_norm_cl(rgb_in, matrix_in, gamut_lut, formula, L_white);
+
+  const int bin = clamp((int)(s_in_norm * (DT_IOP_SATCURVE_HIST_RES - 1)), 0, DT_IOP_SATCURVE_HIST_RES - 1);
+  atomic_inc(hist_bins + bin);
+}
+
 kernel void
 satcurvergb(read_only image2d_t in, write_only image2d_t out,
             const int width, const int height,
@@ -116,7 +172,7 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  float4 pix_in = readpixel(in, x, y);
+  float4 pix_in = Areadpixel(in, x, y);
   float4 rgb = fmax(pix_in, 0.f);
 
   float4 xyz = matrix_product_float4(rgb, matrix_in);
