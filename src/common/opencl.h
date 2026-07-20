@@ -45,6 +45,8 @@
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
 #define DT_OPENCL_PROCESS_CL -997
 #define DT_OPENCL_NODEVICE -996
+#define DT_OPENCL_SPURIOUS -995
+#define DT_OPENCL_MIGRATE -994
 
 #include "common/darktable.h"
 
@@ -234,6 +236,9 @@ typedef struct dt_opencl_t
   gboolean enabled;
   gboolean stopped;
   gboolean fastcl;  // for fast runtime checks instead of reading the conf
+  gboolean fast_tiling;
+  gboolean spurious;
+  gboolean migrate;
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
@@ -307,7 +312,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl,
 
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl,
-                    const gboolean exclude_opencl,
+                    const int options,
                     const gboolean print_statistics);
 
 /** cleans up the opencl subsystem. */
@@ -628,7 +633,7 @@ typedef struct dt_opencl_t
 } dt_opencl_t;
 
 static inline void dt_opencl_init(dt_opencl_t *cl,
-                                  const gboolean exclude_opencl,
+                                  const int options,
                                   const gboolean print_statistics)
 {
   cl->inited = FALSE;
