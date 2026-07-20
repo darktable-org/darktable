@@ -560,15 +560,22 @@ __kernel void spektrafilm_grain_gen_ml(__global const float4 *dens, __global flo
   grain_buf[k] = (float4)(gd[0], gd[1], gd[2], 0.f);
 }
 
+/* gmean centres the grain-delta buffer before scaling by renorm, matching
+   process()'s CPU-side DC-bias removal (see there for the full rationale:
+   the multi-sublayer particle generator has a small positive DC bias that
+   renorm amplifies proportionally to sigma). gmean is computed host-side
+   over the whole buffer (see process_cl()) since a full-image reduction is
+   simplest done there, then passed down as a single scalar. */
 __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const float4 *grain_buf,
-                                    const int w, const int h, const float renorm)
+                                    const int w, const int h, const float renorm, const float gmean)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   float4 d = dens_buf[k];
   float4 g = grain_buf[k];
-  dens_buf[k] = (float4)(d.x + g.x * renorm, d.y + g.y * renorm, d.z + g.z * renorm, d.w);
+  dens_buf[k] = (float4)(d.x + (g.x - gmean) * renorm, d.y + (g.y - gmean) * renorm,
+                         d.z + (g.z - gmean) * renorm, d.w);
 }
 
 /* Multiplicative unsharp mask after grain blur (study b80).
