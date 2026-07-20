@@ -230,7 +230,6 @@ GList *dt_styles_module_order_list(const char *name)
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
