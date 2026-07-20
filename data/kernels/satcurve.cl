@@ -1,25 +1,21 @@
 /*
-    This file is part of darktable,
-    Copyright (C) 2009-2026 darktable developers.
+  This file is part of darktable,
+  Copyright (C) 2009-2026 darktable developers.
 
-    darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+  darktable is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    darktable is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+  darktable is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
 */
 
 #include "common.h"
 #include "colorspace.h"
 #include "color_conversion.h"
-
 
 #define DT_IOP_SATCURVE_RES 256
 
@@ -60,9 +56,12 @@ static inline float clip_jz_chroma_cl(const float Jz, const float Cz, const floa
   float Iz = (Jz + d0) / (1.f + dd - dd * (Jz + d0));
   Iz = fmax(Iz, 0.f);
 
-  const float4 AI[3] = { { 1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-                          { 1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-                          { 1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+  const float4 AI[3] = {
+    { 1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+    { 1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+    { 1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f }
+  };
+
   const float4 izab = { Iz, Cz * ch, Cz * sh, 0.f };
   const float lms0 = dot(AI[0], izab);
   const float lms1 = dot(AI[1], izab);
@@ -78,14 +77,39 @@ static inline float clip_jz_chroma_cl(const float Jz, const float Cz, const floa
 typedef enum dt_iop_satcurve_formula_t
 {
   DT_IOP_SATCURVE_JZAZBZ = 0,
-  DT_IOP_SATCURVE_DTUCS  = 1
+  DT_IOP_SATCURVE_DTUCS = 1
 } dt_iop_satcurve_formula_t;
+
+static inline float curve_to_factor_cl(const float c)
+{
+  return fmax(2.f * c, 0.f);
+}
+
+// maximum HSB saturation reachable at the gamut boundary for given J, h in dt UCS;
+// mirrors satcurve_ucs_gamut_saturation() on CPU -- single source of truth for the
+// gamut-boundary fit, do not re-derive it inline in the kernel.
+static inline float satcurve_ucs_gamut_saturation_cl(const float J, const float h,
+                                                      const float L_white,
+                                                      global const float *const gamut_lut)
+{
+  const float max_colorfulness = fmax(satcurve_lookup_gamut_cl(gamut_lut, h), FLT_MIN);
+  const float max_chroma = 15.932993652962535f
+                         * dtcl_pow(J / L_white, 0.6523997524738018f)
+                         * dtcl_pow(max_colorfulness, 0.6007557017508491f)
+                         / L_white;
+
+  const float4 JCH_gamut_boundary = { J, max_chroma, h, 0.f };
+  const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
+
+  return fmax(HSB_gamut_boundary.y, FLT_MIN);
+}
 
 kernel void
 satcurvergb(read_only image2d_t in, write_only image2d_t out,
             const int width, const int height,
             constant const float *const matrix_in, constant const float *const matrix_out,
-            global const float *const lut, global const float *const gamut_lut,
+            global const float *const sat_lut, global const float *const bri_lut,
+            global const float *const gamut_lut,
             const int formula, const float L_white)
 {
   const int x = get_global_id(0);
@@ -104,48 +128,67 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
     float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
     float4 HCB = dt_UCS_JCH_to_HCB(JCH);
 
-    const float max_colorfulness = fmax(satcurve_lookup_gamut_cl(gamut_lut, JCH.z), FLT_MIN);
-    const float max_chroma = 15.932993652962535f
-        * dtcl_pow(JCH.x / L_white, 0.6523997524738018f)
-        * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
-
-    const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.f };
-    const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
-
     float4 HSB = { HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
 
-    const float gamut_s = fmax(HSB_gamut_boundary.y, FLT_MIN);
+    const float gamut_s = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
     const float s_in_norm = HSB.y / gamut_s;
-    const float c = clamp(satcurve_lookup_lut_cl(lut, s_in_norm), 0.f, 1.f);
-    HSB.y = fmax(HSB.y * (2.f * c), 0.f);
+
+    const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_norm), 0.f, 1.f);
+    const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_norm), 0.f, 1.f);
+    const float sat_factor = curve_to_factor_cl(sat_c);
+    const float bri_factor = curve_to_factor_cl(bri_c);
+
+    HSB.y = fmax(HSB.y * sat_factor, 0.f);
     HSB.y = satcurve_soft_clip_cl(HSB.y, 0.8f * gamut_s, gamut_s);
 
     JCH = dt_UCS_HSB_to_JCH(HSB);
+    HCB = dt_UCS_JCH_to_HCB(JCH);
+
+    HCB.y = fmax(HCB.y * bri_factor, 0.f);
+    HCB.z = fmax(HCB.z * bri_factor, 0.f);
+
+    JCH = dt_UCS_HCB_to_JCH(HCB);
+
+    const float gamut_s_out = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
+
+    float4 HSB_out = { HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
+    HSB_out.y = satcurve_soft_clip_cl(HSB_out.y, 0.8f * gamut_s_out, gamut_s_out);
+
+    JCH = dt_UCS_HSB_to_JCH(HSB_out);
     xyY = dt_UCS_JCH_to_xyY(JCH, L_white);
     xyz = dt_xyY_to_XYZ(xyY);
   }
   else
   {
     float4 jab = XYZ_to_JzAzBz(xyz);
+
     const float Jz = fmax(jab.x, 0.f);
     const float Cz = hypot(jab.y, jab.z);
-    const float h  = atan2(jab.z, jab.y);
+    const float h = atan2(jab.z, jab.y);
     const float ch = dtcl_cos(h), sh = dtcl_sin(h);
     const float gamut = fmax(satcurve_lookup_gamut_cl(gamut_lut, h), FLT_MIN);
+
     const float s_in_norm = (Jz > 0.f ? Cz / Jz : 0.f) / gamut;
-    const float c = clamp(satcurve_lookup_lut_cl(lut, s_in_norm), 0.f, 1.f);
-    const float s_out = satcurve_soft_clip_cl(fmax(s_in_norm * (2.f * c), 0.f), 0.8f, 1.f) * gamut;
+
+    const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_norm), 0.f, 1.f);
+    const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_norm), 0.f, 1.f);
+    const float sat_factor = curve_to_factor_cl(sat_c);
+    const float bri_factor = curve_to_factor_cl(bri_c);
+
+    const float s_out = satcurve_soft_clip_cl(fmax(s_in_norm * sat_factor, 0.f), 0.8f, 1.f) * gamut;
 
     const float r = hypot(Jz, Cz);
-    // T = atan(s_out); cos(T) = 1/sqrt(1+s_out^2), sin(T) = s_out/sqrt(1+s_out^2)
-    // avoids one atan + one cos + one sin per pixel
     const float inv_norm = 1.f / sqrt(1.f + s_out * s_out);
-    const float Jz_out = r * inv_norm;
-    const float Cz_out = clip_jz_chroma_cl(Jz_out, r * s_out * inv_norm, ch, sh);
 
-    jab.x = Jz_out;
-    jab.y = Cz_out * ch;
-    jab.z = Cz_out * sh;
+    float Jz_tmp = r * inv_norm;
+    float Cz_tmp = clip_jz_chroma_cl(Jz_tmp, r * s_out * inv_norm, ch, sh);
+
+    Jz_tmp *= bri_factor;
+    Cz_tmp = clip_jz_chroma_cl(Jz_tmp, Cz_tmp * bri_factor, ch, sh);
+
+    jab.x = Jz_tmp;
+    jab.y = Cz_tmp * ch;
+    jab.z = Cz_tmp * sh;
     xyz = JzAzBz_2_XYZ(jab);
   }
 
