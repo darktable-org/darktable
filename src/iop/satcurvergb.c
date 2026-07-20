@@ -478,7 +478,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self)
      && piece->pipe == self->dev->full.pipe)
   {
-    dt_colormatrix_t hist_input_matrix;
+    dt_colormatrix_t hist_input_matrix = {{ 0.0f }};
     dt_colormatrix_t hist_input_matrix_trans;
     dt_colormatrix_mul(hist_input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
     dt_colormatrix_transpose(hist_input_matrix_trans, hist_input_matrix);
