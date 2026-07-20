@@ -387,6 +387,12 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out,
 void sf_sim_process(const sf_sim_t *sim, const float *rgb_in, float *rgb_out,
                     size_t npix, int nch_in, int nch_out);
 
+/* pre-compression OkLab lightness a single RGB triple would land at, using
+ * boost_override in place of the sim's own out_luminance_boost -- see
+ * spektra_sim.c for the full rationale (used by the precompression-boost
+ * picker in spektrafilm.c). */
+float sf_sim_probe_lightness(const sf_sim_t *sim, const float rgb_in[3], float boost_override);
+
 #ifdef __cplusplus
 }
 #endif

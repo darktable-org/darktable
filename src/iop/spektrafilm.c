@@ -67,6 +67,7 @@
 #include "common/opencl.h"
 #include "common/gaussian.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
@@ -2007,8 +2008,35 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                               / fmaxf(pixel_um, 1e-3f);
     SF_GAUSS_BLUR4(tmpa, gsigma, "grain blur");
     const float grenorm = sf_gauss_grain_renorm(fmaxf(gsigma, 0.3f));
+    /* Centre grain delta (matches process()'s CPU-side fix exactly -- the
+       multi-sublayer particle generator has a small positive DC bias that
+       renorm amplifies proportionally to sigma; this correction only ever
+       existed on the CPU path before, so anyone using OpenCL never got it).
+       Reading the whole buffer back host-side is the simplest way to get a
+       full-image reduction; this runs once per grain stage, not per pixel. */
+    float gmean = 0.0f;
+    if(err == CL_SUCCESS)
+    {
+      float *const tmpa_host = dt_alloc_align_float(npix * 4);
+      if(tmpa_host)
+      {
+        err = dt_opencl_read_buffer_from_device(devid, tmpa_host, tmpa, 0, npix * f * 4, TRUE);
+        if(err == CL_SUCCESS)
+        {
+          double gsum = 0.0;
+          for(size_t kk = 0; kk < npix; kk++)
+            gsum += (double)tmpa_host[kk * 4] + (double)tmpa_host[kk * 4 + 1]
+                    + (double)tmpa_host[kk * 4 + 2];
+          gmean = (float)(gsum / (double)(npix * 3));
+        }
+        dt_free_align(tmpa_host);
+      }
+      else
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
-                                           CLARG(tmpa), CLARG(w), CLARG(h), CLARG(grenorm));
+                                           CLARG(tmpa), CLARG(w), CLARG(h), CLARG(grenorm),
+                                           CLARG(gmean));
     SF_CL_STEP("grain add");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
     {
@@ -2372,6 +2400,67 @@ void gui_update(dt_iop_module_t *self)
   _update_print_sensitivity(self);
 }
 
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
+{
+  dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
+  if(picker != g->output_luminance_boost) return;
+
+  const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
+  if(!work_profile) return;
+
+  /* Build a standalone sim from the module's current live params: the
+     picker runs independently of any specific piece's cached data, so this
+     is a one-off build for this measurement, not the pipe's own d->sim
+     (which _ensure_sim also caches on -- see there for what gets set). */
+  dt_iop_spektrafilm_data_t d_tmp;
+  memset(&d_tmp, 0, sizeof(d_tmp));
+  d_tmp.p = *(dt_iop_spektrafilm_params_t *)self->params;
+  dt_pthread_mutex_init(&d_tmp.lock, NULL);
+  sf_sim_t *sim = _ensure_sim(&d_tmp, work_profile);
+  if(!sim)
+  {
+    dt_pthread_mutex_destroy(&d_tmp.lock);
+    return;
+  }
+
+  /* the brightest tone in the picked area is what determines whether the
+     compressor's knee engages usefully; picked_color_max is already an
+     area-mode min/max/mean pick (see dt_color_picker_new(..., DT_COLOR_PICKER_AREA, ...)
+     above in gui_init). */
+  const float rgb_max[3] = { self->picked_color_max[0], self->picked_color_max[1],
+                            self->picked_color_max[2] };
+  const float current_boost = fmaxf(d_tmp.p.output_luminance_boost, 0.5f);
+  const float measured_L = sf_sim_probe_lightness(sim, rgb_max, current_boost);
+
+  /* Target: land well past the compressor's knee threshold (SF_OUT_LIGHT_T
+     = 0.7 in spektra_sim.c), close to but not at its asymptotic limit
+     (1.0). 0.80 (only 0.10 above the threshold) turned out too
+     conservative in practice -- left visible unused headroom in the
+     histogram and read as noticeably dark, since the knee's own
+     compression only really starts doing useful work well above its
+     threshold. 0.90 leaves a smaller (0.10) margin before the limit
+     instead, using more of the available range; the knee handles any
+     input gracefully by design, so there's no hard-clipping risk in
+     pushing closer to it. No iteration needed: L scales as boost^(1/3)
+     exactly (see sf_sim_probe_lightness), so a single probe plus this
+     closed-form solve is enough. */
+  const float target_L = 0.95f;
+  float new_boost = current_boost;
+  if(measured_L > 1e-4f) new_boost = current_boost * powf(target_L / measured_L, 3.0f);
+  new_boost = CLAMP(new_boost, 0.5f, 4.0f);
+
+  if(d_tmp.gpu) sf_sim_gpu_free(d_tmp.gpu);
+  if(d_tmp.sim) sf_sim_free(d_tmp.sim);
+  dt_pthread_mutex_destroy(&d_tmp.lock);
+
+  dt_iop_spektrafilm_params_t *p = self->params;
+  p->output_luminance_boost = new_boost;
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->output_luminance_boost, new_boost);
+  DT_LEAVE_GUI_UPDATE();
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = IOP_GUI_ALLOC(spektrafilm);
@@ -2565,6 +2654,10 @@ void gui_init(dt_iop_module_t *self)
                               _("pre-compression boost: multiplies XYZ luminance before the"
                                 " OkLCh gamut compressor, pushing the histogram right while"
                                 " preserving the film's natural shoulder rolloff"));
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_luminance_boost);
+  dt_bauhaus_widget_set_quad_tooltip(g->output_luminance_boost,
+                                     _("pick brightest tone in the selected area and set the"
+                                       " boost so it lands just past the compressor's knee"));
 
   self->widget = sf_main_box;
 }
