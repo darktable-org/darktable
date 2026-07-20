@@ -1808,6 +1808,49 @@ static void compress_rgb_aces(double rgb[3])
   }
 }
 
+/* Runs one RGB triple through the full simulation up to (but not including)
+ * the highlight/gamut compressor (compress_rgb_oklch/aces), using
+ * `boost_override` in place of sim->out_luminance_boost, and returns the
+ * resulting OkLab lightness -- the precompression-boost picker's actual
+ * measurement primitive. This needs the pre-compression value specifically:
+ * the reinhard knee (see SF_OUT_LIGHT_T/_L/_P) asymptotically approaches its
+ * limit regardless of how hard the input is pushed, so measuring the
+ * post-compression lightness would tell the picker almost nothing about how
+ * much boost is actually needed.
+ *
+ * No solver/iteration needed: the boost multiplies XYZ uniformly, XYZ->LMS
+ * is linear, so boosted LMS = boost * original LMS; OkLab's L is a fixed
+ * linear combination of LMS^(1/3), so L(boost) = boost^(1/3) * L(1) exactly.
+ * One probe at any boost value is enough to solve for the boost that hits a
+ * target L in closed form (see the caller in spektrafilm.c). */
+float sf_sim_probe_lightness(const sf_sim_t *sim, const float rgb_in[3], float boost_override)
+{
+  sf_sim_t tmp_sim = *sim;
+  tmp_sim.out_luminance_boost = (double)boost_override;
+  tmp_sim.out_compress = SF_OUTPUT_COMPRESS_OFF;
+
+  float raw[3];
+  sf_sim_expose(&tmp_sim, rgb_in, raw, 1, 3, 3);
+  sf_sim_lograw(raw, 1, 3);
+  float corr[3] = { 0.0f, 0.0f, 0.0f };
+  if(tmp_sim.couplers_active) sf_sim_develop_corr(&tmp_sim, raw, corr, 1, 3);
+  float cmy[3];
+  sf_sim_develop(&tmp_sim, raw, corr, cmy, 1, 3, 3);
+  if(tmp_sim.has_print)
+  {
+    sf_sim_print_expose(&tmp_sim, cmy, cmy, 1, 3, 3);
+    sf_sim_print_develop(&tmp_sim, cmy, cmy, 1, 3, 3);
+  }
+  float rgb_out[3];
+  sf_sim_scan(&tmp_sim, cmy, rgb_out, 1, 3, 3);
+
+  const double rgb_d[3] = { rgb_out[0], rgb_out[1], rgb_out[2] };
+  double xyz[3], lab[3];
+  mat3_mulv(xyz, tmp_sim.out_rgb2xyz, rgb_d);
+  xyz_to_oklab(xyz, lab);
+  return (float)lab[0];
+}
+
 /* ------------------------------------------------------------------------ */
 /* build                                                                    */
 /* ------------------------------------------------------------------------ */
