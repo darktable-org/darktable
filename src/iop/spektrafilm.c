@@ -2438,12 +2438,12 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
      conservative in practice -- left visible unused headroom in the
      histogram and read as noticeably dark, since the knee's own
      compression only really starts doing useful work well above its
-     threshold. 0.90 leaves a smaller (0.10) margin before the limit
-     instead, using more of the available range; the knee handles any
-     input gracefully by design, so there's no hard-clipping risk in
-     pushing closer to it. No iteration needed: L scales as boost^(1/3)
-     exactly (see sf_sim_probe_lightness), so a single probe plus this
-     closed-form solve is enough. */
+     threshold. 0.90 still left some headroom on further testing; 0.95
+     (only 0.05 short of the limit) uses close to the full available
+     range. The knee handles any input gracefully by design, so there's no
+     hard-clipping risk in pushing this close to it. No iteration needed:
+     L scales as boost^(1/3) exactly (see sf_sim_probe_lightness), so a
+     single probe plus this closed-form solve is enough. */
   const float target_L = 0.95f;
   float new_boost = current_boost;
   if(measured_L > 1e-4f) new_boost = current_boost * powf(target_L / measured_L, 3.0f);
