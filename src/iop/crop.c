@@ -115,6 +115,8 @@ typedef struct dt_iop_crop_data_t
   float cx, cy, cw, ch; // crop window
   int ratio_n;
   int ratio_d;
+  float crop_left;      // cached crop left offset (computed in modify_roi_out, < 0.0f means uncached)
+  float crop_top;       // cached crop top offset (computed in modify_roi_out, < 0.0f means uncached)
 } dt_iop_crop_data_t;
 
 const char *name()
@@ -448,16 +450,26 @@ static gboolean _set_max_clip(dt_iop_module_t *self)
 // (A factor=100 scaling was previously used here to reduce float truncation error, but it
 // produced non-integer offsets like 446.69 while the pipeline crops at integer pixel 446,
 // causing a ~0.7 pixel misalignment visible as ~11 screen pixels at 1600% zoom.)
+//
+// To prevent slowdown caused by running modify_roi_out repeatedly on hot path coordinate
+// transformations, computed offsets are cached in piece->data. Cache values less than 0.0f indicate
+// no cached data, triggering a dynamic fallback to modify_roi_out.
 static void _get_crop_offset(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *piece,
                               float *crop_left,
                               float *crop_top)
 {
-  dt_iop_roi_t roi_in = piece->buf_in, roi_out;
-  self->modify_roi_out(self, piece, &roi_out, &roi_in);
-
-  *crop_left = roi_out.x;
-  *crop_top  = roi_out.y;
+  dt_iop_crop_data_t *d = piece->data;
+  // check the cache and skip the modify_roi_out() call if cached values exist.
+  if(d->crop_left < 0.0f)
+  {
+    dt_iop_roi_t roi_in = piece->buf_in, roi_out;
+    self->modify_roi_out(self, piece, &roi_out, &roi_in);
+    d->crop_left = roi_out.x;
+    d->crop_top  = roi_out.y;
+  }
+  *crop_left = d->crop_left;
+  *crop_top  = d->crop_top;
 }
 
 gboolean distort_transform(dt_iop_module_t *self,
@@ -622,6 +634,10 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)p1;
   dt_iop_crop_data_t *d = piece->data;
 
+  // Invalidate cached offsets to trigger recalculation on the next frame/transform
+  d->crop_left = -1.0f;
+  d->crop_top = -1.0f;
+
   if(dt_iop_has_focus(self) && dt_pipe_is_basic(pipe))
   {
     d->cx = 0.0f;
@@ -711,6 +727,10 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_crop_data_t));
+  dt_iop_crop_data_t *d = piece->data;
+  // Initialize crop offset cache as empty (-1.0f)
+  d->crop_left = -1.0f;
+  d->crop_top = -1.0f;
 }
 
 void cleanup_pipe(dt_iop_module_t *self,
