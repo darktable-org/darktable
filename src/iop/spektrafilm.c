@@ -157,7 +157,7 @@ typedef struct dt_iop_spektrafilm_params_t
   uint32_t paper_hash;      // $DEFAULT: 0  (0 = the film's target print stock)
   float exposure_ev;        // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "film exposure"
   float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure"
-  gboolean print_auto_exposure; // $DEFAULT: TRUE $DESCRIPTION: "auto print exposure"
+  gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
   float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
@@ -2760,40 +2760,6 @@ void gui_init(dt_iop_module_t *self)
   g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
   gtk_widget_set_tooltip_text(g->scan_film,
                               _("view the developed film directly (no print stage)"));
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "development")));
-  g->push_pull_stops = dt_bauhaus_slider_from_params(self, "push_pull_stops");
-  dt_bauhaus_slider_set_format(g->push_pull_stops, _(" stops"));
-  gtk_widget_set_tooltip_text(
-      g->push_pull_stops,
-      _("push (positive) or pull (negative) processing: shoot at an effective ISO"
-        " different from box speed, then under- or over-develop to compensate --"
-        " combines an exposure shift with a derived contrast increase/decrease"
-        " (approximate: the exact relationship depends on the specific film/developer"
-        " combination, which isn't modeled here). Stacks with the granular gamma"
-        " controls below for further fine-tuning"));
-  g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
-  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
-  gtk_widget_set_tooltip_text(
-      g->film_gamma_factor,
-      _("overall development contrast (morphs the film's density curves) -- extended or"
-        " reduced development time, as in push/pull processing; 1.0 = normal development"));
-  g->film_gamma_factor_fast = dt_bauhaus_slider_from_params(self, "film_gamma_factor_fast");
-  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_fast, 0.25f, 2.0f);
-  gtk_widget_set_tooltip_text(
-      g->film_gamma_factor_fast,
-      _("contrast of the fastest (most light-sensitive) emulsion sub-layer only --"
-        " independent of the slow layer, since push/pull processing doesn't always affect"
-        " every sub-layer equally"));
-  g->film_gamma_factor_slow = dt_bauhaus_slider_from_params(self, "film_gamma_factor_slow");
-  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_slow, 0.25f, 2.0f);
-  gtk_widget_set_tooltip_text(
-      g->film_gamma_factor_slow,
-      _("contrast of the mid and slow emulsion sub-layers"));
-  g->film_developer_exhaustion = dt_bauhaus_slider_from_params(self, "film_developer_exhaustion");
-  gtk_widget_set_tooltip_text(
-      g->film_developer_exhaustion,
-      _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
-        " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print")));
   g->print_exposure_ev = dt_bauhaus_slider_from_params(self, "print_exposure_ev");
   dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
@@ -2819,25 +2785,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->couplers_amount,
                               _("DIR coupler strength: inter-layer inhibition drives saturation"
                                 " and edge effects (1.0 = film-accurate, 0 = off)"));
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "preflash")));
-  g->preflash_exposure = dt_bauhaus_slider_from_params(self, "preflash_exposure");
-  gtk_widget_set_tooltip_text(
-      g->preflash_exposure,
-      _("preflash exposure: a brief, uniform pre-exposure of the print through"
-        " the film's base density, before the main print exposure -- lifts"
-        " shadows and reduces contrast (0 = off)"));
-  g->preflash_m_shift = dt_bauhaus_slider_from_params(self, "preflash_m_shift");
-  dt_bauhaus_slider_set_format(g->preflash_m_shift, _(" CC"));
-  gtk_widget_set_tooltip_text(g->preflash_m_shift,
-                              _("magenta filtration for the preflash exposure only, Kodak CC"
-                                " units from neutral -- independent of the main enlarger"
-                                " filtration above"));
-  g->preflash_y_shift = dt_bauhaus_slider_from_params(self, "preflash_y_shift");
-  dt_bauhaus_slider_set_format(g->preflash_y_shift, _(" CC"));
-  gtk_widget_set_tooltip_text(g->preflash_y_shift,
-                              _("yellow filtration for the preflash exposure only, Kodak CC"
-                                " units from neutral -- independent of the main enlarger"
-                                " filtration above"));
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "format")));
   g->film_format_mm = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm, _(" mm"));
@@ -2940,6 +2887,59 @@ void gui_init(dt_iop_module_t *self)
 
   /* ---- tab: advanced ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "development")));
+  g->push_pull_stops = dt_bauhaus_slider_from_params(self, "push_pull_stops");
+  dt_bauhaus_slider_set_format(g->push_pull_stops, _(" stops"));
+  gtk_widget_set_tooltip_text(
+      g->push_pull_stops,
+      _("push (positive) or pull (negative) processing: shoot at an effective ISO"
+        " different from box speed, then under- or over-develop to compensate --"
+        " combines an exposure shift with a derived contrast increase/decrease"
+        " (approximate: the exact relationship depends on the specific film/developer"
+        " combination, which isn't modeled here). Stacks with the granular gamma"
+        " controls below for further fine-tuning"));
+  g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
+  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
+  gtk_widget_set_tooltip_text(
+      g->film_gamma_factor,
+      _("overall development contrast (morphs the film's density curves) -- extended or"
+        " reduced development time, as in push/pull processing; 1.0 = normal development"));
+  g->film_gamma_factor_fast = dt_bauhaus_slider_from_params(self, "film_gamma_factor_fast");
+  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_fast, 0.25f, 2.0f);
+  gtk_widget_set_tooltip_text(
+      g->film_gamma_factor_fast,
+      _("contrast of the fastest (most light-sensitive) emulsion sub-layer only --"
+        " independent of the slow layer, since push/pull processing doesn't always affect"
+        " every sub-layer equally"));
+  g->film_gamma_factor_slow = dt_bauhaus_slider_from_params(self, "film_gamma_factor_slow");
+  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_slow, 0.25f, 2.0f);
+  gtk_widget_set_tooltip_text(
+      g->film_gamma_factor_slow,
+      _("contrast of the mid and slow emulsion sub-layers"));
+  g->film_developer_exhaustion = dt_bauhaus_slider_from_params(self, "film_developer_exhaustion");
+  gtk_widget_set_tooltip_text(
+      g->film_developer_exhaustion,
+      _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
+        " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "preflash")));
+  g->preflash_exposure = dt_bauhaus_slider_from_params(self, "preflash_exposure");
+  gtk_widget_set_tooltip_text(
+      g->preflash_exposure,
+      _("preflash exposure: a brief, uniform pre-exposure of the print through"
+        " the film's base density, before the main print exposure -- lifts"
+        " shadows and reduces contrast (0 = off)"));
+  g->preflash_m_shift = dt_bauhaus_slider_from_params(self, "preflash_m_shift");
+  dt_bauhaus_slider_set_format(g->preflash_m_shift, _(" CC"));
+  gtk_widget_set_tooltip_text(g->preflash_m_shift,
+                              _("magenta filtration for the preflash exposure only, Kodak CC"
+                                " units from neutral -- independent of the main enlarger"
+                                " filtration above"));
+  g->preflash_y_shift = dt_bauhaus_slider_from_params(self, "preflash_y_shift");
+  dt_bauhaus_slider_set_format(g->preflash_y_shift, _(" CC"));
+  gtk_widget_set_tooltip_text(g->preflash_y_shift,
+                              _("yellow filtration for the preflash exposure only, Kodak CC"
+                                " units from neutral -- independent of the main enlarger"
+                                " filtration above"));
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
   gtk_widget_set_tooltip_text(g->quality,
                               _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
