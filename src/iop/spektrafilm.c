@@ -2749,7 +2749,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(sf_main_box, GTK_WIDGET(g->notebook));
 
   /* ---- tab: film and print ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("film and print"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("media"), NULL);
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "film")));
   g->exposure_ev = dt_bauhaus_slider_from_params(self, "exposure_ev");
   dt_bauhaus_slider_set_format(g->exposure_ev, _(" EV"));
