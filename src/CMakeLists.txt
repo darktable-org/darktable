@@ -423,6 +423,22 @@ if(USE_HEIF)
   endif()
 endif()
 
+# Reset on every configure so a stale value cannot keep the module enabled
+# when USE_ULTRAHDR is turned off or libuhdr disappears.
+set(UltraHDR_FOUND OFF CACHE INTERNAL "")
+if(USE_ULTRAHDR)
+  # libultrahdr has no CMake CONFIG package, so locate it via pkg-config.
+  # NOTE: the pkg-config module and link name are "libuhdr" (NOT "libultrahdr").
+  find_package(PkgConfig)
+  if(PkgConfig_FOUND)
+    pkg_check_modules(UltraHDR IMPORTED_TARGET libuhdr)
+    if(UltraHDR_FOUND)
+      # Cache so src/imageio/format/CMakeLists.txt can gate the module on it.
+      set(UltraHDR_FOUND ON CACHE INTERNAL "")
+    endif()
+  endif()
+endif()
+
 # For now we use the LibRaw submodule
 if(USE_LIBRAW)
   if(DONT_USE_INTERNAL_LIBRAW)

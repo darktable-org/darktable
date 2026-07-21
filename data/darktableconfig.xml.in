@@ -3044,6 +3044,27 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/ultrahdr/quality</name>
+    <type min="0" max="100">int</type>
+    <default>95</default>
+    <shortdescription>UltraHDR base image JPEG quality</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/ultrahdr/gainmap_quality</name>
+    <type min="0" max="100">int</type>
+    <default>95</default>
+    <shortdescription>UltraHDR gain map JPEG quality</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/ultrahdr/gainmap_downscale</name>
+    <type min="0" max="2">int</type>
+    <default>0</default>
+    <shortdescription>UltraHDR gain map resolution (0 full, 1 half, 2 quarter)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/heif/bitdepth</name>
     <type>
       <enum>
