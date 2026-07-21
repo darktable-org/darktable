@@ -275,6 +275,14 @@ struct sf_sim_t
   double curves_before[SF_NLE][3];
   float curves_norm_f[SF_NLE][3];   /* float copies for fast per-pixel path */
   float curves_before_f[SF_NLE][3];
+  /* per-sublayer, post-chemistry-morph raw (un-floored) curve values, valid
+   * only when film->curves_model.n_layers > 0 -- the layer-resolved sibling
+   * of curves_norm, built alongside it in the same call so grain (which
+   * needs sublayers) stays consistent with whatever chemistry the total
+   * curve reflects, matching upstream's own build_film_curves_layers /
+   * apply_print_curves_morph_with_layers intent. */
+  double film_curve_layers[SF_NLE][SF_GRAIN_MAX_SUBLAYERS][3];
+  bool film_morph_applied; /* true when film_curve_layers holds valid (morphed) data */
   double gamma[3];
   double couplers_M[3][3];
   /* Langmuir saturating couplers (spektrafilm dev/0.4+); K = INFINITY keeps
@@ -915,6 +923,9 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->morph_active = false;
   p->morph_gamma = p->morph_gamma_fast = p->morph_gamma_slow = 1.0;
   p->morph_gamma_r = p->morph_gamma_g = p->morph_gamma_b = 1.0;
+  p->film_morph_active = false;
+  p->film_morph_gamma = p->film_morph_gamma_fast = p->film_morph_gamma_slow = 1.0;
+  p->film_morph_developer_exhaustion = 0.0;
   p->scan_film = false;
   p->lut_steps = 0;
   p->input_gamut_compress = true;
@@ -1479,31 +1490,52 @@ static void _sf_build_grain_layers(sf_sim_t *s, const sf_profile_t *film,
     return;
   }
 
-  /* multi-sublayer case: evaluate each sub-layer's CDF term separately (no
-     morph -- the film side has no live chemistry re-evaluation, only the
-     print does, see build_print_curves), matching grain.py's
-     interp_density_cmy_layers_channel/_coarsest_area_from_curves inputs. */
+  /* multi-sublayer case: use the (possibly chemistry-morphed) per-sublayer
+     curves computed alongside curves_norm when the film-side chemistry
+     morph is active, matching upstream's "regenerating the grain
+     sublayers from the same morphed params so grain stays consistent";
+     otherwise evaluate each sub-layer's raw CDF term directly, matching
+     grain.py's interp_density_cmy_layers_channel/_coarsest_area_from_curves
+     inputs. */
   const int positive = s->film_positive;
   double layer_curve[SF_NLE][SF_GRAIN_MAX_SUBLAYERS][3];
   double layer_max_raw[SF_GRAIN_MAX_SUBLAYERS][3];
-  for(int c = 0; c < 3; c++)
+  if(s->film_morph_applied)
   {
-    double centers[8], amps[8], sigmas[8];
-    memcpy(centers, m->centers[c], sizeof(double) * nl);
-    memcpy(amps, m->amplitudes[c], sizeof(double) * nl);
-    memcpy(sigmas, m->sigmas[c], sizeof(double) * nl);
-    for(int l = 0; l < nl; l++)
-    {
-      double mx = -1e300;
-      for(int i = 0; i < SF_NLE; i++)
+    for(int c = 0; c < 3; c++)
+      for(int l = 0; l < nl; l++)
       {
-        double z = (film->log_exposure[i] - centers[l]) / sigmas[l];
-        if(positive) z = -z;
-        const double v = amps[l] * norm_cdf(z);
-        layer_curve[i][l][c] = v;
-        if(v > mx) mx = v;
+        double mx = -1e300;
+        for(int i = 0; i < SF_NLE; i++)
+        {
+          const double v = s->film_curve_layers[i][l][c];
+          layer_curve[i][l][c] = v;
+          if(v > mx) mx = v;
+        }
+        layer_max_raw[l][c] = mx;
       }
-      layer_max_raw[l][c] = mx;
+  }
+  else
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      double centers[8], amps[8], sigmas[8];
+      memcpy(centers, m->centers[c], sizeof(double) * nl);
+      memcpy(amps, m->amplitudes[c], sizeof(double) * nl);
+      memcpy(sigmas, m->sigmas[c], sizeof(double) * nl);
+      for(int l = 0; l < nl; l++)
+      {
+        double mx = -1e300;
+        for(int i = 0; i < SF_NLE; i++)
+        {
+          double z = (film->log_exposure[i] - centers[l]) / sigmas[l];
+          if(positive) z = -z;
+          const double v = amps[l] * norm_cdf(z);
+          layer_curve[i][l][c] = v;
+          if(v > mx) mx = v;
+        }
+        layer_max_raw[l][c] = mx;
+      }
     }
   }
 
@@ -1562,6 +1594,206 @@ static void _sf_build_grain_layers(sf_sim_t *s, const sf_profile_t *film,
   }
   for(int l = nl; l < SF_GRAIN_MAX_SUBLAYERS; l++) s->grain_particle_scale[l] = 0.0;
   for(int l = 0; l < nl; l++) s->grain_particle_scale[l] = particle_scale[l];
+}
+
+/* [mc] Gumbel-max CDF, width/location matched to give a plausible
+ * "exhausted developer" shoulder shape when blended with the fitted
+ * norm_cdfs model (matches morph_curves.py's _gumbel_matched_cdf). */
+static double _sf_gumbel_matched_cdf(double z)
+{
+  const double location = -log(log(2.0));
+  const double width = 0.5 * log(2.0) * sqrt(2.0 * M_PI);
+  return exp(-exp(-(z / width + location)));
+}
+
+/* norm_cdf blended toward the Gumbel shoulder by gumbel_mix in [0,1] -- the
+ * per-layer building block for developer exhaustion (matches
+ * morph_curves.py's _layer_cdf; `z` already sign-flipped for positive
+ * stocks by the caller, matching eval_cdfs_channel's own convention). */
+static double _sf_layer_cdf_mixed(double z, double gumbel_mix)
+{
+  double cdf = norm_cdf(z);
+  if(gumbel_mix > 0.0) cdf = (1.0 - gumbel_mix) * cdf + gumbel_mix * _sf_gumbel_matched_cdf(z);
+  return cdf;
+}
+
+/* Summed channel density at one exposure point, given explicit per-layer
+ * centers/amplitudes/sigmas and an optional per-layer gumbel_mix (NULL ==
+ * all zero) -- the evaluation primitive the exhaustion offset solver below
+ * needs (matches morph_curves.py's _evaluate_channel_density, at a single
+ * point since that's all the solver needs). */
+static double _sf_channel_density_at(double x, const double *centers, const double *amps,
+                                     const double *sigmas, int n_layers,
+                                     const double *gumbel_mix, int positive)
+{
+  double total = 0.0;
+  for(int l = 0; l < n_layers; l++)
+  {
+    double z = (x - centers[l]) / sigmas[l];
+    if(positive) z = -z;
+    total += amps[l] * _sf_layer_cdf_mixed(z, gumbel_mix ? gumbel_mix[l] : 0.0);
+  }
+  return total;
+}
+
+/* Find the horizontal (center) offset that keeps D(0) -- density at zero
+ * log-exposure, i.e. midgray/fog -- unchanged once developer exhaustion
+ * (a gumbel blend toward a matched shoulder) is applied, so exhaustion
+ * changes shoulder shape without shifting midgray. Matches
+ * morph_curves.py's _developer_exhaustion_center_offset (same bracket
+ * [-0.25, 0.25], doubled up to 12 times looking for a sign change), but
+ * bisection instead of Brent's method: standard C, no extra dependency,
+ * and precision matters far more than speed here since this runs once per
+ * channel per sim build, never per pixel. Returns 0 if gumbel_mix is zero
+ * or no sign change is found (matching upstream's own fallback-to-zero). */
+static double _sf_developer_exhaustion_offset(const double *centers, const double *amps,
+                                              const double *sigmas, int n_layers,
+                                              double gumbel_mix, int positive)
+{
+  if(gumbel_mix <= 0.0) return 0.0;
+
+  const double target_d0 = _sf_channel_density_at(0.0, centers, amps, sigmas, n_layers, NULL, positive);
+  double gmix[SF_GRAIN_MAX_SUBLAYERS];
+  for(int l = 0; l < n_layers; l++) gmix[l] = gumbel_mix;
+
+  double shifted[SF_GRAIN_MAX_SUBLAYERS];
+  double lo = -0.25, hi = 0.25;
+  for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + lo;
+  double r_lo = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+  for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + hi;
+  double r_hi = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+  if(r_lo == 0.0) return lo;
+  if(r_hi == 0.0) return hi;
+
+  int bracketed = 0;
+  for(int iter = 0; iter < 12; iter++)
+  {
+    if(r_lo * r_hi < 0.0) { bracketed = 1; break; }
+    lo *= 2.0;
+    hi *= 2.0;
+    for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + lo;
+    r_lo = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+    for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + hi;
+    r_hi = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+    if(r_lo == 0.0) return lo;
+    if(r_hi == 0.0) return hi;
+  }
+  if(!bracketed) return 0.0;
+
+  double mid = 0.0;
+  for(int iter = 0; iter < 60; iter++)
+  {
+    mid = 0.5 * (lo + hi);
+    for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + mid;
+    const double r_mid = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+    if(r_mid == 0.0 || (hi - lo) < 1e-12) break;
+    if((r_lo < 0.0) == (r_mid < 0.0)) { lo = mid; r_lo = r_mid; }
+    else hi = mid;
+  }
+  return mid;
+}
+
+/* Apply the s023 coupled-gamma + developer-exhaustion morph to one
+ * channel's fitted curve-model parameters (matches morph_curves.py's
+ * _morph_channel_params). Amplitudes are unchanged by this morph -- only
+ * centers/sigmas move, plus the per-layer gumbel_mix output (uniformly
+ * `exhaustion` across every layer, matching upstream). Layer speed order
+ * (fast/mid/slow) is by ascending center, same as _sf_build_grain_layers'
+ * own convention elsewhere in this file, and the per-channel skew term
+ * (alpha) upstream's fit can carry isn't modeled here since this file's
+ * curves_model has no alpha field to begin with -- eval_cdfs_channel
+ * already made that same simplification for the print side. */
+static void _sf_morph_channel(const double centers_in[], const double sigmas_in[], int nl,
+                              int positive, double gamma, double gamma_fast, double gamma_slow,
+                              double exhaustion, const double amps[],
+                              double centers_out[], double sigmas_out[], double gumbel_mix_out[])
+{
+  int order[SF_GRAIN_MAX_SUBLAYERS];
+  for(int i = 0; i < nl; i++) order[i] = i;
+  for(int i = 0; i < nl; i++)
+    for(int j = i + 1; j < nl; j++)
+      if(centers_in[order[j]] < centers_in[order[i]])
+      {
+        const int t = order[i];
+        order[i] = order[j];
+        order[j] = t;
+      }
+  const int i_fast = order[0], i_mid = order[nl / 2], i_slow = order[nl - 1];
+
+  const double g_fast = gamma * gamma_fast;
+  const double g_mid = gamma * gamma_slow; /* [mc]: mid intentionally uses the "slow" factor */
+  const double g_slow = g_mid;
+
+  for(int i = 0; i < nl; i++)
+  {
+    centers_out[i] = centers_in[i];
+    sigmas_out[i] = sigmas_in[i];
+    gumbel_mix_out[i] = exhaustion;
+  }
+  sigmas_out[i_fast] = fmax(sigmas_in[i_fast] / g_fast, SF_SIGMA_FLOOR);
+  centers_out[i_fast] = centers_in[i_fast] / g_fast;
+  sigmas_out[i_mid] = fmax(sigmas_in[i_mid] / g_mid, SF_SIGMA_FLOOR);
+  centers_out[i_mid] = centers_in[i_mid] / g_mid;
+  sigmas_out[i_slow] = fmax(sigmas_in[i_slow] / g_slow, SF_SIGMA_FLOOR);
+  centers_out[i_slow] = centers_in[i_slow] / g_slow;
+
+  if(exhaustion > 0.0)
+  {
+    const double offset = _sf_developer_exhaustion_offset(centers_out, amps, sigmas_out, nl,
+                                                           exhaustion, positive);
+    for(int i = 0; i < nl; i++) centers_out[i] += offset;
+  }
+}
+
+/* Film-side counterpart of build_print_curves: applies the s023 chemistry
+ * morph (gamma / fast / slow / developer exhaustion) to the film's own
+ * fitted density-curve model, and -- since grain needs to stay consistent
+ * with whatever curve chemistry produces (matches upstream's own
+ * "regenerating the grain sublayers from the same morphed params") --
+ * also writes the per-sublayer breakdown to layers_out. Only called when
+ * film->curves_model.n_layers > 0; the caller falls back to the profile's
+ * static density_curves array otherwise (matching upstream's own check). */
+static void build_film_curves(double (*curves)[3], double (*layers_out)[SF_GRAIN_MAX_SUBLAYERS][3],
+                              const sf_profile_t *film, const sf_sim_params_t *p)
+{
+  const int positive = (film->type && strcmp(film->type, "positive") == 0);
+  const sf_curves_model_t *m = &film->curves_model;
+  const int nl = m->n_layers;
+
+  for(int c = 0; c < 3; c++)
+  {
+    double centers[SF_GRAIN_MAX_SUBLAYERS], amps[SF_GRAIN_MAX_SUBLAYERS], sigmas[SF_GRAIN_MAX_SUBLAYERS];
+    memcpy(centers, m->centers[c], sizeof(double) * nl);
+    memcpy(amps, m->amplitudes[c], sizeof(double) * nl);
+    memcpy(sigmas, m->sigmas[c], sizeof(double) * nl);
+
+    double mcenters[SF_GRAIN_MAX_SUBLAYERS], msigmas[SF_GRAIN_MAX_SUBLAYERS],
+        gmix[SF_GRAIN_MAX_SUBLAYERS];
+    if(p->film_morph_active)
+      _sf_morph_channel(centers, sigmas, nl, positive, p->film_morph_gamma,
+                        p->film_morph_gamma_fast, p->film_morph_gamma_slow,
+                        p->film_morph_developer_exhaustion, amps, mcenters, msigmas, gmix);
+    else
+    {
+      memcpy(mcenters, centers, sizeof(double) * nl);
+      memcpy(msigmas, sigmas, sizeof(double) * nl);
+      for(int i = 0; i < nl; i++) gmix[i] = 0.0;
+    }
+
+    for(int i = 0; i < SF_NLE; i++)
+    {
+      double total = 0.0;
+      for(int l = 0; l < nl; l++)
+      {
+        double z = (film->log_exposure[i] - mcenters[l]) / msigmas[l];
+        if(positive) z = -z;
+        const double v = amps[l] * _sf_layer_cdf_mixed(z, gmix[l]);
+        layers_out[i][l][c] = v;
+        total += v;
+      }
+      curves[i][c] = total;
+    }
+  }
 }
 
 static void build_print_curves(double (*curves)[3], const sf_profile_t *print,
@@ -2172,23 +2404,51 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
   s->le_step = (film->log_exposure[SF_NLE - 1] - film->log_exposure[0]) / (SF_NLE - 1);
   s->inv_le_step = (float)(1.0 / s->le_step);
   for(int c = 0; c < 3; c++) s->gamma[c] = p->density_curve_gamma;
-  for(int c = 0; c < 3; c++)
+  if(p->film_morph_active && film->curves_model.n_layers > 0)
   {
-    double mn = INFINITY, mx = -INFINITY;
-    for(int i = 0; i < SF_NLE; i++)
+    double curves_tmp[SF_NLE][3];
+    build_film_curves(curves_tmp, s->film_curve_layers, film, p);
+    for(int c = 0; c < 3; c++)
     {
-      const double v = film->density_curves[i][c];
-      if(v < mn) mn = v;
-      if(v > mx) mx = v;
+      double mn = INFINITY, mx = -INFINITY;
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double v = curves_tmp[i][c];
+        if(v < mn) mn = v;
+        if(v > mx) mx = v;
+      }
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double v = curves_tmp[i][c] - mn;
+        s->curves_norm[i][c] = v;
+        s->curves_norm_f[i][c] = (float)v;
+      }
+      s->film_dmax[c] = mx - mn;
+      s->film_dmin[c] = mn;
     }
-    for(int i = 0; i < SF_NLE; i++)
+    s->film_morph_applied = true;
+  }
+  else
+  {
+    for(int c = 0; c < 3; c++)
     {
-      const double v = film->density_curves[i][c] - mn;
-      s->curves_norm[i][c] = v;
-      s->curves_norm_f[i][c] = (float)v;
+      double mn = INFINITY, mx = -INFINITY;
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double v = film->density_curves[i][c];
+        if(v < mn) mn = v;
+        if(v > mx) mx = v;
+      }
+      for(int i = 0; i < SF_NLE; i++)
+      {
+        const double v = film->density_curves[i][c] - mn;
+        s->curves_norm[i][c] = v;
+        s->curves_norm_f[i][c] = (float)v;
+      }
+      s->film_dmax[c] = mx - mn;
+      s->film_dmin[c] = mn;
     }
-    s->film_dmax[c] = mx - mn;
-    s->film_dmin[c] = mn;
+    s->film_morph_applied = false;
   }
   /* [cp] per-film grain catalogue data (film_render_defaults[stock].grain);
      falls back to spektrafilm's original single fixed profile when the pack
