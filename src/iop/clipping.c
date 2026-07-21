@@ -2136,6 +2136,7 @@ void gui_init(dt_iop_module_t *self)
                                          { _("golden cut"), 16180340, 10000000 },
                                          { _("16:9, HDTV"), 16, 9 },
                                          { _("widescreen"), 185, 100 },
+                                         { _("1080x566, Instagram landscape"), 1080, 566 },
                                          { _("2:1, univisium"), 2, 1 },
                                          { _("cinemascope"), 235, 100 },
                                          { _("21:9"), 237, 100 },
