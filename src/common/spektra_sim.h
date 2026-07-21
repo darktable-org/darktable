@@ -303,6 +303,13 @@ typedef struct sf_sim_params_t
   double morph_gamma, morph_gamma_fast, morph_gamma_slow;
   double morph_gamma_r, morph_gamma_g, morph_gamma_b;
 
+  /* film curve chemistry (s023) — same morph as print's, applied to the
+   * film's own fitted density-curve model instead, plus developer
+   * exhaustion (not yet wired for print). Identity at defaults. */
+  bool film_morph_active;
+  double film_morph_gamma, film_morph_gamma_fast, film_morph_gamma_slow;
+  double film_morph_developer_exhaustion;
+
   /* scanning / output */
   bool scan_film;                  /* false: full negative→print→scan chain */
   int lut_steps;                   /* 0 = exact spectral per pixel;
