@@ -108,9 +108,9 @@ colorspaces_transform_gamma(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   float4 pixel = Areadpixel(in, x, y);
-  // avoid NaN in possibly undefined channel
-  pixel.w = 0.0f;
-  pixel = fmax(0.0f, pixel);
+  // sanitize and fix NaN as we do for CPU
+  pixel = select(fmax(pixel, -1e6f), (float4)(0.0f), isnan(pixel));
+
   pixel = dtcl_pow(pixel, gamma);
   write_imagef(out, (int2)(x, y), pixel);
 }
