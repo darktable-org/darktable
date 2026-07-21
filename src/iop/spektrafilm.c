@@ -87,7 +87,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(6, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -113,6 +113,18 @@ DT_MODULE_INTROSPECTION(6, dt_iop_spektrafilm_params_t)
  * safely conservative. */
 #define SF_GRAIN_STRENGTH_CAL 1.20f
 #define SF_GRAIN_SIZE_CAL 0.65f
+/* Push/pull processing is really two things happening together: shooting
+ * at an effective ISO different from box speed (already modeled via
+ * exposure_ev), plus extended/reduced development time, which increases
+ * or decreases contrast -- the gamma knob. There's no single fixed
+ * physical constant for how much contrast one stop of push buys (it
+ * depends on the specific film/developer combination, which isn't
+ * modeled here), so this is a documented approximation: each stop
+ * multiplies gamma by this factor, a commonly-cited rule of thumb
+ * (roughly a 15% contrast increase per stop). Compounds naturally across
+ * multiple stops (push 2 = factor^2), which suits gamma being a
+ * multiplicative quantity in this model to begin with. */
+#define SF_PUSH_PULL_GAMMA_PER_STOP 1.15f
 #define SF_HALO_SIGMAS 4.0f
 #define SF_DIFFUSION_BLOOM_LAMBDA_MAX_UM 950.0f
 /* DIR coupler inhibitor diffusion; spektrafilm params_schema
@@ -180,6 +192,11 @@ typedef struct dt_iop_spektrafilm_params_t
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
   float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery sharpness"
   float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "grain recovery strength"
+  float film_gamma_factor;      // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "development gamma"
+  float film_gamma_factor_fast; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "fast layer gamma"
+  float film_gamma_factor_slow; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "slow layer gamma"
+  float film_developer_exhaustion; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "developer exhaustion"
+  float push_pull_stops; // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "push/pull"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -198,6 +215,9 @@ typedef struct dt_iop_spektrafilm_gui_data_t
 {
   GtkWidget *film, *paper;
   GtkWidget *exposure_ev, *print_exposure_ev, *print_auto_exposure, *print_contrast, *filter_m, *filter_y;
+  GtkWidget *film_gamma_factor, *film_gamma_factor_fast, *film_gamma_factor_slow,
+      *film_developer_exhaustion;
+  GtkWidget *push_pull_stops;
   GtkWidget *couplers_amount, *scan_film, *quality;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
@@ -565,6 +585,96 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     float output_luminance_boost;
   } dt_iop_spektrafilm_params_v4_t;
 
+  typedef struct dt_iop_spektrafilm_params_v6_t
+  {
+    uint32_t film_hash;
+    uint32_t paper_hash;
+    float exposure_ev;
+    float print_exposure_ev;
+    gboolean print_auto_exposure;
+    float print_contrast;
+    float filter_m;
+    float filter_y;
+    float couplers_amount;
+    float preflash_exposure;
+    float preflash_m_shift;
+    float preflash_y_shift;
+    gboolean scan_film;
+    dt_iop_spektrafilm_quality_t quality;
+    gboolean halation_on;
+    float scatter_amount;
+    float scatter_scale;
+    float halation_amount;
+    float halation_scale;
+    float boost_ev;
+    float boost_range;
+    float protect_ev;
+    gboolean diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+    float diffusion_strength;
+    float diffusion_scale;
+    float diffusion_warmth;
+    gboolean print_diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
+    float print_diffusion_strength;
+    float print_diffusion_scale;
+    float print_diffusion_warmth;
+    gboolean grain_on;
+    float grain_amount;
+    float grain_size;
+    float film_format_mm;
+    float output_luminance_boost;
+    float grain_usm_sigma;
+    float grain_usm_amount;
+  } dt_iop_spektrafilm_params_v6_t;
+
+  typedef struct dt_iop_spektrafilm_params_v7_t
+  {
+    uint32_t film_hash;
+    uint32_t paper_hash;
+    float exposure_ev;
+    float print_exposure_ev;
+    gboolean print_auto_exposure;
+    float print_contrast;
+    float filter_m;
+    float filter_y;
+    float couplers_amount;
+    float preflash_exposure;
+    float preflash_m_shift;
+    float preflash_y_shift;
+    gboolean scan_film;
+    dt_iop_spektrafilm_quality_t quality;
+    gboolean halation_on;
+    float scatter_amount;
+    float scatter_scale;
+    float halation_amount;
+    float halation_scale;
+    float boost_ev;
+    float boost_range;
+    float protect_ev;
+    gboolean diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
+    float diffusion_strength;
+    float diffusion_scale;
+    float diffusion_warmth;
+    gboolean print_diffusion_on;
+    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
+    float print_diffusion_strength;
+    float print_diffusion_scale;
+    float print_diffusion_warmth;
+    gboolean grain_on;
+    float grain_amount;
+    float grain_size;
+    float film_format_mm;
+    float output_luminance_boost;
+    float grain_usm_sigma;
+    float grain_usm_amount;
+    float film_gamma_factor;
+    float film_gamma_factor_fast;
+    float film_gamma_factor_slow;
+    float film_developer_exhaustion;
+  } dt_iop_spektrafilm_params_v7_t;
+
   if(old_version == 1)
   {
     const dt_iop_spektrafilm_params_v1_t *o = (dt_iop_spektrafilm_params_v1_t *)old_params;
@@ -616,10 +726,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->output_luminance_boost = 1.0f; /* new in v2: neutral default, no-op (matches upstream) */
     n->grain_usm_sigma = 0.8f;
     n->grain_usm_amount = 0.0f;
+    n->film_gamma_factor = 1.0f;
+    n->film_gamma_factor_fast = 1.0f;
+    n->film_gamma_factor_slow = 1.0f;
+    n->film_developer_exhaustion = 0.0f;
+    n->push_pull_stops = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 6;
+    *new_version = 8;
     return 0;
   }
   if(old_version == 2)
@@ -670,10 +785,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->output_luminance_boost = o->output_luminance_boost;
     n->grain_usm_sigma = 0.8f;
     n->grain_usm_amount = 0.0f;
+    n->film_gamma_factor = 1.0f;
+    n->film_gamma_factor_fast = 1.0f;
+    n->film_gamma_factor_slow = 1.0f;
+    n->film_developer_exhaustion = 0.0f;
+    n->push_pull_stops = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 6;
+    *new_version = 8;
     return 0;
   }
   if(old_version == 3)
@@ -722,10 +842,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->output_luminance_boost = o->output_luminance_boost;
     n->grain_usm_sigma = 0.8f;
     n->grain_usm_amount = 0.0f;
+    n->film_gamma_factor = 1.0f;
+    n->film_gamma_factor_fast = 1.0f;
+    n->film_gamma_factor_slow = 1.0f;
+    n->film_developer_exhaustion = 0.0f;
+    n->push_pull_stops = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 6;
+    *new_version = 8;
     return 0;
   }
   if(old_version == 4)
@@ -774,10 +899,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->output_luminance_boost = o->output_luminance_boost;
     n->grain_usm_sigma = 0.8f;
     n->grain_usm_amount = 0.0f;
+    n->film_gamma_factor = 1.0f;
+    n->film_gamma_factor_fast = 1.0f;
+    n->film_gamma_factor_slow = 1.0f;
+    n->film_developer_exhaustion = 0.0f;
+    n->push_pull_stops = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 6;
+    *new_version = 8;
     return 0;
   }
   if(old_version == 5)
@@ -787,9 +917,124 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     *n = *o;
     n->grain_usm_sigma = 0.8f;
     n->grain_usm_amount = 0.0f;
+    n->film_gamma_factor = 1.0f;
+    n->film_gamma_factor_fast = 1.0f;
+    n->film_gamma_factor_slow = 1.0f;
+    n->film_developer_exhaustion = 0.0f;
+    n->push_pull_stops = 0.0f;
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 6;
+    *new_version = 8;
+    return 0;
+  }
+  if(old_version == 6)
+  {
+    const dt_iop_spektrafilm_params_v6_t *o = (dt_iop_spektrafilm_params_v6_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->film_hash;
+    n->paper_hash = o->paper_hash;
+    n->exposure_ev = o->exposure_ev;
+    n->print_exposure_ev = o->print_exposure_ev;
+    n->print_auto_exposure = o->print_auto_exposure;
+    n->print_contrast = o->print_contrast;
+    n->filter_m = o->filter_m;
+    n->filter_y = o->filter_y;
+    n->couplers_amount = o->couplers_amount;
+    n->preflash_exposure = o->preflash_exposure;
+    n->preflash_m_shift = o->preflash_m_shift;
+    n->preflash_y_shift = o->preflash_y_shift;
+    n->scan_film = o->scan_film;
+    n->quality = o->quality;
+    n->halation_on = o->halation_on;
+    n->scatter_amount = o->scatter_amount;
+    n->scatter_scale = o->scatter_scale;
+    n->halation_amount = o->halation_amount;
+    n->halation_scale = o->halation_scale;
+    n->boost_ev = o->boost_ev;
+    n->boost_range = o->boost_range;
+    n->protect_ev = o->protect_ev;
+    n->diffusion_on = o->diffusion_on;
+    n->diffusion_filter_family = o->diffusion_filter_family;
+    n->diffusion_strength = o->diffusion_strength;
+    n->diffusion_scale = o->diffusion_scale;
+    n->diffusion_warmth = o->diffusion_warmth;
+    n->print_diffusion_on = o->print_diffusion_on;
+    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
+    n->print_diffusion_strength = o->print_diffusion_strength;
+    n->print_diffusion_scale = o->print_diffusion_scale;
+    n->print_diffusion_warmth = o->print_diffusion_warmth;
+    n->grain_on = o->grain_on;
+    n->grain_amount = o->grain_amount;
+    n->grain_size = o->grain_size;
+    n->film_format_mm = o->film_format_mm;
+    n->output_luminance_boost = o->output_luminance_boost;
+    n->grain_usm_sigma = o->grain_usm_sigma;
+    n->grain_usm_amount = o->grain_usm_amount;
+    n->film_gamma_factor = 1.0f;
+    n->film_gamma_factor_fast = 1.0f;
+    n->film_gamma_factor_slow = 1.0f;
+    n->film_developer_exhaustion = 0.0f;
+    n->push_pull_stops = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 8;
+    return 0;
+  }
+  if(old_version == 7)
+  {
+    const dt_iop_spektrafilm_params_v7_t *o = (dt_iop_spektrafilm_params_v7_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->film_hash;
+    n->paper_hash = o->paper_hash;
+    n->exposure_ev = o->exposure_ev;
+    n->print_exposure_ev = o->print_exposure_ev;
+    n->print_auto_exposure = o->print_auto_exposure;
+    n->print_contrast = o->print_contrast;
+    n->filter_m = o->filter_m;
+    n->filter_y = o->filter_y;
+    n->couplers_amount = o->couplers_amount;
+    n->preflash_exposure = o->preflash_exposure;
+    n->preflash_m_shift = o->preflash_m_shift;
+    n->preflash_y_shift = o->preflash_y_shift;
+    n->scan_film = o->scan_film;
+    n->quality = o->quality;
+    n->halation_on = o->halation_on;
+    n->scatter_amount = o->scatter_amount;
+    n->scatter_scale = o->scatter_scale;
+    n->halation_amount = o->halation_amount;
+    n->halation_scale = o->halation_scale;
+    n->boost_ev = o->boost_ev;
+    n->boost_range = o->boost_range;
+    n->protect_ev = o->protect_ev;
+    n->diffusion_on = o->diffusion_on;
+    n->diffusion_filter_family = o->diffusion_filter_family;
+    n->diffusion_strength = o->diffusion_strength;
+    n->diffusion_scale = o->diffusion_scale;
+    n->diffusion_warmth = o->diffusion_warmth;
+    n->print_diffusion_on = o->print_diffusion_on;
+    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
+    n->print_diffusion_strength = o->print_diffusion_strength;
+    n->print_diffusion_scale = o->print_diffusion_scale;
+    n->print_diffusion_warmth = o->print_diffusion_warmth;
+    n->grain_on = o->grain_on;
+    n->grain_amount = o->grain_amount;
+    n->grain_size = o->grain_size;
+    n->film_format_mm = o->film_format_mm;
+    n->output_luminance_boost = o->output_luminance_boost;
+    n->grain_usm_sigma = o->grain_usm_sigma;
+    n->grain_usm_amount = o->grain_usm_amount;
+    n->film_gamma_factor = o->film_gamma_factor;
+    n->film_gamma_factor_fast = o->film_gamma_factor_fast;
+    n->film_gamma_factor_slow = o->film_gamma_factor_slow;
+    n->film_developer_exhaustion = o->film_developer_exhaustion;
+    n->push_pull_stops = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 8;
     return 0;
   }
   return 1;
@@ -1033,6 +1278,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->scan_film, sizeof p->scan_film);
   key = _mix64(key, &p->quality, sizeof p->quality);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
+  key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
+  key = _mix64(key, &p->film_gamma_factor_fast, sizeof p->film_gamma_factor_fast);
+  key = _mix64(key, &p->film_gamma_factor_slow, sizeof p->film_gamma_factor_slow);
+  key = _mix64(key, &p->film_developer_exhaustion, sizeof p->film_developer_exhaustion);
+  key = _mix64(key, &p->push_pull_stops, sizeof p->push_pull_stops);
   key = _mix64(key, m_in, sizeof m_in);
   key = _mix64(key, m_out, sizeof m_out);
 
@@ -1133,7 +1383,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   {
     sf_sim_params_t sp;
     sf_sim_params_defaults(&sp);
-    sp.exposure_comp_ev = p->exposure_ev;
+    sp.exposure_comp_ev = p->exposure_ev - p->push_pull_stops;
     sp.print_exposure = powf(2.0f, p->print_exposure_ev);
     sp.print_exposure_compensation = p->print_auto_exposure; /* normalize_print_exposure
                                        stays at sf_sim_params_defaults' true — that combination
@@ -1155,6 +1405,17 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     {
       sp.morph_active = true;
       sp.morph_gamma = p->print_contrast;
+    }
+    if(p->film_gamma_factor != 1.0f || p->film_gamma_factor_fast != 1.0f
+       || p->film_gamma_factor_slow != 1.0f || p->film_developer_exhaustion != 0.0f
+       || p->push_pull_stops != 0.0f)
+    {
+      sp.film_morph_active = true;
+      sp.film_morph_gamma = p->film_gamma_factor
+                             * powf(SF_PUSH_PULL_GAMMA_PER_STOP, p->push_pull_stops);
+      sp.film_morph_gamma_fast = p->film_gamma_factor_fast;
+      sp.film_morph_gamma_slow = p->film_gamma_factor_slow;
+      sp.film_morph_developer_exhaustion = p->film_developer_exhaustion;
     }
     /* darktable pipeline XYZ is D50-relative; the work profile matrices map
        work RGB <-> that XYZ, so both engine whites are D50 */
@@ -2499,6 +2760,40 @@ void gui_init(dt_iop_module_t *self)
   g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
   gtk_widget_set_tooltip_text(g->scan_film,
                               _("view the developed film directly (no print stage)"));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "development")));
+  g->push_pull_stops = dt_bauhaus_slider_from_params(self, "push_pull_stops");
+  dt_bauhaus_slider_set_format(g->push_pull_stops, _(" stops"));
+  gtk_widget_set_tooltip_text(
+      g->push_pull_stops,
+      _("push (positive) or pull (negative) processing: shoot at an effective ISO"
+        " different from box speed, then under- or over-develop to compensate --"
+        " combines an exposure shift with a derived contrast increase/decrease"
+        " (approximate: the exact relationship depends on the specific film/developer"
+        " combination, which isn't modeled here). Stacks with the granular gamma"
+        " controls below for further fine-tuning"));
+  g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
+  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
+  gtk_widget_set_tooltip_text(
+      g->film_gamma_factor,
+      _("overall development contrast (morphs the film's density curves) -- extended or"
+        " reduced development time, as in push/pull processing; 1.0 = normal development"));
+  g->film_gamma_factor_fast = dt_bauhaus_slider_from_params(self, "film_gamma_factor_fast");
+  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_fast, 0.25f, 2.0f);
+  gtk_widget_set_tooltip_text(
+      g->film_gamma_factor_fast,
+      _("contrast of the fastest (most light-sensitive) emulsion sub-layer only --"
+        " independent of the slow layer, since push/pull processing doesn't always affect"
+        " every sub-layer equally"));
+  g->film_gamma_factor_slow = dt_bauhaus_slider_from_params(self, "film_gamma_factor_slow");
+  dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_slow, 0.25f, 2.0f);
+  gtk_widget_set_tooltip_text(
+      g->film_gamma_factor_slow,
+      _("contrast of the mid and slow emulsion sub-layers"));
+  g->film_developer_exhaustion = dt_bauhaus_slider_from_params(self, "film_developer_exhaustion");
+  gtk_widget_set_tooltip_text(
+      g->film_developer_exhaustion,
+      _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
+        " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print")));
   g->print_exposure_ev = dt_bauhaus_slider_from_params(self, "print_exposure_ev");
   dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
