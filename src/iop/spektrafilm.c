@@ -2666,6 +2666,16 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
   if(picker != g->output_luminance_boost) return;
 
+  /* picked_color_min/max start at sentinel values (+FLT_MAX / -FLT_MAX)
+     until a real area pick has actually landed; if this callback fires
+     before that (e.g. some other programmatic trigger of the picker
+     path), max stays below min and using it directly would feed garbage
+     (-FLT_MAX for every channel) into the simulation -- that propagates
+     into a wildly out-of-range LUT lookup and segfaults. Standard
+     darktable idiom for this check, matching e.g. exposure.c's own
+     color_picker_apply. */
+  if(self->picked_color_max[0] < self->picked_color_min[0]) return;
+
   const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
   if(!work_profile) return;
 
