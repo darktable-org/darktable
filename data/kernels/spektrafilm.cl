@@ -565,17 +565,20 @@ __kernel void spektrafilm_grain_gen_ml(__global const float4 *dens, __global flo
    the multi-sublayer particle generator has a small positive DC bias that
    renorm amplifies proportionally to sigma). gmean is computed host-side
    over the whole buffer (see process_cl()) since a full-image reduction is
-   simplest done there, then passed down as a single scalar. */
+   simplest done there, then passed down PER CHANNEL as a float4 -- a
+   single pooled scalar across R+G+B would leave each channel's own bias
+   minus the pooled average as an uncorrected residual (a color cast, not
+   just a brightness bug). */
 __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const float4 *grain_buf,
-                                    const int w, const int h, const float renorm, const float gmean)
+                                    const int w, const int h, const float renorm, const float4 gmean)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   float4 d = dens_buf[k];
   float4 g = grain_buf[k];
-  dens_buf[k] = (float4)(d.x + (g.x - gmean) * renorm, d.y + (g.y - gmean) * renorm,
-                         d.z + (g.z - gmean) * renorm, d.w);
+  dens_buf[k] = (float4)(d.x + (g.x - gmean.x) * renorm, d.y + (g.y - gmean.y) * renorm,
+                         d.z + (g.z - gmean.z) * renorm, d.w);
 }
 
 /* Multiplicative unsharp mask after grain blur (study b80).
