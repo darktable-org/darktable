@@ -1705,12 +1705,21 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
     /* Centre grain delta: multi-sublayer model has positive DC bias (~0.07)
        that renorm amplifies proportionally to sigma, making image brighter
-       at higher LOD. Remove bias before scaling. */
+       at higher LOD. Remove bias before scaling.
+       IMPORTANT: this must be a per-channel mean, not one pooled scalar
+       across R+G+B -- the per-channel bias differs (channel-dependent
+       particle counts/scale in the multi-sublayer model), so a single
+       pooled mean leaves each channel's own bias minus the pooled average
+       as an uncorrected residual, i.e. a color cast wherever grain is
+       visually significant. */
     {
-      double gsum = 0.0;
-      for(size_t kk = 0; kk < npix * 3; kk++) gsum += (double)gbuf[kk];
-      const float gmean = (float)(gsum / (double)(npix * 3));
-      for(size_t kk = 0; kk < npix * 3; kk++) gbuf[kk] -= gmean;
+      double gsum[3] = { 0.0, 0.0, 0.0 };
+      for(size_t kk = 0; kk < npix; kk++)
+        for(int c = 0; c < 3; c++) gsum[c] += (double)gbuf[kk * 3 + c];
+      float gmean[3];
+      for(int c = 0; c < 3; c++) gmean[c] = (float)(gsum[c] / (double)npix);
+      for(size_t kk = 0; kk < npix; kk++)
+        for(int c = 0; c < 3; c++) gbuf[kk * 3 + c] -= gmean[c];
     }
     const float renorm = sf_gauss_grain_renorm(fmaxf(sigma, 0.3f));
 #ifdef _OPENMP
@@ -2274,8 +2283,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
        renorm amplifies proportionally to sigma; this correction only ever
        existed on the CPU path before, so anyone using OpenCL never got it).
        Reading the whole buffer back host-side is the simplest way to get a
-       full-image reduction; this runs once per grain stage, not per pixel. */
-    float gmean = 0.0f;
+       full-image reduction; this runs once per grain stage, not per pixel.
+       Must be a per-channel mean, not one pooled scalar across R+G+B --
+       see the matching comment in process() for why a pooled mean leaves
+       a per-channel residual (a color cast) uncorrected. */
+    float gmean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     if(err == CL_SUCCESS)
     {
       float *const tmpa_host = dt_alloc_align_float(npix * 4);
@@ -2284,11 +2296,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         err = dt_opencl_read_buffer_from_device(devid, tmpa_host, tmpa, 0, npix * f * 4, TRUE);
         if(err == CL_SUCCESS)
         {
-          double gsum = 0.0;
+          double gsum[3] = { 0.0, 0.0, 0.0 };
           for(size_t kk = 0; kk < npix; kk++)
-            gsum += (double)tmpa_host[kk * 4] + (double)tmpa_host[kk * 4 + 1]
-                    + (double)tmpa_host[kk * 4 + 2];
-          gmean = (float)(gsum / (double)(npix * 3));
+            for(int c = 0; c < 3; c++) gsum[c] += (double)tmpa_host[kk * 4 + c];
+          for(int c = 0; c < 3; c++) gmean[c] = (float)(gsum[c] / (double)npix);
         }
         dt_free_align(tmpa_host);
       }
