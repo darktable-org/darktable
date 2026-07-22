@@ -147,9 +147,12 @@ static gint _model_sort_func(GtkTreeModel *model,
       cmp = g_strcmp0(name_a, name_b);
   }
 
-  g_free(task_a); g_free(task_b);
-  g_free(default_a); g_free(default_b);
-  g_free(name_a); g_free(name_b);
+  g_free(task_a);
+  g_free(task_b);
+  g_free(default_a);
+  g_free(default_b);
+  g_free(name_a);
+  g_free(name_b);
   return cmp;
 }
 
