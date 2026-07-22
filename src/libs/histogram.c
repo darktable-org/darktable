@@ -502,7 +502,17 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
       // FIXME: should handle smooth scrolling rather than discrete?
       // FIXME: should scrolling of scope be handled in the drawable rather than
       //        the eventbox.
-      dt_dev_exposure_handle_event(0, dy - dx, event->scroll.state,
+
+      // get the dominant direction, standardize on delta < 0 => up==right
+      const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
+      // for exposure ('highlight') mode: we want up/right: brighten the image
+      // -> increase exposure, or decrease black point (exposure handles that);
+      // in vectorscope, rgb parade, parts of the visualization moves upwards;
+      // in histogram, to the right.
+      // dt_dev_exposure_handle_event requires 'delta' in the 'brighten' > 0 convention, that is also what
+      // drag events emit
+
+      dt_dev_exposure_handle_event(0, - delta, event->scroll.state,
                                    s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     }
     else

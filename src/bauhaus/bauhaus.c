@@ -508,13 +508,21 @@ static gboolean _popup_scroll(GtkWidget *widget,
                               gpointer user_data)
 {
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
-  int delta_y = 0;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(w->type == DT_BAUHAUS_COMBOBOX)
   {
-    if(w->type == DT_BAUHAUS_COMBOBOX)
-      _combobox_next_sensitive(w, delta_y, 0, w->combobox.mute_scrolling);
-    else
-      _slider_zoom_range(w, delta_y);
+    // match keyboard: right & down -> next
+    int delta_x = 0, delta_y = 0;
+    if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
+    {
+      int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
+    }
+  }
+  else
+  {
+    int delta = 0;
+    if(dt_gui_get_scroll_unit_delta(event, &delta))
+      _slider_zoom_range(w, delta);
   }
   return TRUE;
 }
@@ -3087,14 +3095,17 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
   {
     gtk_widget_grab_focus(widget);
 
-    int delta = dx + dy;
-    if(delta != 0)
+    int magnitude_x = fabs(dx);
+    int magnitude_y = fabs(dy);
+
+    if(magnitude_x || magnitude_y)
     {
       dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
       _request_focus(w);
 
       if(w->type == DT_BAUHAUS_SLIDER)
       {
+        int delta = magnitude_x > magnitude_y ? -dx : dy;
         const gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
                             && event->scroll.window == gtk_widget_get_window(widget);
         if(force && dt_modifier_is(event->scroll.state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
@@ -3106,7 +3117,12 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
           _slider_add_step(widget, - delta, event->scroll.state, force);
       }
       else
+      {
+        // match keyboard: right & down -> next
+        int delta = magnitude_x > magnitude_y ? dx : dy;
+
         _combobox_next_sensitive(w, delta, 0, FALSE);
+      }
     }
   }
   if(event) gdk_event_free(event);

@@ -236,7 +236,7 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
  * So if Shift changes scrolling effect, both scrolls should be handled the same.
  * For this case (or if it's otherwise useful) use the following 2 functions. */
 
-/* Return sum of scroll deltas from event. Return TRUE if any deltas
+/* Return delta of larger magnitude from the event. Return TRUE if any deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
  * GDK_SCROLL_SMOOTH style scroll events. */
 gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);

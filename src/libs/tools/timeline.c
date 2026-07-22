@@ -1342,10 +1342,11 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, d
   }
   else
   {
-    int delta;
-    if(dt_gui_get_scroll_unit_delta(e, &delta))
+    // timeline panning: right==down==forward
+    int delta_x = 0, delta_y = 0;
+    if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
     {
-      int move = delta;
+      int move = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
       if(dt_modifier_is(e->state, GDK_SHIFT_MASK)) move *= 2;
 
       _time_add(&(strip->time_pos), move, strip->zoom);
