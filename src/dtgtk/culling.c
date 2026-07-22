@@ -694,10 +694,11 @@ static gboolean _event_scroll(GtkWidget *widget,
     gdouble dx = 0.0, dy = 0.0;
     if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
     {
-    // dt_gui_get_scroll_deltas gives the raw fractional platform delta.
+      // dt_gui_get_scroll_deltas gives the raw fractional platform delta.
       // Scale so that one full unit of scroll (delta_y == 1.0) matches the
-      // 0.5 zoom_delta of a discrete mouse-wheel click.
-      const float zoom_delta = (float)(-(dx + dy) * 0.5);
+      // 0.5 zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
+      const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
+      const float zoom_delta = (float)(-delta * 0.5);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
       GdkWindow *win = gtk_widget_get_window(table->widget);
@@ -750,12 +751,14 @@ static gboolean _event_scroll(GtkWidget *widget,
     }
   }
 
-  int delta;
-  if(dt_gui_get_scroll_unit_delta(e, &delta))
+  int delta_x = 0, delta_y = 0;
+  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
   {
+    const gboolean is_horizontal = abs(delta_x) > abs(delta_y);
     if(dt_modifiers_include(e->state, GDK_CONTROL_MASK))
     {
-      // zooming
+      // zooming: right==up==zoom-in
+      const int delta = is_horizontal ? -delta_x : delta_y;
       const float zoom_delta = delta < 0 ? 0.5f : -0.5f;
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
@@ -775,6 +778,8 @@ static gboolean _event_scroll(GtkWidget *widget,
     }
     else
     {
+      // navigation: right==down==next
+      const int delta = is_horizontal ? delta_x : delta_y;
       const int move = delta < 0 ? -1 : 1;
       dt_print(DT_DEBUG_INPUT, "[culling scroll] navigate move=%d", move);
       _thumbs_move(table, move);

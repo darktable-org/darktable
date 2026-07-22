@@ -4556,7 +4556,8 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
       int delta;
       if(middle_click || dt_gui_get_scroll_unit_delta(&event->scroll, &delta))
       {
-        s.speed = middle_click ? -1 : powf(10.0f, delta);
+        // delta < 0 -> 10^(-delta) increases speed
+        s.speed = middle_click ? -1 : powf(10.0f, -delta);
 
         if(_insert_shortcut(&s, TRUE, FALSE))
           dt_control_log("%s", _action_description(&s, 2));
