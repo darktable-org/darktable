@@ -1691,7 +1691,7 @@ char *dt_ai_models_download_sync(const char *model_id,
     FILE *file = g_fopen(download_path, resume_from > 0 ? "ab" : "wb");
     if(!file)
     {
-      error = g_strdup_printf(_("failed to open %s"), download_path);
+      error = g_strdup_printf(_("failed to create file: %s"), download_path);
       goto retry_done;
     }
     dl.file = file;
@@ -1739,8 +1739,12 @@ retry_done:
     if(res == CURLE_ABORTED_BY_CALLBACK)
       error = g_strdup(_("download cancelled"));
     else if(res != CURLE_OK)
-      error = g_strdup_printf(_("download failed after %d attempts: %s"),
-                              attempt + 1, curl_easy_strerror(res));
+    {
+      dt_print(DT_DEBUG_AI, "[ai_models] download failed after %d attempts",
+               attempt + 1);
+      error = g_strdup_printf(_("download failed: %s"),
+                              curl_easy_strerror(res));
+    }
     else if(http_code != 200 && http_code != 206)
       error = g_strdup_printf(_("http error: %ld"), http_code);
   }
@@ -1784,11 +1788,10 @@ retry_done:
   if(g_rename(download_path, final_path) != 0)
   {
     g_unlink(download_path);
-    g_free(final_path);
     g_free(download_path);
-    SET_STATUS_AND_RETURN(
-      DT_AI_MODEL_ERROR,
-      g_strdup(_("failed to finalize downloaded file")));
+    char *err = g_strdup_printf(_("failed to create file: %s"), final_path);
+    g_free(final_path);
+    SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, err);
   }
   g_free(download_path);
 
