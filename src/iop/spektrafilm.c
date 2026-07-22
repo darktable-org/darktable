@@ -2441,23 +2441,19 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(fi < 0) return;
   const sf_prof_entry_t *e = &g->entries[fi];
   p->film_hash = e->hash;
-  /* Keep the "default" scan_film following this film's own positive/negative
-     type too, not just the live params -- so a double-click reset (which
-     resets to self->default_params, whether via darktable's own bauhaus
-     reset or a checkbox-reset mechanism for this field) means "what this
-     film actually needs" rather than the module's one-size-fits-all factory
-     default (FALSE). Without this, resetting scan_film on a positive/
-     reversal film would silently break it, since that film has no print
-     stage at all. */
-  if(self->default_params)
-    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
   /* The core checkbox-reset mechanism (darktable-core-toggle-reset.patch)
      doesn't re-read self->default_params live at reset time -- it captures
      each checkbox's default once, at widget-creation time, as opaque
-     "dt-toggle-default" data on the button itself. So the update above
-     alone doesn't reach it; poke the widget's own cached value too,
-     otherwise a reset still uses whatever default_params->scan_film was
-     when the module GUI first built (before any film was ever selected). */
+     "dt-toggle-default" data on the button itself. Poke that cached value
+     here so a right-click/scroll reset on just this checkbox means "what
+     this film actually needs" (slides/reversal stocks: scan; negatives:
+     print) rather than the module's one-size-fits-all factory default
+     (FALSE). This must NOT also write self->default_params->scan_film:
+     that field is darktable-core's stable factory default, read directly
+     by memcpy() on a whole-module reset -- mutating it here made a
+     whole-module reset copy whatever film was last selected instead of
+     the true factory default, requiring two resets in a row to actually
+     converge (confirmed via gui_update tracing across a stack-paste). */
   if(g->scan_film)
     g_object_set_data(G_OBJECT(g->scan_film), "dt-toggle-default", GINT_TO_POINTER(e->positive));
   /* scan-film follows the film's natural mode on a film switch: slides and
@@ -2627,23 +2623,25 @@ void gui_update(dt_iop_module_t *self)
      on darktable.gui->reset, which gui_update runs under, so programmatic
      loads don't get treated as user edits / spawn spurious history items).
      That means its scan_film "what should a reset target" bookkeeping --
-     self->default_params->scan_film and the checkbox's own cached
-     "dt-toggle-default" -- never gets re-baselined on a fresh module load,
-     only when the user actually interacts with the film combobox. Left
-     alone, both stay at the compiled FALSE default after e.g. closing and
-     reopening darktable on an image using a positive/reversal film (which
-     has no print stage and needs scan_film TRUE): the checkbox itself still
-     shows correctly checked here (synced from p->scan_film below), but a
-     later double-click reset on it would silently flip scan_film back off.
-     Re-baseline both here too, exactly like _film_changed does -- but
+     the checkbox's own cached "dt-toggle-default" -- never gets
+     re-baselined on a fresh module load, only when the user actually
+     interacts with the film combobox. Left alone, it stays at the compiled
+     FALSE default after e.g. closing and reopening darktable on an image
+     using a positive/reversal film (which has no print stage and needs
+     scan_film TRUE): the checkbox itself still shows correctly checked
+     here (synced from p->scan_film below), but a later right-click/scroll
+     reset on just this checkbox would silently flip scan_film back off.
+     Re-baseline it here too, exactly like _film_changed does -- but
      WITHOUT touching p->scan_film itself, since the just-loaded value may
      be a deliberate user override away from the film's natural mode and
-     must be preserved on load; only the reset target needs fixing. */
+     must be preserved on load; only the reset target needs fixing. Do NOT
+     also write self->default_params->scan_film here: that field is
+     darktable-core's stable factory default, read directly by memcpy() on
+     a whole-module reset -- mutating it made a whole-module reset copy
+     whatever film was last selected instead of the true factory default. */
   if(fi < g->n_films)
   {
     const sf_prof_entry_t *e = &g->entries[g->film_entry[fi]];
-    if(self->default_params)
-      ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
     if(g->scan_film)
       g_object_set_data(G_OBJECT(g->scan_film), "dt-toggle-default", GINT_TO_POINTER(e->positive));
   }
