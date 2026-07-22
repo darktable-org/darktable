@@ -1218,6 +1218,32 @@ static gboolean _window_configure(GtkWidget *da,
   return FALSE;
 }
 
+static gboolean _main_window_state_event(GtkWidget *widget,
+                                         GdkEventWindowState *event,
+                                         gpointer user_data)
+{
+#ifdef GDK_WINDOWING_WAYLAND
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    const char *mode = dt_conf_get_string_const("ui/wayland_titlebar");
+    if(!g_strcmp0(mode, "hide_when_maximized"))
+    {
+      GtkWidget *titlebar = gtk_window_get_titlebar(GTK_WINDOW(widget));
+      if(titlebar)
+      {
+        const gboolean maximized = (event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED) != 0;
+        if(maximized)
+          gtk_widget_hide(titlebar);
+        else
+          gtk_widget_show(titlebar);
+      }
+    }
+  }
+#endif
+
+  return FALSE;
+}
+
 guint dt_gui_translated_key_state(const GdkEventKey *event)
 {
   if(gdk_keyval_to_lower(event->keyval) == gdk_keyval_to_upper(event->keyval) )
@@ -1931,11 +1957,68 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   GtkWidget *container;
   GtkWidget *widget;
 
+#ifdef GDK_WINDOWING_WAYLAND
+  // Add wayland capability for conditional preferences
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+    dt_capabilities_add("wayland");
+#endif
+
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
+  /*
+   * Wayland window titlebar configuration (ui/wayland_titlebar):
+   *   - "always"             : always show titlebar (GTK HeaderBar, default)
+   *   - "never"              : never show titlebar (no decorations)
+   *   - "hide_when_maximized": hide titlebar when maximized (GNOME Unite compat)
+   */
+  int titlebar_mode = 0; // default: always show
+  const char *mode = dt_conf_get_string_const("ui/wayland_titlebar");
+  if(!g_strcmp0(mode, "never"))
+    titlebar_mode = 1;
+  else if(!g_strcmp0(mode, "hide_when_maximized"))
+    titlebar_mode = 2;
+
+  // Apply hide-titlebar-when-maximized hint (works on X11 and Wayland with SSD)
+  gtk_window_set_hide_titlebar_when_maximized(GTK_WINDOW(widget), titlebar_mode == 2);
+
+#ifdef GDK_WINDOWING_WAYLAND
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    // On Wayland, use NORMAL hint to allow proper window resizing
+    gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
+
+    switch(titlebar_mode)
+    {
+      case 1: // never - no decorations
+        gtk_window_set_decorated(GTK_WINDOW(widget), FALSE);
+        break;
+      case 2: // hide_when_maximized - use GTK HeaderBar and hide it on maximize
+      {
+        GtkWidget *header_bar = gtk_header_bar_new();
+        gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+        gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+        gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+        gtk_widget_show(header_bar);
+        if(dt_conf_get_bool("ui_last/maximized"))
+          gtk_widget_hide(header_bar);
+        break;
+      }
+      default: // always (0) - use GTK HeaderBar (CSD)
+      {
+        GtkWidget *header_bar = gtk_header_bar_new();
+        gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+        gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+        gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+        gtk_widget_show(header_bar);
+        break;
+      }
+    }
+  }
+  else
+#endif
   if(!_check_ssd_support())
   {
     // if must use client-side decoration (CSD), set up custom
@@ -1960,6 +2043,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
                    G_CALLBACK(_gui_quit_callback), NULL);
+  g_signal_connect(G_OBJECT(widget), "window-state-event",
+                   G_CALLBACK(_main_window_state_event), NULL);
   g_signal_connect(G_OBJECT(widget), "focus-in-event",
                    G_CALLBACK(_focus_in_out_event), widget);
   g_signal_connect(G_OBJECT(widget), "focus-out-event",
