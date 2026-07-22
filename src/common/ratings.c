@@ -206,16 +206,16 @@ static void _ratings_apply(const GList *imgs,
   {
     const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
     const int old_rating = dt_ratings_get(image_id);
+    const int new_rating = _ratings_effective(old_rating, rating, toggle);
     if(undo_on)
     {
       dt_undo_ratings_t *undoratings = malloc(sizeof(dt_undo_ratings_t));
       undoratings->imgid = image_id;
       undoratings->before = old_rating;
-      undoratings->after = rating;
+      undoratings->after = new_rating;
       *undo = g_list_append(*undo, undoratings);
     }
 
-    const int new_rating = _ratings_effective(old_rating, rating, toggle);
     _ratings_apply_to_image(image_id, new_rating);
   }
 }
