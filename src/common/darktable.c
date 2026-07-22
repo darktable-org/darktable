@@ -2098,11 +2098,9 @@ int dt_init(int argc,
   dt_capabilities_add("nonapple");
 #elif defined(__APPLE__)
   dt_capabilities_add("apple");
-  dt_capabilities_add("nonwindows");
 #else
   dt_capabilities_add("linux");
   dt_capabilities_add("nonapple");
-  dt_capabilities_add("nonwindows");
 #endif
 
   dt_print(DT_DEBUG_CONTROL,
