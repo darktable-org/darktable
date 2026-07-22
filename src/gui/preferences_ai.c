@@ -30,6 +30,14 @@
 
 #include <glib/gi18n.h>
 
+// translatable AI task names so they are extracted by xgettext:
+static const char *dummy_ai_tasks[] G_GNUC_UNUSED = {
+  N_("mask"),
+  N_("denoise"),
+  N_("rawdenoise"),
+  N_("upscale")
+};
+
 // non-default indicator
 #define NON_DEF_CHAR "\xe2\x97\x8f"
 
@@ -1527,6 +1535,15 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
 }
 #endif // !__APPLE__
 
+static void _task_cell_data_func(GtkCellLayout *cell_layout, GtkCellRenderer *cell,
+                                 GtkTreeModel *tree_model, GtkTreeIter *iter, gpointer data)
+{
+  gchar *task = NULL;
+  gtk_tree_model_get(tree_model, iter, COL_TASK, &task, -1);
+  g_object_set(cell, "text", task ? _(task) : "", NULL);
+  g_free(task);
+}
+
 void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 {
   dt_prefs_ai_data_t *data = g_new0(dt_prefs_ai_data_t, 1);
@@ -1810,12 +1827,11 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), version_col);
 
   // task column
-  GtkTreeViewColumn *task_col = gtk_tree_view_column_new_with_attributes(
-    _("task"),
-    text_renderer,
-    "text",
-    COL_TASK,
-    NULL);
+  GtkCellRenderer *task_renderer = gtk_cell_renderer_text_new();
+  GtkTreeViewColumn *task_col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(task_col, _("task"));
+  gtk_tree_view_column_pack_start(task_col, task_renderer, TRUE);
+  gtk_tree_view_column_set_cell_data_func(task_col, task_renderer, _task_cell_data_func, NULL, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), task_col);
 
   // enabled checkbox column (radio-button behavior per task)
