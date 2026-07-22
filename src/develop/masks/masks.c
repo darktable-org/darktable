@@ -1182,9 +1182,16 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
     gui->posy = pzy * ht;
   }
 
+  // form->points can be mutated below (dragging a node); pixelpipe worker
+  // threads deep-copy dev->forms concurrently in dt_dev_pixelpipe_process, so
+  // this must be serialized against that read (see history_mutex there).
+  dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+
   int rep = 0;
   if(form->functions)
     rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, form, 0, gui, 0);
+
+  dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 
   if(gui) _set_hinter_message(gui, form);
 
@@ -1207,15 +1214,18 @@ gboolean dt_masks_events_button_released(dt_iop_module_t *module,
     dt_dev_masks_selection_change(dev, module, dev->mask_form_selected_id);
   DT_LEAVE_GUI_UPDATE();
 
+  gboolean ret = FALSE;
   if(form->functions)
   {
-    const int ret =
-      form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
+    // serialized against the pixelpipe's dt_masks_dup_forms_deep read of
+    // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
+    dt_pthread_mutex_lock(&dev->history_mutex);
+    ret = form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
     form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
-    return ret;
+    dt_pthread_mutex_unlock(&dev->history_mutex);
   }
 
-  return FALSE;
+  return ret;
 }
 
 gboolean dt_masks_events_button_pressed(dt_iop_module_t *module,
@@ -1253,9 +1263,16 @@ gboolean dt_masks_events_button_pressed(dt_iop_module_t *module,
   }
 
   if(form->functions)
-    return form->functions->button_pressed(module, pzx, pzy, pressure,
-                                           which, type, state, form, 0, gui, 0)
-      || which == 3; // swallow right-clicks so right-drag rotate is disabled
+  {
+    // serialized against the pixelpipe's dt_masks_dup_forms_deep read of
+    // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
+    dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+    const gboolean ret = form->functions->button_pressed(
+                           module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0) ||
+                         which == 3; // swallow right-clicks so right-drag rotate is disabled
+    dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+    return ret;
+  }
   return FALSE;
 }
 
@@ -1289,9 +1306,15 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
   const gboolean incr = dt_mask_scroll_increases(up);
 
   if(form->functions)
+  {
+    // serialized against the pixelpipe's dt_masks_dup_forms_deep read of
+    // dev->forms/form->points, see history_mutex use in dt_dev_pixelpipe_process.
+    dt_pthread_mutex_lock(&darktable.develop->history_mutex);
     ret = (form->functions->mouse_scrolled(module, pzx, pzy,
                                           incr ? 1 : 0,
                                           state, form, 0, gui, 0)) != 0;
+    dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  }
 
   if(gui)
   {
