@@ -2820,7 +2820,8 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
   return TRUE;
 }
 
-static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_t *module)
+static void _display_mask_indicator_callback(GtkToggleButton *bt,
+                                             dt_iop_module_t *module)
 {
   DT_GUARD_GUI_UPDATE();
 
