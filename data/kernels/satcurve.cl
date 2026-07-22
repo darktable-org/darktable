@@ -254,3 +254,25 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
 
   write_imagef(out, (int2)(x, y), pixout);
 }
+// Visualisierung der Sättigungsmaske für die GUI-Anzeige: schreibt
+// sqrt(s_in_norm) als Graustufe in alle 3 RGB-Kanäle, Alpha unverändert.
+// Mirrors display_saturation_mask() auf der CPU-Seite.
+kernel void
+satcurve_mask(read_only image2d_t in, write_only image2d_t out,
+              const int width, const int height,
+              constant const float *const matrix_in,
+              global const float *const gamut_lut,
+              const int formula, const float L_white)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 pix_in = Areadpixel(in, x, y);
+  const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
+
+  const float intensity = sqrt(clamp(s_in_norm, 0.f, 1.f));
+  float4 pixout = { intensity, intensity, intensity, pix_in.w };
+
+  write_imagef(out, (int2)(x, y), pixout);
+}
