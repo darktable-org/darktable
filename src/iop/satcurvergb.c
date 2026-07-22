@@ -1,16 +1,16 @@
 /*
-  This file is part of darktable,
-  Copyright (C) 2026 darktable developers.
+    This file is part of darktable,
+    Copyright (C) 2026 darktable developers.
 
-  darktable is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-  darktable is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
 */
 
 // our includes go first:
@@ -25,6 +25,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
+#include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
@@ -112,6 +113,7 @@ typedef struct dt_iop_satcurve_gui_data_t
   GtkDrawingArea *area;
   GtkWidget *colorpicker;
   GtkWidget *formula;
+  GtkWidget *show_saturation_mask;   // NEU
   GtkNotebook *notebook;
 
   dt_iop_satcurve_gui_channel_t channel[DT_IOP_SATCURVE_CHANNELS];
@@ -127,12 +129,15 @@ typedef struct dt_iop_satcurve_gui_data_t
   float picked_s;
   float picked_s_min;
   float picked_s_max;
+
+  gboolean mask_display;             // NEU
 } dt_iop_satcurve_gui_data_t;
 
 typedef struct dt_iop_satcurve_global_data_t
 {
   int kernel_satcurvergb;
   int kernel_satcurve_histogram;
+  int kernel_satcurve_mask;          // NEU
 } dt_iop_satcurve_global_data_t;
 
 typedef struct dt_iop_satcurve_factors_t
@@ -154,10 +159,10 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remap saturation and brilliance with curves"),
-                                _("corrective or creative"),
-                                _("linear, RGB, scene-referred"),
-                                _("linear, RGB, scene-referred"),
-                                _("linear, RGB, scene-referred"));
+                                 _("corrective or creative"),
+                                 _("linear, RGB, scene-referred"),
+                                 _("linear, RGB, scene-referred"),
+                                 _("linear, RGB, scene-referred"));
 }
 
 int flags()
@@ -171,8 +176,8 @@ int default_group()
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
-                                            dt_dev_pixelpipe_t *pipe,
-                                            dt_dev_pixelpipe_iop_t *piece)
+                                             dt_dev_pixelpipe_t *pipe,
+                                             dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -248,9 +253,9 @@ static inline float clip_jz_chroma(const float Jz, const float Cz, const float c
 }
 
 static inline float pixel_s_in_norm_jzazbz(const float *const restrict rgb_in,
-                                           const dt_colormatrix_t inputmatrix_trans,
-                                           const float *const restrict gamut_lut,
-                                           float *const restrict h_out)
+                                            const dt_colormatrix_t inputmatrix_trans,
+                                            const float *const restrict gamut_lut,
+                                            float *const restrict h_out)
 {
   dt_aligned_pixel_t rgb, xyz, jab;
   copy_pixel(rgb, rgb_in);
@@ -273,14 +278,14 @@ static inline float pixel_s_in_norm_jzazbz(const float *const restrict rgb_in,
 // model used throughout darktable_ucs_22_helpers. Single source of truth for this
 // computation -- do not re-derive it inline at call sites.
 static inline float satcurve_ucs_gamut_saturation(const float J, const float h,
-                                                   const float L_white,
-                                                   const float *const restrict gamut_lut)
+                                                    const float L_white,
+                                                    const float *const restrict gamut_lut)
 {
   const float max_colorfulness = MAX(satcurve_lookup_gamut(gamut_lut, h), FLT_MIN);
   const float max_chroma = 15.932993652962535f
-                         * powf(J / L_white, 0.6523997524738018f)
-                         * powf(max_colorfulness, 0.6007557017508491f)
-                         / L_white;
+    * powf(J / L_white, 0.6523997524738018f)
+    * powf(max_colorfulness, 0.6007557017508491f)
+    / L_white;
 
   const dt_aligned_pixel_t JCH_gamut_boundary = { J, max_chroma, h, 0.f };
   dt_aligned_pixel_t HSB_gamut_boundary;
@@ -290,10 +295,10 @@ static inline float satcurve_ucs_gamut_saturation(const float J, const float h,
 }
 
 static inline float pixel_s_in_norm_ucs(const float *const restrict rgb_in,
-                                        const dt_colormatrix_t inputmatrix_trans,
-                                        const float *const restrict gamut_lut,
-                                        const float L_white,
-                                        float *const restrict h_out)
+                                         const dt_colormatrix_t inputmatrix_trans,
+                                         const float *const restrict gamut_lut,
+                                         const float L_white,
+                                         float *const restrict h_out)
 {
   dt_aligned_pixel_t rgb, xyz, xyY, JCH, HCB;
 
@@ -314,11 +319,11 @@ static inline float pixel_s_in_norm_ucs(const float *const restrict rgb_in,
 }
 
 static inline float pixel_s_in_norm(const dt_iop_satcurve_formula_t formula,
-                                    const float *const restrict rgb_in,
-                                    const dt_colormatrix_t inputmatrix_trans,
-                                    const float *const restrict gamut_lut,
-                                    const float L_white,
-                                    float *const restrict h_out)
+                                     const float *const restrict rgb_in,
+                                     const dt_colormatrix_t inputmatrix_trans,
+                                     const float *const restrict gamut_lut,
+                                     const float L_white,
+                                     float *const restrict h_out)
 {
   if(formula == DT_IOP_SATCURVE_DTUCS)
     return pixel_s_in_norm_ucs(rgb_in, inputmatrix_trans, gamut_lut, L_white, h_out);
@@ -342,12 +347,12 @@ static inline dt_iop_satcurve_gui_channel_t *get_active_gui_channel(dt_iop_modul
 static inline gboolean channel_is_neutral(const dt_iop_satcurve_channel_data_t *c)
 {
   return c->curve_num_nodes == 2
-      && fabsf(c->lut[0] - .5f) < 1e-6f
-      && fabsf(c->lut[DT_IOP_SATCURVE_RES - 1] - .5f) < 1e-6f;
+    && fabsf(c->lut[0] - .5f) < 1e-6f
+    && fabsf(c->lut[DT_IOP_SATCURVE_RES - 1] - .5f) < 1e-6f;
 }
 
 static inline dt_iop_satcurve_factors_t eval_curve_factors(const dt_iop_satcurve_data_t *d,
-                                                           const float s_in_norm)
+                                                             const float s_in_norm)
 {
   const float sat_c = CLAMP(lookup_lut(d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION].lut, s_in_norm), 0.f, 1.f);
   const float bri_c = CLAMP(lookup_lut(d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].lut, s_in_norm), 0.f, 1.f);
@@ -383,10 +388,10 @@ static void _commit_sat_histogram(dt_iop_module_t *self, const int *const bins)
 }
 
 static void _update_sat_histogram(dt_iop_module_t *self,
-                                  const dt_iop_satcurve_data_t *d,
-                                  const dt_colormatrix_t inputmatrix_trans,
-                                  const float *const restrict in,
-                                  const size_t npixels)
+                                   const dt_iop_satcurve_data_t *d,
+                                   const dt_colormatrix_t inputmatrix_trans,
+                                   const float *const restrict in,
+                                   const size_t npixels)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   if(!g) return;
@@ -399,17 +404,16 @@ static void _update_sat_histogram(dt_iop_module_t *self,
   {
     const float s_in_norm = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
     const int bin = CLAMP((int)(s_in_norm * (DT_IOP_SATCURVE_HIST_RES - 1)),
-                          0, DT_IOP_SATCURVE_HIST_RES - 1);
+                           0, DT_IOP_SATCURVE_HIST_RES - 1);
     local_hist[bin]++;
   }
 
   _commit_sat_histogram(self, local_hist);
 }
 
-
 static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
-                                                dt_aligned_pixel_t xyz,
-                                                const float L_white)
+                                                 dt_aligned_pixel_t xyz,
+                                                 const float L_white)
 {
   dt_aligned_pixel_t xyY, JCH, HCB, HSB;
 
@@ -453,7 +457,7 @@ static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
 }
 
 static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t *d,
-                                                   dt_aligned_pixel_t xyz)
+                                                     dt_aligned_pixel_t xyz)
 {
   dt_aligned_pixel_t jab;
   dt_XYZ_2_JzAzBz(xyz, jab);
@@ -485,20 +489,47 @@ static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t 
   dt_JzAzBz_2_XYZ(jab, xyz);
 }
 
+// NEU: berechnet pro Pixel die normierte Sättigung in einen separaten Buffer,
+// analog zu compute_luminance_mask() in toneequal.c
+static inline void compute_saturation_mask(const dt_iop_satcurve_data_t *d,
+                                            const dt_colormatrix_t inputmatrix_trans,
+                                            const float L_white,
+                                            const float *const restrict in,
+                                            float *const restrict mask,
+                                            const size_t npixels)
+{
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {
+    mask[k] = pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans,
+                               d->gamut_lut, L_white, NULL);
+  }
+}
+
+// NEU: Graustufen-Visualisierung der Sättigungsmaske; sqrt-"Gamma" für bessere
+// Sichtbarkeit niedriger Werte, analog display_luminance_mask() in toneequal.c
+static inline void display_saturation_mask(const float *const restrict in,
+                                            const float *const restrict mask,
+                                            float *const restrict out,
+                                            const size_t npixels)
+{
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {
+    const float intensity = sqrtf(CLAMP(mask[k], 0.f, 1.f));
+    out[4 * k + 0] = intensity;
+    out[4 * k + 1] = intensity;
+    out[4 * k + 2] = intensity;
+    out[4 * k + 3] = in[4 * k + 3];
+  }
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_satcurve_data_t *d = piece->data;
-
-  const gboolean neutral_sat = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
-  const gboolean neutral_bri = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE]);
-
-  if(neutral_sat && neutral_bri)
-  {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
-    return;
-  }
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(!work_profile || piece->colors != 4)
@@ -520,12 +551,34 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const float *const restrict in = DT_IS_ALIGNED((const float *)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *)ovoid);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const float L_white = Y_to_dt_UCS_L_star(1.f);
 
   if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self)
      && piece->pipe == self->dev->full.pipe)
     _update_sat_histogram(self, d, inputmatrix_trans, in, npixels);
 
-  const float L_white = Y_to_dt_UCS_L_star(1.f);
+  // NEU: Maskenanzeige-Zweig -- zeigt die normierte Sättigung als Graustufenbild
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display)
+  {
+    float *const restrict mask = dt_alloc_align_float(npixels);
+    if(mask)
+    {
+      compute_saturation_mask(d, inputmatrix_trans, L_white, in, mask, npixels);
+      display_saturation_mask(in, mask, out, npixels);
+      dt_free_align(mask);
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+      return;
+    }
+  }
+
+  const gboolean neutral_sat = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
+  const gboolean neutral_bri = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE]);
+
+  if(neutral_sat && neutral_bri)
+  {
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
+    return;
+  }
 
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
@@ -545,7 +598,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     pixout[3] = in[4 * k + 3];
     copy_pixel_nontemporal(out + 4 * k, pixout);
   }
-
   dt_omploop_sfence();
 }
 
@@ -555,30 +607,22 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_satcurve_data_t *d = piece->data;
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
   const dt_iop_satcurve_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   if(piece->colors != 4) return err;
 
-  const gboolean neutral_sat = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
-  const gboolean neutral_bri = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE]);
-  if(neutral_sat && neutral_bri)
-    return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
-                                        (size_t[]){ 0, 0, 0 },
-                                        (size_t[]){ 0, 0, 0 },
-                                        (size_t[]){ roi_in->width, roi_in->height, 1 });
-
   const dt_iop_order_iccprofile_info_t *const work_profile =
-    dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+      dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return err;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const gboolean want_histogram =
-    self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self)
-    && piece->pipe == self->dev->full.pipe;
+  const gboolean want_mask =
+      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display;
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
@@ -593,6 +637,41 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  gamut_lut_cl = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_lut);
+
+  if(input_matrix_cl == NULL || gamut_lut_cl == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
+
+  const float L_white = Y_to_dt_UCS_L_star(1.f);
+
+  // NEU: Maskenanzeige-Pfad -- eigener, einfacherer Kernel statt satcurvergb
+  if(want_mask)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(
+        devid, gd->kernel_satcurve_mask, width, height,
+        CLARG(dev_in), CLARG(dev_out),
+        CLARG(width), CLARG(height),
+        CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
+        CLARG(d->formula), CLARG(L_white));
+
+    if(err == CL_SUCCESS) piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    goto error;
+  }
+
+  const gboolean neutral_sat = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
+  const gboolean neutral_bri = channel_is_neutral(&d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE]);
+  if(neutral_sat && neutral_bri)
+  {
+    err = dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
+                                        (size_t[]){ 0, 0, 0 },
+                                        (size_t[]){ 0, 0, 0 },
+                                        (size_t[]){ roi_in->width, roi_in->height, 1 });
+    goto error;
+  }
+
   output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
   sat_lut_cl = dt_opencl_copy_host_to_device_constant(
       devid, DT_IOP_SATCURVE_RES * sizeof(float),
@@ -600,17 +679,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   bri_lut_cl = dt_opencl_copy_host_to_device_constant(
       devid, DT_IOP_SATCURVE_RES * sizeof(float),
       d->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].lut);
-  gamut_lut_cl = dt_opencl_copy_host_to_device_constant(
-      devid, LUT_ELEM * sizeof(float), d->gamut_lut);
 
-  if(input_matrix_cl == NULL || output_matrix_cl == NULL
-     || sat_lut_cl == NULL || bri_lut_cl == NULL || gamut_lut_cl == NULL)
+  if(output_matrix_cl == NULL || sat_lut_cl == NULL || bri_lut_cl == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
   }
 
-  const float L_white = Y_to_dt_UCS_L_star(1.f);
+  const gboolean want_histogram =
+      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self)
+      && piece->pipe == self->dev->full.pipe;
 
   // pipeline-critical kernel goes first: the histogram below is pure UI
   // feedback and must never delay the actual image processing on the queue
@@ -636,7 +714,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     hist_bins_cl = dt_opencl_alloc_device_buffer(devid, hist_bins_size);
     if(hist_bins_cl
        && dt_opencl_write_buffer_to_device(devid, hist_bins_host, hist_bins_cl, 0,
-                                          hist_bins_size, TRUE) == CL_SUCCESS)
+                                            hist_bins_size, TRUE) == CL_SUCCESS)
     {
       const cl_int hist_err = dt_opencl_enqueue_kernel_2d_args(
           devid, gd->kernel_satcurve_histogram, width, height,
@@ -647,7 +725,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
       if(hist_err == CL_SUCCESS
          && dt_opencl_read_buffer_from_device(devid, hist_bins_host, hist_bins_cl, 0,
-                                             hist_bins_size, TRUE) == CL_SUCCESS)
+                                               hist_bins_size, TRUE) == CL_SUCCESS)
         _commit_sat_histogram(self, hist_bins_host);
     }
   }
@@ -669,6 +747,7 @@ void init_global(dt_iop_module_so_t *self)
   self->data = gd;
   gd->kernel_satcurvergb = dt_opencl_create_kernel(program, "satcurvergb");
   gd->kernel_satcurve_histogram = dt_opencl_create_kernel(program, "satcurve_histogram");
+  gd->kernel_satcurve_mask = dt_opencl_create_kernel(program, "satcurve_mask"); // NEU
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -676,6 +755,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   const dt_iop_satcurve_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_satcurvergb);
   dt_opencl_free_kernel(gd->kernel_satcurve_histogram);
+  dt_opencl_free_kernel(gd->kernel_satcurve_mask); // NEU
   free(self->data);
   self->data = NULL;
 }
@@ -716,7 +796,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 }
 
 static void build_jzazbz_gamut_lut(dt_iop_satcurve_data_t *d,
-                                   const dt_iop_order_iccprofile_info_t *work_profile)
+                                    const dt_iop_order_iccprofile_info_t *work_profile)
 {
   dt_colormatrix_t inputmatrix = {{ 0.0f }};
   dt_colormatrix_mul(inputmatrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
@@ -753,15 +833,15 @@ static void build_jzazbz_gamut_lut(dt_iop_satcurve_data_t *d,
   d->gamut_lut[0] = (sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2]) / 5.f;
   d->gamut_lut[1] = (sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2] + sampler[3]) / 5.f;
   d->gamut_lut[LUT_ELEM - 2] = (sampler[LUT_ELEM - 4] + sampler[LUT_ELEM - 3] + sampler[LUT_ELEM - 2]
-                                + sampler[LUT_ELEM - 1] + sampler[0]) / 5.f;
+                                 + sampler[LUT_ELEM - 1] + sampler[0]) / 5.f;
   d->gamut_lut[LUT_ELEM - 1] = (sampler[LUT_ELEM - 3] + sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1]
-                                + sampler[0] + sampler[1]) / 5.f;
+                                 + sampler[0] + sampler[1]) / 5.f;
 
   dt_free_align(sampler);
 }
 
 static void build_gamut_lut(dt_iop_satcurve_data_t *d,
-                            const dt_iop_order_iccprofile_info_t *work_profile)
+                             const dt_iop_order_iccprofile_info_t *work_profile)
 {
   if(d->formula == DT_IOP_SATCURVE_DTUCS)
   {
@@ -776,7 +856,7 @@ static void build_gamut_lut(dt_iop_satcurve_data_t *d,
 }
 
 static void sync_channel_curve(dt_iop_satcurve_channel_data_t *dst,
-                               const dt_iop_satcurve_channel_params_t *src)
+                                const dt_iop_satcurve_channel_params_t *src)
 {
   if(dst->curve_type != src->curve_type || dst->curve_num_nodes != src->curve_num_nodes)
   {
@@ -798,7 +878,7 @@ static void sync_channel_curve(dt_iop_satcurve_channel_data_t *dst,
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_satcurve_data_t *d = piece->data;
   const dt_iop_satcurve_params_t *p = (const dt_iop_satcurve_params_t *)p1;
@@ -813,7 +893,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     sync_channel_curve(&d->channel[ch], &p->channel[ch]);
 
   const dt_iop_order_iccprofile_info_t *work_profile =
-    dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+      dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
 
   if(work_profile && (!d->lut_inited || work_profile != d->work_profile))
   {
@@ -824,11 +904,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 }
 
 int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void **new_params,
-                  int32_t *new_params_size,
-                  int *new_version)
+                   const void *const old_params,
+                   const int old_version,
+                   void **new_params,
+                   int32_t *new_params_size,
+                   int *new_version)
 {
   if(old_version == 1)
   {
@@ -849,7 +929,6 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 2;
     return 0;
   }
-
   return 1;
 }
 
@@ -859,33 +938,33 @@ void init_presets(dt_iop_module_so_t *self)
 
   reset_params(&p);
   dt_gui_presets_add_generic(_("neutral"), self->op, self->version(),
-                             &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+                              &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   reset_params(&p);
   p.channel[DT_IOP_SATCURVE_CHANNEL_SATURATION].curve[0].y = .60f;
   p.channel[DT_IOP_SATCURVE_CHANNEL_SATURATION].curve[1].y = .55f;
   dt_gui_presets_add_generic(_("gentle saturation"), self->op, self->version(),
-                             &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+                              &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   reset_params(&p);
   p.channel[DT_IOP_SATCURVE_CHANNEL_SATURATION].curve_num_nodes = 3;
   p.channel[DT_IOP_SATCURVE_CHANNEL_SATURATION].curve[1] = (dt_iop_satcurve_node_t){ .45f, .62f };
   p.channel[DT_IOP_SATCURVE_CHANNEL_SATURATION].curve[2] = (dt_iop_satcurve_node_t){ 1.f, .42f };
   dt_gui_presets_add_generic(_("protect saturated colors"), self->op, self->version(),
-                             &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+                              &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   reset_params(&p);
   p.channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].curve[0].y = .56f;
   p.channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].curve[1].y = .54f;
   dt_gui_presets_add_generic(_("gentle brilliance"), self->op, self->version(),
-                             &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+                              &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   reset_params(&p);
   p.channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].curve_num_nodes = 3;
   p.channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].curve[1] = (dt_iop_satcurve_node_t){ .40f, .58f };
   p.channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE].curve[2] = (dt_iop_satcurve_node_t){ 1.f, .48f };
   dt_gui_presets_add_generic(_("bright mids, protect extremes"), self->op, self->version(),
-                             &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+                              &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 static inline int add_node_to_channel(dt_iop_satcurve_channel_params_t *c, const float x, const float y)
@@ -911,7 +990,7 @@ static void _get_graph_geometry(const GtkAllocation *a, float *x0, float *y0, fl
   *y0 = DT_IOP_SATCURVE_INSET;
   *w = MAX(1, a->width - 2 * DT_IOP_SATCURVE_INSET);
   *h = MAX(1, a->height - 2 * DT_IOP_SATCURVE_INSET - DT_IOP_SATCURVE_GRADIENT_GAP
-              - DT_IOP_SATCURVE_GRADIENT_SIZE);
+            - DT_IOP_SATCURVE_GRADIENT_SIZE);
 }
 
 static void _draw_sat_histogram(cairo_t *cr, dt_iop_satcurve_gui_data_t *g, const int w, const int h)
@@ -964,12 +1043,12 @@ static void _draw_sat_picker(cairo_t *cr, dt_iop_module_t *self, const int w, co
 }
 
 static void _draw_channel_curve(cairo_t *cr,
-                                const dt_iop_satcurve_channel_params_t *cp,
-                                const dt_iop_satcurve_gui_channel_t *gc,
-                                const int selected,
-                                const gboolean active,
-                                const int w, const int h,
-                                const double r, const double g, const double b)
+                                 const dt_iop_satcurve_channel_params_t *cp,
+                                 const dt_iop_satcurve_gui_channel_t *gc,
+                                 const int selected,
+                                 const gboolean active,
+                                 const int w, const int h,
+                                 const double r, const double g, const double b)
 {
   cairo_save(cr);
 
@@ -1000,7 +1079,7 @@ static void _draw_channel_curve(cairo_t *cr,
 }
 
 static void _sync_gui_curve(dt_iop_satcurve_gui_channel_t *gc,
-                            const dt_iop_satcurve_channel_params_t *cp)
+                             const dt_iop_satcurve_channel_params_t *cp)
 {
   if(gc->curve_type != cp->curve_type || gc->curve_num_nodes != cp->curve_num_nodes)
   {
@@ -1061,20 +1140,20 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   cairo_stroke(cr);
 
   _draw_channel_curve(cr,
-                      &p->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION],
-                      &g->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION],
-                      g->active_channel == DT_IOP_SATCURVE_CHANNEL_SATURATION ? g->selected : -1,
-                      g->active_channel == DT_IOP_SATCURVE_CHANNEL_SATURATION,
-                      (int)gw, (int)gh,
-                      .90, .90, .90);
+                       &p->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION],
+                       &g->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION],
+                       g->active_channel == DT_IOP_SATCURVE_CHANNEL_SATURATION ? g->selected : -1,
+                       g->active_channel == DT_IOP_SATCURVE_CHANNEL_SATURATION,
+                       (int)gw, (int)gh,
+                       .90, .90, .90);
 
   _draw_channel_curve(cr,
-                      &p->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE],
-                      &g->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE],
-                      g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? g->selected : -1,
-                      g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE,
-                      (int)gw, (int)gh,
-                      1.00, .65, .20);
+                       &p->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE],
+                       &g->channel[DT_IOP_SATCURVE_CHANNEL_BRILLIANCE],
+                       g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? g->selected : -1,
+                       g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE,
+                       (int)gw, (int)gh,
+                       1.00, .65, .20);
 
   cairo_restore(cr);
 
@@ -1135,7 +1214,6 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
       for(int i = hit; i < cp->curve_num_nodes - 1; i++) cp->curve[i] = cp->curve[i + 1];
       cp->curve_num_nodes--;
     }
-
     g->selected = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
@@ -1154,6 +1232,7 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
 
   return FALSE;
 }
+
 static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
                              dt_iop_module_t *self)
 {
@@ -1172,6 +1251,7 @@ static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
   }
+
   return TRUE;
 }
 
@@ -1197,8 +1277,8 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
     cp->curve[n].x = 1.f;
   else
     cp->curve[n].x = CLAMP(x,
-                           cp->curve[n - 1].x + DT_IOP_SATCURVE_MIN_X_DISTANCE,
-                           cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
+                            cp->curve[n - 1].x + DT_IOP_SATCURVE_MIN_X_DISTANCE,
+                            cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
 
   cp->curve[n].y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
   gtk_widget_queue_draw(widget);
@@ -1248,7 +1328,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *widget, dt_dev_pixelpi
   if(!g) return;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
-    dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
+      dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   if(!work_profile) return;
 
   dt_colormatrix_t inputmatrix = {{ 0.0f }};
@@ -1273,15 +1353,39 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *widget, dt_dev_pixelpi
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+// NEU: Callback für den Sättigungsmasken-Toggle-Button, analog
+// show_luminance_mask_callback() in toneequal.c
+static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
+
+  dt_iop_request_focus(self);
+  g->mask_display = gtk_toggle_button_get_active(button);
+  dt_dev_reprocess_center(self->dev);
+}
+
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
-  if(!in) dt_iop_color_picker_reset(self, FALSE);
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  if(!in)
+  {
+    dt_iop_color_picker_reset(self, FALSE);
+
+    // NEU: Maskenanzeige beim Verlassen des Moduls zurücksetzen
+    if(g && g->mask_display)
+    {
+      g->mask_display = FALSE;
+      if(g->show_saturation_mask)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_saturation_mask), FALSE);
+    }
+  }
 }
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook,
-                                          GtkWidget *page,
-                                          guint page_num,
-                                          dt_iop_module_t *self)
+                                           GtkWidget *page,
+                                           guint page_num,
+                                           dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
 
@@ -1289,8 +1393,8 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   if(!g) return;
 
   g->active_channel = (page_num == 1)
-                        ? DT_IOP_SATCURVE_CHANNEL_BRILLIANCE
-                        : DT_IOP_SATCURVE_CHANNEL_SATURATION;
+    ? DT_IOP_SATCURVE_CHANNEL_BRILLIANCE
+    : DT_IOP_SATCURVE_CHANNEL_SATURATION;
   g->selected = -1;
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -1315,7 +1419,7 @@ void gui_update(dt_iop_module_t *self)
 
   if(g->notebook)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(g->notebook),
-                                  g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? 1 : 0);
+                                   g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? 1 : 0);
 
   if(g->area) gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -1339,6 +1443,7 @@ void gui_init(dt_iop_module_t *self)
   g->selected = -1;
   g->dragging = FALSE;
   g->active_channel = DT_IOP_SATCURVE_CHANNEL_SATURATION;
+  g->mask_display = FALSE; // NEU
 
   for(int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
   {
@@ -1348,8 +1453,8 @@ void gui_init(dt_iop_module_t *self)
 
     for(int i = 0; i < p->channel[ch].curve_num_nodes; i++)
       dt_draw_curve_add_point(g->channel[ch].curve,
-                              p->channel[ch].curve[i].x,
-                              p->channel[ch].curve[i].y);
+                               p->channel[ch].curve[i].x,
+                               p->channel[ch].curve[i].y);
   }
 
   memset(g->histogram, 0, sizeof(g->histogram));
@@ -1382,27 +1487,27 @@ void gui_init(dt_iop_module_t *self)
   gtk_notebook_set_current_page(g->notebook, 0);
 
   g_signal_connect(G_OBJECT(g->notebook), "switch-page",
-                   G_CALLBACK(_channel_tabs_switch_callback), self);
+                    G_CALLBACK(_channel_tabs_switch_callback), self);
 
   dt_gui_box_add(self->widget, GTK_WIDGET(g->notebook));
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/satcurve/graph_height"));
   gtk_widget_set_size_request(GTK_WIDGET(g->area), -1, DT_PIXEL_APPLY_DPI(180));
   gtk_widget_add_events(GTK_WIDGET(g->area),
-                        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                        | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
+                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                         | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(area_release), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",  G_CALLBACK(area_scroll), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll), self);
   dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
 
   g->formula = dt_bauhaus_combobox_from_params(self, "formula");
   dt_bauhaus_combobox_add(g->formula, _("JzAzBz"));
   dt_bauhaus_combobox_add(g->formula, _("darktable UCS"));
   gtk_widget_set_tooltip_text(g->formula,
-                              _("choose the perceptual saturation definition used by both curves"));
+                               _("choose the perceptual saturation definition used by both curves"));
 
   g_object_ref(g->formula);
   gtk_container_remove(GTK_CONTAINER(self->widget), g->formula);
@@ -1413,7 +1518,14 @@ void gui_init(dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT, NULL, IOP_CS_RGB);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick saturation from image"));
 
+  // NEU: Toggle-Button für die Sättigungsmaskenanzeige
+  g->show_saturation_mask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
+  gtk_widget_set_tooltip_text(g->show_saturation_mask, _("display saturation mask"));
+  g_signal_connect(G_OBJECT(g->show_saturation_mask), "toggled",
+                    G_CALLBACK(show_saturation_mask_callback), self);
+
   gtk_box_pack_start(GTK_BOX(controls_hbox), g->colorpicker, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(controls_hbox), g->show_saturation_mask, FALSE, FALSE, 0); // NEU
   gtk_box_pack_end(GTK_BOX(controls_hbox), g->formula, FALSE, FALSE, 0);
   g_object_unref(g->formula);
 
@@ -1425,6 +1537,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_satcurve_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_satcurve_params_t));
   self->params_size = sizeof(dt_iop_satcurve_params_t);
+  self->gui_data = NULL;
 
   reset_params(self->params);
   reset_params(self->default_params);
