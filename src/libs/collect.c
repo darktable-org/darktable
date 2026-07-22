@@ -658,7 +658,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   if(get_path && dt_modifier_is(event->state, GDK_SHIFT_MASK)
      && gtk_tree_selection_count_selected_rows(selection) > 0
      && (d->view_rule == DT_COLLECTION_PROP_DAY
-         || d->view_rule == DT_COLLECTION_PROP_MONTH 
+         || d->view_rule == DT_COLLECTION_PROP_MONTH
          || _is_time_property(d->view_rule)
          || d->view_rule == DT_COLLECTION_PROP_APERTURE
          || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
@@ -1381,6 +1381,25 @@ static void _expand_select_tree_path(GtkTreePath *path1,
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 
+static void _update_parent_count(GtkTreeModel *model,
+                                 GtkTreeIter *iter,
+                                 const int count)
+{
+  GtkTreeIter parent = *iter;
+  GtkTreeIter child;
+  guint parentcount;
+
+  do
+  {
+    gtk_tree_model_get(model, &parent,
+                       DT_LIB_COLLECT_COL_COUNT, &parentcount, -1);
+
+    gtk_tree_store_set(GTK_TREE_STORE(model), &parent,
+                       DT_LIB_COLLECT_COL_COUNT, parentcount + count, -1);
+    child = parent;
+  } while (gtk_tree_model_iter_parent(model, &parent, &child));
+}
+
 static void _tree_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
@@ -1673,6 +1692,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
       char *name = tuple->name;
       const int count = tuple->count;
       const int status = tuple->status;
+
       if(name == NULL) continue; // safeguard against degenerated db entries
 
       // this is just for tags
@@ -1727,7 +1747,8 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
 
         if(tokens != NULL)
         {
-          // find the number of common parts at the beginning of tokens and last_tokens
+          // find the number of common parts at the beginning of tokens and
+          // last_tokens
           GtkTreeIter parent = last_parent;
           const int tokens_length = string_array_length(tokens);
           int common_length = 0;
@@ -1739,7 +1760,6 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
             {
               common_length++;
             }
-
             // point parent iter to where the entries should be added
             for(int i = common_length; i < last_tokens_length; i++)
             {
@@ -1756,6 +1776,14 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
 #endif
           for(int i = 0; i < common_length; i++)
             dt_util_str_cat(&pth, format_separator, tokens[i]);
+
+          // if we are at the end of the path, and this is a folder, we need to
+          // add the count to all parents.
+          if(!tokens[common_length]
+             && property == DT_COLLECTION_PROP_FOLDERS)
+          {
+            _update_parent_count(model, &parent, count);
+          }
 
           for(char **token = &tokens[common_length]; *token; token++)
           {
@@ -1776,19 +1804,12 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
             index++;
             // also add the item count to parents
             if((property == DT_COLLECTION_PROP_DAY
+                || property == DT_COLLECTION_PROP_FOLDERS
                 || _is_time_property(property)) && !*(token + 1))
             {
-              guint parentcount;
-              GtkTreeIter parent2, child = iter;
-
-              while(gtk_tree_model_iter_parent(model, &parent2, &child))
-              {
-                gtk_tree_model_get(model, &parent2,
-                                   DT_LIB_COLLECT_COL_COUNT, &parentcount, -1);
-                gtk_tree_store_set(GTK_TREE_STORE(model), &parent2,
-                                   DT_LIB_COLLECT_COL_COUNT, count + parentcount, -1);
-                child = parent2;
-              }
+              GtkTreeIter p;
+              gtk_tree_model_iter_parent(model, &p, &iter);
+              _update_parent_count(model, &p, count);
             }
 
             common_length++;
@@ -2328,7 +2349,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
     if(strlen(query) > 0)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      
+
       GList *rows = NULL;
 
       while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2438,11 +2459,11 @@ static void _list_view(dt_lib_collect_rule_t *dr)
       {
         const gboolean sort_by_import_time =
           dt_conf_is_equal("plugins/collect/filmroll_sort", "import time");
-        const gboolean sort_by_folder_name = 
+        const gboolean sort_by_folder_name =
           dt_conf_is_equal("plugins/collect/filmroll_sort", "folder name");
-      
+
         if(sort_by_import_time)
-        {      
+        {
           rows = g_list_sort(rows, _sort_filmroll_by_id);
         }
         else if(sort_by_folder_name)
@@ -2453,21 +2474,21 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         {
           rows = g_list_sort(rows, _sort_filmroll_by_display_name);
         }
-      
+
         if(sort_descending)
           rows = g_list_reverse(rows);
-      
+
         for(GList *l = rows; l; l = l->next)
         {
           filmroll_row_t *r = l->data;
-      
+
           gchar *text = g_strdup(r->value);
           gchar *ptr = text;
           while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr))
             ptr[0] = '?';
-      
+
           gchar *escaped_text = g_markup_escape_text(text, -1);
-      
+
           gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
                                             DT_LIB_COLLECT_COL_TEXT, r->folder,
                                             DT_LIB_COLLECT_COL_ID, r->id,
@@ -2477,14 +2498,14 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                                             DT_LIB_COLLECT_COL_COUNT, r->count,
                                             DT_LIB_COLLECT_COL_UNREACHABLE, r->status,
                                             -1);
-      
+
           g_free(text);
           g_free(escaped_text);
           g_free(r->folder);
           g_free(r->value);
           g_free(r);
         }
-      
+
         g_list_free(rows);
         rows = NULL;
       }
