@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
@@ -1221,7 +1222,9 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
       c;
       c = g_list_delete_link(c, c))
   {
-    if(!is_changed && DT_IS_BAUHAUS_WIDGET(c->data) && gtk_widget_get_visible(c->data))
+    if(is_changed) continue;
+
+    if(DT_IS_BAUHAUS_WIDGET(c->data) && gtk_widget_get_visible(c->data))
     {
       dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
       if(!b->field) continue;
@@ -1235,6 +1238,15 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
         is_changed = b->combobox.entries->len
           && b->combobox.active != b->combobox.defpos;
     }
+    // dt_bauhaus_toggle_from_params() checkbuttons are plain GtkCheckButtons,
+    // not bauhaus widgets, so they'd otherwise never be considered here.
+    // dt_bauhaus_toggle_widget_is_changed() (develop/imageop_gui.c) reads
+    // the module's current default_params live rather than a value cached
+    // at some earlier point, so this stays correct even for modules that
+    // recompute their real defaults per-image (e.g. in reload_defaults()),
+    // after the checkbox already exists.
+    else if(GTK_IS_TOGGLE_BUTTON(c->data) && gtk_widget_get_visible(c->data))
+      is_changed = dt_bauhaus_toggle_widget_is_changed(GTK_WIDGET(c->data));
   }
 
   GtkWidget *label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), w);
@@ -1243,6 +1255,11 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
     dt_gui_add_class(label, "changed");
   else
     dt_gui_remove_class(label, "changed");
+}
+
+void dt_bauhaus_highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
+{
+  _highlight_changed_notebook_tab(w, user_data);
 }
 
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,

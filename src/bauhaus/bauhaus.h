@@ -218,6 +218,13 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  gpointer field,
                                  dt_introspection_type_t field_type);
 gpointer dt_bauhaus_widget_get_field(GtkWidget *widget);
+// mark (or re-evaluate, if user_data is NULL/FALSE) the enclosing notebook
+// tab as "changed" -- the same mechanism dt_bauhaus_slider/combobox value
+// changes already drive internally (_highlight_changed_notebook_tab); this
+// is a public wrapper so non-bauhaus widgets bound via the same params
+// (e.g. dt_bauhaus_toggle_from_params()'s plain GtkCheckButton) can drive
+// the same tab-header indicator.
+void dt_bauhaus_highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data);
 // update one bauhaus widget or all widgets in a module from the provided (blend)params
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   GtkWidget *widget,
