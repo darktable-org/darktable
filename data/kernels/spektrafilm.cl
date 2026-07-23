@@ -402,61 +402,6 @@ __kernel void spektrafilm_develop(__global const float4 *lograw, __global const 
   cmy[k] = (float4)(out[0], out[1], out[2], lg.w);
 }
 
-/* stage 4: grain delta on the developed CMY density (spektra_core model);
-   delta is blurred host-side, then added back by spektrafilm_grain_add */
-__kernel void spektrafilm_grain_gen(__global const float4 *dens, __global float4 *grain_buf,
-                                    const int w, const int h, const float grain_amount,
-                                    const int roi_x, const int roi_y, const int mono,
-                                    const float dmax0, const float dmax1, const float dmax2,
-                                    const float dmin0, const float dmin1, const float dmin2,
-                                    const float rms0, const float rms1, const float rms2,
-                                    const float unf0, const float unf1, const float unf2)
-{
-  const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= w || y >= h) return;
-  const size_t k = (size_t)y * w + x;
-  const float4 d4 = dens[k];
-  const float dmn[3] = { dmin0, dmin1, dmin2 };
-  /* per-film emulsion D-max: a hardcoded colour-negative 2.2 saturates the
-     particle model in dense slide areas and tints them channel-dependently */
-  const float dmc[3] = { fmax(dmax0, 1e-3f), fmax(dmax1, 1e-3f), fmax(dmax2, 1e-3f) };
-  /* per-film catalogue grain (rms-granularity, uniformity) from
-     film_render_defaults[stock].grain — replaces the earlier one-size-fits-all
-     constants so e.g. Portra 400 and Tri-X render distinct grain */
-  const float rms[3] = { rms0, rms1, rms2 }, unf[3] = { unf0, unf1, unf2 };
-  const float A48 = 3.14159265f * 24.0f * 24.0f;
-  const float ref_um = 10.0f, pix = ref_um * ref_um;
-  const float dd[3] = { d4.x, d4.y, d4.z };
-  float gd[3];
-  if(mono) /* B&W stock: one achromatic grain realisation for all channels */
-  {
-    const float dm = (dd[0] + dd[1] + dd[2]) / 3.0f;
-    const float dmax = dmc[1] + dmn[1], d_ref = 1.0f + dmn[1];
-    const float sig = rms[1] / 1000.0f;
-    const float denom = fmax(d_ref * (dmax - unf[1] * d_ref), 1e-6f);
-    const float a_grain = sig * sig * A48 / denom;
-    const float npart = pix / fmax(a_grain, 1e-4f);
-    const float din = dm + dmn[1];
-    uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0u);
-    const float gval = sf_layer_particle(din, dmax, npart, unf[1], seed) - dmn[1];
-    const float dl = (gval - dm) * grain_amount;
-    grain_buf[k] = (float4)(dl, dl, dl, 0.f);
-    return;
-  }
-  for(int c = 0; c < 3; c++)
-  {
-    float dmax = dmc[c] + dmn[c], din = dd[c] + dmn[c];
-    float d_ref = 1.0f + dmn[c], sig = rms[c] / 1000.0f;
-    float denom = fmax(d_ref * (dmax - unf[c] * d_ref), 1e-6f);
-    float a_grain = sig * sig * A48 / denom;
-    float npart = pix / fmax(a_grain, 1e-4f);
-    uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), (uint)c);
-    float g = sf_layer_particle(din, dmax, npart, unf[c], seed) - dmn[c];
-    gd[c] = (g - dd[c]) * grain_amount;
-  }
-  grain_buf[k] = (float4)(gd[0], gd[1], gd[2], 0.f);
-}
-
 /* Inverse-lookup: given the already-computed NET total density `target` for
  * one channel, find its fractional position on the [0, n) exposure-grid
  * axis by searching `arr` (assumed monotonic -- guaranteed for a sum of
@@ -493,92 +438,117 @@ static float sf_cl_grain_curve_sample(__global const float *arr, int n, int stri
   return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
 }
 
-/* Multi-sublayer grain delta (see sf_grain_delta_ml, spektra_sim.c): only
- * dispatched when n_sub > 1 -- a film whose own fitted density-curve model
- * has more than one emulsion sub-layer. For n_sub<=1 the host dispatches
- * spektrafilm_grain_gen above instead, unchanged. Sums each sub-layer's
- * independent particle draw, recovering that sub-layer's own density by
- * inverse-interpolating the self-consistent summed sub-layer curve at the
- * exposure position the already-computed total density corresponds to.
- * layer_curve is [nle][max_sub][3] row-major, layer_curve_total is
- * [nle][3]; max_sub (SF_GRAIN_MAX_SUBLAYERS host-side) is the table's
- * fixed stride regardless of how many sub-layers n_sub actually uses. */
-__kernel void spektrafilm_grain_gen_ml(__global const float4 *dens, __global float4 *grain_buf,
-                                       const int w, const int h, const float grain_amount,
-                                       const int roi_x, const int roi_y, const int mono,
-                                       const int n_sub, const int nle, const int max_sub,
-                                       const float dmin0, const float dmin1, const float dmin2,
-                                       const float unf0, const float unf1, const float unf2,
-                                       __global const float *layer_dmax,
-                                       __global const float *layer_npart,
-                                       __global const float *layer_dmin,
-                                       __global const float *layer_curve_total,
-                                       __global const float *layer_curve)
+/* stage 4: grain. Restructured into three kernels (raw sub-layer sample,
+   accumulate, finalize) instead of one that directly produced the final
+   combined delta, so upstream's per-sub-layer dye-cloud blur
+   (layer_particle_model's blur_particle, grain.py) can run on each raw
+   sub-layer buffer independently between sampling and combining -- see
+   the matching comment in process()'s CPU path for the full rationale.
+   channel_idx is 1 for mono (matching the old kernels' convention of
+   using channel 1's curve/params for the achromatic draw) or 0/1/2 for
+   color; seed_ch is 0 for mono (so seeding stays sl*10, not 1+sl*10) or
+   the real channel index for color. layer_curve is [nle][max_sub][3]
+   row-major, layer_curve_total is [nle][3]; max_sub (SF_GRAIN_MAX_SUBLAYERS
+   host-side) is the table's fixed stride regardless of how many
+   sub-layers n_sub actually uses. Outputs the RAW (un-combined,
+   pre-dmin-subtraction) sample for ONE sub-layer into a flat w*h buffer --
+   called once per sub-layer, unlike the old kernels which looped every
+   sub-layer internally in one dispatch. */
+__kernel void spektrafilm_grain_gen_raw_sl(__global const float4 *dens, __global float *raw_out,
+                                           const int w, const int h,
+                                           const int roi_x, const int roi_y, const int mono,
+                                           const int channel_idx, const int seed_ch,
+                                           const int sl_idx, const int nle, const int max_sub,
+                                           const float unif_ch, const float npart_scale,
+                                           __global const float *layer_dmax,
+                                           __global const float *layer_npart,
+                                           __global const float *layer_dmin,
+                                           __global const float *layer_curve_total,
+                                           __global const float *layer_curve)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 d4 = dens[k];
-  const float dd[3] = { d4.x, d4.y, d4.z };
-  const float dmn[3] = { dmin0, dmin1, dmin2 };
-  const float unf[3] = { unf0, unf1, unf2 };
+  const float density = mono ? (d4.x + d4.y + d4.z) / 3.0f
+                             : (channel_idx == 0 ? d4.x : (channel_idx == 1 ? d4.y : d4.z));
   const int lstride = max_sub * 3;
-
-  if(mono)
-  {
-    const float dm = (dd[0] + dd[1] + dd[2]) / 3.0f;
-    const float pos = sf_cl_grain_curve_inverse(layer_curve_total + 1, nle, 3, dm);
-    float total_abs = 0.0f;
-    for(int sl = 0; sl < n_sub; sl++)
-    {
-      const float raw = sf_cl_grain_curve_sample(layer_curve + sl * 3 + 1, nle, lstride, pos);
-      const float d_abs = raw + layer_dmin[sl * 3 + 1];
-      const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), (uint)(sl * 10));
-      total_abs += sf_layer_particle(d_abs, layer_dmax[sl * 3 + 1], layer_npart[sl * 3 + 1], unf[1], seed);
-    }
-    const float gval = total_abs - dmn[1];
-    const float dl = (gval - dm) * grain_amount;
-    grain_buf[k] = (float4)(dl, dl, dl, 0.f);
-    return;
-  }
-
-  float gd[3];
-  for(int c = 0; c < 3; c++)
-  {
-    const float pos = sf_cl_grain_curve_inverse(layer_curve_total + c, nle, 3, dd[c]);
-    float total_abs = 0.0f;
-    for(int sl = 0; sl < n_sub; sl++)
-    {
-      const float raw = sf_cl_grain_curve_sample(layer_curve + sl * 3 + c, nle, lstride, pos);
-      const float d_abs = raw + layer_dmin[sl * 3 + c];
-      const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), (uint)(c + sl * 10));
-      total_abs += sf_layer_particle(d_abs, layer_dmax[sl * 3 + c], layer_npart[sl * 3 + c], unf[c], seed);
-    }
-    const float g = total_abs - dmn[c];
-    gd[c] = (g - dd[c]) * grain_amount;
-  }
-  grain_buf[k] = (float4)(gd[0], gd[1], gd[2], 0.f);
+  const int idx = sl_idx * 3 + channel_idx;
+  const float pos = sf_cl_grain_curve_inverse(layer_curve_total + channel_idx, nle, 3, density);
+  const float raw = sf_cl_grain_curve_sample(layer_curve + idx, nle, lstride, pos);
+  const float d_abs = raw + layer_dmin[idx];
+  const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y),
+                                  (uint)(seed_ch + sl_idx * 10));
+  raw_out[k] = sf_layer_particle(d_abs, layer_dmax[idx], layer_npart[idx] * npart_scale,
+                                 unif_ch, seed);
 }
 
-/* gmean centres the grain-delta buffer before scaling by renorm, matching
+/* Sums sub-layer buffers (each already dye-cloud-blurred by the host) into
+   a single accumulator, one sub-layer at a time: reset=1 initializes the
+   accumulator with the first sub-layer instead of requiring a separate
+   zero-fill dispatch, reset=0 adds subsequent ones. */
+__kernel void spektrafilm_grain_accumulate_1c(__global float *acc, __global const float *src,
+                                              const int w, const int h, const int reset)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  if(reset) acc[k] = src[k];
+  else acc[k] += src[k];
+}
+
+/* Subtracts the density floor and the original clean density from the
+   summed (already dye-blurred) sub-layers, scales by grain strength, and
+   writes into grain_buf's out_ch component (mono broadcasts to all
+   three). grain_buf is read-modify-write: for color, this kernel runs
+   once per output channel with the SAME buffer, each call only touching
+   its own component. */
+__kernel void spektrafilm_grain_finalize_channel(__global float4 *grain_buf,
+                                                 __global const float *acc,
+                                                 __global const float4 *dens,
+                                                 const int w, const int h, const int mono,
+                                                 const int channel_idx, const int out_ch,
+                                                 const float dmin_ch, const float amount)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 d4 = dens[k];
+  const float density = mono ? (d4.x + d4.y + d4.z) / 3.0f
+                             : (channel_idx == 0 ? d4.x : (channel_idx == 1 ? d4.y : d4.z));
+  const float g = acc[k] - dmin_ch;
+  const float delta = (g - density) * amount;
+  float4 gv = mono || out_ch == 0 ? (float4)(0.f, 0.f, 0.f, 0.f) : grain_buf[k];
+  if(mono) gv = (float4)(delta, delta, delta, 0.f);
+  else if(out_ch == 0) gv.x = delta;
+  else if(out_ch == 1) gv.y = delta;
+  else gv.z = delta;
+  grain_buf[k] = gv;
+}
+
+/* gmean centres the grain-delta buffer before adding it back, matching
    process()'s CPU-side DC-bias removal (see there for the full rationale:
-   the multi-sublayer particle generator has a small positive DC bias that
-   renorm amplifies proportionally to sigma). gmean is computed host-side
-   over the whole buffer (see process_cl()) since a full-image reduction is
-   simplest done there, then passed down PER CHANNEL as a float4 -- a
-   single pooled scalar across R+G+B would leave each channel's own bias
-   minus the pooled average as an uncorrected residual (a color cast, not
-   just a brightness bug). */
+   the multi-sublayer particle generator has a small positive DC bias).
+   gmean is computed host-side over the whole buffer (see process_cl())
+   since a full-image reduction is simplest done there, then passed down
+   PER CHANNEL as a float4 -- a single pooled scalar across R+G+B would
+   leave each channel's own bias minus the pooled average as an
+   uncorrected residual (a color cast, not just a brightness bug).
+   No variance-restoration renorm here (upstream's own grain finalization,
+   _finalize_grain in grain.py, has none either -- it just blurs and lets
+   the natural contrast reduction stand, matching real optical clumping;
+   restoring full pre-blur variance made grain visibly higher-contrast,
+   and therefore visually coarser, than upstream at any matching sigma). */
 __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const float4 *grain_buf,
-                                    const int w, const int h, const float renorm, const float4 gmean)
+                                    const int w, const int h, const float4 gmean)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   float4 d = dens_buf[k];
   float4 g = grain_buf[k];
-  dens_buf[k] = (float4)(d.x + (g.x - gmean.x) * renorm, d.y + (g.y - gmean.y) * renorm,
-                         d.z + (g.z - gmean.z) * renorm, d.w);
+  dens_buf[k] = (float4)(d.x + (g.x - gmean.x), d.y + (g.y - gmean.y),
+                         d.z + (g.z - gmean.z), d.w);
 }
 
 /* Multiplicative unsharp mask after grain blur (study b80).
