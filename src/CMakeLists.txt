@@ -54,6 +54,7 @@ FILE(GLOB SOURCE_FILES
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"
+  "common/hdr_viewer.c"
   "common/heal.c"
   "common/histogram.c"
   "common/history.c"
