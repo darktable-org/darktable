@@ -219,10 +219,24 @@ void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out);
 /* Multi-sublayer grain delta (see _sf_build_grain_layers / sf_grain_layers_t
  * above): only call this when sf_sim_grain_layers()'s n > 1 -- for n==1,
  * calling the existing single-layer sf_grain_delta_dmax() (spektra_core.h)
- * directly is both simpler and avoids a redundant lookup round-trip. */
+ * directly is both simpler and avoids a redundant lookup round-trip.
+ * npart_scale rescales the build-time-precomputed layer_npart (built at the
+ * fixed SF_GRAIN_REF_UM reference scale, since it depends on curve/coupler
+ * state baked in at sf_sim_build time, not just resolution) up to the live
+ * pipe's real pixel_um: pass (pixel_um*pixel_um)/(SF_GRAIN_REF_UM*SF_GRAIN_REF_UM). */
 void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], float amount,
                        float out_delta[3], uint32_t xi, uint32_t yi, int mono,
-                       const float dmin_c[3], const float unif_c[3]);
+                       const float dmin_c[3], const float unif_c[3], float npart_scale);
+/* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
+ * sub-layer's raw (un-combined, pre-dmin-subtraction) sample into
+ * raw_out[0..layers->n-1] instead, so the caller can dye-cloud-blur each
+ * sub-layer's whole-image buffer independently (upstream's
+ * layer_particle_model blur_particle) before summing them -- see the
+ * definition in spektra_sim.c for the full rationale. raw_out must have
+ * room for at least layers->n floats. */
+void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers, float density, int channel_idx,
+                             int seed_ch, uint32_t xi, uint32_t yi, float unif_c,
+                             float npart_scale, float *raw_out);
 /* SF_GRAIN_MAX_SUBLAYERS is defined earlier in this header, next to SF_NLE
    (both are needed by sf_sim_gpu_t above, which comes before this point). */
 bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,

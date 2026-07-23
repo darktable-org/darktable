@@ -91,25 +91,6 @@ int sf_gauss_kernel_1d(const float sigma, float *const kernel, const int max_rad
   return radius;
 }
 
-/* Exact grain-clump renormalization: blurring the grain-delta buffer
-   necessarily reduces its variance (that's what turns per-pixel noise into
-   soft "clumps"), so the result needs scaling back up to keep the grain at
-   its intended RMS after clumping. For a normalized kernel k, convolving
-   white noise reduces variance by sum(k^2) along that axis; since the clump
-   blur is separable (the same kernel applied along both axes), the full 2D
-   variance factor is sum(k^2)^2, and the amplitude factor that undoes it is
-   1/sum(k^2). Computed directly from the same kernel actually used for the
-   blur, so this is exact rather than an assumed closed-form approximation. */
-float sf_gauss_grain_renorm(const float sigma)
-{
-  if(sigma < 1e-6f) return 1.0f;
-  float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
-  const int radius = sf_gauss_kernel_1d(sigma, kernel, SF_GAUSS_MAX_RADIUS);
-  double ss = 0.0;
-  for(int i = 0; i < 2 * radius + 1; i++) ss += (double)kernel[i] * kernel[i];
-  return (float)(1.0 / ss);
-}
-
 /* SF_GAUSS_EXACT_MAX_SIGMA / SF_GAUSS_SIGMA_CORRECTION are defined in
    spektra_core.h, shared with spektrafilm.c's GPU macros. */
 
@@ -215,14 +196,9 @@ static void _sf_transpose(const float *const src, float *const dst,
    is a w*h intermediate buffer for the transpose (may be NULL: the row/col
    passes then operate directly without the transpose, which is fine for
    small buffers where cache locality matters less). */
-static void _blur_channel(float *const buf, const int w, const int h, const int c,
-                          const float sigma, float *const plane, float *const trans,
-                          const int exact_only)
+static void _blur_flat_inplace(float *const plane, const int w, const int h,
+                               const float sigma, float *const trans, const int exact_only)
 {
-  if(sigma < 1e-6f) return;
-  const size_t npix = (size_t)w * h;
-  for(size_t i = 0; i < npix; i++) plane[i] = buf[i * 3 + c];
-
   const int use_iir = !exact_only && sigma >= SF_GAUSS_EXACT_MAX_SIGMA;
   float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
   int radius = 0;
@@ -288,21 +264,47 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
     }
     dt_free_align(row_tmp);
   }
+}
+
+static void _blur_channel(float *const buf, const int w, const int h, const int c,
+                          const float sigma, float *const plane, float *const trans,
+                          const int exact_only)
+{
+  if(sigma < 1e-6f) return;
+  const size_t npix = (size_t)w * h;
+  for(size_t i = 0; i < npix; i++) plane[i] = buf[i * 3 + c];
+  _blur_flat_inplace(plane, w, h, sigma, trans, exact_only);
   for(size_t i = 0; i < npix; i++) buf[i * 3 + c] = plane[i];
 }
 
 /* Blur all three channels with the same sigma (grain clumps). Always uses
-   the exact kernel regardless of sigma: sf_gauss_grain_renorm computes the
-   variance-restoration factor from that exact kernel's own coefficients, so
-   the blur actually applied must match it precisely -- the IIR fast path's
-   renormalization behavior hasn't been separately verified, so grain stays
-   on the one path its own math is derived from. Allocates trans buffer. */
+   the exact kernel regardless of sigma: the fast IIR path has a known
+   ~18% effective-width error at the small sigmas grain's clump blur
+   typically uses, which would make grain visibly the wrong size relative
+   to upstream's own (exact-shape) Gaussian blur. Allocates trans buffer. */
 void sf_blur_plane3(float *const buf, const int w, const int h, const float sigma, float *const plane)
 {
   if(sigma < 0.3f) return;
   float *const trans = dt_alloc_align_float((size_t)w * h);
   for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma, plane, trans, /*exact_only=*/1);
   dt_free_align(trans);
+}
+
+/* Same exact-kernel blur as sf_blur_plane3, but for one flat w*h buffer
+   already in place -- used for grain's per-sublayer dye-cloud blur, where
+   each (channel, sub-layer) has its own sigma. No 0.3px floor (unlike
+   sf_blur_plane3's guard for the visible clump blur): the dye-cloud sigma
+   is often well under a pixel and still meaningfully softens the raw
+   particle draw, matching upstream's plain `> 0` check. Caller-provided
+   plane IS buf (in place); trans may be NULL for small buffers. */
+void sf_blur_plane1(float *const buf, const int w, const int h, const float sigma,
+                    float *const plane, float *const trans)
+{
+  if(sigma < 1e-6f) return;
+  (void)plane; /* kept in the signature for API symmetry with sf_blur_plane3; unused: this
+                  variant blurs buf in place, it doesn't need a separate extract/write-back
+                  staging buffer the way the interleaved 3-channel path does. */
+  _blur_flat_inplace(buf, w, h, sigma, trans, /*exact_only=*/1);
 }
 
 /* Same as sf_blur_plane3, but allows the fast IIR path at large sigma: for

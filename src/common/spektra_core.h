@@ -32,6 +32,15 @@
    and OpenMP linkage; everything else in this header is inline). */
 void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
 void sf_blur_plane3_fast(float *buf, int w, int h, float sigma, float *plane);
+/* Same exact-kernel blur as sf_blur_plane3, but operating directly on a
+   single flat w*h buffer (no 3-channel interleave) -- used for the
+   per-sublayer dye-cloud blur inside grain generation, where each
+   (channel, sub-layer) has its own sigma and needs its own buffer rather
+   than sharing one interleaved 3-channel pass. No lower sigma cutoff
+   (unlike sf_blur_plane3's 0.3px guard for the visible clump blur): the
+   dye-cloud sigma is often well under a pixel and still meaningfully
+   softens the raw particle draw, matching upstream's plain `> 0` check. */
+void sf_blur_plane1(float *buf, int w, int h, float sigma, float *plane, float *trans);
 void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
                                      float *orig, float *work);
 /* Two independently-controllable stages, matching upstream's HalationParams:
@@ -589,13 +598,6 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
  * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
 int sf_gauss_kernel_1d(float sigma, float *kernel, int max_radius);
 
-/* Exact grain-clump variance-restoration factor for a separable 2D Gaussian
- * blur of the given sigma (see _sf_gauss_kernel_1d / sf_gauss_grain_renorm
- * in spektra_core.c): blurring the grain-delta buffer necessarily shrinks
- * its variance, and this is the exact factor (1/sum(kernel^2), computed
- * from the actual kernel used) that restores it to the intended RMS. */
-float sf_gauss_grain_renorm(float sigma);
-
 #define SF_FILTRATION_TO_DENSITY 0.30f  /* full filtration slider == 0.30 density */
 SPEKTRA_INLINE void sf_apply_print_grading(float density[3], float d_ref, float print_exposure,
                                            float print_contrast, float filtration_m,
@@ -683,7 +685,7 @@ SPEKTRA_INLINE void sf_grain_px(float dens[3], float pixel_um, float amount, flo
 /* SF_GRAIN_REF_UM (defined above, with sf_grain_px) is reused here for the
    same fine-generation reference scale. */
 SPEKTRA_INLINE void sf_grain_delta_dmax(const float dens[3], float amount, float out_delta[3],
-                                        uint32_t xi, uint32_t yi, int mono,
+                                        uint32_t xi, uint32_t yi, int mono, float pixel_um,
                                         const float dmax_c[3], const float dmin_c[3],
                                         const float rms_c[3], const float unif_c[3])
 {
@@ -693,13 +695,17 @@ SPEKTRA_INLINE void sf_grain_delta_dmax(const float dens[3], float amount, float
   /* Latest spektrafilm grain model (study a90): per-channel particle area from
      catalogue RMS-granularity (sigma_48 through a 48um aperture, ISO 6328):
        a_grain = (rms/1000)^2 * A48 / (D_ref (Dmax - u D_ref)),  D_ref = 1 + d_min.
-     N = pixel_area / a_grain. Generated at a fine fixed reference scale; the blur
-     afterwards sets visible clump size. rms/unif come from the film stock's own
-     catalogue data (see header comment) rather than one shared constant. */
+     N = pixel_area / a_grain. pixel_area is the REAL physical pixel area
+     (film_format_mm-derived pixel_um, squared) -- matching upstream's
+     n_particles_per_pixel = pixel_size_um**2 * ... exactly, so raw grain
+     density/variance (not just visible clump size, which the separate blur
+     step still sets) tracks the real resolution and film format. rms/unif
+     come from the film stock's own catalogue data (see header comment)
+     rather than one shared constant. */
   const float rms[3] = { rms_c[0], rms_c[1], rms_c[2] };
   const float unif[3] = { unif_c[0], unif_c[1], unif_c[2] };
   const float A48 = 3.14159265f * 24.0f * 24.0f;
-  const float ref_um = SF_GRAIN_REF_UM, pix = ref_um * ref_um;
+  const float pix = pixel_um * pixel_um;
   /* mono (B&W / combined): the three channels carry the same value, so grain must
      be ACHROMATIC — one grain realisation applied identically to all channels.
      Per-channel independent grain (the colour path) would otherwise paint colour
@@ -745,12 +751,12 @@ SPEKTRA_INLINE void sf_grain_delta_dmax(const float dens[3], float amount, float
 #define SF_GRAIN_LEGACY_UNIFORMITY { 0.97f, 0.97f, 0.97f }
 
 SPEKTRA_INLINE void sf_grain_delta(const float dens[3], float amount, float out_delta[3],
-                                   uint32_t xi, uint32_t yi, int mono)
+                                   uint32_t xi, uint32_t yi, int mono, float pixel_um)
 {
   const float legacy_dmax[3] = SF_GRAIN_LEGACY_DMAX;
   const float legacy_dmin[3] = SF_GRAIN_LEGACY_DMIN;
   const float legacy_rms[3] = SF_GRAIN_LEGACY_RMS;
   const float legacy_unif[3] = SF_GRAIN_LEGACY_UNIFORMITY;
-  sf_grain_delta_dmax(dens, amount, out_delta, xi, yi, mono, legacy_dmax, legacy_dmin,
+  sf_grain_delta_dmax(dens, amount, out_delta, xi, yi, mono, pixel_um, legacy_dmax, legacy_dmin,
                       legacy_rms, legacy_unif);
 }

@@ -3398,7 +3398,7 @@ static float _sf_grain_curve_sample(const float *arr, int n, int stride, float p
  * calibrated against, rather than diluting it the way an average would. */
 void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], float amount,
                        float out_delta[3], uint32_t xi, uint32_t yi, int mono,
-                       const float dmin_c[3], const float unif_c[3])
+                       const float dmin_c[3], const float unif_c[3], float npart_scale)
 {
   const int nsub = layers->n;
   const int nle = SF_NLE;
@@ -3413,7 +3413,8 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], flo
     {
       const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][1], nle, lstride, pos);
       const float d_abs = raw + (float)layers->layer_dmin[sl][1];
-      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][1], (float)layers->layer_npart[sl][1],
+      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][1],
+                                     (float)layers->layer_npart[sl][1] * npart_scale,
                                      unif_c[1], sf_pixel_seed(xi, yi, (uint32_t)(sl * 10)));
     }
     const float g = total_abs - dmin_c[1];
@@ -3430,11 +3431,47 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], flo
     {
       const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][c], nle, lstride, pos);
       const float d_abs = raw + (float)layers->layer_dmin[sl][c];
-      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][c], (float)layers->layer_npart[sl][c],
+      total_abs += sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][c],
+                                     (float)layers->layer_npart[sl][c] * npart_scale,
                                      unif_c[c], sf_pixel_seed(xi, yi, (uint32_t)(c + sl * 10)));
     }
     const float g = total_abs - dmin_c[c];
     out_delta[c] = (g - dens[c]) * amount;
+  }
+}
+
+/* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
+ * sub-layer's RAW absolute sample (before dmin subtraction, before
+ * summing across sub-layers) into raw_out[0..layers->n-1], so the caller
+ * can run the per-sub-layer dye-cloud blur (upstream's
+ * layer_particle_model blur_particle) on each one independently before
+ * combining -- a spatial blur needs a whole-image buffer per sub-layer,
+ * which this single-pixel function can't do itself, so it just hands
+ * back the un-combined per-sub-layer values for the caller to buffer,
+ * blur, and combine afterward. channel_idx is 1 for mono (matching
+ * sf_grain_delta_ml's own convention of using channel 1's curve/params
+ * for the achromatic draw) or 0/1/2 for color; seed_ch is the seed
+ * component sf_grain_delta_ml adds on top of sl*10 (0 for mono, the
+ * real channel index for color) -- kept as a separate parameter rather
+ * than reusing channel_idx so the mono case still seeds like sl*10, not
+ * (1 + sl*10), matching sf_grain_delta_ml exactly. */
+void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers, float density, int channel_idx,
+                             int seed_ch, uint32_t xi, uint32_t yi, float unif_c,
+                             float npart_scale, float *raw_out)
+{
+  const int nsub = layers->n;
+  const int nle = SF_NLE;
+  const int lstride = SF_GRAIN_MAX_SUBLAYERS * 3;
+  const float pos = _sf_grain_curve_inverse(&layers->layer_curve_total[0][channel_idx], nle, 3,
+                                            density);
+  for(int sl = 0; sl < nsub; sl++)
+  {
+    const float raw = _sf_grain_curve_sample(&layers->layer_curve[0][sl][channel_idx], nle,
+                                             lstride, pos);
+    const float d_abs = raw + (float)layers->layer_dmin[sl][channel_idx];
+    raw_out[sl] = sf_layer_particle(d_abs, (float)layers->layer_dmax[sl][channel_idx],
+                                    (float)layers->layer_npart[sl][channel_idx] * npart_scale,
+                                    unif_c, sf_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10)));
   }
 }
 
