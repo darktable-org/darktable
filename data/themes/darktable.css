@@ -231,6 +231,12 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color colorlabel_yellow rgb(255,180,0);
 @define-color colorlabel_purple rgb(230,0,230);
 
+/* pastel colors for the variants (module borders and active module) */
+@define-color accent_green #C1E1C5;
+@define-color accent_blue #9FBFE2;
+@define-color accent_yellow #E6E6A1;
+@define-color accent_orange #E6C2A1;
+
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *
 {
@@ -1350,6 +1356,13 @@ filechooser row:hover .sidebar-icon
 #preferences-box .sidebar label
 {
   padding: 0.14em 0.84em;
+}
+
+#theme-variant
+{
+  margin-left: 2em;
+  padding-left: 0.5em;
+  min-height: 1.5em;
 }
 
 /*--------------------

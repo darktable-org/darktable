@@ -3711,6 +3711,67 @@ void dt_gui_load_theme(const char *theme)
     _add_theme_import(&themecss, datadir, "themes", "chunk-condensed.css");
   }
 
+  // chunk-rounded-header
+
+  if(dt_conf_get_bool("themes/rounded-header"))
+  {
+    _add_theme_import(&themecss, datadir, "themes", "chunk-rounded-header.css");
+  }
+
+  // chunk-colored-accent
+
+  int index = dt_conf_get_int("themes/accent-color");
+
+  if(index > 0)
+  {
+    const char *colors[] =
+        {
+            "none",
+            "green",
+            "blue",
+            "yellow",
+            "orange"
+        };
+
+    char *chunk = g_strdup_printf
+      ("chunk-%s-accent-color.css",
+       colors[index]);
+    _add_theme_import(&themecss, datadir, "themes", chunk);
+    g_free(chunk);
+  }
+
+  // focused module border
+
+  const char *border_colors[] =
+      {
+          "none",
+          "light",
+          "dark",
+          "green",
+          "blue",
+          "yellow",
+          "orange"};
+
+  index = dt_conf_get_int("themes/focused-module-border");
+
+  if (index > 0)
+  {
+    char *chunk = g_strdup_printf("chunk-%s-focused-module-border.css",
+                                  border_colors[index]);
+    _add_theme_import(&themecss, datadir, "themes", chunk);
+    g_free(chunk);
+  }
+
+  index = dt_conf_get_int("themes/expanded-module-border");
+
+  if (index > 0)
+  {
+    char *chunk = g_strdup_printf("chunk-%s-expanded-module-border.css",
+                                  border_colors[index]);
+    _add_theme_import(&themecss, datadir, "themes", chunk);
+    g_free(chunk);
+  }
+
   // load any OS specific themes tweak file to fix some platform specific issues
 
 #ifdef __APPLE__

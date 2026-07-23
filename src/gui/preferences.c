@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -202,6 +202,51 @@ static void use_sys_font_callback(GtkWidget *widget,
   else
     gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_NORMAL, TRUE);
 
+  reload_ui_last_theme();
+}
+
+static void use_rounded_header_callback(GtkWidget *widget,
+                                        gpointer user_data)
+{
+  dt_conf_set_bool("themes/rounded-header",
+                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+
+  reload_ui_last_theme();
+}
+
+static void use_condensed_control_callback(GtkWidget *widget,
+                                           gpointer user_data)
+{
+  dt_conf_set_bool("themes/condensed",
+                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+
+  reload_ui_last_theme();
+}
+
+static void use_accent_color_callback(GtkWidget *widget,
+                                        gpointer user_data)
+{
+  const int selected = dt_bauhaus_combobox_get(widget);
+
+  dt_conf_set_int("themes/accent-color", selected);
+  reload_ui_last_theme();
+}
+
+static void use_focused_module_border_callback(GtkWidget *widget,
+                                               gpointer user_data)
+{
+  const int selected = dt_bauhaus_combobox_get(widget);
+
+  dt_conf_set_int("themes/focused-module-border", selected);
+  reload_ui_last_theme();
+}
+
+static void use_expanded_module_border_callback(GtkWidget *widget,
+                                                gpointer user_data)
+{
+  const int selected = dt_bauhaus_combobox_get(widget);
+
+  dt_conf_set_int("themes/expanded-module-border", selected);
   reload_ui_last_theme();
 }
 
@@ -412,6 +457,115 @@ static void init_tab_general(GtkWidget *dialog,
   g_signal_connect(G_OBJECT(widget), "value-changed",
                    G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
+
+  // theme variants
+
+  // condensed controls
+  GtkWidget *t_condensed = gtk_check_button_new();
+  label = gtk_label_new(_("condensed module controls"));
+  gtk_widget_set_name(label, "theme-variant");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), t_condensed, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(t_condensed, _("use condensed module controls"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(t_condensed),
+                               dt_conf_get_bool("themes/condensed"));
+  g_signal_connect(G_OBJECT(t_condensed), "toggled",
+                   G_CALLBACK(use_condensed_control_callback),
+                  (gpointer)t_condensed);
+
+  // rounded header
+  GtkWidget *t_rounded = gtk_check_button_new();
+  label = gtk_label_new(_("rounded module headers"));
+  gtk_widget_set_name(label, "theme-variant");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), t_rounded, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(t_rounded, _("use rounded module headers variant"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(t_rounded),
+                               dt_conf_get_bool("themes/rounded-header"));
+  g_signal_connect(G_OBJECT(t_rounded), "toggled",
+                   G_CALLBACK(use_rounded_header_callback), (gpointer)t_rounded);
+
+  // focused module border
+  label = gtk_label_new(_("focused module border"));
+  gtk_widget_set_name(label, "theme-variant");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  widget = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  dt_bauhaus_combobox_add_aligned(widget, _("none"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("light"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("dark"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("green"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("blue"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("yellow"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("orange"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_set(widget, dt_conf_get_int("themes/focused-module-border"));
+  g_signal_connect(G_OBJECT(widget), "value-changed",
+                   G_CALLBACK(use_focused_module_border_callback), 0);
+  gtk_widget_set_tooltip_text(widget,
+                              _("set the focused module border color"));
+
+  // expanded module border
+  label = gtk_label_new(_("expanded module border"));
+  gtk_widget_set_name(label, "theme-variant");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  widget = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  dt_bauhaus_combobox_add_aligned(widget, _("none"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("light"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("dark"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("green"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("blue"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("yellow"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("orange"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_set(widget, dt_conf_get_int("themes/expanded-module-border"));
+  g_signal_connect(G_OBJECT(widget), "value-changed",
+                   G_CALLBACK(use_expanded_module_border_callback), 0);
+  gtk_widget_set_tooltip_text(widget,
+                              _("set the expanded module border color"));
+
+  // accent color
+  label = gtk_label_new(_("accent color"));
+  gtk_widget_set_name(label, "theme-variant");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  widget = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  dt_bauhaus_combobox_add_aligned(widget, _("none"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("green"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("blue"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("yellow"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_add_aligned(widget, _("orange"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+  dt_bauhaus_combobox_set
+    (widget, dt_conf_get_int("themes/accent-color"));
+  g_signal_connect(G_OBJECT(widget), "value-changed",
+                   G_CALLBACK(use_accent_color_callback), 0);
+  gtk_widget_set_tooltip_text(widget,
+                              _("set the theme accent color for the interface"));
 
   //Font size check and spin buttons
   GtkWidget *usesysfont = gtk_check_button_new();
