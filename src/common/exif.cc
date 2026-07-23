@@ -1176,6 +1176,13 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
        else if(state == 2)
           img->exif_highlight_preservation = 0.66f;     // estimated strength for Strong
     }
+    // Canon Highlight Tone Priority. D+ (1) and D+2 (2) both apply ~1 EV sensor underexposure.
+    if(FIND_EXIF_TAG("Exif.CanonLiOp.HighlightTonePriority"))
+    {
+       const long state = pos->toLong(0);
+       if(state > 0)
+          img->exif_highlight_preservation += 1.0f; 
+    }
     else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
        || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
     {
