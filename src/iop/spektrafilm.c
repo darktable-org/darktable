@@ -185,7 +185,7 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean grain_on;        // $DEFAULT: TRUE $DESCRIPTION: "enable grain"
   float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain strength"
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
-  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 35.0 $DESCRIPTION: "film format"
+  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
   float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "grain recovery sharpness"
   float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.5 $DESCRIPTION: "grain recovery strength"
@@ -211,23 +211,88 @@ typedef struct sf_prof_entry_t
 typedef struct dt_iop_spektrafilm_gui_data_t
 {
   GtkWidget *film, *paper;
-  GtkWidget *exposure_ev, *print_exposure_ev, *print_auto_exposure, *print_contrast, *filter_m, *filter_y;
-  GtkWidget *film_gamma_factor, *film_gamma_factor_fast, *film_gamma_factor_slow,
-      *film_developer_exhaustion;
-  GtkWidget *push_pull_stops;
-  GtkWidget *couplers_amount, *scan_film, *quality;
+  GtkWidget *output_boost;
+  GtkWidget *film_format_combo, *film_format_mm_slider;
+  GtkWidget *exposure_ev, *scan_film;
+  GtkWidget *push_pull_stops, *film_gamma_factor;
+  GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
+  GtkWidget *quality;
+  GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
+  GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
+  GtkWidget *grain_on, *grain_amount, *grain_size;
+  GtkWidget *grain_usm_sigma, *grain_usm_amount;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
   GtkWidget *boost_ev, *boost_range, *protect_ev;
   GtkWidget *diffusion_on, *diffusion_filter_family, *diffusion_strength, *diffusion_scale, *diffusion_warmth;
-  GtkWidget *print_diffusion_on, *print_diffusion_filter_family, *print_diffusion_strength, *print_diffusion_scale, *print_diffusion_warmth;
-  GtkWidget *grain_on, *grain_amount, *grain_size, *grain_usm_sigma, *grain_usm_amount, *film_format_mm, *output_luminance_boost;
+  GtkWidget *print_diffusion_on, *print_diffusion_filter_family;
+  GtkWidget *print_diffusion_strength, *print_diffusion_scale, *print_diffusion_warmth;
+
   sf_prof_entry_t entries[SF_MAX_PROFILES];
   int n_entries;
-  int film_entry[SF_MAX_PROFILES], n_films;   /* indices into entries[] */
+  int film_entry[SF_MAX_PROFILES], n_films;
   int paper_entry[SF_MAX_PROFILES], n_papers;
   GtkNotebook *notebook;
 } dt_iop_spektrafilm_gui_data_t;
+
+static const struct { const char *label; float mm; } _format_presets[] = {
+  { "half-frame",  24.0f }, { "35mm",  36.0f }, { "6x6",   56.0f },
+  { "6x7",         69.0f }, { "6x9",   84.0f }, { "4x5",  120.0f },
+  { "8x10",       244.0f },
+  { "Super 8",      5.79f }, { "16mm", 10.26f }, { "Super 16", 12.52f },
+  { "Super 35",    24.89f }, { "VistaVision", 37.72f },
+  { "65mm 5-perf", 52.63f }, { "IMAX 15-perf", 69.6f },
+};
+#define FORMAT_PRESETS_N ((int)(sizeof(_format_presets) / sizeof(_format_presets[0])))
+#define FORMAT_PRESET_CUSTOM FORMAT_PRESETS_N
+
+static int _format_mm_to_preset(float mm)
+{
+  for(int i = 0; i < FORMAT_PRESETS_N; i++)
+    if(fabsf(_format_presets[i].mm - mm) < 0.01f) return i;
+  return FORMAT_PRESET_CUSTOM;
+}
+
+static void _format_changed(GtkWidget *combo, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  const int pi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->film_format_combo));
+  if(pi >= 0 && pi < FORMAT_PRESETS_N)
+  {
+    DT_ENTER_GUI_UPDATE();
+    dt_bauhaus_slider_set(g->film_format_mm_slider, _format_presets[pi].mm);
+    DT_LEAVE_GUI_UPDATE();
+    p->film_format_mm = _format_presets[pi].mm;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+}
+
+static void _format_slider_changed(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  const float mm = dt_bauhaus_slider_get(g->film_format_mm_slider);
+  dt_bauhaus_combobox_set_from_value(g->film_format_combo, _format_mm_to_preset(mm));
+}
+
+static void _populate_format_combo(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  dt_bauhaus_combobox_clear(g->film_format_combo);
+  dt_bauhaus_combobox_add_section(g->film_format_combo, C_("section", "still"));
+  for(int i = 0; i < 7; i++)
+    dt_bauhaus_combobox_add_full(g->film_format_combo, _( _format_presets[i].label ),
+                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(i), NULL, TRUE);
+  dt_bauhaus_combobox_add_section(g->film_format_combo, C_("section", "cine"));
+  for(int i = 7; i < FORMAT_PRESETS_N; i++)
+    dt_bauhaus_combobox_add_full(g->film_format_combo, _( _format_presets[i].label ),
+                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(i), NULL, TRUE);
+  dt_bauhaus_combobox_add_section(g->film_format_combo, C_("section", "custom"));
+  dt_bauhaus_combobox_add_full(g->film_format_combo, _("custom"),
+                               DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(FORMAT_PRESETS_N), NULL, TRUE);
+}
 
 /* per-piece data: parameter snapshot + a lazily (re)built simulation.
    The sim depends on the pipe's work profile, which is only reliably known in
@@ -2650,10 +2715,13 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->filter_m, printing);
   gtk_widget_set_sensitive(g->filter_y, printing);
   gtk_widget_set_sensitive(g->print_diffusion_on, printing);
-  gtk_widget_set_sensitive(g->print_diffusion_filter_family, printing);
-  gtk_widget_set_sensitive(g->print_diffusion_strength, printing);
-  gtk_widget_set_sensitive(g->print_diffusion_scale, printing);
-  gtk_widget_set_sensitive(g->print_diffusion_warmth, printing);
+  gtk_widget_set_sensitive(g->print_diffusion_filter_family, printing && p->print_diffusion_on);
+  gtk_widget_set_sensitive(g->print_diffusion_strength, printing && p->print_diffusion_on);
+  gtk_widget_set_sensitive(g->print_diffusion_scale, printing && p->print_diffusion_on);
+  gtk_widget_set_sensitive(g->print_diffusion_warmth, printing && p->print_diffusion_on);
+  gtk_widget_set_sensitive(g->preflash_exposure, printing);
+  gtk_widget_set_sensitive(g->preflash_m_shift, printing);
+  gtk_widget_set_sensitive(g->preflash_y_shift, printing);
   /* toggle_from_params checkboxes keep showing their tick even when made
      insensitive -- GTK just dims the whole widget, so a checked-but-grayed
      box can read as "this is still on" when it has no effect at all (no
@@ -2670,12 +2738,59 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   DT_LEAVE_GUI_UPDATE();
 }
 
+/* Grays out each effect's own sub-controls when its master "enable" toggle
+   is off -- previously only the print-related controls (scan_film ->
+   _update_print_sensitivity above) got this treatment; halation/grain/
+   diffusion sliders stayed clickable-but-inert when their own toggle was
+   unchecked, which reads as "these still do something" when they don't. */
+static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
+                                 dt_iop_spektrafilm_params_t *p)
+{
+  const gboolean hal = p->halation_on;
+  gtk_widget_set_sensitive(g->scatter_amount, hal);
+  gtk_widget_set_sensitive(g->scatter_scale, hal);
+  gtk_widget_set_sensitive(g->halation_amount, hal);
+  gtk_widget_set_sensitive(g->halation_scale, hal);
+  gtk_widget_set_sensitive(g->boost_ev, hal);
+  gtk_widget_set_sensitive(g->boost_range, hal);
+  gtk_widget_set_sensitive(g->protect_ev, hal);
+
+  const gboolean grn = p->grain_on;
+  gtk_widget_set_sensitive(g->grain_amount, grn);
+  gtk_widget_set_sensitive(g->grain_size, grn);
+  gtk_widget_set_sensitive(g->grain_usm_sigma, grn);
+  gtk_widget_set_sensitive(g->grain_usm_amount, grn);
+
+  const gboolean dif = p->diffusion_on;
+  gtk_widget_set_sensitive(g->diffusion_filter_family, dif);
+  gtk_widget_set_sensitive(g->diffusion_strength, dif);
+  gtk_widget_set_sensitive(g->diffusion_scale, dif);
+  gtk_widget_set_sensitive(g->diffusion_warmth, dif);
+
+  const gboolean pdif = p->print_diffusion_on;
+  gtk_widget_set_sensitive(g->print_diffusion_filter_family, pdif);
+  gtk_widget_set_sensitive(g->print_diffusion_strength, pdif);
+  gtk_widget_set_sensitive(g->print_diffusion_scale, pdif);
+  gtk_widget_set_sensitive(g->print_diffusion_warmth, pdif);
+}
+
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_color_picker_reset(self, TRUE);
+}
+
 /* called by the core whenever a params-linked widget changed */
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
   if(!w || w == g->scan_film) _update_print_sensitivity(self);
+  if(!w || w == g->halation_on || w == g->grain_on || w == g->diffusion_on
+     || w == g->print_diffusion_on)
+  {
+    _toggle_sensitivity(g, p);
+    if(w == g->print_diffusion_on) _update_print_sensitivity(self);
+  }
   if(w == g->print_auto_exposure && !*(gboolean *)previous && p->print_auto_exposure)
   {
     /* print_exposure_ev (manual) and print_auto_exposure (automatic) are
@@ -2801,6 +2916,8 @@ void gui_update(dt_iop_module_t *self)
   }
   dt_bauhaus_combobox_set_from_value(g->paper, g->paper_entry[pi]);
 
+  dt_bauhaus_combobox_set_from_value(g->film_format_combo, _format_mm_to_preset(p->film_format_mm));
+
   /* toggle_from_params check buttons are NOT auto-synced by
      dt_bauhaus_update_from_field (it only handles sliders/combos), so set
      them here or they drift from the params: a stale box makes the first
@@ -2812,13 +2929,15 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->diffusion_on), p->diffusion_on);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_diffusion_on), p->print_diffusion_on);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->grain_on), p->grain_on);
+
+  _toggle_sensitivity(g, p);
   _update_print_sensitivity(self);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
-  if(picker != g->output_luminance_boost) return;
+  if(picker != g->output_boost) return;
 
   /* picked_color_min/max start at sentinel values (+FLT_MAX / -FLT_MAX)
      until a real area pick has actually landed; if this callback fires
@@ -2881,7 +3000,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_iop_spektrafilm_params_t *p = self->params;
   p->output_luminance_boost = new_boost;
   DT_ENTER_GUI_UPDATE();
-  dt_bauhaus_slider_set(g->output_luminance_boost, new_boost);
+  dt_bauhaus_slider_set(g->output_boost, new_boost);
   DT_LEAVE_GUI_UPDATE();
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2891,30 +3010,69 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_spektrafilm_gui_data_t *g = IOP_GUI_ALLOC(spektrafilm);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  GtkWidget *sf_main_box = self->widget;
+
+  /* ---- header (always visible) ---- */
+  GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_box_add(sf_main_box, header_box);
+
   g->film = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film, NULL, N_("film stock"));
   gtk_widget_set_tooltip_text(g->film, _("film emulsion (spektrafilm filming profile)"));
   g_signal_connect(G_OBJECT(g->film), "value-changed", G_CALLBACK(_film_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->film, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(header_box), g->film, TRUE, TRUE, 0);
 
   g->paper = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->paper, NULL, N_("print paper"));
   gtk_widget_set_tooltip_text(g->paper,
                               _("print/paper stock; defaults to the film's target print"));
   g_signal_connect(G_OBJECT(g->paper), "value-changed", G_CALLBACK(_paper_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->paper, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(header_box), g->paper, TRUE, TRUE, 0);
 
-  /* filmic-style tabbed notebook: everything else lives in tabs instead of a
-     single flat, ever-growing list of sliders. */
-  GtkWidget *sf_main_box = self->widget; /* restored after all tab pages below */
+  /* redirect self->widget so from_params widgets pack into header_box */
+  self->widget = header_box;
+
+  g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
+  gtk_widget_set_tooltip_text(g->output_boost,
+                              _("pre-compression boost: multiplies XYZ luminance before the"
+                                " OkLCh gamut compressor, pushing the histogram right while"
+                                " preserving the film's natural shoulder rolloff"));
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_boost);
+  dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
+                                     _("pick brightest tone in the selected area and set the"
+                                       " boost so it lands just past the compressor's knee"));
+
+  g->film_format_combo = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->film_format_combo, NULL, N_("format"));
+  gtk_widget_set_tooltip_text(g->film_format_combo,
+                              _("common film/sensor gate presets; picking one sets the format"
+                                " size slider below (pick \"custom\" to dial in an exact value)"));
+  _populate_format_combo(self);
+  g_signal_connect(G_OBJECT(g->film_format_combo), "value-changed",
+                   G_CALLBACK(_format_changed), self);
+  gtk_box_pack_start(GTK_BOX(header_box), g->film_format_combo, TRUE, TRUE, 0);
+
+  g->film_format_mm_slider = dt_bauhaus_slider_from_params(self, "film_format_mm");
+  dt_bauhaus_slider_set_format(g->film_format_mm_slider, _(" mm"));
+  gtk_widget_set_tooltip_text(g->film_format_mm_slider,
+                              _("physical film format, long side; sets the scale of grain and halation"));
+  g_signal_connect(G_OBJECT(g->film_format_mm_slider), "value-changed",
+                   G_CALLBACK(_format_slider_changed), self);
+
+  /* restore main widget for the notebook */
+  self->widget = sf_main_box;
+
+  /* ---- notebook / tabs ---- */
   static struct dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
   dt_gui_box_add(sf_main_box, GTK_WIDGET(g->notebook));
 
-  /* ---- tab: film and print ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("media"), NULL);
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "film")));
+  /* ---- tab 1: film (exposure + development) ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("film"), NULL);
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "exposure")));
+
   g->exposure_ev = dt_bauhaus_slider_from_params(self, "exposure_ev");
   dt_bauhaus_slider_set_format(g->exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(
@@ -2924,134 +3082,7 @@ void gui_init(dt_iop_module_t *self)
   g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
   gtk_widget_set_tooltip_text(g->scan_film,
                               _("view the developed film directly (no print stage)"));
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print")));
-  g->print_exposure_ev = dt_bauhaus_slider_from_params(self, "print_exposure_ev");
-  dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
-  gtk_widget_set_tooltip_text(g->print_exposure_ev, _("print brightness (enlarger exposure)"));
-  g->print_auto_exposure = dt_bauhaus_toggle_from_params(self, "print_auto_exposure");
-  gtk_widget_set_tooltip_text(
-      g->print_auto_exposure,
-      _("automatically compensate print exposure for film exposure changes, as a real"
-        " printer would print to a fixed density; disable for film exposure to affect"
-        " brightness directly, same as a fixed enlarger exposure time"));
-  g->print_contrast = dt_bauhaus_slider_from_params(self, "print_contrast");
-  gtk_widget_set_tooltip_text(g->print_contrast,
-                              _("print contrast (morphs the paper's density curves)"));
-  g->filter_m = dt_bauhaus_slider_from_params(self, "filter_m");
-  dt_bauhaus_slider_set_format(g->filter_m, _(" CC"));
-  gtk_widget_set_tooltip_text(g->filter_m,
-                              _("magenta enlarger filtration, Kodak CC units from neutral"));
-  g->filter_y = dt_bauhaus_slider_from_params(self, "filter_y");
-  dt_bauhaus_slider_set_format(g->filter_y, _(" CC"));
-  gtk_widget_set_tooltip_text(g->filter_y,
-                              _("yellow enlarger filtration, Kodak CC units from neutral"));
-  g->couplers_amount = dt_bauhaus_slider_from_params(self, "couplers_amount");
-  gtk_widget_set_tooltip_text(g->couplers_amount,
-                              _("DIR coupler strength: inter-layer inhibition drives saturation"
-                                " and edge effects (1.0 = film-accurate, 0 = off)"));
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "format")));
-  g->film_format_mm = dt_bauhaus_slider_from_params(self, "film_format_mm");
-  dt_bauhaus_slider_set_format(g->film_format_mm, _(" mm"));
-  gtk_widget_set_tooltip_text(g->film_format_mm,
-                              _("physical film format, long side; sets the scale of grain and halation"));
 
-  /* ---- tab: grain ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("grain"), NULL);
-  g->grain_on = dt_bauhaus_toggle_from_params(self, "grain_on");
-  g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
-  dt_bauhaus_slider_set_soft_range(g->grain_amount, 0.0f, 2.0f);
-  gtk_widget_set_tooltip_text(g->grain_amount,
-                              _("grain strength (1.0 = film-accurate; drag up to 2,"
-                                " right-click to enter higher values -- useful for pushing"
-                                " naturally fine-grained stocks further than their"
-                                " catalogue amount allows)"));
-  g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
-  gtk_widget_set_tooltip_text(g->grain_size,
-                              _("grain particle size (1.0 = film default; higher = coarser)"));
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "acutance recovery")));
-  g->grain_usm_sigma = dt_bauhaus_slider_from_params(self, "grain_usm_sigma");
-  dt_bauhaus_slider_set_soft_range(g->grain_usm_sigma, 0.0f, 3.0f);
-  gtk_widget_set_tooltip_text(g->grain_usm_sigma,
-                              _("sharpening radius (0 = off). "
-                                "higher = wider halos, lower = finer detail"));
-  g->grain_usm_amount = dt_bauhaus_slider_from_params(self, "grain_usm_amount");
-  dt_bauhaus_slider_set_soft_range(g->grain_usm_amount, 0.0f, 2.0f);
-  gtk_widget_set_tooltip_text(g->grain_usm_amount,
-                              _("sharpening strength (0 = off). "
-                                "restores crispness that the grain blur softened; "
-                                "overdo it and grain starts to look crunchy"));
-
-  /* ---- tab: halation ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);
-  g->halation_on = dt_bauhaus_toggle_from_params(self, "halation_on");
-  g->scatter_amount = dt_bauhaus_slider_from_params(self, "scatter_amount");
-  gtk_widget_set_tooltip_text(g->scatter_amount,
-                              _("in-emulsion light scatter, before the halation bounce"
-                                " (1.0 = film-accurate; 0 = off)"));
-  g->scatter_scale = dt_bauhaus_slider_from_params(self, "scatter_scale");
-  gtk_widget_set_tooltip_text(g->scatter_scale,
-                              _("scatter size: scales the in-emulsion scatter radius"
-                                " (1.0 = film-accurate)"));
-  g->halation_amount = dt_bauhaus_slider_from_params(self, "halation_amount");
-  dt_bauhaus_slider_set_soft_range(g->halation_amount, 0.0f, 2.0f);
-  gtk_widget_set_tooltip_text(g->halation_amount,
-                              _("halation strength (1.0 = film-accurate; drag up to 2,"
-                                " right-click to enter higher values)"));
-  g->halation_scale = dt_bauhaus_slider_from_params(self, "halation_scale");
-  gtk_widget_set_tooltip_text(g->halation_scale,
-                              _("halation size: scales the glow radius (1.0 = film-accurate)"));
-  g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
-  dt_bauhaus_slider_set_format(g->boost_ev, _(" EV"));
-  gtk_widget_set_tooltip_text(g->boost_ev,
-                              _("highlight boost: reconstructs clipped highlights so they bloom"
-                                " into halation/diffusion (0 = off)"));
-  g->boost_range = dt_bauhaus_slider_from_params(self, "boost_range");
-  gtk_widget_set_tooltip_text(g->boost_range, _("range of the highlight boost curve"));
-  g->protect_ev = dt_bauhaus_slider_from_params(self, "protect_ev");
-  dt_bauhaus_slider_set_format(g->protect_ev, _(" EV"));
-  gtk_widget_set_tooltip_text(g->protect_ev,
-                              _("protect tones below this many stops over mid-grey from the boost"));
-
-  /* ---- tab: diffusion ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("diffusion"), NULL);
-  g->diffusion_on = dt_bauhaus_toggle_from_params(self, "diffusion_on");
-  g->diffusion_filter_family = dt_bauhaus_combobox_from_params(self, "diffusion_filter_family");
-  gtk_widget_set_tooltip_text(
-      g->diffusion_filter_family,
-      _("diffusion filter type: black pro-mist (concentrated, punchy halo, deep"
-        " blacks) / glimmerglass (tight, subtle, sharp-preserving) / pro-mist"
-        " (broader, pastel, atmospheric) / cinebloom (frame-wide, slow-decaying"
-        " veil)"));
-  g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
-  gtk_widget_set_tooltip_text(g->diffusion_strength, _("diffusion filter strength"));
-  g->diffusion_scale = dt_bauhaus_slider_from_params(self, "diffusion_scale");
-  gtk_widget_set_tooltip_text(g->diffusion_scale, _("diffusion halo/bloom size"));
-  g->diffusion_warmth = dt_bauhaus_slider_from_params(self, "diffusion_warmth");
-  gtk_widget_set_tooltip_text(g->diffusion_warmth,
-                              _("diffusion halo warmth: >0 warm outer halo, <0 cool"
-                                " (added on top of the selected filter's own warmth bias)"));
-
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "print diffusion")));
-  g->print_diffusion_on = dt_bauhaus_toggle_from_params(self, "print_diffusion_on");
-  g->print_diffusion_filter_family
-      = dt_bauhaus_combobox_from_params(self, "print_diffusion_filter_family");
-  gtk_widget_set_tooltip_text(
-      g->print_diffusion_filter_family,
-      _("print diffusion filter type (same presets as the film-stage filter)"));
-  g->print_diffusion_strength = dt_bauhaus_slider_from_params(self, "print_diffusion_strength");
-  gtk_widget_set_tooltip_text(g->print_diffusion_strength,
-                              _("print diffusion filter strength"));
-  g->print_diffusion_scale = dt_bauhaus_slider_from_params(self, "print_diffusion_scale");
-  gtk_widget_set_tooltip_text(g->print_diffusion_scale,
-                              _("print diffusion halo/bloom size"));
-  g->print_diffusion_warmth = dt_bauhaus_slider_from_params(self, "print_diffusion_warmth");
-  gtk_widget_set_tooltip_text(g->print_diffusion_warmth,
-                              _("print diffusion halo warmth: >0 warm outer halo, <0 cool"
-                                " (added on top of the selected filter's own warmth bias)"));
-
-  /* ---- tab: advanced ---- */
-  self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "development")));
   g->push_pull_stops = dt_bauhaus_slider_from_params(self, "push_pull_stops");
   dt_bauhaus_slider_set_format(g->push_pull_stops, _(" stops"));
   gtk_widget_set_tooltip_text(
@@ -3062,12 +3093,16 @@ void gui_init(dt_iop_module_t *self)
         " (approximate: the exact relationship depends on the specific film/developer"
         " combination, which isn't modeled here). Stacks with the granular gamma"
         " controls below for further fine-tuning"));
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "chemistry")));
+
   g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);
   gtk_widget_set_tooltip_text(
       g->film_gamma_factor,
       _("overall development contrast (morphs the film's density curves) -- extended or"
         " reduced development time, as in push/pull processing; 1.0 = normal development"));
+
   g->film_gamma_factor_fast = dt_bauhaus_slider_from_params(self, "film_gamma_factor_fast");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_fast, 0.25f, 2.0f);
   gtk_widget_set_tooltip_text(
@@ -3075,49 +3110,207 @@ void gui_init(dt_iop_module_t *self)
       _("contrast of the fastest (most light-sensitive) emulsion sub-layer only --"
         " independent of the slow layer, since push/pull processing doesn't always affect"
         " every sub-layer equally"));
+
   g->film_gamma_factor_slow = dt_bauhaus_slider_from_params(self, "film_gamma_factor_slow");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor_slow, 0.25f, 2.0f);
   gtk_widget_set_tooltip_text(
       g->film_gamma_factor_slow,
       _("contrast of the mid and slow emulsion sub-layers"));
+
   g->film_developer_exhaustion = dt_bauhaus_slider_from_params(self, "film_developer_exhaustion");
   gtk_widget_set_tooltip_text(
       g->film_developer_exhaustion,
       _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
         " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "couplers and quality")));
+
+  g->couplers_amount = dt_bauhaus_slider_from_params(self, "couplers_amount");
+  gtk_widget_set_tooltip_text(g->couplers_amount,
+                              _("DIR coupler strength: inter-layer inhibition drives saturation"
+                                " and edge effects (1.0 = film-accurate, 0 = off)"));
+
+  g->quality = dt_bauhaus_combobox_from_params(self, "quality");
+  gtk_widget_set_tooltip_text(g->quality,
+                              _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
+                                " and validated against the reference"));
+
+  /* ---- tab 2: print ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
+
+  GtkWidget *print_page = self->widget;
+
+  g->print_exposure_ev = dt_bauhaus_slider_from_params(self, "print_exposure_ev");
+  dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
+  gtk_widget_set_tooltip_text(g->print_exposure_ev, _("print brightness (enlarger exposure)"));
+
+  g->print_auto_exposure = dt_bauhaus_toggle_from_params(self, "print_auto_exposure");
+  gtk_widget_set_tooltip_text(
+      g->print_auto_exposure,
+      _("automatically compensate print exposure for film exposure changes, as a real"
+        " printer would print to a fixed density; disable for film exposure to affect"
+        " brightness directly, same as a fixed enlarger exposure time"));
+
+  g->print_contrast = dt_bauhaus_slider_from_params(self, "print_contrast");
+  gtk_widget_set_tooltip_text(g->print_contrast,
+                              _("print contrast (morphs the paper's density curves)"));
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "filtration")));
+
+  g->filter_m = dt_bauhaus_slider_from_params(self, "filter_m");
+  dt_bauhaus_slider_set_format(g->filter_m, _(" CC"));
+  gtk_widget_set_tooltip_text(g->filter_m,
+                              _("magenta enlarger filtration, Kodak CC units from neutral"));
+
+  g->filter_y = dt_bauhaus_slider_from_params(self, "filter_y");
+  dt_bauhaus_slider_set_format(g->filter_y, _(" CC"));
+  gtk_widget_set_tooltip_text(g->filter_y,
+                              _("yellow enlarger filtration, Kodak CC units from neutral"));
+
+  self->widget = print_page;
+
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "preflash")));
+
   g->preflash_exposure = dt_bauhaus_slider_from_params(self, "preflash_exposure");
   gtk_widget_set_tooltip_text(
       g->preflash_exposure,
       _("preflash exposure: a brief, uniform pre-exposure of the print through"
         " the film's base density, before the main print exposure -- lifts"
         " shadows and reduces contrast (0 = off)"));
+
   g->preflash_m_shift = dt_bauhaus_slider_from_params(self, "preflash_m_shift");
   dt_bauhaus_slider_set_format(g->preflash_m_shift, _(" CC"));
   gtk_widget_set_tooltip_text(g->preflash_m_shift,
                               _("magenta filtration for the preflash exposure only, Kodak CC"
                                 " units from neutral -- independent of the main enlarger"
                                 " filtration above"));
+
   g->preflash_y_shift = dt_bauhaus_slider_from_params(self, "preflash_y_shift");
   dt_bauhaus_slider_set_format(g->preflash_y_shift, _(" CC"));
   gtk_widget_set_tooltip_text(g->preflash_y_shift,
                               _("yellow filtration for the preflash exposure only, Kodak CC"
                                 " units from neutral -- independent of the main enlarger"
                                 " filtration above"));
-  g->quality = dt_bauhaus_combobox_from_params(self, "quality");
-  gtk_widget_set_tooltip_text(g->quality,
-                              _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
-                                " and validated against the reference"));
-  g->output_luminance_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
-  gtk_widget_set_tooltip_text(g->output_luminance_boost,
-                              _("pre-compression boost: multiplies XYZ luminance before the"
-                                " OkLCh gamut compressor, pushing the histogram right while"
-                                " preserving the film's natural shoulder rolloff"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_luminance_boost);
-  dt_bauhaus_widget_set_quad_tooltip(g->output_luminance_boost,
-                                     _("pick brightest tone in the selected area and set the"
-                                       " boost so it lands just past the compressor's knee"));
 
+  /* ---- tab 3: grain ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("grain"), NULL);
+
+  g->grain_on = dt_bauhaus_toggle_from_params(self, "grain_on");
+
+  g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
+  dt_bauhaus_slider_set_soft_range(g->grain_amount, 0.0f, 2.0f);
+  gtk_widget_set_tooltip_text(g->grain_amount,
+                              _("grain strength (1.0 = film-accurate; drag up to 2,"
+                                " right-click to enter higher values -- useful for pushing"
+                                " naturally fine-grained stocks further than their"
+                                " catalogue amount allows)"));
+
+  g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
+  gtk_widget_set_tooltip_text(g->grain_size,
+                              _("grain particle size (1.0 = film default; higher = coarser)"));
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "acutance recovery")));
+
+  g->grain_usm_sigma = dt_bauhaus_slider_from_params(self, "grain_usm_sigma");
+  dt_bauhaus_slider_set_soft_range(g->grain_usm_sigma, 0.0f, 3.0f);
+  gtk_widget_set_tooltip_text(g->grain_usm_sigma,
+                              _("sharpening radius (0 = off). "
+                                "higher = wider halos, lower = finer detail"));
+
+  g->grain_usm_amount = dt_bauhaus_slider_from_params(self, "grain_usm_amount");
+  dt_bauhaus_slider_set_soft_range(g->grain_usm_amount, 0.0f, 2.0f);
+  gtk_widget_set_tooltip_text(g->grain_usm_amount,
+                              _("sharpening strength (0 = off). "
+                                "restores crispness that the grain blur softened; "
+                                "overdo it and grain starts to look crunchy"));
+
+  /* ---- tab 4: halation ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);
+
+  g->halation_on = dt_bauhaus_toggle_from_params(self, "halation_on");
+
+  g->scatter_amount = dt_bauhaus_slider_from_params(self, "scatter_amount");
+  gtk_widget_set_tooltip_text(g->scatter_amount,
+                              _("in-emulsion light scatter, before the halation bounce"
+                                " (1.0 = film-accurate; 0 = off)"));
+
+  g->scatter_scale = dt_bauhaus_slider_from_params(self, "scatter_scale");
+  gtk_widget_set_tooltip_text(g->scatter_scale,
+                              _("scatter size: scales the in-emulsion scatter radius"
+                                " (1.0 = film-accurate)"));
+
+  g->halation_amount = dt_bauhaus_slider_from_params(self, "halation_amount");
+  dt_bauhaus_slider_set_soft_range(g->halation_amount, 0.0f, 2.0f);
+  gtk_widget_set_tooltip_text(g->halation_amount,
+                              _("halation strength (1.0 = film-accurate; drag up to 2,"
+                                " right-click to enter higher values)"));
+
+  g->halation_scale = dt_bauhaus_slider_from_params(self, "halation_scale");
+  gtk_widget_set_tooltip_text(g->halation_scale,
+                              _("halation size: scales the glow radius (1.0 = film-accurate)"));
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "threshold")));
+
+  g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
+  dt_bauhaus_slider_set_format(g->boost_ev, _(" EV"));
+  gtk_widget_set_tooltip_text(g->boost_ev,
+                              _("highlight boost: reconstructs clipped highlights so they bloom"
+                                " into halation/diffusion (0 = off)"));
+
+  g->boost_range = dt_bauhaus_slider_from_params(self, "boost_range");
+  gtk_widget_set_tooltip_text(g->boost_range, _("range of the highlight boost curve"));
+
+  g->protect_ev = dt_bauhaus_slider_from_params(self, "protect_ev");
+  dt_bauhaus_slider_set_format(g->protect_ev, _(" EV"));
+  gtk_widget_set_tooltip_text(g->protect_ev,
+                              _("protect tones below this many stops over mid-grey from the boost"));
+
+  /* ---- tab 5: diffusion ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("diffusion"), NULL);
+
+  g->diffusion_on = dt_bauhaus_toggle_from_params(self, "diffusion_on");
+
+  g->diffusion_filter_family = dt_bauhaus_combobox_from_params(self, "diffusion_filter_family");
+  gtk_widget_set_tooltip_text(
+      g->diffusion_filter_family,
+      _("diffusion filter type: black pro-mist (concentrated, punchy halo, deep"
+        " blacks) / glimmerglass (tight, subtle, sharp-preserving) / pro-mist"
+        " (broader, pastel, atmospheric) / cinebloom (frame-wide, slow-decaying"
+        " veil)"));
+
+  g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
+  gtk_widget_set_tooltip_text(g->diffusion_strength, _("diffusion filter strength"));
+
+  g->diffusion_scale = dt_bauhaus_slider_from_params(self, "diffusion_scale");
+  gtk_widget_set_tooltip_text(g->diffusion_scale, _("diffusion halo/bloom size"));
+
+  g->diffusion_warmth = dt_bauhaus_slider_from_params(self, "diffusion_warmth");
+  gtk_widget_set_tooltip_text(g->diffusion_warmth,
+                              _("diffusion halo warmth: >0 warm outer halo, <0 cool"
+                                " (added on top of the selected filter's own warmth bias)"));
+
+  g->print_diffusion_on = dt_bauhaus_toggle_from_params(self, "print_diffusion_on");
+
+  g->print_diffusion_filter_family
+      = dt_bauhaus_combobox_from_params(self, "print_diffusion_filter_family");
+  gtk_widget_set_tooltip_text(
+      g->print_diffusion_filter_family,
+      _("print diffusion filter type (same presets as the film-stage filter)"));
+
+  g->print_diffusion_strength = dt_bauhaus_slider_from_params(self, "print_diffusion_strength");
+  gtk_widget_set_tooltip_text(g->print_diffusion_strength,
+                              _("print diffusion filter strength"));
+
+  g->print_diffusion_scale = dt_bauhaus_slider_from_params(self, "print_diffusion_scale");
+  gtk_widget_set_tooltip_text(g->print_diffusion_scale,
+                              _("print diffusion halo/bloom size"));
+
+  g->print_diffusion_warmth = dt_bauhaus_slider_from_params(self, "print_diffusion_warmth");
+  gtk_widget_set_tooltip_text(g->print_diffusion_warmth,
+                              _("print diffusion halo warmth: >0 warm outer halo, <0 cool"
+                                " (added on top of the selected filter's own warmth bias)"));
+
+  /* restore root widget */
   self->widget = sf_main_box;
 }
 
