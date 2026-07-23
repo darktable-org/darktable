@@ -1094,6 +1094,11 @@ endif(HAVE_OPENCL)
 # have a command line interface
 add_subdirectory(cli)
 
+# have a Model Context Protocol server exposing the raw engine to AI agents
+if(USE_MCP)
+  add_subdirectory(mcp)
+endif()
+
 # have a command line utility to generate all the thumbnails
 add_subdirectory(generate-cache)
 
