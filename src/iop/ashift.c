@@ -367,6 +367,8 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *structure_quad;
   GtkWidget *structure_lines;
   gboolean straightening;
+  gboolean straighten_click_mode;
+  gboolean fix_horizon_active;
   float straighten_x;
   float straighten_y;
   int fitting;
@@ -4817,10 +4819,52 @@ int button_pressed(dt_iop_module_t *self,
   if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 1;
 
   // if we start to draw a straightening line
-  if(!g->lines && which == GDK_BUTTON_SECONDARY)
+  if(!g->lines
+     && (which == GDK_BUTTON_SECONDARY
+         || (g->fix_horizon_active && which == GDK_BUTTON_PRIMARY)))
   {
     dt_control_change_cursor("crosshair");
+
+    // click-click mode when fix horizon button is active and right-click
+    if(g->fix_horizon_active && which == GDK_BUTTON_SECONDARY)
+    {
+      if(g->straightening)
+      {
+        // second right-click: finalize the straightening
+        g->straightening = FALSE;
+        g->straighten_click_mode = FALSE;
+
+        const float angle = _calculate_straightening(self, pzx, pzy, g->straighten_x, g->straighten_y, wd, ht, zoom_scale);
+
+        dt_bauhaus_widget_set_quad_active(g->rotation, FALSE);
+        g->fix_horizon_active = FALSE;
+        darktable.develop->proxy.forward_left_click = FALSE;
+        dt_control_change_cursor("default");
+
+        if(angle != 0.0f)
+        {
+          const float n = dt_bauhaus_slider_get(g->rotation) - angle;
+          dt_bauhaus_slider_set(g->rotation, n);
+          dt_toast_log(_("rotation adjusted by %3.2f° to %3.2f°"), -angle, n);
+        }
+        dt_control_queue_redraw_center();
+        return TRUE;
+      }
+      else
+      {
+        // first right-click: record the first point
+        g->straightening = TRUE;
+        g->straighten_click_mode = TRUE;
+        g->straighten_x = pzx;
+        g->straighten_y = pzy;
+        dt_control_queue_redraw_center();
+        return TRUE;
+      }
+    }
+
+    // drag mode for left-click (with button active) or right-click (without button)
     g->straightening = TRUE;
+    g->straighten_click_mode = FALSE;
     g->straighten_x = pzx;
     g->straighten_y = pzy;
     return TRUE;
@@ -5059,10 +5103,22 @@ int button_released(dt_iop_module_t *self,
 
   if(g->straightening)
   {
+    // if in click-click mode, do nothing on release (waiting for second click)
+    if(g->straighten_click_mode) return TRUE;
+
     g->straightening = FALSE;
 
     const float bzx = g->straighten_x, bzy = g->straighten_y;
     const float angle = _calculate_straightening(self, pzx, pzy, bzx, bzy, wd, ht, zoom_scale);
+
+    if(g->fix_horizon_active)
+    {
+      dt_bauhaus_widget_set_quad_active(g->rotation, FALSE);
+      g->fix_horizon_active = FALSE;
+      darktable.develop->proxy.forward_left_click = FALSE;
+      dt_control_change_cursor("default");
+    }
+
     if(angle == 0.0f) return TRUE;
 
     const float n = dt_bauhaus_slider_get(g->rotation) - angle;
@@ -5466,6 +5522,31 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
   return FALSE;
 }
 
+static void _event_fix_horizon_quad_clicked(GtkWidget *widget,
+                                            dt_iop_module_t *self)
+{
+  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  g->fix_horizon_active = dt_bauhaus_widget_get_quad_active(widget);
+  if(!g->fix_horizon_active)
+  {
+    g->straightening = FALSE;
+    g->straighten_click_mode = FALSE;
+    dt_control_change_cursor("default");
+  }
+  else
+  {
+    if(self->off)
+    {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+      dt_bauhaus_widget_set_quad_active(widget, TRUE);
+      g->fix_horizon_active = TRUE;
+    }
+    dt_iop_request_focus(self);
+    dt_control_change_cursor("crosshair");
+  }
+  darktable.develop->proxy.forward_left_click = g->fix_horizon_active;
+}
+
 static int _event_structure_auto_clicked(GtkWidget *widget,
                                          const GdkEventButton *event,
                                          dt_iop_module_t *self)
@@ -5820,13 +5901,14 @@ static gboolean _event_draw(GtkWidget *widget,
 
 void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
+  dt_iop_ashift_gui_data_t *g = self->gui_data;
+
   darktable.develop->history_postpone_invalidate = in
     && dt_dev_modulegroups_test_activated(darktable.develop);
 
   if(self->enabled)
   {
     dt_iop_ashift_params_t *p = self->params;
-    dt_iop_ashift_gui_data_t *g = self->gui_data;
     if(in)
     {
       _shadow_crop_box(p,g);
@@ -5838,6 +5920,16 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
       _gui_update_structure_states(self, NULL);
       _do_clean_structure(self, p, TRUE);
     }
+  }
+
+  if(!in && g->fix_horizon_active)
+  {
+    dt_bauhaus_widget_set_quad_active(g->rotation, FALSE);
+    g->fix_horizon_active = FALSE;
+    g->straightening = FALSE;
+    g->straighten_click_mode = FALSE;
+    darktable.develop->proxy.forward_left_click = FALSE;
+    dt_control_change_cursor("default");
   }
 }
 
@@ -5953,6 +6045,8 @@ void gui_init(dt_iop_module_t *self)
   g->jobcode = ASHIFT_JOBCODE_NONE;
   g->jobparams = 0;
   g->adjust_crop = FALSE;
+  g->fix_horizon_active = FALSE;
+  g->straighten_click_mode = FALSE;
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
 
@@ -5967,6 +6061,15 @@ void gui_init(dt_iop_module_t *self)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP, GDK_KEY_bracketleft, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_bracketright, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_r, GDK_MOD1_MASK);
+
+  dt_bauhaus_widget_set_quad_paint(g->rotation, dtgtk_cairo_paint_horizon, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->rotation, TRUE);
+  g_signal_connect(G_OBJECT(g->rotation), "quad-pressed",
+                   G_CALLBACK(_event_fix_horizon_quad_clicked), (gpointer)self);
+  dt_bauhaus_widget_set_quad_tooltip(g->rotation,
+                                     _("fix the horizon by drawing a line on the image\n\n"
+                                       "left-click and drag on the image\nOR\nright-click "
+                                       "to place the first point,\nthen right-click again to finish and rotate the image"));
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
@@ -6152,7 +6255,10 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   if(darktable.develop->proxy.rotate == self)
+  {
     darktable.develop->proxy.rotate = NULL;
+    darktable.develop->proxy.forward_left_click = FALSE;
+  }
 
   const dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(g->lines) free(g->lines);

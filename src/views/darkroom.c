@@ -1040,7 +1040,8 @@ void expose(dt_view_t *self,
   // if dragging the rotation line, do it and nothing else
   if(dev->proxy.rotate
      && (darktable.control->button_down_which == GDK_BUTTON_SECONDARY
-         || dmod == dev->proxy.rotate))
+         || dmod == dev->proxy.rotate
+         || dev->proxy.forward_left_click))
   {
     // reminder, we want this to be exposed always for guidings
     if(dev->proxy.rotate && dev->proxy.rotate->gui_post_expose)
@@ -4300,6 +4301,34 @@ void mouse_moved(dt_view_t *self,
                                           pressure, which, zoom_scale);
   }
 
+  // fix horizon: forward to proxy.rotate bypassing basics guard
+  if(dev->proxy.forward_left_click
+     && !handled
+     && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
+     && darktable.control->button_down
+     && darktable.control->button_down_which == GDK_BUTTON_PRIMARY
+     && dev->proxy.rotate)
+  {
+    _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
+    handled = dev->proxy.rotate->mouse_moved(dev->proxy.rotate, zoom_x, zoom_y,
+                                             pressure, which, zoom_scale);
+  }
+
+  // fix horizon click-click: forward mouse moves with no button held
+  // so the rubber-band line updates between the two right-clicks
+  if(dev->proxy.forward_left_click
+     && !handled
+     && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
+     && !darktable.control->button_down
+     && dev->proxy.rotate)
+  {
+    _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
+    handled = dev->proxy.rotate->mouse_moved(dev->proxy.rotate, zoom_x, zoom_y,
+                                             pressure, which, zoom_scale);
+  }
+
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved
      && !handled
@@ -4370,6 +4399,14 @@ int button_released(dt_view_t *self,
   float zoom_x = FLT_MAX, zoom_y, zoom_scale;
   // rotate
   if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
+  {
+    _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
+    handled = dev->proxy.rotate->button_released(dev->proxy.rotate, zoom_x, zoom_y,
+                                                 which, state, zoom_scale);
+    if(handled) return handled;
+  }
+  // fix horizon: forward to proxy.rotate bypassing basics guard
+  if(which == GDK_BUTTON_PRIMARY && dev->proxy.forward_left_click && dev->proxy.rotate)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
     handled = dev->proxy.rotate->button_released(dev->proxy.rotate, zoom_x, zoom_y,
@@ -4563,6 +4600,14 @@ int button_pressed(dt_view_t *self,
     _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
     handled = dt_masks_events_button_pressed(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                              pressure, which, type, state);
+    if(handled) return handled;
+  }
+  // fix horizon: forward to proxy.rotate bypassing basics guard
+  if(dev->proxy.forward_left_click && which == GDK_BUTTON_PRIMARY && dev->proxy.rotate)
+  {
+    _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
+    handled = dev->proxy.rotate->button_pressed(dev->proxy.rotate, zoom_x, zoom_y,
+                                                pressure, which, type, state, zoom_scale);
     if(handled) return handled;
   }
   // module
