@@ -99,20 +99,17 @@ DT_MODULE_INTROSPECTION(8, dt_iop_spektrafilm_params_t)
 #define SF_SCATTER_TAIL_MAX_UM 27.0f
 #define SF_GRAIN_BLUR_FACTOR 0.8f
 #define SF_GRAIN_SIZE_MIN 0.05f
-/* Calibration against the reference spektrafilm app's own rendered output,
- * same film stock (Portra 400 / Portra Endura) and nominal (1.0, 1.0)
- * sliders: even with the exact multi-sublayer particle model and exact
- * Gaussian convolution, darktable's grain came out visually fainter and
- * coarser than the reference at those defaults -- matching a stock-independent
- * particle model has no free parameter left to soak up that gap, so these
- * are a direct measured correction on the user-facing sliders rather than a
- * further formula change. Applied only where grain_amount/grain_size feed
- * the actual generation and clump blur (process()/process_cl()); left out of
- * _max_halo_sigma's ROI/tiling padding, since a *smaller* effective size only
- * needs less padding, not more, so the unscaled (larger) estimate there stays
- * safely conservative. */
-#define SF_GRAIN_STRENGTH_CAL 1.20f
-#define SF_GRAIN_SIZE_CAL 0.65f
+/* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
+ * per-sub-layer blur applied to the raw particle draw INSIDE the particle
+ * sampler itself (layer_particle_model in grain.py), before the main
+ * clump blur above ever runs -- sigma = SF_GRAIN_DYE_BLUR_UM *
+ * sqrt(od_particle), where od_particle = dmax/npart is that sub-layer's
+ * own per-particle optical density. Passed through verbatim (no
+ * pixel_um conversion anywhere in the reference's own call chain,
+ * despite the "_um" name) -- ported as literally as upstream computes it
+ * rather than second-guessing the naming. No variance-restoration
+ * afterward either, same as the main clump blur. */
+#define SF_GRAIN_DYE_BLUR_UM 2.0f
 /* Push/pull processing is really two things happening together: shooting
  * at an effective ISO different from box speed (already modeled via
  * exposure_ev), plus extended/reduced development time, which increases
@@ -190,8 +187,8 @@ typedef struct dt_iop_spektrafilm_params_t
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 35.0 $DESCRIPTION: "film format"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
-  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery sharpness"
-  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "grain recovery strength"
+  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "grain recovery sharpness"
+  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.5 $DESCRIPTION: "grain recovery strength"
   float film_gamma_factor;      // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "development gamma"
   float film_gamma_factor_fast; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "fast layer gamma"
   float film_gamma_factor_slow; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "slow layer gamma"
@@ -259,7 +256,8 @@ typedef struct dt_iop_spektrafilm_data_t
 typedef struct dt_iop_spektrafilm_global_data_t
 {
   int kernel_expose, kernel_lograw, kernel_develop_corr, kernel_develop;
-  int kernel_grain_gen, kernel_grain_gen_ml, kernel_grain_add, kernel_grain_usm;
+  int kernel_grain_gen_raw_sl, kernel_grain_accumulate_1c, kernel_grain_finalize_channel,
+      kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
@@ -284,8 +282,10 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_lograw = dt_opencl_create_kernel(program, "spektrafilm_lograw");
   gd->kernel_develop_corr = dt_opencl_create_kernel(program, "spektrafilm_develop_corr");
   gd->kernel_develop = dt_opencl_create_kernel(program, "spektrafilm_develop");
-  gd->kernel_grain_gen = dt_opencl_create_kernel(program, "spektrafilm_grain_gen");
-  gd->kernel_grain_gen_ml = dt_opencl_create_kernel(program, "spektrafilm_grain_gen_ml");
+  gd->kernel_grain_gen_raw_sl = dt_opencl_create_kernel(program, "spektrafilm_grain_gen_raw_sl");
+  gd->kernel_grain_accumulate_1c = dt_opencl_create_kernel(program, "spektrafilm_grain_accumulate_1c");
+  gd->kernel_grain_finalize_channel
+      = dt_opencl_create_kernel(program, "spektrafilm_grain_finalize_channel");
   gd->kernel_grain_add = dt_opencl_create_kernel(program, "spektrafilm_grain_add");
   gd->kernel_grain_usm = dt_opencl_create_kernel(program, "spektrafilm_grain_usm");
   gd->kernel_print_expose = dt_opencl_create_kernel(program, "spektrafilm_print_expose");
@@ -317,8 +317,9 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_lograw);
     dt_opencl_free_kernel(gd->kernel_develop_corr);
     dt_opencl_free_kernel(gd->kernel_develop);
-    dt_opencl_free_kernel(gd->kernel_grain_gen);
-    dt_opencl_free_kernel(gd->kernel_grain_gen_ml);
+    dt_opencl_free_kernel(gd->kernel_grain_gen_raw_sl);
+    dt_opencl_free_kernel(gd->kernel_grain_accumulate_1c);
+    dt_opencl_free_kernel(gd->kernel_grain_finalize_channel);
     dt_opencl_free_kernel(gd->kernel_grain_add);
     dt_opencl_free_kernel(gd->kernel_grain_usm);
     dt_opencl_free_kernel(gd->kernel_print_expose);
@@ -1678,39 +1679,117 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const float amount = d->p.grain_amount * SF_GRAIN_STRENGTH_CAL;
+    const float amount = d->p.grain_amount;
     const int mono = sf_sim_film_bw(sim); /* B&W: achromatic grain */
-    float gdmax[3], grms[3], gunif[3], gdmin[3];
-    sf_sim_film_dmax3(sim, gdmax); /* the emulsion's own D-max: slide film
-                                      exceeds the colour-negative 2.2 default,
-                                      which would bias (tint) dense areas */
+    /* sf_grain_delta_ml's layer_npart is precomputed at sf_sim_build time
+       against the fixed SF_GRAIN_REF_UM reference scale (it depends on
+       curve/coupler state baked in at build time, not just resolution);
+       rescale it live to the real pixe_um here, matching what
+       sf_grain_delta_dmax now does directly for the single-layer case. */
+    const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+    float grms[3], gunif[3], gdmin[3];
     sf_sim_film_grain3(sim, grms, gunif, gdmin); /* per-film catalogue grain
                                       (rms-granularity, uniformity, density
                                       floor) — Portra 400 no longer shares
                                       Tri-X's grain signature */
     sf_grain_layers_t layers;
-    sf_sim_grain_layers(sim, &layers); /* n==1 for a single-layer curve fit:
-                                      the exact same case sf_grain_delta_dmax
-                                      already handles, called unchanged below
-                                      rather than routed through the
-                                      multi-sublayer lookup for no reason */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, gbuf, gdmax, grms, gunif, gdmin, layers)       \
-    firstprivate(w, npix, roi_x, roi_y, amount, mono) schedule(static)
-#endif
-    for(size_t k = 0; k < npix; k++)
+    sf_sim_grain_layers(sim, &layers); /* n==1 for a single-layer curve fit
+                                      is already valid data (see the
+                                      function's own comment): unified
+                                      through this mechanism for every
+                                      stock rather than branching to the
+                                      separate sf_grain_delta_dmax path. */
+    const int nsub = layers.n;
+
+    /* Upstream's per-sub-layer dye-cloud blur (layer_particle_model's
+       blur_particle, grain.py) runs INSIDE the particle sampler, on each
+       sub-layer's raw draw independently, before the main clump blur
+       below ever sees it. Its sigma depends only on that sub-layer's own
+       per-particle optical density (dmax/npart) -- constant across the
+       whole image for a given (channel, sub-layer), so compute it once
+       here rather than per pixel. */
+    float dye_sigma[3][SF_GRAIN_MAX_SUBLAYERS];
+    for(int c = 0; c < 3; c++)
+      for(int sl = 0; sl < nsub; sl++)
+      {
+        const float npart_c = (float)layers.layer_npart[sl][c] * npart_scale;
+        const float od_particle = (float)layers.layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
+        dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f));
+      }
+
+    float *raw[SF_GRAIN_MAX_SUBLAYERS] = { 0 };
+    gboolean raw_ok = TRUE;
+    for(int sl = 0; sl < nsub; sl++)
     {
-      const int x = (int)(k % (size_t)w), y = (int)(k / (size_t)w);
-      if(layers.n > 1)
-        sf_grain_delta_ml(&layers, plane + k * 3, amount, gbuf + k * 3, (uint32_t)(x + roi_x),
-                          (uint32_t)(y + roi_y), mono, gdmin, gunif);
-      else
-        sf_grain_delta_dmax(plane + k * 3, amount, gbuf + k * 3, (uint32_t)(x + roi_x),
-                            (uint32_t)(y + roi_y), mono, gdmax, gdmin, grms, gunif);
+      raw[sl] = dt_alloc_align_float(npix);
+      if(!raw[sl]) raw_ok = FALSE;
     }
-    const float sigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
-                             * fmaxf(d->p.grain_size * SF_GRAIN_SIZE_CAL, SF_GRAIN_SIZE_MIN)
-                             / fmaxf(pixel_um, 1e-3f);
+
+    if(!raw_ok)
+      memset(gbuf, 0, npix * 3 * sizeof(float)); /* allocation failed: skip grain gracefully */
+    else
+    {
+      const int n_out_ch = mono ? 1 : 3;
+      for(int oc = 0; oc < n_out_ch; oc++)
+      {
+        const int channel_idx = mono ? 1 : oc; /* mono uses channel 1's curve/params for the
+                                                    achromatic draw, matching sf_grain_delta_ml */
+        const int seed_ch = mono ? 0 : oc; /* mono seeds as sl*10 (no channel term), matching
+                                               sf_grain_delta_ml's own convention exactly */
+        const float unif_ch = gunif[channel_idx];
+#ifdef _OPENMP
+#pragma omp parallel for default(none)                                                          \
+    shared(plane, raw, layers) firstprivate(w, npix, roi_x, roi_y, mono, channel_idx, seed_ch,   \
+                                            unif_ch, npart_scale, nsub) schedule(static)
+#endif
+        for(size_t k = 0; k < npix; k++)
+        {
+          const int x = (int)(k % (size_t)w), y = (int)(k / (size_t)w);
+          const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
+                                           / 3.0f
+                                     : plane[k * 3 + channel_idx];
+          float samp[SF_GRAIN_MAX_SUBLAYERS];
+          sf_grain_raw_samples_ml(&layers, density, channel_idx, seed_ch, (uint32_t)(x + roi_x),
+                                  (uint32_t)(y + roi_y), unif_ch, npart_scale, samp);
+          for(int sl = 0; sl < nsub; sl++) raw[sl][k] = samp[sl];
+        }
+        /* dye-cloud blur: each sub-layer independently, no variance
+           restoration (matching upstream: layer_particle_model doesn't
+           renormalize after its blur_particle pass either). */
+        for(int sl = 0; sl < nsub; sl++)
+          sf_blur_plane1(raw[sl], w, h, dye_sigma[channel_idx][sl], NULL, scratch);
+        /* combine: sum sub-layers, subtract the density floor and the
+           original clean density, scale by strength. */
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(plane, gbuf, raw)                                  \
+    firstprivate(npix, nsub, channel_idx, mono, oc, amount, gdmin) schedule(static)
+#endif
+        for(size_t k = 0; k < npix; k++)
+        {
+          float total = 0.0f;
+          for(int sl = 0; sl < nsub; sl++) total += raw[sl][k];
+          const float g = total - gdmin[channel_idx];
+          const float density = mono ? (plane[k * 3 + 0] + plane[k * 3 + 1] + plane[k * 3 + 2])
+                                           / 3.0f
+                                     : plane[k * 3 + channel_idx];
+          const float delta = (g - density) * amount;
+          if(mono) gbuf[k * 3 + 0] = gbuf[k * 3 + 1] = gbuf[k * 3 + 2] = delta;
+          else gbuf[k * 3 + oc] = delta;
+        }
+      }
+    }
+    for(int sl = 0; sl < nsub; sl++)
+      if(raw[sl]) dt_free_align(raw[sl]);
+    /* Upstream's grain blur (GrainParams.blur, params_schema.py) is a
+       literal FIXED pixel sigma (0.8), independent of pixel_um/resolution/
+       film_format_mm -- confirmed empirically: measuring the real
+       reference's noise autocorrelation at two different resolutions
+       (87.5 and 35 um/px) gave near-identical radial profiles. Physical
+       scaling lives entirely in particle DENSITY (now pixel_um-driven
+       above), not in this smoothing pass. SF_GRAIN_SIZE_CAL is gone: it
+       was calibrated against the old pixel_um-scaled formula and no
+       longer applies. */
+    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN);
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
     /* Centre grain delta: multi-sublayer model has positive DC bias (~0.07)
        that renorm amplifies proportionally to sigma, making image brighter
@@ -1730,12 +1809,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t kk = 0; kk < npix; kk++)
         for(int c = 0; c < 3; c++) gbuf[kk * 3 + c] -= gmean[c];
     }
-    const float renorm = sf_gauss_grain_renorm(fmaxf(sigma, 0.3f));
+    /* No variance-restoration renorm here -- upstream's own grain
+       finalization (_finalize_grain in grain.py) has none either; it just
+       blurs and lets the natural contrast reduction stand, matching real
+       optical clumping. Restoring full pre-blur variance made grain
+       visibly higher-contrast, and therefore visually coarser, than
+       upstream at any matching sigma. */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix, renorm)              \
+#pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix)              \
     schedule(static)
 #endif
-    for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k] * renorm;
+    for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k];
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
       sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma,
                                        d->p.grain_usm_amount, corr, scratch);
@@ -1930,9 +2014,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
    darktable's fast recursive blur (corrected -- see SF_GAUSS_SIGMA_CORRECTION)
    instead of the exact row/col kernels: for callers with no downstream
    dependency on the exact kernel's shape (unlike grain's SF_GAUSS_BLUR4
-   above, which stays on the exact path unconditionally since
-   sf_gauss_grain_renorm is computed from it), this recovers most of the
-   O(radius) cost the exact kernel pays at large sigma. */
+   above, which stays on the exact path unconditionally -- the fast
+   recursive approximation's own known ~18% effective-width error would
+   reintroduce the same size mismatch against upstream that the exact
+   kernel was adopted to fix), this recovers most of the O(radius) cost the
+   exact kernel pays at large sigma. */
 #define SF_GAUSS_BLUR4_FAST(buf, _sg, label) do { \
     if(err == CL_SUCCESS) \
     { \
@@ -2228,76 +2314,125 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
     const int roi_x = roi_in->x, roi_y = roi_in->y;
-    const float amount = d->p.grain_amount * SF_GRAIN_STRENGTH_CAL;
+    const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
-    if(g->grain_n_sublayers > 1)
+    /* Unified through the multi-sublayer table for every stock (nsub can be
+       1) rather than branching to a separate single-layer kernel -- see the
+       matching comment in process()'s CPU path for why that's valid: the
+       build-time layer table already has correct n==1 data for single-layer
+       stocks. Built once per d->gpu (see d->grain_cl_built_for above)
+       rather than re-uploaded on every process_cl() call: tiled processing
+       calls this once per tile, and this data never changes between tiles
+       of the same image, so re-uploading it per tile was pure overhead. */
+    const int nsub = g->grain_n_sublayers, nle = SF_NLE, maxsub = SF_GRAIN_MAX_SUBLAYERS;
+    if(d->grain_cl_built_for != g)
     {
-      /* multi-sublayer grain (see spektrafilm_grain_gen_ml, spektrafilm.cl):
-         a film whose own fitted density-curve model has more than one
-         emulsion sub-layer. Built once per d->gpu (see d->grain_cl_built_for
-         above) rather than re-uploaded on every process_cl() call: tiled
-         processing calls this once per tile, and this data never changes
-         between tiles of the same image, so re-uploading it per tile was
-         pure overhead -- exactly the kind that shows up as slower tiled
-         rendering, not slower per-pixel compute. */
-      const int nsub = g->grain_n_sublayers, nle = SF_NLE, maxsub = SF_GRAIN_MAX_SUBLAYERS;
-      if(d->grain_cl_built_for != g)
+      if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
+      if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
+      if(d->grain_cl_dmin) dt_opencl_release_mem_object(d->grain_cl_dmin);
+      if(d->grain_cl_total) dt_opencl_release_mem_object(d->grain_cl_total);
+      if(d->grain_cl_curve) dt_opencl_release_mem_object(d->grain_cl_curve);
+      d->grain_cl_dmax = dt_opencl_copy_host_to_device_constant(
+          devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmax);
+      d->grain_cl_npart = dt_opencl_copy_host_to_device_constant(
+          devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_npart);
+      d->grain_cl_dmin = dt_opencl_copy_host_to_device_constant(
+          devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmin);
+      d->grain_cl_total = dt_opencl_copy_host_to_device_constant(
+          devid, (size_t)nle * 3 * f, (void *)g->grain_layer_curve_total);
+      d->grain_cl_curve = dt_opencl_copy_host_to_device_constant(
+          devid, (size_t)nle * maxsub * 3 * f, (void *)g->grain_layer_curve);
+      d->grain_cl_built_for = g;
+    }
+    if(!d->grain_cl_dmax || !d->grain_cl_npart || !d->grain_cl_dmin || !d->grain_cl_total
+       || !d->grain_cl_curve)
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    else
+    {
+      /* layer_npart (uploaded above) is precomputed at sf_sim_build time
+         against the fixed SF_GRAIN_REF_UM reference scale; rescale it live
+         to the real pixel_um here. */
+      const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+      /* Upstream's per-sub-layer dye-cloud blur (layer_particle_model's
+         blur_particle, grain.py): sigma depends only on that sub-layer's
+         own per-particle optical density (dmax/npart), which is constant
+         across the whole image -- computed host-side once here, same as
+         the CPU path, rather than per-pixel on the device. */
+      float dye_sigma[3][SF_GRAIN_MAX_SUBLAYERS];
+      for(int c = 0; c < 3; c++)
+        for(int sl = 0; sl < nsub; sl++)
+        {
+          const float npart_c = g->grain_layer_npart[sl][c] * npart_scale;
+          const float od_particle = g->grain_layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
+          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f));
+        }
+
+      cl_mem raw_buf[SF_GRAIN_MAX_SUBLAYERS] = { NULL };
+      cl_mem acc_buf = dt_opencl_alloc_device_buffer(devid, npix * f);
+      gboolean raw_ok = acc_buf != NULL;
+      for(int sl = 0; sl < nsub; sl++)
       {
-        if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
-        if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
-        if(d->grain_cl_dmin) dt_opencl_release_mem_object(d->grain_cl_dmin);
-        if(d->grain_cl_total) dt_opencl_release_mem_object(d->grain_cl_total);
-        if(d->grain_cl_curve) dt_opencl_release_mem_object(d->grain_cl_curve);
-        d->grain_cl_dmax = dt_opencl_copy_host_to_device_constant(
-            devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmax);
-        d->grain_cl_npart = dt_opencl_copy_host_to_device_constant(
-            devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_npart);
-        d->grain_cl_dmin = dt_opencl_copy_host_to_device_constant(
-            devid, (size_t)maxsub * 3 * f, (void *)g->grain_layer_dmin);
-        d->grain_cl_total = dt_opencl_copy_host_to_device_constant(
-            devid, (size_t)nle * 3 * f, (void *)g->grain_layer_curve_total);
-        d->grain_cl_curve = dt_opencl_copy_host_to_device_constant(
-            devid, (size_t)nle * maxsub * 3 * f, (void *)g->grain_layer_curve);
-        d->grain_cl_built_for = g;
+        raw_buf[sl] = dt_opencl_alloc_device_buffer(devid, npix * f);
+        if(!raw_buf[sl]) raw_ok = FALSE;
       }
-      if(!d->grain_cl_dmax || !d->grain_cl_npart || !d->grain_cl_dmin || !d->grain_cl_total
-         || !d->grain_cl_curve)
+      if(!raw_ok)
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       else
-        err = dt_opencl_enqueue_kernel_2d_args(
-            devid, gd->kernel_grain_gen_ml, w, h, CLARG(plane2), CLARG(tmpa), CLARG(w), CLARG(h),
-            CLARG(amount), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(nsub), CLARG(nle),
-            CLARG(maxsub), CLARG(g->grain_dmin[0]), CLARG(g->grain_dmin[1]), CLARG(g->grain_dmin[2]),
-            CLARG(g->grain_uniformity[0]), CLARG(g->grain_uniformity[1]),
-            CLARG(g->grain_uniformity[2]), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
-            CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
+      {
+        const int n_out_ch = mono ? 1 : 3;
+        for(int oc = 0; oc < n_out_ch && err == CL_SUCCESS; oc++)
+        {
+          const int channel_idx = mono ? 1 : oc;
+          const int seed_ch = mono ? 0 : oc;
+          const float unif_ch = g->grain_uniformity[channel_idx];
+          for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
+          {
+            err = dt_opencl_enqueue_kernel_2d_args(
+                devid, gd->kernel_grain_gen_raw_sl, w, h, CLARG(plane2), CLARG(raw_buf[sl]),
+                CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y), CLARG(mono), CLARG(channel_idx),
+                CLARG(seed_ch), CLARG(sl), CLARG(nle), CLARG(maxsub), CLARG(unif_ch),
+                CLARG(npart_scale), CLARG(d->grain_cl_dmax), CLARG(d->grain_cl_npart),
+                CLARG(d->grain_cl_dmin), CLARG(d->grain_cl_total), CLARG(d->grain_cl_curve));
+            if(err == CL_SUCCESS && dye_sigma[channel_idx][sl] > 1e-6f)
+              SF_GAUSS_BLUR1_L(raw_buf[sl], dye_sigma[channel_idx][sl]);
+          }
+          for(int sl = 0; sl < nsub && err == CL_SUCCESS; sl++)
+          {
+            const int reset = sl == 0;
+            err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_accumulate_1c, w, h,
+                                                   CLARG(acc_buf), CLARG(raw_buf[sl]), CLARG(w),
+                                                   CLARG(h), CLARG(reset));
+          }
+          if(err == CL_SUCCESS)
+          {
+            const float dmin_ch = g->grain_dmin[channel_idx];
+            err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_finalize_channel, w, h,
+                                                   CLARG(tmpa), CLARG(acc_buf), CLARG(plane2),
+                                                   CLARG(w), CLARG(h), CLARG(mono),
+                                                   CLARG(channel_idx), CLARG(oc), CLARG(dmin_ch),
+                                                   CLARG(amount));
+          }
+        }
+      }
+      for(int sl = 0; sl < nsub; sl++)
+        if(raw_buf[sl]) dt_opencl_release_mem_object(raw_buf[sl]);
+      if(acc_buf) dt_opencl_release_mem_object(acc_buf);
     }
-    else
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_gen, w, h, CLARG(plane2),
-                                             CLARG(tmpa), CLARG(w), CLARG(h), CLARG(amount),
-                                             CLARG(roi_x), CLARG(roi_y), CLARG(mono),
-                                             CLARG(g->film_dmax[0]), CLARG(g->film_dmax[1]),
-                                             CLARG(g->film_dmax[2]), CLARG(g->grain_dmin[0]),
-                                             CLARG(g->grain_dmin[1]), CLARG(g->grain_dmin[2]),
-                                             CLARG(g->grain_rms[0]), CLARG(g->grain_rms[1]),
-                                             CLARG(g->grain_rms[2]), CLARG(g->grain_uniformity[0]),
-                                             CLARG(g->grain_uniformity[1]),
-                                             CLARG(g->grain_uniformity[2]));
     SF_CL_STEP("grain gen");
-    const float gsigma = SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
-                              * fmaxf(d->p.grain_size * SF_GRAIN_SIZE_CAL, SF_GRAIN_SIZE_MIN)
-                              / fmaxf(pixel_um, 1e-3f);
+    /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
+       there for the empirical validation. */
+    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN);
     SF_GAUSS_BLUR4(tmpa, gsigma, "grain blur");
-    const float grenorm = sf_gauss_grain_renorm(fmaxf(gsigma, 0.3f));
     /* Centre grain delta (matches process()'s CPU-side fix exactly -- the
-       multi-sublayer particle generator has a small positive DC bias that
-       renorm amplifies proportionally to sigma; this correction only ever
-       existed on the CPU path before, so anyone using OpenCL never got it).
-       Reading the whole buffer back host-side is the simplest way to get a
-       full-image reduction; this runs once per grain stage, not per pixel.
-       Must be a per-channel mean, not one pooled scalar across R+G+B --
-       see the matching comment in process() for why a pooled mean leaves
-       a per-channel residual (a color cast) uncorrected. */
+       multi-sublayer particle generator has a small positive DC bias; this
+       correction only ever existed on the CPU path before, so anyone using
+       OpenCL never got it). Reading the whole buffer back host-side is the
+       simplest way to get a full-image reduction; this runs once per grain
+       stage, not per pixel. Must be a per-channel mean, not one pooled
+       scalar across R+G+B -- see the matching comment in process() for why
+       a pooled mean leaves a per-channel residual (a color cast)
+       uncorrected. No variance-restoration renorm -- see the matching
+       comment on the spektrafilm_grain_add kernel. */
     float gmean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     if(err == CL_SUCCESS)
     {
@@ -2318,8 +2453,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     }
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
-                                           CLARG(tmpa), CLARG(w), CLARG(h), CLARG(grenorm),
-                                           CLARG(gmean));
+                                           CLARG(tmpa), CLARG(w), CLARG(h), CLARG(gmean));
     SF_CL_STEP("grain add");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
     {
