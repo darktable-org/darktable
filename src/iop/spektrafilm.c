@@ -1752,6 +1752,23 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        rescale it live to the real pixe_um here, matching what
        sf_grain_delta_dmax now does directly for the single-layer case. */
     const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
+    /* SF_GRAIN_BLUR_FACTOR/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
+       pixel radii, validated against upstream at whatever single
+       resolution each of its own renders happens to use -- upstream has
+       no notion of "the same image, but at a temporarily reduced preview
+       resolution for interactive editing speed" the way darktable's
+       preview pipe does. Without this, the SAME nominal pixel radius
+       covers a much larger fraction of real scene detail in a
+       downscaled preview than at full/export resolution (a real image
+       edge that spans ~30px at full res might span ~4px in a heavily
+       zoomed-out preview), producing visible over-sharpening ringing on
+       actual scene content, not just grain texture, that isn't present
+       at 1:1/export. Capped at 1.0 so zooming in PAST 100% doesn't grow
+       the radii beyond what was actually validated. Particle density
+       (npart_scale above) is NOT touched by this -- it's correctly
+       resolution-dependent via pixel_um already, confirmed against the
+       reference at multiple different resolutions. */
+    const float preview_scale = fminf(roi_in->scale, 1.0f);
     float grms[3], gunif[3], gdmin[3];
     sf_sim_film_grain3(sim, grms, gunif, gdmin); /* per-film catalogue grain
                                       (rms-granularity, uniformity, density
@@ -1779,7 +1796,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         const float npart_c = (float)layers.layer_npart[sl][c] * npart_scale;
         const float od_particle = (float)layers.layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-        dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f));
+        dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
       }
 
     float *raw[SF_GRAIN_MAX_SUBLAYERS] = { 0 };
@@ -1853,8 +1870,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        scaling lives entirely in particle DENSITY (now pixel_um-driven
        above), not in this smoothing pass. SF_GRAIN_SIZE_CAL is gone: it
        was calibrated against the old pixel_um-scaled formula and no
-       longer applies. */
-    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN);
+       longer applies. preview_scale is a SEPARATE, darktable-only
+       correction (see its own comment above): upstream always renders
+       one real resolution, but darktable's preview pipe renders the same
+       image at a temporarily reduced resolution for interactive speed,
+       so this fixed radius needs shrinking there or it over-affects real
+       scene detail relative to what 1:1/export shows. */
+    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
+                         * preview_scale;
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
     /* Centre grain delta: multi-sublayer model has positive DC bias (~0.07)
        that renorm amplifies proportionally to sigma, making image brighter
@@ -1886,7 +1909,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
     for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k];
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
-      sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma,
+      sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma * preview_scale,
                                        d->p.grain_usm_amount, corr, scratch);
   }
 
@@ -2381,6 +2404,15 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     const int roi_x = roi_in->x, roi_y = roi_in->y;
     const float amount = d->p.grain_amount;
     const int mono = g->film_bw; /* B&W: achromatic grain */
+    /* see the matching comment on the CPU path (process()) for the full
+       rationale: darktable's preview pipe renders at a temporarily
+       reduced resolution, unlike upstream which always renders one real
+       resolution, so these fixed pixel radii need shrinking there to
+       avoid over-affecting real scene detail. Capped at 1.0 so zooming
+       in past 100% doesn't grow radii beyond what was validated. Does
+       NOT apply to npart_scale below, which is correctly resolution-
+       dependent via pixel_um already. */
+    const float preview_scale = fminf(roi_in->scale, 1.0f);
     /* Unified through the multi-sublayer table for every stock (nsub can be
        1) rather than branching to a separate single-layer kernel -- see the
        matching comment in process()'s CPU path for why that's valid: the
@@ -2429,7 +2461,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         {
           const float npart_c = g->grain_layer_npart[sl][c] * npart_scale;
           const float od_particle = g->grain_layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f));
+          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
         }
 
       cl_mem raw_buf[SF_GRAIN_MAX_SUBLAYERS] = { NULL };
@@ -2486,7 +2518,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     SF_CL_STEP("grain gen");
     /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
        there for the empirical validation. */
-    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN);
+    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
+                          * preview_scale;
     SF_GAUSS_BLUR4(tmpa, gsigma, "grain blur");
     /* Centre grain delta (matches process()'s CPU-side fix exactly -- the
        multi-sublayer particle generator has a small positive DC bias; this
@@ -2524,7 +2557,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     {
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
       if(err != CL_SUCCESS) goto cleanup;
-      const float usig = d->p.grain_usm_sigma;
+      const float usig = d->p.grain_usm_sigma * preview_scale;
       SF_GAUSS_BLUR4_FAST(plane2, usig, "grain USM blur");
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_usm, w, h, CLARG(plane2),
                                              CLARG(acc), CLARG(w), CLARG(h),
