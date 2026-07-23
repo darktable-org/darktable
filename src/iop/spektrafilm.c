@@ -188,7 +188,7 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean grain_on;        // $DEFAULT: TRUE $DESCRIPTION: "enable grain"
   float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain strength"
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
-  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
+  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 35.0 $DESCRIPTION: "film format"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
   float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.8 $DESCRIPTION: "grain recovery sharpness"
   float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "grain recovery strength"
@@ -1506,8 +1506,13 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   *roi_in = *roi_out;
   const dt_iop_spektrafilm_data_t *const d = (const dt_iop_spektrafilm_data_t *)piece->data;
   if(!d) return;
-  const float full_w = fmaxf((float)piece->buf_in.width * roi_out->scale, 1.0f);
-  const float pixel_um = d->p.film_format_mm * 1000.0f / full_w;
+  /* film_format_mm is the format's long-edge dimension; buf_in.width alone
+     is the SHORT edge for portrait-oriented images (post-orientation), so
+     using it directly here would under-scale pixel_um (and every halo/grain/
+     halation size derived from it) by the aspect ratio for portrait shots. */
+  const float full_long_edge
+    = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_out->scale, 1.0f);
+  const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
   const int halo = (int)ceilf(SF_HALO_SIGMAS * _max_halo_sigma(&d->p, pixel_um));
   if(halo <= 0) return;
   const int img_w = (int)roundf((float)piece->buf_in.width * roi_out->scale);
@@ -1529,8 +1534,10 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      dt_develop_tiling_t *tiling)
 {
   const dt_iop_spektrafilm_data_t *const d = (const dt_iop_spektrafilm_data_t *)piece->data;
-  const float full_w = fmaxf((float)piece->buf_in.width * roi_in->scale, 1.0f);
-  const float pixel_um = d->p.film_format_mm * 1000.0f / full_w;
+  /* see modify_roi_in: film_format_mm is the long-edge dimension */
+  const float full_long_edge
+    = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
+  const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
   tiling->factor = 2.5f; /* 4 float4 buffers, but they alias in practice */
   tiling->factor_cl = 4.0f; /* + gtmp4 (1 float4) + plane1 and gtmp1 (1ch each, 1/4 float4) */
   tiling->maxbuf = 1.0f;
@@ -1579,9 +1586,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     return;
   }
 
-  /* physical micrometres per pixel at this pipe resolution */
-  const float full_w = fmaxf((float)piece->buf_in.width * roi_in->scale, 1.0f);
-  const float pixel_um = d->p.film_format_mm * 1000.0f / full_w;
+  /* physical micrometres per pixel at this pipe resolution; film_format_mm
+     is the long-edge dimension, see modify_roi_in */
+  const float full_long_edge
+    = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
+  const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
 
   float *plane = dt_alloc_align_float(npix * 3);  /* raw / lograw / cmy, in place */
   float *corr = dt_alloc_align_float(npix * 3);   /* DIR coupler correction field */
@@ -1810,8 +1819,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                             CLARG(oh), CLARG(ox), CLARG(oy));
   if(!g) return DT_OPENCL_DEFAULT_ERROR; /* exact quality etc. -> CPU fallback */
 
-  const float full_w = fmaxf((float)piece->buf_in.width * roi_in->scale, 1.0f);
-  const float pixel_um = d->p.film_format_mm * 1000.0f / full_w;
+  /* film_format_mm is the long-edge dimension, see modify_roi_in */
+  const float full_long_edge
+    = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
+  const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
 
   /* ---- table uploads (read-only buffers) -------------------------------- */
   /* packed matrix block: layout must match the SF_M_* offsets in the .cl */
@@ -2808,7 +2819,7 @@ void gui_init(dt_iop_module_t *self)
   g->film_format_mm = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm, _(" mm"));
   gtk_widget_set_tooltip_text(g->film_format_mm,
-                              _("physical film width; sets the scale of grain and halation"));
+                              _("physical film format, long side; sets the scale of grain and halation"));
 
   /* ---- tab: grain ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("grain"), NULL);
