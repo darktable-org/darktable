@@ -733,7 +733,7 @@ static void _on_select_all_header_clicked(GtkWidget *button, gpointer user_data)
   // only toggle if the click wasn't already handled by the checkbox itself.
   // block the toggled signal to prevent double-fire, then toggle manually
   g_signal_handlers_block_by_func(data->select_all_toggle, _on_select_all_toggled, data);
-  gboolean active
+  const gboolean active
     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->select_all_toggle));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->select_all_toggle), !active);
   g_signal_handlers_unblock_by_func(
@@ -790,8 +790,8 @@ static gboolean _update_progress_idle(gpointer user_data)
   dt_download_dialog_t *dl = (dt_download_dialog_t *)user_data;
 
   g_mutex_lock(&dl->mutex);
-  double progress = dl->progress;
-  gboolean finished = dl->finished;
+  const double progress = dl->progress;
+  const gboolean finished = dl->finished;
   g_mutex_unlock(&dl->mutex);
 
   if(dl->dialog && GTK_IS_WIDGET(dl->dialog))
@@ -918,7 +918,7 @@ _download_model_with_dialog(dt_prefs_ai_data_t *data, const char *model_id)
   gtk_widget_destroy(dialog);
   dl->dialog = NULL;
 
-  gboolean success = (dl->error == NULL);
+  const gboolean success = (dl->error == NULL);
 
   // notify modules that models have changed
   if(success)
@@ -957,9 +957,9 @@ static void _on_download_selected(GtkButton *button, gpointer user_data)
     dt_ai_model_t *model = dt_ai_models_get_by_id(id);
     if(model)
     {
-      gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED
-                                || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
-                                || model->status == DT_AI_MODEL_UPDATE_REQUIRED);
+      const gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+                                     || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
+                                     || model->status == DT_AI_MODEL_UPDATE_REQUIRED);
       dt_ai_model_free(model);
       if(need_download && !_download_model_with_dialog(data, id))
         break; // stop on error or cancel
@@ -980,11 +980,11 @@ static void _on_download_default(GtkButton *button, gpointer user_data)
     dt_ai_model_t *model = dt_ai_models_get_by_index(i);
     if(!model)
       continue;
-    gboolean need_download
-      = (model->is_default
-         && (model->status == DT_AI_MODEL_NOT_DOWNLOADED
-             || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
-             || model->status == DT_AI_MODEL_UPDATE_REQUIRED));
+    const gboolean need_download =
+            (model->is_default
+             && (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+                 || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
+                 || model->status == DT_AI_MODEL_UPDATE_REQUIRED));
     char *id = need_download ? g_strdup(model->id) : NULL;
     dt_ai_model_free(model);
     if(need_download)
@@ -1379,7 +1379,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
   }
   else if(count == 1)
   {
-    dt_ai_ort_found_t *f = found->data;
+    const dt_ai_ort_found_t *f = found->data;
     gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
     _set_ort_path(data, f->path);
     GtkWidget *dlg = gtk_message_dialog_new(
@@ -1412,8 +1412,9 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
     GtkWidget *combo = gtk_combo_box_text_new();
     for(GList *l = found; l; l = g_list_next(l))
     {
-      dt_ai_ort_found_t *f = l->data;
-      gchar *entry = g_strdup_printf("ONNX Runtime %s [%s]  %s", f->version, f->eps, f->path);
+      const dt_ai_ort_found_t *f = l->data;
+      gchar *entry = g_strdup_printf("ONNX Runtime %s [%s]  %s",
+                                     f->version, f->eps, f->path);
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
       g_free(entry);
     }
@@ -1426,7 +1427,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
       const int sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
       if(sel >= 0)
       {
-        dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
+        const dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
         gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
         _set_ort_path(data, f->path);
       }
