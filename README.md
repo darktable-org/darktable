@@ -260,6 +260,7 @@ Optional dependencies (minimum version):
 * libheif 1.13.0 *(for HEIF import & export; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
+* OpenCV 4 — only the core, imgproc, features2d, flann and calib3d modules *(for HDR exposure-bracket auto-alignment)*
 
 Optional dependencies (no version requirement):
 * colord, Xatom *(for fetching the system display color profile)*
