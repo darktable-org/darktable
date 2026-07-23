@@ -2061,7 +2061,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
 
       // make sure for later testing fallback later via
-      // `find_temperature_from_raw_coeffs` if there is no valid illuminant
+      // `find_illuminant_xy_from_as_shot_coeffs` if there is no valid illuminant
       dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
 
 #if EXIV2_TEST_VERSION(0,27,4)

@@ -4,6 +4,7 @@ This guide documents the functions that darktable Image Operation (IOP) modules 
 
 See also:
 - [Pixelpipe Architecture](pixelpipe_architecture.md) for pipeline data flow and caching.
+- [Module Lifecycle](Module_Lifecycle.md) for when these callbacks fire and what the system does around them.
 - [Introspection System](introspection.md) for parameter management.
 - [GUI Architecture](GUI.md) for GUI events, callbacks, thread safety, and widget reparenting.
 
@@ -360,7 +361,13 @@ Access in `process_cl()` via `self->global_data`.
 
 ### `reload_defaults()` - Per-Image Defaults
 
-Called when switching images. Update defaults based on image properties:
+Called when switching images (and on first load). Its purpose is to make `self->default_params` image-specific — most modules have defaults that depend on whether the image is RAW, HDR, monochrome, etc., and those cannot be compile-time constants.
+
+When invoked through the wrapper `dt_iop_reload_defaults()`, the harness calls `dt_iop_load_default_params()` after the module's own `reload_defaults()` returns, copying `default_params` into `self->params`. So on the wrapper path, writing to `default_params` inside `reload_defaults()` immediately affects `self->params` as well. Most callers use the wrapper (e.g. `_dt_dev_load_pipeline_defaults()`, the per-module Reset button, instance duplication).
+
+**Caveat — direct calls bypass only the framework copy, not the module body.** A few sites invoke `module->reload_defaults(module)` directly instead of through the wrapper (for example `develop.c` calls `temperature->reload_defaults(temperature)` to refresh WB side-effects). Those callers do **not** get the automatic `dt_iop_load_default_params()`, so the wholesale `default_params → self->params` copy does not happen. This does **not** mean `self->params` is left untouched: the module's own `reload_defaults()` body may still write specific `self->params` fields directly. `temperature.reload_defaults()` does exactly this — it writes `p->preset` and `p->late_correction` (via `p = self->params`) in lockstep with `default_params`, while the WB coefficient array is written to `default_params` only. On a direct call, the result is therefore a *partial* update: the fields the body touches change in `self->params`, the rest do not, and no history entry is recorded. If you add such a call, prefer `dt_iop_reload_defaults()`, or audit exactly which `self->params` fields the body mutates and sync the rest yourself.
+
+#### Job 1 (all modules that implement this): compute image-specific default params
 
 ```c
 void reload_defaults(dt_iop_module_t *self)
@@ -373,7 +380,30 @@ void reload_defaults(dt_iop_module_t *self)
 }
 ```
 
+Example: `exposure.c` disables itself for non-RAW images by setting `self->default_enabled = FALSE`. The exposure value in `default_params` stays at its static value because exposure is image-type-agnostic beyond that flag.
+
 Common checks: `dt_image_is_raw()`, `dt_image_is_hdr()`, `dt_image_is_ldr()`, `dt_image_is_monochrome()`, `dt_image_is_bayerRGB()`.
+
+#### Job 2 (some modules): write shared inter-module data as a side effect
+
+Some modules use `reload_defaults()` to populate shared state in `dev->chroma` (or similar structures) that other modules depend on. This happens regardless of whether the module is enabled or has a history entry.
+
+Example: `temperature.c` always computes the camera's as-shot WB coefficients and D65 reference coefficients from the image's EXIF data and writes them into `dev->chroma.as_shot[]` and `dev->chroma.D65coeffs[]`. `channelmixerrgb.c` reads these values during its own `commit_params()` to perform chromatic adaptation. If `reload_defaults()` did not run unconditionally, `channelmixerrgb` would have no access to the camera's native WB — even when the white balance module itself is disabled or absent from the history.
+
+For the complete producer/consumer map, the reverse-order default-loading reasoning, and which `dev->chroma` fields each module actually reads, see [iop/wb_and_colorcalibration](iop/wb_and_colorcalibration/README.md).
+
+#### Where `default_params` is consumed
+
+**Initial image load.** Inside `dt_dev_read_history_ext()`, `_dt_dev_load_pipeline_defaults()` calls `reload_defaults()` for every module (in reverse pipe order) and copies each `default_params` into `params`. The function then adds the workflow default modules and any auto-presets, and builds `dev->history` **directly from the database rows** — it does *not* call `dt_dev_pop_history_items`. A module with a history row runs with the saved params from that row; a module without one keeps the image-specific `default_params` just loaded. This is true on both the first open of an image and the reopen of an edited one; the only difference is whether the database has any rows for that module.
+
+**Undo / redo / history-panel navigation.** This is the separate path that uses `dt_dev_pop_history_items_ext()`, which does two passes:
+
+1. Resets all modules: `module->params = module->default_params` — so modules absent from the replayed range start from their image-specific default, not garbage.
+2. Replays history entries: `module->params = hist->params` for each entry up to the target position.
+
+So `default_params` is consumed in two ways: as the starting point for modules with no (or not-yet-replayed) history, and as the value the per-module "Reset to defaults" button restores. It also sets the visual "default" markers on GUI sliders (via `dt_bauhaus_slider_set_default()`).
+
+For the full sequence — load order, the `dev->chroma` side effects, and the reverse-iteration hazard — see [Module_Lifecycle.md](Module_Lifecycle.md).
 
 ### Pipe Lifecycle Functions
 

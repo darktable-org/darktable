@@ -43,7 +43,7 @@
 #include "common/colorspaces.h"
 #include "external/cie_colorimetric_tables.c"
 
-DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_temperature_params_t)
 
 #define INITIALBLACKBODYTEMPERATURE 4000
 
@@ -53,7 +53,7 @@ DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
 #define DT_IOP_LOWEST_TINT 0.135
 #define DT_IOP_HIGHEST_TINT 2.326
 
-#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 5
+#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 4
 
 // If you reorder presets combo, change this consts
 #define DT_IOP_TEMP_UNKNOWN -1
@@ -61,7 +61,6 @@ DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
 #define DT_IOP_TEMP_SPOT 1
 #define DT_IOP_TEMP_USER 2
 #define DT_IOP_TEMP_D65 3
-#define DT_IOP_TEMP_D65_LATE 4
 
 static void _gui_sliders_update(dt_iop_module_t *self);
 
@@ -72,6 +71,7 @@ typedef struct dt_iop_temperature_params_t
   float blue;    // $MIN: 0.0 $MAX: 8.0
   float various; // $MIN: 0.0 $MAX: 8.0
   int preset;
+  gboolean late_correction; // $DEFAULT: FALSE $DESCRIPTION: "prepare data for color calibration"
 } dt_iop_temperature_params_t;
 
 typedef struct dt_iop_temperature_gui_data_t
@@ -84,9 +84,8 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *btn_asshot; //As Shot
   GtkWidget *btn_user;
   GtkWidget *btn_d65;
-  GtkWidget *btn_d65_late;
   GtkWidget *temp_label;
-  GtkWidget *balance_label;
+  GtkWidget *check_late_correction;
   int preset_cnt;
   int preset_num[54];
   double mod_coeff[4];
@@ -102,6 +101,7 @@ typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
   int preset;
+  gboolean late_correction;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -142,6 +142,16 @@ int legacy_params(dt_iop_module_t *self,
     int preset;
   } dt_iop_temperature_params_v4_t;
 
+  typedef struct dt_iop_temperature_params_v5_t
+  {
+    float red;
+    float green;
+    float blue;
+    float various;
+    int preset;
+    gboolean late_correction;
+  } dt_iop_temperature_params_v5_t;
+
   if(old_version == 2)
   {
     typedef struct dt_iop_temperature_params_v2_t
@@ -177,6 +187,28 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_temperature_params_v4_t);
     *new_version = 4;
+    return 0;
+  }
+  if(old_version == 4)
+  {
+    const int legacy_d65_late = 4;
+    const dt_iop_temperature_params_v4_t *o = (dt_iop_temperature_params_v4_t *)old_params;
+    dt_iop_temperature_params_v5_t *n = malloc(sizeof(dt_iop_temperature_params_v5_t));
+
+    memcpy(n, o, sizeof(dt_iop_temperature_params_v4_t));
+    if(o->preset == legacy_d65_late)
+    {
+      n->preset = DT_IOP_TEMP_AS_SHOT;
+      n->late_correction = TRUE;
+    }
+    else
+    {
+      n->preset = o->preset > legacy_d65_late ? o->preset - 1 : o->preset;
+      n->late_correction = FALSE;
+    }
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_temperature_params_v5_t);
+    *new_version = 5;
     return 0;
   }
   return 1;
@@ -526,7 +558,7 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
     chr->wb_coeffs[k] = d->coeffs[k];
   }
-  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+  chr->late_correction = d->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -702,6 +734,8 @@ void commit_params(dt_iop_module_t *self,
   {
     for_four_channels(k)
       chr->wb_coeffs[k] = 1.0f;
+    // keep the module handle available for GUI reports (see below)
+    chr->temperature = self;
     return;
   }
 
@@ -717,14 +751,26 @@ void commit_params(dt_iop_module_t *self,
 
   d->preset = p->preset;
 
-  /* Make sure the chroma information stuff is valid
-     If piece is disabled we always clear the trouble message and
-     make sure chroma does know there is no temperature module.
+  const gboolean effective_late_correction =
+    p->preset == DT_IOP_TEMP_D65 ? FALSE : p->late_correction;
+
+  d->late_correction = effective_late_correction;
+  // When the WB module is disabled it applies no coefficients (wb_coeffs are
+  // published as 1.0 above), so it makes no promise that the data is white
+  // balanced. Do not ask colorin (or any other consumer) to "finish" a
+  // correction that never started, otherwise disabling WB would still pull the
+  // image to D65 via D65coeffs/1.0.
+  chr->late_correction = piece->enabled ? effective_late_correction : FALSE;
+
+  /* Always publish the module handle for GUI reports, regardless of the
+     enabled state. The enabled state is tracked separately via
+     chr->temperature->enabled (module flag) and pipe->dsc.temperature.enabled
+     (pipe flag). This lets color calibration warn about a disabled white
+     balance module while it is still doing chromatic adaptation. Trouble
+     message state is owned entirely by _set_trouble_messages() in
+     channelmixerrgb, so we no longer clear it here.
   */
-  chr->late_correction = p->preset == DT_IOP_TEMP_D65_LATE;
-  chr->temperature = piece->enabled ? self : NULL;
-  if(dt_pipe_is_preview(pipe) && !piece->enabled)
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+  chr->temperature = self;
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -1139,7 +1185,6 @@ static inline const char *_preset_to_str(const int preset)
     case DT_IOP_TEMP_SPOT:      return "by spot";
     case DT_IOP_TEMP_USER:      return "user defined";
     case DT_IOP_TEMP_D65:       return "camera reference";
-    case DT_IOP_TEMP_D65_LATE:  return "as shot to reference";
     default:                    return "other";
   }
 }
@@ -1148,18 +1193,43 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 {
   dt_iop_temperature_params_t *p = self->params;
   dt_dev_chroma_t *chr = &self->dev->chroma;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+
+  const gboolean is_current_reference = p->preset == DT_IOP_TEMP_D65;
+  const gboolean is_new_mode_manual = mode != DT_IOP_TEMP_D65;
+
+  if(is_current_reference && is_new_mode_manual)
+  {
+    // set iff color calibration active in adaptation mode
+    p->late_correction = (chr->adaptation != NULL);
+  }
 
   p->preset = mode;
-  chr->late_correction = mode == DT_IOP_TEMP_D65_LATE;
+
+  if(mode == DT_IOP_TEMP_D65)
+  {
+    chr->late_correction = FALSE;
+  }
+  else
+  {
+    // For non-D65 modes, use the parameter
+    chr->late_correction = p->late_correction;
+  }
+
+  if(g && g->check_late_correction)
+  {
+    // show the checkbox only in modes where user can adjust multipliers
+    gtk_widget_set_visible(g->check_late_correction, is_new_mode_manual);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->check_late_correction),
+                                 p->late_correction);
+  }
 }
 
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *p = self->params;
-  dt_iop_temperature_params_t *d = self->default_params;
-
-  d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
 
   const gboolean true_monochrome =
     dt_image_monochrome_flags(&self->dev->image_storage) & DT_IMAGE_MONOCHROME;
@@ -1192,13 +1262,7 @@ void gui_update(dt_iop_module_t *self)
   gboolean found = FALSE;
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   // is this a "as shot" white balance?
-  if(dt_dev_equal_chroma((float *)p, chr->as_shot) && (p->preset == DT_IOP_TEMP_D65_LATE))
-  {
-    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65_LATE);
-    found = TRUE;
-  }
-
-  else if(dt_dev_equal_chroma((float *)p, chr->as_shot))
+  if(dt_dev_equal_chroma((float *)p, chr->as_shot))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     p->preset = DT_IOP_TEMP_AS_SHOT;
@@ -1346,8 +1410,6 @@ void gui_update(dt_iop_module_t *self)
                                p->preset == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
                                p->preset == DT_IOP_TEMP_D65);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late),
-                               p->preset == DT_IOP_TEMP_D65_LATE);
 
   _color_temptint_sliders(self);
   _color_rgb_sliders(self);
@@ -1500,7 +1562,8 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_temperature_params_t *d = self->default_params;
   dt_iop_temperature_params_t *p = self->params;
 
-  d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
+  d->preset = DT_IOP_TEMP_AS_SHOT;
+  d->late_correction = p->late_correction = dt_is_scene_referred();
 
   float *dcoeffs = (float *)d;
   for_four_channels(k)
@@ -1585,7 +1648,7 @@ void reload_defaults(dt_iop_module_t *self)
     STR_YESNO(another_cat_defined),
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
 
-  d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
+  d->preset = DT_IOP_TEMP_AS_SHOT;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
@@ -1609,7 +1672,8 @@ void reload_defaults(dt_iop_module_t *self)
       {
         for_four_channels(k)
           dcoeffs[k] = as_shot[k];
-        d->preset = p->preset = DT_IOP_TEMP_D65_LATE;
+        d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
+        d->late_correction = p->late_correction = TRUE;
       }
       else
       {
@@ -1619,6 +1683,7 @@ void reload_defaults(dt_iop_module_t *self)
         dcoeffs[2] = coeffs[2]/coeffs[1];
         dcoeffs[3] = coeffs[3]/coeffs[1];
         dcoeffs[1] = 1.0f;
+        d->late_correction = p->late_correction = FALSE;
       }
     }
   }
@@ -1656,7 +1721,6 @@ void reload_defaults(dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
     // old "camera neutral", reason: better matches intent
     dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference"));
-    dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot to reference"));
 
     g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
     memset(g->preset_num, 0, sizeof(g->preset_num));
@@ -1666,7 +1730,6 @@ void reload_defaults(dt_iop_module_t *self)
     _gui_sliders_update(self);
 
     dt_bauhaus_combobox_set(g->presets, p->preset);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late), p->preset == DT_IOP_TEMP_D65_LATE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot), p->preset == DT_IOP_TEMP_AS_SHOT);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65), FALSE);
@@ -1726,8 +1789,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   _mul2temp(self, p, &g->mod_temp, &g->mod_tint);
 
-  dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
-  _update_preset(self, DT_IOP_TEMP_USER);
+  if(w != g->check_late_correction) {
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+    _update_preset(self, DT_IOP_TEMP_USER);
+  }
 }
 
 static gboolean _btn_toggled(GtkWidget *togglebutton,
@@ -1740,7 +1805,6 @@ static gboolean _btn_toggled(GtkWidget *togglebutton,
 
   const int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
                      togglebutton == g->btn_d65 ? DT_IOP_TEMP_D65 :
-                     togglebutton == g->btn_d65_late ? DT_IOP_TEMP_D65_LATE :
                      togglebutton == g->btn_user ? DT_IOP_TEMP_USER : 0;
 
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)))
@@ -1783,8 +1847,6 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
                                pos == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
                                pos == DT_IOP_TEMP_D65);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late),
-                               pos == DT_IOP_TEMP_D65_LATE);
 
   gboolean show_finetune = FALSE;
   dt_dev_chroma_t *chr = &self->dev->chroma;
@@ -1813,9 +1875,6 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
       break;
     case DT_IOP_TEMP_D65: // camera reference d65
       _temp_params_from_array(p, chr->D65coeffs);
-      break;
-    case DT_IOP_TEMP_D65_LATE: // as shot wb just for now
-        _temp_params_from_array(p, chr->as_shot);
       break;
     default: // camera WB presets
     {
@@ -2092,21 +2151,11 @@ void gui_init(dt_iop_module_t *self)
     (g->btn_d65,
      _("set white balance to camera reference point\nin most cases it should be D65"));
 
-  g->btn_d65_late = dt_iop_togglebutton_new(self,
-                                            N_("settings"),
-                                            N_("as shot to reference"), NULL,
-                                            G_CALLBACK(_btn_toggled), FALSE, 0, 0,
-                                            dtgtk_cairo_paint_bulb_mod, NULL);
-  gtk_widget_set_tooltip_text
-    (g->btn_d65_late,
-     _("set white balance to as shot and later correct to camera reference point,\nin most cases it should be D65"));
-
   // put buttons at top. fill later.
   g->buttonbar = dt_gui_hbox(dt_gui_expand(g->btn_asshot),
                              dt_gui_expand(g->colorpicker),
                              dt_gui_expand(g->btn_user),
-                             dt_gui_expand(g->btn_d65),
-                             dt_gui_expand(g->btn_d65_late));
+                             dt_gui_expand(g->btn_d65));
   dt_gui_add_class(g->buttonbar, "dt_iop_toggle");
 
   g->presets = dt_bauhaus_combobox_new(self);
@@ -2149,12 +2198,26 @@ void gui_init(dt_iop_module_t *self)
     (g->scale_tint,
      _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
+  g->check_late_correction = dt_bauhaus_toggle_from_params(self, "late_correction");
+  g_object_ref(g->check_late_correction); // prevent destruction
+  GtkWidget *temp_parent = gtk_widget_get_parent(g->check_late_correction);
+  if(temp_parent)
+    gtk_container_remove(GTK_CONTAINER(temp_parent), g->check_late_correction);
+
+  gtk_widget_set_tooltip_text(g->check_late_correction,
+      _("ensures the white balance coefficients are treated as a reference for the color calibration module.\n"
+        "keep this checked for non-reference white balance in the modern scene-referred workflow."));
+
   GtkWidget *box_enabled = dt_gui_vbox(g->buttonbar,
+                                       g->check_late_correction,
                                        g->presets,
                                        g->finetune,
                                        temp_label_box,
                                        g->scale_k,
                                        g->scale_tint);
+
+  g_object_unref(g->check_late_correction);
+
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/temperature/expand_coefficients",
@@ -2208,9 +2271,9 @@ void gui_cleanup(dt_iop_module_t *self)
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
-  dt_iop_temperature_params_t *d = self->default_params;
+  dt_iop_temperature_params_t *p = self->params;
 
-  const int preset = d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
+  const int preset = p->preset;
   dt_iop_color_picker_reset(self, TRUE);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot),
@@ -2219,8 +2282,6 @@ void gui_reset(dt_iop_module_t *self)
                                preset == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
                                preset == DT_IOP_TEMP_D65);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late),
-                               preset == DT_IOP_TEMP_D65_LATE);
 
   _color_finetuning_slider(self);
   _color_rgb_sliders(self);
