@@ -217,7 +217,6 @@ static void pixel_rgb_geomean(const float *const restrict image,
 // Overkill trick to explicitely unswitch loops
 // GCC should to it automatically with "funswitch-loops" flag,
 // but not sure about Clang
-#ifdef _OPENMP
   #define LOOP(fn)                                                        \
     {                                                                     \
       _Pragma ("omp parallel for simd default(none) schedule(static)      \
@@ -229,17 +228,6 @@ static void pixel_rgb_geomean(const float *const restrict image,
       }                                                                   \
       break;                                                              \
     }
-#else
-  #define LOOP(fn)                                                        \
-    {                                                                     \
-      for(size_t k = 0; k < num_elem; k += 4)                             \
-      {                                                                   \
-        fn(in, out, k, exposure_boost, fulcrum, contrast_boost);          \
-      }                                                                   \
-      break;                                                              \
-    }
-#endif
-
 
 __DT_CLONE_TARGETS__
 static inline void luminance_mask(const float *const restrict in,

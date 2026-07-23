@@ -21,9 +21,7 @@
 
 #include <exception>
 #include <math.h>
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 #include "common/darktable.h"
 #include "common/densecrf.h"

@@ -1910,9 +1910,7 @@ int main(int argc, char *argv[])
   SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif
 
-#ifdef _OPENMP
   omp_set_num_threads(omp_get_num_procs());
-#endif
 
   int res = 1;
   dt_lut_t *self = (dt_lut_t *)calloc(1, sizeof(dt_lut_t));

@@ -78,8 +78,7 @@ typedef unsigned int u_int;
 #include <sys/sysctl.h>
 #endif
 
-#ifdef _OPENMP
-# include <omp.h>
+#include <omp.h>
 
 /* See https://redmine.darktable.org/issues/12568#note-14 */
 # ifdef HAVE_OMP_FIRSTPRIVATE_WITH_CONST
@@ -91,15 +90,13 @@ typedef unsigned int u_int;
 # endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
 
 #ifndef dt_omp_sharedconst
-#ifdef _OPENMP
 #if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_sharedconst(...) shared(__VA_ARGS__)
+  #define dt_omp_sharedconst(...) shared(__VA_ARGS__)
 #else
   // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
   //  'const' variables as shared
-# define dt_omp_sharedconst(var, ...)
+  #define dt_omp_sharedconst(var, ...)
 #endif
-#endif /* _OPENMP */
 #endif /* dt_omp_sharedconst */
 
 #ifndef dt_omp_nontemporal
@@ -107,24 +104,15 @@ typedef unsigned int u_int;
 // GCC 9 recognizes it as valid, but does not do anything with it
 // GCC 10+ ???
 #if (__clang__+0 >= 10 || __GNUC__ >= 9)
-#  define dt_omp_nontemporal(...) nontemporal(__VA_ARGS__)
+  #define dt_omp_nontemporal(...) nontemporal(__VA_ARGS__)
 #else
 // GCC7/8 only support OpenMP 4.5, which does not have the nontemporal() directive.
-#  define dt_omp_nontemporal(var, ...)
+  #define dt_omp_nontemporal(var, ...)
 #endif
 #endif /* dt_omp_nontemporal */
 
 #define DT_OMP_STRINGIFY(...) #__VA_ARGS__
 #define DT_OMP_PRAGMA(...) _Pragma(DT_OMP_STRINGIFY(omp __VA_ARGS__))
-
-#else /* _OPENMP */
-
-# define omp_get_max_threads() 1
-# define omp_get_thread_num() 0
-
-#define DT_OMP_PRAGMA(...)
-
-#endif /* _OPENMP */
 
 #define DT_OMP_SIMD(clauses) DT_OMP_PRAGMA(simd clauses)
 #define DT_OMP_DECLARE_SIMD(clauses) DT_OMP_PRAGMA(declare simd clauses)
@@ -787,29 +775,17 @@ gboolean dt_supported_image(const gchar *filename);
 
 static inline size_t dt_get_num_threads()
 {
-#ifdef _OPENMP
   return (size_t)CLAMP(omp_get_num_procs(), 1, darktable.num_openmp_threads);
-#else
-  return 1;
-#endif
 }
 
 static inline size_t dt_get_num_procs()
 {
-#ifdef _OPENMP
   return (size_t)MAX(1, omp_get_num_procs());
-#else
-  return 1;
-#endif
 }
 
 static inline int dt_get_thread_num()
 {
-#ifdef _OPENMP
   return omp_get_thread_num();
-#else
-  return 0;
-#endif
 }
 
 #define DT_INITHASH 5381
@@ -879,20 +855,6 @@ static inline float *dt_calloc_perthread_float(const size_t n,
 // return a pointer to the indicated thread's private buffer.
 #define dt_get_bythread(buf, padsize, tnum) \
   DT_IS_ALIGNED((buf) + ((padsize) * (tnum)))
-
-// Most code in dt assumes that the compiler is capable of
-// auto-vectorization.  In some cases, this will yield suboptimal code
-// if the compiler in fact does NOT auto-vectorize.  Uncomment the
-// following line for such a compiler.
-
-//#define DT_NO_VECTORIZATION
-
-// For some combinations of compiler and architecture, the compiler
-// may actually emit inferior code if given a hint to vectorize a
-// loop.  Uncomment the following line if such a combination is the
-// compilation target.
-
-//#define DT_NO_SIMD_HINTS
 
 // copy the RGB channels of a pixel; includes the 'alpha' channel as
 // well if faster due to vectorization, but subsequent code should

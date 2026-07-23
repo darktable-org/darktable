@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,9 +116,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 // Build I=log(L)
 // and splat into the lattice
-#ifdef _OPENMP
 #pragma omp parallel for shared(lattice)
-#endif
   for(int j = 0; j < height; j++)
   {
     size_t index = (size_t)j * width;
@@ -161,9 +159,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   //
 
   const float contr = 1. / data->contrast;
-#ifdef _OPENMP
 #pragma omp parallel for
-#endif
   for(int j = 0; j < height; j++)
   {
     size_t index = (size_t)j * width;
