@@ -730,6 +730,11 @@ static gboolean _draw(GtkWidget *da,
 
 static GdkDevice *_touchpad = NULL;
 
+gboolean dt_gui_touchpad_gestures_enabled(void)
+{
+  return darktable.gui->touchpad_gestures_enabled;
+}
+
 static void _touchpad_gestures_pref_changed(gpointer instance,
                                             gpointer user_data)
 {
@@ -751,11 +756,13 @@ static gboolean _input_event(GtkWidget *widget,
       _touchpad = gdk_event_get_source_device(event);
       if(_touchpad)
       {
+        GdkDevice *mst = gdk_event_get_device(event);
         dt_print(DT_DEBUG_INPUT,
-                 "[touchpad] gesture event type=%d source='%s' source_type=%d",
+                 "[touchpad] gesture event type=%d source='%s' source_type=%d master='%s'",
                  event->type,
                  gdk_device_get_name(_touchpad),
-                 gdk_device_get_source(_touchpad));
+                 gdk_device_get_source(_touchpad),
+                 mst ? gdk_device_get_name(mst) : "<none>");
       }
       else
       {
@@ -768,29 +775,137 @@ static gboolean _input_event(GtkWidget *widget,
       break;
   }
 
-  if(event->type == GDK_TOUCHPAD_PINCH && darktable.gui->touchpad_gestures_enabled)
-  {
-    const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] pinch x=%.2f y=%.2f phase=%d scale=%.6f state=0x%x",
-             pinch->x, pinch->y, pinch->phase, pinch->scale, pinch->state);
-    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x_root, pinch->y_root,
-                                     pinch->dx, pinch->dy, pinch->phase,
-                                     pinch->scale, pinch->state & 0xf))
-    {
-      gtk_widget_queue_draw(widget);
-      return TRUE;
-    }
+  if(dt_gui_handle_touchpad_pinch_event(widget, event, "main", NULL))
+    return TRUE;
 
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] pinch ignored by current view");
-  }
-  else if(event->type == GDK_TOUCHPAD_PINCH)
+  return FALSE;
+}
+
+gboolean dt_gui_handle_touchpad_pinch_event(GtkWidget *widget,
+                                            GdkEvent *event,
+                                            const char *tag,
+                                            struct dt_dev_viewport_t *port)
+{
+  if(event->type != GDK_TOUCHPAD_PINCH) return FALSE;
+
+  if(!dt_gui_touchpad_gestures_enabled())
   {
     dt_print(DT_DEBUG_INPUT,
-             "[touchpad] pinch received but disabled by preference darkroom/ui/touchpad_gestures");
+             "[%s touchpad] pinch received but disabled by preference"
+             " darkroom/ui/touchpad_gestures", tag);
+    return FALSE;
   }
 
+  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+
+  // Convert root (screen-absolute) pinch coords to widget-local coords of the
+  // widget that received the event. This is the coord space dt_dev_zoom_move
+  // expects for cursor anchoring (it computes mouse_off via
+  // x - border - 0.5 * port->width).
+  int ox = 0, oy = 0;
+  GdkWindow *win = gtk_widget_get_window(widget);
+  if(win) gdk_window_get_origin(win, &ox, &oy);
+  const double x_local = pinch->x_root - ox;
+  const double y_local = pinch->y_root - oy;
+
+  dt_print(DT_DEBUG_INPUT,
+           "[%s touchpad] pinch x=%.2f y=%.2f (local=%.1f,%.1f origin=%d,%d)"
+           " phase=%d scale=%.6f state=0x%x",
+           tag, pinch->x, pinch->y, x_local, y_local, ox, oy,
+           pinch->phase, pinch->scale, pinch->state);
+
+  const gboolean handled = port
+    ? dt_dev_pinch_zoom(port, tag, x_local, y_local,
+                        pinch->dx, pinch->dy, pinch->phase,
+                        pinch->scale, pinch->state & 0xf)
+    : dt_view_manager_gesture_pinch(darktable.view_manager,
+                                    x_local, y_local,
+                                    pinch->dx, pinch->dy, pinch->phase,
+                                    pinch->scale, pinch->state & 0xf);
+
+  if(handled)
+  {
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+  }
+
+  dt_print(DT_DEBUG_INPUT, "[%s touchpad] pinch ignored by handler", tag);
+  return FALSE;
+}
+
+gboolean dt_gui_handle_touchpad_scroll_pan_event(GtkWidget *widget,
+                                                 GdkEventScroll *event,
+                                                 struct dt_dev_viewport_t *port)
+{
+  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
+  const gboolean touchpad_enabled = dt_gui_touchpad_gestures_enabled();
+  const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  const gboolean is_touchpad_source = device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD;
+  const gboolean matches_last_gesture_device = (device == _touchpad);
+  const gboolean is_smooth = event->direction == GDK_SCROLL_SMOOTH && !event->is_stop;
+
+  // Cross-platform routing: only smooth scrolls from a device known to be a touchpad (either reported as
+  // GDK_SOURCE_TOUCHPAD, or already seen emitting a TOUCHPAD_PINCH/SWIPE gesture this session) are turned into pan.
+  //
+  // On macOS/Quartz the built-in trackpad reports as GDK_SOURCE_MOUSE, so the `is_touchpad_source` clause never
+  // fires there; we rely on `matches_last_gesture_device` instead, which is set the first time the user pinches.
+  // That makes the combined pinch+pan flow work (because the pinch arrives first and binds `_touchpad`), and keeps
+  // mouse scrolls — which never emit TOUCHPAD_PINCH — out of the pan path so they fall through to the discrete
+  // unit-delta path and produce the traditional scroll-wheel zoom in darkroom.
+  const gboolean route_as_pan = touchpad_enabled
+                                && !ctrl_pressed
+                                && (is_touchpad_source || matches_last_gesture_device)
+                                && is_smooth;
+  if(!route_as_pan)
+  {
+    if(is_smooth)
+      dt_print(DT_DEBUG_INPUT,
+               "[touchpad] smooth scroll not treated as pan: enabled=%d ctrl=%d touchpad_source=%d matches_last_gesture=%d source='%s' source_type=%d",
+               touchpad_enabled, ctrl_pressed, is_touchpad_source, matches_last_gesture_device,
+               device ? gdk_device_get_name(device) : "<none>",
+               device ? gdk_device_get_source(device) : -1);
+    return FALSE;
+  }
+
+  gdouble delta_x = 0.0, delta_y = 0.0;
+  if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] smooth scroll ignored (likely pointer emulated), source='%s' source_type=%d",
+             device ? gdk_device_get_name(device) : "<none>",
+             device ? gdk_device_get_source(device) : -1);
+    return TRUE;
+  }
+
+  delta_x *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+  delta_y *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+  if(delta_x == 0.0 && delta_y == 0.0) return FALSE;
+
+  gboolean handled;
+  if(port)
+  {
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, delta_x, delta_y, TRUE);
+    handled = TRUE;
+  }
+  else
+  {
+    handled = dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
+                                          delta_x, delta_y, event->state & 0xf);
+  }
+
+  if(handled)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] pan x=%.2f y=%.2f dx=%.3f dy=%.3f source='%s'",
+             event->x, event->y, delta_x, delta_y,
+             device ? gdk_device_get_name(device) : "<none>");
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+  }
+
+  dt_print(DT_DEBUG_INPUT,
+           "[touchpad] pan not handled by current view (no gesture_pan handler?)"
+           " dx=%.3f dy=%.3f", delta_x, delta_y);
   return FALSE;
 }
 
@@ -800,82 +915,29 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-  const gboolean touchpad_enabled = darktable.gui->touchpad_gestures_enabled;
-  const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  GdkDevice *master = gdk_event_get_device((GdkEvent *)event);
 
+  // `matches_last_gesture` tells us whether this scroll's source GdkDevice is the same one we last saw emit
+  // a TOUCHPAD_PINCH/SWIPE. On macOS/Quartz where the trackpad reports as GDK_SOURCE_MOUSE this is what discriminates
+  // the trackpad from a mouse, but only if GDK Quartz actually hands out distinct GdkDevice values per physical input.
   dt_print(DT_DEBUG_INPUT,
            "[scroll] direction=%d smooth=%s stop=%s ctrl=%s"
            " x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x"
-           " device='%s' source-type=%d",
+           " device='%s' source-type=%d master='%s'"
+           " is_touchpad_source=%d matches_last_gesture=%d",
            event->direction,
            event->direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
            event->is_stop ? "yes" : "no",
-           ctrl_pressed ? "yes" : "no",
+           dt_modifier_is(event->state, GDK_CONTROL_MASK) ? "yes" : "no",
            event->x, event->y, event->delta_x, event->delta_y, event->state,
            device ? gdk_device_get_name(device) : "<none>",
-           device ? (int)gdk_device_get_source(device) : -1);
-  const gboolean is_touchpad_source = device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD;
-  const gboolean matches_last_gesture_device = (device == _touchpad);
+           device ? (int)gdk_device_get_source(device) : -1,
+           master ? gdk_device_get_name(master) : "<none>",
+           device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD,
+           device == _touchpad);
 
-  const gboolean is_smooth = event->direction == GDK_SCROLL_SMOOTH && !event->is_stop;
-#ifdef GDK_WINDOWING_QUARTZ
-  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
-  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to gesture_pan so
-  // that two-finger panning works in views like darkroom (both standalone and
-  // interleaved with a pinch-zoom gesture whose translational component macOS
-  // delivers as a separate scroll stream).
-  const gboolean route_as_pan = touchpad_enabled && !ctrl_pressed && is_smooth;
-#else
-  const gboolean route_as_pan = touchpad_enabled
-                                && !ctrl_pressed
-                                && (is_touchpad_source || matches_last_gesture_device)
-                                && is_smooth;
-#endif
-  if(route_as_pan)
-  {
-    gdouble delta_x = 0.0, delta_y = 0.0;
-    if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
-    {
-      dt_print(DT_DEBUG_INPUT,
-               "[touchpad] smooth scroll ignored (likely pointer emulated), source='%s' source_type=%d",
-               device ? gdk_device_get_name(device) : "<none>",
-               device ? gdk_device_get_source(device) : -1);
-      return TRUE;
-    }
-
-    delta_x *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
-    delta_y *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
-    if((delta_x != 0.0 || delta_y != 0.0)
-       && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
-                                      delta_x, delta_y, event->state & 0xf))
-    {
-      dt_print(DT_DEBUG_INPUT,
-               "[touchpad] pan x=%.2f y=%.2f dx=%.3f dy=%.3f source='%s'",
-               event->x, event->y, delta_x, delta_y,
-               device ? gdk_device_get_name(device) : "<none>");
-      gtk_widget_queue_draw(widget);
-      return TRUE;
-    }
-    else if(delta_x != 0.0 || delta_y != 0.0)
-    {
-      dt_print(DT_DEBUG_INPUT,
-               "[touchpad] pan not handled by current view (no gesture_pan handler?)"
-               " dx=%.3f dy=%.3f",
-               delta_x, delta_y);
-    }
-  }
-  else if(is_smooth)
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] smooth scroll not treated as pan: enabled=%d ctrl=%d touchpad_source=%d matches_last_gesture=%d route_as_pan=%d source='%s' source_type=%d",
-             touchpad_enabled,
-             ctrl_pressed,
-             is_touchpad_source,
-             matches_last_gesture_device,
-             route_as_pan,
-             device ? gdk_device_get_name(device) : "<none>",
-             device ? gdk_device_get_source(device) : -1);
-  }
+  if(dt_gui_handle_touchpad_scroll_pan_event(widget, (GdkEventScroll *)event, NULL))
+    return TRUE;
 
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))

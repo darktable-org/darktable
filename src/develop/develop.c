@@ -3393,6 +3393,127 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     dt_control_navigation_redraw();
 }
 
+gboolean dt_dev_pinch_zoom(dt_dev_viewport_t *port,
+                           const char *tag,
+                           const double x,
+                           const double y,
+                           const double dx,
+                           const double dy,
+                           const int phase,
+                           const double scale,
+                           const int state)
+{
+  // constrain when the config asks for it AND CTRL isn't held
+  const gboolean constrained =
+    port->dev && port->dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
+
+  // Gesture-mode classifier: each event contributes its zoom_eq & pan_eq magnitude in pixels
+  // to a decaying score. When the recent history is zoom-dominant (score > ZOOM_DOMINANT_PX)
+  // we treat the gesture as a pinch and discard the dx/dy translation that would otherwise
+  // jitter the cursor anchor. When pan dominates, the score falls below the threshold and
+  // dx/dy flows through (subject to a small per-axis deadzone for touchpad noise).
+  // The exponential decay gives hysteresis so a single wobble frame mid-gesture doesn't flip the classification.
+  static const float PINCH_ZOOM_PAN_DECAY = 0.8f;
+  static const float PINCH_ZOOM_DOMINANT_PX = 8.0f;
+  static const float PINCH_PAN_DEADZONE_PX = 4.0f;
+  static float pinch_begin_tscale = 0.0f;
+  static float prev_scale = 1.0f;
+  static float zoom_pan_score = 0.0f;
+
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    pinch_begin_tscale =
+      dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, FALSE)
+      * port->ppd;
+    prev_scale = (float)scale;
+    zoom_pan_score = 0.0f;
+    dt_print(DT_DEBUG_INPUT,
+             "[%s pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
+             " -> begin_tscale=%.6f ppd=%.2f",
+             tag, x, y, scale, state, pinch_begin_tscale, port->ppd);
+    return TRUE;
+  }
+  else if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+          || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[%s pinch] %s x=%.1f y=%.1f scale=%.6f state=0x%x",
+             tag, phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel",
+             x, y, scale, state);
+    pinch_begin_tscale = 0.0f;
+    prev_scale = 1.0f;
+    zoom_pan_score = 0.0f;
+    return TRUE;
+  }
+
+  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[%s pinch] unknown phase=%d ignored", tag, phase);
+    return FALSE;
+  }
+  if(pinch_begin_tscale <= 0.0f || scale <= 0.0)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[%s pinch] update skipped: begin_tscale=%.6f scale=%.6f",
+             tag, pinch_begin_tscale, scale);
+    return FALSE;
+  }
+
+  // On macOS (GDK Quartz), NSEventTypeMagnify never populates dx/dy and the
+  // gesture focal-point x/y is set once at phase=BEGIN and does not update
+  // during the gesture — so both approaches to infer translation are zero.
+  // Pan on macOS therefore arrives as a separate smooth-scroll stream which is
+  // routed to gesture_pan by _scrolled() in gtk.c.
+  // On other platforms (Wayland/X11), dx/dy carry the actual translational delta.
+  float eff_dx = (float)dx;
+  float eff_dy = (float)dy;
+
+  // Update the zoom-vs-pan dominance score and use it to decide whether the
+  // dx/dy component is finger-drift wobble (suppress) or real pan (allow).
+  const float scale_inc = (prev_scale > 0.0f) ? fabsf((float)scale / prev_scale - 1.0f) : 0.0f;
+  const float zoom_eq_px = scale_inc * 0.5f * (float)port->width;
+  const float pan_eq_px = sqrtf(eff_dx * eff_dx + eff_dy * eff_dy);
+  zoom_pan_score = zoom_pan_score * PINCH_ZOOM_PAN_DECAY
+                   + (zoom_eq_px - pan_eq_px);
+  const gboolean zoom_dominant = zoom_pan_score > PINCH_ZOOM_DOMINANT_PX;
+  // If zoom is dominant or the pan component is within the deadzone zero that component.
+  eff_dx = (zoom_dominant || fabsf(eff_dx) < PINCH_PAN_DEADZONE_PX) ? 0.0f : eff_dx;
+  eff_dy = (zoom_dominant || fabsf(eff_dy) < PINCH_PAN_DEADZONE_PX) ? 0.0f : eff_dy;
+  prev_scale = (float)scale;
+
+  if(eff_dx != 0.0f || eff_dy != 0.0f)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[%s pinch] pan component eff_dx=%.3f eff_dy=%.3f"
+             " (score=%.2f zoom_eq=%.2f pan_eq=%.2f)",
+             tag, eff_dx, eff_dy, zoom_pan_score, zoom_eq_px, pan_eq_px);
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, constrained);
+  }
+
+  const float ppd = port->ppd;
+  const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0f, FALSE);
+  const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
+  const float tscaletop = 16.0f;
+  const float tscale = CLAMP(pinch_begin_tscale * scale, tscalefloor, tscaletop);
+
+  // Keep pinch fully continuous for a smartphone-like feeling, including at high zoom.
+  // x/y are expected in widget-local coords (caller converts from root); this is
+  // the coord space dt_dev_zoom_move expects for cursor anchoring
+  // (it computes mouse_off via x - border - 0.5 * port->width).
+  const float zoom_scale = tscale / ppd;
+  dt_print(DT_DEBUG_INPUT,
+           "[%s pinch] update x=%.1f y=%.1f (border=%d port=%dx%d) raw_dx=%.3f raw_dy=%.3f"
+           " eff_dx=%.3f eff_dy=%.3f score=%.2f zoom_dom=%d scale=%.6f state=0x%x"
+           " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
+           tag, x, y, port->border_size, port->width, port->height,
+           dx, dy, eff_dx, eff_dy, zoom_pan_score, zoom_dominant,
+           scale, state, tscale, tscalefloor, tscaletop, zoom_scale);
+  dt_dev_zoom_move(port, DT_ZOOM_FREE, zoom_scale, 0, x, y, constrained);
+
+  return TRUE;
+}
+
 void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  const float px,
                                  const float py,
