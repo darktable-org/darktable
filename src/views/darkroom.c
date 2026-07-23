@@ -478,7 +478,6 @@ static inline gboolean _full_request(dt_develop_t *dev)
   return
         dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
      || dev->full.pipe->status == DT_DEV_PIXELPIPE_INVALID
-     || dev->full.pipe->changed != DT_DEV_PIPE_UNCHANGED
      || dev->full.pipe->input_timestamp < dev->preview_pipe->input_timestamp;
 }
 
@@ -738,8 +737,7 @@ void expose(dt_view_t *self,
 
   const gboolean expose_full =
         port->pipe->backbuf                                // do we have an image?
-     && port->pipe->output_imgid == dev->image_storage.id  // same image?
-     && !port->pipe->loading;                              // not loading a new one?
+     && port->pipe->output_imgid == dev->image_storage.id;  // same image?
 
   if(expose_full)
   {
@@ -4005,16 +4003,6 @@ void leave(dt_view_t *self)
     cairo_surface_destroy(darktable.gui->surface);
     darktable.gui->surface = NULL;
   }
-
-  // Invalidate pipe output so expose_full is FALSE on next entry.
-  // Without this, re-opening the same image skips the loading screen
-  // because the stale backbuf + matching output_imgid makes expose_full TRUE.
-  dt_pthread_mutex_lock(&darktable.develop->full.pipe->backbuf_mutex);
-  g_free(darktable.develop->full.pipe->backbuf);
-  darktable.develop->full.pipe->backbuf = NULL;
-  darktable.develop->full.pipe->output_imgid = NO_IMGID;
-  dt_pthread_mutex_unlock(&darktable.develop->full.pipe->backbuf_mutex);
-  darktable.develop->preview_pipe->output_imgid = NO_IMGID;
 
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "darkroom");
 
