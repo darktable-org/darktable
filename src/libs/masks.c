@@ -37,11 +37,22 @@ DT_MODULE(1)
 
 static void _lib_masks_recreate_list(dt_lib_module_t *self);
 static void _lib_masks_update_list(dt_lib_module_t *self);
+static void _lib_masks_selection_change(dt_lib_module_t *self,
+                                        struct dt_iop_module_t *module,
+                                        const dt_mask_id_t selectid);
+static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
+                                              GtkTreeSelection *selection,
+                                              GtkTreeIter *iter,
+                                              struct dt_iop_module_t *module,
+                                              const dt_mask_id_t selectid,
+                                              const int level);
 static void _lib_masks_get_values(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   dt_iop_module_t **module,
                                   dt_mask_id_t *groupid,
                                   dt_mask_id_t *formid);
+static gboolean
+_update_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data);
 
 typedef struct dt_lib_masks_t
 {
@@ -67,8 +78,20 @@ typedef struct dt_lib_masks_t
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection;
   GdkPixbuf *ic_difference, *ic_sum, *ic_exclusion, *ic_used;
+
+  // a selection requested (e.g. right after creating a shape) before the tree
+  // had the matching row: re-applied once gui_update rebuilds the tree. 0 = none.
+  dt_mask_id_t pending_selectid;
+  struct dt_iop_module_t *pending_selmodule;
+
+  // structure hash of the tree as last built; when unchanged (e.g. a slider edit
+  // that only alters shape parameters) gui_update refreshes rows in place instead
+  // of recreating the store, so the panel scroll never moves. See _forms_structure_hash.
+  guint tree_hash;
+  gboolean tree_hash_valid;
 } dt_lib_masks_t;
 
+static void _resize_update(dt_lib_masks_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -156,6 +179,15 @@ void expanded_state(dt_lib_module_t *self,
       dt_control_queue_redraw_center();
     }
   }
+  else
+  {
+    // when the mask manager is opened, reflect the shape currently selected on
+    // the canvas so its controls show right away, instead of the user having to
+    // click the shape in the tree first.
+    dt_develop_t *dev = darktable.develop;
+    if(dt_is_valid_maskid(dev->mask_form_selected_id))
+      _lib_masks_selection_change(self, dev->gui_module, dev->mask_form_selected_id);
+  }
 }
 
 typedef enum dt_masks_tree_cols_t
@@ -221,6 +253,12 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   const float value = is_bool
     ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
     : dt_bauhaus_slider_get(widget);
+
+  // a size/feather/rotation edit reshapes the path and drops its shrink/grow
+  // baseline (see path.c); remember that so we can reset the slider to 0 below.
+  const gboolean reshaped = (value != d->last_value[prop]) &&
+                            (prop == DT_MASKS_PROPERTY_SIZE || prop == DT_MASKS_PROPERTY_FEATHER ||
+                             prop == DT_MASKS_PROPERTY_ROTATION);
 
   DT_ENTER_GUI_UPDATE();
   int count = 0, pos = 0;
@@ -343,6 +381,12 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   }
 
   DT_LEAVE_GUI_UPDATE();
+
+  // the recreate-list triggered above is skipped while we hold the gui-update
+  // guard, so refresh the shrink/grow slider here: a reshape reset the path's
+  // baseline, so this reads back 0.
+  if(reshaped)
+    _resize_update(d);
 }
 
 // Quad for the shrink/grow slider's unit toggle: always shows "%" inside a
@@ -389,9 +433,10 @@ static void _paint_resize_unit(
 }
 
 // The single path the shrink/grow slider acts on, or NULL. We require an
-// unambiguous target: a standalone path, or exactly one path specifically
-// selected inside a group. *out_index receives the form's position in the
-// group (0 for a standalone path) for dt_masks_gui_form_create.
+// unambiguous target: a standalone path, the path explicitly selected inside a
+// group, or - when nothing is explicitly selected - the group's only path.
+// *out_index receives the form's position in the group (0 for a standalone
+// path) for dt_masks_gui_form_create.
 static dt_masks_form_t *_selected_single_path(int *out_index)
 {
   if(out_index)
@@ -404,22 +449,43 @@ static dt_masks_form_t *_selected_single_path(int *out_index)
   if(!(form->type & DT_MASKS_GROUP))
     return (form->type & DT_MASKS_PATH) ? form : NULL;
 
-  if(!dev->mask_form_selected_id)
-    return NULL;
+  // walk the group's shapes, tracking the sole path as we go: mask_form_selected_id
+  // is only set once a shape is clicked, so right after creating or selecting a
+  // single path it is still unset - fall back to that path if it is the only one.
+  const gboolean has_selection = dt_is_valid_maskid(dev->mask_form_selected_id);
+  dt_masks_form_t *single = NULL;
+  int single_pos = 0;
+  int npaths = 0;
   int pos = 0;
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts), pos++)
   {
     dt_masks_point_group_t *fpt = fpts->data;
-    if(fpt->formid != dev->mask_form_selected_id)
-      continue;
     dt_masks_form_t *sel = dt_masks_get_from_id(dev, fpt->formid);
-    if(sel && (sel->type & DT_MASKS_PATH))
+    if(!sel || !(sel->type & DT_MASKS_PATH))
+      continue;
+
+    // an explicit selection wins immediately
+    if(has_selection && fpt->formid == dev->mask_form_selected_id)
     {
       if(out_index)
         *out_index = pos;
       return sel;
     }
+
+    npaths++;
+    single = sel;
+    single_pos = pos;
+  }
+
+  // a specific shape was selected but it is not a path in this group
+  if(has_selection)
     return NULL;
+
+  if(npaths == 1)
+  {
+    if(out_index)
+      *out_index = single_pos;
+    return single;
   }
   return NULL;
 }
@@ -1778,6 +1844,41 @@ GList *_lib_masks_get_selected(dt_lib_module_t *self)
   return res;
 }
 
+// A hash of everything that determines the tree's *structure* (which rows exist
+// and how they nest): the active module, and every form's id/type plus each
+// group member's id and parent. Deliberately excludes per-shape parameters -
+// opacity, state, size, feather, rotation - so editing them (e.g. dragging a
+// slider) leaves the hash unchanged and gui_update can refresh the rows in place
+// instead of recreating the store, which would reset the panel scroll.
+static guint _forms_structure_hash(void)
+{
+  dt_develop_t *dev = darktable.develop;
+  guint h = 2166136261u; // FNV-1a
+#define _MIX(v)                                                                                    \
+  do                                                                                               \
+  {                                                                                                \
+    h = (h ^ (guint)(v)) * 16777619u;                                                              \
+  } while(0)
+  const size_t mod = (size_t)dev->gui_module;
+  _MIX(mod);
+  _MIX(mod >> 32);
+  for(const GList *l = dev->forms; l; l = g_list_next(l))
+  {
+    const dt_masks_form_t *f = l->data;
+    _MIX(f->formid);
+    _MIX(f->type);
+    if(f->type & DT_MASKS_GROUP)
+      for(const GList *p = f->points; p; p = g_list_next(p))
+      {
+        const dt_masks_point_group_t *pt = p->data;
+        _MIX(pt->formid);
+        _MIX(pt->parentid);
+      }
+  }
+#undef _MIX
+  return h;
+}
+
 void gui_update(dt_lib_module_t *self)
 {
   /* first destroy all buttons in list */
@@ -1785,6 +1886,21 @@ void gui_update(dt_lib_module_t *self)
   if(!lm) return;
 
   DT_TRY_GUI_UPDATE();
+
+  // if the tree structure is unchanged (e.g. this update was triggered by a slider
+  // edit, which only alters shape parameters), do not recreate the store - that
+  // resets the panel scroll and makes the view jump under the cursor. Just refresh
+  // the existing rows in place (text/icons), leaving scroll and selection untouched.
+  const guint newhash = _forms_structure_hash();
+  if(lm->treeview && lm->tree_hash_valid && newhash == lm->tree_hash &&
+     !dt_is_valid_maskid(lm->pending_selectid))
+  {
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+    if(model)
+      gtk_tree_model_foreach(model, _update_foreach, lm);
+    DT_LEAVE_GUI_UPDATE();
+    return;
+  }
 
   // if a treeview is already present, let's get the currently selected items
   // as we are going to recreate the tree.
@@ -1863,7 +1979,48 @@ void gui_update(dt_lib_module_t *self)
     g_list_free(selectids);
   }
 
+  // apply a selection that was requested before this row existed (e.g. a shape
+  // that was just created): now that the tree is rebuilt, select its row so the
+  // new shape shows up as selected in the mask manager.
+  if(dt_is_valid_maskid(lm->pending_selectid))
+  {
+    GtkTreeModel *model = GTK_TREE_MODEL(treestore);
+    GtkTreeIter iter;
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+    if(gtk_tree_model_get_iter_first(model, &iter))
+    {
+      gtk_tree_view_expand_all(GTK_TREE_VIEW(lm->treeview));
+      if(_lib_masks_selection_change_r(
+           model, selection, &iter, lm->pending_selmodule, lm->pending_selectid, 1))
+      {
+        // make the just-created shape the active one so the properties reflect
+        // it, rather than the previously selected shape: mask_form_selected_id
+        // is otherwise only set once a shape is clicked on the canvas.
+        darktable.develop->mask_form_selected_id = lm->pending_selectid;
+        _update_all_properties(lm);
+
+        GList *rows = gtk_tree_selection_get_selected_rows(selection, NULL);
+        if(rows)
+        {
+          // a genuinely new shape: reveal its row
+          gtk_tree_view_scroll_to_cell(
+            GTK_TREE_VIEW(lm->treeview), rows->data, NULL, TRUE, 0.5, 0.5);
+          g_list_free_full(rows, (GDestroyNotify)gtk_tree_path_free);
+        }
+      }
+      else
+        gtk_tree_view_collapse_all(GTK_TREE_VIEW(lm->treeview));
+    }
+    lm->pending_selectid = NO_MASKID;
+    lm->pending_selmodule = NULL;
+  }
+
   g_object_unref(treestore);
+
+  // remember the structure we just built so a later parameter-only update can be
+  // served in place (see the early-out at the top of this function).
+  lm->tree_hash = newhash;
+  lm->tree_hash_valid = TRUE;
 
   DT_LEAVE_GUI_UPDATE();
 
@@ -2043,17 +2200,40 @@ static void _lib_masks_selection_change(dt_lib_module_t *self,
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
 
   // we go through all nodes
+  gboolean found = FALSE;
   if(valid)
   {
     gtk_tree_view_expand_all(GTK_TREE_VIEW(lm->treeview));
-    const gboolean found = _lib_masks_selection_change_r(model, selection, &iter,
-                                                         module, selectid, 1);
+    found = _lib_masks_selection_change_r(model, selection, &iter, module, selectid, 1);
     if(!found) gtk_tree_view_collapse_all(GTK_TREE_VIEW(lm->treeview));
+  }
+
+  // a shape just created is not yet in the (still to be rebuilt) tree, so the
+  // row can't be selected now; remember it and let gui_update apply it once the
+  // tree is rebuilt. Otherwise the request is satisfied, so drop any pending one.
+  if(!found && dt_is_valid_maskid(selectid))
+  {
+    lm->pending_selectid = selectid;
+    lm->pending_selmodule = module;
+  }
+  else
+  {
+    lm->pending_selectid = NO_MASKID;
+    lm->pending_selmodule = NULL;
   }
 
   DT_LEAVE_GUI_UPDATE();
 
   _update_all_properties(lm);
+
+  // a just-created shape is not in the tree yet (pending): rebuild the list now
+  // instead of waiting for the next lazy panel redraw. Otherwise the new row -
+  // and the panel reflow it causes - only appears the first time the user drags
+  // a property slider, making the sliders visibly jump. gui_update applies (and
+  // clears) the pending selection. dt_lib_gui_update is a no-op unless a rebuild
+  // was already queued (dt_dev_masks_list_change, which creation triggers).
+  if(dt_is_valid_maskid(lm->pending_selectid))
+    dt_lib_gui_update(self);
 }
 
 static GdkPixbuf *_get_pixbuf_from_cairo(DTGTKCairoPaintIconFunc paint,
@@ -2271,6 +2451,17 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_box_add(d->cs.container, d->resize_amount);
   gtk_widget_show_all(d->resize_amount);
   gtk_widget_set_no_show_all(d->resize_amount, TRUE);
+
+  // "size" scales the shape live; "shrink or grow" insets/outsets its outline.
+  // They are the two resize controls, so keep the grow/shrink slider right below
+  // "size" instead of at the end of the property list.
+  {
+    GList *kids = gtk_container_get_children(GTK_CONTAINER(d->cs.container));
+    const gint size_pos = g_list_index(kids, d->property[DT_MASKS_PROPERTY_SIZE]);
+    if(size_pos >= 0)
+      gtk_box_reorder_child(d->cs.container, d->resize_amount, size_pos + 1);
+    g_list_free(kids);
+  }
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
