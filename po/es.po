@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 01:06-0600\n"
-"PO-Revision-Date: 2026-07-14 01:11-0600\n"
+"POT-Creation-Date: 2026-07-24 14:42-0600\n"
+"PO-Revision-Date: 2026-07-24 15:58-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3759,7 +3759,7 @@ msgstr "radio"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:280
-#: ../src/libs/neural_restore.c:4232 ../src/libs/neural_restore.c:4249
+#: ../src/libs/neural_restore.c:4278 ../src/libs/neural_restore.c:4295
 msgid "strength"
 msgstr "intensidad"
 
@@ -6385,7 +6385,7 @@ msgstr "Lista deplegable"
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1816 ../src/libs/import.c:1928 ../src/libs/import.c:2020
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4177
+#: ../src/libs/modulegroups.c:3727 ../src/libs/neural_restore.c:4223
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1701
@@ -6931,7 +6931,7 @@ msgstr "orden de módulo"
 msgid "range rating"
 msgstr "rango de valoración"
 
-#: ../src/common/collection.c:668 ../src/common/ratings.c:362
+#: ../src/common/collection.c:668 ../src/common/ratings.c:390
 #: ../src/develop/lightroom.c:1582 ../src/libs/filtering.c:58
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
@@ -8333,7 +8333,7 @@ msgstr ""
 "ya que para la siguiente versión <b>el archivo en bruto (RAW) no podrá "
 "leerse</b>."
 
-#: ../src/common/image.h:218 ../src/common/ratings.c:322
+#: ../src/common/image.h:218 ../src/common/ratings.c:350
 #: ../src/imageio/format/avif.c:120 ../src/libs/collect.c:1621
 #: ../src/libs/collect.c:2394 ../src/libs/history.c:838
 #: ../src/libs/modulegroups.c:2867 ../src/libs/snapshots.c:927
@@ -8623,130 +8623,130 @@ msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr ""
 "El sistema de claves de GNOME ya no tiene soporte. Configure uno diferente."
 
-#: ../src/common/ratings.c:150
+#: ../src/common/ratings.c:146
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "Rechazando %d imagen"
 msgstr[1] "Rechazando %d imágenes"
 
-#: ../src/common/ratings.c:153
+#: ../src/common/ratings.c:155
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "Estableciendo la puntuación de %d en %d imagen"
 msgstr[1] "Estableciendo la puntuación de %d en %d imágenes"
 
-#: ../src/common/ratings.c:249
+#: ../src/common/ratings.c:277
 msgid "no images selected to apply rating"
 msgstr "No se ha seleccionado ninguna imagen para puntuar"
 
-#: ../src/common/ratings.c:313 ../src/libs/metadata_view.c:396
+#: ../src/common/ratings.c:341 ../src/libs/metadata_view.c:396
 msgid "image rejected"
 msgstr "imagen rechazada"
 
-#: ../src/common/ratings.c:315
+#: ../src/common/ratings.c:343
 msgid "image rated to 0 star"
 msgstr "Imagen puntuada con 0 estrellas"
 
-#: ../src/common/ratings.c:317
+#: ../src/common/ratings.c:345
 #, c-format
 msgid "image rated to %s"
 msgstr "Imagen puntuada con %s"
 
-#: ../src/common/ratings.c:346
+#: ../src/common/ratings.c:374
 #: ../src/external/lua-scripts/tools/executable_manager.lua:220
 #: ../src/views/lighttable.c:1030
 msgid "select"
 msgstr "seleccionar"
 
-#: ../src/common/ratings.c:347
+#: ../src/common/ratings.c:375
 msgid "upgrade"
 msgstr "incrementar"
 
-#: ../src/common/ratings.c:348
+#: ../src/common/ratings.c:376
 msgid "downgrade"
 msgstr "decrementar"
 
-#: ../src/common/ratings.c:352
+#: ../src/common/ratings.c:380
 msgid "zero"
 msgstr "Cero"
 
-#: ../src/common/ratings.c:353 ../src/libs/filters/rating_range.c:304
+#: ../src/common/ratings.c:381 ../src/libs/filters/rating_range.c:304
 msgid "one"
 msgstr "Una"
 
-#: ../src/common/ratings.c:354 ../src/libs/filters/rating_range.c:305
+#: ../src/common/ratings.c:382 ../src/libs/filters/rating_range.c:305
 msgid "two"
 msgstr "Dos"
 
-#: ../src/common/ratings.c:355 ../src/libs/filters/rating_range.c:306
+#: ../src/common/ratings.c:383 ../src/libs/filters/rating_range.c:306
 msgid "three"
 msgstr "Tres"
 
-#: ../src/common/ratings.c:356 ../src/libs/filters/rating_range.c:307
+#: ../src/common/ratings.c:384 ../src/libs/filters/rating_range.c:307
 msgid "four"
 msgstr "Cuatro"
 
-#: ../src/common/ratings.c:357 ../src/libs/filters/rating_range.c:308
+#: ../src/common/ratings.c:385 ../src/libs/filters/rating_range.c:308
 msgid "five"
 msgstr "Cinco"
 
-#: ../src/common/ratings.c:358
+#: ../src/common/ratings.c:386
 msgid "reject"
 msgstr "Rechazar"
 
-#: ../src/common/styles.c:258
+#: ../src/common/styles.c:257
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "El estilo con nombre «%s» ya existe"
 
-#: ../src/common/styles.c:285 ../src/common/styles.c:1727
+#: ../src/common/styles.c:284 ../src/common/styles.c:1726
 #: ../src/libs/styles.c:53
 msgid "styles"
 msgstr "estilos"
 
-#: ../src/common/styles.c:563 ../src/gui/styles_dialog.c:252
+#: ../src/common/styles.c:562 ../src/gui/styles_dialog.c:252
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "El estilo nombrado «%s» ha sido creado correctamente"
 
-#: ../src/common/styles.c:667 ../src/dtgtk/culling.c:1338
+#: ../src/common/styles.c:666 ../src/dtgtk/culling.c:1338
 msgid "no image selected!"
 msgstr "Ninguna imagen ha sido seleccionada"
 
-#: ../src/common/styles.c:747
+#: ../src/common/styles.c:746
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "La versión del módulo «%s» no coincide: %d != %d"
 
-#: ../src/common/styles.c:1039
+#: ../src/common/styles.c:1038
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "El estilo «%s» se ha aplicado en la imagen actual"
 
-#: ../src/common/styles.c:1303
+#: ../src/common/styles.c:1302
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Falló al intentar sobrescribir el archivo del estilo para %s"
 
-#: ../src/common/styles.c:1309
+#: ../src/common/styles.c:1308
 #, c-format
 msgid "style file for %s exists"
 msgstr "Ya existe el archivo del estilo para %s"
 
 # dt•v5.4
-#: ../src/common/styles.c:1484 ../src/common/styles.c:1808
+#: ../src/common/styles.c:1483 ../src/common/styles.c:1807
 msgid "imported-style"
 msgstr "estilo del importado"
 
-#: ../src/common/styles.c:1617
+#: ../src/common/styles.c:1616
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "El estilo %s fue importado correctamente"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1662
+#: ../src/common/styles.c:1661
 #, c-format
 msgid "could not read file `%s'"
 msgstr "No es posible leer el archivo «%s»"
@@ -8974,14 +8974,14 @@ msgid "show accels window"
 msgstr "Mostrar la ventana de atajos"
 
 # dt•v5.2
-#: ../src/control/control.c:382
+#: ../src/control/control.c:387
 msgid "darktable will be locked until background work has been done"
 msgstr ""
 "darktable se bloqueará hasta que se hayan completado todas las tareas en "
 "segundo plano"
 
 # Traducción no literal: Se usa un mensaje con mejor sentido en español.
-#: ../src/control/control.c:492
+#: ../src/control/control.c:497
 msgid "working..."
 msgstr "Procesando..."
 
@@ -10795,7 +10795,7 @@ msgid "purpose"
 msgstr "finalidad\t"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4310
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:4356
 msgid "process"
 msgstr "procesamiento"
 
@@ -10946,7 +10946,7 @@ msgstr "Dureza: %3.2f%%"
 #: ../src/develop/masks/brush.c:1352 ../src/develop/masks/brush.c:1450
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/path.c:1896
+#: ../src/develop/masks/path.c:1916
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Tamaño: %3.2f%%"
@@ -10983,7 +10983,7 @@ msgstr "<b>Tamaño</b>: Rueda del Ratón"
 
 #: ../src/develop/masks/circle.c:136 ../src/develop/masks/circle.c:180
 #: ../src/develop/masks/ellipse.c:465 ../src/develop/masks/ellipse.c:525
-#: ../src/develop/masks/path.c:1830
+#: ../src/develop/masks/path.c:1850
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "Difuminado: %3.2f%%"
@@ -11005,7 +11005,7 @@ msgstr "[CÍRCULO] cambiar opacidad"
 msgid "circle #%d"
 msgstr "círculo #%d"
 
-#: ../src/develop/masks/circle.c:1421 ../src/develop/masks/path.c:4022
+#: ../src/develop/masks/circle.c:1421 ../src/develop/masks/path.c:4042
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -11307,52 +11307,52 @@ msgstr ""
 "<b>Seleccionar</b>: pulse en un objeto, <b>Opacidad</b>: Ctrl+Rueda del Ratón "
 "(%d%%)"
 
-#: ../src/develop/masks/path.c:3955
+#: ../src/develop/masks/path.c:3975
 msgid "[PATH creation] add a smooth node"
 msgstr "[creación de RUTA] añadir un nodo romo"
 
-#: ../src/develop/masks/path.c:3957
+#: ../src/develop/masks/path.c:3977
 msgid "[PATH creation] add a sharp node"
 msgstr "[creación de RUTA] agregar nodo angulado"
 
-#: ../src/develop/masks/path.c:3959
+#: ../src/develop/masks/path.c:3979
 msgid "[PATH creation] terminate path creation"
 msgstr "[creación de RUTA] finalizar la creación de la ruta"
 
-#: ../src/develop/masks/path.c:3961
+#: ../src/develop/masks/path.c:3981
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[RUTA en el nodo] alternar entre nodo romo o angulado"
 
-#: ../src/develop/masks/path.c:3963
+#: ../src/develop/masks/path.c:3983
 msgid "[PATH on node] remove the node"
 msgstr "[RUTA en el nodo] quitar el nodo"
 
-#: ../src/develop/masks/path.c:3965
+#: ../src/develop/masks/path.c:3985
 msgid "[PATH on feather] reset curvature"
 msgstr "[RUTA en el suavizado] restablecer curvatura"
 
-#: ../src/develop/masks/path.c:3967
+#: ../src/develop/masks/path.c:3987
 msgid "[PATH on segment] add node"
 msgstr "[RUTA en el segmento] añadir nodo"
 
-#: ../src/develop/masks/path.c:3969
+#: ../src/develop/masks/path.c:3989
 msgid "[PATH] change size"
 msgstr "[RUTA] ajustar tamaño"
 
-#: ../src/develop/masks/path.c:3971
+#: ../src/develop/masks/path.c:3991
 msgid "[PATH] change feather size"
 msgstr "[RUTA] ajustar dureza"
 
-#: ../src/develop/masks/path.c:3973
+#: ../src/develop/masks/path.c:3993
 msgid "[PATH] change opacity"
 msgstr "[RUTA] ajustar opacidad"
 
-#: ../src/develop/masks/path.c:3985
+#: ../src/develop/masks/path.c:4005
 #, c-format
 msgid "path #%d"
 msgstr "ruta #%d"
 
-#: ../src/develop/masks/path.c:3996
+#: ../src/develop/masks/path.c:4016
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -11360,7 +11360,7 @@ msgstr ""
 "<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
 "<b>Cancelar</b>: Clic secundario"
 
-#: ../src/develop/masks/path.c:4001
+#: ../src/develop/masks/path.c:4021
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -11368,7 +11368,7 @@ msgstr ""
 "<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
 "<b>Finalizar ruta</b>: Clic secundario"
 
-#: ../src/develop/masks/path.c:4006
+#: ../src/develop/masks/path.c:4026
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -11377,7 +11377,7 @@ msgstr ""
 "<b>Alternar modo (romo/angulado) </b>: Ctrl+Clic"
 
 # dt•v5.0
-#: ../src/develop/masks/path.c:4011
+#: ../src/develop/masks/path.c:4031
 msgid ""
 "<b>node curvature</b>: drag, <b>force symmetry</b>: ctrl+drag,\n"
 "<b>move single handle</b>: shift+drag, <b>reset curvature</b>: right-click"
@@ -11386,7 +11386,7 @@ msgstr ""
 "<b>Manipular un tirador</b>: Mayús+Arrastre  <b>Reiniciar curvatura</b>: Clic "
 "secundario"
 
-#: ../src/develop/masks/path.c:4016
+#: ../src/develop/masks/path.c:4036
 msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
 "<b>remove path</b>: right-click"
@@ -11435,11 +11435,11 @@ msgstr ""
 "Realice un reporte en GitHub."
 
 # dt•v5.0
-#: ../src/develop/pixelpipe_hb.c:1954
+#: ../src/develop/pixelpipe_hb.c:1957
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Desalineación de entrada grave. Realice un reporte en GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3175
+#: ../src/develop/pixelpipe_hb.c:3181
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11460,7 +11460,7 @@ msgstr ""
 "  • Muy poco margen de espacio libre debido a la opción elegida «Utilizar "
 "toda la memoria del dispositivo»."
 
-#: ../src/develop/pixelpipe_hb.c:3477
+#: ../src/develop/pixelpipe_hb.c:3483
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -15789,7 +15789,7 @@ msgstr "Seleccionar la carpeta de guiones"
 #: ../src/iop/clipping.c:2092 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4212
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:4258
 #: ../src/views/lighttable.c:1588
 msgid "page"
 msgstr "página"
@@ -17794,7 +17794,7 @@ msgid "select ONNX Runtime library"
 msgstr "Selecciona la biblioteca ONNX Runtime"
 
 #: ../src/gui/preferences_ai.c:1398 ../src/iop/lut3d.c:1583
-#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4178
+#: ../src/iop/rasterfile.c:383 ../src/libs/neural_restore.c:4224
 msgid "_select"
 msgstr "seleccionar"
 
@@ -18467,7 +18467,7 @@ msgstr "Copiar la configuración de un espacio de trabajo existente"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/heif.c:689
 #: ../src/imageio/format/jxl.c:587 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4343
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4389
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -18496,7 +18496,7 @@ msgstr "con pérdida"
 #: ../src/imageio/format/heif.c:687 ../src/imageio/format/jxl.c:585
 #: ../src/imageio/format/pdf.c:678 ../src/imageio/format/png.c:688
 #: ../src/imageio/format/tiff.c:880 ../src/imageio/format/xcf.c:358
-#: ../src/libs/neural_restore.c:4340
+#: ../src/libs/neural_restore.c:4386
 msgid "bit depth"
 msgstr "profundidad de bit"
 
@@ -18639,7 +18639,7 @@ msgstr "16 bits (flotante)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:4343
+#: ../src/libs/neural_restore.c:4389
 msgid "32 bit (float)"
 msgstr "32 bit (flotante)"
 
@@ -18762,7 +18762,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4343
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4389
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -20236,8 +20236,8 @@ msgstr "enfoque"
 msgid "denoise chroma"
 msgstr "reducción de ruido de crominancia"
 
-#: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1389
-#: ../src/libs/neural_restore.c:4220
+#: ../src/iop/atrous.c:807 ../src/libs/neural_restore.c:1435
+#: ../src/libs/neural_restore.c:4266
 msgid "denoise"
 msgstr "reducción de ruido"
 
@@ -24383,7 +24383,7 @@ msgid "variance blue: "
 msgstr "varianza del azul: "
 
 #: ../src/iop/denoiseprofile.c:3678 ../src/libs/export.c:1600
-#: ../src/libs/neural_restore.c:4351 ../src/libs/print_settings.c:2516
+#: ../src/libs/neural_restore.c:4397 ../src/libs/print_settings.c:2516
 #: ../src/libs/print_settings.c:2872
 msgid "profile"
 msgstr "perfil"
@@ -25051,8 +25051,8 @@ msgstr ""
 msgid "magic lantern defaults"
 msgstr "parámetros de la linterna mágica"
 
-#: ../src/iop/exposure.c:388 ../src/iop/rawoverexposed.c:133
-#: ../src/iop/rawoverexposed.c:244
+#: ../src/iop/exposure.c:388 ../src/iop/rawoverexposed.c:137
+#: ../src/iop/rawoverexposed.c:239
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "No se pudo obtener el búfer en bruto de la imagen «%s»"
@@ -26297,8 +26297,8 @@ msgstr ""
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
-msgstr[0] "corregido %d pixel"
-msgstr[1] "corregidos %d pixeles"
+msgstr[0] " %d pixel corregido"
+msgstr[1] " %d pixeles corregidos"
 
 #: ../src/iop/hotpixels.c:447
 msgid "lower threshold for hot pixel"
@@ -26457,7 +26457,7 @@ msgstr "Distancia al motivo principal"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4453 ../src/iop/overlay.c:1124 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1484 ../src/libs/export.c:1558
-#: ../src/libs/neural_restore.c:4261
+#: ../src/libs/neural_restore.c:4307
 msgid "scale"
 msgstr "escala"
 
@@ -27687,8 +27687,8 @@ msgstr ""
 #. raw denoise sits first: it runs earliest in the denoise workflow
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
-#: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1390
-#: ../src/libs/neural_restore.c:4218
+#: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1436
+#: ../src/libs/neural_restore.c:4264
 msgid "raw denoise"
 msgstr "reducción de ruido (raw)"
 
@@ -27873,7 +27873,7 @@ msgstr "saneado"
 
 #: ../src/iop/retouch.c:2426
 msgid "shapes:"
-msgstr "figuras"
+msgstr "figuras: "
 
 #: ../src/iop/retouch.c:2429
 msgid ""
@@ -29352,9 +29352,9 @@ msgid ""
 "right-click on a marker to delete it"
 msgstr ""
 "Zonas de luminosidad\n"
-"Use la rueda del ratón para cambiar el número de zonas\n"
-"Pulsación izquierda en un borde crea un marcador\n"
-"Pulsación derecha sobre un marcador lo borra"
+"Use la rueda del ratón para cambiar el número de zonas.\n"
+"Cree un marcador con pulsación primaria en un borde.\n"
+"Borre un marcador con pulsación secundaria sobre el mismo."
 
 #: ../src/libs/backgroundjobs.c:52
 msgid "background jobs"
@@ -30234,7 +30234,7 @@ msgstr ""
 "con algunos formatos."
 
 #: ../src/libs/export.c:1601 ../src/libs/export.c:1636
-#: ../src/libs/neural_restore.c:4352 ../src/libs/print_settings.c:2875
+#: ../src/libs/neural_restore.c:4398 ../src/libs/print_settings.c:2875
 #: ../src/libs/print_settings.c:2921
 msgid "image settings"
 msgstr "configuración de la imagen"
@@ -32939,69 +32939,69 @@ msgid "1600%"
 msgstr "1600%"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:459 ../src/libs/neural_restore.c:3360
+#: ../src/libs/neural_restore.c:461 ../src/libs/neural_restore.c:3406
 msgid "neural restore"
 msgstr "restauración neural"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:464
+#: ../src/libs/neural_restore.c:466
 msgid "AI-based image restoration: denoise and upscale"
 msgstr ""
 "Restauración de imágenes basada en IA: reducción de ruido y aumento de "
 "resolución"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:853
+#: ../src/libs/neural_restore.c:855
 #, c-format
 msgid "failed to open TIFF for writing: %s"
 msgstr "No se pudo abrir el archivo TIFF para escribir: %s"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:904
+#: ../src/libs/neural_restore.c:906
 msgid "out of memory for detail recovery buffer"
 msgstr "Memoria insuficiente para el búfer de recuperación de detalles"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1128
+#: ../src/libs/neural_restore.c:1174
 msgid "failed to load AI model for Bayer raw denoising"
 msgstr ""
 "Falló al cargar el modelo de IA para la reducción de ruido en los archivos en "
 "bruto tipo Bayer"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1132
+#: ../src/libs/neural_restore.c:1178
 msgid "failed to load AI model for X-Trans raw denoising"
 msgstr ""
 "Falló al cargar el modelo de IA para la reducción de ruido en los archivos en "
 "bruto tipo X-Trans"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1136
+#: ../src/libs/neural_restore.c:1182
 msgid "failed to load AI model for linear raw denoising"
 msgstr ""
 "Fallo al cargar el modelo de IA para la reducción de ruido lineal de los "
 "archivos en bruto"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1190
+#: ../src/libs/neural_restore.c:1236
 msgid "raw denoise: unsupported raw datatype"
 msgstr ""
 "Reducción de ruido de imagen en bruto: tipo de datos en bruto no compatible"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1321
+#: ../src/libs/neural_restore.c:1367
 msgid "raw denoise: cannot load source image"
 msgstr ""
 "Reducción de ruido de imagen en bruto: no se puede cargar la imagen original"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1347
+#: ../src/libs/neural_restore.c:1393
 msgid "raw denoise: image is not in a supported raw sensor format"
 msgstr ""
 "Reducción de ruido de imagen en bruto: la imagen no está en un formato "
 "compatible con el sensor"
 
-#: ../src/libs/neural_restore.c:1375 ../src/libs/neural_restore.c:2732
+#: ../src/libs/neural_restore.c:1421 ../src/libs/neural_restore.c:2778
 msgid ""
 "raw denoise: this image is already pre-demosaiced (sRaw / computational raw); "
 "results may be limited"
@@ -33010,69 +33010,69 @@ msgstr ""
 "interpolado (sRAW / RAW computacional); los resultados pueden ser limitados"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1391 ../src/libs/neural_restore.c:4222
+#: ../src/libs/neural_restore.c:1437 ../src/libs/neural_restore.c:4268
 msgid "upscale"
 msgstr "ampliación"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1393
+#: ../src/libs/neural_restore.c:1439
 #, c-format
 msgid "loading %s model..."
 msgstr "Cargando modelo «%s» ..."
 
 # dt•v5.2
-#: ../src/libs/neural_restore.c:1423
+#: ../src/libs/neural_restore.c:1469
 #, c-format
 msgid "failed to load AI %s model"
 msgstr "No se ha podido cargar el modelo de IA %s"
 
 # dt•v5.4
-#: ../src/libs/neural_restore.c:1493
+#: ../src/libs/neural_restore.c:1539
 msgid "neural restore: cannot create output directory"
 msgstr "Restauración neural: no se pudo crear el directorio de salida"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1525
+#: ../src/libs/neural_restore.c:1571
 msgid "neural restore: too many output files"
 msgstr "Restauración neural: demasiados archivos de salida"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1534
+#: ../src/libs/neural_restore.c:1580
 #, c-format
 msgid "denoising image %d/%d..."
 msgstr "Reducción de ruido de la imagen %d/%d..."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1535
+#: ../src/libs/neural_restore.c:1581
 #, c-format
 msgid "raw denoising image %d/%d..."
 msgstr "Reducción de ruido de la imagen en bruto %d/%d..."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1536
+#: ../src/libs/neural_restore.c:1582
 #, c-format
 msgid "upscaling 2x image %d/%d..."
 msgstr "Ampliando la imagen 2× %d/%d..."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1537
+#: ../src/libs/neural_restore.c:1583
 #, c-format
 msgid "upscaling 4x image %d/%d..."
 msgstr "Ampliando la imagen 4× %d/%d..."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1546
+#: ../src/libs/neural_restore.c:1592
 #, c-format
 msgid "raw denoise failed for image %d"
 msgstr "Error para la reducción de ruido de la imagen en bruto %d"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1575
+#: ../src/libs/neural_restore.c:1621
 msgid "neural restore: export failed"
 msgstr "Restauración neural: error al exportar"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1598
+#: ../src/libs/neural_restore.c:1644
 #, c-format
 msgid "neural %s: %d image processed"
 msgid_plural "neural %s: %d images processed"
@@ -33080,98 +33080,98 @@ msgstr[0] "%s neural: %d imagen procesada"
 msgstr[1] "%s neural: %d imágenes procesadas"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1680
+#: ../src/libs/neural_restore.c:1726
 msgid "large output - processing will be slow"
 msgstr "Gran volumen de datos: el procesamiento será lento"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1696
+#: ../src/libs/neural_restore.c:1742
 msgid "output: Bayer CFA DNG"
 msgstr "Formato de salida: DNG con filtro CFA de Bayer"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1697
+#: ../src/libs/neural_restore.c:1743
 msgid "output: LinearRaw DNG"
 msgstr "formato de salida: DNG LinearRaw"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1716
+#: ../src/libs/neural_restore.c:1762
 msgid "wide-gamut preserved, not denoised"
 msgstr "Se mantiene la amplia gama cromática sin reducción de ruido"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:1717
+#: ../src/libs/neural_restore.c:1763
 msgid "wide-gamut clipped"
 msgstr "recorte en gama amplia"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3544
+#: ../src/libs/neural_restore.c:3590
 #, c-format
 msgid "zoom %.0f%%"
 msgstr "ampliación: %.0f%%"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3707
+#: ../src/libs/neural_restore.c:3753
 msgid "click to select preview area"
 msgstr "Pulse para seleccionar el área de vista previa"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3732
+#: ../src/libs/neural_restore.c:3778
 msgid "model not available"
 msgstr "Modelo no disponible"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3734 ../src/libs/neural_restore.c:3928
+#: ../src/libs/neural_restore.c:3780 ../src/libs/neural_restore.c:3974
 msgid "generating preview..."
 msgstr "Generando vista previa..."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3736
+#: ../src/libs/neural_restore.c:3782
 msgid "click to generate preview"
 msgstr "Pulse para generar vista previa"
 
 # dt•v5.0
-#: ../src/libs/neural_restore.c:3738
+#: ../src/libs/neural_restore.c:3784
 msgid "image not supported by this task"
 msgstr "La imagen no es compatible para este proceso"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3740
+#: ../src/libs/neural_restore.c:3786
 msgid "preview initialization failed"
 msgstr "Fallo en la inicialización de la previsualización"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:3741
+#: ../src/libs/neural_restore.c:3787
 msgid "select an image to preview"
 msgstr "seleccionar imagen para la previsualización"
 
 # dt•v5.0
-#: ../src/libs/neural_restore.c:4174 ../src/libs/neural_restore.c:4438
+#: ../src/libs/neural_restore.c:4220 ../src/libs/neural_restore.c:4484
 msgid "select output folder"
 msgstr "Seleccionar la carpeta destino"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4219
+#: ../src/libs/neural_restore.c:4265
 msgid "AI raw denoising"
 msgstr "Reducción de ruido sobre imagen en bruto con IA"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4221
+#: ../src/libs/neural_restore.c:4267
 msgid "AI denoising"
 msgstr "Reducción de ruido con IA"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4223
+#: ../src/libs/neural_restore.c:4269
 msgid "AI upscaling"
 msgstr "Redimensionado con IA"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4235
+#: ../src/libs/neural_restore.c:4281
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "Mezcla entre el CFA de origen (0 %) y la salida sin ruido (100 %)"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4253
+#: ../src/libs/neural_restore.c:4299
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -33182,22 +33182,22 @@ msgstr ""
 "suprimido el ruido de color."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4262
+#: ../src/libs/neural_restore.c:4308
 msgid "upscale factor"
 msgstr "factor de escala"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4264
+#: ../src/libs/neural_restore.c:4310
 msgid "2x"
 msgstr "2×"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4264
+#: ../src/libs/neural_restore.c:4310
 msgid "4x"
 msgstr "4×"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4281
+#: ../src/libs/neural_restore.c:4327
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -33206,32 +33206,32 @@ msgstr ""
 "Pulse doble para volver a centrar."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4312
+#: ../src/libs/neural_restore.c:4358
 msgid "process selected images"
 msgstr "Procesar imágenes seleccionadas"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4330
+#: ../src/libs/neural_restore.c:4376
 msgid "output parameters"
 msgstr "parámetros de salida"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4341
+#: ../src/libs/neural_restore.c:4387
 msgid "output TIFF bit depth"
 msgstr "profundidad de bits del archivo TIFF de salida"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4383
+#: ../src/libs/neural_restore.c:4429
 msgid "color profile embedded in the output TIFF"
 msgstr "Perfil de color integrado en el archivo TIFF de salida"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4393
+#: ../src/libs/neural_restore.c:4439
 msgid "preserve wide-gamut colors"
 msgstr "preservar los colores de amplia gama"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4400
+#: ../src/libs/neural_restore.c:4446
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
@@ -33243,17 +33243,17 @@ msgstr ""
 "gama amplia pueden verse recortados. Solo afecta a la reducción de ruido."
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4409
+#: ../src/libs/neural_restore.c:4455
 msgid "add to the current collection"
 msgstr "añadir a la colección actual"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4415
+#: ../src/libs/neural_restore.c:4461
 msgid "automatically import the output image into the current collection"
 msgstr "Importar automáticamente la imagen resultante a la colección actual"
 
 # dt•v5.6
-#: ../src/libs/neural_restore.c:4431
+#: ../src/libs/neural_restore.c:4477
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
