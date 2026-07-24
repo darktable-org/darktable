@@ -547,7 +547,7 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
                                           &x, &y))
       {
         const double delta = fabs(dx) > fabs(dy) ? -dx : dy;
-        const gboolean zoom_in = delta < 0;
+        const int zoom_in = delta < 0.0 ? 1 : 0;
 
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
                          0.0f, zoom_in, x, y, constrain);
