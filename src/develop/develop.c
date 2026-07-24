@@ -3145,6 +3145,15 @@ static void _clamp_zoom_to_mask(
     hiy += MASK_CREATION_MARGIN;
   }
   float mx0, my0, mx1, my1;
+
+  // defaults without fiddling overlay bounds
+  const float halfw = 0.5f * boxw;
+  const float halfh = 0.5f * boxh;
+  float cminx = halfw - .5f;
+  float cmaxx = 0.5f - halfw;
+  float cminy = halfh - 0.5f;
+  float cmaxy = 0.5f - halfh;
+
   if(_dev_mask_overlay_bounds(dev, &mx0, &my0, &mx1, &my1))
   {
     if(mx0 < -0.5f)
@@ -3155,33 +3164,32 @@ static void _clamp_zoom_to_mask(
       loy = fminf(loy, my0 - MASK_HANDLE_MARGIN);
     if(my1 > 0.5f)
       hiy = fmaxf(hiy, my1 + MASK_HANDLE_MARGIN);
-  }
 
-  // Clamp the viewport CENTRE to the editable region. On each side the centre
-  // may travel between two positions:
-  //
-  //  - its "home": image centred when the image fits the viewport (homew == 0),
-  //    or the image edge held at the viewport edge when the image is larger than
-  //    the viewport (homew == 0.5 - halfw, the plain darktable clamp);
-  //  - the node position (lox/hix, MASK_HANDLE_MARGIN already included), if that
-  //    side was extended for off-image mask content, so the node can be reached.
-  //
-  // The home position is NOT forced -- the incoming (cursor-anchored or panned)
-  // centre is merely clamped into [home..node] -- so a plain zoom that leaves
-  // the centre near home keeps the image centred, while a deliberate pan can
-  // still travel out to a node. Crucially the node bound does not depend on
-  // zoom, so the framing neither drifts nor swims as you zoom in/out while
-  // reaching an off-image node (an earlier "... - halfw" bound, or centring the
-  // whole canvas, dragged the picture across the screen on every zoom step).
-  const float halfw = 0.5f * boxw, halfh = 0.5f * boxh;
-  const float homew = boxw >= 1.0f ? 0.0f : 0.5f - halfw;
-  const float homeh = boxh >= 1.0f ? 0.0f : 0.5f - halfh;
-  const float cminx = (lox < -0.5f) ? lox : -homew;
-  const float cmaxx = (hix > 0.5f) ? hix : homew;
-  const float cminy = (loy < -0.5f) ? loy : -homeh;
-  const float cmaxy = (hiy > 0.5f) ? hiy : homeh;
-  *zoom_x = CLAMP(*zoom_x, cminx, cmaxx);
-  *zoom_y = CLAMP(*zoom_y, cminy, cmaxy);
+    // Clamp the viewport CENTRE to the editable region. On each side the centre
+    // may travel between two positions:
+    //
+    //  - its "home": image centred when the image fits the viewport (homew == 0),
+    //    or the image edge held at the viewport edge when the image is larger than
+    //    the viewport (homew == 0.5 - halfw, the plain darktable clamp);
+    //  - the node position (lox/hix, MASK_HANDLE_MARGIN already included), if that
+    //    side was extended for off-image mask content, so the node can be reached.
+    //
+    // The home position is NOT forced -- the incoming (cursor-anchored or panned)
+    // centre is merely clamped into [home..node] -- so a plain zoom that leaves
+    // the centre near home keeps the image centred, while a deliberate pan can
+    // still travel out to a node. Crucially the node bound does not depend on
+    // zoom, so the framing neither drifts nor swims as you zoom in/out while
+    // reaching an off-image node (an earlier "... - halfw" bound, or centring the
+    // whole canvas, dragged the picture across the screen on every zoom step).
+    const float homew = boxw >= 1.0f ? 0.0f : 0.5f - halfw;
+    const float homeh = boxh >= 1.0f ? 0.0f : 0.5f - halfh;
+    cminx = (lox < -0.5f) ? lox : -homew;
+    cmaxx = (hix > 0.5f) ? hix : homew;
+    cminy = (loy < -0.5f) ? loy : -homeh;
+    cmaxy = (hiy > 0.5f) ? hiy : homeh;
+  }
+  *zoom_x = boxw > 1.0f ? 0.0f : CLAMP(*zoom_x, cminx, cmaxx);
+  *zoom_y = boxh > 1.0f ? 0.0f : CLAMP(*zoom_y, cminy, cmaxy);
 }
 
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
