@@ -159,8 +159,8 @@ typedef struct dt_dev_pixelpipe_t
 {
   // store history/zoom caches
   dt_dev_pixelpipe_cache_t cache;
-  // set to TRUE in order to obsolete old cache entries on next pixelpipe run
-  gboolean cache_obsolete;
+  // set to an iop_order to invalidate cachelines >= given order before next pixelpipe run
+  uint32_t cache_obsolete_order;
   uint64_t runs; // used only for pixelpipe cache statistics
   // input buffer
   float *input;
@@ -397,8 +397,6 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 // force a rebuild of the pipe, needed when a module order is changed for example
 void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
 
-// switch on details mask processing
-void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_iop_t *piece);
 // process region of interest of pixels. returns TRUE if pipe was altered during processing.
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                              struct dt_develop_t *dev,

@@ -2243,7 +2243,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
     dt_bauhaus_widget_set_quad_active(g->hue_shift, FALSE);
     g->mask_mode = 0;
-    if(buttons) dt_dev_reprocess_center(self->dev);
+    if(buttons) dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
 
@@ -2568,7 +2568,7 @@ static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
@@ -2577,7 +2577,7 @@ static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook,
@@ -2607,7 +2607,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
 
   g->mask_mode = masking_p ? g->channel + 1 : (masking_t ? GRAD_SWITCH + g->channel + 1 : 0);
   if(g->mask_mode != old_mask_mode)
-    dt_dev_reprocess_center(self->dev);
+    dt_dev_reprocess_center(self->dev, self->iop_order);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
