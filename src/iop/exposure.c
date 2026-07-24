@@ -850,7 +850,7 @@ static void _exposure_proxy_handle_event(int n_press,
     else if(!n_press)
     { // scroll
       const float step = dt_bauhaus_slider_get_step(widget);
-      dt_bauhaus_slider_set(widget, val + delta * step * accel);
+      dt_bauhaus_slider_set(widget, val - delta * step * accel);
     }
     else
     { // drag
