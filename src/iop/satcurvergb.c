@@ -1772,7 +1772,7 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
 
   dt_iop_request_focus(self);
   g->mask_display = gtk_toggle_button_get_active(button);
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
