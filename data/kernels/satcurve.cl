@@ -276,3 +276,48 @@ satcurve_mask(read_only image2d_t in, write_only image2d_t out,
 
   write_imagef(out, (int2)(x, y), pixout);
 }
+
+// scalar (single-channel) saturation mask, feeding the guided filter pipeline
+// in fast_guided_filter_scalar.cl. Mirrors compute_saturation_mask() on the
+// CPU side: MAX(s_in_norm, 0.f), written into a single-channel buffer instead
+// of the 3-channel visualisation that satcurve_mask above produces.
+kernel void
+satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
+                     const int width, const int height,
+                     constant const float *const matrix_in,
+                     global const float *const gamut_lut,
+                     const int formula, const float L_white)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 pix_in = Areadpixel(in, x, y);
+  const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
+
+  write_imagef(out, (int2)(x, y), fmax(s_in_norm, 0.f));
+}
+
+// broadcasts a single-channel (guided-filtered) mask into an RGB visualisation,
+// alpha taken from the original input. Used for the mask_display branch when
+// the guided filter is enabled, so the preview shows the mask that is
+// actually used to modulate the correction. Mirrors display_saturation_mask()
+// on the CPU side, but reading a pre-computed scalar buffer instead of
+// recomputing s_in_norm.
+kernel void
+satcurve_mask_from_scalar(read_only image2d_t scalar_mask, read_only image2d_t in,
+                          write_only image2d_t out,
+                          const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float mask_value = Areadsingle(scalar_mask, x, y);
+  const float4 pix_in = Areadpixel(in, x, y);
+
+  const float intensity = sqrt(clamp(mask_value, 0.f, 1.f));
+  float4 pixout = { intensity, intensity, intensity, pix_in.w };
+
+  write_imagef(out, (int2)(x, y), pixout);
+}
