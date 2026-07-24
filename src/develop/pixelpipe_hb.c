@@ -635,70 +635,6 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   }
 }
 
-/** remove stale entries (deleted, disabled or de-synced consumers) from a
-    raster mask source's users table, so it doesn't keep
-    publishing/invalidating forever */
-static void _iop_prune_stale_raster_users(dt_iop_module_t *module)
-{
-  GHashTable *users = module->raster_mask.source.users;
-  if(!module->dev || !users || g_hash_table_size(users) == 0)
-    return;
-
-  /* A consumer can leak into a source's users table when it is deleted (its
-     cleanup never removes it from other modules' tables) or when a full resync
-     nulls its sink.source before the de-register could fire. Such a phantom user
-     keeps dt_iop_is_raster_mask_used() TRUE, so the source republishes its raster
-     mask -- and invalidates every downstream cacheline -- on every pipe run.
-     Drop entries that are provably stale, without ever dereferencing a possibly
-     dangling (freed) consumer pointer. */
-  GList *iop = module->dev->iop;
-  GHashTableIter iter;
-  gpointer key, value;
-  g_hash_table_iter_init(&iter, users);
-  while(g_hash_table_iter_next(&iter, &key, &value))
-  {
-    dt_iop_module_t *sink = key;
-    // pointer-only membership test -- never dereferences a deleted module
-    if(g_list_find(iop, sink) == NULL)
-    {
-      g_hash_table_iter_remove(&iter);
-      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-                    "prune stale raster user",
-                    NULL,
-                    module,
-                    DT_DEVICE_NONE,
-                    NULL,
-                    NULL,
-                    "dropped deleted consumer");
-      continue;
-    }
-    // alive: a real consumer must still point back at us, be enabled, and
-    // actually have its blending in raster-mask mode. A module that named us as
-    // raster source but is then disabled (or switched its mask to drawn/parametric)
-    // leaves a phantom entry that would otherwise keep us publishing -- and
-    // invalidating every downstream cacheline -- on every pipe run.
-    const gboolean consumes = sink->raster_mask.sink.source == module && sink->enabled &&
-                              (sink->blend_params->mask_mode & DEVELOP_MASK_RASTER);
-    if(!consumes)
-    {
-      g_hash_table_iter_remove(&iter);
-      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-                    "prune stale raster user",
-                    NULL,
-                    module,
-                    DT_DEVICE_NONE,
-                    NULL,
-                    NULL,
-                    "dropped '%s%s' (%s)",
-                    sink->op,
-                    dt_iop_get_instance_id(sink),
-                    sink->raster_mask.sink.source != module ? "de-synced"
-                    : !sink->enabled                        ? "disabled"
-                                                            : "not in raster mode");
-    }
-  }
-}
-
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -739,12 +675,6 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     _dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
   }
-
-  // history has been (re)applied, so real raster consumers have re-registered;
-  // drop any phantom users left behind by deleted or de-synced consumers
-  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
-    _iop_prune_stale_raster_users(((dt_dev_pixelpipe_iop_t *)nodes->data)->module);
-
   dt_print_pipe(DT_DEBUG_PARAMS,
            "synch all modules done",
            pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
@@ -769,12 +699,6 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_print_pipe(DT_DEBUG_PARAMS, "synch top history module missing!",
       pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
   }
-
-  // clear any phantom raster users (deleted/de-synced consumers) so a source
-  // doesn't keep republishing its mask and invalidating downstream every run
-  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
-    _iop_prune_stale_raster_users(((dt_dev_pixelpipe_iop_t *)nodes->data)->module);
-
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
