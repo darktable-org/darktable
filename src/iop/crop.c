@@ -107,6 +107,11 @@ typedef struct dt_iop_crop_gui_data_t
   gboolean preview_ready;
   gint64 focus_time;
   dt_gui_collapsible_section_t cs;
+
+  float scroll_origin_x, scroll_origin_y;
+
+  gboolean new_crop_active;
+  float new_crop_x0, new_crop_y0;
 } dt_iop_crop_gui_data_t;
 
 typedef struct dt_iop_crop_data_t
@@ -1199,6 +1204,16 @@ static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   _commit_box(self, g, p, TRUE);
 }
 
+static void _crop_flip_aspect_shortcut(dt_action_t *action)
+{
+  dt_action_t *owner = action->owner;
+  if(!owner || owner->type != DT_ACTION_TYPE_IOP) return;
+  dt_iop_module_t *self = dt_iop_get_module_preferred_instance((dt_iop_module_so_t *)owner);
+  if(!self) return;
+  _event_key_swap(self);
+  _commit_box(self, self->gui_data, self->params, TRUE);
+}
+
 static gint _aspect_ratio_cmp(const dt_iop_crop_aspect_t *a,
                               const dt_iop_crop_aspect_t *b)
 {
@@ -1263,6 +1278,9 @@ void gui_init(dt_iop_module_t *self)
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
+  g->scroll_origin_x = -1.0f;
+  g->scroll_origin_y = -1.0f;
+  g->new_crop_active = FALSE;
 
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
@@ -1448,6 +1466,8 @@ void gui_init(dt_iop_module_t *self)
   darktable.develop->cropping.flip_callback = _crop_handle_flip;
 
   dt_shortcut_register(DT_ACTION(self->so), 0, 0, GDK_KEY_c, 0);
+  dt_action_register(DT_ACTION(self->so), N_("flip aspect ratio"),
+                     _crop_flip_aspect_shortcut, GDK_KEY_x, 0);
 }
 
 static void _aspect_free(gpointer data)
@@ -1669,6 +1689,62 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_stroke(cr);
 }
 
+int scrolled(dt_iop_module_t *self,
+                    const float pzx,
+                    const float pzy,
+                    const int up,
+                    const uint32_t state)
+{
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+
+  if(!g->preview_ready || self->dev->preview_pipe->loading) return 0;
+
+  // handle resize only when pointer is inside the crop rectangle
+  if(pzx < g->clip_x || pzx > g->clip_x + g->clip_w
+     || pzy < g->clip_y || pzy > g->clip_y + g->clip_h)
+    return 0;
+
+  _set_max_clip(self);
+
+  // clamp min size so we never lose the crop rect entirely
+  const float min_cw = MAX(MIN_CROP_SIZE, g->clip_max_w / 100.0f);
+  const float min_ch = MAX(MIN_CROP_SIZE, g->clip_max_h / 100.0f);
+
+  // compute scale factor (same 0.97 exponential scaling that masks use)
+  const float factor = dt_mask_scroll_increases(up) ? 1.0f / 0.97f : 0.97f;
+
+  float new_cw = g->clip_w * factor;
+  float new_ch = g->clip_h * factor;
+
+  // clamp size to limits
+  new_cw = CLAMP(new_cw, min_cw, g->clip_max_w);
+  new_ch = CLAMP(new_ch, min_ch, g->clip_max_h);
+
+  // scale around pointer position so that point under cursor stays fixed
+  float new_cx = pzx + (g->clip_x - pzx) * (new_cw / g->clip_w);
+  float new_cy = pzy + (g->clip_y - pzy) * (new_ch / g->clip_h);
+
+  // clamp against max clip bounds
+  new_cx = CLAMP(new_cx, g->clip_max_x, g->clip_max_x + g->clip_max_w - new_cw);
+  new_cy = CLAMP(new_cy, g->clip_max_y, g->clip_max_y + g->clip_max_h - new_ch);
+
+  g->clip_x = new_cx;
+  g->clip_y = new_cy;
+  g->clip_w = new_cw;
+  g->clip_h = new_ch;
+
+  // enforce aspect ratio
+  _aspect_apply(self, GRAB_HORIZONTAL | GRAB_VERTICAL);
+
+  // update sliders without triggering pixelpipe re-run
+  ++darktable.gui->reset;
+  _update_sliders_and_limit(g);
+  --darktable.gui->reset;
+
+  dt_control_queue_redraw_center();
+  return 1;
+}
+
 int mouse_moved(dt_iop_module_t *self,
                 const float pzx,
                 const float pzy,
@@ -1681,6 +1757,21 @@ int mouse_moved(dt_iop_module_t *self,
   // we don't do anything if the image is not ready
   if(!g->preview_ready || self->dev->preview_pipe->loading) return 0;
 
+  // claim right-click drag to prevent proxy.rotate (straighten horizon) from interfering
+  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_SECONDARY)
+  {
+    if(!g->new_crop_active)
+    {
+      // only activate when the mouse actually moves (click without drag = reset)
+      const float dx = pzx - g->new_crop_x0;
+      const float dy = pzy - g->new_crop_y0;
+      if(dx * dx + dy * dy > 0.0f)
+        g->new_crop_active = TRUE;
+      else
+        return 1;
+    }
+  }
+
   float wd, ht;
   dt_dev_get_preview_size(self->dev, &wd, &ht);
 
@@ -1688,6 +1779,67 @@ int mouse_moved(dt_iop_module_t *self,
     _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
 
   _set_max_clip(self);
+
+  if(g->new_crop_active)
+  {
+    const float dx = pzx - g->new_crop_x0;
+    const float dy = pzy - g->new_crop_y0;
+    const float adx = fabsf(dx);
+    const float ady = fabsf(dy);
+
+    const float aspect = _aspect_ratio_get(self, g->aspect_presets);
+
+    float new_cx, new_cy, new_cw, new_ch;
+
+    if(aspect > 0.0f)
+    {
+      // constrained to current aspect ratio
+      if(adx * aspect >= ady)
+      {
+        // width-driven: width follows mouse, height derived from ratio
+        new_cw = adx;
+        new_ch = adx / aspect;
+      }
+      else
+      {
+        // height-driven: height follows mouse, width derived from ratio
+        new_ch = ady;
+        new_cw = ady * aspect;
+      }
+      new_cx = dx > 0.0f ? g->new_crop_x0 : g->new_crop_x0 - new_cw;
+      new_cy = dy > 0.0f ? g->new_crop_y0 : g->new_crop_y0 - new_ch;
+    }
+    else
+    {
+      // freehand — no aspect constraint
+      new_cx = fminf(g->new_crop_x0, pzx);
+      new_cy = fminf(g->new_crop_y0, pzy);
+      new_cw = adx;
+      new_ch = ady;
+    }
+
+    // clamp against max clip bounds
+    new_cx = CLAMP(new_cx, g->clip_max_x,
+                   g->clip_max_x + g->clip_max_w - MIN_CROP_SIZE);
+    new_cy = CLAMP(new_cy, g->clip_max_y,
+                   g->clip_max_y + g->clip_max_h - MIN_CROP_SIZE);
+    new_cw = CLAMP(new_cw, MIN_CROP_SIZE,
+                   g->clip_max_x + g->clip_max_w - new_cx);
+    new_ch = CLAMP(new_ch, MIN_CROP_SIZE,
+                   g->clip_max_y + g->clip_max_h - new_cy);
+
+    g->clip_x = new_cx;
+    g->clip_y = new_cy;
+    g->clip_w = new_cw;
+    g->clip_h = new_ch;
+
+    ++darktable.gui->reset;
+    _update_sliders_and_limit(g);
+    --darktable.gui->reset;
+
+    dt_control_queue_redraw_center();
+    return 1;
+  }
 
   if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
   {
@@ -1857,6 +2009,25 @@ int button_released(dt_iop_module_t *self,
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
+  if(g->new_crop_active)
+  {
+    g->new_crop_active = FALSE;
+    _commit_box(self, g, p, FALSE);
+    return 1;
+  }
+
+  if(which == GDK_BUTTON_SECONDARY)
+  {
+    // we reset cropping on RMB click (release without drag)
+    g->clip_x = 0.0f;
+    g->clip_y = 0.0f;
+    g->clip_w = 1.0f;
+    g->clip_h = 1.0f;
+    _aspect_apply(self, GRAB_BOTTOM_RIGHT);
+    gui_changed(self, NULL, NULL);
+    return 1;
+  }
+
   /* reset internal ui states*/
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
@@ -1931,13 +2102,10 @@ int button_pressed(dt_iop_module_t *self,
   }
   else if(which == GDK_BUTTON_SECONDARY)
   {
-    // we reset cropping
-    g->clip_x = 0.0f;
-    g->clip_y = 0.0f;
-    g->clip_w = 1.0f;
-    g->clip_h = 1.0f;
-    _aspect_apply(self, GRAB_BOTTOM_RIGHT);
-    gui_changed(self, NULL, NULL);
+    g->new_crop_x0 = bzx;
+    g->new_crop_y0 = bzy;
+    if(!self->enabled)
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
     return 1;
   }
   else
@@ -1951,6 +2119,10 @@ GSList *mouse_actions(dt_iop_module_t *self)
                                      _("[%s on borders] crop"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_SHIFT_MASK,
                                      _("[%s on borders] crop keeping ratio"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, 0,
+                                     _("[%s] resize on hover"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_RIGHT_DRAG, 0,
+                                     _("[%s] draw new crop rectangle"), self->name());
   return lm;
 }
 

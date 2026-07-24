@@ -515,6 +515,21 @@ static void _module_gui_post_expose(dt_iop_module_t *module,
   cairo_restore(cri);
 }
 
+// returns TRUE when we should skip all module overlays and only draw the rotation line
+static gboolean _should_skip_overlays_for_rotation(const dt_iop_module_t *const dmod,
+                                                   const dt_develop_t *const dev)
+{
+  if(dmod && !strcmp(dmod->op, "crop"))
+  {
+    return FALSE;
+  }
+  if(!dev->proxy.rotate) return FALSE;
+  if(dmod == dev->proxy.rotate) return TRUE;
+  if(darktable.control->button_down_which == GDK_BUTTON_SECONDARY)
+    return TRUE;
+  return FALSE;
+}
+
 static void _view_paint_surface(cairo_t *cr,
                                 const size_t width,
                                 const size_t height,
@@ -1036,9 +1051,7 @@ void expose(dt_view_t *self,
   }
 
   // if dragging the rotation line, do it and nothing else
-  if(dev->proxy.rotate
-     && (darktable.control->button_down_which == GDK_BUTTON_SECONDARY
-         || dmod == dev->proxy.rotate))
+  if(_should_skip_overlays_for_rotation(dmod, dev))
   {
     // reminder, we want this to be exposed always for guidings
     if(dev->proxy.rotate && dev->proxy.rotate->gui_post_expose)
