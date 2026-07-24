@@ -5275,6 +5275,11 @@ static void _path_modify_property(dt_masks_form_t *const form,
 {
   float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
 
+  // a genuine user change (not a no-op refresh, where old_val == new_val). When
+  // it mutates the shape we must drop the shrink/grow baseline so a subsequent
+  // resize re-captures the edited shape, instead of composing on the stale one.
+  const gboolean geom_changed = (ratio != 1.0f);
+
   switch(prop)
   {
     case DT_MASKS_PROPERTY_SIZE:;
@@ -5334,6 +5339,8 @@ static void _path_modify_property(dt_masks_form_t *const form,
       *min = fmaxf(*min, 0.001f / surf);
       *sum += surf / 2.0f;
       ++*count;
+      if(geom_changed)
+        _resize_state_invalidate(form->formid);
       break;
     case DT_MASKS_PROPERTY_FEATHER:;
       for(const GList *l = form->points; l; l = g_list_next(l))
@@ -5346,6 +5353,73 @@ static void _path_modify_property(dt_masks_form_t *const form,
         *min = fmaxf(*min, fmaxf(0.0005f / point->border[0], 0.0005f / point->border[1]));
         *count += 2;
       }
+      if(geom_changed)
+        _resize_state_invalidate(form->formid);
+      break;
+    case DT_MASKS_PROPERTY_ROTATION:;
+      // Paths have no stored rotation angle. This reuses the exact
+      // machinery of the canvas CTRL+drag rotation (dt_masks_rotate_ctrl_points +
+      // _path_centroid over the display buffer).
+      if(new_val != old_val && form->points)
+      {
+        dt_develop_t *const dev = darktable.develop;
+        dt_masks_form_gui_t *const gui = dev->form_gui;
+        const dt_masks_form_t *const fv = dev->form_visible;
+
+        // the display buffer for this form lives in gui->points at the form's
+        // index within the visible group (0 for a standalone shape)
+        int idx = 0;
+        if(gui && fv && (fv->type & DT_MASKS_GROUP))
+        {
+          int p = 0;
+          for(const GList *l = fv->points; l; l = g_list_next(l), p++)
+            if(((dt_masks_point_group_t *)l->data)->formid == form->formid)
+            {
+              idx = p;
+              break;
+            }
+        }
+        dt_masks_form_gui_points_t *const gpt = gui ? g_list_nth_data(gui->points, idx) : NULL;
+
+        const int nc = g_list_length(form->points);
+        const int off = _nb_wctrl_points(nc);
+        if(gpt && gpt->points_count - off >= 3)
+        {
+          float dwidth, dheight, iwidth, iheight;
+          dt_masks_get_image_size(&dwidth, &dheight, &iwidth, &iheight);
+
+          // rotation-invariant area centroid of the on-screen outline, the same
+          // pivot the canvas rotation uses
+          float cx = 0.0f, cy = 0.0f;
+          _path_centroid(&gpt->points[off * 2], gpt->points_count - off, 2, &cx, &cy);
+
+          const float a = deg2radf(new_val - old_val);
+          const float c = cosf(a), s = sinf(a);
+          float *const npts = dt_alloc_align_float((size_t)nc * 6);
+          if(npts)
+          {
+            dt_masks_rotate_ctrl_points(
+              dev, gpt->points, gpt->points_count, nc, cx, cy, c, s, iwidth, iheight, npts);
+            int k = 0;
+            for(GList *l = form->points; l; l = g_list_next(l), k++)
+            {
+              dt_masks_point_path_t *pt = l->data;
+              pt->ctrl1[0] = npts[k * 6 + 0];
+              pt->ctrl1[1] = npts[k * 6 + 1];
+              pt->corner[0] = npts[k * 6 + 2];
+              pt->corner[1] = npts[k * 6 + 3];
+              pt->ctrl2[0] = npts[k * 6 + 4];
+              pt->ctrl2[1] = npts[k * 6 + 5];
+            }
+            dt_free_align(npts);
+          }
+          // the shape changed, so the shrink/grow baseline is stale
+          _resize_state_invalidate(form->formid);
+        }
+      }
+      // relative dial: report the slider's own value so it stays where set
+      *sum += new_val;
+      ++*count;
       break;
     default:;
   }
