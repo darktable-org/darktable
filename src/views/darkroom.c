@@ -686,14 +686,7 @@ void expose(dt_view_t *self,
   float zoom_x, zoom_y, boxw, boxh;
   float zbound_x = FLT_MAX, zbound_y = 0.0f;
   if(!dt_dev_get_zoom_bounds(port, &zoom_x, &zoom_y, &boxw, &boxh))
-  {
-    // get_zoom_bounds reports no scrollable bounds at fit / when the image
-    // fits the viewport, but the viewport may still be panned off-centre to
-    // reach mask nodes outside the image. Use the actual stored centre (0
-    // when not panned) so that pan is rendered; the box spans the full image.
-    dt_dev_get_viewport_params(port, NULL, NULL, &zoom_x, &zoom_y);
     boxw = boxh = 1.0f;
-  }
   else
   {
     zbound_x = zoom_x;
@@ -704,36 +697,20 @@ void expose(dt_view_t *self,
       because adding a slider will change the image area and might
       force a resizing in next expose.  So we disable in cases close
       to full.
-
-      This near-fit centring is applied only to the values handed to the
-      scrollbar; the real zoom_x/zoom_y are kept for rendering so the mask
-      overlay (and guides/pickers) follow the image exactly even when the
-      user has deliberately panned off-canvas below the fit zoom to reach
-      mask handles outside the image. Zeroing them here would pin the
-      overlay at the image centre while the image itself (and raster mask
-      overlay) follow the pan, breaking alignment below fit.
   */
-  float sb_zoom_x = zoom_x, sb_zoom_y = zoom_y, sb_boxw = boxw, sb_boxh = boxh;
   if(boxw > 0.95f)
   {
-    sb_zoom_x = .0f;
-    sb_boxw = 1.01f;
+    zoom_x = .0f;
+    boxw = 1.01f;
   }
   if(boxh > 0.95f)
   {
-    sb_zoom_y = .0f;
-    sb_boxh = 1.01f;
+    zoom_y = .0f;
+    boxh = 1.01f;
   }
 
-  dt_view_set_scrollbar(self,
-                        sb_zoom_x,
-                        -0.5 + sb_boxw / 2,
-                        0.5,
-                        sb_boxw / 2,
-                        sb_zoom_y,
-                        -0.5 + sb_boxh / 2,
-                        0.5,
-                        sb_boxh / 2);
+  dt_view_set_scrollbar(self, zoom_x, -0.5 + boxw/2, 0.5,
+                        boxw/2, zoom_y, -0.5+ boxh/2, 0.5, boxh/2);
 
   const gboolean expose_full =
         port->pipe->backbuf                                // do we have an image?
@@ -946,12 +923,11 @@ void expose(dt_view_t *self,
                                 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, prev_pts, 1);
   const float pp_wd = dev->preview_pipe->processed_width;
   const float pp_ht = dev->preview_pipe->processed_height;
-  // Preview-pipe equivalent of the (real) full-pipe viewport centre. Kept
-  // in lock-step with zoom_x/zoom_y (not zeroed near fit) so the sub-pixel
-  // correction below stays small and the overlay tracks the image at every
-  // zoom level, including when panned off-canvas below the fit zoom.
-  const float zoom_x_vp = pp_wd > 0 ? prev_pts[0] / pp_wd - 0.5f : 0.f;
-  const float zoom_y_vp = pp_ht > 0 ? prev_pts[1] / pp_ht - 0.5f : 0.f;
+  float zoom_x_vp = pp_wd > 0 ? prev_pts[0] / pp_wd - 0.5f : 0.f;
+  float zoom_y_vp = pp_ht > 0 ? prev_pts[1] / pp_ht - 0.5f : 0.f;
+  // apply same clamping as zoom_x/zoom_y (image fits nearly entirely in view)
+  if(boxw > 0.95f) zoom_x_vp = 0.f;
+  if(boxh > 0.95f) zoom_y_vp = 0.f;
 
   // don't draw guides and color pickers on image margins
   cairo_rectangle(cri, tb, tb, width - 2.0 * tb, height - 2.0 * tb);
@@ -1019,18 +995,9 @@ void expose(dt_view_t *self,
     cairo_rectangle(cri, vp_x, vp_y, vp_w, vp_h);
     cairo_clip(cri);
     // Mask overlay points are in preview-pipe output space; shift the
-    // coordinate origin by the difference between full-pipe and
-    // preview-pipe viewport centres so overlays land on the image. This
-    // correction is normally sub-pixel, but when panning beyond the canvas
-    // (to reach off-canvas handles) the preview-pipe forward transform can
-    // extrapolate a non-linear geometric distortion far outside the image
-    // and blow up; cap its magnitude so it can't drag the overlay off the
-    // image content (which would otherwise persist until the next
-    // reprocess).
-    const float max_corr = 1.5f; // pixels
-    const float corr_x = CLAMP((zoom_x - zoom_x_vp) * wd, -max_corr, max_corr);
-    const float corr_y = CLAMP((zoom_y - zoom_y_vp) * ht, -max_corr, max_corr);
-    cairo_translate(cri, corr_x, corr_y);
+    // coordinate origin by the sub-pixel difference between full-pipe
+    // and preview-pipe viewport centres so overlays land on the image.
+    cairo_translate(cri, (zoom_x - zoom_x_vp) * wd, (zoom_y - zoom_y_vp) * ht);
     dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
     cairo_restore(cri);
   }

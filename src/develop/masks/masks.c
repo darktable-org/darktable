@@ -1547,13 +1547,6 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
                                  value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
 
-  // Hiding (or changing) the mask overlay shrinks the editable canvas back to
-  // the image, so a viewport that was panned to reach off-image handles is now
-  // stale. Re-validate it: this no-op clamp snaps the pan back into bounds so
-  // the picture re-centres immediately instead of lingering off-centre (which
-  // also leaves the renderer churning) until the next manual pan.
-  dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
-
   dt_control_queue_redraw_center();
 }
 
