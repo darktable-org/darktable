@@ -1924,7 +1924,7 @@ static void _color_assessment_border_white_ratio_callback(GtkWidget *slider, gpo
   dt_conf_set_float("darkroom/ui/color_assessment_border_white_ratio", dt_bauhaus_slider_get(slider));
   if (dev->full.color_assessment)
   {
-    dt_dev_reprocess_center(dev);
+    dt_dev_reprocess_center(dev, INT_MAX);
   }
   else
   {
@@ -1959,7 +1959,7 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
     if(dev->second_wnd)
       dt_dev_reprocess_all(dev);
     else
-      dt_dev_reprocess_center(dev);
+      dt_dev_reprocess_center(dev, 0);
   }
 }
 
@@ -1986,7 +1986,7 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w,
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.enabled = !d->overexposed.enabled;
   dt_conf_set_bool("darkroom/ui/overexposed/enabled", d->overexposed.enabled);
-  dt_dev_reprocess_center(d);
+  dt_dev_reprocess_center(d, INT_MAX);
 }
 
 static void _colorscheme_callback(GtkWidget *combo,
@@ -1997,7 +1997,7 @@ static void _colorscheme_callback(GtkWidget *combo,
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 static void _lower_callback(GtkWidget *slider,
@@ -2008,7 +2008,7 @@ static void _lower_callback(GtkWidget *slider,
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 static void _upper_callback(GtkWidget *slider,
@@ -2019,7 +2019,7 @@ static void _upper_callback(GtkWidget *slider,
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 static void _mode_callback(GtkWidget *slider,
@@ -2030,7 +2030,7 @@ static void _mode_callback(GtkWidget *slider,
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 /* rawoverexposed */
@@ -2040,7 +2040,7 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w,
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.enabled = !d->rawoverexposed.enabled;
   dt_conf_set_bool("darkroom/ui/rawoverexposed/enabled", d->rawoverexposed.enabled);
-  dt_dev_reprocess_center(d);
+  dt_dev_reprocess_center(d, INT_MAX);
 }
 
 static void _rawoverexposed_mode_callback(GtkWidget *combo,
@@ -2051,7 +2051,7 @@ static void _rawoverexposed_mode_callback(GtkWidget *combo,
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 static void _rawoverexposed_colorscheme_callback(GtkWidget *combo,
@@ -2062,7 +2062,7 @@ static void _rawoverexposed_colorscheme_callback(GtkWidget *combo,
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 static void _rawoverexposed_threshold_callback(GtkWidget *slider,
@@ -2073,7 +2073,7 @@ static void _rawoverexposed_threshold_callback(GtkWidget *slider,
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_dev_reprocess_center(d, 0);
 }
 
 /* softproof */
@@ -2087,8 +2087,8 @@ static void _softproof_quickbutton_clicked(GtkWidget *w,
     darktable.color_profiles->mode = DT_PROFILE_SOFTPROOF;
 
   _update_softproof_gamut_checking(d);
-
-  dt_dev_reprocess_center(d);
+  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+  dt_dev_reprocess_center(d, cout->iop_order);
 }
 
 /* gamut */
@@ -2102,8 +2102,8 @@ static void _gamut_quickbutton_clicked(GtkWidget *w,
     darktable.color_profiles->mode = DT_PROFILE_GAMUTCHECK;
 
   _update_softproof_gamut_checking(d);
-
-  dt_dev_reprocess_center(d);
+  const dt_iop_module_t *cout = dt_iop_get_module("colorout");
+  dt_dev_reprocess_center(d, cout->iop_order);
 }
 
 /* set the gui state for both softproof and gamut checking */
@@ -5105,7 +5105,7 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     // pipe needs to be reconstructed
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview2.pipe->cache_obsolete = TRUE;
+    dev->preview2.pipe->cache_obsolete_order = 0;
 
     // If we have a pinned image, update its viewport dimensions too
     dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
@@ -5118,7 +5118,7 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
       pinned_port->orig_height = event->height;
       pinned_port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       pinned_port->pipe->changed |= DT_DEV_PIPE_REMOVE;
-      pinned_port->pipe->cache_obsolete = TRUE;
+      pinned_port->pipe->cache_obsolete_order = 0;
     }
   }
 

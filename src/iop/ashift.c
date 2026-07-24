@@ -3212,8 +3212,7 @@ static gboolean _do_get_structure_auto(dt_iop_module_t *self,
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
-    dt_dev_reprocess_preview(self->dev);
+    dt_dev_reprocess_preview(self->dev, self->iop_order);
     goto error;
   }
 
@@ -3264,8 +3263,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
-    dt_dev_reprocess_preview(self->dev);
+    dt_dev_reprocess_preview(self->dev, self->iop_order);
     return;
   }
 
@@ -3311,8 +3309,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
-    dt_dev_reprocess_preview(self->dev);
+    dt_dev_reprocess_preview(self->dev, self->iop_order);
     return;
   }
 
