@@ -2794,13 +2794,13 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
   }
 }
 
-void dt_dev_reprocess_center(dt_develop_t *dev)
+void dt_dev_reprocess_center(dt_develop_t *dev, const int32_t iop_order)
 {
   DT_GUARD_GUI_UPDATE();
   if(dev && dev->gui_attached)
   {
     dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->full.pipe->cache_obsolete = TRUE;
+    dev->full.pipe->cache_obsolete_order = iop_order;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
@@ -2810,13 +2810,13 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   }
 }
 
-void dt_dev_reprocess_preview(dt_develop_t *dev)
+void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order)
 {
   if(DT_IN_GUI_UPDATE() || !dev || !dev->gui_attached)
     return;
 
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->cache_obsolete = TRUE;
+  dev->preview_pipe->cache_obsolete_order = iop_order;
 
   dt_dev_invalidate_preview(dev);
   dt_control_queue_redraw_center();
