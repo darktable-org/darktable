@@ -673,7 +673,7 @@ void gui_changed(dt_iop_module_t *self,
     dt_pthread_mutex_unlock(&cd->lock);
 
     if(other)
-      dt_dev_reprocess_center(self->dev);
+      dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 
   gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
@@ -730,7 +730,7 @@ void cleanup(dt_iop_module_t *self)
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 void gui_init(dt_iop_module_t *self)

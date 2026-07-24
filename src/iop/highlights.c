@@ -1258,7 +1258,7 @@ static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
   DT_GUARD_GUI_UPDATE();
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   _set_quads(g, quad);
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -1268,7 +1268,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   {
     const gboolean was_visualize = (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF);
     _set_quads(g, NULL);
-    if(was_visualize) dt_dev_reprocess_center(self->dev);
+    if(was_visualize) dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
 
