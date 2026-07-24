@@ -1140,7 +1140,22 @@ void reset(dt_view_t *self)
 
 gboolean try_enter(dt_view_t *self)
 {
-  const dt_imgid_t imgid = dt_act_on_get_main_image();
+  dt_imgid_t imgid = dt_act_on_get_main_image();
+
+  // nothing hovered/active/selected: fall back to the first image
+  // of the current lighttable collection, so switching to darkroom
+  // from the tab bar always opens whatever is visible there.
+  if(!dt_is_valid_imgid(imgid))
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT 1",
+       -1, &stmt, NULL);
+    if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      imgid = sqlite3_column_int(stmt, 0);
+    if(stmt) sqlite3_finalize(stmt);
+  }
 
   if(!dt_is_valid_imgid(imgid))
   {
