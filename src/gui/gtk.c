@@ -226,7 +226,7 @@ static void _focuspeaking_switch_button_callback(GtkWidget *button,
   gtk_widget_queue_draw(button);
 
   // make sure the second window if active is updated
-  dt_dev_reprocess_center(darktable.develop);
+  dt_dev_reprocess_center(darktable.develop, INT_MAX);
 
   // we inform that all thumbnails need to be redraw
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
