@@ -3722,9 +3722,28 @@ static void _camera_set(dt_iop_module_t *self, const lfCamera *cam)
 
   if(!cam)
   {
+    // Lensfun doesn't know this body. still show what the file says it
+    // was shot with, so it's clear what was searched for rather than
+    // leaving the user with a blank field.
+    const dt_image_t *img = &self->dev->image_storage;
+    g->camera = NULL;
+
+    if(img->exif_model[0])
+      fm = img->exif_maker[0]
+        ? g_strdup_printf("%s, %s", img->exif_maker, img->exif_model)
+        : g_strdup(img->exif_model);
+    else
+      fm = g_strdup(p->camera);
+
     gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))),
-                       "");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->camera_model), "");
+                       fm);
+    gtk_widget_set_tooltip_text
+      (GTK_WIDGET(g->camera_model),
+       *fm ? _("this camera is not in the Lensfun database\n"
+               "click to pick one manually")
+           : _("no camera information found\n"
+               "click to pick one manually"));
+    g_free(fm);
     return;
   }
 
@@ -3940,6 +3959,18 @@ static void _lens_set(dt_iop_module_t *self,
 
   if(!lens)
   {
+    // keep whatever the file claims the lens was, and point at the
+    // picker -- searching without a camera lists the whole database
+    const dt_image_t *img = &self->dev->image_storage;
+    const char *name = p->lens[0] ? p->lens : img->exif_lens;
+
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))),
+                       name);
+    gtk_widget_set_tooltip_text
+      (GTK_WIDGET(g->lens_model),
+       _("no matching lens in the Lensfun database\n"
+         "click to pick one from the full list"));
+
     g->lensfun_trouble = TRUE;
     return;
   }
@@ -4231,7 +4262,9 @@ static void _display_errors(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message
       (self, _("camera/lens not found"),
-       _("please select your lens manually\n"
+       _("pick a camera or lens from the buttons below --\n"
+         "the lens button lists the whole database when the body is unknown\n"
+         "scale, target geometry and the TCA override work without a profile\n"
          "you might also want to check if your Lensfun database is up-to-date\n"
          "by running lensfun-update-data"),
        "camera/lens not found");
@@ -4253,13 +4286,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "lensfun");
 
-    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->message), !g->lensfun_trouble);
+    // none of these need a lens profile to work -- scale, geometry and
+    // the TCA override are independent of the database -- so they stay
+    // usable even when the camera or lens wasn't recognised. graying
+    // them out only made the panel look broken.
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
 
     const gboolean raw_monochrome =
       dt_image_is_monochrome(&self->dev->image_storage);
@@ -4656,13 +4693,13 @@ void gui_update(dt_iop_module_t *self)
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     cam = dt_iop_lensfun_db->FindCamerasExt(NULL, p->camera, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    if(cam)
-      _camera_set(self, cam[0]);
-    else
-      _camera_set(self, NULL);
   }
+  // always call this: with no match it falls back to the EXIF name
+  _camera_set(self, cam ? cam[0] : NULL);
 
-  if(g->camera && p->lens[0])
+  // an unknown body is no reason to give up on the lens -- searching
+  // without a camera simply widens the search to the whole database
+  if(p->lens[0])
   {
     char model[200];
     _parse_model(p->lens, model, sizeof(model));
