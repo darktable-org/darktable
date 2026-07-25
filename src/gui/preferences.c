@@ -393,7 +393,9 @@ static void init_tab_general(GtkWidget *dialog,
 
   // read all themes
   char *theme_name = dt_conf_get_string("ui_last/theme");
-  int selected = 0;
+  const char *default_theme = dt_confgen_get("ui_last/theme", DT_DEFAULT);
+  int selected = -1;
+  int default_selected = -1;
   int k = 0;
   for(GList *iter = darktable.themes; iter; iter = g_list_next(iter))
   {
@@ -403,9 +405,16 @@ static void init_tab_general(GtkWidget *dialog,
     if(i) *i = '\0';
     dt_bauhaus_combobox_add_aligned(widget, name, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     if(!g_strcmp0(name, theme_name)) selected = k;
+    if(!g_strcmp0(name, default_theme)) default_selected = k;
     k++;
+    g_free(name);
   }
   g_free(theme_name);
+
+  // a theme we don't know about must not silently read as whichever one
+  // happens to sort first -- show the configured default instead
+  if(selected < 0)
+    selected = (default_selected >= 0) ? default_selected : 0;
 
   dt_bauhaus_combobox_set(widget, selected);
 

@@ -3686,9 +3686,20 @@ void dt_gui_load_theme(const char *theme)
 
   GError *error = NULL;
 
-  GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
-  gtk_style_context_add_provider_for_screen
-    (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  // Reuse a single provider across calls. Adding a fresh one each time
+  // leaked the previous theme onto the screen -- gtk keeps its own
+  // reference, so the unref below never removed it -- and with every
+  // provider sitting at the same priority the oldest one still won the
+  // @define-color lookups. The result was a theme change only taking
+  // effect one load later.
+  static GtkCssProvider *themes_style_provider = NULL;
+  if(!themes_style_provider)
+  {
+    themes_style_provider = gtk_css_provider_new();
+    gtk_style_context_add_provider_for_screen
+      (gdk_screen_get_default(), GTK_STYLE_PROVIDER(themes_style_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  }
 
   // We load the themes in this specific order:
   //   1. The main darktable-*.css
@@ -3739,7 +3750,7 @@ void dt_gui_load_theme(const char *theme)
     themecss = newcss;
   }
 
-  if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider),
+  if(!gtk_css_provider_load_from_data(themes_style_provider,
                                       themecss, -1, &error))
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -3749,8 +3760,7 @@ void dt_gui_load_theme(const char *theme)
   }
 
   g_free(themecss);
-
-  g_object_unref(themes_style_provider);
+  // provider is kept alive on purpose, see above
 }
 
 void dt_gui_apply_theme()
