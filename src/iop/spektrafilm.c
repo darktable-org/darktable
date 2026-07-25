@@ -2684,21 +2684,33 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(fi < 0) return;
   const sf_prof_entry_t *e = &g->entries[fi];
   p->film_hash = e->hash;
-  /* The core checkbox-reset mechanism (darktable-core-toggle-reset.patch)
-     doesn't re-read self->default_params live at reset time -- it captures
-     each checkbox's default once, at widget-creation time, as opaque
-     "dt-toggle-default" data on the button itself. Poke that cached value
-     here so a right-click/scroll reset on just this checkbox means "what
-     this film actually needs" (slides/reversal stocks: scan; negatives:
-     print) rather than the module's one-size-fits-all factory default
-     (FALSE). This must NOT also write self->default_params->scan_film:
-     that field is darktable-core's stable factory default, read directly
-     by memcpy() on a whole-module reset -- mutating it here made a
-     whole-module reset copy whatever film was last selected instead of
-     the true factory default, requiring two resets in a row to actually
-     converge (confirmed via gui_update tracing across a stack-paste). */
-  if(g->scan_film)
-    g_object_set_data(G_OBJECT(g->scan_film), "dt-toggle-default", GINT_TO_POINTER(e->positive));
+  /* scan_film's checkbox is a plain GtkCheckButton (dt_bauhaus_toggle_from_
+     params), not a bauhaus widget -- the real reset mechanism for it
+     (dt_bauhaus_toggle_widget_reset, develop/imageop_gui.c, part of this
+     fork's own darktable-core toggle-reset patch) reads
+     self->default_params live, via pointer offset, at the moment of the
+     reset -- there is no separate cached value to poke; mutating
+     default_params->scan_film here IS the mechanism, not a workaround for
+     it. This covers BOTH of that patch's reset paths: a right-click/
+     scroll reset on just this checkbox, and double-clicking the notebook
+     tab bar (_reset_all_bauhaus -> dt_bauhaus_toggle_widget_reset for
+     every checkbox on the current page). Without this, a positive/
+     reversal film's scan_film (which has no print stage and needs
+     scan_film TRUE) would silently revert to the compiled FALSE default
+     on either gesture.
+     This alone would reintroduce an old bug, though: a later WHOLE-MODULE
+     reset (_gui_reset_callback -> dt_iop_reload_defaults ->
+     dt_iop_load_default_params's memcpy(params, default_params, ...))
+     copies default_params verbatim, INCLUDING film_hash, which stays
+     pinned at the compiled default (kodak_portra_400, per gui_update's
+     own fallback) regardless of what's mutated here -- so a whole-module
+     reset needs default_params->scan_film to already match THAT film
+     (FALSE), not whatever film was selected right before the reset was
+     clicked. See reload_defaults() below, which restores exactly that,
+     and runs before the memcpy specifically so a single reset click
+     converges correctly on the first try. */
+  if(self->default_params)
+    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
   /* scan-film follows the film's natural mode on a film switch: slides and
      reversal stocks are viewed directly (scan), negatives go through the
      print stage. The user can still toggle freely afterwards -- this only
@@ -2805,6 +2817,32 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
   gtk_widget_set_sensitive(g->print_diffusion_strength, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_scale, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_warmth, pdif);
+}
+
+/* dt_iop_reload_defaults() runs module->reload_defaults() (this function,
+   if present) BEFORE dt_iop_load_default_params()'s memcpy(params,
+   default_params, ...) -- see _gui_reset_callback, develop/imageop.c.
+   _film_changed/gui_update mutate self->default_params->scan_film to
+   track whatever film is CURRENTLY selected (see the comment in
+   _film_changed for why that mutation, not a separate cache, is the real
+   core toggle-reset mechanism for this checkbox). But a whole-module
+   reset's memcpy also resets film_hash itself, unconditionally, back to
+   the compiled default (0, which gui_update's own fallback resolves to
+   kodak_portra_400 -- a negative film, scan_film FALSE) -- regardless of
+   what film was selected right before the reset was clicked. Without
+   this, default_params->scan_film could still be TRUE (from a
+   previously-selected positive film) at the moment the memcpy runs,
+   copying a value that doesn't match the film_hash it's paired with in
+   the same struct; only the NEXT reload_defaults() (triggered by that
+   same reset's own gui_update(), which re-baselines it for the film the
+   combobox fell back to) would catch up, so the first reset click landed
+   wrong and a second was needed to actually converge. Reset it back to
+   the one film_hash=0 always actually means, right before the memcpy
+   copies it, so the first click is correct. */
+void reload_defaults(dt_iop_module_t *self)
+{
+  if(self->default_params)
+    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = FALSE;
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -2915,28 +2953,25 @@ void gui_update(dt_iop_module_t *self)
   /* _film_changed() is a no-op during the combobox-set above (it bails out
      on darktable.gui->reset, which gui_update runs under, so programmatic
      loads don't get treated as user edits / spawn spurious history items).
-     That means its scan_film "what should a reset target" bookkeeping --
-     the checkbox's own cached "dt-toggle-default" -- never gets
-     re-baselined on a fresh module load, only when the user actually
-     interacts with the film combobox. Left alone, it stays at the compiled
-     FALSE default after e.g. closing and reopening darktable on an image
-     using a positive/reversal film (which has no print stage and needs
-     scan_film TRUE): the checkbox itself still shows correctly checked
-     here (synced from p->scan_film below), but a later right-click/scroll
-     reset on just this checkbox would silently flip scan_film back off.
-     Re-baseline it here too, exactly like _film_changed does -- but
-     WITHOUT touching p->scan_film itself, since the just-loaded value may
-     be a deliberate user override away from the film's natural mode and
-     must be preserved on load; only the reset target needs fixing. Do NOT
-     also write self->default_params->scan_film here: that field is
-     darktable-core's stable factory default, read directly by memcpy() on
-     a whole-module reset -- mutating it made a whole-module reset copy
-     whatever film was last selected instead of the true factory default. */
-  if(fi < g->n_films)
+     That means its self->default_params->scan_film re-baselining (see the
+     fuller comment there for why this field, not a separate cache, IS the
+     real core toggle-reset mechanism) never runs on a fresh module load,
+     only when the user actually interacts with the film combobox. Left
+     alone, it stays at whatever it was last set to -- possibly from a
+     PREVIOUSLY loaded image's film -- after e.g. switching to a different
+     image with a positive/reversal film loaded (which has no print stage
+     and needs scan_film TRUE): the checkbox itself still shows correctly
+     checked here (synced from p->scan_film below), but a later
+     right-click/scroll or tab-bar-double-click reset would silently flip
+     scan_film back off. Re-baseline it here too, exactly like
+     _film_changed does -- but WITHOUT touching p->scan_film itself, since
+     the just-loaded value may be a deliberate user override away from the
+     film's natural mode and must be preserved on load; only the reset
+     target needs fixing. */
+  if(fi < g->n_films && self->default_params)
   {
     const sf_prof_entry_t *e = &g->entries[g->film_entry[fi]];
-    if(g->scan_film)
-      g_object_set_data(G_OBJECT(g->scan_film), "dt-toggle-default", GINT_TO_POINTER(e->positive));
+    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
   }
   int pi = 0;
   const char *target = (fi < g->n_films) ? g->entries[g->film_entry[fi]].target_print : NULL;
