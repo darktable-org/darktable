@@ -2762,6 +2762,67 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
   /* [cp] compute_density_curves_before_dir_couplers */
   if(s->couplers_active)
   {
+    /* The inversion below reads le_0 as the x-axis of an interpolation, which
+       needs it strictly increasing: le_0 = le - cac is invertible only while
+       d(cac)/d(le) < 1. Past that the same corrected exposure maps to two
+       densities and the film has no "before couplers" curve at all -- the model
+       has left the physical regime, not merely become inaccurate.
+
+       The breakdown is stock-dependent and can sit well inside the slider's
+       range: measured over the shipped profiles it is amount ~1.60 for
+       Portra 400, ~1.66 for Double-X, ~2.09 for Vision3 250D and ~1.00 for
+       Velvia 100. Beyond it both this code and the reference feed unsorted x to
+       an interpolator -- np.interp there, binary search here -- and each returns
+       a different arbitrary bracket, which is why high amounts diverge between
+       the two while low ones agree.
+
+       So find the largest amount that stays invertible and use that, rather than
+       emitting curves nobody can reproduce. Bisection on a monotone predicate,
+       32 iterations, once per sim build. */
+    {
+      double lo = 0.0, hi = 1.0;
+      for(int it = 0; it < 32; it++)
+      {
+        const double mid = 0.5 * (lo + hi);
+        int ok = 1;
+        for(int m = 0; m < 3 && ok; m++)
+        {
+          double prev = -INFINITY;
+          for(int i = 0; i < SF_NLE && ok; i++)
+          {
+            double cac = 0.0;
+            for(int k = 0; k < 3; k++)
+            {
+              double silver = s->film_positive ? s->film_dmax[k] - s->curves_norm[i][k]
+                                               : s->curves_norm[i][k];
+              if(s->couplers_donor_lm)
+                silver = silver * (s->couplers_donor_K[k] + s->couplers_donor_Dref[k])
+                         / (s->couplers_donor_K[k] + silver);
+              cac += silver * s->couplers_M[k][m] * mid;
+            }
+            if(s->couplers_recv_lm)
+              cac = cac * (s->couplers_recv_Kr[m] + s->couplers_recv_cref[m])
+                    / (s->couplers_recv_Kr[m] + cac);
+            const double v = film->log_exposure[i] - cac;
+            if(v <= prev) ok = 0;
+            prev = v;
+          }
+        }
+        if(ok) lo = mid; else hi = mid;
+      }
+      if(lo < 1.0)
+      {
+        /* couplers_M is already amount-scaled, so scale it again by the surviving
+           fraction and keep every downstream consumer -- inversion, forward
+           correction, GPU export -- on one matrix. */
+        for(int i = 0; i < 3; i++)
+          for(int j = 0; j < 3; j++) s->couplers_M[i][j] *= lo;
+        dt_print(DT_DEBUG_PIPE,
+                 "[spektrafilm] DIR couplers: amount %.3f is past this stock's invertible"
+                 " limit, using %.3f", p->couplers_amount, p->couplers_amount * lo);
+      }
+    }
+
     double le_0[SF_NLE][3];
     for(int i = 0; i < SF_NLE; i++)
       for(int m = 0; m < 3; m++)
