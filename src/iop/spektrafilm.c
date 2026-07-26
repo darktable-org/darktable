@@ -82,7 +82,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(9, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(10, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -92,6 +92,13 @@ DT_MODULE_INTROSPECTION(9, dt_iop_spektrafilm_params_t)
 /* widest stage-1 scatter component: max(sc_tail)*max(tail_rat) from
    spektra_core.c's sf_halation() = 9.7 * 2.7684 um, rounded up */
 #define SF_SCATTER_TAIL_MAX_UM 27.0f
+/* Per-channel ceilings the ROI padding above is sized for. The scatter PSF is
+   per-film pack data now, and modify_roi_in() runs before the sim exists, so it
+   cannot measure the real values -- clamp them to what the padding covers
+   instead, exactly as hal_sigma_um is clamped to SF_HALATION_FIRST_SIGMA_UM.
+   9.7 * SF_EXPTAIL_R2 = 26.85, which is where the 27.0 above comes from. */
+#define SF_SCATTER_CORE_CLAMP_UM 2.2f
+#define SF_SCATTER_TAIL_CLAMP_UM 9.7f
 /* [gl] GlareParams.roughness / .blur -- the reference exposes these but leaves
    them at these values for every profile, so only the amount gets a slider. */
 #define SF_GLARE_ROUGHNESS 0.7f
@@ -196,6 +203,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float scan_usm_sigma;     // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpness"
   float scan_usm_amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpen strength"
   float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "viewing glare"
+  float development_min;    // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -207,6 +215,10 @@ typedef struct sf_prof_entry_t
   gboolean printing; /* stage == "printing" */
   gboolean positive; /* info.type == "positive" (slide / reversal) */
   gboolean bw;       /* channel_model == "bw" */
+  /* development times this stock is characterised at; n_dev == 0 means a single
+     characterisation, i.e. nothing for the development slider to choose */
+  int n_dev;
+  double dev_times[SF_MAX_DEV_TIMES];
   uint32_t hash;
 } sf_prof_entry_t;
 
@@ -224,6 +236,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *grain_on, *grain_amount, *grain_size;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
+  GtkWidget *development_min;
   GtkWidget *grain_usm_sigma, *grain_usm_amount;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
   GtkWidget *boost_ev, *boost_range, *protect_ev;
@@ -331,7 +344,7 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
   int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
-  int kernel_max_partials, kernel_max_reduce, kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
+  int kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
 } dt_iop_spektrafilm_global_data_t;
 
 /* the data pack is large (spectra LUT ~12 MB) and shared by all pieces;
@@ -379,8 +392,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_gauss_col_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_1c");
   gd->kernel_channel_accum = dt_opencl_create_kernel(program, "spektrafilm_channel_accum");
   gd->kernel_halation_apply = dt_opencl_create_kernel(program, "spektrafilm_halation_apply");
-  gd->kernel_max_partials = dt_opencl_create_kernel(program, "spektrafilm_max_partials");
-  gd->kernel_max_reduce = dt_opencl_create_kernel(program, "spektrafilm_max_reduce");
   gd->kernel_boost = dt_opencl_create_kernel(program, "spektrafilm_boost");
   gd->kernel_diffusion_accum = dt_opencl_create_kernel(program, "spektrafilm_diffusion_accum");
   gd->kernel_diffusion_mix = dt_opencl_create_kernel(program, "spektrafilm_diffusion_mix");
@@ -421,8 +432,6 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_gauss_col_1c);
     dt_opencl_free_kernel(gd->kernel_channel_accum);
     dt_opencl_free_kernel(gd->kernel_halation_apply);
-    dt_opencl_free_kernel(gd->kernel_max_partials);
-    dt_opencl_free_kernel(gd->kernel_max_reduce);
     dt_opencl_free_kernel(gd->kernel_boost);
     dt_opencl_free_kernel(gd->kernel_diffusion_accum);
     dt_opencl_free_kernel(gd->kernel_diffusion_mix);
@@ -1129,10 +1138,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scan_usm_sigma = 0.7f;
     n->scan_usm_amount = 0.0f;
     n->glare_percent = 0.0f;
+    n->development_min = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 9;
+    *new_version = 10;
     return 0;
   }
   if(old_version == 8)
@@ -1192,10 +1202,26 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scan_usm_sigma = 0.7f;
     n->scan_usm_amount = 0.0f;
     n->glare_percent = 0.0f;
+    n->development_min = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 9;
+    *new_version = 10;
+    return 0;
+  }
+  if(old_version == 9)
+  {
+    /* v10 appends `development_min`, which picks a member of a B&W stock's
+       development-time family in minutes. 0 means "the stock's own default", the
+       representative middle member -- which is what v9 and earlier effectively
+       rendered whenever they got the layout right, so old edits keep that. */
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+    memcpy(n, old_params, sizeof(*n) - sizeof(n->development_min));
+    n->development_min = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 10;
     return 0;
   }
   return 1;
@@ -1273,7 +1299,7 @@ static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
     char path[SF_PATH_LEN + 300];
     snprintf(path, sizeof path, "%s/%s", profdir, fn);
     char *err = NULL;
-    sf_profile_t *prof = sf_profile_load(path, &err);
+    sf_profile_t *prof = sf_profile_load(path, 0.5f, &err); /* info header only */
     if(!prof)
     {
       free(err);
@@ -1294,6 +1320,7 @@ static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
     e->positive = (type && !strcmp(type, "positive"));
     const char *cm = sf_profile_channel_model(prof);
     e->bw = (cm && !strcmp(cm, "bw"));
+    e->n_dev = sf_profile_dev_times(prof, e->dev_times, SF_MAX_DEV_TIMES);
     e->hash = sf_name_hash(e->stock);
     sf_profile_free(prof);
     n++;
@@ -1437,6 +1464,9 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->preflash_m_shift, sizeof p->preflash_m_shift);
   key = _mix64(key, &p->preflash_y_shift, sizeof p->preflash_y_shift);
   key = _mix64(key, &p->scan_film, sizeof p->scan_film);
+  /* selects which member of a B&W development-time family the curve model is
+     built from, so it has to be part of the sim's cache key */
+  key = _mix64(key, &p->development_min, sizeof p->development_min);
   key = _mix64(key, &p->quality, sizeof p->quality);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
@@ -1532,12 +1562,12 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   sf_pack_dir(dir, sizeof dir);
   char *err = NULL;
   snprintf(path, sizeof path, "%s/profiles/%s.json", dir, film_stock);
-  sf_profile_t *film = sf_profile_load(path, &err);
+  sf_profile_t *film = sf_profile_load(path, p->development_min, &err);
   sf_profile_t *paper = NULL;
   if(film && !p->scan_film)
   {
     snprintf(path, sizeof path, "%s/profiles/%s.json", dir, paper_stock);
-    paper = sf_profile_load(path, &err);
+    paper = sf_profile_load(path, p->development_min, &err);
   }
 
   if(film && (paper || p->scan_film))
@@ -1811,8 +1841,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        SF_HALATION_FIRST_SIGMA_UM (see _max_halo_sigma); clamp so a future
        pack entry larger than that can't under-pad the halo. */
     hal_sigma_um = fmin(hal_sigma_um, (double)SF_HALATION_FIRST_SIGMA_UM);
-    sf_halation(plane, w, h, (double)pixel_um, d->p.scatter_amount, d->p.scatter_scale,
-               d->p.halation_amount, d->p.halation_scale, hal_strength, hal_sigma_um);
+    /* per-film scatter PSF; clamped so a pack cannot outrun the ROI padding */
+    double sc_core[3], sc_tail[3], sc_w[3];
+    sf_sim_scatter_params(sim, sc_core, sc_tail, sc_w);
+    for(int c = 0; c < 3; c++)
+    {
+      sc_core[c] = fmin(sc_core[c], (double)SF_SCATTER_CORE_CLAMP_UM);
+      sc_tail[c] = fmin(sc_tail[c], (double)SF_SCATTER_TAIL_CLAMP_UM);
+    }
+    sf_halation(plane, w, h, (double)pixel_um, sc_core, sc_tail, sc_w, d->p.scatter_amount,
+                d->p.scatter_scale, d->p.halation_amount, d->p.halation_scale, hal_strength,
+                hal_sigma_um);
   }
 
   /* 3) film development: log exposure, DIR coupler inhibition (the correction
@@ -2348,29 +2387,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   /* ---- 2) pre-film spatial effects on linear exposure -------------------- */
   if(d->p.boost_ev > 0.0f)
   {
-    const int npartials = 256;
-    cl_mem partials = dt_opencl_alloc_device_buffer(devid, npartials * sizeof(float));
-    cl_mem maxv_buf = dt_opencl_alloc_device_buffer(devid, sizeof(float));
-    if(partials && maxv_buf)
-    {
-      const int npix_i = (int)npix;
-      err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_max_partials, npartials,
-                                             CLARG(plane), CLARG(npix_i), CLARG(partials),
-                                             CLARG(npartials));
-      if(err == CL_SUCCESS)
-        err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_max_reduce, 1, CLARG(partials),
-                                               CLARG(maxv_buf), CLARG(npartials));
-      if(err == CL_SUCCESS)
-      {
-        const float b_ev = d->p.boost_ev, b_rng = d->p.boost_range, b_prot = d->p.protect_ev;
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
-                                               CLARG(w), CLARG(h), CLARG(b_ev), CLARG(b_rng),
-                                               CLARG(b_prot), CLARG(maxv_buf));
-      }
-      SF_CL_STEP("boost");
-    }
-    dt_opencl_release_mem_object(partials);
-    dt_opencl_release_mem_object(maxv_buf);
+    /* The frame-maximum reduction that used to run here is gone: the curve is
+       anchored to the exposure scale now, which is what makes the boost agree
+       between the preview pipe, the export pipe and every tile. */
+    const float b_ev = d->p.boost_ev, b_rng = d->p.boost_range, b_prot = d->p.protect_ev;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
+                                           CLARG(w), CLARG(h), CLARG(b_ev), CLARG(b_rng),
+                                           CLARG(b_prot));
+    SF_CL_STEP("boost");
   }
 
   if(d->p.diffusion_on)
@@ -2415,8 +2439,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
          channel into the single-channel scratch buffer plane1, blur it
          alone (1x the work of a same-size float4 blur, not 4x), then
          kernel_channel_accum folds it into the target channel of tmpa/acc. */
-      const float sc_core[3] = { 2.2f, 2.0f, 1.6f };
-      const float sc_tail[3] = { 9.3f, 9.7f, 9.1f };
+      /* per-film scatter PSF, same clamps as the CPU path */
+      float sc_core[3], sc_tail[3];
+      for(int c = 0; c < 3; c++)
+      {
+        sc_core[c] = fminf(g->scatter_core_um[c], SF_SCATTER_CORE_CLAMP_UM);
+        sc_tail[c] = fminf(g->scatter_tail_um[c], SF_SCATTER_TAIL_CLAMP_UM);
+      }
       const float amp[3] = { 0.1633f, 0.6496f, 0.1870f }, rat[3] = { 0.5360f, 1.5236f, 2.7684f };
       for(int c = 0; c < 3; c++)
       {
@@ -2449,7 +2478,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                                  CLARG(amp[g3]), CLARG(c), CLARG(reset));
           SF_CL_STEP("scatter tail accum");
         }
-      const float ws_r = 0.78f, ws_g = 0.65f, ws_b = 0.67f;
+      const float ws_r = g->scatter_tail_weight[0], ws_g = g->scatter_tail_weight[1],
+                  ws_b = g->scatter_tail_weight[2];
       /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
          doubles as both the pre-scatter `raw` input and the `out` write
          target -- safe since this is a purely per-pixel elementwise op. */
@@ -2836,6 +2866,7 @@ static void _rescan(dt_iop_module_t *self)
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self);
+static void _update_development_sensitivity(dt_iop_module_t *self);
 
 static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
 {
@@ -2907,13 +2938,81 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
   const int pi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper));
   if(pi < 0) return;
   p->paper_hash = g->entries[pi].hash;
+  /* the print stock can carry a development-time family of its own (2302) */
+  _update_development_sensitivity(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+/* Entry for a stock hash, or NULL. `printing` picks which of the two lists to
+   search, since a stock can appear as film or as paper. */
+static const sf_prof_entry_t *_entry_by_hash(const dt_iop_spektrafilm_gui_data_t *g,
+                                             const uint32_t hash, const gboolean printing)
+{
+  const int n = printing ? g->n_papers : g->n_films;
+  const int *idx = printing ? g->paper_entry : g->film_entry;
+  for(int i = 0; i < n; i++)
+    if(g->entries[idx[i]].hash == hash) return &g->entries[idx[i]];
+  return NULL;
+}
+
+/* The development slider only has something to choose when the stock in use is
+   characterised at more than one development time. Both loads in _ensure_sim()
+   get the same value, so the print stock counts too -- print film 2302 carries a
+   family of its own -- but only while there is a print stage. Lives here rather
+   than in gui_update() because this is the one function every film / paper /
+   scan_film change already routes through; in gui_update() alone it went stale
+   the moment the stock was switched. */
+static void _update_development_sensitivity(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  const dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  if(!g->development_min) return;
+
+  const sf_prof_entry_t *fe = _entry_by_hash(g, p->film_hash, FALSE);
+  const sf_prof_entry_t *pe = p->scan_film ? NULL : _entry_by_hash(g, p->paper_hash, TRUE);
+  const sf_prof_entry_t *de = (fe && fe->n_dev > 1) ? fe : ((pe && pe->n_dev > 1) ? pe : NULL);
+
+  gtk_widget_set_sensitive(g->development_min, de != NULL);
+  /* Span exactly what this stock offers, so dragging lands on real values
+     instead of wandering through empty range. 0 stays reachable at the bottom --
+     it means "the stock's own default" -- and the hard 15 min ceiling covers the
+     widest family in the release (Double-X, 12 min) with room to spare. */
+  float dev_hi = 15.0f;
+  if(de)
+  {
+    dev_hi = (float)de->dev_times[0];
+    for(int i = 1; i < de->n_dev; i++) dev_hi = fmaxf(dev_hi, (float)de->dev_times[i]);
+  }
+  dt_bauhaus_slider_set_soft_range(g->development_min, 0.0f, dev_hi);
+  if(de)
+  {
+    char times[128] = { 0 };
+    for(int i = 0; i < de->n_dev; i++)
+    {
+      char one[24];
+      snprintf(one, sizeof one, "%s%.3g", i ? ", " : "", de->dev_times[i]);
+      g_strlcat(times, one, sizeof times);
+    }
+    char tip[320];
+    snprintf(tip, sizeof tip,
+             _("development time, in minutes. snaps to the nearest time %s is\n"
+               "characterised at: %s min. 0 uses the stock's own default (%.3g min)."),
+             de->name, times, de->dev_times[(de->n_dev - 1) / 2]);
+    gtk_widget_set_tooltip_text(g->development_min, tip);
+  }
+  else
+    gtk_widget_set_tooltip_text(g->development_min,
+                                _("development time. the stock in use is characterised at a\n"
+                                  "single development, so there is nothing to choose.\n\n"
+                                  "single-emulsion B&W stocks are the ones that carry a family:\n"
+                                  "Double-X at 4/5/6.5/9/12 min, print film 2302 at 2/3.5/5/7/9 min."));
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+  _update_development_sensitivity(self);
   const gboolean printing = !p->scan_film;
   gtk_widget_set_sensitive(g->paper, printing);
   gtk_widget_set_sensitive(g->print_exposure_ev, printing);
@@ -3351,6 +3450,14 @@ void gui_init(dt_iop_module_t *self)
         " controls below for further fine-tuning"));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "chemistry")));
+
+  g->development_min = dt_bauhaus_slider_from_params(self, "development_min");
+  dt_bauhaus_slider_set_format(g->development_min, _(" min"));
+  /* gui_update() replaces this with the selected stock's own times, and greys
+     the slider out for stocks characterised at a single development */
+  gtk_widget_set_tooltip_text(g->development_min,
+                              _("development time. snaps to the nearest time the stock was\n"
+                                "characterised at; 0 uses the stock's own default."));
 
   g->film_gamma_factor = dt_bauhaus_slider_from_params(self, "film_gamma_factor");
   dt_bauhaus_slider_set_soft_range(g->film_gamma_factor, 0.25f, 2.0f);

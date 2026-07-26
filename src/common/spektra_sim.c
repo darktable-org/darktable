@@ -108,6 +108,20 @@ static inline void neon_mat3_mulv_batch(const float m[9], const float *in,
 #define SF_HALATION_STRENGTH_DEFAULT_B 0.0
 #define SF_HALATION_SIGMA_DEFAULT_UM 65.0
 
+/* [df] HalationParams scatter defaults. Unlike strength/first_sigma_um these are
+ * not touched by _HALATION_PRESETS, so every stock in the current release uses
+ * them -- but the pack carries them per film, so they are seeded here and then
+ * overwritten from film_render_defaults[stock].halation when present. */
+#define SF_SCATTER_CORE_DEFAULT_R 2.2
+#define SF_SCATTER_CORE_DEFAULT_G 2.0
+#define SF_SCATTER_CORE_DEFAULT_B 1.6
+#define SF_SCATTER_TAIL_DEFAULT_R 9.3
+#define SF_SCATTER_TAIL_DEFAULT_G 9.7
+#define SF_SCATTER_TAIL_DEFAULT_B 9.1
+#define SF_SCATTER_TAILW_DEFAULT_R 0.78
+#define SF_SCATTER_TAILW_DEFAULT_G 0.65
+#define SF_SCATTER_TAILW_DEFAULT_B 0.67
+
 /* ------------------------------------------------------------------------ */
 /* small linear algebra                                                     */
 /* ------------------------------------------------------------------------ */
@@ -234,6 +248,9 @@ struct sf_profile_t
   double log_sensitivity[SF_NWL][3];
   double channel_density[SF_NWL][3];
   double base_density[SF_NWL];
+  double development_time; /* resolved family member, 0 when the stock has none */
+  double dev_times[SF_MAX_DEV_TIMES];
+  int n_dev_times; /* 0 or 1 when the stock is characterised at one development */
   double log_exposure[SF_NLE];
   double density_curves[SF_NLE][3];
   int window_n;
@@ -343,6 +360,11 @@ struct sf_sim_t
      Defaults to SF_HALATION_STRENGTH_DEFAULT_* / SF_HALATION_SIGMA_DEFAULT_UM
      when the pack has no per-stock entry (see sf_sim_build()). */
   double halation_strength[3], halation_sigma_um;
+  /* [df] in-emulsion scatter PSF, per channel. Schema defaults for every stock
+     in the current release (_HALATION_PRESETS only overrides strength and
+     first_sigma_um), but the pack carries them per film, so a future release can
+     vary them without a code change here. */
+  double scatter_core_um[3], scatter_tail_um[3], scatter_tail_weight[3];
 
   /* print exposure (exact spectral path) */
   int has_print;
@@ -416,6 +438,19 @@ static gboolean json_read_darray(JsonObject *obj, const char *key, double *out, 
 }
 
 /* read an n×m nested array into row-major out */
+/* Read an array of unknown length, up to `maxn`; returns how many were read. */
+static int json_read_darray_upto(JsonObject *obj, const char *key, double *out, int maxn)
+{
+  if(!json_object_has_member(obj, key)) return 0;
+  JsonNode *node = json_object_get_member(obj, key);
+  if(!node || !JSON_NODE_HOLDS_ARRAY(node)) return 0;
+  JsonArray *arr = json_node_get_array(node);
+  if(!arr) return 0;
+  const int n = MIN((int)json_array_get_length(arr), maxn);
+  for(int i = 0; i < n; i++) out[i] = json_elem_double(arr, i);
+  return n;
+}
+
 static gboolean json_read_dmatrix(JsonObject *obj, const char *key, double *out, int n, int m)
 {
   if(!json_object_has_member(obj, key)) return FALSE;
@@ -743,7 +778,7 @@ void sf_profile_free(sf_profile_t *p)
   g_free(p);
 }
 
-sf_profile_t *sf_profile_load(const char *path, char **errmsg)
+sf_profile_t *sf_profile_load(const char *path, const float development_min, char **errmsg)
 {
   JsonParser *parser = json_parser_new();
   GError *gerr = NULL;
@@ -784,9 +819,61 @@ sf_profile_t *sf_profile_load(const char *path, char **errmsg)
   ok &= json_read_darray(data, "wavelengths", wavelengths, SF_NWL);
   ok &= json_read_dmatrix(data, "log_sensitivity", &p->log_sensitivity[0][0], SF_NWL, 3);
   ok &= json_read_dmatrix(data, "channel_density", &p->channel_density[0][0], SF_NWL, 3);
-  ok &= json_read_darray(data, "base_density", p->base_density, SF_NWL);
+  /* Development-time family ([dc] select_development_time). A B&W stock can
+     carry one density curve, base+fog spectrum and curve-model row per
+     development time; the export script keeps the family intact and puts the
+     full list of times in `development_time`, so its length is what says whether
+     these arrays are a family or an already-widened single member. Packs that
+     collapsed at export time have one time (or none) and still load unchanged.
+
+     `development` is in minutes; <= 0 means "no choice made" and takes the
+     representative middle member, floor-middle when even, exactly as upstream's
+     select_development_time(None) does. */
+  double dev_times[SF_MAX_DEV_TIMES];
+  const int n_dev = json_read_darray_upto(data, "development_time", dev_times, SF_MAX_DEV_TIMES);
+  const gboolean dev_family = (n_dev > 1);
+  int dev_row = 0;
+  if(dev_family)
+  {
+    if(development_min <= 0.0f)
+      dev_row = (n_dev - 1) / 2;
+    else
+    {
+      double best = fabs(dev_times[0] - (double)development_min);
+      for(int i = 1; i < n_dev; i++)
+      {
+        const double e = fabs(dev_times[i] - (double)development_min);
+        if(e < best) { best = e; dev_row = i; }
+      }
+    }
+    p->development_time = dev_times[dev_row];
+    memcpy(p->dev_times, dev_times, sizeof(double) * n_dev);
+    p->n_dev_times = n_dev;
+  }
+  if(dev_family)
+  {
+    double bd[SF_NWL * SF_MAX_DEV_TIMES];
+    if(json_read_dmatrix(data, "base_density", bd, SF_NWL, n_dev))
+      for(int l = 0; l < SF_NWL; l++) p->base_density[l] = bd[l * n_dev + dev_row];
+    else
+      ok = FALSE;
+  }
+  else
+    ok &= json_read_darray(data, "base_density", p->base_density, SF_NWL);
   ok &= json_read_darray(data, "log_exposure", p->log_exposure, SF_NLE);
-  ok &= json_read_dmatrix(data, "density_curves", &p->density_curves[0][0], SF_NLE, 3);
+  if(dev_family)
+  {
+    /* (n_le, n_dev): take the selected column into all three widened channels */
+    double *dc = malloc(sizeof(double) * SF_NLE * SF_MAX_DEV_TIMES);
+    if(dc && json_read_dmatrix(data, "density_curves", dc, SF_NLE, n_dev))
+      for(int i = 0; i < SF_NLE; i++)
+        for(int c = 0; c < 3; c++) p->density_curves[i][c] = dc[i * n_dev + dev_row];
+    else
+      ok = FALSE;
+    free(dc);
+  }
+  else
+    ok &= json_read_dmatrix(data, "density_curves", &p->density_curves[0][0], SF_NLE, 3);
   if(!ok)
   {
     set_error(errmsg, "spektra_sim: profile %s has unexpected data shapes "
@@ -813,28 +900,41 @@ sf_profile_t *sf_profile_load(const char *path, char **errmsg)
     JsonNode *cnode = (m && json_object_has_member(m, "centers"))
                           ? json_object_get_member(m, "centers") : NULL;
     JsonArray *centers = (cnode && JSON_NODE_HOLDS_ARRAY(cnode)) ? json_node_get_array(cnode) : NULL;
-    /* The reference package's own DensityCurvesModel stores centers/
-       amplitudes/sigmas as (n_channels=3, n_layers) -- confirmed directly
-       against its bundled kodak_portra_endura.json, byte-identical to our
-       copy, and against apply_print_curves_morph's own
-       "n_channels = model.centers.shape[0]". That's the normal,
-       channel-major case (outer array length 3) and every profile checked
-       against the reference package matches it.
-       kodak_2302.json (not part of the reference package's own bundled
-       profiles -- a separately-authored addition) stores it transposed:
-       (n_layers=5, n_channels=3), outer length 5. Rather than assume one
-       convention universally (an earlier version of this fix did, and
-       broke every normal profile by mis-transposing correctly-shaped
-       data), detect orientation per-profile from the one invariant that
-       always holds: there are exactly 3 channels. */
-    const int outer_len = centers ? MIN((int)json_array_get_length(centers), 8) : 0;
+    /* Layout of centers/amplitudes/sigmas, resolved from declared metadata
+       rather than guessed from the array shape.
+
+       For a colour stock the outer axis is the channel: (3, n_layers), which is
+       what the reference's DensityCurvesModel documents and what
+       apply_print_curves_morph reads as "n_channels = model.centers.shape[0]".
+
+       For a single-emulsion (B&W) stock there is only one channel, and the outer
+       axis is the DEVELOPMENT-TIME family -- (n_dev, n_layers). The reference
+       collapses it in select_development_time() (density_curves.py) before the
+       model is ever evaluated, defaulting to the middle member. Our shipped
+       profiles are pre-processed inconsistently: kodak_2302 arrives collapsed
+       and widened to 3 identical rows, kodak_trix collapsed to 1 row, and
+       kodak_doublex still carries all 5 development rows even though its
+       density_curves and development_time were already reduced. Reconstructing
+       each stock's curve from its model confirms it -- doublex matches its own
+       density_curves exactly on row 2 of 5 (= (5-1)/2, the reference's default)
+       and nowhere else, trix on row 0, 2302 on any of its three identical rows.
+
+       Reading the outer axis as layers instead, which shape-guessing does for
+       every B&W stock (their inner length is 3, the LAYER count, not a channel
+       count), builds a model that reproduces nothing: doublex is off by 1.34
+       density at best and trix by 2.37. Both currently render from a wrong
+       curve fit. */
+    const int outer_len = centers ? MIN((int)json_array_get_length(centers), SF_MAX_DEV_TIMES) : 0;
     JsonArray *row0 = (outer_len > 0) ? json_array_get_array_element(centers, 0) : NULL;
-    const int inner_len = row0 ? (int)json_array_get_length(row0) : 0;
-    const gboolean channel_major = (outer_len == 3);              /* centers[channel][layer]: normal */
-    const gboolean layer_major = (!channel_major && inner_len == 3); /* centers[layer][channel]: e.g. kodak_2302 */
-    if(channel_major || layer_major)
+    const int inner_len = row0 ? MIN((int)json_array_get_length(row0), 8) : 0;
+    const gboolean bw = p->channel_model && strcmp(p->channel_model, "bw") == 0;
+    /* A family puts development time on the model's outer axis. So does a pack
+       generated before the export script learned to collapse it, which is why
+       any B&W model whose outer length is not 3 is read the same way. */
+    const gboolean dev_major = dev_family || (bw && outer_len != 3);
+    if(outer_len > 0 && inner_len > 0 && (dev_major || outer_len == 3))
     {
-      const int nl = channel_major ? inner_len : outer_len;
+      const int nl = inner_len;
       p->curves_model.n_layers = nl;
       /* [dc] model_type selects the per-layer sigmoid. Anything other than the
          two known families would be silently rendered as a Gaussian fit, so say
@@ -846,25 +946,32 @@ sf_profile_t *sf_profile_load(const char *path, char **errmsg)
         g_warning("spektra_sim: profile %s has unknown density_curves_model.model_type "
                   "'%s'; rendering it as norm_cdfs", path, model_type);
       g_free(model_type);
-      double c[24], a[24], s[24], al[24];
-      /* alphas is optional (null or absent for every norm_cdfs profile) and
-         follows whatever orientation centers used, so it goes through the same
-         outer/inner lengths and the same idx below. */
+      double c[SF_MAX_DEV_TIMES * 8], a[SF_MAX_DEV_TIMES * 8], s2[SF_MAX_DEV_TIMES * 8],
+          al[SF_MAX_DEV_TIMES * 8];
+      /* alphas is optional (null or absent for every norm_cdfs profile) and has
+         the same shape as centers when present. */
       const gboolean has_alphas = json_object_has_member(m, "alphas")
                                   && !JSON_NODE_HOLDS_NULL(json_object_get_member(m, "alphas"));
       if(!has_alphas || !json_read_dmatrix(m, "alphas", al, outer_len, inner_len))
         memset(al, 0, sizeof(al));
       if(json_read_dmatrix(m, "centers", c, outer_len, inner_len)
          && json_read_dmatrix(m, "amplitudes", a, outer_len, inner_len)
-         && json_read_dmatrix(m, "sigmas", s, outer_len, inner_len))
+         && json_read_dmatrix(m, "sigmas", s2, outer_len, inner_len))
       {
+        /* dev_major: one member of the family for every widened channel. With a
+           real family the row is the one selected above from `development`; on a
+           pre-collapse pack the times are gone, so fall back to the middle row,
+           which is the member the rest of that profile was reduced to. */
+        const int row = !dev_major ? 0
+                        : dev_family ? MIN(dev_row, outer_len - 1)
+                                     : (outer_len - 1) / 2;
         for(int ch = 0; ch < 3; ch++)
           for(int l = 0; l < nl; l++)
           {
-            const int idx = channel_major ? (ch * nl + l) : (l * 3 + ch);
+            const int idx = (dev_major ? row : ch) * inner_len + l;
             p->curves_model.centers[ch][l] = c[idx];
             p->curves_model.amplitudes[ch][l] = a[idx];
-            p->curves_model.sigmas[ch][l] = s[idx];
+            p->curves_model.sigmas[ch][l] = s2[idx];
             p->curves_model.alphas[ch][l] = al[idx];
           }
       }
@@ -883,6 +990,13 @@ const char *sf_profile_stage(const sf_profile_t *p) { return p->stage; }
 const char *sf_profile_type(const sf_profile_t *p) { return p->type; }
 const char *sf_profile_target_print(const sf_profile_t *p) { return p->target_print; }
 const char *sf_profile_channel_model(const sf_profile_t *p) { return p->channel_model; }
+int sf_profile_dev_times(const sf_profile_t *p, double *out, int maxn)
+{
+  if(!p || p->n_dev_times <= 1) return 0;
+  const int n = MIN(p->n_dev_times, maxn);
+  if(out) for(int i = 0; i < n; i++) out[i] = p->dev_times[i];
+  return n;
+}
 
 /* ------------------------------------------------------------------------ */
 /* parameter defaults & colour spaces                                       */
@@ -2326,8 +2440,18 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
     s->halation_strength[2] = SF_HALATION_STRENGTH_DEFAULT_B;
     double sigma3[3] = { SF_HALATION_SIGMA_DEFAULT_UM, SF_HALATION_SIGMA_DEFAULT_UM,
                          SF_HALATION_SIGMA_DEFAULT_UM };
+    const double core_d[3] = { SF_SCATTER_CORE_DEFAULT_R, SF_SCATTER_CORE_DEFAULT_G,
+                               SF_SCATTER_CORE_DEFAULT_B };
+    const double tail_d[3] = { SF_SCATTER_TAIL_DEFAULT_R, SF_SCATTER_TAIL_DEFAULT_G,
+                               SF_SCATTER_TAIL_DEFAULT_B };
+    const double tw_d[3] = { SF_SCATTER_TAILW_DEFAULT_R, SF_SCATTER_TAILW_DEFAULT_G,
+                             SF_SCATTER_TAILW_DEFAULT_B };
+    memcpy(s->scatter_core_um, core_d, sizeof(core_d));
+    memcpy(s->scatter_tail_um, tail_d, sizeof(tail_d));
+    memcpy(s->scatter_tail_weight, tw_d, sizeof(tw_d));
     sf_pack_film_defaults(pack, film->stock, NULL, NULL, NULL, NULL, s->halation_strength,
-                          sigma3, NULL, NULL, NULL);
+                          sigma3, s->scatter_core_um, s->scatter_tail_um,
+                          s->scatter_tail_weight);
     /* all known presets use one sigma for R/G/B (see _HALATION_PRESETS
        upstream); take the first channel rather than plumb a 3-wide sigma
        through sf_halation() for a split that doesn't currently exist. */
@@ -2528,10 +2652,54 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
     _sf_build_grain_layers(s, film, p->grain_density_min, s->grain_uniformity,
                            s->grain_rms, particle_scale, n_scale);
   }
-  /* [cp] coupler matrix: donor row -> receiver column, scaled by amount */
+  /* A single-emulsion stock is one panchromatic layer. The reference reaches
+     every per-channel constant through match_channels(values, n_ch), which at
+     n_ch == 1 returns values[:1] -- the FIRST channel, for all of them. Collapse
+     them here, once, so no consumer has to know: otherwise a B&W frame is
+     rendered with chromatic grain statistics and a chromatic halation strength,
+     and the achromatic grain draw (which reads channel 1) picks the green
+     figure where the reference uses red. */
+  if(s->film_bw)
+  {
+    for(int c = 1; c < 3; c++)
+    {
+      s->grain_rms[c] = s->grain_rms[0];
+      s->grain_uniformity[c] = s->grain_uniformity[0];
+      s->halation_strength[c] = s->halation_strength[0];
+      s->scatter_core_um[c] = s->scatter_core_um[0];
+      s->scatter_tail_um[c] = s->scatter_tail_um[0];
+      s->scatter_tail_weight[c] = s->scatter_tail_weight[0];
+    }
+  }
+
+  /* [cp] coupler matrix: donor row -> receiver column, scaled by amount.
+
+     A single-emulsion (B&W) stock is one panchromatic layer, which the
+     reference models as n_ch == 1: compute_dir_couplers_matrix() populates
+     M_inter only for n_ch == 3, so the matrix is 1x1 self-inhibition and the
+     interlayer gammas are inert. couplers.toml says so explicitly -- "B&W
+     (n_ch == 1) uses only gamma_samelayer_rgb[0]; its interlayer entries are
+     inert but kept so the params mirror the color defaults" -- and they are
+     NOT zero there (defaults.bw.negative carries the color values verbatim).
+
+     Since this file widens a B&W emulsion to three identical channels, every
+     output channel would otherwise pick up its whole matrix COLUMN instead of
+     just the diagonal: with defaults.bw.negative that is 1.79x / 2.28x / 1.87x
+     the reference's single-channel correction, and the three differ by 28%, so
+     an achromatic stock acquires a channel-dependent density shift. Both parts
+     matter -- zeroing the off-diagonal is not enough, because the diagonal
+     alone already spans 0.5159 / 0.5934 / 0.2829. Use gamma_samelayer[0] for
+     all three, which is the value the reference's one channel uses. */
   s->couplers_active = p->couplers_active;
   {
     double M[3][3] = { { 0 } };
+    if(s->film_bw)
+    {
+      const double self_bw = p->gamma_samelayer[0] * p->inhibition_samelayer;
+      M[0][0] = M[1][1] = M[2][2] = self_bw;
+    }
+    else
+    {
     M[0][0] = p->gamma_samelayer[0] * p->inhibition_samelayer;
     M[1][1] = p->gamma_samelayer[1] * p->inhibition_samelayer;
     M[2][2] = p->gamma_samelayer[2] * p->inhibition_samelayer;
@@ -2541,6 +2709,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
     M[1][2] = p->gamma_inter_g_rb[1] * p->inhibition_interlayer;
     M[2][0] = p->gamma_inter_b_rg[0] * p->inhibition_interlayer;
     M[2][1] = p->gamma_inter_b_rg[1] * p->inhibition_interlayer;
+    }
     for(int i = 0; i < 3; i++)
       for(int j = 0; j < 3; j++) s->couplers_M[i][j] = M[i][j] * p->couplers_amount;
 
@@ -3202,6 +3371,12 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
     g->halation_strength[c] = (float)s->halation_strength[c];
   }
   g->halation_first_sigma_um = (float)s->halation_sigma_um;
+  for(int c = 0; c < 3; c++)
+  {
+    g->scatter_core_um[c] = (float)s->scatter_core_um[c];
+    g->scatter_tail_um[c] = (float)s->scatter_tail_um[c];
+    g->scatter_tail_weight[c] = (float)s->scatter_tail_weight[c];
+  }
   g->film_positive = s->film_positive;
   g->couplers_active = s->couplers_active;
 
@@ -3317,6 +3492,23 @@ void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *fir
     for(int c = 0; c < 3; c++) strength[c] = sim ? sim->halation_strength[c] : dflt[c];
   }
   if(first_sigma_um) *first_sigma_um = sim ? sim->halation_sigma_um : SF_HALATION_SIGMA_DEFAULT_UM;
+}
+
+void sf_sim_scatter_params(const sf_sim_t *sim, double core_um[3], double tail_um[3],
+                           double tail_weight[3])
+{
+  static const double core_d[3] = { SF_SCATTER_CORE_DEFAULT_R, SF_SCATTER_CORE_DEFAULT_G,
+                                    SF_SCATTER_CORE_DEFAULT_B };
+  static const double tail_d[3] = { SF_SCATTER_TAIL_DEFAULT_R, SF_SCATTER_TAIL_DEFAULT_G,
+                                    SF_SCATTER_TAIL_DEFAULT_B };
+  static const double tw_d[3] = { SF_SCATTER_TAILW_DEFAULT_R, SF_SCATTER_TAILW_DEFAULT_G,
+                                  SF_SCATTER_TAILW_DEFAULT_B };
+  for(int c = 0; c < 3; c++)
+  {
+    if(core_um) core_um[c] = sim ? sim->scatter_core_um[c] : core_d[c];
+    if(tail_um) tail_um[c] = sim ? sim->scatter_tail_um[c] : tail_d[c];
+    if(tail_weight) tail_weight[c] = sim ? sim->scatter_tail_weight[c] : tw_d[c];
+  }
 }
 
 void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], float dmin[3])
