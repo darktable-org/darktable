@@ -113,7 +113,14 @@ bool sf_pack_film_defaults(const sf_pack_t *pack, const char *film_stock,
 
 /* ------------------------------------------------------------- profile -- */
 
-sf_profile_t *sf_profile_load(const char *path, char **errmsg);
+/* `development_min` picks a member of a B&W stock's development-time family, in
+ * minutes, snapping to the nearest available; <= 0 means "no choice made" and
+ * takes the representative middle member, mirroring
+ * select_development_time(None) (density_curves.py). Ignored for colour stocks
+ * and for stocks with no family. */
+/* Widest development-time family we index (kodak_doublex ships 5). */
+#define SF_MAX_DEV_TIMES 8
+sf_profile_t *sf_profile_load(const char *path, float development_min, char **errmsg);
 void sf_profile_free(sf_profile_t *profile);
 /* ---------------------------------------------------------- GPU export -- */
 
@@ -179,6 +186,7 @@ typedef struct sf_sim_gpu_t
      (spektra_sim.c) when the pack has no per-stock entry. See
      sf_sim_halation_params(). */
   float halation_strength[3], halation_first_sigma_um;
+  float scatter_core_um[3], scatter_tail_um[3], scatter_tail_weight[3];
   /* output gamut compression */
   int out_compress; /* sf_output_compress_t */
   float out_luminance_boost;
@@ -262,6 +270,11 @@ bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stoc
  * SF_HALATION_SIGMA_DEFAULT_UM in spektra_sim.c) when `sim` is NULL or the
  * pack predates per-stock halation data. */
 void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *first_sigma_um);
+/* [df] per-film in-emulsion scatter PSF: Gaussian core radius, exponential tail
+ * decay (both micrometres on film) and the core/tail mix weight, per channel.
+ * Falls back to the schema defaults when sim is NULL or the pack has no entry. */
+void sf_sim_scatter_params(const sf_sim_t *sim, double core_um[3], double tail_um[3],
+                           double tail_weight[3]);
 
 const char *sf_profile_stock(const sf_profile_t *p);
 const char *sf_profile_name(const sf_profile_t *p);
@@ -269,6 +282,9 @@ const char *sf_profile_stage(const sf_profile_t *p);        /* "filming" / "prin
 const char *sf_profile_type(const sf_profile_t *p);         /* "negative" / "positive" */
 const char *sf_profile_target_print(const sf_profile_t *p); /* may be NULL */
 const char *sf_profile_channel_model(const sf_profile_t *p); /* "color" / "bw" / NULL */
+/* Copies out the development times this stock is characterised at, in minutes,
+ * and returns how many there are (0 when it has no family). */
+int sf_profile_dev_times(const sf_profile_t *p, double *out, int maxn);
 
 /* -------------------------------------------------------------- params -- */
 

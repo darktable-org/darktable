@@ -417,14 +417,27 @@ void sf_boost_highlights(float *const raw, const int w, const int h, const float
 {
   if(boost_ev <= 0.0f) return;
   const size_t nn = (size_t)w * h * 3;
-  float maxv = 0.0f;
-  for(size_t i = 0; i < nn; i++) maxv = fmaxf(maxv, raw[i]);
-  if(maxv <= 0.0f) return;
 
+  /* The reference normalises this curve by max(raw) over the whole frame, so its
+     brightest pixel lands exactly boost_ev stops higher. That is a whole-image
+     reduction, and this function only ever sees one ROI or one tile: the preview
+     pipe's downscale averages specular highlights down, so it measured a lower
+     peak and applied a different curve than the export, and a tiled export got a
+     different curve in every tile (tiling_callback sets overlap and factor, so
+     large images do get tiled).
+
+     Anchor the ceiling to the exposure scale instead. raw_x0 is already defined
+     as a number of stops above the film's calibrated middle grey, so defining
+     the ceiling the same way makes the whole curve scene-referred and identical
+     everywhere. Anchoring it to the film's own shoulder was the other candidate
+     and is a trap: the log exposure at 95% of curve excursion ranges from 2.5
+     (Velvia) to 272 (Vision3 250D) in raw units across the shipped stocks, which
+     would leave the slider nearly inert on negatives and violent on slides. */
   const float midgray = 0.184f;
   const float rng = fminf(fmaxf(boost_range, 0.0f), 1.0f);
-  float raw_x0 = midgray * exp2f(fmaxf(protect_ev, 0.0f));
-  if(raw_x0 > maxv) return; /* threshold above peak: nothing to boost */
+  const float prot = fmaxf(protect_ev, 0.0f);
+  const float raw_x0 = midgray * exp2f(prot);
+  const float maxv = midgray * exp2f(prot + SF_BOOST_SPAN_EV);
   const float a = powf(28.0f, 1.0f - rng);
   const float x0 = raw_x0 / maxv;
   const float denom = expf(a * (1.0f - x0)) - a * (1.0f - x0) - 1.0f;
@@ -444,20 +457,13 @@ void sf_boost_highlights(float *const raw, const int w, const int h, const float
 }
 
 void sf_halation(float *const raw, const int w, const int h, const double pixel_um,
+                 const double sc_core[3], const double sc_tail[3], const double w_s[3],
                  const float scatter_amount, const float scatter_scale,
                  const float halation_amount, const float halation_scale,
                  const double halation_strength[3], const double halation_first_sigma_um)
 {
   if(scatter_amount <= 0.0f && halation_amount <= 0.0f) return;
 
-  /* per-channel scatter radii (um on film) and core/tail mix weights. These
-     are the reference model's schema defaults (upstream HalationParams) and,
-     unlike halation_strength/halation_first_sigma_um below, are NOT varied
-     per film stock upstream (every (use, antihalation) preset leaves them
-     alone), so they stay fixed constants here too. */
-  static const double sc_core[3] = { 2.2, 2.0, 1.6 };
-  static const double sc_tail[3] = { 9.3, 9.7, 9.1 };
-  static const double w_s[3]     = { 0.78, 0.65, 0.67 };
   /* tail = sum of three Gaussians (amplitude, radius multiplier) */
   static const double tail_amp[3] = { 0.1633, 0.6496, 0.1870 };
   static const double tail_rat[3] = { 0.5360, 1.5236, 2.7684 };

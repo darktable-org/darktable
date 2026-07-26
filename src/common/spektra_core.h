@@ -59,9 +59,24 @@ void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, floa
  * in micrometres. Both come from sf_sim_halation_params() — per-film when the
  * pack provides film_render_defaults[stock].halation, otherwise the generic
  * still/strong-antihalation baseline. */
-void sf_halation(float *raw, int w, int h, double pixel_um, float scatter_amount,
+/* `sc_core` / `sc_tail` / `w_s` are the per-channel in-emulsion scatter PSF from
+   sf_sim_scatter_params(): Gaussian core radius and exponential tail decay in
+   micrometres on film, and the core/tail mix weight. Already collapsed to one
+   value per channel for a single-emulsion stock, and already clamped by the
+   caller to what the ROI padding covers. */
+void sf_halation(float *raw, int w, int h, double pixel_um, const double sc_core[3],
+                 const double sc_tail[3], const double w_s[3], float scatter_amount,
                  float scatter_scale, float halation_amount, float halation_scale,
                  const double halation_strength[3], double halation_first_sigma_um);
+/* Stops of headroom above the protect threshold over which the boost is spread.
+   The reference spreads it from the threshold up to the frame's own peak; that
+   peak is a whole-image reduction, which a per-ROI/per-tile pixelpipe cannot
+   reproduce consistently. A fixed span keeps the curve identical in every tile
+   and in both pipes, and puts both controls on the same footing -- protect_ev
+   sets where the boost starts, this sets how far above that it reaches full
+   strength. 4 EV matches the reference's typical frame peak for a normally
+   exposed scene (midgray + 4-6 EV). */
+#define SF_BOOST_SPAN_EV 4.0f
 void sf_boost_highlights(float *raw, int w, int h, float boost_ev, float boost_range,
                          float protect_ev);
 void sf_diffusion_filter(float *raw, int w, int h, double pixel_um, int family, float strength,
