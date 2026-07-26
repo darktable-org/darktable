@@ -1472,9 +1472,13 @@ void dt_masks_reset_form_gui(void)
   {
     dt_iop_gui_blend_data_t *bd = m->blend_data;
     bd->masks_shown = DT_MASKS_EDIT_OFF;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
+
+    if(bd->masks_edit)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
+
     for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 0);
+      if(bd->masks_shapes[n])
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 0);
   }
 }
 
