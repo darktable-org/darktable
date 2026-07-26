@@ -204,6 +204,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float scan_usm_amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpen strength"
   float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "viewing glare"
   float development_min;    // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
+  float print_development_min; // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -236,7 +237,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *grain_on, *grain_amount, *grain_size;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
-  GtkWidget *development_min;
+  GtkWidget *development_min, *print_development_min;
   GtkWidget *grain_usm_sigma, *grain_usm_amount;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
   GtkWidget *boost_ev, *boost_range, *protect_ev;
@@ -1139,6 +1140,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scan_usm_amount = 0.0f;
     n->glare_percent = 0.0f;
     n->development_min = 0.0f;
+    n->print_development_min = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -1203,6 +1205,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scan_usm_amount = 0.0f;
     n->glare_percent = 0.0f;
     n->development_min = 0.0f;
+    n->print_development_min = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -1216,8 +1219,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
        representative middle member -- which is what v9 and earlier effectively
        rendered whenever they got the layout right, so old edits keep that. */
     dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-    memcpy(n, old_params, sizeof(*n) - sizeof(n->development_min));
+    memcpy(n, old_params, sizeof(*n) - sizeof(n->development_min) - sizeof(n->print_development_min));
     n->development_min = 0.0f;
+    n->print_development_min = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
@@ -1467,6 +1471,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   /* selects which member of a B&W development-time family the curve model is
      built from, so it has to be part of the sim's cache key */
   key = _mix64(key, &p->development_min, sizeof p->development_min);
+  key = _mix64(key, &p->print_development_min, sizeof p->print_development_min);
   key = _mix64(key, &p->quality, sizeof p->quality);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
@@ -1567,7 +1572,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(film && !p->scan_film)
   {
     snprintf(path, sizeof path, "%s/profiles/%s.json", dir, paper_stock);
-    paper = sf_profile_load(path, p->development_min, &err);
+    paper = sf_profile_load(path, p->print_development_min, &err);
   }
 
   if(film && (paper || p->scan_film))
@@ -2866,7 +2871,9 @@ static void _rescan(dt_iop_module_t *self)
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self);
-static void _update_development_sensitivity(dt_iop_module_t *self);
+static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
+                                            const dt_iop_spektrafilm_params_t *p);
+static float _development_default(const sf_prof_entry_t *e);
 
 static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
 {
@@ -2877,6 +2884,14 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(fi < 0) return;
   const sf_prof_entry_t *e = &g->entries[fi];
   p->film_hash = e->hash;
+  /* A development time from the previous stock means nothing here -- the times
+     differ per stock, and a stale value can sit above the new stock's longest
+     (Double-X at 12 min, then 2302's family topping out at 9). Land on the new
+     stock's own default, so the slider always shows a time it actually has. */
+  p->development_min = _development_default(e);
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->development_min, p->development_min);
+  DT_LEAVE_GUI_UPDATE();
   /* scan_film's checkbox is a plain GtkCheckButton (dt_bauhaus_toggle_from_
      params), not a bauhaus widget -- the real reset mechanism for it
      (dt_bauhaus_toggle_widget_reset, develop/imageop_gui.c, part of this
@@ -2903,7 +2918,13 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
      and runs before the memcpy specifically so a single reset click
      converges correctly on the first try. */
   if(self->default_params)
-    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
+  {
+    dt_iop_spektrafilm_params_t *dp = (dt_iop_spektrafilm_params_t *)self->default_params;
+    dp->scan_film = e->positive;
+    /* same reasoning as the slider's own default above, for the reset path that
+       memcpys default_params over params wholesale */
+    dp->development_min = p->development_min;
+  }
   /* scan-film follows the film's natural mode on a film switch: slides and
      reversal stocks are viewed directly (scan), negatives go through the
      print stage. The user can still toggle freely afterwards -- this only
@@ -2927,6 +2948,10 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
         --darktable.gui->reset;
         break;
       }
+  /* last, once scan_film and the auto-followed paper have settled: both
+     development sliders are gated on their own stock, and the print one also on
+     there being a print stage at all */
+  _update_development_sensitivity(g, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2938,8 +2963,15 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
   const int pi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper));
   if(pi < 0) return;
   p->paper_hash = g->entries[pi].hash;
-  /* the print stock can carry a development-time family of its own (2302) */
-  _update_development_sensitivity(self);
+  /* same as _film_changed: a time from the previous paper does not transfer */
+  p->print_development_min = _development_default(&g->entries[pi]);
+  if(self->default_params)
+    ((dt_iop_spektrafilm_params_t *)self->default_params)->print_development_min
+        = p->print_development_min;
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set(g->print_development_min, p->print_development_min);
+  DT_LEAVE_GUI_UPDATE();
+  _update_development_sensitivity(g, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2955,64 +2987,83 @@ static const sf_prof_entry_t *_entry_by_hash(const dt_iop_spektrafilm_gui_data_t
   return NULL;
 }
 
-/* The development slider only has something to choose when the stock in use is
-   characterised at more than one development time. Both loads in _ensure_sim()
-   get the same value, so the print stock counts too -- print film 2302 carries a
-   family of its own -- but only while there is a print stage. Lives here rather
-   than in gui_update() because this is the one function every film / paper /
-   scan_film change already routes through; in gui_update() alone it went stale
-   the moment the stock was switched. */
-static void _update_development_sensitivity(dt_iop_module_t *self)
+/* Default development time for a stock, in minutes: the representative middle
+   member of its family, which is what select_development_time(None) picks. 0 when
+   the stock is characterised at a single development. */
+static float _development_default(const sf_prof_entry_t *e)
 {
-  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
-  const dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  if(!g->development_min) return;
+  return (e && e->n_dev > 1) ? (float)e->dev_times[(e->n_dev - 1) / 2] : 0.0f;
+}
 
-  const sf_prof_entry_t *fe = _entry_by_hash(g, p->film_hash, FALSE);
-  const sf_prof_entry_t *pe = p->scan_film ? NULL : _entry_by_hash(g, p->paper_hash, TRUE);
-  const sf_prof_entry_t *de = (fe && fe->n_dev > 1) ? fe : ((pe && pe->n_dev > 1) ? pe : NULL);
+/* Point one development slider at one stock: sensitive only where that stock is
+   characterised at more than one development time, spanning exactly the times it
+   offers, and naming them -- they differ per stock and the value snaps to them,
+   so a bare 0-15 range would be guesswork. */
+static void _development_widget_update(GtkWidget *w, const sf_prof_entry_t *e)
+{
+  if(!w) return;
+  const gboolean have = (e && e->n_dev > 1);
+  gtk_widget_set_sensitive(w, have);
 
-  gtk_widget_set_sensitive(g->development_min, de != NULL);
-  /* Span exactly what this stock offers, so dragging lands on real values
-     instead of wandering through empty range. 0 stays reachable at the bottom --
-     it means "the stock's own default" -- and the hard 15 min ceiling covers the
-     widest family in the release (Double-X, 12 min) with room to spare. */
-  float dev_hi = 15.0f;
-  if(de)
+  float hi = 15.0f;
+  if(have)
   {
-    dev_hi = (float)de->dev_times[0];
-    for(int i = 1; i < de->n_dev; i++) dev_hi = fmaxf(dev_hi, (float)de->dev_times[i]);
+    hi = (float)e->dev_times[0];
+    for(int i = 1; i < e->n_dev; i++) hi = fmaxf(hi, (float)e->dev_times[i]);
   }
-  dt_bauhaus_slider_set_soft_range(g->development_min, 0.0f, dev_hi);
-  if(de)
+  /* 0 stays reachable at the bottom -- it means "this stock's own default" -- and
+     the hard 15 min ceiling covers the widest family in the release (Double-X,
+     12 min) with room to spare. */
+  dt_bauhaus_slider_set_soft_range(w, 0.0f, hi);
+  /* Reset gestures (double-click, scroll-reset) go to the widget's own default,
+     which introspection set to the compiled 0. That renders correctly -- 0 means
+     "this stock's default" -- but leaves the slider reading 0 instead of the time
+     it resolved to, on the one discontinuity in the range. Point it at the real
+     number for the stock in hand, so a reset shows 6.5 min on Double-X and 5 min
+     on 2302 rather than 0. */
+  dt_bauhaus_slider_set_default(w, _development_default(e));
+
+  if(have)
   {
     char times[128] = { 0 };
-    for(int i = 0; i < de->n_dev; i++)
+    for(int i = 0; i < e->n_dev; i++)
     {
       char one[24];
-      snprintf(one, sizeof one, "%s%.3g", i ? ", " : "", de->dev_times[i]);
+      snprintf(one, sizeof one, "%s%.3g", i ? ", " : "", e->dev_times[i]);
       g_strlcat(times, one, sizeof times);
     }
     char tip[320];
     snprintf(tip, sizeof tip,
              _("development time, in minutes. snaps to the nearest time %s is\n"
                "characterised at: %s min. 0 uses the stock's own default (%.3g min)."),
-             de->name, times, de->dev_times[(de->n_dev - 1) / 2]);
-    gtk_widget_set_tooltip_text(g->development_min, tip);
+             e->name, times, (double)_development_default(e));
+    gtk_widget_set_tooltip_text(w, tip);
   }
   else
-    gtk_widget_set_tooltip_text(g->development_min,
-                                _("development time. the stock in use is characterised at a\n"
-                                  "single development, so there is nothing to choose.\n\n"
+    gtk_widget_set_tooltip_text(w,
+                                _("development time. this stock is characterised at a single\n"
+                                  "development, so there is nothing to choose.\n\n"
                                   "single-emulsion B&W stocks are the ones that carry a family:\n"
                                   "Double-X at 4/5/6.5/9/12 min, print film 2302 at 2/3.5/5/7/9 min."));
+}
+
+/* Film and print are separate chemistries developed for separate times, so they
+   get a slider each, pointed at their own stock. Lives here rather than in
+   gui_update() because this is the one function every film / paper / scan_film
+   change already routes through; in gui_update() alone it went stale the moment a
+   stock was switched. */
+static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
+                                            const dt_iop_spektrafilm_params_t *p)
+{
+  _development_widget_update(g->development_min, _entry_by_hash(g, p->film_hash, FALSE));
+  _development_widget_update(g->print_development_min,
+                             p->scan_film ? NULL : _entry_by_hash(g, p->paper_hash, TRUE));
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  _update_development_sensitivity(self);
   const gboolean printing = !p->scan_film;
   gtk_widget_set_sensitive(g->paper, printing);
   gtk_widget_set_sensitive(g->print_exposure_ev, printing);
@@ -3042,6 +3093,12 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_diffusion_on),
                                 printing && p->print_diffusion_on);
   DT_LEAVE_GUI_UPDATE();
+
+  /* Also from here: gui_changed() sends the scan_film toggle to this function and
+     not to _toggle_sensitivity(), so without this the print development slider
+     stayed live after switching to a scan-the-film workflow that has no print
+     stage at all. */
+  _update_development_sensitivity(g, p);
 }
 
 /* Grays out each effect's own sub-controls when its master "enable" toggle
@@ -3078,6 +3135,10 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
   gtk_widget_set_sensitive(g->print_diffusion_strength, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_scale, pdif);
   gtk_widget_set_sensitive(g->print_diffusion_warmth, pdif);
+
+  /* last: the development sliders are gated on their own stock's family, and
+     must not be re-enabled by any of the plain `printing` toggles above */
+  _update_development_sensitivity(g, p);
 }
 
 /* dt_iop_reload_defaults() runs module->reload_defaults() (this function,
@@ -3517,6 +3578,16 @@ void gui_init(dt_iop_module_t *self)
   g->print_contrast = dt_bauhaus_slider_from_params(self, "print_contrast");
   gtk_widget_set_tooltip_text(g->print_contrast,
                               _("print contrast (morphs the paper's density curves)"));
+
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "chemistry")));
+
+  g->print_development_min = dt_bauhaus_slider_from_params(self, "print_development_min");
+  dt_bauhaus_slider_set_format(g->print_development_min, _(" min"));
+  /* _update_development_sensitivity() replaces this with the selected paper's own
+     times, and greys it out for papers characterised at a single development */
+  gtk_widget_set_tooltip_text(g->print_development_min,
+                              _("print development time. snaps to the nearest time the paper\n"
+                                "was characterised at; 0 uses its own default."));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "filtration")));
 
