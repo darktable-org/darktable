@@ -2730,6 +2730,10 @@ void reload_defaults(dt_iop_module_t *self)
     }
     dt_bauhaus_combobox_set(g->profile, 0);
 
+    // depends on the image, unlike the other bool defaults set above
+    dt_bauhaus_toggle_set_default(g->compensate_hilite_pres,
+                                  d->compensate_hilite_pres);
+
     gui_update(self);
   }
 }
@@ -3110,14 +3114,14 @@ void gui_update(dt_iop_module_t *self)
     }
   }
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe),
-                               p->wb_adaptive_anscombe);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_pres), p->compensate_hilite_pres);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm),
-                               p->fix_anscombe_and_nlmeans_norm);
+  dt_bauhaus_toggle_set(g->wb_adaptive_anscombe,
+                        p->wb_adaptive_anscombe);
+  dt_bauhaus_toggle_set(g->compensate_hilite_pres, p->compensate_hilite_pres);
+  dt_bauhaus_toggle_set(g->fix_anscombe_and_nlmeans_norm,
+                        p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm,
                          !p->fix_anscombe_and_nlmeans_norm);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
+  dt_bauhaus_toggle_set(g->use_new_vst, p->use_new_vst);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
 
   const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);

@@ -2870,7 +2870,7 @@ void gui_update(dt_iop_module_t *self)
 {
   const dt_iop_colorequal_params_t *p = self->params;
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
+  dt_bauhaus_toggle_set(g->use_filter, p->use_filter);
   gui_changed(self, NULL, NULL);
 
   const gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");

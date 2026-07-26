@@ -35,28 +35,6 @@
 #include <strings.h>
 #include <time.h>
 
-typedef struct dt_module_param_t
-{
-  dt_iop_module_t *module;
-  void            *param;
-} dt_module_param_t;
-
-static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *data)
-{
-  DT_GUARD_GUI_UPDATE();
-
-  dt_iop_module_t *self = data->module;
-  gboolean *field = (gboolean*)(data->param);
-
-  gboolean previous = *field;
-  *field = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton));
-
-  if(*field != previous)
-  {
-    dt_iop_gui_changed(DT_ACTION(self), togglebutton, &previous);
-  }
-}
-
 static gchar *_iop_section_for_params(dt_iop_module_t *self)
 {
   if(!self->widget) self->widget = dt_gui_vbox();
@@ -224,43 +202,43 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   gchar *section = _iop_section_for_params(self);
 
   dt_iop_params_t *p = self->params;
+  dt_iop_params_t *d = self->default_params;
   dt_introspection_field_t *f = self->get_f(param);
 
-  GtkWidget *button = NULL;
+  GtkWidget *toggle = dt_bauhaus_toggle_new(self);
   gchar *str = NULL;
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
   {
+    // the field has to be attached before the label is set: setting the
+    // label is what registers the widget as an action, and only widgets
+    // that already carry a field are collected for the automatic
+    // params-to-gui updates
+    dt_bauhaus_widget_set_field(toggle, (uint8_t *)p + f->header.offset,
+                                DT_INTROSPECTION_TYPE_BOOL);
+
     // we do not want to support a context as it break all translations see #5498
-    // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
     str = *f->header.description
         ? g_strdup(f->header.description)
         : dt_util_str_replace(param, "_", " ");
 
-    GtkWidget *label = gtk_label_new(_(str));
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    button = gtk_check_button_new();
-    gtk_container_add(GTK_CONTAINER(button), label);
-    dt_module_param_t *module_param = g_malloc(sizeof(dt_module_param_t));
-    module_param->module = self;
-    DT_IOP_SECTION_FOR_PARAMS_UNWIND(module_param->module);
-    module_param->param = (uint8_t *)p + f->header.offset;
-    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+    dt_bauhaus_widget_set_label(toggle, section, str);
 
-    dt_action_define_iop(module_param->module, section, str, button, &dt_action_def_toggle);
+    dt_bauhaus_toggle_set_default(toggle,
+                                  *(gboolean *)((uint8_t *)d + f->header.offset));
   }
   else
   {
     str = g_strdup_printf("'%s' is not a bool/togglebutton parameter", param);
 
-    button = gtk_check_button_new_with_label(str);
+    dt_bauhaus_widget_set_label(toggle, section, str);
   }
 
   g_free(str);
 
-  dt_gui_box_add(self->widget, button);
+  dt_gui_box_add(self->widget, toggle);
 
-  return button;
+  return toggle;
 }
 
 GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, const gchar *label, const gchar *ctrl_label,
