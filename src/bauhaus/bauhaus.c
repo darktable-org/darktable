@@ -1149,6 +1149,15 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
   return ac;
 }
 
+void dt_bauhaus_widget_set_label_text(GtkWidget *widget,
+                                      const char *label)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  g_free(w->label);
+  w->label = label ? g_strdup(label) : NULL;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+}
+
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
 {
   const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
