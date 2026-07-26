@@ -1025,42 +1025,23 @@ __kernel void spektrafilm_halation_apply(__global float4 *raw, __global const fl
   raw[k] = r;
 }
 
-__kernel void spektrafilm_max_partials(__global const float4 *plane, const int npix,
-                                       __global float *partials, const int npartials)
-{
-  const int gid = get_global_id(0);
-  if(gid >= npartials) return;
-  float m = 0.0f;
-  for(int i = gid; i < npix; i += npartials)
-  {
-    float4 p = plane[i];
-    m = fmax(m, fmax(p.x, fmax(p.y, p.z)));
-  }
-  partials[gid] = m;
-}
-
-__kernel void spektrafilm_max_reduce(__global const float *partials, __global float *maxv_buf,
-                                     const int npartials)
-{
-  float m = 0.0f;
-  for(int i = 0; i < npartials; i++) m = fmax(m, partials[i]);
-  maxv_buf[0] = m;
-}
-
+/* Scene-referred ceiling, SF_BOOST_SPAN_EV stops above the protect threshold --
+   no frame reduction. See sf_boost_highlights() for the derivation. */
+#define SF_BOOST_SPAN_EV 4.0f
 __kernel void spektrafilm_boost(__global float4 *plane, const int w, const int h,
                                 const float boost_ev, const float boost_range,
-                                const float protect_ev, __global const float *maxv_buf)
+                                const float protect_ev)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const int k = y * w + x;
-  const float maxv = maxv_buf[0];
-  if(boost_ev <= 0.0f || maxv <= 0.0f) return;
+  if(boost_ev <= 0.0f) return;
 
   const float midgray = 0.184f;
   const float rng = fmin(fmax(boost_range, 0.0f), 1.0f);
-  const float raw_x0 = midgray * exp2(fmax(protect_ev, 0.0f));
-  if(raw_x0 >= maxv) return;
+  const float prot = fmax(protect_ev, 0.0f);
+  const float raw_x0 = midgray * exp2(prot);
+  const float maxv = midgray * exp2(prot + SF_BOOST_SPAN_EV);
   const float a = pow(28.0f, 1.0f - rng);
   const float x0 = raw_x0 / maxv;
   const float denom = exp(a * (1.0f - x0)) - a * (1.0f - x0) - 1.0f;
