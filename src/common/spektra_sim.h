@@ -192,7 +192,6 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *sim);
 void sf_sim_gpu_free(sf_sim_gpu_t *g);
 
 int sf_sim_film_bw(const sf_sim_t *sim);
-void sf_sim_film_dmax3(const sf_sim_t *sim, float dmax[3]);
 /* per-film grain catalogue data (rms_granularity, uniformity, density_min);
    falls back to the legacy fixed constants (SF_GRAIN_LEGACY_* in
    spektra_core.h) when sim is NULL or the pack predates per-film grain. */
@@ -217,9 +216,8 @@ typedef struct sf_grain_layers_t
 } sf_grain_layers_t;
 void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out);
 /* Multi-sublayer grain delta (see _sf_build_grain_layers / sf_grain_layers_t
- * above): only call this when sf_sim_grain_layers()'s n > 1 -- for n==1,
- * calling the existing single-layer sf_grain_delta_dmax() (spektra_core.h)
- * directly is both simpler and avoids a redundant lookup round-trip.
+ * above). A single-layer curve fit is the trivial n == 1 case of the same
+ * model, so every stock goes through here.
  * npart_scale rescales the build-time-precomputed layer_npart (built at the
  * fixed SF_GRAIN_REF_UM reference scale, since it depends on curve/coupler
  * state baked in at sf_sim_build time, not just resolution) up to the live
@@ -404,9 +402,6 @@ void sf_sim_print_develop(const sf_sim_t *sim, const float *lograw, float *cmy,
 void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out,
                  size_t npix, int nch_in, int nch_out);
 
-/* convenience: the full deterministic chain without spatial effects */
-void sf_sim_process(const sf_sim_t *sim, const float *rgb_in, float *rgb_out,
-                    size_t npix, int nch_in, int nch_out);
 
 /* pre-compression OkLab lightness a single RGB triple would land at, using
  * boost_override in place of the sim's own out_luminance_boost -- see
