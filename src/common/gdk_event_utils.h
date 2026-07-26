@@ -112,7 +112,15 @@ static inline guint16 dt_gdk_event_get_keycode(const void *e)
 static inline GdkScrollDirection dt_gdk_event_get_scroll_direction(const void *e)
 {
   GdkScrollDirection d = GDK_SCROLL_UP;
-  gdk_event_get_scroll_direction((const GdkEvent *)e, &d);
+  if(!gdk_event_get_scroll_direction((const GdkEvent *)e, &d))
+  {
+    // gdk_event_get_scroll_direction() fails for smooth scrolling events.
+    // The consuming code (dt_gui_get_scroll_delta, dt_gui_get_scroll_unit_deltas,
+    // _event_scroll pan routing, _scroll_proxy_real, etc.) already handles
+    // GDK_SCROLL_SMOOTH by reading the actual deltas, so return SMOOTH here
+    // to preserve the original struct-access behavior.
+    d = GDK_SCROLL_SMOOTH;
+  }
   return d;
 }
 
