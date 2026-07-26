@@ -3840,12 +3840,21 @@ GdkModifierType dt_key_modifier_state()
 static void _reset_all_bauhaus(GtkNotebook *notebook,
                                GtkWidget *box)
 {
-  for(GList *c = gtk_container_get_children(GTK_CONTAINER(box));
-      c;
-      c = g_list_delete_link(c, c))
+  // toggles go last rather than in widget order: a module may switch one of
+  // its own checkboxes on in reaction to one of its sliders changing, so a
+  // checkbox reset while sliders are still to come could be undone again by
+  // a slider that is reset after it
+  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
   {
-    if(DT_IS_BAUHAUS_WIDGET(c->data))
-      dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
+    for(GList *c = gtk_container_get_children(GTK_CONTAINER(box));
+        c;
+        c = g_list_delete_link(c, c))
+    {
+      if(DT_IS_BAUHAUS_WIDGET(c->data)
+         && (dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
+            == (toggles_pass == 1))
+        dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
+    }
   }
 
   dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
