@@ -79,15 +79,10 @@
 #include <string.h>
 
 #define SPEKTRA_INLINE static inline
-#define SF_READ_FILE(path, out, len) \
-  (g_file_get_contents((path), (out), (len), NULL) ? 0 : -1)
-#define SF_FREE_FILE(buf) g_free(buf)
-#define SF_DIAG_LOG(...) dt_print(DT_DEBUG_DEV, __VA_ARGS__)
-#define SF_STRTOD(s, end) g_ascii_strtod((s), (end))
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(8, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(9, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -97,6 +92,10 @@ DT_MODULE_INTROSPECTION(8, dt_iop_spektrafilm_params_t)
 /* widest stage-1 scatter component: max(sc_tail)*max(tail_rat) from
    spektra_core.c's sf_halation() = 9.7 * 2.7684 um, rounded up */
 #define SF_SCATTER_TAIL_MAX_UM 27.0f
+/* [gl] GlareParams.roughness / .blur -- the reference exposes these but leaves
+   them at these values for every profile, so only the amount gets a slider. */
+#define SF_GLARE_ROUGHNESS 0.7f
+#define SF_GLARE_BLUR_PX 0.5f
 #define SF_GRAIN_BLUR_FACTOR 0.8f
 #define SF_GRAIN_SIZE_MIN 0.05f
 /* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
@@ -123,7 +122,6 @@ DT_MODULE_INTROSPECTION(8, dt_iop_spektrafilm_params_t)
  * multiplicative quantity in this model to begin with. */
 #define SF_PUSH_PULL_GAMMA_PER_STOP 1.15f
 #define SF_HALO_SIGMAS 4.0f
-#define SF_DIFFUSION_BLOOM_LAMBDA_MAX_UM 950.0f
 /* DIR coupler inhibitor diffusion; spektrafilm params_schema
    dir_couplers.diffusion_size_um default (a plain gaussian in the reference) */
 
@@ -165,7 +163,7 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean scan_film;       // $DEFAULT: FALSE $DESCRIPTION: "scan the film (skip print)"
   dt_iop_spektrafilm_quality_t quality; // $DEFAULT: DT_SPEKTRAFILM_Q_STANDARD $DESCRIPTION: "quality"
   gboolean halation_on;     // $DEFAULT: TRUE $DESCRIPTION: "enable halation"
-  float scatter_amount;     // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter amount"
+  float scatter_amount;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter amount"
   float scatter_scale;      // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "scatter size"
   float halation_amount;    // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "halation strength"
   float halation_scale;     // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "halation size"
@@ -194,6 +192,10 @@ typedef struct dt_iop_spektrafilm_params_t
   float film_gamma_factor_slow; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "slow layer gamma"
   float film_developer_exhaustion; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "developer exhaustion"
   float push_pull_stops; // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "push/pull"
+  float scan_blur;          // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "scanner blur"
+  float scan_usm_sigma;     // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpness"
+  float scan_usm_amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpen strength"
+  float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "viewing glare"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -221,6 +223,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *grain_on, *grain_amount, *grain_size;
+  GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
   GtkWidget *grain_usm_sigma, *grain_usm_amount;
   GtkWidget *halation_on, *scatter_amount, *scatter_scale, *halation_amount, *halation_scale;
   GtkWidget *boost_ev, *boost_range, *protect_ev;
@@ -324,8 +327,10 @@ typedef struct dt_iop_spektrafilm_global_data_t
   int kernel_grain_gen_raw_sl, kernel_grain_accumulate_1c, kernel_grain_finalize_channel,
       kernel_grain_add, kernel_grain_usm;
   int kernel_print_expose, kernel_print_develop, kernel_scan, kernel_passthrough;
+  int kernel_crop_out, kernel_scan_usm, kernel_glare_gen, kernel_glare_add;
   int kernel_scatter_combine, kernel_accum, kernel_channel_extract, kernel_channel_accum, kernel_halation_apply;
   int kernel_gauss_row_4c, kernel_gauss_col_4c, kernel_gauss_row_1c, kernel_gauss_col_1c;
+  int kernel_yvv_row_4c, kernel_yvv_col_4c, kernel_yvv_row_1c, kernel_yvv_col_1c;
   int kernel_max_partials, kernel_max_reduce, kernel_boost, kernel_diffusion_accum, kernel_diffusion_mix;
 } dt_iop_spektrafilm_global_data_t;
 
@@ -356,10 +361,18 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_print_expose = dt_opencl_create_kernel(program, "spektrafilm_print_expose");
   gd->kernel_print_develop = dt_opencl_create_kernel(program, "spektrafilm_print_develop");
   gd->kernel_scan = dt_opencl_create_kernel(program, "spektrafilm_scan");
+  gd->kernel_crop_out = dt_opencl_create_kernel(program, "spektrafilm_crop_out");
+  gd->kernel_scan_usm = dt_opencl_create_kernel(program, "spektrafilm_scan_usm");
+  gd->kernel_glare_gen = dt_opencl_create_kernel(program, "spektrafilm_glare_gen");
+  gd->kernel_glare_add = dt_opencl_create_kernel(program, "spektrafilm_glare_add");
   gd->kernel_passthrough = dt_opencl_create_kernel(program, "spektrafilm_passthrough");
   gd->kernel_scatter_combine = dt_opencl_create_kernel(program, "spektrafilm_scatter_combine");
   gd->kernel_accum = dt_opencl_create_kernel(program, "spektrafilm_accum");
   gd->kernel_channel_extract = dt_opencl_create_kernel(program, "spektrafilm_channel_extract");
+  gd->kernel_yvv_row_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_4c");
+  gd->kernel_yvv_col_4c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_4c");
+  gd->kernel_yvv_row_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_row_1c");
+  gd->kernel_yvv_col_1c = dt_opencl_create_kernel(program, "spektrafilm_yvv_col_1c");
   gd->kernel_gauss_row_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_4c");
   gd->kernel_gauss_col_4c = dt_opencl_create_kernel(program, "spektrafilm_gauss_col_4c");
   gd->kernel_gauss_row_1c = dt_opencl_create_kernel(program, "spektrafilm_gauss_row_1c");
@@ -390,10 +403,18 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_opencl_free_kernel(gd->kernel_print_expose);
     dt_opencl_free_kernel(gd->kernel_print_develop);
     dt_opencl_free_kernel(gd->kernel_scan);
+    dt_opencl_free_kernel(gd->kernel_crop_out);
+    dt_opencl_free_kernel(gd->kernel_scan_usm);
+    dt_opencl_free_kernel(gd->kernel_glare_gen);
+    dt_opencl_free_kernel(gd->kernel_glare_add);
     dt_opencl_free_kernel(gd->kernel_passthrough);
     dt_opencl_free_kernel(gd->kernel_scatter_combine);
     dt_opencl_free_kernel(gd->kernel_accum);
     dt_opencl_free_kernel(gd->kernel_channel_extract);
+    dt_opencl_free_kernel(gd->kernel_yvv_row_4c);
+    dt_opencl_free_kernel(gd->kernel_yvv_col_4c);
+    dt_opencl_free_kernel(gd->kernel_yvv_row_1c);
+    dt_opencl_free_kernel(gd->kernel_yvv_col_1c);
     dt_opencl_free_kernel(gd->kernel_gauss_row_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_col_4c);
     dt_opencl_free_kernel(gd->kernel_gauss_row_1c);
@@ -740,6 +761,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     float film_gamma_factor_slow;
     float film_developer_exhaustion;
   } dt_iop_spektrafilm_params_v7_t;
+
+  typedef struct dt_iop_spektrafilm_params_v8_t
+  {
+    dt_iop_spektrafilm_params_v7_t v7;
+    float push_pull_stops;
+  } dt_iop_spektrafilm_params_v8_t;
 
   if(old_version == 1)
   {
@@ -1097,10 +1124,78 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->film_gamma_factor_slow = o->film_gamma_factor_slow;
     n->film_developer_exhaustion = o->film_developer_exhaustion;
     n->push_pull_stops = 0.0f;
+    /* v9 fields: neutral, so a v7 preset keeps rendering as it did */
+    n->scan_blur = 0.0f;
+    n->scan_usm_sigma = 0.7f;
+    n->scan_usm_amount = 0.0f;
+    n->glare_percent = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
+    *new_version = 9;
+    return 0;
+  }
+  if(old_version == 8)
+  {
+    /* v9 adds the scanner stage (blur, unsharp mask) and the viewing-glare veil
+       ([sc]/[gl] in the reference: ScannerParams.lens_blur / unsharp_mask and
+       GlareParams). All three default to OFF here rather than to the reference's
+       own defaults, so an existing edit renders exactly as it did before. */
+    const dt_iop_spektrafilm_params_v8_t *o = (dt_iop_spektrafilm_params_v8_t *)old_params;
+    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
+
+    n->film_hash = o->v7.film_hash;
+    n->paper_hash = o->v7.paper_hash;
+    n->exposure_ev = o->v7.exposure_ev;
+    n->print_exposure_ev = o->v7.print_exposure_ev;
+    n->print_auto_exposure = o->v7.print_auto_exposure;
+    n->print_contrast = o->v7.print_contrast;
+    n->filter_m = o->v7.filter_m;
+    n->filter_y = o->v7.filter_y;
+    n->couplers_amount = o->v7.couplers_amount;
+    n->preflash_exposure = o->v7.preflash_exposure;
+    n->preflash_m_shift = o->v7.preflash_m_shift;
+    n->preflash_y_shift = o->v7.preflash_y_shift;
+    n->scan_film = o->v7.scan_film;
+    n->quality = o->v7.quality;
+    n->halation_on = o->v7.halation_on;
+    n->scatter_amount = o->v7.scatter_amount;
+    n->scatter_scale = o->v7.scatter_scale;
+    n->halation_amount = o->v7.halation_amount;
+    n->halation_scale = o->v7.halation_scale;
+    n->boost_ev = o->v7.boost_ev;
+    n->boost_range = o->v7.boost_range;
+    n->protect_ev = o->v7.protect_ev;
+    n->diffusion_on = o->v7.diffusion_on;
+    n->diffusion_filter_family = o->v7.diffusion_filter_family;
+    n->diffusion_strength = o->v7.diffusion_strength;
+    n->diffusion_scale = o->v7.diffusion_scale;
+    n->diffusion_warmth = o->v7.diffusion_warmth;
+    n->print_diffusion_on = o->v7.print_diffusion_on;
+    n->print_diffusion_filter_family = o->v7.print_diffusion_filter_family;
+    n->print_diffusion_strength = o->v7.print_diffusion_strength;
+    n->print_diffusion_scale = o->v7.print_diffusion_scale;
+    n->print_diffusion_warmth = o->v7.print_diffusion_warmth;
+    n->grain_on = o->v7.grain_on;
+    n->grain_amount = o->v7.grain_amount;
+    n->grain_size = o->v7.grain_size;
+    n->film_format_mm = o->v7.film_format_mm;
+    n->output_luminance_boost = o->v7.output_luminance_boost;
+    n->grain_usm_sigma = o->v7.grain_usm_sigma;
+    n->grain_usm_amount = o->v7.grain_usm_amount;
+    n->film_gamma_factor = o->v7.film_gamma_factor;
+    n->film_gamma_factor_fast = o->v7.film_gamma_factor_fast;
+    n->film_gamma_factor_slow = o->v7.film_gamma_factor_slow;
+    n->film_developer_exhaustion = o->v7.film_developer_exhaustion;
+    n->push_pull_stops = o->push_pull_stops;
+    n->scan_blur = 0.0f;
+    n->scan_usm_sigma = 0.7f;
+    n->scan_usm_amount = 0.0f;
+    n->glare_percent = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
+    *new_version = 9;
     return 0;
   }
   return 1;
@@ -1524,6 +1619,21 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
 /* ROI / tiling: expand the input by the spatial-effect halo               */
 /* ---------------------------------------------------------------------- */
 
+/* Widest Gaussian sigma (micrometres on film) one diffusion-filter stage will
+   dispatch, or 0 when the stage is off / a no-op. Built from the same
+   sf_diffusion_build_plan() the CPU and GPU paths run, so the ROI padding can
+   never drift from the bank that is actually convolved. */
+static float _diffusion_pad_sigma_um(const gboolean on, const int family, const float strength,
+                                     const float warmth, const float scale)
+{
+  if(!on) return 0.0f;
+  sf_diffusion_plan_t plan;
+  if(!sf_diffusion_build_plan(family, strength, warmth, &plan) || plan.p_s <= 0.0f) return 0.0f;
+  float smax = 0.0f;
+  for(int j = 0; j < plan.n; j++) smax = fmaxf(smax, plan.sigma_um[j]);
+  return smax * fmaxf(scale, 1e-3f);
+}
+
 static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_um)
 {
   const float inv_um = 1.0f / fmaxf(pixel_um, 1e-3f);
@@ -1542,16 +1652,21 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
                          ? SF_SCATTER_TAIL_MAX_UM * SF_HALATION_PSF_SIGMAS * scat_scale * inv_um
                          : 0.0f;
   /* The widest of film-stage and print-stage diffusion determines the ROI
-     padding — both must fit in the expanded tile. Both stages use the same
-     bloom constant; only the user's scale slider differs between them. */
-  const float diff_film = p->diffusion_on
-                              ? SF_DIFFUSION_BLOOM_LAMBDA_MAX_UM * 1.41421356f * p->diffusion_scale * inv_um
-                              : 0.0f;
-  const float diff_print = p->print_diffusion_on
-                               ? SF_DIFFUSION_BLOOM_LAMBDA_MAX_UM * 1.41421356f
-                                     * p->print_diffusion_scale * inv_um
-                               : 0.0f;
-  const float diff = fmaxf(diff_film, diff_print);
+     padding — both must fit in the expanded tile. Take the widest component of
+     the actual Gaussian bank each stage will dispatch rather than a single
+     constant: the bloom scale differs by 2.6x across the four families (BPM
+     380*2.5 um vs cinebloom 1000*2.5 um), so one constant either under-pads the
+     wide families or over-pads the narrow ones. */
+  const float diff = fmaxf(_diffusion_pad_sigma_um(p->diffusion_on,
+                                                   (int)p->diffusion_filter_family,
+                                                   p->diffusion_strength, p->diffusion_warmth,
+                                                   p->diffusion_scale),
+                           _diffusion_pad_sigma_um(p->print_diffusion_on,
+                                                   (int)p->print_diffusion_filter_family,
+                                                   p->print_diffusion_strength,
+                                                   p->print_diffusion_warmth,
+                                                   p->print_diffusion_scale))
+                     * inv_um;
   const float grain = (p->grain_on && p->grain_amount > 0.0f)
                           ? SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
                                 * fmaxf(p->grain_size, SF_GRAIN_SIZE_MIN) * inv_um
@@ -1563,7 +1678,10 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
                             ? fmaxf((float)SF_COUPLER_BLUR_UM,
                                     (float)(SF_EXPTAIL_R2 * 200.0)) * inv_um
                             : 0.0f;
-  return fmaxf(fmaxf(fmaxf(hal, scat), diff), fmaxf(grain, coupler));
+  /* scanner stage: already in pixels, so it does not go through inv_um */
+  const float scan = fmaxf(p->scan_blur,
+                           (p->scan_usm_amount > 0.0f) ? p->scan_usm_sigma : 0.0f);
+  return fmaxf(fmaxf(fmaxf(hal, scat), fmaxf(diff, scan)), fmaxf(grain, coupler));
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -1657,6 +1775,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float full_long_edge
     = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
+  /* Fixed pixel radii (grain clumps, the two unsharp masks, the glare veil) were
+     validated at export resolution; darktable's preview pipe renders the same
+     image smaller, where the same nominal radius covers much more real scene
+     detail. Shrink them there, but never grow them past 1:1. */
+  const float preview_scale = fminf(roi_in->scale, 1.0f);
 
   float *plane = dt_alloc_align_float(npix * 3);  /* raw / lograw / cmy, in place */
   float *corr = dt_alloc_align_float(npix * 3);   /* DIR coupler correction field */
@@ -1749,8 +1872,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     /* sf_grain_delta_ml's layer_npart is precomputed at sf_sim_build time
        against the fixed SF_GRAIN_REF_UM reference scale (it depends on
        curve/coupler state baked in at build time, not just resolution);
-       rescale it live to the real pixe_um here, matching what
-       sf_grain_delta_dmax now does directly for the single-layer case. */
+       rescale it live to the real pixel_um here. */
     const float npart_scale = (pixel_um * pixel_um) / (SF_GRAIN_REF_UM * SF_GRAIN_REF_UM);
     /* SF_GRAIN_BLUR_FACTOR/SF_GRAIN_DYE_BLUR_UM/grain_usm_sigma are fixed
        pixel radii, validated against upstream at whatever single
@@ -1768,7 +1890,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        (npart_scale above) is NOT touched by this -- it's correctly
        resolution-dependent via pixel_um already, confirmed against the
        reference at multiple different resolutions. */
-    const float preview_scale = fminf(roi_in->scale, 1.0f);
     float grms[3], gunif[3], gdmin[3];
     sf_sim_film_grain3(sim, grms, gunif, gdmin); /* per-film catalogue grain
                                       (rms-granularity, uniformity, density
@@ -1777,10 +1898,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     sf_grain_layers_t layers;
     sf_sim_grain_layers(sim, &layers); /* n==1 for a single-layer curve fit
                                       is already valid data (see the
-                                      function's own comment): unified
-                                      through this mechanism for every
-                                      stock rather than branching to the
-                                      separate sf_grain_delta_dmax path. */
+                                      function's own comment): every stock
+                                      goes through this one mechanism. */
     const int nsub = layers.n;
 
     /* Upstream's per-sub-layer dye-cloud blur (layer_particle_model's
@@ -1879,24 +1998,16 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
                          * preview_scale;
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
-    /* Centre grain delta: multi-sublayer model has positive DC bias (~0.07)
-       that renorm amplifies proportionally to sigma, making image brighter
-       at higher LOD. Remove bias before scaling.
-       IMPORTANT: this must be a per-channel mean, not one pooled scalar
-       across R+G+B -- the per-channel bias differs (channel-dependent
-       particle counts/scale in the multi-sublayer model), so a single
-       pooled mean leaves each channel's own bias minus the pooled average
-       as an uncorrected residual, i.e. a color cast wherever grain is
-       visually significant. */
-    {
-      double gsum[3] = { 0.0, 0.0, 0.0 };
-      for(size_t kk = 0; kk < npix; kk++)
-        for(int c = 0; c < 3; c++) gsum[c] += (double)gbuf[kk * 3 + c];
-      float gmean[3];
-      for(int c = 0; c < 3; c++) gmean[c] = (float)(gsum[c] / (double)npix);
-      for(size_t kk = 0; kk < npix; kk++)
-        for(int c = 0; c < 3; c++) gbuf[kk * 3 + c] -= gmean[c];
-    }
+    /* No DC-centring pass here any more. The positive bias it removed came from
+       sf_layer_particle clamping a normal approximation at zero; the sampler now
+       draws a single exact/unbiased Poisson (see spektra_core.h), so the delta
+       has zero mean by construction. That also removes an image-wide reduction
+       from a function that only ever sees one ROI or tile -- the old per-channel
+       mean depended on how the pixelpipe cut the image up, so preview, export
+       and each tile of a tiled export centred by different amounts. The old
+       correction could not have been right in any case: the bias was a function
+       of density (worst in the shadows, at low particle counts), so subtracting
+       a single scalar left a density-dependent residual behind. */
     /* No variance-restoration renorm here -- upstream's own grain
        finalization (_finalize_grain in grain.py) has none either; it just
        blurs and lets the natural contrast reduction stand, matching real
@@ -1928,6 +2039,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         OkLCh gamut compression. Write RGBA + carried alpha, then crop. */
   sf_sim_scan(sim, plane, plane, npix, 3, 3);
 
+  /* 6b) scanner optics + viewing glare, on the scanned RGB over the full padded
+         ROI so the crop below never sees an edge artifact ([sc] ScannerParams
+         lens_blur / unsharp_mask, [gl] add_glare -- the reference skips glare
+         when the film itself is scanned rather than printed). */
+  if(d->p.scan_blur > 0.0f)
+    sf_blur_plane3(plane, w, h, d->p.scan_blur * preview_scale, scratch);
+  if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
+    sf_unsharp_mask3(plane, w, h, d->p.scan_usm_sigma * preview_scale, d->p.scan_usm_amount,
+                     corr, scratch);
+  if(!d->p.scan_film && d->p.glare_percent > 0.0f)
+    sf_glare(plane, w, h, d->p.glare_percent, SF_GLARE_ROUGHNESS,
+             SF_GLARE_BLUR_PX * preview_scale, roi_in->x, roi_in->y, scratch);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(plane) firstprivate(out, in, w, ow, oh, ox, oy)      \
     schedule(static)
@@ -1950,6 +2074,29 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 }
 
 #ifdef HAVE_OPENCL
+/* Separable Young-van Vliet pass on the device, the GPU half of
+   sf_gauss_yvv_coeffs / _sf_gauss_iir_1d. `tmp` is a scratch buffer of the same
+   shape as `buf`. This replaces dt_gaussian_mean_blur_cl, which was being fed
+   sigma * SF_GAUSS_SIGMA_CORRECTION -- a factor measured for the CPU's old
+   Deriche recursion and meaningless for darktable's iterated-box blur, so the
+   two paths were producing different halo widths for the same sigma. */
+static cl_int _sf_yvv_blur_cl(const int devid, dt_iop_spektrafilm_global_data_t *gd,
+                              cl_mem buf, cl_mem tmp, const int w, const int h,
+                              const float sigma, const int ch)
+{
+  float b[4];
+  sf_gauss_yvv_coeffs(sigma, b);
+  const int krow = (ch == 4) ? gd->kernel_yvv_row_4c : gd->kernel_yvv_row_1c;
+  const int kcol = (ch == 4) ? gd->kernel_yvv_col_4c : gd->kernel_yvv_col_1c;
+  cl_int e = dt_opencl_enqueue_kernel_2d_args(devid, krow, h, 1, CLARG(buf), CLARG(tmp),
+                                              CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
+                                              CLARG(b[2]), CLARG(b[3]));
+  if(e != CL_SUCCESS) return e;
+  return dt_opencl_enqueue_kernel_2d_args(devid, kcol, w, 1, CLARG(tmp), CLARG(buf),
+                                          CLARG(w), CLARG(h), CLARG(b[0]), CLARG(b[1]),
+                                          CLARG(b[2]), CLARG(b[3]));
+}
+
 /* GPU path: mirrors process(). Per-pixel stages run as kernels on the
    validated float tables from sf_sim_gpu_export() (POCL-checked to ~1e-6 vs
    the CPU engine); the Gaussian blurs (diffusion bank, halation bounces,
@@ -1995,6 +2142,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const float full_long_edge
     = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
+  /* see the matching comment in process(): fixed pixel radii shrink with the
+     preview pipe's reduced resolution, but never grow past 1:1 */
+  const float preview_scale = fminf(roi_in->scale, 1.0f);
 
   /* ---- table uploads (read-only buffers) -------------------------------- */
   /* packed matrix block: layout must match the SF_M_* offsets in the .cl */
@@ -2099,7 +2249,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     SF_CL_STEP(label); \
   } while(0)
 /* Same as SF_GAUSS_BLUR4, but above SF_GAUSS_EXACT_MAX_SIGMA falls back to
-   darktable's fast recursive blur (corrected -- see SF_GAUSS_SIGMA_CORRECTION)
+   the shared Young-van Vliet recursion (_sf_yvv_blur_cl above)
    instead of the exact row/col kernels: for callers with no downstream
    dependency on the exact kernel's shape (unlike grain's SF_GAUSS_BLUR4
    above, which stays on the exact path unconditionally -- the fast
@@ -2111,7 +2261,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     if(err == CL_SUCCESS) \
     { \
       if((_sg) >= SF_GAUSS_EXACT_MAX_SIGMA) \
-        err = dt_gaussian_mean_blur_cl(devid, (buf), w, h, 4, (_sg) * SF_GAUSS_SIGMA_CORRECTION); \
+        err = _sf_yvv_blur_cl(devid, gd, (buf), gtmp4, w, h, (_sg), 4); \
       else \
       { \
         float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
@@ -2143,7 +2293,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       { \
         err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, (src), (dst), 0, 0, npix * f * 4); \
         if(err == CL_SUCCESS) \
-          err = dt_gaussian_mean_blur_cl(devid, (dst), w, h, 4, (_sg) * SF_GAUSS_SIGMA_CORRECTION); \
+          err = _sf_yvv_blur_cl(devid, gd, (dst), gtmp4, w, h, (_sg), 4); \
       } \
       else \
       { \
@@ -2170,7 +2320,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     if(err == CL_SUCCESS) \
     { \
       if((_sg) >= SF_GAUSS_EXACT_MAX_SIGMA) \
-        err = dt_gaussian_mean_blur_cl(devid, (buf), w, h, 1, (_sg) * SF_GAUSS_SIGMA_CORRECTION); \
+        err = _sf_yvv_blur_cl(devid, gd, (buf), gtmp1, w, h, (_sg), 1); \
       else \
       { \
         float _kw[2 * SF_GAUSS_MAX_RADIUS + 1]; \
@@ -2303,7 +2453,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       /* (1-s)*raw + s*scattered, matching sf_halation()'s CPU blend; `plane`
          doubles as both the pre-scatter `raw` input and the `out` write
          target -- safe since this is a purely per-pixel elementwise op. */
-      const float s_amount = d->p.scatter_amount;
+      /* convex blend weight -- see sf_halation() for why it cannot exceed 1 */
+      const float s_amount = CLAMP(d->p.scatter_amount, 0.0f, 1.0f);
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scatter_combine, w, h, CLARG(plane),
                                              CLARG(tmpa), CLARG(acc), CLARG(plane), CLARG(w),
                                              CLARG(h), CLARG(s_amount), CLARG(ws_r), CLARG(ws_g),
@@ -2412,7 +2563,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
        in past 100% doesn't grow radii beyond what was validated. Does
        NOT apply to npart_scale below, which is correctly resolution-
        dependent via pixel_um already. */
-    const float preview_scale = fminf(roi_in->scale, 1.0f);
     /* Unified through the multi-sublayer table for every stock (nsub can be
        1) rather than branching to a separate single-layer kernel -- see the
        matching comment in process()'s CPU path for why that's valid: the
@@ -2521,37 +2671,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
                           * preview_scale;
     SF_GAUSS_BLUR4(tmpa, gsigma, "grain blur");
-    /* Centre grain delta (matches process()'s CPU-side fix exactly -- the
-       multi-sublayer particle generator has a small positive DC bias; this
-       correction only ever existed on the CPU path before, so anyone using
-       OpenCL never got it). Reading the whole buffer back host-side is the
-       simplest way to get a full-image reduction; this runs once per grain
-       stage, not per pixel. Must be a per-channel mean, not one pooled
-       scalar across R+G+B -- see the matching comment in process() for why
-       a pooled mean leaves a per-channel residual (a color cast)
-       uncorrected. No variance-restoration renorm -- see the matching
-       comment on the spektrafilm_grain_add kernel. */
-    float gmean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    if(err == CL_SUCCESS)
-    {
-      float *const tmpa_host = dt_alloc_align_float(npix * 4);
-      if(tmpa_host)
-      {
-        err = dt_opencl_read_buffer_from_device(devid, tmpa_host, tmpa, 0, npix * f * 4, TRUE);
-        if(err == CL_SUCCESS)
-        {
-          double gsum[3] = { 0.0, 0.0, 0.0 };
-          for(size_t kk = 0; kk < npix; kk++)
-            for(int c = 0; c < 3; c++) gsum[c] += (double)tmpa_host[kk * 4 + c];
-          for(int c = 0; c < 3; c++) gmean[c] = (float)(gsum[c] / (double)npix);
-        }
-        dt_free_align(tmpa_host);
-      }
-      else
-        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    }
+    /* The DC-centring reduction is gone along with its CPU counterpart: the
+       Poisson sampler is unbiased, so there is nothing to centre. That also
+       retires the full device->host readback it needed, which stalled the queue
+       once per grain stage. */
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
-                                           CLARG(tmpa), CLARG(w), CLARG(h), CLARG(gmean));
+                                           CLARG(tmpa), CLARG(w), CLARG(h));
     SF_CL_STEP("grain add");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
     {
@@ -2613,16 +2738,53 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     SF_CL_STEP("print_develop");
   }
 
-  /* ---- 6) scan: crop the roi_out window straight into dev_out ------------- */
+  /* ---- 6) scan over the full padded ROI into `plane` (free since print) ---- */
   err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_scan, ow, oh, CLARG(plane2), CLARG(dev_in), CLARG(dev_out), CLARG(w),
-      CLARG(ow), CLARG(oh), CLARG(ox), CLARG(oy), CLARG(sl_cl), CLARG(sx_cl), CLARG(sy_cl),
+      devid, gd->kernel_scan, w, h, CLARG(plane2), CLARG(plane), CLARG(w), CLARG(h),
+      CLARG(sl_cl), CLARG(sx_cl), CLARG(sy_cl),
       CLARG(sz_cl), CLARG(sn_cl), CLARG(sm_cl), CLARG(steps), CLARG(g->scan_lo[0]),
       CLARG(g->scan_lo[1]), CLARG(g->scan_lo[2]), CLARG(g->scan_hi[0]), CLARG(g->scan_hi[1]),
       CLARG(g->scan_hi[2]), CLARG(mats_cl), CLARG(cm_cl), CLARG(g->cmax_nl), CLARG(g->cmax_nh),
       CLARG(g->out_compress), CLARG(g->out_luminance_boost), CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
       CLARG(g->scan_bw_q));
   SF_CL_STEP("scan");
+
+  /* ---- 6b) scanner optics + viewing glare (mirrors process()) -------------- */
+  if(d->p.scan_blur > 0.0f)
+  {
+    SF_GAUSS_BLUR4(plane, d->p.scan_blur * preview_scale, "scanner blur");
+  }
+  if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
+  {
+    err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane, acc, 0, 0, npix * f * 4);
+    if(err != CL_SUCCESS) goto cleanup;
+    SF_GAUSS_BLUR4_FAST(plane, d->p.scan_usm_sigma * preview_scale, "scanner USM blur");
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_scan_usm, w, h, CLARG(plane),
+                                           CLARG(acc), CLARG(w), CLARG(h),
+                                           CLARG(d->p.scan_usm_amount));
+    SF_CL_STEP("scanner USM");
+  }
+  if(!d->p.scan_film && d->p.glare_percent > 0.0f)
+  {
+    const float gmean = d->p.glare_percent * 0.01f;
+    const float sigma2 = logf(1.0f + SF_GLARE_ROUGHNESS * SF_GLARE_ROUGHNESS);
+    const float gs = sqrtf(sigma2), gbias = -0.5f * sigma2;
+    const int roi_x = roi_in->x, roi_y = roi_in->y;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_gen, w, h, CLARG(tmpa),
+                                           CLARG(w), CLARG(h), CLARG(roi_x), CLARG(roi_y),
+                                           CLARG(gmean), CLARG(gs), CLARG(gbias));
+    SF_CL_STEP("glare gen");
+    SF_GAUSS_BLUR4(tmpa, SF_GLARE_BLUR_PX * preview_scale, "glare blur");
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_glare_add, w, h, CLARG(plane),
+                                           CLARG(tmpa), CLARG(w), CLARG(h));
+    SF_CL_STEP("glare add");
+  }
+
+  /* ---- 7) crop the roi_out window into dev_out ----------------------------- */
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_crop_out, ow, oh, CLARG(plane),
+                                         CLARG(dev_in), CLARG(dev_out), CLARG(w), CLARG(ow),
+                                         CLARG(oh), CLARG(ox), CLARG(oy));
+  SF_CL_STEP("crop out");
 
 cleanup:
   dt_opencl_release_mem_object(mats_cl);
@@ -3002,6 +3164,39 @@ void gui_update(dt_iop_module_t *self)
   _update_print_sensitivity(self);
 }
 
+/* Boost that puts the probe lightness of `rgb` at `target_L`.
+ *
+ * This used to be a closed form: L was taken to scale as boost^(1/3), so one
+ * probe plus new = current * (target/measured)^3 was supposedly exact. That
+ * identity holds only while the scan stage is a pure scale on XYZ. It is not:
+ * sf_sim_scan applies the scanner black/white-point correction AFTER the boost,
+ * and that correction is affine and clipped -- the delivered luminance is
+ * clamp(m * boost * Y + q, 0, 1). So L goes as boost^a with a < 1/3, the update
+ * degenerates to new = current^(1 - 3a) * const, and repeated picks crept
+ * toward the right value instead of landing on it. (Negatives are unaffected,
+ * scan_bw_on is only set for scan-film mode with positive stock -- which is
+ * exactly where this control gets used.)
+ *
+ * Solve against the real transfer instead. boost -> L is monotone
+ * non-decreasing and one probe is a single pixel through the sim, so a
+ * geometric bisection over the slider's own range is both exact and free:
+ * 20 steps pin the answer to ~2e-6 of the range. The result no longer depends
+ * on the current slider value at all, so picking twice gives the same number. */
+static float _solve_boost_for_lightness(const sf_sim_t *sim, const float rgb[3],
+                                        const float target_L)
+{
+  float lo = 0.5f, hi = 4.0f; /* the slider's own $MIN / $MAX */
+  if(sf_sim_probe_lightness(sim, rgb, lo) >= target_L) return lo;
+  if(sf_sim_probe_lightness(sim, rgb, hi) <= target_L) return hi;
+  for(int i = 0; i < 20; i++)
+  {
+    const float mid = sqrtf(lo * hi);
+    if(sf_sim_probe_lightness(sim, rgb, mid) < target_L) lo = mid;
+    else hi = mid;
+  }
+  return sqrtf(lo * hi);
+}
+
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
@@ -3041,9 +3236,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
      above in gui_init). */
   const float rgb_max[3] = { self->picked_color_max[0], self->picked_color_max[1],
                             self->picked_color_max[2] };
-  const float current_boost = fmaxf(d_tmp.p.output_luminance_boost, 0.5f);
-  const float measured_L = sf_sim_probe_lightness(sim, rgb_max, current_boost);
-
   /* Target: land well past the compressor's knee threshold (SF_OUT_LIGHT_T
      = 0.7 in spektra_sim.c), close to but not at its asymptotic limit
      (1.0). 0.80 (only 0.10 above the threshold) turned out too
@@ -3053,13 +3245,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
      threshold. 0.90 still left some headroom on further testing; 0.95
      (only 0.05 short of the limit) uses close to the full available
      range. The knee handles any input gracefully by design, so there's no
-     hard-clipping risk in pushing this close to it. No iteration needed:
-     L scales as boost^(1/3) exactly (see sf_sim_probe_lightness), so a
-     single probe plus this closed-form solve is enough. */
+     hard-clipping risk in pushing this close to it. */
   const float target_L = 0.95f;
-  float new_boost = current_boost;
-  if(measured_L > 1e-4f) new_boost = current_boost * powf(target_L / measured_L, 3.0f);
-  new_boost = CLAMP(new_boost, 0.5f, 4.0f);
+  const float new_boost = _solve_boost_for_lightness(sim, rgb_max, target_L);
 
   if(d_tmp.gpu) sf_sim_gpu_free(d_tmp.gpu);
   if(d_tmp.sim) sf_sim_free(d_tmp.sim);
@@ -3377,6 +3565,30 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->print_diffusion_warmth,
                               _("print diffusion halo warmth: >0 warm outer halo, <0 cool"
                                 " (added on top of the selected filter's own warmth bias)"));
+
+  /* ---- scanner tab ---- */
+  self->widget = dt_ui_notebook_page(g->notebook, N_("scanner"), NULL);
+
+  g->scan_blur = dt_bauhaus_slider_from_params(self, "scan_blur");
+  gtk_widget_set_tooltip_text(g->scan_blur,
+                              _("scanner lens softness, in pixels (0 = off)"));
+
+  g->scan_usm_sigma = dt_bauhaus_slider_from_params(self, "scan_usm_sigma");
+  gtk_widget_set_tooltip_text(g->scan_usm_sigma,
+                              _("scanner sharpening radius, in pixels"));
+
+  g->scan_usm_amount = dt_bauhaus_slider_from_params(self, "scan_usm_amount");
+  gtk_widget_set_tooltip_text(g->scan_usm_amount,
+                              _("scanner sharpening strength (0 = off). "
+                                "the reference scanner applies 0.7 by default; "
+                                "leave at 0 if you prefer to sharpen downstream"));
+
+  g->glare_percent = dt_bauhaus_slider_from_params(self, "glare_percent");
+  gtk_widget_set_tooltip_text(g->glare_percent,
+                              _("viewing glare: a faint veil of the viewing light "
+                                "reflected off the print surface, in percent. "
+                                "lifts the deepest blacks slightly. "
+                                "not applied when scanning the film directly"));
 
   /* restore root widget */
   self->widget = sf_main_box;

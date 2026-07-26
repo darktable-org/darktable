@@ -41,14 +41,6 @@
 #include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
 
-/* spektra_core.h's bundle-loader half needs file-IO/locale helpers; darktable
-   poisons bare libc fopen, so map them to glib here (this .c does not itself
-   read bundles, but the shared header must compile in this translation
-   unit) -- same mapping spektra_core.c itself uses. */
-#define SF_READ_FILE(path, out, len) \
-  (g_file_get_contents((path), (out), (len), NULL) ? 0 : -1)
-#define SF_FREE_FILE(buf) g_free(buf)
-#define SF_STRTOD(s, end) g_ascii_strtod((s), (end))
 #include "spektra_core.h"
 
 #include <math.h>
@@ -229,7 +221,9 @@ struct sf_pack_t
 typedef struct sf_curves_model_t
 {
   int n_layers;
+  int sept; /* [dc] model_type == "sept_norm_cdfs" (skewed septic CDF) */
   double centers[3][8], amplitudes[3][8], sigmas[3][8];
+  double alphas[3][8]; /* per-layer skew; all zero for norm_cdfs */
 } sf_curves_model_t;
 
 struct sf_profile_t
@@ -842,7 +836,24 @@ sf_profile_t *sf_profile_load(const char *path, char **errmsg)
     {
       const int nl = channel_major ? inner_len : outer_len;
       p->curves_model.n_layers = nl;
-      double c[24], a[24], s[24];
+      /* [dc] model_type selects the per-layer sigmoid. Anything other than the
+         two known families would be silently rendered as a Gaussian fit, so say
+         so rather than shipping wrong curves quietly. */
+      char *model_type = json_dup_string(m, "model_type");
+      if(model_type && strcmp(model_type, "sept_norm_cdfs") == 0)
+        p->curves_model.sept = 1;
+      else if(model_type && strcmp(model_type, "norm_cdfs") != 0)
+        g_warning("spektra_sim: profile %s has unknown density_curves_model.model_type "
+                  "'%s'; rendering it as norm_cdfs", path, model_type);
+      g_free(model_type);
+      double c[24], a[24], s[24], al[24];
+      /* alphas is optional (null or absent for every norm_cdfs profile) and
+         follows whatever orientation centers used, so it goes through the same
+         outer/inner lengths and the same idx below. */
+      const gboolean has_alphas = json_object_has_member(m, "alphas")
+                                  && !JSON_NODE_HOLDS_NULL(json_object_get_member(m, "alphas"));
+      if(!has_alphas || !json_read_dmatrix(m, "alphas", al, outer_len, inner_len))
+        memset(al, 0, sizeof(al));
       if(json_read_dmatrix(m, "centers", c, outer_len, inner_len)
          && json_read_dmatrix(m, "amplitudes", a, outer_len, inner_len)
          && json_read_dmatrix(m, "sigmas", s, outer_len, inner_len))
@@ -854,6 +865,7 @@ sf_profile_t *sf_profile_load(const char *path, char **errmsg)
             p->curves_model.centers[ch][l] = c[idx];
             p->curves_model.amplitudes[ch][l] = a[idx];
             p->curves_model.sigmas[ch][l] = s[idx];
+            p->curves_model.alphas[ch][l] = al[idx];
           }
       }
       else
@@ -1406,20 +1418,49 @@ static inline float interp_curve_uniform_f(float x, float gammac, float le0,
 
 static inline double norm_cdf(double z) { return 0.5 * (1.0 + erf(z * M_SQRT1_2)); }
 
+/* [dc] density_curves.py's septic-polynomial CDF: an order-7 Hermite
+ * smoothstep on a support of SF_SEPT_K sigmas, with a median-preserving skew
+ * warp v = u + alpha*u*(1-u)*(2u-1)^2. The warp vanishes at u = 0.5, so the
+ * 0.5 crossing stays on the layer centre for every alpha, and alpha == 0
+ * reproduces the symmetric Gaussian fit to within the minimax fit error. */
+#define SF_SEPT_K 5.8013
+static double sept_cdf(double z, double alpha)
+{
+  double u = z / SF_SEPT_K + 0.5;
+  u = u < 0.0 ? 0.0 : (u > 1.0 ? 1.0 : u);
+  double v = u;
+  if(alpha != 0.0)
+  {
+    const double t = 2.0 * u - 1.0;
+    v = u + alpha * u * (1.0 - u) * t * t;
+    v = v < 0.0 ? 0.0 : (v > 1.0 ? 1.0 : v);
+  }
+  const double v2 = v * v;
+  return (v2 * v2) * (35.0 + v * (-84.0 + v * (70.0 - 20.0 * v)));
+}
+
+/* One emulsion layer's sigmoid, dispatched by the profile's model_type
+ * ([dc] _layer_cdf_values). `alpha` is ignored by the Gaussian family. */
+static double layer_cdf(double z, int sept, double alpha)
+{
+  return sept ? sept_cdf(z, alpha) : norm_cdf(z);
+}
+
 /* evaluate one channel of the cdfs model over the log-exposure grid.
  * signed z: negated for positive profiles ([mc] _signed_z) */
 static void eval_cdfs_channel(double *out, const double *le, int nle, const double *centers,
-                              const double *amps, const double *sigmas, int n_layers,
-                              int positive)
+                              const double *amps, const double *sigmas, const double *alphas,
+                              int sept, int n_layers, int positive)
 {
   for(int i = 0; i < nle; i++) out[i] = 0.0;
   for(int l = 0; l < n_layers; l++)
   {
+    const double alpha = alphas ? alphas[l] : 0.0;
     for(int i = 0; i < nle; i++)
     {
       double z = (le[i] - centers[l]) / sigmas[l];
       if(positive) z = -z;
-      out[i] += amps[l] * norm_cdf(z);
+      out[i] += amps[l] * layer_cdf(z, sept, alpha);
     }
   }
 }
@@ -1519,10 +1560,11 @@ static void _sf_build_grain_layers(sf_sim_t *s, const sf_profile_t *film,
   {
     for(int c = 0; c < 3; c++)
     {
-      double centers[8], amps[8], sigmas[8];
+      double centers[8], amps[8], sigmas[8], alphas[8];
       memcpy(centers, m->centers[c], sizeof(double) * nl);
       memcpy(amps, m->amplitudes[c], sizeof(double) * nl);
       memcpy(sigmas, m->sigmas[c], sizeof(double) * nl);
+      memcpy(alphas, m->alphas[c], sizeof(double) * nl);
       for(int l = 0; l < nl; l++)
       {
         double mx = -1e300;
@@ -1530,7 +1572,7 @@ static void _sf_build_grain_layers(sf_sim_t *s, const sf_profile_t *film,
         {
           double z = (film->log_exposure[i] - centers[l]) / sigmas[l];
           if(positive) z = -z;
-          const double v = amps[l] * norm_cdf(z);
+          const double v = amps[l] * layer_cdf(z, m->sept, alphas[l]);
           layer_curve[i][l][c] = v;
           if(v > mx) mx = v;
         }
@@ -1610,9 +1652,9 @@ static double _sf_gumbel_matched_cdf(double z)
  * per-layer building block for developer exhaustion (matches
  * morph_curves.py's _layer_cdf; `z` already sign-flipped for positive
  * stocks by the caller, matching eval_cdfs_channel's own convention). */
-static double _sf_layer_cdf_mixed(double z, double gumbel_mix)
+static double _sf_layer_cdf_mixed(double z, int sept, double alpha, double gumbel_mix)
 {
-  double cdf = norm_cdf(z);
+  double cdf = layer_cdf(z, sept, alpha);
   if(gumbel_mix > 0.0) cdf = (1.0 - gumbel_mix) * cdf + gumbel_mix * _sf_gumbel_matched_cdf(z);
   return cdf;
 }
@@ -1623,15 +1665,16 @@ static double _sf_layer_cdf_mixed(double z, double gumbel_mix)
  * needs (matches morph_curves.py's _evaluate_channel_density, at a single
  * point since that's all the solver needs). */
 static double _sf_channel_density_at(double x, const double *centers, const double *amps,
-                                     const double *sigmas, int n_layers,
-                                     const double *gumbel_mix, int positive)
+                                     const double *sigmas, const double *alphas, int sept,
+                                     int n_layers, const double *gumbel_mix, int positive)
 {
   double total = 0.0;
   for(int l = 0; l < n_layers; l++)
   {
     double z = (x - centers[l]) / sigmas[l];
     if(positive) z = -z;
-    total += amps[l] * _sf_layer_cdf_mixed(z, gumbel_mix ? gumbel_mix[l] : 0.0);
+    total += amps[l] * _sf_layer_cdf_mixed(z, sept, alphas ? alphas[l] : 0.0,
+                                           gumbel_mix ? gumbel_mix[l] : 0.0);
   }
   return total;
 }
@@ -1647,21 +1690,22 @@ static double _sf_channel_density_at(double x, const double *centers, const doub
  * channel per sim build, never per pixel. Returns 0 if gumbel_mix is zero
  * or no sign change is found (matching upstream's own fallback-to-zero). */
 static double _sf_developer_exhaustion_offset(const double *centers, const double *amps,
-                                              const double *sigmas, int n_layers,
+                                              const double *sigmas, const double *alphas,
+                                              int sept, int n_layers,
                                               double gumbel_mix, int positive)
 {
   if(gumbel_mix <= 0.0) return 0.0;
 
-  const double target_d0 = _sf_channel_density_at(0.0, centers, amps, sigmas, n_layers, NULL, positive);
+  const double target_d0 = _sf_channel_density_at(0.0, centers, amps, sigmas, alphas, sept, n_layers, NULL, positive);
   double gmix[SF_GRAIN_MAX_SUBLAYERS];
   for(int l = 0; l < n_layers; l++) gmix[l] = gumbel_mix;
 
   double shifted[SF_GRAIN_MAX_SUBLAYERS];
   double lo = -0.25, hi = 0.25;
   for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + lo;
-  double r_lo = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+  double r_lo = _sf_channel_density_at(0.0, shifted, amps, sigmas, alphas, sept, n_layers, gmix, positive) - target_d0;
   for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + hi;
-  double r_hi = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+  double r_hi = _sf_channel_density_at(0.0, shifted, amps, sigmas, alphas, sept, n_layers, gmix, positive) - target_d0;
   if(r_lo == 0.0) return lo;
   if(r_hi == 0.0) return hi;
 
@@ -1672,9 +1716,9 @@ static double _sf_developer_exhaustion_offset(const double *centers, const doubl
     lo *= 2.0;
     hi *= 2.0;
     for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + lo;
-    r_lo = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+    r_lo = _sf_channel_density_at(0.0, shifted, amps, sigmas, alphas, sept, n_layers, gmix, positive) - target_d0;
     for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + hi;
-    r_hi = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+    r_hi = _sf_channel_density_at(0.0, shifted, amps, sigmas, alphas, sept, n_layers, gmix, positive) - target_d0;
     if(r_lo == 0.0) return lo;
     if(r_hi == 0.0) return hi;
   }
@@ -1685,7 +1729,7 @@ static double _sf_developer_exhaustion_offset(const double *centers, const doubl
   {
     mid = 0.5 * (lo + hi);
     for(int l = 0; l < n_layers; l++) shifted[l] = centers[l] + mid;
-    const double r_mid = _sf_channel_density_at(0.0, shifted, amps, sigmas, n_layers, gmix, positive) - target_d0;
+    const double r_mid = _sf_channel_density_at(0.0, shifted, amps, sigmas, alphas, sept, n_layers, gmix, positive) - target_d0;
     if(r_mid == 0.0 || (hi - lo) < 1e-12) break;
     if((r_lo < 0.0) == (r_mid < 0.0)) { lo = mid; r_lo = r_mid; }
     else hi = mid;
@@ -1699,11 +1743,12 @@ static double _sf_developer_exhaustion_offset(const double *centers, const doubl
  * centers/sigmas move, plus the per-layer gumbel_mix output (uniformly
  * `exhaustion` across every layer, matching upstream). Layer speed order
  * (fast/mid/slow) is by ascending center, same as _sf_build_grain_layers'
- * own convention elsewhere in this file, and the per-channel skew term
- * (alpha) upstream's fit can carry isn't modeled here since this file's
- * curves_model has no alpha field to begin with -- eval_cdfs_channel
- * already made that same simplification for the print side. */
-static void _sf_morph_channel(const double centers_in[], const double sigmas_in[], int nl,
+ * own convention elsewhere in this file. The per-layer skew (alpha) is not
+ * touched by the morph -- upstream's _morph_channel_params carries it through
+ * unchanged too -- but it is passed on so the exhaustion solver evaluates the
+ * same sigmoid family the curves are built from. */
+static void _sf_morph_channel(const double centers_in[], const double sigmas_in[],
+                              const double alphas_in[], int sept, int nl,
                               int positive, double gamma, double gamma_fast, double gamma_slow,
                               double exhaustion, const double amps[],
                               double centers_out[], double sigmas_out[], double gumbel_mix_out[])
@@ -1739,7 +1784,8 @@ static void _sf_morph_channel(const double centers_in[], const double sigmas_in[
 
   if(exhaustion > 0.0)
   {
-    const double offset = _sf_developer_exhaustion_offset(centers_out, amps, sigmas_out, nl,
+    const double offset = _sf_developer_exhaustion_offset(centers_out, amps, sigmas_out,
+                                                           alphas_in, sept, nl,
                                                            exhaustion, positive);
     for(int i = 0; i < nl; i++) centers_out[i] += offset;
   }
@@ -1762,15 +1808,17 @@ static void build_film_curves(double (*curves)[3], double (*layers_out)[SF_GRAIN
 
   for(int c = 0; c < 3; c++)
   {
-    double centers[SF_GRAIN_MAX_SUBLAYERS], amps[SF_GRAIN_MAX_SUBLAYERS], sigmas[SF_GRAIN_MAX_SUBLAYERS];
+    double centers[SF_GRAIN_MAX_SUBLAYERS], amps[SF_GRAIN_MAX_SUBLAYERS],
+        sigmas[SF_GRAIN_MAX_SUBLAYERS], alphas[SF_GRAIN_MAX_SUBLAYERS];
     memcpy(centers, m->centers[c], sizeof(double) * nl);
     memcpy(amps, m->amplitudes[c], sizeof(double) * nl);
     memcpy(sigmas, m->sigmas[c], sizeof(double) * nl);
+    memcpy(alphas, m->alphas[c], sizeof(double) * nl);
 
     double mcenters[SF_GRAIN_MAX_SUBLAYERS], msigmas[SF_GRAIN_MAX_SUBLAYERS],
         gmix[SF_GRAIN_MAX_SUBLAYERS];
     if(p->film_morph_active)
-      _sf_morph_channel(centers, sigmas, nl, positive, p->film_morph_gamma,
+      _sf_morph_channel(centers, sigmas, alphas, m->sept, nl, positive, p->film_morph_gamma,
                         p->film_morph_gamma_fast, p->film_morph_gamma_slow,
                         p->film_morph_developer_exhaustion, amps, mcenters, msigmas, gmix);
     else
@@ -1787,7 +1835,7 @@ static void build_film_curves(double (*curves)[3], double (*layers_out)[SF_GRAIN
       {
         double z = (film->log_exposure[i] - mcenters[l]) / msigmas[l];
         if(positive) z = -z;
-        const double v = amps[l] * _sf_layer_cdf_mixed(z, gmix[l]);
+        const double v = amps[l] * _sf_layer_cdf_mixed(z, m->sept, alphas[l], gmix[l]);
         layers_out[i][l][c] = v;
         total += v;
       }
@@ -1805,10 +1853,11 @@ static void build_print_curves(double (*curves)[3], const sf_profile_t *print,
 
   for(int c = 0; c < 3; c++)
   {
-    double centers[8], amps[8], sigmas[8];
+    double centers[8], amps[8], sigmas[8], alphas[8];
     memcpy(centers, m->centers[c], sizeof(centers));
     memcpy(amps, m->amplitudes[c], sizeof(amps));
     memcpy(sigmas, m->sigmas[c], sizeof(sigmas));
+    memcpy(alphas, m->alphas[c], sizeof(alphas));
 
     if(p->morph_active && nl > 0)
     {
@@ -1839,7 +1888,8 @@ static void build_print_curves(double (*curves)[3], const sf_profile_t *print,
     }
 
     double column[SF_NLE];
-    eval_cdfs_channel(column, print->log_exposure, SF_NLE, centers, amps, sigmas, nl, positive);
+    eval_cdfs_channel(column, print->log_exposure, SF_NLE, centers, amps, sigmas, alphas,
+                      m->sept, nl, positive);
     for(int i = 0; i < SF_NLE; i++) curves[i][c] = column[i];
   }
 }
@@ -3091,25 +3141,6 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t n
   }
 }
 
-void sf_sim_process(const sf_sim_t *sim, const float *rgb_in, float *rgb_out, size_t npix,
-                    int nch_in, int nch_out)
-{
-  float *tmp = malloc(npix * 3 * sizeof(float));
-  float *corr = sim->couplers_active ? malloc(npix * 3 * sizeof(float)) : NULL;
-  sf_sim_expose(sim, rgb_in, tmp, npix, nch_in, 3);
-  sf_sim_lograw(tmp, npix, 3);
-  if(corr) sf_sim_develop_corr(sim, tmp, corr, npix, 3);
-  sf_sim_develop(sim, tmp, corr, tmp, npix, 3, 3);
-  if(sim->has_print)
-  {
-    sf_sim_print_expose(sim, tmp, tmp, npix, 3, 3);
-    sf_sim_print_develop(sim, tmp, tmp, npix, 3, 3);
-  }
-  sf_sim_scan(sim, tmp, rgb_out, npix, 3, nch_out);
-  free(corr);
-  free(tmp);
-}
-
 /* ------------------------------------------------------------------------ */
 /* GPU export: float copies of the per-pixel tables                         */
 /* ------------------------------------------------------------------------ */
@@ -3288,14 +3319,9 @@ void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *fir
   if(first_sigma_um) *first_sigma_um = sim ? sim->halation_sigma_um : SF_HALATION_SIGMA_DEFAULT_UM;
 }
 
-void sf_sim_film_dmax3(const sf_sim_t *sim, float dmax[3])
-{
-  for(int c = 0; c < 3; c++) dmax[c] = sim ? (float)sim->film_dmax[c] : 2.2f;
-}
-
 void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], float dmin[3])
 {
-  /* matches SF_GRAIN_LEGACY_* in spektra_core.h */
+  /* spektrafilm's original single fixed profile, for a sim-less caller */
   static const float legacy_rms[3] = { 6.0f, 8.0f, 10.0f };
   static const float legacy_unif[3] = { 0.97f, 0.97f, 0.97f };
   static const float legacy_dmin[3] = { 0.03f, 0.03f, 0.03f };
@@ -3308,7 +3334,7 @@ void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], 
        the film's real absolute D-max when dmin is the SAME floor that
        produced dmax_c. An independently-sourced density_min (e.g. from a
        separate curve-fit pass upstream) breaks that identity and silently
-       biases the particle count — see sf_grain_delta_dmax. */
+       biases the particle count. */
     dmin[c] = sim ? (float)sim->film_dmin[c] : legacy_dmin[c];
   }
 }
@@ -3382,9 +3408,9 @@ static float _sf_grain_curve_sample(const float *arr, int n, int stride, float p
   return arr[i0 * stride] * (1.0f - frac) + arr[(i0 + 1) * stride] * frac;
 }
 
-/* Multi-sublayer grain delta: like sf_grain_delta_dmax (spektra_core.h), but
- * for a film whose own fitted density-curve model has more than one
- * emulsion sub-layer (sf_sim_grain_layers().n > 1). Each sub-layer is drawn
+/* Multi-sublayer grain delta, for a film whose fitted density-curve model has
+ * more than one emulsion sub-layer (sf_sim_grain_layers().n > 1; n == 1 is the
+ * trivial case of the same model). Each sub-layer is drawn
  * independently at its own precomputed dmax/npart, using its own density
  * recovered by inverse-interpolating the self-consistent summed sub-layer
  * curve at the exposure position the already-computed total density
