@@ -11284,7 +11284,7 @@ msgid ""
 "<b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
 "<b>rotate</b>: ctrl+drag"
 msgstr ""
-"<b>Augmente/diminue<b/> : molette • <b>Taille</b> : Ctlr+Maj+molette • "
+"<b>Augmente/diminue</b> : molette • <b>Taille</b> : Ctlr+Maj+molette • "
 "<b>Taille d’adoucissement</b> : Maj+molette\n"
 "<b>Rotation</b> : Ctrl+Maj+molette • <b>Opacité</b> : Ctrl+molette (%d%%)."
 
