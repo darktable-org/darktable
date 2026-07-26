@@ -111,8 +111,38 @@ static inline guint16 dt_gdk_event_get_keycode(const void *e)
 
 static inline GdkScrollDirection dt_gdk_event_get_scroll_direction(const void *e)
 {
+  GdkEvent *event = (GdkEvent *)e;
   GdkScrollDirection d = GDK_SCROLL_UP;
-  gdk_event_get_scroll_direction((const GdkEvent *)e, &d);
+  if(!gdk_event_get_scroll_direction(event, &d))
+  {
+    // The above will fail for smooth scrolling events, so we need to check the
+    // deltas instead.
+    if(event->type == GDK_SCROLL)
+    {
+      gdouble delta_x = 0, delta_y = 0;
+      gdk_event_get_scroll_deltas(event, &delta_x, &delta_y);
+      if(delta_y < 0.)
+      {
+        d = GDK_SCROLL_UP;
+      }
+      else if(delta_y > 0.)
+      {
+        d = GDK_SCROLL_DOWN;
+      }
+      else if(delta_x < 0.)
+      {
+        d = GDK_SCROLL_LEFT;
+      }
+      else if(delta_x > 0.)
+      {
+        d = GDK_SCROLL_RIGHT;
+      }
+      else
+      {
+        d = GDK_SCROLL_UP; // Default to UP if no delta
+      }
+    }
+  }
   return d;
 }
 
