@@ -2241,12 +2241,12 @@ void gui_update(dt_iop_module_t *self)
 
   _update_pivot_slider_settings(g->basic_curve_controls.curve_pivot_x, p);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_gamma),
-                               p->auto_gamma);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->disable_primaries_adjustments),
-                               p->disable_primaries_adjustments);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
-                               p->completely_reverse_primaries);
+  dt_bauhaus_toggle_set(g->auto_gamma,
+                        p->auto_gamma);
+  dt_bauhaus_toggle_set(g->disable_primaries_adjustments,
+                        p->disable_primaries_adjustments);
+  dt_bauhaus_toggle_set(g->completely_reverse_primaries,
+                        p->completely_reverse_primaries);
 
   _update_redraw_dynamic_gui(self, g, p);
 

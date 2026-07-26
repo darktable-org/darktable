@@ -1577,8 +1577,8 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->autoscale, p->curve_autoscale);
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_compensate_middle_grey),
-                               p->compensate_middle_grey);
+  dt_bauhaus_toggle_set(g->chk_compensate_middle_grey,
+                        p->compensate_middle_grey);
   dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
 
   _rgbcurve_show_hide_controls(p, g);

@@ -43,8 +43,8 @@ typedef struct dt_iop_hotpixels_params_t
 typedef struct dt_iop_hotpixels_gui_data_t
 {
   GtkWidget *threshold, *strength;
-  GtkToggleButton *markfixed;
-  GtkToggleButton *permissive;
+  GtkWidget *markfixed;
+  GtkWidget *permissive;
   GtkLabel *message;
   int pixels_fixed;
 } dt_iop_hotpixels_gui_data_t;
@@ -400,8 +400,8 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
   dt_iop_hotpixels_params_t *p = self->params;
-  gtk_toggle_button_set_active(g->markfixed, p->markfixed);
-  gtk_toggle_button_set_active(g->permissive, p->permissive);
+  dt_bauhaus_toggle_set(g->markfixed, p->markfixed);
+  dt_bauhaus_toggle_set(g->permissive, p->permissive);
   g->pixels_fixed = -1;
   gtk_label_set_text(g->message, "");
 
@@ -451,11 +451,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->strength, _("strength of hot pixel correction"));
 
   // 3 neighbours
-  g->permissive = GTK_TOGGLE_BUTTON(dt_bauhaus_toggle_from_params(self, "permissive"));
+  g->permissive = dt_bauhaus_toggle_from_params(self, "permissive");
 
   // mark fixed pixels
   GtkWidget *hbox = self->widget = dt_gui_hbox();
-  g->markfixed = GTK_TOGGLE_BUTTON(dt_bauhaus_toggle_from_params(self, "markfixed"));
+  g->markfixed = dt_bauhaus_toggle_from_params(self, "markfixed");
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   dt_gui_box_add(hbox, g->message);
   dt_gui_box_add(box_raw, hbox);

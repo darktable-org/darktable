@@ -3142,9 +3142,9 @@ void gui_update(dt_iop_module_t *self)
 
   // fetch last view in dartablerc
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_hardness), p->auto_hardness);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->enable_highlight_reconstruction), p->enable_highlight_reconstruction);
+  dt_bauhaus_toggle_set(g->auto_hardness, p->auto_hardness);
+  dt_bauhaus_toggle_set(g->custom_grey, p->custom_grey);
+  dt_bauhaus_toggle_set(g->enable_highlight_reconstruction, p->enable_highlight_reconstruction);
 
   gui_changed(self, NULL, NULL);
 }
@@ -4715,7 +4715,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_sensitive(g->reconstruct_structure_vs_texture, TRUE);
 
     DT_ENTER_GUI_UPDATE();
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->enable_highlight_reconstruction), TRUE);
+    dt_bauhaus_toggle_set(g->enable_highlight_reconstruction, TRUE);
     p->enable_highlight_reconstruction = TRUE;
     DT_LEAVE_GUI_UPDATE();
   }

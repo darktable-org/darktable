@@ -369,6 +369,17 @@ void reload_defaults(dt_iop_module_t *self)
   // the new default is to compensate for highlight preservation mode,
   // but ONLY if we're the first instance (to avoid multiple application)
   d->compensate_hilite_pres = dt_iop_is_first_instance(self->dev->iop, self);
+
+  // both defaults above depend on the image and on the instance, so the
+  // widgets have to be told about them again, as for sliders and comboboxes
+  dt_iop_exposure_gui_data_t *g = self->gui_data;
+  if(g)
+  {
+    dt_bauhaus_toggle_set_default(g->compensate_exposure_bias,
+                                  d->compensate_exposure_bias);
+    dt_bauhaus_toggle_set_default(g->compensate_hilite_preserv,
+                                  d->compensate_hilite_pres);
+  }
 }
 
 static void _deflicker_prepare_histogram(dt_iop_module_t *self,
@@ -682,8 +693,8 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias),
-                               p->compensate_exposure_bias);
+  dt_bauhaus_toggle_set(g->compensate_exposure_bias,
+                        p->compensate_exposure_bias);
   gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
                                  _get_exposure_bias(self));
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
@@ -693,8 +704,8 @@ void gui_update(dt_iop_module_t *self)
   g_free(label);
 
   const float hlbias = _get_highlight_bias(self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_preserv),
-                               p->compensate_hilite_pres);
+  dt_bauhaus_toggle_set(g->compensate_hilite_preserv,
+                        p->compensate_hilite_pres);
   /* xgettext:no-c-format */
   label = g_strdup_printf(_("highlight preservation mode (%.1f EV)"), hlbias);
   gtk_button_set_label(GTK_BUTTON(g->compensate_hilite_preserv), label);

@@ -3803,19 +3803,19 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->clip), p->clip);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_R), p->normalize_R);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_G), p->normalize_G);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_B), p->normalize_B);
+  dt_bauhaus_toggle_set(g->clip, p->clip);
+  dt_bauhaus_toggle_set(g->normalize_R, p->normalize_R);
+  dt_bauhaus_toggle_set(g->normalize_G, p->normalize_G);
+  dt_bauhaus_toggle_set(g->normalize_B, p->normalize_B);
 
   if(p->version != CHANNELMIXERRGB_V_3)
     dt_bauhaus_combobox_set(g->saturation_version, p->version);
   else
     gtk_widget_hide(GTK_WIDGET(g->saturation_version));
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_light), p->normalize_light);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
+  dt_bauhaus_toggle_set(g->normalize_sat, p->normalize_sat);
+  dt_bauhaus_toggle_set(g->normalize_light, p->normalize_light);
+  dt_bauhaus_toggle_set(g->normalize_grey, p->normalize_grey);
 
   dt_iop_gui_enter_critical_section(self);
 
