@@ -4646,8 +4646,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->camera_model, "");
   gtk_widget_set_tooltip_text(g->lens_model, "");
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override),
-                               p->tca_override);
+  dt_bauhaus_toggle_set(g->tca_override,
+                        p->tca_override);
 
   const lfCamera **cam = NULL;
   g->camera = NULL;
