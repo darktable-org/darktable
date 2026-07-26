@@ -1202,12 +1202,18 @@ void gui_init(dt_iop_module_t *self)
 
   g->compensate_exposure_bias = dt_bauhaus_toggle_from_params
     (self, "compensate_exposure_bias");
+  // the label carries the bias read off the image, so shorten it in the
+  // middle rather than at the end, where that value sits
+  dt_bauhaus_widget_set_label_ellipsize(g->compensate_exposure_bias,
+                                        PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias,
                               _("automatically remove the camera exposure bias\n"
                                 "this is useful if you exposed the image to the right."));
 
   g->compensate_hilite_preserv = dt_bauhaus_toggle_from_params
     (self, "compensate_hilite_pres");
+  dt_bauhaus_widget_set_label_ellipsize(g->compensate_hilite_preserv,
+                                        PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->compensate_hilite_preserv,
                               _("remove the camera's hidden exposure bias in\n"
                                 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"

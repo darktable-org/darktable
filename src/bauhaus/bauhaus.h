@@ -181,6 +181,11 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
 // it was given, so shortcuts bound to it are unaffected
 void dt_bauhaus_widget_set_label_text(GtkWidget *widget,
                                       const char *label);
+// how the label is shortened when it does not fit. The default is to drop
+// the end of it; a label that carries a value wants the middle dropped
+// instead, so that the value survives
+void dt_bauhaus_widget_set_label_ellipsize(GtkWidget *widget,
+                                           const PangoEllipsizeMode ellipsize);
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget);
 void dt_bauhaus_widget_hide_label(GtkWidget *widget);
 void dt_bauhaus_widget_set_show_extended_label(GtkWidget *widget,
