@@ -697,10 +697,7 @@ void gui_update(dt_iop_module_t *self)
                         p->compensate_exposure_bias);
   gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
                                  _get_exposure_bias(self));
-  gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
-  gtk_label_set_ellipsize
-    (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))),
-     PANGO_ELLIPSIZE_MIDDLE);
+  dt_bauhaus_widget_set_label_text(g->compensate_exposure_bias, label);
   g_free(label);
 
   const float hlbias = _get_highlight_bias(self);
@@ -708,10 +705,7 @@ void gui_update(dt_iop_module_t *self)
                         p->compensate_hilite_pres);
   /* xgettext:no-c-format */
   label = g_strdup_printf(_("highlight preservation mode (%.1f EV)"), hlbias);
-  gtk_button_set_label(GTK_BUTTON(g->compensate_hilite_preserv), label);
-  gtk_label_set_ellipsize
-    (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_hilite_preserv))),
-     PANGO_ELLIPSIZE_MIDDLE);
+  dt_bauhaus_widget_set_label_text(g->compensate_hilite_preserv, label);
   g_free(label);
   gtk_widget_set_visible(GTK_WIDGET(g->compensate_hilite_preserv), hlbias > 0.0f);
 
@@ -1208,12 +1202,18 @@ void gui_init(dt_iop_module_t *self)
 
   g->compensate_exposure_bias = dt_bauhaus_toggle_from_params
     (self, "compensate_exposure_bias");
+  // the label carries the bias read off the image, so shorten it in the
+  // middle rather than at the end, where that value sits
+  dt_bauhaus_widget_set_label_ellipsize(g->compensate_exposure_bias,
+                                        PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias,
                               _("automatically remove the camera exposure bias\n"
                                 "this is useful if you exposed the image to the right."));
 
   g->compensate_hilite_preserv = dt_bauhaus_toggle_from_params
     (self, "compensate_hilite_pres");
+  dt_bauhaus_widget_set_label_ellipsize(g->compensate_hilite_preserv,
+                                        PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->compensate_hilite_preserv,
                               _("remove the camera's hidden exposure bias in\n"
                                 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
