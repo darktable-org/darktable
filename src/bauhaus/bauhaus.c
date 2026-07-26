@@ -111,6 +111,8 @@ struct _DtBauhausWidget
   // label text, short
   char *label;
   gboolean show_label;
+  // how the label is shortened when it does not fit
+  PangoEllipsizeMode label_ellipsis;
   // section, short
   gchar *section;
   gboolean show_extended_label;
@@ -1147,6 +1149,23 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
   return ac;
+}
+
+void dt_bauhaus_widget_set_label_text(GtkWidget *widget,
+                                      const char *label)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  g_free(w->label);
+  w->label = label ? g_strdup(label) : NULL;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+}
+
+void dt_bauhaus_widget_set_label_ellipsize(GtkWidget *widget,
+                                           const PangoEllipsizeMode ellipsize)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->label_ellipsis = ellipsize;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
 }
 
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
@@ -2964,7 +2983,7 @@ static gboolean _widget_draw(GtkWidget *widget,
       {
         set_color(cr, *text_color);
         _show_pango_text(w, context, cr, label_text, indent, 0, w3 - indent,
-                         FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
+                         FALSE, FALSE, w->label_ellipsis, FALSE, TRUE, NULL, NULL);
       }
       g_free(label_text);
     }
@@ -3984,6 +4003,7 @@ static void dt_bh_init(DtBauhausWidget *w)
 {
   w->field = NULL;
   w->label = NULL;
+  w->label_ellipsis = PANGO_ELLIPSIZE_END;
   w->section = NULL;
 
   // no quad icon and no toggle button:
