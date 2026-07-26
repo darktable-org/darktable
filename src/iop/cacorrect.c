@@ -1291,7 +1291,7 @@ void gui_update(dt_iop_module_t *self)
   if(!supported) self->default_enabled = FALSE;
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), supported ? "bayer" : "other");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);
+  dt_bauhaus_toggle_set(g->avoidshift, p->avoidshift);
 
   gtk_widget_set_visible(g->avoidshift, supported);
   gtk_widget_set_visible(g->iterations, supported);

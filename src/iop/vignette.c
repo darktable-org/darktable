@@ -1032,7 +1032,7 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_vignette_gui_data_t *g = self->gui_data;
   dt_iop_vignette_params_t *p = self->params;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoratio), p->autoratio);
+  dt_bauhaus_toggle_set(g->autoratio, p->autoratio);
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 }
 

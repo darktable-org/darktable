@@ -1542,7 +1542,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->cs_center, do_capture && p->cs_boost);
   gtk_widget_set_visible(g->cs_iter, do_capture);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cs_enabled), p->cs_enabled);
+  dt_bauhaus_toggle_set(g->cs_enabled, p->cs_enabled);
   gtk_widget_set_visible(g->cs_enabled, capture_support);
   gtk_widget_set_visible(GTK_WIDGET(g->capture.expander), do_capture);
 

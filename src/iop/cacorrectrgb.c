@@ -685,7 +685,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_cacorrectrgb_gui_data_t *g = self->gui_data;
   dt_iop_cacorrectrgb_params_t *p = self->params;
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), p->refine_manifolds);
+  dt_bauhaus_toggle_set(g->refine_manifolds, p->refine_manifolds);
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -706,7 +706,7 @@ void reload_defaults(dt_iop_module_t *self)
     dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 20.0);
     dt_bauhaus_slider_set_default(g->strength, d->strength);
     dt_bauhaus_combobox_set_default(g->mode, d->mode);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), d->refine_manifolds);
+    dt_bauhaus_toggle_set_default(g->refine_manifolds, d->refine_manifolds);
   }
 }
 
