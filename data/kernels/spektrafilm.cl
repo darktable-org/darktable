@@ -285,17 +285,36 @@ static inline uint sf_pixel_seed(uint xi, uint yi, uint chan)
 {
   return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
 }
+/* Single Poisson draw; must stay in lockstep with sf_poisson in spektra_core.h
+   (exact below 12, bounded normal above -- see the derivation there). */
+#define SF_POISSON_EXACT_MAX 12.0f
+static float sf_poisson(float lam, uint seed)
+{
+  if(lam <= 0.f) return 0.f;
+  if(lam < SF_POISSON_EXACT_MAX)
+  {
+    const float limit = exp(-lam);
+    float prod = 1.f;
+    int k = 0;
+    do
+    {
+      prod *= sf_u01(seed + (uint)k * 0x9e3779b9u);
+      k++;
+    } while(prod > limit && k < 64);
+    return (float)(k - 1);
+  }
+  return lam + native_sqrt(lam) * sf_nrm(seed);
+}
+
+/* Binomial(Poisson(lam), p) == Poisson(lam*p) exactly (Poisson thinning), so the
+   reference's two-stage compound draw is one Poisson here -- exactly unbiased,
+   no clamping. See sf_layer_particle in spektra_core.h. */
 static float sf_layer_particle(float density, float dmax, float npart, float unif, uint seed)
 {
-  float p = sf_clampf(density / dmax, 1e-6f, 1.f - 1e-6f), od = dmax / npart,
-        sat = 1.f - p * unif * (1.f - 1e-6f), lam = npart / sat;
-  float seeds = lam + native_sqrt(fmax(lam, 0.f)) * sf_nrm(seed * 0x9e3779b9u + 1u);
-  seeds = fmax(seeds, 0.f);
-  float mean = seeds * p, var = seeds * p * (1.f - p),
-        g = mean + native_sqrt(fmax(var, 0.f)) * sf_nrm(seed * 0x85ebca6bU + 7u);
-  g = fmax(g, 0.f);
-  g = fmin(g, seeds);
-  return g * od * sat;
+  const float p = sf_clampf(density / dmax, 1e-6f, 1.f - 1e-6f);
+  const float od = dmax / npart;
+  const float sat = 1.f - p * unif * (1.f - 1e-6f);
+  return sf_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
 }
 
 /* ======================================================================== */
@@ -526,29 +545,22 @@ __kernel void spektrafilm_grain_finalize_channel(__global float4 *grain_buf,
   grain_buf[k] = gv;
 }
 
-/* gmean centres the grain-delta buffer before adding it back, matching
-   process()'s CPU-side DC-bias removal (see there for the full rationale:
-   the multi-sublayer particle generator has a small positive DC bias).
-   gmean is computed host-side over the whole buffer (see process_cl())
-   since a full-image reduction is simplest done there, then passed down
-   PER CHANNEL as a float4 -- a single pooled scalar across R+G+B would
-   leave each channel's own bias minus the pooled average as an
-   uncorrected residual (a color cast, not just a brightness bug).
-   No variance-restoration renorm here (upstream's own grain finalization,
-   _finalize_grain in grain.py, has none either -- it just blurs and lets
-   the natural contrast reduction stand, matching real optical clumping;
-   restoring full pre-blur variance made grain visibly higher-contrast,
-   and therefore visually coarser, than upstream at any matching sigma). */
+/* Add the blurred grain delta back onto the CMY density. No centring pass: the
+   Poisson sampler in sf_layer_particle is unbiased, so the delta already has
+   zero mean. No variance-restoration renorm either -- the reference's own grain
+   finalization (_finalize_grain in grain.py) has none; it just blurs and lets
+   the natural contrast reduction stand, matching real optical clumping.
+   Restoring full pre-blur variance made grain visibly higher-contrast, and
+   therefore visually coarser, than the reference at any matching sigma. */
 __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const float4 *grain_buf,
-                                    const int w, const int h, const float4 gmean)
+                                    const int w, const int h)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
-  float4 d = dens_buf[k];
-  float4 g = grain_buf[k];
-  dens_buf[k] = (float4)(d.x + (g.x - gmean.x), d.y + (g.y - gmean.y),
-                         d.z + (g.z - gmean.z), d.w);
+  const float4 d = dens_buf[k];
+  const float4 g = grain_buf[k];
+  dens_buf[k] = (float4)(d.x + g.x, d.y + g.y, d.z + g.z, d.w);
 }
 
 /* Multiplicative unsharp mask after grain blur (study b80).
@@ -620,9 +632,11 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
    OkLCh (mode 1) / ACES RGC (mode 2) gamut compression. Runs on the OUTPUT
    grid, cropping (ox, oy) from the full-ROI plane and taking alpha from the
    input image (spektra_sim: sf_sim_scan). */
-__kernel void spektrafilm_scan(__global const float4 *cmy, __read_only image2d_t in,
-                               __write_only image2d_t out, const int w, const int ow,
-                               const int oh, const int ox, const int oy,
+/* Scans the full padded ROI into a buffer rather than straight into the output
+   image: the scanner optics and the glare veil run after this on the scanned
+   RGB, and they need the padding. spektrafilm_crop_out does the crop. */
+__kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_out,
+                               const int w, const int h,
                                __global const float *lut, __global const float *sx,
                                __global const float *sy, __global const float *sz,
                                __global const float *cmn, __global const float *cmx,
@@ -635,8 +649,8 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __read_only image2d_t
                                const int bw_on, const float bw_m, const float bw_q)
 {
   const int x = get_global_id(0), y = get_global_id(1);
-  if(x >= ow || y >= oh) return;
-  const size_t k = (size_t)(y + oy) * w + (x + ox);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
   const float4 c4 = cmy[k];
   const float scale = (float)(steps - 1);
   const float r = (c4.x - lo0) / (hi0 - lo0) * scale;
@@ -680,8 +694,56 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __read_only image2d_t
     }
   }
 
+  rgb_out[k] = (float4)(rgb.x, rgb.y, rgb.z, 0.0f);
+}
+
+/* Crop the padded ROI down to roi_out and carry the input alpha through. */
+__kernel void spektrafilm_crop_out(__global const float4 *rgb, __read_only image2d_t in,
+                                   __write_only image2d_t out, const int w, const int ow,
+                                   const int oh, const int ox, const int oy)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= ow || y >= oh) return;
+  const float4 v = rgb[(size_t)(y + oy) * w + (x + ox)];
   const float4 px = read_imagef(in, sampleri, (int2)(x + ox, y + oy));
-  write_imagef(out, (int2)(x, y), (float4)(rgb.x, rgb.y, rgb.z, px.w));
+  write_imagef(out, (int2)(x, y), (float4)(v.x, v.y, v.z, px.w));
+}
+
+/* Additive unsharp mask on the scanned RGB (sf_unsharp_mask3): `rgb` holds the
+   blurred copy on entry, `orig` the unblurred one. */
+__kernel void spektrafilm_scan_usm(__global float4 *rgb, __global const float4 *orig,
+                                   const int w, const int h, const float amount)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 D = orig[k], blur = rgb[k];
+  rgb[k] = (float4)(D.x + amount * (D.x - blur.x), D.y + amount * (D.y - blur.y),
+                    D.z + amount * (D.z - blur.z), D.w);
+}
+
+/* Viewing-glare field: lognormal of linear-space mean `mean` and shape (s, bias)
+   precomputed host-side, keyed on absolute image coordinates so the veil is
+   stable under pan and zoom (sf_glare). Blurred by the caller, then added. */
+__kernel void spektrafilm_glare_gen(__global float4 *field, const int w, const int h,
+                                    const int roi_x, const int roi_y, const float mean,
+                                    const float s, const float bias)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const uint seed = sf_pixel_seed((uint)(x + roi_x), (uint)(y + roi_y), 0x5eedu);
+  const float g = mean * exp(bias + s * sf_nrm(seed));
+  field[(size_t)y * w + x] = (float4)(g, g, g, 0.0f);
+}
+
+__kernel void spektrafilm_glare_add(__global float4 *rgb, __global const float4 *field,
+                                    const int w, const int h)
+{
+  const int x = get_global_id(0), y = get_global_id(1);
+  if(x >= w || y >= h) return;
+  const size_t k = (size_t)y * w + x;
+  const float4 v = rgb[k], g = field[k];
+  rgb[k] = (float4)(v.x + g.x, v.y + g.y, v.z + g.z, v.w);
 }
 
 /* passthrough crop when no sim is available */
@@ -705,6 +767,119 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
  * inner loop's memory access pattern explicit at the call site. Separate
  * _1c/_4c variants avoid packing a lone scatter-stage channel into an
  * otherwise-wasted float4. */
+/* Young-van Vliet order-3 recursive Gaussian, one work-item per line. Same
+   coefficients and same edge-replicated seeding as sf_gauss_yvv_coeffs /
+   _sf_gauss_iir_1d on the CPU, so both paths deliver the identical blur above
+   SF_GAUSS_EXACT_MAX_SIGMA. Launch with global size (h, 1) for rows and
+   (w, 1) for columns. */
+__kernel void spektrafilm_yvv_row_4c(__global const float4 *src, __global float4 *dst,
+                                     const int w, const int h, const float B, const float B1,
+                                     const float B2, const float B3)
+{
+  /* One work-item per line. The launch asks for a second global dimension of
+     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
+     device's preferred multiple, so this is entered by a whole row of items
+     per line -- all of which would otherwise run the same serial recursion
+     over the same addresses and race. Only item 0 may proceed. */
+  const int row = get_global_id(0);
+  if(row >= h || get_global_id(1) != 0) return;
+  __global const float4 *s = src + (size_t)row * w;
+  __global float4 *d = dst + (size_t)row * w;
+  float4 w1 = s[0], w2 = s[0], w3 = s[0];
+  for(int j = 0; j < w; j++)
+  {
+    const float4 v = B * s[j] + B1 * w1 + B2 * w2 + B3 * w3;
+    d[j] = v; w3 = w2; w2 = w1; w1 = v;
+  }
+  float4 v1 = d[w - 1], v2 = v1, v3 = v1;
+  for(int j = w - 1; j >= 0; j--)
+  {
+    const float4 v = B * d[j] + B1 * v1 + B2 * v2 + B3 * v3;
+    d[j] = v; v3 = v2; v2 = v1; v1 = v;
+  }
+}
+
+__kernel void spektrafilm_yvv_col_4c(__global const float4 *src, __global float4 *dst,
+                                     const int w, const int h, const float B, const float B1,
+                                     const float B2, const float B3)
+{
+  /* One work-item per line. The launch asks for a second global dimension of
+     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
+     device's preferred multiple, so this is entered by a whole row of items
+     per line -- all of which would otherwise run the same serial recursion
+     over the same addresses and race. Only item 0 may proceed. */
+  const int col = get_global_id(0);
+  if(col >= w || get_global_id(1) != 0) return;
+  float4 w1 = src[col], w2 = w1, w3 = w1;
+  for(int i = 0; i < h; i++)
+  {
+    const size_t k = (size_t)i * w + col;
+    const float4 v = B * src[k] + B1 * w1 + B2 * w2 + B3 * w3;
+    dst[k] = v; w3 = w2; w2 = w1; w1 = v;
+  }
+  float4 v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
+  for(int i = h - 1; i >= 0; i--)
+  {
+    const size_t k = (size_t)i * w + col;
+    const float4 v = B * dst[k] + B1 * v1 + B2 * v2 + B3 * v3;
+    dst[k] = v; v3 = v2; v2 = v1; v1 = v;
+  }
+}
+
+__kernel void spektrafilm_yvv_row_1c(__global const float *src, __global float *dst,
+                                     const int w, const int h, const float B, const float B1,
+                                     const float B2, const float B3)
+{
+  /* One work-item per line. The launch asks for a second global dimension of
+     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
+     device's preferred multiple, so this is entered by a whole row of items
+     per line -- all of which would otherwise run the same serial recursion
+     over the same addresses and race. Only item 0 may proceed. */
+  const int row = get_global_id(0);
+  if(row >= h || get_global_id(1) != 0) return;
+  __global const float *s = src + (size_t)row * w;
+  __global float *d = dst + (size_t)row * w;
+  float w1 = s[0], w2 = s[0], w3 = s[0];
+  for(int j = 0; j < w; j++)
+  {
+    const float v = B * s[j] + B1 * w1 + B2 * w2 + B3 * w3;
+    d[j] = v; w3 = w2; w2 = w1; w1 = v;
+  }
+  float v1 = d[w - 1], v2 = v1, v3 = v1;
+  for(int j = w - 1; j >= 0; j--)
+  {
+    const float v = B * d[j] + B1 * v1 + B2 * v2 + B3 * v3;
+    d[j] = v; v3 = v2; v2 = v1; v1 = v;
+  }
+}
+
+__kernel void spektrafilm_yvv_col_1c(__global const float *src, __global float *dst,
+                                     const int w, const int h, const float B, const float B1,
+                                     const float B2, const float B3)
+{
+  /* One work-item per line. The launch asks for a second global dimension of
+     1, but dt_opencl_enqueue_kernel_2d_args rounds every dimension up to the
+     device's preferred multiple, so this is entered by a whole row of items
+     per line -- all of which would otherwise run the same serial recursion
+     over the same addresses and race. Only item 0 may proceed. */
+  const int col = get_global_id(0);
+  if(col >= w || get_global_id(1) != 0) return;
+  float w1 = src[col], w2 = w1, w3 = w1;
+  for(int i = 0; i < h; i++)
+  {
+    const size_t k = (size_t)i * w + col;
+    const float v = B * src[k] + B1 * w1 + B2 * w2 + B3 * w3;
+    dst[k] = v; w3 = w2; w2 = w1; w1 = v;
+  }
+  float v1 = dst[(size_t)(h - 1) * w + col], v2 = v1, v3 = v1;
+  for(int i = h - 1; i >= 0; i--)
+  {
+    const size_t k = (size_t)i * w + col;
+    const float v = B * dst[k] + B1 * v1 + B2 * v2 + B3 * v3;
+    dst[k] = v; v3 = v2; v2 = v1; v1 = v;
+  }
+}
+
 __kernel void spektrafilm_gauss_row_4c(__global const float4 *src, __global float4 *dst,
                                        const int w, const int h,
                                        __global const float *weights, const int radius)
