@@ -17,12 +17,8 @@
 */
 
 #pragma once
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <math.h>
 #include <stdint.h>
-#include <errno.h>
 
 #ifndef SPEKTRA_INLINE
 #define SPEKTRA_INLINE static inline
@@ -41,6 +37,18 @@ void sf_blur_plane3_fast(float *buf, int w, int h, float sigma, float *plane);
    dye-cloud sigma is often well under a pixel and still meaningfully
    softens the raw particle draw, matching upstream's plain `> 0` check. */
 void sf_blur_plane1(float *buf, int w, int h, float sigma, float *plane, float *trans);
+/* Additive unsharp mask on the scanned RGB ([df] apply_unsharp_mask):
+   out = D + amount * (D - blur(D)). `orig` and `work` are w*h*3 and w*h
+   scratch buffers supplied by the caller. */
+void sf_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
+                      float *orig, float *work);
+/* Viewing-glare veil ([gl] add_glare): adds a blurred lognormal field of mean
+   percent/100 (relative std `roughness`) to all three channels. `field` is a
+   w*h scratch buffer; roi_x/roi_y are absolute image coordinates so the veil
+   is stable under pan and zoom. */
+void sf_glare(float *rgb, int w, int h, float percent, float roughness, float blur,
+              int roi_x, int roi_y, float *field);
+
 void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
                                      float *orig, float *work);
 /* Two independently-controllable stages, matching upstream's HalationParams:
@@ -80,414 +88,9 @@ typedef struct sf_diffusion_plan_t
 int sf_diffusion_build_plan(int family, float strength, float halo_warmth, sf_diffusion_plan_t *plan);
 
 
-/* Whole-file reader for the bundle loader (bundle.json and the .cube LUTs are
-   small enough to slurp). Inside darktable the including .c maps these to glib
-   (g_file_get_contents / g_free); darktable poisons bare libc fopen, so no libc
-   fallback is emitted in a darktable translation unit. The standalone unit test
-   (-DSF_STANDALONE) gets a small stdio-based fallback.
-
-   SF_READ_FILE(path, char **out_buf, size_t *out_len) -> 0 on success, the buffer
-   is NUL-terminated and owned by the caller, freed with SF_FREE_FILE. */
-#ifndef SF_READ_FILE
-#ifdef SF_STANDALONE
-#include <stdio.h>
-SPEKTRA_INLINE int sf_read_file_stdio(const char *path, char **out, size_t *len)
-{
-  FILE *f = fopen(path, "rb");
-  if(!f) return -1;
-  fseek(f, 0, SEEK_END);
-  long sz = ftell(f);
-  fseek(f, 0, SEEK_SET);
-  if(sz < 0) { fclose(f); return -1; }
-  char *b = (char *)malloc((size_t)sz + 1);
-  if(!b) { fclose(f); return -1; }
-  if(fread(b, 1, (size_t)sz, f) != (size_t)sz) { free(b); fclose(f); return -1; }
-  b[sz] = 0;
-  fclose(f);
-  *out = b;
-  if(len) *len = (size_t)sz;
-  return 0;
-}
-#define SF_READ_FILE(path, out, len) sf_read_file_stdio((path), (out), (len))
-#define SF_FREE_FILE(buf) free(buf)
-#else
-#error "SF_READ_FILE must be defined (map to g_file_get_contents) before including spektra_core.h"
-#endif
-#endif
-
-/* Locale-independent ASCII float parse. darktable runs under the user locale
-   (e.g. de_DE uses ',' as decimal), but .cube / bundle.json always use '.'.
-   sscanf("%f")/strtod honour LC_NUMERIC, so we must not use them. The module
-   maps SF_STRTOD to g_ascii_strtod; standalone uses a small C-locale parser. */
-#ifndef SF_STRTOD
-SPEKTRA_INLINE double sf_ascii_strtod(const char *s, char **end)
-{
-  while(*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') s++;
-  double sign = 1.0;
-  if(*s == '+')
-    s++;
-  else if(*s == '-')
-  {
-    sign = -1.0;
-    s++;
-  }
-  double val = 0.0;
-  int any = 0;
-  while(*s >= '0' && *s <= '9')
-  {
-    val = val * 10.0 + (*s - '0');
-    s++;
-    any = 1;
-  }
-  if(*s == '.')
-  {
-    s++;
-    double f = 0.0, sc = 1.0;
-    while(*s >= '0' && *s <= '9')
-    {
-      f = f * 10.0 + (*s - '0');
-      sc *= 10.0;
-      s++;
-      any = 1;
-    }
-    val += f / sc;
-  }
-  if(any && (*s == 'e' || *s == 'E'))
-  {
-    s++;
-    int es = 1, e = 0;
-    if(*s == '+')
-      s++;
-    else if(*s == '-')
-    {
-      es = -1;
-      s++;
-    }
-    while(*s >= '0' && *s <= '9')
-    {
-      e = e * 10 + (*s - '0');
-      s++;
-    }
-    double m = 1.0;
-    for(int i = 0; i < e; i++) m *= 10.0;
-    val = es > 0 ? val * m : val / m;
-  }
-  if(end) *end = (char *)s;
-  return any ? sign * val : 0.0;
-}
-#define SF_STRTOD(s, end) sf_ascii_strtod((s), (end))
-#endif
-
 SPEKTRA_INLINE float sf_clampf(float x, float lo, float hi)
 {
   return x < lo ? lo : (x > hi ? hi : x);
-}
-
-/* ---------------- .cube + bundle ---------------- */
-typedef struct
-{
-  int n;
-  float *data;
-} sf_cube_t; /* n^3 * 3, R fastest */
-typedef struct
-{
-  sf_cube_t film, print;
-  float d_min[3], d_max[3]; /* cmy_film wire */
-  char name[256];           /* bundle dir name */
-  int valid;
-  int is_positive; /* slide/reversal film: film cube has inverted density slope */
-  int is_combined; /* 1-LUT (combined rgb_in->rgb_out) bundle: one cube in `film`,
-                      no density split, no `print`. Used for B&W and any 1lut bake. */
-  float input_gain; /* bundle.json input_exposure.gain: the cube was baked so that
-                       film_pipeline(decode(coord) * gain). At runtime we sample at
-                       coord = srgb_oetf(linear / input_gain). Default 1.0. */
-} sf_bundle_t;
-
-SPEKTRA_INLINE int sf_load_cube(const char *path, sf_cube_t *c)
-{
-  char *buf = NULL;
-  size_t len = 0;
-  if(SF_READ_FILE(path, &buf, &len) != 0 || !buf)
-  {
-#ifdef SF_DIAG_LOG
-    SF_DIAG_LOG("[spektrafilm] read cube FAILED: %s\n", path);
-#endif
-    return -1;
-  }
-
-  c->n = 0;
-  c->data = NULL;
-  int idx = 0, cap = 0;
-  /* Walk the file buffer line by line (the .cube grammar is line-oriented):
-     header keywords (LUT_3D_SIZE, DOMAIN_*, TITLE) and one "r g b" triplet per
-     data line, with R varying fastest. */
-  char *p = buf;
-  while(*p)
-  {
-    char *eol = p;
-    while(*eol && *eol != '\n') eol++;
-    const char hold = *eol;
-    *eol = 0; /* terminate this line for the parsers below */
-
-    char *s = p;
-    while(*s == ' ' || *s == '\t') s++;
-    if(*s == '#' || *s == '\r' || *s == 0)
-    {
-      /* comment or blank: skip */
-    }
-    else if(!strncmp(s, "LUT_3D_SIZE", 11))
-    {
-      c->n = atoi(s + 11);
-      cap = c->n * c->n * c->n * 3;
-      c->data = (float *)malloc(sizeof(float) * cap);
-      if(!c->data)
-      {
-        SF_FREE_FILE(buf);
-        return -1;
-      }
-    }
-    else if(!strncmp(s, "DOMAIN_", 7) || !strncmp(s, "TITLE", 5) || (*s >= 'A' && *s <= 'Z'))
-    {
-      /* other header keyword: skip */
-    }
-    else
-    {
-      char *e1 = NULL, *e2 = NULL, *e3 = NULL;
-      const float r = (float)SF_STRTOD(s, &e1);
-      const float g = (float)SF_STRTOD(e1, &e2);
-      const float b = (float)SF_STRTOD(e2, &e3);
-      if(e1 != s && e2 != e1 && e3 != e2 && idx + 3 <= cap)
-      {
-        c->data[idx++] = r;
-        c->data[idx++] = g;
-        c->data[idx++] = b;
-      }
-    }
-
-    if(hold == 0) break;
-    p = eol + 1;
-  }
-  SF_FREE_FILE(buf);
-
-  if(c->n <= 0 || idx != c->n * c->n * c->n * 3)
-  {
-#ifdef SF_DIAG_LOG
-    SF_DIAG_LOG("[spektrafilm] cube row/size mismatch n=%d got=%d expect=%d: %s\n", c->n, idx,
-                c->n * c->n * c->n * 3, path);
-#endif
-    free(c->data);
-    c->data = NULL;
-    return -1;
-  }
-  return 0;
-}
-SPEKTRA_INLINE void sf_cube_free(sf_cube_t *c)
-{
-  free(c->data);
-  c->data = NULL;
-  c->n = 0;
-}
-
-SPEKTRA_INLINE void sf_cube_sample(const sf_cube_t *c, const float in[3], float out[3])
-{
-  const int n = c->n;
-  float fx = sf_clampf(in[0], 0, 1) * (n - 1), fy = sf_clampf(in[1], 0, 1) * (n - 1),
-        fz = sf_clampf(in[2], 0, 1) * (n - 1);
-  int x0 = (int)fx, y0 = (int)fy, z0 = (int)fz, x1 = x0 < n - 1 ? x0 + 1 : x0,
-      y1 = y0 < n - 1 ? y0 + 1 : y0, z1 = z0 < n - 1 ? z0 + 1 : z0;
-  float dx = fx - x0, dy = fy - y0, dz = fz - z0;
-#define SFI(X, Y, Z) (((size_t)(Z) * n * n + (size_t)(Y) * n + (X)) * 3)
-  for(int ch = 0; ch < 3; ch++)
-  {
-    float a = c->data[SFI(x0, y0, z0) + ch] * (1 - dx) + c->data[SFI(x1, y0, z0) + ch] * dx;
-    float b = c->data[SFI(x0, y1, z0) + ch] * (1 - dx) + c->data[SFI(x1, y1, z0) + ch] * dx;
-    float cc = c->data[SFI(x0, y0, z1) + ch] * (1 - dx) + c->data[SFI(x1, y0, z1) + ch] * dx;
-    float d = c->data[SFI(x0, y1, z1) + ch] * (1 - dx) + c->data[SFI(x1, y1, z1) + ch] * dx;
-    float e = a * (1 - dy) + b * dy, g = cc * (1 - dy) + d * dy;
-    out[ch] = e * (1 - dz) + g * dz;
-  }
-#undef SFI
-}
-
-/* tiny JSON scrapes (sufficient for the fixed spektrafilm bundle.json schema) */
-SPEKTRA_INLINE int sf_scrape_float(const char *b, const char *k, float *out)
-{
-  /* find key k (e.g. "\"gain\"") then the number after the following ':' */
-  const char *p = strstr(b, k);
-  if(!p) return -1;
-  p = strchr(p, ':');
-  if(!p) return -1;
-  p++;
-  while(*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') p++;
-  char *end = NULL;
-  double d = SF_STRTOD(p, &end);
-  if(end == p) return -1;
-  *out = (float)d;
-  return 0;
-}
-
-SPEKTRA_INLINE int sf_scrape_vec3(const char *b, const char *k, float v[3])
-{
-  const char *p = strstr(b, k);
-  if(!p) return -1;
-  p = strchr(p, '[');
-  if(!p) return -1;
-  p++;
-  for(int i = 0; i < 3; i++)
-  {
-    while(*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r' || *p == ',') p++;
-    char *end = NULL;
-    double d = SF_STRTOD(p, &end);
-    if(end == p) return -1;
-    v[i] = (float)d;
-    p = end;
-  }
-  return 0;
-}
-SPEKTRA_INLINE int sf_scrape_path(const char *buf, const char *role, char *out, int sz)
-{
-  const char *p = buf;
-  while((p = strstr(p, "\"role\"")))
-  {
-    const char *c = strchr(p, ':'), *q1 = c ? strchr(c, '"') : 0,
-               *q2 = q1 ? strchr(q1 + 1, '"') : 0;
-    if(!q2)
-    {
-      p += 5;
-      continue;
-    }
-    int len = (int)(q2 - q1 - 1);
-    if((int)strlen(role) == len && !strncmp(q1 + 1, role, len))
-    {
-      const char *nr = strstr(q2, "\"role\""), *pa = strstr(q2, "\"path\"");
-      if(!pa || (nr && pa > nr))
-      {
-        p = q2;
-        continue;
-      }
-      pa = strchr(pa, ':');
-      pa = strchr(pa, '"');
-      if(!pa) return -1;
-      pa++;
-      const char *e = strchr(pa, '"');
-      if(!e || e - pa >= sz) return -1;
-      memcpy(out, pa, e - pa);
-      out[e - pa] = 0;
-      return 0;
-    }
-    p = q2;
-  }
-  return -1;
-}
-/* load a bundle dir (containing bundle.json + the two cubes) */
-SPEKTRA_INLINE int sf_load_bundle(const char *dir, sf_bundle_t *b)
-{
-  memset(b, 0, sizeof *b);
-  char jp[1024];
-  snprintf(jp, sizeof jp, "%s/bundle.json", dir);
-  char *buf = NULL;
-  size_t sz = 0;
-  if(SF_READ_FILE(jp, &buf, &sz) != 0 || !buf || sz == 0)
-  {
-    SF_FREE_FILE(buf);
-    return -1;
-  }
-  /* input exposure gain (bundle.json input_exposure.gain). The cube maps
-     output(coord) = film_pipeline(decode(coord) * gain), so at runtime we sample
-     at coord = srgb_oetf(linear / gain). Default 1.0 when absent (older bundles
-     or stops_above_midgray=null). Scrape the "gain" key inside "input_exposure". */
-  b->input_gain = 1.0f;
-  {
-    const char *ie = strstr(buf, "\"input_exposure\"");
-    if(ie)
-    {
-      float g = 1.0f;
-      if(!sf_scrape_float(ie, "\"gain\"", &g) && g > 1e-4f) b->input_gain = g;
-    }
-  }
-  /* 1-LUT (combined) bundle? It has a single lut with role "combined" and no
-     film/print density wire. Load that one cube into `film` and mark combined. */
-  char cp[256] = {0};
-  if(!sf_scrape_path(buf, "combined", cp, sizeof cp))
-  {
-    SF_FREE_FILE(buf);
-    char full[2048];
-    snprintf(full, sizeof full, "%s/%s", dir, cp);
-    if(sf_load_cube(full, &b->film)) return -1;
-    b->is_combined = 1;
-    b->valid = 1;
-    return 0; /* no density wire / print / positive-detection for combined */
-  }
-
-  int ok =
-      !sf_scrape_vec3(buf, "\"d_max\"", b->d_max) && !sf_scrape_vec3(buf, "\"d_min\"", b->d_min);
-  char fp[256] = {0}, pp[256] = {0};
-  ok = ok && !sf_scrape_path(buf, "film", fp, sizeof fp) &&
-       !sf_scrape_path(buf, "print", pp, sizeof pp);
-  SF_FREE_FILE(buf);
-  if(!ok)
-  {
-#ifdef SF_DIAG_LOG
-    SF_DIAG_LOG("[spektrafilm] bundle.json parse failed (wire/paths) in %s\n", dir);
-#endif
-    return -1;
-  }
-  char full[2048];
-  snprintf(full, sizeof full, "%s/%s", dir, fp);
-  if(sf_load_cube(full, &b->film)) return -1;
-  snprintf(full, sizeof full, "%s/%s", dir, pp);
-  if(sf_load_cube(full, &b->print))
-  {
-    sf_cube_free(&b->film);
-    return -1;
-  }
-  b->valid = 1;
-
-  /* Detect positive (slide/reversal) film: sample the film cube at black and
-     white, convert to cmy_film density via the wire, and compare. Negative
-     films -> density rises with input; positive films -> density falls. This
-     needs no metadata (bundle.json omits film type) and no name matching. */
-  {
-    float blk[3] = {0.f, 0.f, 0.f}, wht[3] = {1.f, 1.f, 1.f}, fo_b[3], fo_w[3];
-    sf_cube_sample(&b->film, blk, fo_b);
-    sf_cube_sample(&b->film, wht, fo_w);
-    float d_b = 0.f, d_w = 0.f;
-    for(int c = 0; c < 3; c++)
-    {
-      d_b += b->d_min[c] + fo_b[c] * (b->d_max[c] - b->d_min[c]);
-      d_w += b->d_min[c] + fo_w[c] * (b->d_max[c] - b->d_min[c]);
-    }
-    b->is_positive = (d_w < d_b) ? 1 : 0; /* white darker than black => slide */
-  }
-  return 0;
-}
-SPEKTRA_INLINE void sf_bundle_free(sf_bundle_t *b)
-{
-  sf_cube_free(&b->film);
-  sf_cube_free(&b->print);
-  b->valid = 0;
-}
-
-SPEKTRA_INLINE void sf_to_density(const sf_bundle_t *b, const float v[3], float d[3])
-{
-  for(int c = 0; c < 3; c++) d[c] = b->d_min[c] + v[c] * (b->d_max[c] - b->d_min[c]);
-}
-SPEKTRA_INLINE void sf_from_density(const sf_bundle_t *b, const float d[3], float v[3])
-{
-  for(int c = 0; c < 3; c++)
-    v[c] = sf_clampf((d[c] - b->d_min[c]) / (b->d_max[c] - b->d_min[c]), 0, 1);
-}
-
-/* ---------------- sRGB transfer (module is scene-linear; cubes are sRGB) ---------------- */
-SPEKTRA_INLINE float sf_srgb_oetf(float x)
-{
-  x = x < 0 ? 0 : x;
-  return x <= 0.0031308f ? 12.92f * x : 1.055f * powf(x, 1.0f / 2.4f) - 0.055f;
-}
-SPEKTRA_INLINE float sf_srgb_eotf(float x)
-{
-  x = sf_clampf(x, 0, 1);
-  return x <= 0.04045f ? x / 12.92f : powf((x + 0.055f) / 1.055f, 2.4f);
 }
 
 /* ---------------- grain (validated) ----------------
@@ -553,18 +156,6 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
   return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
 }
 
-/* Print-stage grading applied to the CMY film density before the print cube
-   (2lut path only). Mirrors the spektrafilm app's print controls, approximated on
-   the baked density rather than by re-running the paper model:
-   - print_exposure (stops): a uniform density shift (brighter print = less
-     density); dchange = -print_exposure * SF_PRINT_EV_TO_DENSITY.
-   - print_contrast: pivots density about a mid-grey Dp so slopes steepen/flatten.
-   - filtration_m / filtration_y: subtractive printing filters. Magenta rides the
-     green record, yellow the blue record; each adds a small per-channel density.
-   density[] is modified in place; d_ref is a representative mid density (mean of
-   the film's d_min/d_max) used as the contrast pivot. */
-#define SF_PRINT_EV_TO_DENSITY 0.30103f /* log10(2): one stop == 0.301 density */
-
 /* Maximum kernel half-width (taps = 2*radius+1) for sf_gauss_kernel_1d below.
    Caps cost for pathologically large sigma (very high film_format_mm
    combined with very low resolution); every physically-plausible sigma this
@@ -573,60 +164,74 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
    dispatch the identical kernel for a given sigma. */
 #define SF_GAUSS_MAX_RADIUS 512
 
-/* Above this sigma, the recursive (Young-van Vliet IIR) approximation is
-   accurate enough to use as a fast path instead of the exact kernel below:
-   simulating its actual impulse response against the requested sigma shows
-   the effective-vs-requested ratio stabilizes at a stable 1.1799 for sigma
-   >= ~1.5px, correctable with the single constant factor below. Below that
-   threshold the ratio isn't flat (it drifts, and below ~0.5px flips to
-   UNDER-blurring), which is why the exact kernel exists at all -- so this
-   threshold routes only the large-radius blurs (halation's bounce
-   especially, where the exact kernel's O(radius) cost is worst) through the
-   O(1)-per-pixel fast path, recovering most of the performance the exact
-   kernel gave up without reintroducing the inaccuracy it fixed at small
-   sigma. Shared by spektra_core.c's CPU dispatch and spektrafilm.c's GPU
-   macros so both switch over at the same sigma. */
-#define SF_GAUSS_EXACT_MAX_SIGMA 2.0f
-#define SF_GAUSS_SIGMA_CORRECTION 0.8475f /* 1 / 1.1799 */
+/* Sigma at which the direct kernel hands over to the recursive one. This is
+   the reference's own crossover (SMALL_SIGMA_MAX in fast_gaussian_filter.py),
+   and above it both sides now run the same Young-van Vliet filter, so a given
+   sigma produces the same blur here, on the GPU, and in the app. */
+#define SF_GAUSS_EXACT_MAX_SIGMA 3.0f
 
-/* Build a normalized, truncated 1D Gaussian kernel -- truncate=4 sigma,
- * matching scipy.ndimage.gaussian_filter's own default (what the reference
- * spektrafilm actually blurs with), so the blur is exact to kernel-
- * truncation precision for any sigma. `kernel` must have room for
+/* Young-van Vliet order-3 recursive Gaussian coefficients (B, B1, B2, B3),
+   identical to the reference's _yvv_coeffs. Exported so the GPU host side can
+   build the same filter the CPU runs. */
+void sf_gauss_yvv_coeffs(float sigma, float out[4]);
+
+/* Build a normalized, truncated 1D Gaussian kernel. truncate = 3 sigma with
+ * radius = int(3*sigma + 0.5), matching the reference's own
+ * _gaussian_kernel_1d default rather than scipy's truncate = 4 -- the
+ * reference never calls scipy for this. `kernel` must have room for
  * 2*max_radius+1 taps; returns the radius actually used. Exported so both
  * the CPU convolution (spektra_core.c) and the GPU host-side weight upload
  * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
 int sf_gauss_kernel_1d(float sigma, float *kernel, int max_radius);
 
-#define SF_FILTRATION_TO_DENSITY 0.30f  /* full filtration slider == 0.30 density */
-SPEKTRA_INLINE void sf_apply_print_grading(float density[3], float d_ref, float print_exposure,
-                                           float print_contrast, float filtration_m,
-                                           float filtration_y)
+/* sf_poisson: one Poisson(lam) draw from a stateless seed.
+
+   Below SF_POISSON_EXACT_MAX the draw is EXACT (Knuth's product-of-uniforms).
+   That threshold is not a quality/speed compromise, it is where the normal
+   approximation stops being safe: sf_nrm is bounded at +-sqrt(12) (Irwin-Hall
+   over four uniforms), so lam + sqrt(lam)*sf_nrm() can only go negative when
+   lam < 12. Above the threshold no clamp is ever needed and the approximation is
+   mean- and variance-exact; below it, clamping a normal at zero is exactly what
+   biased the old sampler upward in the shadows. Cost: the exact branch averages
+   lam+1 hashes (<= 13), the fast branch 4 -- against 8 for the two sf_nrm draws
+   this replaces. */
+#define SF_POISSON_EXACT_MAX 12.0f
+SPEKTRA_INLINE float sf_poisson(float lam, uint32_t seed)
 {
-  const float ev = -print_exposure * SF_PRINT_EV_TO_DENSITY;
-  for(int c = 0; c < 3; c++)
+  if(lam <= 0.0f) return 0.0f;
+  if(lam < SF_POISSON_EXACT_MAX)
   {
-    float v = density[c] + ev;                       /* print exposure */
-    v = d_ref + (v - d_ref) * print_contrast;        /* print contrast (pivot) */
-    density[c] = v;
+    const float limit = expf(-lam);
+    float prod = 1.0f;
+    int k = 0;
+    do
+    {
+      prod *= sf_u01(seed + (uint32_t)k * 0x9e3779b9u);
+      k++;
+    } while(prod > limit && k < 64);
+    return (float)(k - 1);
   }
-  /* subtractive filters: M -> green channel (index 1), Y -> blue channel (index 2) */
-  density[1] += filtration_m * SF_FILTRATION_TO_DENSITY;
-  density[2] += filtration_y * SF_FILTRATION_TO_DENSITY;
+  return lam + sqrtf(lam) * sf_nrm(seed);
 }
 
+/* sf_layer_particle: draw the developed density of one emulsion layer.
+
+   The reference model (layer_particle_model, grain.py) draws N_s ~ Poisson(lam)
+   sensitised grains and develops each with probability p, i.e.
+   Binomial(Poisson(lam), p). Poisson thinning makes that composition EXACTLY
+   Poisson(lam * p), so the two-stage draw collapses to a single Poisson and the
+   intermediate grain count -- along with the two clamps that went with it --
+   disappears.
+
+   The mean is then exactly lam*p * od * sat = density, and the variance exactly
+   p * dmax^2 * sat / npart = D (Dmax - u D) / N, the target grain.py derives. */
 SPEKTRA_INLINE float sf_layer_particle(float density, float dmax, float npart, float unif,
                                        uint32_t seed)
 {
-  float p = sf_clampf(density / dmax, 1e-6f, 1 - 1e-6f), od = dmax / npart,
-        sat = 1.f - p * unif * (1 - 1e-6f), lam = npart / sat;
-  float seeds = lam + sqrtf(fmaxf(lam, 0)) * sf_nrm(seed * 0x9e3779b9u + 1u);
-  if(seeds < 0) seeds = 0;
-  float mean = seeds * p, var = seeds * p * (1 - p),
-        g = mean + sqrtf(fmaxf(var, 0)) * sf_nrm(seed * 0x85ebca6bU + 7u);
-  if(g < 0) g = 0;
-  if(g > seeds) g = seeds;
-  return g * od * sat;
+  const float p = sf_clampf(density / dmax, 1e-6f, 1 - 1e-6f);
+  const float od = dmax / npart;
+  const float sat = 1.f - p * unif * (1 - 1e-6f);
+  return sf_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
 }
 /* SF_GRAIN_REF_UM: the fixed reference scale (spektrafilm's own
    pixel_size_um=10) the particle model is generated at, independent of the
@@ -637,126 +242,3 @@ SPEKTRA_INLINE float sf_layer_particle(float density, float dmax, float npart, f
    resolution — see the grain blur in spektrafilm.c/.cl and
    _max_halo_sigma's ROI padding, all of which must agree. */
 #define SF_GRAIN_REF_UM 10.0f
-/* grain on one CMY-density pixel; strength scales particle count effect via amount */
-SPEKTRA_INLINE void sf_grain_px(float dens[3], float pixel_um, float amount, float size,
-                                uint32_t xi, uint32_t yi)
-{
-  const float dmin[3] = {0.03f, 0.03f, 0.03f}, dmaxc[3] = {2.2f, 2.2f, 2.2f};
-  const float pscale[3] = {1.6f, 1.6f, 3.2f}, unif[3] = {0.97f, 0.99f, 0.97f};
-  const int nsub = 1;
-  /* Grain is rendered at a FIXED reference scale (like spektrafilm's
-     pixel_size_um=10), NOT the live pipe pixel_um, so grain character stays
-     constant across zoom. The size slider scales this reference: larger size =>
-     larger effective grain pixel => fewer particles per pixel => coarser grain.
-     size=1.0 reproduces the app's default look. pixel_um is unused for grain
-     (still used by halation). */
-  const float parea = 0.2f;
-  const float ref_um = SF_GRAIN_REF_UM / fmaxf(size, 0.05f); /* size up => coarser grain */
-  float pix = ref_um * ref_um;
-  (void)pixel_um;
-  for(int c = 0; c < 3; c++)
-  {
-    float npart = pix / (parea * pscale[c]), dmax = dmaxc[c] + dmin[c];
-    float din = dens[c] + dmin[c], acc = 0;
-    for(int sl = 0; sl < nsub; sl++)
-      acc += sf_layer_particle(
-          din, dmax, npart, unif[c],
-          sf_pixel_seed(xi, yi, (uint32_t)(c + sl * 10)));
-    acc /= nsub;
-    acc -= dmin[c];
-    dens[c] = dens[c] + (acc - dens[c]) * amount; /* amount=1 -> full spektrafilm grain */
-  }
-}
-
-/* apply halation+scatter to a w*h*3 LINEAR plane in place (amount scales both passes) */
-/* Compute the grain DELTA (grained density - clean density) for one pixel into
-   out_delta[3]. Generation matches the validated per-pixel particle model; the
-   visible film STRUCTURE comes from blurring this delta buffer afterwards (as
-   spektrafilm blurs its grain by grain.blur). Generated at a fine fixed scale so
-   the subsequent blur produces organic clumps rather than 1px speckle. */
-/* dmax_c: the emulsion's actual per-channel maximum density (base-subtracted).
-   Using a too-small value saturates the particle model in dense areas (slide
-   shadows) and produces a channel-dependent -- i.e. coloured -- bias.
-   dmin_c/rms_c/unif_c: the stock's own catalogue grain characteristics
-   (film_render_defaults[stock].grain in the pack — rms_granularity,
-   uniformity, density_min), so e.g. Portra 400 and Tri-X no longer share one
-   hardcoded grain signature. Callers without per-film data may pass the
-   SF_GRAIN_LEGACY_* arrays below to reproduce the earlier fixed look. */
-/* SF_GRAIN_REF_UM (defined above, with sf_grain_px) is reused here for the
-   same fine-generation reference scale. */
-SPEKTRA_INLINE void sf_grain_delta_dmax(const float dens[3], float amount, float out_delta[3],
-                                        uint32_t xi, uint32_t yi, int mono, float pixel_um,
-                                        const float dmax_c[3], const float dmin_c[3],
-                                        const float rms_c[3], const float unif_c[3])
-{
-  const float dmin[3] = { dmin_c[0], dmin_c[1], dmin_c[2] };
-  const float dmaxc[3] = { fmaxf(dmax_c[0], 1e-3f), fmaxf(dmax_c[1], 1e-3f),
-                           fmaxf(dmax_c[2], 1e-3f) };
-  /* Latest spektrafilm grain model (study a90): per-channel particle area from
-     catalogue RMS-granularity (sigma_48 through a 48um aperture, ISO 6328):
-       a_grain = (rms/1000)^2 * A48 / (D_ref (Dmax - u D_ref)),  D_ref = 1 + d_min.
-     N = pixel_area / a_grain. pixel_area is the REAL physical pixel area
-     (film_format_mm-derived pixel_um, squared) -- matching upstream's
-     n_particles_per_pixel = pixel_size_um**2 * ... exactly, so raw grain
-     density/variance (not just visible clump size, which the separate blur
-     step still sets) tracks the real resolution and film format. rms/unif
-     come from the film stock's own catalogue data (see header comment)
-     rather than one shared constant. */
-  const float rms[3] = { rms_c[0], rms_c[1], rms_c[2] };
-  const float unif[3] = { unif_c[0], unif_c[1], unif_c[2] };
-  const float A48 = 3.14159265f * 24.0f * 24.0f;
-  const float pix = pixel_um * pixel_um;
-  /* mono (B&W / combined): the three channels carry the same value, so grain must
-     be ACHROMATIC — one grain realisation applied identically to all channels.
-     Per-channel independent grain (the colour path) would otherwise paint colour
-     speckle onto a grey image. Use channel 1's parameters and the mean density. */
-  if(mono)
-  {
-    const float dm = (dens[0] + dens[1] + dens[2]) / 3.0f;
-    const float dmax = dmaxc[1] + dmin[1];
-    const float d_ref = 1.0f + dmin[1];
-    const float sig = rms[1] / 1000.0f;
-    const float denom = fmaxf(d_ref * (dmax - unif[1] * d_ref), 1e-6f);
-    const float a_grain = sig * sig * A48 / denom;
-    const float npart = pix / fmaxf(a_grain, 1e-4f);
-    const float din = dm + dmin[1];
-    float g = sf_layer_particle(din, dmax, npart, unif[1],
-                                sf_pixel_seed(xi, yi, 0u)) - dmin[1];
-    const float d = (g - dm) * amount;
-    out_delta[0] = out_delta[1] = out_delta[2] = d; /* identical -> grey grain */
-    return;
-  }
-  for(int c = 0; c < 3; c++)
-  {
-    const float dmax = dmaxc[c] + dmin[c];
-    const float d_ref = 1.0f + dmin[c];
-    const float sig = rms[c] / 1000.0f;
-    const float denom = fmaxf(d_ref * (dmax - unif[c] * d_ref), 1e-6f);
-    const float a_grain = sig * sig * A48 / denom;
-    const float npart = pix / fmaxf(a_grain, 1e-4f);
-    const float din = dens[c] + dmin[c];
-    float g = sf_layer_particle(din, dmax, npart, unif[c],
-                                sf_pixel_seed(xi, yi, (uint32_t)c));
-    g -= dmin[c];
-    out_delta[c] = (g - dens[c]) * amount; /* delta to be blurred then added */
-  }
-}
-
-/* Fallback catalogue values (spektrafilm's original single fixed profile) for
-   callers with no per-film pack data (see sf_pack_film_grain / sf_sim_film_grain3
-   for the real per-stock values). */
-#define SF_GRAIN_LEGACY_DMAX { 2.2f, 2.2f, 2.2f }
-#define SF_GRAIN_LEGACY_DMIN { 0.03f, 0.03f, 0.03f }
-#define SF_GRAIN_LEGACY_RMS { 6.0f, 8.0f, 10.0f }
-#define SF_GRAIN_LEGACY_UNIFORMITY { 0.97f, 0.97f, 0.97f }
-
-SPEKTRA_INLINE void sf_grain_delta(const float dens[3], float amount, float out_delta[3],
-                                   uint32_t xi, uint32_t yi, int mono, float pixel_um)
-{
-  const float legacy_dmax[3] = SF_GRAIN_LEGACY_DMAX;
-  const float legacy_dmin[3] = SF_GRAIN_LEGACY_DMIN;
-  const float legacy_rms[3] = SF_GRAIN_LEGACY_RMS;
-  const float legacy_unif[3] = SF_GRAIN_LEGACY_UNIFORMITY;
-  sf_grain_delta_dmax(dens, amount, out_delta, xi, yi, mono, pixel_um, legacy_dmax, legacy_dmin,
-                      legacy_rms, legacy_unif);
-}
