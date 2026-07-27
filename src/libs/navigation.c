@@ -300,6 +300,68 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// Draw a small arrow on the thumbnail border pointing toward the viewport
+// centre when it has been panned outside the image (e.g. reaching off-image
+// mask handles), where the view box would otherwise shrink to nothing and
+// vanish. Expects the current transform to map the thumbnail image to
+// [0,wd]x[0,ht]; scale is that transform's scale (to keep the outline 1px).
+static void _draw_offview_arrow(cairo_t *cr,
+                                const int wd,
+                                const int ht,
+                                const float zoom_x,
+                                const float zoom_y,
+                                const float scale)
+{
+  const float cx = wd * (0.5f + zoom_x);
+  const float cy = ht * (0.5f + zoom_y);
+  if(cx >= 0.0f && cx <= wd && cy >= 0.0f && cy <= ht)
+    return; // view centre still inside the thumbnail: the box itself suffices
+
+  const float ox = 0.5f * wd, oy = 0.5f * ht;
+  float dx = cx - ox, dy = cy - oy;
+  const float dlen = hypotf(dx, dy);
+  if(dlen <= 1e-3f)
+    return;
+
+  dx /= dlen;
+  dy /= dlen;
+  // where the centre->view ray exits the image rectangle
+  float t = 1e9f;
+  if(dx > 0.0f)
+    t = fminf(t, (wd - ox) / dx);
+  else if(dx < 0.0f)
+    t = fminf(t, (0.0f - ox) / dx);
+  if(dy > 0.0f)
+    t = fminf(t, (ht - oy) / dy);
+  else if(dy < 0.0f)
+    t = fminf(t, (0.0f - oy) / dy);
+  t = fmaxf(0.0f, t);
+
+  // Draw a chevron ( ">" shape ) whose apex points outward along the view
+  // direction: an open two-armed stroke reads its direction more clearly than
+  // a solid triangle.
+  const float a = fminf(wd, ht) * 0.08f;          // chevron reach in thumbnail units
+  const float tipx = ox + dx * t - dx * a * 0.3f; // apex just inside the border
+  const float tipy = oy + dy * t - dy * a * 0.3f;
+  const float perpx = -dy, perpy = dx;
+  const float spread = a * 0.85f; // half-width of the arms (~90 deg opening)
+  const float ax1 = tipx - dx * a + perpx * spread, ay1 = tipy - dy * a + perpy * spread;
+  const float ax2 = tipx - dx * a - perpx * spread, ay2 = tipy - dy * a - perpy * spread;
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+  cairo_move_to(cr, ax1, ay1);
+  cairo_line_to(cr, tipx, tipy);
+  cairo_line_to(cr, ax2, ay2);
+  // dark halo first, then a white core, so it reads on any background
+  cairo_set_source_rgba(cr, 0., 0., 0., 0.7);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4) / scale);
+  cairo_stroke_preserve(cr);
+  cairo_set_source_rgb(cr, 1., 1., 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2) / scale);
+  cairo_stroke(cr);
+}
+
 static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
                                               cairo_t *crf,
                                               gpointer user_data)
@@ -351,7 +413,10 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
       cairo_fill(cr);
 
-      // Repaint the original image in the area of interest
+      // Repaint the original image in the area of interest. Isolate the box
+      // clip/translate in its own save so the off-view arrow below is drawn in
+      // plain thumbnail coordinates.
+      cairo_save(cr);
       cairo_set_source_surface(cr, surface, 0, 0);
       cairo_translate(cr, wd * (.5f + zoom_x), ht * (.5f + zoom_y));
       boxw *= wd;
@@ -369,6 +434,12 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_rectangle(cr, -boxw / 2, -boxh / 2, boxw, boxh);
       cairo_stroke(cr);
+      cairo_restore(cr);
+
+      // While editing a mask the viewport can be panned outside the image; the
+      // view box then shrinks against the thumbnail edge and disappears, losing
+      // any sense of where one is looking. Point an arrow the way it has gone.
+      _draw_offview_arrow(cr, wd, ht, zoom_x, zoom_y, scale);
     }
     cairo_restore(cr);
 

@@ -387,6 +387,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
 
     // we change the center value
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     gradient->anchor[0] = pts[0] / iwidth;
@@ -558,6 +559,7 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     gradient->anchor[0] = pts[0] / iwidth;
