@@ -1797,7 +1797,11 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   if(old_container) gtk_widget_show(new_container);
 }
 
-static gboolean _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
+static void _cycle_layout_callback(GtkGestureSingle *gesture,
+                                    gint n_press,
+                                    gdouble x,
+                                    gdouble y,
+                                    dt_iop_module_t *self)
 {
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 
@@ -1808,7 +1812,6 @@ static gboolean _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, 
   g_free(layout);
 
   _configure_slider_blocks(NULL, self);
-  return TRUE;
 }
 
 #define HSL_CALLBACK(which)                                                             \
@@ -1898,7 +1901,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->main_label, _("click to cycle layout"));
   GtkWidget *main_label_box = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(main_label_box), g->main_label);
-  g_signal_connect(G_OBJECT(main_label_box), "button-release-event", G_CALLBACK(_cycle_layout_callback), self);
+  dt_gui_connect_click(main_label_box, NULL, _cycle_layout_callback, self);
 
   g->main_box = gtk_event_box_new(); // is filled in _configure_slider_blocks
 
