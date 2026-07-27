@@ -1926,9 +1926,11 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
 }
 
 
-static void show_luminance_mask_callback(GtkWidget *togglebutton,
-                                         GdkEventButton *event,
-                                         dt_iop_module_t *self)
+static void show_luminance_mask_callback(GtkGestureSingle *gesture,
+                                           int n_press,
+                                           double x,
+                                           double y,
+                                           dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_request_focus(self);
@@ -3107,12 +3109,17 @@ static void area_button_release(GtkGestureSingle *gesture,
   }
 }
 
-static gboolean area_scroll(GtkWidget *widget,
-                            GdkEventScroll *event,
-                            gpointer user_data)
+static void area_scroll(GtkEventControllerScroll *controller,
+                         gdouble dx,
+                         gdouble dy,
+                         dt_iop_module_t *self)
 {
   // do not propagate to tab bar unless scrolling sidebar
-  return !dt_gui_ignore_scroll(event);
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  if(!dt_gui_ignore_scroll((GdkEventScroll *)event))
+    dt_gui_claim(controller);
+  gdk_event_free(event);
 }
 
 static void notebook_button_press(GtkGestureSingle *gesture,
@@ -3276,8 +3283,9 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_connect_click(g->area, area_button_press, area_button_release, self);
   dt_gui_connect_motion(g->area, area_motion_notify, NULL, area_leave_notify, self);
   gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(area_scroll), self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        area_scroll, self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
   g->smoothing = dt_bauhaus_slider_new_with_range(self, -2.33f, +1.67f, 0, 0.0f, 2);
