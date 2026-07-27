@@ -71,13 +71,17 @@ typedef struct dt_lib_history_t
 static void _lib_history_compress_clicked_callback(GtkButton *widget,
                                                    gpointer user_data);
 
-static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget,
-                                                       GdkEventButton *e,
-                                                       gpointer user_data);
+static void _lib_history_compress_pressed_callback(GtkGestureSingle *gesture,
+                                                   gint n_press,
+                                                   gdouble x,
+                                                   gdouble y,
+                                                   dt_lib_module_t *self);
 
-static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
-                                                     GdkEventButton *e,
-                                                     dt_lib_module_t *self);
+static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
+                                                 gint n_press,
+                                                 gdouble x,
+                                                 gdouble y,
+                                                 dt_lib_module_t *self);
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
                                                               gpointer user_data);
@@ -140,8 +144,7 @@ void gui_init(dt_lib_module_t *self)
     (self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
      _("create a minimal history stack which produces the same image\n"
        "ctrl+click to truncate history to the selected item"), 0, 0);
-  g_signal_connect(G_OBJECT(d->compress_button), "button-press-event",
-                   G_CALLBACK(_lib_history_compress_pressed_callback), self);
+  dt_gui_connect_click(d->compress_button, _lib_history_compress_pressed_callback, NULL, self);
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_NONE, NULL);
@@ -236,8 +239,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
-  g_signal_connect(G_OBJECT(widget), "button-press-event",
-                   G_CALLBACK(_lib_history_button_clicked_callback), self);
+  dt_gui_connect_click(widget, _lib_history_button_clicked_callback, NULL, self);
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
@@ -1241,31 +1243,34 @@ static void _lib_history_compress_clicked_callback(GtkButton *widget, gpointer u
   _lib_history_truncate(TRUE);
 }
 
-static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget,
-                                                       GdkEventButton *e,
-                                                       gpointer user_data)
+static void _lib_history_compress_pressed_callback(GtkGestureSingle *gesture,
+                                                   gint n_press,
+                                                   gdouble x,
+                                                   gdouble y,
+                                                   dt_lib_module_t *self)
 {
-  const gboolean compress = !dt_modifier_is(e->state, GDK_CONTROL_MASK);
+  const gboolean compress = !(dt_key_modifier_state() & GDK_CONTROL_MASK);
   _lib_history_truncate(compress);
-
-  return TRUE;
 }
 
-static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
-                                                     GdkEventButton *e,
-                                                     dt_lib_module_t *self)
+static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
+                                                 gint n_press,
+                                                 gdouble x,
+                                                 gdouble y,
+                                                 dt_lib_module_t *self)
 {
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!dt_is_valid_imgid(imgid)) return FALSE;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   static gboolean reset = FALSE;
 
-  if(reset) return FALSE;
+  if(reset) return;
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
 
   // shift-click just show the corresponding module in modulegroups
-  if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
+  if(dt_key_modifier_state() & GDK_SHIFT_MASK)
   {
     const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
     dt_dev_history_item_t *hist = g_list_nth_data(darktable.develop->history, num - 1);
@@ -1274,7 +1279,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
       dt_dev_modulegroups_switch(darktable.develop, hist->module);
       dt_iop_gui_set_expanded(hist->module, TRUE, TRUE);
     }
-    return TRUE;
+    return;
   }
 
   dt_lib_history_t *d = self->data;
@@ -1292,7 +1297,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
   g_list_free(children);
 
   reset = FALSE;
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -1310,7 +1315,6 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
 
   dt_iop_connect_accels_all();
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-  return FALSE;
 }
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,

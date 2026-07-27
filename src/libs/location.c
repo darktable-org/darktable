@@ -156,16 +156,16 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _event_box_enter_leave(GtkWidget *widget,
-                                       GdkEventCrossing *event,
-                                       gpointer user_data)
+static void _event_box_enter(GtkEventControllerMotion *controller, gdouble x, gdouble y, gpointer user_data)
 {
-  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY)
-    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
-  else
-    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+}
 
-  return FALSE;
+static void _event_box_leave(GtkEventControllerMotion *controller, gpointer user_data)
+{
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
 }
 
 static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
@@ -174,10 +174,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
   GtkWidget *eb, *vb, *w;
   eb = gtk_event_box_new();
   gtk_widget_set_name(eb, "dt-map-location");
-  g_signal_connect(G_OBJECT(eb), "enter-notify-event",
-                   G_CALLBACK(_event_box_enter_leave), NULL);
-  g_signal_connect(G_OBJECT(eb), "leave-notify-event",
-                   G_CALLBACK(_event_box_enter_leave), NULL);
+  dt_gui_connect_motion(eb, NULL, _event_box_enter, _event_box_leave, NULL);
 
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
