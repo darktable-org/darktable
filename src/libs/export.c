@@ -572,7 +572,7 @@ static void _scale_mdlclick_cb(GtkGestureSingle *gesture, int n_press,
                                   dt_lib_export_t *d)
 {
   GtkWidget *spin = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_MIDDLE)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_string(CONFIG_PREFIX "resizing_factor", "1");
     g_signal_handlers_block_by_func(spin, _scale_changed, d);
@@ -590,7 +590,7 @@ static void _widht_mdlclick_cb(GtkGestureSingle *gesture, int n_press,
                                   dt_lib_export_t *d)
 {
   GtkWidget *spin = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_MIDDLE)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "width", 0);
     g_signal_handlers_block_by_func(spin, _width_changed, d);
@@ -608,7 +608,7 @@ static void _height_mdlclick_cb(GtkGestureSingle *gesture, int n_press,
                                    dt_lib_export_t *d)
 {
   GtkWidget *spin = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_MIDDLE)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "height", 0);
     g_signal_handlers_block_by_func(spin, _height_changed, d);

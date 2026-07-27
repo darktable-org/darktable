@@ -278,7 +278,7 @@ static void _lib_colorlabels_button_press_callback(GtkGestureSingle *gesture, in
 
   const gint colorlabel = _get_colorlabel(self, w);
 
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_SECONDARY
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY
      && colorlabel != 5)  // The button to reset colorlabels needs no description
   {
     d->colorlabel = colorlabel;
