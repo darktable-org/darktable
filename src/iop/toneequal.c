@@ -3275,6 +3275,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
   dt_gui_connect_click(g->area, area_button_press, area_button_release, self);
   dt_gui_connect_motion(g->area, area_motion_notify, NULL, area_leave_notify, self);
+  gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(area_scroll), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
