@@ -786,8 +786,28 @@ void init(dt_view_t *self)
 
     g_signal_connect(GTK_WIDGET(lib->map), "changed",
                      G_CALLBACK(_view_map_changed_callback), self);
-    dt_gui_connect_click(lib->map, _view_map_click_pressed_cb, _view_map_click_released_cb, self);
-    dt_gui_connect_motion(lib->map, _view_map_motion_cb, NULL, NULL, self);
+    /* OsmGpsMap uses widget class vfuncs (button_press_event,
+     * motion_notify_event) for its event handling — not GtkGesture.
+     * In GTK3, the vfunc fires AFTER CAPTURE controllers and BEFORE
+     * BUBBLE controllers on the same widget.  If the vfunc returns
+     * TRUE (event consumed), BUBBLE controllers never fire, which
+     * is why BUBBLE phase doesn't work here.
+     *
+     * Use CAPTURE phase so our controllers run first.  We don't
+     * claim the sequence, so the event continues to the widget class
+     * vfunc and the map handles it normally. */
+    {
+      GtkGestureSingle *g
+        = dt_gui_connect_click(lib->map, _view_map_click_pressed_cb,
+                                _view_map_click_released_cb, self);
+      gtk_event_controller_set_propagation_phase(
+        GTK_EVENT_CONTROLLER(g), GTK_PHASE_CAPTURE);
+    }
+    {
+      GtkEventController *m
+        = dt_gui_connect_motion(lib->map, _view_map_motion_cb, NULL, NULL, self);
+      gtk_event_controller_set_propagation_phase(m, GTK_PHASE_CAPTURE);
+    }
     g_signal_connect(G_OBJECT(lib->map), "drag-motion",
                      G_CALLBACK(_view_map_drag_motion_callback),
                      self);
