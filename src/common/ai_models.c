@@ -31,15 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-// windows doesn't have realpath, use _fullpath instead
-static inline char *realpath(const char *path, char *resolved_path)
-{
-  (void)resolved_path; // ignored, always allocate
-  return _fullpath(NULL, path, _MAX_PATH);
-}
-#endif
-
 // internal layout of the registry singleton (darktable.ai_registry);
 // external callers go through the accessors in ai_models.h — the lock
 // and the model list are intentionally hidden so nobody can
@@ -1169,6 +1160,64 @@ static gboolean _verify_checksum(const char *filepath,
 
 static gboolean _rmdir_recursive(const char *path);
 
+// libarchive narrow-char APIs use the ANSI code page on Windows, so UTF-8
+// paths with non-ASCII chars fail; route through the _w variants on Windows
+
+static int _archive_open_utf8(struct archive *a,
+                              const char *path)
+{
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  if(!wpath)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] UTF-8 to UTF-16 conversion failed for archive path: %s",
+             path);
+    return ARCHIVE_FATAL;
+  }
+  const int r = archive_read_open_filename_w(a, wpath, 10240);
+  g_free(wpath);
+  return r;
+#else
+  return archive_read_open_filename(a, path, 10240);
+#endif
+}
+
+static gboolean _archive_entry_set_pathname_utf8(struct archive_entry *entry,
+                                                 const char *path)
+{
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  if(!wpath) return FALSE;
+  archive_entry_copy_pathname_w(entry, wpath);
+  g_free(wpath);
+#else
+  archive_entry_set_pathname(entry, path);
+#endif
+  return TRUE;
+}
+
+// canonical path, g_free-able; NULL if unresolvable
+static gchar *_canonical_path_utf8(const char *path)
+{
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  if(!wpath) return NULL;
+  wchar_t wresolved[_MAX_PATH];
+  gchar *out = NULL;
+  if(_wfullpath(wresolved, wpath, _MAX_PATH))
+    out = g_utf16_to_utf8((gunichar2 *)wresolved, -1, NULL, NULL, NULL);
+  g_free(wpath);
+  return out;
+#else
+  char *p = realpath(path, NULL);
+  if(!p) return NULL;
+  gchar *out = g_strdup(p);
+  free(p);
+  return out;
+#endif
+}
+
 static gboolean _extract_zip(const char *zippath,
                              const char *destdir)
 {
@@ -1186,11 +1235,11 @@ static gboolean _extract_zip(const char *zippath,
       | ARCHIVE_EXTRACT_SECURE_SYMLINKS
       | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
 
-  if((r = archive_read_open_filename(a, zippath, 10240)) != ARCHIVE_OK)
+  if((r = _archive_open_utf8(a, zippath)) != ARCHIVE_OK)
   {
     dt_print(DT_DEBUG_AI,
-             "[ai_models] failed to open archive: %s",
-             archive_error_string(a));
+             "[ai_models] failed to open archive %s: %s",
+             zippath, archive_error_string(a));
     archive_read_free(a);
     archive_write_free(ext);
     return FALSE;
@@ -1199,7 +1248,7 @@ static gboolean _extract_zip(const char *zippath,
   _ensure_directory(destdir);
 
   // resolve destdir to a canonical path for path traversal validation
-  char *real_destdir = realpath(destdir, NULL);
+  gchar *real_destdir = _canonical_path_utf8(destdir);
   if(!real_destdir)
   {
     dt_print(DT_DEBUG_AI, "[ai_models] failed to resolve destdir: %s", destdir);
@@ -1225,16 +1274,16 @@ static gboolean _extract_zip(const char *zippath,
     }
 
     // build full path in destination
-    char *full_path = g_build_filename(real_destdir, entry_name, NULL);
+    gchar *full_path = g_build_filename(real_destdir, entry_name, NULL);
 
     // verify the resolved path is within destdir
-    char *real_full_path = realpath(full_path, NULL);
-    // for new files, realpath returns NULL; check the parent directory instead
+    gchar *real_full_path = _canonical_path_utf8(full_path);
+    // for new files, the canonical form is unresolvable; check the parent instead
     if(!real_full_path)
     {
-      char *parent = g_path_get_dirname(full_path);
+      gchar *parent = g_path_get_dirname(full_path);
       _ensure_directory(parent);
-      char *real_parent = realpath(parent, NULL);
+      gchar *real_parent = _canonical_path_utf8(parent);
       g_free(parent);
       if(
         !real_parent || strncmp(real_parent, real_destdir, destdir_len) != 0
@@ -1242,11 +1291,11 @@ static gboolean _extract_zip(const char *zippath,
             && real_parent[destdir_len] != '\0'))
       {
         dt_print(DT_DEBUG_AI, "[ai_models] path traversal blocked: %s", entry_name);
-        free(real_parent);
+        g_free(real_parent);
         g_free(full_path);
         continue;
       }
-      free(real_parent);
+      g_free(real_parent);
     }
     else
     {
@@ -1256,14 +1305,21 @@ static gboolean _extract_zip(const char *zippath,
             && real_full_path[destdir_len] != '\0'))
       {
         dt_print(DT_DEBUG_AI, "[ai_models] path traversal blocked: %s", entry_name);
-        free(real_full_path);
+        g_free(real_full_path);
         g_free(full_path);
         continue;
       }
-      free(real_full_path);
+      g_free(real_full_path);
     }
 
-    archive_entry_set_pathname(entry, full_path);
+    if(!_archive_entry_set_pathname_utf8(entry, full_path))
+    {
+      dt_print(DT_DEBUG_AI,
+               "[ai_models] failed to convert entry path, skipping: %s",
+               entry_name);
+      g_free(full_path);
+      continue;
+    }
 
     r = archive_write_header(ext, entry);
     if(r == ARCHIVE_OK)
@@ -1298,7 +1354,7 @@ static gboolean _extract_zip(const char *zippath,
       break;
   }
 
-  free(real_destdir);
+  g_free(real_destdir);
   archive_read_close(a);
   archive_read_free(a);
   archive_write_close(ext);
