@@ -1521,6 +1521,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw",
                    G_CALLBACK(_area_draw_callback), self);
+  gtk_widget_add_events(GTK_WIDGET(g->area),
+                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
   dt_gui_connect_click(g->area, _area_button_press_callback, NULL, self);
   dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, _area_leave_notify_callback, self);
   dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES

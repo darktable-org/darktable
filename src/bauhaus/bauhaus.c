@@ -1023,7 +1023,10 @@ void dt_bauhaus_init()
   gtk_container_add(GTK_CONTAINER(pop->window), pop->area);
   gtk_widget_set_can_focus(pop->area, TRUE);
   gtk_widget_add_events(pop->area,
-                        darktable.gui->scroll_mask);
+                        GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                        | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
 
   GObject *window = G_OBJECT(pop->window);
   GObject *area = G_OBJECT(pop->area);

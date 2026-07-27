@@ -90,7 +90,10 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *drawing = gtk_drawing_area_new();
 
-  gtk_widget_set_events(drawing, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
+  gtk_widget_set_events(drawing, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK
+                               | GDK_POINTER_MOTION_MASK
+                               | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
   /* connect callbacks */
   gtk_widget_set_tooltip_text(drawing, _("set star rating for selected images"));

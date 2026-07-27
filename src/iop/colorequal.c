@@ -2979,9 +2979,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle sliders visibility\nalt+scroll to change page"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
+  gtk_widget_add_events(GTK_WIDGET(g->area),
+                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | darktable.gui->scroll_mask);
   dt_gui_connect_click_all(g->area, _area_button_press_callback, _area_button_release_callback, self);
   dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, NULL, self);
-  gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
   dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
                                         | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
                         _area_scrolled_callback, self);
