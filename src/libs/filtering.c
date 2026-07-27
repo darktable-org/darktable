@@ -1160,6 +1160,47 @@ static void _event_rule_disable(GtkWidget *widget, dt_lib_filtering_rule_t *rule
   _widget_header_update(rule);
 }
 
+static void _rule_remove_config_entries(dt_lib_module_t *self, dt_lib_filtering_rule_t *rule)
+{
+  dt_lib_filtering_t *d = rule->lib;
+  if(d->nb_rules <= 0) return;
+  d->nb_rules--;
+  dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
+
+  // move up all still active rules by one.
+  for(int i = rule->num; i < DT_COLLECTION_MAX_RULES - 1; i++)
+  {
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i + 1);
+    const int mode = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i + 1);
+    const int item = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i + 1);
+    const int off = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i + 1);
+    const int top = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i + 1);
+    gchar *string = dt_conf_get_string(confname);
+    if(string)
+    {
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
+      dt_conf_set_int(confname, mode);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
+      dt_conf_set_int(confname, item);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
+      dt_conf_set_int(confname, off);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+      dt_conf_set_int(confname, top);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
+      dt_conf_set_string(confname, string);
+      g_free(string);
+    }
+  }
+
+  _filters_gui_update(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, rule->prop, NULL);
+}
+
 static void _event_rule_close_cb(GtkGestureSingle *gesture, int n_press,
                                     double x, double y,
                                     dt_lib_module_t *self)
@@ -1169,48 +1210,7 @@ static void _event_rule_close_cb(GtkGestureSingle *gesture, int n_press,
   if(rule->manual_widget_set) return;
 
   if(!rule->topbar)
-  {
-    // decrease the nb of active rules
-    dt_lib_filtering_t *d = rule->lib;
-    if(d->nb_rules <= 0) return;
-    d->nb_rules--;
-    dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
-
-    // move up all still active rules by one.
-    for(int i = rule->num; i < DT_COLLECTION_MAX_RULES - 1; i++)
-    {
-      char confname[200] = { 0 };
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i + 1);
-      const int mode = dt_conf_get_int(confname);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i + 1);
-      const int item = dt_conf_get_int(confname);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i + 1);
-      const int off = dt_conf_get_int(confname);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i + 1);
-      const int top = dt_conf_get_int(confname);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i + 1);
-      gchar *string = dt_conf_get_string(confname);
-      if(string)
-      {
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
-        dt_conf_set_int(confname, mode);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
-        dt_conf_set_int(confname, item);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
-        dt_conf_set_int(confname, off);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
-        dt_conf_set_int(confname, top);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
-        dt_conf_set_string(confname, string);
-        g_free(string);
-      }
-    }
-
-    _filters_gui_update(self);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, rule->prop, NULL);
-  }
-  else
-    return;
+    _rule_remove_config_entries(self, rule);
 }
 
 static gboolean _rule_available_for_topbar(const dt_collection_properties_t prop)
@@ -1677,55 +1677,19 @@ static void _topbar_rule_remove_cb(GtkGestureSingle *gesture, int n_press,
   _topbar_update(self);
 
   // remove the rule
-  dt_lib_filtering_rule_t *r = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  if(!r->manual_widget_set && !r->topbar)
-  {
-    if(d->nb_rules > 0)
-    {
-      d->nb_rules--;
-      dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
-      for(int i = r->num; i < DT_COLLECTION_MAX_RULES - 1; i++)
-      {
-        char confname[200] = { 0 };
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i + 1);
-        const int mode = dt_conf_get_int(confname);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i + 1);
-        const int item = dt_conf_get_int(confname);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i + 1);
-        const int off = dt_conf_get_int(confname);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i + 1);
-        const int top = dt_conf_get_int(confname);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i + 1);
-        gchar *string = dt_conf_get_string(confname);
-        if(string)
-        {
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
-          dt_conf_set_int(confname, mode);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
-          dt_conf_set_int(confname, item);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
-          dt_conf_set_int(confname, off);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
-          dt_conf_set_int(confname, top);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
-          dt_conf_set_string(confname, string);
-          g_free(string);
-        }
-      }
-      _filters_gui_update(self);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, r->prop, NULL);
-    }
-  }
+  _rule_remove_config_entries(self, rule);
 
   // reconstruct the combobox
   GtkWidget *hb = gtk_widget_get_parent(widget);
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(hb)));
+  GtkWidget *popover_vbox = gtk_widget_get_parent(hb);
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(popover_vbox));
   GtkWidget *combo = g_list_last(childs)->data;
+  g_list_free(childs);
   dt_bauhaus_combobox_clear(combo);
   _topbar_populate_rules_combo(combo, d);
 
   // remove the entry from the popover
-  gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(hb)), hb);
+  gtk_container_remove(GTK_CONTAINER(popover_vbox), hb);
 }
 
 static GtkWidget *_topbar_menu_new_rule(dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
