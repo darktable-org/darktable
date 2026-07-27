@@ -1517,12 +1517,15 @@ static gboolean _blendop_masks_modes_param_toggled(GtkToggleButton *button,
                                      DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL);
 }
 
-static gboolean _blendop_masks_modes_both_toggled(GtkToggleButton *button,
-                                                  GdkEventButton *event,
-                                                  dt_iop_module_t *module)
+static void _blendop_masks_modes_both_toggled(GtkGestureSingle *gesture,
+                                                 int n_press,
+                                                 double x,
+                                                 double y,
+                                                 dt_iop_module_t *module)
 {
-  return _blendop_masks_modes_toggle(button, module,
-                                     DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_CONDITIONAL);
+  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  _blendop_masks_modes_toggle(GTK_TOGGLE_BUTTON(button), module,
+                              DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_CONDITIONAL);
 }
 
 static gboolean _blendop_masks_modes_raster_toggled(GtkToggleButton *button,
