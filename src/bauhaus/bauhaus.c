@@ -535,18 +535,7 @@ static void _popup_scroll_cb(GtkEventControllerScroll *controller,
   {
     // match keyboard: right & down -> next
     int delta_x = 0, delta_y = 0;
-    GdkEvent *event = gtk_get_current_event();
-    if(event)
-    {
-      dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)event, &delta_x, &delta_y);
-      gdk_event_free(event);
-    }
-    else
-    {
-      // fallback: use raw values if no current event
-      delta_x = (int)dx;
-      delta_y = (int)dy;
-    }
+    dt_gui_get_scroll_unit_deltas_fallback(dx, dy, &delta_x, &delta_y);
     const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
     if(delta != 0)
       _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
@@ -554,16 +543,7 @@ static void _popup_scroll_cb(GtkEventControllerScroll *controller,
   else
   {
     int delta = 0;
-    GdkEvent *event = gtk_get_current_event();
-    if(event)
-    {
-      dt_gui_get_scroll_unit_delta((const GdkEventScroll *)event, &delta);
-      gdk_event_free(event);
-    }
-    else
-    {
-      delta = -(int)dy;
-    }
+    dt_gui_get_scroll_unit_delta_fallback(dy, &delta);
     _slider_zoom_range(w, delta);
   }
 }
