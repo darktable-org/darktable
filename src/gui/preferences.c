@@ -98,12 +98,16 @@ static void tree_row_activated_presets(GtkTreeView *tree,
                                        gpointer data);
 static void tree_selection_changed(GtkTreeSelection *selection,
                                    gpointer data);
-static gboolean tree_key_press(GtkWidget *widget,
-                               GdkEventKey *event,
-                               gpointer data);
-static gboolean tree_key_press_presets(GtkWidget *widget,
-                                       GdkEventKey *event,
-                                       gpointer data);
+static gboolean _search_key_pressed(GtkEventControllerKey *controller,
+                                    guint keyval,
+                                    guint keycode,
+                                    GdkModifierType state,
+                                    GtkWidget *search_entry);
+static gboolean _delete_preset_key_pressed(GtkEventControllerKey *controller,
+                                           guint keyval,
+                                           guint keycode,
+                                           GdkModifierType state,
+                                           GtkTreeStore *model);
 
 static GtkWidget *_preferences_dialog;
 
@@ -904,6 +908,24 @@ static gboolean _search_func(GtkTreeModel *model,
   return TRUE;
 }
 
+static gboolean _search_key_pressed(GtkEventControllerKey *controller,
+                                    guint keyval,
+                                    guint keycode,
+                                    GdkModifierType state,
+                                    GtkWidget *search_entry)
+{
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkSearchEntry *entry = GTK_SEARCH_ENTRY(search_entry);
+  // we build a temporary GdkEventKey to reuse dt_gui_search_start
+  GdkEventKey event;
+  memset(&event, 0, sizeof(event));
+  event.type = GDK_KEY_PRESS;
+  event.keyval = keyval;
+  event.state = state;
+  event.is_modifier = (keyval >= GDK_KEY_Shift_L && keyval <= GDK_KEY_Hyper_R);
+  return dt_gui_search_start(widget, &event, entry);
+}
+
 static void init_tab_presets(GtkWidget *stack)
 {
   GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -1013,8 +1035,7 @@ static void init_tab_presets(GtkWidget *stack)
                    G_CALLBACK(dt_gui_search_stop), tree);
   g_signal_connect(G_OBJECT(search_presets), "stop-search",
                    G_CALLBACK(dt_gui_search_stop), tree);
-  g_signal_connect(G_OBJECT(tree), "key-press-event",
-                   G_CALLBACK(dt_gui_search_start), search_presets);
+  dt_gui_connect_key(tree, _search_key_pressed, search_presets);
   gtk_tree_view_set_search_entry(tree, GTK_ENTRY(search_presets));
 
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
@@ -1039,8 +1060,7 @@ static void init_tab_presets(GtkWidget *stack)
                    G_CALLBACK(tree_row_activated_presets), NULL);
 
   // A keypress may delete preset
-  g_signal_connect(G_OBJECT(tree), "key-press-event",
-                   G_CALLBACK(tree_key_press_presets), (gpointer)model);
+  dt_gui_connect_key(tree, _delete_preset_key_pressed, model);
 
   // Setting up the search functionality
   gtk_tree_view_set_search_equal_func(tree, _search_func, tree, NULL);
@@ -1152,18 +1172,22 @@ static void tree_row_activated_presets(GtkTreeView *tree,
   }
 }
 
-static gboolean tree_key_press_presets(GtkWidget *widget,
-                                       GdkEventKey *event,
-                                       gpointer data)
+static gboolean _delete_preset_key_pressed(GtkEventControllerKey *controller,
+                                             guint keyval,
+                                             guint keycode,
+                                             GdkModifierType state,
+                                             GtkTreeStore *model_store)
 {
-  GtkTreeModel *model = (GtkTreeModel *)data;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkTreeModel *model = GTK_TREE_MODEL(model_store);
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 
-  // We can just ignore mod key presses outright
-  if(event->is_modifier) return FALSE;
+  // We can just ignore modifier keys outright
+  if((keyval >= GDK_KEY_Shift_L && keyval <= GDK_KEY_Hyper_R))
+    return FALSE;
 
-  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Delete || dt_gdk_event_get_keyval(event) == GDK_KEY_BackSpace)
+  if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_BackSpace)
   {
     // If a leaf node is selected, delete that preset
 
