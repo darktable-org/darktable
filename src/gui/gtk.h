@@ -558,6 +558,27 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
   gtk_gesture_single_set_button(dt_gui_connect_click(widget, pressed, released, data), 0)
 
+/*
+ * GTK3 bridge: GtkGestureMultiPress in GTK3 does not process
+ * GDK_2BUTTON_PRESS / GDK_3BUTTON_PRESS.  See implementation in gtk.c
+ * for the full explanation and GTK4 migration instructions.
+ *
+ * Connection: call alongside dt_gui_connect_click() with the same
+ * pressed callback and data.  The callback receives (NULL, n_press, x, y, data)
+ * — the NULL gesture indicates the call came from this bridge, so the callback
+ * must handle that gracefully (see culling.c/thumbtable.c for the pattern).
+ *
+ * GTK4 migration: remove all calls to dt_gui_connect_double_click() and
+ * delete this declaration.  GtkGestureClick handles n_press natively.
+ */
+unsigned long dt_gui_connect_double_click(GtkWidget *widget,
+                                           GCallback pressed,
+                                           gpointer data);
+#define dt_gui_connect_double_click(widget, pressed, data) ( \
+  ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  dt_gui_connect_double_click(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
+void dt_gui_disconnect_double_click(GtkWidget *widget, unsigned long id);
+
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
                                   GCallback drag_end,
