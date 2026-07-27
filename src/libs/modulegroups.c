@@ -2668,16 +2668,19 @@ static void _manage_editor_module_add_popup(GtkWidget *widget,
                            G_CALLBACK(_manage_editor_module_add), self, FALSE);
 }
 
-static gboolean _presets_pressed(GtkWidget *widget,
-                                 GdkEventButton *event,
-                                 dt_lib_module_t *self)
+static void _presets_pressed_cb(GtkGestureSingle *gesture,
+                                int n_press,
+                                double x,
+                                double y,
+                                dt_lib_module_t *self)
 {
-  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+  if(state & GDK_CONTROL_MASK)
   {
     manage_presets(self);
-    return TRUE;
+    dt_gui_claim(gesture);
   }
-  return FALSE;
 }
 
 static void _manage_direct_popup(GtkGestureSingle *gesture,
@@ -3019,8 +3022,7 @@ void gui_init(dt_lib_module_t *self)
   self->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(self->presets_button, _("presets\nctrl+click to manage"));
   gtk_box_pack_start(GTK_BOX(d->hbox_buttons), self->presets_button, FALSE, FALSE, 0);
-  g_signal_connect(self->presets_button, "button-press-event",
-                   G_CALLBACK(_presets_pressed), self);
+  dt_gui_connect_click(self->presets_button, _presets_pressed_cb, NULL, self);
 
   /* search box */
   d->text_entry = gtk_search_entry_new();
