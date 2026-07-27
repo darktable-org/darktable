@@ -1988,10 +1988,13 @@ static void _shortcut_row_activated(GtkTreeView *tree_view,
   _grab_in_tree_view(tree_view);
 }
 
-static gboolean _view_key_pressed(GtkWidget *widget,
-                                  GdkEventKey *event,
-                                  gpointer user_data)
+static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
+                                       guint keyval,
+                                       guint keycode,
+                                       GdkModifierType state,
+                                       GtkWidget *search_entry)
 {
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
@@ -2002,7 +2005,7 @@ static gboolean _view_key_pressed(GtkWidget *widget,
     if(!strcmp(gtk_widget_get_name(widget), "actions_view"))
     {
       // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-      if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+      if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         dt_shortcut_t shortcut = { .speed = 1.0 };
         gtk_tree_model_get(model, &iter, 0, &shortcut.action, -1);
@@ -2020,13 +2023,13 @@ static gboolean _view_key_pressed(GtkWidget *widget,
         dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
         // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-        if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK) && s->views)
+        if(dt_modifier_is(state, GDK_CONTROL_MASK) && s->views)
         {
           _shortcut_copy_lua(NULL, s, NULL);
         }
 
         // GDK_KEY_BackSpace moves to parent in tree
-        if(dt_gdk_event_get_keyval(event) == GDK_KEY_Delete || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Delete)
+        if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete)
         {
           if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
                                        s->is_default ? s->views ?
@@ -2045,7 +2048,7 @@ static gboolean _view_key_pressed(GtkWidget *widget,
     }
   }
 
-  return dt_gui_search_start(widget, event, user_data);
+  return dt_gui_search_start(widget, (GdkEventKey *)gtk_get_current_event(), GTK_SEARCH_ENTRY(search_entry));
 }
 
 static void _add_shortcuts_to_tree()
@@ -2260,22 +2263,22 @@ static gboolean _action_find_and_expand(GtkTreeModel *model,
   return FALSE;
 }
 
-static gboolean _action_view_click(GtkWidget *widget,
-                                   GdkEventButton *event,
-                                   gpointer data)
+static void _action_view_click_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkTreeStore *model_data)
 {
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(view);
+  const guint button = gtk_gesture_single_get_button(gesture);
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(button == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
     GtkTreePath *path = NULL;
-    if(gtk_tree_view_get_path_at_pos(view, (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
+    if(gtk_tree_view_get_path_at_pos(view, (gint)x, (gint)y,
                                      &path, NULL, NULL, NULL))
     {
-      if(dt_gdk_event_get_type(event) == GDK_DOUBLE_BUTTON_PRESS)
+      if(n_press == 2)
       {
         gtk_tree_selection_select_path(selection, path);
         _action_row_activated(view, path, NULL, model);
@@ -2296,15 +2299,13 @@ static gboolean _action_view_click(GtkWidget *widget,
     else
       gtk_tree_selection_unselect_all(selection);
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
     GtkTreeIter iter;
     gtk_tree_model_get_iter_first(model, &iter);
 
     _action_find_and_expand(model, &iter, view);
   }
-
-  return TRUE;
 }
 
 static gboolean _action_view_show(GtkTreeView *view,
@@ -2910,8 +2911,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_name(GTK_WIDGET(shortcuts_view), "shortcuts_view");
   g_signal_connect(G_OBJECT(shortcuts_view), "row-activated",
                    G_CALLBACK(_shortcut_row_activated), filtered_shortcuts);
-  g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event",
-                   G_CALLBACK(_view_key_pressed), search_shortcuts);
+  dt_gui_connect_key(shortcuts_view, _view_key_pressed_cb, search_shortcuts);
   g_signal_connect(G_OBJECT(_shortcuts_store), "row-inserted",
                    G_CALLBACK(_shortcut_row_inserted), shortcuts_view);
 
@@ -3009,10 +3009,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_name(GTK_WIDGET(actions_view), "actions_view");
   g_signal_connect(G_OBJECT(actions_view), "row-activated",
                    G_CALLBACK(_action_row_activated), _actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "button-press-event",
-                   G_CALLBACK(_action_view_click), _actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "key-press-event",
-                   G_CALLBACK(_view_key_pressed), search_actions);
+  dt_gui_connect_click_all(actions_view, _action_view_click_cb, NULL, _actions_store);
+  dt_gui_connect_key(actions_view, _view_key_pressed_cb, search_actions);
 
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
                    G_CALLBACK(_action_selection_changed), shortcuts_view);
@@ -4853,12 +4851,9 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
   return owner;
 }
 
-static gboolean _reset_element_on_leave(GtkWidget *widget,
-                                        GdkEvent *event,
-                                        gpointer user_data)
+static void _reset_element_on_leave_cb(GtkEventControllerMotion *controller, gpointer user_data)
 {
   darktable.control->element = -1;
-  return FALSE;
 }
 
 dt_action_t *dt_action_define(dt_action_t *owner,
@@ -4917,8 +4912,7 @@ dt_action_t *dt_action_define(dt_action_t *owner,
       }
 
       gtk_widget_set_has_tooltip(widget, TRUE);
-      g_signal_connect(G_OBJECT(widget), "leave-notify-event",
-                       G_CALLBACK(_reset_element_on_leave), NULL);
+      dt_gui_connect_motion(widget, NULL, NULL, _reset_element_on_leave_cb, NULL);
     }
   }
 
