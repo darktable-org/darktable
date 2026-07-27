@@ -3097,6 +3097,10 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
+  // avoid unexpected back to lighttable mode on double-click
+  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
+    return 1;
+
   dt_iop_liquify_gui_data_t *g = self->gui_data;
   dt_iop_liquify_params_t *p = self->params;
 
