@@ -1858,7 +1858,6 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
                                 gdouble y,
                                 dt_view_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   dt_map_t *lib = self->data;
   GdkEvent *event = gtk_get_current_event();
 
@@ -2167,10 +2166,10 @@ static void _view_map_click_pressed_cb(GtkGestureSingle *gesture,
         {
           GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(lib->map));
           GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(display));
-          gdouble root_x, root_y;
+          gint root_x, root_y;
           gdk_device_get_position(pointer, NULL, &root_x, &root_y);
-          lib->start_drag_x = ceil(root_x);
-          lib->start_drag_y = ceil(root_y);
+          lib->start_drag_x = root_x;
+          lib->start_drag_y = root_y;
           lib->loc.drag = TRUE;
           return;
         }
@@ -2216,10 +2215,10 @@ static void _view_map_click_pressed_cb(GtkGestureSingle *gesture,
       {
         GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(lib->map));
         GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(display));
-        gdouble root_x, root_y;
+        gint root_x, root_y;
         gdk_device_get_position(pointer, NULL, &root_x, &root_y);
-        lib->start_drag_x = ceil(root_x);
-        lib->start_drag_y = ceil(root_y);
+        lib->start_drag_x = root_x;
+        lib->start_drag_y = root_y;
         lib->start_drag = TRUE;
       }
     }
