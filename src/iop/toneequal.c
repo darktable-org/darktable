@@ -2946,6 +2946,7 @@ static gboolean area_draw(GtkWidget *widget,
 static void area_leave_notify(GtkEventControllerMotion *controller,
                                dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE();
   if(!self->enabled) return;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2977,6 +2978,8 @@ static void area_button_press(GtkGestureSingle *gesture,
                                gdouble y,
                                dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE();
+
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   dt_iop_request_focus(self);
@@ -3030,6 +3033,7 @@ static void area_motion_notify(GtkEventControllerMotion *controller,
                                 gdouble y,
                                 dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE();
   if(!self->enabled) return;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3084,6 +3088,7 @@ static void area_button_release(GtkGestureSingle *gesture,
                                  gdouble y,
                                  dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE();
   if(!self->enabled) return;
 
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
@@ -3114,12 +3119,8 @@ static void area_scroll(GtkEventControllerScroll *controller,
                          gdouble dy,
                          dt_iop_module_t *self)
 {
-  // do not propagate to tab bar unless scrolling sidebar
-  GdkEvent *event = gtk_get_current_event();
-  if(!event) return;
-  if(!dt_gui_ignore_scroll((GdkEventScroll *)event))
-    dt_gui_claim(controller);
-  gdk_event_free(event);
+  // scroll is already filtered by _scroll_sidebar in the proxy,
+  // so only valid scroll events on the area widget reach here.
 }
 
 static void notebook_button_press(GtkGestureSingle *gesture,
