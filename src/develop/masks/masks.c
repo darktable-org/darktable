@@ -243,6 +243,18 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form,
   }
 }
 
+// Maximum fraction of the image dimension by which a dragged mask node /
+// anchor / clone source may be pushed outside the image.
+#define DT_MASKS_MOVE_MARGIN 0.5f
+
+void dt_masks_clamp_move_pts(float *pts, const float wd, const float ht)
+{
+  const float mx = DT_MASKS_MOVE_MARGIN * wd;
+  const float my = DT_MASKS_MOVE_MARGIN * ht;
+  pts[0] = fminf(fmaxf(pts[0], -mx), wd + mx);
+  pts[1] = fminf(fmaxf(pts[1], -my), ht + my);
+}
+
 void dt_masks_gui_form_test_create(dt_masks_form_t *form,
                                    dt_masks_form_gui_t *gui,
                                    const dt_iop_module_t *module)

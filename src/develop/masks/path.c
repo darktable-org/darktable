@@ -3518,6 +3518,7 @@ static int _path_events_button_released(dt_iop_module_t *module,
     // we get point0 new values
     dt_masks_point_path_t *point = form->points->data;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     const float dx = pts[0] / iwidth - point->corner[0];
     const float dy = pts[1] / iheight - point->corner[1];
@@ -3571,6 +3572,7 @@ static int _path_events_button_released(dt_iop_module_t *module,
 
     // we change the source value
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     form->source[0] = pts[0] / iwidth;
     form->source[1] = pts[1] / iheight;
@@ -3823,6 +3825,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
   else if(gui->form_dragging || gui->source_dragging)
   {
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     // we move all points

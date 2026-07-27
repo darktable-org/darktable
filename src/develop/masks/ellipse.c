@@ -840,6 +840,7 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
 
     // we change the center value
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     ellipse->center[0] = pts[0] / iwidth;
     ellipse->center[1] = pts[1] / iheight;
@@ -1012,6 +1013,7 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
     {
       // we change the center value
       float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+      dt_masks_clamp_move_pts(pts, wd, ht);
 
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -1057,6 +1059,7 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
     float wd, ht, iwidth, iheight;
     dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     if(gui->form_dragging)
