@@ -919,6 +919,7 @@ void dt_bauhaus_load_theme()
   // around it
   gint min_width = 0, min_height = 0;
   GtkBorder check_padding = { 0 }, check_border = { 0 };
+  bh->check_margin = (GtkBorder){ 0 };
   if(bh->check_context)
   {
     const GtkStateFlags check_state = gtk_style_context_get_state(bh->check_context);
@@ -928,7 +929,14 @@ void dt_bauhaus_load_theme()
                           NULL);
     gtk_style_context_get_padding(bh->check_context, check_state, &check_padding);
     gtk_style_context_get_border(bh->check_context, check_state, &check_border);
+    // gtk lays a check button out with these around the indicator, and
+    // gtk_render_check() does not apply them, so the space in front of the
+    // box and between the box and the label are ours to add
+    gtk_style_context_get_margin(bh->check_context, check_state, &bh->check_margin);
   }
+  // only the gap between the box and the label is used, and never less than
+  // the spacing the other widget types keep between their own parts
+  bh->check_margin.right = MAX(bh->check_margin.right, INNER_PADDING);
   const gint css_width = min_width + check_padding.left + check_padding.right
                                    + check_border.left + check_border.right;
   const gint css_height = min_height + check_padding.top + check_padding.bottom
@@ -1166,6 +1174,25 @@ void dt_bauhaus_widget_set_label_ellipsize(GtkWidget *widget,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   w->label_ellipsis = ellipsize;
   gtk_widget_queue_draw(GTK_WIDGET(w));
+}
+
+void dt_bauhaus_widget_get_quad_rect(GtkWidget *widget,
+                                     GdkRectangle *rect)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  // the quad is the last thing on the row, drawn INNER_PADDING * 4 into the
+  // width _widget_get_quad_width() reserves for it at the end
+  const int right = allocation.width - w->margin.right - w->padding.right;
+  const int top = w->margin.top + w->padding.top;
+
+  rect->width = darktable.bauhaus->quad_width;
+  rect->height = allocation.height - top - w->margin.bottom - w->padding.bottom;
+  rect->x = right - _widget_get_quad_width(w) + INNER_PADDING * 4;
+  rect->y = top;
 }
 
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
@@ -1684,10 +1711,6 @@ GtkWidget *dt_bauhaus_toggle_from_widget(dt_bauhaus_widget_t *w,
   dt_bauhaus_toggle_data_t *d = &w->toggle;
   d->active = FALSE;
   d->defpos = FALSE;
-
-  // the tick box is drawn in front of the label, so the column that the
-  // other types keep free on the right would only be wasted width here
-  w->show_quad = FALSE;
 
   gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-toggle");
 
@@ -2986,10 +3009,12 @@ static gboolean _widget_draw(GtkWidget *widget,
     break;
     case DT_BAUHAUS_TOGGLE:
     {
-      // box first, then the label beside it, so the pair reads as one
-      // control the way a check button does
+      // the box starts where the other types start their label, so that a
+      // checkbox lines up with them down the left of a module, and the
+      // label follows it after the gap the css keeps between a check
+      // button's indicator and its own label
       const float size = _toggle_box_size();
-      const float indent = size + INNER_PADDING * 2;
+      const float indent = size + darktable.bauhaus->check_margin.right;
       _draw_toggle_box(w, cr, 0, h3, size);
 
       gchar *label_text = _build_label(w);
@@ -3072,7 +3097,7 @@ static gint _natural_width(GtkWidget *widget,
   else if(w->type == DT_BAUHAUS_TOGGLE)
   {
     // the box sits in front of the label rather than in the quad column
-    natural_size += _toggle_box_size() + INNER_PADDING * 2;
+    natural_size += _toggle_box_size() + darktable.bauhaus->check_margin.right;
   }
   else
   {
