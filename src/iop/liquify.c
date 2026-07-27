@@ -3555,8 +3555,22 @@ static void _btn_make_radio_cb(GtkToggleButton *btn,
     g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
   }
 
+  /* Called from GtkGestureMultiPress::pressed (via our CAPTURE-phase
+   * gesture that claims the sequence).  The signal fires BEFORE the
+   * togglebutton toggles, so we manage all toggle states explicitly. */
+  if(!btn)
+  {
+    /* NULL btn from gui_focus() / gui_reset() — disable all tools. */
+    gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
+    gtk_toggle_button_set_active(g->btn_line_tool, FALSE);
+    gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
+    gtk_toggle_button_set_active(g->btn_node_tool, FALSE);
+    dt_control_hinter_message("");
+    return;
+  }
+
   // now, let's enable and start a new form safely
-  if(!btn || !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn)))
+  if(!gtk_toggle_button_get_active(btn))
   {
     gtk_toggle_button_set_active(g->btn_point_tool, btn == g->btn_point_tool);
     gtk_toggle_button_set_active(g->btn_line_tool,  btn == g->btn_line_tool);
@@ -3602,14 +3616,16 @@ static void btn_make_radio_callback(GtkGestureSingle *gesture,
                                       double y,
                                       dt_iop_module_t *self)
 {
-  GtkWidget *btn = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  gboolean ctrl_pressed = FALSE;
   GdkEvent *event = gtk_get_current_event();
+  gboolean ctrl_pressed = FALSE;
   if(event)
   {
     ctrl_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
     gdk_event_free(event);
   }
+
+  GtkWidget *btn = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+
   _btn_make_radio_cb(GTK_TOGGLE_BUTTON(btn), ctrl_pressed, self);
 }
 
