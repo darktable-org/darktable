@@ -2714,7 +2714,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     apply_autotune(self);
 }
 
-static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, const dt_iop_module_t *self)
+static void show_mask_callback(GtkGestureSingle *gesture,
+                                int n_press,
+                                double x,
+                                double y,
+                                const dt_iop_module_t *self)
 {
   DT_TRY_GUI_UPDATE();
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;

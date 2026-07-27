@@ -1799,18 +1799,24 @@ void gui_post_expose(dt_iop_module_t *self,
   }
 }
 
-static gboolean rt_edit_masks_callback(GtkWidget *widget,
-                                       GdkEventButton *event,
-                                       dt_iop_module_t *self)
+static void rt_edit_masks_callback(GtkGestureSingle *gesture,
+                                     int n_press,
+                                     double x,
+                                     double y,
+                                     dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
   // if we don't have the focus, request for it and quit, gui_focus() do the rest
   if(darktable.develop->gui_module != self)
   {
     dt_iop_request_focus(self);
-    return FALSE;
+    return;
   }
+
+  GdkEvent *event = gtk_get_current_event();
+  const guint button = event ? dt_gdk_event_get_button(event) : 0;
+  const GdkModifierType state = event ? dt_gdk_event_get_state(event) : 0;
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1831,7 +1837,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(button == GDK_BUTTON_PRIMARY)
   {
     DT_ENTER_GUI_UPDATE();
 
@@ -1842,7 +1848,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
       const gboolean control_button_pressed =
-        dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+        dt_modifier_is(state, GDK_CONTROL_MASK);
 
       switch(bd->masks_shown)
       {
@@ -1876,24 +1882,32 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
                                  && (darktable.develop->gui_module == self));
 
     DT_LEAVE_GUI_UPDATE();
-
-    return TRUE;
   }
 
-  return TRUE;
+  if(event) gdk_event_free(event);
 }
 
-static gboolean rt_add_shape_callback(GtkWidget *widget,
-                                      GdkEventButton *e,
-                                      dt_iop_module_t *self)
+static void rt_add_shape_callback(GtkGestureSingle *gesture,
+                                    int n_press,
+                                    double x,
+                                    double y,
+                                    dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
+
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
+  gboolean creation_continuous = FALSE;
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    creation_continuous = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+    gdk_event_free(event);
+  }
 
   rt_add_shape(widget, creation_continuous, self);
 
@@ -1905,8 +1919,6 @@ static gboolean rt_add_shape_callback(GtkWidget *widget,
                                rt_shape_is_being_added(self, DT_MASKS_ELLIPSE));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush),
                                rt_shape_is_being_added(self, DT_MASKS_BRUSH));
-
-  return TRUE;
 }
 
 static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,

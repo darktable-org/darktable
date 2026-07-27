@@ -246,7 +246,12 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
                                    DTGTKCairoPaintIconFunc paint, GtkWidget *box)
 {
   GtkWidget *w = dtgtk_togglebutton_new(paint, 0, NULL);
-  g_signal_connect_data(G_OBJECT(w), "button-press-event", callback, self, NULL, 0);
+  {
+    GtkGesture *gesture = gtk_gesture_multi_press_new(w);
+    g_object_weak_ref(G_OBJECT(w), (GWeakNotify)g_object_unref, gesture);
+    g_signal_connect_data(gesture, "pressed", callback, self, NULL, 0);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+  }
 
   if(!ctrl_label)
     gtk_widget_set_tooltip_text(w, _(label));
