@@ -1140,6 +1140,64 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
     }
   }
 
+  /*
+   * Panasonic distortion correction (RW2/RWL)
+   *
+   * The DistortionInfo tag (0x0119 in IFD0 of the RW2) is a 32-byte blob of
+   * 16 signed 16-bit little-endian entries. Exiv2 exposes it as an Undefined
+   * byte array under the numeric key; we parse the fields ourselves.
+   *
+   * Layout (from ExifTool PanasonicRaw.pm + trou/panasonic-rw2 notes):
+   *   [0,1]  checksums (ignored)
+   *   [2]    DistortionParam02 (unknown; leave for future investigation)
+   *   [3]    usually 0
+   *   [4]    DistortionParam04 -> b (r^5)
+   *   [5]    DistortionScale
+   *   [6]    unused
+   *   [7]    DistortionCorrection flag: low nibble 0=off, 1=on
+   *   [8]    DistortionParam08 -> a (r^3)
+   *   [9]    DistortionParam09 (unknown)
+   *   [10]   unused
+   *   [11]   DistortionParam11 -> c (r^7)
+   *   [12]   DistortionN (constant 2500; disables correction if changed)
+   *   [13..] unused / trailing
+   *
+   * Formula (Rigo, https://github.com/trou/panasonic-rw2/blob/master/notes.txt):
+   *   Ru = Rd + scale * (a*Rd^3 + b*Rd^5 + c*Rd^7)  (Rd, Ru normalised to half-diag)
+   *   scale = 1 / (1 + DistortionScale/32768)
+   *   a = DistortionParam08 / 32768
+   *   b = DistortionParam04 / 32768
+   *   c = DistortionParam11 / 32768
+   * we store the raw a/b/c and scale here; _init_coeffs_md_v2 applies scale
+   * when evaluating the polynomial so the two factors stay separable
+   */
+  if((_exif_read_exif_tag(exifData, &pos, "Exif.PanasonicRaw.0x0119")
+      // TIFF/DNG round-trip: dt_exif_read_blob copies the blob here
+      || _exif_read_exif_tag(exifData, &pos, "Exif.Image.0xf119"))
+     && pos->size() == 32)
+  {
+    uint8_t buf[32];
+    pos->copy(buf, Exiv2::littleEndian);
+    int16_t v[16];
+    memcpy(v, buf, sizeof(v));
+
+    const int enabled = (v[7] & 0x0f) == 1;
+    if(enabled)
+    {
+      img->exif_correction_type = CORRECTION_TYPE_PANASONIC;
+      img->exif_correction_data.panasonic.scale = 1.0f / (1.0f + (float)v[5] / 32768.0f);
+      img->exif_correction_data.panasonic.a = (float)v[8]  / 32768.0f;
+      img->exif_correction_data.panasonic.b = (float)v[4]  / 32768.0f;
+      img->exif_correction_data.panasonic.c = (float)v[11] / 32768.0f;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exif] Panasonic distortion: scale=%.6f a=%.6f b=%.6f c=%.6f",
+               img->exif_correction_data.panasonic.scale,
+               img->exif_correction_data.panasonic.a,
+               img->exif_correction_data.panasonic.b,
+               img->exif_correction_data.panasonic.c);
+    }
+  }
+
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
@@ -2797,6 +2855,23 @@ int dt_exif_read_blob(uint8_t **buf,
                  "[exiv2 dt_exif_read_blob] failed to copy %s -> %s: %s",
                  sony_copies[k].src, sony_copies[k].dst, e.what());
       }
+    }
+
+    // copy Panasonic DistortionInfo to IFD0 by numeric ID; the
+    // Exif.PanasonicRaw namespace is dropped by exiv2 on TIFF/DNG write.
+    // 0xF119 is in TIFF's private range (>= 0x8000) so no standard collision
+    try
+    {
+      Exiv2::ExifData::iterator src =
+        exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.0x0119"));
+      if(src != exifData.end())
+        exifData.add(Exiv2::ExifKey("Exif.Image.0xf119"), &src->value());
+    }
+    catch(const Exiv2::AnyError &e)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exiv2 dt_exif_read_blob] failed to copy Panasonic distortion: %s",
+               e.what());
     }
 
     {
