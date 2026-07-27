@@ -1245,7 +1245,7 @@ static void _tree_button_pressed_cb(GtkGestureSingle *gesture, int n_press, doub
     }
   }
   /* single click with the right mouse button? */
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   if(button == GDK_BUTTON_PRIMARY)
   {
     // if click on a blank space, then deselect all

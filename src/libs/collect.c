@@ -698,7 +698,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     gtk_tree_selection_select_path(selection, path);
   }
 
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   // case of a context-menu (folder/filmroll)
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
