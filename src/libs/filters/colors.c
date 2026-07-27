@@ -265,10 +265,11 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gboolean _colors_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static void _colors_enter_cb(GtkEventControllerMotion *controller,
+                               double x, double y,
+                               gpointer user_data)
 {
   darktable.control->element = GPOINTER_TO_INT(user_data) + 1;
-  return FALSE;
 }
 
 static float _action_process_colors(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -349,8 +350,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                                      "\nctrl+click to exclude the color label"
                                                      "\nthe gray button affects all color labels"));
     dt_gui_connect_click(colors->colors[k], _colors_clicked_gesture, NULL, colors);
-    g_signal_connect(G_OBJECT(colors->colors[k]), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
-                     GINT_TO_POINTER(k));
+    dt_gui_connect_motion(colors->colors[k], NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(k));
     dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
   colors->operator= dtgtk_button_new(dtgtk_cairo_paint_intersection, 0, NULL);
@@ -360,8 +360,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                 "\nintersection: images having all selected color labels"
                                 "\nunion: images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
-  g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
-                   GINT_TO_POINTER(-1));
+  dt_gui_connect_motion(colors->operator, NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(-1));
   dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
 
   dt_shortcut_register(ac, DT_COLORLABELS_RED    + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F1, GDK_SHIFT_MASK);
