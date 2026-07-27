@@ -2921,6 +2921,13 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   {
     dt_iop_spektrafilm_params_t *dp = (dt_iop_spektrafilm_params_t *)self->default_params;
     dp->scan_film = e->positive;
+    /* the checkbox caches the default it was created with, the way sliders
+       and comboboxes do, so re-baselining the param's default has to
+       re-baseline the widget's too. Otherwise a reset would return to the
+       default of whichever film happened to be selected when the module's
+       gui was built, and the tab's "changed" marker would compare against
+       that same stale value. */
+    dt_bauhaus_toggle_set_default(g->scan_film, dp->scan_film);
     /* same reasoning as the slider's own default above, for the reset path that
        memcpys default_params over params wholesale */
     dp->development_min = p->development_min;
@@ -2932,9 +2939,9 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(p->scan_film != e->positive)
   {
     p->scan_film = e->positive;
-    ++darktable.gui->reset;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->scan_film), p->scan_film);
-    --darktable.gui->reset;
+    DT_ENTER_GUI_UPDATE();
+    dt_bauhaus_toggle_set(g->scan_film, p->scan_film);
+    DT_LEAVE_GUI_UPDATE();
     _update_print_sensitivity(self);
   }
   /* if the paper is still on "auto" (hash 0) keep it following the film's
@@ -2943,9 +2950,9 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
     for(int k = 0; k < g->n_papers; k++)
       if(!strcmp(g->entries[g->paper_entry[k]].stock, e->target_print))
       {
-        ++darktable.gui->reset;
+        DT_ENTER_GUI_UPDATE();
         dt_bauhaus_combobox_set_from_value(g->paper, g->paper_entry[k]);
-        --darktable.gui->reset;
+        DT_LEAVE_GUI_UPDATE();
         break;
       }
   /* last, once scan_film and the auto-followed paper have settled: both
@@ -3088,10 +3095,10 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
      programmatic widget syncs rely on -- so this is purely visual and
      never writes back into the param. */
   DT_ENTER_GUI_UPDATE();
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_auto_exposure),
-                                printing && p->print_auto_exposure);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_diffusion_on),
-                                printing && p->print_diffusion_on);
+  dt_bauhaus_toggle_set(g->print_auto_exposure,
+                        printing && p->print_auto_exposure);
+  dt_bauhaus_toggle_set(g->print_diffusion_on,
+                        printing && p->print_diffusion_on);
   DT_LEAVE_GUI_UPDATE();
 
   /* Also from here: gui_changed() sends the scan_film toggle to this function and
@@ -3165,6 +3172,12 @@ void reload_defaults(dt_iop_module_t *self)
 {
   if(self->default_params)
     ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = FALSE;
+
+  /* keep the widget's cached default in step with the one just restored,
+     for the same reason _film_changed() does after re-baselining it */
+  dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
+  if(g && g->scan_film)
+    dt_bauhaus_toggle_set_default(g->scan_film, FALSE);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -3313,12 +3326,12 @@ void gui_update(dt_iop_module_t *self)
      them here or they drift from the params: a stale box makes the first
      click a no-op (field already has that value -> no history item) and
      module reset never updates them. */
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->scan_film), p->scan_film);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_auto_exposure), p->print_auto_exposure);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->halation_on), p->halation_on);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->diffusion_on), p->diffusion_on);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->print_diffusion_on), p->print_diffusion_on);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->grain_on), p->grain_on);
+  dt_bauhaus_toggle_set(g->scan_film, p->scan_film);
+  dt_bauhaus_toggle_set(g->print_auto_exposure, p->print_auto_exposure);
+  dt_bauhaus_toggle_set(g->halation_on, p->halation_on);
+  dt_bauhaus_toggle_set(g->diffusion_on, p->diffusion_on);
+  dt_bauhaus_toggle_set(g->print_diffusion_on, p->print_diffusion_on);
+  dt_bauhaus_toggle_set(g->grain_on, p->grain_on);
 
   _toggle_sensitivity(g, p);
   _update_print_sensitivity(self);
