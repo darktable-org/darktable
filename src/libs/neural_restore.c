@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
-
 // neural restore — lighttable module for AI-based image restoration
 //
 // overview
@@ -3501,11 +3499,11 @@ static void _pick_toggled(GtkToggleButton *btn,
   gtk_widget_queue_draw(d->preview_area);
 }
 
-static gboolean _pick_double_click(GtkWidget *widget,
-                                   GdkEventButton *event,
-                                   dt_lib_module_t *self)
+static void _pick_double_click_cb(GtkGestureSingle *gesture, int n_press,
+                                     double x, double y,
+                                     dt_lib_module_t *self)
 {
-  if(dt_gdk_event_get_type(event) != GDK_2BUTTON_PRESS) return FALSE;
+  if(n_press < 2) return;
   dt_lib_neural_restore_t *d = self->data;
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;
@@ -3517,7 +3515,6 @@ static gboolean _pick_double_click(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
   d->preview_requested = TRUE;
   _trigger_preview(self);
-  return TRUE;
 }
 
 // upper bound on tooltip pixel dimensions so we never overflow the
@@ -3927,18 +3924,14 @@ static gboolean _preview_draw(GtkWidget *widget,
 // clicks within this distance grip the divider without snapping it
 #define PREVIEW_DIVIDER_NEAR_PX  3.0
 
-static gboolean _preview_button_press(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      dt_lib_module_t *self)
+static void _preview_button_press_cb(GtkGestureSingle *gesture, int n_press,
+                                        double ex, double ey,
+                                        dt_lib_module_t *self)
 {
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
-  guint button = 0;
-  gdk_event_get_button((GdkEvent *)event, &button);
-  if(button != 1) return FALSE;
-
-  double ex = 0.0, ey = 0.0;
-  gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
+  if(gtk_gesture_single_get_button(gesture) != 1) return;
 
   // thumbnail picking mode: click to select area and trigger preview
   if(d->picking_thumbnail && d->export_cairo)
@@ -3949,17 +3942,10 @@ static gboolean _preview_button_press(GtkWidget *widget,
     _picking_geometry(d, w, h, &img_w, &img_h, &ox, &oy);
 
     // convert click to normalized image coords.
-    //  * RGB denoise / upscale: clamp so the crop rectangle stays
-    //    within the image (master behaviour — the export-based preview
-    //    needs this because the worker and draw share a single
-    //    export_w-based scale).
-    //  * raw denoise: no inner-margin clamp — user can pick corners.
-    //    the raw worker CLAMPs crop_x/y, and _preview_draw pushes the
-    //    rectangle inward to match.
     const float nx = (float)((ex - ox) / img_w);
     const float ny = (float)((ey - oy) / img_h);
     if(nx < 0.0f || nx > 1.0f || ny < 0.0f || ny > 1.0f)
-      return TRUE;
+      return;
 
     if(d->task == NEURAL_TASK_RAW_DENOISE)
     {
@@ -3987,7 +3973,7 @@ static gboolean _preview_button_press(GtkWidget *widget,
     d->preview_requested = TRUE;
     dt_control_log(_("generating preview..."));
     _trigger_preview(self);
-    return TRUE;
+    return;
   }
 
   // click to start preview generation
@@ -3995,55 +3981,50 @@ static gboolean _preview_button_press(GtkWidget *widget,
   {
     d->preview_requested = TRUE;
     _trigger_preview(self);
-    return TRUE;
+    return;
   }
 
-  if(!d->preview_ready) return FALSE;
+  if(!d->preview_ready) return;
 
   const int w = gtk_widget_get_allocated_width(widget);
   const int h = gtk_widget_get_allocated_height(widget);
   const int pw = d->preview_w;
   const int ph = d->preview_h;
-  if(pw <= 0 || ph <= 0) return FALSE;
+  if(pw <= 0 || ph <= 0) return;
   const double scale = fmax(1.0, fmin((double)w / pw, (double)h / ph));
-  const double ox = (w - pw * scale) / 2.0;
-  const double div_x = ox + d->split_pos * pw * scale;
+  const double div_ox = (w - pw * scale) / 2.0;
+  const double div_x = div_ox + d->split_pos * pw * scale;
 
   if(fabs(ex - div_x) < PREVIEW_DIVIDER_NEAR_PX)
   {
     // precision grip on the divider — drag without snapping
     d->dragging_split = TRUE;
-    return TRUE;
+    return;
   }
 
   // click anywhere else snaps the divider then enters drag
-  d->split_pos = CLAMP((ex - ox) / (pw * scale), 0.0, 1.0);
+  d->split_pos = CLAMP((ex - div_ox) / (pw * scale), 0.0, 1.0);
   d->dragging_split = TRUE;
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean _preview_button_release(GtkWidget *widget,
-                                        GdkEventButton *event,
-                                        dt_lib_module_t *self)
+static void _preview_button_release_cb(GtkGestureSingle *gesture, int n_press,
+                                          double x, double y,
+                                          dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   if(d->dragging_split)
   {
     d->dragging_split = FALSE;
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean _preview_motion(GtkWidget *widget,
-                                GdkEventMotion *event,
-                                dt_lib_module_t *self)
+static void _preview_motion_cb(GtkEventControllerMotion *controller,
+                                 double ex, double ey,
+                                 dt_lib_module_t *self)
 {
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
-
-  double ex = 0.0, ey = 0.0;
-  gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
 
   // move crop rectangle while hovering in picking mode
   if(d->picking_thumbnail && d->export_cairo)
@@ -4072,7 +4053,7 @@ static gboolean _preview_motion(GtkWidget *widget,
       d->patch_center[1] = CLAMP(ry, half_h, 1.0f - half_h);
     }
     gtk_widget_queue_draw(widget);
-    return TRUE;
+    return;
   }
 
   if(d->dragging_split)
@@ -4080,7 +4061,7 @@ static gboolean _preview_motion(GtkWidget *widget,
     const int w = gtk_widget_get_allocated_width(widget);
     const int pw = d->preview_w;
     const int ph = d->preview_h;
-    if(pw <= 0 || ph <= 0) return FALSE;
+    if(pw <= 0 || ph <= 0) return;
     const int ah = gtk_widget_get_allocated_height(widget);
     const double scale = fmax(1.0, fmin((double)w / pw,
                                         (double)ah / ph));
@@ -4089,7 +4070,7 @@ static gboolean _preview_motion(GtkWidget *widget,
 
     d->split_pos = CLAMP((ex - ox) / img_w, 0.0, 1.0);
     gtk_widget_queue_draw(widget);
-    return TRUE;
+    return;
   }
 
   // change cursor near divider
@@ -4123,7 +4104,7 @@ static gboolean _preview_motion(GtkWidget *widget,
     }
   }
 
-  return FALSE;
+  return;
 }
 
 static void _selection_changed_callback(gpointer instance,
@@ -4342,23 +4323,14 @@ void gui_init(dt_lib_module_t *self)
                                 "double-click to reset to center"));
   g_signal_connect(d->pick_button, "toggled",
                    G_CALLBACK(_pick_toggled), self);
-  g_signal_connect(d->pick_button, "button-press-event",
-                   G_CALLBACK(_pick_double_click), self);
+  dt_gui_connect_click_all(d->pick_button, _pick_double_click_cb, NULL, self);
 
   // preview area (resizable via dt_ui_resize_wrap)
   d->preview_area = GTK_WIDGET(dt_ui_resize_wrap(NULL, 200, CONF_PREVIEW_HEIGHT));
-  gtk_widget_add_events(d->preview_area,
-                        GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_POINTER_MOTION_MASK);
   g_signal_connect(d->preview_area, "draw",
                    G_CALLBACK(_preview_draw), self);
-  g_signal_connect(d->preview_area, "button-press-event",
-                   G_CALLBACK(_preview_button_press), self);
-  g_signal_connect(d->preview_area, "button-release-event",
-                   G_CALLBACK(_preview_button_release), self);
-  g_signal_connect(d->preview_area, "motion-notify-event",
-                   G_CALLBACK(_preview_motion), self);
+  dt_gui_connect_click(d->preview_area, _preview_button_press_cb, _preview_button_release_cb, self);
+  dt_gui_connect_motion(d->preview_area, _preview_motion_cb, NULL, NULL, self);
   // hover-zoom tooltip: shows the same preview at 2x so the user can
   // see individual pixels. only fires when there's a valid preview;
   // suppressed during inference / picking / dragging
