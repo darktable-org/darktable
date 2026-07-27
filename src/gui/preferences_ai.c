@@ -608,7 +608,6 @@ static void _on_provider_changed(GtkWidget *widget, gpointer user_data)
 }
 
 // double-click on label resets the enable toggle to default
-static gboolean
 static void _reset_enable_click_cb(GtkGestureSingle *gesture, int n_press,
                                       double x, double y,
                                       GtkWidget *widget)
