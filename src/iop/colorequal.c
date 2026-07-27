@@ -2697,16 +2697,20 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
   }
 }
 
-static gboolean _area_scrolled_callback(GtkWidget *widget,
-                                        GdkEventScroll *event,
-                                        const dt_iop_module_t *self)
+static void _area_scrolled_callback(GtkEventControllerScroll *controller,
+                                      gdouble dx,
+                                      gdouble dy,
+                                      dt_iop_module_t *self)
 {
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
+
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
 
   GtkWidget *w = dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK)
                ? GTK_WIDGET(g->notebook)
                : _get_slider(g, g->selected);
-  return gtk_widget_event(w, (GdkEvent*)event);
+  gtk_widget_event(w, event);
 }
 
 static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
@@ -2977,8 +2981,9 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_connect_click_all(g->area, _area_button_press_callback, _area_button_release_callback, self);
   dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, NULL, self);
   gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(_area_scrolled_callback), self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _area_scrolled_callback, self);
   g_signal_connect(G_OBJECT(g->area), "size-allocate",
                    G_CALLBACK(_area_size_callback), self);
 
