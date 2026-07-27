@@ -909,10 +909,10 @@ static void _on_vectorscope_harmony_changed(const dt_color_harmony_guide_t *guid
   _apply_harmony_guide(self, self->params, self->gui_data, guide);
 }
 
-static void _sync_to_vectorscope_toggled(GtkToggleButton *button, dt_iop_module_t *self)
+static void _sync_to_vectorscope_toggled(GtkWidget *button, dt_iop_module_t *self)
 {
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
-  const gboolean active = gtk_toggle_button_get_active(button);
+  const gboolean active = dt_bauhaus_toggle_get(button);
   dt_conf_set_bool("plugins/darkroom/colorharmonizer/sync_to_vectorscope", active);
 
   if(active)
@@ -999,7 +999,7 @@ static void _custom_hue_changed(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(self->dev, self, TRUE);
 
   if(g->sync_to_vectorscope
-     && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope)))
+     && dt_bauhaus_toggle_get(g->sync_to_vectorscope))
     _push_to_vectorscope(self);
 }
 
@@ -1094,7 +1094,7 @@ static void _sync_vectorscope_if_enabled(dt_iop_module_t *self,
                                          GtkWidget *widget)
 {
   if(!g->sync_to_vectorscope
-     || !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope)))
+     || !dt_bauhaus_toggle_get(g->sync_to_vectorscope))
     return;
 
   if(self->enabled)
@@ -1373,7 +1373,7 @@ static void _auto_detect_callback(GtkButton *button, dt_iop_module_t *self)
   dt_dev_add_history_item(self->dev, self, TRUE);
 
   if(g->sync_to_vectorscope
-     && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope)))
+     && dt_bauhaus_toggle_get(g->sync_to_vectorscope))
     _push_to_vectorscope(self);
 }
 
@@ -1510,9 +1510,11 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *sync_row = dt_gui_hbox();
 
-  g->sync_to_vectorscope = gtk_check_button_new_with_label(_("vectorscope two-way sync"));
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->sync_to_vectorscope))),
-                          PANGO_ELLIPSIZE_END);
+  // no field: this only says whether the vectorscope overlay follows the
+  // module, it is not one of the module's parameters
+  g->sync_to_vectorscope = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->sync_to_vectorscope, NULL,
+                              N_("vectorscope two-way sync"));
   gtk_widget_set_tooltip_text(g->sync_to_vectorscope,
     _("when enabled, the vectorscope harmony overlay is kept in sync with\n"
       "the harmony rule and anchor hue controls in the module.\n"
@@ -1521,9 +1523,9 @@ void gui_init(dt_iop_module_t *self)
   const char *conf_key = "plugins/darkroom/colorharmonizer/sync_to_vectorscope";
   if(!dt_conf_key_exists(conf_key))
     dt_conf_set_bool(conf_key, TRUE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope), dt_conf_get_bool(conf_key));
+  dt_bauhaus_toggle_set(g->sync_to_vectorscope, dt_conf_get_bool(conf_key));
 
-  g_signal_connect(G_OBJECT(g->sync_to_vectorscope), "toggled",
+  g_signal_connect(G_OBJECT(g->sync_to_vectorscope), "value-changed",
                    G_CALLBACK(_sync_to_vectorscope_toggled), self);
 
   g->set_from_vectorscope = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
@@ -1542,7 +1544,7 @@ void gui_init(dt_iop_module_t *self)
   // "set from vectorscope" is redundant when sync is active; disable it initially
   // (sync checkbox starts checked, so the button starts insensitive)
   gtk_widget_set_sensitive(g->set_from_vectorscope,
-      !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope)));
+      !dt_bauhaus_toggle_get(g->sync_to_vectorscope));
 
   g->histogram_valid = FALSE;
   g_mutex_init(&g->histogram_lock);
@@ -1636,7 +1638,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
   if(!g) return;
   const gboolean sync = g->sync_to_vectorscope
-      && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope));
+      && dt_bauhaus_toggle_get(g->sync_to_vectorscope);
   if(in)
   {
     if(sync && self->enabled)
