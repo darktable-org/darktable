@@ -5318,6 +5318,31 @@ static void cropmode_callback(GtkWidget *widget, dt_iop_module_t *self)
   _swap_shadow_crop_box(p,g);
 }
 
+static void _event_auto_rotate_quad_callback(GtkWidget *widget,
+                                             dt_iop_module_t *self)
+{
+  DT_GUARD_GUI_UPDATE();
+
+  dt_iop_ashift_params_t *p = self->params;
+  dt_iop_ashift_gui_data_t *g = self->gui_data;
+
+  dt_iop_request_focus(self);
+
+  if(self->enabled)
+  {
+    do_fit(self, p, ASHIFT_FIT_ROTATION_BOTH_LINES);
+  }
+  else
+  {
+    g->jobcode = ASHIFT_JOBCODE_FIT;
+    g->jobparams = ASHIFT_FIT_ROTATION_BOTH_LINES;
+  }
+
+  _swap_shadow_crop_box(p, g);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _swap_shadow_crop_box(p, g);
+}
+
 static int _event_fit_v_button_clicked(GtkWidget *widget,
                                        const GdkEventButton *event,
                                        dt_iop_module_t *self)
@@ -5965,6 +5990,10 @@ void gui_init(dt_iop_module_t *self)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP, GDK_KEY_bracketleft, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_bracketright, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_r, GDK_MOD1_MASK);
+
+  dt_bauhaus_widget_set_quad(g->rotation, self, dtgtk_cairo_paint_wand, FALSE,
+                             _event_auto_rotate_quad_callback,
+                             _("auto-rotate the image using detected structure"));
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
