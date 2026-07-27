@@ -3442,18 +3442,20 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
-                                             GdkEventMotion *event,
-                                             dt_iop_module_t *self)
+static void denoiseprofile_motion_notify(GtkEventControllerMotion *controller,
+                                          gdouble x,
+                                          gdouble y,
+                                          dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   dt_iop_denoiseprofile_params_t *p = self->params;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   const int inset = DT_IOP_DENOISE_PROFILE_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
   if(g->dragging)
   {
     *p = g->drag_params;
@@ -3470,16 +3472,22 @@ static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
     g->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean denoiseprofile_button_press(GtkWidget *widget,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *self)
+static void denoiseprofile_button_press(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   const int ch = g->channel;
-  if(dt_gdk_event_get_button(event) == 1 && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+
+  if(n_press >= 2)
   {
     // reset current curve
     dt_iop_denoiseprofile_params_t *p = self->params;
@@ -3493,7 +3501,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  else
   {
     g->drag_params = *(dt_iop_denoiseprofile_params_t *)self->params;
     const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -3502,57 +3510,46 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
     g->mouse_pick
         = dt_draw_curve_calc_value(g->transition_curve,
-                                   CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
+                                   CLAMP(x - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(y - inset, 0, height) / (float)height;
     g->dragging = 1;
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean denoiseprofile_button_release(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self)
+static void denoiseprofile_button_release(GtkGestureSingle *gesture,
+                                           gint n_press,
+                                           gdouble x,
+                                           gdouble y,
+                                           dt_iop_module_t *self)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
-    dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
-    g->dragging = 0;
-    return TRUE;
-  }
-  return FALSE;
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  g->dragging = 0;
 }
 
-static gboolean denoiseprofile_leave_notify(GtkWidget *widget,
-                                            GdkEventCrossing *event,
-                                            dt_iop_module_t *self)
+static void denoiseprofile_leave_notify(GtkEventControllerMotion *controller,
+                                         dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
 }
 
-static gboolean denoiseprofile_scrolled(GtkWidget *widget,
-                                        GdkEventScroll *event,
-                                        dt_iop_module_t *self)
+static void denoiseprofile_scrolled(GtkEventControllerScroll *controller,
+                                     gdouble dx,
+                                     gdouble dy,
+                                     dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
-  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK))
-    return gtk_widget_event(GTK_WIDGET(g->channel > DT_DENOISE_PROFILE_B ? g->channel_tabs_Y0U0V0 : g->channel_tabs), (GdkEvent*)event);
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dy != 0.0)
   {
-    g->mouse_radius = CLAMP(g->mouse_radius * (1.f - 0.1f * delta_y),
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.f - 0.1f * dy),
                             0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
-    gtk_widget_queue_draw(widget);
+    gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
   }
-
-  return TRUE;
 }
 
 static void denoiseprofile_tab_switch(GtkNotebook *notebook,
@@ -3632,16 +3629,11 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(denoiseprofile_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(denoiseprofile_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(denoiseprofile_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(denoiseprofile_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(denoiseprofile_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(denoiseprofile_scrolled), self);
+  dt_gui_connect_click(g->area, denoiseprofile_button_press, denoiseprofile_button_release, self);
+  dt_gui_connect_motion(g->area, denoiseprofile_motion_notify, NULL, denoiseprofile_leave_notify, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        denoiseprofile_scrolled, self);
 
   dt_gui_box_add(g->box_wavelets, g->channel_tabs, g->channel_tabs_Y0U0V0, g->area);
 
