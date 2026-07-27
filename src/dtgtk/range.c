@@ -1184,7 +1184,7 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
 static void _event_entry_press_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
   GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_SECONDARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, w);
   }
@@ -1566,7 +1566,7 @@ static void _event_band_leave_cb(GtkEventControllerMotion *controller, GtkDarkta
 
 static void _event_band_press_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   GdkModifierType state;
   gtk_get_current_event_state(&state);
 
