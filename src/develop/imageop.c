@@ -2542,17 +2542,7 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
 
   // preset cycling: right==down==next
   int delta_x = 0, delta_y = 0;
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)event, &delta_x, &delta_y);
-    gdk_event_free(event);
-  }
-  else
-  {
-    delta_x = (int)dx;
-    delta_y = (int)dy;
-  }
+  dt_gui_get_scroll_unit_deltas_fallback(dx, dy, &delta_x, &delta_y);
   const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
   dt_gui_presets_apply_adjacent_preset(module, delta);
 }
