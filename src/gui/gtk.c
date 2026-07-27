@@ -624,6 +624,36 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event,
   return FALSE;
 }
 
+gboolean dt_gui_get_scroll_unit_deltas_fallback(const gdouble dx,
+                                                 const gdouble dy,
+                                                 int *delta_x,
+                                                 int *delta_y)
+{
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    const gboolean ok = dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)event, delta_x, delta_y);
+    gdk_event_free(event);
+    return ok;
+  }
+  // fallback: use raw values if no current event available
+  *delta_x = (int)dx;
+  *delta_y = (int)dy;
+  return TRUE;
+}
+
+gboolean dt_gui_get_scroll_unit_delta_fallback(const gdouble dy,
+                                                int *delta)
+{
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas_fallback(0, dy, &delta_x, &delta_y))
+  {
+    *delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static gboolean _draw_borders(GtkWidget *widget,
                               cairo_t *crf,
                               const gpointer user_data)
