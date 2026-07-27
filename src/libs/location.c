@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
-
 #include "common/darktable.h"
 #include "common/geo.h"
 #include "common/curl_tools.h"
@@ -89,9 +87,9 @@ typedef struct _callback_param_t
 static void _lib_location_entry_activated(GtkButton *button,
                                           dt_lib_module_t *self);
 
-static gboolean _lib_location_result_item_activated(GtkButton *button,
-                                                    GdkEventButton *ev,
-                                                    gpointer user_data);
+static void _lib_location_result_item_activated(GtkGestureSingle *gesture, int n_press,
+                                                     double x, double y,
+                                                     gpointer user_data);
 
 static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
                                                const char *element_name,
@@ -209,9 +207,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
     lib->callback_params = g_list_append(lib->callback_params, param);
     param->lib = lib;
     param->result = place;
-    g_signal_connect(G_OBJECT(eb), "button-press-event",
-                     G_CALLBACK(_lib_location_result_item_activated),
-                     (gpointer)param);
+    dt_gui_connect_click(eb, _lib_location_result_item_activated, NULL, param);
   }
   return eb;
 }
@@ -440,15 +436,14 @@ bail_out:
   return FALSE;
 }
 
-gboolean _lib_location_result_item_activated(GtkButton *button,
-                                             GdkEventButton *ev,
-                                             gpointer user_data)
+static void _lib_location_result_item_activated(GtkGestureSingle *gesture, int n_press,
+                                                     double x, double y,
+                                                     gpointer user_data)
 {
   _callback_param_t *param = (_callback_param_t *)user_data;
   dt_lib_location_t *lib = param->lib;
   _lib_location_result_t *result = param->result;
   _show_location(lib, result);
-  return TRUE;
 }
 
 void _lib_location_entry_activated(GtkButton *button,
