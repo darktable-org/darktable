@@ -2711,6 +2711,7 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
                ? GTK_WIDGET(g->notebook)
                : _get_slider(g, g->selected);
   gtk_widget_event(w, event);
+  gdk_event_free(event);
 }
 
 static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
