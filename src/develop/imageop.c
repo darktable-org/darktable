@@ -2777,6 +2777,19 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
 {
   if(n_press >= 2) return;
 
+  // ignore clicks on buttons inside the header (presets, reset, enable, multiinstance)
+  // GTK4: use gtk_gesture_get_last_event(gesture) instead of gtk_get_current_event()
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    if(GTK_IS_BUTTON(gtk_get_event_widget(event)))
+    {
+      gdk_event_free(event);
+      return;
+    }
+    gdk_event_free(event);
+  }
+
   const guint button = gtk_gesture_single_get_current_button(gesture);
 
   if(button == GDK_BUTTON_PRIMARY)
