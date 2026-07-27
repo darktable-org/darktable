@@ -552,6 +552,10 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("grid"), GTK_WIDGET(g->area), NULL);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_monochrome_draw), self);
+  gtk_widget_add_events(GTK_WIDGET(g->area),
+                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
   dt_gui_connect_click(g->area, _monochrome_button_press, _monochrome_button_release, self);
   dt_gui_connect_motion(g->area, _monochrome_motion_notify, NULL, _monochrome_leave_notify, self);
   dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES

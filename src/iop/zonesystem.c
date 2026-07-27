@@ -443,6 +443,10 @@ void gui_init(dt_iop_module_t *self)
                                           "left-click on a border to create a marker\n"
                                           "right-click on a marker to delete it"));
   g_signal_connect(G_OBJECT(g->zones), "draw", G_CALLBACK(dt_iop_zonesystem_bar_draw), self);
+  gtk_widget_add_events(GTK_WIDGET(g->zones),
+                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
   dt_gui_connect_click_all(g->zones, dt_iop_zonesystem_bar_button_press, dt_iop_zonesystem_bar_button_release, self);
   dt_gui_connect_motion(g->zones, dt_iop_zonesystem_bar_motion_notify, NULL, dt_iop_zonesystem_bar_leave_notify, self);
   dt_gui_connect_scroll(g->zones, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
