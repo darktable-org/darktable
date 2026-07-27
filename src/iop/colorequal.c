@@ -2976,6 +2976,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
   dt_gui_connect_click_all(g->area, _area_button_press_callback, _area_button_release_callback, self);
   dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, NULL, self);
+  gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "size-allocate",
