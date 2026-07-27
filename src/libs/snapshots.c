@@ -562,15 +562,18 @@ static void _entry_activated_callback(GtkEntry *entry, dt_lib_module_t *self)
   gtk_widget_grab_focus(d->snapshot[index].button);
 }
 
-static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
-                                                    GdkEventButton *event,
-                                                    dt_lib_module_t *self)
+static void _lib_button_button_pressed_callback(GtkGestureSingle *gesture,
+                                                gint n_press,
+                                                gdouble x,
+                                                gdouble y,
+                                                dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
 
   const int index = _look_for_widget(self, widget, FALSE);
 
-  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+  if(dt_key_modifier_state() & GDK_CONTROL_MASK)
   {
     gtk_widget_hide(d->snapshot[index].name);
     gtk_widget_show(d->snapshot[index].entry);
@@ -578,7 +581,6 @@ static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
   }
 
   gtk_widget_set_focus_on_click(widget, FALSE);
-  return gtk_widget_has_focus(d->snapshot[index].entry);
 }
 
 static void _init_snapshot_entry(dt_lib_module_t *self,
@@ -589,8 +591,7 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
   gtk_widget_set_name(s->button, "snapshot-button");
   g_signal_connect(G_OBJECT(s->button), "toggled",
                    G_CALLBACK(_lib_snapshots_toggled_callback), self);
-  g_signal_connect(G_OBJECT(s->button), "button-press-event",
-                   G_CALLBACK(_lib_button_button_pressed_callback), self);
+  dt_gui_connect_click(s->button, _lib_button_button_pressed_callback, NULL, self);
 
   s->num = gtk_label_new("");
   gtk_widget_set_name(s->num, "history-number");
