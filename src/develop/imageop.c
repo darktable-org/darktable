@@ -1092,7 +1092,7 @@ static gboolean _rename_module_key_pressed(GtkEventControllerKey *controller,
                                            GdkModifierType state,
                                            dt_iop_module_t *module)
 {
-  GtkWidget *entry = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *entry = dt_gui_get_widget(controller);
   gboolean ended = FALSE;
 
   if(keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter)
@@ -2523,7 +2523,7 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
   if(disabled) return;
 
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
 
   g_signal_connect(G_OBJECT(menu), "deactivate",

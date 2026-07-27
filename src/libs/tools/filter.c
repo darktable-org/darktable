@@ -91,7 +91,7 @@ static void _pref_show(GtkGestureSingle *gesture,
                         gdouble y,
                         dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_view_filtering_show_pref_menu(darktable.view_manager, widget);
 }
 

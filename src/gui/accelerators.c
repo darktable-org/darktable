@@ -1994,7 +1994,7 @@ static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
                                        GdkModifierType state,
                                        GtkWidget *search_entry)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
@@ -2265,7 +2265,7 @@ static gboolean _action_find_and_expand(GtkTreeModel *model,
 
 static void _action_view_click_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkTreeStore *model_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(view);
   const guint button = gtk_gesture_single_get_button(gesture);

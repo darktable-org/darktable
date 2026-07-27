@@ -571,7 +571,7 @@ static void _scale_mdlclick_cb(GtkGestureSingle *gesture, int n_press,
                                   double x, double y,
                                   dt_lib_export_t *d)
 {
-  GtkWidget *spin = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *spin = dt_gui_get_widget(gesture);
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_string(CONFIG_PREFIX "resizing_factor", "1");
@@ -589,7 +589,7 @@ static void _widht_mdlclick_cb(GtkGestureSingle *gesture, int n_press,
                                   double x, double y,
                                   dt_lib_export_t *d)
 {
-  GtkWidget *spin = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *spin = dt_gui_get_widget(gesture);
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "width", 0);
@@ -607,7 +607,7 @@ static void _height_mdlclick_cb(GtkGestureSingle *gesture, int n_press,
                                    double x, double y,
                                    dt_lib_export_t *d)
 {
-  GtkWidget *spin = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *spin = dt_gui_get_widget(gesture);
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "height", 0);

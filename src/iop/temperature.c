@@ -1738,7 +1738,7 @@ static void _btn_toggled(GtkGestureSingle *gesture,
 {
   if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
-  GtkWidget *togglebutton = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *togglebutton = dt_gui_get_widget(gesture);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
 
   const int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :

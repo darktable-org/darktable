@@ -1476,7 +1476,7 @@ static void _click_on_view_attached(GtkGestureSingle *gesture,
                                       dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *view = dt_gui_get_widget(gesture);
   _unselect_all_in_view(d->dictionary_view);
 
   const guint button = gtk_gesture_single_get_current_button(gesture);
@@ -1538,7 +1538,7 @@ static gboolean _attached_key_pressed(GtkEventControllerKey *controller,
   dt_lib_tagging_t *d = self->data;
   _unselect_all_in_view(d->dictionary_view);
 
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -1619,7 +1619,7 @@ static gboolean _enter_key_pressed(GtkEventControllerKey *controller,
                                      dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  GtkWidget *entry = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *entry = dt_gui_get_widget(controller);
   switch(keyval)
   {
     case GDK_KEY_Return:
@@ -2654,7 +2654,7 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
                                         dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *view = dt_gui_get_widget(gesture);
   _unselect_all_in_view(d->attached_view);
 
   GdkEvent *event = gtk_get_current_event();
@@ -2738,7 +2738,7 @@ static gboolean _dictionary_key_pressed(GtkEventControllerKey *controller,
   _unselect_all_in_view(d->attached_view);
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   gboolean res = FALSE;
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
@@ -3807,7 +3807,7 @@ static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
-      GtkWidget *entry = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+      GtkWidget *entry = dt_gui_get_widget(controller);
       dt_gui_cursor_set_busy();
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);

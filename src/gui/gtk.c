@@ -4883,7 +4883,7 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
   // decide whether to propogate them or scroll itself depending on
   // modifiers state, and this function will no longer be needed
   GtkWidget *const widget =
-    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+    dt_gui_get_widget(controller);
   const GtkWidget *panel = NULL;
   if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, widget))
     panel = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];

@@ -1477,7 +1477,7 @@ static void _mouse_scroll(GtkEventControllerScroll *controller,
                            gdouble dx, gdouble dy,
                            dt_iop_module_t *self)
 {
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)view);

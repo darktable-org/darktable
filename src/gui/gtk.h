@@ -616,6 +616,9 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(pressed, gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, __typeof__(data))), \
   dt_gui_connect_key(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
 
+#define dt_gui_get_widget(controller) \
+      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
+
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
 #define dt_gui_deny(gesture) \

@@ -90,7 +90,7 @@ static void _lib_colorlabels_enter_notify_callback(GtkEventControllerMotion *con
                                                        double x, double y,
                                                        dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const gint colorlabel = _get_colorlabel(self, widget);
 
   darktable.control->element = (colorlabel + 1) % 6;
@@ -180,7 +180,7 @@ static gboolean _lib_colorlabels_key_press_cb(GtkEventControllerKey *controller,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
-      GtkWidget *entry = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+      GtkWidget *entry = dt_gui_get_widget(controller);
       char confname[128];
       const gchar *label = gtk_entry_get_text(GTK_ENTRY(entry));
       snprintf(confname, sizeof(confname), "colorlabel/%s",
@@ -273,7 +273,7 @@ static void _lib_colorlabels_button_press_callback(GtkGestureSingle *gesture, in
                                                       double x, double y,
                                                       dt_lib_module_t *self)
 {
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *w = dt_gui_get_widget(gesture);
   dt_lib_colorlabels_t *d = self->data;
 
   const gint colorlabel = _get_colorlabel(self, w);

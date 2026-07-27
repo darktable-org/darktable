@@ -3449,7 +3449,7 @@ static void denoiseprofile_motion_notify(GtkEventControllerMotion *controller,
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   dt_iop_denoiseprofile_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_IOP_DENOISE_PROFILE_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -3485,7 +3485,7 @@ static void denoiseprofile_button_press(GtkGestureSingle *gesture,
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
     return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   if(n_press >= 2)
   {
@@ -3534,7 +3534,7 @@ static void denoiseprofile_leave_notify(GtkEventControllerMotion *controller,
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static void denoiseprofile_scrolled(GtkEventControllerScroll *controller,
@@ -3548,7 +3548,7 @@ static void denoiseprofile_scrolled(GtkEventControllerScroll *controller,
   {
     g->mouse_radius = CLAMP(g->mouse_radius * (1.f - 0.1f * dy),
                             0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
-    gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+    gtk_widget_queue_draw(dt_gui_get_widget(controller));
   }
 }
 

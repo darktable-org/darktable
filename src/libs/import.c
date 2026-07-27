@@ -560,7 +560,7 @@ static void _files_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                        double x, double y,
                                        dt_lib_module_t *self)
 {
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *view = dt_gui_get_widget(gesture);
   dt_lib_import_t *d = self->data;
   if(n_press == 1)
   {
@@ -1266,7 +1266,7 @@ static void _places_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                         double x, double y,
                                         dt_lib_module_t *self)
 {
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *view = dt_gui_get_widget(gesture);
   GtkTreePath *path = NULL;
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
                                    (gint)x, (gint)y, &path, NULL, NULL, NULL))
@@ -1301,7 +1301,7 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                          double x, double y,
                                          dt_lib_module_t *self)
 {
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *view = dt_gui_get_widget(gesture);
   dt_lib_import_t *d = self->data;
 
   GdkModifierType state;

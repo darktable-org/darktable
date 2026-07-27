@@ -424,7 +424,7 @@ static gboolean _key_pressed_cb(GtkEventControllerKey *controller,
                                    GdkModifierType state,
                                    dt_lib_module_t *self)
 {
-  GtkWidget *textview = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *textview = dt_gui_get_widget(controller);
   dt_lib_metadata_t *d = self->data;
 
   switch(keyval)

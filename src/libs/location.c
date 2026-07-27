@@ -156,13 +156,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _event_box_enter(GtkEventControllerMotion *controller, gdouble x, gdouble y, gpointer user_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
 }
 
 static void _event_box_leave(GtkEventControllerMotion *controller, gpointer user_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
 }
 

@@ -838,7 +838,7 @@ static void _click_on_view(GtkGestureSingle *gesture,
                             dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = self->data;
-  GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *view = dt_gui_get_widget(gesture);
 
   gboolean editing;
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);

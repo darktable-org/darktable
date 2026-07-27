@@ -569,7 +569,7 @@ static void _lib_button_button_pressed_callback(GtkGestureSingle *gesture,
                                                 dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   const int index = _look_for_widget(self, widget, FALSE);
 

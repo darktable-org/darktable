@@ -1249,7 +1249,7 @@ static void rt_wdbar_button_press(GtkGestureSingle *gesture, gint n_press, gdoub
   dt_iop_request_focus(self);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = round(RT_WDBAR_INSET * allocation.height);
@@ -1318,7 +1318,7 @@ static void rt_wdbar_motion_notify(GtkEventControllerMotion *controller,
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
   dt_iop_retouch_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1897,7 +1897,7 @@ static void rt_add_shape_callback(GtkGestureSingle *gesture,
 
   if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_color_picker_reset(self, TRUE);
 

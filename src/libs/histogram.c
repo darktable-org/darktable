@@ -561,7 +561,7 @@ static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controlle
   // pass-through on otherwise -> exposure dragging reaches scope.
   // For the split option we test the inner button_box_split, not the full-width
   // outer_box_split, so dragging still works across the rest of the top.
-  GtkWidget *eb = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *eb = dt_gui_get_widget(controller);
   gtk_overlay_set_overlay_pass_through
     (GTK_OVERLAY(s->overlay), s->button_box_left,
      !_pointer_over_widget(eb, s->button_box_left, x, y));

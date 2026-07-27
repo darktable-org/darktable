@@ -1183,7 +1183,7 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
 
 static void _event_entry_press_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *w = dt_gui_get_widget(gesture);
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, w);

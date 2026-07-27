@@ -1224,7 +1224,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
 
 static void _tree_button_pressed_cb(GtkGestureSingle *gesture, int n_press, double x, double y, dt_lib_module_t *self)
 {
-  GtkWidget *treeview = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *treeview = dt_gui_get_widget(gesture);
   // we first need to adjust selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));

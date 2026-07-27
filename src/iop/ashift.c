@@ -5473,7 +5473,7 @@ static void _event_structure_auto_clicked(GtkGestureSingle *gesture,
                                                gdouble y,
                                                dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   DT_GUARD_GUI_UPDATE();
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)

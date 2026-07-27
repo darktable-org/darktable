@@ -2692,7 +2692,7 @@ static void _manage_direct_popup(GtkGestureSingle *gesture,
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
     return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return;
   _manage_module_add_popup(widget, gr,
@@ -2708,7 +2708,7 @@ static void _manage_direct_basic_popup(GtkGestureSingle *gesture,
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
     return;
 
-  _manage_basics_add_popup(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)), self, TRUE);
+  _manage_basics_add_popup(dt_gui_get_widget(gesture), self, TRUE);
 }
 
 static void _manage_direct_module_popup(GtkGestureSingle *gesture,
@@ -2720,7 +2720,7 @@ static void _manage_direct_module_popup(GtkGestureSingle *gesture,
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
     return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
   int nba = 0; // nb of already present items
@@ -2754,7 +2754,7 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
     return;
 
   dt_lib_modulegroups_t *d = self->data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkWidget *pop = gtk_menu_new();
   gtk_widget_set_name(pop, "modulegroups-popup");
 
@@ -3285,7 +3285,7 @@ static void _manage_editor_group_icon_changed(GtkGestureSingle *gesture,
                                              gdouble y,
                                              dt_lib_modulegroups_group_t *gr)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   const char *ic = (char *)g_object_get_data(G_OBJECT(widget), "ic_name");
   g_free(gr->icon);
   gr->icon = g_strdup(ic);

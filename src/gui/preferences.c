@@ -914,7 +914,7 @@ static gboolean _search_key_pressed(GtkEventControllerKey *controller,
                                     GdkModifierType state,
                                     GtkWidget *search_entry)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkSearchEntry *entry = GTK_SEARCH_ENTRY(search_entry);
   // we build a temporary GdkEventKey to reuse dt_gui_search_start
   GdkEventKey event;
@@ -1178,7 +1178,7 @@ static gboolean _delete_preset_key_pressed(GtkEventControllerKey *controller,
                                              GdkModifierType state,
                                              GtkTreeStore *model_store)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkTreeModel *model = GTK_TREE_MODEL(model_store);
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));

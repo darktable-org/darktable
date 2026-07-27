@@ -521,7 +521,7 @@ static void _live_sample_button_cb(GtkGestureSingle *gesture,
                                      gdouble y,
                                      dt_colorpicker_sample_t *sample)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   const guint button = gtk_gesture_single_get_current_button(gesture);
   if(button == GDK_BUTTON_PRIMARY)
   {

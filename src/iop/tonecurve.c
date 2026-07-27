@@ -1167,7 +1167,7 @@ static void _scrolled(GtkEventControllerScroll *controller,
                           gdouble dy,
                           dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_tonecurve_params_t *p = self->params;
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
 
@@ -1191,7 +1191,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkEventControllerKey *controller,
                                                 GdkModifierType state,
                                                 dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_tonecurve_params_t *p = self->params;
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
 
@@ -1343,7 +1343,7 @@ static void dt_iop_tonecurve_leave_notify(GtkEventControllerMotion *controller,
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   if(!(dt_key_modifier_state() & GDK_BUTTON1_MASK))
     g->selected = -1;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static void picker_scale(const float *in, float *out)
@@ -1748,7 +1748,7 @@ static void dt_iop_tonecurve_motion_notify(GtkEventControllerMotion *controller,
                                                   gdouble y,
                                                   dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   dt_iop_tonecurve_params_t *p = self->params;
 
@@ -1831,7 +1831,7 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
                                                gdouble y,
                                                dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_iop_tonecurve_params_t *p = self->params;
   const dt_iop_tonecurve_params_t *const d = self->default_params;
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;

@@ -1450,7 +1450,7 @@ static void _datetime_scroll_over(GtkEventControllerScroll *controller,
   dt_lib_geotagging_t *d = self->data;
   if(!d->editing)
   {
-    GtkWidget* w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+    GtkWidget* w = dt_gui_get_widget(controller);
     int i = 0;
     for(i = 0; i < DT_GEOTAG_PARTS_NB; i++)
       if(w == d->dt.widget[i]) break;

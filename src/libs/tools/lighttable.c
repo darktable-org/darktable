@@ -213,7 +213,7 @@ static void _lib_lighttable_layout_btn_release_cb(GtkGestureSingle *gesture, int
                                                       double x, double y,
                                                       dt_lib_module_t *self)
 {
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *w = dt_gui_get_widget(gesture);
   dt_lib_tool_lighttable_t *d = self->data;
 
   const gboolean active
@@ -276,7 +276,7 @@ static void _lib_lighttable_restricted_btn_release_cb(GtkGestureSingle *gesture,
                                                          dt_lib_module_t *self)
 {
   _lib_lighttable_do_restricted_btn(self,
-    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)));
+    dt_gui_get_widget(gesture));
 }
 
 static void _lib_lighttable_key_accel_toggle_filemanager(dt_action_t *action)
