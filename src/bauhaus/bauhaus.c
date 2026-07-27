@@ -692,26 +692,33 @@ static void _window_motion_handle(GtkWidget *widget,
   gtk_widget_queue_draw(pop->area);
 }
 
-static void _window_motion_cb(GtkEventControllerMotion *controller,
-                               gdouble x,
-                               gdouble y,
-                               gpointer user_data)
+// GTK4 TODO: This popup uses GTK_WINDOW_POPUP which has compatibility issues
+// with GtkEventControllerKey and GtkEventControllerMotion on GTK3 — motion
+// and key events don't reach the controllers on this window type.  The signal
+// handlers below are the fallback.  For GTK4, the popup should be migrated to
+// GtkPopover or a GtkWindow with proper event controllers.
+
+static gboolean _window_motion_handler(GtkWidget *widget, GdkEventMotion *event,
+                                        gpointer user_data)
 {
-  GtkWidget *widget = dt_gui_get_widget(controller);
-  GdkEvent *event = gtk_get_current_event();
-  if(!event) return;
-  const gdouble root_x = dt_gdk_event_get_root_x(event);
-  const gdouble root_y = dt_gdk_event_get_root_y(event);
-  const GdkModifierType state = dt_gdk_event_get_state(event);
-  gdk_event_free(event);
-  _window_motion_handle(widget, root_x, root_y, state);
+  _window_motion_handle(widget,
+                        dt_gdk_event_get_root_x(event),
+                        dt_gdk_event_get_root_y(event),
+                        dt_gdk_event_get_state(event));
+  return TRUE;
 }
 
-static void _popup_leave_notify_cb(GtkEventControllerMotion *controller,
+static gboolean _popup_leave_handler(GtkWidget *widget, GdkEventCrossing *event,
+                                      gpointer user_data)
+{
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
+  return TRUE;
+}
+
+static gboolean _popup_key_handler(GtkWidget *widget, GdkEventKey *event,
                                     gpointer user_data)
 {
-  GtkWidget *widget = dt_gui_get_widget(controller);
-  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
+  return _popup_key_press(NULL, dt_gdk_event_get_keyval(event), 0, dt_gdk_event_get_state(event), NULL);
 }
 
 static void _popup_button_release_cb(GtkGestureSingle *gesture,
@@ -789,6 +796,8 @@ static void _window_show(GtkWidget *w, gpointer user_data)
 {
   // make sure combo popup handles button release
   gtk_grab_add(GTK_WIDGET(user_data));
+  // grab keyboard focus so the popup receives key events
+  gtk_widget_grab_focus(GTK_WIDGET(user_data));
 }
 
 static void _widget_leave(GtkEventControllerMotion *controller,
@@ -1017,6 +1026,7 @@ void dt_bauhaus_init()
   gtk_window_set_modal(GTK_WINDOW(pop->window), TRUE);
   gtk_window_set_type_hint(GTK_WINDOW(pop->window),
                            GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_widget_add_events(pop->window, GDK_POINTER_MOTION_MASK);
 
   pop->area = gtk_drawing_area_new();
   g_object_set(pop->area, "expand", TRUE, NULL);
@@ -1036,9 +1046,9 @@ void dt_bauhaus_init()
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  dt_gui_connect_key(area, _popup_key_press, NULL);
-  dt_gui_connect_motion(area, NULL, NULL, _popup_leave_notify_cb, NULL);
-  dt_gui_connect_motion(window, _window_motion_cb, NULL, NULL, NULL);
+  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_handler), NULL);
+  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_handler), NULL);
+  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_handler), NULL);
   dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
   dt_gui_connect_scroll(area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
