@@ -1479,7 +1479,7 @@ static void _click_on_view_attached(GtkGestureSingle *gesture,
   GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
   _unselect_all_in_view(d->dictionary_view);
 
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   if((n_press == 1 && button == GDK_BUTTON_SECONDARY)
      || (n_press == 2 && button == GDK_BUTTON_PRIMARY)
      || (n_press == 1 && button == GDK_BUTTON_PRIMARY))
@@ -2659,7 +2659,7 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
 
   GdkEvent *event = gtk_get_current_event();
   const GdkModifierType state = event ? dt_gdk_event_get_state(event) : 0;
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   const gboolean shift_pressed = dt_modifier_is(state, GDK_SHIFT_MASK);
   if((button == GDK_BUTTON_SECONDARY && n_press == 1)          // contextual menu
      || (d->tree_flag && button == GDK_BUTTON_PRIMARY && n_press == 1)  // expand & drag
