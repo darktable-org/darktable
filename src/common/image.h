@@ -155,7 +155,8 @@ typedef enum dt_image_correction_type_t
   CORRECTION_TYPE_SONY,
   CORRECTION_TYPE_FUJI,
   CORRECTION_TYPE_DNG,
-  CORRECTION_TYPE_OLYMPUS
+  CORRECTION_TYPE_OLYMPUS,
+  CORRECTION_TYPE_PANASONIC
 } dt_image_correction_type_t;
 
 typedef union dt_image_correction_data_t
@@ -184,6 +185,14 @@ typedef union dt_image_correction_data_t
     gboolean has_ca;
     float ca[6];
   } olympus;
+  struct {
+    // raw polynomial coefficients from Exif.PanasonicRaw.0x0119, decoded as
+    // word/32768. applied per Rigo's formulation in _init_coeffs_md_v2:
+    //   Ru = Rd + scale * (a*Rd^3 + b*Rd^5 + c*Rd^7)
+    // (Rd, Ru normalised to half-diagonal)
+    float a, b, c;
+    float scale;
+  } panasonic;
 } dt_image_correction_data_t;
 
 typedef enum dt_image_loader_t
