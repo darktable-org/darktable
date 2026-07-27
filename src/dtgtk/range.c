@@ -1181,15 +1181,13 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
   }
 }
 
-static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static void _event_entry_press_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(e->button == GDK_BUTTON_SECONDARY)
+  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, w);
-    return TRUE;
   }
-  return FALSE;
 }
 
 static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
@@ -1509,10 +1507,9 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
   gtk_widget_queue_draw(range->band);
 }
 
-static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static void _event_band_motion_cb(GtkEventControllerMotion *controller, double x, double y, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  range->current_x_px = dt_gdk_event_get_x(event) - range->alloc_padding.x;
+  range->current_x_px = x - range->alloc_padding.x;
 
   // if we are outside the graph, don't go further
   const gboolean inside = (range->current_x_px >= 0 && range->current_x_px <= range->alloc_padding.width);
@@ -1521,13 +1518,13 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
     range->mouse_inside = HOVER_OUTSIDE;
     dt_control_change_cursor("default");
     _current_hide_popup(range);
-    return TRUE;
+    return;
   }
   _current_show_popup(range);
   // point the popup to the current position
   gint wx, wy;
   gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  GdkRectangle rect = { dt_gdk_event_get_x(event), 0, 1, gtk_widget_get_allocated_height(range->band) };
+  GdkRectangle rect = { x, 0, 1, gtk_widget_get_allocated_height(range->band) };
   gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
@@ -1556,32 +1553,32 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
     dt_control_change_cursor("default");
   }
   gtk_widget_queue_draw(range->band);
-  return TRUE;
 }
 
-static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+static void _event_band_leave_cb(GtkEventControllerMotion *controller, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   range->mouse_inside = HOVER_OUTSIDE;
   dt_control_change_cursor("default");
   _current_hide_popup(range);
 
   gtk_widget_queue_draw(range->band);
-  return TRUE;
 }
 
-static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static void _event_band_press_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
+  const guint button = gtk_gesture_single_get_button(gesture);
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+
+  if(button == GDK_BUTTON_PRIMARY && n_press == 2)
   {
     dtgtk_range_select_set_selection(range, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, range->min_r, range->max_r,
                                      TRUE, TRUE);
   }
-  else if(e->button == GDK_BUTTON_PRIMARY)
+  else if(button == GDK_BUTTON_PRIMARY)
   {
-    if(!range->mouse_inside) return TRUE;
-    const double pos_r = _graph_value_from_pos(range, e->x - range->alloc_padding.x, TRUE);
+    if(!range->mouse_inside) return;
+    const double pos_r = _graph_value_from_pos(range, x - range->alloc_padding.x, TRUE);
     if(range->mouse_inside == HOVER_MAX)
     {
       range->bounds &= ~DT_RANGE_BOUND_MAX;
@@ -1593,7 +1590,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
       range->select_min_r = range->select_max_r;
       range->select_max_r = pos_r;
     }
-    else if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       // if we have shift pressed, we only want to set the second bound which is done in release
       range->bounds &= ~DT_RANGE_BOUND_FIXED;
@@ -1610,17 +1607,15 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
 
     gtk_widget_queue_draw(range->band);
   }
-  else if(e->button == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, range->band);
   }
-  return TRUE;
 }
-static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static void _event_band_release_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(!range->set_selection) return TRUE;
-  range->select_max_r = _graph_value_from_pos(range, e->x - range->alloc_padding.x, TRUE);
+  if(!range->set_selection) return;
+  range->select_max_r = _graph_value_from_pos(range, x - range->alloc_padding.x, TRUE);
   const double min_pos_px = _graph_value_to_pos(range, range->select_min_r);
 
   // we verify that the values are in the right order
@@ -1632,7 +1627,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   }
 
   // we also set the bounds
-  if(fabs(e->x - range->alloc_padding.x - min_pos_px) < 2)
+  if(fabs(x - range->alloc_padding.x - min_pos_px) < 2)
     range->bounds = DT_RANGE_BOUND_FIXED;
   else
   {
@@ -1652,8 +1647,6 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   range->set_selection = FALSE;
 
   dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, range->select_max_r, TRUE, FALSE);
-
-  return TRUE;
 }
 
 // Public functions
@@ -1686,14 +1679,11 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
 
   // the graph band
   range->band = gtk_drawing_area_new();
-  gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                         | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
+  gtk_widget_set_events(range->band, GDK_STRUCTURE_MASK);
   g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
-  g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
-  g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
-  g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
-  g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
   g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
+  dt_gui_connect_click_all(range->band, _event_band_press_cb, _event_band_release_cb, range);
+  dt_gui_connect_motion(range->band, _event_band_motion_cb, NULL, _event_band_leave_cb, range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
   gtk_widget_set_can_default(range->band, TRUE);
 
@@ -1726,7 +1716,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     _entry_set_tooltip(range->entry_min, BOUND_MIN, range->type);
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
-    g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
+    dt_gui_connect_click_all(range->entry_min, _event_entry_press_cb, NULL, range);
 
     range->entry_max = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_max, TRUE);
@@ -1734,7 +1724,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     _entry_set_tooltip(range->entry_max, BOUND_MAX, range->type);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
-    g_signal_connect(G_OBJECT(range->entry_max), "button-press-event", G_CALLBACK(_event_entry_press), range);
+    dt_gui_connect_click_all(range->entry_max, _event_entry_press_cb, NULL, range);
 
     dt_gui_box_add(vbox, dt_gui_hbox(dt_gui_expand(range->entry_min), dt_gui_expand(range->entry_max)));
   }
