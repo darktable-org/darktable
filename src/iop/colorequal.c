@@ -2709,76 +2709,67 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   return gtk_widget_event(w, (GdkEvent*)event);
 }
 
-static gboolean _area_motion_notify_callback(GtkWidget *widget,
-                                             const GdkEventMotion *event,
-                                             const dt_iop_module_t *self)
+static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
+                                          gdouble x,
+                                          gdouble y,
+                                          dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(g->dragging && g->on_node)
-    _area_set_pos(g, dt_gdk_event_get_y(event));
+    _area_set_pos(g, y);
   else
   {
     // look if close to a node
     const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
     const int oldsel = g->selected;
     const int oldon = g->on_node;
-    g->selected = (int)(((float)dt_gdk_event_get_x(event) - g->points[0][0])
+    g->selected = (int)(((float)x - g->points[0][0])
                         / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
-    g->on_node = fabsf(g->points[g->selected][1] - (float)dt_gdk_event_get_y(event)) < epsilon;
+    g->on_node = fabsf(g->points[g->selected][1] - (float)y) < epsilon;
     darktable.control->element = g->selected;
     if(oldsel != g->selected || oldon != g->on_node)
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-
-  return TRUE;
 }
 
-static gboolean _area_button_press_callback(GtkWidget *widget,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *self)
+static void _area_button_press_callback(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE
-     || (dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
-         && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)))
+  if(button == GDK_BUTTON_MIDDLE
+     || (button == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
+         && dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK)))
   {
     dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
                      gtk_notebook_get_n_pages(g->notebook) != 4);
     gui_update(self);
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  else if(button == GDK_BUTTON_PRIMARY)
   {
-    if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
-    {
+    if(n_press >= 2)
       _area_reset_nodes(g);
-      return TRUE;
-    }
     else
-    {
       g->dragging = TRUE;
-    }
   }
-  else
-    return gtk_widget_event(_get_slider(g, g->selected), (GdkEvent*)event);
-
-  return FALSE;
+  // other buttons: forward not supported with event controllers, ignored
 }
 
-static gboolean _area_button_release_callback(GtkWidget *widget,
-                                              const GdkEventButton *event,
-                                              const dt_iop_module_t *self)
+static void _area_button_release_callback(GtkGestureSingle *gesture,
+                                           gint n_press,
+                                           gdouble x,
+                                           gdouble y,
+                                           dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     g->dragging = FALSE;
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
 static void _area_size_callback(GtkWidget *widget,
@@ -2982,19 +2973,9 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle sliders visibility\nalt+scroll to change page"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  gtk_widget_add_events(GTK_WIDGET(g->area),
-                        GDK_BUTTON_PRESS_MASK
-                        | GDK_POINTER_MOTION_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_SCROLL_MASK
-                        | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(_area_button_release_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(_area_motion_notify_callback), self);
+  dt_gui_connect_click_all(g->area, _area_button_press_callback, _area_button_release_callback, self);
+  dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, NULL, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "size-allocate",

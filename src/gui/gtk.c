@@ -4946,6 +4946,20 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   return controller;
 }
 
+GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
+                                          GCallback pressed,
+                                          gpointer data)
+{
+  GtkEventController *controller = gtk_event_controller_key_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
+  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+
+  if(pressed) g_signal_connect(controller, "key-pressed", G_CALLBACK(pressed), data);
+
+  return controller;
+}
+
 
 static int busy_nest_count = 0;
 

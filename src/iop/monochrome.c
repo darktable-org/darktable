@@ -449,7 +449,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static void _monochrome_motion_notify(GtkEventControllerMotion *controller, gdouble x, gdouble y, dt_iop_module_t *self)
 {
   dt_iop_monochrome_gui_data_t *g = self->gui_data;
   dt_iop_monochrome_params_t *p = self->params;
@@ -457,94 +457,87 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
   {
     const float old_a = p->a, old_b = p->b;
     const int inset = DT_COLORCORRECTION_INSET;
+    GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
-    const float mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
-    const float mouse_y = CLAMP(height - 1 - dt_gdk_event_get_y(event) + inset, 0, height);
+    const float mouse_x = CLAMP(x - inset, 0, width);
+    const float mouse_y = CLAMP(height - 1 - y + inset, 0, height);
     p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
     p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
 
     if(old_a != p->a || old_b != p->b) dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  return TRUE;
 }
 
-static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static void _monochrome_button_press(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
+  dt_iop_monochrome_params_t *p = self->params;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+
+  dt_iop_color_picker_reset(self, TRUE);
+  if(n_press >= 2)
   {
-    dt_iop_monochrome_gui_data_t *g = self->gui_data;
-    dt_iop_monochrome_params_t *p = self->params;
-    dt_iop_color_picker_reset(self, TRUE);
-    if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
-    {
-      // reset
-      const dt_iop_monochrome_params_t *const p0 = self->default_params;
-      p->a = p0->a;
-      p->b = p0->b;
-      p->size = p0->size;
-    }
-    else
-    {
-      const int inset = DT_COLORCORRECTION_INSET;
-      GtkAllocation allocation;
-      gtk_widget_get_allocation(widget, &allocation);
-      int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
-      const float mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width);
-      const float mouse_y = CLAMP(height - 1 - dt_gdk_event_get_y(event) + inset, 0, height);
-      p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
-      p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
-      g->dragging = 1;
-      g_object_set(G_OBJECT(widget), "has-tooltip", FALSE, (gchar *)0);
-    }
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    return TRUE;
+    // reset
+    const dt_iop_monochrome_params_t *const p0 = self->default_params;
+    p->a = p0->a;
+    p->b = p0->b;
+    p->size = p0->size;
   }
-  return FALSE;
+  else
+  {
+    const int inset = DT_COLORCORRECTION_INSET;
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
+    const float mouse_x = CLAMP(x - inset, 0, width);
+    const float mouse_y = CLAMP(height - 1 - y + inset, 0, height);
+    p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
+    p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
+    g->dragging = 1;
+    g_object_set(G_OBJECT(widget), "has-tooltip", FALSE, (gchar *)0);
+  }
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static void _monochrome_button_release(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
-    dt_iop_monochrome_gui_data_t *g = self->gui_data;
-    dt_iop_color_picker_reset(self, TRUE);
-    g->dragging = 0;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (gchar *)0);
-    return TRUE;
-  }
-  return FALSE;
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  dt_iop_color_picker_reset(self, TRUE);
+  g->dragging = 0;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (gchar *)0);
 }
 
-static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static void _monochrome_leave_notify(GtkEventControllerMotion *controller, dt_iop_module_t *self)
 {
   dt_iop_monochrome_gui_data_t *g = self->gui_data;
   g->dragging = 0;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return TRUE;
 }
 
-static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
+static void _monochrome_scrolled(GtkEventControllerScroll *controller, gdouble dx, gdouble dy, dt_iop_module_t *self)
 {
   dt_iop_monochrome_params_t *p = self->params;
 
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
   dt_iop_color_picker_reset(self, TRUE);
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dy != 0.0)
   {
     const float old_size = p->size;
-    p->size = CLAMP(p->size - delta_y * 0.1, 0.5f, 3.0f);
+    p->size = CLAMP(p->size - dy * 0.1, 0.5f, 3.0f);
     if(old_size != p->size) dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(widget);
+    gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
   }
-
-  return TRUE;
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -558,17 +551,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
   dt_action_define_iop(self, NULL, N_("grid"), GTK_WIDGET(g->area), NULL);
 
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_monochrome_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(_monochrome_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(_monochrome_button_release),
-                   self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(_monochrome_motion_notify),
-                   self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(_monochrome_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_monochrome_scrolled), self);
+  dt_gui_connect_click(g->area, _monochrome_button_press, _monochrome_button_release, self);
+  dt_gui_connect_motion(g->area, _monochrome_motion_notify, NULL, _monochrome_leave_notify, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _monochrome_scrolled, self);
 
   g->highlights
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, N_("highlights")));
