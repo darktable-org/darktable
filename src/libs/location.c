@@ -207,7 +207,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
     lib->callback_params = g_list_append(lib->callback_params, param);
     param->lib = lib;
     param->result = place;
-    dt_gui_connect_click(eb, _lib_location_result_item_activated, NULL, param);
+    dt_gui_connect_click(eb, _lib_location_result_item_activated, NULL, (gpointer)param);
   }
   return eb;
 }

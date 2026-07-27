@@ -1475,7 +1475,7 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
 
 static void _mouse_scroll(GtkEventControllerScroll *controller,
                            gdouble dx, gdouble dy,
-                           dt_lib_module_t *self)
+                           dt_iop_module_t *self)
 {
   GtkWidget *view = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -1494,10 +1494,9 @@ static void _mouse_scroll(GtkEventControllerScroll *controller,
       GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
       gtk_tree_view_set_cursor((GtkTreeView *)view, path, NULL, FALSE);
       gtk_tree_path_free(path);
-      return TRUE;
+      return;
     }
   }
-  return FALSE;
 }
 #endif // HAVE_GMIC
 
