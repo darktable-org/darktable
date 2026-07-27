@@ -1052,7 +1052,7 @@ static void _event_rating_release_cb(GtkGestureSingle *gesture,
                                       gdouble y,
                                       dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(thumb->disable_actions)
     return;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
@@ -1091,7 +1091,7 @@ static void _event_grouping_release_cb(GtkGestureSingle *gesture,
                                         gdouble y,
                                         dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(thumb->disable_actions)
     return;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
@@ -1144,7 +1144,7 @@ static void _event_audio_release_cb(GtkGestureSingle *gesture,
                                      gdouble y,
                                      dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(thumb->disable_actions)
     return;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
@@ -1318,7 +1318,7 @@ static void _event_box_enter_cb(GtkEventControllerMotion *controller,
                                   gdouble y,
                                   dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   if(!thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
@@ -1330,7 +1330,7 @@ static void _event_box_enter_cb(GtkEventControllerMotion *controller,
 static void _event_box_leave_cb(GtkEventControllerMotion *controller,
                                  dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, FALSE);
@@ -1358,7 +1358,7 @@ static void _event_btn_enter_cb(GtkEventControllerMotion *controller,
                                   gdouble y,
                                   dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   if(widget == thumb->w_reject)
     darktable.control->element = DT_VIEW_REJECT;
@@ -1375,7 +1375,7 @@ static void _event_btn_enter_cb(GtkEventControllerMotion *controller,
 static void _event_btn_leave_cb(GtkEventControllerMotion *controller,
                                  dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   if(widget == thumb->w_reject)
     darktable.control->element = -1;
@@ -1386,7 +1386,7 @@ static void _event_star_enter_cb(GtkEventControllerMotion *controller,
                                    gdouble y,
                                    dt_thumbnail_t *thumb)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   if(thumb->disable_actions) return;
 
   if(!thumb->disable_mouseover)

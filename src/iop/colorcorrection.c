@@ -357,7 +357,7 @@ static void dt_iop_colorcorrection_motion_notify(GtkEventControllerMotion *contr
                                                       gdouble y,
                                                       dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   dt_iop_colorcorrection_params_t *p = self->params;
   const int inset = DT_COLORCORRECTION_INSET;
@@ -438,7 +438,7 @@ static void dt_iop_colorcorrection_leave_notify(GtkEventControllerMotion *contro
 
 static void dt_iop_colorcorrection_scrolled(GtkEventControllerScroll *controller, gdouble dx, gdouble dy, dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   dt_iop_colorcorrection_params_t *p = self->params;
 
@@ -454,7 +454,7 @@ static void dt_iop_colorcorrection_scrolled(GtkEventControllerScroll *controller
 
 static gboolean dt_iop_colorcorrection_key_press(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   dt_iop_colorcorrection_params_t *p = self->params;
   if(g->selected < 1) return FALSE;

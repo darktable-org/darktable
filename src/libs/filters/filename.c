@@ -237,7 +237,7 @@ static void _filename_update_selection(_widgets_filename_t *filename)
 
 static void _filename_press(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, _widgets_filename_t *filename)
 {
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *w = dt_gui_get_widget(gesture);
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {

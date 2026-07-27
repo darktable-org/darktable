@@ -570,7 +570,7 @@ static void dt_iop_zonesystem_bar_button_press(GtkGestureSingle *gesture, gint n
 {
   dt_iop_zonesystem_params_t *p = self->params;
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   const int inset = DT_ZONESYSTEM_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -624,7 +624,7 @@ static void dt_iop_zonesystem_bar_scrolled(GtkEventControllerScroll *controller,
     p->size = CLAMP(p->size - dy, 4, MAX_ZONE_SYSTEM_SIZE);
     p->zone[cs] = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+    gtk_widget_queue_draw(dt_gui_get_widget(controller));
   }
 }
 
@@ -641,7 +641,7 @@ static void dt_iop_zonesystem_bar_motion_notify(GtkEventControllerMotion *contro
 {
   dt_iop_zonesystem_params_t *p = self->params;
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_ZONESYSTEM_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);

@@ -1258,7 +1258,7 @@ static void _on_tree_motion_cb(GtkEventControllerMotion *controller,
                                   double x, double y,
                                   gpointer user_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkTreeView *tv = GTK_TREE_VIEW(widget);
   GdkWindow *bin = gtk_tree_view_get_bin_window(tv);
   if(!bin) return;
@@ -1281,7 +1281,7 @@ static void _on_info_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                        double x, double y,
                                        gpointer user_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(gtk_gesture_single_get_button(gesture) != 1) return;
 
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;

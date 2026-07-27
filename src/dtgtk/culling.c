@@ -822,7 +822,7 @@ static gboolean _event_draw(GtkWidget *widget,
 static void _event_leave_cb(GtkEventControllerMotion *controller,
                               dt_culling_t *table)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget))
   {

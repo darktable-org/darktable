@@ -1382,7 +1382,7 @@ static gboolean _event_draw(GtkWidget *widget,
 static void _event_leave_cb(GtkEventControllerMotion *controller,
                               dt_thumbtable_t *table)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget))
   {
@@ -1631,7 +1631,7 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
           }
           else
           {
-            GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+            GtkWidget *w = dt_gui_get_widget(gesture);
             GtkSettings *settings = gtk_widget_get_settings(GTK_WIDGET(w));
             guint double_click_time = 400;
 

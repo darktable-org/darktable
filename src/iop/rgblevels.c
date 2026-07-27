@@ -365,7 +365,7 @@ static void _area_leave_notify_callback(GtkEventControllerMotion *controller,
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   g->mouse_x = g->mouse_y = -1.0;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static gboolean _area_draw_callback(GtkWidget *widget,
@@ -554,7 +554,7 @@ static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   dt_iop_rgblevels_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -654,7 +654,7 @@ static void _area_scroll_callback(GtkEventControllerScroll *controller,
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   dt_iop_rgblevels_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   _turn_selregion_picker_off(self);
 

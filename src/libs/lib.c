@@ -991,7 +991,7 @@ static void _presets_popup_gesture_cb(GtkGestureSingle *gesture,
                                        gdouble y,
                                        dt_lib_module_t *module)
 {
-  _presets_popup_callback(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)), module);
+  _presets_popup_callback(dt_gui_get_widget(gesture), module);
 }
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, const gboolean expanded)

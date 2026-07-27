@@ -701,7 +701,7 @@ static void dt_iop_levels_leave_notify(GtkEventControllerMotion *controller, dt_
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   g->mouse_x = g->mouse_y = -1.0;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -866,7 +866,7 @@ static void dt_iop_levels_motion_notify(GtkEventControllerMotion *controller, gd
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   dt_iop_levels_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -945,7 +945,7 @@ static void dt_iop_levels_scroll(GtkEventControllerScroll *controller, gdouble d
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   dt_iop_levels_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   dt_iop_color_picker_reset(self, TRUE);
 

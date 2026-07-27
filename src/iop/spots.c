@@ -337,7 +337,7 @@ static void _add_shape_callback(GtkGestureSingle *gesture,
 {
   if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   const dt_iop_spots_gui_data_t *g = self->gui_data;
 
   gboolean creation_continuous = FALSE;

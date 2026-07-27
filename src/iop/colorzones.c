@@ -1860,7 +1860,7 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
                                         gdouble dy,
                                         dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
@@ -1918,7 +1918,7 @@ static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
                                              gdouble y,
                                              dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
@@ -2088,7 +2088,7 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
                                             gdouble y,
                                             dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
   const dt_iop_colorzones_params_t *const d = self->default_params;
@@ -2239,7 +2239,7 @@ static void _area_leave_notify_callback(GtkEventControllerMotion *controller,
   g->mouse_y = -fabs(g->mouse_y);
   if(!(dt_key_modifier_state() & GDK_BUTTON1_MASK))
     g->selected = -1;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static gboolean _area_key_press_callback(GtkEventControllerKey *controller,
@@ -2248,7 +2248,7 @@ static gboolean _area_key_press_callback(GtkEventControllerKey *controller,
                                          GdkModifierType state,
                                          dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   if(darktable.develop->darkroom_skip_mouse_events) return FALSE;
