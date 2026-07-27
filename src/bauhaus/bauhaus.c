@@ -750,11 +750,15 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
 
     bh->change_active = TRUE;
     GtkWidget *w_current = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-    const GdkEvent *current_event = gtk_get_current_event();
-    _window_motion_handle(w_current,
-                              dt_gdk_event_get_root_x(current_event),
-                              dt_gdk_event_get_root_y(current_event),
-                              dt_gdk_event_get_state(current_event));
+    GdkEvent *current_event = gtk_get_current_event();
+    if(current_event)
+    {
+      _window_motion_handle(w_current,
+                                dt_gdk_event_get_root_x(current_event),
+                                dt_gdk_event_get_root_y(current_event),
+                                dt_gdk_event_get_state(current_event));
+      gdk_event_free(current_event);
+    }
   }
   else if(button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
     _slider_zoom_range(w, 0);
