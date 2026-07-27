@@ -4571,7 +4571,16 @@ int button_pressed(dt_view_t *self,
     if(handled) return handled;
   }
 
-  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS) return 0;
+  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
+  {
+    // When masks are being edited, consume the double-click to avoid
+    // accidentally switching to lighttable.  The mask-specific handlers
+    // (brush, path, gradient, object, and our ellipse/circle guards)
+    // already return 1 for 2BUTTON_PRESS when form_visible is set;
+    // this is a belt-and-suspenders check for edge cases.
+    if(dev->form_visible) return 1;
+    return 0;
+  }
   if(which == GDK_BUTTON_PRIMARY)
   {
     dt_control_change_cursor("pointer");
@@ -5172,6 +5181,16 @@ static void _second_window_buttons_enter_notify_callback(GtkEventControllerMotio
 static void _second_window_buttons_leave_notify_callback(GtkEventControllerMotion *controller,
                                                           GtkWidget *button_box)
 {
+  // GDK_NOTIFY_INFERIOR means the pointer moved into a child window (still
+  // within the second window); keep the buttons visible in that case.
+  GdkEvent *event = gtk_get_current_event();
+  if(event && event->crossing.detail == GDK_NOTIFY_INFERIOR)
+  {
+    gdk_event_free(event);
+    return;
+  }
+  if(event) gdk_event_free(event);
+
   gtk_widget_set_opacity(button_box, 0.0);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
                                        button_box, TRUE);
