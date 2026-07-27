@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/gdk_event_utils.h"
+#include "gui/gtk.h"
 
 #include "chart/dtcairo.h"
 #include "chart/colorchart.h"
@@ -77,7 +78,7 @@ typedef struct dt_lut_t
 } dt_lut_t;
 
 // boring helper functions
-static void init_image(dt_lut_t *self, image_t *image, GCallback motion_cb);
+static void init_image(dt_lut_t *self, image_t *image, void (*motion_cb)(GtkEventControllerMotion *, gdouble, gdouble, dt_lut_t *));
 static void image_lab_to_xyz(float *image, const int width, const int height);
 static void map_boundingbox_to_view(image_t *image, point_t *bb);
 static point_t map_point_to_view(image_t *image, point_t p);
@@ -98,9 +99,9 @@ static void get_pixel_region(const image_t *const image, const point_t *const co
                              int *x_end, int *y_end);
 static void reset_bb(image_t *image);
 static void free_image(image_t *image);
-static gboolean handle_motion(GtkWidget *widget, GdkEventMotion *event, dt_lut_t *self, image_t *image);
+static gboolean handle_motion(GtkWidget *widget, gdouble mx, gdouble my, dt_lut_t *self, image_t *image);
 static int find_closest_corner(point_t *bb, float x, float y);
-static void map_mouse_to_0_1(GtkWidget *widget, GdkEventMotion *event, image_t *image, float *x, float *y);
+static void map_mouse_to_0_1(GtkWidget *widget, gdouble mx, gdouble my, image_t *image, float *x, float *y);
 static void update_corner(image_t *image, int which, float *x, float *y);
 static gboolean open_source_image(dt_lut_t *self, const char *filename);
 static gboolean open_reference_image(dt_lut_t *self, const char *filename);
@@ -170,37 +171,43 @@ static point_t map_point_to_view(image_t *image, point_t p)
   return result;
 }
 
-static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static void _motion_cb_source(GtkEventControllerMotion *controller,
+                              gdouble x,
+                              gdouble y,
+                              dt_lut_t *self)
 {
-  dt_lut_t *self = (dt_lut_t *)user_data;
-  const gboolean res = handle_motion(widget, event, self, &self->source);
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  const gboolean res = handle_motion(widget, x, y, self, &self->source);
   if(res)
   {
     collect_source_patches(self);
     update_table(self);
   }
-  return res;
 }
 
-static gboolean motion_notify_callback_reference(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static void _motion_cb_reference(GtkEventControllerMotion *controller,
+                                 gdouble x,
+                                 gdouble y,
+                                 dt_lut_t *self)
 {
-  dt_lut_t *self = (dt_lut_t *)user_data;
-  const gboolean res = handle_motion(widget, event, self, &self->reference);
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  const gboolean res = handle_motion(widget, x, y, self, &self->reference);
   if(res)
   {
     collect_reference_patches(self);
     update_table(self);
   }
-  return res;
 }
 
-static gboolean handle_motion(GtkWidget *widget, GdkEventMotion *event, dt_lut_t *self, image_t *image)
+static gboolean handle_motion(GtkWidget *widget, gdouble mx, gdouble my, dt_lut_t *self, image_t *image)
 {
-  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK) || !image->image) return FALSE;
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+  if(!(state & GDK_BUTTON1_MASK) || !image->image) return FALSE;
 
   // mouse -> 0..1
   float x, y;
-  map_mouse_to_0_1(widget, event, image, &x, &y);
+  map_mouse_to_0_1(widget, mx, my, image, &x, &y);
 
   // dragging the crosses is hard when they are not in a cornerof the bb but sprinkled over the chart
   int closest_corner = find_closest_corner(image->bb, x, y);
@@ -255,13 +262,13 @@ static int find_closest_corner(point_t *bb, float x, float y)
   return closest_corner;
 }
 
-static void map_mouse_to_0_1(GtkWidget *widget, GdkEventMotion *event, image_t *image, float *x, float *y)
+static void map_mouse_to_0_1(GtkWidget *widget, gdouble mx, gdouble my, image_t *image, float *x, float *y)
 {
   guint width = gtk_widget_get_allocated_width(widget);
   guint height = gtk_widget_get_allocated_height(widget);
 
-  *x = (dt_gdk_event_get_x(event) - image->offset_x) / (width - 2.0 * image->offset_x);
-  *y = (dt_gdk_event_get_y(event) - image->offset_y) / (height - 2.0 * image->offset_y);
+  *x = (mx - image->offset_x) / (width - 2.0 * image->offset_x);
+  *y = (my - image->offset_y) / (height - 2.0 * image->offset_y);
 }
 
 static void update_corner(image_t *image, int which, float *x, float *y)
@@ -1189,7 +1196,7 @@ static GtkWidget *create_notebook_page_source(dt_lut_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("size:"), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), source_shrink, TRUE, TRUE, 0);
 
-  init_image(self, &self->source, G_CALLBACK(motion_notify_callback_source));
+  init_image(self, &self->source, _motion_cb_source);
   self->source.draw_colored = TRUE;
   gtk_box_pack_start(GTK_BOX(page), self->source.drawing_area, TRUE, TRUE, 0);
 
@@ -1242,7 +1249,7 @@ static GtkWidget *create_notebook_page_reference(dt_lut_t *self)
   gtk_box_pack_start(GTK_BOX(reference_image_box), reference_shrink, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), reference_image_box, TRUE, TRUE, 0);
 
-  init_image(self, &self->reference, G_CALLBACK(motion_notify_callback_reference));
+  init_image(self, &self->reference, _motion_cb_reference);
   self->reference.draw_colored = FALSE;
   gtk_box_pack_start(GTK_BOX(page), self->reference.drawing_area, TRUE, TRUE, 0);
 
@@ -1621,7 +1628,7 @@ static void reset_bb(image_t *image)
   image->bb[BOTTOM_LEFT].y = 0.95;
 }
 
-static void init_image(dt_lut_t *self, image_t *image, GCallback motion_cb)
+static void init_image(dt_lut_t *self, image_t *image, void (*motion_cb)(GtkEventControllerMotion *, gdouble, gdouble, dt_lut_t *))
 {
   memset(image, 0x00, sizeof(image_t));
   image->chart = &self->chart;
@@ -1631,7 +1638,7 @@ static void init_image(dt_lut_t *self, image_t *image, GCallback motion_cb)
                         GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   g_signal_connect(image->drawing_area, "size-allocate", G_CALLBACK(size_allocate_callback), image);
   g_signal_connect(image->drawing_area, "draw", G_CALLBACK(draw_image_callback), image);
-  g_signal_connect(image->drawing_area, "motion-notify-event", G_CALLBACK(motion_cb), self);
+  dt_gui_connect_motion(image->drawing_area, motion_cb, NULL, NULL, self);
 }
 
 static void free_image(image_t *image)
