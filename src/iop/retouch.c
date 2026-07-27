@@ -1229,9 +1229,7 @@ static void rt_merge_from_scale_update(const int _merge_from_scale,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean rt_wdbar_leave_notify(GtkWidget *widget,
-                                      GdkEventCrossing *event,
-                                      dt_iop_module_t *self)
+static void rt_wdbar_leave_notify(GtkEventControllerMotion *controller, dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
@@ -1241,25 +1239,23 @@ static gboolean rt_wdbar_leave_notify(GtkWidget *widget,
   g->lower_margin = g->upper_margin = FALSE;
 
   gtk_widget_queue_draw(g->wd_bar);
-  return TRUE;
 }
 
-static gboolean rt_wdbar_button_press(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      dt_iop_module_t *self)
+static void rt_wdbar_button_press(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self)
 {
   if(DT_IN_GUI_UPDATE())
-    return TRUE;
+    return;
 
   dt_iop_request_focus(self);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = round(RT_WDBAR_INSET * allocation.height);
   const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     if(g->lower_margin) // bottom slider
     {
@@ -1280,58 +1276,49 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget,
   }
 
   gtk_widget_queue_draw(g->wd_bar);
-  return TRUE;
 }
 
-static gboolean rt_wdbar_button_release(GtkWidget *widget,
-                                        GdkEventButton *event,
-                                        dt_iop_module_t *self)
+static void rt_wdbar_button_release(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     g->is_dragging = 0;
 
   gtk_widget_queue_draw(g->wd_bar);
-  return TRUE;
 }
 
-static gboolean rt_wdbar_scrolled(GtkWidget *widget,
-                                  GdkEventScroll *event,
-                                  dt_iop_module_t *self)
+static void rt_wdbar_scrolled(GtkEventControllerScroll *controller, gdouble dx, gdouble dy, dt_iop_module_t *self)
 {
-  if(dt_gui_ignore_scroll(event))
-    return FALSE;
-
   if(DT_IN_GUI_UPDATE())
-    return TRUE;
+    return;
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
   dt_iop_request_focus(self);
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dy != 0.0)
   {
     if(g->lower_margin) // bottom slider
-      rt_num_scales_update(p->num_scales - delta_y, self);
+      rt_num_scales_update(p->num_scales - dy, self);
     else if(g->upper_margin) // top slider
-      rt_merge_from_scale_update(p->merge_from_scale - delta_y, self);
+      rt_merge_from_scale_update(p->merge_from_scale - dy, self);
     else if(g->curr_scale >= 0)
-      rt_curr_scale_update(p->curr_scale - delta_y, self);
+      rt_curr_scale_update(p->curr_scale - dy, self);
   }
 
   gtk_widget_queue_draw(g->wd_bar);
-  return TRUE;
 }
 
-static gboolean rt_wdbar_motion_notify(GtkWidget *widget,
-                                       GdkEventMotion *event,
-                                       dt_iop_module_t *self)
+static void rt_wdbar_motion_notify(GtkEventControllerMotion *controller,
+                                    gdouble x,
+                                    gdouble y,
+                                    dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
   dt_iop_retouch_params_t *p = self->params;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1341,8 +1328,8 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget,
 
 
   /* record mouse position within control */
-  g->wdbar_mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, allocation.width - 2.0f * inset - 1.0f);
-  g->wdbar_mouse_y = dt_gdk_event_get_y(event);
+  g->wdbar_mouse_x = CLAMP(x - inset, 0, allocation.width - 2.0f * inset - 1.0f);
+  g->wdbar_mouse_y = y;
 
   g->curr_scale = g->wdbar_mouse_x / box_w;
   g->lower_cursor = g->upper_cursor = FALSE;
@@ -1374,7 +1361,6 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget,
     rt_merge_from_scale_update(g->curr_scale, self);
 
   gtk_widget_queue_draw(g->wd_bar);
-  return TRUE;
 }
 
 static int rt_scale_has_shapes(dt_iop_retouch_params_t *p,
@@ -2532,20 +2518,11 @@ void gui_init(dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->wd_bar), "draw",
                    G_CALLBACK(rt_wdbar_draw), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "motion-notify-event",
-                   G_CALLBACK(rt_wdbar_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "leave-notify-event",
-                   G_CALLBACK(rt_wdbar_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "button-press-event",
-                   G_CALLBACK(rt_wdbar_button_press), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "button-release-event",
-                   G_CALLBACK(rt_wdbar_button_release), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "scroll-event",
-                   G_CALLBACK(rt_wdbar_scrolled), self);
-  gtk_widget_add_events(GTK_WIDGET(g->wd_bar),
-                        GDK_POINTER_MOTION_MASK
-                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                        | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  dt_gui_connect_click(g->wd_bar, rt_wdbar_button_press, rt_wdbar_button_release, self);
+  dt_gui_connect_motion(g->wd_bar, rt_wdbar_motion_notify, NULL, rt_wdbar_leave_notify, self);
+  dt_gui_connect_scroll(g->wd_bar, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        rt_wdbar_scrolled, self);
   gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(40));
 
   // toolbar display current scale / cut&paste / suppress&display masks
