@@ -550,7 +550,7 @@ void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 gboolean dt_gui_long_click(const guint second,
                            const guint first);
 
-#define ASSERT_FUNC_TYPE(func, expected_type) (void)(sizeof((func), (expected_type)0))
+#define ASSERT_FUNC_TYPE(func, expected_type) (void)((expected_type)(func))
 
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
