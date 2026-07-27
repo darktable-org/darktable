@@ -717,7 +717,7 @@ static void _window_motion_cb(GtkEventControllerMotion *controller,
                                gdouble y,
                                gpointer user_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GdkEvent *event = gtk_get_current_event();
   if(!event) return;
   const gdouble root_x = dt_gdk_event_get_root_x(event);
@@ -730,7 +730,7 @@ static void _window_motion_cb(GtkEventControllerMotion *controller,
 static void _popup_leave_notify_cb(GtkEventControllerMotion *controller,
                                     gpointer user_data)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
 }
 
@@ -758,7 +758,7 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
   GdkEvent *cur_event = gtk_get_current_event();
   if(cur_event)
   {
-    if(dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture))))
+    if(dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(dt_gui_get_widget(gesture)))
     {
       gdk_event_free(cur_event);
       _popup_reject();
@@ -786,7 +786,7 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
     }
 
     bh->change_active = TRUE;
-    GtkWidget *w_current = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+    GtkWidget *w_current = dt_gui_get_widget(gesture);
     GdkEvent *current_event = gtk_get_current_event();
     if(current_event)
     {
@@ -3946,7 +3946,7 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_t *bh = darktable.bauhaus;
   gboolean passthrough_from_histogram =
-    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)) != widget;
+    dt_gui_get_widget(gesture) != widget;
 
   if(!passthrough_from_histogram)
   {

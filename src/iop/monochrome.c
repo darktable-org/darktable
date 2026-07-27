@@ -457,7 +457,7 @@ static void _monochrome_motion_notify(GtkEventControllerMotion *controller, gdou
   {
     const float old_a = p->a, old_b = p->b;
     const int inset = DT_COLORCORRECTION_INSET;
-    GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+    GtkWidget *widget = dt_gui_get_widget(controller);
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     int width = allocation.width - 2 * inset, height = allocation.height - 2 * inset;
@@ -478,7 +478,7 @@ static void _monochrome_button_press(GtkGestureSingle *gesture, gint n_press, gd
 
   dt_iop_monochrome_gui_data_t *g = self->gui_data;
   dt_iop_monochrome_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_color_picker_reset(self, TRUE);
   if(n_press >= 2)
@@ -511,7 +511,7 @@ static void _monochrome_button_release(GtkGestureSingle *gesture, gint n_press, 
     return;
 
   dt_iop_monochrome_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_iop_color_picker_reset(self, TRUE);
   g->dragging = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -536,7 +536,7 @@ static void _monochrome_scrolled(GtkEventControllerScroll *controller, gdouble d
     const float old_size = p->size;
     p->size = CLAMP(p->size - dy * 0.1, 0.5f, 3.0f);
     if(old_size != p->size) dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+    gtk_widget_queue_draw(dt_gui_get_widget(controller));
   }
 }
 

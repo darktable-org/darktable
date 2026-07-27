@@ -1259,7 +1259,7 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
                                                  gdouble y,
                                                  dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!dt_is_valid_imgid(imgid)) return;
 

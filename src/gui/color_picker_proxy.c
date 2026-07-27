@@ -268,7 +268,7 @@ static void _color_picker_clicked(GtkGestureSingle *gesture,
                                    gdouble y,
                                    dt_iop_color_picker_t *self)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   _color_picker_callback_button_press(button, NULL, self);
 }
 

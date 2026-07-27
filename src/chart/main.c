@@ -176,7 +176,7 @@ static void _motion_cb_source(GtkEventControllerMotion *controller,
                               gdouble y,
                               dt_lut_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const gboolean res = handle_motion(widget, x, y, self, &self->source);
   if(res)
   {
@@ -190,7 +190,7 @@ static void _motion_cb_reference(GtkEventControllerMotion *controller,
                                  gdouble y,
                                  dt_lut_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const gboolean res = handle_motion(widget, x, y, self, &self->reference);
   if(res)
   {

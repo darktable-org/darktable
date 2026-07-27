@@ -267,7 +267,7 @@ static void _misc_press(GtkGestureSingle *gesture,
                         gdouble y,
                         _widgets_misc_t *misc)
 {
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *w = dt_gui_get_widget(gesture);
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {

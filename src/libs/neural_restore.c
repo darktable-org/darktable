@@ -3928,7 +3928,7 @@ static void _preview_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                         double ex, double ey,
                                         dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
   if(gtk_gesture_single_get_button(gesture) != 1) return;
@@ -4023,7 +4023,7 @@ static void _preview_motion_cb(GtkEventControllerMotion *controller,
                                  double ex, double ey,
                                  dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
   // move crop rectangle while hovering in picking mode

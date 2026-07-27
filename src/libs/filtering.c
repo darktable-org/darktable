@@ -1164,7 +1164,7 @@ static void _event_rule_close_cb(GtkGestureSingle *gesture, int n_press,
                                     double x, double y,
                                     dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return;
 
@@ -1667,7 +1667,7 @@ static void _topbar_rule_remove_cb(GtkGestureSingle *gesture, int n_press,
                                        double x, double y,
                                        dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return;
   dt_lib_filtering_t *d = self->data;
@@ -1932,7 +1932,7 @@ static void _sort_close_cb(GtkGestureSingle *gesture, int n_press,
                               double x, double y,
                               dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   _widgets_sort_t *sort = (_widgets_sort_t *)g_object_get_data(G_OBJECT(widget), "sort");
   if(sort->lib->manual_sort_set) return;
 

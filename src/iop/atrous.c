@@ -1034,7 +1034,7 @@ static void area_enter_notify(GtkEventControllerMotion *controller,
   g->in_curve = TRUE;
   if(!g->dragging)
     g->x_move = -1;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static void area_leave_notify(GtkEventControllerMotion *controller,
@@ -1044,7 +1044,7 @@ static void area_leave_notify(GtkEventControllerMotion *controller,
   g->in_curve = FALSE;
   if(!g->dragging)
     g->x_move = -1;
-  gtk_widget_queue_draw(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)));
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -1388,7 +1388,7 @@ static void area_motion_notify(GtkEventControllerMotion *controller,
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_iop_atrous_params_t *p = self->params;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1474,7 +1474,7 @@ static void area_button_press(GtkGestureSingle *gesture,
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
     return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   if(n_press >= 2)
   {
@@ -1528,7 +1528,7 @@ static void area_scrolled(GtkEventControllerScroll *controller,
                            dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   if(dt_modifier_eq(controller, GDK_MOD1_MASK))
   {

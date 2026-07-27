@@ -2774,7 +2774,7 @@ static void _quickbutton_pressed_cb(GtkGestureSingle *gesture,
                                      gdouble y,
                                      GtkWidget *popover)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
 
   /* secondary click: show popup immediately */
   if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_SECONDARY)
@@ -5071,7 +5071,7 @@ static void _second_window_button_released_callback(GtkGestureSingle *gesture,
 {
   if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
 
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *w = dt_gui_get_widget(gesture);
   gtk_widget_queue_draw(w);
 }
 

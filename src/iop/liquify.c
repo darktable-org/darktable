@@ -3628,7 +3628,7 @@ static void btn_make_radio_callback(GtkGestureSingle *gesture,
     gdk_event_free(event);
   }
 
-  GtkWidget *btn = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *btn = dt_gui_get_widget(gesture);
 
   _btn_make_radio_cb(GTK_TOGGLE_BUTTON(btn), ctrl_pressed, self);
 }

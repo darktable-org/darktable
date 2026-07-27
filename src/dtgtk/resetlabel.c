@@ -38,7 +38,7 @@ static void _reset_label_callback(GtkGestureSingle *gesture,
 {
   if(n_press >= 2)
   {
-    GtkDarktableResetLabel *label = DTGTK_RESET_LABEL(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)));
+    GtkDarktableResetLabel *label = DTGTK_RESET_LABEL(dt_gui_get_widget(gesture));
     memcpy(((char *)label->module->params) + label->offset,
            ((char *)label->module->default_params) + label->offset, label->size);
     dt_iop_gui_update(label->module);

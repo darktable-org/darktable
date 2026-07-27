@@ -1389,7 +1389,7 @@ static void checker_motion_notify(
   // highlight?
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1429,7 +1429,7 @@ static void checker_button_press(
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);

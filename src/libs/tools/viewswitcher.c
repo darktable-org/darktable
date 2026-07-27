@@ -182,7 +182,7 @@ static void _lib_viewswitcher_enter_callback(GtkEventControllerMotion *controlle
                                                double x, double y,
                                                GtkWidget *label)
 {
-  GtkWidget *w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *w = dt_gui_get_widget(controller);
   /* if not active view lets highlight */
   if(strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
     gtk_widget_set_state_flags(label, GTK_STATE_FLAG_PRELIGHT, FALSE);

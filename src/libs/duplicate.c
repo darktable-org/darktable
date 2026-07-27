@@ -183,7 +183,7 @@ static void _lib_duplicate_thumb_press_callback(GtkGestureSingle *gesture,
                                                 dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = self->data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
   const dt_imgid_t imgid = thumb->imgid;
 

@@ -749,7 +749,7 @@ static void _blendop_blend_order_clicked(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
 
   dt_develop_blend_params_t *bp = module->blend_params;
   const gboolean active = !(bp->blend_mode & DEVELOP_BLEND_REVERSE);
@@ -1360,7 +1360,7 @@ static void _blendop_blendif_showmask_clicked(GtkGestureSingle *gesture,
 
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
 
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
 
   const gboolean has_mask_display =
     module->request_mask_display
@@ -1413,7 +1413,7 @@ static void _blendop_masks_modes_none_clicked(GtkGestureSingle *gesture,
                                                   dt_iop_module_t *module)
 {
   DT_GUARD_GUI_UPDATE();
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
@@ -1508,7 +1508,7 @@ static void _blendop_masks_modes_uni_toggled(GtkGestureSingle *gesture,
                                                  gdouble y,
                                                  dt_iop_module_t *module)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   _blendop_masks_modes_toggle(GTK_TOGGLE_BUTTON(button), module, DEVELOP_MASK_ENABLED);
 }
 
@@ -1518,7 +1518,7 @@ static void _blendop_masks_modes_drawn_toggled(GtkGestureSingle *gesture,
                                                    gdouble y,
                                                    dt_iop_module_t *module)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   _blendop_masks_modes_toggle(GTK_TOGGLE_BUTTON(button), module,
                               DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK);
 }
@@ -1529,7 +1529,7 @@ static void _blendop_masks_modes_param_toggled(GtkGestureSingle *gesture,
                                                    gdouble y,
                                                    dt_iop_module_t *module)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   _blendop_masks_modes_toggle(GTK_TOGGLE_BUTTON(button), module,
                               DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL);
 }
@@ -1540,7 +1540,7 @@ static void _blendop_masks_modes_both_toggled(GtkGestureSingle *gesture,
                                                  double y,
                                                  dt_iop_module_t *module)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   _blendop_masks_modes_toggle(GTK_TOGGLE_BUTTON(button), module,
                               DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_CONDITIONAL);
 }
@@ -1551,7 +1551,7 @@ static void _blendop_masks_modes_raster_toggled(GtkGestureSingle *gesture,
                                                     gdouble y,
                                                     dt_iop_module_t *module)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *button = dt_gui_get_widget(gesture);
   _blendop_masks_modes_toggle(GTK_TOGGLE_BUTTON(button), module,
                               DEVELOP_MASK_ENABLED | DEVELOP_MASK_RASTER);
 }
@@ -1562,7 +1562,7 @@ static void _blendop_blendif_suppress_toggled(GtkGestureSingle *gesture,
                                                   gdouble y,
                                                   dt_iop_module_t *module)
 {
-  GtkWidget *togglebutton_w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *togglebutton_w = dt_gui_get_widget(gesture);
   GtkToggleButton *togglebutton = GTK_TOGGLE_BUTTON(togglebutton_w);
   module->suppress_mask = !gtk_toggle_button_get_active(togglebutton);
   DT_GUARD_GUI_UPDATE();
@@ -1633,7 +1633,7 @@ static void _blendop_masks_add_shape(GtkGestureSingle *gesture,
                                          gdouble y,
                                          dt_iop_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
 
@@ -1762,7 +1762,7 @@ static void _blendop_masks_polarity_callback(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  GtkWidget *togglebutton = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *togglebutton = dt_gui_get_widget(gesture);
 
   const int active = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(togglebutton), active);
@@ -2221,7 +2221,7 @@ static void _blendop_blendif_enter_cb(GtkEventControllerMotion *controller,
 {
   if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
   dt_dev_pixelpipe_display_mask_t mode = DT_DEV_PIXELPIPE_DISPLAY_NONE;
@@ -2320,7 +2320,7 @@ static gboolean _blendop_blendif_key_press_cb(GtkEventControllerKey *controller,
 {
   if(dt_atomic_get_int(&darktable.gui->reset) != 0) return FALSE;
 
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_gui_blend_data_t *data = module->blend_data;
   gboolean handled = FALSE;
 
@@ -2988,7 +2988,7 @@ static void _raster_polarity_callback(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  GtkWidget *togglebutton = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *togglebutton = dt_gui_get_widget(gesture);
 
   dt_develop_blend_params_t *bp = self->blend_params;
 

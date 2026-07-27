@@ -636,7 +636,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
                                         double x, double y,
                                         dt_lib_collect_t *d)
 {
-  GtkWidget *treeview = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *treeview = dt_gui_get_widget(gesture);
   static GdkModifierType last_mod_state = 0;
 
   GdkEvent *event = gtk_get_current_event();

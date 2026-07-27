@@ -419,7 +419,7 @@ static void _lib_navigation_motion_notify_callback(GtkEventControllerMotion *con
                                                       double x, double y,
                                                       dt_lib_module_t *self)
 {
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, x, y,
@@ -590,7 +590,7 @@ static void _lib_navigation_button_press_callback(GtkGestureSingle *gesture, int
                                                      dt_lib_module_t *self)
 {
   dt_lib_navigation_t *d = self->data;
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const guint button = gtk_gesture_single_get_button(gesture);
