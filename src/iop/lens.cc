@@ -2417,6 +2417,52 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         vig[i] = 1;
     }
   }
+  else if(img->exif_correction_type == CORRECTION_TYPE_PANASONIC)
+  {
+    // Panasonic distortion polynomial (Rigo, trou/panasonic-rw2):
+    //   Ru = Rd + scale * (a*Rd^3 + b*Rd^5 + c*Rd^7)
+    // where Rd is the source (distorted) radius, Ru is the destination
+    // (undistorted) radius, both normalised to the half-diagonal, and
+    // scale is DistortionScale from Panasonic firmware. The pipeline
+    // needs the multiplier dr = Rd/Ru at each destination radius r;
+    // invert with two fixed-point iterations (Rd_new = Ru / f(Rd_old)),
+    // which reduce error by ~1000x for the small distortions typical
+    // of Panasonic bodies
+    const float a  = cd->panasonic.a;
+    const float b  = cd->panasonic.b;
+    const float c  = cd->panasonic.c;
+    const float sc = cd->panasonic.scale;
+
+    nc = MAXKNOTS;
+
+    for(int i = 0; i < nc; i++)
+    {
+      const float r = (float)i / (float)(nc - 1);
+      knots_dist[i] = knots_vig[i] = r;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        // invert Ru -> Rd via two fixed-point iterations
+        float rd = r;
+        for(int k = 0; k < 2; k++)
+        {
+          const float rd2 = rd * rd;
+          const float rd4 = rd2 * rd2;
+          const float rd6 = rd4 * rd2;
+          const float f = 1.0f + sc * (a*rd2 + b*rd4 + c*rd6);
+          rd = (f > 1e-6f) ? r / f : r;
+        }
+        const float dr = (r > 0.0f) ? rd / r : 1.0f;
+        const float fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+      }
+      else if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
+
+      if(vig)
+        vig[i] = 1.0f;
+    }
+  }
 
 
   // calculate the optimal scaling value to show the maximum
