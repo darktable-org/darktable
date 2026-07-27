@@ -82,7 +82,7 @@
 #include "common/spektra_core.h"
 #include "common/spektra_sim.h"
 
-DT_MODULE_INTROSPECTION(10, dt_iop_spektrafilm_params_t)
+DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -132,7 +132,6 @@ DT_MODULE_INTROSPECTION(10, dt_iop_spektrafilm_params_t)
 /* DIR coupler inhibitor diffusion; spektrafilm params_schema
    dir_couplers.diffusion_size_um default (a plain gaussian in the reference) */
 
-#define SF_MAX_PROFILES 128
 #define SF_NAME_LEN 128
 #define SF_PATH_LEN 1024
 
@@ -245,10 +244,9 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *print_diffusion_on, *print_diffusion_filter_family;
   GtkWidget *print_diffusion_strength, *print_diffusion_scale, *print_diffusion_warmth;
 
-  sf_prof_entry_t entries[SF_MAX_PROFILES];
-  int n_entries;
-  int film_entry[SF_MAX_PROFILES], n_films;
-  int paper_entry[SF_MAX_PROFILES], n_papers;
+  /* every profile found on disk, sorted, films and papers together --
+     e->printing separates them. Owns its sf_prof_entry_t nodes. */
+  GList *entries;
   GtkNotebook *notebook;
 } dt_iop_spektrafilm_gui_data_t;
 
@@ -454,10 +452,12 @@ const char *name(void)
 {
   return _("spektrafilm");
 }
+
 const char *aliases(void)
 {
   return _("film simulation|analog|spectral|grain|halation|print");
 }
+
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(
@@ -467,788 +467,38 @@ const char **description(dt_iop_module_t *self)
       _("creative"), _("linear, RGB, scene-referred"), _("non-linear, RGB"),
       _("non-linear, RGB, display-referred"));
 }
+
 int default_group(void)
 {
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
+
 int flags(void)
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_ALLOW_TILING;
 }
+
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *p,
                                             dt_dev_pixelpipe_iop_t *pi)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void **new_params, int32_t *new_params_size, int *new_version)
-{
-  /* v1 -> v5, v2 -> v5, v3 -> v5, v4 -> v5: each case below produces the
-     current (v5) struct directly, rather than chaining through the
-     intermediate versions -- same convention darktable's own modules use for
-     multi-version migrations (see e.g. exposure.c, where every old_version
-     case sets *new_version straight to its latest, not to old_version+1).
-
-     v1 is the module's true original params shape, confirmed directly
-     against the live, unmodified upstream source -- covering every params
-     layout this module shipped with before the version was first bumped
-     (the introspection version was never bumped through several early
-     field additions, print_auto_exposure among them, during this module's
-     fast-moving initial development, so v1 recovers history saved against
-     any of those shapes too: the struct has only ever grown by appending
-     fields, so an old, smaller saved blob still matches the leading
-     fields of the current struct).
-
-     v2 is the shape after the first proper version bump (preflash_*,
-     diffusion_filter_family, output_luminance_boost added) but before
-     print diffusion existed.
-
-     v3 adds print_diffusion_on/print_diffusion_filter_family/
-     print_diffusion_strength/print_diffusion_scale/print_diffusion_warmth
-     -- a second, independent diffusion filter applied at the print stage
-     rather than the film stage.
-
-     v4 splits what used to be one shared halation_amount/halation_scale
-     pair -- driving BOTH the in-emulsion scatter stage (always fully
-     engaged, s_amount==1 hardcoded) and the back-reflection halation stage
-     -- into two independent pairs: scatter_amount/scatter_scale (new) and
-     halation_amount/halation_scale (unchanged meaning, now stage-2 only).
-     Every v1/v2/v3 case sets scatter_amount = 1.0 (previously the implicit,
-     unconfigurable, always-on value) and scatter_scale = <old
-     halation_scale> (the spatial multiplier that value used to feed into
-     BOTH stages) so migrated params reproduce the old rendering exactly,
-     pixel for pixel, before the user ever touches the new sliders.
-
-     v6 adds grain_usm_sigma and grain_usm_amount after grain blur (study b80).
-     v5 is a params-VALUE change, not a struct-shape change: sf_halation()
-     no longer applies eff = halation_amount^1.3 before scaling
-     halation_strength -- halation_amount is now a direct linear multiplier,
-     matching upstream's a_tot = halation_strength * halation_amount exactly.
-     Every version prior to v5 (v1 through v4, all of which share today's
-     dt_iop_spektrafilm_params_t layout for this field) rendered under the
-     ^1.3 curve, so every case below remaps
-     halation_amount := old_halation_amount^1.3 -- the exact inverse of
-     dropping the curve -- so a_tot stays numerically identical and every
-     migrated edit still renders pixel-for-pixel as before, even though nothing
-     about the struct's field layout changed. This is why a params version
-     bump is still required even for a pure algorithm/semantics change: without
-     it, darktable has no reason to call this function at all, and old edits
-     would silently double-apply/skip the curve on load.
-
-     From this version onward, any further params struct or semantics change
-     should bump the version and add another case here rather than silently
-     drift again. */
-  typedef struct dt_iop_spektrafilm_params_v1_t
-  {
-    uint32_t film_hash;
-    uint32_t paper_hash;
-    float exposure_ev;
-    float print_exposure_ev;
-    gboolean print_auto_exposure;
-    float print_contrast;
-    float filter_m;
-    float filter_y;
-    float couplers_amount;
-    gboolean scan_film;
-    dt_iop_spektrafilm_quality_t quality;
-    gboolean halation_on;
-    float halation_amount;
-    float halation_scale;
-    float boost_ev;
-    float boost_range;
-    float protect_ev;
-    gboolean diffusion_on;
-    float diffusion_strength;
-    float diffusion_scale;
-    float diffusion_warmth;
-    gboolean grain_on;
-    float grain_amount;
-    float grain_size;
-    float film_format_mm;
-  } dt_iop_spektrafilm_params_v1_t;
-
-  typedef struct dt_iop_spektrafilm_params_v2_t
-  {
-    uint32_t film_hash;
-    uint32_t paper_hash;
-    float exposure_ev;
-    float print_exposure_ev;
-    gboolean print_auto_exposure;
-    float print_contrast;
-    float filter_m;
-    float filter_y;
-    float couplers_amount;
-    float preflash_exposure;
-    float preflash_m_shift;
-    float preflash_y_shift;
-    gboolean scan_film;
-    dt_iop_spektrafilm_quality_t quality;
-    gboolean halation_on;
-    float halation_amount;
-    float halation_scale;
-    float boost_ev;
-    float boost_range;
-    float protect_ev;
-    gboolean diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
-    float diffusion_strength;
-    float diffusion_scale;
-    float diffusion_warmth;
-    gboolean grain_on;
-    float grain_amount;
-    float grain_size;
-    float film_format_mm;
-    float output_luminance_boost;
-  } dt_iop_spektrafilm_params_v2_t;
-
-  typedef struct dt_iop_spektrafilm_params_v3_t
-  {
-    uint32_t film_hash;
-    uint32_t paper_hash;
-    float exposure_ev;
-    float print_exposure_ev;
-    gboolean print_auto_exposure;
-    float print_contrast;
-    float filter_m;
-    float filter_y;
-    float couplers_amount;
-    float preflash_exposure;
-    float preflash_m_shift;
-    float preflash_y_shift;
-    gboolean scan_film;
-    dt_iop_spektrafilm_quality_t quality;
-    gboolean halation_on;
-    float halation_amount;
-    float halation_scale;
-    float boost_ev;
-    float boost_range;
-    float protect_ev;
-    gboolean diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
-    float diffusion_strength;
-    float diffusion_scale;
-    float diffusion_warmth;
-    gboolean print_diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
-    float print_diffusion_strength;
-    float print_diffusion_scale;
-    float print_diffusion_warmth;
-    gboolean grain_on;
-    float grain_amount;
-    float grain_size;
-    float film_format_mm;
-    float output_luminance_boost;
-  } dt_iop_spektrafilm_params_v3_t;
-
-  typedef struct dt_iop_spektrafilm_params_v4_t
-  {
-    uint32_t film_hash;
-    uint32_t paper_hash;
-    float exposure_ev;
-    float print_exposure_ev;
-    gboolean print_auto_exposure;
-    float print_contrast;
-    float filter_m;
-    float filter_y;
-    float couplers_amount;
-    float preflash_exposure;
-    float preflash_m_shift;
-    float preflash_y_shift;
-    gboolean scan_film;
-    dt_iop_spektrafilm_quality_t quality;
-    gboolean halation_on;
-    float scatter_amount;
-    float scatter_scale;
-    float halation_amount;
-    float halation_scale;
-    float boost_ev;
-    float boost_range;
-    float protect_ev;
-    gboolean diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
-    float diffusion_strength;
-    float diffusion_scale;
-    float diffusion_warmth;
-    gboolean print_diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
-    float print_diffusion_strength;
-    float print_diffusion_scale;
-    float print_diffusion_warmth;
-    gboolean grain_on;
-    float grain_amount;
-    float grain_size;
-    float film_format_mm;
-    float output_luminance_boost;
-  } dt_iop_spektrafilm_params_v4_t;
-
-  typedef struct dt_iop_spektrafilm_params_v6_t
-  {
-    uint32_t film_hash;
-    uint32_t paper_hash;
-    float exposure_ev;
-    float print_exposure_ev;
-    gboolean print_auto_exposure;
-    float print_contrast;
-    float filter_m;
-    float filter_y;
-    float couplers_amount;
-    float preflash_exposure;
-    float preflash_m_shift;
-    float preflash_y_shift;
-    gboolean scan_film;
-    dt_iop_spektrafilm_quality_t quality;
-    gboolean halation_on;
-    float scatter_amount;
-    float scatter_scale;
-    float halation_amount;
-    float halation_scale;
-    float boost_ev;
-    float boost_range;
-    float protect_ev;
-    gboolean diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
-    float diffusion_strength;
-    float diffusion_scale;
-    float diffusion_warmth;
-    gboolean print_diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
-    float print_diffusion_strength;
-    float print_diffusion_scale;
-    float print_diffusion_warmth;
-    gboolean grain_on;
-    float grain_amount;
-    float grain_size;
-    float film_format_mm;
-    float output_luminance_boost;
-    float grain_usm_sigma;
-    float grain_usm_amount;
-  } dt_iop_spektrafilm_params_v6_t;
-
-  typedef struct dt_iop_spektrafilm_params_v7_t
-  {
-    uint32_t film_hash;
-    uint32_t paper_hash;
-    float exposure_ev;
-    float print_exposure_ev;
-    gboolean print_auto_exposure;
-    float print_contrast;
-    float filter_m;
-    float filter_y;
-    float couplers_amount;
-    float preflash_exposure;
-    float preflash_m_shift;
-    float preflash_y_shift;
-    gboolean scan_film;
-    dt_iop_spektrafilm_quality_t quality;
-    gboolean halation_on;
-    float scatter_amount;
-    float scatter_scale;
-    float halation_amount;
-    float halation_scale;
-    float boost_ev;
-    float boost_range;
-    float protect_ev;
-    gboolean diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t diffusion_filter_family;
-    float diffusion_strength;
-    float diffusion_scale;
-    float diffusion_warmth;
-    gboolean print_diffusion_on;
-    dt_iop_spektrafilm_diffusion_family_t print_diffusion_filter_family;
-    float print_diffusion_strength;
-    float print_diffusion_scale;
-    float print_diffusion_warmth;
-    gboolean grain_on;
-    float grain_amount;
-    float grain_size;
-    float film_format_mm;
-    float output_luminance_boost;
-    float grain_usm_sigma;
-    float grain_usm_amount;
-    float film_gamma_factor;
-    float film_gamma_factor_fast;
-    float film_gamma_factor_slow;
-    float film_developer_exhaustion;
-  } dt_iop_spektrafilm_params_v7_t;
-
-  typedef struct dt_iop_spektrafilm_params_v8_t
-  {
-    dt_iop_spektrafilm_params_v7_t v7;
-    float push_pull_stops;
-  } dt_iop_spektrafilm_params_v8_t;
-
-  if(old_version == 1)
-  {
-    const dt_iop_spektrafilm_params_v1_t *o = (dt_iop_spektrafilm_params_v1_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->film_hash;
-    n->paper_hash = o->paper_hash;
-    n->exposure_ev = o->exposure_ev;
-    n->print_exposure_ev = o->print_exposure_ev;
-    n->print_auto_exposure = o->print_auto_exposure;
-    n->print_contrast = o->print_contrast;
-    n->filter_m = o->filter_m;
-    n->filter_y = o->filter_y;
-    n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = 0.0f; /* new in v2: neutral default, no-op (matches upstream) */
-    n->preflash_m_shift = 0.0f;  /* new in v2: neutral default, no-op */
-    n->preflash_y_shift = 0.0f;  /* new in v2: neutral default, no-op */
-    n->scan_film = o->scan_film;
-    n->quality = o->quality;
-    n->halation_on = o->halation_on;
-    /* new in v4: scatter used to be hardcoded fully-on and shared
-       halation_scale as its spatial multiplier -- reproduce that exactly. */
-    n->scatter_amount = 1.0f;
-    n->scatter_scale = o->halation_scale;
-    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
-    n->halation_scale = o->halation_scale;
-    n->boost_ev = o->boost_ev;
-    n->boost_range = o->boost_range;
-    n->protect_ev = o->protect_ev;
-    n->diffusion_on = o->diffusion_on;
-    /* new in v2: the engine was hardcoded to Black Pro-Mist before the
-       family selector existed, so this exactly reproduces old saved
-       diffusion settings rather than just picking a neutral default. */
-    n->diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
-    n->diffusion_strength = o->diffusion_strength;
-    n->diffusion_scale = o->diffusion_scale;
-    n->diffusion_warmth = o->diffusion_warmth;
-    /* new in v3: print diffusion never existed for anything saved against
-       v1, so it defaults off, same $DEFAULT the param itself declares. */
-    n->print_diffusion_on = FALSE;
-    n->print_diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
-    n->print_diffusion_strength = 0.5f;
-    n->print_diffusion_scale = 1.0f;
-    n->print_diffusion_warmth = 0.0f;
-    n->grain_on = o->grain_on;
-    n->grain_amount = o->grain_amount;
-    n->grain_size = o->grain_size;
-    n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = 1.0f; /* new in v2: neutral default, no-op (matches upstream) */
-    n->grain_usm_sigma = 0.8f;
-    n->grain_usm_amount = 0.0f;
-    n->film_gamma_factor = 1.0f;
-    n->film_gamma_factor_fast = 1.0f;
-    n->film_gamma_factor_slow = 1.0f;
-    n->film_developer_exhaustion = 0.0f;
-    n->push_pull_stops = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
-    return 0;
-  }
-  if(old_version == 2)
-  {
-    const dt_iop_spektrafilm_params_v2_t *o = (dt_iop_spektrafilm_params_v2_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->film_hash;
-    n->paper_hash = o->paper_hash;
-    n->exposure_ev = o->exposure_ev;
-    n->print_exposure_ev = o->print_exposure_ev;
-    n->print_auto_exposure = o->print_auto_exposure;
-    n->print_contrast = o->print_contrast;
-    n->filter_m = o->filter_m;
-    n->filter_y = o->filter_y;
-    n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = o->preflash_exposure;
-    n->preflash_m_shift = o->preflash_m_shift;
-    n->preflash_y_shift = o->preflash_y_shift;
-    n->scan_film = o->scan_film;
-    n->quality = o->quality;
-    n->halation_on = o->halation_on;
-    /* new in v4: scatter used to be hardcoded fully-on and shared
-       halation_scale as its spatial multiplier -- reproduce that exactly. */
-    n->scatter_amount = 1.0f;
-    n->scatter_scale = o->halation_scale;
-    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
-    n->halation_scale = o->halation_scale;
-    n->boost_ev = o->boost_ev;
-    n->boost_range = o->boost_range;
-    n->protect_ev = o->protect_ev;
-    n->diffusion_on = o->diffusion_on;
-    n->diffusion_filter_family = o->diffusion_filter_family;
-    n->diffusion_strength = o->diffusion_strength;
-    n->diffusion_scale = o->diffusion_scale;
-    n->diffusion_warmth = o->diffusion_warmth;
-    /* new in v3: nothing saved against v2 ever had print diffusion, so it
-       defaults off, same $DEFAULT the param itself declares. */
-    n->print_diffusion_on = FALSE;
-    n->print_diffusion_filter_family = DT_SPEKTRAFILM_DIFF_BLACK_PRO_MIST;
-    n->print_diffusion_strength = 0.5f;
-    n->print_diffusion_scale = 1.0f;
-    n->print_diffusion_warmth = 0.0f;
-    n->grain_on = o->grain_on;
-    n->grain_amount = o->grain_amount;
-    n->grain_size = o->grain_size;
-    n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = o->output_luminance_boost;
-    n->grain_usm_sigma = 0.8f;
-    n->grain_usm_amount = 0.0f;
-    n->film_gamma_factor = 1.0f;
-    n->film_gamma_factor_fast = 1.0f;
-    n->film_gamma_factor_slow = 1.0f;
-    n->film_developer_exhaustion = 0.0f;
-    n->push_pull_stops = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
-    return 0;
-  }
-  if(old_version == 3)
-  {
-    const dt_iop_spektrafilm_params_v3_t *o = (dt_iop_spektrafilm_params_v3_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->film_hash;
-    n->paper_hash = o->paper_hash;
-    n->exposure_ev = o->exposure_ev;
-    n->print_exposure_ev = o->print_exposure_ev;
-    n->print_auto_exposure = o->print_auto_exposure;
-    n->print_contrast = o->print_contrast;
-    n->filter_m = o->filter_m;
-    n->filter_y = o->filter_y;
-    n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = o->preflash_exposure;
-    n->preflash_m_shift = o->preflash_m_shift;
-    n->preflash_y_shift = o->preflash_y_shift;
-    n->scan_film = o->scan_film;
-    n->quality = o->quality;
-    n->halation_on = o->halation_on;
-    /* new in v4: scatter used to be hardcoded fully-on and shared
-       halation_scale as its spatial multiplier -- reproduce that exactly. */
-    n->scatter_amount = 1.0f;
-    n->scatter_scale = o->halation_scale;
-    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
-    n->halation_scale = o->halation_scale;
-    n->boost_ev = o->boost_ev;
-    n->boost_range = o->boost_range;
-    n->protect_ev = o->protect_ev;
-    n->diffusion_on = o->diffusion_on;
-    n->diffusion_filter_family = o->diffusion_filter_family;
-    n->diffusion_strength = o->diffusion_strength;
-    n->diffusion_scale = o->diffusion_scale;
-    n->diffusion_warmth = o->diffusion_warmth;
-    n->print_diffusion_on = o->print_diffusion_on;
-    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
-    n->print_diffusion_strength = o->print_diffusion_strength;
-    n->print_diffusion_scale = o->print_diffusion_scale;
-    n->print_diffusion_warmth = o->print_diffusion_warmth;
-    n->grain_on = o->grain_on;
-    n->grain_amount = o->grain_amount;
-    n->grain_size = o->grain_size;
-    n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = o->output_luminance_boost;
-    n->grain_usm_sigma = 0.8f;
-    n->grain_usm_amount = 0.0f;
-    n->film_gamma_factor = 1.0f;
-    n->film_gamma_factor_fast = 1.0f;
-    n->film_gamma_factor_slow = 1.0f;
-    n->film_developer_exhaustion = 0.0f;
-    n->push_pull_stops = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
-    return 0;
-  }
-  if(old_version == 4)
-  {
-    const dt_iop_spektrafilm_params_v4_t *o = (dt_iop_spektrafilm_params_v4_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->film_hash;
-    n->paper_hash = o->paper_hash;
-    n->exposure_ev = o->exposure_ev;
-    n->print_exposure_ev = o->print_exposure_ev;
-    n->print_auto_exposure = o->print_auto_exposure;
-    n->print_contrast = o->print_contrast;
-    n->filter_m = o->filter_m;
-    n->filter_y = o->filter_y;
-    n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = o->preflash_exposure;
-    n->preflash_m_shift = o->preflash_m_shift;
-    n->preflash_y_shift = o->preflash_y_shift;
-    n->scan_film = o->scan_film;
-    n->quality = o->quality;
-    n->halation_on = o->halation_on;
-    /* v4 already had independent scatter_amount/scatter_scale -- carry them
-       over unchanged, only halation_amount's curve is being removed here. */
-    n->scatter_amount = o->scatter_amount;
-    n->scatter_scale = o->scatter_scale;
-    n->halation_amount = powf(o->halation_amount, 1.3f); /* v5: undo dropped ^1.3 curve */
-    n->halation_scale = o->halation_scale;
-    n->boost_ev = o->boost_ev;
-    n->boost_range = o->boost_range;
-    n->protect_ev = o->protect_ev;
-    n->diffusion_on = o->diffusion_on;
-    n->diffusion_filter_family = o->diffusion_filter_family;
-    n->diffusion_strength = o->diffusion_strength;
-    n->diffusion_scale = o->diffusion_scale;
-    n->diffusion_warmth = o->diffusion_warmth;
-    n->print_diffusion_on = o->print_diffusion_on;
-    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
-    n->print_diffusion_strength = o->print_diffusion_strength;
-    n->print_diffusion_scale = o->print_diffusion_scale;
-    n->print_diffusion_warmth = o->print_diffusion_warmth;
-    n->grain_on = o->grain_on;
-    n->grain_amount = o->grain_amount;
-    n->grain_size = o->grain_size;
-    n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = o->output_luminance_boost;
-    n->grain_usm_sigma = 0.8f;
-    n->grain_usm_amount = 0.0f;
-    n->film_gamma_factor = 1.0f;
-    n->film_gamma_factor_fast = 1.0f;
-    n->film_gamma_factor_slow = 1.0f;
-    n->film_developer_exhaustion = 0.0f;
-    n->push_pull_stops = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
-    return 0;
-  }
-  if(old_version == 5)
-  {
-    const dt_iop_spektrafilm_params_t *o = (dt_iop_spektrafilm_params_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-    *n = *o;
-    n->grain_usm_sigma = 0.8f;
-    n->grain_usm_amount = 0.0f;
-    n->film_gamma_factor = 1.0f;
-    n->film_gamma_factor_fast = 1.0f;
-    n->film_gamma_factor_slow = 1.0f;
-    n->film_developer_exhaustion = 0.0f;
-    n->push_pull_stops = 0.0f;
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
-    return 0;
-  }
-  if(old_version == 6)
-  {
-    const dt_iop_spektrafilm_params_v6_t *o = (dt_iop_spektrafilm_params_v6_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->film_hash;
-    n->paper_hash = o->paper_hash;
-    n->exposure_ev = o->exposure_ev;
-    n->print_exposure_ev = o->print_exposure_ev;
-    n->print_auto_exposure = o->print_auto_exposure;
-    n->print_contrast = o->print_contrast;
-    n->filter_m = o->filter_m;
-    n->filter_y = o->filter_y;
-    n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = o->preflash_exposure;
-    n->preflash_m_shift = o->preflash_m_shift;
-    n->preflash_y_shift = o->preflash_y_shift;
-    n->scan_film = o->scan_film;
-    n->quality = o->quality;
-    n->halation_on = o->halation_on;
-    n->scatter_amount = o->scatter_amount;
-    n->scatter_scale = o->scatter_scale;
-    n->halation_amount = o->halation_amount;
-    n->halation_scale = o->halation_scale;
-    n->boost_ev = o->boost_ev;
-    n->boost_range = o->boost_range;
-    n->protect_ev = o->protect_ev;
-    n->diffusion_on = o->diffusion_on;
-    n->diffusion_filter_family = o->diffusion_filter_family;
-    n->diffusion_strength = o->diffusion_strength;
-    n->diffusion_scale = o->diffusion_scale;
-    n->diffusion_warmth = o->diffusion_warmth;
-    n->print_diffusion_on = o->print_diffusion_on;
-    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
-    n->print_diffusion_strength = o->print_diffusion_strength;
-    n->print_diffusion_scale = o->print_diffusion_scale;
-    n->print_diffusion_warmth = o->print_diffusion_warmth;
-    n->grain_on = o->grain_on;
-    n->grain_amount = o->grain_amount;
-    n->grain_size = o->grain_size;
-    n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = o->output_luminance_boost;
-    n->grain_usm_sigma = o->grain_usm_sigma;
-    n->grain_usm_amount = o->grain_usm_amount;
-    n->film_gamma_factor = 1.0f;
-    n->film_gamma_factor_fast = 1.0f;
-    n->film_gamma_factor_slow = 1.0f;
-    n->film_developer_exhaustion = 0.0f;
-    n->push_pull_stops = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 8;
-    return 0;
-  }
-  if(old_version == 7)
-  {
-    const dt_iop_spektrafilm_params_v7_t *o = (dt_iop_spektrafilm_params_v7_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->film_hash;
-    n->paper_hash = o->paper_hash;
-    n->exposure_ev = o->exposure_ev;
-    n->print_exposure_ev = o->print_exposure_ev;
-    n->print_auto_exposure = o->print_auto_exposure;
-    n->print_contrast = o->print_contrast;
-    n->filter_m = o->filter_m;
-    n->filter_y = o->filter_y;
-    n->couplers_amount = o->couplers_amount;
-    n->preflash_exposure = o->preflash_exposure;
-    n->preflash_m_shift = o->preflash_m_shift;
-    n->preflash_y_shift = o->preflash_y_shift;
-    n->scan_film = o->scan_film;
-    n->quality = o->quality;
-    n->halation_on = o->halation_on;
-    n->scatter_amount = o->scatter_amount;
-    n->scatter_scale = o->scatter_scale;
-    n->halation_amount = o->halation_amount;
-    n->halation_scale = o->halation_scale;
-    n->boost_ev = o->boost_ev;
-    n->boost_range = o->boost_range;
-    n->protect_ev = o->protect_ev;
-    n->diffusion_on = o->diffusion_on;
-    n->diffusion_filter_family = o->diffusion_filter_family;
-    n->diffusion_strength = o->diffusion_strength;
-    n->diffusion_scale = o->diffusion_scale;
-    n->diffusion_warmth = o->diffusion_warmth;
-    n->print_diffusion_on = o->print_diffusion_on;
-    n->print_diffusion_filter_family = o->print_diffusion_filter_family;
-    n->print_diffusion_strength = o->print_diffusion_strength;
-    n->print_diffusion_scale = o->print_diffusion_scale;
-    n->print_diffusion_warmth = o->print_diffusion_warmth;
-    n->grain_on = o->grain_on;
-    n->grain_amount = o->grain_amount;
-    n->grain_size = o->grain_size;
-    n->film_format_mm = o->film_format_mm;
-    n->output_luminance_boost = o->output_luminance_boost;
-    n->grain_usm_sigma = o->grain_usm_sigma;
-    n->grain_usm_amount = o->grain_usm_amount;
-    n->film_gamma_factor = o->film_gamma_factor;
-    n->film_gamma_factor_fast = o->film_gamma_factor_fast;
-    n->film_gamma_factor_slow = o->film_gamma_factor_slow;
-    n->film_developer_exhaustion = o->film_developer_exhaustion;
-    n->push_pull_stops = 0.0f;
-    /* v9 fields: neutral, so a v7 preset keeps rendering as it did */
-    n->scan_blur = 0.0f;
-    n->scan_usm_sigma = 0.7f;
-    n->scan_usm_amount = 0.0f;
-    n->glare_percent = 0.0f;
-    n->development_min = 0.0f;
-    n->print_development_min = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 10;
-    return 0;
-  }
-  if(old_version == 8)
-  {
-    /* v9 adds the scanner stage (blur, unsharp mask) and the viewing-glare veil
-       ([sc]/[gl] in the reference: ScannerParams.lens_blur / unsharp_mask and
-       GlareParams). All three default to OFF here rather than to the reference's
-       own defaults, so an existing edit renders exactly as it did before. */
-    const dt_iop_spektrafilm_params_v8_t *o = (dt_iop_spektrafilm_params_v8_t *)old_params;
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-
-    n->film_hash = o->v7.film_hash;
-    n->paper_hash = o->v7.paper_hash;
-    n->exposure_ev = o->v7.exposure_ev;
-    n->print_exposure_ev = o->v7.print_exposure_ev;
-    n->print_auto_exposure = o->v7.print_auto_exposure;
-    n->print_contrast = o->v7.print_contrast;
-    n->filter_m = o->v7.filter_m;
-    n->filter_y = o->v7.filter_y;
-    n->couplers_amount = o->v7.couplers_amount;
-    n->preflash_exposure = o->v7.preflash_exposure;
-    n->preflash_m_shift = o->v7.preflash_m_shift;
-    n->preflash_y_shift = o->v7.preflash_y_shift;
-    n->scan_film = o->v7.scan_film;
-    n->quality = o->v7.quality;
-    n->halation_on = o->v7.halation_on;
-    n->scatter_amount = o->v7.scatter_amount;
-    n->scatter_scale = o->v7.scatter_scale;
-    n->halation_amount = o->v7.halation_amount;
-    n->halation_scale = o->v7.halation_scale;
-    n->boost_ev = o->v7.boost_ev;
-    n->boost_range = o->v7.boost_range;
-    n->protect_ev = o->v7.protect_ev;
-    n->diffusion_on = o->v7.diffusion_on;
-    n->diffusion_filter_family = o->v7.diffusion_filter_family;
-    n->diffusion_strength = o->v7.diffusion_strength;
-    n->diffusion_scale = o->v7.diffusion_scale;
-    n->diffusion_warmth = o->v7.diffusion_warmth;
-    n->print_diffusion_on = o->v7.print_diffusion_on;
-    n->print_diffusion_filter_family = o->v7.print_diffusion_filter_family;
-    n->print_diffusion_strength = o->v7.print_diffusion_strength;
-    n->print_diffusion_scale = o->v7.print_diffusion_scale;
-    n->print_diffusion_warmth = o->v7.print_diffusion_warmth;
-    n->grain_on = o->v7.grain_on;
-    n->grain_amount = o->v7.grain_amount;
-    n->grain_size = o->v7.grain_size;
-    n->film_format_mm = o->v7.film_format_mm;
-    n->output_luminance_boost = o->v7.output_luminance_boost;
-    n->grain_usm_sigma = o->v7.grain_usm_sigma;
-    n->grain_usm_amount = o->v7.grain_usm_amount;
-    n->film_gamma_factor = o->v7.film_gamma_factor;
-    n->film_gamma_factor_fast = o->v7.film_gamma_factor_fast;
-    n->film_gamma_factor_slow = o->v7.film_gamma_factor_slow;
-    n->film_developer_exhaustion = o->v7.film_developer_exhaustion;
-    n->push_pull_stops = o->push_pull_stops;
-    n->scan_blur = 0.0f;
-    n->scan_usm_sigma = 0.7f;
-    n->scan_usm_amount = 0.0f;
-    n->glare_percent = 0.0f;
-    n->development_min = 0.0f;
-    n->print_development_min = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 10;
-    return 0;
-  }
-  if(old_version == 9)
-  {
-    /* v10 appends `development_min`, which picks a member of a B&W stock's
-       development-time family in minutes. 0 means "the stock's own default", the
-       representative middle member -- which is what v9 and earlier effectively
-       rendered whenever they got the layout right, so old edits keep that. */
-    dt_iop_spektrafilm_params_t *n = malloc(sizeof(dt_iop_spektrafilm_params_t));
-    memcpy(n, old_params, sizeof(*n) - sizeof(n->development_min) - sizeof(n->print_development_min));
-    n->development_min = 0.0f;
-    n->print_development_min = 0.0f;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_spektrafilm_params_t);
-    *new_version = 10;
-    return 0;
-  }
-  return 1;
-}
-
 /* ---------------------------------------------------------------------- */
 /* profile discovery                                                      */
 /* ---------------------------------------------------------------------- */
 
-/* stable string hash for profile identity in params (same as the LUT module
-   used for bundles, so behaviour across machines/rescans is order-free) */
-static uint32_t sf_name_hash(const char *s)
+/* Stable identity for a profile in params: the stock name hashed, so a rescan
+   or a different machine resolves the same stock regardless of directory order.
+   Folded to 32 bits because params store it as uint32_t. */
+static uint32_t _name_hash(const char *s)
 {
-  uint32_t h = 2166136261u; /* FNV-1a */
-  for(const unsigned char *p = (const unsigned char *)s; *p; p++)
-  {
-    h ^= *p;
-    h *= 16777619u;
-  }
-  return h ? h : 1; /* 0 is reserved for "first available" */
+  const dt_hash_t h = dt_hash(DT_INITHASH, s, strlen(s));
+  const uint32_t h32 = (uint32_t)(h ^ (h >> 32));
+  return h32 ? h32 : 1; /* 0 is reserved for "first available" */
 }
 
-static void sf_pack_dir(char *dst, size_t dstsz)
+static void _pack_dir(char *dst, size_t dstsz)
 {
   char cfg[SF_PATH_LEN];
   dt_loc_get_user_config_dir(cfg, sizeof cfg);
@@ -1257,7 +507,7 @@ static void sf_pack_dir(char *dst, size_t dstsz)
 
 /* natural (human) string compare: embedded numbers compared numerically
    so "Vision3 50D" < "Vision3 200T" < "Vision3 500T" */
-static int sf_nat_cmp(const char *a, const char *b)
+static int _nat_cmp(const char *a, const char *b)
 {
   for(;;)
   {
@@ -1284,20 +534,26 @@ static int sf_nat_cmp(const char *a, const char *b)
   }
 }
 
+static gint _entry_name_cmp(gconstpointer a, gconstpointer b)
+{
+  return _nat_cmp(((const sf_prof_entry_t *)a)->name, ((const sf_prof_entry_t *)b)->name);
+}
+
 /* scan <config>/spektrafilm/profiles/ (all .json files); reads only the info header of
-   each profile (stock / name / stage / target_print) */
-static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
+   each profile (stock / name / stage / target_print). Returns a newly allocated
+   list of sf_prof_entry_t, sorted by name, which the caller owns. */
+static GList *_scan_profiles(void)
 {
   char dir[SF_PATH_LEN];
-  sf_pack_dir(dir, sizeof dir);
+  _pack_dir(dir, sizeof dir);
   char profdir[SF_PATH_LEN + 16];
   snprintf(profdir, sizeof profdir, "%s/profiles", dir);
 
   GDir *gd = g_dir_open(profdir, 0, NULL);
-  if(!gd) return 0;
-  int n = 0;
+  if(!gd) return NULL;
+  GList *list = NULL;
   const char *fn;
-  while(n < maxn && (fn = g_dir_read_name(gd)))
+  while((fn = g_dir_read_name(gd)))
   {
     if(!g_str_has_suffix(fn, ".json")) continue;
     char path[SF_PATH_LEN + 300];
@@ -1309,8 +565,7 @@ static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
       free(err);
       continue;
     }
-    sf_prof_entry_t *e = &out[n];
-    memset(e, 0, sizeof(*e));
+    sf_prof_entry_t *e = g_malloc0(sizeof(sf_prof_entry_t));
     g_strlcpy(e->stock, sf_profile_stock(prof) ? sf_profile_stock(prof) : fn, SF_NAME_LEN);
     /* strip .json when falling back to the file name */
     char *dot = strstr(e->stock, ".json");
@@ -1325,51 +580,51 @@ static int sf_scan_profiles(sf_prof_entry_t *out, int maxn)
     const char *cm = sf_profile_channel_model(prof);
     e->bw = (cm && !strcmp(cm, "bw"));
     e->n_dev = sf_profile_dev_times(prof, e->dev_times, SF_MAX_DEV_TIMES);
-    e->hash = sf_name_hash(e->stock);
+    e->hash = _name_hash(e->stock);
     sf_profile_free(prof);
-    n++;
+    list = g_list_prepend(list, e);
   }
   g_dir_close(gd);
   /* natural order by display name (numbers compared numerically,
      so "50D" < "200T" instead of lexicographic "200T" < "50D") */
-  for(int i = 0; i < n; i++)
-    for(int j = i + 1; j < n; j++)
-      if(sf_nat_cmp(out[j].name, out[i].name) < 0)
-      {
-        sf_prof_entry_t t = out[i];
-        out[i] = out[j];
-        out[j] = t;
-      }
-  return n;
+  return g_list_sort(list, _entry_name_cmp);
 }
 
 /* resolve a profile hash to its stock name. hash 0 -> default:
    for films the first filming stock, for papers prefer the film's
    target_print. Returns false when nothing matches. */
-static gboolean sf_resolve_stock(const sf_prof_entry_t *entries, int n, uint32_t hash,
-                                 gboolean want_printing, const char *prefer_stock,
-                                 char *dst, size_t dstsz)
+static gboolean _resolve_stock(GList *entries, uint32_t hash, gboolean want_printing,
+                               const char *prefer_stock, char *dst, size_t dstsz)
 {
   if(hash)
-    for(int i = 0; i < n; i++)
-      if(entries[i].hash == hash && entries[i].printing == want_printing)
-      {
-        g_strlcpy(dst, entries[i].stock, dstsz);
-        return TRUE;
-      }
-  if(prefer_stock && prefer_stock[0])
-    for(int i = 0; i < n; i++)
-      if(entries[i].printing == want_printing && !strcmp(entries[i].stock, prefer_stock))
-      {
-        g_strlcpy(dst, entries[i].stock, dstsz);
-        return TRUE;
-      }
-  for(int i = 0; i < n; i++)
-    if(entries[i].printing == want_printing)
+    for(GList *l = entries; l; l = l->next)
     {
-      g_strlcpy(dst, entries[i].stock, dstsz);
+      const sf_prof_entry_t *e = l->data;
+      if(e->hash == hash && e->printing == want_printing)
+      {
+        g_strlcpy(dst, e->stock, dstsz);
+        return TRUE;
+      }
+    }
+  if(prefer_stock && prefer_stock[0])
+    for(GList *l = entries; l; l = l->next)
+    {
+      const sf_prof_entry_t *e = l->data;
+      if(e->printing == want_printing && !strcmp(e->stock, prefer_stock))
+      {
+        g_strlcpy(dst, e->stock, dstsz);
+        return TRUE;
+      }
+    }
+  for(GList *l = entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(e->printing == want_printing)
+    {
+      g_strlcpy(dst, e->stock, dstsz);
       return TRUE;
     }
+  }
   return FALSE;
 }
 
@@ -1383,6 +638,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
   dt_pthread_mutex_init(&d->lock, NULL);
   piece->data = d;
 }
+
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = (dt_iop_spektrafilm_data_t *)piece->data;
@@ -1518,7 +774,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(!_pack && !_pack_error[0])
   {
     char dir[SF_PATH_LEN];
-    sf_pack_dir(dir, sizeof dir);
+    _pack_dir(dir, sizeof dir);
     char *err = NULL;
     _pack = sf_pack_load(dir, &err);
     if(!_pack)
@@ -1540,31 +796,36 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   }
 
   /* resolve stocks */
-  sf_prof_entry_t entries[SF_MAX_PROFILES];
-  const int n = sf_scan_profiles(entries, SF_MAX_PROFILES);
+  GList *entries = _scan_profiles();
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
-  if(!sf_resolve_stock(entries, n, p->film_hash, FALSE, "kodak_portra_400", film_stock,
-                       sizeof film_stock))
+  if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_portra_400", film_stock,
+                     sizeof film_stock))
   {
     g_strlcpy(d->sim_error, "no filming profiles found", sizeof d->sim_error);
+    g_list_free_full(entries, g_free);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
   const char *target_print = NULL;
-  for(int i = 0; i < n; i++)
-    if(!entries[i].printing && !strcmp(entries[i].stock, film_stock))
-      target_print = entries[i].target_print;
+  for(GList *l = entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(!e->printing && !strcmp(e->stock, film_stock)) target_print = e->target_print;
+  }
   if(!p->scan_film
-     && !sf_resolve_stock(entries, n, p->paper_hash, TRUE, target_print, paper_stock,
-                          sizeof paper_stock))
+     && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, paper_stock,
+                        sizeof paper_stock))
   {
     g_strlcpy(d->sim_error, "no printing profiles found", sizeof d->sim_error);
+    g_list_free_full(entries, g_free);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
 
+  g_list_free_full(entries, g_free); /* stocks resolved; the list is done */
+
   char dir[SF_PATH_LEN], path[SF_PATH_LEN + 300];
-  sf_pack_dir(dir, sizeof dir);
+  _pack_dir(dir, sizeof dir);
   char *err = NULL;
   snprintf(path, sizeof path, "%s/profiles/%s.json", dir, film_stock);
   sf_profile_t *film = sf_profile_load(path, p->development_min, &err);
@@ -2859,15 +2120,15 @@ cleanup:
 static void _rescan(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
-  g->n_entries = sf_scan_profiles(g->entries, SF_MAX_PROFILES);
-  g->n_films = g->n_papers = 0;
-  for(int i = 0; i < g->n_entries; i++)
-  {
-    if(g->entries[i].printing)
-      g->paper_entry[g->n_papers++] = i;
-    else
-      g->film_entry[g->n_films++] = i;
-  }
+  g_list_free_full(g->entries, g_free);
+  g->entries = _scan_profiles();
+}
+
+/* Entry at a list position, or NULL. The comboboxes carry the position as their
+   data, so this is how a user selection resolves back to a profile. */
+static const sf_prof_entry_t *_entry_at(const dt_iop_spektrafilm_gui_data_t *g, const int pos)
+{
+  return (pos >= 0) ? g_list_nth_data(g->entries, pos) : NULL;
 }
 
 static void _update_print_sensitivity(dt_iop_module_t *self);
@@ -2880,9 +2141,9 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  const int fi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->film));
-  if(fi < 0) return;
-  const sf_prof_entry_t *e = &g->entries[fi];
+  const sf_prof_entry_t *e
+      = _entry_at(g, GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->film)));
+  if(!e) return;
   p->film_hash = e->hash;
   /* A development time from the previous stock means nothing here -- the times
      differ per stock, and a stale value can sit above the new stock's longest
@@ -2892,46 +2153,11 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->development_min, p->development_min);
   DT_LEAVE_GUI_UPDATE();
-  /* scan_film's checkbox is a plain GtkCheckButton (dt_bauhaus_toggle_from_
-     params), not a bauhaus widget -- the real reset mechanism for it
-     (dt_bauhaus_toggle_widget_reset, develop/imageop_gui.c, part of this
-     fork's own darktable-core toggle-reset patch) reads
-     self->default_params live, via pointer offset, at the moment of the
-     reset -- there is no separate cached value to poke; mutating
-     default_params->scan_film here IS the mechanism, not a workaround for
-     it. This covers BOTH of that patch's reset paths: a right-click/
-     scroll reset on just this checkbox, and double-clicking the notebook
-     tab bar (_reset_all_bauhaus -> dt_bauhaus_toggle_widget_reset for
-     every checkbox on the current page). Without this, a positive/
-     reversal film's scan_film (which has no print stage and needs
-     scan_film TRUE) would silently revert to the compiled FALSE default
-     on either gesture.
-     This alone would reintroduce an old bug, though: a later WHOLE-MODULE
-     reset (_gui_reset_callback -> dt_iop_reload_defaults ->
-     dt_iop_load_default_params's memcpy(params, default_params, ...))
-     copies default_params verbatim, INCLUDING film_hash, which stays
-     pinned at the compiled default (kodak_portra_400, per gui_update's
-     own fallback) regardless of what's mutated here -- so a whole-module
-     reset needs default_params->scan_film to already match THAT film
-     (FALSE), not whatever film was selected right before the reset was
-     clicked. See reload_defaults() below, which restores exactly that,
-     and runs before the memcpy specifically so a single reset click
-     converges correctly on the first try. */
-  if(self->default_params)
-  {
-    dt_iop_spektrafilm_params_t *dp = (dt_iop_spektrafilm_params_t *)self->default_params;
-    dp->scan_film = e->positive;
-    /* the checkbox caches the default it was created with, the way sliders
-       and comboboxes do, so re-baselining the param's default has to
-       re-baseline the widget's too. Otherwise a reset would return to the
-       default of whichever film happened to be selected when the module's
-       gui was built, and the tab's "changed" marker would compare against
-       that same stale value. */
-    dt_bauhaus_toggle_set_default(g->scan_film, dp->scan_film);
-    /* same reasoning as the slider's own default above, for the reset path that
-       memcpys default_params over params wholesale */
-    dp->development_min = p->development_min;
-  }
+  /* A positive/reversal stock has no print stage, so its natural mode is
+     scan_film. Point the widget's reset target at that, so a reset gesture on
+     the checkbox lands on what THIS film wants rather than the compiled
+     default. */
+  dt_bauhaus_toggle_set_default(g->scan_film, e->positive);
   /* scan-film follows the film's natural mode on a film switch: slides and
      reversal stocks are viewed directly (scan), negatives go through the
      print stage. The user can still toggle freely afterwards -- this only
@@ -2947,14 +2173,20 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   /* if the paper is still on "auto" (hash 0) keep it following the film's
      target print; otherwise leave the explicit user choice alone */
   if(p->paper_hash == 0 && e->target_print[0])
-    for(int k = 0; k < g->n_papers; k++)
-      if(!strcmp(g->entries[g->paper_entry[k]].stock, e->target_print))
+  {
+    int pos = 0;
+    for(const GList *l = g->entries; l; l = l->next, pos++)
+    {
+      const sf_prof_entry_t *pe = l->data;
+      if(pe->printing && !strcmp(pe->stock, e->target_print))
       {
         DT_ENTER_GUI_UPDATE();
-        dt_bauhaus_combobox_set_from_value(g->paper, g->paper_entry[k]);
+        dt_bauhaus_combobox_set_from_value(g->paper, pos);
         DT_LEAVE_GUI_UPDATE();
         break;
       }
+    }
+  }
   /* last, once scan_film and the auto-followed paper have settled: both
      development sliders are gated on their own stock, and the print one also on
      there being a print stage at all */
@@ -2967,14 +2199,12 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  const int pi = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper));
-  if(pi < 0) return;
-  p->paper_hash = g->entries[pi].hash;
+  const sf_prof_entry_t *pe
+      = _entry_at(g, GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper)));
+  if(!pe) return;
+  p->paper_hash = pe->hash;
   /* same as _film_changed: a time from the previous paper does not transfer */
-  p->print_development_min = _development_default(&g->entries[pi]);
-  if(self->default_params)
-    ((dt_iop_spektrafilm_params_t *)self->default_params)->print_development_min
-        = p->print_development_min;
+  p->print_development_min = _development_default(pe);
   DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set(g->print_development_min, p->print_development_min);
   DT_LEAVE_GUI_UPDATE();
@@ -2982,15 +2212,16 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-/* Entry for a stock hash, or NULL. `printing` picks which of the two lists to
-   search, since a stock can appear as film or as paper. */
+/* Entry for a stock hash, or NULL. `printing` disambiguates, since the same
+   stock name can exist as both a film and a paper. */
 static const sf_prof_entry_t *_entry_by_hash(const dt_iop_spektrafilm_gui_data_t *g,
                                              const uint32_t hash, const gboolean printing)
 {
-  const int n = printing ? g->n_papers : g->n_films;
-  const int *idx = printing ? g->paper_entry : g->film_entry;
-  for(int i = 0; i < n; i++)
-    if(g->entries[idx[i]].hash == hash) return &g->entries[idx[i]];
+  for(const GList *l = g->entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(e->hash == hash && e->printing == printing) return e;
+  }
   return NULL;
 }
 
@@ -3148,38 +2379,6 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
   _update_development_sensitivity(g, p);
 }
 
-/* dt_iop_reload_defaults() runs module->reload_defaults() (this function,
-   if present) BEFORE dt_iop_load_default_params()'s memcpy(params,
-   default_params, ...) -- see _gui_reset_callback, develop/imageop.c.
-   _film_changed/gui_update mutate self->default_params->scan_film to
-   track whatever film is CURRENTLY selected (see the comment in
-   _film_changed for why that mutation, not a separate cache, is the real
-   core toggle-reset mechanism for this checkbox). But a whole-module
-   reset's memcpy also resets film_hash itself, unconditionally, back to
-   the compiled default (0, which gui_update's own fallback resolves to
-   kodak_portra_400 -- a negative film, scan_film FALSE) -- regardless of
-   what film was selected right before the reset was clicked. Without
-   this, default_params->scan_film could still be TRUE (from a
-   previously-selected positive film) at the moment the memcpy runs,
-   copying a value that doesn't match the film_hash it's paired with in
-   the same struct; only the NEXT reload_defaults() (triggered by that
-   same reset's own gui_update(), which re-baselines it for the film the
-   combobox fell back to) would catch up, so the first reset click landed
-   wrong and a second was needed to actually converge. Reset it back to
-   the one film_hash=0 always actually means, right before the memcpy
-   copies it, so the first click is correct. */
-void reload_defaults(dt_iop_module_t *self)
-{
-  if(self->default_params)
-    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = FALSE;
-
-  /* keep the widget's cached default in step with the one just restored,
-     for the same reason _film_changed() does after re-baselining it */
-  dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
-  if(g && g->scan_film)
-    dt_bauhaus_toggle_set_default(g->scan_film, FALSE);
-}
-
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
@@ -3218,106 +2417,96 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
 
   _rescan(self);
+
+  /* Films and papers share one list; e->printing separates them, and each
+     combobox entry carries its position in that list as its data. */
+  static const struct { int pos; int bw; const char *label; } groups[] = {
+    { 0, 0, N_("negative color") },
+    { 0, 1, N_("negative monochrome") },
+    { 1, 0, N_("positive color") },
+    { 1, 1, N_("positive monochrome") },
+  };
+  static const struct { int bw; const char *label; } pgroups[] = {
+    { 0, N_("color") },
+    { 1, N_("monochrome") },
+  };
+
   dt_bauhaus_combobox_clear(g->film);
-  if(g->n_films == 0)
-    dt_bauhaus_combobox_add(g->film, _("(no profiles found)"));
-  else
+  gboolean any_film = FALSE;
+  for(int gi = 0; gi < 4; gi++)
   {
-    static const struct { int pos; int bw; const char *label; } groups[] = {
-      { 0, 0, N_("negative color") },
-      { 1, 0, N_("positive color") },
-      { 0, 1, N_("negative monochrome") },
-      { 1, 1, N_("positive monochrome") },
-    };
-    for(int gi = 0; gi < 4; gi++)
+    gboolean first = TRUE;
+    int pos = 0;
+    for(const GList *l = g->entries; l; l = l->next, pos++)
     {
-      gboolean first = TRUE;
-      for(int f = 0; f < g->n_films; f++)
-      {
-        const sf_prof_entry_t *e = &g->entries[g->film_entry[f]];
-        if(e->positive != groups[gi].pos || e->bw != groups[gi].bw) continue;
-        if(first) { dt_bauhaus_combobox_add_section(g->film, _(groups[gi].label)); first = FALSE; }
-        dt_bauhaus_combobox_add_full(g->film, e->name,
-                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                     GINT_TO_POINTER(g->film_entry[f]),
-                                     NULL, TRUE);
-      }
+      const sf_prof_entry_t *e = l->data;
+      if(e->printing || e->positive != groups[gi].pos || e->bw != groups[gi].bw) continue;
+      if(first) { dt_bauhaus_combobox_add_section(g->film, _(groups[gi].label)); first = FALSE; }
+      dt_bauhaus_combobox_add_full(g->film, e->name, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                   GINT_TO_POINTER(pos), NULL, TRUE);
+      any_film = TRUE;
     }
   }
+  if(!any_film) dt_bauhaus_combobox_add(g->film, _("(no profiles found)"));
+
   dt_bauhaus_combobox_clear(g->paper);
-  if(g->n_papers == 0)
-    dt_bauhaus_combobox_add(g->paper, _("(none)"));
-  else
+  gboolean any_paper = FALSE;
+  for(int gi = 0; gi < 2; gi++)
   {
-    static const struct { int bw; const char *label; } pgroups[] = {
-      { 0, N_("color") },
-      { 1, N_("monochrome") },
-    };
-    for(int gi = 0; gi < 2; gi++)
+    gboolean first = TRUE;
+    int pos = 0;
+    for(const GList *l = g->entries; l; l = l->next, pos++)
     {
-      gboolean first = TRUE;
-      for(int k = 0; k < g->n_papers; k++)
-      {
-        const sf_prof_entry_t *e = &g->entries[g->paper_entry[k]];
-        if(e->bw != pgroups[gi].bw) continue;
-        if(first) { dt_bauhaus_combobox_add_section(g->paper, _(pgroups[gi].label)); first = FALSE; }
-        dt_bauhaus_combobox_add_full(g->paper, e->name,
-                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                     GINT_TO_POINTER(g->paper_entry[k]),
-                                     NULL, TRUE);
-      }
+      const sf_prof_entry_t *e = l->data;
+      if(!e->printing || e->bw != pgroups[gi].bw) continue;
+      if(first) { dt_bauhaus_combobox_add_section(g->paper, _(pgroups[gi].label)); first = FALSE; }
+      dt_bauhaus_combobox_add_full(g->paper, e->name, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                   GINT_TO_POINTER(pos), NULL, TRUE);
+      any_paper = TRUE;
     }
+  }
+  if(!any_paper) dt_bauhaus_combobox_add(g->paper, _("(none)"));
+
+  /* Select the saved film. On no hash match -- a fresh param with film_hash 0,
+     or a stock that vanished from the pack -- mirror _resolve_stock's fallback
+     so the combobox agrees with what the pipeline actually renders, instead of
+     landing on whatever sorts first while the pipe renders the real default. */
+  int fpos = -1, fallback = -1, pos = 0;
+  const sf_prof_entry_t *fe = NULL;
+  for(const GList *l = g->entries; l; l = l->next, pos++)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(e->printing) continue;
+    if(fallback < 0 || !strcmp(e->stock, "kodak_portra_400")) fallback = pos;
+    if(p->film_hash && e->hash == p->film_hash) { fpos = pos; fe = e; }
+  }
+  if(fpos < 0) fpos = fallback;
+  if(fpos >= 0)
+  {
+    if(!fe) fe = _entry_at(g, fpos);
+    dt_bauhaus_combobox_set_from_value(g->film, fpos);
   }
 
-  int fi = 0;
-  gboolean film_matched = FALSE;
-  for(int f = 0; f < g->n_films; f++)
-    if(g->entries[g->film_entry[f]].hash == p->film_hash) { fi = f; film_matched = TRUE; }
-  if(!film_matched)
+  /* _film_changed() bails out under darktable.gui->reset, which gui_update runs
+     under, so its reset target never gets set on a plain module load. Do it here
+     too, or a reset gesture on a positive/reversal film would flip scan_film off.
+     p->scan_film itself is deliberately not touched: the loaded value may be an
+     intentional override and must survive the load. */
+  if(fe) dt_bauhaus_toggle_set_default(g->scan_film, fe->positive);
+
+  const char *target = fe ? fe->target_print : NULL;
+  int ppos = -1, pfirst = -1;
+  pos = 0;
+  for(const GList *l = g->entries; l; l = l->next, pos++)
   {
-    /* no hash match (fresh param with film_hash==0, or the saved stock
-       vanished from the pack) -- mirror sf_resolve_stock's fallback so the
-       combobox agrees with what the pixel pipeline actually renders, instead
-       of silently landing on whatever sorts first (e.g. "Fujifilm C200"
-       alphabetically before "Kodak Portra 400") while the pipe renders the
-       real default. */
-    for(int f = 0; f < g->n_films; f++)
-      if(!strcmp(g->entries[g->film_entry[f]].stock, "kodak_portra_400")) fi = f;
+    const sf_prof_entry_t *e = l->data;
+    if(!e->printing) continue;
+    if(pfirst < 0) pfirst = pos;
+    if(p->paper_hash ? (e->hash == p->paper_hash) : (target && !strcmp(e->stock, target)))
+      ppos = pos;
   }
-  dt_bauhaus_combobox_set_from_value(g->film, g->film_entry[fi]);
-  /* _film_changed() is a no-op during the combobox-set above (it bails out
-     on darktable.gui->reset, which gui_update runs under, so programmatic
-     loads don't get treated as user edits / spawn spurious history items).
-     That means its self->default_params->scan_film re-baselining (see the
-     fuller comment there for why this field, not a separate cache, IS the
-     real core toggle-reset mechanism) never runs on a fresh module load,
-     only when the user actually interacts with the film combobox. Left
-     alone, it stays at whatever it was last set to -- possibly from a
-     PREVIOUSLY loaded image's film -- after e.g. switching to a different
-     image with a positive/reversal film loaded (which has no print stage
-     and needs scan_film TRUE): the checkbox itself still shows correctly
-     checked here (synced from p->scan_film below), but a later
-     right-click/scroll or tab-bar-double-click reset would silently flip
-     scan_film back off. Re-baseline it here too, exactly like
-     _film_changed does -- but WITHOUT touching p->scan_film itself, since
-     the just-loaded value may be a deliberate user override away from the
-     film's natural mode and must be preserved on load; only the reset
-     target needs fixing. */
-  if(fi < g->n_films && self->default_params)
-  {
-    const sf_prof_entry_t *e = &g->entries[g->film_entry[fi]];
-    ((dt_iop_spektrafilm_params_t *)self->default_params)->scan_film = e->positive;
-  }
-  int pi = 0;
-  const char *target = (fi < g->n_films) ? g->entries[g->film_entry[fi]].target_print : NULL;
-  for(int k = 0; k < g->n_papers; k++)
-  {
-    const sf_prof_entry_t *e = &g->entries[g->paper_entry[k]];
-    if(p->paper_hash ? (e->hash == p->paper_hash)
-                     : (target && !strcmp(e->stock, target)))
-      pi = k;
-  }
-  dt_bauhaus_combobox_set_from_value(g->paper, g->paper_entry[pi]);
+  if(ppos < 0) ppos = pfirst;
+  if(ppos >= 0) dt_bauhaus_combobox_set_from_value(g->paper, ppos);
 
   dt_bauhaus_combobox_set_from_value(g->film_format_combo, _format_mm_to_preset(p->film_format_mm));
 
@@ -3783,6 +2972,16 @@ void gui_init(dt_iop_module_t *self)
 
   /* restore root widget */
   self->widget = sf_main_box;
+}
+
+void gui_cleanup(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(g)
+  {
+    g_list_free_full(g->entries, g_free);
+    g->entries = NULL;
+  }
 }
 
 // clang-format off
