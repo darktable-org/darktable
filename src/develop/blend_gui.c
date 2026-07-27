@@ -2192,28 +2192,33 @@ static void _blendop_blendif_channel_mask_view_toggle
 // magic mode: if mouse cursor enters a gradient slider with shift
 // and/or control pressed we enter channel display and/or mask display
 // mode
-static gboolean _blendop_blendif_enter(GtkWidget *widget,
-                                       GdkEventCrossing *event,
-                                       dt_iop_module_t *module)
+static void _blendop_blendif_enter_cb(GtkEventControllerMotion *controller,
+                                         double x, double y,
+                                         dt_iop_module_t *module)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
   dt_dev_pixelpipe_display_mask_t mode = DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
-  // depending on shift modifiers we activate channel and/or mask display
-  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+  GdkModifierType state;
+  if(gtk_get_current_event_state(&state))
   {
-    mode = (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
-  }
-  else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
-  {
-    mode = DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
-  }
-  else if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
-  {
-    mode = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    // depending on shift modifiers we activate channel and/or mask display
+    if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    {
+      mode = (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
+    }
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    {
+      mode = DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
+    }
+    else if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    {
+      mode = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    }
   }
 
   dt_pthread_mutex_lock(&data->lock);
@@ -2235,7 +2240,6 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget,
   _blendop_blendif_channel_mask_view(widget, module, mode);
 
   gtk_widget_grab_focus(widget);
-  return FALSE;
 }
 
 
@@ -2265,11 +2269,10 @@ static gboolean _blendop_blendif_leave_delayed(gpointer data)
 }
 
 // de-activate magic mode when leaving the gradient slider
-static gboolean _blendop_blendif_leave(GtkWidget *widget,
-                                       GdkEventCrossing *event,
-                                       dt_iop_module_t *module)
+static void _blendop_blendif_leave_cb(GtkEventControllerMotion *controller,
+                                        dt_iop_module_t *module)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
@@ -2283,24 +2286,25 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget,
          != (data->save_for_leave & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY)))
       data->timeout_handle = g_timeout_add(1000, _blendop_blendif_leave_delayed, module);
   dt_pthread_mutex_unlock(&data->lock);
-
-  return FALSE;
 }
 
 
-static gboolean _blendop_blendif_key_press(GtkWidget *widget,
-                                           GdkEventKey *event,
-                                           dt_iop_module_t *module)
+static gboolean _blendop_blendif_key_press_cb(GtkEventControllerKey *controller,
+                                                  guint keyval,
+                                                  guint keycode,
+                                                  GdkModifierType state,
+                                                  dt_iop_module_t *module)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return FALSE;
 
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   dt_iop_gui_blend_data_t *data = module->blend_data;
   gboolean handled = FALSE;
 
   const int tab = data->tab;
   const int in_out = (widget == GTK_WIDGET(data->filter[1].slider)) ? 1 : 0;
 
-  switch(dt_gdk_event_get_keyval(event))
+  switch(keyval)
   {
     case GDK_KEY_a:
     case GDK_KEY_A:
@@ -2656,12 +2660,8 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
                        G_CALLBACK(_blendop_blendif_sliders_callback), bd);
       g_signal_connect(G_OBJECT(sl->slider), "value-reset",
                        G_CALLBACK(_blendop_blendif_sliders_reset_callback), bd);
-      g_signal_connect(G_OBJECT(sl->slider), "leave-notify-event",
-                       G_CALLBACK(_blendop_blendif_leave), module);
-      g_signal_connect(G_OBJECT(sl->slider), "enter-notify-event",
-                       G_CALLBACK(_blendop_blendif_enter), module);
-      g_signal_connect(G_OBJECT(sl->slider), "key-press-event",
-                       G_CALLBACK(_blendop_blendif_key_press), module);
+      dt_gui_connect_motion(sl->slider, NULL, _blendop_blendif_enter_cb, _blendop_blendif_leave_cb, module);
+      dt_gui_connect_key(sl->slider, _blendop_blendif_key_press_cb, module);
       g_signal_connect(G_OBJECT(sl->polarity), "toggled",
                        G_CALLBACK(_blendop_blendif_polarity_callback), bd);
 
