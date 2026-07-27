@@ -1117,34 +1117,39 @@ static gboolean _event_scroll_compressed(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _event_scroll(GtkWidget *widget,
-                              GdkEvent *event,
-                              dt_thumbtable_t *table)
+static void _event_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx,
+                           gdouble dy,
+                           dt_thumbtable_t *table)
 {
-  GdkEventScroll *e = (GdkEventScroll *)event;
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  const GdkEventScroll *e = (const GdkEventScroll *)event;
+  const GdkModifierType state = dt_gdk_event_get_state(event);
 
   // file manager can either scroll fractionally and smoothly for precision
   // touch pads, or in one-thumbnail increments for clicky scroll wheels,
   // except while control is held, as that indicates zooming
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
-      && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
+      && !dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     gdouble deltaf = 0.f;
     gboolean did_scroll;
     if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
     {
-      gdouble deltaf_x, deltaf_y;
-      did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
-      if (did_scroll) {
-        // file manager scroll: tilt right (delta_x >) 0 or scroll down (delta_y > 0) -> down (towards the last image)
-        deltaf = fabs(deltaf_x) > fabs(deltaf_y) ? deltaf_x : deltaf_y;
+      // use controller dx/dy directly for fractional scrolling
+      did_scroll = (dx != 0.0 || dy != 0.0);
+      if(did_scroll)
+      {
+        // file manager scroll: tilt right (dx > 0) or scroll down (dy > 0) -> down
+        deltaf = fabs(dx) > fabs(dy) ? dx : dy;
       }
     }
     else
     {
       int delta_x, delta_y;
       did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
-      if (did_scroll)
+      if(did_scroll)
       {
         deltaf = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
       }
@@ -1159,8 +1164,8 @@ static gboolean _event_scroll(GtkWidget *widget,
       }
       table->scroll_value += deltaf;
     }
-    // we stop here to avoid scrolledwindow to move
-    return TRUE;
+    gdk_event_free(event);
+    return;
   }
 
   // filmstrip and zoom mode always use clicky scroll:
@@ -1170,7 +1175,7 @@ static gboolean _event_scroll(GtkWidget *widget,
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
-       || dt_modifier_is(e->state, GDK_CONTROL_MASK))
+       || dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // up==right==zoom in
       const int delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
@@ -1192,7 +1197,7 @@ static gboolean _event_scroll(GtkWidget *widget,
     {
       // filmstrip scroll: tilt right (delta_x >) 0 or scroll down (delta_y > 0) -> down (towards the last image)
       const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
-      _move(table, -delta * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
+      _move(table, -delta * (dt_modifier_is(state, GDK_SHIFT_MASK)
                   ? table->view_width - table->thumb_size
                   : table->thumb_size), 0, TRUE);
 
@@ -1202,8 +1207,7 @@ static gboolean _event_scroll(GtkWidget *widget,
         dt_control_set_mouse_over_id(th->imgid);
     }
   }
-  // we stop here to avoid scrolled window to move
-  return TRUE;
+  gdk_event_free(event);
 }
 
 static void _line_to(cairo_t *cr,
@@ -2586,8 +2590,9 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(table->widget, "drag-data-received",
                    G_CALLBACK(dt_thumbtable_event_dnd_received), table);
 
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
-                   G_CALLBACK(_event_scroll), table);
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _event_scroll, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
   dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);

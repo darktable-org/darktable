@@ -651,26 +651,33 @@ static gboolean _event_gesture(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _event_scroll(GtkWidget *widget,
-                              GdkEvent *event,
-                              gpointer user_data)
+static void _event_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx,
+                           gdouble dy,
+                           dt_culling_t *table)
 {
-  GdkEventScroll *e = (GdkEventScroll *)event;
-  dt_culling_t *table = (dt_culling_t *)user_data;
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
 
-  GdkDevice *device = gdk_event_get_source_device(event);
+  GdkDevice *device = dt_gdk_event_get_source_device(event);
+  const GdkScrollDirection direction = dt_gdk_event_get_scroll_direction(event);
+  const gboolean is_stop = gdk_event_is_scroll_stop_event(event);
+  const GdkModifierType state = dt_gdk_event_get_state(event);
+  const gdouble x_root = dt_gdk_event_get_root_x(event);
+  const gdouble y_root = dt_gdk_event_get_root_y(event);
+
   dt_print(DT_DEBUG_INPUT,
            "[culling scroll] direction=%d smooth=%s stop=%s ctrl=%s"
            " device='%s' source-type=%d x_root=%.1f y_root=%.1f"
            " delta_x=%.3f delta_y=%.3f state=0x%x",
-           e->direction,
-           e->direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
-           e->is_stop ? "yes" : "no",
-           dt_modifier_is(e->state, GDK_CONTROL_MASK) ? "yes" : "no",
+           direction,
+           direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
+           is_stop ? "yes" : "no",
+           dt_modifier_is(state, GDK_CONTROL_MASK) ? "yes" : "no",
            device ? gdk_device_get_name(device) : "<none>",
            device ? (int)gdk_device_get_source(device) : -1,
-           e->x_root, e->y_root,
-           e->delta_x, e->delta_y, e->state);
+           x_root, y_root,
+           dx, dy, state);
 
   // ctrl + smooth scroll: apply fractional zoom on every event so the zoom
   // feels seamless rather than stepped.  This must come before the integer-
@@ -683,19 +690,19 @@ static gboolean _event_scroll(GtkWidget *widget,
   // must be finalised regardless. (If no zoom was pending this is a no-op, and
   // the safety-net timer in _thumbs_zoom_add covers devices that never emit a
   // stop event at all.)
-  if(e->direction == GDK_SCROLL_SMOOTH && e->is_stop)
+  if(direction == GDK_SCROLL_SMOOTH && is_stop)
   {
+    gdk_event_free(event);
     dt_culling_zoom_end(table);
-    return TRUE;
+    return;
   }
 
-  if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && dt_modifiers_include(e->state, GDK_CONTROL_MASK))
+  if(direction == GDK_SCROLL_SMOOTH && !is_stop
+     && dt_modifiers_include(state, GDK_CONTROL_MASK))
   {
-    gdouble dx = 0.0, dy = 0.0;
-    if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
+    if(dx != 0.0 || dy != 0.0)
     {
-      // dt_gui_get_scroll_deltas gives the raw fractional platform delta.
+      // controller dx/dy gives the raw fractional platform delta.
       // Scale so that one full unit of scroll (delta_y == 1.0) matches the
       // 0.5 zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
       const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
@@ -705,22 +712,23 @@ static gboolean _event_scroll(GtkWidget *widget,
       GdkWindow *win = gtk_widget_get_window(table->widget);
       if(win)
         gdk_window_get_origin(win, &ox, &oy);
-      const float x_culling = e->x_root - ox;
-      const float y_culling = e->y_root - oy;
+      const float x_culling = x_root - ox;
+      const float y_culling = y_root - oy;
       dt_print(DT_DEBUG_INPUT,
                "[culling scroll] ctrl+smooth zoom_delta=%.4f x_culling=%.1f y_culling=%.1f",
                zoom_delta, x_culling, y_culling);
       if(fabsf(zoom_delta) > 0.001f)
-        _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, TRUE);
+        _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state, TRUE);
     }
-    return TRUE;
+    gdk_event_free(event);
+    return;
   }
 
   // Smooth scroll (touchpad two-finger swipe): pan zoomed images or navigate images.
   // We check before the unit-delta path so fractional smooth scroll is used for panning
   // with full fidelity rather than being accumulated into integer steps.
-  if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && !dt_modifiers_include(e->state, GDK_CONTROL_MASK))
+  if(direction == GDK_SCROLL_SMOOTH && !is_stop
+     && !dt_modifiers_include(state, GDK_CONTROL_MASK))
   {
     // Check if any thumbnail is zoomed in; if so, pan instead of navigate.
     float fz = 1.0f;
@@ -734,29 +742,31 @@ static gboolean _event_scroll(GtkWidget *widget,
              fz, fz > 1.0f ? "pan path" : "navigate path");
     if(fz > 1.0f)
     {
-      gdouble dx = 0.0, dy = 0.0;
-      if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
+      if(dx != 0.0 || dy != 0.0)
       {
-        // dt_gui_get_scroll_deltas returns platform-normalised fractional units;
+        // controller dx/dy is platform-normalised fractional units;
         // scale to pixel-scale (matches the factor used by the center-widget pan path).
         dt_print(DT_DEBUG_INPUT,
                  "[culling scroll] panning dx=%.3f dy=%.3f (scaled: dx=%.1f dy=%.1f)",
                  dx, dy, dx * 50.0, dy * 50.0);
-        dt_culling_pan_move(table, (float)(-dx * 50.0), (float)(-dy * 50.0), e->state);
+        dt_culling_pan_move(table, (float)(-dx * 50.0), (float)(-dy * 50.0), state);
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta from dt_gui_get_scroll_deltas");
+        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta from controller");
       }
-      return TRUE;
+      gdk_event_free(event);
+      return;
     }
   }
 
+  // discrete scroll: use unit deltas for zoom/navigation
+  const GdkEventScroll *scroll_event = (const GdkEventScroll *)event;
   int delta_x = 0, delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  if(dt_gui_get_scroll_unit_deltas(scroll_event, &delta_x, &delta_y))
   {
     const gboolean is_horizontal = abs(delta_x) > abs(delta_y);
-    if(dt_modifiers_include(e->state, GDK_CONTROL_MASK))
+    if(dt_modifiers_include(state, GDK_CONTROL_MASK))
     {
       // zooming: right==up==zoom-in
       const int delta = is_horizontal ? -delta_x : delta_y;
@@ -766,8 +776,8 @@ static gboolean _event_scroll(GtkWidget *widget,
       GdkWindow *win = gtk_widget_get_window(table->widget);
       if(win)
         gdk_window_get_origin(win, &ox, &oy);
-      const float x_culling = e->x_root - ox;
-      const float y_culling = e->y_root - oy;
+      const float x_culling = x_root - ox;
+      const float y_culling = y_root - oy;
       dt_print(DT_DEBUG_INPUT,
                "[culling scroll] ctrl+scroll zoom_delta=%.2f x_culling=%.1f y_culling=%.1f",
                zoom_delta, x_culling, y_culling);
@@ -775,7 +785,7 @@ static gboolean _event_scroll(GtkWidget *widget,
       // smooth is_stop event to finalise it, so reload the surface immediately
       // (still cheap — the native mipmap surface cache is reused).  Leaving it
       // deferred would freeze the image at a stale, scaled-up resolution.
-      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, FALSE);
+      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state, FALSE);
     }
     else
     {
@@ -786,7 +796,7 @@ static gboolean _event_scroll(GtkWidget *widget,
       _thumbs_move(table, move);
     }
   }
-  return TRUE;
+  gdk_event_free(event);
 }
 
 static gboolean _event_draw(GtkWidget *widget,
@@ -1208,8 +1218,9 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
 
   g_signal_connect(G_OBJECT(table->widget), "event",
                    G_CALLBACK(_event_gesture), table);
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
-                   G_CALLBACK(_event_scroll), table);
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _event_scroll, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
   dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
