@@ -635,6 +635,13 @@ static void _preview_set_state(dt_view_t *self,
     _preview_quit(self);
 }
 
+static void _profile_popup_show_cb(GtkGestureSingle *gesture, int n_press,
+                                      double x, double y,
+                                      GtkWidget *popover)
+{
+  gtk_widget_show_all(popover);
+}
+
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_library_t));
@@ -1475,8 +1482,7 @@ void gui_init(dt_view_t *self)
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
-  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event",
-                           G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
+  dt_gui_connect_click_all(profile_button, _profile_popup_show_cb, NULL, lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
