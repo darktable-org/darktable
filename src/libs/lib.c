@@ -973,6 +973,7 @@ static void _lib_gui_reset_callback(GtkGestureSingle *gesture,
   module->gui_reset(module);
   if(module->has_preset_label(module))
     gtk_label_set_text(GTK_LABEL(module->preset_label), "");
+  dt_gui_claim(gesture);
 }
 
 static void _presets_popup_callback(GtkWidget *button,
@@ -985,14 +986,6 @@ static void _presets_popup_callback(GtkWidget *button,
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
-static void _presets_popup_gesture_cb(GtkGestureSingle *gesture,
-                                       gint n_press,
-                                       gdouble x,
-                                       gdouble y,
-                                       dt_lib_module_t *module)
-{
-  _presets_popup_callback(dt_gui_get_widget(gesture), module);
-}
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, const gboolean expanded)
 {
@@ -1042,7 +1035,7 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
                                                 dt_lib_module_t *module)
 {
   if(n_press > 1) return;
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   GdkModifierType state;
   gtk_get_current_event_state(&state);
 
@@ -1108,6 +1101,18 @@ static void _lib_plugin_header_button_release_cb(GtkGestureSingle *gesture,
                                                     gdouble y,
                                                     dt_lib_module_t *module)
 {
+  // ignore clicks on buttons inside the header (presets, reset, enable)
+  // GTK4: use gtk_gesture_get_last_event(gesture) instead of gtk_get_current_event()
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    if(GTK_IS_BUTTON(gtk_get_event_widget(event)))
+    {
+      gdk_event_free(event);
+      return;
+    }
+    gdk_event_free(event);
+  }
   _lib_plugin_arrow_button_press_cb(gesture, n_press, x, y, module);
 }
 
@@ -1308,7 +1313,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
       // FIXME separately define as darkroom widget shortcut/action,
       // because not automatically registered via lib if presets btn
       // has been loaded to be shown outside expander
-      dt_gui_connect_click(module->presets_button, _presets_popup_gesture_cb, NULL, module);
+      g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(_presets_popup_callback), module);
     }
     module->expander = NULL;
     return NULL;
@@ -1334,7 +1339,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   }
 
   /* setup the header box */
-  dt_gui_connect_click(header_evb, _lib_plugin_arrow_button_press_cb, _lib_plugin_header_button_release_cb, module);
+  dt_gui_connect_click(header_evb, NULL, _lib_plugin_header_button_release_cb, module);
   dt_gui_connect_motion(header_evb, NULL, _header_enter_notify_callback, NULL, GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
   /* (un)focus module when entering/leaving body */
@@ -1379,7 +1384,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(module->presets_button, _("presets and preferences"));
-  dt_gui_connect_click(module->presets_button, _lib_gui_reset_callback, _presets_popup_gesture_cb, module);
+  g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(_presets_popup_callback), module);
   dt_gui_connect_motion(module->presets_button, NULL, _header_enter_notify_callback, NULL, GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
   if(!module->get_params
      && !module->set_preferences)
