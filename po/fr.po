@@ -5157,15 +5157,15 @@ msgstr "Transposer"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:107
 msgid "rotate 180°"
-msgstr "Tourner de 180°"
+msgstr "Rotation de 180°"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:109
 msgid "rotate 90°"
-msgstr "Tourner de 90°"
+msgstr "Rotation de 90°"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:110
 msgid "rotate -90°"
-msgstr "Tourner de –90°"
+msgstr "Rotation de –90°"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:111
 msgid "transverse"
@@ -10832,7 +10832,7 @@ msgstr ""
 #: ../src/develop/masks/brush.c:3453 ../src/develop/masks/brush.c:3468
 #: ../src/develop/masks/path.c:5345
 msgid ", <b>rotate both</b>: shift+ctrl+drag"
-msgstr ", <b>Tourner les deux</b> : Maj+Ctrl+déplacer"
+msgstr ", <b>Rotation des deux</b> : Ctrl+Maj+déplacer"
 
 #: ../src/develop/masks/brush.c:3458 ../src/develop/masks/ellipse.c:2148
 #: ../src/develop/masks/path.c:5331
@@ -10841,7 +10841,7 @@ msgid ""
 "shift+ctrl+drag"
 msgstr ""
 "<b>Déplacer</b> : glisser • <b>Tourne source</b> : Ctrl+déplacer • <b>Tourne "
-"les deux</b> : Maj+Ctrl+déplacer"
+"les deux</b> : Ctrl+Maj+déplacer"
 
 #: ../src/develop/masks/brush.c:3464
 msgid ""
@@ -10903,7 +10903,7 @@ msgstr "[ELLIPSE] Changer la taille d’adoucissement"
 
 #: ../src/develop/masks/ellipse.c:2082
 msgid "[ELLIPSE] rotate shape"
-msgstr "[ELLIPSE] Tourner la forme"
+msgstr "[ELLIPSE] Rotation de la forme"
 
 #: ../src/develop/masks/ellipse.c:2085
 msgid "[ELLIPSE] change opacity"
@@ -10920,7 +10920,7 @@ msgstr ""
 
 #: ../src/develop/masks/ellipse.c:2096
 msgid "[ELLIPSE] rotate shape and source together"
-msgstr "[ELLIPSE] Tourner la forme et la source ensemble"
+msgstr "[ELLIPSE] Rotation de la forme et la source ensemble"
 
 #: ../src/develop/masks/ellipse.c:2103
 #, c-format
@@ -10938,7 +10938,7 @@ msgstr ""
 
 #: ../src/develop/masks/ellipse.c:2144
 msgid "<b>rotate</b>: ctrl+drag"
-msgstr "<b>Tourner</b> : Ctrl+déplacer"
+msgstr "<b>Rotation</b> : Ctrl+déplacer"
 
 #: ../src/develop/masks/ellipse.c:2154
 #, c-format
@@ -10947,7 +10947,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Mode d’adoucissement</b> : Alt+clic • <b>Tourner</b> : Ctrl+déplacer\n"
+"<b>Mode d’adoucissement</b> : Alt+clic • <b>Rotation</b> : Ctrl+déplacer\n"
 "<b>Taille</b> : molette • <b>Taille d’adoucissement</b> : Maj+molette • "
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
@@ -10957,7 +10957,7 @@ msgid ""
 "<b>rotate both</b>: shift+ctrl+drag"
 msgstr ""
 "\n"
-"<b>Tourner les deux</b> : Maj+Ctrl+déplacer"
+"<b>Rotation des deux</b> : Ctrl+Maj+déplacer"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:174
 #, c-format
@@ -10971,11 +10971,11 @@ msgstr "Courbure : %3.2f%%"
 
 #: ../src/develop/masks/gradient.c:1421
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "[DÉGRADÉ sur pivot] Tourner la forme"
+msgstr "[DÉGRADÉ sur pivot] Rotation de la forme"
 
 #: ../src/develop/masks/gradient.c:1423
 msgid "[GRADIENT] rotate shape"
-msgstr "[DÉGRADÉ] Tourner la forme"
+msgstr "[DÉGRADÉ] Rotation de la forme"
 
 #: ../src/develop/masks/gradient.c:1425
 msgid "[GRADIENT creation] set rotation"
@@ -11018,7 +11018,7 @@ msgstr ""
 
 #: ../src/develop/masks/gradient.c:1463
 msgid "<b>rotate</b>: drag"
-msgstr "<b>Tourner</b> : déplacer"
+msgstr "<b>Rotation</b> : déplacer"
 
 #: ../src/develop/masks/masks.c:136
 msgid "[SHAPE] remove shape"
@@ -11285,8 +11285,8 @@ msgid ""
 "<b>rotate</b>: ctrl+drag"
 msgstr ""
 "<b>Augmente/diminue</b> : molette • <b>Taille</b> : Ctlr+Maj+molette • "
-"<b>Taille d’adoucissement</b> : Maj+molette\n"
-"<b>Rotation</b> : Ctrl+Maj+molette • <b>Opacité</b> : Ctrl+molette (%d%%)."
+"<b>Taille d’adoucissement</b> : Maj+molette • <b>Opacité</b> : Ctrl+molette (%d%%).\n"
+"<b>Rotation</b> : Ctrl+déplacer "
 
 #: ../src/develop/pixelpipe_hb.c:572
 msgid "enabled as required"
