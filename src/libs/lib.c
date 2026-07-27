@@ -1163,14 +1163,30 @@ static void _body_enter_callback(GtkEventControllerMotion *controller,
                                    dt_lib_module_t *module)
 {
   // set focused module when entering (not when opening popup)
-  darktable.lib->gui_module = module;
+  // only act on non-inferior (not from child) normal crossings
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    if(event->crossing.detail != GDK_NOTIFY_INFERIOR
+       && event->crossing.mode == GDK_CROSSING_NORMAL)
+      darktable.lib->gui_module = module;
+    gdk_event_free(event);
+  }
 }
 
 static void _body_leave_callback(GtkEventControllerMotion *controller,
                                   dt_lib_module_t *module)
 {
   // clear focused module when leaving
-  darktable.lib->gui_module = NULL;
+  // only act on non-inferior (not to child) normal crossings
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    if(event->crossing.detail != GDK_NOTIFY_INFERIOR
+       && event->crossing.mode == GDK_CROSSING_NORMAL)
+      darktable.lib->gui_module = NULL;
+    gdk_event_free(event);
+  }
 }
 
 static gboolean _on_drag_motion(GtkWidget *widget,
