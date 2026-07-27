@@ -534,13 +534,37 @@ static void _popup_scroll_cb(GtkEventControllerScroll *controller,
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     // match keyboard: right & down -> next
-    const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
+    int delta_x = 0, delta_y = 0;
+    GdkEvent *event = gtk_get_current_event();
+    if(event)
+    {
+      dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)event, &delta_x, &delta_y);
+      gdk_event_free(event);
+    }
+    else
+    {
+      // fallback: use raw values if no current event
+      delta_x = (int)dx;
+      delta_y = (int)dy;
+    }
+    const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
     if(delta != 0)
       _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
   }
   else
   {
-    _slider_zoom_range(w, -(int)dy);
+    int delta = 0;
+    GdkEvent *event = gtk_get_current_event();
+    if(event)
+    {
+      dt_gui_get_scroll_unit_delta((const GdkEventScroll *)event, &delta);
+      gdk_event_free(event);
+    }
+    else
+    {
+      delta = -(int)dy;
+    }
+    _slider_zoom_range(w, delta);
   }
 }
 
@@ -716,7 +740,7 @@ static void _popup_button_release_cb(GtkGestureSingle *gesture,
                                        gdouble y,
                                        gpointer user_data)
 {
-  if(darktable.bauhaus->change_active && gtk_gesture_single_get_button(gesture) != GDK_BUTTON_MIDDLE)
+  if(darktable.bauhaus->change_active && gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_MIDDLE)
     _popup_hide();
 }
 
@@ -728,7 +752,20 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+
+  // reject clicks that come from outside the popup area window
+  GdkEvent *cur_event = gtk_get_current_event();
+  if(cur_event)
+  {
+    if(dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture))))
+    {
+      gdk_event_free(cur_event);
+      _popup_reject();
+      return;
+    }
+    gdk_event_free(cur_event);
+  }
 
   if(button == GDK_BUTTON_PRIMARY)
   {
@@ -753,10 +790,12 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
     GdkEvent *current_event = gtk_get_current_event();
     if(current_event)
     {
+      GdkModifierType motion_state = dt_gdk_event_get_state(current_event);
+      motion_state |= GDK_BUTTON1_MASK;
       _window_motion_handle(w_current,
                                 dt_gdk_event_get_root_x(current_event),
                                 dt_gdk_event_get_root_y(current_event),
-                                dt_gdk_event_get_state(current_event));
+                                motion_state);
       gdk_event_free(current_event);
     }
   }
