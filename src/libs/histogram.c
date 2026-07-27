@@ -484,13 +484,15 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                                       const gdouble dy,
                                       dt_scopes_t *s)
 {
+  // GTK4 note: gtk_get_current_event() returns NULL inside event controller
+  // callbacks in GTK4.  For state checks, use
+  // gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(self), &state)
+  // instead.  For forwarding the event via gtk_widget_event(), use
+  // gtk_gesture_get_last_event() and gdk_event_copy() if needed.
   GdkEvent *event = gtk_get_current_event();
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_SCROLL)
   {
-    // FIXME: so long as we have event, test its flags -- and for GTK 4 we can
-    // use gtk_get_current_event() and get flags -- make a helper function to do
-    // this.
     if(dt_modifier_is(dt_gdk_event_get_state(event),
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
@@ -499,20 +501,8 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
     }
     else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
     {
-      // FIXME: should scroll for exposure change be handled by each scope, rather than here?
-      // FIXME: should handle smooth scrolling rather than discrete?
-      // FIXME: should scrolling of scope be handled in the drawable rather than
-      //        the eventbox.
-
       // get the dominant direction, standardize on delta < 0 => up==right
       const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
-      // for exposure ('highlight') mode: we want up/right: brighten the image
-      // -> increase exposure, or decrease black point (exposure handles that);
-      // in vectorscope, rgb parade, parts of the visualization moves upwards;
-      // in histogram, to the right.
-      // dt_dev_exposure_handle_event requires 'delta' in the 'brighten' > 0 convention, that is also what
-      // drag events emit
-
       dt_dev_exposure_handle_event(0, - delta, dt_gdk_event_get_state(event),
                                    s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     }
