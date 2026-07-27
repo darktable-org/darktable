@@ -171,7 +171,15 @@ static double INNER_PADDING = 4.0;
 static void _popup_reject(void);
 static void _popup_hide(void);
 static gboolean _popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
-static gboolean _popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+static void _window_motion_handle(GtkWidget *widget,
+                                    gdouble root_x,
+                                    gdouble root_y,
+                                    GdkModifierType state);
+static gboolean _popup_key_press(GtkEventControllerKey *controller,
+                                  guint keyval,
+                                  guint keycode,
+                                  GdkModifierType state,
+                                  gpointer user_data);
 static void _combobox_set(dt_bauhaus_widget_t *w,
                           const int pos,
                           const gboolean mute);
@@ -591,9 +599,10 @@ static void _window_position(const int offset)
                           0, - pop->offset + pop->offcut);
 }
 
-static gboolean _window_motion_notify(GtkWidget *widget,
-                                      GdkEventMotion *event,
-                                      gpointer user_data)
+static void _window_motion_handle(GtkWidget *widget,
+                                    gdouble root_x,
+                                    gdouble root_y,
+                                    GdkModifierType state)
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
@@ -607,16 +616,16 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   // recalculate event coords so we get useful values outside window
   GdkWindow *window = gtk_widget_get_window(pop->area);
   gdk_window_get_origin(window, &allocation.x, &allocation.y);
-  const gint ex = dt_gdk_event_get_root_x(event) - allocation.x;
-  const gint ey = dt_gdk_event_get_root_y(event) - allocation.y;
+  const gint ex = root_x - allocation.x;
+  const gint ey = root_y - allocation.y;
 
-  const int tol = DT_PIXEL_APPLY_DPI(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK ? 400 : 50);
+  const int tol = DT_PIXEL_APPLY_DPI(state & GDK_BUTTON1_MASK ? 400 : 50);
   if(ex < - tol || ex > allocation.width + tol
      || ey + pop->offcut < - tol
      || ey + pop->offcut > pop->position.height + tol)
   {
     _popup_reject();
-    return TRUE;
+    return;
   }
 
   if(bh->keys_cnt == 0) _stop_cursor();
@@ -653,7 +662,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
                           : _slider_get_line_offset
       (pop->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / fabsf(d->factor),
        bh->mouse_x / (width - _widget_get_quad_width(w)), bh->mouse_y / width, ht / width);
-    if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK
+    if(state & GDK_BUTTON1_MASK
        || (bh->mouse_line_distance
            && ((bh->mouse_line_distance * mouse_off <= 0) ^
                (fabsf(bh->mouse_line_distance - mouse_off) > .5f))))
@@ -668,7 +677,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
     const int active = (bh->mouse_y - w->top_gap) / bh->line_height;
     if(active >= 0 && active < d->entries->len)
     {
-      if(_combobox_entry(d, active)->sensitive && dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+      if(_combobox_entry(d, active)->sensitive && state & GDK_BUTTON1_MASK)
       {
         if(active != d->active)
           _combobox_set(w, active, w->combobox.mute_scrolling);
@@ -677,7 +686,21 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   }
 
   gtk_widget_queue_draw(pop->area);
-  return TRUE;
+}
+
+static void _window_motion_cb(GtkEventControllerMotion *controller,
+                               gdouble x,
+                               gdouble y,
+                               gpointer user_data)
+{
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  const gdouble root_x = dt_gdk_event_get_root_x(event);
+  const gdouble root_y = dt_gdk_event_get_root_y(event);
+  const GdkModifierType state = dt_gdk_event_get_state(event);
+  gdk_event_free(event);
+  _window_motion_handle(widget, root_x, root_y, state);
 }
 
 static void _popup_leave_notify_cb(GtkEventControllerMotion *controller,
@@ -728,8 +751,10 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
     bh->change_active = TRUE;
     GtkWidget *w_current = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
     const GdkEvent *current_event = gtk_get_current_event();
-    _window_motion_notify(w_current,
-                          (GdkEventMotion *)current_event, user_data);
+    _window_motion_handle(w_current,
+                              dt_gdk_event_get_root_x(current_event),
+                              dt_gdk_event_get_root_y(current_event),
+                              dt_gdk_event_get_state(current_event));
   }
   else if(button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
     _slider_zoom_range(w, 0);
@@ -984,10 +1009,10 @@ void dt_bauhaus_init()
   g_signal_connect(gtk_widget_get_window(pop->window),
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
-  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
+  dt_gui_connect_key(area, _popup_key_press, NULL);
   dt_gui_connect_motion(area, NULL, NULL, _popup_leave_notify_cb, NULL);
+  dt_gui_connect_motion(window, _window_motion_cb, NULL, NULL, NULL);
   dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
   dt_gui_connect_scroll(area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
@@ -3756,16 +3781,18 @@ static void _slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   }
 }
 
-static gboolean _popup_key_press(GtkWidget *widget,
-                                 GdkEventKey *event,
-                                 gpointer user_data)
+static gboolean _popup_key_press(GtkEventControllerKey *controller,
+                                  guint keyval,
+                                  guint keycode,
+                                  GdkModifierType state,
+                                  gpointer user_data)
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
   const gboolean is_combo = w->type == DT_BAUHAUS_COMBOBOX;
   int delta = -1;
 
-  switch(dt_gdk_event_get_keyval(event))
+  switch(keyval)
   {
     case GDK_KEY_BackSpace:
     case GDK_KEY_Delete:
@@ -3831,22 +3858,37 @@ static gboolean _popup_key_press(GtkWidget *widget,
       if(is_combo)
         _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
       else
-        _slider_add_step(GTK_WIDGET(w), delta, dt_gdk_event_get_state(event), FALSE);
+        _slider_add_step(GTK_WIDGET(w), delta, state, FALSE);
       break;
     default:
-      if(!event->string || !g_utf8_validate(event->string, -1, NULL)) return FALSE;
-      const gunichar c = g_utf8_get_char(event->string);
-      if(!g_unichar_isprint(c)) return FALSE;
-      const long int char_width = g_utf8_next_char(event->string) - event->string;
+    {
+      GdkEvent *event = gtk_get_current_event();
+      if(!event) return FALSE;
+      const gchar *str = ((GdkEventKey *)event)->string;
+      if(!str || !g_utf8_validate(str, -1, NULL))
+      {
+        gdk_event_free(event);
+        return FALSE;
+      }
+      const gunichar c = g_utf8_get_char(str);
+      if(!g_unichar_isprint(c))
+      {
+        gdk_event_free(event);
+        return FALSE;
+      }
+      const long int char_width = g_utf8_next_char(str) - str;
       if(bh->keys_cnt + 1 + char_width < DT_BAUHAUS_MAX_TEXT
-         && (is_combo || strchr("0123456789.,%%+-*Xx/:^~ ()", event->string[0])))
+         && (is_combo || strchr("0123456789.,%%+-*Xx/:^~ ()", str[0])))
       {
         // only accept valid keys for slider; combo is checked in _popup_draw
-        strncpy(bh->keys + bh->keys_cnt, event->string, char_width);
+        strncpy(bh->keys + bh->keys_cnt, str, char_width);
         bh->keys_cnt += char_width;
 
         if(!is_combo) _start_cursor(-1);
       }
+      gdk_event_free(event);
+      break;
+    }
   }
   gtk_widget_queue_draw(bh->popup.area);
   return TRUE;
