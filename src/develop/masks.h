@@ -650,6 +650,13 @@ void dt_masks_gui_form_create(dt_masks_form_t *form,
 void dt_masks_gui_form_remove(dt_masks_form_t *form,
                               dt_masks_form_gui_t *gui,
                               const int index);
+// Constrain a drag target (in preview/processed-pipe pixel coords, wd/ht =
+// processed image size) so it stays within the image expanded by
+// DT_MASKS_MOVE_MARGIN. Used when translating a whole form / its anchor / clone
+// source so the dragged control point stays within the image or reasonably
+// close, instead of being movable to an arbitrary distance where the shape
+// would be lost.
+void dt_masks_clamp_move_pts(float *pts, const float wd, const float ht);
 void dt_masks_gui_form_test_create(dt_masks_form_t *form,
                                    dt_masks_form_gui_t *gui,
                                    const struct dt_iop_module_t *module);

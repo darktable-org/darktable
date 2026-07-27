@@ -706,24 +706,39 @@ void expose(dt_view_t *self,
       force a resizing in next expose.  So we disable in cases close
       to full.
 
-      This near-fit centring is applied only to the values handed to the
-      scrollbar; the real zoom_x/zoom_y are kept for rendering so the mask
-      overlay (and guides/pickers) follow the image exactly even when the
-      user has deliberately panned off-canvas below the fit zoom to reach
-      mask handles outside the image. Zeroing them here would pin the
-      overlay at the image centre while the image itself (and raster mask
-      overlay) follow the pan, breaking alignment below fit.
+      The scrollbar always gets this near-fit centring (sb_zoom_*). The real
+      zoom_x/zoom_y feeding the overlay coordinate frame below are kept
+      un-centred ONLY while a mask is being edited: there the user may
+      deliberately pan off-canvas below the fit zoom to reach mask handles
+      outside the image, and zeroing them would pin the overlay at the image
+      centre while the image itself (and raster mask overlay) follow the pan,
+      breaking alignment. When no mask is being edited we centre them exactly
+      as darktable did before the off-canvas panning was added, so guides,
+      colour pickers and the crop module's dimming can't drift off the image
+      on a nonzero stored viewport centre -- e.g. entering the crop module
+      shows the uncropped image, reprojecting port->zoom_x against the larger
+      processed size into a nonzero centre that would otherwise shift the crop
+      overlay into a grey band beside the picture.
   */
+  // Mask editing (including creation) is the only state that relaxes the pan
+  // clamp to allow the viewport past the image; it is disabled while the crop
+  // overlay is active, so form_visible is NULL there.
+  const gboolean mask_editing = dev->form_visible != NULL;
+
   float sb_zoom_x = zoom_x, sb_zoom_y = zoom_y, sb_boxw = boxw, sb_boxh = boxh;
   if(boxw > 0.95f)
   {
     sb_zoom_x = .0f;
     sb_boxw = 1.01f;
+    if(!mask_editing)
+      zoom_x = .0f;
   }
   if(boxh > 0.95f)
   {
     sb_zoom_y = .0f;
     sb_boxh = 1.01f;
+    if(!mask_editing)
+      zoom_y = .0f;
   }
 
   dt_view_set_scrollbar(self,
@@ -1010,13 +1025,17 @@ void expose(dt_view_t *self,
         "expose masks",
          port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
-    // Clip to viewport (excluding border) so mask overlays don't
-    // bleed into the grey border when the image is zoomed in.
+    // Clip the mask overlay to the full viewport. Mask control points can be
+    // placed outside the image, in the expanded grey canvas around it; insetting
+    // the clip by the grey border (tb) as we used to would hide those off-image
+    // handles and segments behind an invisible border a few pixels in from the
+    // window edge. The grey-border containment the inset provided no longer
+    // applies now that masks legitimately extend past the image.
     cairo_save(cri);
-    const float vp_w = (width - 2.0f * tb) / zoom_scale;
-    const float vp_h = (height - 2.0f * tb) / zoom_scale;
-    const float vp_x = (tb - 0.5f * width) / zoom_scale + 0.5f * wd + zoom_x * wd;
-    const float vp_y = (tb - 0.5f * height) / zoom_scale + 0.5f * ht + zoom_y * ht;
+    const float vp_w = width / zoom_scale;
+    const float vp_h = height / zoom_scale;
+    const float vp_x = -0.5f * width / zoom_scale + 0.5f * wd + zoom_x * wd;
+    const float vp_y = -0.5f * height / zoom_scale + 0.5f * ht + zoom_y * ht;
     cairo_rectangle(cri, vp_x, vp_y, vp_w, vp_h);
     cairo_clip(cri);
     // Mask overlay points are in preview-pipe output space; shift the

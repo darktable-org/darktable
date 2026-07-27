@@ -3093,10 +3093,19 @@ _dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x
     if(!gpt)
       continue;
 
-    // points[], border[] and source[] are interleaved (x, y) pairs
-    const float *const arrays[3] = { gpt->points, gpt->border, gpt->source };
-    const int counts[3] = { gpt->points_count, gpt->border_count, gpt->source_count };
-    for(int a = 0; a < 3; a++)
+    // points[] (shape outline) and source[] (clone source) are interleaved
+    // (x, y) pairs. The feather border[] is deliberately excluded: it is not a
+    // drag target, so it shouldn't enlarge the pannable region, and its
+    // degenerate segments are flagged with DT_INVALID_COORDINATE (== -FLT_MAX)
+    // sentinels. Folding those (or any other stray non-finite / extreme value)
+    // into the box would blow it up to ~1e35 and let the viewport pan away from
+    // the image without bound. Reject anything outside a generous window around
+    // the image (32x its size — far more than any reachable handle) so a single
+    // bad coordinate can't defeat the clamp.
+    const float *const arrays[2] = { gpt->points, gpt->source };
+    const int counts[2] = { gpt->points_count, gpt->source_count };
+    const float limx = 32.0f * wd, limy = 32.0f * ht;
+    for(int a = 0; a < 2; a++)
     {
       const float *p = arrays[a];
       if(!p)
@@ -3105,6 +3114,8 @@ _dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x
       {
         const float px = p[i * 2];
         const float py = p[i * 2 + 1];
+        if(!isfinite(px) || !isfinite(py) || px <= -limx || px >= limx || py <= -limy || py >= limy)
+          continue;
         minx = fminf(minx, px);
         maxx = fmaxf(maxx, px);
         miny = fminf(miny, py);
