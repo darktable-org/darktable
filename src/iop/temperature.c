@@ -1730,12 +1730,15 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   _update_preset(self, DT_IOP_TEMP_USER);
 }
 
-static gboolean _btn_toggled(GtkWidget *togglebutton,
-                            GdkEventButton *event,
-                            dt_iop_module_t *self)
+static void _btn_toggled(GtkGestureSingle *gesture,
+                         int n_press,
+                         double x,
+                         double y,
+                         dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(TRUE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
+  GtkWidget *togglebutton = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
 
   const int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
@@ -1761,7 +1764,6 @@ static gboolean _btn_toggled(GtkWidget *togglebutton,
     "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     _preset_to_str(preset),
     chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
-  return TRUE;
 }
 
 static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
