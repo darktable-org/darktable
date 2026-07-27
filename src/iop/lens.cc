@@ -4328,7 +4328,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       img->exif_correction_type != CORRECTION_TYPE_DNG
       && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_latest_md_algo),
+    dt_bauhaus_toggle_set(g->use_latest_md_algo,
                                  FALSE);
     gtk_widget_set_visible
       (g->use_latest_md_algo,
@@ -4515,15 +4515,18 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *only_vig = dt_gui_vbox();
 
   /* embedded metadata widgets */
-  g->use_latest_md_algo =
-    gtk_check_button_new_with_label(_("use latest algorithm"));
+  // no field: this only switches the module over to the newer correction
+  // algorithm, it is not one of the module's parameters
+  g->use_latest_md_algo = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->use_latest_md_algo, NULL,
+                              N_("use latest algorithm"));
   gtk_widget_set_tooltip_text
     (g->use_latest_md_algo,
      _("you're using an old version of the algorithm.\n"
        "once enabled, you won't be able to\n"
        "return back to old algorithm."));
   GtkWidget *box_md = dt_gui_vbox(g->use_latest_md_algo);
-  g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled",
+  g_signal_connect(G_OBJECT(g->use_latest_md_algo), "value-changed",
                    G_CALLBACK(_use_latest_md_algo_callback), self);
 
   // we put fine-tuning values under an expander

@@ -916,6 +916,16 @@ menuitem > arrow
   margin: 0.2em 0;
 }
 
+/* the "show guides" checkbox, which is the one that carries an icon of its
+   own and is appended to modules that know nothing about it. Left moves its
+   tick box and label in from the start of the row, right pulls its icon in
+   from the end, and neither touches any other checkbox */
+.dt_guides_toggle
+{
+  padding-left: 0.65em;
+  padding-right: 0.65em;
+}
+
 /* and set menuitem related to sort of combobox like metadata presets in import module */
 menuitem label,
 #view-dropdown button,

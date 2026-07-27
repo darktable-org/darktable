@@ -3784,7 +3784,7 @@ void gui_update(dt_iop_module_t *self)
   gboolean use_mixing = TRUE;
   if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/use_mixing"))
     use_mixing = dt_conf_get_bool("darkroom/modules/channelmixerrgb/use_mixing");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_mixing), use_mixing);
+  dt_bauhaus_toggle_set(g->use_mixing, use_mixing);
 
   float lightness = 50.f;
   if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/lightness"))
@@ -3955,8 +3955,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   Lch_target[0] = dt_bauhaus_slider_get(g->lightness_spot);
   Lch_target[1] = dt_bauhaus_slider_get(g->chroma_spot);
   Lch_target[2] = dt_bauhaus_slider_get(g->hue_spot) / 360.f;
-  const gboolean use_mixing =
-    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->use_mixing));
+  const gboolean use_mixing = dt_bauhaus_toggle_get(g->use_mixing);
   dt_iop_gui_leave_critical_section(self);
 
   // Save the color on change
@@ -4191,8 +4190,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
   g_free(str);
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
-  const gboolean use_mixing =
-    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->use_mixing));
+  const gboolean use_mixing = dt_bauhaus_toggle_get(g->use_mixing);
 
   // build the channel mixing matrix - keep in synch with commit_params()
   dt_colormatrix_t MIX = { { 0.f } };
@@ -4553,15 +4551,15 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   const gchar *label = N_("take channel mixing into account");
-  g->use_mixing = gtk_check_button_new_with_label(_(label));
-  dt_action_define_iop(self, N_("mapping"), label, g->use_mixing, &dt_action_def_toggle);
-  gtk_label_set_ellipsize
-    (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->use_mixing))), PANGO_ELLIPSIZE_END);
+  // no field: this setting belongs to the spot mapping workflow and is kept
+  // in conf across images, rather than being part of the module's params
+  g->use_mixing = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->use_mixing, N_("mapping"), label);
   gtk_widget_set_tooltip_text
     (g->use_mixing,
      _("compute the target by taking the channel mixing into account.\n"
        "if disabled, only the CAT is considered."));
-  g_signal_connect(G_OBJECT(g->use_mixing), "toggled",
+  g_signal_connect(G_OBJECT(g->use_mixing), "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->origin_spot = gtk_drawing_area_new();

@@ -133,6 +133,7 @@ typedef struct dt_bauhaus_t
   // that toggles are drawn by the theme rather than from hardcoded colours
   GtkStyleContext *check_context;
   float check_size;                      // side of a toggle's tick box
+  GtkBorder check_margin;                // space the css keeps around it
 
   // initialise or connect accelerators in set_label
   int skip_accel;
@@ -186,6 +187,10 @@ void dt_bauhaus_widget_set_label_text(GtkWidget *widget,
 // instead, so that the value survives
 void dt_bauhaus_widget_set_label_ellipsize(GtkWidget *widget,
                                            const PangoEllipsizeMode ellipsize);
+// where the quad is drawn, in widget coordinates, for anchoring a popup to
+// the icon rather than to the whole widget
+void dt_bauhaus_widget_get_quad_rect(GtkWidget *widget,
+                                     GdkRectangle *rect);
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget);
 void dt_bauhaus_widget_hide_label(GtkWidget *widget);
 void dt_bauhaus_widget_set_show_extended_label(GtkWidget *widget,
