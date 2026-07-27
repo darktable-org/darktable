@@ -5341,6 +5341,7 @@ static void _event_auto_rotate_quad_callback(GtkWidget *widget,
   _swap_shadow_crop_box(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   _swap_shadow_crop_box(p, g);
+  _commit_crop_box(p, g);
 }
 
 static int _event_fit_v_button_clicked(GtkWidget *widget,
@@ -5629,13 +5630,12 @@ void commit_params(dt_iop_module_t *self,
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
-  if(dt_iop_has_focus(self)
-     || dt_isnan(p->cl)
+  if(dt_isnan(p->cl)
      || dt_isnan(p->cr)
      || dt_isnan(p->ct)
      || dt_isnan(p->cb))
   {
-    // if gui has focus we want to see the full uncropped image
+    // if crop parameters are not yet known, show the full image
     d->cl = 0.0f;
     d->cr = 1.0f;
     d->ct = 0.0f;
