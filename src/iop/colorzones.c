@@ -2364,7 +2364,7 @@ static void _edit_by_area_callback(GtkWidget *widget,
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
-  g->edit_by_area = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  g->edit_by_area = dt_bauhaus_toggle_get(widget);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -2669,13 +2669,14 @@ void gui_init(dt_iop_module_t *self)
 
   // edit by area
   gchar *label = N_("edit by area");
-  g->chk_edit_by_area = gtk_check_button_new_with_label(_(label));
-  dt_action_define_iop(self, NULL, label, g->chk_edit_by_area, &dt_action_def_toggle);
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->chk_edit_by_area))),
-                          PANGO_ELLIPSIZE_START);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_edit_by_area), g->edit_by_area);
+  // no field: this selects an editing mode for the curve widget below, it
+  // is not one of the module's parameters
+  g->chk_edit_by_area = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->chk_edit_by_area, NULL, label);
+  dt_bauhaus_widget_set_label_ellipsize(g->chk_edit_by_area, PANGO_ELLIPSIZE_START);
+  dt_bauhaus_toggle_set(g->chk_edit_by_area, g->edit_by_area);
   gtk_widget_set_tooltip_text(g->chk_edit_by_area, _("edit the curve nodes by area"));
-  g_signal_connect(G_OBJECT(g->chk_edit_by_area), "toggled",
+  g_signal_connect(G_OBJECT(g->chk_edit_by_area), "value-changed",
                    G_CALLBACK(_edit_by_area_callback), self);
 
   // display selection
