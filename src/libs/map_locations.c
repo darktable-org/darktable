@@ -891,8 +891,6 @@ static void _click_on_view(GtkGestureSingle *gesture,
   }
 }
 
-void gui_init
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = g_malloc0(sizeof(dt_lib_map_locations_t));

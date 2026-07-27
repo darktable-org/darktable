@@ -1773,7 +1773,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
   gtk_widget_queue_draw(widget);
 
-  return TRUE;}
+  return TRUE;
+}
 
 static void _delete_node(dt_iop_module_t *self,
                          dt_iop_colorzones_node_t *curve,
