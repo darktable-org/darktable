@@ -27,6 +27,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <curl/curl.h>
+#include <errno.h>
 #include <json-glib/json-glib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -397,12 +398,14 @@ static gboolean _setup_registry(dt_ai_registry_t *registry)
   gboolean ok = TRUE;
   if(!_ensure_directory(models))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create models dir: %s", models);
+    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create models dir %s: %s",
+             models, strerror(errno));
     ok = FALSE;
   }
   if(!_ensure_directory(cache))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create cache dir: %s", cache);
+    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create cache dir %s: %s",
+             cache, strerror(errno));
     ok = FALSE;
   }
 
