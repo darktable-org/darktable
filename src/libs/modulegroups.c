@@ -1666,6 +1666,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorzones");
   AM("colorequal");
   AM("colorharmonizer");
+  AM("spektrafilm");
   AM("lut3d");
   AM("monochrome");
   AM("profile");
