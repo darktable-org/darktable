@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-24 14:42-0600\n"
-"PO-Revision-Date: 2026-07-24 15:58-0600\n"
+"PO-Revision-Date: 2026-07-29 15:09-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -570,7 +570,7 @@ msgstr "Credenciales de Windows"
 #: ../build/bin/conf_gen.h:4150
 msgctxt "preferences"
 msgid "vectorscope"
-msgstr "vectorscopio"
+msgstr "Vectorscopio"
 
 #: ../build/bin/conf_gen.h:4151
 msgctxt "preferences"
@@ -580,7 +580,7 @@ msgstr "Oscilograma"
 #: ../build/bin/conf_gen.h:4152
 msgctxt "preferences"
 msgid "split"
-msgstr "dividir"
+msgstr "Dividido"
 
 #: ../build/bin/conf_gen.h:4153
 msgctxt "preferences"
