@@ -87,8 +87,12 @@ int sf_gauss_kernel_1d(const float sigma, float *const kernel, const int max_rad
  * scatter core and tail, the diffusion bank -- was chosen by eye against renders
  * made THROUGH that filter, so matching it is what reproduces the intended look;
  * being independently correct just makes every halo about 10% too tight. */
-void sf_gauss_yvv_coeffs(const float sigma, float out[4])
+void sf_gauss_yvv_coeffs(const float sigma_req, float out[4])
 {
+  /* clamped for both callers at once -- the CPU dispatch in _blur_flat_inplace
+     and _sf_yvv_blur_cl on the GPU both come through here, so they cannot drift
+     apart. See SF_GAUSS_MAX_IIR_SIGMA. */
+  const float sigma = fminf(sigma_req, SF_GAUSS_MAX_IIR_SIGMA);
   const double s = (double)sigma;
   const double q = (s >= 2.5) ? (0.98711 * s - 0.96330)
                               : (3.97156 - 4.14554 * sqrt(1.0 - 0.26891 * s));

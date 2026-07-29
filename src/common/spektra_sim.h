@@ -83,6 +83,10 @@ typedef struct sf_sim_t sf_sim_t;
 /* Load a data pack directory (pack.json + spectra_lut.f32 + profiles/).
  * On failure returns NULL and sets *errmsg (caller frees with free()). */
 sf_pack_t *sf_pack_load(const char *dir, char **errmsg);
+/* Identity of the spectral upsampling table this pack carries. The hash is what
+ * params record; the string is for the message shown when they disagree. */
+uint32_t sf_pack_lut_hash(const sf_pack_t *pack);
+const char *sf_pack_lut_id(const sf_pack_t *pack);
 void sf_pack_free(sf_pack_t *pack);
 const char *sf_pack_version(const sf_pack_t *pack);
 
@@ -204,6 +208,14 @@ int sf_sim_film_bw(const sf_sim_t *sim);
    falls back to the legacy fixed constants (SF_GRAIN_LEGACY_* in
    spektra_core.h) when sim is NULL or the pack predates per-film grain. */
 void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], float dmin[3]);
+/* Sum of the per-sub-layer density floors, per channel -- the amount the grain
+ * sampler actually adds to a pixel's density, and so the amount the caller has
+ * to take back off to recover a zero-mean delta. Equals grain_density_min for a
+ * single-layer stock, but NOT in general: the multi-sub-layer table's floors are
+ * density_max_fractions[l] * density_min and their sum is not constrained to
+ * density_min. Subtracting grain_density_min instead left the delta with a
+ * constant positive mean of (sum - density_min) per unit grain strength. */
+void sf_sim_grain_dmin_total(const sf_sim_t *sim, float dmin_total[3]);
 
 /* Multi-sublayer grain model (see _sf_build_grain_layers in spektra_sim.c):
  * n==1 for any stock whose own fitted density-curve model is single-layer
