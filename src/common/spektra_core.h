@@ -188,6 +188,25 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
 /* Young-van Vliet order-3 recursive Gaussian coefficients (B, B1, B2, B3),
    identical to the reference's _yvv_coeffs. Exported so the GPU host side can
    build the same filter the CPU runs. */
+/* Widest sigma the recursive filter is asked for. Above this its float32
+   coefficients stop describing the filter we want: B falls to ~1e-7 while
+   B1..B3 stay near 3, and the poles walk out to the unit circle. Measured
+   effective vs requested sigma, single pass, float32:
+
+       requested   100    150    200    400    700
+       effective   102    155    254    875  105395
+
+   -- so it tracks to ~150, is unusable by 200, and diverges outright past ~700,
+   which is where cinebloom and pro-mist land at export resolution (their bloom
+   reaches 2500 um and 1625 um, ~1000 px on a 6000 px frame at 26 mm). The
+   divergence shows as full-height coloured striping: the column pass runs after
+   the row pass, so each column blows up on its own.
+
+   Clamping keeps the filter inside the range where it is a Gaussian at the cost
+   of a narrower halo than asked for at extreme diffusion settings. That is a
+   stopgap, not the answer -- a large-sigma blur wants downsample/blur/upsample,
+   which is also faster. This just stops it producing garbage in the meantime. */
+#define SF_GAUSS_MAX_IIR_SIGMA 150.0f
 void sf_gauss_yvv_coeffs(float sigma, float out[4]);
 
 /* Build a normalized, truncated 1D Gaussian kernel. truncate = 3 sigma with

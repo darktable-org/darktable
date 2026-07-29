@@ -227,6 +227,9 @@ struct sf_pack_t
   JsonNode *neutral_filters;    /* nested object database */
   JsonNode *film_defaults;      /* per-film render defaults */
   JsonParser *parser;           /* keeps the JSON tree alive */
+  /* identity of the spectral upsampling table, from its header */
+  char lut_id[256];
+  uint32_t lut_hash;
   /* hanatos2025 irradiance spectra LUT */
   int tc_n;                     /* 192 */
   float *spectra;               /* tc_n * tc_n * SF_NWL */
@@ -451,6 +454,39 @@ static int json_read_darray_upto(JsonObject *obj, const char *key, double *out, 
   return n;
 }
 
+/* IEEE 754 binary16 -> binary32. Handles subnormals and inf/NaN; the LUT is
+   plain finite reflectance data, but a decoder that quietly mangles the edge
+   cases is worse than one that costs a branch on a once-per-load path. */
+static inline float _sf_half_to_float(const uint16_t h)
+{
+  const uint32_t sign = (uint32_t)(h & 0x8000u) << 16;
+  const uint32_t exp = (h >> 10) & 0x1fu;
+  const uint32_t mant = h & 0x3ffu;
+  uint32_t bits;
+  if(exp == 0)
+  {
+    if(mant == 0)
+      bits = sign; /* +-0 */
+    else
+    {
+      /* subnormal: normalise */
+      uint32_t e = exp, m = mant;
+      int shift = 0;
+      while(!(m & 0x400u)) { m <<= 1; shift++; }
+      m &= 0x3ffu;
+      e = 127 - 15 - shift + 1;
+      bits = sign | (e << 23) | (m << 13);
+    }
+  }
+  else if(exp == 0x1fu)
+    bits = sign | 0x7f800000u | (mant << 13); /* inf / NaN */
+  else
+    bits = sign | ((exp + 127 - 15) << 23) | (mant << 13);
+  float f;
+  memcpy(&f, &bits, sizeof f);
+  return f;
+}
+
 static gboolean json_read_dmatrix(JsonObject *obj, const char *key, double *out, int n, int m)
 {
   if(!json_object_has_member(obj, key)) return FALSE;
@@ -487,6 +523,9 @@ static void set_error(char **errmsg, const char *fmt, ...)
 /* ------------------------------------------------------------------------ */
 /* pack loading                                                             */
 /* ------------------------------------------------------------------------ */
+
+uint32_t sf_pack_lut_hash(const sf_pack_t *pack) { return pack ? pack->lut_hash : 0u; }
+const char *sf_pack_lut_id(const sf_pack_t *pack) { return pack ? pack->lut_id : ""; }
 
 void sf_pack_free(sf_pack_t *pack)
 {
@@ -583,7 +622,18 @@ sf_pack_t *sf_pack_load(const char *dir, char **errmsg)
   if(json_object_has_member(root, "film_render_defaults"))
     pack->film_defaults = json_object_get_member(root, "film_render_defaults");
 
-  /* hanatos2025 spectra LUT */
+  /* Spectral upsampling LUT.
+
+     Upstream revises this table often -- arctic2026 alpha, alpha02, beta01
+     through beta04 so far, with the older ones deleted as each lands -- and
+     every revision changes every render. So the header carries the table's
+     identity as well as its shape, and that identity is recorded in params:
+     an edit made against one revision and reopened against another is reported
+     rather than silently rendering differently.
+
+     Stored as float16, which is what upstream computes and ships; widened here
+     on load. Reading it as float32 doubled the file for precision that was
+     never in the source data. */
   {
     FILE *fh = g_fopen(lut_path, "rb");
     if(!fh)
@@ -592,18 +642,52 @@ sf_pack_t *sf_pack_load(const char *dir, char **errmsg)
       goto fail;
     }
     char magic[4];
-    int32_t dims[3];
-    if(fread(magic, 1, 4, fh) != 4 || memcmp(magic, "SFSL", 4) != 0
-       || fread(dims, 4, 3, fh) != 3 || dims[0] != dims[1] || dims[2] != SF_NWL)
+    int32_t hdr_version = 0, dims[3], dtype = 0, id_len = 0;
+    uint32_t lut_hash = 0;
+    if(fread(magic, 1, 4, fh) != 4 || memcmp(magic, "SFS2", 4) != 0
+       || fread(&hdr_version, 4, 1, fh) != 1 || hdr_version != 2
+       || fread(dims, 4, 3, fh) != 3 || dims[0] != dims[1] || dims[2] != SF_NWL
+       || fread(&dtype, 4, 1, fh) != 1 || (dtype != 0 && dtype != 1)
+       || fread(&lut_hash, 4, 1, fh) != 1 || fread(&id_len, 4, 1, fh) != 1
+       || id_len < 0 || id_len > 255)
     {
-      set_error(errmsg, "spektra_sim: bad spectra_lut header in %s", lut_path);
+      set_error(errmsg,
+                "spektra_sim: %s is not a v2 spectral LUT -- regenerate the data "
+                "pack with spektrafilm_export_data.py",
+                lut_path);
       fclose(fh);
       goto fail;
     }
+    if(id_len && fread(pack->lut_id, 1, id_len, fh) != (size_t)id_len)
+    {
+      set_error(errmsg, "spektra_sim: truncated spectra lut header in %s", lut_path);
+      fclose(fh);
+      goto fail;
+    }
+    pack->lut_id[id_len] = 0;
+    pack->lut_hash = lut_hash;
     pack->tc_n = dims[0];
+
     const size_t count = (size_t)dims[0] * dims[1] * dims[2];
     pack->spectra = malloc(count * sizeof(float));
-    if(!pack->spectra || fread(pack->spectra, sizeof(float), count, fh) != count)
+    if(!pack->spectra)
+    {
+      set_error(errmsg, "spektra_sim: out of memory for spectra lut");
+      fclose(fh);
+      goto fail;
+    }
+    gboolean ok;
+    if(dtype == 1) /* float16 -> float32 */
+    {
+      uint16_t *h16 = malloc(count * sizeof(uint16_t));
+      ok = h16 && fread(h16, sizeof(uint16_t), count, fh) == count;
+      if(ok)
+        for(size_t i = 0; i < count; i++) pack->spectra[i] = _sf_half_to_float(h16[i]);
+      free(h16);
+    }
+    else
+      ok = fread(pack->spectra, sizeof(float), count, fh) == count;
+    if(!ok)
     {
       set_error(errmsg, "spektra_sim: truncated spectra lut %s", lut_path);
       fclose(fh);
@@ -3427,8 +3511,6 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   {
     g->grain_rms[c] = (float)s->grain_rms[c];
     g->grain_uniformity[c] = (float)s->grain_uniformity[c];
-    /* self-consistent with g->film_dmax: see sf_sim_film_grain3 */
-    g->grain_dmin[c] = (float)s->film_dmin[c];
     g->halation_strength[c] = (float)s->halation_strength[c];
   }
   g->halation_first_sigma_um = (float)s->halation_sigma_um;
@@ -3442,6 +3524,11 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   g->couplers_active = s->couplers_active;
 
   g->grain_n_sublayers = s->grain_n_sublayers;
+  /* What the sampler adds: the sum of the per-sub-layer floors. The GPU combine
+     subtracts this exactly as the CPU one now does, so the two agree. This used
+     to be film_dmin here and grain_density_min on the CPU -- two different wrong
+     values, which is why the paths brightened by different amounts. */
+  sf_sim_grain_dmin_total(s, g->grain_dmin);
   for(int l = 0; l < SF_GRAIN_MAX_SUBLAYERS; l++)
   {
     g->grain_particle_scale[l] = (float)s->grain_particle_scale[l];
@@ -3569,6 +3656,19 @@ void sf_sim_scatter_params(const sf_sim_t *sim, double core_um[3], double tail_u
     if(core_um) core_um[c] = sim ? sim->scatter_core_um[c] : core_d[c];
     if(tail_um) tail_um[c] = sim ? sim->scatter_tail_um[c] : tail_d[c];
     if(tail_weight) tail_weight[c] = sim ? sim->scatter_tail_weight[c] : tw_d[c];
+  }
+}
+
+void sf_sim_grain_dmin_total(const sf_sim_t *sim, float dmin_total[3])
+{
+  for(int c = 0; c < 3; c++) dmin_total[c] = 0.0f;
+  if(!sim) return;
+  const int nl = sim->grain_n_sublayers > 0 ? sim->grain_n_sublayers : 1;
+  for(int c = 0; c < 3; c++)
+  {
+    double t = 0.0;
+    for(int l = 0; l < nl; l++) t += sim->grain_layer_dmin[l][c];
+    dmin_total[c] = (float)t;
   }
 }
 
