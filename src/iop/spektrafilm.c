@@ -155,6 +155,13 @@ typedef enum dt_iop_spektrafilm_diffusion_family_t
 typedef struct dt_iop_spektrafilm_params_t
 {
   uint32_t film_hash;       // $DEFAULT: 0  (0 = first available filming stock)
+  /* Identity of the spectral upsampling table this edit was developed against.
+     Upstream revises it often and every revision changes the render, so an edit
+     reopened against a different one is reported rather than silently rendering
+     differently. 0 means "not recorded" (an edit older than this field, or one
+     made while no pack was loaded) and never warns. Diagnostic only -- nothing
+     downstream reads it. */
+  uint32_t lut_hash;        // $DEFAULT: 0
   uint32_t paper_hash;      // $DEFAULT: 0  (0 = the film's target print stock)
   float exposure_ev;        // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "film exposure"
   float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure"
@@ -321,6 +328,7 @@ typedef struct dt_iop_spektrafilm_data_t
   sf_sim_gpu_t *gpu; /* float tables for process_cl; NULL for exact quality */
   uint64_t sim_key;  /* hash of everything the sim build depends on */
   char sim_error[256];
+  char sim_warning[256];
   /* multi-sublayer grain GPU constant buffers (see process_cl's grain
      stage): built from d->gpu's grain_layer_* tables, which only change
      when d->gpu itself is rebuilt (a new film/paper/quality choice), never
@@ -712,6 +720,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
 
   uint64_t key = 0xcbf29ce484222325ULL;
   key = _mix64(key, &p->film_hash, sizeof p->film_hash);
+  key = _mix64(key, &p->lut_hash, sizeof p->lut_hash);
   key = _mix64(key, &p->paper_hash, sizeof p->paper_hash);
   key = _mix64(key, &p->exposure_ev, sizeof p->exposure_ev);
   key = _mix64(key, &p->print_exposure_ev, sizeof p->print_exposure_ev);
@@ -768,6 +777,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   }
   d->sim_key = key;
   d->sim_error[0] = 0;
+  d->sim_warning[0] = 0;
 
   /* global pack, loaded once */
   dt_pthread_mutex_lock(&_pack_lock);
@@ -886,6 +896,21 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.input_white_xy[0] = sp.output_white_xy[0] = d50_xy[0];
     sp.input_white_xy[1] = sp.output_white_xy[1] = d50_xy[1];
 
+    /* Compare what this edit was developed against with what is installed. Only
+       when the edit actually recorded one -- a 0 means the field predates the
+       edit, not that anything is wrong. */
+    const uint32_t pack_lut = sf_pack_lut_hash(pack);
+    if(p->lut_hash && pack_lut && p->lut_hash != pack_lut)
+      /* Print the hash as well as the name. The name carries the spektrafilm
+         version string, and that is not a reliable identifier: an editable dev
+         install reports whatever pyproject.toml says, so two materially
+         different checkouts can both call themselves the same thing. Without
+         the hash the message reads as nonsense when they do. */
+      snprintf(d->sim_warning, sizeof d->sim_warning,
+               _("developed with a different spectral table\n"
+                 "recorded: %08x    installed: %s (%08x)"),
+               p->lut_hash, sf_pack_lut_id(pack), pack_lut);
+
     d->sim = sf_sim_build(pack, film, paper, &sp, &err);
     if(!d->sim && err)
     {
@@ -945,7 +970,12 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
      scatter_scale split). */
   const float scat_scale = fmaxf(p->scatter_scale, 1e-3f);
   const float scat = (p->halation_on && p->scatter_amount > 0.0f)
-                         ? SF_SCATTER_TAIL_MAX_UM * SF_HALATION_PSF_SIGMAS * scat_scale * inv_um
+                         /* SF_SCATTER_TAIL_MAX_UM is already the widest tail
+                            component's sigma; SF_HALATION_PSF_SIGMAS is
+                            sqrt(n_bounces) and belongs to the halation term
+                            above, so applying it here over-padded scatter by
+                            1.73x. Harmless but wasteful. */
+                         ? SF_SCATTER_TAIL_MAX_UM * scat_scale * inv_um
                          : 0.0f;
   /* The widest of film-stage and print-stage diffusion determines the ROI
      padding — both must fit in the expanded tile. Take the widest component of
@@ -1196,7 +1226,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        resolution-dependent via pixel_um already, confirmed against the
        reference at multiple different resolutions. */
     float grms[3], gunif[3], gdmin[3];
-    sf_sim_film_grain3(sim, grms, gunif, gdmin); /* per-film catalogue grain
+    /* gdmin here is what the SAMPLER adds -- the sum of the per-sub-layer
+       floors, not the film's single density_min. They coincide for a
+       single-layer stock and differ for a multi-sub-layer one; using
+       density_min there gave the delta a constant positive mean. */
+    sf_sim_grain_dmin_total(sim, gdmin);
+    float gdmin_unused[3];
+    sf_sim_film_grain3(sim, grms, gunif, gdmin_unused); /* per-film catalogue grain
                                       (rms-granularity, uniformity, density
                                       floor) — Portra 400 no longer shares
                                       Tri-X's grain signature */
@@ -1303,16 +1339,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
                          * preview_scale;
     sf_blur_plane3(gbuf, w, h, sigma, scratch);
-    /* No DC-centring pass here any more. The positive bias it removed came from
-       sf_layer_particle clamping a normal approximation at zero; the sampler now
-       draws a single exact/unbiased Poisson (see spektra_core.h), so the delta
-       has zero mean by construction. That also removes an image-wide reduction
-       from a function that only ever sees one ROI or tile -- the old per-channel
-       mean depended on how the pixelpipe cut the image up, so preview, export
-       and each tile of a tiled export centred by different amounts. The old
-       correction could not have been right in any case: the bias was a function
-       of density (worst in the shadows, at low particle counts), so subtracting
-       a single scalar left a density-dependent residual behind. */
+    /* No DC-centring pass. The delta is zero-mean by construction now: the
+       sampler draws an unbiased Poisson (spektra_core.h) and the combine above
+       takes back exactly the floors the sampler added -- see
+       sf_sim_grain_dmin_total(). Subtracting grain_density_min there instead
+       left a constant +(sum - density_min) per unit strength, which a per-ROI
+       mean was previously hiding. */
     /* No variance-restoration renorm here -- upstream's own grain
        finalization (_finalize_grain in grain.py) has none either; it just
        blurs and lets the natural contrast reduction stand, matching real
@@ -2387,6 +2419,17 @@ void gui_reset(dt_iop_module_t *self)
 /* called by the core whenever a params-linked widget changed */
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
+  /* Stamp the spectral table this edit is being made against. Done here because
+     gui_changed() runs after the widget has written the param and before the
+     history item is created, so the value lands in the same edit -- and only on
+     a real user change, so merely opening an image never dirties one. */
+  {
+    dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
+    dt_pthread_mutex_lock(&_pack_lock);
+    if(_pack) p->lut_hash = sf_pack_lut_hash(_pack);
+    dt_pthread_mutex_unlock(&_pack_lock);
+  }
+
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
   if(!w || w == g->scan_film) _update_print_sensitivity(self);
@@ -2409,6 +2452,22 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     p->print_exposure_ev = 0.0f;
     dt_bauhaus_slider_set(g->print_exposure_ev, 0.0f);
   }
+}
+
+/* sim_error and sim_warning were being recorded and never shown -- a missing
+   data pack, an unreadable profile or a spectral-table mismatch all produced a
+   silently wrong or blank render. Route them to the module's trouble banner,
+   which is darktable's own mechanism for exactly this. */
+static void _update_trouble_message(dt_iop_module_t *self)
+{
+  const dt_iop_spektrafilm_data_t *d = (const dt_iop_spektrafilm_data_t *)self->data;
+  if(!d) return;
+  if(d->sim_error[0])
+    dt_iop_set_module_trouble_message(self, _("cannot render"), d->sim_error, NULL);
+  else if(d->sim_warning[0])
+    dt_iop_set_module_trouble_message(self, _("data mismatch"), d->sim_warning, NULL);
+  else
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -2524,6 +2583,8 @@ void gui_update(dt_iop_module_t *self)
 
   _toggle_sensitivity(g, p);
   _update_print_sensitivity(self);
+
+  _update_trouble_message(self);
 }
 
 /* Boost that puts the probe lightness of `rgb` at `target_L`.
@@ -2867,13 +2928,31 @@ void gui_init(dt_iop_module_t *self)
 
   g->scatter_amount = dt_bauhaus_slider_from_params(self, "scatter_amount");
   gtk_widget_set_tooltip_text(g->scatter_amount,
-                              _("in-emulsion light scatter, before the halation bounce"
-                                " (1.0 = film-accurate; 0 = off)"));
+                              _("fraction of light that scatters inside the emulsion,\n"
+                                "before the halation bounce. 1.0 is film-accurate and is\n"
+                                "also the maximum -- it means all of it, so nothing of the\n"
+                                "unscattered image remains.\n\n"
+                                "this is why the whole frame softens rather than just high\n"
+                                "contrast edges: the scatter radius is small (a few um on\n"
+                                "film) but it applies everywhere. lower this if you want a\n"
+                                "sharper result than the film itself would give."));
 
   g->scatter_scale = dt_bauhaus_slider_from_params(self, "scatter_scale");
+  /* Upstream fixes scatter_spatial_scale at 1.0 -- it is a schema field with no
+     UI, no preset and no per-stock override. Exposing it is a darktable
+     addition, so keep the drag range close to the value the film model actually
+     claims and leave the rest reachable by right-click. At 4.0 on a 50 MP frame
+     the effective blur is ~14 px across the whole image, far outside anything
+     the reference produces. */
+  dt_bauhaus_slider_set_soft_range(g->scatter_scale, 0.2f, 1.5f);
   gtk_widget_set_tooltip_text(g->scatter_scale,
-                              _("scatter size: scales the in-emulsion scatter radius"
-                                " (1.0 = film-accurate)"));
+                              _("scales the in-emulsion scatter radius. 1.0 is\n"
+                                "film-accurate, and is what the reference implementation\n"
+                                "always uses -- it does not expose this control.\n\n"
+                                "above 1.0 you are past what the film model claims, and the\n"
+                                "whole frame softens quickly: the radius scales with the\n"
+                                "value, so 4.0 is a four times wider blur everywhere.\n"
+                                "drag up to 1.5, right-click to enter higher values"));
 
   g->halation_amount = dt_bauhaus_slider_from_params(self, "halation_amount");
   dt_bauhaus_slider_set_soft_range(g->halation_amount, 0.0f, 2.0f);
