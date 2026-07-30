@@ -2277,11 +2277,16 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
         if(cl_mem_input)
         {
-          didconvert = success_opencl = dt_ioppr_transform_image_colorspace_cl(module, pipe->devid,
+          success_opencl = dt_ioppr_transform_image_colorspace_cl(module, pipe->devid,
                                                                   cl_mem_input, cl_mem_input,
                                                                   roi_in.width, roi_in.height,
                                                                   input_cst_cl, cst_to, &input_cst_cl,
                                                                   work_profile);
+          /* didconvert must mean the buffer contents actually changed colorspace.
+             transform_image_colorspace_cl() returns TRUE on success even when
+             cst_from == cst_to (no-op). Using that boolean alone would skip
+             legitimate unconverted input writebacks. */
+          didconvert = success_opencl && (cst_from != input_cst_cl);
         }
         else
         {
@@ -2544,6 +2549,12 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           dt_opencl_release_mem_object(cl_mem_input);
           cl_mem_input = NULL;
           valid_input_on_gpu_only = FALSE;
+
+          /* In-place GPU colorspace convert + host writeback poisons the
+             upstream cache hash (same bug as the non-tiled important_cl_input
+             path). Drop the lying cacheline. */
+          if(didconvert)
+            dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
         }
 
         // transform to module input colorspace if not done already
@@ -2723,8 +2734,22 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
         if(important_cl_input)
         {
-          /* write back input into cache for faster re-usal (full pipe or preview) */
-          if(cl_mem_input != NULL)
+          /* write back input into cache for faster re-usal (full pipe or preview).
+
+             IMPORTANT: cl_mem_input may have been colorspace-converted *in place*
+             on the GPU (see didconvert above). Copying that buffer back over the
+             upstream module's host cache line while keeping the upstream hash
+             poisons the pipecache: the same hash later returns data whose
+             colorspace no longer matches what that hash was created for. On the
+             next run, modules then either skip a needed conversion or apply the
+             wrong one, which shows up as black frames / burned colors when
+             enabling atrous, bilat, diffuse, etc.
+
+             Only write back when we did *not* convert. If we did convert, leave
+             valid_input_on_gpu_only set so the upstream cacheline is invalidated
+             below instead of keeping a lying hash.
+          */
+          if(cl_mem_input != NULL && !didconvert)
           {
             /* copy input to host memory, so we can find it in cache and wait via blocking flag */
             if(dt_opencl_copy_image_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp)
@@ -2745,6 +2770,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
               input_format->cst = input_cst_cl;
             }
+          }
+          else if(cl_mem_input != NULL && didconvert)
+          {
+            dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+              "skip CL input cache writeback after colorspace convert",
+              pipe, module, pipe->devid, &roi_in, NULL);
+            important_cl_input = FALSE;
           }
         }
 
