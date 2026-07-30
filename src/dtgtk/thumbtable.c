@@ -2684,6 +2684,15 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       // in filemanager, we need to take care of the center offset
       posx = table->center_offset;
 
+      // keep partial first-row scroll across forced redraws
+      // (rating/colorlabel → collection RELOAD)
+      if(table->thumb_size > 0)
+      {
+        posy = table->thumbs_area.y % table->thumb_size;
+        // cover the viewport when the first row is only partly shown
+        table->rows = (table->view_height - posy) / table->thumb_size + 1;
+      }
+
       // ensure that the overall layout doesn't change
       // (i.e. we don't get empty spaces in the very first row)
       offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;

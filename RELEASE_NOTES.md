@@ -146,6 +146,10 @@ changes (where available).
   rejecting with filmstrip auto-scroll disabled and the collection
   filtered to hide rejected images.
 
+- Fixed lighttable filemanager scrolling to the top when assigning
+  a star rating or color label while the first row was only partly
+  visible.
+
 ## Lua
 
 ### API Version
