@@ -142,6 +142,10 @@ changes (where available).
 
 - Fixed a bug leading to subtle color errors after history changes.
 
+- Fixed lighttable full preview jumping to the first image when
+  rejecting with filmstrip auto-scroll disabled and the collection
+  filtered to hide rejected images.
+
 ## Lua
 
 ### API Version

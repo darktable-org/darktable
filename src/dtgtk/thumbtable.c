@@ -2083,7 +2083,9 @@ static void _dt_collection_changed_callback(gpointer instance,
       if(tmpoff != table->offset_imgid)
       {
         old_offset = table->offset_imgid;
-        table->offset = _thumb_get_rowid(tmpoff);
+        const int active_rowid = _thumb_get_rowid(tmpoff);
+        if(active_rowid > 0)
+          table->offset = active_rowid;
         table->offset_imgid = tmpoff;
         dt_thumbtable_full_redraw(table, TRUE);
       }
