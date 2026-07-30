@@ -149,6 +149,10 @@ changes (where available).
 - Fixed the image index and filmstrip selection in culling mode not
   updating when navigating with the arrow keys.
 
+- Fixed lighttable filemanager scrolling to the top when assigning
+  a star rating or color label while the first row was only partly
+  visible.
+
 ## Lua
 
 ### API Version
