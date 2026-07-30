@@ -163,14 +163,22 @@ void dt_iop_clip_and_zoom(float *out,
 
   DT_OMP_SIMD(aligned(in, linear : 16))
   for(size_t k = 0; k < (size_t)roi_in->width * roi_in->height*4; k += 4)
-    for_each_channel(c) linear[k+c] = powf(fmaxf(in[k+c], -1e6f), 2.4f);  // fmaxf sanitizes NaN
+    for_each_channel(c)
+    {
+      const float value = fmaxf(in[k+c], -1e6f);
+      linear[k+c] = copysignf(powf(fabsf(value), 2.4f), value);
+    }
 
   dt_interpolation_resample(itor, out, roi_out, linear, roi_in);
   dt_free_align(linear);
 
   DT_OMP_SIMD(aligned(out : 16))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
-    for_each_channel(c) out[k+c] = powf(out[k+c], 1.0f / 2.4f);
+    for_each_channel(c)
+    {
+      const float value = fmaxf(out[k+c], -1e6f);
+      out[k+c] = copysignf(powf(fabsf(value), 1.0f / 2.4f), value);
+    }
 }
 
 // apply clip and zoom on the image region supplied in the input buffer.
