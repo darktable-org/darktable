@@ -18,6 +18,7 @@
 
 #include "common/color_picker.h"
 #include "common/colorspaces.h"
+#include "common/hdr_viewer.h"
 #include "common/histogram.h"
 #include "common/opencl.h"
 #include "common/iop_order.h"
@@ -1789,6 +1790,24 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
           && dt_pipe_is_basic(piece->pipe);
 }
 
+// The HDR viewer must only receive the fully-processed, display-referred image.
+// The basic darkroom pipes skip enabled modules located downstream of a focused
+// module that shares its operation tags (see dt_iop_module_is_skipped), so the
+// focused module's effect is shown in context. That can drop filmic/sigmoid and
+// leave an unbounded scene-linear buffer at colorout's input. Detect it so we
+// forward only complete frames and otherwise keep the viewer's last good frame.
+static gboolean _hdr_viewer_pipe_incomplete(const dt_dev_pixelpipe_t *pipe,
+                                            const dt_develop_t *dev)
+{
+  for(const GList *n = pipe->nodes; n; n = g_list_next(n))
+  {
+    const dt_dev_pixelpipe_iop_t *p = (const dt_dev_pixelpipe_iop_t *)n->data;
+    if(p && p->module && p->enabled && dt_iop_module_is_skipped(dev, p->module))
+      return TRUE;
+  }
+  return FALSE;
+}
+
 static inline gboolean _dev_pixelpipe_early_exit(const dt_develop_t *dev,
                                                  const dt_dev_pixelpipe_t *pipe)
 {
@@ -2080,6 +2099,80 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                 g_list_previous(modules),
                                 g_list_previous(pieces), pos - 1))
     return TRUE;
+
+  // HDR viewer: forward the working-space linear image (colorout's input) to the
+  // external HDR preview app. We capture it HERE -- right after the recursion
+  // fills `input` and BEFORE colorout processes -- because colorout overwrites/
+  // recycles its input buffer in place while converting to the display profile;
+  // reading it afterwards yields scratch values, not the tone-mapped image. This
+  // buffer is the fully-edited image still in the working profile's linear
+  // primaries (Rec.2020 by default) with super-white (>1.0) intact, before
+  // colorout bakes in the display TRC -- exactly what an EDR/HDR display needs.
+  // The work-profile RGB->XYZ(D50) matrix is sent alongside for color management.
+  // NOTE: the socket calls below must remain outside any OMP parallel section.
+  if(dev->gui_attached && !dev->gui_leaving
+     && pipe == dev->preview_pipe
+     // host `input` must actually hold this frame's pixels. If the upstream
+     // module ran on OpenCL its result is left GPU-resident (cl_mem_input set)
+     // and the host buffer is stale, so skip this frame rather than forward
+     // garbage to the viewer (it keeps its last good frame).
+     && cl_mem_input == NULL
+     && dt_iop_module_is(module, "colorout")
+     && input_format->datatype == TYPE_FLOAT && input_format->channels == 4
+     && dt_conf_get_bool("plugins/darkroom/hdr_viewer_enabled")
+     // only forward fully-processed frames: when a tag-filtering module is
+     // focused, the basic pipe skips downstream modules (e.g. filmic/sigmoid)
+     // and colorout's input would be incomplete (scene-linear).
+     && !_hdr_viewer_pipe_incomplete(pipe, dev))
+  {
+    // Cooldown: skip connect attempts for 2 seconds after a failed connect to
+    // avoid a 200ms timeout on every frame when the viewer is not running. The
+    // preview pipe runs on a single thread, so no synchronisation is needed.
+    static int64_t _hdr_viewer_next_attempt_us = 0;
+    const int64_t now_us = g_get_monotonic_time();
+    if(now_us >= _hdr_viewer_next_attempt_us)
+    {
+      const int viewer_fd = dt_hdr_viewer_connect();
+      if(viewer_fd >= 0)
+      {
+        const size_t w = (size_t)roi_in.width;
+        const size_t h = (size_t)roi_in.height;
+        const float *const rgba = (const float *const)input;
+
+        // working RGB -> XYZ(D50): darktable stores this as a [4][4]
+        // dt_colormatrix_t (rows padded to 4 for SIMD); copy the 3x3 core.
+        const dt_iop_order_iccprofile_info_t *const work_profile
+          = dt_ioppr_get_pipe_work_profile_info(pipe);
+        float rgb_to_xyz[9];
+        if(work_profile)
+          for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+              rgb_to_xyz[i * 3 + j] = work_profile->matrix_in[i][j];
+
+        // Strip alpha channel: RGBA float -> RGB float (packed, row-major)
+        const size_t npixels = w * h;
+        float *rgb = work_profile ? dt_alloc_align_float(npixels * 3) : NULL;
+        if(rgb)
+        {
+          DT_OMP_FOR()
+          for(size_t k = 0; k < npixels; k++)
+          {
+            rgb[k * 3 + 0] = rgba[k * 4 + 0];
+            rgb[k * 3 + 1] = rgba[k * 4 + 1];
+            rgb[k * 3 + 2] = rgba[k * 4 + 2];
+          }
+          dt_hdr_viewer_send_frame(viewer_fd, (uint32_t)w, (uint32_t)h, rgb, rgb_to_xyz);
+          dt_free_align(rgb);
+        }
+        dt_hdr_viewer_disconnect(viewer_fd);
+      }
+      else
+      {
+        // Viewer not reachable -- back off for 2 seconds before retrying.
+        _hdr_viewer_next_attempt_us = now_us + 2 * G_USEC_PER_SEC;
+      }
+    }
+  }
 
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
 
@@ -2834,7 +2927,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     /* input is still only on GPU? Let's invalidate CPU input buffer then */
     if(valid_input_on_gpu_only)
+    {
       dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+    }
   }
   else
   {
@@ -3010,6 +3105,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            display_profile,
                                            dt_ioppr_get_histogram_profile_info(dev));
   }
+
   return _pipe_has_shutdown(pipe);
 }
 
