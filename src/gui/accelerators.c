@@ -1988,6 +1988,36 @@ static void _shortcut_row_activated(GtkTreeView *tree_view,
   _grab_in_tree_view(tree_view);
 }
 
+static gboolean _shortcut_delete_selected(GtkTreeView *view)
+{
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    return FALSE;
+
+  GSequenceIter *shortcut_iter = NULL;
+  gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
+
+  if(_is_shortcut_category(shortcut_iter))
+    return FALSE;
+
+  dt_shortcut_t *s = g_sequence_get(shortcut_iter);
+
+  if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
+                               s->is_default ? s->views ?
+                               _("disable the selected default shortcut?") :
+                               _("restore the selected default shortcut?") :
+                               _("remove the selected shortcut?")))
+  {
+    _remove_shortcut(shortcut_iter);
+
+    dt_shortcuts_save(NULL, FALSE);
+  }
+
+  return TRUE;
+}
+
 static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
                                        guint keyval,
                                        guint keycode,
@@ -2028,22 +2058,10 @@ static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
           _shortcut_copy_lua(NULL, s, NULL);
         }
 
-        // GDK_KEY_BackSpace moves to parent in tree
-        if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete)
-        {
-          if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
-                                       s->is_default ? s->views ?
-                                       _("disable the selected default shortcut?") :
-                                       _("restore the selected default shortcut?") :
-                                       _("remove the selected shortcut?")))
-          {
-            _remove_shortcut(shortcut_iter);
-
-            dt_shortcuts_save(NULL, FALSE);
-          }
-
-          return TRUE;
-        }
+        // GDK_KEY_BackSpace is the delete key on macOS; it is also
+        // accepted when deleting presets, so keep it consistent here
+        if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete || keyval == GDK_KEY_BackSpace)
+          return _shortcut_delete_selected(view);
       }
     }
   }
@@ -2860,6 +2878,43 @@ static void _notice_clicked(GtkWidget *button,
   dt_conf_set_bool("accel/hide_notice", TRUE);
 }
 
+/* The shortcuts treeview consumes GDK_KEY_BackSpace ("select-cursor-parent")
+ * in its own key handling before any handler connected on the treeview runs,
+ * so the delete keys are intercepted at the toplevel instead, before the key
+ * event is propagated to the focus widget.  GDK_KEY_BackSpace is the delete
+ * key on macOS. */
+static gboolean _shortcuts_dialog_key_pressed(GtkWidget *widget,
+                                              GdkEventKey *event,
+                                              gpointer user_data)
+{
+  GtkWidget *view = user_data;
+
+  if(gtk_window_get_focus(GTK_WINDOW(widget)) != view)
+    return FALSE;
+
+  guint keyval;
+  gdk_event_get_keyval((GdkEvent *)event, &keyval);
+
+  if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete || keyval == GDK_KEY_BackSpace)
+    return _shortcut_delete_selected(GTK_TREE_VIEW(view));
+
+  return FALSE;
+}
+
+static void _shortcuts_view_realized(GtkWidget *widget, gpointer user_data)
+{
+  if(g_object_get_data(G_OBJECT(widget), "accel-dialog-key-connected"))
+    return;
+  g_object_set_data(G_OBJECT(widget), "accel-dialog-key-connected", GINT_TO_POINTER(TRUE));
+
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  if(!toplevel || !GTK_IS_WINDOW(toplevel))
+    return;
+
+  g_signal_connect(G_OBJECT(toplevel), "key-press-event",
+                   G_CALLBACK(_shortcuts_dialog_key_pressed), widget);
+}
+
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
   // Save the shortcuts before editing
@@ -2904,6 +2959,9 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(search_shortcuts), "stop-search",
                    G_CALLBACK(dt_gui_search_stop), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
+  // intercept the delete keys at the toplevel, see _shortcuts_dialog_key_pressed
+  g_signal_connect(G_OBJECT(shortcuts_view), "realize",
+                   G_CALLBACK(_shortcuts_view_realized), NULL);
 
   gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(shortcuts_view),
                                          _shortcut_selection_function, NULL, NULL);
