@@ -658,8 +658,17 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
   g_object_unref(cursor);
 }
 
+static gboolean _shortcuts_dialog_open = FALSE;
+
 static void _show_shortcuts_prefs(GtkWidget *w)
 {
+  /* guard against re-entrant calls: a long-press or right-click on the
+   * keymap button can trigger both the pressed and the released gesture
+   * callback while the (modeless) dialog is already running */
+  if(_shortcuts_dialog_open)
+    return;
+  _shortcuts_dialog_open = TRUE;
+
   GtkWidget *shortcuts_dialog = gtk_dialog_new_with_buttons(_("shortcuts"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                                             GTK_DIALOG_DESTROY_WITH_PARENT, NULL, NULL);
   if(!_shortcuts_dialog_posize.w)
@@ -679,6 +688,8 @@ static void _show_shortcuts_prefs(GtkWidget *w)
 
   gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
   gtk_widget_destroy(shortcuts_dialog);
+
+  _shortcuts_dialog_open = FALSE;
 }
 
 static void _main_do_event_keymap(GdkEvent *event, gpointer data)
