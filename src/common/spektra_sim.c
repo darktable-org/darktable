@@ -2894,16 +2894,20 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
         }
         if(ok) lo = mid; else hi = mid;
       }
-      if(lo < 1.0)
+      if(lo < 0.999)
       {
         /* couplers_M is already amount-scaled, so scale it again by the surviving
            fraction and keep every downstream consumer -- inversion, forward
            correction, GPU export -- on one matrix. */
         for(int i = 0; i < 3; i++)
           for(int j = 0; j < 3; j++) s->couplers_M[i][j] *= lo;
+        /* Only when the reduction is real: this used to fire at the default
+           amount on ordinary stocks and print identical before/after values,
+           because a sub-0.1% trim rounds away at three decimals. */
         dt_print(DT_DEBUG_PIPE,
-                 "[spektrafilm] DIR couplers: amount %.3f is past this stock's invertible"
-                 " limit, using %.3f", p->couplers_amount, p->couplers_amount * lo);
+                 "[spektrafilm] DIR couplers: %s is invertible only to %.1f%% of the"
+                 " requested amount; using %.3f instead of %.3f",
+                 film->stock, 100.0 * lo, p->couplers_amount * lo, p->couplers_amount);
       }
     }
 

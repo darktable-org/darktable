@@ -67,6 +67,8 @@
 #include "common/opencl.h"
 #include "common/gaussian.h"
 #include "gui/accelerators.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -164,7 +166,10 @@ typedef struct dt_iop_spektrafilm_params_t
   uint32_t lut_hash;        // $DEFAULT: 0
   uint32_t paper_hash;      // $DEFAULT: 0  (0 = the film's target print stock)
   float exposure_ev;        // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "film exposure"
-  float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure"
+  /* "compensation" because it is an offset either way: with auto print
+     exposure on it shifts the automatic result rather than being ignored, which
+     the bare name implied. */
+  float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure compensation"
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
   float print_contrast;     // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print contrast"
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
@@ -196,7 +201,10 @@ typedef struct dt_iop_spektrafilm_params_t
   gboolean grain_on;        // $DEFAULT: TRUE $DESCRIPTION: "enable grain"
   float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain strength"
   float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
-  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "film format"
+  /* The format combobox above picks a film GAUGE (35mm); this is the frame's
+     LONG EDGE (36 mm). Both are right and both were called "format", which read
+     as the preset contradicting the slider. */
+  float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
   float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "grain recovery sharpness"
   float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.5 $DESCRIPTION: "grain recovery strength"
@@ -208,7 +216,13 @@ typedef struct dt_iop_spektrafilm_params_t
   float scan_blur;          // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "scanner blur"
   float scan_usm_sigma;     // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpness"
   float scan_usm_amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.7 $DESCRIPTION: "scanner sharpen strength"
-  float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "viewing glare"
+  /* Off by default. Glare is a viewing-condition simulation, not a film
+     property, and it is the last thing in the chain: leaving it on lifts the
+     black point of every render, which hides the real per-paper black points
+     while you are still judging them. The reference defaults it on because it
+     renders finished images; this is an editing tool. Same reasoning as
+     scan_usm_amount below. */
+  float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "viewing glare"
   float development_min;    // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
   float print_development_min; // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
 } dt_iop_spektrafilm_params_t;
@@ -289,6 +303,12 @@ static void _format_changed(GtkWidget *combo, gpointer user_data)
     p->film_format_mm = _format_presets[pi].mm;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
+  /* The millimetre slider only means anything on "custom" -- on a preset it is
+     a read-only echo, and one that reads as a contradiction ("35mm" setting
+     "36 mm") because the preset names a film GAUGE while the slider is the
+     frame's LONG EDGE. Showing it only when it is editable removes both the
+     row and the confusion. */
+  gtk_widget_set_visible(g->film_format_mm_slider, pi < 0 || pi >= FORMAT_PRESETS_N);
 }
 
 static void _format_slider_changed(GtkWidget *slider, gpointer user_data)
@@ -542,6 +562,28 @@ static int _nat_cmp(const char *a, const char *b)
   }
 }
 
+/* Trim filler out of a profile's display name, in place.
+
+   The comboboxes are as wide as darktable's right panel and no wider, so a name
+   like "Kodak Professional Portra Endura" truncates to "Kodak Professional ..."
+   -- and four papers share that prefix, so the list became four identical
+   entries. Only genuinely redundant words go: "Professional" says nothing, and
+   "Negative Film" / "Reversal Film" duplicate the section heading the entry is
+   already filed under. Everything that identifies the stock stays, including
+   "Print Film 2302", where it is part of the name people know. */
+static void _shorten_name(char *s, const size_t sz)
+{
+  static const char *const filler[] = { " Professional", " Negative Film", " Reversal Film" };
+  for(size_t f = 0; f < sizeof(filler) / sizeof(*filler); f++)
+  {
+    char *at = strstr(s, filler[f]);
+    if(!at) continue;
+    const size_t flen = strlen(filler[f]);
+    memmove(at, at + flen, strlen(at + flen) + 1);
+  }
+  (void)sz;
+}
+
 static gint _entry_name_cmp(gconstpointer a, gconstpointer b)
 {
   return _nat_cmp(((const sf_prof_entry_t *)a)->name, ((const sf_prof_entry_t *)b)->name);
@@ -585,6 +627,7 @@ static GList *_scan_profiles(void)
     if(tp) g_strlcpy(e->target_print, tp, SF_NAME_LEN);
     const char *type = sf_profile_type(prof);
     e->positive = (type && !strcmp(type, "positive"));
+    _shorten_name(e->name, sizeof e->name);
     const char *cm = sf_profile_channel_model(prof);
     e->bw = (cm && !strcmp(cm, "bw"));
     e->n_dev = sf_profile_dev_times(prof, e->dev_times, SF_MAX_DEV_TIMES);
@@ -2202,22 +2245,31 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
     DT_LEAVE_GUI_UPDATE();
     _update_print_sensitivity(self);
   }
-  /* if the paper is still on "auto" (hash 0) keep it following the film's
-     target print; otherwise leave the explicit user choice alone */
-  if(p->paper_hash == 0 && e->target_print[0])
+  /* On "auto" (hash 0) the paper follows the film's target print, and the
+     combobox keeps reading "auto" rather than jumping to the resolved stock:
+     the state is the link, not the destination, and displaying a specific paper
+     while the hash says auto made the two disagree. Name the resolved stock in
+     the tooltip so it stays visible. The pipeline resolves it identically either
+     way (_resolve_stock). */
+  if(p->paper_hash == 0)
   {
-    int pos = 0;
-    for(const GList *l = g->entries; l; l = l->next, pos++)
-    {
-      const sf_prof_entry_t *pe = l->data;
-      if(pe->printing && !strcmp(pe->stock, e->target_print))
+    const sf_prof_entry_t *re = NULL;
+    if(e->target_print[0])
+      for(const GList *l = g->entries; l && !re; l = l->next)
       {
-        DT_ENTER_GUI_UPDATE();
-        dt_bauhaus_combobox_set_from_value(g->paper, pos);
-        DT_LEAVE_GUI_UPDATE();
-        break;
+        const sf_prof_entry_t *pe = l->data;
+        if(pe->printing && !strcmp(pe->stock, e->target_print)) re = pe;
       }
-    }
+    char tip[256];
+    if(re)
+      snprintf(tip, sizeof tip,
+               _("print paper. \"auto\" follows the film stock's own target print,\n"
+                 "currently %s. picking a paper pins it until you select auto again."),
+               re->name);
+    else
+      g_strlcpy(tip, _("print paper. \"auto\" follows the film stock's own target print."),
+                sizeof tip);
+    gtk_widget_set_tooltip_text(g->paper, tip);
   }
   /* last, once scan_film and the auto-followed paper have settled: both
      development sliders are gated on their own stock, and the print one also on
@@ -2231,8 +2283,17 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
-  const sf_prof_entry_t *pe
-      = _entry_at(g, GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper)));
+  const int ppos = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(g->paper));
+  if(ppos < 0)
+  {
+    /* back to auto: drop the explicit choice so the film resolves it again */
+    p->paper_hash = 0;
+    p->print_development_min = 0.0f;
+    _update_development_sensitivity(g, p);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return;
+  }
+  const sf_prof_entry_t *pe = _entry_at(g, ppos);
   if(!pe) return;
   p->paper_hash = pe->hash;
   /* same as _film_changed: a time from the previous paper does not transfer */
@@ -2509,6 +2570,15 @@ void gui_update(dt_iop_module_t *self)
   if(!any_film) dt_bauhaus_combobox_add(g->film, _("(no profiles found)"));
 
   dt_bauhaus_combobox_clear(g->paper);
+  /* paper_hash 0 means "follow the film's target print" -- the state a fresh
+     edit starts in, and the one _film_changed() keeps updating. Picking a paper
+     replaced it with an explicit choice and the link was then unreachable, which
+     is what people have asked to get back. Give that state a name at the top of
+     the list so it is both visible and selectable, rather than adding a separate
+     reset button for something the combobox can already express. Data -1 keeps
+     it clear of the list positions used below. */
+  dt_bauhaus_combobox_add_full(g->paper, _("auto (follow film stock)"),
+                               DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(-1), NULL, TRUE);
   gboolean any_paper = FALSE;
   for(int gi = 0; gi < 2; gi++)
   {
@@ -2564,10 +2634,18 @@ void gui_update(dt_iop_module_t *self)
     if(p->paper_hash ? (e->hash == p->paper_hash) : (target && !strcmp(e->stock, target)))
       ppos = pos;
   }
-  if(ppos < 0) ppos = pfirst;
-  if(ppos >= 0) dt_bauhaus_combobox_set_from_value(g->paper, ppos);
+  /* an edit that never picked a paper shows "auto", not the stock it happens to
+     resolve to -- otherwise the link looks broken the moment it is displayed */
+  if(!p->paper_hash) ppos = -1;
+  else if(ppos < 0) ppos = pfirst;
+  if(ppos >= -1) dt_bauhaus_combobox_set_from_value(g->paper, ppos);
 
-  dt_bauhaus_combobox_set_from_value(g->film_format_combo, _format_mm_to_preset(p->film_format_mm));
+  {
+    const int fpreset = _format_mm_to_preset(p->film_format_mm);
+    dt_bauhaus_combobox_set_from_value(g->film_format_combo, fpreset);
+    gtk_widget_set_visible(g->film_format_mm_slider,
+                           fpreset < 0 || fpreset >= FORMAT_PRESETS_N);
+  }
 
   /* toggle_from_params check buttons are NOT auto-synced by
      dt_bauhaus_update_from_field (it only handles sliders/combos), so set
@@ -2684,6 +2762,59 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+/* Section heading with its own reset button.
+
+   Each tab holds several unrelated groups and darktable resets whole modules or
+   single widgets, nothing in between -- so trying one idea in "chemistry" means
+   either undoing every slider by hand or throwing away the rest of the tab. The
+   button resets exactly the widgets between this heading and the next one.
+
+   No bookkeeping: the widgets are packed into the page box in order, so the
+   callback walks that box from its own header to the following one. A heading
+   is marked with the "sf_section" data key rather than recognised by type. */
+static void _section_reset_clicked(GtkButton *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  GtkWidget *hdr = gtk_widget_get_parent(GTK_WIDGET(button));
+  GtkWidget *box = hdr ? gtk_widget_get_parent(hdr) : NULL;
+  if(!box) return;
+
+  /* Deliberately NOT wrapped in darktable.gui->reset: each widget's own
+     value-changed handler is what writes the param, so suppressing it would
+     move the sliders without changing the render. The cost is one history entry
+     per widget rather than one per click -- correct, undoable, just chattier
+     than ideal. */
+  GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
+  gboolean after = FALSE;
+  for(const GList *l = kids; l; l = l->next)
+  {
+    GtkWidget *w = l->data;
+    if(w == hdr) { after = TRUE; continue; }
+    if(!after) continue;
+    if(g_object_get_data(G_OBJECT(w), "sf_section")) break; /* next section */
+    if(DT_IS_BAUHAUS_WIDGET(w)) dt_bauhaus_widget_reset(w);
+  }
+  g_list_free(kids);
+}
+
+/* Pack a section heading carrying a reset button, and return it. */
+static GtkWidget *_section_add(dt_iop_module_t *self, const char *label)
+{
+  GtkWidget *hdr = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  g_object_set_data(G_OBJECT(hdr), "sf_section", GINT_TO_POINTER(1));
+
+  GtkWidget *lbl = dt_ui_section_label_new(label);
+  gtk_box_pack_start(GTK_BOX(hdr), lbl, TRUE, TRUE, 0);
+
+  GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
+  gtk_widget_set_tooltip_text(btn, _("reset only this section"));
+  gtk_box_pack_end(GTK_BOX(hdr), btn, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_section_reset_clicked), self);
+
+  dt_gui_box_add(self->widget, hdr);
+  return hdr;
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = IOP_GUI_ALLOC(spektrafilm);
@@ -2695,14 +2826,28 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_box_add(sf_main_box, header_box);
 
+  /* Heading instead of an inline label: the stock names are long enough that a
+     left label leaves too little room for the value ("Kodak Professional Portra
+     Endura" truncated to the shared prefix, so four papers read alike). Hiding
+     the label outright would free the same room but leave two unlabelled
+     dropdowns whose contents look similar, so the heading carries the name.
+     Plain dt_ui_section_label_new(), NOT _section_add(): these comboboxes are
+     hand-wired rather than from_params, so a section reset button would move the
+     display without touching film_hash. */
+  dt_gui_box_add(header_box, dt_ui_section_label_new(C_("section", "film stock")));
+
   g->film = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film, NULL, N_("film stock"));
+  dt_bauhaus_widget_hide_label(g->film);
   gtk_widget_set_tooltip_text(g->film, _("film emulsion (spektrafilm filming profile)"));
   g_signal_connect(G_OBJECT(g->film), "value-changed", G_CALLBACK(_film_changed), self);
   gtk_box_pack_start(GTK_BOX(header_box), g->film, TRUE, TRUE, 0);
 
+  dt_gui_box_add(header_box, dt_ui_section_label_new(C_("section", "print paper")));
+
   g->paper = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->paper, NULL, N_("print paper"));
+  dt_bauhaus_widget_hide_label(g->paper);
   gtk_widget_set_tooltip_text(g->paper,
                               _("print/paper stock; defaults to the film's target print"));
   g_signal_connect(G_OBJECT(g->paper), "value-changed", G_CALLBACK(_paper_changed), self);
@@ -2710,16 +2855,6 @@ void gui_init(dt_iop_module_t *self)
 
   /* redirect self->widget so from_params widgets pack into header_box */
   self->widget = header_box;
-
-  g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
-  gtk_widget_set_tooltip_text(g->output_boost,
-                              _("pre-compression boost: multiplies XYZ luminance before the"
-                                " OkLCh gamut compressor, pushing the histogram right while"
-                                " preserving the film's natural shoulder rolloff"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_boost);
-  dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
-                                     _("pick brightest tone in the selected area and set the"
-                                       " boost so it lands just past the compressor's knee"));
 
   g->film_format_combo = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film_format_combo, NULL, N_("format"));
@@ -2750,7 +2885,7 @@ void gui_init(dt_iop_module_t *self)
   /* ---- tab 1: film (exposure + development) ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("film"), NULL);
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "exposure")));
+  _section_add(self, C_("section", "exposure"));
 
   g->exposure_ev = dt_bauhaus_slider_from_params(self, "exposure_ev");
   dt_bauhaus_slider_set_format(g->exposure_ev, _(" EV"));
@@ -2773,7 +2908,7 @@ void gui_init(dt_iop_module_t *self)
         " combination, which isn't modeled here). Stacks with the granular gamma"
         " controls below for further fine-tuning"));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "chemistry")));
+  _section_add(self, C_("section", "chemistry"));
 
   g->development_min = dt_bauhaus_slider_from_params(self, "development_min");
   dt_bauhaus_slider_set_format(g->development_min, _(" min"));
@@ -2810,7 +2945,7 @@ void gui_init(dt_iop_module_t *self)
       _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
         " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "couplers and quality")));
+  _section_add(self, C_("section", "couplers and quality"));
 
   g->couplers_amount = dt_bauhaus_slider_from_params(self, "couplers_amount");
   gtk_widget_set_tooltip_text(g->couplers_amount,
@@ -2842,7 +2977,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->print_contrast,
                               _("print contrast (morphs the paper's density curves)"));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "chemistry")));
+  _section_add(self, C_("section", "chemistry"));
 
   g->print_development_min = dt_bauhaus_slider_from_params(self, "print_development_min");
   dt_bauhaus_slider_set_format(g->print_development_min, _(" min"));
@@ -2852,7 +2987,7 @@ void gui_init(dt_iop_module_t *self)
                               _("print development time. snaps to the nearest time the paper\n"
                                 "was characterised at; 0 uses its own default."));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "filtration")));
+  _section_add(self, C_("section", "filtration"));
 
   g->filter_m = dt_bauhaus_slider_from_params(self, "filter_m");
   dt_bauhaus_slider_set_format(g->filter_m, _(" CC"));
@@ -2866,7 +3001,7 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = print_page;
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "preflash")));
+  _section_add(self, C_("section", "preflash"));
 
   g->preflash_exposure = dt_bauhaus_slider_from_params(self, "preflash_exposure");
   gtk_widget_set_tooltip_text(
@@ -2906,7 +3041,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->grain_size,
                               _("grain particle size (1.0 = film default; higher = coarser)"));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "acutance recovery")));
+  _section_add(self, C_("section", "acutance recovery"));
 
   g->grain_usm_sigma = dt_bauhaus_slider_from_params(self, "grain_usm_sigma");
   dt_bauhaus_slider_set_soft_range(g->grain_usm_sigma, 0.0f, 3.0f);
@@ -2964,7 +3099,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->halation_scale,
                               _("halation size: scales the glow radius (1.0 = film-accurate)"));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "threshold")));
+  _section_add(self, C_("section", "threshold"));
 
   g->boost_ev = dt_bauhaus_slider_from_params(self, "boost_ev");
   dt_bauhaus_slider_set_format(g->boost_ev, _(" EV"));
@@ -3027,6 +3162,23 @@ void gui_init(dt_iop_module_t *self)
 
   /* ---- scanner tab ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("scanner"), NULL);
+
+  /* Pre-compression boost lives here, not in the header. It acts in the scan
+     stage, immediately before the OkLCh gamut compressor -- the last thing the
+     module does, not the first. Its old position at the top implied an input
+     control, which is why the picker "reading the processed look" was reported
+     as a bug: the picker is right, the placement was misleading. */
+  g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
+  gtk_widget_set_tooltip_text(g->output_boost,
+                              _("multiplies XYZ luminance just before the OkLCh gamut\n"
+                                "compressor, pushing the histogram right while preserving\n"
+                                "the film's natural shoulder rolloff.\n\n"
+                                "this acts at the END of the module, so the picker measures\n"
+                                "the processed image rather than the input"));
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_boost);
+  dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
+                                     _("pick brightest tone in the selected area and set the"
+                                       " boost so it lands just past the compressor's knee"));
 
   g->scan_blur = dt_bauhaus_slider_from_params(self, "scan_blur");
   gtk_widget_set_tooltip_text(g->scan_blur,
