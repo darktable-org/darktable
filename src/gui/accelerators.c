@@ -2281,23 +2281,46 @@ static gboolean _action_find_and_expand(GtkTreeModel *model,
   return FALSE;
 }
 
+/* Claim the event sequence in CAPTURE phase so the treeview's internal
+ * GtkGestureMultiPress (GTK_PHASE_BUBBLE) does NOT process clicks.
+ * The pre-migration button-press-event handler consumed the events
+ * (return TRUE), which suppressed the internal gesture; the gesture
+ * controller replacement must do the same, otherwise the two gestures
+ * fight over row selection and expansion.
+ *
+ * GTK4 migration: the pattern is the same — just rename
+ * GtkGestureMultiPress to GtkGestureClick. */
+static void _gesture_begin_claim(GtkGesture *gesture,
+                                  GdkEventSequence *sequence,
+                                  gpointer user_data)
+{
+  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
 static void _action_view_click_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkTreeStore *model_data)
 {
   GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(view);
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   if(button == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
+    /* gesture coordinates are relative to the widget allocation, while
+     * gtk_tree_view_get_path_at_pos() expects bin-window coordinates */
+    gint bin_x, bin_y;
+    gtk_tree_view_convert_widget_to_bin_window_coords(view, (gint)x, (gint)y, &bin_x, &bin_y);
+
     GtkTreePath *path = NULL;
-    if(gtk_tree_view_get_path_at_pos(view, (gint)x, (gint)y,
+    if(gtk_tree_view_get_path_at_pos(view, bin_x, bin_y,
                                      &path, NULL, NULL, NULL))
     {
-      if(n_press == 2)
+      if(n_press >= 2)
       {
+        /* the internal gesture that would emit "row-activated" on
+         * double-click is suppressed, so activate the row ourselves */
         gtk_tree_selection_select_path(selection, path);
         _action_row_activated(view, path, NULL, model);
       }
@@ -2313,6 +2336,7 @@ static void _action_view_click_cb(GtkGestureSingle *gesture, int n_press, double
       }
 
       gtk_widget_grab_focus(widget);
+      gtk_tree_path_free(path);
     }
     else
       gtk_tree_selection_unselect_all(selection);
@@ -3067,7 +3091,20 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_name(GTK_WIDGET(actions_view), "actions_view");
   g_signal_connect(G_OBJECT(actions_view), "row-activated",
                    G_CALLBACK(_action_row_activated), _actions_store);
-  dt_gui_connect_click_all(actions_view, _action_view_click_cb, NULL, _actions_store);
+
+  {
+    // the internal treeview gesture would fight our click handling;
+    // claim the sequence in CAPTURE phase to suppress it, replicating
+    // the event consumption of the pre-migration handler
+    GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(actions_view));
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                               GTK_PHASE_CAPTURE);
+    g_object_weak_ref(G_OBJECT(actions_view), (GWeakNotify)g_object_unref, gesture);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    g_signal_connect(gesture, "pressed", G_CALLBACK(_action_view_click_cb), _actions_store);
+    g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
+  }
+
   dt_gui_connect_key(actions_view, _view_key_pressed_cb, search_actions);
 
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
