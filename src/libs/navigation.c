@@ -593,7 +593,7 @@ static void _lib_navigation_button_press_callback(GtkGestureSingle *gesture, int
   GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   if(button == GDK_BUTTON_PRIMARY || button == GDK_BUTTON_SECONDARY)
   {

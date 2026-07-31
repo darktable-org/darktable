@@ -138,7 +138,7 @@ static void _label_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                      double x, double y,
                                      gpointer user_data)
 {
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_SECONDARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
     dt_gui_claim(gesture);
 }
 
@@ -146,7 +146,7 @@ static void _button_press_cb(GtkGestureSingle *gesture, int n_press,
                                double x, double y,
                                dt_lib_module_t *self)
 {
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   if(button == GDK_BUTTON_PRIMARY || button == GDK_BUTTON_SECONDARY)
   {
     dt_lib_log_history_t *d = self->data;

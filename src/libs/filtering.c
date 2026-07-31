@@ -1049,7 +1049,7 @@ static void _topbar_label_press_cb(GtkGestureSingle *gesture, int n_press,
                                       dt_lib_module_t *self)
 {
   //reset on double-click
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY && n_press >= 2)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY && n_press >= 2)
     _topbar_reset(self);
 }
 

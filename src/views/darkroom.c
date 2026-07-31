@@ -2768,6 +2768,8 @@ const dt_action_def_t _action_def_move
       _action_elements_move,
       NULL, TRUE };
 
+static guint _quickbutton_start_time = 0;
+
 static void _quickbutton_pressed_cb(GtkGestureSingle *gesture,
                                      gint n_press,
                                      gdouble x,
@@ -2777,11 +2779,15 @@ static void _quickbutton_pressed_cb(GtkGestureSingle *gesture,
   GtkWidget *button = dt_gui_get_widget(gesture);
 
   /* secondary click: show popup immediately */
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_SECONDARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
     g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
     _toolbar_show_popup(popover);
+  }
+  else
+  {
+    _quickbutton_start_time = gtk_get_current_event_time();
   }
 }
 
@@ -2792,11 +2798,12 @@ static void _quickbutton_released_cb(GtkGestureSingle *gesture,
                                      GtkWidget *popover)
 {
   /* primary button long-press: show popup */
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     int delay = 0;
     g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
-    _toolbar_show_popup(popover);
+    if(gtk_get_current_event_time() - _quickbutton_start_time > (guint)delay)
+      _toolbar_show_popup(popover);
   }
 }
 
@@ -5038,7 +5045,7 @@ static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
   if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   // Handle double-click to reset zoom and center
   if(n_press == 2 && button == GDK_BUTTON_PRIMARY)
@@ -5069,7 +5076,7 @@ static void _second_window_button_released_callback(GtkGestureSingle *gesture,
                                                       gdouble y,
                                                       dt_develop_t *dev)
 {
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
 
   GtkWidget *w = dt_gui_get_widget(gesture);
   gtk_widget_queue_draw(w);
