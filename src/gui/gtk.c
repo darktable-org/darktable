@@ -5039,6 +5039,47 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   return controller;
 }
 
+/*
+ * GTK3 bridge for GtkEventControllerKey.
+ *
+ * On GTK3, key events are delivered to the toplevel window, not to the
+ * focus widget, so a key controller with GTK_PHASE_TARGET attached to a
+ * widget never receives them.  This bridge connects the classic
+ * "key-press-event" signal (which GTK routes to the focus widget) and
+ * forwards to the controller-style callback so the GTK4 API can be used
+ * unchanged.
+ *
+ * GTK4 migration: DELETE this entire bridge; dt_gui_connect_key() then
+ * connects the controller's "key-pressed" signal directly.
+ */
+#if !GTK_CHECK_VERSION(4, 0, 0)
+typedef struct _KeyBridgeData
+{
+  GCallback cb;
+  gpointer data;
+  GtkEventControllerKey *controller;
+} KeyBridgeData;
+
+static void _key_bridge_free(gpointer p, GClosure *cl)
+{
+  g_free(p);
+}
+
+static gboolean _key_bridge_handler(GtkWidget *widget, GdkEventKey *event, gpointer user)
+{
+  KeyBridgeData *d = user;
+  guint keyval;
+  guint16 keycode;
+  GdkModifierType state;
+  gdk_event_get_keyval((GdkEvent *)event, &keyval);
+  gdk_event_get_keycode((GdkEvent *)event, &keycode);
+  gdk_event_get_state((GdkEvent *)event, &state);
+
+  return ((gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, gpointer))d->cb)
+    (d->controller, keyval, keycode, state, d->data);
+}
+#endif
+
 GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
                                           GCallback pressed,
                                           gpointer data)
@@ -5048,11 +5089,29 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
   g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 
-  if(pressed) g_signal_connect(controller, "key-pressed", G_CALLBACK(pressed), data);
+  if(pressed)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    g_signal_connect(controller, "key-pressed", G_CALLBACK(pressed), data);
+#else
+    /* GtkEventControllerKey with GTK_PHASE_TARGET never fires on GTK3:
+     * key events are delivered to the toplevel window, not to the focus
+     * widget, so the TARGET-phase controllers are never reached.  Connect
+     * the classic key-press-event signal instead, which GTK routes to the
+     * focus widget (this is what the pre-migration code did).  The
+     * controller is still returned so callers can use dt_gui_get_widget()
+     * and the GTK4 migration keeps the controller path above. */
+    KeyBridgeData *d = g_new0(KeyBridgeData, 1);
+    d->cb = pressed;
+    d->data = data;
+    d->controller = GTK_EVENT_CONTROLLER_KEY(controller);
+    g_signal_connect_data(widget, "key-press-event",
+                          G_CALLBACK(_key_bridge_handler), d, _key_bridge_free, 0);
+#endif
+  }
 
   return controller;
 }
-
 
 static int busy_nest_count = 0;
 
