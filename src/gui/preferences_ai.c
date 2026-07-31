@@ -1288,7 +1288,12 @@ static void _on_info_button_press_cb(GtkGestureSingle *gesture, int n_press,
   GtkTreePath *path = NULL;
   GtkTreeViewColumn *column = NULL;
 
-  if(!gtk_tree_view_get_path_at_pos(tv, (gint)x, (gint)y,
+  /* gesture coordinates are relative to the widget allocation, while
+   * gtk_tree_view_get_path_at_pos() expects bin-window coordinates */
+  gint bin_x, bin_y;
+  gtk_tree_view_convert_widget_to_bin_window_coords(tv, (gint)x, (gint)y, &bin_x, &bin_y);
+
+  if(!gtk_tree_view_get_path_at_pos(tv, bin_x, bin_y,
                                     &path, &column, NULL, NULL))
     return;
 
