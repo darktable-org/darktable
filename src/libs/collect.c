@@ -641,10 +641,16 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
 
   GdkEvent *event = gtk_get_current_event();
 
+  /* gesture coordinates are relative to the widget allocation, while
+   * gtk_tree_view_get_path_at_pos() expects bin-window coordinates */
+  gint bin_x, bin_y;
+  gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(treeview),
+                                                    (gint)x, (gint)y, &bin_x, &bin_y);
+
   /* Get tree path for row that was clicked */
   GtkTreePath *path = NULL;
   const gboolean get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                                          (gint)x, (gint)y,
+                                                          bin_x, bin_y,
                                                           &path, NULL, NULL, NULL);
 
   GdkModifierType mod_state;
