@@ -1080,7 +1080,7 @@ static void _lib_timeline_button_press_callback(GtkGestureSingle *gesture,
 {
   dt_lib_timeline_t *strip = self->data;
 
-  const guint button = gtk_gesture_single_get_button(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {

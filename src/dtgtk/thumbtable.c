@@ -1453,10 +1453,10 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
    * occurs for primary button).
    *
    * GTK4 migration: remove the ternary and just call
-   * gtk_gesture_single_get_button(gesture) directly — GtkGestureClick
+   * gtk_gesture_single_get_current_button(gesture) directly — GtkGestureClick
    * will provide a valid gesture pointer for all n_press values. */
   const guint button = gesture
-    ? gtk_gesture_single_get_button(gesture)
+    ? gtk_gesture_single_get_current_button(gesture)
     : GDK_BUTTON_PRIMARY;
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
