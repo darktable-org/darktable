@@ -1612,22 +1612,26 @@ void color_picker_apply(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *self)
+static void rt_copypaste_scale_callback(GtkGestureSingle *gesture,
+                                        int n_press,
+                                        double x,
+                                        double y,
+                                        dt_iop_module_t *self)
 {
-  DT_TRY_GUI_UPDATE(TRUE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
+
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   int scale_copied = 0;
-  const int active = !gtk_toggle_button_get_active(togglebutton);
+  const int active = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  if(togglebutton == (GtkToggleButton *)g->bt_copy_scale)
+  if(widget == g->bt_copy_scale)
   {
     g->copied_scale = (active) ? p->curr_scale : -1;
   }
-  else if(togglebutton == (GtkToggleButton *)g->bt_paste_scale)
+  else if(widget == g->bt_paste_scale)
   {
     rt_paste_forms_from_scale(p, g->copied_scale, p->curr_scale);
     rt_show_forms_for_current_scale(self);
@@ -1643,18 +1647,18 @@ static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton,
   gtk_widget_set_sensitive(g->bt_paste_scale,
                            g->copied_scale >= 0);
 
-  DT_LEAVE_GUI_UPDATE();
-
   if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE);
-
-  return TRUE;
 }
 
-static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
-                                                  GdkEventButton *event,
-                                                  dt_iop_module_t *self)
+static void rt_display_wavelet_scale_callback(GtkGestureSingle *gesture,
+                                              int n_press,
+                                              double x,
+                                              double y,
+                                              dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(TRUE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
+
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
@@ -1666,16 +1670,16 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
     dt_control_log(_("cannot display scales when the blending mask is displayed"));
 
     DT_ENTER_GUI_UPDATE();
-    gtk_toggle_button_set_active(togglebutton, FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
     DT_LEAVE_GUI_UPDATE();
-    return TRUE;
+    return;
   }
 
   if(self->off)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 
-  g->display_wavelet_scale = !gtk_toggle_button_get_active(togglebutton);
+  g->display_wavelet_scale = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   rt_show_hide_controls(self);
 
@@ -1697,8 +1701,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
 
   dt_dev_reprocess_center(self->dev, self->iop_order);
 
-  gtk_toggle_button_set_active(togglebutton, g->display_wavelet_scale);
-  return TRUE;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), g->display_wavelet_scale);
 }
 
 static void rt_develop_ui_pipe_finished_callback(gpointer instance,
@@ -1740,11 +1743,13 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance,
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
 }
 
-static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton,
-                                        GdkEventButton *event,
-                                        dt_iop_module_t *self)
+static void rt_auto_levels_callback(GtkGestureSingle *gesture,
+                                    int n_press,
+                                    double x,
+                                    double y,
+                                    dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
@@ -1759,8 +1764,6 @@ static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton,
   dt_iop_gui_leave_critical_section(self);
 
   dt_iop_refresh_center(self);
-
-  return TRUE;
 }
 
 static void rt_mask_opacity_callback(GtkWidget *slider,
@@ -1921,31 +1924,38 @@ static void rt_add_shape_callback(GtkGestureSingle *gesture,
                                rt_shape_is_being_added(self, DT_MASKS_BRUSH));
 }
 
-static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
-                                             GdkEventButton *e,
-                                             dt_iop_module_t *self)
+static void rt_select_algorithm_callback(GtkGestureSingle *gesture,
+                                         int n_press,
+                                         double x,
+                                         double y,
+                                         dt_iop_module_t *self)
 {
-  DT_TRY_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
+
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_retouch_params_t *p = self->params;
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
   dt_iop_retouch_algo_type_t new_algo = DT_IOP_RETOUCH_HEAL;
 
-  if(togglebutton == (GtkToggleButton *)g->bt_blur)
+  if(widget == g->bt_blur)
     new_algo = DT_IOP_RETOUCH_BLUR;
-  else if(togglebutton == (GtkToggleButton *)g->bt_clone)
+  else if(widget == g->bt_clone)
     new_algo = DT_IOP_RETOUCH_CLONE;
-  else if(togglebutton == (GtkToggleButton *)g->bt_heal)
+  else if(widget == g->bt_heal)
     new_algo = DT_IOP_RETOUCH_HEAL;
-  else if(togglebutton == (GtkToggleButton *)g->bt_fill)
+  else if(widget == g->bt_fill)
     new_algo = DT_IOP_RETOUCH_FILL;
 
   // check if we have to do something
   gboolean accept = TRUE;
 
+  GdkEvent *event = gtk_get_current_event();
+  const GdkModifierType state = event ? dt_gdk_event_get_state(event) : 0;
+
   const int index = rt_get_selected_shape_index(p);
-  if(index >= 0 && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  if(index >= 0 && dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     if(new_algo != p->rt_forms[index].algorithm)
     {
@@ -1980,11 +1990,11 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
 
   if(!accept)
   {
-    DT_LEAVE_GUI_UPDATE();
-    return FALSE;
+    if(event) gdk_event_free(event);
+    return;
   }
 
-  if(index >= 0 && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  if(index >= 0 && dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     if(p->algorithm != p->rt_forms[index].algorithm)
     {
@@ -2017,12 +2027,12 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
     dt_control_queue_redraw_center();
   }
 
-  DT_LEAVE_GUI_UPDATE();
+  if(event) gdk_event_free(event);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   // if we have the shift key pressed, we set it as default
-  if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     dt_conf_set_int("plugins/darkroom/retouch/default_algo", p->algorithm);
     // and we show a toat msg to confirm
@@ -2035,15 +2045,17 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
     else if(p->algorithm == DT_IOP_RETOUCH_BLUR)
       dt_control_log(_("default tool changed to %s"), _("blur"));
   }
-
-  return TRUE;
 }
 
-static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
-                                     GdkEventButton *event,
-                                     dt_iop_module_t *self)
+static void rt_showmask_callback(GtkGestureSingle *gesture,
+                                 int n_press,
+                                 double x,
+                                 double y,
+                                 dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(TRUE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
+
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
@@ -2053,11 +2065,11 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
-    gtk_toggle_button_set_active(togglebutton, FALSE);
-    return TRUE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+    return;
   }
 
-  g->mask_display = !gtk_toggle_button_get_active(togglebutton);
+  g->mask_display = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(self->off)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
@@ -2065,26 +2077,28 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
 
   dt_iop_refresh_center(self);
 
-  gtk_toggle_button_set_active(togglebutton, g->mask_display);
-  return TRUE;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), g->mask_display);
 }
 
-static gboolean rt_suppress_callback(GtkToggleButton *togglebutton,
-                                     GdkEventButton *event,
-                                     dt_iop_module_t *self)
+static void rt_suppress_callback(GtkGestureSingle *gesture,
+                                 int n_press,
+                                 double x,
+                                 double y,
+                                 dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(TRUE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
+
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   dt_iop_retouch_gui_data_t *g = self->gui_data;
-  g->suppress_mask = !gtk_toggle_button_get_active(togglebutton);
+  g->suppress_mask = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 
   dt_iop_refresh_center(self);
 
-  gtk_toggle_button_set_active(togglebutton, g->suppress_mask);
-  return TRUE;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), g->suppress_mask);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
