@@ -20,6 +20,7 @@
   This file implements the necessary routines for all text baseed filters for the filtering module
 */
 
+#include "common/collection.h"
 typedef struct _widgets_misc_t
 {
   dt_lib_filtering_rule_t *rule;
@@ -113,6 +114,10 @@ void _misc_tree_update(_widgets_misc_t *misc)
     table = g_strdup("metering_mode");
     tooltip = g_strdup(_("no metering mode defined"));
   }
+  else if(misc->prop == DT_COLLECTION_PROP_DIMENSIONS)
+  {
+    tooltip = g_strdup(_("no image dimensions defined"));
+  }
 
   // SQL
   if(misc->prop == DT_COLLECTION_PROP_CAMERA)
@@ -152,6 +157,18 @@ void _misc_tree_update(_widgets_misc_t *misc)
                " GROUP BY group_id"
                " HAVING COUNT(*) > 1"
                " ORDER BY group_id",
+               d->last_where_ext);
+    // clang-format on
+  }
+  else if(misc->prop == DT_COLLECTION_PROP_DIMENSIONS)
+  {
+    // clang-format off
+    g_snprintf(query, sizeof(query),
+               "SELECT mi.width || 'x' || mi.height AS dim, COUNT(*) AS count"
+               " FROM main.images AS mi"
+               " WHERE %s"
+               " GROUP BY dim"
+               " ORDER BY dim",
                d->last_where_ext);
     // clang-format on
   }
@@ -452,6 +469,14 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
     tooltip = g_strdup(_("enter group id to search.\n"
                          "multiple values can be separated by ','\n"
                          "\nright-click to get existing group ids"));
+  }
+  else if(prop == DT_COLLECTION_PROP_DIMENSIONS)
+  {
+    name = g_strdup(_("image dimensions"));
+    tooltip = g_strdup(_("enter the image dimensions to search.\n"
+                         "use the format widthxheight, i.e. 6000x4000.\n"
+                         "multiple values can be separated by ','\n"
+                         "\nright-click to get existing image dimensions"));
   }
 
   gtk_entry_set_placeholder_text(GTK_ENTRY(misc->name), name);
