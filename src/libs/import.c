@@ -562,13 +562,18 @@ static void _files_button_press_cb(GtkGestureSingle *gesture, int n_press,
 {
   GtkWidget *view = dt_gui_get_widget(gesture);
   dt_lib_import_t *d = self->data;
+  /* gesture coordinates are relative to the widget allocation, while the
+   * treeview coordinate APIs expect bin-window coordinates */
+  gint bin_x, bin_y;
+  gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(view),
+                                                    (gint)x, (gint)y, &bin_x, &bin_y);
   if(n_press == 1)
   {
     GtkTreePath *path = NULL;
     GtkTreeViewColumn *column = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)x, (gint)y,
+                                     bin_x, bin_y,
                                      &path, &column, NULL, NULL))
     {
       if(column == d->from.pixcol)
@@ -590,7 +595,7 @@ static void _files_button_press_cb(GtkGestureSingle *gesture, int n_press,
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)x, (gint)y,
+                                     bin_x, bin_y,
                                      &path, NULL, NULL, NULL))
     {
       GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -1268,8 +1273,13 @@ static void _places_button_press_cb(GtkGestureSingle *gesture, int n_press,
 {
   GtkWidget *view = dt_gui_get_widget(gesture);
   GtkTreePath *path = NULL;
+  /* gesture coordinates are relative to the widget allocation, while the
+   * treeview coordinate APIs expect bin-window coordinates */
+  gint bin_x, bin_y;
+  gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(view),
+                                                    (gint)x, (gint)y, &bin_x, &bin_y);
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                   (gint)x, (gint)y, &path, NULL, NULL, NULL))
+                                   bin_x, bin_y, &path, NULL, NULL, NULL))
   {
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
     GtkTreeIter iter;
@@ -1304,6 +1314,12 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
   GtkWidget *view = dt_gui_get_widget(gesture);
   dt_lib_import_t *d = self->data;
 
+  /* gesture coordinates are relative to the widget allocation, while the
+   * treeview coordinate APIs expect bin-window coordinates */
+  gint bin_x, bin_y;
+  gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(view),
+                                                    (gint)x, (gint)y, &bin_x, &bin_y);
+
   GdkModifierType state;
   gtk_get_current_event_state(&state);
 
@@ -1313,15 +1329,15 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
   {
     GtkTreePath *path = NULL;
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     x, y, &path, NULL, NULL, NULL))
+                                     bin_x, bin_y, &path, NULL, NULL, NULL))
     {
       GdkRectangle rect;
       gtk_tree_view_get_cell_area(GTK_TREE_VIEW(view), path, d->from.foldercol, &rect);
       const gboolean blank = gtk_tree_view_is_blank_at_pos(GTK_TREE_VIEW(view),
-                                                           x, y,
+                                                           bin_x, bin_y,
                                                            NULL, NULL, NULL, NULL);
       // select and save new folder only if not click on expander
-      if(blank || (x > rect.x))
+      if(blank || (bin_x > rect.x))
       {
         GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
         gtk_tree_selection_select_path(selection, path);
@@ -1342,7 +1358,7 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
   {
     GtkTreePath *path = NULL;
     gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                  x, y, &path, NULL, NULL, NULL);
+                                  bin_x, bin_y, &path, NULL, NULL, NULL);
     if(path)
     {
       if(gtk_tree_view_row_expanded(d->from.folderview, path))
