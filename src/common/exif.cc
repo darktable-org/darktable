@@ -1977,12 +1977,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", utf8);
+      g_free(utf8);
     }
     else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", utf8);
+      g_free(utf8);
     }
 
     // FIXME: Should the UserComment go into the description? Or do we
@@ -1998,13 +2002,17 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if(FIND_EXIF_TAG("Exif.Image.ImageDescription"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", utf8);
+      g_free(utf8);
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", utf8);
+      g_free(utf8);
     }
 
     if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
