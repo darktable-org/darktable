@@ -503,7 +503,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\n"
                                                   "right-click to exit mapping mode"));
   g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
-  dt_gui_connect_click(d->keymap_button, _lib_keymap_button_pressed, _lib_keymap_button_released, (gpointer)(d));
+  dt_gui_connect_click_all(d->keymap_button, _lib_keymap_button_pressed, _lib_keymap_button_released, (gpointer)(d));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
@@ -792,9 +792,13 @@ static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+static guint _keymap_button_start_time = 0;
+
 static void _lib_keymap_button_pressed(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
   darktable.control->confirm_mapping = !(dt_key_modifier_state() & GDK_CONTROL_MASK);
+
+  _keymap_button_start_time = gtk_get_current_event_time();
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
@@ -804,16 +808,13 @@ static void _lib_keymap_button_pressed(GtkGestureSingle *gesture, gint n_press, 
 
 static void _lib_keymap_button_released(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-  static guint start_time = 0;
-  guint current_time = gtk_get_current_event_time();
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if(current_time - start_time > (guint)delay)
+  if(gtk_get_current_event_time() - _keymap_button_start_time > (guint)delay)
   {
     _show_shortcuts_prefs(NULL);
   }
-  start_time = current_time;
 }
 
 #ifdef USE_LUA
