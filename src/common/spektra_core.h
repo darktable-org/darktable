@@ -50,7 +50,7 @@ void sf_glare(float *rgb, int w, int h, float percent, float roughness, float bl
               int roi_x, int roi_y, float *field);
 
 void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
-                                     float *orig, float *work);
+                                     const float *floor_d, float *orig, float *work);
 /* Two independently-controllable stages, matching upstream's HalationParams:
  *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
  *   halation_amount / halation_scale -- stage 2, back-reflection multi-bounce
