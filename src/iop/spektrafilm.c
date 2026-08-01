@@ -1419,8 +1419,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     /* Acutance recovery for the blur above, and only meaningful because of it:
        these two are tuned together (defaults sigma 0.7 / amount 1.5). */
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
+      /* The reference's multiplicative USM (_finalize_grain in grain.py)
+         runs on the ABSOLUTE density -- the grain sampler's floor is still
+         present and is only removed afterwards (add_micro_structure -> blur
+         -> USM -> -= density_min). The delta combine above already took the
+         floor back out, so pass it back in here: without it the D/blur(D)
+         ratio is ill-conditioned in the deepest shadows and the USM
+         amplifies shadow noise the reference never does. */
       sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma * preview_scale,
-                                       d->p.grain_usm_amount, corr, scratch);
+                                       d->p.grain_usm_amount, gdmin, corr, scratch);
   }
 
   /* 5) print exposure + development (skipped in scan-film mode) */
@@ -2080,7 +2087,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       SF_GAUSS_BLUR4_FAST(plane2, usig, "grain USM blur");
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_usm, w, h, CLARG(plane2),
                                              CLARG(acc), CLARG(w), CLARG(h),
-                                             CLARG(d->p.grain_usm_amount));
+                                             CLARG(d->p.grain_usm_amount),
+                                             CLARG(g->grain_dmin[0]), CLARG(g->grain_dmin[1]),
+                                             CLARG(g->grain_dmin[2]));
       SF_CL_STEP("grain USM");
     }
   }

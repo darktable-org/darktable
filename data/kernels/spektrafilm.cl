@@ -570,21 +570,32 @@ __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const fl
 /* Multiplicative unsharp mask after grain blur (study b80), recovering the
    acutance that blur removed from the combined image-plus-grain density.
    cmy = orig * (orig / G_sigma(orig))^amount. Caller saved orig in `orig`
-   buffer and blurred `cmy` in place before launching this kernel. */
+   buffer and blurred `cmy` in place before launching this kernel.
+   Runs on the ABSOLUTE density: the grain floor (dmin, the sum of the
+   per-sublayer floors) is added back before the ratio and removed from the
+   result, matching the reference (_finalize_grain: blur -> USM ->
+   -= density_min). Without the floor the D/blur(D) ratio is
+   ill-conditioned in the deepest shadows and shadow noise gets amplified
+   the way the reference never does. */
 __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 *orig,
-                                     const int w, const int h, const float amount)
+                                     const int w, const int h, const float amount,
+                                     const float dmin0, const float dmin1, const float dmin2)
 {
   const int x = get_global_id(0), y = get_global_id(1);
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
-  const float4 D = orig[k];
-  const float4 blur = cmy[k];
+  const float4 dmin = (float4)(dmin0, dmin1, dmin2, 0.0f);
+  const float4 D = orig[k] + dmin;
+  const float4 blur = cmy[k] + dmin;
   const float eps = 1e-6f;
   const float ratmax = 4.0f, ratmin = 1.0f / ratmax;
   float4 out;
-  out.x = fmax(D.x * pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount), 0.0f);
-  out.y = fmax(D.y * pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount), 0.0f);
-  out.z = fmax(D.z * pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount), 0.0f);
+  out.x = fmax(D.x * pow(fmax(fmin(D.x / fmax(blur.x, eps), ratmax), ratmin), amount) - dmin.x,
+               0.0f);
+  out.y = fmax(D.y * pow(fmax(fmin(D.y / fmax(blur.y, eps), ratmax), ratmin), amount) - dmin.y,
+               0.0f);
+  out.z = fmax(D.z * pow(fmax(fmin(D.z / fmax(blur.z, eps), ratmax), ratmin), amount) - dmin.z,
+               0.0f);
   out.w = 0.0f;
   cmy[k] = out;
 }

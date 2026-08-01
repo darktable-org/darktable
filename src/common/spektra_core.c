@@ -311,6 +311,7 @@ void sf_blur_plane3_fast(float *const buf, const int w, const int h, const float
    spektrafilm_grain_usm in the .cl, which never had the renormalisation. */
 void sf_multiplicative_unsharp_mask3(float *const buf, const int w, const int h,
                                       const float sigma, const float amount,
+                                      const float *const floor_d,
                                       float *const orig, float *const work)
 {
   if(sigma <= 0.0f || amount <= 0.0f) return;
@@ -321,10 +322,11 @@ void sf_multiplicative_unsharp_mask3(float *const buf, const int w, const int h,
   const float ratio_max = 4.0f;
   for(size_t i = 0; i < nn; i++)
   {
-    const float D = fmaxf(orig[i], 0.0f);
-    const float blur = fmaxf(buf[i], eps);
+    const float d0 = floor_d[i % 3];
+    const float D = fmaxf(orig[i] + d0, 0.0f);
+    const float blur = fmaxf(buf[i] + d0, eps);
     const float ratio = fmaxf(fminf(D / blur, ratio_max), 1.0f / ratio_max);
-    buf[i] = fmaxf(D * powf(ratio, amount), 0.0f);
+    buf[i] = fmaxf(D * powf(ratio, amount) - d0, 0.0f);
   }
 }
 
