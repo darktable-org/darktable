@@ -545,13 +545,17 @@ __kernel void spektrafilm_grain_finalize_channel(__global float4 *grain_buf,
   grain_buf[k] = gv;
 }
 
-/* Add the blurred grain delta back onto the CMY density. No centring pass: the
-   Poisson sampler in sf_layer_particle is unbiased, so the delta already has
-   zero mean. No variance-restoration renorm either -- the reference's own grain
-   finalization (_finalize_grain in grain.py) has none; it just blurs and lets
-   the natural contrast reduction stand, matching real optical clumping.
-   Restoring full pre-blur variance made grain visibly higher-contrast, and
-   therefore visually coarser, than the reference at any matching sigma. */
+/* Add the raw, still-unblurred grain delta onto the CMY density. The clump
+   blur runs AFTER this, on the combined field, so it softens image detail and
+   grain alike -- that is what the reference blurs (_finalize_grain in grain.py
+   smooths the grained density itself, not an isolated grain layer), and it is
+   what the multiplicative unsharp mask further down is tuned to recover.
+   No centring pass: the Poisson sampler in sf_layer_particle is unbiased, so
+   the delta already has zero mean. No variance-restoration renorm either --
+   the reference's grain finalization has none; it just blurs and lets the
+   natural contrast reduction stand, matching real optical clumping. Restoring
+   full pre-blur variance made grain visibly higher-contrast, and therefore
+   visually coarser, than the reference at any matching sigma. */
 __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const float4 *grain_buf,
                                     const int w, const int h)
 {
@@ -563,7 +567,8 @@ __kernel void spektrafilm_grain_add(__global float4 *dens_buf, __global const fl
   dens_buf[k] = (float4)(d.x + g.x, d.y + g.y, d.z + g.z, d.w);
 }
 
-/* Multiplicative unsharp mask after grain blur (study b80).
+/* Multiplicative unsharp mask after grain blur (study b80), recovering the
+   acutance that blur removed from the combined image-plus-grain density.
    cmy = orig * (orig / G_sigma(orig))^amount. Caller saved orig in `orig`
    buffer and blurred `cmy` in place before launching this kernel. */
 __kernel void spektrafilm_grain_usm(__global float4 *cmy, __global const float4 *orig,
