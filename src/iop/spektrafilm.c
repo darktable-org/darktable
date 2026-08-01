@@ -1239,8 +1239,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   sf_sim_develop(sim, plane, couplers ? corr : NULL, plane, npix, 3, 3);
 
-  /* 4) grain on the developed CMY film density (delta model + clump blur,
-        renormalised so strength is stable across clump sizes) */
+  /* 4) grain on the developed CMY film density: sample a grained density,
+        take its difference from the clean one, scale by strength, add it
+        back, then clump-blur the combined field and recover acutance with
+        the multiplicative unsharp mask (upstream's blur/usm pair) */
   if(d->p.grain_on && d->p.grain_amount > 0.0f)
   {
     float *gbuf = corr; /* corr is free now — reuse as the grain delta buffer */
@@ -1365,6 +1367,32 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
     for(int sl = 0; sl < nsub; sl++)
       if(raw[sl]) dt_free_align(raw[sl]);
+    /* No DC-centring pass. The delta is zero-mean by construction now: the
+       sampler draws an unbiased Poisson (spektra_core.h) and the combine above
+       takes back exactly the floors the sampler added -- see
+       sf_sim_grain_dmin_total(). Subtracting grain_density_min there instead
+       left a constant +(sum - density_min) per unit strength, which a per-ROI
+       mean was previously hiding. */
+    /* Add the still-UNBLURRED delta onto the clean density first, so the clump
+       blur below runs on the grained ABSOLUTE density -- image detail and grain
+       together -- which is what upstream blurs (_finalize_grain in grain.py
+       smooths density_cmy_out itself, not a separate grain layer).
+
+       Blurring only the delta and adding it to an untouched clean signal leaves
+       real image detail at full sharpness, and the multiplicative unsharp mask
+       further down then sharpens it anyway. That mask exists solely to recover
+       the acutance this blur takes away: the two are a tuned pair
+       (params_schema.py annotates the blur "optimized to go with the mult usm
+       below" and the usm "optimized to go with the blur above"). Running the
+       recovery half without the loss half is over-sharpening by construction,
+       and showed up as crunchy, over-defined edges on fine high-contrast
+       texture. Softening genuine detail here is intended, not a side effect --
+       it is what the emulsion does, and what upstream's own output shows. */
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix)              \
+    schedule(static)
+#endif
+    for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k];
     /* Upstream's grain blur (GrainParams.blur, params_schema.py) is a
        literal FIXED pixel sigma (0.8), independent of pixel_um/resolution/
        film_format_mm -- confirmed empirically: measuring the real
@@ -1381,24 +1409,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        scene detail relative to what 1:1/export shows. */
     const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
                          * preview_scale;
-    sf_blur_plane3(gbuf, w, h, sigma, scratch);
-    /* No DC-centring pass. The delta is zero-mean by construction now: the
-       sampler draws an unbiased Poisson (spektra_core.h) and the combine above
-       takes back exactly the floors the sampler added -- see
-       sf_sim_grain_dmin_total(). Subtracting grain_density_min there instead
-       left a constant +(sum - density_min) per unit strength, which a per-ROI
-       mean was previously hiding. */
     /* No variance-restoration renorm here -- upstream's own grain
        finalization (_finalize_grain in grain.py) has none either; it just
        blurs and lets the natural contrast reduction stand, matching real
        optical clumping. Restoring full pre-blur variance made grain
        visibly higher-contrast, and therefore visually coarser, than
        upstream at any matching sigma. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(plane, gbuf) firstprivate(npix)              \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < npix * 3; k++) plane[k] += gbuf[k];
+    sf_blur_plane3(plane, w, h, sigma, scratch);
+    /* Acutance recovery for the blur above, and only meaningful because of it:
+       these two are tuned together (defaults sigma 0.7 / amount 1.5). */
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
       sf_multiplicative_unsharp_mask3(plane, w, h, d->p.grain_usm_sigma * preview_scale,
                                        d->p.grain_usm_amount, corr, scratch);
@@ -2037,18 +2056,22 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       if(acc_buf) dt_opencl_release_mem_object(acc_buf);
     }
     SF_CL_STEP("grain gen");
-    /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
-       there for the empirical validation. */
-    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
-                          * preview_scale;
-    SF_GAUSS_BLUR4(tmpa, gsigma, "grain blur");
     /* The DC-centring reduction is gone along with its CPU counterpart: the
        Poisson sampler is unbiased, so there is nothing to centre. That also
        retires the full device->host readback it needed, which stalled the queue
        once per grain stage. */
+    /* Add the still-UNBLURRED delta, so the blur below sees the grained
+       absolute density rather than an isolated grain layer -- same ordering as
+       process(), see the long comment there for why the blur and the unsharp
+       mask that follows it only make sense as a pair. */
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
                                            CLARG(tmpa), CLARG(w), CLARG(h));
     SF_CL_STEP("grain add");
+    /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
+       there for the empirical validation. */
+    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
+                          * preview_scale;
+    SF_GAUSS_BLUR4(plane2, gsigma, "grain blur");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
     {
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, plane2, acc, 0, 0, npix * f * 4);
