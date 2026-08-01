@@ -161,16 +161,28 @@ void dt_iop_clip_and_zoom(float *out,
   if(!linear)
     return dt_interpolation_resample(itor, out, roi_out, in, roi_in);
 
+  /* Both gammas must not feed powf() a negative base with a fractional
+     exponent -- that's NaN, and a NaN here survives the whole pipe and
+     shows up as a black pixel on screen. Flooring the input at zero avoids
+     the NaN but silently gamut-clips: colors outside this working space's
+     primaries are legitimately negative in one or more channels, and that's
+     unrelated to the actual bug. copysignf() routes around the NaN instead
+     by taking the gamma of the magnitude and reapplying the original sign,
+     so negative values stay negative rather than being clipped. */
   DT_OMP_SIMD(aligned(in, linear : 16))
   for(size_t k = 0; k < (size_t)roi_in->width * roi_in->height*4; k += 4)
-    for_each_channel(c) linear[k+c] = powf(fmaxf(in[k+c], -1e6f), 2.4f);  // fmaxf sanitizes NaN
+    for_each_channel(c) linear[k+c] = copysignf(powf(fabsf(in[k+c]), 2.4f), in[k+c]);
 
   dt_interpolation_resample(itor, out, roi_out, linear, roi_in);
   dt_free_align(linear);
 
+  /* The resampler is unclamped and every interpolator we offer bar bilinear
+     has negative lobes, so a high contrast edge undershoots below zero here
+     -- lanczos3, the default, by as much as 12% of the step. Same
+     sign-preserving fix as above. */
   DT_OMP_SIMD(aligned(out : 16))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
-    for_each_channel(c) out[k+c] = powf(out[k+c], 1.0f / 2.4f);
+    for_each_channel(c) out[k+c] = copysignf(powf(fabsf(out[k+c]), 1.0f / 2.4f), out[k+c]);
 }
 
 // apply clip and zoom on the image region supplied in the input buffer.

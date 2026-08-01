@@ -108,9 +108,14 @@ colorspaces_transform_gamma(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   float4 pixel = Areadpixel(in, x, y);
-  // sanitize and fix NaN as we do for CPU
-  pixel = select(fmax(pixel, -1e6f), (float4)(0.0f), isnan(pixel));
+  /* sanitize and fix NaN as we do for CPU: the resampler between the two
+     passes is unclamped, so a high contrast edge can arrive here undershot
+     below zero, and pow() of a negative base with a fractional exponent is
+     NaN. Flooring at zero would dodge the NaN but also gamut-clip colors
+     that are legitimately negative in this working space's primaries, so
+     take the gamma of the magnitude and reapply the original sign instead. */
+  pixel = select(pixel, (float4)(0.0f), isnan(pixel));
+  pixel = copysign(dtcl_pow(fabs(pixel), gamma), pixel);
 
-  pixel = dtcl_pow(pixel, gamma);
   write_imagef(out, (int2)(x, y), pixel);
 }
