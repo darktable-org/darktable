@@ -119,9 +119,10 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_EXPOSURE_BIAS,
 
+  DT_COLLECTION_PROP_DUPLICATES,
+
   DT_COLLECTION_PROP_MONTH,
 
-  DT_COLLECTION_PROP_DUPLICATES,
   DT_COLLECTION_PROP_DIMENSIONS,
 
   // all new collection types need to be added before DT_COLLECTION_PROP_LAST,
