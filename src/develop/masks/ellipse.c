@@ -2151,13 +2151,13 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui,
   else if(gui->form_selected)
   {
     g_snprintf(msgbuf, msgbuf_len,
-               _("<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag\n"
-                 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll,"
+               _("<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,"
+                 "<b>size</b>: scroll\n<b>feather size</b>: shift+scroll"
                  " <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     // joint rotation of both shapes only makes sense when there is a source
     // (clone/heal forms, e.g. in the retouch module)
     if(form->type & DT_MASKS_CLONE)
-      g_strlcat(msgbuf, _("\n<b>rotate both</b>: shift+ctrl+drag"), msgbuf_len);
+      g_strlcat(msgbuf, _("<b>rotate both</b>: shift+ctrl+drag"), msgbuf_len);
   }
 }
 
