@@ -59,11 +59,13 @@
 #include "common/file_location.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/pixelpipe_cache.h"
 #include "develop/tiling.h"
 #include "develop/imageop_gui.h"
 #include "develop/imageop_math.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
+#include "common/spektra_fetch.h"
 #include "common/opencl.h"
 #include "common/gaussian.h"
 #include "gui/accelerators.h"
@@ -269,6 +271,17 @@ typedef struct dt_iop_spektrafilm_gui_data_t
      e->printing separates them. Owns its sf_prof_entry_t nodes. */
   GList *entries;
   GtkNotebook *notebook;
+
+  /* data-pack row in the header: a button and a status line, both hidden while
+     the installed pack already satisfies the edit. Shown only when there is
+     something to do, so the common case stays a clean two-combobox header. */
+  /* main_box holds everything except the data-pack row, so the whole module can
+     be collapsed to just that row while no usable pack exists. */
+  GtkWidget *main_box;
+  GtkWidget *data_box, *data_button, *data_status;
+  guint data_poll;      /* g_timeout id while a download runs, 0 otherwise */
+  uint32_t data_wanted; /* spectral table the button will ask for */
+  sf_fetch_state_t data_last_state; /* to spot the moment a fetch finishes */
 } dt_iop_spektrafilm_gui_data_t;
 
 static const struct { const char *label; float mm; } _format_presets[] = {
@@ -379,12 +392,26 @@ typedef struct dt_iop_spektrafilm_global_data_t
    cleanup_global(). Kept in module-static storage rather than global_data so
    every pipe sees the same pack. */
 static sf_pack_t *_pack = NULL;
+/* Directory _pack was loaded from. Which directory that is depends on the edit:
+   an image developed against an older spectral table resolves to a different
+   pack than one developed against the current one. Keeping the path lets
+   _ensure_sim() notice the resolved directory has changed and reload, and lets
+   _scan_profiles() read profiles out of the SAME pack rather than always out of
+   the config directory -- profiles and spectral table have to come from one
+   place or the film list will not match the data behind it. */
+static char _pack_path[SF_PATH_LEN] = { 0 };
+/* Value of sf_fetch_generation() when _pack / _pack_error were last decided.
+   A download can install a pack into a directory this module already probed
+   and rejected, which leaves the resolved path unchanged -- so a path
+   comparison alone cannot tell that the answer has changed. */
+static guint _pack_gen = 0;
 static char _pack_error[256] = { 0 };
 static dt_pthread_mutex_t _pack_lock;
 
 void init_global(dt_iop_module_so_t *self)
 {
   dt_pthread_mutex_init(&_pack_lock, NULL);
+  sf_fetch_init();
   const int program = 42; /* spektrafilm.cl in data/kernels/programs.conf */
   dt_iop_spektrafilm_global_data_t *gd = malloc(sizeof(dt_iop_spektrafilm_global_data_t));
   self->data = gd;
@@ -465,12 +492,17 @@ void cleanup_global(dt_iop_module_so_t *self)
     free(self->data);
     self->data = NULL;
   }
+  /* Before the pack lock goes away: a running fetch reprocesses the pipe on
+     completion, so it has to be joined while there is still a pipe to touch. */
+  sf_fetch_cleanup();
   dt_pthread_mutex_lock(&_pack_lock);
   if(_pack)
   {
     sf_pack_free(_pack);
     _pack = NULL;
   }
+  _pack_path[0] = 0;
+  _pack_gen = 0;
   _pack_error[0] = 0;
   dt_pthread_mutex_unlock(&_pack_lock);
   dt_pthread_mutex_destroy(&_pack_lock);
@@ -526,11 +558,33 @@ static uint32_t _name_hash(const char *s)
   return h32 ? h32 : 1; /* 0 is reserved for "first available" */
 }
 
+/* Where a hand-installed pack lives. Still the preferred location, and the one
+   named in the "no data pack" message, but no longer the only one: downloaded
+   packs live under the cache directory, one per spectral table. */
 static void _pack_dir(char *dst, size_t dstsz)
 {
   char cfg[SF_PATH_LEN];
   dt_loc_get_user_config_dir(cfg, sizeof cfg);
   snprintf(dst, dstsz, "%s/spektrafilm", cfg);
+}
+
+/* Pick the pack directory for an edit that recorded wanted_lut_hash (0 = no
+   preference). Local lookup only -- no network, safe on the pixelpipe. Falls
+   back to the config directory so error text still names somewhere real. */
+static void _resolve_pack_dir(uint32_t wanted_lut_hash, char *dst, size_t dstsz)
+{
+  gboolean exact = FALSE;
+  const gboolean found = sf_fetch_resolve_pack_dir(wanted_lut_hash, dst, dstsz, &exact);
+  if(!found) _pack_dir(dst, dstsz);
+  /* Which directory was chosen, and why, is the first thing worth knowing when
+     the module renders nothing: it separates "no pack anywhere" from "found a
+     pack, but it failed to load". */
+  dt_print(DT_DEBUG_DEV,
+           "[spektrafilm] pack for table %08x -> %s (%s)\n", wanted_lut_hash, dst,
+           !found      ? "nothing found, falling back"
+           : exact     ? "exact match"
+           : !wanted_lut_hash ? "no table recorded, taking what is installed"
+                       : "table mismatch, using anyway");
 }
 
 /* natural (human) string compare: embedded numbers compared numerically
@@ -589,13 +643,30 @@ static gint _entry_name_cmp(gconstpointer a, gconstpointer b)
   return _nat_cmp(((const sf_prof_entry_t *)a)->name, ((const sf_prof_entry_t *)b)->name);
 }
 
-/* scan <config>/spektrafilm/profiles/ (all .json files); reads only the info header of
+/* scan <packdir>/profiles/ (all .json files); reads only the info header of
    each profile (stock / name / stage / target_print). Returns a newly allocated
-   list of sf_prof_entry_t, sorted by name, which the caller owns. */
-static GList *_scan_profiles(void)
+   list of sf_prof_entry_t, sorted by name, which the caller owns.
+
+   packdir may be NULL, which means "whichever pack is currently loaded, or the
+   one a fresh edit would resolve to". Profiles must come from the same pack as
+   the spectral table: a profile names a stock, and the pack holds that stock's
+   digested render defaults, so mixing the two silently drops per-film halation,
+   grain and coupler data for any stock the other side has never heard of. */
+static GList *_scan_profiles(const char *packdir)
 {
   char dir[SF_PATH_LEN];
-  _pack_dir(dir, sizeof dir);
+  if(packdir && *packdir)
+    g_strlcpy(dir, packdir, sizeof dir);
+  else
+  {
+    dt_pthread_mutex_lock(&_pack_lock);
+    /* _pack_path also records directories that failed to load, so it only
+       answers "which pack is in use" when one is actually held. */
+    const gboolean have = _pack && _pack_path[0] != 0;
+    if(have) g_strlcpy(dir, _pack_path, sizeof dir);
+    dt_pthread_mutex_unlock(&_pack_lock);
+    if(!have) _resolve_pack_dir(0, dir, sizeof dir);
+  }
   char profdir[SF_PATH_LEN + 16];
   snprintf(profdir, sizeof profdir, "%s/profiles", dir);
 
@@ -822,14 +893,43 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   d->sim_error[0] = 0;
   d->sim_warning[0] = 0;
 
-  /* global pack, loaded once */
+  /* Global pack, loaded once per resolved directory.
+     Which directory that is depends on the spectral table this edit recorded,
+     so switching to an image developed against a different table reloads rather
+     than silently rendering it with the wrong data. One pack is held at a time:
+     the LUT is ~12 MB, and having two images from different table generations
+     open in the same session is rare enough that the reload costs less than
+     permanently carrying every pack the user has on disk. */
+  char want_dir[SF_PATH_LEN];
+  _resolve_pack_dir(p->lut_hash, want_dir, sizeof want_dir);
+
+  const guint gen = sf_fetch_generation();
+
   dt_pthread_mutex_lock(&_pack_lock);
+  /* The loaded pack and the error from failing to load both belong to one
+     directory at one point in time, so both go stale on either axis: the
+     resolved directory changing, or a download changing what that directory
+     holds. Testing only the first, and only while a pack was actually loaded,
+     left _pack_error latched forever after the first failure -- so a pack
+     downloaded mid-session was never picked up and the image went on
+     rendering against a failure recorded before the pack existed. */
+  if(strcmp(_pack_path, want_dir) != 0 || _pack_gen != gen)
+  {
+    if(_pack) sf_pack_free(_pack);
+    _pack = NULL;
+    _pack_error[0] = 0;
+    _pack_path[0] = 0;
+  }
   if(!_pack && !_pack_error[0])
   {
-    char dir[SF_PATH_LEN];
-    _pack_dir(dir, sizeof dir);
     char *err = NULL;
-    _pack = sf_pack_load(dir, &err);
+    _pack = sf_pack_load(want_dir, &err);
+    /* Record the attempt on failure too: _pack_path is what the staleness
+       check above compares against, and leaving it empty after a failed load
+       would make every later call look stale and retry the same doomed load
+       once per pipe run. */
+    g_strlcpy(_pack_path, want_dir, sizeof _pack_path);
+    _pack_gen = gen;
     if(!_pack)
     {
       g_strlcpy(_pack_error, err ? err : "unknown", sizeof _pack_error);
@@ -837,24 +937,34 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
       free(err);
     }
     else
-      dt_print(DT_DEBUG_DEV, "[spektrafilm] loaded data pack %s (spektrafilm %s)\n", dir,
-               sf_pack_version(_pack));
+      dt_print(DT_DEBUG_DEV, "[spektrafilm] loaded data pack %s (spektrafilm %s)\n",
+               want_dir, sf_pack_version(_pack));
   }
   sf_pack_t *pack = _pack;
+  char pack_dir[SF_PATH_LEN];
+  char pack_error[sizeof _pack_error];
+  g_strlcpy(pack_dir, _pack_path, sizeof pack_dir);
+  g_strlcpy(pack_error, _pack_error, sizeof pack_error);
   dt_pthread_mutex_unlock(&_pack_lock);
   if(!pack)
   {
+    /* Without this the module renders nothing behind an empty trouble banner
+       and the reason only ever reaches the terminal. */
+    g_strlcpy(d->sim_error, pack_error[0] ? pack_error : "no data pack found",
+              sizeof d->sim_error);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
 
   /* resolve stocks */
-  GList *entries = _scan_profiles();
+  GList *entries = _scan_profiles(pack_dir);
   char film_stock[SF_NAME_LEN] = { 0 }, paper_stock[SF_NAME_LEN] = { 0 };
   if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_portra_400", film_stock,
                      sizeof film_stock))
   {
     g_strlcpy(d->sim_error, "no filming profiles found", sizeof d->sim_error);
+    dt_print(DT_DEBUG_DEV, "[spektrafilm] no filming profiles under %s/profiles\n",
+             pack_dir);
     g_list_free_full(entries, g_free);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
@@ -870,6 +980,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
                         sizeof paper_stock))
   {
     g_strlcpy(d->sim_error, "no printing profiles found", sizeof d->sim_error);
+    dt_print(DT_DEBUG_DEV, "[spektrafilm] no printing profiles under %s/profiles\n",
+             pack_dir);
     g_list_free_full(entries, g_free);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
@@ -877,17 +989,35 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
 
   g_list_free_full(entries, g_free); /* stocks resolved; the list is done */
 
-  char dir[SF_PATH_LEN], path[SF_PATH_LEN + 300];
-  _pack_dir(dir, sizeof dir);
+  /* Load from the pack that was actually resolved, NOT from the config
+     directory. _scan_profiles() above lists the resolved pack's profiles, so
+     using a different directory here means the stock names resolve against one
+     pack and the files are read from another -- with a downloaded pack and
+     nothing hand-installed, every load simply misses and the module goes quiet
+     for want of a film. */
+  char path[SF_PATH_LEN + 300];
   char *err = NULL;
-  snprintf(path, sizeof path, "%s/profiles/%s.json", dir, film_stock);
+  snprintf(path, sizeof path, "%s/profiles/%s.json", pack_dir, film_stock);
   sf_profile_t *film = sf_profile_load(path, p->development_min, &err);
+  if(!film)
+    dt_print(DT_DEBUG_DEV, "[spektrafilm] cannot load film profile %s: %s\n", path,
+             err ? err : "unknown");
   sf_profile_t *paper = NULL;
   if(film && !p->scan_film)
   {
-    snprintf(path, sizeof path, "%s/profiles/%s.json", dir, paper_stock);
+    snprintf(path, sizeof path, "%s/profiles/%s.json", pack_dir, paper_stock);
     paper = sf_profile_load(path, p->print_development_min, &err);
+    if(!paper)
+      dt_print(DT_DEBUG_DEV, "[spektrafilm] cannot load print profile %s: %s\n", path,
+               err ? err : "unknown");
   }
+
+  /* A profile that will not load left sim_error empty and printed nothing: the
+     only branch that reports err sits inside the "film loaded" path below, so
+     this failure rendered as a silently disabled module. */
+  if(!film || (!paper && !p->scan_film))
+    g_strlcpy(d->sim_error, err ? err : "profile could not be loaded",
+              sizeof d->sim_error);
 
   if(film && (paper || p->scan_film))
   {
@@ -951,7 +1081,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
          the hash the message reads as nonsense when they do. */
       snprintf(d->sim_warning, sizeof d->sim_warning,
                _("developed with a different spectral table\n"
-                 "recorded: %08x    installed: %s (%08x)"),
+                 "recorded: %08x    installed: %s (%08x)\n"
+                 "the matching pack can be fetched with the button below"),
                p->lut_hash, sf_pack_lut_id(pack), pack_lut);
 
     d->sim = sf_sim_build(pack, film, paper, &sp, &err);
@@ -2228,7 +2359,7 @@ static void _rescan(dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   g_list_free_full(g->entries, g_free);
-  g->entries = _scan_profiles();
+  g->entries = _scan_profiles(NULL);
 }
 
 /* Entry at a list position, or NULL. The comboboxes carry the position as their
@@ -2515,11 +2646,23 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   /* Stamp the spectral table this edit is being made against. Done here because
      gui_changed() runs after the widget has written the param and before the
      history item is created, so the value lands in the same edit -- and only on
-     a real user change, so merely opening an image never dirties one. */
+     a real user change, so merely opening an image never dirties one.
+
+     Only stamp when there is nothing to lose: no table recorded yet, or the
+     loaded pack is already the one recorded. Overwriting a DIFFERENT recorded
+     hash would throw away the only record of which pack renders this edit as
+     it was made, and it would happen on any incidental slider touch while the
+     mismatch warning was on screen saying the data was wrong. That record is
+     what the download button uses to fetch the right pack, so losing it turns
+     a fixable mismatch into a permanent one. */
   {
     dt_iop_spektrafilm_params_t *p = (dt_iop_spektrafilm_params_t *)self->params;
     dt_pthread_mutex_lock(&_pack_lock);
-    if(_pack) p->lut_hash = sf_pack_lut_hash(_pack);
+    if(_pack)
+    {
+      const uint32_t cur = sf_pack_lut_hash(_pack);
+      if(!p->lut_hash || p->lut_hash == cur) p->lut_hash = cur;
+    }
     dt_pthread_mutex_unlock(&_pack_lock);
   }
 
@@ -2547,6 +2690,146 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
+/* ---------------------------------------------------------------------- */
+/* data pack status row                                                   */
+/* ---------------------------------------------------------------------- */
+
+static gboolean _data_poll_cb(gpointer user_data);
+
+/* Reflect pack state into the header row. Called whenever the module's trouble
+   state is refreshed and once per second while a download runs. */
+static void _update_data_row(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  const dt_iop_spektrafilm_params_t *p =
+      (const dt_iop_spektrafilm_params_t *)self->params;
+  if(!g || !g->data_box) return;
+
+  char msg[256] = { 0 };
+  double progress = 0.0;
+  const sf_fetch_state_t state = sf_fetch_status(msg, sizeof msg, &progress);
+
+  /* Is any pack usable at all, and is it the one this edit was made with?
+     Local-only, so this is cheap enough to answer on every refresh. */
+  char dir[SF_PATH_LEN];
+  gboolean exact = FALSE;
+  const gboolean have_any =
+      sf_fetch_resolve_pack_dir(p->lut_hash, dir, sizeof dir, &exact);
+
+  /* With no pack there is nothing any of the controls could act on: a film
+     list with no films, sliders driving a simulation that cannot be built.
+     Collapse the module to the one control that changes that, and bring the
+     rest back only once a pack is in place. */
+  if(g->main_box) gtk_widget_set_visible(g->main_box, have_any);
+
+  if(state == SF_FETCH_RUNNING)
+  {
+    g->data_last_state = state;
+    char line[320];
+    snprintf(line, sizeof line, "%s  %d%%", msg, (int)(progress * 100.0 + 0.5));
+    gtk_label_set_text(GTK_LABEL(g->data_status), line);
+    gtk_button_set_label(GTK_BUTTON(g->data_button), _("cancel"));
+    gtk_widget_set_sensitive(g->data_button, TRUE);
+    gtk_widget_set_visible(g->data_box, TRUE);
+    if(!g->data_poll) g->data_poll = g_timeout_add(500, _data_poll_cb, self);
+    return;
+  }
+
+  if(g->data_poll)
+  {
+    g_source_remove(g->data_poll);
+    g->data_poll = 0;
+  }
+
+  /* A fetch just finished. Reprocessing alone is not enough to make the new
+     pack usable: the film and paper comboboxes were filled by _rescan() at a
+     time when no profiles existed, and nothing refills them on a pipe
+     reprocess. Without this the module renders but every stock list stays
+     empty, so no selection can be made and changing a slider appears to do
+     nothing. dt_iop_gui_update() re-runs gui_update(), which rescans. */
+  if(g->data_last_state == SF_FETCH_RUNNING && state == SF_FETCH_DONE)
+  {
+    g->data_last_state = state;
+    dt_iop_gui_update(self);
+
+    /* Drop the cached pipeline output from this module onwards before asking
+       for a reprocess.
+
+       The pixelpipe caches by a hash over module parameters, and installing a
+       pack changes none of them -- so the cacheline computed while the module
+       had no data (and therefore passed pixels through untouched) still
+       matches and gets reused. The symptom is a module that stays inert after
+       a successful download, starts working the moment any slider moves, and
+       goes inert again the instant that slider returns to its original value,
+       because that value hashes back onto the stale line. A restart looked
+       like a fix only because it started with an empty cache. */
+    dt_develop_t *dev = darktable.develop;
+    if(dev)
+    {
+      dt_dev_pixelpipe_t *pipes[]
+          = { dev->full.pipe, dev->preview_pipe, dev->preview2.pipe };
+      for(size_t i = 0; i < sizeof(pipes) / sizeof(pipes[0]); i++)
+        if(pipes[i])
+          dt_dev_pixelpipe_cache_invalidate_later(pipes[i], self->iop_order,
+                                                  "spektrafilm data pack installed");
+      dt_dev_reprocess_all(dev);
+    }
+    return; /* gui_update() calls back into here with the settled state */
+  }
+  g->data_last_state = state;
+
+  /* Nothing installed at all, or installed but not the table this edit wants.
+     Those are the only two states worth offering a download for; anything else
+     leaves the row hidden. */
+  if(have_any && (exact || !p->lut_hash))
+  {
+    gtk_widget_set_visible(g->data_box, FALSE);
+    return;
+  }
+
+  g->data_wanted = have_any ? p->lut_hash : 0;
+  gtk_label_set_text(
+      GTK_LABEL(g->data_status),
+      have_any
+          ? _("the table this edit was developed with is not installed")
+          : _("no data pack installed -- the module's controls appear once one is"));
+  gtk_button_set_label(GTK_BUTTON(g->data_button), _("download data pack"));
+
+  /* The button stays visible but dead when downloads are switched off, so the
+     reason the module cannot render is discoverable rather than silent. */
+  const gboolean allowed = sf_fetch_downloads_enabled();
+  gtk_widget_set_sensitive(g->data_button, allowed);
+  gtk_widget_set_tooltip_text(
+      g->data_button,
+      allowed ? _("fetch the matching spectral data pack over the network")
+              : _("enable \"allow spektrafilm to download data\" in preferences first"));
+  gtk_widget_set_visible(g->data_box, TRUE);
+}
+
+static gboolean _data_poll_cb(gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(!g || !g->data_box) return G_SOURCE_REMOVE;
+  _update_data_row(self);
+  /* _update_data_row clears data_poll when the fetch is no longer running, and
+     that is also the signal to stop this timeout. */
+  return g->data_poll ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+}
+
+static void _data_button_clicked(GtkButton *button, dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  if(!g) return;
+
+  if(sf_fetch_status(NULL, 0, NULL) == SF_FETCH_RUNNING)
+    sf_fetch_cancel();
+  else
+    sf_fetch_start(g->data_wanted);
+
+  _update_data_row(self);
+}
+
 /* sim_error and sim_warning were being recorded and never shown -- a missing
    data pack, an unreadable profile or a spectral-table mismatch all produced a
    silently wrong or blank render. Route them to the module's trouble banner,
@@ -2554,6 +2837,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 static void _update_trouble_message(dt_iop_module_t *self)
 {
   const dt_iop_spektrafilm_data_t *d = (const dt_iop_spektrafilm_data_t *)self->data;
+  _update_data_row(self);
   if(!d) return;
   if(d->sim_error[0])
     dt_iop_set_module_trouble_message(self, _("cannot render"), d->sim_error, NULL);
@@ -2854,9 +3138,45 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *sf_main_box = self->widget;
 
-  /* ---- header (always visible) ---- */
+  /* ---- data pack row (packed first, so it reads as a precondition) ----
+     Deliberately outside main_box: it is the one thing that must stay on
+     screen when there is no pack, since it is what gets you one.
+
+     Built with no_show_all set, because dt_iop_gui_init() runs a single
+     gtk_widget_show_all() over the whole module at creation time. Without the
+     flag that one call would reveal the row before _update_data_row() has had
+     any chance to decide whether it should be there. */
+  g->data_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
+  gtk_widget_set_no_show_all(g->data_box, TRUE);
+
+  g->data_status = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->data_status), TRUE);
+  gtk_label_set_xalign(GTK_LABEL(g->data_status), 0.0);
+  gtk_widget_set_name(g->data_status, "spektrafilm-data-status");
+  gtk_box_pack_start(GTK_BOX(g->data_box), g->data_status, TRUE, TRUE, 0);
+
+  g->data_button = gtk_button_new_with_label(_("download data pack"));
+  g_signal_connect(G_OBJECT(g->data_button), "clicked",
+                   G_CALLBACK(_data_button_clicked), self);
+  gtk_box_pack_start(GTK_BOX(g->data_box), g->data_button, TRUE, TRUE, 0);
+
+  gtk_widget_show(g->data_status);
+  gtk_widget_show(g->data_button);
+  gtk_box_pack_start(GTK_BOX(sf_main_box), g->data_box, TRUE, TRUE, 0);
+
+  /* Everything else lives under main_box so a single set_visible() hides the
+     lot. No no_show_all here: the creation-time show_all is what establishes
+     the correct visibility of every child, including the ones with their own
+     rules (the format slider is only shown for a custom format), and redoing
+     that by hand on reveal would quietly override them. Since that show_all
+     runs once at creation and gui_update() runs after it, hiding here sticks,
+     and revealing later restores exactly the state show_all left behind. */
+  g->main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_box_add(sf_main_box, g->main_box);
+
+  /* ---- header ---- */
   GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_box_add(sf_main_box, header_box);
+  dt_gui_box_add(g->main_box, header_box);
 
   /* Heading instead of an inline label: the stock names are long enough that a
      left label leaves too little room for the value ("Kodak Professional Portra
@@ -2912,7 +3232,7 @@ void gui_init(dt_iop_module_t *self)
   static struct dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
-  dt_gui_box_add(sf_main_box, GTK_WIDGET(g->notebook));
+  dt_gui_box_add(g->main_box, GTK_WIDGET(g->notebook));
 
   /* ---- tab 1: film (exposure + development) ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("film"), NULL);
@@ -3242,6 +3562,13 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   if(g)
   {
+    /* The poll timeout closes over self and reads gui_data. Leaving it armed
+       past teardown is a use-after-free on the next tick. */
+    if(g->data_poll)
+    {
+      g_source_remove(g->data_poll);
+      g->data_poll = 0;
+    }
     g_list_free_full(g->entries, g_free);
     g->entries = NULL;
   }
