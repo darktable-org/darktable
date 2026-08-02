@@ -70,9 +70,6 @@ changes (where available).
 
 - Clarified multi-image rating toasts for un-reject and for mixed
   upgrade/downgrade results across the selection.
-- Fixed lighttable full preview jumping to the first image when
-  rejecting with filmstrip auto-scroll disabled and the collection
-  filtered to hide rejected images.
 
 ## Lua
 
