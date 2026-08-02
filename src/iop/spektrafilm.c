@@ -3207,11 +3207,22 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->paper), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(header_box), g->paper, TRUE, TRUE, 0);
 
+  /* Both controls below describe the physical frame, not the paper. Without a
+     heading they sit directly under the "print paper" combobox and read as
+     part of that section, since a section label runs until the next one. */
+  dt_gui_box_add(header_box, dt_ui_section_label_new(C_("section", "format")));
+
   /* redirect self->widget so from_params widgets pack into header_box */
   self->widget = header_box;
 
   g->film_format_combo = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film_format_combo, NULL, N_("format"));
+  /* Label hidden, as with the two comboboxes above: the heading directly over
+     it already says "format", and showing both puts the same word twice on
+     consecutive lines. The label itself stays set, so shortcuts and the module
+     search still find the control by name. The slider below keeps its own
+     label, since "frame long edge" is not what the heading says. */
+  dt_bauhaus_widget_hide_label(g->film_format_combo);
   gtk_widget_set_tooltip_text(g->film_format_combo,
                               _("common film/sensor gate presets; picking one sets the frame"
                                 " long edge slider below (pick \"custom\" to dial in an exact"
