@@ -72,6 +72,27 @@ extern "C" {
    spektra_sim.c) and the max particle_scale_sublayers entries read below. */
 #define SF_GRAIN_MAX_SUBLAYERS 8
 
+/* Pack container format, as declared by pack.json's "pack_format".
+ *
+ * This versions the CONTAINER, not the data in it, and it is deliberately
+ * separate from the spektrafilm version string: that string is unreliable as
+ * an identifier (an editable dev install reports whatever pyproject.toml
+ * happens to say), while this is a number the exporter controls and bumps only
+ * when the layout changes in a way an older reader would get wrong.
+ *
+ * MIN exists so a build can drop support for a layout it can no longer read,
+ * rather than parsing an old pack into plausible-looking nonsense. MAX exists
+ * so a pack written by a newer exporter is refused with an explanation instead
+ * of being silently misread -- pack.json is a permissive JSON object, so a
+ * future revision that moves or reinterprets a field would otherwise parse
+ * without complaint. Widen MAX only once this reader actually handles the new
+ * layout.
+ *
+ * The declaration is mandatory in pack.json; there is no format that predates
+ * the field, so nothing needs to be assumed for one that omits it. */
+#define SF_PACK_FORMAT_MIN 1
+#define SF_PACK_FORMAT_MAX 1
+
 
 
 typedef struct sf_pack_t sf_pack_t;
