@@ -282,7 +282,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->gui_attached || dev->full.pipe->processing) return;
+  if(!dev->gui_attached || dt_pipe_started(dev->full.pipe)) return;
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
 }
@@ -622,7 +622,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 
   dt_pthread_mutex_lock(&pipe->mutex);
 
-  if(dev->gui_leaving || (dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO))
+  if(dev->gui_leaving || dt_pipe_started(pipe))
   {
     dt_pthread_mutex_unlock(&pipe->mutex);
     return;
@@ -787,7 +787,7 @@ restart:
 
   const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
   const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-  const gboolean stopped = early || shutdown != DT_DEV_PIXELPIPE_STOP_NO;
+  const gboolean stopped = early || shutdown > DT_DEV_PIXELPIPE_PROCESSING;
 
   const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
   dt_print_pipe(DT_DEBUG_PIPE, stopped ? "pixelpipe_process stopped" : "pixelpipe_process good",
@@ -822,7 +822,7 @@ restart:
     /* pixelpipe stopped due to changed pipe nodes, HQ mode changes or module aborts
         while processing the pipe. All require restarts as pipe status is not valid yet.
     */
-    if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
+    if(shutdown > DT_DEV_PIXELPIPE_PROCESSING)
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
       goto restart;
@@ -870,6 +870,8 @@ restart:
   dt_mipmap_cache_release(&buf);
   // if a widget needs to be redrawn there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_busy_leave();
+  if(dt_pipe_is_full(pipe))
+    dev->history_last_module = NULL;
   dt_pthread_mutex_unlock(&pipe->mutex);
 
   const gboolean signalling = dev->gui_attached && !dev->gui_leaving && signal != -1;
@@ -3916,7 +3918,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO)
+    if(dt_atomic_get_int(&pipe->shutdown) > DT_DEV_PIXELPIPE_PROCESSING)
       return TRUE;  // stop waiting if pipe shuts down
 
     dt_hash_t probehash;

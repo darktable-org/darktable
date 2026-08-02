@@ -336,7 +336,7 @@ void process(dt_iop_module_t *self,
   }
 
   if(mask_display)
-    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i);
+    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
 }
 
 void init(dt_iop_module_t *self)
