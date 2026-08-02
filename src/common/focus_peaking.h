@@ -106,7 +106,7 @@ static inline void dt_focuspeaking(cairo_t *cr,
     for(size_t j = 0; j < buf_width; ++j)
     {
       size_t index = i * buf_width + j;
-      if (i < 2 || i >= buf_height - 2 || j < 2 || j > buf_width -2)
+      if (i < 2 || i >= buf_height - 2 || j < 2 || j >= buf_width - 2)
         // ensure defined value for borders
         luma_ds[index] = 0.0f;
       else
