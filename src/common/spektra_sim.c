@@ -557,6 +557,35 @@ sf_pack_t *sf_pack_load(const char *dir, char **errmsg)
   JsonObject *root = json_node_get_object(json_parser_get_root(pack->parser));
   pack->version = json_dup_string(root, "spektrafilm_version");
 
+  /* Container format check, before anything is read out of the object. A pack
+     from a newer exporter may have moved or redefined fields; JSON parsing
+     would not notice, and the result would be a pack that loads and renders
+     wrongly rather than one that fails.
+
+     The field is required, with no "assume 1 when absent" fallback. Every pack
+     the exporter has ever produced carries it, so an absent one is a
+     hand-edited or truncated pack.json rather than an older revision -- and
+     silently assuming a format for a file that never declared one is precisely
+     the guess this check exists to avoid. */
+  {
+    if(!json_object_has_member(root, "pack_format"))
+    {
+      set_error(errmsg, "spektra_sim: %s declares no pack_format", json_path);
+      goto fail;
+    }
+    const int fmt = (int)json_object_get_int_member(root, "pack_format");
+    if(fmt < SF_PACK_FORMAT_MIN || fmt > SF_PACK_FORMAT_MAX)
+    {
+      set_error(errmsg,
+                "spektra_sim: %s is pack format %d, this build reads %d..%d -- "
+                "%s",
+                json_path, fmt, SF_PACK_FORMAT_MIN, SF_PACK_FORMAT_MAX,
+                fmt > SF_PACK_FORMAT_MAX ? "update darktable"
+                                         : "re-export the pack");
+      goto fail;
+    }
+  }
+
   if(!json_read_darray(root, "wavelengths", pack->wavelengths, SF_NWL)
      || !json_read_darray(root, "log_exposure", pack->log_exposure, SF_NLE)
      || !json_read_dmatrix(root, "cmfs", &pack->cmfs[0][0], SF_NWL, 3))
