@@ -10840,8 +10840,8 @@ msgid ""
 "<b>move</b>: drag, <b>rotate source</b>: ctrl+drag, <b>rotate both</b>: "
 "shift+ctrl+drag"
 msgstr ""
-"<b>Déplacer</b> : glisser • <b>Tourne source</b> : Ctrl+déplacer • <b>Tourne "
-"les deux</b> : Ctrl+Maj+déplacer"
+"<b>Déplacer</b> : glisser • <b>Rotation source</b> : Ctrl+déplacer • <b>Rotation "
+"des deux</b> : Ctrl+Maj+déplacer"
 
 #: ../src/develop/masks/brush.c:3464
 msgid ""
