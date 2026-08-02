@@ -222,8 +222,10 @@ typedef struct dt_iop_spektrafilm_params_t
      property, and it is the last thing in the chain: leaving it on lifts the
      black point of every render, which hides the real per-paper black points
      while you are still judging them. The reference defaults it on because it
-     renders finished images; this is an editing tool. Same reasoning as
-     scan_usm_amount below. */
+     renders finished images; this is an editing tool. Note that this is NOT
+     the same reasoning as scan_usm_amount, which does default to the
+     reference's own 0.7 -- sharpening is part of what a scan looks like,
+     whereas glare is a property of the room the print is viewed in. */
   float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "viewing glare"
   float development_min;    // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
   float print_development_min; // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
@@ -3211,8 +3213,11 @@ void gui_init(dt_iop_module_t *self)
   g->film_format_combo = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film_format_combo, NULL, N_("format"));
   gtk_widget_set_tooltip_text(g->film_format_combo,
-                              _("common film/sensor gate presets; picking one sets the format"
-                                " size slider below (pick \"custom\" to dial in an exact value)"));
+                              _("common film/sensor gate presets; picking one sets the frame"
+                                " long edge slider below (pick \"custom\" to dial in an exact"
+                                " value).\nthe preset names a film gauge (35mm) while the"
+                                " slider is the frame's long edge (36mm) -- both describe the"
+                                " same format"));
   _populate_format_combo(self);
   g_signal_connect(G_OBJECT(g->film_format_combo), "value-changed",
                    G_CALLBACK(_format_changed), self);
@@ -3221,7 +3226,10 @@ void gui_init(dt_iop_module_t *self)
   g->film_format_mm_slider = dt_bauhaus_slider_from_params(self, "film_format_mm");
   dt_bauhaus_slider_set_format(g->film_format_mm_slider, _(" mm"));
   gtk_widget_set_tooltip_text(g->film_format_mm_slider,
-                              _("physical film format, long side; sets the scale of grain and halation"));
+                              _("physical frame size, long edge. sets the scale that grain, "
+                                "scatter, halation and diffusion are all computed at, so a "
+                                "smaller format shows every one of them proportionally larger "
+                                "for the same print size"));
   g_signal_connect(G_OBJECT(g->film_format_mm_slider), "value-changed",
                    G_CALLBACK(_format_slider_changed), self);
 
@@ -3460,7 +3468,11 @@ void gui_init(dt_iop_module_t *self)
                                 " into halation/diffusion (0 = off)"));
 
   g->boost_range = dt_bauhaus_slider_from_params(self, "boost_range");
-  gtk_widget_set_tooltip_text(g->boost_range, _("range of the highlight boost curve"));
+  gtk_widget_set_tooltip_text(
+      g->boost_range,
+      _("widens or narrows the band of tones the highlight boost acts on. "
+        "lower confines it to the brightest clipped highlights, higher pulls "
+        "more of the upper midtones into the bloom"));
 
   g->protect_ev = dt_bauhaus_slider_from_params(self, "protect_ev");
   dt_bauhaus_slider_set_format(g->protect_ev, _(" EV"));
@@ -3481,10 +3493,18 @@ void gui_init(dt_iop_module_t *self)
         " veil)"));
 
   g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
-  gtk_widget_set_tooltip_text(g->diffusion_strength, _("diffusion filter strength"));
+  gtk_widget_set_tooltip_text(
+      g->diffusion_strength,
+      _("sets how much light is diverted into the diffusion halo (0 = off). "
+        "the halo is added on top of the unfiltered image, so raising this "
+        "lifts shadows and lowers contrast as well as glowing the highlights"));
 
   g->diffusion_scale = dt_bauhaus_slider_from_params(self, "diffusion_scale");
-  gtk_widget_set_tooltip_text(g->diffusion_scale, _("diffusion halo/bloom size"));
+  gtk_widget_set_tooltip_text(
+      g->diffusion_scale,
+      _("scales the radius of the diffusion halo. spreads the same amount of "
+        "light further from each highlight rather than adding more of it -- "
+        "use diffusion strength for that"));
 
   g->diffusion_warmth = dt_bauhaus_slider_from_params(self, "diffusion_warmth");
   gtk_widget_set_tooltip_text(g->diffusion_warmth,
@@ -3500,12 +3520,18 @@ void gui_init(dt_iop_module_t *self)
       _("print diffusion filter type (same presets as the film-stage filter)"));
 
   g->print_diffusion_strength = dt_bauhaus_slider_from_params(self, "print_diffusion_strength");
-  gtk_widget_set_tooltip_text(g->print_diffusion_strength,
-                              _("print diffusion filter strength"));
+  gtk_widget_set_tooltip_text(
+      g->print_diffusion_strength,
+      _("sets how much light is diverted into the print diffusion halo "
+        "(0 = off). acts at the enlarger rather than the camera, so it blooms "
+        "the printed image instead of the scene"));
 
   g->print_diffusion_scale = dt_bauhaus_slider_from_params(self, "print_diffusion_scale");
-  gtk_widget_set_tooltip_text(g->print_diffusion_scale,
-                              _("print diffusion halo/bloom size"));
+  gtk_widget_set_tooltip_text(
+      g->print_diffusion_scale,
+      _("scales the radius of the print diffusion halo. spreads the same "
+        "amount of light further from each highlight rather than adding more "
+        "of it -- use print diffusion strength for that"));
 
   g->print_diffusion_warmth = dt_bauhaus_slider_from_params(self, "print_diffusion_warmth");
   gtk_widget_set_tooltip_text(g->print_diffusion_warmth,
