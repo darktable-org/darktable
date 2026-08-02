@@ -1192,7 +1192,7 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
                                                            pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    
+
     float diff = (check_angle < 0) ? -rad2degf(dv) : rad2degf(dv);
 
     // Rotation behavior (counter_rotate_source is set at button-press time):
@@ -1243,7 +1243,7 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
                                                            pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    
+
     float diff = (check_angle < 0) ? -dv : dv;
     form->source[2] += diff;
 
