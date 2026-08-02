@@ -470,7 +470,10 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   {
     name = g_strdup(_("image dimensions"));
     tooltip = g_strdup(_("enter the image dimensions to search.\n"
-                         "use the format widthxheight, i.e. 6000x4000.\n"
+                         "use the format widthxheight, i.e.\n"
+                         "'6000x4000' for a full match,\n"
+                         "'6000x' for width only,\n"
+                         "'x4000' for height only.\n"
                          "multiple values can be separated by ','\n"
                          "\nright-click to get existing image dimensions"));
   }
