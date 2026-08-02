@@ -28,12 +28,13 @@ struct dt_iop_roi_t;
  * implements a simple pixel cache suitable for caching float images
  * corresponding to history items and zoom/pan settings in the develop module.
  * correctness is secured via the hash so make sure everything is included here.
- * No caching if cl_mem, instead copied cache buffers are used.
+ * No caching cl_mem, instead copied cache buffers are used.
  */
 typedef struct dt_dev_pixelpipe_cache_t
 {
   int32_t entries;
   size_t allmem;
+  size_t max_allmem;
   size_t memlimit;
   void **data;
   size_t *size;
@@ -43,12 +44,9 @@ typedef struct dt_dev_pixelpipe_cache_t
   int32_t *ioporder;
   uint64_t calls;
   int32_t lastline;
-  // profiling & stats:
+  // profiling
   uint64_t tests;
   uint64_t hits;
-  uint32_t lused;
-  uint32_t linvalid;
-  uint32_t limportant;
 } dt_dev_pixelpipe_cache_t;
 
 typedef enum dt_dev_pixelpipe_cache_test_t
@@ -90,7 +88,7 @@ void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, co
 void dt_dev_pixelpipe_important_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data, const size_t size);
 
 /** mark the given cache line as invalid or to be ignored */
-void dt_dev_pixelpipe_invalidate_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data);
+void dt_dev_pixelpipe_invalidate_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data, const char *info);
 
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
