@@ -392,6 +392,7 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
         sqlite3_step(stmt);
         sqlite3_reset(stmt);
         sqlite3_clear_bindings(stmt);
+        dt_diratime_action(dtfilename, "delete");
       }
       dt_image_cache_read_release(img);
     }
@@ -1169,6 +1170,7 @@ static _dt_delete_status_t delete_file_from_disk
        || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
     {
       delete_status = _DT_DELETE_STATUS_DELETED;
+      dt_diratime_action(filename, "delete");
     }
     else
     {
