@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-02 12:31+0200\n"
-"PO-Revision-Date: 2026-08-03 10:24+0900\n"
+"PO-Revision-Date: 2026-08-03 11:46+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -411,11 +411,9 @@ msgid "pixels"
 msgstr "ピクセル"
 
 #: ../build/bin/conf_gen.h:1983
-#, fuzzy
-#| msgid "patch size"
 msgctxt "preferences"
 msgid "% of path size"
-msgstr "パッチ サイズ"
+msgstr "パスのサイズに対する割合（%）"
 
 #: ../build/bin/conf_gen.h:2002
 msgctxt "preferences"
@@ -423,8 +421,6 @@ msgid "sharp"
 msgstr "シャープ"
 
 #: ../build/bin/conf_gen.h:2003 ../build/bin/preferences_gen.h:3548
-#, fuzzy
-#| msgid "balance"
 msgctxt "preferences"
 msgid "balanced"
 msgstr "バランス"
@@ -1529,17 +1525,19 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3477
 msgid "path mask resize step amount"
-msgstr "パスマスクリサイズのステップ量"
+msgstr "パスマスクのリサイズのステップ量"
 
 #: ../build/bin/preferences_gen.h:3495
 msgid ""
 "amount to grow or shrink a path mask per scroll wheel tick when resizing. the "
 "unit is set by the 'path mask resize unit' preference."
 msgstr ""
+"リサイズ時にスクロールホイールの1ティックごとにパスマスクを膨張または縮小させ"
+"る量です。単位は'パスマスクのリサイズ単位'設定で指定します"
 
 #: ../build/bin/preferences_gen.h:3504
 msgid "unit for path mask resize step amount"
-msgstr "パスマスクリサイズのステップ量の単位"
+msgstr "パスマスクのリサイズのステップ量の単位"
 
 #: ../build/bin/preferences_gen.h:3514
 #, no-c-format
@@ -1547,10 +1545,12 @@ msgid ""
 "unit for the path mask resize step: 'pixels' uses image pixels, '% of path "
 "size' uses a percentage of the path's largest bounding box dimension."
 msgstr ""
+"ステップの単位です。'ピクセル'は画像のピクセル数を使用し、'パスのサイズに対す"
+"る割合（%）'はパスの最大バウンディングボックスの寸法に対する割合を使用します"
 
 #: ../build/bin/preferences_gen.h:3523
 msgid "path mask resize tracing resolution"
-msgstr "パスマスクリサイズのトレース解像度"
+msgstr "パスマスクのリサイズのトレース解像度"
 
 #: ../build/bin/preferences_gen.h:3530
 msgctxt "preferences"
@@ -1568,10 +1568,8 @@ msgstr ""
 "ドが保持されます"
 
 #: ../build/bin/preferences_gen.h:3541
-#, fuzzy
-#| msgid "curve smoothing"
 msgid "path mask resize curve smoothing"
-msgstr "カーブの平滑化"
+msgstr "パスマスクのリサイズのカーブ平滑化"
 
 #: ../build/bin/preferences_gen.h:3550
 msgid ""
@@ -6603,10 +6601,9 @@ msgid "download cancelled"
 msgstr "ダウンロードがキャンセルされました"
 
 #: ../src/common/ai_models.c:1801
-#, fuzzy, c-format
-#| msgid "download failed: %s"
+#, c-format
 msgid "download failed after %d attempts: %s"
-msgstr "ダウンロード失敗：%s"
+msgstr "%d回試行しましたが、ダウンロードに失敗しました：%s"
 
 #: ../src/common/ai_models.c:1804
 #, c-format
@@ -6627,10 +6624,8 @@ msgstr ""
 "止します"
 
 #: ../src/common/ai_models.c:1850
-#, fuzzy
-#| msgid "failed to initialize download"
 msgid "failed to finalize downloaded file"
-msgstr "ダウンロードの初期化に失敗しました"
+msgstr "ダウンロードしたファイルの完了処理に失敗しました"
 
 #: ../src/common/ai_models.c:1862
 msgid "failed to extract archive"
@@ -8425,13 +8420,11 @@ msgstr ""
 
 #. all were rejected → un-reject
 #: ../src/common/ratings.c:150
-#, fuzzy, c-format
-#| msgid "rejecting %d image"
-#| msgid_plural "rejecting %d images"
+#, c-format
 msgid "unrejecting %d image"
 msgid_plural "unrejecting %d images"
-msgstr[0] "%d 枚の画像を除外しています"
-msgstr[1] "%d 枚の画像を除外しています"
+msgstr[0] "%d枚の画像の除外を解除しています"
+msgstr[1] "%d枚の画像の除外を解除しています"
 
 #: ../src/common/ratings.c:153
 #, c-format
@@ -10710,10 +10703,8 @@ msgid "size: %3.2f%%"
 msgstr "サイズ：%3.2f%%"
 
 #: ../src/develop/masks/brush.c:3406
-#, fuzzy
-#| msgid "[PATH on segment] add node"
 msgid "[BRUSH on segment] add node"
-msgstr "【線分の上のパス】ノードを追加する"
+msgstr "【線分の上のブラシ】ノードを追加する"
 
 #: ../src/develop/masks/brush.c:3410
 msgid "[BRUSH] rotate shape (source only on a clone source)"
@@ -10741,48 +10732,35 @@ msgid "brush #%d"
 msgstr "ブラシ#%d"
 
 #: ../src/develop/masks/brush.c:3447
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%), <b>rotate</b>: ctrl+drag"
 msgstr ""
 "<b>サイズ</b>：スクロール　　<b>硬さ</b>：Shift+スクロール\n"
-"<b>不透明度</b>：Ctrl+スクロール (%d%%)"
+"<b>不透明度</b>：Ctrl+スクロール (%d%%)　　<b>回転</b>：Ctrl+ドラッグ"
 
 #: ../src/develop/masks/brush.c:3453 ../src/develop/masks/brush.c:3468
 #: ../src/develop/masks/path.c:5345
-#, fuzzy
-#| msgid "<b>rotate</b>: ctrl+drag"
 msgid ", <b>rotate both</b>: shift+ctrl+drag"
-msgstr "<b>回転</b>：Ctrl+ドラッグ"
+msgstr "、<b>両方を回転</b>：Shift+Ctrl+ドラッグ"
 
 #: ../src/develop/masks/brush.c:3458 ../src/develop/masks/ellipse.c:2148
 #: ../src/develop/masks/path.c:5331
-#, fuzzy
-#| msgid ""
-#| "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move "
-#| "horizontally</b>: ctrl+drag"
 msgid ""
 "<b>move</b>: drag, <b>rotate source</b>: ctrl+drag, <b>rotate both</b>: "
 "shift+ctrl+drag"
 msgstr ""
-"<b>移動する</b>：ドラッグ　　<b>垂直方向に移動する</b>：Shift+ドラッグ　　<b>"
-"水平方向に移動する</b>：Ctrl+ドラッグ"
+"<b>移動</b>：ドラッグ　　<b>ソースを回転</b>：Ctrl+ドラッグ　　<b>両方を回転</"
+"b>：Shift+Ctrl+ドラッグ"
 
 #: ../src/develop/masks/brush.c:3464
-#, fuzzy
-#| msgid ""
-#| "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
-#| "<b>remove path</b>: right-click"
 msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: shift+click\n"
 "<b>rotate</b>: ctrl+drag"
 msgstr ""
-"<b>セグメントを移動</b>：ドラッグ　　<b>ノードを追加</b>：Ctrl+クリック\n"
-"<b>パスを削除</b>：右クリック"
+"<b>セグメントを移動</b>：ドラッグ　　<b>ノードを追加</b>：Shift+クリック\n"
+"<b>回転</b>：Ctrl+ドラッグ"
 
 #: ../src/develop/masks/brush.c:3471
 msgid "<b>size</b>: scroll"
@@ -10851,10 +10829,8 @@ msgid "[ELLIPSE] rotate shape (source only on a clone source)"
 msgstr "【楕円】シェイプを回転する（クローンソースの場合はソースのみ回転）"
 
 #: ../src/develop/masks/ellipse.c:2096
-#, fuzzy
-#| msgid "[ELLIPSE] rotate shape"
 msgid "[ELLIPSE] rotate shape and source together"
-msgstr "【楕円】シェイプを回転する"
+msgstr "【楕円】シェイプとソースをともに回転する"
 
 #: ../src/develop/masks/ellipse.c:2103
 #, c-format
@@ -10875,24 +10851,19 @@ msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>回転</b>：Ctrl+ドラッグ"
 
 #: ../src/develop/masks/ellipse.c:2154
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag\n"
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-#| "ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag,<b>size</b>: scroll\n"
 "<b>feather size</b>: shift+scroll <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>境界ぼかしのモード</b>：Alt+クリック　　<b>回転</b>：Ctrl+ドラッグ\n"
-"<b>サイズ</b>：スクロール　　<b>境界ぼかしのサイズ</b>：Shift+スクロール　　"
-"<b>不透明度</b>：Ctrl+スクロール (%d%%)"
+"<b>境界ぼかしのモード</b>：Alt+クリック　　<b>回転</b>：Ctrl+ドラッグ　　<b>サ"
+"イズ</b>：スクロール\n"
+"<b>境界ぼかしのサイズ</b>：Shift+スクロール　　<b>不透明度</b>：Ctrl+スクロー"
+"ル (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2160
-#, fuzzy
-#| msgid "<b>rotate</b>: ctrl+drag"
 msgid "<b>rotate both</b>: shift+ctrl+drag"
-msgstr "<b>回転</b>：Ctrl+ドラッグ"
+msgstr "<b>両方を回転</b>：Shift+Ctrl+ドラッグ"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:174
 #, c-format
@@ -10909,10 +10880,8 @@ msgid "[GRADIENT on pivot] rotate shape"
 msgstr "【ピボット上のグラデーション】シェイプを回転する"
 
 #: ../src/develop/masks/gradient.c:1423
-#, fuzzy
-#| msgid "[GRADIENT on pivot] rotate shape"
 msgid "[GRADIENT] rotate shape"
-msgstr "【ピボット上のグラデーション】シェイプを回転する"
+msgstr "【グラデーション】シェイプを回転する"
 
 #: ../src/develop/masks/gradient.c:1425
 msgid "[GRADIENT creation] set rotation"
@@ -10945,16 +10914,13 @@ msgstr ""
 "<b>回転</b>：クリック+ドラッグ　　 <b>不透明度</b>：Ctrl+スクロール (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1460
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
-#| "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotate</b>: ctrl+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>曲率</b>：スクロール　　<b>圧縮</b>：Shift+スクロール\n"
-"<b>回転</b>：クリック+ドラッグ　　 <b>不透明度</b>：Ctrl+スクロール (%d%%)"
+"<b>回転</b>：Ctrl+ドラッグ　　<b>不透明度</b>：Ctrl+スクロール (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1463
 msgid "<b>rotate</b>: drag"
@@ -11116,7 +11082,7 @@ msgstr ""
 #: ../src/develop/masks/path.c:2839
 #, c-format
 msgid "resize: %+d %s"
-msgstr ""
+msgstr "リサイズ：%+d %s"
 
 #: ../src/develop/masks/path.c:5255
 msgid "[PATH creation] add a smooth node"
@@ -11159,10 +11125,8 @@ msgid "[PATH] grow/shrink"
 msgstr "【パス】膨張／縮小"
 
 #: ../src/develop/masks/path.c:5278
-#, fuzzy
-#| msgid "[PATH] change size"
 msgid "[PATH] resize"
-msgstr "【パス】 サイズを変更する"
+msgstr "【パス】リサイズ"
 
 #: ../src/develop/masks/path.c:5280
 msgid "[PATH] change feather size"
@@ -11211,29 +11175,23 @@ msgstr ""
 "クリック"
 
 #: ../src/develop/masks/path.c:5325
-#, fuzzy
-#| msgid ""
-#| "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
-#| "<b>remove path</b>: right-click"
 msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: shift+click\n"
 "<b>remove path</b>: right-click"
 msgstr ""
-"<b>セグメントを移動</b>：ドラッグ　　<b>ノードを追加</b>：Ctrl+クリック\n"
+"<b>セグメントを移動</b>：ドラッグ　　<b>ノードを追加</b>：Shift+クリック\n"
 "<b>パスを削除</b>：右クリック"
 
 #: ../src/develop/masks/path.c:5338
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-#| "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>grow/shrink</b>: scroll, <b>resize</b>: ctrl+shift+scroll\n"
 "<b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%), "
 "<b>rotate</b>: ctrl+drag"
 msgstr ""
-"<b>サイズ</b>：スクロール　　<b>境界ぼかしのサイズ</b>：Shift+スクロール\n"
-"<b>回転</b>：Ctrl+Shift+スクロール　　 <b>不透明度</b>：Ctrl+スクロール (%d%%)"
+"<b>膨張／縮小</b>：スクロール　　<b>リサイズ</b>：Ctrl+Shift+スクロール\n"
+"<b>境界ぼかしのサイズ</b>：Shift+スクロール　　<b>不透明度</b>：Ctrl+スクロー"
+"ル (%d%%)　　<b>回転</b>：Ctrl+ドラッグ"
 
 #: ../src/develop/pixelpipe_hb.c:572
 msgid "enabled as required"
@@ -24174,19 +24132,12 @@ msgstr ""
 "ETTRで撮影した場合に有用です"
 
 #: ../src/iop/exposure.c:1216
-#, fuzzy
-#| msgid ""
-#| "if enabled, reduces the ISO used for denoise\n"
-#| "by the factor of the camera's hidden exposure\n"
-#| "bias used in HDR / highlight preservation /\n"
-#| "dynamic range / HLG tone modes."
 msgid ""
 "remove the camera's hidden exposure bias in\n"
 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
 msgstr ""
-"有効にすると、HDR／ハイライト保持／ダイナミックレンジ／HLGトーンモードで用いら"
-"れるカメラの隠し露出バイアスの係数によって、ノイズ除去に用いるISOの値を低く設"
-"定します"
+"HDR／ハイライト保持／ダイナミックレンジ／HLGトーンモードで用いられる、\n"
+"カメラの隠し露出バイアスを除去します\n"
 
 #: ../src/iop/exposure.c:1225
 msgid "set the exposure adjustment using the selected area"
@@ -25497,11 +25448,6 @@ msgid "camera/lens not found"
 msgstr "カメラとレンズの組み合わせが見つかりません"
 
 #: ../src/iop/lens.cc:4311
-#, fuzzy
-#| msgid ""
-#| "please select your lens manually\n"
-#| "you might also want to check if your Lensfun database is up-to-date\n"
-#| "by running lensfun-update-data"
 msgid ""
 "pick a camera or lens from the buttons below --\n"
 "the lens button lists the whole database when the body is unknown\n"
@@ -25509,8 +25455,11 @@ msgid ""
 "you might also want to check if your Lensfun database is up-to-date\n"
 "by running lensfun-update-data"
 msgstr ""
-"レンズを手動で選択してください\n"
-"lensfun-update-dataを実行して、lensfunのデータベースが最新のものであるかチェッ"
+"下のボタンからカメラまたはレンズを選択してください --\n"
+"カメラ本体が不明の場合、レンズのボタンにはデータベース全体が一覧表示されます\n"
+"スケール、ターゲットジオメトリ、倍率色収差の上書きはプロファイルなしでも機能し"
+"ます\n"
+"lensfun-update-dataを実行して、Lensfunのデータベースが最新のものであるかチェッ"
 "クするとよいかもしれません"
 
 #. Lensfun widget
@@ -26439,10 +26388,8 @@ msgid "composite"
 msgstr "合成"
 
 #: ../src/iop/overlay.c:176
-#, fuzzy
-#| msgid "combine with elements from a processed image"
 msgid "combine the image with elements from another processed image"
-msgstr "処理した画像の要素を合成します"
+msgstr "画像と別の処理済み画像の要素を合成します"
 
 #: ../src/iop/overlay.c:185
 msgid "layer|stack|overlay"
@@ -28963,16 +28910,12 @@ msgstr ""
 "作成／名前変更／除去します"
 
 #: ../src/libs/duplicate.c:365
-#, fuzzy
-#| msgid "create a duplicate of the image with same history stack"
 msgid "create a duplicate of this image with same history stack"
-msgstr "同じ履歴スタックで画像を複製します"
+msgstr "同じ履歴スタックでこの画像の複製を作成します"
 
 #: ../src/libs/duplicate.c:374
-#, fuzzy
-#| msgid "create a 'virgin' duplicate of the image without any development"
 msgid "create a 'virgin' duplicate of this image without any development"
-msgstr "現像していない未編集画像を複製します"
+msgstr "この画像の現像していない未編集の複製を作成します"
 
 #: ../src/libs/duplicate.c:381
 msgid "delete this duplicate"
@@ -33652,14 +33595,8 @@ msgid "soft proof"
 msgstr "ソフトプルーフ"
 
 #: ../src/views/darkroom.c:1134
-#, fuzzy
-#| msgid ""
-#| "open an XMP sidecar file\n"
-#| "and apply it to selected images"
 msgid "drop XMP sidecar files here to apply edits"
-msgstr ""
-"XMPサイドカーファイルを開いて、\n"
-"選択した画像に適用します"
+msgstr "ここにXMPサイドカーファイルをドロップして編集を適用します"
 
 #. fail :(
 #: ../src/views/darkroom.c:1149 ../src/views/print.c:318
@@ -34216,23 +34153,21 @@ msgstr ""
 
 #: ../src/views/darkroom.c:3705
 msgid "create _duplicate"
-msgstr "複製を作成"
+msgstr "_複製を作成"
 
 #: ../src/views/darkroom.c:3706
 msgid "_replace history"
-msgstr "履歴を置き換え"
+msgstr "_履歴を置き換え"
 
 #: ../src/views/darkroom.c:3716 ../src/views/darkroom.c:3726
-#, fuzzy, c-format
-#| msgid "error loading file '%s'"
+#, c-format
 msgid "error loading sidecar '%s'"
-msgstr "ファイル'%s'の 読み込み中にエラーが発生しました"
+msgstr "サイドカー'%s'の読み込み中にエラーが発生しました"
 
 #: ../src/views/darkroom.c:3718
-#, fuzzy, c-format
-#| msgid "applied style `%s' on current image"
+#, c-format
 msgid "applied '%s' to the current image"
-msgstr "スタイル`%s'を現在の画像に適用しました"
+msgstr "`%s'を現在の画像に適用しました"
 
 #: ../src/views/darkroom.c:3732
 #, c-format
@@ -34246,14 +34181,12 @@ msgstr[1] ""
 "現在の画像の複製が%d個作成されます（ドロップしたサイドカー1つにつき1個）"
 
 #: ../src/views/darkroom.c:3738
-#, fuzzy
-#| msgid "create duplicate"
 msgid "create duplicates"
 msgstr "複製を作成"
 
 #: ../src/views/darkroom.c:3741
 msgid "_create"
-msgstr "作成"
+msgstr "_作成"
 
 #: ../src/views/darkroom.c:3756
 #, c-format
@@ -34263,10 +34196,8 @@ msgstr[0] "ドロップされたサイドカーから%u個の複製を作成し�
 msgstr[1] "ドロップされたサイドカーから%u個の複製を作成しました"
 
 #: ../src/views/darkroom.c:3761
-#, fuzzy
-#| msgid "error loading directory `%s'"
 msgid "error loading the dropped sidecars"
-msgstr "ディレクトリ`%s'読み込みエラー"
+msgstr "ドロップされたサイドカーの読み込み中にエラーが発生しました"
 
 #: ../src/views/darkroom.c:4814
 msgid "keyboard shortcut slider precision: fine"
