@@ -633,9 +633,12 @@ static GPtrArray *_parse_manifest(const char *json,
                                   char **out_base,
                                   uint32_t *out_hash,
                                   guint64 *out_total,
-                                  gboolean *out_unsupported)
+                                  int *out_unsupported_fmt)
 {
-  if(out_unsupported) *out_unsupported = FALSE;
+  /* 0 when nothing was skipped for its format, else the format that was --
+     which way it misses decides what to tell the user, and the two point at
+     opposite fixes. */
+  if(out_unsupported_fmt) *out_unsupported_fmt = 0;
 
   GPtrArray *files = NULL;
   JsonParser *parser = json_parser_new();
@@ -667,7 +670,7 @@ static GPtrArray *_parse_manifest(const char *json,
 
   JsonObject *chosen = NULL;
   uint32_t chosen_hash = 0;
-  gboolean saw_unsupported = FALSE;
+  int saw_unsupported_fmt = 0;
   const guint npacks = json_array_get_length(packs);
   for(guint i = 0; i < npacks && !chosen; i++)
   {
@@ -694,7 +697,7 @@ static GPtrArray *_parse_manifest(const char *json,
                "[spektrafilm] manifest pack %08x is format %d, this build reads"
                " %d..%d -- skipping",
                h, fmt, SF_PACK_FORMAT_MIN, SF_PACK_FORMAT_MAX);
-      if(!wanted || h == wanted) saw_unsupported = TRUE;
+      if(!wanted || h == wanted) saw_unsupported_fmt = fmt;
       continue;
     }
 
@@ -732,9 +735,13 @@ static GPtrArray *_parse_manifest(const char *json,
   if(!chosen)
   {
     /* Distinguish "the repository has nothing for you" from "it has exactly
-       what you asked for, but this darktable cannot read it" -- the second is
-       an upgrade prompt, the first is not. */
-    if(out_unsupported) *out_unsupported = saw_unsupported;
+       what you asked for, but this darktable cannot read it" -- and, within
+       the second, which side the mismatch falls on. A pack newer than this
+       build means update darktable; one older means the repository is behind
+       and needs re-exporting, which is somebody else's job entirely. Reporting
+       both as an upgrade prompt sends half of them after a release that does
+       not exist. */
+    if(out_unsupported_fmt) *out_unsupported_fmt = saw_unsupported_fmt;
     goto out;
   }
 
@@ -909,15 +916,18 @@ static gpointer _fetch_worker(gpointer data)
 
   uint32_t got_hash = 0;
   guint64 total = 0;
-  gboolean unsupported = FALSE;
-  files = _parse_manifest(manifest, wanted, &base, &got_hash, &total, &unsupported);
+  int unsupported_fmt = 0;
+  files = _parse_manifest(manifest, wanted, &base, &got_hash, &total, &unsupported_fmt);
   if(!files)
   {
     _set_status(SF_FETCH_FAILED, -1.0,
-                unsupported
+                unsupported_fmt > SF_PACK_FORMAT_MAX
                     ? _("that data pack needs a newer darktable")
-                    : (wanted ? _("no pack with that spectral table is published")
-                              : _("could not read the pack manifest")));
+                    : unsupported_fmt
+                        ? _("that data pack is too old for this darktable -- "
+                            "the data repository needs re-exporting")
+                        : (wanted ? _("no pack with that spectral table is published")
+                                  : _("could not read the pack manifest")));
     goto out;
   }
 

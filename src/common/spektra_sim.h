@@ -90,8 +90,8 @@ extern "C" {
  *
  * The declaration is mandatory in pack.json; there is no format that predates
  * the field, so nothing needs to be assumed for one that omits it. */
-#define SF_PACK_FORMAT_MIN 1
-#define SF_PACK_FORMAT_MAX 1
+#define SF_PACK_FORMAT_MIN 2
+#define SF_PACK_FORMAT_MAX 2
 
 
 
