@@ -4374,8 +4374,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       img->exif_correction_type != CORRECTION_TYPE_DNG
       && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
-    dt_bauhaus_toggle_set(g->use_latest_md_algo,
-                                 FALSE);
+    // guard: the callback re-enters gui_changed -> infinite recursion
+    DT_ENTER_GUI_UPDATE();
+    dt_bauhaus_toggle_set(g->use_latest_md_algo, FALSE);
+    DT_LEAVE_GUI_UPDATE();
     gtk_widget_set_visible
       (g->use_latest_md_algo,
        p->md_version != DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2);
