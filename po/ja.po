@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-02 12:31+0200\n"
-"PO-Revision-Date: 2026-08-03 11:46+0900\n"
+"PO-Revision-Date: 2026-08-03 17:57+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -2326,12 +2326,12 @@ msgstr ""
 "2本指のタッチパッドジェスチャーを使用して、ダークルームでパンとピンチによる"
 "ズームを行います\n"
 "\n"
-"有効: タッチパッドのピンチ操作で画像をズームし、2本指でのスクロール操作で画像"
-"をパンします。<i>Ctrl+スクロール</i> でも従来のズーム操作を引き続き行うことが"
-"出来ます\n"
+"<b>有効:</b> タッチパッドのピンチ操作で画像をズームし、2本指でのスクロール操作"
+"で画像をパンします。<i>Ctrl+スクロール</i> でも従来のズーム操作を引き続き行う"
+"ことが出来ます\n"
 "\n"
-"無効: タッチパッドのジェスチャーは無視され、ダークルームは従来のスクロール操作"
-"に戻り、<i>Ctrl+スクロール</i> でズームを行います"
+"<b>無効:</b> タッチパッドのジェスチャーは無視され、ダークルームは従来のスク"
+"ロール操作に戻り、<i>Ctrl+スクロール</i> でズームを行います"
 
 #: ../build/bin/preferences_gen.h:4655
 msgid "constrain darkroom zoom between screen fit and 100%"
@@ -11026,31 +11026,31 @@ msgstr "オブジェクトマスクの準備に失敗しました"
 
 #: ../src/develop/masks/object.c:1803
 msgid "[OBJECT] select / add foreground point"
-msgstr "【オブジェクト】前景ポイントを選択／追加"
+msgstr "【オブジェクト】前景ポイントを選択／追加する"
 
 #: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] add background point"
-msgstr "【オブジェクト】背景ポイントを追加"
+msgstr "【オブジェクト】背景ポイントを追加する"
 
 #: ../src/develop/masks/object.c:1813
 msgid "[OBJECT] clear selection"
-msgstr "【オブジェクト】選択をクリア"
+msgstr "【オブジェクト】選択をクリアする"
 
 #: ../src/develop/masks/object.c:1818
 msgid "[OBJECT] apply mask"
-msgstr "【オブジェクト】マスクを適用"
+msgstr "【オブジェクト】マスクを適用する"
 
 #: ../src/develop/masks/object.c:1823
 msgid "[OBJECT] change smoothing"
-msgstr "【オブジェクト】平滑化を変更"
+msgstr "【オブジェクト】平滑化を変更する"
 
 #: ../src/develop/masks/object.c:1828
 msgid "[OBJECT] change cleanup"
-msgstr "【オブジェクト】クリーンアップを変更"
+msgstr "【オブジェクト】クリーンアップを変更する"
 
 #: ../src/develop/masks/object.c:1833
 msgid "[OBJECT] change opacity"
-msgstr "【オブジェクト】不透明度を変更"
+msgstr "【オブジェクト】不透明度を変更する"
 
 #: ../src/develop/masks/object.c:1840
 #, c-format
@@ -12322,7 +12322,7 @@ msgstr "$(Xmp.dc.rights) - メタデータから取得した権利"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1017
 #: ../src/gui/gtkentry.c:117
 msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
-msgstr "$(CATEGORY0(category)) - 階層タグのレベルnのサブタグ"
+msgstr "$(CATEGORY[n,category]) - 階層タグのレベルnのサブタグ"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1018
 #: ../src/gui/gtkentry.c:121
@@ -18218,7 +18218,7 @@ msgid ""
 "example: 210 mm x 2.97 cm"
 msgstr ""
 "PDFの用紙のサイズ\n"
-"リストから選択、または\"<幅> [単位] x <高さ> <単位>\n"
+"リストから選択、または\"<幅> [単位] x <高さ> <単位>\"\n"
 "例：210 mm x 2.97 cm"
 
 #. orientation
@@ -19305,7 +19305,7 @@ msgstr "パラメータに保存することが出来る線は%d本のみです"
 #: ../src/iop/ashift.c:5068
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
-msgstr "%3.1fから%3.1f°へ調整して回転"
+msgstr "%3.2f°から%3.2f°へ回転を調整"
 
 #: ../src/iop/ashift.c:5701 ../src/iop/ashift.c:5703 ../src/iop/ashift.c:5807
 #: ../src/iop/ashift.c:5809
@@ -32654,10 +32654,10 @@ msgid_plural ""
 "<u>%d</u> images are assigned this tag!"
 msgstr[0] ""
 "タグ`%s'を本当に削除しますか？\n"
-"%d枚の画像にこのタグが付いています！"
+"<u>%d</u>枚の画像にこのタグが付いています！"
 msgstr[1] ""
 "タグ`%s'を本当に削除しますか？\n"
-"%d枚の画像にこのタグが付いています！"
+"<u>%d</u>枚の画像にこのタグが付いています！"
 
 #: ../src/libs/tagging.c:1749
 #, c-format
