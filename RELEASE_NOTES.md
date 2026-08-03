@@ -146,6 +146,9 @@ changes (where available).
   rejecting with filmstrip auto-scroll disabled and the collection
   filtered to hide rejected images.
 
+- Fixed the image index and filmstrip selection in culling mode not
+  updating when navigating with the arrow keys.
+
 ## Lua
 
 ### API Version
