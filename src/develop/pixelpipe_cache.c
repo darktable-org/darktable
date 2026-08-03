@@ -441,6 +441,23 @@ static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k)
   return removed;
 }
 
+void dt_dev_pixelpipe_clear_cacheline(dt_dev_pixelpipe_t *pipe,
+                                      const void *data,
+                                      const char *info)
+{
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+  {
+    if(cache->data[k] == data)
+    {
+      _free_cacheline(cache, k);
+      if(info)
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+          "clear cacheline", pipe, NULL, pipe->devid, NULL, NULL, "'%s'", info);
+    }
+  }
+}
+
 static inline int _used(const dt_dev_pixelpipe_cache_t *cache)
 {
   int cnt = 0;
