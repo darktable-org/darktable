@@ -2887,8 +2887,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         return TRUE;
     }
 
-    if(valid_input_on_gpu_only) // can't we clear/dealloc the cachline ?
-      dt_dev_pixelpipe_invalidate_cacheline(pipe, input, NULL);
+    if(valid_input_on_gpu_only)
+      dt_dev_pixelpipe_clear_cacheline(pipe, input, "input=valid_input_on_gpu_only");
   }
   else
 #endif // HAVE_OPENCL

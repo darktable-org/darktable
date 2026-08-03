@@ -90,6 +90,9 @@ void dt_dev_pixelpipe_important_cacheline(const struct dt_dev_pixelpipe_t *pipe,
 /** mark the given cache line as invalid or to be ignored */
 void dt_dev_pixelpipe_invalidate_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data, const char *info);
 
+/** removes cacheline and deallocates from pool. Note: use with great care! */
+void dt_dev_pixelpipe_clear_cacheline(struct dt_dev_pixelpipe_t *pipe, const void *data, const char *info);
+
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
 void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe);
