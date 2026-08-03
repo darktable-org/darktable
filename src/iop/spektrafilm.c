@@ -532,7 +532,11 @@ const char **description(dt_iop_module_t *self)
 
 int default_group(void)
 {
-  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
+  /* Same grouping as the other display transforms (filmicrgb, sigmoid, agx),
+     not the grading modules. It matters beyond tidiness: "only use one display
+     transform" is the module's first piece of advice, and filing it under
+     colour put it in a different group from every module it conflicts with. */
+  return IOP_GROUP_TONE | IOP_GROUP_TECHNICAL;
 }
 
 int flags(void)
@@ -3180,49 +3184,32 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_box_add(g->main_box, header_box);
 
-  /* Heading instead of an inline label: the stock names are long enough that a
-     left label leaves too little room for the value ("Kodak Professional Portra
-     Endura" truncated to the shared prefix, so four papers read alike). Hiding
-     the label outright would free the same room but leave two unlabelled
-     dropdowns whose contents look similar, so the heading carries the name.
-     Plain dt_ui_section_label_new(), NOT _section_add(): these comboboxes are
-     hand-wired rather than from_params, so a section reset button would move the
-     display without touching film_hash. */
-  dt_gui_box_add(header_box, dt_ui_section_label_new(C_("section", "film stock")));
-
+  /* Inline labels, like every other control in the module. These were section
+     headings for a while, to buy the value more width: the paper names used to
+     truncate to a shared prefix, so "Kodak Professional Portra Endura" and three
+     others all read alike. _shorten_name() has since stripped the filler words
+     they shared, and they now diverge at the seventh character ("Kodak Endura
+     Premier" / "Kodak Portra Endura" / "Kodak Supra Endura" / "Kodak Ultra
+     Endura"), so a label beside them no longer costs anything worth having.
+     A heading per single control also read as clutter once there were three. */
   g->film = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film, NULL, N_("film stock"));
-  dt_bauhaus_widget_hide_label(g->film);
   gtk_widget_set_tooltip_text(g->film, _("film emulsion (spektrafilm filming profile)"));
   g_signal_connect(G_OBJECT(g->film), "value-changed", G_CALLBACK(_film_changed), self);
   gtk_box_pack_start(GTK_BOX(header_box), g->film, TRUE, TRUE, 0);
 
-  dt_gui_box_add(header_box, dt_ui_section_label_new(C_("section", "print paper")));
-
   g->paper = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->paper, NULL, N_("print paper"));
-  dt_bauhaus_widget_hide_label(g->paper);
   gtk_widget_set_tooltip_text(g->paper,
                               _("print/paper stock; defaults to the film's target print"));
   g_signal_connect(G_OBJECT(g->paper), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(header_box), g->paper, TRUE, TRUE, 0);
-
-  /* Both controls below describe the physical frame, not the paper. Without a
-     heading they sit directly under the "print paper" combobox and read as
-     part of that section, since a section label runs until the next one. */
-  dt_gui_box_add(header_box, dt_ui_section_label_new(C_("section", "format")));
 
   /* redirect self->widget so from_params widgets pack into header_box */
   self->widget = header_box;
 
   g->film_format_combo = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film_format_combo, NULL, N_("format"));
-  /* Label hidden, as with the two comboboxes above: the heading directly over
-     it already says "format", and showing both puts the same word twice on
-     consecutive lines. The label itself stays set, so shortcuts and the module
-     search still find the control by name. The slider below keeps its own
-     label, since "frame long edge" is not what the heading says. */
-  dt_bauhaus_widget_hide_label(g->film_format_combo);
   gtk_widget_set_tooltip_text(g->film_format_combo,
                               _("common film/sensor gate presets; picking one sets the frame"
                                 " long edge slider below (pick \"custom\" to dial in an exact"
@@ -3375,11 +3362,17 @@ void gui_init(dt_iop_module_t *self)
   _section_add(self, C_("section", "preflash"));
 
   g->preflash_exposure = dt_bauhaus_slider_from_params(self, "preflash_exposure");
+  /* The effect is strong well before 0.5, so spreading 0..2 across the panel
+     put every usable setting in the first quarter of the travel and made the
+     step from off to barely-on larger than the whole range people work in.
+     Higher values stay reachable by right-click, as elsewhere in the module. */
+  dt_bauhaus_slider_set_soft_range(g->preflash_exposure, 0.0f, 0.5f);
   gtk_widget_set_tooltip_text(
       g->preflash_exposure,
       _("preflash exposure: a brief, uniform pre-exposure of the print through"
         " the film's base density, before the main print exposure -- lifts"
-        " shadows and reduces contrast (0 = off)"));
+        " shadows and reduces contrast (0 = off). drag up to 0.5, right-click"
+        " to enter higher values"));
 
   g->preflash_m_shift = dt_bauhaus_slider_from_params(self, "preflash_m_shift");
   dt_bauhaus_slider_set_format(g->preflash_m_shift, _(" CC"));
