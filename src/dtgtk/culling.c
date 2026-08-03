@@ -1062,6 +1062,9 @@ static void _dt_selection_changed_callback(gpointer instance,
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
+  // if we are updating the selection ourselves, stay in synchronisation mode
+  if(table->select_desactivate) return;
+
   // if we are in selection synchronisation mode, we exit this mode
   if(table->selection_sync) table->selection_sync = FALSE;
 
