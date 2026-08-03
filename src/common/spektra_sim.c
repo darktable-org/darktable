@@ -1023,28 +1023,24 @@ sf_profile_t *sf_profile_load(const char *path, const float development_min, cha
        For a single-emulsion (B&W) stock there is only one channel, and the outer
        axis is the DEVELOPMENT-TIME family -- (n_dev, n_layers). The reference
        collapses it in select_development_time() (density_curves.py) before the
-       model is ever evaluated, defaulting to the middle member. Our shipped
-       profiles are pre-processed inconsistently: kodak_2302 arrives collapsed
-       and widened to 3 identical rows, kodak_trix collapsed to 1 row, and
-       kodak_doublex still carries all 5 development rows even though its
-       density_curves and development_time were already reduced. Reconstructing
-       each stock's curve from its model confirms it -- doublex matches its own
-       density_curves exactly on row 2 of 5 (= (5-1)/2, the reference's default)
-       and nowhere else, trix on row 0, 2302 on any of its three identical rows.
+       model is ever evaluated, defaulting to the middle member.
 
-       Reading the outer axis as layers instead, which shape-guessing does for
-       every B&W stock (their inner length is 3, the LAYER count, not a channel
-       count), builds a model that reproduces nothing: doublex is off by 1.34
-       density at best and trix by 2.37. Both currently render from a wrong
-       curve fit. */
+       So the axis follows from channel_model and nothing else. It used to be
+       guessed from the row count as well, because the exporter widened a mono
+       stock's single model row to three copies while leaving a development
+       family at its natural row count -- one field, two layouts, in one pack.
+       pack_format 2 stops that widening, so the rule is now what the data
+       declares rather than what its shape suggests. The guess is worth
+       remembering: an earlier pack fed Double-X's model as channel-major and
+       rendered it from a curve off by 1.34 density, and the last version of it
+       survived only because the one replicated stock had identical rows.
+       tools/check_profiles.py in the data repository proves the axis by
+       reconstruction and fails a pack that gets it wrong. */
     const int outer_len = centers ? MIN((int)json_array_get_length(centers), SF_MAX_DEV_TIMES) : 0;
     JsonArray *row0 = (outer_len > 0) ? json_array_get_array_element(centers, 0) : NULL;
     const int inner_len = row0 ? MIN((int)json_array_get_length(row0), 8) : 0;
     const gboolean bw = p->channel_model && strcmp(p->channel_model, "bw") == 0;
-    /* A family puts development time on the model's outer axis. So does a pack
-       generated before the export script learned to collapse it, which is why
-       any B&W model whose outer length is not 3 is read the same way. */
-    const gboolean dev_major = dev_family || (bw && outer_len != 3);
+    const gboolean dev_major = bw;
     if(outer_len > 0 && inner_len > 0 && (dev_major || outer_len == 3))
     {
       const int nl = inner_len;
