@@ -181,6 +181,8 @@ typedef union dt_image_correction_data_t
     float centre_vig[2];
     gboolean has_warp;
     gboolean has_vignette;
+    // a GainMap in OpcodeList3, applied after demosaic (see dng_gain_maps_opcode3)
+    gboolean has_gainmap;
   } dng;
   struct {
     gboolean has_dist;
@@ -360,6 +362,9 @@ typedef struct dt_image_t
 
   /* GainMaps from DNG OpcodeList2 exif tag */
   GList *dng_gain_maps;
+
+  /* GainMaps from DNG OpcodeList3 exif tag */
+  GList *dng_gain_maps_opcode3;
 
   /* convenience pointer back into the image cache, so we can return
    * dt_image_t* there directly. */

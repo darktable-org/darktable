@@ -79,6 +79,9 @@ typedef struct dt_iop_rawprepare_data_t
   gboolean apply_gainmaps;
   // GainMap for each filter of RGGB Bayer pattern
   dt_dng_gain_map_t *gainmaps[4];
+  /* DNG OpcodeList3 GainMap for linear DNGs, owned by the image cache. NULL
+     unless the image is already demosaiced, in which case demosaic handles it. */
+  const dt_dng_gain_map_t *gainmap_opcode3;
 } dt_iop_rawprepare_data_t;
 
 typedef struct dt_iop_rawprepare_global_data_t
@@ -440,6 +443,22 @@ void process(dt_iop_module_t *self,
     }
   }
 
+  if(d->gainmap_opcode3)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "dng gainmap", piece->pipe, self, DT_DEVICE_CPU, NULL, roi_out,
+                  "OpcodeList3 %ux%u map, %u planes",
+                  d->gainmap_opcode3->map_points_h, d->gainmap_opcode3->map_points_v,
+                  d->gainmap_opcode3->map_planes);
+    /* unlike demosaic, rawprepare does not resample: it reads the input at
+       (csx + i, csy + j), so roi_out maps straight back to raw coordinates and
+       csx/csy already carry the crop. */
+    dt_dng_gain_map_apply(d->gainmap_opcode3, &piece->pipe->image, out, out,
+                          roi_out->width, roi_out->height,
+                          (roi_out->x + csx) / roi_out->scale,
+                          (roi_out->y + csy) / roi_out->scale,
+                          1.0f / roi_out->scale);
+  }
+
   const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
   if(color_sraw && piece->pipe->want_detail_mask)
     dt_dev_write_scharr_mask(piece, out, roi_out, FALSE);
@@ -463,6 +482,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_div = NULL;
   cl_mem dev_gainmap[4] = {NULL};
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
 
   int kernel = -1;
   gboolean gainmap_args = FALSE;
@@ -513,6 +533,7 @@ int process_cl(dt_iop_module_t *self,
   const int height = roi_out->height;
 
   const size_t sizes[2] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid) };
+
   dt_opencl_set_kernel_args(devid, kernel, 0,
     CLARG(dev_in), CLARG(dev_out),
     CLARG(width), CLARG(height),
@@ -540,6 +561,20 @@ int process_cl(dt_iop_module_t *self,
        CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+
+  if(err == CL_SUCCESS && d->gainmap_opcode3)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "dng gainmap", piece->pipe, self, devid, NULL, roi_out,
+                  "OpcodeList3 %ux%u map, %u planes",
+                  d->gainmap_opcode3->map_points_h, d->gainmap_opcode3->map_points_v,
+                  d->gainmap_opcode3->map_planes);
+    err = dt_dng_gain_map_apply_cl(devid, d->gainmap_opcode3, &piece->pipe->image,
+                                   dev_out, dev_out,
+                                   roi_out->width, roi_out->height,
+                                   (roi_out->x + csx) / roi_out->scale,
+                                   (roi_out->y + csy) / roi_out->scale,
+                                   1.0f / roi_out->scale);
+  }
 
 finish:
   dt_opencl_release_mem_object(dev_sub);
@@ -727,6 +762,17 @@ void commit_params(dt_iop_module_t *self,
     d->apply_gainmaps = _check_gain_maps(self, d->gainmaps);
   else
     d->apply_gainmaps = FALSE;
+
+  /* OpcodeList3 is defined for demosaiced data, so for a CFA raw it belongs in
+     demosaic and not here. A linear DNG never reaches a demosaicer, and this is
+     the first module that sees it as three colour planes, so it is corrected
+     here instead. Following the OpcodeList2 maps, it is offered under the same
+     "flat field" control. */
+  d->gainmap_opcode3 = (p->flat_field == FLAT_FIELD_EMBEDDED
+                        && !piece->pipe->dsc.filters
+                        && piece->colors == 4)
+    ? dt_dng_gain_map_opcode3(&piece->pipe->image)
+    : NULL;
 
   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
