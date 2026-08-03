@@ -246,6 +246,8 @@ typedef struct dt_develop_t
 
     // this module receives right-drag events if not already claimed
     struct dt_iop_module_t *rotate;
+    // when set, left-click events are forwarded to proxy.rotate (used for fix horizon from quick access)
+    gboolean forward_left_click;
 
     // modulegroups plugin hooks
     struct

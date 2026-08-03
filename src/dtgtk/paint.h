@@ -361,6 +361,8 @@ void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint 
 
 /** Paint an icon for snapshots restore button */
 void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a horizon fix icon */
+void dtgtk_cairo_paint_horizon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 G_END_DECLS
 
