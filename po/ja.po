@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-02 12:31+0200\n"
-"PO-Revision-Date: 2026-08-03 09:48+0900\n"
+"PO-Revision-Date: 2026-08-03 10:24+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1529,7 +1529,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3477
 msgid "path mask resize step amount"
-msgstr ""
+msgstr "パスマスクリサイズのステップ量"
 
 #: ../build/bin/preferences_gen.h:3495
 msgid ""
@@ -1539,7 +1539,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3504
 msgid "unit for path mask resize step amount"
-msgstr ""
+msgstr "パスマスクリサイズのステップ量の単位"
 
 #: ../build/bin/preferences_gen.h:3514
 #, no-c-format
@@ -1550,7 +1550,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3523
 msgid "path mask resize tracing resolution"
-msgstr ""
+msgstr "パスマスクリサイズのトレース解像度"
 
 #: ../build/bin/preferences_gen.h:3530
 msgctxt "preferences"
@@ -1563,6 +1563,9 @@ msgid ""
 "vectorizing a resized path mask. higher values preserve more detail and nodes "
 "at the cost of speed."
 msgstr ""
+"リサイズしたパスマスクを再ベクトル化する際に使用する内部ラスターの解像度（長辺"
+"のピクセル数）。値を大きくすると、速度と引き換えに、より多くのディテールとノー"
+"ドが保持されます"
 
 #: ../build/bin/preferences_gen.h:3541
 #, fuzzy
@@ -1576,6 +1579,9 @@ msgid ""
 "'sharp' preserves more nodes and corners; 'smooth' produces fewer, rounder "
 "control points."
 msgstr ""
+"リサイズしたパスマスクを再ベクトル化する際の角の処理方法を制御します。'シャー"
+"プ'はより多くのノードと角を保持し、'スムーズ'はより少なく、より丸みを帯びたコ"
+"ントロールポイントを生成します"
 
 #: ../build/bin/preferences_gen.h:3559
 msgid "show mask indicator in module headers"
@@ -10711,11 +10717,11 @@ msgstr "【線分の上のパス】ノードを追加する"
 
 #: ../src/develop/masks/brush.c:3410
 msgid "[BRUSH] rotate shape (source only on a clone source)"
-msgstr ""
+msgstr "【ブラシ】シェイプを回転する（クローンソースの場合はソースのみ回転）"
 
 #: ../src/develop/masks/brush.c:3414
 msgid "[BRUSH] rotate shape and source together"
-msgstr ""
+msgstr "【ブラシ】シェイプとソースを両方回転する"
 
 #: ../src/develop/masks/brush.c:3416
 msgid "[BRUSH] change size"
@@ -10842,7 +10848,7 @@ msgstr "【楕円】境界ぼかしのモードを変更する"
 
 #: ../src/develop/masks/ellipse.c:2092
 msgid "[ELLIPSE] rotate shape (source only on a clone source)"
-msgstr ""
+msgstr "【楕円】シェイプを回転する（クローンソースの場合はソースのみ回転）"
 
 #: ../src/develop/masks/ellipse.c:2096
 #, fuzzy
@@ -11142,15 +11148,15 @@ msgstr "【線分の上のパス】ノードを追加する"
 
 #: ../src/develop/masks/path.c:5271
 msgid "[PATH] rotate shape (source only on a clone source)"
-msgstr ""
+msgstr "【パス】シェイプを回転する（クローンソースの場合はソースのみ回転）"
 
 #: ../src/develop/masks/path.c:5275
 msgid "[PATH] rotate shape and source together"
-msgstr ""
+msgstr "【パス】シェイプとソースを同時に回転する"
 
 #: ../src/develop/masks/path.c:5276
 msgid "[PATH] grow/shrink"
-msgstr ""
+msgstr "【パス】膨張／縮小"
 
 #: ../src/develop/masks/path.c:5278
 #, fuzzy
@@ -22828,6 +22834,10 @@ msgid ""
 "minimal\n"
 "visual differences might be possible."
 msgstr ""
+"ブルーマッピングモードは長い間非推奨とされてきましたが、このたび削除されまし"
+"た\n"
+"デフォルトにリセットするか、任意のカラーインプロファイルに切り替えて結果を確認"
+"してください。わずかな見た目の違いが生じる可能性があります"
 
 #: ../src/iop/colorin.c:2062
 msgid "input profile"
@@ -25423,12 +25433,16 @@ msgid ""
 "this camera is not in the Lensfun database\n"
 "click to pick one manually"
 msgstr ""
+"このカメラはLensfunデータベースに登録されていません\n"
+"クリックして手動で選択してください"
 
 #: ../src/iop/lens.cc:3790
 msgid ""
 "no camera information found\n"
 "click to pick one manually"
 msgstr ""
+"カメラ情報が見つかりません\n"
+"クリックして手動で選択してください"
 
 #: ../src/iop/lens.cc:3820
 #, c-format
@@ -25448,6 +25462,8 @@ msgid ""
 "no matching lens in the Lensfun database\n"
 "click to pick one from the full list"
 msgstr ""
+"一致するレンズがLensfunデータベースにありません\n"
+"クリックしてリストから選択してください"
 
 #: ../src/iop/lens.cc:4074
 #, c-format
@@ -30927,7 +30943,7 @@ msgstr "マスクの境界の微調整"
 
 #: ../src/libs/masks.c:518
 msgid "shrink amount too large: the path would disappear"
-msgstr ""
+msgstr "縮小量が大きすぎます：パスが消えてしまいます"
 
 #: ../src/libs/masks.c:719
 #, c-format
@@ -31005,17 +31021,22 @@ msgstr "筆圧"
 
 #: ../src/libs/masks.c:2428
 msgid "shrink or grow"
-msgstr ""
+msgstr "縮小または膨張"
 
 #: ../src/libs/masks.c:2432
 msgid ""
 "grow (positive) or shrink (negative) the selected path,\n"
 "relative to its shape when selected; 0 restores the original"
 msgstr ""
+"選択したパスを、選択時の形状を基準にして膨張（正の値）または縮小（負の値）させ"
+"ます\n"
+"0で元の形状に戻ります"
 
 #: ../src/libs/masks.c:2445
 msgid "shrink/grow unit: image pixels (px) or % of path size — click to toggle"
 msgstr ""
+"縮小／膨張の単位：画像のピクセル数（px）またはパスのサイズに対する割合（%） — "
+"クリックで切り替え"
 
 #: ../src/libs/metadata.c:66
 msgid "metadata editor"
@@ -31816,6 +31837,8 @@ msgid ""
 "raw denoise: this image is already pre-demosaiced (sRaw / computational raw); "
 "results may be limited"
 msgstr ""
+"rawノイズ除去：この画像はすでにデモザイク済みです（sRaw／コンピュテーショナル"
+"raw）。効果が限定的になる可能性があります"
 
 #: ../src/libs/neural_restore.c:1438 ../src/libs/neural_restore.c:4282
 msgid "upscale"
@@ -31890,6 +31913,8 @@ msgstr "出力：LinearRaw DNG"
 #: ../src/libs/neural_restore.c:1755
 msgid "preview unavailable – process to save result"
 msgstr ""
+"プレビューを利用することが出来ません — 結果を保存するには処理を実行してくださ"
+"い"
 
 #: ../src/libs/neural_restore.c:1776
 msgid "wide-gamut preserved, not denoised"
@@ -33519,7 +33544,7 @@ msgstr "スクリプトごとの設定オプション"
 
 #: ../src/views/darkroom.c:657
 msgid "drop image files here to add them to the collection"
-msgstr ""
+msgstr "ここに画像ファイルをドロップしてコレクションに追加します"
 
 #: ../src/views/darkroom.c:791
 #, c-format
@@ -34175,7 +34200,7 @@ msgstr "選択を同期"
 #: ../src/views/darkroom.c:3697
 #, c-format
 msgid "apply the dropped sidecar '%s'?"
-msgstr ""
+msgstr "ドロップされたサイドカー'%s'を適用しますか？"
 
 #: ../src/views/darkroom.c:3698
 msgid "apply sidecar"
@@ -34186,6 +34211,8 @@ msgid ""
 "replace the history of the current image, or create a duplicate and apply the "
 "history to it?"
 msgstr ""
+"現在の画像の履歴を置き換えますか、それとも複製を作成してそちらに履歴を適用しま"
+"すか？"
 
 #: ../src/views/darkroom.c:3705
 msgid "create _duplicate"
@@ -34214,7 +34241,9 @@ msgid ""
 msgid_plural ""
 "%d duplicates of the current image will be created, one per dropped sidecar."
 msgstr[0] ""
+"現在の画像の複製が%d個作成されます（ドロップしたサイドカー1つにつき1個）"
 msgstr[1] ""
+"現在の画像の複製が%d個作成されます（ドロップしたサイドカー1つにつき1個）"
 
 #: ../src/views/darkroom.c:3738
 #, fuzzy
@@ -34230,8 +34259,8 @@ msgstr "作成"
 #, c-format
 msgid "created %u duplicate from dropped sidecars"
 msgid_plural "created %u duplicates from dropped sidecars"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ドロップされたサイドカーから%u個の複製を作成しました"
+msgstr[1] "ドロップされたサイドカーから%u個の複製を作成しました"
 
 #: ../src/views/darkroom.c:3761
 #, fuzzy
