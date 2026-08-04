@@ -118,7 +118,7 @@ const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t st
   case DT_DEV_PIXELPIPE_STOP_HQ:    return "DT_DEV_PIXELPIPE_STOP_HQ";
   case DT_DEV_PIXELPIPE_STOP_ZOOM:  return "DT_DEV_PIXELPIPE_STOP_ZOOM";
   case DT_DEV_PIXELPIPE_STOP_DATA:  return "DT_DEV_PIXELPIPE_STOP_DATA";
-  default:                          return "DT_DEV_PIXELPIPE_STOP_MODULE";
+  default:                          return "DT_DEV_PIXELPIPE_STOP_UNDEFINED";
   }
 }
 

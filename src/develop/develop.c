@@ -282,7 +282,10 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->gui_attached || dt_pipe_started(dev->full.pipe)) return;
+  if(!dev->gui_attached) return;
+  if(dt_pipe_processing(dev->full.pipe))
+    dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
 }
@@ -297,6 +300,8 @@ void dt_dev_process_preview(dt_develop_t *dev)
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
   if(!dev->gui_attached && !dev->preview2.widget) return;
+  if(dt_pipe_processing(dev->preview2.pipe))
+    dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
@@ -799,7 +804,8 @@ restart:
                 pipe->input_changed ? "pipe_input_changed " : "",
                 pipe->changed & DT_DEV_PIPE_ZOOMED ? "zoomed " : "",
                 pipe->changed & DT_DEV_PIPE_SYNCH ? "synch" : "");
-  restarts++;
+  if(shutdown != DT_DEV_PIXELPIPE_STOP_ZOOM && shutdown != DT_DEV_PIXELPIPE_STOP_DATA)
+    restarts++;
 
   if(stopped)
   {
@@ -819,9 +825,7 @@ restart:
       return;
     }
 
-    /* pixelpipe stopped due to changed pipe nodes, HQ mode changes or module aborts
-        while processing the pipe. All require restarts as pipe status is not valid yet.
-    */
+    // pixelpipe stopped due to a shutdown request, all modes require a pipe restart as pipe status is not valid.
     if(shutdown > DT_DEV_PIXELPIPE_PROCESSING)
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
@@ -3390,7 +3394,11 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
 
   if(port->widget)
+  {
+    if(dt_pipe_processing(port->pipe) && port == &dev->full)
+      dt_dev_pixelpipe_set_shutdown(port->pipe, DT_DEV_PIXELPIPE_STOP_ZOOM);
     dt_control_queue_redraw_widget(port->widget);
+  }
   if(port == &dev->full)
     dt_control_navigation_redraw();
 }
