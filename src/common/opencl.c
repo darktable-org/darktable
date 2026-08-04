@@ -4032,7 +4032,7 @@ static void _opencl_events_profiling(const int devid,
     return; // nothing to do
 
   char **tags = malloc(sizeof(char *) * (*eventsconsolidated + 1));
-  double *timings = malloc(sizeof(float) * (*eventsconsolidated + 1));
+  double *timings = malloc(sizeof(double) * (*eventsconsolidated + 1));
   int items = 1;
   tags[0] = "";
   timings[0] = 0.0;
