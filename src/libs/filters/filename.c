@@ -372,7 +372,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_box_pack_start(GTK_BOX(hb), filename->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
-  dt_gui_connect_click(filename->name, _filename_press, NULL, filename);
+  GtkGestureSingle *g_name = dt_gui_connect_click(filename->name, _filename_press, NULL, filename);
+  gtk_gesture_single_set_button(g_name, GDK_BUTTON_SECONDARY);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_name), GTK_PHASE_TARGET);
 
   filename->ext = dt_ui_entry_new(top ? 5 : 0);
   gtk_widget_set_can_default(filename->ext, TRUE);
@@ -384,7 +386,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
-  dt_gui_connect_click(filename->ext, _filename_press, NULL, filename);
+  GtkGestureSingle *g_ext = dt_gui_connect_click(filename->ext, _filename_press, NULL, filename);
+  gtk_gesture_single_set_button(g_ext, GDK_BUTTON_SECONDARY);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_ext), GTK_PHASE_TARGET);
   if(top)
   {
     dt_gui_add_class(hb, "dt_quick_filter");
