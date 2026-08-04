@@ -235,7 +235,7 @@ void gui_init(dt_lib_module_t *self)
   //        as here is a well-used pattern, make proxy which handles
   //        this so don't need to implement a "begin" handler here.
   GtkGesture *zoom_gesture = gtk_gesture_zoom_new(thumbnail);
-  g_object_weak_ref(G_OBJECT(thumbnail), (GWeakNotify) g_object_unref, zoom_gesture);
+  dt_gui_add_controller(thumbnail, zoom_gesture);
   g_signal_connect(zoom_gesture, "begin", G_CALLBACK(_lib_navigation_pinch_begin_callback), self);
   g_signal_connect(zoom_gesture, "scale-changed", G_CALLBACK(_lib_navigation_pinch_scale_callback), self);
   dt_gui_connect_motion(thumbnail, _lib_navigation_motion_notify_callback, NULL, _lib_navigation_leave_notify_callback, self);

@@ -266,7 +266,7 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
     GtkGesture *gesture = gtk_gesture_multi_press_new(w);
     gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
                                                GTK_PHASE_CAPTURE);
-    g_object_weak_ref(G_OBJECT(w), (GWeakNotify)g_object_unref, gesture);
+    dt_gui_add_controller(w, gesture);
     g_signal_connect_data(gesture, "pressed", callback, self, NULL, 0);
     g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);

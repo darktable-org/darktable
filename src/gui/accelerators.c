@@ -3099,7 +3099,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
     GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(actions_view));
     gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
                                                GTK_PHASE_CAPTURE);
-    g_object_weak_ref(G_OBJECT(actions_view), (GWeakNotify)g_object_unref, gesture);
+    dt_gui_add_controller(GTK_WIDGET(actions_view), gesture);
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
     g_signal_connect(gesture, "pressed", G_CALLBACK(_action_view_click_cb), _actions_store);
     g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
