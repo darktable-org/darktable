@@ -268,8 +268,9 @@ static void _misc_press(GtkGestureSingle *gesture,
                         _widgets_misc_t *misc)
 {
   GtkWidget *w = dt_gui_get_widget(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
+  if(button == GDK_BUTTON_SECONDARY)
   {
     _misc_tree_update_visibility(w, misc);
     gtk_popover_set_default_widget(GTK_POPOVER(misc->pop), w);
@@ -280,7 +281,7 @@ static void _misc_press(GtkGestureSingle *gesture,
 
     gtk_widget_show_all(misc->pop);
   }
-  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
+  else if(button == GDK_BUTTON_PRIMARY
           && n_press >= 2)
   {
     gtk_entry_set_text(GTK_ENTRY(misc->name), "");
@@ -462,7 +463,9 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   gtk_box_pack_start(GTK_BOX(hb), misc->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(misc->name), "activate", G_CALLBACK(_misc_changed), misc);
   g_signal_connect(G_OBJECT(misc->name), "focus-out-event", G_CALLBACK(_misc_focus_out), misc);
-  dt_gui_connect_click(misc->name, _misc_press, NULL, misc);
+  GtkGestureSingle *misc_gesture = dt_gui_connect_click(misc->name, _misc_press, NULL, misc);
+  gtk_gesture_single_set_button(misc_gesture, GDK_BUTTON_SECONDARY);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(misc_gesture), GTK_PHASE_TARGET);
 
   if(top)
   {
