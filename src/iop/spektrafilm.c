@@ -368,11 +368,21 @@ typedef struct dt_iop_spektrafilm_data_t
      stage): built from d->gpu's grain_layer_* tables, which only change
      when d->gpu itself is rebuilt (a new film/paper/quality choice), never
      per-tile. Cached here and keyed on the `gpu` pointer they were built
-     from, instead of being re-uploaded on every process_cl() call --
-     tiled processing calls process_cl() once per tile, so uploading these
-     fresh every time was pure per-tile overhead for data that never
-     changes between tiles of the same image. */
+     from AND on the device they were built on, instead of being re-uploaded
+     on every process_cl() call -- tiled processing calls process_cl() once
+     per tile, so uploading these fresh every time was pure per-tile overhead
+     for data that never changes between tiles of the same image.
+
+     The device is part of the key because a cl_mem belongs to the context
+     that created it. piece->data lives as long as the pipe, but pipe->devid
+     is reassigned by dt_opencl_lock_device() on every run -- that is what the
+     device pool is for -- so on a machine with more than one OpenCL device a
+     pipe can upload these on one device and, next run, hand them to a kernel
+     on another. The handles are still valid, just foreign, and clSetKernelArg
+     dereferences them inside the driver: it segfaults there rather than
+     returning an error, so there is nothing to check afterwards. */
   const sf_sim_gpu_t *grain_cl_built_for;
+  int grain_cl_devid;
   cl_mem grain_cl_dmax, grain_cl_npart, grain_cl_dmin, grain_cl_total, grain_cl_curve;
 } dt_iop_spektrafilm_data_t;
 
@@ -2106,7 +2116,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
        calls this once per tile, and this data never changes between tiles
        of the same image, so re-uploading it per tile was pure overhead. */
     const int nsub = g->grain_n_sublayers, nle = SF_NLE, maxsub = SF_GRAIN_MAX_SUBLAYERS;
-    if(d->grain_cl_built_for != g)
+    if(d->grain_cl_built_for != g || d->grain_cl_devid != devid)
     {
       if(d->grain_cl_dmax) dt_opencl_release_mem_object(d->grain_cl_dmax);
       if(d->grain_cl_npart) dt_opencl_release_mem_object(d->grain_cl_npart);
@@ -2124,6 +2134,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       d->grain_cl_curve = dt_opencl_copy_host_to_device_constant(
           devid, (size_t)nle * maxsub * 3 * f, (void *)g->grain_layer_curve);
       d->grain_cl_built_for = g;
+      d->grain_cl_devid = devid;
     }
     if(!d->grain_cl_dmax || !d->grain_cl_npart || !d->grain_cl_dmin || !d->grain_cl_total
        || !d->grain_cl_curve)
