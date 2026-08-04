@@ -96,6 +96,16 @@ static inline void neon_mat3_mulv_batch(const float m[9], const float *in,
 #define SF_CMAX_NH 720 /* [gc] _OKLCH_CMAX_TABLE_N_H */
 #define SF_CMAX_NBISECT 18
 #define SF_MIDGRAY 0.184
+/* [su] hanatos2025 sensitivity adaptation, surface half.
+   _HANATOS2025_MAX_CORRECTION_STOPS in spectral_upsampling.py -- the bound the
+   surface fit was produced under, so it is part of the model rather than a
+   safety clamp bolted on afterwards. */
+#define SF_HANATOS_MAX_CORRECTION_STOPS 2.0
+/* poly2d_deg4 takes 15 coefficients per channel. The warped variant of the
+   surface (eval_poly4_warp_log_exposure_surface) takes 16 -- 15 plus a Mobius
+   alpha -- and reading one as the other silently evaluates a different
+   surface, so the count is checked rather than assumed. */
+#define SF_SURFACE_NCOEF 15
 
 /* Generic (still film, strong-antihalation) halation baseline — the values
  * spektra_core.c's sf_halation() used to hardcode unconditionally. Now the
@@ -258,6 +268,11 @@ struct sf_profile_t
   double density_curves[SF_NLE][3];
   int window_n;
   double window_params[8];
+  /* [su] hanatos2025_adaptation_surface_params: per-channel degree-4 polynomial
+     in tc, giving a log2 exposure correction. surface_n is 0 when the profile
+     carries none, which is how print stocks and the two B&W films arrive. */
+  int surface_n;
+  double surface_params[3][SF_SURFACE_NCOEF];
   sf_curves_model_t curves_model;
 };
 
@@ -1006,6 +1021,27 @@ sf_profile_t *sf_profile_load(const char *path, const float development_min, cha
     for(int i = 0; i < p->window_n; i++)
       p->window_params[i] = json_array_get_double_element(arr, i);
   }
+  if(json_object_has_member(data, "hanatos2025_adaptation_surface_params"))
+  {
+    JsonNode *node = json_object_get_member(data, "hanatos2025_adaptation_surface_params");
+    JsonArray *arr = (node && JSON_NODE_HOLDS_ARRAY(node)) ? json_node_get_array(node) : NULL;
+    JsonArray *row0 = (arr && json_array_get_length(arr) == 3)
+                          ? json_array_get_array_element(arr, 0)
+                          : NULL;
+    const int ncoef = row0 ? (int)json_array_get_length(row0) : 0;
+    if(ncoef == SF_SURFACE_NCOEF
+       && json_read_dmatrix(data, "hanatos2025_adaptation_surface_params",
+                            &p->surface_params[0][0], 3, SF_SURFACE_NCOEF))
+      p->surface_n = SF_SURFACE_NCOEF;
+    else if(ncoef)
+      /* Not silently ignored: an unrecognised width is most likely the warped
+         variant (16), and evaluating it here as if it were the plain one would
+         apply a wrong correction of up to two stops rather than none. */
+      g_warning("spektra_sim: profile %s has %d surface coefficients per channel, "
+                "expected %d; skipping the hanatos2025 surface adaptation",
+                path, ncoef, SF_SURFACE_NCOEF);
+  }
+
   if(json_object_has_member(data, "density_curves_model"))
   {
     JsonNode *mnode = json_object_get_member(data, "density_curves_model");
@@ -1213,6 +1249,31 @@ static inline void tri2quad(double out[2], const double tc[2])
   double x = (1.0 - tx) * (1.0 - tx);
   out[0] = CLAMP(x, 0.0, 1.0);
   out[1] = CLAMP(y, 0.0, 1.0);
+}
+
+/* [su] hanika_sigmoid: algebraic sigmoid matching Jakob & Hanika 2019, bounding
+   the polynomial to +-max_val. Soft, so the surface approaches the bound
+   asymptotically instead of flattening onto it. */
+static inline double hanika_sigmoid(double z, double max_val)
+{
+  const double t = z / max_val;
+  return z / sqrt(1.0 + t * t);
+}
+
+/* [su] poly2d_deg4: degree-4 polynomial in tc, centred on center_tc.
+   params[0] is deliberately unread -- upstream drops the constant term so the
+   correction is exactly zero at the centre, which is what keeps the reference
+   white unmoved. */
+static double poly2d_deg4(const double tc[2], const double params[SF_SURFACE_NCOEF],
+                          const double center_tc[2])
+{
+  const double x = tc[0] - center_tc[0], y = tc[1] - center_tc[1];
+  const double x2 = x * x, y2 = y * y, xy = x * y;
+  const double x3 = x2 * x, y3 = y2 * y;
+  return params[1] * x + params[2] * y + params[3] * x2 + params[4] * y2
+         + params[5] * xy + params[6] * x3 + params[7] * y3 + params[8] * (x2 * y)
+         + params[9] * (x * y2) + params[10] * (x2 * x2) + params[11] * (y2 * y2)
+         + params[12] * (x3 * y) + params[13] * (x2 * y2) + params[14] * (x * y3);
 }
 
 static inline void quad2tri(double out[2], const double xy[2])
@@ -2651,6 +2712,46 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
         dst[1] = acc[1];
         dst[2] = acc[2];
       }
+    /* [su] compute_hanatos2025_tc_lut, apply_surface: raw_lut *= 2**surface.
+       A per-chromaticity, per-channel log2 exposure correction, evaluated on the
+       same tc grid as the LUT and centred on the film's reference illuminant, so
+       it is exactly zero at that white and grows away from it -- the second half
+       of the hanatos2025 sensitivity adaptation, the first being the spectral
+       bandpass window folded into sens_w above. Both preserve white balance,
+       which is why the window's per-channel renormalisation and this surface's
+       missing constant term matter as much as the shapes themselves.
+
+       Runs after the sensitivity product and before the gamut-compression
+       remap below, matching upstream's order: the remap resamples this LUT, so
+       it has to see the corrected values.
+
+       Build-time, once per sim. The GPU path uploads the corrected table and
+       needs no kernel of its own. Skipped for a profile that carries no
+       surface parameters, as upstream skips it on an empty array. */
+    if(film->surface_n == SF_SURFACE_NCOEF)
+    {
+      double center_tc[2];
+      tri2quad(center_tc, film_ref_xy);
+      const double step = 1.0 / (double)(n - 1);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+      for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+        {
+          /* tc grid identical to upstream's meshgrid(linspace(0, 1, n),
+             indexing='ij'): the first index runs tc.x, the second tc.y, which
+             is also how cubic_interp_2d addresses this table. */
+          const double tc[2] = { (double)i * step, (double)j * step };
+          double *dst = s->tc_lut + ((size_t)i * n + j) * 3;
+          for(int c = 0; c < 3; c++)
+          {
+            const double raw = poly2d_deg4(tc, film->surface_params[c], center_tc);
+            const double stops = hanika_sigmoid(raw, SF_HANATOS_MAX_CORRECTION_STOPS);
+            dst[c] *= exp2(stops);
+          }
+        }
+    }
     /* [gc] remap_tc_lut_for_compression: new_lut[tc] = old_lut[compress(tc)] */
     if(p->input_gamut_compress)
     {
