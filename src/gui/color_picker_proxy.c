@@ -262,6 +262,16 @@ static void _color_picker_callback(GtkWidget *button,
   _color_picker_callback_button_press(button, NULL, self);
 }
 
+static void _color_picker_clicked(GtkGestureSingle *gesture,
+                                   gint n_press,
+                                   gdouble x,
+                                   gdouble y,
+                                   dt_iop_color_picker_t *self)
+{
+  GtkWidget *button = dt_gui_get_widget(gesture);
+  _color_picker_callback_button_press(button, NULL, self);
+}
+
 void dt_iop_color_picker_set_cst(dt_iop_module_t *module,
                                  const dt_iop_colorspace_type_t picker_cst)
 {
@@ -401,9 +411,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
       color_picker->picker_cst = cst;
       color_picker->fixed_cst = TRUE;
     }
-    g_signal_connect_data(G_OBJECT(button), "button-press-event",
-                          G_CALLBACK(_color_picker_callback_button_press),
-                          color_picker, (GClosureNotify)_color_picker_destroy, 0);
+    dt_gui_connect_click(button, _color_picker_clicked, NULL, color_picker);
     if(w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
     return button;

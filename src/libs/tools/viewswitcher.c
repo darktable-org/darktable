@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,12 +45,19 @@ typedef struct dt_lib_viewswitcher_t
 } dt_lib_viewswitcher_t;
 
 /* callback when a view label is pressed */
-static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, const dt_view_t *view);
+static void _lib_viewswitcher_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                       double x, double y,
+                                                       dt_view_t *view);
 /* helper function to create a label */
 static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *view);
 /* callback when view changed signal happens */
 static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t *old_view,
                                                     dt_view_t *new_view, dt_lib_module_t *self);
+static void _lib_viewswitcher_enter_callback(GtkEventControllerMotion *controller,
+                                               double x, double y,
+                                               GtkWidget *label);
+static void _lib_viewswitcher_leave_callback(GtkEventControllerMotion *controller,
+                                               GtkWidget *label);
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,
                                                           dt_view_t *new_view, dt_lib_module_t *self);
 static void _switch_view(const dt_view_t *view);
@@ -171,15 +178,22 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, GtkLabel *l)
+static void _lib_viewswitcher_enter_callback(GtkEventControllerMotion *controller,
+                                               double x, double y,
+                                               GtkWidget *label)
 {
+  GtkWidget *w = dt_gui_get_widget(controller);
   /* if not active view lets highlight */
-  if(e->type == GDK_ENTER_NOTIFY &&
-     strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
-    gtk_widget_set_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_PRELIGHT, FALSE);
+  if(strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
+    gtk_widget_set_state_flags(label, GTK_STATE_FLAG_PRELIGHT, FALSE);
   else
-    gtk_widget_unset_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_PRELIGHT);
-  return FALSE;
+    gtk_widget_unset_state_flags(label, GTK_STATE_FLAG_PRELIGHT);
+}
+
+static void _lib_viewswitcher_leave_callback(GtkEventControllerMotion *controller,
+                                               GtkWidget *label)
+{
+  gtk_widget_unset_state_flags(label, GTK_STATE_FLAG_PRELIGHT);
 }
 
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,
@@ -259,13 +273,10 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *view)
   gtk_widget_set_state_flags(b, GTK_STATE_FLAG_NORMAL, TRUE);
 
   /* connect button press handler */
-  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), view);
+  dt_gui_connect_click(eb, _lib_viewswitcher_button_press_callback, NULL, view);
 
   /* set enter/leave notify events and connect signals */
-  gtk_widget_add_events(GTK_WIDGET(eb), GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-
-  g_signal_connect(G_OBJECT(eb), "enter-notify-event", G_CALLBACK(_lib_viewswitcher_enter_leave_notify_callback), b);
-  g_signal_connect(G_OBJECT(eb), "leave-notify-event", G_CALLBACK(_lib_viewswitcher_enter_leave_notify_callback), b);
+  dt_gui_connect_motion(eb, NULL, _lib_viewswitcher_enter_callback, _lib_viewswitcher_leave_callback, b);
 
   return eb;
 }
@@ -275,14 +286,14 @@ static void _switch_view(const dt_view_t *view)
   dt_ctl_switch_mode_to_by_view(view);
 }
 
-static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, const dt_view_t *view)
+static void _lib_viewswitcher_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                       double x, double y,
+                                                       dt_view_t *view)
 {
-  if(ev->button == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     _switch_view(view);
-    return TRUE;
   }
-  return FALSE;
 }
 
 

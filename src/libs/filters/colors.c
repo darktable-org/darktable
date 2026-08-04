@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -52,7 +52,8 @@ static void _set_mask(dt_lib_filtering_rule_t *rule , const int mask, const gboo
   g_free(txt);
 }
 
-static gboolean _colors_clicked(GtkWidget *w, GdkEventButton *e, _widgets_colors_t *colors)
+// kept for direct callers from accelerators
+static gboolean _colors_clicked_old(GtkWidget *w, GdkEventButton *e, _widgets_colors_t *colors)
 {
   // double click reset the widget
   if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
@@ -100,6 +101,58 @@ static gboolean _colors_clicked(GtkWidget *w, GdkEventButton *e, _widgets_colors
   _set_mask(colors->rule, new_mask, TRUE);
   _colors_update(rule);
   return FALSE;
+}
+
+static void _colors_clicked_gesture(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, _widgets_colors_t *colors)
+{
+  GtkWidget *w = dt_gui_get_widget(gesture);
+
+  // double click reset the widget
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY && n_press >= 2)
+  {
+    _set_mask(colors->rule, CL_AND_MASK, TRUE);
+    _colors_update(colors->rule);
+    return;
+  }
+
+  dt_lib_filtering_rule_t *rule = colors->rule;
+  const int mask = _get_mask(rule->raw_text);
+  const int k = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "colors_index"));
+  const GdkModifierType state = dt_key_modifier_state();
+  const int mask_k = (1 << k) | (1 << (k + 12));
+  int new_mask = mask_k;
+  if(k == DT_COLORLABELS_LAST)
+  {
+    if(mask & mask_k)
+      new_mask = 0;
+    else if(state & GDK_CONTROL_MASK)
+      new_mask = CL_ALL_EXCLUDED | CL_GREY_EXCLUDED;
+    else
+      new_mask = CL_ALL_INCLUDED | CL_GREY_INCLUDED;
+    new_mask |= (mask & CL_AND_MASK);
+  }
+  else
+  {
+    if(mask & mask_k)
+      new_mask = 0;
+    else if(state & GDK_CONTROL_MASK)
+      new_mask = 1 << (k + 12);
+    else
+      new_mask = 1 << k;
+    new_mask |= (mask & ~mask_k);
+  }
+
+  if((new_mask & CL_ALL_EXCLUDED) == CL_ALL_EXCLUDED)
+    new_mask |= CL_GREY_EXCLUDED;
+  else
+    new_mask &= ~CL_GREY_EXCLUDED;
+  if((new_mask & CL_ALL_INCLUDED) == CL_ALL_INCLUDED)
+    new_mask |= CL_GREY_INCLUDED;
+  else
+    new_mask &= ~CL_GREY_INCLUDED;
+
+  _set_mask(colors->rule, new_mask, TRUE);
+  _colors_update(rule);
 }
 
 static void _colors_operator_clicked(GtkWidget *w, _widgets_colors_t *colors)
@@ -212,10 +265,11 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gboolean _colors_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static void _colors_enter_cb(GtkEventControllerMotion *controller,
+                               double x, double y,
+                               gpointer user_data)
 {
   darktable.control->element = GPOINTER_TO_INT(user_data) + 1;
-  return FALSE;
 }
 
 static float _action_process_colors(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -236,7 +290,7 @@ static float _action_process_colors(gpointer target, dt_action_element_t element
        && (mask || effect != DT_ACTION_EFFECT_OFF))
     {
       if(element)
-        _colors_clicked(w, &e, colors);
+        _colors_clicked_old(w, &e, colors);
       else
         _colors_operator_clicked(w, colors);
     }
@@ -295,9 +349,8 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                                      "\nclick to toggle the color label selection"
                                                      "\nctrl+click to exclude the color label"
                                                      "\nthe gray button affects all color labels"));
-    g_signal_connect(G_OBJECT(colors->colors[k]), "button-press-event", G_CALLBACK(_colors_clicked), colors);
-    g_signal_connect(G_OBJECT(colors->colors[k]), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
-                     GINT_TO_POINTER(k));
+    dt_gui_connect_click(colors->colors[k], _colors_clicked_gesture, NULL, colors);
+    dt_gui_connect_motion(colors->colors[k], NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(k));
     dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
   colors->operator= dtgtk_button_new(dtgtk_cairo_paint_intersection, 0, NULL);
@@ -307,8 +360,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                 "\nintersection: images having all selected color labels"
                                 "\nunion: images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
-  g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
-                   GINT_TO_POINTER(-1));
+  dt_gui_connect_motion(colors->operator, NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(-1));
   dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
 
   dt_shortcut_register(ac, DT_COLORLABELS_RED    + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F1, GDK_SHIFT_MASK);

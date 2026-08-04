@@ -54,7 +54,8 @@ static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_dat
 static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callbacks for key mapping button */
 static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data);
-static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButton *event, gpointer user_data);
+static void _lib_keymap_button_pressed(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
+static void _lib_keymap_button_released(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -502,8 +503,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\n"
                                                   "right-click to exit mapping mode"));
   g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
-  g_signal_connect(G_OBJECT(d->keymap_button), "button-press-event", G_CALLBACK(_lib_keymap_button_press_release), d);
-  g_signal_connect(G_OBJECT(d->keymap_button), "button-release-event", G_CALLBACK(_lib_keymap_button_press_release), d);
+  dt_gui_connect_click_all(d->keymap_button, _lib_keymap_button_pressed, _lib_keymap_button_released, (gpointer)(d));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
@@ -658,8 +658,17 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
   g_object_unref(cursor);
 }
 
+static gboolean _shortcuts_dialog_open = FALSE;
+
 static void _show_shortcuts_prefs(GtkWidget *w)
 {
+  /* guard against re-entrant calls: a long-press or right-click on the
+   * keymap button can trigger both the pressed and the released gesture
+   * callback while the (modeless) dialog is already running */
+  if(_shortcuts_dialog_open)
+    return;
+  _shortcuts_dialog_open = TRUE;
+
   GtkWidget *shortcuts_dialog = gtk_dialog_new_with_buttons(_("shortcuts"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                                             GTK_DIALOG_DESTROY_WITH_PARENT, NULL, NULL);
   if(!_shortcuts_dialog_posize.w)
@@ -679,6 +688,8 @@ static void _show_shortcuts_prefs(GtkWidget *w)
 
   gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
   gtk_widget_destroy(shortcuts_dialog);
+
+  _shortcuts_dialog_open = FALSE;
 }
 
 static void _main_do_event_keymap(GdkEvent *event, gpointer data)
@@ -792,25 +803,28 @@ static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButton *event, gpointer user_data)
+static guint _keymap_button_start_time = 0;
+
+static void _lib_keymap_button_pressed(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-  static guint start_time = 0;
+  darktable.control->confirm_mapping = !(dt_key_modifier_state() & GDK_CONTROL_MASK);
 
-  darktable.control->confirm_mapping = !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+  _keymap_button_start_time = gtk_get_current_event_time();
 
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
+  {
+    _show_shortcuts_prefs(NULL);
+  }
+}
+
+static void _lib_keymap_button_released(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data)
+{
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY) ||
-     (dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE && dt_gdk_event_get_time(event) - start_time > delay))
+  if(gtk_get_current_event_time() - _keymap_button_start_time > (guint)delay)
   {
     _show_shortcuts_prefs(NULL);
-    return TRUE;
-  }
-  else
-  {
-    start_time = dt_gdk_event_get_time(event);
-    return FALSE;
   }
 }
 

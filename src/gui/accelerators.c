@@ -1988,10 +1988,43 @@ static void _shortcut_row_activated(GtkTreeView *tree_view,
   _grab_in_tree_view(tree_view);
 }
 
-static gboolean _view_key_pressed(GtkWidget *widget,
-                                  GdkEventKey *event,
-                                  gpointer user_data)
+static gboolean _shortcut_delete_selected(GtkTreeView *view)
 {
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    return FALSE;
+
+  GSequenceIter *shortcut_iter = NULL;
+  gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
+
+  if(_is_shortcut_category(shortcut_iter))
+    return FALSE;
+
+  dt_shortcut_t *s = g_sequence_get(shortcut_iter);
+
+  if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
+                               s->is_default ? s->views ?
+                               _("disable the selected default shortcut?") :
+                               _("restore the selected default shortcut?") :
+                               _("remove the selected shortcut?")))
+  {
+    _remove_shortcut(shortcut_iter);
+
+    dt_shortcuts_save(NULL, FALSE);
+  }
+
+  return TRUE;
+}
+
+static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
+                                       guint keyval,
+                                       guint keycode,
+                                       GdkModifierType state,
+                                       GtkWidget *search_entry)
+{
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
@@ -2002,7 +2035,7 @@ static gboolean _view_key_pressed(GtkWidget *widget,
     if(!strcmp(gtk_widget_get_name(widget), "actions_view"))
     {
       // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-      if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+      if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         dt_shortcut_t shortcut = { .speed = 1.0 };
         gtk_tree_model_get(model, &iter, 0, &shortcut.action, -1);
@@ -2020,32 +2053,20 @@ static gboolean _view_key_pressed(GtkWidget *widget,
         dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
         // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-        if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK) && s->views)
+        if(dt_modifier_is(state, GDK_CONTROL_MASK) && s->views)
         {
           _shortcut_copy_lua(NULL, s, NULL);
         }
 
-        // GDK_KEY_BackSpace moves to parent in tree
-        if(dt_gdk_event_get_keyval(event) == GDK_KEY_Delete || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Delete)
-        {
-          if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
-                                       s->is_default ? s->views ?
-                                       _("disable the selected default shortcut?") :
-                                       _("restore the selected default shortcut?") :
-                                       _("remove the selected shortcut?")))
-          {
-            _remove_shortcut(shortcut_iter);
-
-            dt_shortcuts_save(NULL, FALSE);
-          }
-
-          return TRUE;
-        }
+        // GDK_KEY_BackSpace is the delete key on macOS; it is also
+        // accepted when deleting presets, so keep it consistent here
+        if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete || keyval == GDK_KEY_BackSpace)
+          return _shortcut_delete_selected(view);
       }
     }
   }
 
-  return dt_gui_search_start(widget, event, user_data);
+  return dt_gui_search_start(widget, (GdkEventKey *)gtk_get_current_event(), GTK_SEARCH_ENTRY(search_entry));
 }
 
 static void _add_shortcuts_to_tree()
@@ -2260,23 +2281,46 @@ static gboolean _action_find_and_expand(GtkTreeModel *model,
   return FALSE;
 }
 
-static gboolean _action_view_click(GtkWidget *widget,
-                                   GdkEventButton *event,
-                                   gpointer data)
+/* Claim the event sequence in CAPTURE phase so the treeview's internal
+ * GtkGestureMultiPress (GTK_PHASE_BUBBLE) does NOT process clicks.
+ * The pre-migration button-press-event handler consumed the events
+ * (return TRUE), which suppressed the internal gesture; the gesture
+ * controller replacement must do the same, otherwise the two gestures
+ * fight over row selection and expansion.
+ *
+ * GTK4 migration: the pattern is the same — just rename
+ * GtkGestureMultiPress to GtkGestureClick. */
+static void _gesture_begin_claim(GtkGesture *gesture,
+                                  GdkEventSequence *sequence,
+                                  gpointer user_data)
 {
+  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+static void _action_view_click_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkTreeStore *model_data)
+{
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(view);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(button == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
+    /* gesture coordinates are relative to the widget allocation, while
+     * gtk_tree_view_get_path_at_pos() expects bin-window coordinates */
+    gint bin_x, bin_y;
+    gtk_tree_view_convert_widget_to_bin_window_coords(view, (gint)x, (gint)y, &bin_x, &bin_y);
+
     GtkTreePath *path = NULL;
-    if(gtk_tree_view_get_path_at_pos(view, (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
+    if(gtk_tree_view_get_path_at_pos(view, bin_x, bin_y,
                                      &path, NULL, NULL, NULL))
     {
-      if(dt_gdk_event_get_type(event) == GDK_DOUBLE_BUTTON_PRESS)
+      if(n_press >= 2)
       {
+        /* the internal gesture that would emit "row-activated" on
+         * double-click is suppressed, so activate the row ourselves */
         gtk_tree_selection_select_path(selection, path);
         _action_row_activated(view, path, NULL, model);
       }
@@ -2292,19 +2336,18 @@ static gboolean _action_view_click(GtkWidget *widget,
       }
 
       gtk_widget_grab_focus(widget);
+      gtk_tree_path_free(path);
     }
     else
       gtk_tree_selection_unselect_all(selection);
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
     GtkTreeIter iter;
     gtk_tree_model_get_iter_first(model, &iter);
 
     _action_find_and_expand(model, &iter, view);
   }
-
-  return TRUE;
 }
 
 static gboolean _action_view_show(GtkTreeView *view,
@@ -2859,6 +2902,43 @@ static void _notice_clicked(GtkWidget *button,
   dt_conf_set_bool("accel/hide_notice", TRUE);
 }
 
+/* The shortcuts treeview consumes GDK_KEY_BackSpace ("select-cursor-parent")
+ * in its own key handling before any handler connected on the treeview runs,
+ * so the delete keys are intercepted at the toplevel instead, before the key
+ * event is propagated to the focus widget.  GDK_KEY_BackSpace is the delete
+ * key on macOS. */
+static gboolean _shortcuts_dialog_key_pressed(GtkWidget *widget,
+                                              GdkEventKey *event,
+                                              gpointer user_data)
+{
+  GtkWidget *view = user_data;
+
+  if(gtk_window_get_focus(GTK_WINDOW(widget)) != view)
+    return FALSE;
+
+  guint keyval;
+  gdk_event_get_keyval((GdkEvent *)event, &keyval);
+
+  if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete || keyval == GDK_KEY_BackSpace)
+    return _shortcut_delete_selected(GTK_TREE_VIEW(view));
+
+  return FALSE;
+}
+
+static void _shortcuts_view_realized(GtkWidget *widget, gpointer user_data)
+{
+  if(g_object_get_data(G_OBJECT(widget), "accel-dialog-key-connected"))
+    return;
+  g_object_set_data(G_OBJECT(widget), "accel-dialog-key-connected", GINT_TO_POINTER(TRUE));
+
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  if(!toplevel || !GTK_IS_WINDOW(toplevel))
+    return;
+
+  g_signal_connect(G_OBJECT(toplevel), "key-press-event",
+                   G_CALLBACK(_shortcuts_dialog_key_pressed), widget);
+}
+
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
   // Save the shortcuts before editing
@@ -2903,6 +2983,9 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(search_shortcuts), "stop-search",
                    G_CALLBACK(dt_gui_search_stop), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
+  // intercept the delete keys at the toplevel, see _shortcuts_dialog_key_pressed
+  g_signal_connect(G_OBJECT(shortcuts_view), "realize",
+                   G_CALLBACK(_shortcuts_view_realized), NULL);
 
   gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(shortcuts_view),
                                          _shortcut_selection_function, NULL, NULL);
@@ -2910,8 +2993,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_name(GTK_WIDGET(shortcuts_view), "shortcuts_view");
   g_signal_connect(G_OBJECT(shortcuts_view), "row-activated",
                    G_CALLBACK(_shortcut_row_activated), filtered_shortcuts);
-  g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event",
-                   G_CALLBACK(_view_key_pressed), search_shortcuts);
+  dt_gui_connect_key(shortcuts_view, _view_key_pressed_cb, search_shortcuts);
   g_signal_connect(G_OBJECT(_shortcuts_store), "row-inserted",
                    G_CALLBACK(_shortcut_row_inserted), shortcuts_view);
 
@@ -3009,10 +3091,21 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_name(GTK_WIDGET(actions_view), "actions_view");
   g_signal_connect(G_OBJECT(actions_view), "row-activated",
                    G_CALLBACK(_action_row_activated), _actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "button-press-event",
-                   G_CALLBACK(_action_view_click), _actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "key-press-event",
-                   G_CALLBACK(_view_key_pressed), search_actions);
+
+  {
+    // the internal treeview gesture would fight our click handling;
+    // claim the sequence in CAPTURE phase to suppress it, replicating
+    // the event consumption of the pre-migration handler
+    GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(actions_view));
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                               GTK_PHASE_CAPTURE);
+    g_object_weak_ref(G_OBJECT(actions_view), (GWeakNotify)g_object_unref, gesture);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    g_signal_connect(gesture, "pressed", G_CALLBACK(_action_view_click_cb), _actions_store);
+    g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
+  }
+
+  dt_gui_connect_key(actions_view, _view_key_pressed_cb, search_actions);
 
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
                    G_CALLBACK(_action_selection_changed), shortcuts_view);
@@ -4853,12 +4946,9 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
   return owner;
 }
 
-static gboolean _reset_element_on_leave(GtkWidget *widget,
-                                        GdkEvent *event,
-                                        gpointer user_data)
+static void _reset_element_on_leave_cb(GtkEventControllerMotion *controller, gpointer user_data)
 {
   darktable.control->element = -1;
-  return FALSE;
 }
 
 dt_action_t *dt_action_define(dt_action_t *owner,
@@ -4917,8 +5007,7 @@ dt_action_t *dt_action_define(dt_action_t *owner,
       }
 
       gtk_widget_set_has_tooltip(widget, TRUE);
-      g_signal_connect(G_OBJECT(widget), "leave-notify-event",
-                       G_CALLBACK(_reset_element_on_leave), NULL);
+      dt_gui_connect_motion(widget, NULL, NULL, _reset_element_on_leave_cb, NULL);
     }
   }
 

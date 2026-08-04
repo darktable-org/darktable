@@ -2768,38 +2768,48 @@ const dt_action_def_t _action_def_move
       _action_elements_move,
       NULL, TRUE };
 
-static gboolean _quickbutton_press_release(GtkWidget *button,
-                                           GdkEventButton *event,
-                                           GtkWidget *popover)
+static guint _quickbutton_start_time = 0;
+
+static void _quickbutton_pressed_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     GtkWidget *popover)
 {
-  static guint start_time = 0;
+  GtkWidget *button = dt_gui_get_widget(gesture);
 
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
-
-  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY) ||
-     (dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE && dt_gdk_event_get_time(event) - start_time > delay))
+  /* secondary click: show popup immediately */
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
-
     g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
-
     _toolbar_show_popup(popover);
-    return TRUE;
   }
   else
   {
-    start_time = dt_gdk_event_get_time(event);
-    return FALSE;
+    _quickbutton_start_time = gtk_get_current_event_time();
+  }
+}
+
+static void _quickbutton_released_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     GtkWidget *popover)
+{
+  /* primary button long-press: show popup */
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  {
+    int delay = 0;
+    g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
+    if(gtk_get_current_event_time() - _quickbutton_start_time > (guint)delay)
+      _toolbar_show_popup(popover);
   }
 }
 
 void connect_button_press_release(GtkWidget *w, GtkWidget *p)
 {
-  g_signal_connect(w, "button-press-event",
-                   G_CALLBACK(_quickbutton_press_release), p);
-  g_signal_connect(w, "button-release-event",
-                   G_CALLBACK(_quickbutton_press_release), p);
+  dt_gui_connect_click_all(w, _quickbutton_pressed_cb, _quickbutton_released_cb, p);
 }
 
 // cycle modules begins
@@ -4568,7 +4578,16 @@ int button_pressed(dt_view_t *self,
     if(handled) return handled;
   }
 
-  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS) return 0;
+  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
+  {
+    // When masks are being edited, consume the double-click to avoid
+    // accidentally switching to lighttable.  The mask-specific handlers
+    // (brush, path, gradient, object, and our ellipse/circle guards)
+    // already return 1 for 2BUTTON_PRESS when form_visible is set;
+    // this is a belt-and-suspenders check for edge cases.
+    if(dev->form_visible) return 1;
+    return 0;
+  }
   if(which == GDK_BUTTON_PRIMARY)
   {
     dt_control_change_cursor("pointer");
@@ -4989,34 +5008,12 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _second_window_scrolled_callback(GtkWidget *widget,
-                                                 GdkEventScroll *event,
-                                                 dt_develop_t *dev)
+static void _second_window_scrolled_callback(GtkEventControllerScroll *controller,
+                                               gdouble dx,
+                                               gdouble dy,
+                                               dt_develop_t *dev)
 {
-  if(dev->gui_leaving) return TRUE;
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
-  {
-    // Use pinned viewport if pinned, otherwise main dev's preview2
-    dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
-    if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
-
-    dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
-
-    const gboolean constrained =
-      dev->constrain_zoom && !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
-    dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0 ? 1 : 0,
-                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), constrained);
-  }
-
-  return TRUE;
-}
-
-static gboolean _second_window_button_pressed_callback(GtkWidget *w,
-                                                       GdkEventButton *event,
-                                                       dt_develop_t *dev)
-{
-  if(dev->gui_leaving) return FALSE;
+  if(dev->gui_leaving) return;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
@@ -5024,47 +5021,158 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-  // Handle double-click to reset zoom and center
-  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  const GdkEvent *current = gtk_get_current_event();
+  if(!current) return;
+
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+
+  // Two-finger trackpad scroll pans the image, like the main darkroom view's
+  // _scrolled()/gesture_pan path.  The mouse wheel zooms.  Ctrl forces zoom
+  // even for smooth scrolls.
+  if(dt_gdk_event_get_scroll_direction(current) == GDK_SCROLL_SMOOTH
+     && !dt_modifier_is(state, GDK_CONTROL_MASK))
   {
-    dt_dev_zoom_move(port, DT_ZOOM_FIT, 0.0f, 0,
-                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), TRUE);
-    return TRUE;
+    const GdkEventScroll *scroll = (const GdkEventScroll *)current;
+    gdouble pan_dx = 0.0, pan_dy = 0.0;
+    if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy)) return;
+    pan_dx *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    pan_dy *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom second window] pan dx=%.3f dy=%.3f", pan_dx, pan_dy);
+    if(pan_dx != 0.0 || pan_dy != 0.0)
+      dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, pan_dx, pan_dy, TRUE);
+    return;
   }
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
-    // store coordinates in logical pixels (as delivered by event)
-    darktable.control->button_x = dt_gdk_event_get_x(event);
-    darktable.control->button_y = dt_gdk_event_get_y(event);
-    _dt_second_window_change_cursor(dev, "grabbing");
-    return TRUE;
-  }
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
-  {
-    dt_dev_zoom_move(port, DT_ZOOM_1, 0.0f, -2,
-                     dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK));
-    return TRUE;
-  }
-  return FALSE;
+
+  int delta_y;
+  if(!dt_gui_get_scroll_unit_delta((const GdkEventScroll *)current, &delta_y)) return;
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
+  gdouble x = 0.0, y = 0.0;
+  gdk_event_get_coords(current, &x, &y);
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom second window] scroll zoom delta_y=%d", delta_y);
+  dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0 ? 1 : 0,
+                   x, y, constrained);
 }
 
-static gboolean _second_window_button_released_callback(GtkWidget *w,
-                                                        GdkEventButton *event,
-                                                        dt_develop_t *dev)
+static gboolean _second_window_pinch_callback(GtkWidget *widget,
+                                              GdkEvent *event,
+                                              dt_develop_t *dev)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
+  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
+  if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
 
-  gtk_widget_queue_draw(w);
+  // Use pinned viewport if pinned, otherwise main dev's preview2
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+
+  dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
+
+  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(pinch->state, GDK_CONTROL_MASK);
+
+  // Zoom the second window proportionally to the pinch scale, mirroring the
+  // main darkroom view's gesture_pinch().
+  static float begin_tscale = 0.0f;
+
+  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    begin_tscale =
+      dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, FALSE) * port->ppd;
+    return TRUE;
+  }
+  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+     || pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  {
+    begin_tscale = 0.0f;
+    return TRUE;
+  }
+  if(pinch->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
+  if(begin_tscale <= 0.0f || pinch->scale <= 0.0) return FALSE;
+
+  const float ppd = port->ppd;
+  const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE);
+  const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
+  const float tscale = CLAMP(begin_tscale * pinch->scale, tscalefloor, 16.0f);
+  const float zoom_scale = tscale / ppd;
+
+  // Convert root (screen-absolute) pinch coords to widget-local, which is the
+  // coordinate space dt_dev_zoom_move() anchors the zoom to.
+  int ox = 0, oy = 0;
+  GdkWindow *win = gtk_widget_get_window(widget);
+  if(win) gdk_window_get_origin(win, &ox, &oy);
+  const float x_local = (float)pinch->x_root - ox;
+  const float y_local = (float)pinch->y_root - oy;
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom second window] pinch scale=%.6f tscale=%.6f zoom_scale=%.6f",
+           pinch->scale, tscale, zoom_scale);
+  dt_dev_zoom_move(port, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
   return TRUE;
 }
 
-static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
-                                                    GdkEventMotion *event,
-                                                    dt_develop_t *dev)
+static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
+                                                     gint n_press,
+                                                     gdouble x,
+                                                     gdouble y,
+                                                     dt_develop_t *dev)
 {
-  if(dev->gui_leaving) return FALSE;
+  if(dev->gui_leaving) return;
 
-  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+  // Use pinned viewport if pinned, otherwise main dev's preview2
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+
+  dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+
+  // Handle double-click to reset zoom and center
+  if(n_press == 2 && button == GDK_BUTTON_PRIMARY)
+  {
+    dt_dev_zoom_move(port, DT_ZOOM_FIT, 0.0f, 0, x, y, TRUE);
+    return;
+  }
+  if(button == GDK_BUTTON_PRIMARY)
+  {
+    // store coordinates in logical pixels (as delivered by event)
+    darktable.control->button_x = x;
+    darktable.control->button_y = y;
+    _dt_second_window_change_cursor(dev, "grabbing");
+    return;
+  }
+  if(button == GDK_BUTTON_MIDDLE)
+  {
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
+    dt_dev_zoom_move(port, DT_ZOOM_1, 0.0f, -2, x, y, !dt_modifier_is(state, GDK_CONTROL_MASK));
+    return;
+  }
+}
+
+static void _second_window_button_released_callback(GtkGestureSingle *gesture,
+                                                      gint n_press,
+                                                      gdouble x,
+                                                      gdouble y,
+                                                      dt_develop_t *dev)
+{
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
+
+  GtkWidget *w = dt_gui_get_widget(gesture);
+  gtk_widget_queue_draw(w);
+}
+
+static void _second_window_mouse_moved_callback(GtkEventControllerMotion *controller,
+                                                  gdouble x,
+                                                  gdouble y,
+                                                  dt_develop_t *dev)
+{
+  if(dev->gui_leaving) return;
+
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+  if(state & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
 
@@ -5075,20 +5183,16 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
     dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
     dt_dev_zoom_move(port, DT_ZOOM_MOVE, -1.f, 0,
-                     dt_gdk_event_get_x(event) - ctl->button_x, dt_gdk_event_get_y(event) - ctl->button_y, TRUE);
-    ctl->button_x = dt_gdk_event_get_x(event);
-    ctl->button_y = dt_gdk_event_get_y(event);
-    return TRUE;
+                     x - ctl->button_x, y - ctl->button_y, TRUE);
+    ctl->button_x = x;
+    ctl->button_y = y;
   }
-  return FALSE;
 }
 
-static gboolean _second_window_leave_callback(GtkWidget *widget,
-                                              GdkEventCrossing *event,
-                                              dt_develop_t *dev)
+static void _second_window_leave_callback(GtkEventControllerMotion *controller,
+                                            dt_develop_t *dev)
 {
   _second_window_leave(dev);
-  return TRUE;
 }
 
 static gboolean _second_window_configure_callback(GtkWidget *da,
@@ -5149,9 +5253,10 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
   return TRUE;
 }
 
-static gboolean _second_window_buttons_enter_notify_callback(GtkWidget *widget,
-                                                              GdkEventCrossing *event,
-                                                              GtkWidget *button_box)
+static void _second_window_buttons_enter_notify_callback(GtkEventControllerMotion *controller,
+                                                          gdouble x,
+                                                          gdouble y,
+                                                          GtkWidget *button_box)
 {
   // Make buttons visible and interactive.  Using opacity instead of hide/show
   // keeps the GdkWindow (and its NSView tracking areas on macOS) always alive,
@@ -5159,22 +5264,24 @@ static gboolean _second_window_buttons_enter_notify_callback(GtkWidget *widget,
   gtk_widget_set_opacity(button_box, 1.0);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
                                        button_box, FALSE);
-  return FALSE;
 }
 
-static gboolean _second_window_buttons_leave_notify_callback(GtkWidget *widget,
-                                                              GdkEventCrossing *event,
-                                                              GtkWidget *button_box)
+static void _second_window_buttons_leave_notify_callback(GtkEventControllerMotion *controller,
+                                                          GtkWidget *button_box)
 {
   // GDK_NOTIFY_INFERIOR means the pointer moved into a child window (still
   // within the second window); keep the buttons visible in that case.
-  if(event->detail != GDK_NOTIFY_INFERIOR)
+  GdkEvent *event = gtk_get_current_event();
+  if(event && event->crossing.detail == GDK_NOTIFY_INFERIOR)
   {
-    gtk_widget_set_opacity(button_box, 0.0);
-    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
-                                         button_box, TRUE);
+    gdk_event_free(event);
+    return;
   }
-  return FALSE;
+  if(event) gdk_event_free(event);
+
+  gtk_widget_set_opacity(button_box, 0.0);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
+                                       button_box, TRUE);
 }
 
 // Callback for the pin button in the overlay
@@ -5236,13 +5343,8 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
 
   // Needed to display/hide the widgets.
   // Must be done before the window is realized.
-  gtk_widget_add_events(window, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-
   // Show / hide controls on enter/leave events.
-  g_signal_connect(G_OBJECT(window), "enter-notify-event",
-                   G_CALLBACK(_second_window_buttons_enter_notify_callback), event_box);
-  g_signal_connect(G_OBJECT(window), "leave-notify-event",
-                   G_CALLBACK(_second_window_buttons_leave_notify_callback), event_box);
+  dt_gui_connect_motion(window, NULL, _second_window_buttons_enter_notify_callback, _second_window_buttons_leave_notify_callback, event_box);
 
   dev->preview2.pin_button = pin_button;
 
@@ -5432,21 +5534,18 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                           | GDK_BUTTON_RELEASE_MASK
                           | GDK_ENTER_NOTIFY_MASK
                           | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_TOUCHPAD_GESTURE_MASK
                           | darktable.gui->scroll_mask);
 
     /* connect callbacks */
     g_signal_connect(G_OBJECT(dev->preview2.widget), "draw",
                      G_CALLBACK(_second_window_draw_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "scroll-event",
-                     G_CALLBACK(_second_window_scrolled_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "button-press-event",
-                     G_CALLBACK(_second_window_button_pressed_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "button-release-event",
-                     G_CALLBACK(_second_window_button_released_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "motion-notify-event",
-                     G_CALLBACK(_second_window_mouse_moved_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "leave-notify-event",
-                     G_CALLBACK(_second_window_leave_callback), dev);
+    dt_gui_connect_scroll(dev->preview2.widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
+                          _second_window_scrolled_callback, dev);
+    g_signal_connect(G_OBJECT(dev->preview2.widget), "event",
+                     G_CALLBACK(_second_window_pinch_callback), dev);
+    dt_gui_connect_click_all(dev->preview2.widget, _second_window_button_pressed_callback, _second_window_button_released_callback, dev);
+    dt_gui_connect_motion(dev->preview2.widget, _second_window_mouse_moved_callback, NULL, _second_window_leave_callback, dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "configure-event",
                      G_CALLBACK(_second_window_configure_callback), dev);
 

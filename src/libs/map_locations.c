@@ -831,42 +831,47 @@ static void _selection_changed(GtkTreeSelection *selection, dt_lib_module_t *sel
   _display_buttons(self);
 }
 
-static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static void _click_on_view(GtkGestureSingle *gesture,
+                            gint n_press,
+                            gdouble x,
+                            gdouble y,
+                            dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = self->data;
+  GtkWidget *view = dt_gui_get_widget(gesture);
 
   gboolean editing;
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);
   if(editing)
   {
     dt_control_log(_("terminate edit (press enter or escape) before selecting another location"));
-    return TRUE;
+    return;
   }
 
-  const int button_pressed = (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS) ? dt_gdk_event_get_button(event) : 0;
-  const gboolean ctrl_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+  const guint button_pressed = gtk_gesture_single_get_current_button(gesture);
+  const gboolean ctrl_pressed = dt_key_modifier_state() & GDK_CONTROL_MASK;
   if(button_pressed == GDK_BUTTON_SECONDARY || button_pressed == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)dt_gdk_event_get_x(event),
-                                     (gint)dt_gdk_event_get_y(event), &path, NULL, NULL, NULL))
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)x,
+                                     (gint)y, &path, NULL, NULL, NULL))
     {
       if(button_pressed == GDK_BUTTON_SECONDARY)
       {
         gtk_tree_selection_select_path(selection, path);
-        _pop_menu_view(view, event, self);
+        _pop_menu_view(view, NULL, self);
         gtk_tree_path_free(path);
         _display_buttons(self);
-        return TRUE;
+        return;
       }
       else if(button_pressed == GDK_BUTTON_PRIMARY && !ctrl_pressed)
       {
         if(gtk_tree_selection_path_is_selected(selection, path))
           g_timeout_add(100, (GSourceFunc)_force_selection_changed, self);
         gtk_tree_path_free(path);
-        return FALSE;
+        return;
       }
       else if(button_pressed == GDK_BUTTON_PRIMARY && ctrl_pressed)
       {
@@ -875,16 +880,15 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
         gtk_tree_view_set_cursor(GTK_TREE_VIEW(d->view), path, d->name_col, TRUE);
         gtk_tree_path_free(path);
         _display_buttons(self);
-        return TRUE;
+        return;
       }
     }
     else
     {
       g_timeout_add(10, (GSourceFunc)_force_selection_changed, self);
-      return FALSE;
+      return;
     }
   }
-  return FALSE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -921,7 +925,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view), self);
+  dt_gui_connect_click(view, _click_on_view, NULL, self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view),
                               _("list of user locations,"
                                 "\nclick to show or hide a location on the map:"

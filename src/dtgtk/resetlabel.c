@@ -17,6 +17,7 @@
 */
 #include "common/gdk_event_utils.h"
 
+#include "gui/gtk.h"
 #include "dtgtk/resetlabel.h"
 
 G_DEFINE_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, GTK_TYPE_EVENT_BOX);
@@ -29,17 +30,20 @@ static void dtgtk_reset_label_init(GtkDarktableResetLabel *label)
 {
 }
 
-static gboolean _reset_label_callback(GtkDarktableResetLabel *label, GdkEventButton *event, gpointer user_data)
+static void _reset_label_callback(GtkGestureSingle *gesture,
+                                   gint n_press,
+                                   gdouble x,
+                                   gdouble y,
+                                   gpointer user_data)
 {
-  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+  if(n_press >= 2)
   {
+    GtkDarktableResetLabel *label = DTGTK_RESET_LABEL(dt_gui_get_widget(gesture));
     memcpy(((char *)label->module->params) + label->offset,
            ((char *)label->module->default_params) + label->offset, label->size);
     dt_iop_gui_update(label->module);
     dt_dev_add_history_item(darktable.develop, label->module, FALSE);
-    return TRUE;
   }
-  return FALSE;
 }
 
 // public functions
@@ -64,8 +68,7 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(label), FALSE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("double-click to reset"));
   gtk_container_add(GTK_CONTAINER(label), GTK_WIDGET(label->lb));
-  gtk_widget_add_events(GTK_WIDGET(label), GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(label), "button-press-event", G_CALLBACK(_reset_label_callback), (gpointer)NULL);
+  dt_gui_connect_click(label, _reset_label_callback, NULL, NULL);
 
   return (GtkWidget *)label;
 }
