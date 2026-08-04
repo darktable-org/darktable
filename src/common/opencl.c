@@ -3915,8 +3915,18 @@ static cl_event *_opencl_events_get_slot(const int devid,
   return (*eventlist) + *numevents - 1;
 }
 
-
-/** reset eventlist to empty state */
+/** Note:
+  a reserved event slot can hold an undefined NULL handle when it's enqueue failed
+  as the event has not been initialized by the driver but get_slot has already
+  counted the slot.
+  Passing NULL to clWaitForEvents crashes some drivers and, on those that merely
+  return an error would abort a batched wait and leave the valid events that follow
+  un-waited-for before flush checks/releases them.
+  This is more likely to happen on small systems with high clmem pressure as the
+  driver keeps events on device memory and the OpenCL specs don't say a word about
+  how many events are safe to use.
+  So we always check for such NULL-events.
+*/
 void dt_opencl_events_reset(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
@@ -3933,10 +3943,12 @@ void dt_opencl_events_reset(const int devid)
 
   if(*eventlist == NULL || *numevents == 0) return; // nothing to do
 
+  static const cl_event zeroevent[1]; // implicitly initialized to zero
   // release all remaining events in eventlist, not to waste resources
   for(int k = *eventsconsolidated; k < *numevents; k++)
   {
-    (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
+    if(memcmp((*eventlist) + k, zeroevent, sizeof(cl_event)))
+      (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
   }
 
   memset(*eventtags, 0, sizeof(dt_opencl_eventtag_t) * *maxevents);
@@ -3978,19 +3990,28 @@ static void _opencl_events_wait_for(const int devid)
 
   assert(*numevents > *eventsconsolidated);
 
-  // now wait for all remaining events to terminate
-  // Risk: might never return in case of OpenCL blocks or endless loops
-  // TODO: run clWaitForEvents in separate thread and implement watchdog timer
-  cl_int err = (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
-                                           (*eventlist) + *eventsconsolidated);
-  if((err != CL_SUCCESS) && (err != CL_INVALID_VALUE))
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+  /* now wait for all remaining events to terminate.
+      As we want to ignore NULL events we can't wait for an event list
+      but do that for every event.
+      Principally this might never return in case of OpenCL blocking,
+      could we implement a timeout?
+  */
+  for(int k = *eventsconsolidated; k < *numevents; k++)
+  {
+    if(!memcmp((*eventlist) + k, zeroevent, sizeof(cl_event)))
+      continue; // NULL handle from a failed enqueue
+
+    cl_int err = (cl->dlocl->symbols->dt_clWaitForEvents)(1, &((*eventlist)[k]));
+    if((err != CL_SUCCESS) && (err != CL_INVALID_VALUE))
+      dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_events_wait_for] reported %s for device %i",
-       cl_errstr(err), devid);
+              cl_errstr(err), devid);
+  }
 }
 
-/** display OpenCL profiling information. If "aggregated" is TRUE, try
- * to generate summarized info for each kernel */
+/** display OpenCL profiling information.
+    If "aggregated" is TRUE, try to generate a summarized info for each kernel
+*/
 static void _opencl_events_profiling(const int devid,
                                      const gboolean aggregated)
 {
@@ -4011,10 +4032,10 @@ static void _opencl_events_profiling(const int devid,
     return; // nothing to do
 
   char **tags = malloc(sizeof(char *) * (*eventsconsolidated + 1));
-  float *timings = malloc(sizeof(float) * (*eventsconsolidated + 1));
+  double *timings = malloc(sizeof(float) * (*eventsconsolidated + 1));
   int items = 1;
   tags[0] = "";
-  timings[0] = 0.0f;
+  timings[0] = 0.0;
 
   // get profiling info and arrange it
   for(int k = 0; k < *eventsconsolidated; k++)
@@ -4022,8 +4043,7 @@ static void _opencl_events_profiling(const int devid,
     // if aggregated is TRUE, try to sum up timings for multiple runs of each kernel
     if(aggregated)
     {
-      // linear search: this is not efficient at all but acceptable given the limited
-      // number of events (ca. 10 - 20)
+      // linear search: this is not efficient at all but acceptable given the limited number of events
       int tagfound = -1;
       for(int i = 0; i < items; i++)
       {
@@ -4061,26 +4081,25 @@ static void _opencl_events_profiling(const int devid,
            "[opencl_profiling] profiling device %d ('%s'):",
            devid, cl->dev[devid].fullname);
 
-  float total = 0.0f;
+  double total = 0.0;
   for(int i = 1; i < items; i++)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds in %s",
-             (double)fmaxf(0.0f, timings[i]),
+             fmax(0.0, timings[i]),
              tags[i][0] == '\0' ? "<?>" : tags[i]);
     total += timings[i];
   }
   // aggregated timing info for items without tag (if any)
-  if(timings[0] > 0.0f)
+  if(timings[0] > 0.0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds (unallocated)",
-             (double)timings[0]);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds (unallocated)", timings[0]);
     total += timings[0];
   }
 
   dt_print(DT_DEBUG_OPENCL,
            "[opencl_profiling] spent %7.4f seconds totally in"
            " command queue (with %d event%s missing)",
-           (double)total, *lostevents, *lostevents == 1 ? "" : "s");
+           total, *lostevents, *lostevents == 1 ? "" : "s");
   free(timings);
   free(tags);
 }
@@ -4090,7 +4109,8 @@ static void _opencl_events_profiling(const int devid,
     info (would be CL_COMPLETE or last error code) and print profiling
     info if needed.  If "reset" is FALSE just store info (success
     value, profiling) from terminated events and release events for
-    re-use by OpenCL driver. */
+    re-use by OpenCL driver. Ignore NULL events
+*/
 cl_int dt_opencl_events_flush(const int devid,
                               const gboolean reset)
 {
@@ -4113,9 +4133,20 @@ cl_int dt_opencl_events_flush(const int devid,
   // Wait for command queue to terminate (side effect: might adjust *numevents)
   _opencl_events_wait_for(devid);
 
-  // now check return status and profiling data of all newly terminated events
+  /* now check return status and profiling data of all newly terminated events,
+      ignore zeroevents while doing so
+  */
+  static const cl_event zeroevent[1]; // implicitly initialized to zero
   for(int k = *eventsconsolidated; k < *numevents; k++)
   {
+    // ignore zeroevents
+    if(!memcmp((*eventlist) + k, zeroevent, sizeof(cl_event)))
+    {
+      (*lostevents)++;
+      (*eventsconsolidated)++;
+      continue;
+    }
+
     cl_int err;
     char *tag = (*eventtags)[k].tag;
     cl_int *retval = &((*eventtags)[k].retval);
