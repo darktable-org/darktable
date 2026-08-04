@@ -4082,8 +4082,12 @@ static float _process_shortcut(float move_size)
             "  [_process_shortcut] processing shortcut: %s",
             _shortcut_description(&_sc));
 
-  if(DT_PERFORM_ACTION(move_size) &&
-     gtk_widget_has_grab(darktable.control->progress_system.proxy.module->widget))
+  // the progress proxy is only set while the backgroundjobs lib module is alive,
+  // so it is NULL early in startup and again after that module is cleaned up.
+  // no proxy means nothing holds the grab.
+  if(DT_PERFORM_ACTION(move_size)
+     && darktable.control->progress_system.proxy.module
+     && gtk_widget_has_grab(darktable.control->progress_system.proxy.module->widget))
   {
     if(_sc.key_device == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE && _sc.key == GDK_KEY_Escape)
       dt_print(DT_DEBUG_ALWAYS, "this should cancel the running blocking job"); // TODO

@@ -5140,9 +5140,12 @@ void dt_gui_cursor_set_busy()
     // since the main reason for calling this function is that we won't be running the Gtk main
     // loop for a while, ensure that the mouse cursor gets updated
     dt_gui_process_events();
-    GtkWidget *progress_widget = darktable.control->progress_system.proxy.module->widget;
-    gtk_widget_realize(progress_widget);
-    gtk_grab_add(progress_widget);
+    if(darktable.control->progress_system.proxy.module)
+    {
+      GtkWidget *progress_widget = darktable.control->progress_system.proxy.module->widget;
+      gtk_widget_realize(progress_widget);
+      gtk_grab_add(progress_widget);
+    }
   }
 }
 
@@ -5158,7 +5161,8 @@ void dt_gui_cursor_clear_busy()
       // to restore the original mouse cursor
       dt_control_allow_change_cursor();
       dt_control_clear_temp_cursor();
-      gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
+      if(darktable.control->progress_system.proxy.module)
+        gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
     }
   }
 }
