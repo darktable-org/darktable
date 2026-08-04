@@ -4771,6 +4771,20 @@ gboolean dt_gui_long_click(const guint second,
   return second - delay > first;
 }
 
+void dt_gui_add_controller(GtkWidget *widget,
+                           gpointer controller)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+#else
+  // GTK3 has no gtk_widget_add_controller(): the widget only keeps a
+  // weak pointer to the controller, so release our reference when the
+  // widget is destroyed.  This must not be done from a weak notify on
+  // the widget, see the comment on the declaration.
+  g_signal_connect_swapped(widget, "destroy", G_CALLBACK(g_object_unref), controller);
+#endif
+}
+
 static void _gesture_cancel(GtkGestureSingle *gesture,
                             GdkEventSequence *sequence,
                             GtkWidget *widget)
@@ -4784,7 +4798,7 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          gpointer data)
 {
   GtkGesture *gesture = gtk_gesture_multi_press_new(widget);
-  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, gesture);
+  dt_gui_add_controller(widget, gesture);
   // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
@@ -4869,7 +4883,7 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   gpointer data)
 {
   GtkGesture *gesture = gtk_gesture_drag_new(widget);
-  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, gesture);
+  dt_gui_add_controller(widget, gesture);
   // GTK4 GtkGesture *gesture = gtk_gesture_drag_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
   if(drag_begin) g_signal_connect(gesture, "drag-begin", G_CALLBACK(drag_begin), data);
@@ -4887,7 +4901,7 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
 {
   GtkEventController *controller = gtk_event_controller_motion_new(widget);
   gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
-  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
+  dt_gui_add_controller(widget, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 
   gtk_widget_add_events(widget, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK); // still needed for now by _main_do_event_keymap
@@ -5031,7 +5045,7 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
 
   GtkEventController *const controller = gtk_event_controller_scroll_new(widget, flags);
   gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
-  g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
+  dt_gui_add_controller(widget, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
   g_signal_connect(controller, "scroll", G_CALLBACK(proxy), data);
   g_object_set_data(G_OBJECT(controller), _scroll_real_handler_key, scroll);
@@ -5085,7 +5099,7 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 {
   GtkEventController *controller = gtk_event_controller_key_new(widget);
   gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
-  g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
+  dt_gui_add_controller(widget, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 
   if(pressed)
