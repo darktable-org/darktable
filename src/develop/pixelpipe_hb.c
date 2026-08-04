@@ -2280,9 +2280,15 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     const size_t m_width = MAX(roi_in.width, roi_out->width);
     const size_t m_height = MAX(roi_in.height, roi_out->height);
 
-    const gboolean fits_on_device =
+    const dt_opencl_tilemode_t fitter =
       dt_opencl_image_fits_device(pipe->devid, m_width, m_height,
-                                  m_bpp, tiling.factor_cl, tiling.overhead);
+                                  m_bpp, tiling.factor_cl, tiling.overhead, tiling.overlap);
+
+    const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING;
+    const gboolean fast_tiling = fitter == DT_OPENCL_FAST_TILING
+        && !memcmp(&roi_in, roi_out, sizeof(roi_in))
+        && !(module->flags() & (IOP_FLAGS_WRITE_RASTER | IOP_FLAGS_WRITE_DETAILS));
+    const gboolean fits_on_device = no_tiling || fast_tiling;
 
     if(possible_cl && !fits_on_device)
     {
@@ -2395,12 +2401,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       }
 
       dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from blend cache" : "process",
-                        pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s%s %zuMB",
+          bcaching ? "from blend cache" : no_tiling ? "process" : fast_tiling ? "process fast tiled" : "process tiled",
+                        pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s %zuMB",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
-                        fits_on_device ? "" : ", tiled",
                         (size_t)(tiling.factor_cl * (m_width * m_height * m_bpp) + tiling.overhead) / DT_MEGA);
 
       if(fits_on_device)
@@ -2442,7 +2447,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            meaningful messages in case of error */
         if(success_opencl)
         {
-          if(_is_debug_pipe(pipe))
+          if(_is_debug_pipe(pipe) && no_tiling)
           {
             if(darktable.bench_module && dt_str_commasubstring(darktable.bench_module, module->op))
               _opencl_benchmark(pipe, module, piece, cl_mem_input, roi_out, &roi_in, bpp);
@@ -2467,8 +2472,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           else
           {
             *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
-            if(*cl_mem_output)
+            if(*cl_mem_output && no_tiling)
               err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+            else if(*cl_mem_output && fast_tiling)
+              err = process_tiling_cl_fast(piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out, in_bpp, bpp, &tiling);
             else
               err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
