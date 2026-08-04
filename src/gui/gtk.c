@@ -80,7 +80,6 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 0
 #define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
-#define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
 
 #ifdef GDK_WINDOWING_QUARTZ
 // macOS has a fixed DPI of 72
@@ -618,6 +617,36 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event,
   if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
   {
     // treat right like up, left like down
+    *delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+gboolean dt_gui_get_scroll_unit_deltas_fallback(const gdouble dx,
+                                                 const gdouble dy,
+                                                 int *delta_x,
+                                                 int *delta_y)
+{
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    const gboolean ok = dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)event, delta_x, delta_y);
+    gdk_event_free(event);
+    return ok;
+  }
+  // fallback: use raw values if no current event available
+  *delta_x = (int)dx;
+  *delta_y = (int)dy;
+  return TRUE;
+}
+
+gboolean dt_gui_get_scroll_unit_delta_fallback(const gdouble dy,
+                                                int *delta)
+{
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas_fallback(0, dy, &delta_x, &delta_y))
+  {
     *delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
     return TRUE;
   }
@@ -4769,6 +4798,70 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   return (GtkGestureSingle *)gesture;
 }
 
+/*
+ * GTK3 bridge for double/triple-click detection.
+ *
+ * GtkGestureMultiPress in GTK3 does not process GDK_2BUTTON_PRESS or
+ * GDK_3BUTTON_PRESS events at all:
+ * - gtk_gesture_handle_event() only dispatches GDK_BUTTON_PRESS (not 2/3)
+ * - gtk_gesture_multi_press_begin() checks for GDK_BUTTON_PRESS only
+ * - GDK always delivers GDK_2BUTTON_PRESS for the second press of a
+ *   double-click (never a second GDK_BUTTON_PRESS)
+ *
+ * As a result, GtkGestureMultiPress's "pressed" signal with n_press=2 or 3
+ * is NEVER emitted in GTK3.  This helper works around it by connecting a
+ * classic "button-press-event" signal handler that catches GDK_2BUTTON_PRESS
+ * and GDK_3BUTTON_PRESS and forwards them to the same pressed callback with
+ * the correct n_press value.
+ *
+ * GTK4 migration: DELETE this entire helper (struct, free, handler, and both
+ * public functions).  GtkGestureClick (the GTK4 replacement for
+ * GtkGestureMultiPress) uses an internal timer to detect multi-press patterns
+ * and correctly emits "pressed" with n_press=2/3 without needing GDK_2BUTTON_PRESS.
+ * The callers using dt_gui_connect_double_click() should simply remove those
+ * calls — the gesture alone will suffice.
+ */
+typedef struct _DblClkData
+{
+  GCallback cb;
+  gpointer data;
+} DblClkData;
+
+static void _dbl_clk_free(gpointer p, GClosure *cl)
+{
+  g_free(p);
+}
+
+static gboolean _dbl_clk_handler(GtkWidget *w, GdkEventButton *ev, gpointer user)
+{
+  DblClkData *d = user;
+  int n;
+  if(ev->type == GDK_2BUTTON_PRESS) n = 2;
+  else if(ev->type == GDK_3BUTTON_PRESS) n = 3;
+  else return GDK_EVENT_PROPAGATE;
+  ((void (*)(GtkGestureSingle *, int, double, double, gpointer))d->cb)
+    (NULL, n, ev->x, ev->y, d->data);
+  return GDK_EVENT_STOP;
+}
+
+unsigned long
+(dt_gui_connect_double_click)(GtkWidget *widget,
+                              GCallback pressed,
+                              gpointer data)
+{
+  DblClkData *d = g_malloc(sizeof(DblClkData));
+  d->cb = pressed;
+  d->data = data;
+  return g_signal_connect_data(widget, "button-press-event",
+                                G_CALLBACK(_dbl_clk_handler),
+                                d, _dbl_clk_free, 0);
+}
+
+void (dt_gui_disconnect_double_click)(GtkWidget *widget, unsigned long id)
+{
+  g_signal_handler_disconnect(widget, id);
+}
+
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
                                   GCallback drag_end,
@@ -4779,7 +4872,6 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
   g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, gesture);
   // GTK4 GtkGesture *gesture = gtk_gesture_drag_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
-
   if(drag_begin) g_signal_connect(gesture, "drag-begin", G_CALLBACK(drag_begin), data);
   if(drag_end) g_signal_connect(gesture, "drag-end", G_CALLBACK(drag_end), data);
   if(drag_update) g_signal_connect(gesture, "drag-update", G_CALLBACK(drag_update), data);
@@ -4820,7 +4912,7 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
   // decide whether to propogate them or scroll itself depending on
   // modifiers state, and this function will no longer be needed
   GtkWidget *const widget =
-    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+    dt_gui_get_widget(controller);
   const GtkWidget *panel = NULL;
   if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, widget))
     panel = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];
@@ -4946,6 +5038,79 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   return controller;
 }
 
+/*
+ * GTK3 bridge for GtkEventControllerKey.
+ *
+ * On GTK3, key events are delivered to the toplevel window, not to the
+ * focus widget, so a key controller with GTK_PHASE_TARGET attached to a
+ * widget never receives them.  This bridge connects the classic
+ * "key-press-event" signal (which GTK routes to the focus widget) and
+ * forwards to the controller-style callback so the GTK4 API can be used
+ * unchanged.
+ *
+ * GTK4 migration: DELETE this entire bridge; dt_gui_connect_key() then
+ * connects the controller's "key-pressed" signal directly.
+ */
+#if !GTK_CHECK_VERSION(4, 0, 0)
+typedef struct _KeyBridgeData
+{
+  GCallback cb;
+  gpointer data;
+  GtkEventControllerKey *controller;
+} KeyBridgeData;
+
+static void _key_bridge_free(gpointer p, GClosure *cl)
+{
+  g_free(p);
+}
+
+static gboolean _key_bridge_handler(GtkWidget *widget, GdkEventKey *event, gpointer user)
+{
+  KeyBridgeData *d = user;
+  guint keyval;
+  guint16 keycode;
+  GdkModifierType state;
+  gdk_event_get_keyval((GdkEvent *)event, &keyval);
+  gdk_event_get_keycode((GdkEvent *)event, &keycode);
+  gdk_event_get_state((GdkEvent *)event, &state);
+
+  return ((gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, gpointer))d->cb)
+    (d->controller, keyval, keycode, state, d->data);
+}
+#endif
+
+GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
+                                          GCallback pressed,
+                                          gpointer data)
+{
+  GtkEventController *controller = gtk_event_controller_key_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
+  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+
+  if(pressed)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    g_signal_connect(controller, "key-pressed", G_CALLBACK(pressed), data);
+#else
+    /* GtkEventControllerKey with GTK_PHASE_TARGET never fires on GTK3:
+     * key events are delivered to the toplevel window, not to the focus
+     * widget, so the TARGET-phase controllers are never reached.  Connect
+     * the classic key-press-event signal instead, which GTK routes to the
+     * focus widget (this is what the pre-migration code did).  The
+     * controller is still returned so callers can use dt_gui_get_widget()
+     * and the GTK4 migration keeps the controller path above. */
+    KeyBridgeData *d = g_new0(KeyBridgeData, 1);
+    d->cb = pressed;
+    d->data = data;
+    d->controller = GTK_EVENT_CONTROLLER_KEY(controller);
+    g_signal_connect_data(widget, "key-press-event",
+                          G_CALLBACK(_key_bridge_handler), d, _key_bridge_free, 0);
+#endif
+  }
+
+  return controller;
+}
 
 static int busy_nest_count = 0;
 

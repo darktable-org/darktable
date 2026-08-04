@@ -223,6 +223,9 @@ double dt_get_screen_resolution(GtkWidget *widget);
  * modifiers are pressed to indicate the control should be scrolled, then remove
  * the modifiers from the event before returning false */
 gboolean dt_gui_ignore_scroll(GdkEventScroll *event);
+/* Scale factor converting normalized smooth scroll deltas (as returned by
+ * dt_gui_get_scroll_deltas() on macOS) back to pixels for panning. */
+#define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
 /* Return requested scroll delta(s) from event. If delta_x or delta_y
  * is NULL, do not return that delta. Return TRUE if requested deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
@@ -247,6 +250,11 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
+/* Same as above but for use inside scroll-event-controller callbacks where the
+ * raw dx/dy are available but no GdkEventScroll *.  Tries gtk_get_current_event()
+ * first for smooth-scroll accumulation, falls back to casting the raw values. */
+gboolean dt_gui_get_scroll_unit_deltas_fallback(gdouble dx, gdouble dy, int *delta_x, int *delta_y);
+gboolean dt_gui_get_scroll_unit_delta_fallback(gdouble dy, int *delta);
 
 /*
  * new ui api
@@ -545,7 +553,7 @@ void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 gboolean dt_gui_long_click(const guint second,
                            const guint first);
 
-#define ASSERT_FUNC_TYPE(func, expected_type) (void)(1 ? (func) : (expected_type)0)
+#define ASSERT_FUNC_TYPE(func, expected_type) (void)((expected_type)(func))
 
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
@@ -557,6 +565,27 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   dt_gui_connect_click(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
   gtk_gesture_single_set_button(dt_gui_connect_click(widget, pressed, released, data), 0)
+
+/*
+ * GTK3 bridge: GtkGestureMultiPress in GTK3 does not process
+ * GDK_2BUTTON_PRESS / GDK_3BUTTON_PRESS.  See implementation in gtk.c
+ * for the full explanation and GTK4 migration instructions.
+ *
+ * Connection: call alongside dt_gui_connect_click() with the same
+ * pressed callback and data.  The callback receives (NULL, n_press, x, y, data)
+ * — the NULL gesture indicates the call came from this bridge, so the callback
+ * must handle that gracefully (see culling.c/thumbtable.c for the pattern).
+ *
+ * GTK4 migration: remove all calls to dt_gui_connect_double_click() and
+ * delete this declaration.  GtkGestureClick handles n_press natively.
+ */
+unsigned long dt_gui_connect_double_click(GtkWidget *widget,
+                                           GCallback pressed,
+                                           gpointer data);
+#define dt_gui_connect_double_click(widget, pressed, data) ( \
+  ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  dt_gui_connect_double_click(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
+void dt_gui_disconnect_double_click(GtkWidget *widget, unsigned long id);
 
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
@@ -587,6 +616,16 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
 #define dt_gui_connect_scroll(widget, flags, scroll, data) ( \
   ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
   dt_gui_connect_scroll(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
+
+GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
+                                          GCallback pressed,
+                                          gpointer data);
+#define dt_gui_connect_key(widget, pressed, data) ( \
+  ASSERT_FUNC_TYPE(pressed, gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, __typeof__(data))), \
+  dt_gui_connect_key(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
+
+#define dt_gui_get_widget(controller) \
+      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
 
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)

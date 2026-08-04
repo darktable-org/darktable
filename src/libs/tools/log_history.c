@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
-
 #include "control/signal.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -37,14 +35,14 @@ typedef struct dt_lib_log_history_t
 
 static void _populate_list_box(dt_lib_module_t *self);
 static void _log_redraw_callback(gpointer instance, dt_lib_module_t *self);
-static gboolean _button_press_release(GtkWidget *button,
-                                      GdkEventButton *event,
-                                      dt_lib_module_t *self);
+static void _button_press_cb(GtkGestureSingle *gesture, int n_press,
+                               double x, double y,
+                               dt_lib_module_t *self);
 static gboolean _suppress_popup(GtkWidget *widget,
                                 gpointer user_data);
-static gboolean _label_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data);
+static void _label_button_press_cb(GtkGestureSingle *gesture, int n_press,
+                                     double x, double y,
+                                     gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -97,8 +95,7 @@ static void _populate_list_box(dt_lib_module_t *self)
        gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
        gtk_label_set_selectable(GTK_LABEL(label), TRUE);
        dt_gui_add_class(label, "dt_monospace");
-       g_signal_connect(G_OBJECT(label), "button-press-event",
-                       G_CALLBACK(_label_button_press), NULL);
+       dt_gui_connect_click_all(label, _label_button_press_cb, NULL, NULL);
        g_signal_connect(G_OBJECT(label), "popup-menu",
                        G_CALLBACK(_suppress_popup), NULL);
        gtk_list_box_insert(GTK_LIST_BOX(d->list_box), label, -1);
@@ -137,29 +134,20 @@ static gboolean _suppress_popup(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _label_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static void _label_button_press_cb(GtkGestureSingle *gesture, int n_press,
+                                     double x, double y,
+                                     gpointer user_data)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
-    return TRUE;
-  return FALSE;
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
+    dt_gui_claim(gesture);
 }
 
-static gboolean _button_press_release(GtkWidget *button,
-                                      GdkEventButton *event,
-                                      dt_lib_module_t *self)
+static void _button_press_cb(GtkGestureSingle *gesture, int n_press,
+                               double x, double y,
+                               dt_lib_module_t *self)
 {
-  static guint start_time = 0;
-
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
-
-  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
-      && (dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
-          || dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY))
-     || (dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE
-         && dt_gdk_event_get_time(event) - start_time > delay))
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY || button == GDK_BUTTON_SECONDARY)
   {
     dt_lib_log_history_t *d = self->data;
     if(gtk_widget_is_visible(d->popover))
@@ -171,12 +159,6 @@ static gboolean _button_press_release(GtkWidget *button,
       // hide unread indicator now that the user sees the log
       gtk_widget_hide(d->badge);
     }
-    return TRUE;
-  }
-  else
-  {
-    start_time = dt_gdk_event_get_time(event);
-    return FALSE;
   }
 }
 
@@ -223,10 +205,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->scrolled), d->list_box);
   gtk_container_add(GTK_CONTAINER(d->popover), d->scrolled);
 
-  g_signal_connect(G_OBJECT(d->button), "button-press-event",
-                   G_CALLBACK(_button_press_release), self);
-  g_signal_connect(G_OBJECT(d->button), "button-release-event",
-                   G_CALLBACK(_button_press_release), self);
+  dt_gui_connect_click_all(d->button, _button_press_cb, NULL, self);
 
   self->widget = dt_gui_hbox(overlay);
 

@@ -18,6 +18,7 @@
 
 #include "control/conf.h"
 #include "control/control.h"
+#include "common/gdk_event_utils.h"
 #include "common/imagebuf.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -328,15 +329,24 @@ static gboolean _add_shape(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _add_shape_callback(GtkWidget *widget,
-                                    GdkEventButton *e,
-                                    dt_iop_module_t *self)
+static void _add_shape_callback(GtkGestureSingle *gesture,
+                                 int n_press,
+                                 double x,
+                                 double y,
+                                 dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   const dt_iop_spots_gui_data_t *g = self->gui_data;
 
-  const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
+  gboolean creation_continuous = FALSE;
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    creation_continuous = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+    gdk_event_free(event);
+  }
 
   _add_shape(widget, creation_continuous, self);
 
@@ -346,21 +356,21 @@ static gboolean _add_shape_callback(GtkWidget *widget,
                                _shape_is_being_added(self, DT_MASKS_ELLIPSE));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path),
                                _shape_is_being_added(self, DT_MASKS_PATH));
-
-  return TRUE;
 }
 
-static gboolean _edit_masks(GtkWidget *widget,
-                            GdkEventButton *e,
-                            dt_iop_module_t *self)
+static void _edit_masks(GtkGestureSingle *gesture,
+                          int n_press,
+                          double x,
+                          double y,
+                          dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
   // if we don't have the focus, request for it and quit, gui_focus() do the rest
   if(darktable.develop->gui_module != self)
   {
     dt_iop_request_focus(self);
-    return FALSE;
+    return;
   }
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
@@ -408,8 +418,6 @@ static gboolean _edit_masks(GtkWidget *widget,
   DT_LEAVE_GUI_UPDATE();
 
   dt_control_queue_redraw_center();
-
-  return TRUE;
 }
 
 static gboolean masks_form_is_in_roi(dt_iop_module_t *self,

@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
-
 #include "bauhaus/bauhaus.h"
 #include "common/colorlabels.h"
 #include "common/collection.h"
@@ -45,9 +43,12 @@ typedef struct dt_lib_colorlabels_t
 } dt_lib_colorlabels_t;
 
 /* callback when a colorlabel button is clicked */
-static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
-                                                         GdkEventButton *event,
-                                                         dt_lib_module_t *self);
+static void _lib_colorlabels_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                      double x, double y,
+                                                      dt_lib_module_t *self);
+static void _lib_colorlabels_enter_notify_callback(GtkEventControllerMotion *controller,
+                                                     double x, double y,
+                                                     dt_lib_module_t *self);
 
 gint _get_colorlabel(dt_lib_module_t *self, GtkWidget *w)
 {
@@ -85,14 +86,14 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static gboolean _lib_colorlabels_enter_notify_callback(GtkWidget *widget,
-                                                       GdkEventCrossing *event,
+static void _lib_colorlabels_enter_notify_callback(GtkEventControllerMotion *controller,
+                                                       double x, double y,
                                                        dt_lib_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const gint colorlabel = _get_colorlabel(self, widget);
 
   darktable.control->element = (colorlabel + 1) % 6;
-  return FALSE;
 }
 
 static char *_get_tooltip_for(const int coloridx)
@@ -137,12 +138,8 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_markup(button, tooltip);
     g_free(tooltip);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(button), "button-press-event",
-                     G_CALLBACK(_lib_colorlabels_button_clicked_callback),
-                     self);
-    g_signal_connect(G_OBJECT(button), "enter-notify-event",
-                     G_CALLBACK(_lib_colorlabels_enter_notify_callback),
-                     self);
+    dt_gui_connect_click_all(button, _lib_colorlabels_button_press_callback, NULL, self);
+    dt_gui_connect_motion(button, NULL, _lib_colorlabels_enter_notify_callback, NULL, self);
     ac = dt_action_define(&darktable.control->actions_thumb, NULL,
                           N_("color label"), button, &dt_action_def_color_label);
   }
@@ -164,13 +161,15 @@ void gui_cleanup(dt_lib_module_t *self)
 
 #define FLOATING_ENTRY_WIDTH DT_PIXEL_APPLY_DPI(150)
 
-static gboolean _lib_colorlabels_key_press(GtkWidget *entry,
-                                           GdkEventKey *event,
-                                           dt_lib_module_t *self)
+static gboolean _lib_colorlabels_key_press_cb(GtkEventControllerKey *controller,
+                                                  guint keyval,
+                                                  guint keycode,
+                                                  GdkModifierType state,
+                                                  dt_lib_module_t *self)
 {
   dt_lib_colorlabels_t *d = self->data;
 
-  switch(dt_gdk_event_get_keyval(event))
+  switch(keyval)
   {
     case GDK_KEY_Escape:
       gtk_widget_destroy(d->floating_window);
@@ -181,6 +180,7 @@ static gboolean _lib_colorlabels_key_press(GtkWidget *entry,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
+      GtkWidget *entry = dt_gui_get_widget(controller);
       char confname[128];
       const gchar *label = gtk_entry_get_text(GTK_ENTRY(entry));
       snprintf(confname, sizeof(confname), "colorlabel/%s",
@@ -210,7 +210,8 @@ static gboolean _lib_colorlabels_destroy(GtkWidget *widget,
 }
 
 static void _lib_colorlabels_edit(dt_lib_module_t *self,
-                                  GdkEventButton *event)
+                                  const gdouble root_x,
+                                  const gdouble root_y)
 {
   dt_lib_colorlabels_t *d = self->data;
 
@@ -225,7 +226,7 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   g_signal_connect(entry, "focus-out-event", G_CALLBACK(_lib_colorlabels_destroy), self);
-  g_signal_connect(entry, "key-press-event", G_CALLBACK(_lib_colorlabels_key_press), self);
+  dt_gui_connect_key(entry, _lib_colorlabels_key_press_cb, self);
   gtk_widget_set_tooltip_text(entry, _("enter a description of how you use this color label"));
 
   if(use_popover)
@@ -248,8 +249,8 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   else
   {
     // Legacy/X11 path: keep undecorated popup GtkWindow
-    const gint x = dt_gdk_event_get_root_x(event);
-    const gint y = dt_gdk_event_get_root_y(event) - DT_PIXEL_APPLY_DPI(50);
+    const gint x = root_x;
+    const gint y = root_y - DT_PIXEL_APPLY_DPI(50);
 
     d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -268,20 +269,26 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   }
 }
 
-static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
-                                                         GdkEventButton *event,
-                                                         dt_lib_module_t *self)
+static void _lib_colorlabels_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                      double x, double y,
+                                                      dt_lib_module_t *self)
 {
+  GtkWidget *w = dt_gui_get_widget(gesture);
   dt_lib_colorlabels_t *d = self->data;
 
   const gint colorlabel = _get_colorlabel(self, w);
 
-  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
-     && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY
      && colorlabel != 5)  // The button to reset colorlabels needs no description
   {
     d->colorlabel = colorlabel;
-    _lib_colorlabels_edit(self, event);
+    GdkEvent *ev = gtk_get_current_event();
+    if(ev)
+    {
+      gdouble root_x, root_y;
+      gdk_event_get_root_coords(ev, &root_x, &root_y);
+      _lib_colorlabels_edit(self, root_x, root_y);
+    }
   }
   else
   {
@@ -291,7 +298,6 @@ static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
                                DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                imgs);
   }
-  return TRUE;
 }
 
 // clang-format off

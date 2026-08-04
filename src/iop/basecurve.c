@@ -1530,15 +1530,13 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget,
-                                              GdkEventCrossing *event,
-                                              dt_iop_module_t *self)
+static void dt_iop_basecurve_leave_notify(GtkEventControllerMotion *controller,
+                                                 dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
-  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK))
+  if(!(dt_key_modifier_state() & GDK_BUTTON1_MASK))
     g->selected = -1;
-  gtk_widget_queue_draw(widget);
-  return FALSE;
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static float to_log(const float x, const float base)
@@ -1775,10 +1773,12 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
                                      float dy,
                                      const guint state);
 
-static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
-                                               GdkEventMotion *event,
-                                               dt_iop_module_t *self)
+static void dt_iop_basecurve_motion_notify(GtkEventControllerMotion *controller,
+                                                  gdouble x,
+                                                  gdouble y,
+                                                  dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
   dt_iop_basecurve_params_t *p = self->params;
   int ch = 0;
@@ -1791,14 +1791,14 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
   const double old_m_x = g->mouse_x;
   const double old_m_y = g->mouse_y;
-  g->mouse_x = dt_gdk_event_get_x(event) - inset;
-  g->mouse_y = dt_gdk_event_get_y(event) - inset;
+  g->mouse_x = x - inset;
+  g->mouse_y = y - inset;
 
   const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
   const float my = 1.0f - CLAMP(g->mouse_y, 0, height) / (float)height;
   const float linx = to_lin(mx, g->loglogscale), liny = to_lin(my, g->loglogscale);
 
-  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+  if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(g->selected >= 0)
@@ -1812,7 +1812,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
       const float dy = to_lin(1 - g->mouse_y / height - translate_mouse_y, g->loglogscale)
                        - to_lin(1 - old_m_y / height - translate_mouse_y, g->loglogscale);
 
-      return _move_point_internal(self, widget, dx, dy, dt_gdk_event_get_state(event));
+      _move_point_internal(self, widget, dx, dy, dt_key_modifier_state());
     }
     else if(nodes < MAXNODES && g->selected >= -1)
     {
@@ -1842,13 +1842,15 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
   }
   if(g->selected >= 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self)
+static void dt_iop_basecurve_button_press(GtkGestureSingle *gesture,
+                                                 gint n_press,
+                                                 gdouble x,
+                                                 gdouble y,
+                                                 dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_iop_basecurve_params_t *p = self->params;
   const dt_iop_basecurve_params_t *const d = self->default_params;
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
@@ -1857,9 +1859,9 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
   int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)
+    if(dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK)
       && nodes < MAXNODES && g->selected == -1)
     {
       // if we are not on a node -> add a new node at the current x of the pointer and y of the curve at that x
@@ -1867,8 +1869,8 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
       int width = allocation.width - 2 * inset;
-      g->mouse_x = dt_gdk_event_get_x(event) - inset;
-      g->mouse_y = dt_gdk_event_get_y(event) - inset;
+      g->mouse_x = x - inset;
+      g->mouse_y = y - inset;
 
       const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
       const float linx = to_lin(mx, g->loglogscale);
@@ -1895,12 +1897,12 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
            (selected < nodes && basecurve[selected].x - linx <= 0.025)))
       {
         // evaluate the curve at the current x position
-        const float y = dt_draw_curve_calc_value(g->minmax_curve, linx);
+        const float curve_y = dt_draw_curve_calc_value(g->minmax_curve, linx);
 
-        if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+        if(curve_y >= 0.0 && curve_y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
+          selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, curve_y);
 
           // maybe set the new one as being selected
           float min = .04f;
@@ -1908,7 +1910,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
           for(int k = 0; k < nodes; k++)
           {
             float other_y = to_log(basecurve[k].y, g->loglogscale);
-            float dist = (y - other_y) * (y - other_y);
+            float dist = (curve_y - other_y) * (curve_y - other_y);
             if(dist < min) g->selected = selected;
           }
 
@@ -1916,9 +1918,8 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
           gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
       }
-      return TRUE;
     }
-    else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+    else if(n_press >= 2)
     {
       // reset current curve
       p->basecurve_nodes[ch] = d->basecurve_nodes[ch];
@@ -1931,10 +1932,9 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       g->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
-      return TRUE;
     }
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if(g->selected == 0 || g->selected == nodes - 1)
     {
@@ -1942,7 +1942,6 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       basecurve[g->selected].y = basecurve[g->selected].x = reset_value;
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
-      return TRUE;
     }
 
     for(int k = g->selected; k < nodes - 1; k++)
@@ -1955,9 +1954,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
     p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
-    return TRUE;
   }
-  return FALSE;
 }
 
 static gboolean _move_point_internal(dt_iop_module_t *self,
@@ -1988,50 +1985,49 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
 #define BASECURVE_DEFAULT_STEP (0.001f)
 
-static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
+static void _scrolled(GtkEventControllerScroll *controller, gdouble dx, gdouble dy, dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
-  if(dt_gui_ignore_scroll(event)) return FALSE;
+  if(g->selected < 0) return;
 
-  if(g->selected < 0) return TRUE;
-
-  gdouble delta_y;
-  if(dt_gui_get_scroll_delta(event, &delta_y))
+  if(dy != 0.0)
   {
-    delta_y *= -BASECURVE_DEFAULT_STEP;
-    return _move_point_internal(self, widget, 0.0, delta_y, dt_gdk_event_get_state(event));
+    dy *= -BASECURVE_DEFAULT_STEP;
+    _move_point_internal(self, widget, 0.0, dy, dt_key_modifier_state());
   }
-
-  return TRUE;
 }
 
-static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
-                                           GdkEventKey *event,
-                                           dt_iop_module_t *self)
+static gboolean dt_iop_basecurve_key_press(GtkEventControllerKey *controller,
+                                                guint keyval,
+                                                guint keycode,
+                                                GdkModifierType state,
+                                                dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   if(g->selected < 0) return TRUE;
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
-  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Up || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Up)
+  if(keyval == GDK_KEY_Up || keyval == GDK_KEY_KP_Up)
   {
     handled = 1;
     dy = BASECURVE_DEFAULT_STEP;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Down || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Down)
+  else if(keyval == GDK_KEY_Down || keyval == GDK_KEY_KP_Down)
   {
     handled = 1;
     dy = -BASECURVE_DEFAULT_STEP;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Right || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Right)
+  else if(keyval == GDK_KEY_Right || keyval == GDK_KEY_KP_Right)
   {
     handled = 1;
     dx = BASECURVE_DEFAULT_STEP;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Left || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Left)
+  else if(keyval == GDK_KEY_Left || keyval == GDK_KEY_KP_Left)
   {
     handled = 1;
     dx = -BASECURVE_DEFAULT_STEP;
@@ -2039,7 +2035,7 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
 
   if(!handled) return FALSE;
 
-  return _move_point_internal(self, widget, dx, dy, dt_gdk_event_get_state(event));
+  return _move_point_internal(self, widget, dx, dy, state);
 }
 
 #undef BASECURVE_DEFAULT_STEP
@@ -2124,16 +2120,19 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
   dt_gui_box_add(self->widget, g->logbase);
 
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
-                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_scrolled), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
+  gtk_widget_add_events(GTK_WIDGET(g->area),
+                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
+  dt_gui_connect_click(g->area, dt_iop_basecurve_button_press, NULL, self);
+  dt_gui_connect_motion(g->area, dt_iop_basecurve_motion_notify, NULL, dt_iop_basecurve_leave_notify, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _scrolled, self);
+  dt_gui_connect_key(g->area, dt_iop_basecurve_key_press, self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

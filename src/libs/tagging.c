@@ -1469,22 +1469,26 @@ static void _pop_menu_attached(GtkWidget *treeview,
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 }
 
-static gboolean _click_on_view_attached(GtkWidget *view,
-                                        GdkEventButton *event,
-                                        dt_lib_module_t *self)
+static void _click_on_view_attached(GtkGestureSingle *gesture,
+                                      int n_press,
+                                      double x,
+                                      double y,
+                                      dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
+  GtkWidget *view = dt_gui_get_widget(gesture);
   _unselect_all_in_view(d->dictionary_view);
 
-  if((dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
-    || (dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-    || (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY))
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  if((n_press == 1 && button == GDK_BUTTON_SECONDARY)
+     || (n_press == 2 && button == GDK_BUTTON_PRIMARY)
+     || (n_press == 1 && button == GDK_BUTTON_PRIMARY))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
+                                     (gint)x, (gint)y,
                                      &path, NULL, NULL, NULL))
     {
       gboolean valid_tag = FALSE;
@@ -1497,46 +1501,51 @@ static gboolean _click_on_view_attached(GtkWidget *view,
       {
         gtk_tree_selection_select_path(selection, path);
         dt_lib_gui_queue_update(self);
-        if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
-           && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+        if(n_press == 1 && button == GDK_BUTTON_SECONDARY)
         {
-          _pop_menu_attached(view, event, self);
+          dt_gui_claim(gesture);
+          GdkEvent *event = gtk_get_current_event();
+          _pop_menu_attached(view, (GdkEventButton *)event, self);
+          if(event) gdk_event_free(event);
           gtk_tree_path_free(path);
-          return TRUE;
+          return;
         }
-        else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS
-                && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+        else if(n_press == 2 && button == GDK_BUTTON_PRIMARY)
         {
+          dt_gui_claim(gesture);
           _detach_selected_tag(d->attached_view, self);
           gtk_tree_path_free(path);
-          return TRUE;
+          return;
         }
       }
       else
       { // prevent to select a darktable tag
+        dt_gui_claim(gesture);
         gtk_tree_path_free(path);
-        return TRUE;
+        return;
       }
     }
     gtk_tree_path_free(path);
   }
-  return FALSE;
 }
 
-static gboolean _attached_key_pressed(GtkWidget *view,
-                                      GdkEventKey *event,
-                                      dt_lib_module_t *self)
+static gboolean _attached_key_pressed(GtkEventControllerKey *controller,
+                                       guint keyval,
+                                       guint keycode,
+                                       GdkModifierType state,
+                                       dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
   _unselect_all_in_view(d->dictionary_view);
 
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-    switch(dt_gdk_event_get_keyval(event))
+    switch(keyval)
     {
       case GDK_KEY_Delete:
       case GDK_KEY_KP_Delete:
@@ -1548,13 +1557,13 @@ static gboolean _attached_key_pressed(GtkWidget *view,
     }
     gtk_tree_path_free(path);
   }
-  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Tab)
+  if(keyval == GDK_KEY_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     gtk_widget_grab_focus(GTK_WIDGET(d->entry));
     return TRUE;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Left_Tab)
+  else if(keyval == GDK_KEY_ISO_Left_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     return TRUE;
@@ -1603,12 +1612,15 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
                     tagname ? tagname + 1 : d->last_tag, FALSE, TRUE);
 }
 
-static gboolean _enter_key_pressed(GtkWidget *entry,
-                                   GdkEventKey *event,
-                                   dt_lib_module_t *self)
+static gboolean _enter_key_pressed(GtkEventControllerKey *controller,
+                                     guint keyval,
+                                     guint keycode,
+                                     GdkModifierType state,
+                                     dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  switch(dt_gdk_event_get_keyval(event))
+  GtkWidget *entry = dt_gui_get_widget(controller);
+  switch(keyval)
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
@@ -2635,28 +2647,33 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
   }
 }
 
-static gboolean _click_on_view_dictionary(GtkWidget *view,
-                                          GdkEventButton *event,
-                                          dt_lib_module_t *self)
+static void _click_on_view_dictionary(GtkGestureSingle *gesture,
+                                        int n_press,
+                                        double x,
+                                        double y,
+                                        dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
+  GtkWidget *view = dt_gui_get_widget(gesture);
   _unselect_all_in_view(d->attached_view);
 
-  const int button_pressed = (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS) ? dt_gdk_event_get_button(event) : 0;
-  const gboolean shift_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK);
-  if((button_pressed == GDK_BUTTON_SECONDARY)                     // contextual menu
-     || (d->tree_flag && button_pressed == GDK_BUTTON_PRIMARY)    // expand & drag
-     || (dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)) // attach
+  GdkEvent *event = gtk_get_current_event();
+  const GdkModifierType state = event ? dt_gdk_event_get_state(event) : 0;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  const gboolean shift_pressed = dt_modifier_is(state, GDK_SHIFT_MASK);
+  if((button == GDK_BUTTON_SECONDARY && n_press == 1)          // contextual menu
+     || (d->tree_flag && button == GDK_BUTTON_PRIMARY && n_press == 1)  // expand & drag
+     || (n_press == 2 && button == GDK_BUTTON_PRIMARY))        // attach
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
-                                     (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
+                                     (gint)x, (gint)y,
                                      &path, NULL, NULL, NULL))
     {
       if(d->tree_flag
-         && button_pressed == GDK_BUTTON_PRIMARY
+         && button == GDK_BUTTON_PRIMARY && n_press == 1
          && !shift_pressed)
       {
         GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
@@ -2671,60 +2688,69 @@ static gboolean _click_on_view_dictionary(GtkWidget *view,
         d->drag.path = path;
         if(d->drag.lastpath) gtk_tree_path_free(d->drag.lastpath);
         d->drag.lastpath = NULL;
-        return FALSE;
+        if(event) gdk_event_free(event);
+        return;
       }
       else
       {
         gtk_tree_selection_select_path(selection, path);
         dt_lib_gui_queue_update(self);
-        if(button_pressed == GDK_BUTTON_SECONDARY)
+        if(button == GDK_BUTTON_SECONDARY && n_press == 1)
         {
-          _pop_menu_dictionary(view, event, self);
+          dt_gui_claim(gesture);
+          _pop_menu_dictionary(view, (GdkEventButton *)event, self);
           gtk_tree_path_free(path);
-          return TRUE;
+          if(event) gdk_event_free(event);
+          return;
         }
         else if(d->tree_flag
-                && button_pressed == GDK_BUTTON_PRIMARY
+                && button == GDK_BUTTON_PRIMARY && n_press == 1
                 && shift_pressed)
         {
+          dt_gui_claim(gesture);
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
           gtk_tree_path_free(path);
-          return TRUE;
+          if(event) gdk_event_free(event);
+          return;
         }
-        else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS
-                && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+        else if(n_press == 2 && button == GDK_BUTTON_PRIMARY)
         {
+          dt_gui_claim(gesture);
           _attach_selected_tag(self, d);
           gtk_tree_path_free(path);
-          return TRUE;
+          if(event) gdk_event_free(event);
+          return;
         }
       }
     }
     gtk_tree_path_free(path);
   }
-  return FALSE;
+  if(event) gdk_event_free(event);
 }
 
-static gboolean _dictionary_key_pressed(GtkWidget *view,
-                                        GdkEventKey *event,
-                                        dt_lib_module_t *self)
+static gboolean _dictionary_key_pressed(GtkEventControllerKey *controller,
+                                         guint keyval,
+                                         guint keycode,
+                                         GdkModifierType state,
+                                         dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
   _unselect_all_in_view(d->attached_view);
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   gboolean res = FALSE;
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-    switch(dt_gdk_event_get_keyval(event))
+    switch(keyval)
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
       {
         _attach_selected_tag(self, d);
-        if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
+        if(dt_modifier_is(state, GDK_SHIFT_MASK))
         {
           gtk_tree_selection_unselect_all(selection);
           gtk_entry_set_text(GTK_ENTRY(d->entry), "");
@@ -2736,7 +2762,7 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
       case GDK_KEY_Left:
         if(path)
         {
-          if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
+          if(dt_modifier_is(state, GDK_SHIFT_MASK))
             gtk_tree_view_collapse_all(GTK_TREE_VIEW(view));
           else
             gtk_tree_view_collapse_row(GTK_TREE_VIEW(view), path);
@@ -2747,7 +2773,7 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
         if(path)
         {
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path,
-                                   dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK));
+                                   dt_modifier_is(state, GDK_SHIFT_MASK));
           res = TRUE;
         }
         break;
@@ -2756,12 +2782,12 @@ static gboolean _dictionary_key_pressed(GtkWidget *view,
     }
     gtk_tree_path_free(path);
   }
-  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Tab)
+  if(keyval == GDK_KEY_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     res = TRUE;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_ISO_Left_Tab)
+  else if(keyval == GDK_KEY_ISO_Left_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     gtk_widget_grab_focus(GTK_WIDGET(d->entry));
@@ -3529,10 +3555,8 @@ void gui_init(dt_lib_module_t *self)
        "\npress Delete or double-click to detach"
        "\nright-click for other actions on attached tag,"
        "\nTab to give the focus to entry"));
-  g_signal_connect(G_OBJECT(view), "button-press-event",
-                   G_CALLBACK(_click_on_view_attached), (gpointer)self);
-  g_signal_connect(G_OBJECT(view), "key-press-event",
-                   G_CALLBACK(_attached_key_pressed), (gpointer)self);
+  dt_gui_connect_click_all(view, _click_on_view_attached, NULL, self);
+  dt_gui_connect_key(view, _attached_key_pressed, self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed",
                    G_CALLBACK(_tree_selection_changed), self);
 
@@ -3591,8 +3615,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed",
                    G_CALLBACK(_tag_name_changed), (gpointer)self);
-  g_signal_connect(G_OBJECT(w), "key-press-event",
-                   G_CALLBACK(_enter_key_pressed), (gpointer)self);
+  dt_gui_connect_key(w, _enter_key_pressed, self);
   d->entry = GTK_ENTRY(w);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, 0, NULL);
@@ -3669,10 +3692,8 @@ void gui_init(dt_lib_module_t *self)
        "\nright-click for other actions on selected tag"
        "\nshift+Tab to give the focus to entry"));
 
-  g_signal_connect(G_OBJECT(view), "button-press-event",
-                   G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
-  g_signal_connect(G_OBJECT(view), "key-press-event",
-                   G_CALLBACK(_dictionary_key_pressed), (gpointer)self);
+  dt_gui_connect_click_all(view, _click_on_view_dictionary, NULL, self);
+  dt_gui_connect_key(view, _dictionary_key_pressed, self);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
   g_object_unref(d->dictionary_listfilter);
   g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
@@ -3767,12 +3788,14 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 // http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
-static gboolean _lib_tagging_tag_key_press(GtkWidget *entry,
-                                           GdkEventKey *event,
-                                           dt_lib_module_t *self)
+static gboolean _lib_tagging_tag_key_press(GtkEventControllerKey *controller,
+                                            guint keyval,
+                                            guint keycode,
+                                            GdkModifierType state,
+                                            dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
-  switch(dt_gdk_event_get_keyval(event))
+  switch(keyval)
   {
     case GDK_KEY_Escape:
       g_list_free(d->floating_tag_imgs);
@@ -3784,6 +3807,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
+      GtkWidget *entry = dt_gui_get_widget(controller);
       dt_gui_cursor_set_busy();
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
@@ -3895,8 +3919,7 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   gtk_container_add(GTK_CONTAINER(d->floating_tag_window), entry);
   g_signal_connect(entry, "focus-out-event",
                    G_CALLBACK(_lib_tagging_tag_destroy), d->floating_tag_window);
-  g_signal_connect(entry, "key-press-event",
-                   G_CALLBACK(_lib_tagging_tag_key_press), self);
+  dt_gui_connect_key(entry, _lib_tagging_tag_key_press, self);
 
   gtk_widget_show_all(d->floating_tag_window);
   gtk_widget_grab_focus(entry);

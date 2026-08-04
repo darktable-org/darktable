@@ -651,26 +651,33 @@ static gboolean _event_gesture(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _event_scroll(GtkWidget *widget,
-                              GdkEvent *event,
-                              gpointer user_data)
+static void _event_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx,
+                           gdouble dy,
+                           dt_culling_t *table)
 {
-  GdkEventScroll *e = (GdkEventScroll *)event;
-  dt_culling_t *table = (dt_culling_t *)user_data;
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
 
-  GdkDevice *device = gdk_event_get_source_device(event);
+  GdkDevice *device = dt_gdk_event_get_source_device(event);
+  const GdkScrollDirection direction = dt_gdk_event_get_scroll_direction(event);
+  const gboolean is_stop = gdk_event_is_scroll_stop_event(event);
+  const GdkModifierType state = dt_gdk_event_get_state(event);
+  const gdouble x_root = dt_gdk_event_get_root_x(event);
+  const gdouble y_root = dt_gdk_event_get_root_y(event);
+
   dt_print(DT_DEBUG_INPUT,
            "[culling scroll] direction=%d smooth=%s stop=%s ctrl=%s"
            " device='%s' source-type=%d x_root=%.1f y_root=%.1f"
            " delta_x=%.3f delta_y=%.3f state=0x%x",
-           e->direction,
-           e->direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
-           e->is_stop ? "yes" : "no",
-           dt_modifier_is(e->state, GDK_CONTROL_MASK) ? "yes" : "no",
+           direction,
+           direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
+           is_stop ? "yes" : "no",
+           dt_modifier_is(state, GDK_CONTROL_MASK) ? "yes" : "no",
            device ? gdk_device_get_name(device) : "<none>",
            device ? (int)gdk_device_get_source(device) : -1,
-           e->x_root, e->y_root,
-           e->delta_x, e->delta_y, e->state);
+           x_root, y_root,
+           dx, dy, state);
 
   // ctrl + smooth scroll: apply fractional zoom on every event so the zoom
   // feels seamless rather than stepped.  This must come before the integer-
@@ -683,19 +690,19 @@ static gboolean _event_scroll(GtkWidget *widget,
   // must be finalised regardless. (If no zoom was pending this is a no-op, and
   // the safety-net timer in _thumbs_zoom_add covers devices that never emit a
   // stop event at all.)
-  if(e->direction == GDK_SCROLL_SMOOTH && e->is_stop)
+  if(direction == GDK_SCROLL_SMOOTH && is_stop)
   {
+    gdk_event_free(event);
     dt_culling_zoom_end(table);
-    return TRUE;
+    return;
   }
 
-  if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && dt_modifiers_include(e->state, GDK_CONTROL_MASK))
+  if(direction == GDK_SCROLL_SMOOTH && !is_stop
+     && dt_modifiers_include(state, GDK_CONTROL_MASK))
   {
-    gdouble dx = 0.0, dy = 0.0;
-    if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
+    if(dx != 0.0 || dy != 0.0)
     {
-      // dt_gui_get_scroll_deltas gives the raw fractional platform delta.
+      // controller dx/dy gives the raw fractional platform delta.
       // Scale so that one full unit of scroll (delta_y == 1.0) matches the
       // 0.5 zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
       const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
@@ -705,22 +712,23 @@ static gboolean _event_scroll(GtkWidget *widget,
       GdkWindow *win = gtk_widget_get_window(table->widget);
       if(win)
         gdk_window_get_origin(win, &ox, &oy);
-      const float x_culling = e->x_root - ox;
-      const float y_culling = e->y_root - oy;
+      const float x_culling = x_root - ox;
+      const float y_culling = y_root - oy;
       dt_print(DT_DEBUG_INPUT,
                "[culling scroll] ctrl+smooth zoom_delta=%.4f x_culling=%.1f y_culling=%.1f",
                zoom_delta, x_culling, y_culling);
       if(fabsf(zoom_delta) > 0.001f)
-        _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, TRUE);
+        _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state, TRUE);
     }
-    return TRUE;
+    gdk_event_free(event);
+    return;
   }
 
   // Smooth scroll (touchpad two-finger swipe): pan zoomed images or navigate images.
   // We check before the unit-delta path so fractional smooth scroll is used for panning
   // with full fidelity rather than being accumulated into integer steps.
-  if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
-     && !dt_modifiers_include(e->state, GDK_CONTROL_MASK))
+  if(direction == GDK_SCROLL_SMOOTH && !is_stop
+     && !dt_modifiers_include(state, GDK_CONTROL_MASK))
   {
     // Check if any thumbnail is zoomed in; if so, pan instead of navigate.
     float fz = 1.0f;
@@ -734,29 +742,31 @@ static gboolean _event_scroll(GtkWidget *widget,
              fz, fz > 1.0f ? "pan path" : "navigate path");
     if(fz > 1.0f)
     {
-      gdouble dx = 0.0, dy = 0.0;
-      if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
+      if(dx != 0.0 || dy != 0.0)
       {
-        // dt_gui_get_scroll_deltas returns platform-normalised fractional units;
+        // controller dx/dy is platform-normalised fractional units;
         // scale to pixel-scale (matches the factor used by the center-widget pan path).
         dt_print(DT_DEBUG_INPUT,
                  "[culling scroll] panning dx=%.3f dy=%.3f (scaled: dx=%.1f dy=%.1f)",
                  dx, dy, dx * 50.0, dy * 50.0);
-        dt_culling_pan_move(table, (float)(-dx * 50.0), (float)(-dy * 50.0), e->state);
+        dt_culling_pan_move(table, (float)(-dx * 50.0), (float)(-dy * 50.0), state);
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta from dt_gui_get_scroll_deltas");
+        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta from controller");
       }
-      return TRUE;
+      gdk_event_free(event);
+      return;
     }
   }
 
+  // discrete scroll: use unit deltas for zoom/navigation
+  const GdkEventScroll *scroll_event = (const GdkEventScroll *)event;
   int delta_x = 0, delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  if(dt_gui_get_scroll_unit_deltas(scroll_event, &delta_x, &delta_y))
   {
     const gboolean is_horizontal = abs(delta_x) > abs(delta_y);
-    if(dt_modifiers_include(e->state, GDK_CONTROL_MASK))
+    if(dt_modifiers_include(state, GDK_CONTROL_MASK))
     {
       // zooming: right==up==zoom-in
       const int delta = is_horizontal ? -delta_x : delta_y;
@@ -766,8 +776,8 @@ static gboolean _event_scroll(GtkWidget *widget,
       GdkWindow *win = gtk_widget_get_window(table->widget);
       if(win)
         gdk_window_get_origin(win, &ox, &oy);
-      const float x_culling = e->x_root - ox;
-      const float y_culling = e->y_root - oy;
+      const float x_culling = x_root - ox;
+      const float y_culling = y_root - oy;
       dt_print(DT_DEBUG_INPUT,
                "[culling scroll] ctrl+scroll zoom_delta=%.2f x_culling=%.1f y_culling=%.1f",
                zoom_delta, x_culling, y_culling);
@@ -775,7 +785,7 @@ static gboolean _event_scroll(GtkWidget *widget,
       // smooth is_stop event to finalise it, so reload the surface immediately
       // (still cheap — the native mipmap surface cache is reused).  Leaving it
       // deferred would freeze the image at a stale, scaled-up resolution.
-      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, FALSE);
+      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state, FALSE);
     }
     else
     {
@@ -786,7 +796,7 @@ static gboolean _event_scroll(GtkWidget *widget,
       _thumbs_move(table, move);
     }
   }
-  return TRUE;
+  gdk_event_free(event);
 }
 
 static gboolean _event_draw(GtkWidget *widget,
@@ -809,118 +819,137 @@ static gboolean _event_draw(GtkWidget *widget,
   return FALSE; // let's propagate this event
 }
 
-static gboolean _event_leave_notify(GtkWidget *widget,
-                                    GdkEventCrossing *event,
-                                    gpointer user_data)
+static void _event_leave_cb(GtkEventControllerMotion *controller,
+                              dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
+  GtkWidget *widget = dt_gui_get_widget(controller);
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget))
   {
     table->mouse_inside = FALSE;
-    return FALSE;
+    return;
   }
 
-  // if we leave thumbtable in favour of an inferior (a thumbnail)
-  // it's not a real leave !  same if this is not a mouse move action
-  // (shortcut that activate a button for example)
-  if(event->detail == GDK_NOTIFY_INFERIOR
-     || event->mode == GDK_CROSSING_GTK_GRAB
-     || event->mode == GDK_CROSSING_GRAB)
-    return FALSE;
-
   table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(NO_IMGID);
-  return TRUE;
+
+  // check crossing detail: don't clear mouse_over_id when leaving to
+  // a child widget (thumbnail) or due to a grab
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    if(event->crossing.detail != GDK_NOTIFY_INFERIOR
+       && event->crossing.mode != GDK_CROSSING_GTK_GRAB
+       && event->crossing.mode != GDK_CROSSING_GRAB)
+      dt_control_set_mouse_over_id(NO_IMGID);
+    gdk_event_free(event);
+  }
 }
 
-static gboolean _event_enter_notify(GtkWidget *widget,
-                                    GdkEventCrossing *event,
-                                    gpointer user_data)
+static void _event_enter_cb(GtkEventControllerMotion *controller,
+                              gdouble x,
+                              gdouble y,
+                              dt_culling_t *table)
 {
-  // we only handle the case where we enter thumbtable from an
-  // inferior (a thumbnail) this is when the mouse enter an "empty"
-  // area of thumbtable
-  if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
-
-  dt_control_set_mouse_over_id(NO_IMGID);
-  return TRUE;
+  // when entering the culling area from a child thumbnail (INFERIOR),
+  // clear the mouse-over id since we're now in the empty area
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    if(event->crossing.detail == GDK_NOTIFY_INFERIOR)
+      dt_control_set_mouse_over_id(NO_IMGID);
+    gdk_event_free(event);
+  }
 }
 
-static gboolean _event_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static void _event_button_press_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
+  /*
+   * GTK3 bridge for GDK_2BUTTON_PRESS (see dt_gui_connect_double_click):
+   * GtkGestureMultiPress doesn't process multi-press events, so when a
+   * double/triple-click is detected by the classic "button-press-event"
+   * signal handler, it calls this callback with gesture=NULL.  In that
+   * case the button is always GDK_BUTTON_PRIMARY (GDK_2BUTTON_PRESS only
+   * occurs for primary button).
+   *
+   * GTK4 migration: remove the ternary and just call
+   * gtk_gesture_single_get_current_button(gesture) directly — GtkGestureClick
+   * will provide a valid gesture pointer for all n_press values. */
+  const guint button = gesture
+    ? gtk_gesture_single_get_current_button(gesture)
+    : GDK_BUTTON_PRIMARY;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
-     && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
+  if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   }
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
+  if(button == GDK_BUTTON_MIDDLE)
   {
-    // convert screen coordinates to culling coordinates
-    int ox = 0, oy = 0;
-    GdkWindow *win = gtk_widget_get_window(table->widget);
-    if(win)
-      gdk_window_get_origin(win, &ox, &oy);
-    const float x_culling = dt_gdk_event_get_root_x(event) - ox;
-    const float y_culling = dt_gdk_event_get_root_y(event) - oy;
-
     // if shift is pressed, we work only with image hovered
-    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
-      _toggle_zoom_current(table, x_culling, y_culling);
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      _toggle_zoom_current(table, x, y);
     else
-      _toggle_zoom_all(table, x_culling, y_culling);
-    return TRUE;
+      _toggle_zoom_all(table, x, y);
+    return;
   }
 
-  const dt_imgid_t id = dt_control_get_mouse_over_id();
-  if(dt_is_valid_imgid(id)
-     && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
-     && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+  if(button == GDK_BUTTON_PRIMARY && n_press == 2)
   {
-    // we have to set again the selected image, because it was deselected
-    // during the previous GDK_BUTTON_PRESS event
-    const dt_imgid_t old_selection = table->selection;
-    table->selection = id;
-    dt_view_manager_switch(darktable.view_manager, "darkroom");
-    if (id != old_selection)
+    const dt_imgid_t id = dt_control_get_mouse_over_id();
+    if(dt_is_valid_imgid(id))
     {
-      _update_selected_thumbnail(table, old_selection);
-      dt_act_on_reset_cache(TRUE);
-      dt_act_on_reset_cache(FALSE);
+      // we have to set again the selected image, because it was deselected
+      // during the previous GDK_BUTTON_PRESS event
+      const dt_imgid_t old_selection = table->selection;
+      table->selection = id;
+      dt_view_manager_switch(darktable.view_manager, "darkroom");
+      if(id != old_selection)
+      {
+        _update_selected_thumbnail(table, old_selection);
+        dt_act_on_reset_cache(TRUE);
+        dt_act_on_reset_cache(FALSE);
+      }
     }
-    return TRUE;
+    return;
   }
 
-  table->pan_x = dt_gdk_event_get_root_x(event);
-  table->pan_y = dt_gdk_event_get_root_y(event);
+  // start panning — need root coordinates for pan tracking
+  const GdkEvent *current = gtk_get_current_event();
+  if(current)
+    gdk_event_get_root_coords(current, &table->pan_x, &table->pan_y);
   table->panning = TRUE;
-  return TRUE;
 }
 
-static gboolean _event_motion_notify(GtkWidget *widget,
-                                     GdkEventMotion *event,
-                                     gpointer user_data)
+static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
+                                      gdouble x,
+                                      gdouble y,
+                                      dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
+  // get root coordinates for pan tracking
+  const GdkEvent *current = gtk_get_current_event();
+  gdouble root_x = 0, root_y = 0;
+  if(current) gdk_event_get_root_coords(current, &root_x, &root_y);
+
   table->mouse_inside = TRUE;
   if(!table->panning)
   {
-    table->pan_x = dt_gdk_event_get_root_x(event);
-    table->pan_y = dt_gdk_event_get_root_y(event);
-    return FALSE;
+    table->pan_x = root_x;
+    table->pan_y = root_y;
+    return;
   }
 
   // get the max zoom of all images
   const int max_in_memory_images = _get_max_in_memory_images();
   if(table->mode == DT_CULLING_MODE_CULLING
      && table->thumbs_count > max_in_memory_images)
-    return FALSE;
+    return;
 
   float fz = 1.0f;
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -931,14 +960,14 @@ static gboolean _event_motion_notify(GtkWidget *widget,
 
   if(table->panning && fz > 1.0f)
   {
-    const double x = dt_gdk_event_get_root_x(event);
-    const double y = dt_gdk_event_get_root_y(event);
     // we want the images to stay in the screen
     const float scale = darktable.gui->ppd_thb / darktable.gui->ppd;
-    const float valx = (x - table->pan_x) * scale;
-    const float valy = (y - table->pan_y) * scale;
+    const float valx = (root_x - table->pan_x) * scale;
+    const float valy = (root_y - table->pan_y) * scale;
 
-    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK))
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
@@ -983,8 +1012,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
         th->zoomy = mindy;
     }
 
-    table->pan_x = x;
-    table->pan_y = y;
+    table->pan_x = root_x;
+    table->pan_y = root_y;
   }
 
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -992,22 +1021,21 @@ static gboolean _event_motion_notify(GtkWidget *widget,
     dt_thumbnail_t *th = l->data;
     dt_thumbnail_image_refresh_position(th);
   }
-  return TRUE;
 }
 
-static gboolean _event_button_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      gpointer user_data)
+static void _event_button_release_cb(GtkGestureSingle *gesture,
+                                       gint n_press,
+                                       gdouble x,
+                                       gdouble y,
+                                       dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
   table->panning = FALSE;
 
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
   // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
-     && dt_is_valid_imgid(overid)
-     && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+     && dt_is_valid_imgid(overid))
   {
     const dt_imgid_t old_sel = table->selection;
     if(table->selection == overid)
@@ -1026,8 +1054,6 @@ static gboolean _event_button_release(GtkWidget *widget,
     dt_act_on_reset_cache(TRUE);
     dt_act_on_reset_cache(FALSE);
   }
-
-  return TRUE;
 }
 
 // called each time the preference change, to update specific parts
@@ -1215,12 +1241,7 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
   // set widget signals
   gtk_widget_set_events(table->widget,
                         GDK_EXPOSURE_MASK
-                        | GDK_POINTER_MOTION_MASK
-                        | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK
-                        | GDK_ENTER_NOTIFY_MASK
-                        | GDK_LEAVE_NOTIFY_MASK
                         | GDK_TOUCHPAD_GESTURE_MASK);
 
   dt_gui_add_class(table->widget, "dt_transparent_background");
@@ -1228,20 +1249,22 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
 
   g_signal_connect(G_OBJECT(table->widget), "event",
                    G_CALLBACK(_event_gesture), table);
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
-                   G_CALLBACK(_event_scroll), table);
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _event_scroll, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
-  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event",
-                   G_CALLBACK(_event_leave_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
-                   G_CALLBACK(_event_enter_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-press-event",
-                   G_CALLBACK(_event_button_press), table);
-  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
-                   G_CALLBACK(_event_motion_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-release-event",
-                   G_CALLBACK(_event_button_release), table);
+  dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
+  dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
+  /* GTK3 bridge: GtkGestureMultiPress does not process GDK_2BUTTON_PRESS.
+   * dt_gui_connect_double_click forwards double/triple clicks via a
+   * "button-press-event" signal handler.  The callback checks for NULL
+   * gesture (meaning it came from this bridge) and uses GDK_BUTTON_PRIMARY.
+   *
+   * GTK4 migration: remove this call.  GtkGestureClick handles n_press
+   * natively and the callback can use gtk_gesture_single_get_button()
+   * safely on the real gesture pointer. */
+  dt_gui_connect_double_click(table->widget, _event_button_press_cb, table);
 
   // we register globals signals
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,

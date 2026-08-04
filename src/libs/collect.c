@@ -632,31 +632,45 @@ static void view_popup_menu(GtkWidget *treeview,
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 }
 
-static gboolean view_onButtonPressed(GtkWidget *treeview,
-                                     GdkEventButton *event,
-                                     dt_lib_collect_t *d)
+static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
+                                        double x, double y,
+                                        dt_lib_collect_t *d)
 {
+  GtkWidget *treeview = dt_gui_get_widget(gesture);
+  static GdkModifierType last_mod_state = 0;
+
+  GdkEvent *event = gtk_get_current_event();
+
+  /* gesture coordinates are relative to the widget allocation, while
+   * gtk_tree_view_get_path_at_pos() expects bin-window coordinates */
+  gint bin_x, bin_y;
+  gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(treeview),
+                                                    (gint)x, (gint)y, &bin_x, &bin_y);
+
   /* Get tree path for row that was clicked */
   GtkTreePath *path = NULL;
   const gboolean get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                                          (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event),
+                                                          bin_x, bin_y,
                                                           &path, NULL, NULL, NULL);
 
-  if(dt_gdk_event_get_type(event) == GDK_DOUBLE_BUTTON_PRESS || d->singleclick)
+  GdkModifierType mod_state;
+  gtk_get_current_event_state(&mod_state);
+
+  if((n_press >= 2 || d->singleclick) && path)
   {
-    if(dt_gdk_event_get_state(event) == last_state && path)
+    if(mod_state == last_mod_state)
     {
       if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
         gtk_tree_view_collapse_row(GTK_TREE_VIEW(treeview), path);
       else
         gtk_tree_view_expand_row(GTK_TREE_VIEW(treeview), path, FALSE);
     }
-    last_state = dt_gdk_event_get_state(event);
+    last_mod_state = mod_state;
   }
 
   // case of a range selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  if(get_path && dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
+  if(get_path && dt_modifier_is(mod_state, GDK_SHIFT_MASK)
      && gtk_tree_selection_count_selected_rows(selection) > 0
      && (d->view_rule == DT_COLLECTION_PROP_DAY
          || d->view_rule == DT_COLLECTION_PROP_MONTH
@@ -678,10 +692,10 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
       gtk_tree_selection_select_range(selection, path2, path);
     g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
 
-    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     gtk_tree_path_free(path);
-    return TRUE;
+    return;
   }
 
   if(path)
@@ -690,37 +704,38 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
     gtk_tree_selection_select_path(selection, path);
   }
 
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+
   // case of a context-menu (folder/filmroll)
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
       || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
-     && (dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
-     && !(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
-          || dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)))
+     && (n_press == 1 && button == GDK_BUTTON_SECONDARY)
+     && !(dt_modifier_is(mod_state, GDK_SHIFT_MASK)
+          || dt_modifier_is(mod_state, GDK_CONTROL_MASK)))
   {
-    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
-    view_popup_menu(treeview, event, d);
+    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
+    view_popup_menu(treeview, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
-    return TRUE;
+    return;
   }
 
   // case of a activation
-  if((!d->singleclick && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-     || (d->singleclick && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-     || (!d->singleclick && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY
-         && (dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK)
-             || dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)))
+  if((!d->singleclick && n_press >= 2 && button == GDK_BUTTON_PRIMARY)
+     || (d->singleclick && n_press == 1 && button == GDK_BUTTON_PRIMARY)
+     || (!d->singleclick && n_press == 1 && button == GDK_BUTTON_PRIMARY
+         && (dt_modifier_is(mod_state, GDK_SHIFT_MASK)
+             || dt_modifier_is(mod_state, GDK_CONTROL_MASK)))
      || (d->view_rule == DT_COLLECTION_PROP_MONTH
-         && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY))
+         && n_press == 1 && button == GDK_BUTTON_PRIMARY))
   {
-    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
-    return TRUE;
+    return;
   }
 
   if(path) gtk_tree_path_free(path);
-  return FALSE;
 }
 
 static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
@@ -3590,12 +3605,12 @@ static void menuitem_clear(GtkMenuItem *menuitem,
                              DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-static gboolean popup_button_callback(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      dt_lib_collect_rule_t *d)
+static void popup_button_callback_cb(GtkGestureSingle *gesture, int n_press,
+                                         double x, double y,
+                                         dt_lib_collect_rule_t *d)
 {
-  if(dt_gdk_event_get_button(event) != 1)
-    return FALSE;
+  if(gtk_gesture_single_get_button(gesture) != 1)
+    return;
 
   GtkWidget *menu = gtk_menu_new();
   GtkWidget *mi;
@@ -3655,9 +3670,8 @@ static gboolean popup_button_callback(GtkWidget *widget,
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
-
-  return TRUE;
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), gtk_get_current_event());
+  return;
 }
 
 static void view_set_click(gpointer instance,
@@ -4045,9 +4059,7 @@ void gui_init(dt_lib_module_t *self)
 
     d->rule[i].button = w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
     dt_gui_add_class(GTK_WIDGET(w), "dt_big_btn_canvas");
-    gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "button-press-event",
-                     G_CALLBACK(popup_button_callback), d->rule + i);
+    dt_gui_connect_click(w, popup_button_callback_cb, NULL, d->rule + i);
 
     d->rule[i].hbox = dt_gui_hbox(d->rule[i].combo, dt_gui_expand(d->rule[i].text), d->rule[i].button);
     gtk_widget_set_name(d->rule[i].hbox, "lib-dtbutton");
@@ -4058,8 +4070,7 @@ void gui_init(dt_lib_module_t *self)
   d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  g_signal_connect(G_OBJECT(view), "button-press-event",
-                   G_CALLBACK(view_onButtonPressed), d);
+  dt_gui_connect_click_all(view, view_onButtonPressed_cb, NULL, d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();

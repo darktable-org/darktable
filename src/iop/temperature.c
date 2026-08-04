@@ -1730,12 +1730,15 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   _update_preset(self, DT_IOP_TEMP_USER);
 }
 
-static gboolean _btn_toggled(GtkWidget *togglebutton,
-                            GdkEventButton *event,
-                            dt_iop_module_t *self)
+static void _btn_toggled(GtkGestureSingle *gesture,
+                         int n_press,
+                         double x,
+                         double y,
+                         dt_iop_module_t *self)
 {
-  DT_GUARD_GUI_UPDATE(TRUE);
+  if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
+  GtkWidget *togglebutton = dt_gui_get_widget(gesture);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
 
   const int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
@@ -1761,7 +1764,6 @@ static gboolean _btn_toggled(GtkWidget *togglebutton,
     "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     _preset_to_str(preset),
     chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
-  return TRUE;
 }
 
 static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1995,9 +1997,11 @@ static void _gui_sliders_update(dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->scale_y), (img->flags & DT_IMAGE_4BAYER));
 }
 
-static gboolean temp_label_click(GtkWidget *label,
-                                 GdkEventButton *event,
-                                 dt_iop_module_t *self)
+static void temp_label_click(GtkGestureSingle *gesture,
+                                gint n_press,
+                                gdouble x,
+                                gdouble y,
+                                dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -2027,7 +2031,6 @@ static gboolean temp_label_click(GtkWidget *label,
   _color_temptint_sliders(self);
   _color_rgb_sliders(self);
   _color_finetuning_slider(self);
-  return TRUE;
 }
 
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)
@@ -2130,8 +2133,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
   gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
 
-  g_signal_connect(G_OBJECT(temp_label_box), "button-release-event",
-                   G_CALLBACK(temp_label_click), self);
+  dt_gui_connect_click(temp_label_box, NULL, temp_label_click, self);
 
   //Match UI order: temp first, then tint (like every other app ever)
   g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback

@@ -1657,24 +1657,22 @@ static gboolean _bottom_area_draw_callback(GtkWidget *widget,
 #undef DT_COLORZONES_CELLSI
 #undef DT_COLORZONES_CELLSJ
 
-static gboolean _bottom_area_button_press_callback(GtkWidget *widget,
-                                                   GdkEventButton *event,
-                                                   dt_iop_module_t *self)
+static void _bottom_area_button_press_callback(GtkGestureSingle *gesture,
+                                                  gint n_press,
+                                                  gdouble x,
+                                                  gdouble y,
+                                                  dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY && dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY && n_press >= 2)
   {
     // reset zoom level
     g->zoom_factor = 1.f;
     g->offset_x = g->offset_y = 0.f;
 
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
-
-    return TRUE;
   }
-
-  return FALSE;
 }
 
 static gboolean _sanity_check(const float x,
@@ -1857,73 +1855,70 @@ static inline int _add_node(dt_iop_colorzones_node_t *curve,
   return selected;
 }
 
-static gboolean _area_scrolled_callback(GtkWidget *widget,
-                                        GdkEventScroll *event,
+static void _area_scrolled_callback(GtkEventControllerScroll *controller,
+                                        gdouble dx,
+                                        gdouble dy,
                                         dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
-  if(dt_gui_ignore_scroll(event)) return FALSE;
+  if(dy == 0.0) return;
 
-  if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK))
-    return gtk_widget_event(GTK_WIDGET(g->channel_tabs), (GdkEvent*)event);
-
-  int delta_y;
+  if(dt_modifier_is(dt_key_modifier_state(), GDK_MOD1_MASK))
+  {
+    // FIXME: event forwarding to g->channel_tabs removed
+    return;
+  }
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
-    {
-      GtkAllocation allocation;
-      gtk_widget_get_allocation(widget, &allocation);
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
 
-      const float mx = g->mouse_x;
-      const float my = g->mouse_y;
-      const float linx = _mouse_to_curve(mx, g->zoom_factor, g->offset_x),
-                  liny = _mouse_to_curve(my, g->zoom_factor, g->offset_y);
+    const float mx = g->mouse_x;
+    const float my = g->mouse_y;
+    const float linx = _mouse_to_curve(mx, g->zoom_factor, g->offset_x),
+                liny = _mouse_to_curve(my, g->zoom_factor, g->offset_y);
 
-      g->zoom_factor *= 1.0 - 0.1 * delta_y;
-      if(g->zoom_factor < 1.f) g->zoom_factor = 1.f;
+    g->zoom_factor *= 1.0 - 0.1 * dy;
+    if(g->zoom_factor < 1.f) g->zoom_factor = 1.f;
 
-      g->offset_x = linx - (mx / g->zoom_factor);
-      g->offset_y = liny - (my / g->zoom_factor);
+    g->offset_x = linx - (mx / g->zoom_factor);
+    g->offset_y = liny - (my / g->zoom_factor);
 
-      g->offset_x = CLAMP(g->offset_x, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
-      g->offset_y = CLAMP(g->offset_y, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
+    g->offset_x = CLAMP(g->offset_x, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
+    g->offset_y = CLAMP(g->offset_y, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
 
-      gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    }
-
-    return TRUE;
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+    return;
   }
 
-  if(g->selected < 0 && !g->edit_by_area) return TRUE;
+  if(g->selected < 0 && !g->edit_by_area) return;
 
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  dt_iop_color_picker_reset(self, TRUE);
+
+  if(g->edit_by_area)
   {
-    dt_iop_color_picker_reset(self, TRUE);
-
-    if(g->edit_by_area)
-    {
-      const int bands = p->curve_num_nodes[g->channel];
-      g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * delta_y), 0.2 / bands, 1.0);
-      gtk_widget_queue_draw(widget);
-    }
-    else
-    {
-      const float dy = delta_y * -DT_IOP_COLORZONES_DEFAULT_STEP;
-      return _move_point_internal(self, widget, g->selected, 0.f, dy, dt_gdk_event_get_state(event));
-    }
+    const int bands = p->curve_num_nodes[g->channel];
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * dy), 0.2 / bands, 1.0);
+    gtk_widget_queue_draw(widget);
   }
-
-  return TRUE;
+  else
+  {
+    dy *= -DT_IOP_COLORZONES_DEFAULT_STEP;
+    _move_point_internal(self, widget, g->selected, 0.f, dy, dt_key_modifier_state());
+    gtk_widget_queue_draw(widget);
+  }
 }
 
-static gboolean _area_motion_notify_callback(GtkWidget *widget,
-                                             GdkEventMotion *event,
+static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
+                                             gdouble x,
+                                             gdouble y,
                                              dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
 
@@ -1941,10 +1936,10 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
     const float mx = g->mouse_x;
     const float my = g->mouse_y;
 
-    g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
-    g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
+    g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+    g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
-    if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+    if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
     {
       g->offset_x += (mx - g->mouse_x) / g->zoom_factor;
       g->offset_y += (my - g->mouse_y) / g->zoom_factor;
@@ -1954,7 +1949,6 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
-    return TRUE;
   }
 
   const int ch = g->channel;
@@ -1964,8 +1958,8 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   const double old_m_x = g->mouse_x;
   const double old_m_y = fabs(g->mouse_y);
 
-  g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
+  g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
   darktable.control->element =
     (int)(8.0 *
@@ -1973,7 +1967,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
                           g->zoom_factor, g->offset_x) + 0.5f) % 8;
 
   // move a node
-  if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+  if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
   {
     if(g->edit_by_area)
     {
@@ -2004,7 +1998,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
                                          g->zoom_factor, g->offset_y);
 
       dt_iop_color_picker_reset(self, TRUE);
-      return _move_point_internal(self, widget, g->selected, dx, dy, dt_gdk_event_get_state(event));
+      _move_point_internal(self, widget, g->selected, dx, dy, dt_key_modifier_state());
     }
   }
 
@@ -2020,7 +2014,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
         dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       }
     }
-    else if(dt_gdk_event_get_y(event) > height)
+    else if(y > height)
     {
       g->x_move = 0;
       const int bands = p->curve_num_nodes[g->channel];
@@ -2043,7 +2037,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   }
   else
   {
-    if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+    if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
     {
       if(nodes < DT_IOP_COLORZONES_MAXNODES && g->selected == -1)
       {
@@ -2086,33 +2080,34 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   }
 
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean _area_button_press_callback(GtkWidget *widget,
-                                            GdkEventButton *event,
+static void _area_button_press_callback(GtkGestureSingle *gesture,
+                                            gint n_press,
+                                            gdouble x,
+                                            gdouble y,
                                             dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
   const dt_iop_colorzones_params_t *const d = self->default_params;
 
-  if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return;
 
   int ch = g->channel;
   int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    if(g->edit_by_area && dt_gdk_event_get_type(event) != GDK_2BUTTON_PRESS
-       && !dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+    if(g->edit_by_area && n_press < 2
+       && !dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK))
     {
       g->dragging = 1;
-      return TRUE;
     }
-    else if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
-            && dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)
+    else if(n_press >= 1
+            && dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK)
             && nodes < DT_IOP_COLORZONES_MAXNODES
             && (g->selected == -1 || g->edit_by_area))
     {
@@ -2124,8 +2119,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       const int height = allocation.height - 2 * inset;
       const int width = allocation.width - 2 * inset;
 
-      g->mouse_x = CLAMP(dt_gdk_event_get_x(event) - inset, 0, width) / (float)width;
-      g->mouse_y = 1.0 - CLAMP(dt_gdk_event_get_y(event) - inset, 0, height) / (float)height;
+      g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+      g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
       const float mx = _mouse_to_curve(g->mouse_x, g->zoom_factor, g->offset_x);
 
@@ -2147,14 +2142,14 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       if(selected == -1) selected = nodes;
 
       // evaluate the curve at the current x position
-      const float y = dt_draw_curve_calc_value(g->minmax_curve[ch], mx);
+      const float curve_y = dt_draw_curve_calc_value(g->minmax_curve[ch], mx);
 
       if(y >= 0.0f && y <= 1.0f) // never add something outside the
                                  // viewport, you couldn't change it
                                  // afterwards
       {
         // create a new node
-        selected = _add_node(curve, &p->curve_num_nodes[ch], mx, y);
+        selected = _add_node(curve, &p->curve_num_nodes[ch], mx, curve_y);
 
         // maybe set the new one as being selected
         const float min = .04f * .04f; // comparing against square
@@ -2170,10 +2165,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
         dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
       }
-
-      return TRUE;
     }
-    else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+    else if(n_press >= 2)
     {
       // reset current curve
       p->curve_num_nodes[ch] = d->curve_num_nodes[ch];
@@ -2188,11 +2181,9 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       dt_iop_color_picker_reset(self, TRUE);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
-
-      return TRUE;
     }
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if((g->selected == 0 || g->selected == nodes - 1)
        && p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
@@ -2214,54 +2205,50 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       dt_iop_color_picker_reset(self, TRUE);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-      return TRUE;
     }
 
     // right click deletes the node, ctrl+right click reset the node to y-zero
     _delete_node(self, curve, &p->curve_num_nodes[ch],
-                 g->selected, dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK));
+                 g->selected, dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK));
     g->selected = -2; // avoid re-insertion of that point immediately after this
-
-    return TRUE;
   }
-
-  return FALSE;
 }
 
-static gboolean _area_button_release_callback(GtkWidget *widget,
-                                              GdkEventButton *event,
+static void _area_button_release_callback(GtkGestureSingle *gesture,
+                                              gint n_press,
+                                              gdouble x,
+                                              gdouble y,
                                               dt_iop_module_t *self)
 {
-  if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_colorzones_gui_data_t *g = self->gui_data;
     g->dragging = 0;
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean _area_leave_notify_callback(GtkWidget *widget,
-                                            GdkEventCrossing *event,
+static void _area_leave_notify_callback(GtkEventControllerMotion *controller,
                                             dt_iop_module_t *self)
 {
-  if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return;
 
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   // for fluxbox
   g->mouse_y = -fabs(g->mouse_y);
-  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK))
+  if(!(dt_key_modifier_state() & GDK_BUTTON1_MASK))
     g->selected = -1;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
-static gboolean _area_key_press_callback(GtkWidget *widget,
-                                         GdkEventKey *event,
+static gboolean _area_key_press_callback(GtkEventControllerKey *controller,
+                                         guint keyval,
+                                         guint keycode,
+                                         GdkModifierType state,
                                          dt_iop_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   if(darktable.develop->darkroom_skip_mouse_events) return FALSE;
@@ -2270,22 +2257,22 @@ static gboolean _area_key_press_callback(GtkWidget *widget,
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
-  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Up || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Up)
+  if(keyval == GDK_KEY_Up || keyval == GDK_KEY_KP_Up)
   {
     handled = 1;
     dy = DT_IOP_COLORZONES_DEFAULT_STEP;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Down || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Down)
+  else if(keyval == GDK_KEY_Down || keyval == GDK_KEY_KP_Down)
   {
     handled = 1;
     dy = -DT_IOP_COLORZONES_DEFAULT_STEP;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Right || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Right)
+  else if(keyval == GDK_KEY_Right || keyval == GDK_KEY_KP_Right)
   {
     handled = 1;
     dx = DT_IOP_COLORZONES_DEFAULT_STEP;
   }
-  else if(dt_gdk_event_get_keyval(event) == GDK_KEY_Left || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Left)
+  else if(keyval == GDK_KEY_Left || keyval == GDK_KEY_KP_Left)
   {
     handled = 1;
     dx = -DT_IOP_COLORZONES_DEFAULT_STEP;
@@ -2294,7 +2281,7 @@ static gboolean _area_key_press_callback(GtkWidget *widget,
   if(!handled) return FALSE;
 
   dt_iop_color_picker_reset(self, TRUE);
-  return _move_point_internal(self, widget, g->selected, dx, dy, dt_gdk_event_get_state(event));
+  return _move_point_internal(self, widget, g->selected, dx, dy, dt_key_modifier_state());
 }
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook,
@@ -2711,25 +2698,22 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw",
                    G_CALLBACK(_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(_area_button_release_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(_area_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event",
-                   G_CALLBACK(_area_key_press_callback), self);
+  gtk_widget_add_events(GTK_WIDGET(g->area),
+                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
+  dt_gui_connect_click(g->area, _area_button_press_callback, _area_button_release_callback, self);
+  dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, _area_leave_notify_callback, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _area_scrolled_callback, self);
+  dt_gui_connect_key(g->area, _area_key_press_callback, self);
 
-  gtk_widget_add_events(GTK_WIDGET(g->bottom_area), GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(g->bottom_area), "draw",
                    G_CALLBACK(_bottom_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->bottom_area), "button-press-event",
-                   G_CALLBACK(_bottom_area_button_press_callback),
-                   self);
+  gtk_widget_add_events(GTK_WIDGET(g->bottom_area), GDK_BUTTON_PRESS_MASK);
+  dt_gui_connect_click(g->bottom_area, _bottom_area_button_press_callback, NULL, self);
 
   g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
   dt_gui_box_add(self->widget, g->interpolator);

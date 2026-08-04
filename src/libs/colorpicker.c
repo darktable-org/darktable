@@ -270,17 +270,17 @@ static void _update_picker_output(dt_lib_module_t *self)
                            darktable.lib->proxy.colorpicker.picker_proxy != NULL);
 }
 
-static gboolean _large_patch_toggle(GtkWidget *widget,
-                                    GdkEvent *event,
-                                    dt_lib_colorpicker_t *data)
+static void _large_patch_toggle_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_lib_colorpicker_t *data)
 {
   const gboolean show_large_patch = !dt_conf_get_bool("ui_last/colorpicker_large");
   dt_conf_set_bool("ui_last/colorpicker_large", show_large_patch);
 
   gtk_widget_set_visible(gtk_widget_get_parent(data->large_color_patch),
                          show_large_patch);
-
-  return FALSE;
 }
 
 static void _picker_button_toggled(GtkToggleButton *button,
@@ -474,9 +474,10 @@ static void _label_size_allocate_callback(GtkWidget *widget,
   }
 }
 
-static gboolean _sample_enter_callback(GtkWidget *widget,
-                                       GdkEvent *event,
-                                       dt_colorpicker_sample_t *sample)
+static void _sample_enter_callback(GtkEventControllerMotion *controller,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_colorpicker_sample_t *sample)
 {
   darktable.lib->proxy.colorpicker.selected_sample = sample;
 
@@ -484,16 +485,11 @@ static gboolean _sample_enter_callback(GtkWidget *widget,
     dt_dev_invalidate_all(darktable.develop);
 
   dt_control_queue_redraw_center();
-
-  return FALSE;
 }
 
-static gboolean _sample_leave_callback(GtkWidget *widget,
-                                       GdkEvent *event,
-                                       gpointer data)
+static void _sample_leave_callback(GtkEventControllerMotion *controller,
+                                     dt_colorpicker_sample_t *sample)
 {
-  if(event->crossing.detail == GDK_NOTIFY_INFERIOR) return FALSE;
-
   if(darktable.lib->proxy.colorpicker.selected_sample)
   {
     darktable.lib->proxy.colorpicker.selected_sample = NULL;
@@ -502,8 +498,6 @@ static gboolean _sample_leave_callback(GtkWidget *widget,
 
     dt_control_queue_redraw_center();
   }
-
-  return FALSE;
 }
 
 static void _remove_sample(dt_colorpicker_sample_t *sample)
@@ -521,16 +515,20 @@ static void _remove_sample_cb(GtkButton *widget,
   dt_dev_invalidate_all(darktable.develop);
 }
 
-static gboolean _live_sample_button(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    dt_colorpicker_sample_t *sample)
+static void _live_sample_button_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_colorpicker_sample_t *sample)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY)
   {
     sample->locked = !sample->locked;
     gtk_widget_queue_draw(widget);
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
     // copy to active picker
     dt_lib_module_t *self = darktable.lib->proxy.colorpicker.module;
@@ -592,7 +590,6 @@ static gboolean _live_sample_button(GtkWidget *widget,
     }
     dt_control_queue_redraw_center();
   }
-  return FALSE;
 }
 
 static void _add_sample(GtkButton *widget,
@@ -616,22 +613,16 @@ static void _add_sample(GtkButton *widget,
   sample->copied = FALSE;
 
   sample->container = gtk_event_box_new();
-  gtk_widget_add_events(sample->container,
-                        GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(sample->container), "enter-notify-event",
-                   G_CALLBACK(_sample_enter_callback), sample);
-  g_signal_connect(G_OBJECT(sample->container), "leave-notify-event",
-                   G_CALLBACK(_sample_leave_callback), sample);
+  dt_gui_connect_motion(sample->container, NULL, _sample_enter_callback, _sample_leave_callback, sample);
 
   sample->color_patch = gtk_drawing_area_new();
-  gtk_widget_add_events(sample->color_patch, GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text
     (sample->color_patch,
      _("hover to highlight sample on canvas,\n"
        "click to lock sample,\n"
        "right-click to load sample area into active color picker"));
-  g_signal_connect(G_OBJECT(sample->color_patch), "button-press-event",
-                   G_CALLBACK(_live_sample_button), sample);
+  gtk_widget_add_events(sample->color_patch, GDK_BUTTON_PRESS_MASK);
+  dt_gui_connect_click_all(sample->color_patch, _live_sample_button_cb, NULL, sample);
   g_signal_connect(G_OBJECT(sample->color_patch), "draw",
                    G_CALLBACK(_sample_draw_callback), sample);
 
@@ -734,18 +725,13 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *color_patch = gtk_drawing_area_new();
   data->large_color_patch = color_patch;
   gtk_widget_set_tooltip_text(color_patch, _("click to (un)hide large color patch"));
-  gtk_widget_set_events(color_patch,
-                        GDK_BUTTON_PRESS_MASK
-                        | GDK_ENTER_NOTIFY_MASK
-                        | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(color_patch), "draw",
                    G_CALLBACK(_sample_draw_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(color_patch), "button-press-event",
-                   G_CALLBACK(_large_patch_toggle), data);
-  g_signal_connect(G_OBJECT(color_patch), "enter-notify-event",
-                   G_CALLBACK(_sample_enter_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(color_patch), "leave-notify-event",
-                   G_CALLBACK(_sample_leave_callback), &data->primary_sample);
+  gtk_widget_set_events(color_patch,
+                        GDK_BUTTON_PRESS_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  dt_gui_connect_click(color_patch, _large_patch_toggle_cb, NULL, data);
+  dt_gui_connect_motion(color_patch, NULL, _sample_enter_callback, _sample_leave_callback, &data->primary_sample);
   GtkWidget *color_patch_wrapper = dt_gui_hbox(dt_gui_expand(color_patch));
   gtk_widget_set_name(GTK_WIDGET(color_patch_wrapper), "color-picker-area");
   gtk_widget_show(color_patch);
@@ -786,17 +772,12 @@ void gui_init(dt_lib_module_t *self)
 
   // The small sample, label and add button
   GtkWidget *sample_row_events = gtk_event_box_new();
-  gtk_widget_add_events(sample_row_events, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(sample_row_events), "enter-notify-event",
-                   G_CALLBACK(_sample_enter_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(sample_row_events), "leave-notify-event",
-                   G_CALLBACK(_sample_leave_callback), &data->primary_sample);
+  dt_gui_connect_motion(sample_row_events, NULL, _sample_enter_callback, _sample_leave_callback, &data->primary_sample);
 
   data->primary_sample.color_patch = color_patch = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(color_patch, _("click to (un)hide large color patch"));
   gtk_widget_set_events(color_patch, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(color_patch), "button-press-event",
-                   G_CALLBACK(_large_patch_toggle), data);
+  dt_gui_connect_click(color_patch, _large_patch_toggle_cb, NULL, data);
   g_signal_connect(G_OBJECT(color_patch), "draw",
                    G_CALLBACK(_sample_draw_callback), &data->primary_sample);
 

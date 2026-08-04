@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -261,11 +261,15 @@ static void _misc_update_selection(_widgets_misc_t *misc)
   misc->internal_change--;
 }
 
-static gboolean _misc_press(GtkWidget *w,
-                            GdkEventButton *e,
-                            _widgets_misc_t *misc)
+static void _misc_press(GtkGestureSingle *gesture,
+                        gint n_press,
+                        gdouble x,
+                        gdouble y,
+                        _widgets_misc_t *misc)
 {
-  if(e->button == GDK_BUTTON_SECONDARY)
+  GtkWidget *w = dt_gui_get_widget(gesture);
+
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
     _misc_tree_update_visibility(w, misc);
     gtk_popover_set_default_widget(GTK_POPOVER(misc->pop), w);
@@ -275,14 +279,13 @@ static gboolean _misc_press(GtkWidget *w,
     _misc_update_selection(misc);
 
     gtk_widget_show_all(misc->pop);
-    return TRUE;
   }
-  else if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
+  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
+          && n_press >= 2)
   {
     gtk_entry_set_text(GTK_ENTRY(misc->name), "");
     _misc_changed(w, misc);
   }
-  return FALSE;
 }
 
 static gboolean _misc_update(dt_lib_filtering_rule_t *rule)
@@ -459,7 +462,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   gtk_box_pack_start(GTK_BOX(hb), misc->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(misc->name), "activate", G_CALLBACK(_misc_changed), misc);
   g_signal_connect(G_OBJECT(misc->name), "focus-out-event", G_CALLBACK(_misc_focus_out), misc);
-  g_signal_connect(G_OBJECT(misc->name), "button-press-event", G_CALLBACK(_misc_press), misc);
+  dt_gui_connect_click(misc->name, _misc_press, NULL, misc);
 
   if(top)
   {

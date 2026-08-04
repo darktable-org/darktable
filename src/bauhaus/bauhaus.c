@@ -171,7 +171,15 @@ static double INNER_PADDING = 4.0;
 static void _popup_reject(void);
 static void _popup_hide(void);
 static gboolean _popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
-static gboolean _popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+static void _window_motion_handle(GtkWidget *widget,
+                                    gdouble root_x,
+                                    gdouble root_y,
+                                    GdkModifierType state);
+static gboolean _popup_key_press(GtkEventControllerKey *controller,
+                                  guint keyval,
+                                  guint keycode,
+                                  GdkModifierType state,
+                                  gpointer user_data);
 static void _combobox_set(dt_bauhaus_widget_t *w,
                           const int pos,
                           const gboolean mute);
@@ -517,8 +525,9 @@ static void _slider_zoom_toast(dt_bauhaus_widget_t *w)
   g_free(max_text);
 }
 
-static gboolean _popup_scroll(GtkWidget *widget,
-                              GdkEventScroll *event,
+static void _popup_scroll_cb(GtkEventControllerScroll *controller,
+                              gdouble dx,
+                              gdouble dy,
                               gpointer user_data)
 {
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
@@ -526,19 +535,17 @@ static gboolean _popup_scroll(GtkWidget *widget,
   {
     // match keyboard: right & down -> next
     int delta_x = 0, delta_y = 0;
-    if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
-    {
-      int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+    dt_gui_get_scroll_unit_deltas_fallback(dx, dy, &delta_x, &delta_y);
+    const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+    if(delta != 0)
       _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
-    }
   }
   else
   {
     int delta = 0;
-    if(dt_gui_get_scroll_unit_delta(event, &delta))
-      _slider_zoom_range(w, delta);
+    dt_gui_get_scroll_unit_delta_fallback(dy, &delta);
+    _slider_zoom_range(w, delta);
   }
-  return TRUE;
 }
 
 static void _window_moved_to_rect(GdkWindow *window,
@@ -596,9 +603,10 @@ static void _window_position(const int offset)
                           0, - pop->offset + pop->offcut);
 }
 
-static gboolean _window_motion_notify(GtkWidget *widget,
-                                      GdkEventMotion *event,
-                                      gpointer user_data)
+static void _window_motion_handle(GtkWidget *widget,
+                                    gdouble root_x,
+                                    gdouble root_y,
+                                    GdkModifierType state)
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
@@ -612,16 +620,16 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   // recalculate event coords so we get useful values outside window
   GdkWindow *window = gtk_widget_get_window(pop->area);
   gdk_window_get_origin(window, &allocation.x, &allocation.y);
-  const gint ex = dt_gdk_event_get_root_x(event) - allocation.x;
-  const gint ey = dt_gdk_event_get_root_y(event) - allocation.y;
+  const gint ex = root_x - allocation.x;
+  const gint ey = root_y - allocation.y;
 
-  const int tol = DT_PIXEL_APPLY_DPI(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK ? 400 : 50);
+  const int tol = DT_PIXEL_APPLY_DPI(state & GDK_BUTTON1_MASK ? 400 : 50);
   if(ex < - tol || ex > allocation.width + tol
      || ey + pop->offcut < - tol
      || ey + pop->offcut > pop->position.height + tol)
   {
     _popup_reject();
-    return TRUE;
+    return;
   }
 
   if(bh->keys_cnt == 0) _stop_cursor();
@@ -658,7 +666,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
                           : _slider_get_line_offset
       (pop->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / fabsf(d->factor),
        bh->mouse_x / (width - _widget_get_quad_width(w)), bh->mouse_y / width, ht / width);
-    if(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK
+    if(state & GDK_BUTTON1_MASK
        || (bh->mouse_line_distance
            && ((bh->mouse_line_distance * mouse_off <= 0) ^
                (fabsf(bh->mouse_line_distance - mouse_off) > .5f))))
@@ -673,7 +681,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
     const int active = (bh->mouse_y - w->top_gap) / bh->line_height;
     if(active >= 0 && active < d->entries->len)
     {
-      if(_combobox_entry(d, active)->sensitive && dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
+      if(_combobox_entry(d, active)->sensitive && state & GDK_BUTTON1_MASK)
       {
         if(active != d->active)
           _combobox_set(w, active, w->combobox.mute_scrolling);
@@ -682,72 +690,114 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   }
 
   gtk_widget_queue_draw(pop->area);
+}
+
+// GTK4 TODO: This popup uses GTK_WINDOW_POPUP which has compatibility issues
+// with GtkEventControllerKey and GtkEventControllerMotion on GTK3 — motion
+// and key events don't reach the controllers on this window type.  The signal
+// handlers below are the fallback.  For GTK4, the popup should be migrated to
+// GtkPopover or a GtkWindow with proper event controllers.
+
+static gboolean _window_motion_handler(GtkWidget *widget, GdkEventMotion *event,
+                                        gpointer user_data)
+{
+  _window_motion_handle(widget,
+                        dt_gdk_event_get_root_x(event),
+                        dt_gdk_event_get_root_y(event),
+                        dt_gdk_event_get_state(event));
   return TRUE;
 }
 
-static gboolean _popup_leave_notify(GtkWidget *widget,
-                                    GdkEventCrossing *event,
-                                    gpointer user_data)
+static gboolean _popup_leave_handler(GtkWidget *widget, GdkEventCrossing *event,
+                                      gpointer user_data)
 {
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
   return TRUE;
 }
 
-static gboolean _popup_button_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      gpointer user_data)
-{
-  if(darktable.bauhaus->change_active && dt_gdk_event_get_button(event) != GDK_BUTTON_MIDDLE)
-    _popup_hide();
-
-  return TRUE;
-}
-
-static gboolean _popup_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
+static gboolean _popup_key_handler(GtkWidget *widget, GdkEventKey *event,
                                     gpointer user_data)
 {
-  if(dt_gdk_event_get_window(event) != gtk_widget_get_window(widget))
-  {
-    _popup_reject();
-    return TRUE;
-  }
+  return _popup_key_press(NULL, dt_gdk_event_get_keyval(event), 0, dt_gdk_event_get_state(event), NULL);
+}
 
+static void _popup_button_release_cb(GtkGestureSingle *gesture,
+                                       gint n_press,
+                                       gdouble x,
+                                       gdouble y,
+                                       gpointer user_data)
+{
+  if(darktable.bauhaus->change_active && gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_MIDDLE)
+    _popup_hide();
+}
+
+static void _popup_button_press_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     gpointer user_data)
+{
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  // reject clicks that come from outside the popup area window
+  GdkEvent *cur_event = gtk_get_current_event();
+  if(cur_event)
+  {
+    if(dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(dt_gui_get_widget(gesture)))
+    {
+      gdk_event_free(cur_event);
+      _popup_reject();
+      return;
+    }
+    gdk_event_free(cur_event);
+  }
+
+  if(button == GDK_BUTTON_PRIMARY)
   {
     // only accept left mouse click
     gtk_widget_set_state_flags(GTK_WIDGET(w),
                                GTK_STATE_FLAG_FOCUSED, FALSE);
 
     if(w->type == DT_BAUHAUS_COMBOBOX
-       && !dt_gui_long_click(dt_gdk_event_get_time(event), bh->opentime))
+       && !dt_gui_long_click(gdk_event_get_time(gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL)), bh->opentime))
     {
       // counts as double click, reset:
-      if(!(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK) && w->field
+      GdkModifierType state;
+      gtk_get_current_event_state(&state);
+      if(!(dt_modifier_is(state, GDK_CONTROL_MASK) && w->field
           && dt_gui_presets_autoapply_for_module((dt_iop_module_t *)w->module,
                                                  GTK_WIDGET(w))))
         dt_bauhaus_widget_reset(GTK_WIDGET(w));
     }
 
     bh->change_active = TRUE;
-    event->state |= GDK_BUTTON1_MASK;
-    _window_motion_notify(widget, (GdkEventMotion*)event, user_data);
+    GtkWidget *w_current = dt_gui_get_widget(gesture);
+    GdkEvent *current_event = gtk_get_current_event();
+    if(current_event)
+    {
+      GdkModifierType motion_state = dt_gdk_event_get_state(current_event);
+      motion_state |= GDK_BUTTON1_MASK;
+      _window_motion_handle(w_current,
+                                dt_gdk_event_get_root_x(current_event),
+                                dt_gdk_event_get_root_y(current_event),
+                                motion_state);
+      gdk_event_free(current_event);
+    }
   }
-  else if(dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
+  else if(button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
     _slider_zoom_range(w, 0);
   else
     _popup_reject();
-
-  return TRUE;
 }
 
 static void _window_show(GtkWidget *w, gpointer user_data)
 {
   // make sure combo popup handles button release
   gtk_grab_add(GTK_WIDGET(user_data));
+  // grab keyboard focus so the popup receives key events
+  gtk_widget_grab_focus(GTK_WIDGET(user_data));
 }
 
 static void _widget_leave(GtkEventControllerMotion *controller,
@@ -976,6 +1026,7 @@ void dt_bauhaus_init()
   gtk_window_set_modal(GTK_WINDOW(pop->window), TRUE);
   gtk_window_set_type_hint(GTK_WINDOW(pop->window),
                            GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_widget_add_events(pop->window, GDK_POINTER_MOTION_MASK);
 
   pop->area = gtk_drawing_area_new();
   g_object_set(pop->area, "expand", TRUE, NULL);
@@ -994,13 +1045,14 @@ void dt_bauhaus_init()
   g_signal_connect(gtk_widget_get_window(pop->window),
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
-  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_notify), NULL);
-  g_signal_connect(area, "button-press-event", G_CALLBACK(_popup_button_press), NULL);
-  g_signal_connect(area, "button-release-event", G_CALLBACK (_popup_button_release), NULL);
-  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
-  g_signal_connect(area, "scroll-event", G_CALLBACK(_popup_scroll), NULL);
+  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_handler), NULL);
+  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_handler), NULL);
+  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_handler), NULL);
+  dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
+  dt_gui_connect_scroll(area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                  | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _popup_scroll_cb, NULL);
 
   dt_action_define(&darktable.control->actions_focus, NULL, N_("sliders"),
                    NULL, &_action_def_focus_slider);
@@ -3765,16 +3817,18 @@ static void _slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   }
 }
 
-static gboolean _popup_key_press(GtkWidget *widget,
-                                 GdkEventKey *event,
-                                 gpointer user_data)
+static gboolean _popup_key_press(GtkEventControllerKey *controller,
+                                  guint keyval,
+                                  guint keycode,
+                                  GdkModifierType state,
+                                  gpointer user_data)
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
   const gboolean is_combo = w->type == DT_BAUHAUS_COMBOBOX;
   int delta = -1;
 
-  switch(dt_gdk_event_get_keyval(event))
+  switch(keyval)
   {
     case GDK_KEY_BackSpace:
     case GDK_KEY_Delete:
@@ -3840,22 +3894,37 @@ static gboolean _popup_key_press(GtkWidget *widget,
       if(is_combo)
         _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
       else
-        _slider_add_step(GTK_WIDGET(w), delta, dt_gdk_event_get_state(event), FALSE);
+        _slider_add_step(GTK_WIDGET(w), delta, state, FALSE);
       break;
     default:
-      if(!event->string || !g_utf8_validate(event->string, -1, NULL)) return FALSE;
-      const gunichar c = g_utf8_get_char(event->string);
-      if(!g_unichar_isprint(c)) return FALSE;
-      const long int char_width = g_utf8_next_char(event->string) - event->string;
+    {
+      GdkEvent *event = gtk_get_current_event();
+      if(!event) return FALSE;
+      const gchar *str = ((GdkEventKey *)event)->string;
+      if(!str || !g_utf8_validate(str, -1, NULL))
+      {
+        gdk_event_free(event);
+        return FALSE;
+      }
+      const gunichar c = g_utf8_get_char(str);
+      if(!g_unichar_isprint(c))
+      {
+        gdk_event_free(event);
+        return FALSE;
+      }
+      const long int char_width = g_utf8_next_char(str) - str;
       if(bh->keys_cnt + 1 + char_width < DT_BAUHAUS_MAX_TEXT
-         && (is_combo || strchr("0123456789.,%%+-*Xx/:^~ ()", event->string[0])))
+         && (is_combo || strchr("0123456789.,%%+-*Xx/:^~ ()", str[0])))
       {
         // only accept valid keys for slider; combo is checked in _popup_draw
-        strncpy(bh->keys + bh->keys_cnt, event->string, char_width);
+        strncpy(bh->keys + bh->keys_cnt, str, char_width);
         bh->keys_cnt += char_width;
 
         if(!is_combo) _start_cursor(-1);
       }
+      gdk_event_free(event);
+      break;
+    }
   }
   gtk_widget_queue_draw(bh->popup.area);
   return TRUE;
@@ -3870,7 +3939,7 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_t *bh = darktable.bauhaus;
   gboolean passthrough_from_histogram =
-    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)) != widget;
+    dt_gui_get_widget(gesture) != widget;
 
   if(!passthrough_from_histogram)
   {

@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
-
 #include "common/metadata.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -420,24 +418,27 @@ static void _cancel_button_clicked(GtkButton *button,
   gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
 }
 
-static gboolean _key_pressed(GtkWidget *textview,
-                             GdkEventKey *event,
-                             dt_lib_module_t *self)
+static gboolean _key_pressed_cb(GtkEventControllerKey *controller,
+                                   guint keyval,
+                                   guint keycode,
+                                   GdkModifierType state,
+                                   dt_lib_module_t *self)
 {
+  GtkWidget *textview = dt_gui_get_widget(controller);
   dt_lib_metadata_t *d = self->data;
 
-  switch(dt_gdk_event_get_keyval(event))
+  switch(keyval)
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
-      if(!dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+      if(!dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         gtk_button_clicked(GTK_BUTTON(d->apply_button));
         return TRUE;
       }
       break;
     case GDK_KEY_Escape:
-      if(dt_modifier_is(dt_gdk_event_get_state(event), 0))
+      if(dt_modifier_is(state, 0))
       {
         gtk_button_clicked(GTK_BUTTON(d->cancel_button));
         return TRUE;
@@ -447,7 +448,7 @@ static gboolean _key_pressed(GtkWidget *textview,
       break;
   }
 
-  return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event);
+  return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), (GdkEventKey *)gtk_get_current_event());
 }
 
 static gboolean _textview_focus(GtkWidget *widget,
@@ -569,11 +570,11 @@ static void _populate_popup_multi(GtkTextView *textview,
   gtk_widget_show_all(popup);
 }
 
-static gboolean _metadata_reset(GtkWidget *label,
-                                GdkEventButton *event,
-                                GtkWidget *widget)
+static void _metadata_reset_cb(GtkGestureSingle *gesture, int n_press,
+                                  double x, double y,
+                                  GtkWidget *widget)
 {
-  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+  if(n_press >= 2)
   {
     g_object_set_data(G_OBJECT(widget), "tv_multiple", GINT_TO_POINTER(FALSE));
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
@@ -582,7 +583,6 @@ static gboolean _metadata_reset(GtkWidget *label,
     else
       g_signal_emit_by_name(G_OBJECT(buffer), "changed"); // even if unchanged
   }
-  return TRUE;
 }
 
 static void _add_grid_row(dt_metadata_t *metadata, int row, dt_lib_module_t *self)
@@ -640,10 +640,10 @@ static void _add_grid_row(dt_metadata_t *metadata, int row, dt_lib_module_t *sel
   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
   gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
   gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK);
-  g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
+  dt_gui_connect_key(textview, _key_pressed_cb, self);
   g_signal_connect(textview, "focus", G_CALLBACK(_textview_focus), self);
   g_signal_connect(textview, "populate-popup", G_CALLBACK(_populate_popup_multi), self);
-  g_signal_connect(labelev, "button-press-event", G_CALLBACK(_metadata_reset), textview);
+  dt_gui_connect_click_all(labelev, _metadata_reset_cb, NULL, textview);
   g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
   gtk_widget_set_hexpand(textview, TRUE);
   gtk_widget_set_vexpand(textview, TRUE);

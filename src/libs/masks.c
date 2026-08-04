@@ -664,22 +664,23 @@ static void _tree_add_shape(GtkButton *button, gpointer shape)
   dt_control_queue_redraw_center();
 }
 
-static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer shape)
+static void _bt_add_shape_cb(GtkGestureSingle *gesture, int n_press, double x, double y, gpointer shape)
 {
-  DT_GUARD_GUI_UPDATE(FALSE);
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
   {
 #ifdef HAVE_AI
     if(GPOINTER_TO_INT(shape) == DT_MASKS_OBJECT && !dt_masks_object_available())
     {
       dt_control_log(_("AI model is not available. Check preferences > AI"));
-      return TRUE;
+      return;
     }
 #endif
     _tree_add_shape(NULL, shape);
 
-    if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       darktable.develop->form_gui->creation_continuous = TRUE;
       darktable.develop->form_gui->creation_continuous_module =
@@ -688,7 +689,6 @@ static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer
 
     _lib_masks_inactivate_icons(darktable.develop->proxy.masks.module);
   }
-  return TRUE;
 }
 
 static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
@@ -1222,10 +1222,9 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   _update_all_properties(self);
 }
 
-static int _tree_button_pressed(GtkWidget *treeview,
-                                GdkEventButton *event,
-                                dt_lib_module_t *self)
+static void _tree_button_pressed_cb(GtkGestureSingle *gesture, int n_press, double x, double y, dt_lib_module_t *self)
 {
+  GtkWidget *treeview = dt_gui_get_widget(gesture);
   // we first need to adjust selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
@@ -1235,7 +1234,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
   dt_iop_module_t *module = NULL;
   gboolean on_row = FALSE;
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                   (gint)dt_gdk_event_get_x(event), (gint)dt_gdk_event_get_y(event), &mouse_path, NULL,
+                                   (gint)x, (gint)y, &mouse_path, NULL,
                                    NULL, NULL))
   {
     on_row = TRUE;
@@ -1246,7 +1245,8 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
   }
   /* single click with the right mouse button? */
-  if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY)
   {
     // if click on a blank space, then deselect all
     if(!on_row)
@@ -1254,13 +1254,15 @@ static int _tree_button_pressed(GtkWidget *treeview,
       gtk_tree_selection_unselect_all(selection);
     }
   }
-  else if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
     // if we are already inside the selection, no change
     if(on_row
        && !gtk_tree_selection_path_is_selected(selection, mouse_path))
     {
-      if(!dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+      if(!dt_modifier_is(state, GDK_CONTROL_MASK))
         gtk_tree_selection_unselect_all(selection);
 
       gtk_tree_selection_select_path(selection, mouse_path);
@@ -1516,12 +1518,8 @@ static int _tree_button_pressed(GtkWidget *treeview,
 
     gtk_widget_show_all(GTK_WIDGET(menu));
 
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
-
-    return 1;
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), gtk_get_current_event());
   }
-
-  return 0;
 }
 
 static gboolean _tree_restrict_select(GtkTreeSelection *selection,
@@ -2276,40 +2274,35 @@ void gui_init(dt_lib_module_t *self)
   d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add gradient"),
                    d->bt_gradient, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event",
-                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_GRADIENT));
+  dt_gui_connect_click(d->bt_gradient, _bt_add_shape_cb, NULL, GINT_TO_POINTER(DT_MASKS_GRADIENT));
   gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add path"),
                    d->bt_path, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_path), "button-press-event",
-                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_PATH));
+  dt_gui_connect_click(d->bt_path, _bt_add_shape_cb, NULL, GINT_TO_POINTER(DT_MASKS_PATH));
   gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
 
   d->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add ellipse"),
                    d->bt_ellipse, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event",
-                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_ELLIPSE));
+  dt_gui_connect_click(d->bt_ellipse, _bt_add_shape_cb, NULL, GINT_TO_POINTER(DT_MASKS_ELLIPSE));
   gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
 
   d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add circle"),
                    d->bt_circle, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event",
-                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_CIRCLE));
+  dt_gui_connect_click(d->bt_circle, _bt_add_shape_cb, NULL, GINT_TO_POINTER(DT_MASKS_CIRCLE));
   gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
 
   d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add brush"),
                    d->bt_brush, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event",
-                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_BRUSH));
+  dt_gui_connect_click(d->bt_brush, _bt_add_shape_cb, NULL, GINT_TO_POINTER(DT_MASKS_BRUSH));
   gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
 
@@ -2317,8 +2310,7 @@ void gui_init(dt_lib_module_t *self)
   d->bt_object = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_object, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add object"),
                    d->bt_object, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_object), "button-press-event",
-                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_OBJECT));
+  dt_gui_connect_click(d->bt_object, _bt_add_shape_cb, NULL, GINT_TO_POINTER(DT_MASKS_OBJECT));
   gtk_widget_set_tooltip_text(d->bt_object, _("add AI object"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_object), FALSE);
 #endif
@@ -2355,8 +2347,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_has_tooltip(d->treeview, TRUE);
   g_signal_connect(d->treeview, "query-tooltip", G_CALLBACK(_tree_query_tooltip), NULL);
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);
-  g_signal_connect(d->treeview, "button-press-event",
-                   G_CALLBACK(_tree_button_pressed), self);
+  dt_gui_connect_click_all(d->treeview, _tree_button_pressed_cb, NULL, self);
 
   GtkWidget *shape_buttons = dt_gui_hbox
     (dt_gui_expand(dt_ui_label_new(_("created shapes"))),
