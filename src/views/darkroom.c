@@ -5021,15 +5021,96 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
+  const GdkEvent *current = gtk_get_current_event();
+  if(!current) return;
+
   GdkModifierType state;
   gtk_get_current_event_state(&state);
+
+  // Two-finger trackpad scroll pans the image, like the main darkroom view's
+  // _scrolled()/gesture_pan path.  The mouse wheel zooms.  Ctrl forces zoom
+  // even for smooth scrolls.
+  if(dt_gdk_event_get_scroll_direction(current) == GDK_SCROLL_SMOOTH
+     && !dt_modifier_is(state, GDK_CONTROL_MASK))
+  {
+    const GdkEventScroll *scroll = (const GdkEventScroll *)current;
+    gdouble pan_dx = 0.0, pan_dy = 0.0;
+    if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy)) return;
+    pan_dx *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    pan_dy *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    dt_print(DT_DEBUG_INPUT,
+             "[darkroom second window] pan dx=%.3f dy=%.3f", pan_dx, pan_dy);
+    if(pan_dx != 0.0 || pan_dy != 0.0)
+      dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, pan_dx, pan_dy, TRUE);
+    return;
+  }
+
+  int delta_y;
+  if(!dt_gui_get_scroll_unit_delta((const GdkEventScroll *)current, &delta_y)) return;
   const gboolean constrained =
     dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   gdouble x = 0.0, y = 0.0;
-  const GdkEvent *current = gtk_get_current_event();
-  if(current) gdk_event_get_coords(current, &x, &y);
-  dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, dy < 0 ? 1 : 0,
+  gdk_event_get_coords(current, &x, &y);
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom second window] scroll zoom delta_y=%d", delta_y);
+  dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0 ? 1 : 0,
                    x, y, constrained);
+}
+
+static gboolean _second_window_pinch_callback(GtkWidget *widget,
+                                              GdkEvent *event,
+                                              dt_develop_t *dev)
+{
+  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
+  if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
+
+  // Use pinned viewport if pinned, otherwise main dev's preview2
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+
+  dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
+
+  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+  const gboolean constrained =
+    dev->constrain_zoom && !dt_modifier_is(pinch->state, GDK_CONTROL_MASK);
+
+  // Zoom the second window proportionally to the pinch scale, mirroring the
+  // main darkroom view's gesture_pinch().
+  static float begin_tscale = 0.0f;
+
+  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    begin_tscale =
+      dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, FALSE) * port->ppd;
+    return TRUE;
+  }
+  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+     || pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  {
+    begin_tscale = 0.0f;
+    return TRUE;
+  }
+  if(pinch->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
+  if(begin_tscale <= 0.0f || pinch->scale <= 0.0) return FALSE;
+
+  const float ppd = port->ppd;
+  const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE);
+  const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
+  const float tscale = CLAMP(begin_tscale * pinch->scale, tscalefloor, 16.0f);
+  const float zoom_scale = tscale / ppd;
+
+  // Convert root (screen-absolute) pinch coords to widget-local, which is the
+  // coordinate space dt_dev_zoom_move() anchors the zoom to.
+  int ox = 0, oy = 0;
+  GdkWindow *win = gtk_widget_get_window(widget);
+  if(win) gdk_window_get_origin(win, &ox, &oy);
+  const float x_local = (float)pinch->x_root - ox;
+  const float y_local = (float)pinch->y_root - oy;
+  dt_print(DT_DEBUG_INPUT,
+           "[darkroom second window] pinch scale=%.6f tscale=%.6f zoom_scale=%.6f",
+           pinch->scale, tscale, zoom_scale);
+  dt_dev_zoom_move(port, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
+  return TRUE;
 }
 
 static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
@@ -5453,14 +5534,16 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                           | GDK_BUTTON_RELEASE_MASK
                           | GDK_ENTER_NOTIFY_MASK
                           | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_TOUCHPAD_GESTURE_MASK
                           | darktable.gui->scroll_mask);
 
     /* connect callbacks */
     g_signal_connect(G_OBJECT(dev->preview2.widget), "draw",
                      G_CALLBACK(_second_window_draw_callback), dev);
-    dt_gui_connect_scroll(dev->preview2.widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
-                                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+    dt_gui_connect_scroll(dev->preview2.widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                           _second_window_scrolled_callback, dev);
+    g_signal_connect(G_OBJECT(dev->preview2.widget), "event",
+                     G_CALLBACK(_second_window_pinch_callback), dev);
     dt_gui_connect_click_all(dev->preview2.widget, _second_window_button_pressed_callback, _second_window_button_released_callback, dev);
     dt_gui_connect_motion(dev->preview2.widget, _second_window_mouse_moved_callback, NULL, _second_window_leave_callback, dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "configure-event",
