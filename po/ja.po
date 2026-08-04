@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-02 12:31+0200\n"
-"PO-Revision-Date: 2026-08-03 17:57+0900\n"
+"PO-Revision-Date: 2026-08-04 11:19+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -11069,8 +11069,8 @@ msgstr ""
 "<b>追加</b>：クリック　　<b>除外</b>：Shift+クリック　　<b>クリア</b>："
 "Ctrl+Shift+クリック　　<b>適用</b>：右クリック　　<b>適用+ラスタ保存</b>: "
 "Shift+右クリック\n"
-"<b>平滑化</b>：Shift+スクロール（%3.2f）　　<b>クリーンアップ</b>：Shift+スク"
-"ロール （%d）　　<b>不透明度</b>：Ctrl+スクロール（%d%%）"
+"<b>平滑化</b>：スクロール（%3.2f）　　<b>クリーンアップ</b>：Shift+スクロール "
+"（%d）　　<b>不透明度</b>：Ctrl+スクロール（%d%%）"
 
 #: ../src/develop/masks/object.c:1869
 #, c-format
@@ -21192,7 +21192,7 @@ msgid ""
 "useful when the perspective correction is sloppy or\n"
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
-"パッチを小さくして、選択する中心部を大きく、または小さくします\n"
+"パッチの半径を小さくすると、より中心に近い部分を選択します\n"
 "パースペクティブ補正がうまく機能していない時に有用です\n"
 "パッチの枠の影がパッチの縁にあります"
 
@@ -23259,8 +23259,8 @@ msgid ""
 msgstr ""
 "X-Transセンサーのデモザイク方式。Markesteijn 3-passと周波数領域クロマは低速で"
 "す\n"
-"二重デモザイクは第二パスでVNGバリアントを混ぜ合わせることで処理時間が2倍になり"
-"ます"
+"二重デモザイクは第二パスでVNGバリアントを混ぜ合わせることで処理時間が増加しま"
+"す"
 
 #: ../src/iop/demosaic.c:1749
 msgid "Bayer4 sensor demosaicing methods."
@@ -23635,8 +23635,8 @@ msgid ""
 "increase if shadows are too green."
 msgstr ""
 "シャドウの色かぶりを補正します\n"
-"シャドウが紫がかっている場合、値を上げてください\n"
-"シャドウが緑がかっている場合、値を下げてください"
+"シャドウが紫がかっている場合、値を下げてください\n"
+"シャドウが緑がかっている場合、値を上げてください"
 
 #: ../src/iop/denoiseprofile.c:3778
 msgid ""
@@ -24038,7 +24038,7 @@ msgstr "構図|拡張|延長"
 msgid ""
 "how much to enlarge the canvas to the left as a percentage of the original "
 "image width"
-msgstr "画像の左側にキャンバスを拡げます（元画像の高さ比）"
+msgstr "画像の左側にキャンバスを拡げます（元画像の幅比）"
 
 #: ../src/iop/enlargecanvas.c:428
 msgid ""
@@ -24050,7 +24050,7 @@ msgstr "画像の右側にキャンバスを拡げます（元画像の幅比）
 msgid ""
 "how much to enlarge the canvas to the top as a percentage of the original "
 "image height"
-msgstr "画像の上側にキャンバスを拡げます（元画像の幅比）"
+msgstr "画像の上側にキャンバスを拡げます（元画像の高さ比）"
 
 #: ../src/iop/enlargecanvas.c:440
 msgid ""
@@ -29649,6 +29649,7 @@ msgid ""
 msgstr ""
 "検索する拡張子を入力してください。最初にドットを入力してください\n"
 "複数の値は,で区切ってください\n"
+"キーワード 'RAW'、'NOT RAW'、'LDR'、'HDR' を使用することが出来ます\n"
 "\n"
 "右クリックすると、既存の拡張子を表示します"
 
@@ -33802,7 +33803,7 @@ msgstr "白の余白の割合"
 
 #: ../src/views/darkroom.c:3151
 msgid "the border ratio specifies the fraction of the white part of the border."
-msgstr "余白の白い部分を指定します"
+msgstr "この比率は、余白のなかで白い部分が占める割合を指定します"
 
 #: ../src/views/darkroom.c:3162
 msgid "high quality processing"
