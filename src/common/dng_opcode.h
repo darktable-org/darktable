@@ -61,6 +61,10 @@ const dt_dng_gain_map_t *dt_dng_gain_map_opcode3(const dt_image_t *img);
 /* Multiply the GainMap into 4-channel float data. in and out may be the same
    buffer.
 
+   gm must have come from dt_dng_gain_map_opcode3(): that is where the map is
+   checked for the shape this assumes, including spacings that can safely be
+   reciprocated. Do not hand it a map straight off the parser.
+
    The caller supplies the geometry explicitly rather than passing a roi,
    because the two callers do not derive it the same way. x0/y0 are the full
    resolution raw sensor coordinates of output pixel (0,0), including whatever

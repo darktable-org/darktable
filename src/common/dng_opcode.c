@@ -21,6 +21,7 @@
 
 #include "debug.h"
 #include "dng_opcode.h"
+#include "common/math.h"
 #include "develop/imageop.h"
 
 #define OPCODE_ID_GAINMAP (9)
@@ -244,8 +245,19 @@ const dt_dng_gain_map_t *dt_dng_gain_map_opcode3(const dt_image_t *img)
      || g->col_pitch != 1
      || g->map_points_v < 2
      || g->map_points_h < 2
-     || g->map_spacing_v <= 0.0
-     || g->map_spacing_h <= 0.0
+     /* The spacings are reciprocated below, so reject anything that will not
+        survive it. Written as !(x > 0.0) rather than x <= 0.0 so that a NaN
+        read from a malformed file is rejected too, and the reciprocal is
+        checked because a positive but denormal spacing overflows to infinity
+        once it is narrowed to float. */
+     || !(g->map_spacing_v > 0.0)
+     || !(g->map_spacing_h > 0.0)
+     || !dt_isfinite((float)g->map_spacing_v)
+     || !dt_isfinite((float)g->map_spacing_h)
+     || !dt_isfinite((float)(1.0 / g->map_spacing_v))
+     || !dt_isfinite((float)(1.0 / g->map_spacing_h))
+     || !dt_isfinite((float)g->map_origin_v)
+     || !dt_isfinite((float)g->map_origin_h)
      || g->top != 0
      || g->left != 0
      || g->bottom != (uint32_t)img->height
