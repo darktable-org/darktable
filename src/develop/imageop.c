@@ -2480,13 +2480,15 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
     }
     /* reset to default params */
     dt_iop_reload_defaults(module);
-    dt_iop_commit_blend_params(module, module->default_blendop_params);
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
 
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);
 
     /* update ui to default params*/
     dt_iop_gui_update(module);
+
+    dt_dev_add_history_item(module->dev, module, TRUE);
 
     dt_dev_add_history_item(module->dev, module, TRUE);
   }
