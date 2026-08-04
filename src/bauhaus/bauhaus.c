@@ -1362,7 +1362,10 @@ static void _toggle_set(dt_bauhaus_widget_t *w,
                         const gboolean active)
 {
   dt_bauhaus_toggle_data_t *d = &w->toggle;
-  d->active = active ? TRUE : FALSE;
+  const gboolean new_active = active ? TRUE : FALSE;
+  // match GtkToggleButton: skip when the state does not change
+  if(d->active == new_active) return;
+  d->active = new_active;
   gtk_widget_queue_draw(GTK_WIDGET(w));
 
   // while the gui is being brought in line with the params there is
