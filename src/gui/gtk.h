@@ -223,6 +223,9 @@ double dt_get_screen_resolution(GtkWidget *widget);
  * modifiers are pressed to indicate the control should be scrolled, then remove
  * the modifiers from the event before returning false */
 gboolean dt_gui_ignore_scroll(GdkEventScroll *event);
+/* Scale factor converting normalized smooth scroll deltas (as returned by
+ * dt_gui_get_scroll_deltas() on macOS) back to pixels for panning. */
+#define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
 /* Return requested scroll delta(s) from event. If delta_x or delta_y
  * is NULL, do not return that delta. Return TRUE if requested deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
