@@ -27,3 +27,4 @@ CMakeLists.txt.user
 workspace/
 cmake-build-debug/
 .idea/
+AppDir/
