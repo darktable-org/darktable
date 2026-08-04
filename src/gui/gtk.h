@@ -555,6 +555,19 @@ gboolean dt_gui_long_click(const guint second,
 
 #define ASSERT_FUNC_TYPE(func, expected_type) (void)((expected_type)(func))
 
+/*
+ * Give our controller reference to the widget, like GTK4's
+ * gtk_widget_add_controller() (transfer full).  On GTK3 the widget only weakly
+ * points at the controller, so we unref on "destroy" — never from a weak
+ * notify on the widget: the controller's dispose removes its own weak pointer,
+ * which reenters the weak reference list being torn down and corrupts the heap.
+ *
+ * GTK4 migration: keep the calls, drop the widget argument from the
+ * gtk_gesture_*_new() / gtk_event_controller_*_new() calls above them.
+ */
+void dt_gui_add_controller(GtkWidget *widget,
+                           gpointer controller);
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,
