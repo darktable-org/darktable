@@ -98,7 +98,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget,
   return FALSE;
 }
 
-// create a 'virgin' duplicate of imgid, without any development
+// create a 'virgin' duplicate of imgid, discarding the source history stack
 static void _lib_duplicate_original(const dt_imgid_t imgid)
 {
   const dt_imgid_t newid = dt_image_duplicate(imgid);
@@ -367,11 +367,11 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(
       G_OBJECT(bt_dup), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
 
-    // create a 'virgin' duplicate of this image, without any development
+    // create a 'virgin' duplicate of this image, discarding the source history stack
     GtkWidget *bt_orig = dtgtk_button_new(dtgtk_cairo_paint_plus, 0, NULL);
     dt_gui_add_class(bt_orig, "dt_duplicate_original");
     gtk_widget_set_tooltip_text(
-      bt_orig, _("create a 'virgin' duplicate of this image without any development"));
+      bt_orig, _("create a 'virgin' duplicate, discarding the source history stack"));
     g_object_set_data(G_OBJECT(bt_orig), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(
       G_OBJECT(bt_orig), "clicked", G_CALLBACK(_lib_duplicate_original_clicked_callback), self);
