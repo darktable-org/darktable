@@ -2381,12 +2381,36 @@ static float _path_resize_offset_px(
   return _path_offset_px(points, iwidth, iheight, resize_amount, pct);
 }
 
+// Raster canvas the grow/shrink pipeline works on. It is anchored on the shape,
+// not on the image: `x0`/`y0` are the canvas origin in image pixels and `scale`
+// converts image pixels to raster pixels. The canvas is padded well beyond the
+// shape so a grow never runs into its edge (which would flatten the outline
+// along the border instead of letting it expand off-canvas).
+typedef struct _path_canvas_t
+{
+  int rw, rh;   // raster size in pixels
+  float x0, y0; // canvas origin in image pixels (may be negative)
+  float scale;  // image px → raster px
+  float iw, ih; // image size in pixels, for the normalized ↔ image mapping
+} _path_canvas_t;
+
+// normalized mask coords → raster pixel coords
+static inline float _canvas_x(const _path_canvas_t *c, const float nx)
+{
+  return (nx * c->iw - c->x0) * c->scale;
+}
+static inline float _canvas_y(const _path_canvas_t *c, const float ny)
+{
+  return (ny * c->ih - c->y0) * c->scale;
+}
+
 // Rasterize the closed bezier path into a binary float mask following the
 // ras2forms convention: value < 0.5 → inside, value >= 0.5 → outside.
 // Returns a buffer owned by the caller (dt_free_align), or NULL on allocation
 // failure.
-static float *_path_rasterize(dt_masks_form_t *form, const int rw, const int rh)
+static float *_path_rasterize(dt_masks_form_t *form, const _path_canvas_t *c)
 {
+  const int rw = c->rw, rh = c->rh;
   // Render the path as alpha=1 on a cleared A8 surface, then invert.
   cairo_surface_t *surf = cairo_image_surface_create(CAIRO_FORMAT_A8, rw, rh);
   cairo_t *cr2 = cairo_create(surf);
@@ -2400,19 +2424,19 @@ static float *_path_rasterize(dt_masks_form_t *form, const int rw, const int rh)
   {
     const GList *seg = form->points;
     const dt_masks_point_path_t *first = seg->data;
-    cairo_move_to(cr2, first->corner[0] * rw, first->corner[1] * rh);
+    cairo_move_to(cr2, _canvas_x(c, first->corner[0]), _canvas_y(c, first->corner[1]));
     for(; seg; seg = g_list_next(seg))
     {
       const dt_masks_point_path_t *a = seg->data;
       const GList *seg2 = g_list_next_wraparound(seg, form->points);
       const dt_masks_point_path_t *b = seg2->data;
       cairo_curve_to(cr2,
-                     a->ctrl2[0] * rw,
-                     a->ctrl2[1] * rh,
-                     b->ctrl1[0] * rw,
-                     b->ctrl1[1] * rh,
-                     b->corner[0] * rw,
-                     b->corner[1] * rh);
+                     _canvas_x(c, a->ctrl2[0]),
+                     _canvas_y(c, a->ctrl2[1]),
+                     _canvas_x(c, b->ctrl1[0]),
+                     _canvas_y(c, b->ctrl1[1]),
+                     _canvas_x(c, b->corner[0]),
+                     _canvas_y(c, b->corner[1]));
     }
   }
   cairo_close_path(cr2);
@@ -2623,12 +2647,12 @@ static GList *_path_simplify_rdp(GList *points, const double eps_px)
 // Returns a newly-owned points list (caller frees), or NULL if no usable
 // boundary was produced. Does not free `morphed`.
 static GList *_path_revectorize(float *morphed,
-                                const int rw,
-                                const int rh,
+                                const _path_canvas_t *c,
                                 const double alphamax,
                                 const double eps_px,
                                 const float mean_border)
 {
+  const int rw = c->rw, rh = c->rh;
   // out_signs runs parallel to new_forms: '+' for outer boundaries, '-' for
   // holes. A hole can have more nodes than the outer contour, so select on the
   // sign first and only use node count as a tie-breaker among outer boundaries.
@@ -2671,17 +2695,21 @@ static GList *_path_revectorize(float *morphed,
   // the resized shape preserves the original's corners instead of rounding them.
   best->points = _path_simplify_rdp(best->points, eps_px);
 
-  // ras2forms (image=NULL) returns raw pixel coords [0..rw]×[0..rh];
-  // mask coords are normalized: corner[0] ∈ [0,1] = pixel_x / rw.
+  // ras2forms (image=NULL) returns raw pixel coords [0..rw]×[0..rh] on the
+  // shape-anchored canvas; map them back through the canvas origin/scale into
+  // normalized mask coords. Results outside [0,1] are legitimate: that is a
+  // shape which has grown past the image border.
+  const float ux = 1.0f / (c->scale * c->iw), uy = 1.0f / (c->scale * c->ih);
+  const float nx0 = c->x0 / c->iw, ny0 = c->y0 / c->ih;
   for(GList *pl = best->points; pl; pl = g_list_next(pl))
   {
     dt_masks_point_path_t *pt = pl->data;
-    pt->corner[0] /= rw;
-    pt->corner[1] /= rh;
-    pt->ctrl1[0] /= rw;
-    pt->ctrl1[1] /= rh;
-    pt->ctrl2[0] /= rw;
-    pt->ctrl2[1] /= rh;
+    pt->corner[0] = pt->corner[0] * ux + nx0;
+    pt->corner[1] = pt->corner[1] * uy + ny0;
+    pt->ctrl1[0] = pt->ctrl1[0] * ux + nx0;
+    pt->ctrl1[1] = pt->ctrl1[1] * uy + ny0;
+    pt->ctrl2[0] = pt->ctrl2[0] * ux + nx0;
+    pt->ctrl2[1] = pt->ctrl2[1] * uy + ny0;
     pt->border[0] = pt->border[1] = mean_border;
   }
 
@@ -2707,19 +2735,66 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   if(iwidth <= 0.0f || iheight <= 0.0f)
     return FALSE;
 
-  // Raster resolution and the offset radius (in raster pixels).
+  // The raster canvas is anchored on the shape's own bounding box, not on the
+  // image: rasterizing on an image-sized canvas would clip everything growing
+  // past the border and re-vectorize it as a straight line along that border.
+  // Pad the box by the grow offset plus some slack, so the morphed outline is
+  // always surrounded by empty canvas and off-image parts survive intact.
+  _path_init_ctrl_points(form); // ctrl points take part in the bbox
+  const dt_masks_point_path_t *bfirst = form->points->data;
+  float bbx0 = bfirst->corner[0], bbx1 = bfirst->corner[0];
+  float bby0 = bfirst->corner[1], bby1 = bfirst->corner[1];
+  for(const GList *pl = form->points; pl; pl = g_list_next(pl))
+  {
+    const dt_masks_point_path_t *p = pl->data;
+    const float xs[3] = { p->corner[0], p->ctrl1[0], p->ctrl2[0] };
+    const float ys[3] = { p->corner[1], p->ctrl1[1], p->ctrl2[1] };
+    for(int k = 0; k < 3; k++)
+    {
+      bbx0 = fminf(bbx0, xs[k]);
+      bbx1 = fmaxf(bbx1, xs[k]);
+      bby0 = fminf(bby0, ys[k]);
+      bby1 = fmaxf(bby1, ys[k]);
+    }
+  }
+
+  // bbox in image pixels, padded by the offset (only a grow needs the room, but
+  // padding a shrink too costs nothing and keeps the mapping uniform) plus a
+  // slack margin that guarantees a few empty pixels around the traced boundary.
+  const float bw_img = fmaxf(1.0f, (bbx1 - bbx0) * iwidth);
+  const float bh_img = fmaxf(1.0f, (bby1 - bby0) * iheight);
+  const float pad_img = fmaxf(offset_img_px, 0.0f) + fmaxf(2.0f, 0.02f * fmaxf(bw_img, bh_img));
+  const float cw_img = bw_img + 2.0f * pad_img;
+  const float ch_img = bh_img + 2.0f * pad_img;
+
+  // Raster resolution and the offset radius (in raster pixels). The tracing
+  // resolution applies to the padded canvas, so the raster cost stays constant
+  // no matter how far the shape extends beyond the image.
   const char *res_str = dt_conf_get_string_const("masks/path_resize_resolution");
   const int res_pref = res_str ? atoi(res_str) : 0;
   const int trace_res = (res_pref > 0) ? res_pref : 2048;
-  const float rscale = (float)trace_res / fmaxf(iwidth, iheight);
-  const int rw = MAX(1, (int)(iwidth * rscale + 0.5f));
-  const int rh = MAX(1, (int)(iheight * rscale + 0.5f));
+  const float rscale = (float)trace_res / fmaxf(cw_img, ch_img);
+
+  const _path_canvas_t canvas = { .rw = MAX(1, (int)(cw_img * rscale + 0.5f)),
+                                  .rh = MAX(1, (int)(ch_img * rscale + 0.5f)),
+                                  .x0 = bbx0 * iwidth - pad_img,
+                                  .y0 = bby0 * iheight - pad_img,
+                                  .scale = rscale,
+                                  .iw = iwidth,
+                                  .ih = iheight };
+  const int rw = canvas.rw, rh = canvas.rh;
 
   // radius in raster pixels (float for sub-pixel EDT threshold)
   const float r_float = fmaxf(0.5f, offset_img_px * rscale);
 
-  dt_print(
-    DT_DEBUG_MASKS, "[masks path] inset: rw=%d rh=%d r_float=%.2f up=%d", rw, rh, r_float, up);
+  dt_print(DT_DEBUG_MASKS,
+           "[masks path] inset: rw=%d rh=%d org=%.1f,%.1f r_float=%.2f up=%d",
+           rw,
+           rh,
+           canvas.x0,
+           canvas.y0,
+           r_float,
+           up);
 
   // New nodes inherit the original mean feather.
   const float mean_border = _path_mean_border(form);
@@ -2739,7 +2814,7 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   const double eps_px = eps_img * rscale;
 
   // rasterize → EDT inset/outset → re-vectorize
-  float *mask = _path_rasterize(form, rw, rh);
+  float *mask = _path_rasterize(form, &canvas);
   if(!mask)
     return FALSE;
 
@@ -2748,7 +2823,7 @@ static gboolean _path_morph_core(dt_masks_form_t *form, const float offset_img_p
   if(!morphed)
     return FALSE;
 
-  GList *new_points = _path_revectorize(morphed, rw, rh, alphamax, eps_px, mean_border);
+  GList *new_points = _path_revectorize(morphed, &canvas, alphamax, eps_px, mean_border);
   dt_free_align(morphed);
   if(!new_points)
     return FALSE;
