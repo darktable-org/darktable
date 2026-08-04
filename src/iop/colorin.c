@@ -662,7 +662,7 @@ int process_cl(dt_iop_module_t *self,
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
-    dt_print_pipe(DT_DEBUG_PIPE, "coeff correction",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "coeff correction",
       pipe, self, devid, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
       pipe->dsc.temperature.coeffs[0], coeffs[0],
@@ -1209,7 +1209,7 @@ void process(dt_iop_module_t *self,
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
-    dt_print_pipe(DT_DEBUG_PIPE, "coeff correction",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "coeff correction",
       pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
       pipe->dsc.temperature.coeffs[0], coeffs[0],
