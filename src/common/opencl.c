@@ -323,12 +323,6 @@ void dt_opencl_micro_nap(const int devid)
     dt_iop_nap(cl->dev[devid].micro_nap);
 }
 
-gboolean dt_opencl_use_pinned_memory(const int devid)
-{
-  dt_opencl_t *cl = darktable.opencl;
-  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].pinned_memory;
-}
-
 gboolean dt_opencl_unified_memory(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
@@ -366,7 +360,7 @@ static void _opencl_write_device_config(const int devid)
   g_snprintf(key, sizeof(key), "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
   g_snprintf(dat, sizeof(dat), "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
-    cl->dev[devid].pinned_memory,
+    0,
 
     // this used to define the number of slots, now a bool and using DT_OPENCL_EVENTS if true
     cl->dev[devid].use_events ? 1 : 0,
@@ -443,7 +437,6 @@ static gboolean _opencl_read_device_config(const int devid)
 
     cldid->use_events = events ? TRUE : FALSE;
     cldid->micro_nap = micro_nap;
-    cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
     cldid->asyncmode = asyncmode ? TRUE : FALSE;
     cldid->disabled = disabled && dt_conf_get_int("performance_configuration_version_completed") != 19 ? TRUE : FALSE;
     cldid->unified_fraction = unified_fraction;
@@ -535,9 +528,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   // setting sane/conservative defaults at first
   cl->dev[dev].unified_fraction = 0.25f;
   cl->dev[dev].micro_nap = 250;
-  cl->dev[dev].pinned_memory = FALSE;
   cl->dev[dev].unified_memory = FALSE;
-  cl->dev[dev].pinned_error = FALSE;
   cl->dev[dev].clmem_error = FALSE;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
@@ -932,8 +923,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ASYNC PIXELPIPE:          %s\n", STR_YESNO(cl->dev[dev].asyncmode));
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   PINNED MEMORY TILING:     %s\n", STR_YESNO(cl->dev[dev].pinned_memory));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   SUPPORTED ATOMICS:        %s%s%s\n",
                cl->dev[dev].atomic_support == DT_OPENCL_ATOMIC_NONE ? "none" : "",
@@ -3677,29 +3666,47 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
   return _opencl_get_device_memalloc(devid);
 }
 
-gboolean dt_opencl_image_fits_device(const int devid,
-                                     const size_t width,
-                                     const size_t height,
-                                     const uint32_t bpp,
-                                     const float factor,
-                                     const size_t overhead)
+/* result for fitting the OpenCL device returns
+    DT_OPENCL_NO_TILING: image data can be fully processed in available cl_mem
+    DT_OPENCL_FAST_TILING: image data vs available cl_mem ratio is not bad so we
+        can do pixelpipe internal tiling keep in&out cl_mem and just copy cl_mem parts.
+    DT_OPENCL_TILING: We must do classical tiling going the hard & slow way
+        via host <-> device transfers either because
+      - the device supported image dimension is smaller than
+        the processed image
+      - the maximum supported size of an image/buffer is smaller
+        than the processed image
+      - the "not bad ratio" test for DT_OPENCL_FAST_TILING failed.
+*/
+dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
+                                                 const int width,
+                                                 const int height,
+                                                 const uint32_t bpp,
+                                                 const float factor,
+                                                 const size_t overhead,
+                                                 const int overlap)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!_cldev_running(devid)) return FALSE;
+  if(!_cldev_running(devid)) return DT_OPENCL_TILING;
 
-  const size_t required  = width * height * bpp;
-  const size_t total = factor * required + overhead;
+  const int64_t plane = width * height * bpp;
+  const int64_t total = factor * plane + overhead;
 
-  if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
-    return FALSE;
+  // always tile as processed image is larger than device is providing
+  if(cl->dev[devid].max_image_width < width
+      || cl->dev[devid].max_image_height < height
+      || _opencl_get_device_memalloc(devid) < plane)
+    return DT_OPENCL_TILING;
 
-  if(_opencl_get_device_memalloc(devid) < required)
-    return FALSE;
-  if(dt_opencl_get_device_available(devid) < total)
-    return FALSE;
-  // We know here that total memory fits and if so the buffersize will
-  // also fit as there is a factor of >=2
-  return TRUE;
+  const int64_t avail = dt_opencl_get_device_available(devid);
+
+  // available clm_em allows processing whole image in one bunch
+  if(avail > total)
+    return cl->fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_NO_TILING;
+  const int64_t perline = width * bpp;
+  const int64_t remains = avail - overhead - 2*plane;
+  // fast internal OpenCL tiling possible and with a good bet on performance?
+  return (remains / perline - overlap) > height / 10 ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
 }
 
 /** round size to a multiple of the value given in the device specifig
@@ -3807,10 +3814,9 @@ void dt_opencl_update_settings(void)
       res->cl_uni_memory += cl->dev[i].used_available;
     }
     dt_print_nts(DT_DEBUG_OPENCL,
-         "   AVAILABLE CLMEM SIZE:     %zu MB%s%s\n",
+         "   AVAILABLE CLMEM SIZE:     %zu MB%s\n",
               (size_t)(cl->dev[i].used_available / DT_MEGA),
-              cl->dev[i].tunehead ? ", tuned" : "",
-              cl->dev[i].pinned_memory ? ", pinned": "");
+              cl->dev[i].tunehead ? ", tuned" : "");
   }
   if(res->cl_uni_memory)
     dt_print_nts(DT_DEBUG_OPENCL,
