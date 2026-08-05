@@ -72,6 +72,12 @@ typedef struct dt_iop_color_picker_t
 
 gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev);
 
+/* g_object data key on the picker widget: the owning dt_iop_color_picker_t */
+#define DT_COLOR_PICKER_INSTANCE_KEY "dt-color-picker-instance"
+
+/* action definition for standalone picker toggle buttons (see color_picker_proxy.c) */
+extern const struct dt_action_def_t dt_action_def_color_picker;
+
 //* reset current color picker if not keep-active or not keep */
 void dt_iop_color_picker_reset(dt_iop_module_t *module,
                                const gboolean keep);

@@ -4482,7 +4482,7 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_illuminant_color_draw), self);
 
   g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
-  dt_action_define_iop(self, NULL, N_("picker"), g->color_picker, &dt_action_def_toggle);
+  dt_action_define_iop(self, NULL, N_("picker"), g->color_picker, &dt_action_def_color_picker);
   gtk_widget_set_tooltip_text(g->color_picker,
                               _("set white balance to detected from area"));
 
