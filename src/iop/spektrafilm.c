@@ -229,6 +229,12 @@ typedef struct dt_iop_spektrafilm_params_t
   float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "viewing glare"
   float development_min;    // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
   float print_development_min; // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
+  /* Off by default, which is what the reference does: the film profiles carry
+     the correction surface and enable it, but the reference runtime's own
+     setting disables it and wins, so its renders are made without it. Left
+     switchable because the coefficients are part of the profile data and the
+     upstream default may flip; see spektra_sim.h's adaptation_surface. */
+  gboolean adaptation_surface; // $DEFAULT: FALSE $DESCRIPTION: "sensitivity adaptation"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -255,7 +261,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *exposure_ev, *scan_film;
   GtkWidget *push_pull_stops, *film_gamma_factor;
   GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
-  GtkWidget *quality;
+  GtkWidget *quality, *adaptation_surface;
   GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
   GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
@@ -868,6 +874,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->development_min, sizeof p->development_min);
   key = _mix64(key, &p->print_development_min, sizeof p->print_development_min);
   key = _mix64(key, &p->quality, sizeof p->quality);
+  /* changes the tc LUT, which is built once per sim */
+  key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
   key = _mix64(key, &p->film_gamma_factor_fast, sizeof p->film_gamma_factor_fast);
@@ -1055,6 +1063,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.preflash_m_shift = p->preflash_m_shift;
     sp.preflash_y_shift = p->preflash_y_shift;
     sp.scan_film = p->scan_film;
+    sp.adaptation_surface = p->adaptation_surface;
     sp.lut_steps = _quality_steps(p->quality);
     sp.out_luminance_boost = p->output_luminance_boost;
     if(p->print_contrast != 1.0f)
@@ -2391,6 +2400,10 @@ static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t 
                                             const dt_iop_spektrafilm_params_t *p);
 static float _development_default(const sf_prof_entry_t *e);
 
+/* forward: needs _entry_by_hash(), which is defined below with the rest of the
+   stock lookups */
+static void _update_paper_auto_entry(dt_iop_module_t *self);
+
 static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2427,30 +2440,12 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   }
   /* On "auto" (hash 0) the paper follows the film's target print, and the
      combobox keeps reading "auto" rather than jumping to the resolved stock:
-     the state is the link, not the destination, and displaying a specific paper
-     while the hash says auto made the two disagree. Name the resolved stock in
-     the tooltip so it stays visible. The pipeline resolves it identically either
-     way (_resolve_stock). */
-  if(p->paper_hash == 0)
-  {
-    const sf_prof_entry_t *re = NULL;
-    if(e->target_print[0])
-      for(const GList *l = g->entries; l && !re; l = l->next)
-      {
-        const sf_prof_entry_t *pe = l->data;
-        if(pe->printing && !strcmp(pe->stock, e->target_print)) re = pe;
-      }
-    char tip[256];
-    if(re)
-      snprintf(tip, sizeof tip,
-               _("print paper. \"auto\" follows the film stock's own target print,\n"
-                 "currently %s. picking a paper pins it until you select auto again."),
-               re->name);
-    else
-      g_strlcpy(tip, _("print paper. \"auto\" follows the film stock's own target print."),
-                sizeof tip);
-    gtk_widget_set_tooltip_text(g->paper, tip);
-  }
+     the state is the link, not the destination, and selecting a specific paper
+     while the hash says auto made the two disagree. The entry names the stock
+     it resolves to instead. Done on every film change, not only while auto is
+     selected, so the entry is already correct if the paper is set back to auto
+     later. The pipeline resolves it identically either way (_resolve_stock). */
+  _update_paper_auto_entry(self);
   /* last, once scan_film and the auto-followed paper have settled: both
      development sliders are gated on their own stock, and the print one also on
      there being a print stage at all */
@@ -2496,6 +2491,96 @@ static const sf_prof_entry_t *_entry_by_hash(const dt_iop_spektrafilm_gui_data_t
     if(e->hash == hash && e->printing == printing) return e;
   }
   return NULL;
+}
+
+/* The film the pipeline is rendering with: the stock this edit names, or -- for
+   a hash of 0, or a stock that has since left the pack -- the same fallback
+   gui_update() selects the combobox on, so the label below never names a film
+   the combobox does not show. */
+static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                  const dt_iop_spektrafilm_params_t *p)
+{
+  const sf_prof_entry_t *hit = _entry_by_hash(g, p->film_hash, FALSE);
+  if(p->film_hash && hit) return hit;
+  const sf_prof_entry_t *fallback = NULL;
+  for(const GList *l = g->entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *e = l->data;
+    if(e->printing) continue;
+    if(!fallback || !strcmp(e->stock, "kodak_portra_400")) fallback = e;
+  }
+  return fallback;
+}
+
+/* The paper the pipeline actually prints on while "auto" is selected: the film's
+   own target print when the pack ships it as a paper, otherwise the first print
+   stock in the list. That second half mirrors _resolve_stock()'s own last
+   resort, and is what makes the label honest -- stopping at target_print left
+   two cases reading "follow film stock" while the pipeline was quietly printing
+   on a specific paper anyway: a film that names no target print, and Double-X,
+   whose target 2302 the pack exports as a film rather than as a paper. */
+static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
+                                                const sf_prof_entry_t *film)
+{
+  const sf_prof_entry_t *first = NULL;
+  for(const GList *l = g->entries; l; l = l->next)
+  {
+    const sf_prof_entry_t *pe = l->data;
+    if(!pe->printing) continue;
+    if(!first) first = pe;
+    if(film && film->target_print[0] && !strcmp(pe->stock, film->target_print)) return pe;
+  }
+  return first;
+}
+
+/* Name the resolved paper in the "auto" entry itself rather than only in the
+   tooltip. The combobox deliberately keeps reading "auto" while it follows a
+   film (the state is the link, not the destination), but that left the paper
+   actually being printed on invisible unless you hovered. Renaming the entry
+   shows both at once and keeps the link intact -- the selection does not move,
+   only its text changes, so paper_hash stays 0.
+
+   With scan_film there is no print stage at all, and the widget is insensitive:
+   the entry goes blank rather than naming a paper nothing will be printed on.
+   Called from _update_print_sensitivity() as well as on a film change, so it
+   follows that toggle. */
+static void _update_paper_auto_entry(dt_iop_module_t *self)
+{
+  dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
+  const dt_iop_spektrafilm_params_t *p = (const dt_iop_spektrafilm_params_t *)self->params;
+  if(!g || !g->paper) return;
+  char label[SF_NAME_LEN + 32];
+  char tip[SF_NAME_LEN + 256];
+  const sf_prof_entry_t *re
+      = p->scan_film ? NULL : _auto_paper_entry(g, _current_film_entry(g, p));
+  if(p->scan_film)
+  {
+    label[0] = '\0';
+    g_strlcpy(tip, _("print paper. not used: the film is being scanned directly."),
+              sizeof tip);
+  }
+  else if(re)
+  {
+    snprintf(label, sizeof label, _("auto (%s)"), re->name);
+    snprintf(tip, sizeof tip,
+             _("print paper. \"auto\" follows the film stock's own target print,\n"
+               "currently %s. picking a paper pins it until you select auto again."),
+             re->name);
+  }
+  else
+  {
+    /* no print stock in the pack at all -- the list below reads "(none)" */
+    g_strlcpy(label, _("auto"), sizeof label);
+    g_strlcpy(tip, _("print paper. \"auto\" follows the film stock's own target print."),
+              sizeof tip);
+  }
+  /* Position 0: the auto entry is added before any section header, so its list
+     index is fixed whatever paper groups the pack turns out to contain. */
+  dt_bauhaus_combobox_set_entry_label(g->paper, 0, label);
+  /* The widget renders the active entry's label straight out of that array at
+     draw time, so a relabel needs nothing but a redraw -- and does need one. */
+  gtk_widget_queue_draw(g->paper);
+  gtk_widget_set_tooltip_text(g->paper, tip);
 }
 
 /* Default development time for a stock, in minutes: the representative middle
@@ -2604,6 +2689,10 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   dt_bauhaus_toggle_set(g->print_diffusion_on,
                         printing && p->print_diffusion_on);
   DT_LEAVE_GUI_UPDATE();
+
+  /* The auto entry names the paper in use, and with no print stage there is
+     none: relabel from here, the one place every scan_film change passes. */
+  _update_paper_auto_entry(self);
 
   /* Also from here: gui_changed() sends the scan_film toggle to this function and
      not to _toggle_sensitivity(), so without this the print development slider
@@ -2972,6 +3061,10 @@ void gui_update(dt_iop_module_t *self)
   if(!p->paper_hash) ppos = -1;
   else if(ppos < 0) ppos = pfirst;
   if(ppos >= -1) dt_bauhaus_combobox_set_from_value(g->paper, ppos);
+  /* after the repopulation above, which reset the auto entry to its plain
+     label: the entry names the paper this film resolves to, so a module that
+     opens on auto shows the paper it is really printing on */
+  _update_paper_auto_entry(self);
 
   {
     const int fpreset = _format_mm_to_preset(p->film_format_mm);
@@ -2986,6 +3079,7 @@ void gui_update(dt_iop_module_t *self)
      click a no-op (field already has that value -> no history item) and
      module reset never updates them. */
   dt_bauhaus_toggle_set(g->scan_film, p->scan_film);
+  dt_bauhaus_toggle_set(g->adaptation_surface, p->adaptation_surface);
   dt_bauhaus_toggle_set(g->print_auto_exposure, p->print_auto_exposure);
   dt_bauhaus_toggle_set(g->halation_on, p->halation_on);
   dt_bauhaus_toggle_set(g->diffusion_on, p->diffusion_on);
@@ -3325,6 +3419,16 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->quality,
                               _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
                                 " and validated against the reference"));
+
+  g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
+  gtk_widget_set_tooltip_text(
+      g->adaptation_surface,
+      _("apply the film profile's own exposure correction surface, a per-colour\n"
+        "adjustment of up to two stops that leaves the reference white untouched\n"
+        "and grows with distance from it.\noff by default: the reference renders\n"
+        "without it, so leaving it on makes saturated colours diverge from a\n"
+        "reference render. has no effect on stocks whose profile carries no\n"
+        "surface (the monochrome films and every print paper)"));
 
   /* ---- tab 2: print ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
