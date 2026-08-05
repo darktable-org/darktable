@@ -1718,7 +1718,9 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     _entry_set_tooltip(range->entry_min, BOUND_MIN, range->type);
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
-    dt_gui_connect_click_all(range->entry_min, _event_entry_press_cb, NULL, range);
+    GtkGestureSingle *g_min = dt_gui_connect_click(range->entry_min, _event_entry_press_cb, NULL, range);
+    gtk_gesture_single_set_button(g_min, GDK_BUTTON_SECONDARY);
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_min), GTK_PHASE_TARGET);
 
     range->entry_max = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_max, TRUE);
@@ -1726,7 +1728,9 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     _entry_set_tooltip(range->entry_max, BOUND_MAX, range->type);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
-    dt_gui_connect_click_all(range->entry_max, _event_entry_press_cb, NULL, range);
+    GtkGestureSingle *g_max = dt_gui_connect_click(range->entry_max, _event_entry_press_cb, NULL, range);
+    gtk_gesture_single_set_button(g_max, GDK_BUTTON_SECONDARY);
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(g_max), GTK_PHASE_TARGET);
 
     dt_gui_box_add(vbox, dt_gui_hbox(dt_gui_expand(range->entry_min), dt_gui_expand(range->entry_max)));
   }
