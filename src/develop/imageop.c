@@ -449,6 +449,45 @@ void dt_iop_init_pipe(dt_iop_module_t *module,
   piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
 }
 
+/* the module whose header buttons are currently shown (if any) */
+static dt_iop_module_t *_header_buttons_module = NULL;
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _pointer_in_module(const dt_iop_module_t *module)
+{
+  GdkDevice *const device =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  gint x, y;
+
+  /* gdk_window_get_device_position() returns the window under the device, not
+   * a within-bounds test (over the label's event box it returns that window,
+   * over the plain header background it returns NULL).  Compare the returned
+   * coordinates against the window size instead.
+   * GTK3-only: on the GTK4 switch this becomes gdk_surface_get_device_position(). */
+  GtkWidget *const header_evb =
+    dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(module->expander));
+  if(gtk_widget_get_realized(header_evb))
+  {
+    GdkWindow *const win = gtk_widget_get_window(header_evb);
+    gdk_window_get_device_position(win, device, &x, &y, NULL);
+    if(x >= 0 && y >= 0
+       && x < gdk_window_get_width(win) && y < gdk_window_get_height(win))
+      return TRUE;
+  }
+  GtkWidget *const body_evb =
+    dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(module->expander));
+  if(gtk_widget_get_realized(body_evb))
+  {
+    GdkWindow *const win = gtk_widget_get_window(body_evb);
+    gdk_window_get_device_position(win, device, &x, &y, NULL);
+    if(x >= 0 && y >= 0
+       && x < gdk_window_get_width(win) && y < gdk_window_get_height(win))
+      return TRUE;
+  }
+  return FALSE;
+}
+#endif
+
 static void _header_enter_notify_callback(GtkEventControllerMotion *controller,
                                           gdouble x,
                                           gdouble y,
@@ -463,18 +502,31 @@ static void _header_motion_notify_show_callback(GtkEventControllerMotion *contro
                                                 dt_iop_module_t *module)
 {
   darktable.control->element = DT_ACTION_ELEMENT_SHOW;
+
+  /* entering another module's header generates no usable leave for the
+   * previous one: the leave crossing's position is still within the old
+   * module's bounds, so the position check in the hide callback cannot hide
+   * it.  Hide the previously shown buttons here instead. */
+  if(_header_buttons_module && _header_buttons_module != module
+     && g_list_find(darktable.develop->iop, _header_buttons_module))
+    dt_iop_show_hide_header_buttons(_header_buttons_module, NULL, FALSE, FALSE);
+  _header_buttons_module = module;
+
   dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE);
 }
 
 static void _header_motion_notify_hide_callback(GtkEventControllerMotion *controller,
                                                 dt_iop_module_t *module)
 {
-  dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
-}
-
-static void _header_menu_deactivate_callback(GtkMenuShell *menushell,
-                                             dt_iop_module_t *module)
-{
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK3-only: the motion controller fires leave for every crossing,
+   * including inferior ones (pointer moving to a child button) and the
+   * synthetic ones a menu popup/close generates.  Only hide when the pointer
+   * has really left the module.
+   * GTK4: compiled out -- GtkEventControllerMotion only emits leave for real
+   * widget crossings there. */
+  if(_pointer_in_module(module)) return;
+#endif
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
 
@@ -1046,9 +1098,6 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
   g_signal_connect(G_OBJECT(item), "activate",
                    G_CALLBACK(_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
-
-  g_signal_connect(G_OBJECT(menu), "deactivate",
-                   G_CALLBACK(_header_menu_deactivate_callback), module);
 
   dt_gui_menu_popup(GTK_MENU(menu), GTK_WIDGET(button),
                     GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
@@ -2358,6 +2407,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
+  if(_header_buttons_module == module) _header_buttons_module = NULL;
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
@@ -2507,9 +2557,6 @@ static gboolean _presets_popup_callback(GtkButton *button,
 
   GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
 
-  g_signal_connect(G_OBJECT(menu), "deactivate",
-                   G_CALLBACK(_header_menu_deactivate_callback), module);
-
   dt_gui_menu_popup(menu,
                     GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
@@ -2527,9 +2574,6 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
 
   GtkWidget *button = dt_gui_get_widget(gesture);
   GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
-
-  g_signal_connect(G_OBJECT(menu), "deactivate",
-                   G_CALLBACK(_header_menu_deactivate_callback), module);
 
   dt_gui_menu_popup(menu,
                     button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
