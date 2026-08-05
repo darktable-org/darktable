@@ -290,7 +290,7 @@ static void _lib_viewswitcher_button_press_callback(GtkGestureSingle *gesture, i
                                                        double x, double y,
                                                        dt_view_t *view)
 {
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     _switch_view(view);
   }

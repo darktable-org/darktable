@@ -2634,7 +2634,7 @@ dt_thumbtable_t *dt_thumbtable_new()
    * gesture (meaning it came from this bridge) and uses GDK_BUTTON_PRIMARY.
    *
    * GTK4 migration: remove this call.  GtkGestureClick handles n_press
-   * natively and the callback can use gtk_gesture_single_get_button()
+   * natively and the callback can use gtk_gesture_single_get_current_button()
    * safely on the real gesture pointer. */
   dt_gui_connect_double_click(table->widget, _event_button_press_cb, table);
 
