@@ -123,6 +123,8 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_MONTH,
 
+  DT_COLLECTION_PROP_DIMENSIONS,
+
   // all new collection types need to be added before DT_COLLECTION_PROP_LAST,
   // which separates actual collection types from special flag values
   DT_COLLECTION_PROP_LAST,
