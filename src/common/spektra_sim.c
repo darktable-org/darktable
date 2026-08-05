@@ -1198,6 +1198,7 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->film_morph_gamma = p->film_morph_gamma_fast = p->film_morph_gamma_slow = 1.0;
   p->film_morph_developer_exhaustion = 0.0;
   p->scan_film = false;
+  p->adaptation_bandwidth = true;
   p->adaptation_surface = false;
   p->lut_steps = 0;
   p->input_gamut_compress = true;
@@ -2671,7 +2672,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
         const double v = pow(10.0, film->log_sensitivity[l][m]);
         sens_w[l][m] = isfinite(v) ? v : 0.0;
       }
-    if(film->window_n == 4) /* erf4 spectral bandpass, white-balance preserving */
+    /* [su] apply_hanatos2025_adaptation_bandwidth: the erf4 spectral bandpass,
+       white-balance preserving (hence the per-channel renormalisation below).
+       On by default, as the reference resolves it; switchable for the same
+       reason the surface below is, and so the two halves of the adaptation can
+       be told apart when a render is compared against the reference. */
+    if(p->adaptation_bandwidth && film->window_n == 4)
     {
       const double c_uv = film->window_params[0], s_uv = film->window_params[1];
       const double c_ir = film->window_params[2], s_ir = film->window_params[3];
@@ -2731,7 +2737,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
        surface parameters, as upstream skips it on an empty array.
 
        Off unless the caller asks for it (params->adaptation_surface, default
-       false). The profiles ship this enabled, but the reference runtime's
+       false), the second of the two adaptation switches. The profiles ship this enabled, but the reference runtime's
        SettingsParams.apply_hanatos2025_adaptation_surface is false and takes
        precedence there, so applying it whenever a profile carries the
        coefficients diverges from a reference render by as much as the
