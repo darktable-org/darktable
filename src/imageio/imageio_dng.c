@@ -28,10 +28,13 @@
 #include <glib/gstdio.h>
 #include <inttypes.h>
 #include <math.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tiffio.h>
+
+#include <jpeglib.h>
 
 #ifdef _WIN32
 #include <wchar.h>
@@ -41,6 +44,45 @@
 #ifndef TIFFTAG_PREVIEWCOLORSPACE
 #define TIFFTAG_PREVIEWCOLORSPACE 50970
 #endif
+
+// ============================================================================
+// Lossless JPEG DNG output — libtiff hijack with libjpeg-turbo encoding
+// ============================================================================
+//
+// Adobe DNG spec lists lossless JPEG (compression code 7) as the canonical
+// compression for raw integer (Bayer / Linear) DNG files; the natural
+// implementation is `TIFFTAG_COMPRESSION = COMPRESSION_JPEG` + TIFFWriteTile,
+// but libtiff's bundled JPEG codec hard-rejects BitsPerSample > 12 in its
+// setupencode() — our raw payloads are 16-bit, so that path returns
+// "BitsPerSample 16 not allowed for JPEG" and fails before the first write
+//
+// libjpeg-turbo (which libtiff already links) DOES support 16-bit lossless
+// JPEG via jpeg_enable_lossless() + jpeg16_write_scanlines(); the job is to
+// route around libtiff's codec without giving up the file-structure
+// scaffolding libtiff provides (IFDs, tag bookkeeping, thumbnail SubIFDs)
+//
+// The trick:
+//   1. Tell libtiff the file is COMPRESSION_ADOBE_DEFLATE during setup —
+//      libtiff's deflate codec accepts 16-bit, so its setupencode passes
+//   2. For each tile, encode our uint16 pixels to a self-contained lossless
+//      JPEG datastream via _encode_tile_lossless_jpeg() (libjpeg-turbo)
+//   3. Write those bytes via TIFFWriteRawTile() — libtiff stores opaque
+//      bytes and records the tile offset / byte-count without invoking its
+//      deflate codec at all
+//   4. After TIFFClose(), reopen the file and patch the Compression tag
+//      from 8 (DEFLATE) to 7 (lossless JPEG) via _patch_compression_tag()
+//
+// The on-disk tile data is genuine libjpeg-turbo-encoded lossless JPEG; the
+// deflate codec is never invoked, it's just a setup-time lie to defeat
+// libtiff's 16-bit gate. The file ends up indistinguishable from one Adobe
+// DNG Converter would produce — verified by reading it back in darktable
+// (rawspeed), Affinity Photo, and Apple Preview (ImageIO)
+//
+// If libtiff ever re-exposes TIFFRewriteField() (private since 4.0) or adds
+// a "raw tile, no codec setup" mode, both the deflate pretense and the
+// post-close tag patch can collapse to one libtiff call; until then the
+// hijack-and-patch pair is the smallest correct dance
+// ============================================================================
 
 // DNG uses SRATIONAL / RATIONAL for matrix and WB tags. libtiff accepts
 // these as float/double arrays and handles the conversion; we just pass
@@ -93,6 +135,237 @@ static void _register_extra_dng_fields(TIFF *tif)
       TRUE, TRUE, (char *)"CFAPattern" },
   };
   TIFFMergeFieldInfo(tif, extra, sizeof(extra) / sizeof(extra[0]));
+}
+
+/* ---------- post-write COMPRESSION-tag patcher ----------------------
+ * libtiff 4.x has no public TIFFRewriteField, and our libtiff hijack
+ * (set up with DEFLATE so libtiff accepts 16-bit; write raw JPEG tile
+ * bytes that bypass the codec) leaves COMPRESSION=8 in the file. we
+ * parse the closed TIFF, locate the SubIFD0 (or IFD0 when no canonical
+ * thumbnail), find tag 259 (Compression), and overwrite its 2-byte
+ * SHORT value with 7 (lossless JPEG). Stable: TIFF on-disk format is
+ * fixed by spec, so this won't bit-rot against libtiff updates
+ */
+static inline uint16_t _read_u16(const uint8_t *p, gboolean le)
+{
+  return le ? (uint16_t)(p[0] | (p[1] << 8))
+            : (uint16_t)((p[0] << 8) | p[1]);
+}
+
+static inline uint32_t _read_u32(const uint8_t *p, gboolean le)
+{
+  return le
+    ? (uint32_t)(p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24))
+    : (uint32_t)((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+}
+
+static inline void _write_u16(uint8_t *p, uint16_t v, gboolean le)
+{
+  if(le) { p[0] = v & 0xff;        p[1] = (v >> 8) & 0xff; }
+  else   { p[0] = (v >> 8) & 0xff; p[1] = v & 0xff; }
+}
+
+// scan an IFD at file offset `ifd_off` looking for tag `target_tag`;
+// if found, return the absolute file offset of its value-field (the
+// last 4 bytes of the 12-byte entry); returns 0 if not found / error
+static long _find_tag_value_offset(FILE *f, uint32_t ifd_off,
+                                   uint16_t target_tag, gboolean le)
+{
+  if(fseek(f, (long)ifd_off, SEEK_SET) != 0) return 0;
+  uint8_t cnt_buf[2];
+  if(fread(cnt_buf, 1, 2, f) != 2) return 0;
+  const uint16_t n = _read_u16(cnt_buf, le);
+  for(int i = 0; i < n; i++)
+  {
+    const long entry_pos = ftell(f);
+    uint8_t entry[12];
+    if(fread(entry, 1, 12, f) != 12) return 0;
+    const uint16_t tag = _read_u16(entry, le);
+    if(tag == target_tag) return entry_pos + 8;
+  }
+  return 0;
+}
+
+// patch the COMPRESSION tag of the raw-payload IFD to JPEG (7);
+// `payload_in_subifd` selects between IFD0 (no thumbnail) and SubIFD0
+// (canonical thumbnail layout); returns 0 on success
+static int _patch_compression_tag(const char *filename,
+                                  gboolean payload_in_subifd)
+{
+  FILE *f = g_fopen(filename, "r+b");
+  if(!f) return 1;
+
+  uint8_t hdr[8];
+  if(fread(hdr, 1, 8, f) != 8) { fclose(f); return 1; }
+  gboolean le;
+  if(hdr[0] == 'I' && hdr[1] == 'I')      le = TRUE;
+  else if(hdr[0] == 'M' && hdr[1] == 'M') le = FALSE;
+  else { fclose(f); return 1; }
+  // hdr[2..3] = magic 42 — skip
+  const uint32_t ifd0_off = _read_u32(hdr + 4, le);
+
+  uint32_t payload_ifd_off = ifd0_off;
+  if(payload_in_subifd)
+  {
+    // find SubIFDs tag (330) in IFD0, then read the entry's count
+    // field (4 bytes before the value field) and the value itself
+    // (4 bytes at the value field). When count == 1, the value IS
+    // the inline SubIFD0 offset (TIFF inlining rule for ≤ 4-byte
+    // values). When count > 1, the value is an offset to an array
+    // of LONG offsets, and we want the first array entry
+    const long sub_val_off = _find_tag_value_offset(f, ifd0_off, 330, le);
+    if(!sub_val_off) { fclose(f); return 1; }
+    if(fseek(f, sub_val_off - 4, SEEK_SET) != 0) { fclose(f); return 1; }
+    uint8_t cnt_buf[4], val_buf[4];
+    if(fread(cnt_buf, 1, 4, f) != 4) { fclose(f); return 1; }
+    if(fread(val_buf, 1, 4, f) != 4) { fclose(f); return 1; }
+    const uint32_t sub_count = _read_u32(cnt_buf, le);
+    if(sub_count == 0) { fclose(f); return 1; }
+    if(sub_count == 1)
+    {
+      payload_ifd_off = _read_u32(val_buf, le);
+    }
+    else
+    {
+      const uint32_t arr_off = _read_u32(val_buf, le);
+      if(fseek(f, (long)arr_off, SEEK_SET) != 0)
+      {
+        fclose(f);
+        return 1;
+      }
+      uint8_t first[4];
+      if(fread(first, 1, 4, f) != 4) { fclose(f); return 1; }
+      payload_ifd_off = _read_u32(first, le);
+    }
+  }
+
+  // now patch COMPRESSION in the payload IFD
+  const long comp_val_off = _find_tag_value_offset(f, payload_ifd_off, 259, le);
+  if(!comp_val_off) { fclose(f); return 1; }
+
+  // confirm libtiff actually wrote DEFLATE (8) here before overwriting;
+  // otherwise _find_tag_value_offset landed somewhere we shouldn't patch
+  if(fseek(f, comp_val_off, SEEK_SET) != 0) { fclose(f); return 1; }
+  uint8_t existing[2];
+  if(fread(existing, 1, 2, f) != 2) { fclose(f); return 1; }
+  if(_read_u16(existing, le) != COMPRESSION_ADOBE_DEFLATE)
+  {
+    fclose(f);
+    return 1;
+  }
+
+  if(fseek(f, comp_val_off, SEEK_SET) != 0) { fclose(f); return 1; }
+  uint8_t new_val[2];
+  _write_u16(new_val, (uint16_t)7, le);  // 7 = lossless JPEG
+  const size_t wrote = fwrite(new_val, 1, 2, f);
+  fclose(f);
+  return (wrote == 2) ? 0 : 1;
+}
+
+/* ---------- libjpeg-turbo lossless JPEG encoder ---------------------
+ * libtiff's JPEG codec rejects BitsPerSample > 12, so for compressed
+ * raw integer DNG (which is 14- to 16-bit per channel) we encode tiles
+ * ourselves using libjpeg-turbo's lossless mode and embed the bytes
+ * via the hand-rolled DNG writer (TIFF can store opaque tile data)
+ *
+ * Each emitted tile is a self-contained JPEG datastream (SOI..EOI),
+ * which is what rawspeed's AbstractDngDecompressor::decompressThread<7>
+ * expects. Predictor 1 (sample above-left), point_transform 0 (no
+ * pre-shift). These match what Adobe DNG Converter emits for raw DNG
+ */
+struct _ljpeg_err
+{
+  struct jpeg_error_mgr base;
+  jmp_buf jbuf;
+};
+
+static void _ljpeg_error_exit(j_common_ptr cinfo)
+{
+  struct _ljpeg_err *e = (struct _ljpeg_err *)cinfo->err;
+  longjmp(e->jbuf, 1);
+}
+
+// encode a single tile to a self-contained lossless JPEG datastream;
+// returns 0 on success; on success *out_buf is malloc'd (free via
+// free(), not g_free — libjpeg-turbo's jpeg_mem_dest uses malloc)
+// channels: 1 for Bayer CFA, 3 for Linear RGB
+// bit_depth: 16 only today (uses jpeg16_write_scanlines / J16SAMPLE);
+// to add 12-bit later, dispatch to jpeg12_write_scanlines / J12SAMPLE
+// based on bit_depth — never mix the 16-bit API with data_precision < 13
+static int _encode_tile_lossless_jpeg(const uint16_t *tile_data,
+                                      int width,
+                                      int height,
+                                      int channels,
+                                      int bit_depth,
+                                      uint8_t **out_buf,
+                                      size_t *out_len)
+{
+  *out_buf = NULL;
+  *out_len = 0;
+  if(width <= 0 || height <= 0
+     || (channels != 1 && channels != 3)
+     || bit_depth != 16)
+    return 1;
+
+  // zero-init cinfo so jpeg_destroy_compress is safe in the setjmp
+  // path even if libjpeg longjmps before jpeg_create_compress (it
+  // early-returns when cinfo->mem == NULL)
+  struct jpeg_compress_struct cinfo;
+  memset(&cinfo, 0, sizeof(cinfo));
+  struct _ljpeg_err jerr;
+  cinfo.err = jpeg_std_error(&jerr.base);
+  jerr.base.error_exit = _ljpeg_error_exit;
+
+  unsigned long buflen = 0;
+  uint8_t *buf = NULL;
+
+  if(setjmp(jerr.jbuf))
+  {
+    // libjpeg longjmp'd out of an internal error
+    jpeg_destroy_compress(&cinfo);
+    free(buf);
+    return 1;
+  }
+
+  jpeg_create_compress(&cinfo);
+  jpeg_mem_dest(&cinfo, &buf, &buflen);
+
+  cinfo.image_width      = (JDIMENSION)width;
+  cinfo.image_height     = (JDIMENSION)height;
+  cinfo.input_components = channels;
+  cinfo.in_color_space   = (channels == 1) ? JCS_GRAYSCALE : JCS_RGB;
+
+  jpeg_set_defaults(&cinfo);
+  cinfo.data_precision = bit_depth;
+  // suppress the APP0/JFIF marker — JFIF is the JPEG-as-file-format
+  // envelope and isn't applicable when JPEG is used purely as a
+  // codec inside DNG; Adobe DNG Converter omits it too
+  cinfo.write_JFIF_header = FALSE;
+  // predictor 1 = use the sample to the left of current
+  jpeg_enable_lossless(&cinfo, 1, 0);
+
+  jpeg_start_compress(&cinfo, TRUE);
+
+  // 16-bit scanline API: take J16SAMPROW = uint16_t* per row,
+  // pass to jpeg16_write_scanlines one row at a time;
+  // const-strip is intentional: libjpeg-turbo doesn't write to the
+  // scanline buffer during compress, and the J16SAMPROW typedef
+  // doesn't carry const; (void*) makes the strip explicit and
+  // silences -Wcast-qual
+  const size_t row_stride = (size_t)width * channels;
+  while(cinfo.next_scanline < cinfo.image_height)
+  {
+    J16SAMPROW row =
+      (J16SAMPROW)(void *)(tile_data + cinfo.next_scanline * row_stride);
+    jpeg16_write_scanlines(&cinfo, &row, 1);
+  }
+
+  jpeg_finish_compress(&cinfo);
+  jpeg_destroy_compress(&cinfo);
+
+  *out_buf = buf;
+  *out_len = (size_t)buflen;
+  return 0;
 }
 
 // map the dcraw 2x2 CFA filters word to 4 single-byte channel indices
@@ -334,10 +607,13 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
                                    const dt_image_t *img,
                                    const void *exif_blob,
                                    int exif_len,
-                                   const dt_imageio_dng_preview_t *preview)
+                                   const dt_imageio_dng_preview_t *preview,
+                                   dt_imageio_dng_compress_t compress)
 {
   if(!filename || !cfa || !img || width <= 0 || height <= 0)
     return 1;
+  const gboolean use_lossless_jpeg
+    = (compress == DT_IMAGEIO_DNG_COMPRESS_LOSSLESS_JPEG);
 
   _install_dng_tiff_handlers();
 
@@ -396,9 +672,19 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_CFA);
   TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
-  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+  // see "Lossless JPEG DNG output" notes at top of file for the hijack
+  if(use_lossless_jpeg)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_TILEWIDTH, (uint32_t)256);
+    TIFFSetField(tif, TIFFTAG_TILELENGTH, (uint32_t)256);
+  }
+  else
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
+  }
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
   // shared metadata only on single-IFD layout — canonical has it on IFD0
   if(!canonical)
     _set_dng_shared_metadata(tif, img);
@@ -474,13 +760,62 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPORIGIN, default_crop_origin);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE, default_crop_size);
 
-  // scanline write
   int res = 0;
-  for(int y = 0; y < height && res == 0; y++)
+  if(use_lossless_jpeg)
   {
-    const uint16_t *row = cfa + (size_t)y * width;
-    if(TIFFWriteScanline(tif, (void *)row, y, 0) < 0)
-      res = 1;
+    // tile-by-tile lossless JPEG; 256×256 is a multiple of 2 (CFA grid)
+    // and 16 (JPEG MCU); partial edge tiles are zero-padded; the
+    // ActiveArea metadata above keeps the importer inside width×height
+    const int TS = 256;
+    const int tiles_x = (width + TS - 1) / TS;
+    const int tiles_y = (height + TS - 1) / TS;
+    uint16_t *tile_buf = g_malloc0((size_t)TS * TS * sizeof(uint16_t));
+    if(!tile_buf) res = 1;
+    int tile_idx = 0;
+    for(int ty = 0; ty < tiles_y && res == 0; ty++)
+    {
+      for(int tx = 0; tx < tiles_x && res == 0; tx++)
+      {
+        const int x0 = tx * TS;
+        const int y0 = ty * TS;
+        const int copy_h = MIN(TS, height - y0);
+        const int copy_w = MIN(TS, width - x0);
+        memset(tile_buf, 0, (size_t)TS * TS * sizeof(uint16_t));
+        for(int yy = 0; yy < copy_h; yy++)
+        {
+          const uint16_t *src = cfa + (size_t)(y0 + yy) * width + x0;
+          memcpy(tile_buf + (size_t)yy * TS, src,
+                 (size_t)copy_w * sizeof(uint16_t));
+        }
+        uint8_t *jpeg_bytes = NULL;
+        size_t jpeg_len = 0;
+        if(_encode_tile_lossless_jpeg(tile_buf, TS, TS, 1, 16,
+                                      &jpeg_bytes, &jpeg_len) != 0)
+        {
+          res = 1;
+          break;
+        }
+        if(TIFFWriteRawTile(tif, tile_idx, jpeg_bytes,
+                            (tmsize_t)jpeg_len) < 0)
+          res = 1;
+        free(jpeg_bytes);
+        tile_idx++;
+      }
+    }
+    g_free(tile_buf);
+
+    // libtiff stored COMPRESSION=8 (DEFLATE) during setup; patch it
+    // to 7 (lossless JPEG) post-close via _patch_compression_tag,
+    // since libtiff 4.x has no public TIFFRewriteField equivalent
+  }
+  else
+  {
+    for(int y = 0; y < height && res == 0; y++)
+    {
+      const uint16_t *row = cfa + (size_t)y * width;
+      if(TIFFWriteScanline(tif, (void *)row, y, 0) < 0)
+        res = 1;
+    }
   }
 
   // SubIFD1 = full-res preview when we have both thumb and original
@@ -503,6 +838,18 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   TIFFClose(tif);
   g_free(thumb_jpeg);
 
+  // patch Compression tag 8 (DEFLATE) → 7 (lossless JPEG); see notes
+  // at top of file
+  if(res == 0 && use_lossless_jpeg)
+  {
+    if(_patch_compression_tag(filename, canonical) != 0)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_dng] post-write COMPRESSION patch failed");
+      res = 1;
+    }
+  }
+
   // embed source EXIF (datetime, ISO, shutter, etc.)
   // dt_exif_write_blob takes a non-const pointer; we don't modify it
   if(res == 0 && exif_blob && exif_len > 0)
@@ -522,10 +869,13 @@ int dt_imageio_dng_write_linear(const char *filename,
                                 const dt_image_t *img,
                                 const void *exif_blob,
                                 int exif_len,
-                                const dt_imageio_dng_preview_t *preview)
+                                const dt_imageio_dng_preview_t *preview,
+                                dt_imageio_dng_compress_t compress)
 {
   if(!filename || !rgb || !img || width <= 0 || height <= 0)
     return 1;
+  const gboolean use_lossless_jpeg
+    = (compress == DT_IMAGEIO_DNG_COMPRESS_LOSSLESS_JPEG);
 
   _install_dng_tiff_handlers();
 
@@ -582,9 +932,19 @@ int dt_imageio_dng_write_linear(const char *filename,
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, 34892);  // LinearRaw
   TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
-  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+  // see "Lossless JPEG DNG output" notes at top of file for the hijack
+  if(use_lossless_jpeg)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_TILEWIDTH, (uint32_t)256);
+    TIFFSetField(tif, TIFFTAG_TILELENGTH, (uint32_t)256);
+  }
+  else
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
+  }
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
   if(!canonical)
     _set_dng_shared_metadata(tif, img);
 
@@ -613,35 +973,90 @@ int dt_imageio_dng_write_linear(const char *filename,
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPORIGIN, default_crop_origin);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE, default_crop_size);
 
-  // scanline write: float [0, 1] normalized camRGB -> uint16
-  //     [0, 65535]. BlackLevel=0 and WhiteLevel=65535 let the
-  //     re-importer recover the [0, 1] range via the standard raw
-  //     normalization (val - black) / (white - black)
+  // float [0, 1] normalized camRGB -> uint16 [0, 65535]. BlackLevel=0
+  // and WhiteLevel=65535 let the re-importer recover the [0, 1] range
+  // via the standard raw normalization (val - black) / (white - black)
   const float clip_hi = 65535.0f;
-  uint16_t *scan = g_malloc((size_t)width * 3 * sizeof(uint16_t));
   int res = 0;
-  if(!scan)
+  if(use_lossless_jpeg)
   {
-    TIFFClose(tif);
-    g_unlink(filename);
-    return 1;
-  }
-  for(int y = 0; y < height && res == 0; y++)
-  {
-    const float *row = rgb + (size_t)y * width * 3;
-    for(int x = 0; x < width; x++)
+    // tile-by-tile lossless JPEG, 256×256, 3-channel RGB
+    const int TS = 256;
+    const int tiles_x = (width + TS - 1) / TS;
+    const int tiles_y = (height + TS - 1) / TS;
+    uint16_t *tile_buf
+      = g_malloc0((size_t)TS * TS * 3 * sizeof(uint16_t));
+    if(!tile_buf) res = 1;
+    int tile_idx = 0;
+    for(int ty = 0; ty < tiles_y && res == 0; ty++)
     {
-      for(int c = 0; c < 3; c++)
+      for(int tx = 0; tx < tiles_x && res == 0; tx++)
       {
-        float adc = row[x * 3 + c] * 65535.0f;
-        if(adc < 0.0f) adc = 0.0f;
-        if(adc > clip_hi) adc = clip_hi;
-        scan[x * 3 + c] = (uint16_t)(adc + 0.5f);
+        const int x0 = tx * TS;
+        const int y0 = ty * TS;
+        const int copy_h = MIN(TS, height - y0);
+        const int copy_w = MIN(TS, width - x0);
+        memset(tile_buf, 0,
+               (size_t)TS * TS * 3 * sizeof(uint16_t));
+        for(int yy = 0; yy < copy_h; yy++)
+        {
+          const float *src = rgb + (size_t)(y0 + yy) * width * 3
+                                 + (size_t)x0 * 3;
+          uint16_t *dst = tile_buf + (size_t)yy * TS * 3;
+          for(int xx = 0; xx < copy_w; xx++)
+          {
+            for(int c = 0; c < 3; c++)
+            {
+              float adc = src[xx * 3 + c] * 65535.0f;
+              if(adc < 0.0f) adc = 0.0f;
+              if(adc > clip_hi) adc = clip_hi;
+              dst[xx * 3 + c] = (uint16_t)(adc + 0.5f);
+            }
+          }
+        }
+        uint8_t *jpeg_bytes = NULL;
+        size_t jpeg_len = 0;
+        if(_encode_tile_lossless_jpeg(tile_buf, TS, TS, 3, 16,
+                                      &jpeg_bytes, &jpeg_len) != 0)
+        {
+          res = 1;
+          break;
+        }
+        if(TIFFWriteRawTile(tif, tile_idx, jpeg_bytes,
+                            (tmsize_t)jpeg_len) < 0)
+          res = 1;
+        free(jpeg_bytes);
+        tile_idx++;
       }
     }
-    if(TIFFWriteScanline(tif, scan, y, 0) < 0) res = 1;
+    g_free(tile_buf);
   }
-  g_free(scan);
+  else
+  {
+    uint16_t *scan = g_malloc((size_t)width * 3 * sizeof(uint16_t));
+    if(!scan)
+    {
+      TIFFClose(tif);
+      g_unlink(filename);
+      return 1;
+    }
+    for(int y = 0; y < height && res == 0; y++)
+    {
+      const float *row = rgb + (size_t)y * width * 3;
+      for(int x = 0; x < width; x++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          float adc = row[x * 3 + c] * 65535.0f;
+          if(adc < 0.0f) adc = 0.0f;
+          if(adc > clip_hi) adc = clip_hi;
+          scan[x * 3 + c] = (uint16_t)(adc + 0.5f);
+        }
+      }
+      if(TIFFWriteScanline(tif, scan, y, 0) < 0) res = 1;
+    }
+    g_free(scan);
+  }
 
   // SubIFD1 = full-res preview when we have both thumb and original
   if(res == 0 && have_thumb)
@@ -662,6 +1077,17 @@ int dt_imageio_dng_write_linear(const char *filename,
 
   TIFFClose(tif);
   g_free(thumb_jpeg);
+
+  // patch Compression 8 → 7; see notes at top of file
+  if(res == 0 && use_lossless_jpeg)
+  {
+    if(_patch_compression_tag(filename, canonical) != 0)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_dng] post-write COMPRESSION patch failed");
+      res = 1;
+    }
+  }
 
   if(res == 0 && exif_blob && exif_len > 0)
     dt_exif_write_blob((uint8_t *)exif_blob, (uint32_t)exif_len,
