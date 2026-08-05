@@ -118,6 +118,7 @@ const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t st
   case DT_DEV_PIXELPIPE_STOP_HQ:    return "DT_DEV_PIXELPIPE_STOP_HQ";
   case DT_DEV_PIXELPIPE_STOP_ZOOM:  return "DT_DEV_PIXELPIPE_STOP_ZOOM";
   case DT_DEV_PIXELPIPE_STOP_DATA:  return "DT_DEV_PIXELPIPE_STOP_DATA";
+  case DT_DEV_PIXELPIPE_STOP_PIECE: return "DT_DEV_PIXELPIPE_STOP_PIECE";
   default:                          return "DT_DEV_PIXELPIPE_STOP_UNDEFINED";
   }
 }
@@ -1379,12 +1380,40 @@ static inline dt_dev_pixelpipe_stopper_t _module_pipe_stop(dt_dev_pixelpipe_t *p
         || stopper == DT_DEV_PIXELPIPE_STOP_DATA)
     return stopper;
 
+  if(stopper == DT_DEV_PIXELPIPE_STOP_PIECE)
+  {
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, module->iop_order, "piece shutdown: ");
+    return stopper;
+  }
+
   /** There was no valid shutdown mode, this should never happen and would be a
       definite bug.
       Just in case we fetch this and flush the pipe cache
   */
   dt_dev_pixelpipe_cache_invalidate_later(pipe, 0, "module pipe abort: ");
   return stopper;
+}
+
+gboolean dt_dev_piece_shutdown(dt_dev_pixelpipe_iop_t *piece, const gboolean test)
+{
+  /** If the remaining payload of the testing piece is small, we prefer to continue processing
+      and thus return FALSE to possibly avoid the costly DT_DEV_PIXELPIPE_STOP_PIECE shutdown
+      mode (invalidating all following cachelines).
+  */
+  if(!test)
+    return FALSE;
+
+  const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&piece->pipe->shutdown);
+  if(stopper <= DT_DEV_PIXELPIPE_PROCESSING)
+    return FALSE;
+
+  /** There is a pending shutdown request while processing a piece with high payload.
+      By setting shutdown to DT_DEV_PIXELPIPE_STOP_PIECE we deligate the shutdown to
+      _module_pipe_stop() and enforce cacheline invalidations for iop_orders following
+      the testing module.
+  */
+  dt_atomic_set_int(&piece->pipe->shutdown, DT_DEV_PIXELPIPE_STOP_PIECE);
+  return TRUE;
 }
 
 void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
@@ -2536,11 +2565,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         const dt_dev_pixelpipe_stopper_t cl_stopper = _module_pipe_stop(pipe, module, *output);
         if(cl_stopper != DT_DEV_PIXELPIPE_STOP_NO)
         {
-          /*  In case of a DT_DEV_PIXELPIPE_STOP_DATA shutdown
+          /*  In case of a DT_DEV_PIXELPIPE_STOP_DATA or DT_DEV_PIXELPIPE_STOP_PIECE shutdown
               we try to make input cacheline valid for next pipe run.
           */
           if(valid_input_on_gpu_only
-              && cl_stopper == DT_DEV_PIXELPIPE_STOP_DATA
+              && (cl_stopper == DT_DEV_PIXELPIPE_STOP_DATA || cl_stopper == DT_DEV_PIXELPIPE_STOP_PIECE)
               && !convert
               && _copy_image_to_host_err(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp, "input cacheline")
                     == CL_SUCCESS)
