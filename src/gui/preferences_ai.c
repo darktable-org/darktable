@@ -1281,7 +1281,7 @@ static void _on_info_button_press_cb(GtkGestureSingle *gesture, int n_press,
                                        gpointer user_data)
 {
   GtkWidget *widget = dt_gui_get_widget(gesture);
-  if(gtk_gesture_single_get_button(gesture) != 1) return;
+  if(gtk_gesture_single_get_current_button(gesture) != 1) return;
 
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   GtkTreeView *tv = GTK_TREE_VIEW(widget);
