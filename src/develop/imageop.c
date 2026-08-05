@@ -3294,14 +3294,28 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   }
   dt_gui_connect_motion(button, NULL, _header_enter_notify_callback, NULL,
                         GINT_TO_POINTER(element));
-  dt_gui_connect_click(button, (element == DT_ACTION_ELEMENT_ENABLE)
-                               ? _gui_off_button_clicked
-                               : (element == DT_ACTION_ELEMENT_RESET)
-                                 ? _gui_reset_clicked
-                                 : (element == DT_ACTION_ELEMENT_PRESETS)
-                                   ? _presets_popup_clicked
-                                   : _gui_multiinstance_clicked,
-                       NULL, module);
+  if(element == DT_ACTION_ELEMENT_PRESETS || element == DT_ACTION_ELEMENT_INSTANCE)
+  {
+    // open the menu on release so that the GtkButton finishes its own
+    // press/release cycle before the menu grabs the pointer: a grab on press
+    // would swallow the release and leave the button stuck in its pressed
+    // state.  connect "released" directly, as dt_gui_connect_click() would
+    // also bridge "cancel" to a synthetic release and open the menu twice
+    GtkGestureSingle *const gesture = dt_gui_connect_click(button, NULL, NULL, module);
+    g_signal_connect(gesture, "released",
+                     G_CALLBACK(element == DT_ACTION_ELEMENT_PRESETS
+                                ? _presets_popup_clicked
+                                : _gui_multiinstance_clicked),
+                     module);
+  }
+  else
+  {
+    dt_gui_connect_click(button,
+                         element == DT_ACTION_ELEMENT_ENABLE
+                           ? _gui_off_button_clicked
+                           : _gui_reset_clicked,
+                         NULL, module);
+  }
   dt_action_define(&module->so->actions, NULL, NULL, button, NULL);
   gtk_widget_show(button);
 
@@ -3418,7 +3432,13 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->header = header;
 
   /* setup the header box */
-  dt_gui_connect_click(header_evb, NULL, _iop_plugin_header_released, module);
+  // connect the header's released handler directly: dt_gui_connect_click()
+  // would also bridge "cancel" to a synthetic release, which -- after the
+  // presets menu (opened by the real release) grabs the pointer and cancels
+  // the gesture -- would open the menu a second time
+  GtkGestureSingle *const header_gesture = dt_gui_connect_click(header_evb, NULL, NULL, module);
+  g_signal_connect(header_gesture, "released",
+                   G_CALLBACK(_iop_plugin_header_released), module);
   dt_gui_connect_motion(header_evb, NULL,
                         _header_motion_notify_show_callback,
                         _header_motion_notify_hide_callback, module);
