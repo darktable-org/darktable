@@ -229,12 +229,15 @@ typedef struct dt_iop_spektrafilm_params_t
   float glare_percent;      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "viewing glare"
   float development_min;    // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
   float print_development_min; // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 0.0 $DESCRIPTION: "development time"
-  /* Off by default, which is what the reference does: the film profiles carry
+  /* The two halves of the hanatos2025 sensitivity adaptation, each defaulting
+     the way the reference resolves it. Bandwidth on: the filming stage agrees
+     with the reference to 4e-15 that way. Surface off: the film profiles carry
      the correction surface and enable it, but the reference runtime's own
-     setting disables it and wins, so its renders are made without it. Left
-     switchable because the coefficients are part of the profile data and the
-     upstream default may flip; see spektra_sim.h's adaptation_surface. */
-  gboolean adaptation_surface; // $DEFAULT: FALSE $DESCRIPTION: "sensitivity adaptation"
+     setting disables it and wins, so its renders are made without it. Both are
+     left switchable because the coefficients are part of the profile data and
+     the upstream defaults may flip; see spektra_sim.h. */
+  gboolean adaptation_bandwidth; // $DEFAULT: TRUE $DESCRIPTION: "bandwidth adaptation"
+  gboolean adaptation_surface; // $DEFAULT: FALSE $DESCRIPTION: "surface adaptation"
 } dt_iop_spektrafilm_params_t;
 
 /* one discovered profile: stock (= file base name), display name, stage */
@@ -261,7 +264,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *exposure_ev, *scan_film;
   GtkWidget *push_pull_stops, *film_gamma_factor;
   GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
-  GtkWidget *quality, *adaptation_surface;
+  GtkWidget *quality, *adaptation_bandwidth, *adaptation_surface;
   GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
   GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
@@ -874,7 +877,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->development_min, sizeof p->development_min);
   key = _mix64(key, &p->print_development_min, sizeof p->print_development_min);
   key = _mix64(key, &p->quality, sizeof p->quality);
-  /* changes the tc LUT, which is built once per sim */
+  /* both change the tc LUT, which is built once per sim */
+  key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
@@ -1063,6 +1067,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.preflash_m_shift = p->preflash_m_shift;
     sp.preflash_y_shift = p->preflash_y_shift;
     sp.scan_film = p->scan_film;
+    sp.adaptation_bandwidth = p->adaptation_bandwidth;
     sp.adaptation_surface = p->adaptation_surface;
     sp.lut_steps = _quality_steps(p->quality);
     sp.out_luminance_boost = p->output_luminance_boost;
@@ -3079,6 +3084,7 @@ void gui_update(dt_iop_module_t *self)
      click a no-op (field already has that value -> no history item) and
      module reset never updates them. */
   dt_bauhaus_toggle_set(g->scan_film, p->scan_film);
+  dt_bauhaus_toggle_set(g->adaptation_bandwidth, p->adaptation_bandwidth);
   dt_bauhaus_toggle_set(g->adaptation_surface, p->adaptation_surface);
   dt_bauhaus_toggle_set(g->print_auto_exposure, p->print_auto_exposure);
   dt_bauhaus_toggle_set(g->halation_on, p->halation_on);
@@ -3408,7 +3414,13 @@ void gui_init(dt_iop_module_t *self)
       _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
         " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
 
-  _section_add(self, C_("section", "couplers and quality"));
+  /* "couplers and quality" named its first two controls, which stopped
+     describing the section once the adaptation switches joined them -- and
+     enumerating members does not scale anyway. What all four have in common is
+     that they are the knobs you reach for last: the coupler strength and the
+     two adaptation halves change how faithful the model is rather than what the
+     look is, and the quality setting trades accuracy for speed. */
+  _section_add(self, C_("section", "advanced"));
 
   g->couplers_amount = dt_bauhaus_slider_from_params(self, "couplers_amount");
   gtk_widget_set_tooltip_text(g->couplers_amount,
@@ -3420,15 +3432,25 @@ void gui_init(dt_iop_module_t *self)
                               _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
                                 " and validated against the reference"));
 
+  g->adaptation_bandwidth = dt_bauhaus_toggle_from_params(self, "adaptation_bandwidth");
+  gtk_widget_set_tooltip_text(
+      g->adaptation_bandwidth,
+      _("first half of the film's sensitivity adaptation: a spectral bandpass\n"
+        "applied to the stock's own sensitivities, rolling off the UV and IR\n"
+        "ends of each channel while preserving white balance.\non by default --\n"
+        "the reference renders with it, and the filming stage matches it to\n"
+        "1e-14 this way, so turning it off is a diagnostic rather than a look.\n"
+        "no effect on stocks whose profile carries no bandpass"));
+
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
-      _("apply the film profile's own exposure correction surface, a per-colour\n"
-        "adjustment of up to two stops that leaves the reference white untouched\n"
-        "and grows with distance from it.\noff by default: the reference renders\n"
-        "without it, so leaving it on makes saturated colours diverge from a\n"
-        "reference render. has no effect on stocks whose profile carries no\n"
-        "surface (the monochrome films and every print paper)"));
+      _("second half of the film's sensitivity adaptation: a per-colour exposure\n"
+        "correction of up to two stops that leaves the film's reference white\n"
+        "untouched and grows with distance from it.\noff by default -- the\n"
+        "reference renders without it, so leaving it on makes saturated colours\n"
+        "diverge from a reference render.\nno effect on stocks whose profile\n"
+        "carries no surface (the monochrome films and every print paper)"));
 
   /* ---- tab 2: print ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
