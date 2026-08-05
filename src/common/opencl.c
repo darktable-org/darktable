@@ -50,6 +50,7 @@
 
 static const char *_opencl_get_vendor_by_id(unsigned int id);
 
+static void _opencl_memory_statistics(int devid, const cl_mem mem, const dt_opencl_memory_t action);
 static gboolean _opencl_load_program(const int dev,
                                      const int prog,
                                      const char *programname,
@@ -220,12 +221,6 @@ const char *cl_errstr(cl_int error)
   }
 }
 
-static inline void _check_clmem_err(const int devid, const cl_int err)
-{
-  if((err == CL_MEM_OBJECT_ALLOCATION_FAILURE) || (err == CL_OUT_OF_RESOURCES))
-  darktable.opencl->dev[devid].clmem_error |= TRUE;
-}
-
 static inline gboolean _cl_running(void)
 {
   dt_opencl_t *cl = darktable.opencl;
@@ -238,11 +233,21 @@ static inline gboolean _cldev_running(const int devid)
   return cl->inited && cl->enabled && !cl->stopped && (devid>=0);
 }
 
-int dt_opencl_get_device_info(dt_opencl_t *cl,
-                              cl_device_id device,
-                              cl_device_info param_name,
-                              void **param_value,
-                              size_t *param_value_size)
+static inline cl_int _migrate_cl_mem(const int devid, cl_mem mem)
+{
+  const dt_opencl_t *cl = darktable.opencl;
+  const cl_mem list[1] = { mem };
+  return (cl->dlocl->symbols->dt_clEnqueueMigrateMemObjects)
+    (darktable.opencl->dev[devid].cmd_queue,
+      1, list, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED,
+      0, NULL, NULL);
+}
+
+static cl_int _opencl_get_device_info(dt_opencl_t *cl,
+                                      cl_device_id device,
+                                      cl_device_info param_name,
+                                      void **param_value,
+                                      size_t *param_value_size)
 {
   *param_value_size = SIZE_MAX;
 
@@ -529,7 +534,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].unified_fraction = 0.25f;
   cl->dev[dev].micro_nap = 250;
   cl->dev[dev].unified_memory = FALSE;
-  cl->dev[dev].clmem_error = FALSE;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].use_events = TRUE;
@@ -587,7 +591,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE,
                                            sizeof(cl_bool), &device_available, NULL);
 
-  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VENDOR,
+  err = _opencl_get_device_info(cl, devid, CL_DEVICE_VENDOR,
                                   (void **)&vendor, &vendor_size);
   if(err != CL_SUCCESS)
   {
@@ -600,7 +604,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID,
                                            sizeof(cl_uint), &vendor_id, NULL);
 
-  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_NAME,
+  err = _opencl_get_device_info(cl, devid, CL_DEVICE_NAME,
                                   (void **)&device_name, &device_name_size);
   if(err != CL_SUCCESS)
   {
@@ -693,7 +697,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CANONICAL NAME:           %s\n", cl->dev[dev].cname);
 
-  err = dt_opencl_get_device_info(cl, devid, CL_DRIVER_VERSION,
+  err = _opencl_get_device_info(cl, devid, CL_DRIVER_VERSION,
                                   (void **)&driverversion, &driverversion_size);
   if(err != CL_SUCCESS)
   {
@@ -704,7 +708,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
-  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VERSION,
+  err = _opencl_get_device_info(cl, devid, CL_DEVICE_VERSION,
                                   (void **)&deviceversion, &deviceversion_size);
   if(err != CL_SUCCESS)
   {
@@ -719,7 +723,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   char *deviceextensions = NULL;
   size_t deviceextensions_size;
-  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_EXTENSIONS,
+  err = _opencl_get_device_info(cl, devid, CL_DEVICE_EXTENSIONS,
                                   (void **)&deviceextensions, &deviceextensions_size);
   if(err == CL_SUCCESS && deviceextensions_size > 0)
   {
@@ -902,7 +906,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   MAX WORK ITEM DIMENSIONS: %d [ ", max_item_dimension);
 
   size_t infointtab_size;
-  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES,
+  err = _opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES,
                                   (void **)&infointtab, &infointtab_size);
   if(err == CL_SUCCESS)
   {
@@ -1648,12 +1652,9 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       {
         dt_print_nts(DT_DEBUG_OPENCL,
                      "[opencl_summary_statistics] device '%s' id=%d:"
-                     " peak memory usage %.1f MB%s\n",
+                     " peak memory usage %zu MB\n",
                      cl->dev[i].fullname, i,
-                     (float)cl->dev[i].peak_memory/(1024*1024),
-                     cl->dev[i].clmem_error
-                       ? ", clmem runtime problem"
-                       : "");
+                     cl->dev[i].peak_memory / DT_MEGA);
       }
 
       if(cl->print_statistics && cl->dev[i].use_events)
@@ -1662,13 +1663,15 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         {
           dt_print_nts(DT_DEBUG_OPENCL,
                        "[opencl_summary_statistics] device '%s' id=%d:"
-                       " %d out of %d events were "
-                       "successful and %d events lost. max event=%d%s\n",
+                       " %d out of %d event%s %s "
+                       "successful and %d events lost. max event=%d\n",
                        cl->dev[i].fullname, i,
-                       cl->dev[i].totalsuccess, cl->dev[i].totalevents,
+                       cl->dev[i].totalsuccess,
+                       cl->dev[i].totalevents,
+                       cl->dev[i].totalevents > 1 ? "s" : "",
+                       cl->dev[i].totalsuccess > 1 ? "were" : "was",
                        cl->dev[i].totallost,
-                       cl->dev[i].maxeventslot,
-                       cl->dev[i].clmem_error ? ", clmem runtime problem" : "");
+                       cl->dev[i].maxeventslot);
         }
         else
         {
@@ -1730,7 +1733,7 @@ gboolean dt_opencl_finish(const int devid)
 
   // take the opportunity to release some event handles, but without printing
   // summary statistics
-  cl_int success = dt_opencl_events_flush(devid, FALSE);
+  const cl_int success = dt_opencl_events_flush(devid, FALSE);
 
   return (err == CL_SUCCESS && success == CL_SUCCESS);
 }
@@ -2829,7 +2832,6 @@ int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,
              "[dt_opencl_enqueue_kernel_%id%s] kernel `%s' (%i) on device '%s' id=%d: %s",
               dimensions, local ? "_with_local" : "",
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
-  _check_clmem_err(dev, err);
   return err;
 }
 
@@ -3002,7 +3004,6 @@ int dt_opencl_write_host_to_image_raw(const int devid,
              darktable.opencl->dev[devid].fullname, devid);
 
 
-  _check_clmem_err(devid, err);
   return err;
 }
 
@@ -3035,7 +3036,6 @@ int dt_opencl_enqueue_copy_image(const int devid,
              "[opencl copy_image] copied image on device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
-  _check_clmem_err(devid, err);
   return err;
 }
 
@@ -3065,7 +3065,6 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
              "[opencl copy_image_to_buffer] copied image to buffer device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
-  _check_clmem_err(devid, err);
   return err;
 }
 
@@ -3095,7 +3094,6 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
              "[opencl copy_buffer_to_image] copied buffer to image on device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
-  _check_clmem_err(devid, err);
   return err;
 }
 
@@ -3123,7 +3121,6 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid,
              "[opencl copy_buffer_to_buffer] copied buffer to buffer on device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
-  _check_clmem_err(devid, err);
   return err;
 }
 
@@ -3185,6 +3182,11 @@ int dt_opencl_write_buffer_to_device(const int devid,
   return err;
 }
 
+static inline void _opencl_release_mem_object(cl_mem mem)
+{
+  if(mem != NULL)
+    (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(mem);
+}
 
 void *dt_opencl_copy_host_to_device_constant(const int devid,
                                              const size_t size,
@@ -3193,27 +3195,36 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
-  const gboolean oversize = size > (darktable.opencl->dev[devid].max_mem_constant / 8);
+  const dt_opencl_t *cl = darktable.opencl;
+  const gboolean oversize = size > (cl->dev[devid].max_mem_constant / 8);
   const int mode = oversize ? CL_MEM_COPY_HOST_PTR : CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
 
   cl_int err = CL_SUCCESS;
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)
-    (darktable.opencl->dev[devid].context, mode, size, host, &err);
+  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, mode, size, host, &err);
+
+  if(err == CL_SUCCESS && buf != NULL && cl->migrate)
+    err = _migrate_cl_mem(devid, buf);
 
   if(err != CL_SUCCESS)
+  {
+    _opencl_release_mem_object(buf);
+    buf = NULL;
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_host_to_device_constant]"
+             "[opencl %s_host_to_device_constant]"
              " could not allocate buffer on device '%s' id=%d: %s",
-             darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+             cl->migrate ? "migrate" : "copy",
+             cl->dev[devid].fullname, devid, cl_errstr(err));
+  }
+
   if(oversize)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl copy_host_to_device_constant]"
+             "[opencl %s_host_to_device_constant]"
              " fallback to non-const buffer on device '%s' id=%d",
-             darktable.opencl->dev[devid].fullname, devid);
+             cl->migrate ? "migrate" : "copy",
+             cl->dev[devid].fullname, devid);
 
-  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
-
-  return dev;
+  _opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
+  return buf;
 }
 
 
@@ -3227,6 +3238,7 @@ static void *_opencl_copy_host_to_image_rowpitch(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
+  const dt_opencl_t *cl = darktable.opencl;
   cl_int err = CL_SUCCESS;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -3248,21 +3260,28 @@ static void *_opencl_copy_host_to_image_rowpitch(const int devid,
   desc.image_height = height;
   desc.image_row_pitch = rowpitch;
 
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
-    (darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, &desc, host, &err);
+  cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
+    (cl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, &desc, host, &err);
+
+  if(err == CL_SUCCESS && dev != NULL && cl->migrate)
+    err = _migrate_cl_mem(devid, dev);
+
   if(err != CL_SUCCESS)
+  {
+    _opencl_release_mem_object(dev);
+    dev = NULL;
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_host_to_device]"
-             " could not alloc/copy img buffer on device '%s' id=%d: %s",
-             darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+             "[opencl %s_host_to_device] could not alloc/copy img buffer on device '%s' id=%d: %s",
+             cl->migrate ? "migrate" : "copy",
+             cl->dev[devid].fullname, devid, cl_errstr(err));
+  }
   else
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl copy_host_to_device]"
-             " did alloc/copy img buffer on device '%s' id=%d",
-             darktable.opencl->dev[devid].fullname, devid);
+             "[opencl %s_host_to_device] did alloc/copy img buffer on device '%s' id=%d",
+             cl->migrate ? "migrate" : "copy",
+             cl->dev[devid].fullname, devid);
 
-  _check_clmem_err(devid, err);
-  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
+  _opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
 }
@@ -3287,9 +3306,8 @@ void dt_opencl_release_mem_object(cl_mem mem)
   if(mem == NULL)
     return;
 
-  dt_opencl_memory_statistics(DT_DEVICE_CPU, mem, OPENCL_MEMORY_SUB);
-
-  (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(mem);
+  _opencl_memory_statistics(DT_DEVICE_CPU, mem, OPENCL_MEMORY_SUB);
+  _opencl_release_mem_object(mem);
 }
 
 void *dt_opencl_map_buffer(const int devid,
@@ -3319,7 +3337,6 @@ void *dt_opencl_map_buffer(const int devid,
              "[opencl map buffer] mapped buffer to device '%s' id=%d",
              darktable.opencl->dev[devid].fullname, devid);
 
-  _check_clmem_err(devid, err);
   return ptr;
 }
 
@@ -3405,7 +3422,7 @@ void *dt_opencl_alloc_device(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
-  dt_opencl_t *cl = darktable.opencl;
+  const dt_opencl_t *cl = darktable.opencl;
   if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
     return NULL;
 
@@ -3439,13 +3456,20 @@ void *dt_opencl_alloc_device(const int devid,
   cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
     (cl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
 
-  if(err != CL_SUCCESS || dev == NULL)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device] could not alloc image on device '%s' id=%d: %s",
-             cl->dev[devid].fullname, devid, cl_errstr(err));
+  if(err == CL_SUCCESS && dev != NULL && cl->migrate)
+    err = _migrate_cl_mem(devid, dev);
 
-  _check_clmem_err(devid, err);
-  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
+  if(err != CL_SUCCESS)
+  {
+    _opencl_release_mem_object(dev);
+    dev = NULL;
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl %s device] could not alloc image on device '%s' id=%d: %s",
+             cl->migrate ? "migrate" : "alloc",
+             cl->dev[devid].fullname, devid, cl_errstr(err));
+  }
+
+  _opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
 }
@@ -3466,16 +3490,19 @@ void *dt_opencl_alloc_device_buffer(const int devid,
     return NULL;
   cl_int err = CL_SUCCESS;
 
-  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)
-    (cl->dev[devid].context,
-     CL_MEM_READ_WRITE, size, NULL, &err);
-  if(err != CL_SUCCESS || buf == NULL)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_buffer] could not allocate cl buffer on device '%s' id=%d: %s",
-             cl->dev[devid].fullname, devid, cl_errstr(err));
+  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, size, NULL, &err);
+  if(err == CL_SUCCESS && buf != NULL && cl->migrate)
+    err = _migrate_cl_mem(devid, buf);
 
-  _check_clmem_err(devid, err);
-  dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
+  if(err != CL_SUCCESS)
+  {
+    _opencl_release_mem_object(buf);
+    buf = NULL;
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl alloc_device_buffer%s] could not allocate cl buffer on device '%s' id=%d: %s",
+             cl->migrate ? "_migrate" : "", cl->dev[devid].fullname, devid, cl_errstr(err));
+  }
+  _opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
 }
@@ -3492,16 +3519,20 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
 
   cl_int err = CL_SUCCESS;
 
-  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)
-    (cl->dev[devid].context,
-     flags, size, NULL, &err);
-  if(err != CL_SUCCESS || buf == NULL)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_buffer_with_flags] could not allocate cl buffer on device '%s' id=%d: %s",
-             cl->dev[devid].fullname, devid, cl_errstr(err));
+  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, flags, size, NULL, &err);
+  if(err == CL_SUCCESS && buf != NULL && cl->migrate)
+    err = _migrate_cl_mem(devid, buf);
 
-  _check_clmem_err(devid, err);
-  dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
+  if(err != CL_SUCCESS)
+  {
+    _opencl_release_mem_object(buf);
+    buf = NULL;
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl %s_device_buffer_with_flags] could not allocate cl buffer on device '%s' id=%d: %s",
+             cl->migrate ? "migrate" : "alloc", cl->dev[devid].fullname, devid, cl_errstr(err));
+  }
+
+  _opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
 }
@@ -3616,11 +3647,14 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   }
 }
 
-void dt_opencl_memory_statistics(int devid,
-                                 const cl_mem mem,
-                                 const dt_opencl_memory_t action)
+static void _opencl_memory_statistics(int devid,
+                                      const cl_mem mem,
+                                      const dt_opencl_memory_t action)
 {
   if(!((darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL)))
+    return;
+
+  if(!mem)
     return;
 
   if(devid <= DT_DEVICE_CPU)
@@ -3639,19 +3673,18 @@ void dt_opencl_memory_statistics(int devid,
   cl->dev[devid].peak_memory = MAX(cl->dev[devid].peak_memory, cl->dev[devid].memory_in_use);
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
-  {
-    dt_print(DT_DEBUG_OPENCL,"[opencl memory] device '%s' id=%d: %.1fMB in use, %.1fMB available GPU mem of %.1fMB",
+    dt_print(DT_DEBUG_OPENCL,"[opencl memory] device '%s' id=%d: %zu MB in use, %zu MB available GPU mem of %zu MB",
              cl->dev[devid].fullname, devid,
-             (float)cl->dev[devid].memory_in_use / DT_MEGA,
-             (float)cl->dev[devid].used_available / DT_MEGA,
-             (float)cl->dev[devid].max_global_mem / DT_MEGA);
-      if(cl->dev[devid].memory_in_use > darktable.opencl->dev[devid].used_available)
-      {
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl memory] Warning, device '%s' id=%d used more GPU memory than available",
-                 cl->dev[devid].fullname, devid);
-      }
-  }
+             (size_t)cl->dev[devid].memory_in_use / DT_MEGA,
+             (size_t)cl->dev[devid].used_available / DT_MEGA,
+             (size_t)cl->dev[devid].max_global_mem / DT_MEGA);
+
+  if(cl->dev[devid].memory_in_use > darktable.opencl->dev[devid].used_available)
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
+                 "[opencl memory] Warning, device '%s' id=%d used %zuMB, available are %zuMB",
+                 cl->dev[devid].fullname, devid,
+                 (size_t)cl->dev[devid].memory_in_use / DT_MEGA,
+                 (size_t)cl->dev[devid].used_available / DT_MEGA);
 }
 
 cl_ulong dt_opencl_get_device_available(const int devid)
