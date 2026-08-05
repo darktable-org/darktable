@@ -156,7 +156,8 @@ static void _init_picker(dt_iop_color_picker_t *picker,
 }
 
 static gboolean _color_picker_callback_button_press(GtkWidget *button,
-                                                    GdkEventButton *e,
+                                                    const gboolean ctrl,
+                                                    const gboolean right,
                                                     dt_iop_color_picker_t *self)
 {
   // module is NULL if primary colorpicker
@@ -175,9 +176,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
   if(module && module->off)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
-  const GdkModifierType state = e != NULL ? e->state : dt_key_modifier_state();
-  const gboolean to_area_mode =
-    dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == GDK_BUTTON_SECONDARY);
+  const gboolean to_area_mode = ctrl || right;
   dt_iop_color_picker_flags_t flags = self->flags;
 
   // setup if a new picker or switching between point/area mode
@@ -260,7 +259,10 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
 static void _color_picker_callback(GtkWidget *button,
                                    dt_iop_color_picker_t *self)
 {
-  _color_picker_callback_button_press(button, NULL, self);
+  _color_picker_callback_button_press(button,
+                                      dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK),
+                                      FALSE,
+                                      self);
 }
 
 static void _color_picker_clicked(GtkGestureSingle *gesture,
@@ -272,10 +274,11 @@ static void _color_picker_clicked(GtkGestureSingle *gesture,
   GtkWidget *button = dt_gui_get_widget(gesture);
   // pass the clicked button through to the callback: a secondary click
   // switches the picker to area mode (as before the gtk4-prep migration)
-  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-  event->button.button = gtk_gesture_single_get_current_button(gesture);
-  _color_picker_callback_button_press(button, &event->button, self);
-  gdk_event_free(event);
+  _color_picker_callback_button_press(button,
+                                      dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK),
+                                      gtk_gesture_single_get_current_button(gesture)
+                                        == GDK_BUTTON_SECONDARY,
+                                      self);
 }
 
 /*
@@ -315,15 +318,12 @@ static float _color_picker_widget_toggle(GtkWidget *target,
   if(!DT_ACTION_TOGGLE_NEEDED(effect, move_size, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target))))
     return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
 
-  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-  event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
-                         || effect == DT_ACTION_EFFECT_ON_CTRL)
-                      ? GDK_CONTROL_MASK : 0;
-  event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
-                          || effect == DT_ACTION_EFFECT_ON_RIGHT)
-                       ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
-  _color_picker_callback_button_press(target, &event->button, self);
-  gdk_event_free(event);
+  _color_picker_callback_button_press(target,
+                                      effect == DT_ACTION_EFFECT_TOGGLE_CTRL
+                                        || effect == DT_ACTION_EFFECT_ON_CTRL,
+                                      effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
+                                        || effect == DT_ACTION_EFFECT_ON_RIGHT,
+                                      self);
 
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
   if(!gtk_widget_is_visible(target))

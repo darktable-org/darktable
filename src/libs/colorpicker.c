@@ -768,7 +768,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->picker_button), "toggled",
                    G_CALLBACK(_picker_button_toggled), data);
   dt_action_define(DT_ACTION(self), NULL, N_("pick color"),
-                   data->picker_button, &dt_action_def_toggle);
+                   data->picker_button, &dt_action_def_color_picker);
 
   // The small sample, label and add button
   GtkWidget *sample_row_events = gtk_event_box_new();

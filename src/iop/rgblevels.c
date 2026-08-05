@@ -1054,7 +1054,7 @@ void gui_init(dt_iop_module_t *self)
 #define PICKER_SETUP(color, name, tooltip)                                 \
   g->color##pick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL); \
   dt_action_define_iop(self, N_("pickers"), name, g->color##pick,          \
-                       &dt_action_def_toggle);                             \
+                       &dt_action_def_color_picker);                             \
   gtk_widget_set_tooltip_text(g->color##pick, tooltip);                    \
   gtk_widget_set_name(GTK_WIDGET(g->color##pick), "picker-"#color);        \
   g_signal_connect(dt_gui_expand(g->color##pick), "toggled",               \
