@@ -333,13 +333,22 @@ typedef struct sf_sim_params_t
   /* camera / filming */
   double exposure_comp_ev;      /* 0 */
   double density_curve_gamma;   /* 1 */
-  /* [su] SettingsParams.apply_hanatos2025_adaptation_surface. The exposure
-   * correction surface carried by a film profile, applied to the tc LUT in
-   * sf_sim_build(). The profiles set it true, but the reference runtime's own
+  /* [su] SettingsParams.apply_hanatos2025_adaptation_bandwidth /
+   * ..._adaptation_surface: the two halves of the hanatos2025 sensitivity
+   * adaptation, both applied in sf_sim_build() and both skipped for a profile
+   * that carries no coefficients for them.
+   *
+   * bandwidth is the erf4 spectral bandpass folded into the film's own
+   * sensitivities (white-balance preserving, hence the per-channel
+   * renormalisation), and matches the reference on.
+   *
+   * surface is the per-chromaticity exposure correction applied to the tc LUT
+   * afterwards. The profiles set it true, but the reference runtime's own
    * setting is false and wins, so a reference render does NOT include it --
    * hence false here as well, and a caller-facing switch rather than a
    * profile-driven one. It is worth up to +-2 stops per channel away from the
    * reference white, so the two states are visibly different renders. */
+  bool adaptation_bandwidth;    /* true */
   bool adaptation_surface;      /* false */
 
   /* DIR couplers (matrix part; spatial diffusion is the caller's blur) */
