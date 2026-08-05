@@ -667,7 +667,7 @@ static void _tree_add_shape(GtkButton *button, gpointer shape)
 static void _bt_add_shape_cb(GtkGestureSingle *gesture, int n_press, double x, double y, gpointer shape)
 {
 
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
 #ifdef HAVE_AI
     if(GPOINTER_TO_INT(shape) == DT_MASKS_OBJECT && !dt_masks_object_available())

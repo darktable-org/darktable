@@ -4802,6 +4802,12 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
+  // GtkGestureSingle:button defaults to GDK_BUTTON_PRIMARY on GTK3, which
+  // would silently drop right/middle clicks.  The old button-press-event
+  // handlers reacted to all buttons, so listen to any button; callers
+  // distinguish them via gtk_gesture_single_get_current_button().
+  gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+
   if(pressed) g_signal_connect(gesture, "pressed", G_CALLBACK(pressed), data);
   if(released)
   {

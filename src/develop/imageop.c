@@ -1132,7 +1132,21 @@ static void _gui_multiinstance_clicked(GtkGestureSingle *gesture,
                                        gdouble y,
                                        dt_iop_module_t *module)
 {
-  _gui_multiinstance_callback(NULL, NULL, module);
+  // restore the per-button behaviour of the old button-press-event handler:
+  // secondary-click creates a new instance, middle-click does nothing,
+  // anything else opens the multi-instance popup.
+  // gtk_gesture_single_get_current_button() is unchanged in GTK4.
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_SECONDARY)
+  {
+    if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
+      _gui_copy_callback(NULL, module);
+    return;
+  }
+  if(button == GDK_BUTTON_MIDDLE)
+    return;
+
+  _gui_multiinstance_callback(GTK_BUTTON(dt_gui_get_widget(gesture)), NULL, module);
 }
 
 static gboolean _rename_module_key_pressed(GtkEventControllerKey *controller,
