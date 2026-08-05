@@ -239,8 +239,6 @@ DT_MODULE(1)
 #define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
 #define CONF_PREVIEW_TOOLTIP_ZOOM \
   "plugins/lighttable/neural_restore/preview_tooltip_zoom"
-// default matches the TIFF export module: deflate + predictor
-#define COMPRESSION_DEFAULT NEURAL_COMPRESS_DEFLATE_PREDICTOR
 
 typedef enum dt_neural_task_t
 {
@@ -3427,7 +3425,7 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
     : NEURAL_BPP_16;
   job_data->compression = dt_conf_key_exists(CONF_COMPRESSION)
     ? dt_conf_get_int(CONF_COMPRESSION)
-    : COMPRESSION_DEFAULT;
+    : NEURAL_COMPRESS_DEFLATE_PREDICTOR;
   job_data->add_to_catalog
     = dt_conf_key_exists(CONF_ADD_CATALOG)
       ? dt_conf_get_bool(CONF_ADD_CATALOG)
@@ -4424,7 +4422,7 @@ void gui_init(dt_lib_module_t *self)
   // compression — same options as the TIFF export module
   const int saved_compress = dt_conf_key_exists(CONF_COMPRESSION)
     ? dt_conf_get_int(CONF_COMPRESSION)
-    : COMPRESSION_DEFAULT;
+    : NEURAL_COMPRESS_DEFLATE_PREDICTOR;
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->compress_combo, self, NULL, N_("compression"),
                                _("output TIFF compression"),
                                saved_compress, _compress_combo_changed, self,
