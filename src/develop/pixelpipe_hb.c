@@ -1375,11 +1375,15 @@ static inline dt_dev_pixelpipe_stopper_t _module_pipe_stop(dt_dev_pixelpipe_t *p
 
   if(stopper == DT_DEV_PIXELPIPE_STOP_NODES
         || stopper == DT_DEV_PIXELPIPE_STOP_HQ
-        || stopper == DT_DEV_PIXELPIPE_STOP_ZOOM)
+        || stopper == DT_DEV_PIXELPIPE_STOP_ZOOM
+        || stopper == DT_DEV_PIXELPIPE_STOP_DATA)
     return stopper;
 
-  if(stopper == DT_DEV_PIXELPIPE_STOP_DATA)
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, module->iop_order, "module pipe stop: ");
+  /** There was no valid shutdown mode, this should never happen and would be a
+      definite bug.
+      Just in case we fetch this and flush the pipe cache
+  */
+  dt_dev_pixelpipe_cache_invalidate_later(pipe, 0, "module pipe abort: ");
   return stopper;
 }
 
@@ -2532,8 +2536,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         const dt_dev_pixelpipe_stopper_t cl_stopper = _module_pipe_stop(pipe, module, *output);
         if(cl_stopper != DT_DEV_PIXELPIPE_STOP_NO)
         {
-          /*  In case of a DT_DEV_PIXELPIPE_STOP_DATA shutdown we have invalidated all following
-              cachelines but we try to make input cacheline valid for next pipe run.
+          /*  In case of a DT_DEV_PIXELPIPE_STOP_DATA shutdown
+              we try to make input cacheline valid for next pipe run.
           */
           if(valid_input_on_gpu_only
               && cl_stopper == DT_DEV_PIXELPIPE_STOP_DATA

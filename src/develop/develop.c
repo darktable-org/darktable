@@ -804,7 +804,7 @@ restart:
                 pipe->input_changed ? "pipe_input_changed " : "",
                 pipe->changed & DT_DEV_PIPE_ZOOMED ? "zoomed " : "",
                 pipe->changed & DT_DEV_PIPE_SYNCH ? "synch" : "");
-  if(shutdown != DT_DEV_PIXELPIPE_STOP_ZOOM && shutdown != DT_DEV_PIXELPIPE_STOP_DATA)
+  if(shutdown <= DT_DEV_PIXELPIPE_PROCESSING)
     restarts++;
 
   if(stopped)
