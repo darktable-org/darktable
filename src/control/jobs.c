@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -505,9 +505,7 @@ gboolean dt_control_add_job(dt_job_queue_t queue_id, _dt_job_t *job)
 
 static void *_control_work_res(void *ptr)
 {
-#ifdef _OPENMP // need to do this in every thread
   omp_set_num_threads(dt_get_num_threads());
-#endif
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
   dt_control_t *s = params->self;
   threadid = params->threadid;
@@ -550,9 +548,7 @@ static void *_control_worker_kicker(void *ptr)
 
 static void *_control_work(void *ptr)
 {
-#ifdef _OPENMP // need to do this in every thread
   omp_set_num_threads(dt_get_num_threads());
-#endif
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
   dt_control_t *control = params->self;
   threadid = params->threadid;

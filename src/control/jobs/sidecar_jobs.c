@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,30 +21,6 @@
 static GSList *pending_images = NULL;
 static gboolean background_running = FALSE;
 
-#ifndef _OPENMP
-#include "common/dtpthread.h"
-static gboolean lock_initialized = FALSE;
-static dt_pthread_mutex_t pending_mutex;
-
-static void _lock_pending_queue()
-{
-  if(!lock_initialized)
-  {
-    dt_pthread_mutex_init(&pending_mutex, NULL);
-    lock_initialized = TRUE;
-  }
-  dt_pthread_mutex_lock(&pending_mutex);
-}
-
-static void _unlock_pending_queue()
-{
-  if(lock_initialized)
-  {
-    dt_pthread_mutex_unlock(&pending_mutex);
-  }
-}
-#endif /* !_OPENMP */
-
 static int32_t _control_write_sidecars_job_run(dt_job_t *job)
 {
   GSList *imgs = NULL;
@@ -60,16 +36,8 @@ static int32_t _control_write_sidecars_job_run(dt_job_t *job)
     if(curr_fetch > prev_fetch + 0.25)
     {
       prev_fetch = curr_fetch;
-#ifdef _OPENMP
 #pragma omp atomic capture
       { new_imgs = pending_images; pending_images = NULL ; }
-#else
-      // don't have atomics, so use locks instead
-      _lock_pending_queue();
-      new_imgs = pending_images;
-      pending_images = NULL;
-      _unlock_pending_queue();
-#endif
       if(new_imgs)
       {
         // add the new images to the queue being processed if they are not already on the queue
@@ -116,16 +84,8 @@ void dt_sidecar_synch_enqueue(dt_imgid_t imgid)
   if(background_running)
   {
     GSList *img = g_slist_prepend(NULL,GINT_TO_POINTER(imgid));
-#ifdef _OPENMP
 #pragma omp atomic capture
     { img->next = pending_images; pending_images = img; }
-#else
-    // don't have atomics, so use locks instead
-    _lock_pending_queue();
-    img->next = pending_images;
-    pending_images = img;
-    _unlock_pending_queue();
-#endif
   }
   else
   {
@@ -153,16 +113,8 @@ void dt_sidecar_synch_enqueue_list(const GList *imgs)
     new_imgs = g_slist_prepend(new_imgs,ilist->data);
   }
   GSList *last = g_slist_last(new_imgs);
-#ifdef _OPENMP
 #pragma omp atomic capture
   { last->next = pending_images; pending_images = new_imgs; }
-#else
-  // don't have atomics, so use locks instead
-  _lock_pending_queue();
-  last->next = pending_images;
-  pending_images = new_imgs;
-  _unlock_pending_queue();
-#endif
 }
 
 void dt_control_sidecar_synch_start()

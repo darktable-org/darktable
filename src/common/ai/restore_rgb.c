@@ -738,13 +738,7 @@ void dt_restore_apply_detail_recovery(const float *original_4ch,
     = dt_alloc_align_float(npix);
   if(!lum_residual) return;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none)           \
-  dt_omp_firstprivate(original_4ch, denoised_4ch,     \
-                      lum_residual, npix)             \
-  schedule(simd:static)                               \
-  aligned(original_4ch, denoised_4ch, lum_residual:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(original_4ch, denoised_4ch, lum_residual:64))
   for(size_t i = 0; i < npix; i++)
   {
     const size_t p = i * 4;
@@ -764,13 +758,7 @@ void dt_restore_apply_detail_recovery(const float *original_4ch,
   dwt_denoise(lum_residual, width, height,
               DWT_DETAIL_BANDS, noise);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none)       \
-  dt_omp_firstprivate(denoised_4ch, lum_residual, \
-                      npix, alpha)                \
-  schedule(simd:static)                           \
-  aligned(denoised_4ch, lum_residual:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(denoised_4ch, lum_residual:64))
   for(size_t i = 0; i < npix; i++)
   {
     const size_t p = i * 4;
