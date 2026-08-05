@@ -847,7 +847,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
-  dt_action_define_iop(self, N_("pickers"), N_("film material"), g->Dmin_sampler, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("film material"), g->Dmin_sampler, &dt_action_def_color_picker);
 
   dt_gui_box_add(page1, dt_ui_section_label_new(C_("section", "color of the film base")),
                         dt_gui_hbox(dt_gui_expand(g->Dmin_picker), g->Dmin_sampler));
@@ -909,7 +909,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
-  dt_action_define_iop(self, N_("pickers"), N_("shadows"), g->WB_low_sampler, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("shadows"), g->WB_low_sampler, &dt_action_def_color_picker);
 
   dt_gui_box_add(page2, dt_ui_section_label_new(C_("section", "shadows color cast")),
                         dt_gui_hbox(dt_gui_expand(g->WB_low_picker), g->WB_low_sampler));
@@ -943,7 +943,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));
-  dt_action_define_iop(self, N_("pickers"), N_("illuminant"), g->WB_high_sampler, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("illuminant"), g->WB_high_sampler, &dt_action_def_color_picker);
 
   dt_gui_box_add(page2, dt_ui_section_label_new(C_("section", "highlights white balance")),
                         dt_gui_hbox(dt_gui_expand(g->WB_high_picker), g->WB_high_sampler));

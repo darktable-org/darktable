@@ -22,6 +22,7 @@
 #include "libs/lib.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "develop/blend.h"
 
 /*
@@ -269,8 +270,103 @@ static void _color_picker_clicked(GtkGestureSingle *gesture,
                                    dt_iop_color_picker_t *self)
 {
   GtkWidget *button = dt_gui_get_widget(gesture);
-  _color_picker_callback_button_press(button, NULL, self);
+  // pass the clicked button through to the callback: a secondary click
+  // switches the picker to area mode (as before the gtk4-prep migration)
+  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+  event->button.button = gtk_gesture_single_get_current_button(gesture);
+  _color_picker_callback_button_press(button, &event->button, self);
+  gdk_event_free(event);
 }
+
+/*
+ * Claim the event sequence in CAPTURE phase so the toggle button's own
+ * internal GtkGestureMultiPress (GTK_PHASE_BUBBLE, which emits "clicked"
+ * and toggles the button on release) never processes the event; the
+ * picker callback fully controls the button state instead.  Same pattern
+ * as dt_iop_togglebutton_new.
+ *
+ * GTK4 migration: the pattern is the same, just rename
+ * GtkGestureMultiPress to GtkGestureClick. */
+static void _gesture_begin_claim(GtkGesture *gesture,
+                                  GdkEventSequence *sequence,
+                                  gpointer user_data)
+{
+  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+/*
+ * Shared activation entry for standalone picker toggle buttons (created
+ * with a NULL container, e.g. AgX "auto tune levels").  Real clicks go
+ * through the CAPTURE-phase gesture above, shortcuts through the action
+ * definition below (dt_action_def_color_picker); both end up here,
+ * mirroring how bauhaus pickers route clicks and shortcuts through
+ * dt_bauhaus_widget_press_quad().
+ */
+static float _color_picker_widget_toggle(GtkWidget *target,
+                                         const dt_action_effect_t effect,
+                                         const float move_size)
+{
+  if(!DT_PERFORM_ACTION(move_size) || !target)
+    return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
+
+  dt_iop_color_picker_t *self = g_object_get_data(G_OBJECT(target), DT_COLOR_PICKER_INSTANCE_KEY);
+  if(!self) return 0.f;
+
+  if(!DT_ACTION_TOGGLE_NEEDED(effect, move_size, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target))))
+    return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
+
+  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+  event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
+                         || effect == DT_ACTION_EFFECT_ON_CTRL)
+                      ? GDK_CONTROL_MASK : 0;
+  event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
+                          || effect == DT_ACTION_EFFECT_ON_RIGHT)
+                       ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+  _color_picker_callback_button_press(target, &event->button, self);
+  gdk_event_free(event);
+
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
+  if(!gtk_widget_is_visible(target))
+    dt_action_widget_toast(NULL, target, active ? _("on") : _("off"));
+
+  return active;
+}
+
+/*
+ * Action definition for standalone picker toggle buttons.
+ *
+ * The generic toggle definition (dt_action_def_toggle in accelerators.c)
+ * activates widgets by synthesizing GObject "button-press-event" signals.
+ * Those only reach the widget class handler (which dispatches
+ * BUBBLE-phase controllers) and carry no device, so they can never
+ * trigger the CAPTURE-phase gesture that picker buttons need in order to
+ * suppress the button's own internal gesture -- which is why picker
+ * shortcuts stopped working after the gtk4-prep migration.  Like bauhaus
+ * widgets, picker buttons therefore use their own definition whose
+ * process calls the same shared entry as real clicks.
+ */
+static const dt_action_element_def_t _color_picker_elements[]
+  = { { NULL, dt_action_effect_toggle } };
+
+static const dt_shortcut_fallback_t _color_picker_fallbacks[]
+  = { { .mods = GDK_CONTROL_MASK    , .effect = DT_ACTION_EFFECT_TOGGLE_CTRL  },
+      { .button = DT_SHORTCUT_RIGHT , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
+      { .press = DT_SHORTCUT_LONG   , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
+      { } };
+
+static float _color_picker_process(gpointer target,
+                                   const dt_action_element_t element,
+                                   const dt_action_effect_t effect,
+                                   const float move_size)
+{
+  return _color_picker_widget_toggle(target, effect, move_size);
+}
+
+const dt_action_def_t dt_action_def_color_picker
+  = { N_("toggle"),
+      _color_picker_process,
+      _color_picker_elements,
+      _color_picker_fallbacks };
 
 void dt_iop_color_picker_set_cst(dt_iop_module_t *module,
                                  const dt_iop_colorspace_type_t picker_cst)
@@ -390,6 +486,10 @@ static void _color_picker_destroy(dt_iop_color_picker_t *picker)
   // before freeing the struct to prevent use-after-free in dt_iop_color_picker_reset.
   if(darktable.lib && darktable.lib->proxy.colorpicker.picker_proxy == picker)
     darktable.lib->proxy.colorpicker.picker_proxy = NULL;
+  if(picker->colorpick)
+  {
+    g_object_set_data(G_OBJECT(picker->colorpick), DT_COLOR_PICKER_INSTANCE_KEY, NULL);
+  }
   g_free(picker);
 }
 
@@ -411,7 +511,28 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
       color_picker->picker_cst = cst;
       color_picker->fixed_cst = TRUE;
     }
-    dt_gui_connect_click(button, _color_picker_clicked, NULL, color_picker);
+    // The button is a GtkToggleButton, which owns its own
+    // GtkGestureMultiPress (bubble phase) that emits "clicked" and toggles
+    // the button on release.  Use a CAPTURE-phase gesture that claims the
+    // event sequence (same pattern as dt_iop_togglebutton_new) so that
+    // internal gesture never runs and the picker callback fully controls
+    // the button state on real clicks.
+    //
+    // Shortcuts (dt_action_def_color_picker, see above) call
+    // _color_picker_widget_toggle() directly instead of synthesizing
+    // GObject "button-press-event" signals, which cannot reach this
+    // CAPTURE-phase gesture (the widget class handler only dispatches
+    // BUBBLE-phase controllers and synthetic events carry no device).
+    GtkGesture *gesture = gtk_gesture_multi_press_new(button);
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                               GTK_PHASE_CAPTURE);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    dt_gui_add_controller(button, gesture);
+    g_signal_connect_data(gesture, "pressed",
+                          G_CALLBACK(_color_picker_clicked),
+                          color_picker, (GClosureNotify)_color_picker_destroy, 0);
+    g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
+    g_object_set_data(G_OBJECT(button), DT_COLOR_PICKER_INSTANCE_KEY, color_picker);
     if(w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
     return button;
