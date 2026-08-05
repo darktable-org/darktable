@@ -129,10 +129,8 @@ typedef enum dt_dev_pixelpipe_status_t
     as we do for above shutdown modes.
 
     DT_DEV_PIXELPIPE_STOP_DATA
-    A request to restart with different module parameters.
-    As we missed processing the correct output and all following modules
-    will give different results accordingly we clear cachelines for following
-    modules (possibly writing back input cl_mem to host for a faster restart).
+    A request to restart with different module parameters,
+    writing back input cl_mem to host for a faster restart if possible.
 */
 
 typedef enum dt_dev_pixelpipe_stopper_t
