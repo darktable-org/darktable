@@ -1794,8 +1794,9 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
             dt_util_str_cat(&pth, format_separator, tokens[i]);
 
           // if we are at the end of the path, and this is a folder, we need to
-          // add the count to all parents.
-          if(!tokens[common_length]
+          // add the count to all parents. common_length == 0 means 'parent' was
+          // never set to a valid node, and there is no node to update anyway.
+          if(common_length > 0 && !tokens[common_length]
              && property == DT_COLLECTION_PROP_FOLDERS)
           {
             _update_parent_count(model, &parent, count);
@@ -1824,8 +1825,11 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
                 || _is_time_property(property)) && !*(token + 1))
             {
               GtkTreeIter p;
-              gtk_tree_model_iter_parent(model, &p, &iter);
-              _update_parent_count(model, &p, count);
+              // a top-level node has no parent: gtk_tree_model_iter_parent
+              // then returns FALSE and leaves 'p' uninitialized, so passing it
+              // on would cause a crash when dereferenced later
+              if(gtk_tree_model_iter_parent(model, &p, &iter))
+                _update_parent_count(model, &p, count);
             }
 
             common_length++;
