@@ -3429,28 +3429,29 @@ void gui_init(dt_iop_module_t *self)
 
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
   gtk_widget_set_tooltip_text(g->quality,
-                              _("spectral accuracy vs speed; the tables are PCHIP-interpolated"
-                                " and validated against the reference"));
+                              _("spectral accuracy vs speed: the colour model is evaluated"
+                                " on a table of this size and PCHIP-interpolated between the"
+                                " points, so a finer table lands closer to the exact answer"
+                                " and costs more to build.\n\"exact spectral\" skips the table"
+                                " and runs the model per pixel -- CPU only, and slow"));
 
   g->adaptation_bandwidth = dt_bauhaus_toggle_from_params(self, "adaptation_bandwidth");
   gtk_widget_set_tooltip_text(
       g->adaptation_bandwidth,
       _("first half of the film's sensitivity adaptation: a spectral bandpass\n"
         "applied to the stock's own sensitivities, rolling off the UV and IR\n"
-        "ends of each channel while preserving white balance.\non by default --\n"
-        "the reference renders with it, and the filming stage matches it to\n"
-        "1e-14 this way, so turning it off is a diagnostic rather than a look.\n"
-        "no effect on stocks whose profile carries no bandpass"));
+        "ends of each channel while preserving white balance.\non by default,\n"
+        "and best left on: it is part of how the stock is characterised rather\n"
+        "than a look.\nno effect on stocks whose profile carries no bandpass"));
 
   g->adaptation_surface = dt_bauhaus_toggle_from_params(self, "adaptation_surface");
   gtk_widget_set_tooltip_text(
       g->adaptation_surface,
       _("second half of the film's sensitivity adaptation: a per-colour exposure\n"
-        "correction of up to two stops that leaves the film's reference white\n"
-        "untouched and grows with distance from it.\noff by default -- the\n"
-        "reference renders without it, so leaving it on makes saturated colours\n"
-        "diverge from a reference render.\nno effect on stocks whose profile\n"
-        "carries no surface (the monochrome films and every print paper)"));
+        "correction of up to two stops, zero at the film's own white point and\n"
+        "growing with distance from it.\noff by default: it shifts saturated\n"
+        "colours substantially.\nno effect on stocks whose profile carries no\n"
+        "surface (the monochrome films and every print paper)"));
 
   /* ---- tab 2: print ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("print"), NULL);
@@ -3583,8 +3584,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->scatter_scale, 0.2f, 1.5f);
   gtk_widget_set_tooltip_text(g->scatter_scale,
                               _("scales the in-emulsion scatter radius. 1.0 is\n"
-                                "film-accurate, and is what the reference implementation\n"
-                                "always uses -- it does not expose this control.\n\n"
+                                "film-accurate: the radius the film model itself\n"
+                                "works at, and not normally something to change.\n\n"
                                 "above 1.0 you are past what the film model claims, and the\n"
                                 "whole frame softens quickly: the radius scales with the\n"
                                 "value, so 4.0 is a four times wider blur everywhere.\n"
@@ -3710,7 +3711,7 @@ void gui_init(dt_iop_module_t *self)
   g->scan_usm_amount = dt_bauhaus_slider_from_params(self, "scan_usm_amount");
   gtk_widget_set_tooltip_text(g->scan_usm_amount,
                               _("scanner sharpening strength (0 = off). "
-                                "the reference scanner applies 0.7 by default; "
+                                "0.7 is what a scan of the film normally gets; "
                                 "leave at 0 if you prefer to sharpen downstream"));
 
   g->glare_percent = dt_bauhaus_slider_from_params(self, "glare_percent");
