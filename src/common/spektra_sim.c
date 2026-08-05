@@ -1198,6 +1198,7 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->film_morph_gamma = p->film_morph_gamma_fast = p->film_morph_gamma_slow = 1.0;
   p->film_morph_developer_exhaustion = 0.0;
   p->scan_film = false;
+  p->adaptation_surface = false;
   p->lut_steps = 0;
   p->input_gamut_compress = true;
   p->output_compress = SF_OUTPUT_COMPRESS_OKLCH;
@@ -2727,8 +2728,18 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
 
        Build-time, once per sim. The GPU path uploads the corrected table and
        needs no kernel of its own. Skipped for a profile that carries no
-       surface parameters, as upstream skips it on an empty array. */
-    if(film->surface_n == SF_SURFACE_NCOEF)
+       surface parameters, as upstream skips it on an empty array.
+
+       Off unless the caller asks for it (params->adaptation_surface, default
+       false). The profiles ship this enabled, but the reference runtime's
+       SettingsParams.apply_hanatos2025_adaptation_surface is false and takes
+       precedence there, so applying it whenever a profile carries the
+       coefficients diverges from a reference render by as much as the
+       sigmoid's +-2 stop bound wherever the chromaticity is far from the film's
+       reference white. Runtime-selectable rather than compiled out, because the
+       correction is the model's own and becomes right the day the reference
+       turns it on. */
+    if(p->adaptation_surface && film->surface_n == SF_SURFACE_NCOEF)
     {
       double center_tc[2];
       tri2quad(center_tc, film_ref_xy);
