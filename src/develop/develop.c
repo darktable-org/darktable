@@ -1633,6 +1633,11 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     module->enabled = module->default_enabled;
 
+    // reset the instance name too: per-position state restored from
+    // history below, else a later rename would leak into earlier positions
+    module->multi_name_hand_edited = FALSE;
+    g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
+
     if(module->multi_priority == 0)
       module->iop_order =
         dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
