@@ -169,6 +169,8 @@ changes (where available).
 
 - Change to user installed scripts directory before updating.
 
+- Execute user luarc file in all cases.
+
 ### New Scripts
 
 - N/A
