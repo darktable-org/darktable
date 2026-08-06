@@ -1239,10 +1239,23 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
   g_free(otxt);
 
   // set widget signals
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK3: event controllers don't request input events from GDK -- the
+   * motion controller's event mask is 0 and gestures only request touch
+   * events -- so the widget must keep its own event mask or it never
+   * receives enter/leave/motion/button events at all (the GtkLayout bin
+   * window only adds exposure/scroll masks on top of this).  Without
+   * them, hover tracking (mouse_inside / mouse_over_id) breaks in the
+   * culling layout, and clicks on empty areas are dropped.
+   * GTK4 migration: delete this call -- GTK4 delivers all input events
+   * to every widget automatically. */
   gtk_widget_set_events(table->widget,
-                        GDK_EXPOSURE_MASK
+                        GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                         | GDK_TOUCHPAD_GESTURE_MASK);
+#endif
 
   dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);
