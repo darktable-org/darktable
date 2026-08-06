@@ -4372,6 +4372,27 @@ static gboolean _button_release_delayed(gpointer timed_out)
   return G_SOURCE_REMOVE;
 }
 
+// returns TRUE if a double or triple press shortcut is registered for this key
+static gboolean _shortcut_has_double_triple_press(const dt_input_device_t id,
+                                           const guint key,
+                                           const guint mods)
+{
+  dt_shortcut_t s = { .key_device = id, .key = key, .mods = mods,
+                      .press = DT_SHORTCUT_DOUBLE,
+                      .views = dt_view_get_current() };
+
+  GSequenceIter *multi = _shortcut_search(&s, GINT_TO_POINTER(s.views));
+  for(int checks = 2; checks--; multi = g_sequence_iter_prev(multi))
+  {
+    if(g_sequence_iter_is_end(multi)) continue;
+
+    const dt_shortcut_t *m = g_sequence_get(multi);
+    if(m->key_device == id && m->key == key && m->press >= DT_SHORTCUT_DOUBLE)
+      return TRUE;
+  }
+  return FALSE;
+}
+
 void dt_shortcut_key_press(const dt_input_device_t id,
                            const guint time,
                            const guint key)
@@ -4428,16 +4449,37 @@ void dt_shortcut_key_press(const dt_input_device_t id,
                          _shortcut_description(s), _action_description(s, 2));
         }
 
-        definition->process(NULL, s->element, DT_ACTION_EFFECT_ON, 1);
+        // a hold action must not swallow a fast consecutive press of the same
+        // key: if the key was held and released within the double-click time
+        // window and a double/triple press shortcut exists for it, fall
+        // through to the normal handling below which turns this press into a
+        // double/triple press instead of re-engaging the hold
+        if(key == _sc.key
+           && _sc.key_device == id
+           && !dt_gui_long_click(time, _last_time)
+           && _shortcut_has_double_triple_press(id, key, _sc.mods))
+        {
+          /* fall through to the double/triple press detection below */
+        }
+        else
+        {
+          definition->process(NULL, s->element, DT_ACTION_EFFECT_ON, 1);
 
-        this_key.hold_def = definition;
-        this_key.hold_element = s->element;
+          this_key.hold_def = definition;
+          this_key.hold_element = s->element;
 
-        dt_device_key_t *new_key = calloc(1, sizeof(dt_device_key_t));
-        *new_key = this_key;
-        _hold_keys = g_slist_prepend(_hold_keys, new_key);
+          dt_device_key_t *new_key = calloc(1, sizeof(dt_device_key_t));
+          *new_key = this_key;
+          _hold_keys = g_slist_prepend(_hold_keys, new_key);
 
-        return;
+          // remember the press so a fast consecutive press of this key
+          // (after release) can be detected as a double/triple press below
+          _last_time = time;
+          _sc.key_device = id;
+          _sc.key = key;
+
+          return;
+        }
       }
     }
 
