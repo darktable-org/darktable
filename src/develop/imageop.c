@@ -449,9 +449,6 @@ void dt_iop_init_pipe(dt_iop_module_t *module,
   piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
 }
 
-/* the module whose header buttons are currently shown (if any) */
-static dt_iop_module_t *_header_buttons_module = NULL;
-
 #if !GTK_CHECK_VERSION(4, 0, 0)
 static gboolean _pointer_in_module(const dt_iop_module_t *module)
 {
@@ -507,10 +504,10 @@ static void _header_motion_notify_show_callback(GtkEventControllerMotion *contro
    * previous one: the leave crossing's position is still within the old
    * module's bounds, so the position check in the hide callback cannot hide
    * it.  Hide the previously shown buttons here instead. */
-  if(_header_buttons_module && _header_buttons_module != module
-     && g_list_find(darktable.develop->iop, _header_buttons_module))
-    dt_iop_show_hide_header_buttons(_header_buttons_module, NULL, FALSE, FALSE);
-  _header_buttons_module = module;
+  if(darktable.develop->header_buttons_module && darktable.develop->header_buttons_module != module
+     && g_list_find(darktable.develop->iop, darktable.develop->header_buttons_module))
+    dt_iop_show_hide_header_buttons(darktable.develop->header_buttons_module, NULL, FALSE, FALSE);
+  darktable.develop->header_buttons_module = module;
 
   dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE);
 }
@@ -2421,7 +2418,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
-  if(_header_buttons_module == module) _header_buttons_module = NULL;
+  if(darktable.develop->header_buttons_module == module)
+    darktable.develop->header_buttons_module = NULL;
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
