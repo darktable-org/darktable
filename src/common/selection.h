@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,9 @@ void dt_selection_invert(struct dt_selection_t *selection);
 void dt_selection_clear(struct dt_selection_t *selection);
 /** adds imgid to the current selection */
 void dt_selection_select(struct dt_selection_t *selection, dt_imgid_t imgid);
+/** get the imgid of the last image selected with a single selection (click,
+ *  keyboard navigation, ...) ; it is the anchor used for range selection */
+dt_imgid_t dt_selection_get_last_single_id(const struct dt_selection_t *selection);
 /** removes imgid from the current selection */
 void dt_selection_deselect(struct dt_selection_t *selection, dt_imgid_t imgid);
 /** clears current selection and adds imgid */
