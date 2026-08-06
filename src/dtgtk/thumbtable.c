@@ -1395,7 +1395,9 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
 
   /* Don't clear the mouse-over when leaving to a child widget (thumbnail),
    * or while the pointer is grabbed: the shortcut machinery's synthetic
-   * crossings must not lose the hovered image (see #21729). */
+   * crossings must not lose the hovered image (see #21729).
+   * GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
@@ -1425,6 +1427,8 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
+    /* GTK4 migration: drop the pointer-grab check (see
+     * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
     if(!dt_gui_pointer_is_grabbed()
        && !_thumb_get_at_pos(table, (int)x, (int)y))
       dt_control_set_mouse_over_id(NO_IMGID);
@@ -1568,7 +1572,9 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
   /* The pointer is over the table itself (not a thumbnail): make sure no
    * stale image stays hovered.  The enter/leave crossings cannot be relied
    * on here -- redraws under the pointer make GDK miss the crossing from a
-   * thumbnail into the table area (see #21729). */
+   * thumbnail into the table area (see #21729).
+   * GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
   if(!table->dragging
      && !dt_gui_pointer_is_grabbed()
      && !_thumb_get_at_pos(table, (int)x, (int)y))

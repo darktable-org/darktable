@@ -164,12 +164,35 @@ void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name)
 
 gboolean dt_gui_pointer_is_grabbed()
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4 migration: delete this function and every !dt_gui_pointer_is_grabbed()
+   * check in the culling/thumbtable hover handlers (they become no-ops).
+   * GTK4 removed gdk_seat_grab()/gdk_device_grab() (see migration guide
+   * "Stop using grabs"), so darktable never grabs the pointer and no phantom
+   * crossing events exist to filter.  More fundamentally, GtkLayout and
+   * GtkEventBox were removed in GTK4 ("GtkLayout ... has been removed in
+   * favor of the existing GtkFixed", "GtkEventBox is no longer needed and
+   * has been removed"), so the lighttable/culling widgets must be reworked
+   * anyway -- a GtkGridView with one widget per thumbnail gives native
+   * per-image enter/leave events, which supersedes both the manual
+   * hit-testing and this guard entirely. */
+  return FALSE;
+#else
   /* the keyboard shortcut machinery grabs the pointer on every key press
-   * (gdk_seat_grab()), which makes GDK synthesize crossing events that are
-   * not real pointer movements; this lets callers tell those apart from
-   * genuine crossings */
-  return gdk_display_device_is_grabbed(gdk_display_get_default(),
+   * (gdk_seat_grab()), which makes GDK (and the Quartz tracking areas
+   * behind it on macOS) synthesize crossing events that are not real
+   * pointer movements; this lets callers tell those apart from genuine
+   * crossings
+   *
+   * the shortcut machinery's own flag is checked first: on macOS the
+   * Quartz backend doesn't implement device grabs and GDK's serial-based
+   * grab bookkeeping (serials are always 0 there) can silently drop the
+   * grab before it is released, making gdk_display_device_is_grabbed()
+   * return FALSE while a shortcut action is still running */
+  return dt_shortcut_pointer_grabbed()
+      || gdk_display_device_is_grabbed(gdk_display_get_default(),
                                        gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())));
+#endif
 }
 
 /*

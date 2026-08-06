@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,6 +93,13 @@ void dt_shortcut_key_press(dt_input_device_t id, const guint time, const guint k
 void dt_shortcut_key_release(dt_input_device_t id, const guint time, const guint key);
 gboolean dt_shortcut_key_active(dt_input_device_t id, const guint key);
 float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const float move_size);
+
+// shortcut machinery seat-grab tracking (see dt_gui_pointer_is_grabbed):
+// the shortcut machinery keeps its own flag because the Quartz backend
+// cannot be trusted to report the grab state (GDK serials are always 0 there)
+#if !GTK_CHECK_VERSION(4, 0, 0)
+gboolean dt_shortcut_pointer_grabbed(void);
+#endif
 
 typedef enum dt_shortcut_flag_t
 {
