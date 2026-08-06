@@ -700,12 +700,14 @@ static void _event_scroll(GtkEventControllerScroll *controller,
   if(direction == GDK_SCROLL_SMOOTH && !is_stop
      && dt_modifiers_include(state, GDK_CONTROL_MASK))
   {
-    if(dx != 0.0 || dy != 0.0)
+    // raw platform deltas, not the attenuated controller deltas, so that
+    // one full unit of scroll (delta_y == 1.0) still matches the 0.5
+    // zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
+    gdouble ddx = 0.0, ddy = 0.0;
+    if(dt_gui_get_scroll_deltas((const GdkEventScroll *)event, &ddx, &ddy)
+       && (ddx != 0.0 || ddy != 0.0))
     {
-      // controller dx/dy gives the raw fractional platform delta.
-      // Scale so that one full unit of scroll (delta_y == 1.0) matches the
-      // 0.5 zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
-      const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
+      const gdouble delta = fabs(ddx) > fabs(ddy) ? -ddx : ddy;
       const float zoom_delta = (float)(-delta * 0.5);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
@@ -742,18 +744,20 @@ static void _event_scroll(GtkEventControllerScroll *controller,
              fz, fz > 1.0f ? "pan path" : "navigate path");
     if(fz > 1.0f)
     {
-      if(dx != 0.0 || dy != 0.0)
+      gdouble ddx = 0.0, ddy = 0.0;
+      if(dt_gui_get_scroll_deltas((const GdkEventScroll *)event, &ddx, &ddy)
+         && (ddx != 0.0 || ddy != 0.0))
       {
-        // controller dx/dy is platform-normalised fractional units;
-        // scale to pixel-scale (matches the factor used by the center-widget pan path).
+        // raw platform deltas; scale to pixel-scale (matches the factor
+        // used by the center-widget pan path).
         dt_print(DT_DEBUG_INPUT,
                  "[culling scroll] panning dx=%.3f dy=%.3f (scaled: dx=%.1f dy=%.1f)",
-                 dx, dy, dx * 50.0, dy * 50.0);
-        dt_culling_pan_move(table, (float)(-dx * 50.0), (float)(-dy * 50.0), state);
+                 ddx, ddy, ddx * 50.0, ddy * 50.0);
+        dt_culling_pan_move(table, (float)(-ddx * 50.0), (float)(-ddy * 50.0), state);
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta from controller");
+        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta");
       }
       gdk_event_free(event);
       return;
@@ -1297,8 +1301,7 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
 
   g_signal_connect(G_OBJECT(table->widget), "event",
                    G_CALLBACK(_event_gesture), table);
-  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
-                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _event_scroll, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
