@@ -1628,6 +1628,9 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
 
   if(dt_is_valid_imgid(id))
   {
+    /* the keyboard cursor continues from the image we clicked on */
+    table->key_pos = id;
+
     if(dt_modifier_is(state, GDK_CONTROL_MASK)
        || dt_modifier_is(state, GDK_MOD2_MASK)) // CMD key on macOS
     {
@@ -2622,6 +2625,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_free(cl);
 
   table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/collect/history_pos0"));
+  table->key_pos = NO_IMGID;
 
   // set widget signals
 #if !GTK_CHECK_VERSION(4, 0, 0)
@@ -3383,17 +3387,42 @@ gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table,
   return FALSE;
 }
 
+// get the image the keyboard navigation should continue from: the last image
+// the keyboard navigated to (key_pos), falling back to the last single-selected
+// image, then the mouse hover -- so a stationary mouse cannot move the keyboard
+// cursor
+static dt_imgid_t _thumb_key_base(dt_thumbtable_t *table)
+{
+  const dt_imgid_t keyid = table->key_pos;
+  const dt_imgid_t selid = dt_selection_get_last_single_id(darktable.selection);
+  return dt_is_valid_imgid(keyid) && _thumb_get_rowid(keyid) > 0 ? keyid
+       : dt_is_valid_imgid(selid) && _thumb_get_rowid(selid) > 0 ? selid
+       : dt_control_get_mouse_over_id();
+}
+
+// move the selection to imgid (plain navigation) or extend it from the fixed
+// anchor (shift navigation), keeping the keyboard cursor on it
+static void _thumb_key_select(dt_thumbtable_t *table,
+                              const dt_imgid_t imgid,
+                              const gboolean select)
+{
+  if(!dt_is_valid_imgid(imgid)) return;
+  if(select)
+    dt_selection_select_range(darktable.selection, imgid);
+  else
+    dt_selection_select_single(darktable.selection, imgid);
+  table->key_pos = imgid;
+}
+
 static gboolean _filemanager_key_move(dt_thumbtable_t *table,
                                       const dt_thumbtable_move_t move,
                                       const gboolean select)
 {
-  // base point
-  dt_imgid_t baseid = dt_control_get_mouse_over_id();
+  /* the keyboard cursor is anchored on the real selection, not the mouse
+   * hover */
+  dt_imgid_t baseid = _thumb_key_base(table);
   const gboolean first_move = (baseid <= 0);
   int newrowid = -1;
-  // let's be sure that the current image is selected
-  if(dt_is_valid_imgid(baseid) && select)
-    dt_selection_select(darktable.selection, baseid);
 
   int baserowid = 1;
 
@@ -3476,9 +3505,8 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table,
   if(newrowid != -1)
     _filemanager_ensure_rowid_visibility(table, newrowid);
 
-  // if needed, we set the selection
-  if(select && dt_is_valid_imgid(imgid))
-    dt_selection_select_range(darktable.selection, imgid);
+  // move the selection with the keyboard
+  _thumb_key_select(table, imgid, select);
   return TRUE;
 }
 
@@ -3486,11 +3514,6 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
                                    const dt_thumbtable_move_t move,
                                    const gboolean select)
 {
-  // let's be sure that the current image is selected
-  const dt_imgid_t baseid = dt_control_get_mouse_over_id();
-  if(dt_is_valid_imgid(baseid) && select)
-    dt_selection_select(darktable.selection, baseid);
-
   // first, we move the view by 1 thumb_size
   // move step
   const int step = table->thumb_size;
@@ -3539,10 +3562,11 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
   // and we set mouseover if we can
   dt_thumbnail_t *thumb = _thumb_get_under_mouse(table);
   if(thumb)
+  {
     dt_control_set_mouse_over_id(thumb->imgid);
-  // if needed, we set the selection
-  if(thumb && select)
-    dt_selection_select_range(darktable.selection, thumb->imgid);
+    // move the selection with the keyboard
+    _thumb_key_select(table, thumb->imgid, select);
+  }
 
   // and we record new positions values
   const dt_thumbnail_t *first = table->list->data;

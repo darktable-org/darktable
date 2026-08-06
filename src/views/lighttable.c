@@ -1574,29 +1574,45 @@ void gui_init(dt_view_t *self)
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_STARTEND), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Home, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Home, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_End, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_End, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("horizontal"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEFTRIGHT), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Left, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Left, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_Right, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_Right, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("vertical"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_UPDOWN), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Down, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Down, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_Up, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_Up, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("page"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Page_Down, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Page_Down, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_Page_Up, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_Page_Up, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("leave"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEAVE), &_action_def_move);
