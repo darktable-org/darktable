@@ -129,7 +129,11 @@ typedef enum dt_dev_pixelpipe_status_t
     as we do for above shutdown modes.
 
     DT_DEV_PIXELPIPE_STOP_DATA
-    A request to restart with different module parameters.
+    A request to restart with different module parameters,
+    writing back input cl_mem to host for a faster restart if possible.
+
+    DT_DEV_PIXELPIPE_STOP_PIECE
+    A module has stopped within the piece process() variants.
     As we missed processing the correct output and all following modules
     will give different results accordingly we clear cachelines for following
     modules (possibly writing back input cl_mem to host for a faster restart).
@@ -143,6 +147,7 @@ typedef enum dt_dev_pixelpipe_stopper_t
   DT_DEV_PIXELPIPE_STOP_HQ,
   DT_DEV_PIXELPIPE_STOP_ZOOM,
   DT_DEV_PIXELPIPE_STOP_DATA,
+  DT_DEV_PIXELPIPE_STOP_PIECE,
 } dt_dev_pixelpipe_stopper_t;
 
 typedef struct dt_dev_detail_mask_t
@@ -334,6 +339,8 @@ const char *dt_dev_pixelpipe_shutdown_to_str(const dt_dev_pixelpipe_stopper_t st
 
 // sets pipe->shutdown in atomic CAS mode so only one mode is possible per pipe run
 void dt_dev_pixelpipe_set_shutdown(dt_dev_pixelpipe_t *pipe, const dt_dev_pixelpipe_stopper_t stopper);
+// Is there a pending shutdown request for the piece's pipe?
+gboolean dt_dev_piece_shutdown(dt_dev_pixelpipe_iop_t *piece, const gboolean test);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
