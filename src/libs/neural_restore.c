@@ -3968,7 +3968,7 @@ static void _preview_button_press_cb(GtkGestureSingle *gesture, int n_press,
   GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
-  if(gtk_gesture_single_get_button(gesture) != 1) return;
+  if(gtk_gesture_single_get_current_button(gesture) != 1) return;
 
   // thumbnail picking mode: click to select area and trigger preview
   if(d->picking_thumbnail && d->export_cairo)
