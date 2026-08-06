@@ -832,17 +832,36 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
 
   table->mouse_inside = FALSE;
 
-  // check crossing detail: don't clear mouse_over_id when leaving to
-  // a child widget (thumbnail) or due to a grab
+  /* Don't clear the mouse-over when leaving to a child widget (thumbnail),
+   * or while the pointer is grabbed: the shortcut machinery's synthetic
+   * crossings must not lose the hovered image (see #21729).
+   * GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
     if(event->crossing.detail != GDK_NOTIFY_INFERIOR
        && event->crossing.mode != GDK_CROSSING_GTK_GRAB
-       && event->crossing.mode != GDK_CROSSING_GRAB)
+       && event->crossing.mode != GDK_CROSSING_GRAB
+       && !dt_gui_pointer_is_grabbed())
       dt_control_set_mouse_over_id(NO_IMGID);
     gdk_event_free(event);
   }
+}
+
+// the image under the pointer, or NO_IMGID if the pointer is in an empty area
+static dt_imgid_t _culling_image_at_pos(const dt_culling_t *table,
+                                        const gdouble x,
+                                        const gdouble y)
+{
+  for(const GList *l = table->list; l; l = g_list_next(l))
+  {
+    const dt_thumbnail_t *th = l->data;
+    if(th->x <= x && th->x + th->width > x
+       && th->y <= y && th->y + th->height > y)
+      return th->imgid;
+  }
+  return NO_IMGID;
 }
 
 static void _event_enter_cb(GtkEventControllerMotion *controller,
@@ -850,13 +869,19 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
                               gdouble y,
                               dt_culling_t *table)
 {
-  // when entering the culling area from a child thumbnail (INFERIOR),
-  // clear the mouse-over id since we're now in the empty area
+  /* The pointer entered the culling area (from the filmstrip, a panel, or
+   * after a redraw).  Set the mouse-over to the image under the pointer, if
+   * any, else clear it.  Hit-testing the pointer instead of trusting the
+   * crossing detail is required: redraws under the pointer make GDK report
+   * VIRTUAL/NONLINEAR details instead of INFERIOR, which would otherwise
+   * leave a stale hovered image (see #21729). */
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
-    if(event->crossing.detail == GDK_NOTIFY_INFERIOR)
-      dt_control_set_mouse_over_id(NO_IMGID);
+    /* GTK4 migration: drop the pointer-grab check (see
+     * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+    if(!dt_gui_pointer_is_grabbed())
+      dt_control_set_mouse_over_id(_culling_image_at_pos(table, x, y));
     gdk_event_free(event);
   }
 }
@@ -938,6 +963,16 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
   if(current) gdk_event_get_root_coords(current, &root_x, &root_y);
 
   table->mouse_inside = TRUE;
+
+  /* keep the mouse-over in sync with the image under the pointer; this is
+   * what makes 'prioritize hovered image' work over the culling area.  The
+   * enter/leave crossings cannot be relied on alone -- redraws under the
+   * pointer make GDK miss them (see #21729).
+   * GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+  if(!table->panning && !dt_gui_pointer_is_grabbed())
+    dt_control_set_mouse_over_id(_culling_image_at_pos(table, x, y));
+
   if(!table->panning)
   {
     table->pan_x = root_x;
@@ -1239,10 +1274,23 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
   g_free(otxt);
 
   // set widget signals
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK3: event controllers don't request input events from GDK -- the
+   * motion controller's event mask is 0 and gestures only request touch
+   * events -- so the widget must keep its own event mask or it never
+   * receives enter/leave/motion/button events at all (the GtkLayout bin
+   * window only adds exposure/scroll masks on top of this).  Without
+   * them, hover tracking (mouse_inside / mouse_over_id) breaks in the
+   * culling layout, and clicks on empty areas are dropped.
+   * GTK4 migration: delete this call -- GTK4 delivers all input events
+   * to every widget automatically. */
   gtk_widget_set_events(table->widget,
-                        GDK_EXPOSURE_MASK
+                        GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                         | GDK_TOUCHPAD_GESTURE_MASK);
+#endif
 
   dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);

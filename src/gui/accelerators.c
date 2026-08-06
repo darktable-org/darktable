@@ -3646,6 +3646,12 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view)
 
 static GSList *_pressed_keys = NULL, *_hold_keys = NULL; // lists of currently pressed and held keys
 static guint _pressed_button = 0;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _pointer_grabbed = FALSE; // seat grab held by the shortcut machinery
+                                          // (kept in sync with gdk_seat_grab/ungrab:
+                                          //  the Quartz backend cannot be trusted to
+                                          //  report it, see dt_gui_pointer_is_grabbed)
+#endif
 static guint _last_time = 0; // time of key or button press
                              // used to determine if release should trigger action
                              // set to 0 by any intermediate move (so no action on release)
@@ -4050,7 +4056,14 @@ lua_end:
 
 static void _ungrab_grab_widget()
 {
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK3 only: releasing the grab (see the grab in dt_shortcut_key_press).
+   * GTK4 migration: delete -- GTK4 removed the grab APIs (see migration
+   * guide "Stop using grabs"), so there is nothing to release and no
+   * synthetic crossings to guard against (see dt_gui_pointer_is_grabbed). */
   gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+  _pointer_grabbed = FALSE;
+#endif
 
   g_slist_free_full(_pressed_keys, g_free);
   _pressed_keys = NULL;
@@ -4064,6 +4077,21 @@ static void _ungrab_grab_widget()
     _grab_widget = NULL;
   }
 }
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// the shortcut machinery keeps its own track of the seat grab it performs
+// (set in dt_shortcut_key_press, cleared in _ungrab_grab_widget): the
+// Quartz backend (macOS) doesn't implement device grabs and GDK's
+// serial-based grab bookkeeping (serials are always 0 there) can silently
+// drop the grab before it is released, so callers wanting to tell apart
+// genuine pointer crossings from the synthetic ones generated around
+// shortcuts should use dt_gui_pointer_is_grabbed(), which combines this
+// flag with the GDK state
+gboolean dt_shortcut_pointer_grabbed(void)
+{
+  return _pointer_grabbed;
+}
+#endif
 
 static void _ungrab_at_focus_loss()
 {
@@ -4345,11 +4373,18 @@ static gboolean _key_release_delayed(gpointer timed_out)
 {
   _timeout_source = 0;
 
-  if(!_pressed_keys)
-    _ungrab_grab_widget();
-
+  /* Run the shortcut action while the seat grab is still held, then
+   * ungrab.  Releasing the grab first makes GDK (and on macOS the
+   * Quartz tracking-area machinery behind it) emit phantom crossing
+   * events between the ungrab and the action, which clear the
+   * mouse-over id and make 'prioritize hovered image' fall back to the
+   * selection (see #21729).  This also matches the double/triple-press
+   * path, which processes the action while the grab is held. */
   if(!timed_out)
     dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
+
+  if(!_pressed_keys)
+    _ungrab_grab_widget();
 
   if(!_pressed_keys)
     _sc = (dt_shortcut_t) { 0 };
@@ -4459,10 +4494,22 @@ void dt_shortcut_key_press(const dt_input_device_t id,
     {
       _lookup_mapping_widget();
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      /* GTK3 only: grabbing the pointer on every key press makes GDK (and
+       * the Quartz tracking areas behind it on macOS) synthesize phantom
+       * crossing events; the hover tracking in the lighttable filters them
+       * with dt_gui_pointer_is_grabbed() so that 'prioritize hovered image'
+       * keeps working (see #21729).
+       * GTK4 migration: delete -- GTK4 removed gdk_seat_grab() and
+       * gdk_device_grab() (see migration guide "Stop using grabs"), so the
+       * shortcut machinery no longer grabs anything and no synthetic
+       * crossings exist to filter. */
       gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
                     gtk_widget_get_window(_grab_window ? _grab_window
                                                        : dt_ui_main_window(darktable.gui->ui)),
                     GDK_SEAT_CAPABILITY_ALL, FALSE, NULL, NULL, NULL, NULL);
+      _pointer_grabbed = TRUE;
+#endif
     }
     else
     {
