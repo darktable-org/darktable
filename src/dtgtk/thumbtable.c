@@ -1136,14 +1136,20 @@ static void _event_scroll(GtkEventControllerScroll *controller,
   {
     gdouble deltaf = 0.f;
     gboolean did_scroll;
-    if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
+    if(dt_conf_get_bool("thumbtable_fractional_scrolling")
+       && dt_gdk_event_get_scroll_direction(e) == GDK_SCROLL_SMOOTH)
     {
-      // use controller dx/dy directly for fractional scrolling
-      did_scroll = (dx != 0.0 || dy != 0.0);
+      // pixel-precise scrolling for precision touch pads: use the raw
+      // platform deltas (scaled back up in _event_scroll_compressed), not
+      // the attenuated controller deltas, so movement tracks the finger
+      // 1:1 like the native scrollbars.  clicky wheels keep the
+      // row-by-row path below.
+      gdouble deltaf_x, deltaf_y;
+      did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
       if(did_scroll)
       {
-        // file manager scroll: tilt right (dx > 0) or scroll down (dy > 0) -> down
-        deltaf = fabs(dx) > fabs(dy) ? dx : dy;
+        // file manager scroll: tilt right (delta_x > 0) or scroll down (delta_y > 0) -> down
+        deltaf = fabs(deltaf_x) > fabs(deltaf_y) ? deltaf_x : deltaf_y;
       }
     }
     else
@@ -2663,8 +2669,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(table->widget, "drag-data-received",
                    G_CALLBACK(dt_thumbtable_event_dnd_received), table);
 
-  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
-                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _event_scroll, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
