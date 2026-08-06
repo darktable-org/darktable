@@ -162,6 +162,16 @@ void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name)
   gtk_style_context_remove_class(context, class_name);
 }
 
+gboolean dt_gui_pointer_is_grabbed()
+{
+  /* the keyboard shortcut machinery grabs the pointer on every key press
+   * (gdk_seat_grab()), which makes GDK synthesize crossing events that are
+   * not real pointer movements; this lets callers tell those apart from
+   * genuine crossings */
+  return gdk_display_device_is_grabbed(gdk_display_get_default(),
+                                       gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())));
+}
+
 /*
  * OLD UI API
  */
