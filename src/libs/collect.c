@@ -3613,7 +3613,7 @@ static void popup_button_callback_cb(GtkGestureSingle *gesture, int n_press,
                                          double x, double y,
                                          dt_lib_collect_rule_t *d)
 {
-  if(gtk_gesture_single_get_button(gesture) != 1)
+  if(gtk_gesture_single_get_current_button(gesture) != 1)
     return;
 
   GtkWidget *menu = gtk_menu_new();

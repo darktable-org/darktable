@@ -1289,7 +1289,7 @@ static void _places_button_press_cb(GtkGestureSingle *gesture, int n_press,
     gtk_tree_model_get(model, &iter, 0, &folder_name, 1, &folder_path, -1);
 
     // left-click: set as new root
-    if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
+    if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     {
       GtkTreeSelection *place_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
       gtk_tree_selection_select_path(place_selection, path);
@@ -1324,7 +1324,7 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
   gtk_get_current_event_state(&state);
 
   if(n_press == 1
-     && gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY
+     && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
      && !dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
     GtkTreePath *path = NULL;
@@ -1354,7 +1354,7 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
     }
     gtk_tree_path_free(path);
   }
-  else if(n_press >= 2 && gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
+  else if(n_press >= 2 && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     GtkTreePath *path = NULL;
     gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),

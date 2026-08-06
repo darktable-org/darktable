@@ -1262,7 +1262,7 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
    * gesture (meaning it came from this bridge) and uses GDK_BUTTON_PRIMARY.
    *
    * GTK4 migration: remove this call.  GtkGestureClick handles n_press
-   * natively and the callback can use gtk_gesture_single_get_button()
+   * natively and the callback can use gtk_gesture_single_get_current_button()
    * safely on the real gesture pointer. */
   dt_gui_connect_double_click(table->widget, _event_button_press_cb, table);
 

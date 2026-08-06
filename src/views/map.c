@@ -2168,7 +2168,7 @@ static void _view_map_click_pressed_cb(GtkGestureSingle *gesture,
     }
   }
 
-  if(gtk_gesture_single_get_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     // check if the click was in a location form - ctrl gives priority to images
     if(lib->loc.main.id > 0
