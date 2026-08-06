@@ -219,27 +219,39 @@ static float _action_process_toggle(gpointer target,
   if(DT_ACTION_TOGGLE_NEEDED(effect, move_size, value)
      && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW))
   {
-    GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-    event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
-                           || effect == DT_ACTION_EFFECT_ON_CTRL)
-                        ? GDK_CONTROL_MASK : 0;
-    event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
-                            || effect == DT_ACTION_EFFECT_ON_RIGHT)
-                         ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+    GtkGestureSingle *const gesture = g_object_get_data(G_OBJECT(target), DT_ACTION_GESTURE_KEY);
+    if(gesture)
+    {
+      /* the widget's activation lives in a gesture controller, which
+       * synthetic GdkEvents never reach: invoke it through the same
+       * "pressed" signal a real click produces (the callback manages the
+       * button states itself, as for a real click) */
+      g_signal_emit_by_name(gesture, "pressed", 1, 0.0, 0.0);
+    }
+    else
+    {
+      GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+      event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
+                             || effect == DT_ACTION_EFFECT_ON_CTRL)
+                          ? GDK_CONTROL_MASK : 0;
+      event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
+                              || effect == DT_ACTION_EFFECT_ON_RIGHT)
+                           ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
 
-    if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-    event->button.window = gtk_widget_get_window(target);
-    g_object_ref(event->button.window);
+      if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
+      event->button.window = gtk_widget_get_window(target);
+      g_object_ref(event->button.window);
 
-    // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
-    // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
-    gboolean handled;
-    g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
-    if(!handled) gtk_button_clicked(GTK_BUTTON(target));
-    event->type = GDK_BUTTON_RELEASE;
-    g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
+      // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
+      // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
+      gboolean handled;
+      g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
+      if(!handled) gtk_button_clicked(GTK_BUTTON(target));
+      event->type = GDK_BUTTON_RELEASE;
+      g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
 
-    gdk_event_free(event);
+      gdk_event_free(event);
+    }
 
     value = gtk_toggle_button_get_active(target);
 
@@ -261,28 +273,38 @@ static float _action_process_button(gpointer target,
      && gtk_widget_is_sensitive(target)
      && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW))
   {
-    if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-
-    if(effect != DT_ACTION_EFFECT_ACTIVATE
-      || !g_signal_handler_find(target, G_SIGNAL_MATCH_ID,
-                                g_signal_lookup("clicked", gtk_button_get_type()),
-                                0, NULL, NULL, NULL)
-      || !gtk_widget_activate(GTK_WIDGET(target)))
+    GtkGestureSingle *const gesture = g_object_get_data(G_OBJECT(target), DT_ACTION_GESTURE_KEY);
+    if(gesture)
     {
-      GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-      event->button.state = effect == DT_ACTION_EFFECT_ACTIVATE_CTRL
-                          ? GDK_CONTROL_MASK : 0;
-      event->button.button = effect == DT_ACTION_EFFECT_ACTIVATE_RIGHT
-                          ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+      /* same as _action_process_toggle: the widget's activation lives in a
+       * gesture controller, which synthetic GdkEvents never reach */
+      g_signal_emit_by_name(gesture, "pressed", 1, 0.0, 0.0);
+    }
+    else
+    {
+      if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
 
-      event->button.window = gtk_widget_get_window(target);
-      g_object_ref(event->button.window);
+      if(effect != DT_ACTION_EFFECT_ACTIVATE
+        || !g_signal_handler_find(target, G_SIGNAL_MATCH_ID,
+                                  g_signal_lookup("clicked", gtk_button_get_type()),
+                                  0, NULL, NULL, NULL)
+        || !gtk_widget_activate(GTK_WIDGET(target)))
+      {
+        GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+        event->button.state = effect == DT_ACTION_EFFECT_ACTIVATE_CTRL
+                            ? GDK_CONTROL_MASK : 0;
+        event->button.button = effect == DT_ACTION_EFFECT_ACTIVATE_RIGHT
+                            ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
 
-      gtk_widget_event(target, event);
-      event->type = GDK_BUTTON_RELEASE;
-      gtk_widget_event(target, event);
+        event->button.window = gtk_widget_get_window(target);
+        g_object_ref(event->button.window);
 
-      gdk_event_free(event);
+        gtk_widget_event(target, event);
+        event->type = GDK_BUTTON_RELEASE;
+        gtk_widget_event(target, event);
+
+        gdk_event_free(event);
+      }
     }
   }
 

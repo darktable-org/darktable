@@ -643,6 +643,16 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
 
+/* button of the current gesture press; 0 when the press was synthesized by
+ * the shortcut machinery (DT_ACTION_GESTURE_KEY), which stands for a primary
+ * click (GtkGestureSingle resets current-button to 0 on release, so a 0 is
+ * never a real press) */
+static inline guint dt_gui_current_button(GtkGestureSingle *gesture)
+{
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  return button ? button : GDK_BUTTON_PRIMARY;
+}
+
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
 #define dt_gui_deny(gesture) \
