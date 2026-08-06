@@ -5083,7 +5083,12 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   flags &= ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE;
 
   GtkEventController *const controller = gtk_event_controller_scroll_new(widget, flags);
-  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  /* BUBBLE phase matches the bubbling behavior of the replaced
+   * "scroll-event" signal: the controller fires whenever the event target
+   * is the widget or any of its descendants (e.g. child widgets such as
+   * thumbnails or star icons placed on a GtkLayout).  GTK_PHASE_TARGET
+   * would only fire when the widget is the target itself. */
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_BUBBLE);
   dt_gui_add_controller(widget, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
   g_signal_connect(controller, "scroll", G_CALLBACK(proxy), data);
