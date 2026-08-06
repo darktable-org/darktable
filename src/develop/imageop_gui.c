@@ -270,6 +270,9 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
     g_signal_connect_data(gesture, "pressed", callback, self, NULL, 0);
     g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    /* shortcut activation routes through this gesture (DT_ACTION_GESTURE_KEY,
+     * see _action_process_toggle in accelerators.c) */
+    g_object_set_data(G_OBJECT(w), DT_ACTION_GESTURE_KEY, gesture);
   }
 
   if(!ctrl_label)

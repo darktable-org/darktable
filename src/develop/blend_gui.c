@@ -1358,7 +1358,7 @@ static void _blendop_blendif_showmask_clicked(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  if(dt_gui_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
 
   GtkWidget *button = dt_gui_get_widget(gesture);
 
@@ -1416,7 +1416,7 @@ static void _blendop_masks_modes_none_clicked(GtkGestureSingle *gesture,
   GtkWidget *button = dt_gui_get_widget(gesture);
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY
      && data->selected_mask_mode != button)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->selected_mask_mode),
