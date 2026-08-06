@@ -2330,7 +2330,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     g->mask_mode = 0;
     g->cursor_valid = FALSE; // disables Gaussian mode when module loses focus
     g->preview_pipe_hash = DT_INVALID_HASH;
-    if(buttons) dt_dev_reprocess_center(self->dev);
+    if(buttons) dt_dev_reprocess_center(self->dev, self->iop_order);
     dt_control_queue_redraw_center();
   }
 }
