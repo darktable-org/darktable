@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
+#include "gui/gtk.h"
 #include "views/view.h"
 #include "bauhaus/bauhaus.h"
 
@@ -1392,14 +1393,16 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
 
   table->mouse_inside = FALSE;
 
-  // check crossing detail: don't clear mouse_over_id when leaving to
-  // a child widget (thumbnail) or due to a grab
+  /* Don't clear the mouse-over when leaving to a child widget (thumbnail),
+   * or while the pointer is grabbed: the shortcut machinery's synthetic
+   * crossings must not lose the hovered image (see #21729). */
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
     if(event->crossing.detail != GDK_NOTIFY_INFERIOR
        && event->crossing.mode != GDK_CROSSING_GTK_GRAB
-       && event->crossing.mode != GDK_CROSSING_GRAB)
+       && event->crossing.mode != GDK_CROSSING_GRAB
+       && !dt_gui_pointer_is_grabbed())
       dt_control_set_mouse_over_id(NO_IMGID);
     gdk_event_free(event);
   }
@@ -1412,12 +1415,18 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
 {
   dt_set_backthumb_time(0.0);
 
-  // when entering the thumbtable area from a child thumbnail (INFERIOR),
-  // clear the mouse-over id since we're now in the empty area
+  /* The pointer entered the thumbtable area (from a thumbnail, a panel, or
+   * after a redraw of the table).  Clear the mouse-over only if the pointer
+   * landed on the table itself; if it landed on a thumbnail, the thumbnail's
+   * own enter handler sets it.  Hit-testing the pointer instead of trusting
+   * the crossing detail is required: redraws under the pointer make GDK
+   * report VIRTUAL/NONLINEAR details instead of INFERIOR, which would
+   * otherwise leave a stale hovered image (see #21729). */
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
-    if(event->crossing.detail == GDK_NOTIFY_INFERIOR)
+    if(!dt_gui_pointer_is_grabbed()
+       && !_thumb_get_at_pos(table, (int)x, (int)y))
       dt_control_set_mouse_over_id(NO_IMGID);
     gdk_event_free(event);
   }
@@ -1555,6 +1564,15 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
   dt_set_backthumb_time(0.0);
 
   table->mouse_inside = TRUE;
+
+  /* The pointer is over the table itself (not a thumbnail): make sure no
+   * stale image stays hovered.  The enter/leave crossings cannot be relied
+   * on here -- redraws under the pointer make GDK miss the crossing from a
+   * thumbnail into the table area (see #21729). */
+  if(!table->dragging
+     && !dt_gui_pointer_is_grabbed()
+     && !_thumb_get_at_pos(table, (int)x, (int)y))
+    dt_control_set_mouse_over_id(NO_IMGID);
 
   // get root coordinates for drag tracking
   const GdkEvent *current = gtk_get_current_event();
