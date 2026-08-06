@@ -225,6 +225,20 @@ void dt_action_cleanup_instance_iop(dt_iop_module_t *module);
 // UX miscellaneous functions
 void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *msg, ...);
 
+/* Widgets whose activation lives in a gesture controller (a GtkGesture*
+ * "pressed"/"released" handler instead of widget class vfuncs or "clicked"/
+ * "toggled" signals) register their gesture here so the shortcut machinery
+ * can invoke the same code path as a real click: synthetic GdkEvents never
+ * reach gesture controllers, so without this a shortcut would flip the
+ * widget's visual state without activating it.  See _action_process_toggle
+ * and _action_process_button in accelerators.c.
+ *
+ * GTK4: this stored-gesture path survives the switch -- "button-press-event"
+ * does not exist in GTK4 and GdkEvent is opaque
+ * (https://docs.gtk.org/gtk4/migrating-3to4.html, "Event controllers and
+ * gestures replace event signals"). */
+#define DT_ACTION_GESTURE_KEY "_dt_action_gesture"
+
 // check if widget intentionally hidden (to disable it)
 gboolean dt_action_widget_invisible(GtkWidget *w);
 
