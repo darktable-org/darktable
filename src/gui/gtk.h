@@ -202,6 +202,9 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
 // call class function to add or remove CSS classes (need to be set on top of this file as first function is used in this file)
 void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
 void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
+/* true while the pointer is grabbed by our own shortcut machinery; used to
+ * ignore the synthetic crossing events GDK generates for those grabs */
+gboolean dt_gui_pointer_is_grabbed(void);
 
 void dt_open_url(const char *url);
 int dt_gui_theme_init(dt_gui_gtk_t *gui);
