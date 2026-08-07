@@ -1,10 +1,6 @@
 # Only build on real *nix system or MSYS2 installation
 if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
-    if (USE_OPENMP)
-        find_package(OpenMP)
-    else()
-        set(OPENMP_FOUND FALSE)
-    endif()
+    find_package(OpenMP)
 
     set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/modules")
     find_library(M_LIBRARY m)
@@ -16,12 +12,11 @@ if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
     endif()
 
     add_executable(darktable-curve-tool darktable-curve-tool.c exif-wrapper.cpp)
-    if (OPENMP_FOUND)
-        set_target_properties(darktable-curve-tool PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+    set_target_properties(darktable-curve-tool PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
         if(OpenMP_CXX_INCLUDE_DIRS)
             include_directories(${OpenMP_CXX_INCLUDE_DIRS})
         endif()
-    endif()
+
     target_link_libraries(darktable-curve-tool ${Exiv2_LIBRARY} ${OpenMP_CXX_LIBRARIES} m)
 
     configure_file(README.cmake.md README.md)

@@ -21,9 +21,7 @@
 
 #include "develop/masks.h"
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 /* Macros as in Inkscape */
 #define BM_WORDBITS   (8 * (int)sizeof(potrace_word))

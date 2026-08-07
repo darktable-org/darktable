@@ -47,9 +47,7 @@
 #include "win/scandir.h"
 #endif
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 #define SET_THRESHOLD 0.6f
 

@@ -44,7 +44,7 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 #endif
 #endif
 
-#if defined(_OPENMP) && __GNUC_PREREQ(4, 9)
+#if __GNUC_PREREQ(4, 9)
 #define OPENMP_SIMD_
 #define SIMD() simd
 #else

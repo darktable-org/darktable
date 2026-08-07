@@ -915,7 +915,6 @@ static void process_cmatrix_fastpath(dt_iop_module_t *self,
 
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
-#ifdef _OPENMP
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
   DT_OMP_FOR()
@@ -930,12 +929,6 @@ static void process_cmatrix_fastpath(dt_iop_module_t *self,
     else
       _cmatrix_fastpath_simple(out + 4*start, in + 4*start, end-start, d->cmatrix, corr);
   }
-#else // no OpenMP
-  if(clipping)
-    _cmatrix_fastpath_clipping(out, in, npixels, d->nmatrix, d->lmatrix, corr);
-  else
-    _cmatrix_fastpath_simple(out, in, npixels, d->cmatrix, corr);
-#endif
   // ensure that all nontemporal writes have been flushed to RAM before we return
   dt_omploop_sfence();
 }
@@ -1041,7 +1034,6 @@ static void process_cmatrix_proper(dt_iop_module_t *self,
 
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
-#ifdef _OPENMP
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
   DT_OMP_FOR()
@@ -1056,12 +1048,6 @@ static void process_cmatrix_proper(dt_iop_module_t *self,
     else
       _cmatrix_proper_simple(out + 4*start, in + 4*start, end-start, d, d->cmatrix, corr);
   }
-#else
-  if(clipping)
-    _cmatrix_proper_clipping(out, in, npixels, d,d->nmatrix, d->lmatrix, corr);
-  else
-    _cmatrix_proper_simple(out, in, npixels, d, d->cmatrix, corr);
-#endif
   // ensure that all nontemporal writes have been flushed to RAM before we return
   dt_omploop_sfence();
 }
