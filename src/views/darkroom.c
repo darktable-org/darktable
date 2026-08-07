@@ -5040,7 +5040,7 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-  const GdkEvent *current = gtk_get_current_event();
+  GdkEvent *current = gtk_get_current_event();
   if(!current) return;
 
   GdkModifierType state;
@@ -5054,18 +5054,27 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
   {
     const GdkEventScroll *scroll = (const GdkEventScroll *)current;
     gdouble pan_dx = 0.0, pan_dy = 0.0;
-    if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy)) return;
+    if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy))
+    {
+      gdk_event_free(current);
+      return;
+    }
     pan_dx *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
     pan_dy *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
     dt_print(DT_DEBUG_INPUT,
              "[darkroom second window] pan dx=%.3f dy=%.3f", pan_dx, pan_dy);
     if(pan_dx != 0.0 || pan_dy != 0.0)
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, pan_dx, pan_dy, TRUE);
+    gdk_event_free(current);
     return;
   }
 
   int delta_y;
-  if(!dt_gui_get_scroll_unit_delta((const GdkEventScroll *)current, &delta_y)) return;
+  if(!dt_gui_get_scroll_unit_delta((const GdkEventScroll *)current, &delta_y))
+  {
+    gdk_event_free(current);
+    return;
+  }
   const gboolean constrained =
     dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   gdouble x = 0.0, y = 0.0;
@@ -5074,6 +5083,7 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
            "[darkroom second window] scroll zoom delta_y=%d", delta_y);
   dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0 ? 1 : 0,
                    x, y, constrained);
+  gdk_event_free(current);
 }
 
 static gboolean _second_window_pinch_callback(GtkWidget *widget,

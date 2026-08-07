@@ -448,7 +448,11 @@ static gboolean _key_pressed_cb(GtkEventControllerKey *controller,
       break;
   }
 
-  return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), (GdkEventKey *)gtk_get_current_event());
+  GdkEvent *event = gtk_get_current_event();
+  const gboolean handled =
+    gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), (GdkEventKey *)event);
+  gdk_event_free(event);
+  return handled;
 }
 
 static gboolean _textview_focus(GtkWidget *widget,
