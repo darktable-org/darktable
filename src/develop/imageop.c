@@ -2587,8 +2587,21 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
                     button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
-static gint64 _presets_scrolled_last_step_time = 0;
-static int _presets_scrolled_last_dir = 0;
+/* per-presets-button hysteresis state: a continuous trackpad gesture is a
+ * series of swipes and each swipe ends with a short opposite-sign stream
+ * (fingers lifting / rebounding), which the discrete scroll proxy turns
+ * into a step back.  Mid-list that oscillates between two presets; at the
+ * first/last preset it flashes between the boundary preset and its
+ * neighbour and spams the "(first)"/"(last)" toast.  The state is stored
+ * per button (not process-global) so that a step on one module's presets
+ * cannot dampen another module's, and the dampener only applies to smooth
+ * (trackpad) scrolls: reversing a clicky wheel is a deliberate direction
+ * change and must apply immediately. */
+typedef struct dt_presets_scroll_t
+{
+  gint64 last_step_time;
+  int last_dir;
+} dt_presets_scroll_t;
 
 static void _presets_scrolled(GtkEventControllerScroll *controller,
                               gdouble dx,
@@ -2605,21 +2618,29 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
   const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
   if(delta == 0) return;
 
-  // Hysteresis: a continuous trackpad gesture is a series of swipes and
-  // each swipe ends with a short opposite-sign stream (fingers lifting /
-  // rebounding), which the proxy turns into a step back.  Mid-list that
-  // oscillates between two presets; at the first/last preset it flashes
-  // between the boundary preset and its neighbour and spams the
-  // "(first)"/"(last)" toast.  Ignore a reversal that arrives within a
-  // fraction of a second of the previous step - a real direction change
-  // comes from a new gesture.
+  GdkEvent *event = gtk_get_current_event();
+  const gboolean smooth = event
+    && dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH;
+  if(event) gdk_event_free(event);
+
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  dt_presets_scroll_t *state
+    = g_object_get_data(G_OBJECT(widget), "dt_presets_scroll_state");
+  if(!state)
+  {
+    state = g_malloc0(sizeof(dt_presets_scroll_t));
+    g_object_set_data_full(G_OBJECT(widget), "dt_presets_scroll_state",
+                           state, g_free);
+  }
+
   const gint64 now = g_get_monotonic_time();
-  if(_presets_scrolled_last_dir != 0
-     && delta != _presets_scrolled_last_dir
-     && now - _presets_scrolled_last_step_time < 250000)
+  if(smooth
+     && state->last_dir != 0
+     && (delta > 0) != (state->last_dir > 0)
+     && now - state->last_step_time < 250000)
     return;
-  _presets_scrolled_last_dir = delta > 0 ? 1 : -1;
-  _presets_scrolled_last_step_time = now;
+  state->last_dir = delta > 0 ? 1 : -1;
+  state->last_step_time = now;
 
   dt_gui_presets_apply_adjacent_preset(module, delta);
 }
