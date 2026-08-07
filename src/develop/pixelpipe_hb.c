@@ -312,10 +312,30 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
+static inline size_t _dev_used_cachemem(void)
+{
+  const dt_develop_t *dev = darktable.develop;
+  // FIXME take care about other caches not defined by resource levels?
+  return  dev->full.pipe->cache.allmem
+        + dev->preview2.pipe->cache.allmem
+        + dev->preview_pipe->cache.allmem;
+}
+
 size_t dt_get_available_pipe_mem(const dt_dev_pixelpipe_t *pipe)
 {
+  const size_t cachemem = _dev_used_cachemem();
   const size_t allmem = dt_get_available_mem();
-  return MAX(DT_MEGA, allmem / (dt_pipe_is_thumb(pipe) ? 3 : 1));
+  const size_t safemem = allmem > cachemem ? allmem - cachemem : 0;
+  const size_t granted = MAX(safemem, DT_MEGA * 128);
+
+  const gboolean warn = (cachemem > allmem / 2) || (granted < DT_MEGA * 1024);
+  if(warn)
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_TILING, "pipemem warning",
+      pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "allmem=%zuMB, cachemem=%zuMB, granted=%zuMB",
+      allmem / DT_MEGA, cachemem / DT_MEGA, granted / DT_MEGA);
+
+  return granted / (dt_pipe_is_thumb(pipe) ? 3 : 1);
 }
 
 static void get_output_format(dt_iop_module_t *module,

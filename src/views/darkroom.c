@@ -3594,6 +3594,19 @@ void enter(dt_view_t *self)
 
 }
 
+static inline void _clear_pipecache(dt_dev_pixelpipe_t *pipe)
+{
+  // As log as we don't have a better trim ...
+  dt_dev_pixelpipe_cache_checkmem(pipe);
+
+  if(pipe->bcache_data)
+  {
+    dt_free_align(pipe->bcache_data);
+    pipe->bcache_data = NULL;
+    pipe->bcache_hash = DT_INVALID_HASH;
+  }
+}
+
 void leave(dt_view_t *self)
 {
   dt_iop_color_picker_cleanup();
@@ -3690,6 +3703,11 @@ void leave(dt_view_t *self)
   dev->gui_leaving = TRUE;
 
   dt_pthread_mutex_lock(&dev->history_mutex);
+
+  // cleanup pipe caches leaving most important stuff available for darkroom re-enter
+  _clear_pipecache(dev->full.pipe);
+  _clear_pipecache(dev->preview2.pipe);
+  _clear_pipecache(dev->preview_pipe);
 
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2.pipe);
