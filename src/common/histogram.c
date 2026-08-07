@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,6 +65,28 @@ static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const pa
     // WARNING: you must ensure that bins_count is big enough
     // e.g. 2^16 if you expect 16 bit raw files
     histogram[MIN(in[i], max_bin)]++;
+  }
+}
+
+//------------------------------------------------------------------------------
+
+static inline void _bin_luma(const dt_dev_histogram_collection_params_t *const params,
+                             const void *const restrict pixel,
+                             uint32_t *const restrict histogram,
+                             const int j,
+                             const dt_iop_order_iccprofile_info_t *const profile)
+{
+  const dt_histogram_roi_t *roi = params->roi;
+  float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
+  const float max_bin = params->bins_count - 1;
+
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
+  {
+    const float luma = profile->matrix_in[1][0] * in[i*4]
+                       + profile->matrix_in[1][1] * in[i*4+1]
+                       + profile->matrix_in[1][2] * in[i*4+2];
+    const size_t bin = CLAMP(max_bin * luma, 0.0f, max_bin);
+    histogram[bin]++;
   }
 }
 
@@ -225,15 +247,23 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
       break;
 
     case IOP_CS_RGB:
-      histogram_stats->ch = 3u;
-      if(compensate_middle_grey && profile_info)
-        // for rgbcurve (compensated)
+      if(histogram_stats->ch == 1u)
+        // for histogram utility module
         _hist_worker(histogram_params, histogram_stats, pixel, histogram,
-                     _bin_rgb_compensated, profile_info);
+                     _bin_luma, profile_info);
       else
-        // used by levels, rgbcurve (uncompensated), rgblevels
-        _hist_worker(histogram_params, histogram_stats, pixel, histogram,
-                     _bin_rgb, profile_info);
+      {
+        histogram_stats->ch = 3u;
+        if(compensate_middle_grey && profile_info)
+          // for rgbcurve (compensated)
+          _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                       _bin_rgb_compensated, profile_info);
+        else
+          // used by levels, rgbcurve (uncompensated), rgblevels, and
+          // histogram utility module
+          _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                       _bin_rgb, profile_info);
+      }
       break;
 
     case IOP_CS_LAB:
@@ -257,7 +287,7 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   if(*histogram && histogram_max)
   {
     // RGB, Lab, and LCh
-    if(cst == IOP_CS_RGB || IOP_CS_LAB)
+    if(cst == IOP_CS_RGB || cst == IOP_CS_LAB)
     {
       uint32_t *hist = *histogram;
 
@@ -271,9 +301,15 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
         m[2] = hist[2];
       }
 
-      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-        for_each_channel(ch,aligned(hist:64) aligned(m:16))
-          m[ch] = MAX(m[ch], hist[k+ch]);
+      // intentionally skip first bucket to show bit more y-axis range
+      // for underexposed images
+      if(histogram_stats->ch == 1u)
+        for(int k = 1; k < histogram_stats->bins_count; k++)
+          m[0] = MAX(m[0], hist[k]);
+      else
+        for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
+          for_each_channel(ch,aligned(hist:64) aligned(m:16))
+            m[ch] = MAX(m[ch], hist[k+ch]);
     }
     else
       // raw max not implemented, as is only seen in exposure
