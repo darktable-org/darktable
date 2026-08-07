@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-02 12:31+0200\n"
-"PO-Revision-Date: 2026-08-02 15:51+0300\n"
+"PO-Revision-Date: 2026-08-07 23:11+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1365,7 +1365,7 @@ msgstr "Розміщення інформаційного рядка зобра�
 
 #: ../build/bin/preferences_gen.h:3213
 msgid "border around image in darkroom mode"
-msgstr "Облямівка навколо зображення в режимі темної кімнати"
+msgstr "Облямівка навколо зображення в режимі Темної кімнати"
 
 #: ../build/bin/preferences_gen.h:3229 ../build/bin/preferences_gen.h:3493
 #: ../build/bin/preferences_gen.h:4370 ../build/bin/preferences_gen.h:4440
@@ -1382,7 +1382,7 @@ msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you don't "
 "want any border."
 msgstr ""
-"Обробляти зображення в режимі темної кімнати з невеликою облямівкою.\n"
+"Обробляти зображення в режимі Темної кімнати з невеликою облямівкою.\n"
 "Встановіть в 0, якщо не хочете жодної облямівки."
 
 #: ../build/bin/preferences_gen.h:3257
@@ -1395,7 +1395,7 @@ msgid ""
 "disable to just show a toast message"
 msgstr ""
 "Показувати сірий екран завантаження під час навігації між зображеннями в "
-"темній кімнаті.\n"
+"Темній кімнаті.\n"
 "Якщо вимкнено, буде просто показуватись тимчасове сповіщення про виконання "
 "операції."
 
@@ -1434,7 +1434,7 @@ msgstr "Розгортати одночасно лише один модуль �
 #: ../build/bin/preferences_gen.h:3341
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"Ця опція перемикає поведінку натискання з Shift в режимі темної кімнати."
+"Ця опція перемикає поведінку натискання з Shift в режимі Темної кімнати."
 
 #: ../build/bin/preferences_gen.h:3350
 msgid "only collapse modules in current group"
@@ -2424,7 +2424,7 @@ msgid ""
 "when enabled, the filmstrip in culling mode and in the darkroom automatically "
 "scrolls to center on the selected image"
 msgstr ""
-"Коли це увімкнено, \"стрічка знімків\" у режимі вибракування та в темній "
+"Коли це увімкнено, \"стрічка знімків\" у режимі вибракування та в Темній "
 "кімнаті автоматично прокручується для встановлення вибраного зображення по "
 "центру."
 
@@ -7533,7 +7533,7 @@ msgstr ""
 #: ../src/common/darktable.c:2556
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
-"Щодо демозаїкізації масштабованих зображень в режимі темної кімнати "
+"Щодо демозаїкізації масштабованих зображень в режимі Темної кімнати "
 "перегляньте відповідний параметр в \"Налаштування > Темна кімната\""
 
 #: ../src/common/darktable.c:2562
@@ -12674,7 +12674,7 @@ msgstr "Автоматичне вирівнювання"
 #. visible name of script
 #: ../src/external/lua-scripts/official/auto_straighten.lua:109
 msgid "straighten an image in darkroom using image metadata"
-msgstr "Вирівняти зображення в темній кімнаті за допомогою метаданих зображення"
+msgstr "Вирівняти зображення в Темній кімнаті за допомогою метаданих зображення"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -16415,7 +16415,7 @@ msgstr "Вибрати колір із зображення"
 
 #: ../src/gui/gtk.c:196 ../src/views/darkroom.c:5398
 msgid "darktable - darkroom preview"
-msgstr "Darktable - попередній перегляд зображення з темної кімнати"
+msgstr "Darktable - попередній перегляд зображення з Темної кімнати"
 
 #: ../src/gui/gtk.c:205
 msgid "tooltips off"
@@ -28141,7 +28141,7 @@ msgstr ""
 "Діаметр розмиття у відсотках від найбільшого розміру зображення.\n"
 "Попередження: великі значення цього параметра можуть зробити попередній "
 "перегляд\n"
-"в темній кімнаті набагато повільнішим, якщо використовується профіль "
+"в Темній кімнаті набагато повільнішим, якщо використовується профіль "
 "знешумлення."
 
 #: ../src/iop/toneequal.c:3384
@@ -29545,7 +29545,7 @@ msgid ""
 msgstr ""
 "Уточнення набору зображень для відображення або редагування.\n"
 "Фільтри можна закріпити на верхній панелі інструментів,\n"
-"де вони також будуть доступні в темній кімнаті"
+"де вони також будуть доступні в Темній кімнаті"
 
 #: ../src/libs/filtering.c:308
 msgid "initial setting"
@@ -33956,7 +33956,7 @@ msgstr "Друге вікно"
 
 #: ../src/views/darkroom.c:3088
 msgid "display a second darkroom image window"
-msgstr "Відкрити друге вікно перегляду зображення з темної кімнати"
+msgstr "Відкрити друге вікно перегляду зображення з Темної кімнати"
 
 #. Register a toggle-pin action for the second window as a command so the
 #. shortcut works independently of the pin button widget.  The pin button
@@ -34466,7 +34466,7 @@ msgstr "Середній"
 
 #: ../src/views/lighttable.c:1150
 msgid "open image in darkroom"
-msgstr "Відкрити зображення в темній кімнаті"
+msgstr "Відкрити зображення в Темній кімнаті"
 
 #: ../src/views/lighttable.c:1155
 msgid "switch to next/previous image"
@@ -34609,7 +34609,7 @@ msgstr "Прокрутка вниз широка"
 
 #: ../src/views/map.c:3211
 msgid "[on image] open in darkroom"
-msgstr "[на зображенні] відкрити в темній кімнаті"
+msgstr "[на зображенні] відкрити в Темній кімнаті"
 
 #: ../src/views/map.c:3213
 msgid "[on map] zoom map"
