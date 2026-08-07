@@ -1276,6 +1276,13 @@ static void _dev_change_image(dt_develop_t *dev,
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
 
+  // Remember where we are looking, as a fraction of the image, while the
+  // current pipe can still be asked. The next image gets the same framing
+  // once its own dimensions are known (see restore_zoom handling in
+  // dt_dev_process_image_job).
+  dt_dev_snapshot_zoom_pos(&dev->full);
+  dt_dev_snapshot_zoom_pos(&dev->preview2);
+
   // change active image
   g_slist_free(darktable.view_manager->active_images);
   darktable.view_manager->active_images = g_slist_prepend(NULL, GINT_TO_POINTER(imgid));
@@ -4030,6 +4037,10 @@ void leave(dt_view_t *self)
   dt_iop_color_picker_cleanup();
   if(darktable.lib->proxy.colorpicker.picker_proxy)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
+
+  // Drop any pending viewport centre carry-over: re-entering the darkroom
+  // starts from whatever zoom state the new session sets up.
+  darktable.develop->full.restore_zoom = darktable.develop->preview2.restore_zoom = FALSE;
 
   // Clear cached surface so the loading screen shows on next darkroom entry
   if(darktable.gui->surface)
