@@ -1372,8 +1372,7 @@ static void _blendop_blendif_showmask_clicked(GtkGestureSingle *gesture,
       | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
       | DT_DEV_PIXELPIPE_DISPLAY_ANY);
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  GdkModifierType state = dt_gui_current_state(gesture);
 
   if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
     module->request_mask_display |=
@@ -1637,8 +1636,7 @@ static void _blendop_masks_add_shape(GtkGestureSingle *gesture,
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state = dt_gui_current_state(gesture);
   const gboolean continuous = dt_modifier_is(state, GDK_CONTROL_MASK);
 
   // find out who we are
@@ -1705,8 +1703,7 @@ static void _blendop_masks_show_and_edit(GtkGestureSingle *gesture,
 
   dt_iop_color_picker_reset(self, FALSE);
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  GdkModifierType state = dt_gui_current_state(gesture);
 
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,
                                               self->blend_params->mask_id);

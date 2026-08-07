@@ -5331,8 +5331,9 @@ static void _event_fit_v_button_clicked(GtkGestureSingle *gesture,
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5380,8 +5381,9 @@ static void _event_fit_h_button_clicked(GtkGestureSingle *gesture,
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5429,8 +5431,9 @@ static void _event_fit_both_button_clicked(GtkGestureSingle *gesture,
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5483,8 +5486,9 @@ static void _event_structure_auto_clicked(GtkGestureSingle *gesture,
 
     _do_clean_structure(self, p, TRUE);
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_enhance_t enhance;
 

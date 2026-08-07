@@ -340,13 +340,8 @@ static void _add_shape_callback(GtkGestureSingle *gesture,
   GtkWidget *widget = dt_gui_get_widget(gesture);
   const dt_iop_spots_gui_data_t *g = self->gui_data;
 
-  gboolean creation_continuous = FALSE;
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    creation_continuous = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
-    gdk_event_free(event);
-  }
+  const gboolean creation_continuous =
+    dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK);
 
   _add_shape(widget, creation_continuous, self);
 
