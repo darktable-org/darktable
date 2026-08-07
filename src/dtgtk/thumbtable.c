@@ -1463,20 +1463,7 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
 {
   dt_set_backthumb_time(0.0);
 
-  /*
-   * GTK3 bridge for GDK_2BUTTON_PRESS (see dt_gui_connect_double_click):
-   * GtkGestureMultiPress doesn't process multi-press events, so when a
-   * double/triple-click is detected by the classic "button-press-event"
-   * signal handler, it calls this callback with gesture=NULL.  In that
-   * case the button is always GDK_BUTTON_PRIMARY (GDK_2BUTTON_PRESS only
-   * occurs for primary button).
-   *
-   * GTK4 migration: remove the ternary and just call
-   * gtk_gesture_single_get_current_button(gesture) directly — GtkGestureClick
-   * will provide a valid gesture pointer for all n_press values. */
-  const guint button = gesture
-    ? gtk_gesture_single_get_current_button(gesture)
-    : GDK_BUTTON_PRIMARY;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(button == GDK_BUTTON_PRIMARY && n_press == 2)
@@ -2675,15 +2662,6 @@ dt_thumbtable_t *dt_thumbtable_new()
                    G_CALLBACK(_event_draw), table);
   dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
   dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
-  /* GTK3 bridge: GtkGestureMultiPress does not process GDK_2BUTTON_PRESS.
-   * dt_gui_connect_double_click forwards double/triple clicks via a
-   * "button-press-event" signal handler.  The callback checks for NULL
-   * gesture (meaning it came from this bridge) and uses GDK_BUTTON_PRIMARY.
-   *
-   * GTK4 migration: remove this call.  GtkGestureClick handles n_press
-   * natively and the callback can use gtk_gesture_single_get_current_button()
-   * safely on the real gesture pointer. */
-  dt_gui_connect_double_click(table->widget, _event_button_press_cb, table);
 
   // we register globals signals
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,
