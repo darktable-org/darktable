@@ -2644,7 +2644,7 @@ void gui_init(dt_iop_module_t *self)
      NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick fill color from image"));
   dt_action_define_iop(self, NULL, N_("pick fill color"),
-                       g->colorpicker, &dt_action_def_toggle);
+                       g->colorpicker, &dt_action_def_color_picker);
 
   g->hbox_color_pick = dt_gui_hbox(dt_ui_label_new(_("fill color: ")),
                                    dt_gui_expand(g->colorpick), g->colorpicker);
