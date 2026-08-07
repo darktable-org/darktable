@@ -81,6 +81,11 @@ gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const
 /** invalidates all cachelines. */
 void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe);
 
+/** free the oldest non-important cachelines until the cache fits within 'reserve' bytes.
+    Used when leaving darkroom to hand memory back to the thumbnail cache while keeping a
+    small reserve for a fast return to the same image. */
+void dt_dev_pixelpipe_cache_trim(struct dt_dev_pixelpipe_t *pipe, const size_t reserve);
+
 /** invalidates all cachelines for modules with at least the same iop_order */
 void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, const int32_t order, const char *info);
 
