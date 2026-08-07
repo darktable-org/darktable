@@ -1477,7 +1477,6 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
      && (!strcmp(format->mime(NULL), "image/avif")
          || !strcmp(format->mime(NULL), "image/heif")
          || !strcmp(format->mime(NULL), "image/x-exr")
-         || !strcmp(format->mime(NULL), "image/jxl")
          || !strcmp(format->mime(NULL), "image/x-xcf")))
   {
     const int32_t meta_all =
@@ -1487,7 +1486,43 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     md_flags_set = metadata ? (metadata->flags & meta_all) == meta_all : FALSE;
   }
 
-  if(!ignore_exif && md_flags_set)
+  // Some formats expect to add metadata in the encoder instead of re-opening the file with exiv2.
+  gboolean md_encoder_adds_exif = !strcmp(format->mime(NULL), "image/jxl");
+
+  if (!ignore_exif && md_encoder_adds_exif)
+  {
+    uint8_t *exif_profile0 = NULL; // Exif data should be 65536 bytes
+                                   // max, but if original size is
+                                   // close to that, adding new tags
+                                   // could make it go over that... so
+                                   // let it be and see what happens
+                                   // when we write the image
+    char pathname[PATH_MAX] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
+
+    // Read unfiltered exif from source image
+    uint8_t *exif_profile0 = NULL;
+    const int length0 = dt_exif_read_blob(&exif_profile0, pathname, imgid, sRGB,
+                                          processed_width, processed_height, FALSE);
+
+    // Filter metadata in-memory (no temporary files needed)
+    uint8_t *filtered_exif = NULL;
+    int filtered_exif_len = 0;
+    if(!ignore_exif && md_flags_set && exif_profile0 && length0 > 0)
+    {
+      filtered_exif_len = dt_exif_write_blob_to_buffer(exif_profile0, length0, &filtered_exif, 1);
+    }
+    free(exif_profile0);
+
+    // write image with filtered metadata
+    res = (format->write_image(format_params, filename, outbuf, icc_type,
+                              icc_filename, filtered_exif, filtered_exif_len, imgid,
+                              num, total, &pipe, export_masks)) != 0;
+
+    g_free(filtered_exif);
+  }
+  else if(!ignore_exif && md_flags_set)
   {
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes
                                   // max, but if original size is
