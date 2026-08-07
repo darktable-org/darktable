@@ -1574,9 +1574,8 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
     dt_control_set_mouse_over_id(NO_IMGID);
 
   // get root coordinates for drag tracking
-  const GdkEvent *current = gtk_get_current_event();
   gdouble root_x = 0, root_y = 0;
-  if(current) gdk_event_get_root_coords(current, &root_x, &root_y);
+  dt_gui_get_current_root_coords(&root_x, &root_y);
 
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
