@@ -3722,6 +3722,12 @@ static gboolean _pointer_grabbed = FALSE; // seat grab held by the shortcut mach
                                           //  report it, see dt_gui_pointer_is_grabbed)
 #endif
 static guint _last_time = 0; // time of key or button press
+
+/* a hold key's delayed release is pending (see dt_shortcut_key_release):
+ * the hold action was already dispatched (ON at engage, OFF at release),
+ * so the delayed release must not re-run the shortcut pass, it only has
+ * to clear _sc once the double/triple-press window elapses */
+static gboolean _hold_release_pending = FALSE;
                              // used to determine if release should trigger action
                              // set to 0 by any intermediate move (so no action on release)
 static guint  _last_mapping_time = 0;
@@ -4325,6 +4331,16 @@ static inline void _interrupt_delayed_release(gboolean trigger)
     g_source_remove(_timeout_source);
     _timeout_source = 0;
 
+    if(_hold_release_pending)
+    {
+      /* the cancelled delayed release belonged to a hold key whose action
+       * was already dispatched: drop the stale key so the reentrant pass
+       * below (and any later shortcut lookup) cannot re-dispatch it */
+      _hold_release_pending = FALSE;
+      _sc.key_device = 0;
+      _sc.key = 0;
+    }
+
     if(trigger)
       dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
 
@@ -4448,8 +4464,15 @@ static gboolean _key_release_delayed(gpointer timed_out)
    * events between the ungrab and the action, which clear the
    * mouse-over id and make 'prioritize hovered image' fall back to the
    * selection (see #21729).  This also matches the double/triple-press
-   * path, which processes the action while the grab is held. */
-  if(!timed_out)
+   * path, which processes the action while the grab is held.
+   *
+   * A released hold key's action was already dispatched by the hold
+   * machinery (DT_ACTION_EFFECT_ON at engage, OFF at release), so for it
+   * this pass only has to clear _sc, not re-run the shortcut. */
+  const gboolean hold_release = _hold_release_pending;
+  _hold_release_pending = FALSE;
+
+  if(!timed_out && !hold_release)
     dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
 
   if(!_pressed_keys)
@@ -4735,6 +4758,17 @@ void dt_shortcut_key_release(const dt_input_device_t id,
     held_data->hold_def->process(NULL, held_data->hold_element, DT_ACTION_EFFECT_OFF, 1);
     g_free(held_data);
     _hold_keys = g_slist_delete_link(_hold_keys, held_key);
+
+    /* schedule the same delayed cleanup a normal key release gets: the
+     * double/triple-press window needs _sc.key to stay valid for a fast
+     * consecutive press of this key, but once the window elapses _sc must
+     * be cleared -- otherwise the stale hold key makes every later
+     * move/scroll shortcut resolve as "that key + move" (see
+     * _shortcut_closest_match, which requires c->key == s->key) and wheel
+     * scrolling stops working.  The HOLD_OFF dispatch above replaces the
+     * shortcut pass the delayed release would otherwise run, so flag it. */
+    _hold_release_pending = TRUE;
+    _delay_for_double_triple(time, -1);
     return;
   }
 
