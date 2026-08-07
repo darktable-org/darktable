@@ -70,6 +70,8 @@ changes (where available).
 
 - Clarified multi-image rating toasts for un-reject and for mixed
   upgrade/downgrade results across the selection.
+- Fix blank module instance names when going back in darkroom action history
+- Do not override library edit history from XMP sidecar file when using darktable-cli with a library file
 
 ## Lua
 
