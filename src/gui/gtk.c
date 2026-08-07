@@ -4788,6 +4788,28 @@ void dt_gui_add_controller(GtkWidget *widget,
 #endif
 }
 
+/*
+ * Root (screen-absolute) coordinates of the current event, or FALSE if there
+ * is no current event.  gtk_get_current_event() returns an owned copy on
+ * GTK3 (transfer full), so the copy is released here -- the whole
+ * get-event/use/free dance is confined to this one helper.
+ *
+ * GTK4 migration: gtk_get_current_event() disappears; gesture/controller
+ * callbacks get the event from gtk_gesture_get_last_event() or
+ * gtk_event_controller_get_current_event() (borrowed, no free).  Callers
+ * of this helper should then switch to those and read the coordinates
+ * directly, or drop the helper and use
+ * gtk_gesture_get_last_event(gesture, NULL).
+ */
+gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y)
+{
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return FALSE;
+  const gboolean ok = gdk_event_get_root_coords(event, x, y);
+  gdk_event_free(event);
+  return ok;
+}
+
 static void _gesture_cancel(GtkGestureSingle *gesture,
                             GdkEventSequence *sequence,
                             GtkWidget *widget)

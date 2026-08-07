@@ -695,6 +695,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     gtk_tree_path_free(path);
+    gdk_event_free(event);
     return;
   }
 
@@ -717,6 +718,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     view_popup_menu(treeview, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
+    gdk_event_free(event);
     return;
   }
 
@@ -732,10 +734,12 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
+    gdk_event_free(event);
     return;
   }
 
   if(path) gtk_tree_path_free(path);
+  gdk_event_free(event);
 }
 
 static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
@@ -3674,7 +3678,9 @@ static void popup_button_callback_cb(GtkGestureSingle *gesture, int n_press,
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), gtk_get_current_event());
+  GdkEvent *event = gtk_get_current_event();
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), event);
+  gdk_event_free(event);
   return;
 }
 

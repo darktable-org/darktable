@@ -1518,7 +1518,9 @@ static void _tree_button_pressed_cb(GtkGestureSingle *gesture, int n_press, doub
 
     gtk_widget_show_all(GTK_WIDGET(menu));
 
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), gtk_get_current_event());
+    GdkEvent *event = gtk_get_current_event();
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), event);
+    gdk_event_free(event);
   }
 }
 

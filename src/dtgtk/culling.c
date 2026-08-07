@@ -937,9 +937,7 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
   }
 
   // start panning — need root coordinates for pan tracking
-  const GdkEvent *current = gtk_get_current_event();
-  if(current)
-    gdk_event_get_root_coords(current, &table->pan_x, &table->pan_y);
+  dt_gui_get_current_root_coords(&table->pan_x, &table->pan_y);
   table->panning = TRUE;
 }
 
@@ -949,9 +947,8 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
                                       dt_culling_t *table)
 {
   // get root coordinates for pan tracking
-  const GdkEvent *current = gtk_get_current_event();
   gdouble root_x = 0, root_y = 0;
-  if(current) gdk_event_get_root_coords(current, &root_x, &root_y);
+  dt_gui_get_current_root_coords(&root_x, &root_y);
 
   table->mouse_inside = TRUE;
 

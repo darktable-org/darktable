@@ -2088,7 +2088,11 @@ static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
     }
   }
 
-  return dt_gui_search_start(widget, (GdkEventKey *)gtk_get_current_event(), GTK_SEARCH_ENTRY(search_entry));
+  GdkEvent *event = gtk_get_current_event();
+  const gboolean handled =
+    dt_gui_search_start(widget, (GdkEventKey *)event, GTK_SEARCH_ENTRY(search_entry));
+  gdk_event_free(event);
+  return handled;
 }
 
 static void _add_shortcuts_to_tree()

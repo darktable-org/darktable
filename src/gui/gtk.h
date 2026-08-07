@@ -566,6 +566,17 @@ gboolean dt_gui_long_click(const guint second,
 void dt_gui_add_controller(GtkWidget *widget,
                            gpointer controller);
 
+/*
+ * Root (screen-absolute) coordinates of the current event, or FALSE when
+ * there is no current event.  Owns and releases the gtk_get_current_event()
+ * copy internally (GTK3 returns transfer-full).
+ *
+ * GTK4 migration: gtk_get_current_event() disappears; use
+ * gtk_gesture_get_last_event()/gtk_event_controller_get_current_event()
+ * (borrowed) and drop this helper.
+ */
+gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y);
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,

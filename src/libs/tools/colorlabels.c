@@ -282,13 +282,9 @@ static void _lib_colorlabels_button_press_callback(GtkGestureSingle *gesture, in
      && colorlabel != 5)  // The button to reset colorlabels needs no description
   {
     d->colorlabel = colorlabel;
-    GdkEvent *ev = gtk_get_current_event();
-    if(ev)
-    {
-      gdouble root_x, root_y;
-      gdk_event_get_root_coords(ev, &root_x, &root_y);
+    gdouble root_x, root_y;
+    if(dt_gui_get_current_root_coords(&root_x, &root_y))
       _lib_colorlabels_edit(self, root_x, root_y);
-    }
   }
   else
   {
