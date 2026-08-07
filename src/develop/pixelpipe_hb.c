@@ -1368,16 +1368,42 @@ static inline dt_dev_pixelpipe_stopper_t _module_pipe_stop(dt_dev_pixelpipe_t *p
   if(stopper <= DT_DEV_PIXELPIPE_PROCESSING)
     return DT_DEV_PIXELPIPE_STOP_NO;    // as being zero we can do simple if()
 
+  /** Ignore some UI shutdown requests
+      As every shutdown request is restarting the pipe it's better to ignore them
+      by resetting shutdown to DT_DEV_PIXELPIPE_PROCESSING if
+      - we do mask visualizing or are in fast pipe mode
+      - we are very late in the pipe
+  */
+  const gboolean simple =
+           stopper == DT_DEV_PIXELPIPE_STOP_NODES
+        || stopper == DT_DEV_PIXELPIPE_STOP_HQ
+        || stopper == DT_DEV_PIXELPIPE_STOP_ZOOM
+        || stopper == DT_DEV_PIXELPIPE_STOP_DATA;
+
+  // colorout as a marker for "late in the pipe"
+  const gboolean ignore_late = simple
+                            && module->iop_order >= dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorout", 0);
+
+  const gboolean ignore_visual = (stopper == DT_DEV_PIXELPIPE_STOP_ZOOM || stopper == DT_DEV_PIXELPIPE_STOP_DATA)
+                              && (dt_pipe_mask_display(pipe) || dt_pipe_is_fast(pipe));
+
+  if(ignore_late || ignore_visual)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "ignore shutdown", pipe, module, pipe->devid, NULL, NULL,"%s because of %s%s",
+        dt_dev_pixelpipe_shutdown_to_str(stopper),
+        ignore_late ? "late " : "",
+        ignore_late ? module->op : dt_pipe_mask_display(pipe) ? "mask visual" : "fast pipe");
+    dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_PROCESSING);
+    return DT_DEV_PIXELPIPE_STOP_NO;
+  }
+
   dt_print_pipe(DT_DEBUG_PIPE, "module pipe stop",
       pipe, module, pipe->devid, NULL, NULL, "%s",
       dt_dev_pixelpipe_shutdown_to_str(stopper));
 
   dt_dev_pixelpipe_invalidate_cacheline(pipe, outcacheline, NULL);
 
-  if(stopper == DT_DEV_PIXELPIPE_STOP_NODES
-        || stopper == DT_DEV_PIXELPIPE_STOP_HQ
-        || stopper == DT_DEV_PIXELPIPE_STOP_ZOOM
-        || stopper == DT_DEV_PIXELPIPE_STOP_DATA)
+  if(simple)
     return stopper;
 
   if(stopper == DT_DEV_PIXELPIPE_STOP_PIECE)
