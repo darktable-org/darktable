@@ -2205,6 +2205,7 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
       dt_iop_color_picker_reset(self, TRUE);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+      return; // an endpoint reset must not fall through into node removal
     }
 
     // right click deletes the node, ctrl+right click reset the node to y-zero

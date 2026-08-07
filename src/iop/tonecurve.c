@@ -1950,6 +1950,7 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
       tonecurve[g->selected].y = tonecurve[g->selected].x = reset_value;
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+      return; // an endpoint reset must not fall through into node removal
     }
 
     for(int k = g->selected; k < nodes - 1; k++)
