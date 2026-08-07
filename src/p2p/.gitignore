@@ -1,0 +1,7 @@
+# Go build outputs
+p2p
+daemon
+dt-p2p-daemon
+*.so
+*.a
+*.test

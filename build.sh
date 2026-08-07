@@ -14,7 +14,7 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 # ---------------------------------------------------------------------------
 
 INSTALL_PREFIX_DEFAULT="/opt/darktable"
-INSTALL_PREFIX="$INSTALL_PREFIX_DEFAULT"
+INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX:-$INSTALL_PREFIX_DEFAULT}"
 BUILD_TYPE_DEFAULT="RelWithDebInfo"
 BUILD_TYPE="$BUILD_TYPE_DEFAULT"
 BUILD_DIR_DEFAULT="$DT_SRC_DIR/build"
@@ -302,6 +302,14 @@ clean()
 
 MAKE_TASKS=$(num_cpu)
 MAKE=$(make_name)
+
+# In WSL, Windows paths containing parentheses (e.g. "Program Files (x86)") get
+# baked into cmake-generated build rules and cause /bin/sh syntax errors at build
+# time. Strip Windows drive mounts from PATH before cmake sees it.
+if grep -qi microsoft /proc/version 2>/dev/null; then
+	PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -v '^/mnt/[a-z]/' | tr '\n' ':' | sed 's/:$//')
+	export PATH
+fi
 
 features_set_to_autodetect
 parse_args "$@"

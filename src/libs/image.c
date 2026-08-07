@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/ratings.h"
 #include "common/colorlabels.h"
 #include "common/grouping.h"
@@ -55,6 +56,8 @@ typedef struct dt_lib_image_t
   GtkWidget *refresh_button, *set_monochrome_button, *set_color_button;
   GtkWidget *copy_metadata_button, *paste_metadata_button, *clear_metadata_button;
   GtkWidget *rating_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
+  GtkWidget *create_proxy_button, *proxy_quality_spin;
+  GtkWidget *prefer_proxy_button;
   GtkWidget *page1; // saved here for lua extensions
   dt_imgid_t imageid;
 } dt_lib_image_t;
@@ -155,6 +158,27 @@ static void _duplicate_virgin(dt_action_t *action)
   dt_control_duplicate_images(TRUE);
 }
 
+static void _proxy_quality_changed(GtkSpinButton *spin, gpointer user_data)
+{
+  (void)user_data;
+  dt_conf_set_int("plugins/lighttable/proxy_quality",
+                  gtk_spin_button_get_value_as_int(spin));
+}
+
+static void _prefer_proxy_toggled(GtkToggleButton *btn, gpointer user_data)
+{
+  (void)user_data;
+  const gboolean active = gtk_toggle_button_get_active(btn);
+  dt_conf_set_bool("plugins/darkroom/prefer_proxy_media", active);
+  if(darktable.develop && dt_is_valid_imgid(darktable.develop->image_storage.id))
+  {
+    const dt_imgid_t imgid = darktable.develop->image_storage.id;
+    dt_mipmap_cache_evict_at_size(imgid, DT_MIPMAP_FULL);
+    dt_mipmap_cache_evict_at_size(imgid, DT_MIPMAP_F);
+    dt_dev_reload_image(darktable.develop, imgid);
+  }
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const int i = GPOINTER_TO_INT(user_data);
@@ -187,6 +211,8 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_reset_local_copy_images();
   else if(i == 14)
     dt_control_refresh_exif();
+  else if(i == 15)
+    dt_control_create_proxy_images();
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -225,6 +251,7 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_any);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->create_proxy_button), act_on_any);
   if(act_on_mult)
   {
     gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), TRUE);
@@ -595,6 +622,42 @@ void gui_init(dt_lib_module_t *self)
                                            _("remove selected images from the group"),
                                            GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_grid_attach(grid, d->ungroup_button, 2, line++, 2, 1);
+
+  // proxy media
+  d->create_proxy_button = dt_action_button_new
+    (self, N_("create proxy media"), button_clicked, GINT_TO_POINTER(15),
+     _("create a half-resolution AVIF proxy sidecar (*.proxy.avif) from the raw\n"
+       "for use on machines where the full raw is not available"), 0, 0);
+  gtk_grid_attach(grid, d->create_proxy_button, 0, line, 2, 1);
+
+  {
+    GtkWidget *quality_label = gtk_label_new(_("quality"));
+    gtk_widget_set_halign(quality_label, GTK_ALIGN_END);
+    gtk_grid_attach(grid, quality_label, 2, line, 1, 1);
+
+    const int default_quality = 85;
+    if(!dt_conf_key_exists("plugins/lighttable/proxy_quality"))
+      dt_conf_set_int("plugins/lighttable/proxy_quality", default_quality);
+    const int cur_quality = dt_conf_get_and_sanitize_int("plugins/lighttable/proxy_quality", 0, 100);
+
+    d->proxy_quality_spin = gtk_spin_button_new_with_range(0.0, 100.0, 1.0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->proxy_quality_spin), cur_quality);
+    gtk_widget_set_tooltip_text(d->proxy_quality_spin,
+                                _("proxy AVIF quality: 0 = smallest file, 100 = best quality"));
+    g_signal_connect(G_OBJECT(d->proxy_quality_spin), "value-changed",
+                     G_CALLBACK(_proxy_quality_changed), NULL);
+    gtk_grid_attach(grid, d->proxy_quality_spin, 3, line++, 1, 1);
+  }
+
+  d->prefer_proxy_button = gtk_check_button_new_with_label(_("prefer proxy media"));
+  gtk_widget_set_tooltip_text(d->prefer_proxy_button,
+    _("when a proxy sidecar (*.proxy.avif) exists, use it instead of the raw file\n"
+      "both develop to the same histogram — proxy is faster to load"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->prefer_proxy_button),
+    dt_conf_get_bool("plugins/darkroom/prefer_proxy_media"));
+  g_signal_connect(G_OBJECT(d->prefer_proxy_button), "toggled",
+                   G_CALLBACK(_prefer_proxy_toggled), NULL);
+  gtk_grid_attach(grid, d->prefer_proxy_button, 0, line++, 4, 1);
 
   // metadata operations
   grid = GTK_GRID(gtk_grid_new());

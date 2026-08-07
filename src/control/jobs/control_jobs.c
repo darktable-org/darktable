@@ -19,6 +19,7 @@
 #include "control/jobs/control_jobs.h"
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "imageio/proxy.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
@@ -379,6 +380,8 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
     {
       char dtfilename[PATH_MAX] = { 0 };
       dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), NULL);
+      char raw_filename[PATH_MAX];
+      g_strlcpy(raw_filename, dtfilename, sizeof(raw_filename));
       dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
       g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
       // write the sidecar, but ONLY if it is missing or its contents have changed
@@ -392,6 +395,9 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
         sqlite3_step(stmt);
         sqlite3_reset(stmt);
         sqlite3_clear_bindings(stmt);
+        // Do NOT push XMP here: this batch job runs for every image on startup
+        // and would flood the socket buffer, blocking this foreground job.
+        // P2P sync is triggered by the per-edit debounce hook instead.
       }
       dt_image_cache_read_release(img);
     }
@@ -3148,6 +3154,59 @@ void dt_control_import(GList *imgs,
   // if import in place single image => synchronous import
   while(wait)
     g_usleep(100);
+}
+
+// ---------------------------------------------------------------------------
+// Proxy media creation job
+// ---------------------------------------------------------------------------
+
+static int32_t _control_create_proxy_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
+  const guint total = g_list_length(t);
+  const int quality = GPOINTER_TO_INT(params->data);
+  double fraction = 0.0;
+  double prev_time = 0;
+
+  dt_control_job_set_progress_message(job,
+    ngettext("creating proxy for %d image", "creating proxies for %d images", total), total);
+
+  for(; t && !_job_cancelled(job); t = g_list_next(t))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+
+    char raw_path[PATH_MAX] = { 0 };
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, raw_path, sizeof(raw_path), &from_cache);
+
+    if(raw_path[0])
+    {
+      // Skip if a proxy already exists
+      char proxy_path[PATH_MAX];
+      const gboolean exists = dt_imageio_proxy_path(raw_path, proxy_path, sizeof(proxy_path))
+                              && g_file_test(proxy_path, G_FILE_TEST_IS_REGULAR);
+
+      if(!exists)
+        dt_imageio_create_proxy(raw_path, quality);
+    }
+
+    fraction += 1.0 / total;
+    _update_progress(job, fraction, &prev_time);
+  }
+
+  dt_control_queue_redraw_center();
+  return 0;
+}
+
+void dt_control_create_proxy_images(void)
+{
+  const int quality = dt_conf_get_and_sanitize_int("plugins/lighttable/proxy_quality", 0, 100);
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG,
+    _control_generic_images_job_create(
+      &_control_create_proxy_job_run,
+      N_("create proxy media"), quality,
+      NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
 // clang-format off

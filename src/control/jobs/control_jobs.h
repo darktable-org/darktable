@@ -68,6 +68,7 @@ void dt_control_export(GList *imgid_list,
 void dt_control_merge_hdr(void);
 void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace);
 void dt_control_refresh_exif(void);
+void dt_control_create_proxy_images(void);
 
 G_END_DECLS
 
