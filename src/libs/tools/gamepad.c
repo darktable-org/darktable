@@ -30,7 +30,7 @@ DT_MODULE(1)
 
 #ifdef HAVE_SDL
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 const char *name(dt_lib_module_t *self)
 {
@@ -50,12 +50,13 @@ uint32_t container(dt_lib_module_t *self)
 typedef struct dt_gamepad_device_t
 {
   dt_input_device_t id;
-  SDL_GameController *controller;
+  SDL_Gamepad *controller;
   Uint32 timestamp;
-  int value[SDL_CONTROLLER_AXIS_MAX];
-  int location[SDL_CONTROLLER_AXIS_MAX];
+  int value[SDL_GAMEPAD_AXIS_COUNT];
+  int location[SDL_GAMEPAD_AXIS_COUNT];
 } dt_gamepad_device_t;
 
+// SDL3 face buttons are south/east/west/north but share indices 0–3 with former a/b/x/y
 static const char *_button_names[]
   = { N_("button a"), N_("button b"), N_("button x"), N_("button y"),
       N_("button back"), N_("button guide"), N_("button start"),
@@ -65,10 +66,14 @@ static const char *_button_names[]
       N_("left trigger"), N_("right trigger"),
       NULL };
 
+static const struct { const char *alias; guint key; } _button_aliases[]
+  = { { N_("button south"), 0 }, { N_("button east"), 1 }, { N_("button west"), 2 }, { N_("button north"), 3 },
+      { NULL, 0 } };
+
 static gchar *_key_to_string(const guint key,
                              const gboolean display)
 {
-  const gchar *name = key < SDL_CONTROLLER_BUTTON_MAX + 2 ? _button_names[key] : N_("invalid gamepad button");
+  const gchar *name = key < SDL_GAMEPAD_BUTTON_COUNT + 2 ? _button_names[key] : N_("invalid gamepad button");
   return g_strdup(display ? _(name) : name);
 }
 
@@ -82,6 +87,13 @@ static gboolean _string_to_key(const gchar *string,
     else
       (*key)++;
 
+  for(int i = 0; _button_aliases[i].alias; i++)
+    if(!strcmp(_button_aliases[i].alias, string))
+    {
+      *key = _button_aliases[i].key;
+      return TRUE;
+    }
+
   return FALSE;
 }
 
@@ -93,7 +105,7 @@ static const char *_move_names[]
 static gchar *_move_to_string(const guint move,
                               const gboolean display)
 {
-  const gchar *name = move < SDL_CONTROLLER_AXIS_MAX + 4 /* diagonals */ ? _move_names[move] : N_("invalid gamepad axis");
+  const gchar *name = move < SDL_GAMEPAD_AXIS_COUNT + 4 /* diagonals */ ? _move_names[move] : N_("invalid gamepad axis");
   return g_strdup(display ? _(name) : name);
 }
 
@@ -126,7 +138,7 @@ static void _process_axis_timestep(dt_gamepad_device_t *gamepad,
   if(timestamp > gamepad->timestamp)
   {
     Uint32 time = timestamp - gamepad->timestamp;
-    for(SDL_GameControllerAxis axis = SDL_CONTROLLER_AXIS_LEFTX; axis <= SDL_CONTROLLER_AXIS_RIGHTY; axis++)
+    for(SDL_GamepadAxis axis = SDL_GAMEPAD_AXIS_LEFTX; axis <= SDL_GAMEPAD_AXIS_RIGHTY; axis++)
     {
       if(abs(gamepad->value[axis]) > 4000)
         gamepad->location[axis] += time * gamepad->value[axis];
@@ -145,7 +157,7 @@ static void _process_axis_and_send(dt_gamepad_device_t *gamepad,
 
   for(int side = 0; side < 2; side++)
   {
-    int stick = SDL_CONTROLLER_AXIS_LEFTX + 2 * side;
+    int stick = SDL_GAMEPAD_AXIS_LEFTX + 2 * side;
 
     gdouble angle = gamepad->location[stick] / (0.001 + gamepad->location[stick + 1]);
 
@@ -170,7 +182,7 @@ static void _process_axis_and_send(dt_gamepad_device_t *gamepad,
         }
         else
         {
-          gamepad->location[stick]  += size * step_size * angle;
+          gamepad->location[stick] += size * step_size * angle;
           dt_shortcut_move(gamepad->id, timestamp, stick + ((angle < 0) ? 5 : 4), size);
         }
       }
@@ -188,14 +200,14 @@ static gboolean _poll_devices(gpointer user_data)
   dt_gamepad_device_t *gamepad = NULL;
   SDL_JoystickID prev_which = -1;
 
-  while(SDL_PollEvent(&event) > 0 )
+  while(SDL_PollEvent(&event))
   {
     num_events++;
 
-    if(event.cbutton.which != prev_which)
+    if(event.gbutton.which != prev_which)
     {
-      prev_which = event.cbutton.which;
-      SDL_GameController *controller = SDL_GameControllerFromInstanceID(prev_which);
+      prev_which = event.gbutton.which;
+      SDL_Gamepad *controller = SDL_GetGamepadFromID(prev_which);
       gamepad = NULL;
       for(GSList *gamepads = self->data; gamepads; gamepads = gamepads->next)
         if(((dt_gamepad_device_t *)(gamepads->data))->controller == controller)
@@ -208,55 +220,55 @@ static gboolean _poll_devices(gpointer user_data)
 
     switch(event.type)
     {
-    case SDL_CONTROLLERBUTTONDOWN:
-      dt_print(DT_DEBUG_INPUT, "SDL button down event time %d id %d button %hhd state %hhd", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
-      _process_axis_and_send(gamepad, event.cbutton.timestamp);
-      dt_shortcut_key_press(gamepad->id, event.cbutton.timestamp, event.cbutton.button);
+    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+      dt_print(DT_DEBUG_INPUT, "SDL button down event time %u id %u button %hhd down %hhd", (guint)SDL_NS_TO_MS(event.gbutton.timestamp), (guint)event.gbutton.which, event.gbutton.button, event.gbutton.down);
+      _process_axis_and_send(gamepad, SDL_NS_TO_MS(event.gbutton.timestamp));
+      dt_shortcut_key_press(gamepad->id, SDL_NS_TO_MS(event.gbutton.timestamp), event.gbutton.button);
 
       break;
-    case SDL_CONTROLLERBUTTONUP:
-      dt_print(DT_DEBUG_INPUT, "SDL button up event time %d id %d button %hhd state %hhd", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
-      _process_axis_and_send(gamepad, event.cbutton.timestamp);
-      dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, event.cbutton.button);
+    case SDL_EVENT_GAMEPAD_BUTTON_UP:
+      dt_print(DT_DEBUG_INPUT, "SDL button up event time %u id %u button %hhd down %hhd", (guint)SDL_NS_TO_MS(event.gbutton.timestamp), (guint)event.gbutton.which, event.gbutton.button, event.gbutton.down);
+      _process_axis_and_send(gamepad, SDL_NS_TO_MS(event.gbutton.timestamp));
+      dt_shortcut_key_release(gamepad->id, SDL_NS_TO_MS(event.gbutton.timestamp), event.gbutton.button);
       break;
-    case SDL_CONTROLLERAXISMOTION:
-      dt_print(DT_DEBUG_INPUT, "SDL axis event type %d time %d id %d axis %hhd value %hd", event.caxis.type, event.caxis.timestamp, event.caxis.which, event.caxis.axis, event.caxis.value);
+    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+      dt_print(DT_DEBUG_INPUT, "SDL axis event type %u time %u id %u axis %hhd value %hd", event.gaxis.type, (guint)SDL_NS_TO_MS(event.gaxis.timestamp), (guint)event.gaxis.which, event.gaxis.axis, event.gaxis.value);
 
-      if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+      if(event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)
       {
-        int trigger = event.caxis.axis - SDL_CONTROLLER_AXIS_TRIGGERLEFT;
-        if(event.caxis.value / 10500 > gamepad->value[event.caxis.axis])
+        int trigger = event.gaxis.axis - SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+        if(event.gaxis.value / 10500 > gamepad->value[event.gaxis.axis])
         {
-          dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, SDL_CONTROLLER_BUTTON_MAX + trigger);
-          dt_shortcut_key_press(gamepad->id, event.cbutton.timestamp, SDL_CONTROLLER_BUTTON_MAX + trigger);
-          gamepad->value[event.caxis.axis] = event.caxis.value / 10500;
+          dt_shortcut_key_release(gamepad->id, SDL_NS_TO_MS(event.gbutton.timestamp), SDL_GAMEPAD_BUTTON_COUNT + trigger);
+          dt_shortcut_key_press(gamepad->id, SDL_NS_TO_MS(event.gbutton.timestamp), SDL_GAMEPAD_BUTTON_COUNT + trigger);
+          gamepad->value[event.gaxis.axis] = event.gaxis.value / 10500;
         }
-        else if(event.caxis.value / 9500 < gamepad->value[event.caxis.axis])
+        else if(event.gaxis.value / 9500 < gamepad->value[event.gaxis.axis])
         {
-          dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, SDL_CONTROLLER_BUTTON_MAX + trigger);
-          gamepad->value[event.caxis.axis] = event.caxis.value / 9500;
+          dt_shortcut_key_release(gamepad->id, SDL_NS_TO_MS(event.gbutton.timestamp), SDL_GAMEPAD_BUTTON_COUNT + trigger);
+          gamepad->value[event.gaxis.axis] = event.gaxis.value / 9500;
         }
       }
       else
       {
-        _process_axis_timestep(gamepad, event.caxis.timestamp);
-        gamepad->value[event.caxis.axis] = event.caxis.value;
+        _process_axis_timestep(gamepad, SDL_NS_TO_MS(event.gaxis.timestamp));
+        gamepad->value[event.gaxis.axis] = event.gaxis.value;
       }
       break;
-    case SDL_CONTROLLERDEVICEADDED:
+    case SDL_EVENT_GAMEPAD_ADDED:
       break;
     }
   }
 
   for(GSList *gamepads = self->data; gamepads; gamepads = gamepads->next) _process_axis_and_send(gamepads->data, SDL_GetTicks());
 
-  if(num_events) dt_print(DT_DEBUG_INPUT, "sdl num_events: %d time: %u", num_events, SDL_GetTicks());
+  if(num_events) dt_print(DT_DEBUG_INPUT, "sdl num_events: %d time: %u", num_events, (guint)SDL_GetTicks());
   return G_SOURCE_CONTINUE;
 }
 
 static void _gamepad_open_devices(dt_lib_module_t *self)
 {
-  if(SDL_Init(SDL_INIT_GAMECONTROLLER))
+  if(!SDL_Init(SDL_INIT_GAMEPAD))
   {
     dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] ERROR initialising SDL");
     return;
@@ -266,22 +278,24 @@ static void _gamepad_open_devices(dt_lib_module_t *self)
 
   dt_input_device_t id = dt_register_input_driver(self, &_driver_definition);
 
-  for(int i = 0; i < SDL_NumJoysticks() && i < 10; i++)
+  int count = 0;
+  SDL_JoystickID *ids = SDL_GetGamepads(&count);
+  if(ids)
   {
-    if(SDL_IsGameController(i))
+    for(int i = 0; i < count && i < 10; i++)
     {
-      SDL_GameController *controller = SDL_GameControllerOpen(i);
+      SDL_Gamepad *controller = SDL_OpenGamepad(ids[i]);
 
       if(!controller)
       {
         dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] ERROR opening game controller '%s'",
-                 SDL_GameControllerNameForIndex(i));
+                 SDL_GetGamepadNameForID(ids[i]));
         continue;
       }
       else
       {
         dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] opened game controller '%s'",
-                 SDL_GameControllerNameForIndex(i));
+                 SDL_GetGamepadNameForID(ids[i]));
       }
 
       dt_gamepad_device_t *gamepad = g_malloc0(sizeof(dt_gamepad_device_t));
@@ -291,6 +305,7 @@ static void _gamepad_open_devices(dt_lib_module_t *self)
 
       self->data = g_slist_append(self->data, gamepad);
     }
+    SDL_free(ids);
   }
   if(self->data)
   {
@@ -301,7 +316,7 @@ static void _gamepad_open_devices(dt_lib_module_t *self)
 
 static void _gamepad_device_free(dt_gamepad_device_t *gamepad)
 {
-  SDL_GameControllerClose(gamepad->controller);
+  SDL_CloseGamepad(gamepad->controller);
 
   g_free(gamepad);
 }
