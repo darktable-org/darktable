@@ -2632,7 +2632,7 @@ void gui_init(dt_iop_module_t *self)
      _("pick GUI color from image\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(g->colorpicker, "keep-active");
   dt_action_define_iop(self, N_("pickers"), N_("show color"),
-                       g->colorpicker, &dt_action_def_toggle);
+                       g->colorpicker, &dt_action_def_color_picker);
   g->colorpicker_set_values = dt_color_picker_new_with_cst(self,
                                                            DT_COLOR_PICKER_AREA,
                                                            NULL, IOP_CS_LCH);
@@ -2647,7 +2647,7 @@ void gui_init(dt_iop_module_t *self)
                                 "ctrl+drag to create a positive curve\n"
                                 "shift+drag to create a negative curve"));
   dt_action_define_iop(self, N_("pickers"), N_("create curve"),
-                       g->colorpicker_set_values, &dt_action_def_toggle);
+                       g->colorpicker_set_values, &dt_action_def_color_picker);
 
   // the nice graph
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,

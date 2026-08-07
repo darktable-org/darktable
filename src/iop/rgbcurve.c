@@ -1497,7 +1497,7 @@ void gui_init(dt_iop_module_t *self)
                                 "ctrl+click or right-click to select an area"));
   gtk_widget_set_name(g->colorpicker, "keep-active");
   dt_action_define_iop(self, N_("pickers"), N_("show color"),
-                       g->colorpicker, &dt_action_def_toggle);
+                       g->colorpicker, &dt_action_def_color_picker);
   g->colorpicker_set_values = dt_color_picker_new(self,
                                                   DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO,
                                                   NULL);
@@ -1512,7 +1512,7 @@ void gui_init(dt_iop_module_t *self)
                                 "ctrl+drag to create a positive curve\n"
                                 "shift+drag to create a negative curve"));
   dt_action_define_iop(self, N_("pickers"), N_("create curve"),
-                       g->colorpicker_set_values, &dt_action_def_toggle);
+                       g->colorpicker_set_values, &dt_action_def_color_picker);
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
