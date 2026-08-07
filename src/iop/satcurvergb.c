@@ -1686,6 +1686,7 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
                            cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
 
   cp->curve[n].y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
