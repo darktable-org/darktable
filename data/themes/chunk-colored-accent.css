@@ -1,0 +1,19 @@
+
+#right #module-header > button:first-child:checked,
+#right #basics-header-box > button:first-child:checked
+{
+  color: @active_module_icon_fg;
+}
+
+#right #module-header > button:first-child:hover,
+#right #basics-header-box > button:first-child:hover
+{
+  background-color: black;
+}
+
+#right > box:last-child #module-header
+{
+ background-color: @bg_color;
+ border-radius: 0px;
+ margin-right: 0.9em;
+}
