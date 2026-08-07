@@ -1043,7 +1043,7 @@ msgstr "Шаблон іменування файлів, який викорис�
 #: ../src/gui/preferences.c:632 ../src/libs/tools/lighttable.c:65
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
-msgstr "Світлий стіл"
+msgstr "Світловий стіл"
 
 #: ../build/bin/preferences_gen.h:2793 ../build/bin/preferences_gen.h:3144
 #: ../build/bin/preferences_gen.h:4036 ../src/gui/preferences.c:345
@@ -1109,7 +1109,7 @@ msgid ""
 "\n"
 "<b>disabled</b> actions apply to the current selection (less error prone)"
 msgstr ""
-"На Світлому столі, де відбувається вибракування, можна застосовувати дії "
+"На Світловому столі, де відбувається вибракування, можна застосовувати дії "
 "(наприклад, встановлення оцінок) до зображення, на яке наведено курсор, або "
 "до вибраних\n"
 "\n"
@@ -1125,7 +1125,7 @@ msgstr "Розгортати одночасно лише один сервісн
 
 #: ../build/bin/preferences_gen.h:2862
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
-msgstr "Ця опція перемикає поведінку shift+клік в режимі світлого стола."
+msgstr "Ця опція перемикає поведінку Shift+клік в режимі Світлового столу."
 
 #: ../build/bin/preferences_gen.h:2871
 msgid "scroll utility modules to the top when expanded"
@@ -1234,7 +1234,7 @@ msgstr ""
 "Зауважте, що це може зайняти багато місця на диску (кілька гігабайт для 20 "
 "тис. зображень) і кешовані файли ніколи не будуть видалятися.\n"
 "Якщо хочете, можете видалити їх вручну, це безпечно.\n"
-"З кешуванням продуктивність світлого столу значно збільшиться, якщо ви "
+"З кешуванням продуктивність Світлового столу значно збільшиться, якщо ви "
 "переглядаєте багато мініатюр.\n"
 "Щоб генерувати всі мініатюри всієї вашої колекції в автономному режимі, "
 "запустіть 'darktable-generate-cache'."
@@ -1258,12 +1258,12 @@ msgstr ""
 "Зауважте, що це може зайняти багато місця на диску (кілька гігабайт для 20 "
 "тис. зображень) і кешовані файли ніколи не будуть видалятися.\n"
 "Якщо хочете, можете видалити їх вручну, це безпечно.\n"
-"З кешуванням продуктивність світлого столу значно збільшиться при "
+"З кешуванням продуктивність Світлового столу значно збільшиться при "
 "масштабуванні зображення в режимі повного попереднього перегляду."
 
 #: ../build/bin/preferences_gen.h:3016
 msgid "enable smooth scrolling for lighttable thumbnails"
-msgstr "Увімкнути плавне прокручування мініатюр Світлого столу"
+msgstr "Увімкнути плавне прокручування мініатюр Світлового столу"
 
 #: ../build/bin/preferences_gen.h:3024
 msgid ""
@@ -1285,8 +1285,8 @@ msgid ""
 "to the selected size are generated while user is inactive in lighttable."
 msgstr ""
 "Якщо активовано \"Увімкнути запис кешу мініатюр на диск\", мініатюри аж до "
-"вибраного розміру створюються, поки користувач неактивний в режимі Світлого "
-"стола."
+"вибраного розміру створюються, поки користувач неактивний в режимі Світлового "
+"столу."
 
 #: ../build/bin/preferences_gen.h:3051
 msgid "reset cached thumbnails"
@@ -6156,7 +6156,7 @@ msgstr "16-бітний вихід"
 #: ../build/share/darktable/org.darktable.darktable.desktop.in.h:1
 #: ../data/org.darktable.darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
-msgstr "Віртуальний світлий стіл і темна кімната"
+msgstr "Віртуальний світловий стіл і темна кімната"
 
 #: ../build/share/darktable/org.darktable.darktable.desktop.in.h:2
 #: ../data/org.darktable.darktable.appdata.xml.in.h:1
@@ -6176,7 +6176,7 @@ msgid ""
 "view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
 "Darktable керує вашими raw файлами та зображеннями в базі даних, дає змогу "
-"переглядати їх у режимі Світлого стола й обробляти/покращувати їх у режимі "
+"переглядати їх у режимі Світлового столу й обробляти/покращувати їх у режимі "
 "Темної кімнати."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
@@ -6184,7 +6184,7 @@ msgid ""
 "Other modes besides lighttable and darkroom are a map for geotagging, "
 "tethering, print and a slideshow."
 msgstr ""
-"Інші режими, крім світлого стола та темної кімнати, - це мапа для "
+"Інші режими, крім Світлового столу та Темної кімнати, - це мапа для "
 "геотегування, керування камерою, друк та слайд-шоу."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:4
@@ -6197,7 +6197,7 @@ msgstr ""
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Віртуальний світлий стіл, показ колекції"
+msgstr "Віртуальний світловий стіл, показ колекції"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -12432,7 +12432,7 @@ msgstr "$(FOLDER.HOME) - домашній каталог"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1021
 #: ../src/gui/gtkentry.c:115
 msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr "$(FOLDER.DESKTOP) - каталог робочого стола"
+msgstr "$(FOLDER.DESKTOP) - каталог робочого столу"
 
 #. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:1023
@@ -15536,7 +15536,7 @@ msgstr "Помилка: забезпечте, щоб min_mip <= max_mip\n"
 #: ../src/generate-cache/main.c:252
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
-msgstr "Створення повного кешу мініатюр для світлого стола\n"
+msgstr "Створення повного кешу мініатюр для Світлового столу\n"
 
 #: ../src/gui/about.c:34
 #, c-format
@@ -16450,7 +16450,7 @@ msgstr "Режими"
 #: ../src/gui/gtk.c:1541
 msgctxt "menu"
 msgid "Lighttable"
-msgstr "Світлий стіл"
+msgstr "Світловий стіл"
 
 #: ../src/gui/gtk.c:1542
 msgctxt "menu"
@@ -30973,7 +30973,7 @@ msgstr "Оновити стрічку знімків"
 
 #: ../src/libs/map_locations.c:797
 msgid "go to collection (lighttable)"
-msgstr "Перейти до колекції (світлий стіл)"
+msgstr "Перейти до колекції (Світловий стіл)"
 
 #: ../src/libs/map_locations.c:842
 msgid "terminate edit (press enter or escape) before selecting another location"
@@ -33562,11 +33562,11 @@ msgstr "Натисніть, щоб перейти до розкладки фай
 
 #: ../src/libs/tools/lighttable.c:469
 msgid "toggle zoomable lighttable layout"
-msgstr "Перемкнути розкладку масштабованого світлого стола"
+msgstr "Перемкнути розкладку масштабованого Світлового столу"
 
 #: ../src/libs/tools/lighttable.c:472
 msgid "click to enter zoomable lighttable layout."
-msgstr "Натисніть, щоб перейти до розкладки масштабованого світлого стола"
+msgstr "Натисніть, щоб перейти до розкладки масштабованого Світлового столу"
 
 #: ../src/libs/tools/lighttable.c:477
 msgid "toggle culling mode"
@@ -33699,7 +33699,7 @@ msgid ""
 "if stored on an external drive, ensure that the drive is connected and files\n"
 "can be accessed in the same locations as when you imported this image."
 msgstr ""
-"Файл '%s' недоступний, переходимо до режиму Світлого стола.\n"
+"Файл '%s' недоступний, переходимо до режиму Світлового столу.\n"
 "\n"
 "Якщо файл зберігається на зовнішньому диску, переконайтеся,\n"
 "що диск під’єднано та файли доступні у тих самих місцях, що й\n"
@@ -33712,7 +33712,7 @@ msgid ""
 "\n"
 "please check that it was correctly and completely copied from the camera."
 msgstr ""
-"Файл '%s' виглядає пошкодженим, переходимо до режиму Світлого стола.\n"
+"Файл '%s' виглядає пошкодженим, переходимо до режиму Світлового столу.\n"
 "\n"
 "Переконайтеся, що файл було правильно та повністю скопійовано з камери."
 
@@ -33720,7 +33720,7 @@ msgstr ""
 #, c-format
 msgid "file `%s' is not in any recognized format, switching to lighttable now."
 msgstr ""
-"Файл '%s' має нерозпізнаний формат, переходимо до режиму Світлого стола."
+"Файл '%s' має нерозпізнаний формат, переходимо до режиму Світлового столу."
 
 #: ../src/views/darkroom.c:809
 #, c-format
@@ -33728,7 +33728,7 @@ msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
 msgstr ""
 "Файл '%s' створено непідтримуваною моделлю камери, переходимо до режиму "
-"Світлого стола."
+"Світлового столу."
 
 #: ../src/views/darkroom.c:814
 #, c-format
@@ -33741,7 +33741,7 @@ msgid ""
 "and the release notes for this version of darktable)"
 msgstr ""
 "Файл '%s' використовує непідтримувану можливість, переходимо до режиму "
-"Світлого стола.\n"
+"Світлового столу.\n"
 "\n"
 "Перевірте, чи підтримується формат зображення та режим стиснення, які ви "
 "вибрали\n"
@@ -33755,7 +33755,7 @@ msgid ""
 "\n"
 "please check that the file has not been truncated."
 msgstr ""
-"Помилка під час читання файлу `%s', переходимо до режиму Світлого стола.\n"
+"Помилка під час читання файлу `%s', переходимо до режиму Світлового столу.\n"
 "\n"
 "Переконайтеся, що файл не було скорочено."
 
@@ -33772,7 +33772,7 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
-"Не вдалося завантажити '%s', переходимо до режиму Світлого стола.\n"
+"Не вдалося завантажити '%s', переходимо до режиму Світлового столу.\n"
 "\n"
 "Будь ласка, переконайтесь, що модель камери, яка створила зображення, "
 "підтримується в Darktable\n"
@@ -34421,7 +34421,7 @@ msgstr "Точність клавіатурного прискорювача п�
 
 #: ../src/views/darkroom.c:4834
 msgid "switch to lighttable"
-msgstr "Перейти до світлого столу"
+msgstr "Перейти до Світлового столу"
 
 #: ../src/views/darkroom.c:4836 ../src/views/lighttable.c:1157
 msgid "zoom in the image"
@@ -34636,7 +34636,7 @@ msgstr "Кінець зображень"
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Кінець зображень. Натисніть будь-яку клавішу, щоб повернутися до режиму "
-"світлого стола."
+"Світлового столу."
 
 #: ../src/views/slideshow.c:513
 msgid "waiting to start slideshow"
@@ -35255,7 +35255,7 @@ msgstr "Дії за допомогою миші"
 
 #~ msgctxt "menu"
 #~ msgid "lighttable"
-#~ msgstr "Світлий стіл"
+#~ msgstr "Світловий стіл"
 
 #~ msgctxt "menu"
 #~ msgid "darkroom"
@@ -36754,7 +36754,7 @@ msgstr "Дії за допомогою миші"
 
 #~ msgctxt "accel"
 #~ msgid "switch views/lighttable"
-#~ msgstr "перемикання режимів/світлий стіл"
+#~ msgstr "перемикання режимів/Світловий стіл"
 
 #~ msgctxt "accel"
 #~ msgid "switch views/darkroom"
