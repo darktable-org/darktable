@@ -2597,10 +2597,13 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
   if(dy == 0.0 && dx == 0.0) return;
 
   // preset cycling: right==down==next
-  int delta_x = 0, delta_y = 0;
-  dt_gui_get_scroll_unit_deltas_fallback(dx, dy, &delta_x, &delta_y);
-  const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
-  dt_gui_presets_apply_adjacent_preset(module, delta);
+  // the DISCRETE scroll proxy already accumulates smooth deltas into unit
+  // steps, so dx/dy are integer steps here; only apply a preset when one
+  // was actually emitted (a zero delta would query "adjacent to nothing"
+  // and show a misleading "(last)" toast).
+  const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
+  if(delta != 0)
+    dt_gui_presets_apply_adjacent_preset(module, delta);
 }
 
 gboolean dt_iop_has_focus(const dt_iop_module_t *module)
