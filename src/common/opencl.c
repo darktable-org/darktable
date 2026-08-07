@@ -27,6 +27,7 @@
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/heal.h"
+#include "common/dng_opcode.h"
 #include "common/interpolation.h"
 #include "common/locallaplaciancl.h"
 #include "common/opencl_drivers_blacklist.h"
@@ -1580,6 +1581,7 @@ finally:
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
+    cl->dng_gain_map = dt_dng_gain_map_init_cl_global();
     cl->local_laplacian = dt_local_laplacian_init_cl_global();
     cl->dwt = dt_dwt_init_cl_global();
     cl->heal = dt_heal_init_cl_global();
@@ -1636,6 +1638,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_bilateral_free_cl_global(cl->bilateral);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
+    dt_dng_gain_map_free_cl_global(cl->dng_gain_map);
     dt_dwt_free_cl_global(cl->dwt);
     dt_heal_free_cl_global(cl->heal);
     dt_colorspaces_free_cl_global(cl->colorspaces);
