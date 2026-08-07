@@ -209,6 +209,27 @@ const dt_action_element_def_t _action_elements_entry[]
 const dt_action_element_def_t _action_elements_value_fallback[]
   = { { NULL, dt_action_effect_value } };
 
+/* encode an action effect as (state << 8) | button for the synthetic gesture
+ * press used by shortcut activation (decoded by dt_gui_current_button() /
+ * dt_gui_current_state() in gtk.h); plain effects become a plain primary
+ * click */
+static inline gint _action_effect_button_state(const dt_action_effect_t effect)
+{
+  switch(effect)
+  {
+    case DT_ACTION_EFFECT_TOGGLE_CTRL:
+    case DT_ACTION_EFFECT_ON_CTRL:
+    case DT_ACTION_EFFECT_ACTIVATE_CTRL:
+      return (GDK_CONTROL_MASK << 8) | GDK_BUTTON_PRIMARY;
+    case DT_ACTION_EFFECT_TOGGLE_RIGHT:
+    case DT_ACTION_EFFECT_ON_RIGHT:
+    case DT_ACTION_EFFECT_ACTIVATE_RIGHT:
+      return (0 << 8) | GDK_BUTTON_SECONDARY;
+    default:
+      return (0 << 8) | GDK_BUTTON_PRIMARY;
+  }
+}
+
 static float _action_process_toggle(gpointer target,
                                     dt_action_element_t element,
                                     dt_action_effect_t effect,
@@ -224,9 +245,14 @@ static float _action_process_toggle(gpointer target,
     {
       /* the widget's activation lives in a gesture controller, which
        * synthetic GdkEvents never reach: invoke it through the same
-       * "pressed" signal a real click produces (the callback manages the
-       * button states itself, as for a real click) */
+       * "pressed" signal a real click produces, carrying the action
+       * effect as button/state so ctrl-/right-variants keep working
+       * (the callback manages the button states itself, as for a real
+       * click) */
+      g_object_set_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY,
+                        GINT_TO_POINTER(_action_effect_button_state(effect)));
       g_signal_emit_by_name(gesture, "pressed", 1, 0.0, 0.0);
+      g_object_set_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY, NULL);
     }
     else
     {
@@ -277,8 +303,12 @@ static float _action_process_button(gpointer target,
     if(gesture)
     {
       /* same as _action_process_toggle: the widget's activation lives in a
-       * gesture controller, which synthetic GdkEvents never reach */
+       * gesture controller, which synthetic GdkEvents never reach; carry the
+       * action effect as button/state (see _action_effect_button_state) */
+      g_object_set_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY,
+                        GINT_TO_POINTER(_action_effect_button_state(effect)));
       g_signal_emit_by_name(gesture, "pressed", 1, 0.0, 0.0);
+      g_object_set_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY, NULL);
     }
     else
     {

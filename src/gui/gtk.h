@@ -631,14 +631,35 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
 
-/* button of the current gesture press; 0 when the press was synthesized by
- * the shortcut machinery (DT_ACTION_GESTURE_KEY), which stands for a primary
- * click (GtkGestureSingle resets current-button to 0 on release, so a 0 is
- * never a real press) */
+/* object-data key on the gesture carrying a shortcut-activated press'
+ * button+state, encoded as (state << 8) | button (see
+ * _action_process_toggle/_action_process_button).  Set right before the
+ * synthetic "pressed" emit and cleared after it, so a NULL means the press
+ * came from a real event. */
+#define DT_ACTION_GESTURE_SYNTH_KEY "_dt_action_gesture_synth"
+
+/* button of the current gesture press; for a shortcut-activated press the
+ * effect-determined button, else the real press' button (GtkGestureSingle
+ * resets current-button to 0 on release, so a 0 is never a real press and
+ * stands for a primary click) */
 static inline guint dt_gui_current_button(GtkGestureSingle *gesture)
 {
+  const gpointer synth = g_object_get_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY);
+  if(synth) return GPOINTER_TO_INT(synth) & 0xff;
   const guint button = gtk_gesture_single_get_current_button(gesture);
   return button ? button : GDK_BUTTON_PRIMARY;
+}
+
+/* modifiers of the current gesture press: for a shortcut-activated press the
+ * effect-determined modifiers (the action effect wins over whatever key
+ * produced the shortcut), else the current event's */
+static inline GdkModifierType dt_gui_current_state(GtkGestureSingle *gesture)
+{
+  const gpointer synth = g_object_get_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY);
+  if(synth) return (GdkModifierType)(GPOINTER_TO_INT(synth) >> 8);
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+  return state;
 }
 
 #define dt_gui_claim(gesture) \

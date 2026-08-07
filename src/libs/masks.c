@@ -678,9 +678,7 @@ static void _bt_add_shape_cb(GtkGestureSingle *gesture, int n_press, double x, d
 #endif
     _tree_add_shape(NULL, shape);
 
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK))
     {
       darktable.develop->form_gui->creation_continuous = TRUE;
       darktable.develop->form_gui->creation_continuous_module =
