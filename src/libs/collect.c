@@ -632,6 +632,20 @@ static void view_popup_menu(GtkWidget *treeview,
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 }
 
+/* Claim the event sequence in CAPTURE phase so the treeview's internal
+ * GtkGestureMultiPress (GTK_PHASE_BUBBLE) does NOT process clicks.
+ * The pre-migration button-press-event handler consumed the events
+ * (return TRUE), which suppressed the internal gesture; the gesture
+ * controller replacement must do the same, otherwise the two gestures
+ * fight over row selection and expansion (see the same pattern in
+ * gui/accelerators.c). */
+static void _gesture_begin_claim(GtkGesture *gesture,
+                                  GdkEventSequence *sequence,
+                                  gpointer user_data)
+{
+  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
 static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
                                         double x, double y,
                                         dt_lib_collect_t *d)
@@ -4080,7 +4094,17 @@ void gui_init(dt_lib_module_t *self)
   d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  dt_gui_connect_click_all(view, view_onButtonPressed_cb, NULL, d);
+  /* the treeview owns an internal bubble-phase GtkGestureMultiPress that
+   * would fight our own selection handling: use a CAPTURE-phase gesture
+   * that claims the sequence, replicating the event consumption of the
+   * pre-migration button-press-event handler */
+  GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(view));
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                             GTK_PHASE_CAPTURE);
+  dt_gui_add_controller(GTK_WIDGET(view), gesture);
+  gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+  g_signal_connect(gesture, "pressed", G_CALLBACK(view_onButtonPressed_cb), d);
+  g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
