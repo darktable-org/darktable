@@ -1944,6 +1944,11 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
   }
   else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    // consume the event so it does not bubble to the module body's
+    // right-click handler (which opens the presets menu); the pre-migration
+    // button-press handler returned TRUE here
+    dt_gui_claim(gesture);
+
     if(g->selected == 0 || g->selected == nodes - 1)
     {
       float reset_value = g->selected == 0 ? 0 : 1;
