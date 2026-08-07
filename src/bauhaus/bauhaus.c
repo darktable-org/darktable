@@ -534,17 +534,20 @@ static void _popup_scroll_cb(GtkEventControllerScroll *controller,
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     // match keyboard: right & down -> next
-    int delta_x = 0, delta_y = 0;
-    dt_gui_get_scroll_unit_deltas_fallback(dx, dy, &delta_x, &delta_y);
-    const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+    // the DISCRETE scroll proxy already accumulated smooth deltas into unit
+    // steps, so dx/dy are integer steps here.
+    const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
     if(delta != 0)
       _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
   }
   else
   {
-    int delta = 0;
-    dt_gui_get_scroll_unit_delta_fallback(dy, &delta);
-    _slider_zoom_range(w, delta);
+    // only zoom the range on a real scroll step: delta == 0 means no unit
+    // was accumulated yet and must NOT trigger the "reset zoom range"
+    // branch of _slider_zoom_range() (the middle-click action).
+    const int delta = (int)dy;
+    if(delta != 0)
+      _slider_zoom_range(w, delta);
   }
 }
 
