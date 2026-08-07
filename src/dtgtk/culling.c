@@ -1058,7 +1058,8 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
   // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
-     && dt_is_valid_imgid(overid))
+     && dt_is_valid_imgid(overid)
+     && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     const dt_imgid_t old_sel = table->selection;
     if(table->selection == overid)
