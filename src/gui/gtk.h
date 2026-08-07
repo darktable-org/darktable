@@ -253,11 +253,6 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
-/* Same as above but for use inside scroll-event-controller callbacks where the
- * raw dx/dy are available but no GdkEventScroll *.  Tries gtk_get_current_event()
- * first for smooth-scroll accumulation, falls back to casting the raw values. */
-gboolean dt_gui_get_scroll_unit_deltas_fallback(gdouble dx, gdouble dy, int *delta_x, int *delta_y);
-gboolean dt_gui_get_scroll_unit_delta_fallback(gdouble dy, int *delta);
 
 /*
  * new ui api
