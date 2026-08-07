@@ -125,6 +125,15 @@ typedef struct dt_dev_viewport_t
   float zoom_x, zoom_y;
   float zoom_scale;
 
+  /* Viewport centre carried over to the next image, as a fraction of the
+     image in [-0.5, 0.5]. zoom_x/zoom_y themselves live in *input pixel*
+     coordinates of the currently loaded image (so they survive geometry
+     module changes), which makes them meaningless once another image with a
+     different geometry is loaded. So we snapshot the normalised centre before
+     the switch and re-apply it once the new pipe dimensions are known. */
+  gboolean restore_zoom;
+  float restore_zoom_x, restore_zoom_y;
+
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe;
   
@@ -463,6 +472,10 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       const float x,
                       const float y,
                       const gboolean constrain);
+/* Snapshot the current viewport centre as a fraction of the image so it can be
+   re-applied to the next image, see restore_zoom in dt_dev_viewport_t. Call
+   right before changing image, while the current pipe is still valid. */
+void dt_dev_snapshot_zoom_pos(dt_dev_viewport_t *port);
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             const dt_dev_zoom_t zoom,
                             const int closeup_factor,
