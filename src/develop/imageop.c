@@ -2589,6 +2589,9 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
                     button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
+static gint64 _presets_scrolled_last_step_time = 0;
+static int _presets_scrolled_last_dir = 0;
+
 static void _presets_scrolled(GtkEventControllerScroll *controller,
                               gdouble dx,
                               gdouble dy,
@@ -2602,8 +2605,25 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
   // was actually emitted (a zero delta would query "adjacent to nothing"
   // and show a misleading "(last)" toast).
   const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
-  if(delta != 0)
-    dt_gui_presets_apply_adjacent_preset(module, delta);
+  if(delta == 0) return;
+
+  // Hysteresis: a continuous trackpad gesture is a series of swipes and
+  // each swipe ends with a short opposite-sign stream (fingers lifting /
+  // rebounding), which the proxy turns into a step back.  Mid-list that
+  // oscillates between two presets; at the first/last preset it flashes
+  // between the boundary preset and its neighbour and spams the
+  // "(first)"/"(last)" toast.  Ignore a reversal that arrives within a
+  // fraction of a second of the previous step - a real direction change
+  // comes from a new gesture.
+  const gint64 now = g_get_monotonic_time();
+  if(_presets_scrolled_last_dir != 0
+     && delta != _presets_scrolled_last_dir
+     && now - _presets_scrolled_last_step_time < 250000)
+    return;
+  _presets_scrolled_last_dir = delta > 0 ? 1 : -1;
+  _presets_scrolled_last_step_time = now;
+
+  dt_gui_presets_apply_adjacent_preset(module, delta);
 }
 
 gboolean dt_iop_has_focus(const dt_iop_module_t *module)
