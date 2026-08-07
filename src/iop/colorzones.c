@@ -2185,6 +2185,10 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
   }
   else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    // consume the event so it does not bubble to the module body's
+    // right-click handler (which opens the presets menu)
+    dt_gui_claim(gesture);
+
     if((g->selected == 0 || g->selected == nodes - 1)
        && p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
