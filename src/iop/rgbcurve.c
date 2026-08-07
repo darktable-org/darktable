@@ -1406,6 +1406,7 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
       dt_iop_color_picker_reset(self, TRUE);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
+      return; // an endpoint reset must not fall through into node removal
     }
 
     for(int k = g->selected; k < nodes - 1; k++)
