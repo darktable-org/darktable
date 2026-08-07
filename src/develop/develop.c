@@ -762,7 +762,30 @@ restart:
         dt_dev_zoom_move() possibly leaves port->pipe->changed DT_DEV_PIPE_ZOOMED;
         and might redraw the widgets as a side effect
     */
-    if(port_loading || require_zoom_test)
+    if(port->restore_zoom && port_loading && pipe->processed_width && pipe->processed_height)
+    {
+      /* An image switch just happened. port->zoom_x/zoom_y are in input pixel
+         coordinates of the *previous* image, so reprojecting them through this
+         image's geometry modules would drop the viewport at an arbitrary spot
+         (typically an edge or corner once clamped). Re-apply the normalised
+         centre snapshotted before the switch instead.
+      */
+      const float rx = port->restore_zoom_x;
+      const float ry = port->restore_zoom_y;
+      port->restore_zoom = FALSE;
+      dt_print_pipe(DT_DEBUG_PIPE,
+                    "dt_dev_zoom_move",
+                    pipe,
+                    NULL,
+                    DT_DEVICE_NONE,
+                    NULL,
+                    NULL,
+                    "restore centre %.4f/%.4f",
+                    rx,
+                    ry);
+      dt_dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, rx, ry, TRUE);
+    }
+    else if(port_loading || require_zoom_test)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
         port_loading ? "port_loading " : "",
@@ -3478,13 +3501,45 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 
   if(x && y && port->pipe)
   {
-    float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop, port->pipe,
-                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
-    *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
-    *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
+    // A pipe that hasn't produced dimensions yet (never processed, or in the
+    // middle of an image switch) would turn the normalisation below into a
+    // division by zero and send the viewport off to infinity.
+    if(port->pipe->processed_width && port->pipe->processed_height)
+    {
+      float pts[2] = { port->zoom_x, port->zoom_y };
+      dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop,
+                                    port->pipe,
+                                    0.0f,
+                                    DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
+                                    pts,
+                                    1);
+      *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
+      *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
+    }
+    else
+      *x = *y = 0.0f;
   }
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+void dt_dev_snapshot_zoom_pos(dt_dev_viewport_t *port)
+{
+  if(!port || !port->pipe)
+    return;
+
+  // Nothing worth carrying over when the image is shown at fit: the centre is
+  // forced home anyway, and a stale snapshot would fight the next fit.
+  if(port->zoom == DT_ZOOM_FIT || !port->pipe->processed_width || !port->pipe->processed_height)
+  {
+    port->restore_zoom = FALSE;
+    return;
+  }
+
+  float zx = 0.0f, zy = 0.0f;
+  dt_dev_get_viewport_params(port, NULL, NULL, &zx, &zy);
+  port->restore_zoom_x = CLAMP(zx, -0.5f, 0.5f);
+  port->restore_zoom_y = CLAMP(zy, -0.5f, 0.5f);
+  port->restore_zoom = TRUE;
 }
 
 gboolean dt_dev_is_current_image(const dt_develop_t *dev,
