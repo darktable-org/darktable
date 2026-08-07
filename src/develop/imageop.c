@@ -2551,8 +2551,6 @@ static void _gui_reset_clicked(GtkGestureSingle *gesture,
     dt_iop_gui_update(module);
 
     dt_dev_add_history_item(module->dev, module, TRUE);
-
-    dt_dev_add_history_item(module->dev, module, TRUE);
   }
 
   // rebuild the accelerators
