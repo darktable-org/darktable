@@ -1618,7 +1618,8 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
   GdkModifierType state;
   gtk_get_current_event_state(&state);
 
-  if(dt_is_valid_imgid(id))
+  if(dt_is_valid_imgid(id)
+     && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     /* the keyboard cursor continues from the image we clicked on */
     table->key_pos = id;
