@@ -4482,10 +4482,21 @@ static gboolean _key_release_delayed(gpointer timed_out)
   if(!_pressed_keys)
     _ungrab_grab_widget();
 
-  if(!_pressed_keys)
+  if(!_pressed_keys && !_hold_keys)
     _sc = (dt_shortcut_t) { 0 };
   else
+  {
+    if(!_pressed_keys)
+    {
+      /* another hold key is still engaged: keep its identity in _sc, or
+       * move/scroll routing stops matching while it is held (see
+       * _shortcut_closest_match, which requires c->key == s->key) */
+      const dt_device_key_t *held = _hold_keys->data;
+      _sc.key_device = held->key_device;
+      _sc.key = held->key;
+    }
     _sc.press &= ~DT_SHORTCUT_LONG;
+  }
 
   return G_SOURCE_REMOVE;
 }
@@ -4594,6 +4605,19 @@ void dt_shortcut_key_press(const dt_input_device_t id,
         }
         else
         {
+          /* a still-armed delayed release (a previous tap or click whose
+           * double/triple-press window has not elapsed) must be flushed
+           * against the state that armed it before the hold takes over
+           * _sc: the pending pass requires c->key == s->key, so left armed
+           * it would resolve against the hold key and re-run the hold
+           * action, silently disengaging the hold while the key is still
+           * held.  A same-key re-engage inside the window is that pending
+           * pass's own double-press check: just cancel it -- the hold
+           * action already ran OFF at the previous release. */
+          const gboolean same_key_reengage
+            = key == _sc.key && _sc.key_device == id && !dt_gui_long_click(time, _last_time);
+          _interrupt_delayed_release(!same_key_reengage);
+
           definition->process(NULL, s->element, DT_ACTION_EFFECT_ON, 1);
 
           this_key.hold_def = definition;
@@ -4701,6 +4725,16 @@ static void _delay_for_double_triple(guint time, guint is_key)
   {
     _ungrab_grab_widget();
     dt_control_log(_("short key press resets stuck keys"));
+    /* this early return skips the _key_release_delayed() cleanup a hold
+     * release scheduled: drop its flag and the stale hold key now, or the
+     * next ordinary key release would silently skip its own dispatch and
+     * every later move/scroll would resolve as "that key + move" */
+    if(_hold_release_pending)
+    {
+      _hold_release_pending = FALSE;
+      _sc.key_device = 0;
+      _sc.key = 0;
+    }
     return;
   }
   else if((is_key ? _sc.press : _sc.click) & DT_SHORTCUT_TRIPLE)
@@ -4770,7 +4804,16 @@ void dt_shortcut_key_release(const dt_input_device_t id,
      * move/scroll shortcut resolve as "that key + move" (see
      * _shortcut_closest_match, which requires c->key == s->key) and wheel
      * scrolling stops working.  The HOLD_OFF dispatch above replaces the
-     * shortcut pass the delayed release would otherwise run, so flag it. */
+     * shortcut pass the delayed release would otherwise run, so flag it.
+     * Also cancel a still-armed delayed release before scheduling the
+     * cleanup, mirroring the ordinary key release below: otherwise the
+     * g_timeout_add() in _delay_for_double_triple() overwrites the live
+     * source handle and the orphaned pass later runs an extra cleanup.
+     * Never trigger it here (TRUE): it would resolve against the hold key
+     * still in _sc and re-run the hold action; the OFF dispatch above
+     * already replaced that pass. */
+    _interrupt_delayed_release(FALSE);
+
     _hold_release_pending = TRUE;
     _delay_for_double_triple(time, -1);
     return;
