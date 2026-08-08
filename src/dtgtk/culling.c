@@ -700,12 +700,14 @@ static void _event_scroll(GtkEventControllerScroll *controller,
   if(direction == GDK_SCROLL_SMOOTH && !is_stop
      && dt_modifiers_include(state, GDK_CONTROL_MASK))
   {
-    if(dx != 0.0 || dy != 0.0)
+    // raw platform deltas, not the attenuated controller deltas, so that
+    // one full unit of scroll (delta_y == 1.0) still matches the 0.5
+    // zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
+    gdouble ddx = 0.0, ddy = 0.0;
+    if(dt_gui_get_scroll_deltas((const GdkEventScroll *)event, &ddx, &ddy)
+       && (ddx != 0.0 || ddy != 0.0))
     {
-      // controller dx/dy gives the raw fractional platform delta.
-      // Scale so that one full unit of scroll (delta_y == 1.0) matches the
-      // 0.5 zoom_delta of a discrete mouse-wheel click. right==up==zoom-in
-      const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
+      const gdouble delta = fabs(ddx) > fabs(ddy) ? -ddx : ddy;
       const float zoom_delta = (float)(-delta * 0.5);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
@@ -742,18 +744,20 @@ static void _event_scroll(GtkEventControllerScroll *controller,
              fz, fz > 1.0f ? "pan path" : "navigate path");
     if(fz > 1.0f)
     {
-      if(dx != 0.0 || dy != 0.0)
+      gdouble ddx = 0.0, ddy = 0.0;
+      if(dt_gui_get_scroll_deltas((const GdkEventScroll *)event, &ddx, &ddy)
+         && (ddx != 0.0 || ddy != 0.0))
       {
-        // controller dx/dy is platform-normalised fractional units;
-        // scale to pixel-scale (matches the factor used by the center-widget pan path).
+        // raw platform deltas; scale to pixel-scale (matches the factor
+        // used by the center-widget pan path).
         dt_print(DT_DEBUG_INPUT,
                  "[culling scroll] panning dx=%.3f dy=%.3f (scaled: dx=%.1f dy=%.1f)",
-                 dx, dy, dx * 50.0, dy * 50.0);
-        dt_culling_pan_move(table, (float)(-dx * 50.0), (float)(-dy * 50.0), state);
+                 ddx, ddy, ddx * 50.0, ddy * 50.0);
+        dt_culling_pan_move(table, (float)(-ddx * 50.0), (float)(-ddy * 50.0), state);
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta from controller");
+        dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta");
       }
       gdk_event_free(event);
       return;
@@ -830,11 +834,10 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
     return;
   }
 
-  table->mouse_inside = FALSE;
-
-  /* Don't clear the mouse-over when leaving to a child widget (thumbnail),
-   * or while the pointer is grabbed: the shortcut machinery's synthetic
-   * crossings must not lose the hovered image (see #21729).
+  /* Don't clear the mouse-over nor the inside-table state when leaving to a
+   * child widget (thumbnail), or while the pointer is grabbed: the shortcut
+   * machinery's synthetic crossings must not lose the hovered image nor
+   * mouse_inside (see #21729, #21745).
    * GTK4 migration: drop the pointer-grab check (see
    * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
   GdkEvent *event = gtk_get_current_event();
@@ -844,7 +847,10 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
        && event->crossing.mode != GDK_CROSSING_GTK_GRAB
        && event->crossing.mode != GDK_CROSSING_GRAB
        && !dt_gui_pointer_is_grabbed())
+    {
+      table->mouse_inside = FALSE;
       dt_control_set_mouse_over_id(NO_IMGID);
+    }
     gdk_event_free(event);
   }
 }
@@ -875,6 +881,8 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
    * crossing detail is required: redraws under the pointer make GDK report
    * VIRTUAL/NONLINEAR details instead of INFERIOR, which would otherwise
    * leave a stale hovered image (see #21729). */
+  table->mouse_inside = TRUE;
+
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
@@ -892,20 +900,7 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
                                      gdouble y,
                                      dt_culling_t *table)
 {
-  /*
-   * GTK3 bridge for GDK_2BUTTON_PRESS (see dt_gui_connect_double_click):
-   * GtkGestureMultiPress doesn't process multi-press events, so when a
-   * double/triple-click is detected by the classic "button-press-event"
-   * signal handler, it calls this callback with gesture=NULL.  In that
-   * case the button is always GDK_BUTTON_PRIMARY (GDK_2BUTTON_PRESS only
-   * occurs for primary button).
-   *
-   * GTK4 migration: remove the ternary and just call
-   * gtk_gesture_single_get_current_button(gesture) directly — GtkGestureClick
-   * will provide a valid gesture pointer for all n_press values. */
-  const guint button = gesture
-    ? gtk_gesture_single_get_current_button(gesture)
-    : GDK_BUTTON_PRIMARY;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {
@@ -946,9 +941,7 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
   }
 
   // start panning — need root coordinates for pan tracking
-  const GdkEvent *current = gtk_get_current_event();
-  if(current)
-    gdk_event_get_root_coords(current, &table->pan_x, &table->pan_y);
+  dt_gui_get_current_root_coords(&table->pan_x, &table->pan_y);
   table->panning = TRUE;
 }
 
@@ -958,9 +951,8 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
                                       dt_culling_t *table)
 {
   // get root coordinates for pan tracking
-  const GdkEvent *current = gtk_get_current_event();
   gdouble root_x = 0, root_y = 0;
-  if(current) gdk_event_get_root_coords(current, &root_x, &root_y);
+  dt_gui_get_current_root_coords(&root_x, &root_y);
 
   table->mouse_inside = TRUE;
 
@@ -1070,7 +1062,8 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
   // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
-     && dt_is_valid_imgid(overid))
+     && dt_is_valid_imgid(overid)
+     && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     const dt_imgid_t old_sel = table->selection;
     if(table->selection == overid)
@@ -1297,22 +1290,12 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
 
   g_signal_connect(G_OBJECT(table->widget), "event",
                    G_CALLBACK(_event_gesture), table);
-  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
-                                        | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _event_scroll, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
   dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
   dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
-  /* GTK3 bridge: GtkGestureMultiPress does not process GDK_2BUTTON_PRESS.
-   * dt_gui_connect_double_click forwards double/triple clicks via a
-   * "button-press-event" signal handler.  The callback checks for NULL
-   * gesture (meaning it came from this bridge) and uses GDK_BUTTON_PRIMARY.
-   *
-   * GTK4 migration: remove this call.  GtkGestureClick handles n_press
-   * natively and the callback can use gtk_gesture_single_get_current_button()
-   * safely on the real gesture pointer. */
-  dt_gui_connect_double_click(table->widget, _event_button_press_cb, table);
 
   // we register globals signals
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,

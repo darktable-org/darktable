@@ -2185,6 +2185,10 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
   }
   else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    // consume the event so it does not bubble to the module body's
+    // right-click handler (which opens the presets menu)
+    dt_gui_claim(gesture);
+
     if((g->selected == 0 || g->selected == nodes - 1)
        && p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
@@ -2205,6 +2209,7 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
       dt_iop_color_picker_reset(self, TRUE);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+      return; // an endpoint reset must not fall through into node removal
     }
 
     // right click deletes the node, ctrl+right click reset the node to y-zero
@@ -2627,7 +2632,7 @@ void gui_init(dt_iop_module_t *self)
      _("pick GUI color from image\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(g->colorpicker, "keep-active");
   dt_action_define_iop(self, N_("pickers"), N_("show color"),
-                       g->colorpicker, &dt_action_def_toggle);
+                       g->colorpicker, &dt_action_def_color_picker);
   g->colorpicker_set_values = dt_color_picker_new_with_cst(self,
                                                            DT_COLOR_PICKER_AREA,
                                                            NULL, IOP_CS_LCH);
@@ -2642,7 +2647,7 @@ void gui_init(dt_iop_module_t *self)
                                 "ctrl+drag to create a positive curve\n"
                                 "shift+drag to create a negative curve"));
   dt_action_define_iop(self, N_("pickers"), N_("create curve"),
-                       g->colorpicker_set_values, &dt_action_def_toggle);
+                       g->colorpicker_set_values, &dt_action_def_color_picker);
 
   // the nice graph
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,

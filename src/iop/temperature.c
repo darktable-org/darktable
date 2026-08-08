@@ -2076,7 +2076,7 @@ void gui_init(dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA,
                                                 NULL, IOP_CS_NONE);
   dt_action_define_iop(self, N_("settings"), N_("from image area"),
-                       g->colorpicker, &dt_action_def_toggle);
+                       g->colorpicker, &dt_action_def_color_picker);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker),
                                dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(g->colorpicker, "dt_transparent_background");

@@ -253,11 +253,6 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
-/* Same as above but for use inside scroll-event-controller callbacks where the
- * raw dx/dy are available but no GdkEventScroll *.  Tries gtk_get_current_event()
- * first for smooth-scroll accumulation, falls back to casting the raw values. */
-gboolean dt_gui_get_scroll_unit_deltas_fallback(gdouble dx, gdouble dy, int *delta_x, int *delta_y);
-gboolean dt_gui_get_scroll_unit_delta_fallback(gdouble dy, int *delta);
 
 /*
  * new ui api
@@ -571,6 +566,17 @@ gboolean dt_gui_long_click(const guint second,
 void dt_gui_add_controller(GtkWidget *widget,
                            gpointer controller);
 
+/*
+ * Root (screen-absolute) coordinates of the current event, or FALSE when
+ * there is no current event.  Owns and releases the gtk_get_current_event()
+ * copy internally (GTK3 returns transfer-full).
+ *
+ * GTK4 migration: gtk_get_current_event() disappears; use
+ * gtk_gesture_get_last_event()/gtk_event_controller_get_current_event()
+ * (borrowed) and drop this helper.
+ */
+gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y);
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,
@@ -579,29 +585,11 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
   ASSERT_FUNC_TYPE(released, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
   dt_gui_connect_click(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
+/* dt_gui_connect_click() already listens to any button (button=0): callbacks
+ * decide via gtk_gesture_single_get_current_button(), as the old
+ * button-press-event handlers did.  This alias only documents that intent. */
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
-  gtk_gesture_single_set_button(dt_gui_connect_click(widget, pressed, released, data), 0)
-
-/*
- * GTK3 bridge: GtkGestureMultiPress in GTK3 does not process
- * GDK_2BUTTON_PRESS / GDK_3BUTTON_PRESS.  See implementation in gtk.c
- * for the full explanation and GTK4 migration instructions.
- *
- * Connection: call alongside dt_gui_connect_click() with the same
- * pressed callback and data.  The callback receives (NULL, n_press, x, y, data)
- * — the NULL gesture indicates the call came from this bridge, so the callback
- * must handle that gracefully (see culling.c/thumbtable.c for the pattern).
- *
- * GTK4 migration: remove all calls to dt_gui_connect_double_click() and
- * delete this declaration.  GtkGestureClick handles n_press natively.
- */
-unsigned long dt_gui_connect_double_click(GtkWidget *widget,
-                                           GCallback pressed,
-                                           gpointer data);
-#define dt_gui_connect_double_click(widget, pressed, data) ( \
-  ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
-  dt_gui_connect_double_click(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
-void dt_gui_disconnect_double_click(GtkWidget *widget, unsigned long id);
+  dt_gui_connect_click(widget, pressed, released, data)
 
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
@@ -642,6 +630,37 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
+
+/* object-data key on the gesture carrying a shortcut-activated press'
+ * button+state, encoded as (state << 8) | button (see
+ * _action_process_toggle/_action_process_button).  Set right before the
+ * synthetic "pressed" emit and cleared after it, so a NULL means the press
+ * came from a real event. */
+#define DT_ACTION_GESTURE_SYNTH_KEY "_dt_action_gesture_synth"
+
+/* button of the current gesture press; for a shortcut-activated press the
+ * effect-determined button, else the real press' button (GtkGestureSingle
+ * resets current-button to 0 on release, so a 0 is never a real press and
+ * stands for a primary click) */
+static inline guint dt_gui_current_button(GtkGestureSingle *gesture)
+{
+  const gpointer synth = g_object_get_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY);
+  if(synth) return GPOINTER_TO_INT(synth) & 0xff;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  return button ? button : GDK_BUTTON_PRIMARY;
+}
+
+/* modifiers of the current gesture press: for a shortcut-activated press the
+ * effect-determined modifiers (the action effect wins over whatever key
+ * produced the shortcut), else the current event's */
+static inline GdkModifierType dt_gui_current_state(GtkGestureSingle *gesture)
+{
+  const gpointer synth = g_object_get_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY);
+  if(synth) return (GdkModifierType)(GPOINTER_TO_INT(synth) >> 8);
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+  return state;
+}
 
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
