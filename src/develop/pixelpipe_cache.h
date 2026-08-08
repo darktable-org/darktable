@@ -95,7 +95,7 @@ void dt_dev_pixelpipe_clear_cacheline(struct dt_dev_pixelpipe_t *pipe, const voi
 
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
-void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe);
+void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe, const gboolean trim);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

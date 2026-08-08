@@ -480,7 +480,7 @@ static inline int _invalid(const dt_dev_pixelpipe_cache_t *cache)
   return cnt;
 }
 
-void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
+void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe, const gboolean trim)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
@@ -503,7 +503,12 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
     }
   }
 
-  while(cache->memlimit && (cache->memlimit < cache->allmem))
+  size_t trim_limit = cache->memlimit;
+  const gboolean lowmem = dt_get_available_mem() < DT_MEGA * 8000;
+  if(lowmem && trim) trim_limit = 0;
+  if(trim) trim_limit /= 4;
+
+  while(cache->memlimit && (trim_limit < cache->allmem))
   {
     const int k = _get_oldest_cacheline(cache, DT_CACHETEST_USED);
     if(k == 0) break;
@@ -513,8 +518,10 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
   }
 
   if(free_cnt + free_invalid_cnt)
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-      "Freed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB max=%zuMB",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, trim ? "pipe cache trim" : "pipe cache check",
+      pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "%sFreed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB max=%zuMB",
+      lowmem & trim ? "lowmem" : "",
       free_invalid_cnt, free_cnt, freed_invalid/DT_MEGA, freed / DT_MEGA,
       cache->allmem / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA);
 }
