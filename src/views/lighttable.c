@@ -450,7 +450,9 @@ static gboolean is_image_visible_cb(lua_State *L)
 void cleanup(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
+  dt_culling_destroy(lib->culling);
   free(lib->culling);
+  dt_culling_destroy(lib->preview);
   free(lib->preview);
   free(self->data);
 }

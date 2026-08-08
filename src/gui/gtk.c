@@ -827,14 +827,73 @@ static gboolean _input_event(GtkWidget *widget,
   return FALSE;
 }
 
+gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event)
+{
+  if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
+  if(dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)) return FALSE;
+  if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH) return FALSE;
+  if(gdk_event_is_scroll_stop_event((GdkEvent *)event)) return FALSE;
+#ifdef GDK_WINDOWING_QUARTZ
+  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
+  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to pan so that
+  // two-finger panning works in views like darkroom (both standalone and
+  // interleaved with a pinch-zoom gesture whose translational component macOS
+  // delivers as a separate scroll stream).
+  return TRUE;
+#else
+  GdkDevice *const device = dt_gdk_event_get_source_device(event);
+  // Also accept the device that last produced a touchpad pinch/swipe gesture:
+  // some touchpads report the follow-up scroll stream from a different device.
+  return device && (gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
+                    || device == _touchpad);
+#endif
+}
+
+float dt_gui_scroll_zoom_delta(const GdkEventScroll *event,
+                               const gdouble dx, const gdouble dy)
+{
+  // zoom direction convention: up (the backward scroll) zooms in, down zooms
+  // out.  The horizontal axis depends on how the scroll was produced: with the
+  // shift modifier still set, the OS has rotated a vertical wheel step into a
+  // left/right scroll (on macOS, Windows and X11 alike), so LEFT keeps meaning
+  // "wheel up" and zooms in, preserving the wheel's muscle memory.  Without
+  // shift (wheel tilt, two-finger swipe) RIGHT is the positive direction and
+  // zooms in, LEFT zooms out.
+  //
+  // Discrete wheels carry a normalized direction, so left/right is resolved
+  // from that rather than from the raw delta sign, whose polarity is not
+  // canonical across platforms.  Smooth (fractional) scrolls have no
+  // direction; their dominant delta is used with the same convention.
+  const gboolean shift = dt_modifiers_include(dt_gdk_event_get_state(event),
+                                              GDK_SHIFT_MASK);
+  switch(dt_gdk_event_get_scroll_direction(event))
+  {
+    case GDK_SCROLL_UP:
+      return 0.5f;
+    case GDK_SCROLL_DOWN:
+      return -0.5f;
+    case GDK_SCROLL_LEFT:
+      return shift ? 0.5f : -0.5f;
+    case GDK_SCROLL_RIGHT:
+      return shift ? -0.5f : 0.5f;
+    default: // GDK_SCROLL_SMOOTH
+    {
+      if(fabs(dx) > fabs(dy))
+        return shift ? (dx < 0 ? 0.5f : -0.5f) : (dx > 0 ? 0.5f : -0.5f);
+      return dy < 0 ? 0.5f : -0.5f;
+    }
+  }
+}
+
 static gboolean _scrolled(GtkWidget *widget,
                           const GdkEventScroll *event,
                           gpointer user_data)
 {
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-  const gboolean touchpad_enabled = darktable.gui->touchpad_gestures_enabled;
   const gboolean ctrl_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
+  const gboolean is_smooth = dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH
+                             && !gdk_event_is_scroll_stop_event((GdkEvent *)event);
 
   dt_print(DT_DEBUG_INPUT,
            "[scroll] direction=%d smooth=%s stop=%s ctrl=%s"
@@ -842,29 +901,12 @@ static gboolean _scrolled(GtkWidget *widget,
            " device='%s' source-type=%d",
            dt_gdk_event_get_scroll_direction(event),
            dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH ? "yes" : "no",
-           event->is_stop ? "yes" : "no",
+           gdk_event_is_scroll_stop_event((GdkEvent *)event) ? "yes" : "no",
            ctrl_pressed ? "yes" : "no",
            dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), dt_gdk_event_get_scroll_delta_x(event), dt_gdk_event_get_scroll_delta_y(event), dt_gdk_event_get_state(event),
            device ? gdk_device_get_name(device) : "<none>",
            device ? (int)gdk_device_get_source(device) : -1);
-  const gboolean is_touchpad_source = device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD;
-  const gboolean matches_last_gesture_device = (device == _touchpad);
-
-  const gboolean is_smooth = dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH && !event->is_stop;
-#ifdef GDK_WINDOWING_QUARTZ
-  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
-  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to gesture_pan so
-  // that two-finger panning works in views like darkroom (both standalone and
-  // interleaved with a pinch-zoom gesture whose translational component macOS
-  // delivers as a separate scroll stream).
-  const gboolean route_as_pan = touchpad_enabled && !ctrl_pressed && is_smooth;
-#else
-  const gboolean route_as_pan = touchpad_enabled
-                                && !ctrl_pressed
-                                && (is_touchpad_source || matches_last_gesture_device)
-                                && is_smooth;
-#endif
-  if(route_as_pan)
+  if(dt_gui_scroll_should_pan(event))
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
     if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
@@ -900,26 +942,24 @@ static gboolean _scrolled(GtkWidget *widget,
   else if(is_smooth)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[touchpad] smooth scroll not treated as pan: enabled=%d ctrl=%d touchpad_source=%d matches_last_gesture=%d route_as_pan=%d source='%s' source_type=%d",
-             touchpad_enabled,
+             "[touchpad] smooth scroll not treated as pan: gestures_enabled=%d ctrl=%d source='%s' source_type=%d",
+             darktable.gui->touchpad_gestures_enabled,
              ctrl_pressed,
-             is_touchpad_source,
-             matches_last_gesture_device,
-             route_as_pan,
              device ? gdk_device_get_name(device) : "<none>",
-             device ? gdk_device_get_source(device) : -1);
+             device ? (int)gdk_device_get_source(device) : -1);
   }
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
   {
+    const gboolean up = dt_gui_scroll_zoom_delta(event, delta_x, delta_y) > 0.0f;
     dt_print(DT_DEBUG_INPUT,
              "[scroll] discrete fallback x=%.2f y=%.2f up=%d state=0x%x source='%s' source_type=%d",
-             dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), delta_y < 0, dt_gdk_event_get_state(event),
+             dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), up, dt_gdk_event_get_state(event),
              device ? gdk_device_get_name(device) : "<none>",
              device ? gdk_device_get_source(device) : -1);
     dt_view_manager_scrolled(darktable.view_manager, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
-                             delta_y < 0,
+                             up,
                              dt_gdk_event_get_state(event) & 0xf);
     gtk_widget_queue_draw(widget);
   }
