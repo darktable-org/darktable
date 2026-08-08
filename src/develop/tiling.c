@@ -1769,8 +1769,7 @@ int default_process_tiling_cl(dt_iop_module_t *self,
 int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
                            void *cl_in,
                            void *cl_out,
-                           const dt_iop_roi_t *roi_in,
-                           const dt_iop_roi_t *roi_out,
+                           const dt_iop_roi_t *roi,
                            const int in_bpp,
                            const int bpp,
                            const dt_develop_tiling_t *tiling)
@@ -1778,22 +1777,23 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   dt_iop_module_t *module = piece->module;
   const int devid = pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int width = roi->width;
+  const int height = roi->height;
   const int aligner = MAX(tiling->align, dt_opencl_tiling_align(devid));
   const int border = _align_up(tiling->overlap, aligner);
   const int64_t overhead = tiling->overhead;
   const int64_t allmem = dt_opencl_get_device_available(devid);
   const int64_t avail = allmem - (int64_t)(in_bpp + bpp)*width*height - overhead;
-  const int per_row = in_bpp * width * tiling->factor_cl;
-  const int possible = avail / per_row;
-  const int tile_height = darktable.opencl->fast_tiling
-        ? _align_up(MIN(300+3*border, possible), aligner)
-        : _align_up(possible, aligner);
+
+  const int per_row = (in_bpp + bpp) * width;
+  const int tile_height = MIN(_align_up((int)(avail / per_row), aligner), height);
   const int valid_rows = tile_height - 2*border;
+  if(valid_rows < 1) // should never happen - just make sure, see dt_opencl_image_fits_device()
+    return DT_OPENCL_PROCESS_CL;
+
   const int num_tiles = (height + valid_rows - 1) / valid_rows;
-  dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
-    "  fast tiling", pipe, module, devid, roi_in, roi_out,
+  dt_print_pipe(DT_DEBUG_TILING,
+    "  fast tiling", pipe, module, devid, roi, NULL,
     "tiles=%d validrows=%d border=%d", num_tiles, valid_rows, border);
 
   cl_int err = CL_SUCCESS;
@@ -1823,13 +1823,12 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
     if(out_height > 0)
     {
       /* roi_in and roi_out for process_cl on subbuffer */
-      const dt_iop_roi_t iroi = { roi_in->x, roi_in->y + first_in, width, t_rows, roi_in->scale };
-      const dt_iop_roi_t oroi = { roi_out->x, roi_out->y + first_in, width, t_rows, roi_out->scale };
-      dt_dev_prepare_piece_cfa(piece, &iroi);
+      const dt_iop_roi_t troi = { roi->x, roi->y + first_in, width, t_rows, roi->scale };
+      dt_dev_prepare_piece_cfa(piece, &troi);
       for_four_channels(k) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
-        "    tile", pipe, module, devid, &iroi, &oroi,
+        "    tile", pipe, module, devid, &troi, NULL,
         "tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d",
         tile_nr, num_tiles, group, first_in, last_in, t_rows);
       const size_t insrc[2]  = { 0, first_in };
@@ -1837,14 +1836,14 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
       err = dt_opencl_enqueue_copy_image(devid, (cl_mem)cl_in, t_in, insrc, CLIMG_ORIGIN, iarea);
       if(err != CL_SUCCESS) goto finish;
 
-      err = module->process_cl(module, piece, t_in, t_out, &iroi, &oroi);
+      err = module->process_cl(module, piece, t_in, t_out, &troi, &troi);
       if(err != CL_SUCCESS) goto finish;
 
       for_four_channels(k)
       {
         if(tile_nr > 0 && fabs(processed_maximum_new[k] - piece->pipe->dsc.processed_maximum[k]) > 1.0e-6f)
           dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-            "changed procmax", pipe, module, devid, &iroi, &oroi,
+            "changed procmax", pipe, module, devid, NULL, NULL,
             "tile=%d channel=%d procmax=%.3f", tile_nr, (int)k, piece->pipe->dsc.processed_maximum[k]);
         processed_maximum_new[k] = piece->pipe->dsc.processed_maximum[k];
       }
@@ -1880,8 +1879,7 @@ int default_process_tiling_cl(dt_iop_module_t *self,
 int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
                         void *cl_in,
                         void *cl_out,
-                        const dt_iop_roi_t *roi_in,
-                        const dt_iop_roi_t *roi_out,
+                        const dt_iop_roi_t *roi,
                         const int in_bpp,
                         const int bpp,
                         const dt_develop_tiling_t *tiling)
