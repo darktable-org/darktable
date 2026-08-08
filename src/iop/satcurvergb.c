@@ -145,14 +145,14 @@ typedef struct dt_iop_satcurve_gui_data_t
   float picked_s_min;
   float picked_s_max;
 
-  gboolean mask_display; // NEU
+  gboolean mask_display;
 } dt_iop_satcurve_gui_data_t;
 
 typedef struct dt_iop_satcurve_global_data_t
 {
   int kernel_satcurvergb;
   int kernel_satcurve_histogram;
-  int kernel_satcurve_mask; // NEU
+  int kernel_satcurve_mask;
   int kernel_satcurve_scalar_mask;
   int kernel_satcurve_mask_from_scalar;
   int kernel_satcurve_apply_guided_mask;
@@ -520,8 +520,8 @@ static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t 
   dt_JzAzBz_2_XYZ(jab, xyz);
 }
 
-// NEU: berechnet pro Pixel die normierte Sättigung in einen separaten Buffer,
-// analog zu compute_luminance_mask() in toneequal.c
+// Compute the normalized saturation for each pixel into a separate buffer,
+// analogous to compute_luminance_mask() in toneequal.c.
 static inline void compute_saturation_mask(const dt_iop_satcurve_data_t *d,
                                            const dt_colormatrix_t inputmatrix_trans,
                                            const float L_white,
@@ -537,8 +537,8 @@ static inline void compute_saturation_mask(const dt_iop_satcurve_data_t *d,
   }
 }
 
-// NEU: Graustufen-Visualisierung der Sättigungsmaske; sqrt-"Gamma" für bessere
-// Sichtbarkeit niedriger Werte, analog display_luminance_mask() in toneequal.c
+// Render the saturation mask as a grayscale preview. Using a sqrt-like gamma
+// makes low values easier to see, analogous to display_luminance_mask() in toneequal.c.
 static inline void display_saturation_mask(const float *const restrict in,
                                            const float *const restrict mask,
                                            float *const restrict out,
@@ -611,7 +611,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe)
     _update_sat_histogram(self, d, inputmatrix_trans, in, npixels);
 
-  // NEU: Maskenanzeige-Zweig -- zeigt die normierte Sättigung als Graustufenbild
+  // Display a grayscale preview of the normalized saturation mask.
   if (self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display)
   {
     float *const restrict mask = dt_alloc_align_float(npixels);
@@ -972,7 +972,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   const float L_white = Y_to_dt_UCS_L_star(1.f);
 
-  // NEU: Maskenanzeige-Pfad -- eigener, einfacherer Kernel statt satcurvergb
+  // Mask-preview path: use a simpler kernel than the main satcurvergb path.
   if (want_mask)
   {
     if (!gf_active)
@@ -1152,7 +1152,7 @@ void init_global(dt_iop_module_so_t *self)
   self->data = gd;
   gd->kernel_satcurvergb = dt_opencl_create_kernel(program, "satcurvergb");
   gd->kernel_satcurve_histogram = dt_opencl_create_kernel(program, "satcurve_histogram");
-  gd->kernel_satcurve_mask = dt_opencl_create_kernel(program, "satcurve_mask"); // NEU
+  gd->kernel_satcurve_mask = dt_opencl_create_kernel(program, "satcurve_mask");
   gd->kernel_satcurve_scalar_mask = dt_opencl_create_kernel(program, "satcurve_scalar_mask");
   gd->kernel_satcurve_mask_from_scalar = dt_opencl_create_kernel(program, "satcurve_mask_from_scalar");
   gd->kernel_satcurve_apply_guided_mask = dt_opencl_create_kernel(program_fgf, "satcurve_apply_guided_mask");
@@ -1168,7 +1168,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   const dt_iop_satcurve_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_satcurvergb);
   dt_opencl_free_kernel(gd->kernel_satcurve_histogram);
-  dt_opencl_free_kernel(gd->kernel_satcurve_mask); // NEU
+  dt_opencl_free_kernel(gd->kernel_satcurve_mask);
   dt_opencl_free_kernel(gd->kernel_satcurve_scalar_mask);
   dt_opencl_free_kernel(gd->kernel_satcurve_mask_from_scalar);
   dt_opencl_free_kernel(gd->kernel_satcurve_apply_guided_mask);
@@ -1763,17 +1763,29 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *widget, dt_dev_pixelpi
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-// NEU: Callback für den Sättigungsmasken-Toggle-Button, analog
-// show_luminance_mask_callback() in toneequal.c
+// Toggle the saturation-mask preview, following the standard pattern used by
+// other mask preview controls in darktable.
 static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module_t *self)
 {
-  if (darktable.gui->reset)
-    return;
+  DT_GUARD_GUI_UPDATE();
+
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  if (!g)
+    return;
 
   dt_iop_request_focus(self);
+
+  if (self->request_mask_display)
+  {
+    dt_control_log(_("cannot display saturation masks while the blending mask is displayed"));
+    gtk_toggle_button_set_active(button, FALSE);
+    g->mask_display = FALSE;
+    return;
+  }
+
   g->mask_display = gtk_toggle_button_get_active(button);
-  dt_dev_reprocess_center(self->dev, self->iop_order);
+  dt_iop_refresh_center(self);
+  dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -1783,7 +1795,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   {
     dt_iop_color_picker_reset(self, FALSE);
 
-    // NEU: Maskenanzeige beim Verlassen des Moduls zurücksetzen
+    // Reset the mask preview when leaving the module.
     if (g && g->mask_display)
     {
       g->mask_display = FALSE;
@@ -1861,7 +1873,7 @@ void gui_init(dt_iop_module_t *self)
   g->selected = -1;
   g->dragging = FALSE;
   g->active_channel = DT_IOP_SATCURVE_CHANNEL_SATURATION;
-  g->mask_display = FALSE; // NEU
+  g->mask_display = FALSE;
 
   for (int ch = 0; ch < DT_IOP_SATCURVE_CHANNELS; ch++)
   {
@@ -1935,14 +1947,14 @@ void gui_init(dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT, NULL, IOP_CS_RGB);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick saturation from image"));
 
-  // NEU: Toggle-Button für die Sättigungsmaskenanzeige
+  // Toggle button for the saturation-mask preview.
   g->show_saturation_mask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
   gtk_widget_set_tooltip_text(g->show_saturation_mask, _("display saturation mask"));
   g_signal_connect(G_OBJECT(g->show_saturation_mask), "toggled",
                    G_CALLBACK(show_saturation_mask_callback), self);
 
   gtk_box_pack_start(GTK_BOX(controls_hbox), g->colorpicker, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(controls_hbox), g->show_saturation_mask, FALSE, FALSE, 0); // NEU
+  gtk_box_pack_start(GTK_BOX(controls_hbox), g->show_saturation_mask, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(controls_hbox), g->formula, FALSE, FALSE, 0);
   g_object_unref(g->formula);
 
