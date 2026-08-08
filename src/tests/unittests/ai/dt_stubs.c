@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ai/backend.h"
+
 /* darktable global — the AI backend accesses darktable.unmuted
    via the dt_debug_if macro.  Set all bits so debug output is enabled. */
 char darktable[8192] __attribute__((aligned(16)));
@@ -34,12 +36,50 @@ void dt_print_ext(const char *msg, ...)
   fputc('\n', stderr);
 }
 
+void dt_control_log(const char *msg, ...)
+{
+  va_list ap;
+  va_start(ap, msg);
+  vfprintf(stderr, msg, ap);
+  va_end(ap);
+  fputc('\n', stderr);
+}
+
 gchar *dt_conf_get_string(const char *name)
 {
-  return g_strdup("cpu");
+  /* only the provider key gets a value — every other key (models_path,
+     ort_library_path) must come back empty so the backend keeps its
+     compiled-in defaults instead of treating "cpu" as a path */
+  if(!g_strcmp0(name, DT_AI_CONF_PROVIDER)) return g_strdup("cpu");
+  return g_strdup("");
+}
+
+gboolean dt_conf_get_bool(const char *name)
+{
+  /* env init and model loading are gated on plugins/ai/enabled */
+  return !g_strcmp0(name, "plugins/ai/enabled");
+}
+
+int dt_conf_get_int(const char *name)
+{
+  return 0;
+}
+
+gboolean dt_conf_key_exists(const char *key)
+{
+  /* no darktablerc under test: callers fall back to their defaults */
+  return FALSE;
 }
 
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize)
 {
   if(configdir && bufsize > 0) configdir[0] = '\0';
+}
+
+void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize)
+{
+  /* keep EP cache writes out of the user's real cache directory */
+  gchar *dir = g_build_filename(g_get_tmp_dir(), "darktable-test-ai-cache", NULL);
+  g_strlcpy(cachedir, dir, bufsize);
+  g_free(dir);
 }
