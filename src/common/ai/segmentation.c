@@ -225,17 +225,26 @@ static void _crop_resize_mask(const float *const restrict src,
     }
   }
 
+  // inverse of the sampling mapping below, hoisted out of the pixel loops
+  const float inv_scale = (scale > 1e-6f) ? 1.0f / scale : 0.0f;
+
   DT_OMP_FOR(shared(range_lut))
   for(int y = 0; y < dst_h; y++)
   {
-    const float sy = (dst_h > 1) ? (float)y * (float)(valid_h - 1) / (float)(dst_h - 1) : 0.0f;
+    // pixel-centre convention: output pixel y covers [y, y+1[, whose
+    // centre y + 0.5 maps to (y + 0.5) * scale in mask space, i.e.
+    // sample index (y + 0.5) * scale - 0.5. the previous align-corners
+    // mapping was not the inverse of that and stretched the mask
+    // outwards; see the commit message for figures. the clamp is
+    // load-bearing: it keeps fy >= 0 and makes (int)sy a floor
+    const float sy = MAX(((float)y + 0.5f) * scale - 0.5f, 0.0f);
     const int y0 = MIN((int)sy, valid_h - 1);
     const int y1 = MIN(y0 + 1, valid_h - 1);
     const float fy = sy - (float)y0;
 
     for(int x = 0; x < dst_w; x++)
     {
-      const float sx = (dst_w > 1) ? (float)x * (float)(valid_w - 1) / (float)(dst_w - 1) : 0.0f;
+      const float sx = MAX(((float)x + 0.5f) * scale - 0.5f, 0.0f);
       const int x0 = MIN((int)sx, valid_w - 1);
       const int x1 = MIN(x0 + 1, valid_w - 1);
       const float fx = sx - (float)x0;
@@ -255,11 +264,13 @@ static void _crop_resize_mask(const float *const restrict src,
         // reference luma at the output pixel (guide is at dst resolution)
         const int luma_ref = _luma709(&guide_rgb[(y * guide_w + x) * 3]);
 
-        // map the 4 source-grid corners back into guide coords
-        const float gx0 = (valid_w > 1) ? (float)x0 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
-        const float gx1 = (valid_w > 1) ? (float)x1 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
-        const float gy0 = (valid_h > 1) ? (float)y0 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
-        const float gy1 = (valid_h > 1) ? (float)y1 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
+        // map the 4 source-grid corners back into guide coords -- exact
+        // inverse of the sampling mapping above, so that the range weights
+        // are read at the guide pixels the mask values actually come from
+        const float gx0 = ((float)x0 + 0.5f) * inv_scale - 0.5f;
+        const float gx1 = ((float)x1 + 0.5f) * inv_scale - 0.5f;
+        const float gy0 = ((float)y0 + 0.5f) * inv_scale - 0.5f;
+        const float gy1 = ((float)y1 + 0.5f) * inv_scale - 0.5f;
 
         const int ix00 = MIN(MAX((int)(gx0 + 0.5f), 0), guide_w - 1);
         const int ix01 = MIN(MAX((int)(gx1 + 0.5f), 0), guide_w - 1);
