@@ -5098,19 +5098,21 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
     return;
   }
 
-  int delta_y;
-  if(!dt_gui_get_scroll_unit_delta((const GdkEventScroll *)current, &delta_y))
+  int delta_x, delta_y;
+  if(!dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)current, &delta_x, &delta_y))
   {
     gdk_event_free(current);
     return;
   }
+  const gboolean zoom_in = dt_gui_scroll_zoom_delta((const GdkEventScroll *)current,
+                                                    delta_x, delta_y) > 0.0f;
   const gboolean constrained =
     dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   gdouble x = 0.0, y = 0.0;
   gdk_event_get_coords(current, &x, &y);
   dt_print(DT_DEBUG_INPUT,
-           "[darkroom second window] scroll zoom delta_y=%d", delta_y);
-  dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0 ? 1 : 0,
+           "[darkroom second window] scroll zoom zoom_in=%d", zoom_in);
+  dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, zoom_in ? 1 : 0,
                    x, y, constrained);
   gdk_event_free(current);
 }
