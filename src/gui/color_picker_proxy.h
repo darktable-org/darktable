@@ -104,6 +104,8 @@ GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module,
                                         GtkWidget *w,
                                         const dt_iop_colorspace_type_t cst);
 
+gboolean dt_iop_color_picker_is_active(GtkWidget *w);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
