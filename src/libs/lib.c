@@ -970,10 +970,31 @@ static void _lib_gui_reset_callback(GtkGestureSingle *gesture,
                                       gdouble y,
                                       dt_lib_module_t *module)
 {
+  /* the reset action, shared by the module header reset button (wired through
+   * its "clicked" signal in _lib_init_header) and the action/shortcut
+   * fallback (_action_process, which passes a NULL gesture) */
   module->gui_reset(module);
   if(module->has_preset_label(module))
     gtk_label_set_text(GTK_LABEL(module->preset_label), "");
-  dt_gui_claim(gesture);
+  if(gesture)
+    dt_gui_claim(gesture);
+}
+
+static void _lib_gui_reset_button_clicked_callback(GtkWidget *widget,
+                                                   gpointer user_data)
+{
+  /* the reset runs on the button's own "clicked" signal, not on a custom
+   * gesture's press/release: gui_reset() may open a modal dialog, and a
+   * dialog opened from inside a press handler would interrupt the press
+   * dispatch -- the button's gesture only processes the press after the
+   * dialog closes and its release was consumed by the dialog's grab, leaving
+   * the button stuck in its pressed state.  "clicked" fires once the press
+   * and release have both completed, so the dialog cannot split them.
+   * (A custom gesture's "released" is equally unusable: the dialog's grab
+   * cancels the gesture and dt_gui_connect_click() forwards that
+   * cancellation to the released handler, firing the reset twice.) */
+  dt_lib_module_t *module = user_data;
+  _lib_gui_reset_callback(NULL, 1, 0.0, 0.0, module);
 }
 
 static void _presets_popup_callback(GtkWidget *button,
@@ -1395,7 +1416,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
-  dt_gui_connect_click(module->reset_button, _lib_gui_reset_callback, NULL, module);
+  /* "clicked" rather than a custom gesture: see _lib_gui_reset_button_clicked_callback */
+  g_signal_connect(G_OBJECT(module->reset_button), "clicked",
+                   G_CALLBACK(_lib_gui_reset_button_clicked_callback), module);
   dt_gui_connect_motion(module->reset_button, NULL, _header_enter_notify_callback, NULL, GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);

@@ -1399,6 +1399,10 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
   }
   else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    // consume the event so it does not bubble to the module body's
+    // right-click handler (which opens the presets menu)
+    dt_gui_claim(gesture);
+
     if(g->selected == 0 || g->selected == nodes - 1)
     {
       const float reset_value = g->selected == 0 ? 0.f : 1.f;
@@ -1406,6 +1410,7 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
       dt_iop_color_picker_reset(self, TRUE);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
+      return; // an endpoint reset must not fall through into node removal
     }
 
     for(int k = g->selected; k < nodes - 1; k++)
@@ -1492,7 +1497,7 @@ void gui_init(dt_iop_module_t *self)
                                 "ctrl+click or right-click to select an area"));
   gtk_widget_set_name(g->colorpicker, "keep-active");
   dt_action_define_iop(self, N_("pickers"), N_("show color"),
-                       g->colorpicker, &dt_action_def_toggle);
+                       g->colorpicker, &dt_action_def_color_picker);
   g->colorpicker_set_values = dt_color_picker_new(self,
                                                   DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO,
                                                   NULL);
@@ -1507,7 +1512,7 @@ void gui_init(dt_iop_module_t *self)
                                 "ctrl+drag to create a positive curve\n"
                                 "shift+drag to create a negative curve"));
   dt_action_define_iop(self, N_("pickers"), N_("create curve"),
-                       g->colorpicker_set_values, &dt_action_def_toggle);
+                       g->colorpicker_set_values, &dt_action_def_color_picker);
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);

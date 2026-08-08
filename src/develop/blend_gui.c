@@ -1358,7 +1358,7 @@ static void _blendop_blendif_showmask_clicked(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+  if(dt_gui_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
 
   GtkWidget *button = dt_gui_get_widget(gesture);
 
@@ -1372,8 +1372,7 @@ static void _blendop_blendif_showmask_clicked(GtkGestureSingle *gesture,
       | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
       | DT_DEV_PIXELPIPE_DISPLAY_ANY);
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  GdkModifierType state = dt_gui_current_state(gesture);
 
   if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
     module->request_mask_display |=
@@ -1416,7 +1415,7 @@ static void _blendop_masks_modes_none_clicked(GtkGestureSingle *gesture,
   GtkWidget *button = dt_gui_get_widget(gesture);
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY
      && data->selected_mask_mode != button)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->selected_mask_mode),
@@ -1637,8 +1636,7 @@ static void _blendop_masks_add_shape(GtkGestureSingle *gesture,
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state = dt_gui_current_state(gesture);
   const gboolean continuous = dt_modifier_is(state, GDK_CONTROL_MASK);
 
   // find out who we are
@@ -1705,8 +1703,7 @@ static void _blendop_masks_show_and_edit(GtkGestureSingle *gesture,
 
   dt_iop_color_picker_reset(self, FALSE);
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  GdkModifierType state = dt_gui_current_state(gesture);
 
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,
                                               self->blend_params->mask_id);
@@ -2611,7 +2608,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
        _("pick GUI color from image\n"
          "ctrl+click or right-click to select an area"));
     gtk_widget_set_name(bd->colorpicker, "keep-active");
-    dt_action_define_iop(module, "blend`pickers", N_("show color"), bd->colorpicker, &dt_action_def_toggle);
+    dt_action_define_iop(module, "blend`pickers", N_("show color"), bd->colorpicker, &dt_action_def_color_picker);
 
     bd->colorpicker_set_values =
       dt_color_picker_new(module, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, header);
@@ -2623,7 +2620,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
        _("set the range based on an area from the image\n"
          "drag to use the input image\n"
          "ctrl+drag to use the output image"));
-    dt_action_define_iop(module, "blend`pickers", N_("set range"), bd->colorpicker_set_values, &dt_action_def_toggle);
+    dt_action_define_iop(module, "blend`pickers", N_("set range"), bd->colorpicker_set_values, &dt_action_def_color_picker);
 
     GtkWidget *btn = dt_iop_togglebutton_new(module, "blend`tools",
                                              N_("invert all channel's polarities"), NULL,

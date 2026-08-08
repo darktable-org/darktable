@@ -5326,13 +5326,14 @@ static void _event_fit_v_button_clicked(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5375,13 +5376,14 @@ static void _event_fit_h_button_clicked(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5424,13 +5426,14 @@ static void _event_fit_both_button_clicked(GtkGestureSingle *gesture,
 {
   DT_GUARD_GUI_UPDATE();
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -5476,15 +5479,16 @@ static void _event_structure_auto_clicked(GtkGestureSingle *gesture,
   GtkWidget *widget = dt_gui_get_widget(gesture);
   DT_GUARD_GUI_UPDATE();
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
 
     _do_clean_structure(self, p, TRUE);
 
-    const int control = dt_modifiers_include(dt_key_modifier_state(), GDK_CONTROL_MASK);
-    const int shift = dt_modifiers_include(dt_key_modifier_state(), GDK_SHIFT_MASK);
+    const GdkModifierType state = dt_gui_current_state(gesture);
+    const int control = dt_modifiers_include(state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_enhance_t enhance;
 
@@ -6117,12 +6121,18 @@ void gui_init(dt_iop_module_t *self)
     (g->structure_quad, _("manually define perspective rectangle"));
   gtk_widget_set_tooltip_text(g->structure_lines, _("manually draw structure lines"));
 
-  dt_gui_connect_click(g->fit_v, _event_fit_v_button_clicked, NULL, self);
-  dt_gui_connect_click(g->fit_h, _event_fit_h_button_clicked, NULL, self);
-  dt_gui_connect_click(g->fit_both, _event_fit_both_button_clicked, NULL, self);
-  dt_gui_connect_click(g->structure_quad, _event_structure_quad_clicked, NULL, self);
-  dt_gui_connect_click(g->structure_lines, _event_structure_lines_clicked, NULL, self);
-  dt_gui_connect_click(g->structure_auto, _event_structure_auto_clicked, NULL, self);
+  g_object_set_data(G_OBJECT(g->fit_v), DT_ACTION_GESTURE_KEY,
+                    dt_gui_connect_click(g->fit_v, _event_fit_v_button_clicked, NULL, self));
+  g_object_set_data(G_OBJECT(g->fit_h), DT_ACTION_GESTURE_KEY,
+                    dt_gui_connect_click(g->fit_h, _event_fit_h_button_clicked, NULL, self));
+  g_object_set_data(G_OBJECT(g->fit_both), DT_ACTION_GESTURE_KEY,
+                    dt_gui_connect_click(g->fit_both, _event_fit_both_button_clicked, NULL, self));
+  g_object_set_data(G_OBJECT(g->structure_quad), DT_ACTION_GESTURE_KEY,
+                    dt_gui_connect_click(g->structure_quad, _event_structure_quad_clicked, NULL, self));
+  g_object_set_data(G_OBJECT(g->structure_lines), DT_ACTION_GESTURE_KEY,
+                    dt_gui_connect_click(g->structure_lines, _event_structure_lines_clicked, NULL, self));
+  g_object_set_data(G_OBJECT(g->structure_auto), DT_ACTION_GESTURE_KEY,
+                    dt_gui_connect_click(g->structure_auto, _event_structure_auto_clicked, NULL, self));
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_event_draw), self);
 
   dt_action_define_iop(self, N_("fit"),

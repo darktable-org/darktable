@@ -656,36 +656,6 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event,
   return FALSE;
 }
 
-gboolean dt_gui_get_scroll_unit_deltas_fallback(const gdouble dx,
-                                                 const gdouble dy,
-                                                 int *delta_x,
-                                                 int *delta_y)
-{
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    const gboolean ok = dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)event, delta_x, delta_y);
-    gdk_event_free(event);
-    return ok;
-  }
-  // fallback: use raw values if no current event available
-  *delta_x = (int)dx;
-  *delta_y = (int)dy;
-  return TRUE;
-}
-
-gboolean dt_gui_get_scroll_unit_delta_fallback(const gdouble dy,
-                                                int *delta)
-{
-  int delta_x, delta_y;
-  if(dt_gui_get_scroll_unit_deltas_fallback(0, dy, &delta_x, &delta_y))
-  {
-    *delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
-    return TRUE;
-  }
-  return FALSE;
-}
-
 static gboolean _draw_borders(GtkWidget *widget,
                               cairo_t *crf,
                               const gpointer user_data)
@@ -4818,6 +4788,28 @@ void dt_gui_add_controller(GtkWidget *widget,
 #endif
 }
 
+/*
+ * Root (screen-absolute) coordinates of the current event, or FALSE if there
+ * is no current event.  gtk_get_current_event() returns an owned copy on
+ * GTK3 (transfer full), so the copy is released here -- the whole
+ * get-event/use/free dance is confined to this one helper.
+ *
+ * GTK4 migration: gtk_get_current_event() disappears; gesture/controller
+ * callbacks get the event from gtk_gesture_get_last_event() or
+ * gtk_event_controller_get_current_event() (borrowed, no free).  Callers
+ * of this helper should then switch to those and read the coordinates
+ * directly, or drop the helper and use
+ * gtk_gesture_get_last_event(gesture, NULL).
+ */
+gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y)
+{
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return FALSE;
+  const gboolean ok = gdk_event_get_root_coords(event, x, y);
+  gdk_event_free(event);
+  return ok;
+}
+
 static void _gesture_cancel(GtkGestureSingle *gesture,
                             GdkEventSequence *sequence,
                             GtkWidget *widget)
@@ -4849,70 +4841,6 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   }
 
   return (GtkGestureSingle *)gesture;
-}
-
-/*
- * GTK3 bridge for double/triple-click detection.
- *
- * GtkGestureMultiPress in GTK3 does not process GDK_2BUTTON_PRESS or
- * GDK_3BUTTON_PRESS events at all:
- * - gtk_gesture_handle_event() only dispatches GDK_BUTTON_PRESS (not 2/3)
- * - gtk_gesture_multi_press_begin() checks for GDK_BUTTON_PRESS only
- * - GDK always delivers GDK_2BUTTON_PRESS for the second press of a
- *   double-click (never a second GDK_BUTTON_PRESS)
- *
- * As a result, GtkGestureMultiPress's "pressed" signal with n_press=2 or 3
- * is NEVER emitted in GTK3.  This helper works around it by connecting a
- * classic "button-press-event" signal handler that catches GDK_2BUTTON_PRESS
- * and GDK_3BUTTON_PRESS and forwards them to the same pressed callback with
- * the correct n_press value.
- *
- * GTK4 migration: DELETE this entire helper (struct, free, handler, and both
- * public functions).  GtkGestureClick (the GTK4 replacement for
- * GtkGestureMultiPress) uses an internal timer to detect multi-press patterns
- * and correctly emits "pressed" with n_press=2/3 without needing GDK_2BUTTON_PRESS.
- * The callers using dt_gui_connect_double_click() should simply remove those
- * calls — the gesture alone will suffice.
- */
-typedef struct _DblClkData
-{
-  GCallback cb;
-  gpointer data;
-} DblClkData;
-
-static void _dbl_clk_free(gpointer p, GClosure *cl)
-{
-  g_free(p);
-}
-
-static gboolean _dbl_clk_handler(GtkWidget *w, GdkEventButton *ev, gpointer user)
-{
-  DblClkData *d = user;
-  int n;
-  if(ev->type == GDK_2BUTTON_PRESS) n = 2;
-  else if(ev->type == GDK_3BUTTON_PRESS) n = 3;
-  else return GDK_EVENT_PROPAGATE;
-  ((void (*)(GtkGestureSingle *, int, double, double, gpointer))d->cb)
-    (NULL, n, ev->x, ev->y, d->data);
-  return GDK_EVENT_STOP;
-}
-
-unsigned long
-(dt_gui_connect_double_click)(GtkWidget *widget,
-                              GCallback pressed,
-                              gpointer data)
-{
-  DblClkData *d = g_malloc(sizeof(DblClkData));
-  d->cb = pressed;
-  d->data = data;
-  return g_signal_connect_data(widget, "button-press-event",
-                                G_CALLBACK(_dbl_clk_handler),
-                                d, _dbl_clk_free, 0);
-}
-
-void (dt_gui_disconnect_double_click)(GtkWidget *widget, unsigned long id)
-{
-  g_signal_handler_disconnect(widget, id);
 }
 
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
@@ -5083,7 +5011,12 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   flags &= ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE;
 
   GtkEventController *const controller = gtk_event_controller_scroll_new(widget, flags);
-  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  /* BUBBLE phase matches the bubbling behavior of the replaced
+   * "scroll-event" signal: the controller fires whenever the event target
+   * is the widget or any of its descendants (e.g. child widgets such as
+   * thumbnails or star icons placed on a GtkLayout).  GTK_PHASE_TARGET
+   * would only fire when the widget is the target itself. */
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_BUBBLE);
   dt_gui_add_controller(widget, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
   g_signal_connect(controller, "scroll", G_CALLBACK(proxy), data);

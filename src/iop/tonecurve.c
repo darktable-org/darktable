@@ -1279,7 +1279,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text
     (g->colorpicker,
      _("pick GUI color from image\nctrl+click or right-click to select an area"));
-  dt_action_define_iop(self, NULL, N_("pick color"), g->colorpicker, &dt_action_def_toggle);
+  dt_action_define_iop(self, NULL, N_("pick color"), g->colorpicker, &dt_action_def_color_picker);
 
   dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs), 
                                            dt_gui_align_right(g->colorpicker)));
@@ -1944,12 +1944,18 @@ static void dt_iop_tonecurve_button_press(GtkGestureSingle *gesture,
   }
   else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    // consume the event so it does not bubble to the module body's
+    // right-click handler (which opens the presets menu); the pre-migration
+    // button-press handler returned TRUE here
+    dt_gui_claim(gesture);
+
     if(g->selected == 0 || g->selected == nodes - 1)
     {
       float reset_value = g->selected == 0 ? 0 : 1;
       tonecurve[g->selected].y = tonecurve[g->selected].x = reset_value;
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+      return; // an endpoint reset must not fall through into node removal
     }
 
     for(int k = g->selected; k < nodes - 1; k++)

@@ -632,6 +632,84 @@ static void view_popup_menu(GtkWidget *treeview,
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 }
 
+/* Claim the press only when the collections handler fully owns it, so a
+ * plain click still reaches the treeview's internal bubble-phase gesture:
+ * single-click expander toggles, focus grab and cursor placement keep
+ * working (the pre-migration button-press-event handler returned FALSE for
+ * those presses).  The presses that must claim are the ones the handler
+ * resolves itself and that the internal gesture would fight: modifier
+ * presses (ctrl/shift selection, shift-range, ctrl+shift view switch),
+ * single-click mode, the MONTH rule's single-press activation, and the
+ * folder/filmroll context menu.  Same selective pattern as in
+ * gui/accelerators.c. */
+static void _gesture_begin_claim(GtkGesture *gesture,
+                                 GdkEventSequence *sequence,
+                                 gpointer user_data)
+{
+  const dt_lib_collect_t *d = user_data;
+
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+
+  const gboolean modifier = dt_modifier_is(state, GDK_SHIFT_MASK)
+    || dt_modifier_is(state, GDK_CONTROL_MASK)
+    || dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK);
+  const guint button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(gesture));
+  const gboolean folder_menu
+    = (d->view_rule == DT_COLLECTION_PROP_FOLDERS
+       || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
+      && button == GDK_BUTTON_SECONDARY && !modifier;
+
+  if(modifier || d->singleclick || d->view_rule == DT_COLLECTION_PROP_MONTH || folder_menu)
+    gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+/* Replicates GTK's private coords_are_over_arrow(): TRUE when the bin-window
+ * coordinates hit the expander arrow of a parent row.  Needed to tell apart
+ * a double-click on the arrow (the treeview's internal gesture toggles it on
+ * every primary release, so ours must claim the second press and not add a
+ * third toggle) from a double-click on the row body (the internal gesture
+ * does not toggle there, ours must). */
+static gboolean _coords_are_over_arrow(GtkTreeView *view, gint bin_x, gint bin_y)
+{
+  GtkTreePath *path = NULL;
+  GtkTreeViewColumn *column = NULL;
+  gint cell_x, cell_y;
+
+  if(!gtk_tree_view_get_path_at_pos(view, bin_x, bin_y, &path, &column, &cell_x, &cell_y))
+    return FALSE;
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(view);
+  const gboolean over_parent = gtk_tree_model_get_iter(model, &iter, path)
+    && gtk_tree_model_iter_has_child(model, &iter);
+  const gboolean in_expander_column = column == gtk_tree_view_get_expander_column(view);
+  if(!over_parent || !in_expander_column)
+  {
+    gtk_tree_path_free(path);
+    return FALSE;
+  }
+
+  gboolean indent_expanders = TRUE;
+  gint expander_size = 12, horizontal_separator = 0;
+  gtk_widget_style_get(GTK_WIDGET(view),
+                       "indent-expanders", &indent_expanders,
+                       "horizontal-separator", &horizontal_separator,
+                       "expander-size", &expander_size, NULL);
+
+  /* GTK draws the arrow one expander width in per tree level below the
+   * top level when indent-expanders is set: gtk_tree_view_get_arrow_xrange
+   * offsets by expander_size * (rbtree_depth - 1) (the root rbtree has
+   * depth 0), and the rbtree depth is path depth - 1. */
+  const gint depth = gtk_tree_path_get_depth(path);
+  const gint x = indent_expanders ? expander_size * (depth - 1) : 0;
+  const gint x1 = x + horizontal_separator / 2;
+  const gint x2 = x + expander_size;
+  gtk_tree_path_free(path);
+
+  return cell_x >= x1 && cell_x < x2;
+}
+
 static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
                                         double x, double y,
                                         dt_lib_collect_t *d)
@@ -655,8 +733,32 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
 
   GdkModifierType mod_state;
   gtk_get_current_event_state(&mod_state);
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  const gboolean modifier = dt_modifier_is(mod_state, GDK_SHIFT_MASK)
+    || dt_modifier_is(mod_state, GDK_CONTROL_MASK)
+    || dt_modifier_is(mod_state, GDK_SHIFT_MASK | GDK_CONTROL_MASK);
 
-  if((n_press >= 2 || d->singleclick) && path)
+  const gboolean plain_primary
+    = button == GDK_BUTTON_PRIMARY && !modifier && !d->singleclick
+      && d->view_rule != DT_COLLECTION_PROP_MONTH;
+  const gboolean over_arrow = path && _coords_are_over_arrow(GTK_TREE_VIEW(treeview), bin_x, bin_y);
+
+  /* the treeview's internal gesture toggles the expander on every primary
+   * release over the arrow, so it owns all arrow toggles; ours must not add
+   * a toggle for any n_press >= 2 primary press on the arrow (a double
+   * click would otherwise get release1 + press2 + release2 = 3 toggles).
+   * Only the second press of a fast pair is claimed, so the internal
+   * gesture never sees it: a double-click then toggles exactly once (on the
+   * first release) with no flicker, while every later press of a longer
+   * burst is still handled by the internal gesture and keeps responding. */
+  const gboolean arrow_second_press = n_press == 2 && plain_primary && over_arrow;
+  if(arrow_second_press)
+  {
+    GdkEventSequence *sequence = gtk_gesture_single_get_current_sequence(GTK_GESTURE_SINGLE(gesture));
+    gtk_gesture_set_sequence_state(GTK_GESTURE(gesture), sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+  }
+
+  if((n_press >= 2 || d->singleclick) && path && !(n_press >= 2 && plain_primary && over_arrow))
   {
     if(mod_state == last_mod_state)
     {
@@ -695,6 +797,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     gtk_tree_path_free(path);
+    gdk_event_free(event);
     return;
   }
 
@@ -703,8 +806,6 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     gtk_tree_selection_unselect_all(selection);
     gtk_tree_selection_select_path(selection, path);
   }
-
-  const guint button = gtk_gesture_single_get_current_button(gesture);
 
   // case of a context-menu (folder/filmroll)
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
@@ -717,25 +818,26 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     view_popup_menu(treeview, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
+    gdk_event_free(event);
     return;
   }
 
   // case of a activation
   if((!d->singleclick && n_press >= 2 && button == GDK_BUTTON_PRIMARY)
      || (d->singleclick && n_press == 1 && button == GDK_BUTTON_PRIMARY)
-     || (!d->singleclick && n_press == 1 && button == GDK_BUTTON_PRIMARY
-         && (dt_modifier_is(mod_state, GDK_SHIFT_MASK)
-             || dt_modifier_is(mod_state, GDK_CONTROL_MASK)))
+     || (!d->singleclick && n_press == 1 && button == GDK_BUTTON_PRIMARY && modifier)
      || (d->view_rule == DT_COLLECTION_PROP_MONTH
          && n_press == 1 && button == GDK_BUTTON_PRIMARY))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
+    gdk_event_free(event);
     return;
   }
 
   if(path) gtk_tree_path_free(path);
+  gdk_event_free(event);
 }
 
 static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
@@ -3674,7 +3776,9 @@ static void popup_button_callback_cb(GtkGestureSingle *gesture, int n_press,
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), gtk_get_current_event());
+  GdkEvent *event = gtk_get_current_event();
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), event);
+  gdk_event_free(event);
   return;
 }
 
@@ -4074,7 +4178,17 @@ void gui_init(dt_lib_module_t *self)
   d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  dt_gui_connect_click_all(view, view_onButtonPressed_cb, NULL, d);
+  /* the treeview owns an internal bubble-phase GtkGestureMultiPress that
+   * would fight our own selection handling: use a CAPTURE-phase gesture
+   * that claims the sequence, replicating the event consumption of the
+   * pre-migration button-press-event handler */
+  GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(view));
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                             GTK_PHASE_CAPTURE);
+  dt_gui_add_controller(GTK_WIDGET(view), gesture);
+  gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+  g_signal_connect(gesture, "pressed", G_CALLBACK(view_onButtonPressed_cb), d);
+  g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();

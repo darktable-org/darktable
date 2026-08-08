@@ -3620,13 +3620,13 @@ static void btn_make_radio_callback(GtkGestureSingle *gesture,
                                       double y,
                                       dt_iop_module_t *self)
 {
-  GdkEvent *event = gtk_get_current_event();
-  gboolean ctrl_pressed = FALSE;
-  if(event)
-  {
-    ctrl_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
-    gdk_event_free(event);
-  }
+  /* read the modifier state from the gesture: for a real click this is
+   * the live event state, for a shortcut-activated press it is the
+   * declared effect carried by _action_effect_button_state() (see
+   * DT_ACTION_GESTURE_SYNTH_KEY in gtk.h); gtk_get_current_event() would
+   * return the key event during shortcut dispatch and lose the declared
+   * ctrl variant */
+  const gboolean ctrl_pressed = dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK);
 
   GtkWidget *btn = dt_gui_get_widget(gesture);
 
