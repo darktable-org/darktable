@@ -3681,7 +3681,8 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
 dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
                                                  const int width,
                                                  const int height,
-                                                 const uint32_t bpp,
+                                                 const int32_t ibpp,
+                                                 const int32_t obpp,
                                                  const float factor,
                                                  const size_t overhead,
                                                  const int overlap)
@@ -3689,24 +3690,32 @@ dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
   dt_opencl_t *cl = darktable.opencl;
   if(!_cldev_running(devid)) return DT_OPENCL_TILING;
 
-  const int64_t plane = width * height * bpp;
-  const int64_t total = factor * plane + overhead;
+  const int64_t iplane = (int64_t)width * height * ibpp;
+  const int64_t oplane = (int64_t)width * height * obpp;
 
-  // always tile as processed image is larger than device is providing
+  // always tile as processed image is larger than what device or dt are providing
   if(cl->dev[devid].max_image_width < width
       || cl->dev[devid].max_image_height < height
-      || _opencl_get_device_memalloc(devid) < plane)
+      || _opencl_get_device_memalloc(devid) < MAX(iplane, oplane))
     return DT_OPENCL_TILING;
 
   const int64_t avail = dt_opencl_get_device_available(devid);
+  // total amount of used cl_mem as requested by module tiling code
+  const int64_t tiling_total = iplane * factor + overhead;
 
-  // available clm_em allows processing whole image in one bunch
-  if(avail > total)
+  // available cl_mem allows processing whole image in one bunch
+  if(avail > tiling_total)
     return cl->fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_NO_TILING;
-  const int64_t perline = width * bpp;
-  const int64_t remains = avail - overhead - 2*plane;
+
+  // how much is available for each fast tile
+  const int64_t tile_mem = avail - overhead - iplane - oplane;
+  if(tile_mem < DT_MEGA) return DT_OPENCL_TILING;
+
+  const int64_t per_line = width * (ibpp + obpp);
+  const int64_t tlines = tile_mem / per_line;
   // fast internal OpenCL tiling possible and with a good bet on performance?
-  return (remains / perline - overlap) > height / 10 ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
+  const gboolean good_bet = (tlines - 2*overlap) > (tlines / 5);
+  return good_bet ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
 }
 
 /** round size to a multiple of the value given in the device specifig
