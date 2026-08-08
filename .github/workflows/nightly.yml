@@ -72,6 +72,11 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
+            libopencv-calib3d-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-flann-dev \
+            libopencv-imgproc-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -184,7 +189,7 @@ jobs:
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage-${{ runner.arch }}
-          retention-days: 1
+          retention-days: 21
 
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
@@ -258,6 +263,7 @@ jobs:
             libxml2:p
             lua54:p
             omp:p
+            opencv:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p
@@ -331,7 +337,7 @@ jobs:
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
-          retention-days: 1
+          retention-days: 21
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
@@ -412,7 +418,7 @@ jobs:
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
-          retention-days: 1
+          retention-days: 21
 
   upload_to_release:
     permissions:
