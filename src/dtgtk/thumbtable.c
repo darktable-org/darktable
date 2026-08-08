@@ -1397,11 +1397,10 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
     return;
   }
 
-  table->mouse_inside = FALSE;
-
-  /* Don't clear the mouse-over when leaving to a child widget (thumbnail),
-   * or while the pointer is grabbed: the shortcut machinery's synthetic
-   * crossings must not lose the hovered image (see #21729).
+  /* Don't clear the mouse-over nor the inside-table state when leaving to a
+   * child widget (thumbnail), or while the pointer is grabbed: the shortcut
+   * machinery's synthetic crossings must not lose the hovered image nor
+   * mouse_inside (see #21729, #21745).
    * GTK4 migration: drop the pointer-grab check (see
    * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
   GdkEvent *event = gtk_get_current_event();
@@ -1411,7 +1410,10 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
        && event->crossing.mode != GDK_CROSSING_GTK_GRAB
        && event->crossing.mode != GDK_CROSSING_GRAB
        && !dt_gui_pointer_is_grabbed())
+    {
+      table->mouse_inside = FALSE;
       dt_control_set_mouse_over_id(NO_IMGID);
+    }
     gdk_event_free(event);
   }
 }
@@ -1422,6 +1424,8 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
                               dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
+
+  table->mouse_inside = TRUE;
 
   /* The pointer entered the thumbtable area (from a thumbnail, a panel, or
    * after a redraw of the table).  Clear the mouse-over only if the pointer
