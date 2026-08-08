@@ -1460,8 +1460,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_
 
   cairo_surface_t *cst =
     dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   cairo_t *cr = cairo_create(cst);
   PangoLayout *layout = pango_cairo_create_layout(cr);
 

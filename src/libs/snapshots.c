@@ -148,8 +148,7 @@ static void _draw_sym(cairo_t *cr,
   const double inv = inverted ? -0.1 : 1.0;
 
   PangoRectangle ink;
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(12) * PANGO_SCALE);
   PangoLayout *layout = pango_cairo_create_layout(cr);

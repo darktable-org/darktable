@@ -1427,7 +1427,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
 
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, g->allocation.width,
                                                        g->allocation.height);
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   cairo_t *cr = cairo_create(cst);
   PangoLayout *layout = pango_cairo_create_layout(cr);
 

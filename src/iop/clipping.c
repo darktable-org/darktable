@@ -2305,7 +2305,7 @@ static void gui_draw_sym(cairo_t *cr, const float x, const float y, const float 
 {
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE * scale);
   layout = pango_cairo_create_layout(cr);
@@ -2373,7 +2373,7 @@ void gui_post_expose(dt_iop_module_t *self,
     dimensions[0] = '\0';
     PangoLayout *layout;
     PangoRectangle ext;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
     layout = pango_cairo_create_layout(cr);
@@ -2417,7 +2417,7 @@ void gui_post_expose(dt_iop_module_t *self,
   {
     PangoRectangle ink;
     PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
     layout = pango_cairo_create_layout(cr);
@@ -2658,7 +2658,7 @@ void gui_post_expose(dt_iop_module_t *self,
       // draw the apply "button"
       PangoLayout *layout;
       PangoRectangle ink;
-      PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      PangoFontDescription *desc = dt_gui_get_font();
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
       pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);

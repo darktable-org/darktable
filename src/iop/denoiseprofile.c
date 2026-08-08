@@ -3398,8 +3398,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   // draw labels:
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size(desc, (.08 * height) * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);

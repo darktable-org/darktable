@@ -1276,8 +1276,7 @@ static void _lighttable_expose_empty(cairo_t *cr,
   const float offy = height * 0.2f;
   const float offx = width * 0.05f;
   PangoLayout *layout = pango_cairo_create_layout(cr);
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(20.0f) * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);

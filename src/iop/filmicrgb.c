@@ -3287,24 +3287,10 @@ void filmic_gui_draw_icon(cairo_t *cr, const dt_iop_filmicrgb_gui_button_data_t 
 
   cairo_save(cr);
 
-  GdkRGBA color;
-
-  // copy color
-  color.red = darktable.bauhaus->graph_fg.red;
-  color.green = darktable.bauhaus->graph_fg.green;
-  color.blue = darktable.bauhaus->graph_fg.blue;
-  color.alpha = darktable.bauhaus->graph_fg.alpha;
-
   if(button->mouse_hover)
-  {
-    // use graph_fg color as-is if mouse hover
-    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
-  }
+    set_color(cr, darktable.bauhaus->color_fg);
   else
-  {
-    // use graph_fg color with transparency else
-    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha * 0.5);
-  }
+    set_color(cr, darktable.bauhaus->color_fg_insensitive);
 
   cairo_rectangle(cr, button->left, button->top, button->w - DT_PIXEL_APPLY_DPI(0.5),
                   button->h - DT_PIXEL_APPLY_DPI(0.5));
@@ -3332,8 +3318,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
 
   cairo_surface_t *cst =
     dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, g->allocation.width, g->allocation.height);
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   cairo_t *cr = cairo_create(cst);
   PangoLayout *layout = pango_cairo_create_layout(cr);
 
