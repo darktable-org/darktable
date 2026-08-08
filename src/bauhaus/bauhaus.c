@@ -3980,8 +3980,11 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   else if(button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
     GdkEvent *const event = gtk_get_current_event();
-    bh->opentime = gdk_event_get_time(event);
-    gdk_event_free(event);
+    if(event)
+    {
+      bh->opentime = gdk_event_get_time(event);
+      gdk_event_free(event);
+    }
     bh->mouse_x = x;
     bh->mouse_y = y;
     _popup_show(widget);
@@ -4072,10 +4075,14 @@ static void _widget_motion(GtkEventControllerMotion *controller,
       const float scaled_step =
         width * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
       const float steps = floorf((x - bh->mouse_x) / scaled_step);
-      GdkEvent *const event = gtk_get_current_event(); // TODO cleanup
+      // the current event may be NULL for synthetic motions; fall back to
+      // the global keyboard state in that case
+      GdkEvent *const event = gtk_get_current_event();
+      const GdkModifierType motion_state = event ? dt_gdk_event_get_state(event)
+                                                 : dt_key_modifier_state();
+      if(event) gdk_event_free(event);
       _slider_add_step(widget, copysignf(1, d->factor) * steps,
-                       dt_gdk_event_get_state(event), FALSE);
-      gdk_event_free(event);
+                       motion_state, FALSE);
 
       bh->mouse_x += steps * scaled_step;
     }
