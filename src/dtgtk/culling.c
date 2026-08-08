@@ -673,7 +673,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
            direction,
            direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
            is_stop ? "yes" : "no",
-           dt_modifier_is(state, GDK_CONTROL_MASK) ? "yes" : "no",
+           dt_modifiers_include(state, GDK_CONTROL_MASK) ? "yes" : "no",
            device ? gdk_device_get_name(device) : "<none>",
            device ? (int)gdk_device_get_source(device) : -1,
            x_root, y_root,
@@ -726,11 +726,12 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     return;
   }
 
-  // Smooth scroll (touchpad two-finger swipe): pan zoomed images or navigate images.
-  // We check before the unit-delta path so fractional smooth scroll is used for panning
-  // with full fidelity rather than being accumulated into integer steps.
-  if(direction == GDK_SCROLL_SMOOTH && !is_stop
-     && !dt_modifiers_include(state, GDK_CONTROL_MASK))
+  // Smooth scroll without ctrl: a touchpad two-finger swipe pans zoomed images,
+  // checked before the unit-delta path so fractional deltas keep full fidelity.
+  // dt_gui_scroll_should_pan() restricts this to touchpad-sourced events, so
+  // mouse wheels always navigate between images, even at 100% zoom (GTK4 can
+  // deliver wheel scrolls as smooth events too).
+  if(dt_gui_scroll_should_pan((const GdkEventScroll *)event))
   {
     // Check if any thumbnail is zoomed in; if so, pan instead of navigate.
     float fz = 1.0f;
@@ -752,8 +753,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
         // used by the center-widget pan path).
         dt_print(DT_DEBUG_INPUT,
                  "[culling scroll] panning dx=%.3f dy=%.3f (scaled: dx=%.1f dy=%.1f)",
-                 ddx, ddy, ddx * 50.0, ddy * 50.0);
-        dt_culling_pan_move(table, (float)(-ddx * 50.0), (float)(-ddy * 50.0), state);
+                 ddx, ddy, ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE, ddy * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
+        dt_culling_pan_move(table, (float)(-ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE),
+                            (float)(-ddy * DT_UI_SCROLL_SMOOTH_DELTA_SCALE), state);
       }
       else
       {

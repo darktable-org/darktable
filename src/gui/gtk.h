@@ -254,6 +254,15 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
+/* Return TRUE if a scroll event should be treated as a touchpad pan gesture
+ * (two-finger swipe) rather than a plain scroll: requires the touchpad-gestures
+ * preference, a smooth non-stop scroll without ctrl, and a touchpad source
+ * device (on macOS any smooth non-ctrl scroll qualifies, as the built-in
+ * trackpad reports as a mouse; a device that just produced a pinch/swipe
+ * gesture also qualifies).  Mouse wheels therefore never pan, even where GTK
+ * delivers wheel scrolls as smooth events. */
+gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event);
+
 /*
  * new ui api
  */
