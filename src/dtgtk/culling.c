@@ -651,6 +651,9 @@ static gboolean _event_gesture(GtkWidget *widget,
   return TRUE;
 }
 
+// zoom direction for a scroll: see dt_gui_scroll_zoom_delta() in gtk.c for
+// the convention (up/left-with-shift zooms in, down zooms out; without shift
+// right is the increase direction for tilt/two-finger-swipes).
 static void _event_scroll(GtkEventControllerScroll *controller,
                            gdouble dx,
                            gdouble dy,
@@ -673,7 +676,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
            direction,
            direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
            is_stop ? "yes" : "no",
-           dt_modifier_is(state, GDK_CONTROL_MASK) ? "yes" : "no",
+           dt_modifiers_include(state, GDK_CONTROL_MASK) ? "yes" : "no",
            device ? gdk_device_get_name(device) : "<none>",
            device ? (int)gdk_device_get_source(device) : -1,
            x_root, y_root,
@@ -707,8 +710,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     if(dt_gui_get_scroll_deltas((const GdkEventScroll *)event, &ddx, &ddy)
        && (ddx != 0.0 || ddy != 0.0))
     {
-      const gdouble delta = fabs(ddx) > fabs(ddy) ? -ddx : ddy;
-      const float zoom_delta = (float)(-delta * 0.5);
+      const float zoom_delta = dt_gui_scroll_zoom_delta((const GdkEventScroll *)event, ddx, ddy);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
       GdkWindow *win = gtk_widget_get_window(table->widget);
@@ -726,11 +728,12 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     return;
   }
 
-  // Smooth scroll (touchpad two-finger swipe): pan zoomed images or navigate images.
-  // We check before the unit-delta path so fractional smooth scroll is used for panning
-  // with full fidelity rather than being accumulated into integer steps.
-  if(direction == GDK_SCROLL_SMOOTH && !is_stop
-     && !dt_modifiers_include(state, GDK_CONTROL_MASK))
+  // Smooth scroll without ctrl: a touchpad two-finger swipe pans zoomed images,
+  // checked before the unit-delta path so fractional deltas keep full fidelity.
+  // dt_gui_scroll_should_pan() restricts this to touchpad-sourced events, so
+  // mouse wheels always navigate between images, even at 100% zoom (GTK4 can
+  // deliver wheel scrolls as smooth events too).
+  if(dt_gui_scroll_should_pan((const GdkEventScroll *)event))
   {
     // Check if any thumbnail is zoomed in; if so, pan instead of navigate.
     float fz = 1.0f;
@@ -752,8 +755,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
         // used by the center-widget pan path).
         dt_print(DT_DEBUG_INPUT,
                  "[culling scroll] panning dx=%.3f dy=%.3f (scaled: dx=%.1f dy=%.1f)",
-                 ddx, ddy, ddx * 50.0, ddy * 50.0);
-        dt_culling_pan_move(table, (float)(-ddx * 50.0), (float)(-ddy * 50.0), state);
+                 ddx, ddy, ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE, ddy * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
+        dt_culling_pan_move(table, (float)(-ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE),
+                            (float)(-ddy * DT_UI_SCROLL_SMOOTH_DELTA_SCALE), state);
       }
       else
       {
@@ -772,9 +776,8 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     const gboolean is_horizontal = abs(delta_x) > abs(delta_y);
     if(dt_modifiers_include(state, GDK_CONTROL_MASK))
     {
-      // zooming: right==up==zoom-in
-      const int delta = is_horizontal ? -delta_x : delta_y;
-      const float zoom_delta = delta < 0 ? 0.5f : -0.5f;
+      // zooming: see dt_gui_scroll_zoom_delta() for the direction convention
+      const float zoom_delta = dt_gui_scroll_zoom_delta(scroll_event, delta_x, delta_y);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
       GdkWindow *win = gtk_widget_get_window(table->widget);
@@ -1312,6 +1315,27 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
   g_object_ref(table->widget);
 
   return table;
+}
+
+void dt_culling_destroy(dt_culling_t *table)
+{
+  if(!table) return;
+  // cancel a pending deferred-zoom finalisation so the timer cannot fire
+  // on a freed table
+  if(table->zoom_finalize_timeout_id)
+  {
+    g_source_remove(table->zoom_finalize_timeout_id);
+    table->zoom_finalize_timeout_id = 0;
+  }
+  // drop the control-signal connections that use this table as user_data
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(table, "culling");
+  // destroy the widget (tears down the event-controller callbacks that use
+  // the table as user_data) and drop the extra reference taken in dt_culling_new
+  if(table->widget)
+  {
+    gtk_widget_destroy(table->widget);
+    g_object_unref(table->widget);
+  }
 }
 
 // initialize offset, ... values

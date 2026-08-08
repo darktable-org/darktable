@@ -254,6 +254,24 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
+/* Return TRUE if a scroll event should be treated as a touchpad pan gesture
+ * (two-finger swipe) rather than a plain scroll: requires the touchpad-gestures
+ * preference, a smooth non-stop scroll without ctrl, and a touchpad source
+ * device (on macOS any smooth non-ctrl scroll qualifies, as the built-in
+ * trackpad reports as a mouse; a device that just produced a pinch/swipe
+ * gesture also qualifies).  Mouse wheels therefore never pan, even where GTK
+ * delivers wheel scrolls as smooth events. */
+gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event);
+
+/* Return the zoom delta (+/-0.5, positive = zoom in) for a scroll event.
+ * Vertical scrolls zoom in on up.  Horizontal scrolls zoom in on LEFT when
+ * the shift modifier is set (the OS rotated a vertical wheel step into a
+ * left/right scroll, so LEFT keeps meaning "wheel up") and on RIGHT
+ * otherwise (wheel tilt, two-finger swipe).  Discrete events are resolved
+ * from the normalized GDK direction; smooth (fractional) scrolls use their
+ * dominant delta.  dx/dy are the caller's deltas (raw or accumulated units). */
+float dt_gui_scroll_zoom_delta(const GdkEventScroll *event, gdouble dx, gdouble dy);
+
 /*
  * new ui api
  */
