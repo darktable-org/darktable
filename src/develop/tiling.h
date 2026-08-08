@@ -49,8 +49,7 @@ int process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
                       const dt_iop_roi_t *const roi_out, const int bpp);
 
 int process_tiling_cl_fast(struct dt_dev_pixelpipe_iop_t *piece, void *cl_in, void *cl_out,
-                        const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                        const int in_bpp, const int bpp, const dt_develop_tiling_t *tiling);
+                        const dt_iop_roi_t *roi, const int in_bpp, const int bpp, const dt_develop_tiling_t *tiling);
 
 void default_process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid, void *const ovid, const dt_iop_roi_t *const roi_in,
