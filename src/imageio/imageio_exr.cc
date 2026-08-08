@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <inttypes.h>
 #include <memory>
 #include <stdio.h>
@@ -35,9 +34,7 @@
 #include "common/exif.h"
 #include "common/metadata.h"
 #include "common/datetime.h"
-#include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio/imageio_common.h"
 #include "imageio/imageio_exr.h"
 #include "imageio/imageio_exr.hh"
 
