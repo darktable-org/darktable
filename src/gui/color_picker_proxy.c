@@ -571,6 +571,12 @@ GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module,
   return _color_picker_new(module, flags, w, TRUE, cst);
 }
 
+gboolean dt_iop_color_picker_is_active(GtkWidget *w)
+{
+  const dt_iop_color_picker_t *p = darktable.lib->proxy.colorpicker.picker_proxy;
+  return p && p->colorpick == w;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
