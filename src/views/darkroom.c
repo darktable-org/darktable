@@ -5075,11 +5075,11 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
   GdkModifierType state;
   gtk_get_current_event_state(&state);
 
-  // Two-finger trackpad scroll pans the image, like the main darkroom view's
-  // _scrolled()/gesture_pan path.  The mouse wheel zooms.  Ctrl forces zoom
-  // even for smooth scrolls.
-  if(dt_gdk_event_get_scroll_direction(current) == GDK_SCROLL_SMOOTH
-     && !dt_modifier_is(state, GDK_CONTROL_MASK))
+  // A touchpad two-finger swipe pans the image, like the main darkroom view's
+  // _scrolled()/gesture_pan path.  dt_gui_scroll_should_pan() restricts this to
+  // touchpad-sourced events, so the mouse wheel zooms even where GTK delivers
+  // wheel scrolls as smooth events.
+  if(dt_gui_scroll_should_pan((const GdkEventScroll *)current))
   {
     const GdkEventScroll *scroll = (const GdkEventScroll *)current;
     gdouble pan_dx = 0.0, pan_dy = 0.0;
