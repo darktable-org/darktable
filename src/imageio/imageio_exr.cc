@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[exr_open] error: only images with RGB(A) channels are supported,"
-             " skipping `%s'", img->filename);
+             " skipping '%s'", img->filename);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
@@ -232,7 +232,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
   if(!buf)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[exr_open] error: could not alloc full buffer for image `%s'",
+             "[exr_open] error: could not alloc full buffer for image '%s'",
              img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -255,15 +255,25 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
       "A", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 3),
                       xstride, ystride, 1, 1, 0.0));
 
-  if(isTiled)
+  try
   {
-    fileTiled->setFrameBuffer(frameBuffer);
-    fileTiled->readTiles(0, fileTiled->numXTiles() - 1, 0, fileTiled->numYTiles() - 1);
+    if(isTiled)
+    {
+      fileTiled->setFrameBuffer(frameBuffer);
+      fileTiled->readTiles(0, fileTiled->numXTiles() - 1, 0, fileTiled->numYTiles() - 1);
+    }
+    else
+    {
+      file->setFrameBuffer(frameBuffer);
+      file->readPixels(dw.min.y, dw.max.y);
+    }
   }
-  else
+  catch(const std::exception &e)
   {
-    file->setFrameBuffer(frameBuffer);
-    file->readPixels(dw.min.y, dw.max.y);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[exr_open] error: could not read from '%s' due to: %s",
+             img->filename, e.what());
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   /* try to get the chromaticities and whitepoint. this will add the
