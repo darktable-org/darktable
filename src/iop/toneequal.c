@@ -2450,8 +2450,7 @@ void gui_post_expose(dt_iop_module_t *self,
   char text[256];
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
 
   // Avoid text resizing based on zoom level
   const int old_size = pango_font_description_get_size(desc);
@@ -2596,7 +2595,7 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
 
   if(g->desc)
     pango_font_description_free(g->desc);
-  g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  g->desc = dt_gui_get_font();
 
   pango_layout_set_font_description(g->layout, g->desc);
   pango_cairo_context_set_resolution

@@ -5260,6 +5260,11 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
   g_signal_connect(dialog, "configure-event", G_CALLBACK(_resize_dialog), (gpointer)conf);
 }
 
+PangoFontDescription *dt_gui_get_font(void)
+{
+  return pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
