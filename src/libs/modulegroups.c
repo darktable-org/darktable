@@ -1593,6 +1593,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "tone"), "tone");
   AM("agx");
+  AM("bilat");
   AM("contrastntexture");
   AM("filmicrgb");
   AM("levels");
