@@ -849,6 +849,42 @@ gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event)
 #endif
 }
 
+float dt_gui_scroll_zoom_delta(const GdkEventScroll *event,
+                               const gdouble dx, const gdouble dy)
+{
+  // zoom direction convention: up (the backward scroll) zooms in, down zooms
+  // out.  The horizontal axis depends on how the scroll was produced: with the
+  // shift modifier still set, the OS has rotated a vertical wheel step into a
+  // left/right scroll (on macOS, Windows and X11 alike), so LEFT keeps meaning
+  // "wheel up" and zooms in, preserving the wheel's muscle memory.  Without
+  // shift (wheel tilt, two-finger swipe) RIGHT is the positive direction and
+  // zooms in, LEFT zooms out.
+  //
+  // Discrete wheels carry a normalized direction, so left/right is resolved
+  // from that rather than from the raw delta sign, whose polarity is not
+  // canonical across platforms.  Smooth (fractional) scrolls have no
+  // direction; their dominant delta is used with the same convention.
+  const gboolean shift = dt_modifiers_include(dt_gdk_event_get_state(event),
+                                              GDK_SHIFT_MASK);
+  switch(dt_gdk_event_get_scroll_direction(event))
+  {
+    case GDK_SCROLL_UP:
+      return 0.5f;
+    case GDK_SCROLL_DOWN:
+      return -0.5f;
+    case GDK_SCROLL_LEFT:
+      return shift ? 0.5f : -0.5f;
+    case GDK_SCROLL_RIGHT:
+      return shift ? -0.5f : 0.5f;
+    default: // GDK_SCROLL_SMOOTH
+    {
+      if(fabs(dx) > fabs(dy))
+        return shift ? (dx < 0 ? 0.5f : -0.5f) : (dx > 0 ? 0.5f : -0.5f);
+      return dy < 0 ? 0.5f : -0.5f;
+    }
+  }
+}
+
 static gboolean _scrolled(GtkWidget *widget,
                           const GdkEventScroll *event,
                           gpointer user_data)
@@ -913,16 +949,17 @@ static gboolean _scrolled(GtkWidget *widget,
              device ? (int)gdk_device_get_source(device) : -1);
   }
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
   {
+    const gboolean up = dt_gui_scroll_zoom_delta(event, delta_x, delta_y) > 0.0f;
     dt_print(DT_DEBUG_INPUT,
              "[scroll] discrete fallback x=%.2f y=%.2f up=%d state=0x%x source='%s' source_type=%d",
-             dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), delta_y < 0, dt_gdk_event_get_state(event),
+             dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), up, dt_gdk_event_get_state(event),
              device ? gdk_device_get_name(device) : "<none>",
              device ? gdk_device_get_source(device) : -1);
     dt_view_manager_scrolled(darktable.view_manager, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
-                             delta_y < 0,
+                             up,
                              dt_gdk_event_get_state(event) & 0xf);
     gtk_widget_queue_draw(widget);
   }
