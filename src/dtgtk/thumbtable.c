@@ -1184,8 +1184,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
        || dt_modifier_is(state, GDK_CONTROL_MASK))
     {
-      // up==right==zoom in
-      const int delta = abs(delta_x) > abs(delta_y) ? -delta_x : delta_y;
+      // up==left==zoom in, down==right==zoom out (left/right resolved from the
+      // GDK direction, so shift+wheel works even with inverted horizontal deltas)
+      const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       {
         const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta) * 2 + 1),

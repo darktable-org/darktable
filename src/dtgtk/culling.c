@@ -651,6 +651,33 @@ static gboolean _event_gesture(GtkWidget *widget,
   return TRUE;
 }
 
+// zoom direction for a scroll: up and left (the backward scrolls) zoom in,
+// down and right zoom out — the same convention as the darkroom and the
+// lighttable zoomable mode.  discrete wheels carry a normalized direction,
+// so left/right is resolved from that rather than the raw horizontal delta:
+// some macos bluetooth mice deliver shift+wheel with inverted delta signs,
+// but GDK still reports the correct LEFT/RIGHT direction.  smooth (fractional)
+// scrolls have no direction, so their deltas are used, with up/left (negative)
+// zooming in.
+static float _scroll_zoom_delta(const GdkEventScroll *event,
+                                const gdouble dx, const gdouble dy)
+{
+  switch(dt_gdk_event_get_scroll_direction(event))
+  {
+    case GDK_SCROLL_UP:
+    case GDK_SCROLL_LEFT:
+      return 0.5f;
+    case GDK_SCROLL_DOWN:
+    case GDK_SCROLL_RIGHT:
+      return -0.5f;
+    default: // GDK_SCROLL_SMOOTH
+    {
+      const gdouble dominant = fabs(dx) > fabs(dy) ? dx : dy;
+      return (float)(-dominant * 0.5);
+    }
+  }
+}
+
 static void _event_scroll(GtkEventControllerScroll *controller,
                            gdouble dx,
                            gdouble dy,
@@ -707,8 +734,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     if(dt_gui_get_scroll_deltas((const GdkEventScroll *)event, &ddx, &ddy)
        && (ddx != 0.0 || ddy != 0.0))
     {
-      const gdouble delta = fabs(ddx) > fabs(ddy) ? -ddx : ddy;
-      const float zoom_delta = (float)(-delta * 0.5);
+      const float zoom_delta = _scroll_zoom_delta((const GdkEventScroll *)event, ddx, ddy);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
       GdkWindow *win = gtk_widget_get_window(table->widget);
@@ -774,9 +800,8 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     const gboolean is_horizontal = abs(delta_x) > abs(delta_y);
     if(dt_modifiers_include(state, GDK_CONTROL_MASK))
     {
-      // zooming: right==up==zoom-in
-      const int delta = is_horizontal ? -delta_x : delta_y;
-      const float zoom_delta = delta < 0 ? 0.5f : -0.5f;
+      // zooming: up==left==zoom-in, down==right==zoom-out
+      const float zoom_delta = _scroll_zoom_delta(scroll_event, delta_x, delta_y);
       // convert screen to culling coordinates
       int ox = 0, oy = 0;
       GdkWindow *win = gtk_widget_get_window(table->widget);
