@@ -1593,7 +1593,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "tone"), "tone");
   AM("agx");
-  AM("bilat");
+  AM("contrastntexture");
   AM("filmicrgb");
   AM("levels");
   AM("rgbcurve");
@@ -1769,7 +1769,7 @@ void init_presets(dt_lib_module_t *self)
   AM("flip");
   AM("exposure");
   AM("temperature");
-  AM("bilat");
+  AM("contrastntexture");
   AM("highlights");
 
   SMG(C_("modulegroup", "color"), "color");
