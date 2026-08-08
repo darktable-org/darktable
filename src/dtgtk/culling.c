@@ -1341,6 +1341,27 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
   return table;
 }
 
+void dt_culling_destroy(dt_culling_t *table)
+{
+  if(!table) return;
+  // cancel a pending deferred-zoom finalisation so the timer cannot fire
+  // on a freed table
+  if(table->zoom_finalize_timeout_id)
+  {
+    g_source_remove(table->zoom_finalize_timeout_id);
+    table->zoom_finalize_timeout_id = 0;
+  }
+  // drop the control-signal connections that use this table as user_data
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(table, "culling");
+  // destroy the widget (tears down the event-controller callbacks that use
+  // the table as user_data) and drop the extra reference taken in dt_culling_new
+  if(table->widget)
+  {
+    gtk_widget_destroy(table->widget);
+    g_object_unref(table->widget);
+  }
+}
+
 // initialize offset, ... values
 // to be used when reentering culling
 void dt_culling_init(dt_culling_t *table,
