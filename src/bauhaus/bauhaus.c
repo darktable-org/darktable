@@ -1618,46 +1618,6 @@ static float _curve_log10(const float inval,
     return (expf(M_LN10 * inval * 3.0f) - 1.0f) / 999.0f;
 }
 
-GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self)
-{
-  return dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3);
-}
-
-GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self,
-                                            const float min,
-                                            const float max,
-                                            const float step,
-                                            const float defval,
-                                            const int digits)
-{
-  return dt_bauhaus_slider_new_with_range_and_feedback
-    (self, min, max, step, defval, digits, 1);
-}
-
-GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self,
-                                        const float min,
-                                        const float max,
-                                        const float step,
-                                        const float defval,
-                                        const int digits)
-{
-  return dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self,
-                                          min, max, step, defval, digits);
-}
-
-GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self,
-                                                         const float min,
-                                                         const float max,
-                                                         const float step,
-                                                         const float defval,
-                                                         const int digits,
-                                                         const int feedback)
-{
-  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
-  return dt_bauhaus_slider_from_widget(w, self, min, max, step, defval, digits, feedback);
-}
-
-
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,
                                          dt_iop_module_t *self,
                                          const float min,
@@ -2888,8 +2848,7 @@ static gboolean _popup_draw(GtkWidget *widget,
     // make extra large, but without dependency on popup window height
     // (that might differ for comboboxes for example). only fall back
     // to height dependency if the popup is really small.
-    PangoFontDescription *desc =
-      pango_font_description_copy_static(bh->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
 
