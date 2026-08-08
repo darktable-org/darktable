@@ -1599,6 +1599,7 @@ void init_presets(dt_lib_module_t *self)
   AM("rgbcurve");
   AM("rgblevels");
   AM("sigmoid");
+  AM("spektrafilm");
   AM("tonecurve");
 
   SMG(C_("modulegroup", "color"), "color");
