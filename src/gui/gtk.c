@@ -2920,6 +2920,52 @@ static gboolean _side_panel_draw(GtkWidget *widget,
   return FALSE;
 }
 
+#if GTK_CHECK_VERSION(4, 0, 0)
+/* GTK4 panel-scroll gating: a BUBBLE controller on the panel's content box
+ * decides whether the panel's scrolled window may scroll.  It runs only when
+ * the event bubbles up from the background (a child control with its own
+ * scroll handling claims the event at TARGET phase first and never reaches
+ * this controller); returning PROPAGATE lets the scrolled window's internal
+ * controller do the actual scrolling, STOP consumes the scroll just like the
+ * GTK3 handler's return TRUE.  See the GTK3 signal handler below. */
+static gboolean _panel_center_scroll(GtkEventControllerScroll *controller,
+                                     gdouble dx,
+                                     gdouble dy,
+                                     gpointer user_data)
+{
+  const GdkModifierType mods =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller))
+    & gtk_accelerator_get_default_mod_mask();
+  return ((mods != darktable.gui->sidebar_scroll_mask)
+          != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"))
+    ? GDK_EVENT_STOP : GDK_EVENT_PROPAGATE;
+}
+
+/* GTK4 border scroll: forward the scroll over a side border to the panel's
+ * scrolled window by scrolling its adjustment directly, honoring the same
+ * modifiers/config gate (the GTK3 path forwards the raw event, which the
+ * panel's scroll-event handler then gates). */
+static gboolean _borders_scrolled_controller(GtkEventControllerScroll *controller,
+                                             gdouble dx,
+                                             gdouble dy,
+                                             gpointer user_data)
+{
+  GtkWidget *sw = user_data;
+  const GdkModifierType mods =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller))
+    & gtk_accelerator_get_default_mod_mask();
+  if(((mods != darktable.gui->sidebar_scroll_mask)
+      != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")))
+    return GDK_EVENT_STOP;   // gated away, same as the GTK3 consume
+
+  GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+  if(adj)
+    gtk_adjustment_set_value
+      (adj, gtk_adjustment_get_value(adj) + dy * gtk_adjustment_get_step_increment(adj));
+  return GDK_EVENT_STOP;
+}
+#endif
+
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
@@ -2936,6 +2982,17 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                  : GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
 
+#if GTK_CHECK_VERSION(4, 0, 0)
+  {
+    GtkWidget *const border =
+      left ? darktable.gui->widgets.right_border : darktable.gui->widgets.left_border;
+    GtkEventController *border_scroll =
+      gtk_event_controller_scroll_new(border, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES);
+    dt_gui_add_controller(border, border_scroll);
+    g_signal_connect(border_scroll, "scroll",
+                     G_CALLBACK(_borders_scrolled_controller), sw);
+  }
+#else
   g_signal_connect(
     G_OBJECT(left ? darktable.gui->widgets.right_border : darktable.gui->widgets.left_border),
     "scroll-event",
@@ -2944,17 +3001,25 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over
    * a control, and scroll it's value), only scroll on modifier */
-  // GTK4: this is absolutely not GTK4 compatible, but there is no way
-  // in GTK3 to have child widgets have their own scroll behavior and
-  // have a GtkEventControllerScroll on the parent GtkScrolledWindow.
   g_signal_connect(G_OBJECT(sw), "scroll-event",
                    G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
+#endif
 
   /* create the container */
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(box, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(sw), box);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4 panel-scroll gating, see _panel_center_scroll */
+  {
+    GtkEventController *panel_scroll =
+      gtk_event_controller_scroll_new(box, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES);
+    gtk_event_controller_set_propagation_phase(panel_scroll, GTK_PHASE_BUBBLE);
+    dt_gui_add_controller(box, panel_scroll);
+    g_signal_connect(panel_scroll, "scroll", G_CALLBACK(_panel_center_scroll), NULL);
+  }
+#endif
   g_signal_connect_swapped(box, "draw", G_CALLBACK(_side_panel_draw), NULL);
 
   GtkWidget *empty = gtk_event_box_new();
@@ -4473,6 +4538,85 @@ static gboolean _scroll_wrap_height(GtkWidget *w,
   return FALSE;
 }
 
+#if GTK_CHECK_VERSION(4, 0, 0)
+/* GTK4 version of _resize_wrap_scroll: the scroll controller callback can
+ * return GDK_EVENT_PROPAGATE, so the "at the end of the inner scrolled
+ * window, let the parent scroll" pass-through is expressible (the GTK3
+ * handler had to gtk_propagate_event() manually).  CAPTURE phase runs before
+ * the scrolled window's own BUBBLE controller, so no double scroll. */
+static gboolean _resize_wrap_scroll_controller(GtkEventControllerScroll *controller,
+                                               gdouble dx,
+                                               gdouble dy,
+                                               gpointer user_data)
+{
+  GtkScrolledWindow *sw = GTK_SCROLLED_WINDOW(dt_gui_get_widget(controller));
+  const char *config_str = user_data;
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  const int delta_y = (int)dy;
+  if(delta_y == 0) return GDK_EVENT_PROPAGATE;
+
+  GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
+  if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
+
+  const gint increment = _get_container_row_heigth(w);
+
+  if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
+  {
+    const gint new_size = dt_conf_get_int(config_str) + increment * delta_y;
+
+    dt_toast_log(_("never show more than %d lines"), 1 + new_size / increment);
+
+    dt_conf_set_int(config_str, new_size);
+    gtk_widget_queue_draw(w);
+    return GDK_EVENT_STOP;
+  }
+
+  GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(sw);
+
+  const gint before = gtk_adjustment_get_value(adj);
+
+  gint value = before + increment * delta_y;
+
+  value -= value % increment;
+  gtk_adjustment_set_value(adj, value);
+  const gint after = gtk_adjustment_get_value(adj);
+
+  // pass through to the parent scrolled window when the inner one can't move
+  return after == before ? GDK_EVENT_PROPAGATE : GDK_EVENT_STOP;
+}
+
+/* GTK4 version of _scroll_wrap_height: the drawing area has no scrolled
+ * window of its own, so plain scrolls propagate to the panel's scrolled
+ * window (the GTK3 handler returned FALSE for that). */
+static gboolean _scroll_wrap_height_controller(GtkEventControllerScroll *controller,
+                                               gdouble dx,
+                                               gdouble dy,
+                                               gpointer user_data)
+{
+  GtkWidget *w = dt_gui_get_widget(controller);
+  const char *config_str = user_data;
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+
+  if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
+  {
+    const int delta_y = (int)dy;
+    if(delta_y != 0)
+    {
+      //adjust height
+      const int height = dt_conf_get_int(config_str) + delta_y;
+      dt_conf_set_int(config_str, height);
+      dtgtk_drawing_area_set_height(w, height);
+    }
+    return GDK_EVENT_STOP;
+  }
+
+  // otherwise let the enclosing scrolled window handle it
+  return GDK_EVENT_PROPAGATE;
+}
+#endif
+
 static gboolean _resize_wrap_dragging = FALSE;
 static gboolean _resize_wrap_handle_hover = FALSE;
 static GtkWidget *_resize_wrap_hovered = NULL;
@@ -4500,15 +4644,22 @@ static gboolean _resize_wrap_draw_handle(GtkWidget *w,
   return FALSE;
 }
 
-static gboolean _resize_wrap_motion(GtkWidget *widget,
-                                    const GdkEventMotion *event,
-                                    const char *config_str)
+/* controller version: the drag uses the controller-relative y, the hover
+ * check keeps the old window comparison via the current event (BUBBLE phase
+ * delivers motions over child widgets too, as the old signal did) */
+static void _resize_wrap_motion_controller(GtkEventControllerMotion *controller,
+                                           gdouble x,
+                                           gdouble y,
+                                           gpointer user_data)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  const char *config_str = user_data;
+
   if(_resize_wrap_dragging)
   {
     // keeps resize box from shrinking when user clicks above very
     // bottom of handle
-    const int new_height = round(dt_gdk_event_get_y(event) + 0.5*DT_RESIZE_HANDLE_SIZE);
+    const int new_height = round(y + 0.5 * DT_RESIZE_HANDLE_SIZE);
     if(DTGTK_IS_DRAWING_AREA(widget))
     {
       // enforce configuration limits
@@ -4521,15 +4672,16 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
       dt_conf_set_int(config_str, new_height);
       gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(widget)))));
     }
-    return TRUE;
+    return;
   }
 
   const gboolean prior = _resize_wrap_handle_hover;
-  if(!(dt_gdk_event_get_state(event) & GDK_BUTTON1_MASK)
-     && dt_gdk_event_get_window(event) == gtk_widget_get_window(widget))
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(!(dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
+     && (!event || dt_gdk_event_get_window(event) == gtk_widget_get_window(widget)))
   {
     _resize_wrap_handle_hover =
-      dt_gdk_event_get_y(event) >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE;
+      y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE;
     if(_resize_wrap_handle_hover != prior)
     {
       if(_resize_wrap_handle_hover)
@@ -4540,46 +4692,67 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
       gtk_widget_queue_draw(widget);
     }
   }
-
-  return _resize_wrap_handle_hover;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
-static gboolean _resize_wrap_button(GtkWidget *widget,
-                                    const GdkEventButton *event,
-                                    const char *config_str)
+static void _resize_wrap_button_pressed(GtkGestureSingle *gesture,
+                                        gint n_press,
+                                        gdouble x,
+                                        gdouble y,
+                                        gpointer user_data)
 {
-  if(_resize_wrap_dragging
-     && dt_gdk_event_get_type(event) == GDK_BUTTON_RELEASE)
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  if(y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
+     && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  {
+    _resize_wrap_dragging = TRUE;
+  }
+}
+
+static void _resize_wrap_button_released(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         gpointer user_data)
+{
+  if(_resize_wrap_dragging)
   {
     _resize_wrap_dragging = FALSE;
     dt_control_clear_temp_cursor();
-    return TRUE;
   }
-  else if(dt_gdk_event_get_y(event) >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
-          && dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS
-          && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
-    _resize_wrap_dragging = TRUE;
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
-static gboolean _resize_wrap_enter_leave(GtkWidget *widget,
-                                         const GdkEventCrossing *event,
-                                         const char *config_str)
+static void _resize_wrap_enter_leave_controller(GtkEventControllerMotion *controller,
+                                                gpointer user_data,
+                                                const gboolean is_enter)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
+
+  // the crossing detail/mode distinguish child crossings and grab-break
+  // leaves; with the BUBBLE-phase motion controller they arrive as the
+  // controller's current event, exactly as the old signal's GdkEventCrossing
+  GdkCrossingMode mode = GDK_CROSSING_NORMAL;
+  GdkNotifyType detail = GDK_NOTIFY_NONLINEAR;
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    mode = gdk_crossing_event_get_mode(event);
+    detail = gdk_crossing_event_get_detail(event);
+#else
+    mode = event->crossing.mode;
+    detail = event->crossing.detail;
+#endif
+  }
+
   _resize_wrap_hovered =
-    dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY
-    || event->detail == GDK_NOTIFY_INFERIOR
-    || _resize_wrap_dragging ? widget : NULL;
+    is_enter || detail == GDK_NOTIFY_INFERIOR || _resize_wrap_dragging ? widget : NULL;
 
   // When leave handle and widget, remove temp resize cursor. When
   // enter widget, motion event will handle cursor change for handle.
-  if(dt_gdk_event_get_type(event) == GDK_LEAVE_NOTIFY
-     && !_resize_wrap_dragging
-     && _resize_wrap_handle_hover)
+  if(!is_enter && !_resize_wrap_dragging && _resize_wrap_handle_hover)
   {
     dt_control_clear_temp_cursor();
     _resize_wrap_handle_hover = FALSE;
@@ -4587,11 +4760,27 @@ static gboolean _resize_wrap_enter_leave(GtkWidget *widget,
 
   gtk_widget_queue_draw(widget);
 
-  if(event->mode == GDK_CROSSING_GTK_UNGRAB)
+  if(mode == GDK_CROSSING_GTK_UNGRAB)
     _resize_wrap_dragging = FALSE;
-
-  return FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
+
+static void _resize_wrap_enter_controller(GtkEventControllerMotion *controller,
+                                          gdouble x,
+                                          gdouble y,
+                                          gpointer user_data)
+{
+  _resize_wrap_enter_leave_controller(controller, user_data, TRUE);
+}
+
+static void _resize_wrap_leave_controller(GtkEventControllerMotion *controller,
+                                          gpointer user_data)
+{
+  _resize_wrap_enter_leave_controller(controller, user_data, FALSE);
+}
+
 
 GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                              const gint min_size,
@@ -4607,10 +4796,15 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
   {
     const float height = dt_conf_get_int(config_str);
     dtgtk_drawing_area_set_height(w, height);
-    g_signal_connect(G_OBJECT(w),
-                              "scroll-event",
-                              G_CALLBACK(_scroll_wrap_height),
-                              config_str);
+#if GTK_CHECK_VERSION(4, 0, 0)
+    GtkEventController *scroll = gtk_event_controller_scroll_new
+      (w, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
+    dt_gui_add_controller(w, scroll);
+    g_signal_connect(scroll, "scroll", G_CALLBACK(_scroll_wrap_height_controller), config_str);
+#else
+    g_signal_connect(G_OBJECT(w), "scroll-event",
+                     G_CALLBACK(_scroll_wrap_height), config_str);
+#endif
   }
   else
   {
@@ -4619,8 +4813,16 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_min_content_height
       (GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
+#if GTK_CHECK_VERSION(4, 0, 0)
+    GtkEventController *scroll = gtk_event_controller_scroll_new
+      (sw, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
+    gtk_event_controller_set_propagation_phase(scroll, GTK_PHASE_CAPTURE);
+    dt_gui_add_controller(sw, scroll);
+    g_signal_connect(scroll, "scroll", G_CALLBACK(_resize_wrap_scroll_controller), config_str);
+#else
     g_signal_connect(G_OBJECT(sw), "scroll-event",
                      G_CALLBACK(_resize_wrap_scroll), config_str);
+#endif
     g_signal_connect(G_OBJECT(w), "draw",
                      G_CALLBACK(_resize_wrap_draw), config_str);
     gtk_widget_set_margin_bottom(sw, DT_RESIZE_HANDLE_SIZE);
@@ -4631,16 +4833,19 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
   gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                          | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(w), "motion-notify-event",
-                   G_CALLBACK(_resize_wrap_motion), config_str);
-  g_signal_connect(G_OBJECT(w), "button-press-event",
-                   G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(w), "button-release-event",
-                   G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(w), "enter-notify-event",
-                   G_CALLBACK(_resize_wrap_enter_leave), config_str);
-  g_signal_connect(G_OBJECT(w), "leave-notify-event",
-                   G_CALLBACK(_resize_wrap_enter_leave), config_str);
+
+  // resize handle interaction: click gesture + motion/enter/leave controller
+  // (BUBBLE phase so motions over the wrapped child keep driving the drag,
+  // like the old signal did)
+  dt_gui_connect_click(w, _resize_wrap_button_pressed, _resize_wrap_button_released, config_str);
+  {
+    GtkEventController *motion = gtk_event_controller_motion_new(w);
+    gtk_event_controller_set_propagation_phase(motion, GTK_PHASE_BUBBLE);
+    dt_gui_add_controller(w, motion);
+    g_signal_connect(motion, "motion", G_CALLBACK(_resize_wrap_motion_controller), config_str);
+    g_signal_connect(motion, "enter", G_CALLBACK(_resize_wrap_enter_controller), config_str);
+    g_signal_connect(motion, "leave", G_CALLBACK(_resize_wrap_leave_controller), config_str);
+  }
   g_signal_connect_after(G_OBJECT(w), "draw",
                          G_CALLBACK(_resize_wrap_draw_handle), NULL);
 
@@ -5051,9 +5256,6 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
                                 gdouble dy,
                                 GdkEvent* event)
 {
-  // GTK4: the sidebar scroll controller can capture scrolls then
-  // decide whether to propogate them or scroll itself depending on
-  // modifiers state, and this function will no longer be needed
   GtkWidget *const widget =
     dt_gui_get_widget(controller);
   const GtkWidget *panel = NULL;
@@ -5061,13 +5263,29 @@ static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
     panel = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];
   else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, widget))
     panel = darktable.gui->ui->panels[DT_UI_PANEL_RIGHT];
-  if(panel && dt_gui_ignore_scroll(&event->scroll))
+  if(!panel) return FALSE;
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // GTK4 has no raw event forwarding: the decision is taken from the
+  // modifiers and the panel's scrolled window is scrolled directly.
+  const gboolean ignore = _dt_gui_ignore_scroll
+    (dt_gdk_event_get_state(event) & gtk_accelerator_get_default_mod_mask());
+#else
+  const gboolean ignore = dt_gui_ignore_scroll(&event->scroll);
+#endif
+  if(ignore)
   {
-    // FIXME: do we need to even check if in left/right panel? will this break if mouse over a widget within a GtkScrolledWindow within the panel GtkScrolledWindow?
     GtkWidget *const sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
     if(sw)
     {
+#if GTK_CHECK_VERSION(4, 0, 0)
+      GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+      if(adj)
+        gtk_adjustment_set_value
+          (adj, gtk_adjustment_get_value(adj) + dy * gtk_adjustment_get_step_increment(adj));
+#else
       gtk_widget_event(sw, event);
+#endif
       return TRUE;
     }
   }
@@ -5098,7 +5316,7 @@ static void _scroll_proxy_real(GtkEventControllerScroll* controller,
                                gpointer user_data,
                                gboolean discrete)
 {
-  GdkEvent *const event = gtk_get_current_event();
+  GdkEvent *const event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event) return;
   // FIXME: make sure this logic is right -- want to ignore emulated pointer events, attenuate scroll events with data, and use any deltas not emulated
   if(gdk_event_get_event_type(event) == GDK_SCROLL
@@ -5141,7 +5359,9 @@ static void _scroll_proxy_real(GtkEventControllerScroll* controller,
       real_handler(controller, dx, dy, user_data);
     }
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
   gdk_event_free(event);
+#endif
 }
 
 static void _scroll_proxy(GtkEventControllerScroll* controller,
