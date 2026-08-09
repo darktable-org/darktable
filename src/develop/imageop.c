@@ -1034,21 +1034,9 @@ void _get_multi_show(dt_iop_module_t *module,
     multi_show->down = 0;
 }
 
-static gboolean _gui_multiinstance_callback(GtkButton *button,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *module)
+static void _gui_multiinstance_callback(GtkButton *button,
+                                        dt_iop_module_t *module)
 {
-  if(event && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
-  {
-    if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
-      _gui_copy_callback(button, module);
-    return TRUE;
-  }
-  else if(event && dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
-  {
-    return FALSE;
-  }
-
   dt_iop_gui_multi_show_t multi_show;
   _get_multi_show(module, &multi_show);
 
@@ -1102,8 +1090,6 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
   // make sure the button is deactivated now that the menu is opened
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
-
-  return TRUE;
 }
 
 static void _gui_off_button_clicked(GtkGestureSingle *gesture,
@@ -1143,7 +1129,7 @@ static void _gui_multiinstance_clicked(GtkGestureSingle *gesture,
   if(button == GDK_BUTTON_MIDDLE)
     return;
 
-  _gui_multiinstance_callback(GTK_BUTTON(dt_gui_get_widget(gesture)), NULL, module);
+  _gui_multiinstance_callback(GTK_BUTTON(dt_gui_get_widget(gesture)), module);
 }
 
 static gboolean _rename_module_key_pressed(GtkEventControllerKey *controller,
@@ -4364,7 +4350,7 @@ static float _action_process(gpointer target,
         _gui_delete_callback   (NULL, module);
       else if(effect == DT_ACTION_EFFECT_RENAME                               )
         _gui_rename_callback   (NULL, module);
-      else _gui_multiinstance_callback(NULL, NULL, module);
+      else _gui_multiinstance_callback(NULL, module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       {
