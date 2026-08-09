@@ -295,13 +295,14 @@ static void _color_picker_clicked(GtkGestureSingle *gesture,
  * Shared activation entry for standalone picker toggle buttons (created
  * with a NULL container, e.g. AgX "auto tune levels").  Real clicks go
  * through the CAPTURE-phase gesture above, shortcuts through the action
- * definition below (dt_action_def_color_picker); both end up here,
- * mirroring how bauhaus pickers route clicks and shortcuts through
- * dt_bauhaus_widget_press_quad().
+ * definition below (dt_action_def_color_picker), and programmatic
+ * activation (temperature.c "spot" preset, colorpicker lib sample copy)
+ * through the public wrapper; all end up here, mirroring how bauhaus
+ * pickers route clicks and shortcuts through dt_bauhaus_widget_press_quad().
  */
-static float _color_picker_widget_toggle(GtkWidget *target,
-                                         const dt_action_effect_t effect,
-                                         const float move_size)
+float dt_iop_color_picker_toggle(GtkWidget *target,
+                                 const dt_action_effect_t effect,
+                                 const float move_size)
 {
   if(!DT_PERFORM_ACTION(move_size) || !target)
     return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(target));
@@ -337,7 +338,8 @@ static float _color_picker_widget_toggle(GtkWidget *target,
  * suppress the button's own internal gesture -- which is why picker
  * shortcuts stopped working after the gtk4-prep migration.  Like bauhaus
  * widgets, picker buttons therefore use their own definition whose
- * process calls the same shared entry as real clicks.
+ * process calls the shared entry dt_iop_color_picker_toggle(), the same
+ * one real clicks and programmatic activation go through.
  */
 static const dt_action_element_def_t _color_picker_elements[]
   = { { NULL, dt_action_effect_toggle } };
@@ -353,7 +355,7 @@ static float _color_picker_process(gpointer target,
                                    const dt_action_effect_t effect,
                                    const float move_size)
 {
-  return _color_picker_widget_toggle(target, effect, move_size);
+  return dt_iop_color_picker_toggle(target, effect, move_size);
 }
 
 const dt_action_def_t dt_action_def_color_picker
@@ -512,11 +514,13 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
     // internal gesture never runs and the picker callback fully controls
     // the button state on real clicks.
     //
-    // Shortcuts (dt_action_def_color_picker, see above) call
-    // _color_picker_widget_toggle() directly instead of synthesizing
-    // GObject "button-press-event" signals, which cannot reach this
-    // CAPTURE-phase gesture (the widget class handler only dispatches
-    // BUBBLE-phase controllers and synthetic events carry no device).
+    // Shortcuts (dt_action_def_color_picker, see above) and programmatic
+    // activation (dt_iop_color_picker_toggle, e.g. temperature.c "spot"
+    // preset, colorpicker lib sample copy) call the shared entry directly
+    // instead of synthesizing GObject "button-press-event" signals, which
+    // cannot reach this CAPTURE-phase gesture (the widget class handler only
+    // dispatches BUBBLE-phase controllers and synthetic events carry no
+    // device).
     GtkGesture *gesture = gtk_gesture_multi_press_new(button);
     gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
                                                GTK_PHASE_CAPTURE);

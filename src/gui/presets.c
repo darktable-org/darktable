@@ -1279,10 +1279,15 @@ static void _menuitem_button_preset_pressed(GtkGestureSingle *gesture,
     gdk_event_get_time(gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL));
   _click_time = event_time;
 
+  /* the shell emits "activate" on release for every mouse click (any
+   * button); mark the item so _menuitem_activate_preset only applies for
+   * keyboard activation (see dt_gui_menuitem_activated_by_keyboard) */
+  GtkWidget *menuitem = dt_gui_get_widget(gesture);
+  dt_gui_menuitem_mark_pressed(menuitem);
+
   if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY
      || n_press != 1) return;
 
-  GtkMenuItem *menuitem = GTK_MENU_ITEM(dt_gui_get_widget(gesture));
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(_active_menu_item)
@@ -1333,11 +1338,9 @@ static void _menuitem_button_preset_released(GtkGestureSingle *gesture,
 static void _menuitem_activate_preset(GtkMenuItem *menuitem,
                                       dt_iop_module_t *module)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
+  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
     dt_gui_presets_apply_preset(g_object_get_data(G_OBJECT(menuitem),
                                                   "dt-preset-name"), module);
-  gdk_event_free(event);
 }
 
 static void _menuitem_connect_preset(GtkWidget *mi,

@@ -771,6 +771,29 @@ static inline GtkWidget *dt_gui_scroll_wrap(GtkWidget *widget)
   return scrolled_window;
 }
 
+/* Menu items: the shell emits "activate" for mouse clicks as well as for
+ * keyboard (Enter/mnemonic/accel) activation, so handlers that apply on
+ * press (item gestures, see the menu conversion commits) mark the item
+ * here and skip the release-time activate.  This replaces the
+ * gtk_get_current_event() GDK_KEY_PRESS check, which does not exist in
+ * GTK4. */
+#define DT_GUI_MENUITEM_MOUSE_KEY "dt-gui-menuitem-mouse"
+
+static inline void dt_gui_menuitem_mark_pressed(GtkWidget *menuitem)
+{
+  g_object_set_data(G_OBJECT(menuitem), DT_GUI_MENUITEM_MOUSE_KEY, GINT_TO_POINTER(TRUE));
+}
+
+static inline gboolean dt_gui_menuitem_activated_by_keyboard(GtkWidget *menuitem)
+{
+  if(g_object_get_data(G_OBJECT(menuitem), DT_GUI_MENUITEM_MOUSE_KEY))
+  {
+    g_object_set_data(G_OBJECT(menuitem), DT_GUI_MENUITEM_MOUSE_KEY, NULL);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer,
                                  GtkCellEditable **active_editable);
