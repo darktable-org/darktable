@@ -1567,8 +1567,8 @@ static void _event_band_leave_cb(GtkEventControllerMotion *controller, GtkDarkta
 static void _event_band_press_cb(GtkGestureSingle *gesture, int n_press, double x, double y, GtkDarktableRangeSelect *range)
 {
   const guint button = gtk_gesture_single_get_current_button(gesture);
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   if(button == GDK_BUTTON_PRIMARY && n_press == 2)
   {

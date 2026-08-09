@@ -1254,8 +1254,8 @@ static void _tree_button_pressed_cb(GtkGestureSingle *gesture, int n_press, doub
   }
   else if(button == GDK_BUTTON_SECONDARY)
   {
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     // if we are already inside the selection, no change
     if(on_row
        && !gtk_tree_selection_path_is_selected(selection, mouse_path))
@@ -1516,9 +1516,8 @@ static void _tree_button_pressed_cb(GtkGestureSingle *gesture, int n_press, doub
 
     gtk_widget_show_all(GTK_WIDGET(menu));
 
-    GdkEvent *event = gtk_get_current_event();
+    const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
     gtk_menu_popup_at_pointer(GTK_MENU(menu), event);
-    gdk_event_free(event);
   }
 }
 

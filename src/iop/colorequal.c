@@ -2702,14 +2702,20 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
 {
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event) return;
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
   GtkWidget *w = dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK)
                ? GTK_WIDGET(g->notebook)
                : _get_slider(g, g->selected);
   gtk_widget_event(w, event);
   gdk_event_free(event);
+#else
+  /* GTK4 TODO: no gtk_widget_event() -- alt-scroll to the notebook must be
+   * reimplemented as a controller on the notebook instead. */
+  (void)g;
+#endif
 }
 
 static void _area_motion_notify_callback(GtkEventControllerMotion *controller,

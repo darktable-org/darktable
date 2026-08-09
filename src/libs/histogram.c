@@ -340,8 +340,7 @@ static void _drawable_drag_update(GtkGestureDrag* gesture,
                                   dt_scopes_t *s)
 {
   dt_scopes_mode_t *const cur_mode = s->cur_mode;
-  // GTK4: use gtk_event_controller_get_current_event_state()
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_MOTION_NOTIFY)
   {
@@ -356,7 +355,6 @@ static void _drawable_drag_update(GtkGestureDrag* gesture,
     s->last_offset_x = offset_x;
     s->last_offset_y = offset_y;
   }
-  gdk_event_free(event);
 }
 
 static void _drawable_button_press(GtkGestureSingle *gesture,
@@ -484,12 +482,7 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                                       const gdouble dy,
                                       dt_scopes_t *s)
 {
-  // GTK4 note: gtk_get_current_event() returns NULL inside event controller
-  // callbacks in GTK4.  For state checks, use
-  // gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(self), &state)
-  // instead.  For forwarding the event via gtk_widget_event(), use
-  // gtk_gesture_get_last_event() and gdk_event_copy() if needed.
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(self));
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_SCROLL)
   {
@@ -497,7 +490,11 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
       // bubble to adjusting the overall widget size
+#if !GTK_CHECK_VERSION(4, 0, 0)
       gtk_widget_event(s->scope_draw, event);
+#endif
+      // GTK4 TODO: no gtk_widget_event() -- the scopes drawable must
+      // handle widget-size adjustment via its own scroll controller.
     }
     else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
     {
@@ -521,13 +518,22 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
     else
     {
       int ebx, eby;
+#if GTK_CHECK_VERSION(4, 0, 0)
+      gdouble gdk_x = 0.0, gdk_y = 0.0;
+      gdk_event_get_position(event, &gdk_x, &gdk_y);
+      gtk_widget_translate_coordinates(dt_gui_get_widget(GTK_EVENT_CONTROLLER(self)), s->scope_draw,
+                                       (int)gdk_x, (int)gdk_y, &ebx, &eby);
+#else
       gtk_widget_translate_coordinates(gtk_get_event_widget(event), s->scope_draw,
                                        (int)dt_gdk_event_get_x(event), (int)dt_gdk_event_get_y(event), &ebx, &eby);
+#endif
       dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, ebx, eby,
                                dx, dy, dt_gdk_event_get_state(event));
     }
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
   gdk_event_free(event);
+#endif
 }
 
 // TRUE if the point (x, y) -- given in `from` widget coordinates -- lies
@@ -598,9 +604,14 @@ static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller
   // when click between buttons on the buttonbox a leave event is
   // generated -- ignore it (for GTK 4, replace this with the simpler
   // gtk_event_controller_get_current_event())
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_mode(event) == GDK_CROSSING_UNGRAB
+       && gdk_crossing_event_get_detail(event) == GDK_NOTIFY_INFERIOR)
+      return;
+#else
     if(gdk_event_get_event_type(event) == GDK_LEAVE_NOTIFY)
     {
       const GdkEventCrossing *xc = &event->crossing;
@@ -611,6 +622,7 @@ static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller
       }
     }
     gdk_event_free(event);
+#endif
   }
   gtk_widget_hide(s->button_box_left);
   gtk_widget_hide(s->button_box_right);

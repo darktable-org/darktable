@@ -2715,8 +2715,8 @@ static void _presets_pressed_cb(GtkGestureSingle *gesture,
                                 double y,
                                 dt_lib_module_t *self)
 {
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
   if(state & GDK_CONTROL_MASK)
   {
     manage_presets(self);
