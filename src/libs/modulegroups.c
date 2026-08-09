@@ -822,8 +822,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   _basics_hide(self);
 
   // if we have a module to force or still have none selected, set d-current to active pipe
-  if(d->current == DT_MODULEGROUP_INVALID || d->current == DT_MODULEGROUP_NONE)
-    d->current = DT_MODULEGROUP_ACTIVE_PIPE;
+  // note: DT_MODULEGROUP_NONE ("all modules", reached by clicking the active group
+  // button again or restored from conf) is a real group state and must be kept;
+  // only INVALID (no selection) is upgraded to the active pipe.
+  if(d->current == DT_MODULEGROUP_INVALID) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
 
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
@@ -979,6 +981,44 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   if(d->current == DT_MODULEGROUP_BASICS && !(text_entered && text_entered[0] != '\0')) _basics_show(self);
 }
 
+/* switch to the given group, or to the all modules view for DT_MODULEGROUP_NONE,
+ * and refresh the panel; shared by the tab buttons and the active button popup.
+ * the caller must hold the gui update lock (DT_TRY_GUI_UPDATE) so the nested
+ * toggled signals from the button state changes below are dropped. */
+static void _lib_modulegroups_switch_to(dt_lib_module_t *self, const int group)
+{
+  dt_lib_modulegroups_t *d = self->data;
+  const int ngroups = g_list_length(d->groups);
+
+  /* deactivate all buttons */
+  for(int k = 0; k <= ngroups; k++)
+  {
+    const GtkWidget *bt = _buttons_get_from_pos(self, k);
+    if(bt) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), FALSE);
+  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), FALSE);
+
+  if(d->current == DT_MODULEGROUP_BASICS) dt_iop_request_focus(NULL);
+
+  /* the all modules view has no button of its own, so keep them all deactivated */
+  if(group == DT_MODULEGROUP_NONE)
+    d->current = DT_MODULEGROUP_NONE;
+  else
+  {
+    d->current = group;
+    const GtkWidget *bt = _buttons_get_from_pos(self, group);
+    if(bt) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
+  }
+
+  /* clear search text */
+  if(gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
+    gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
+
+  /* update visibility */
+  d->force_show_module = NULL;
+  _lib_modulegroups_update_iop_visibility(self);
+}
+
 static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
   DT_TRY_GUI_UPDATE();
@@ -987,40 +1027,24 @@ static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  /* deactivate all buttons */
+  /* store toggled modulegroup */
   int gid = 0;
   const int ngroups = g_list_length(d->groups);
   for(int k = 0; k <= ngroups; k++)
   {
     const GtkWidget *bt = _buttons_get_from_pos(self, k);
-    /* store toggled modulegroup */
     if(bt == button)
       gid = k;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), FALSE);
   }
   if(button == d->basic_btn) gid = DT_MODULEGROUP_BASICS;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), FALSE);
-
-  if(d->current == DT_MODULEGROUP_BASICS) dt_iop_request_focus(NULL);
 
   /* only deselect button if not currently searching else re-enable module */
   if(d->current == gid && gid != DT_MODULEGROUP_BASICS && !(text_entered && text_entered[0] != '\0'))
-    d->current = DT_MODULEGROUP_NONE;
+    _lib_modulegroups_switch_to(self, DT_MODULEGROUP_NONE);
   else
-  {
-    d->current = gid;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(_buttons_get_from_pos(self, gid)), TRUE);
-  }
-
-  /* clear search text */
-  if(gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
-    gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
+    _lib_modulegroups_switch_to(self, gid);
 
   DT_LEAVE_GUI_UPDATE();
-
-  /* update visibility */
-  d->force_show_module = NULL;
-  _lib_modulegroups_update_iop_visibility(self);
 }
 
 typedef struct _set_gui_thread_t
@@ -1033,10 +1057,12 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 {
   _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
 
-  /* set current group and update visibility */
-  GtkWidget *bt = _buttons_get_from_pos(params->self, params->group);
-  if(bt) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
-  _lib_modulegroups_update_iop_visibility(params->self);
+  /* set current group and update visibility; the button state changes must
+   * not run the toggle handler (restoring the active pipe while it is selected
+   * must not be taken for a click switching to the all modules view) */
+  DT_ENTER_GUI_UPDATE();
+  _lib_modulegroups_switch_to(params->self, params->group);
+  DT_LEAVE_GUI_UPDATE();
 
   free(params);
   return G_SOURCE_REMOVE;
@@ -1059,7 +1085,16 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
   if(!params) return;
   params->self = self;
   params->group = group;
-  g_main_context_invoke(NULL, _lib_modulegroups_set_gui_thread, params);
+
+  /* run synchronously on the gui thread: the visibility update must stay in
+   * the same main loop iteration as the caller (e.g. right after the module
+   * list was rebuilt), otherwise every module is visible for at least one
+   * frame before the current group filter applies. only defer when called
+   * from a worker thread. */
+  if(g_main_context_is_owner(g_main_context_default()))
+    _lib_modulegroups_set_gui_thread(params);
+  else
+    g_main_context_invoke(NULL, _lib_modulegroups_set_gui_thread, params);
 }
 
 /* this is a proxy function so it might be called from another thread */
@@ -1068,7 +1103,12 @@ static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
   _set_gui_thread_t *params = malloc(sizeof(_set_gui_thread_t));
   if(!params) return;
   params->self = self;
-  g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
+
+  /* same as above: run synchronously on the gui thread */
+  if(g_main_context_is_owner(g_main_context_default()))
+    _lib_modulegroups_upd_gui_thread(params);
+  else
+    g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
 }
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
@@ -2735,15 +2775,85 @@ static void _manage_direct_module_popup(GtkGestureSingle *gesture,
   dt_gui_menu_popup(GTK_MENU(this_module), NULL, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
-static void _manage_direct_full_active_toggled(GtkWidget *widget,
+/* display modes offered by the active button popup */
+typedef enum dt_lib_modulegroup_popup_mode_t
+{
+  DT_MODULEGROUP_POPUP_ALL = 0,          /* show every module */
+  DT_MODULEGROUP_POPUP_ACTIVE_HISTORY,   /* active pipe, incl. history modules */
+  DT_MODULEGROUP_POPUP_ACTIVE            /* active pipe only */
+} dt_lib_modulegroup_popup_mode_t;
+
+/* the currently active option of the popup; weak ref so it clears by itself
+ * when the menu is rebuilt/closed (same pattern as the module preset menus) */
+static GtkWidget *_active_mode_item = NULL;
+
+static void _manage_direct_active_mode_toggled(GtkWidget *widget,
                                                dt_lib_module_t *self)
 {
+  if(!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))) return;
+
+  /* keep the options exclusive: uncheck and unhighlight the previous one */
+  if(_active_mode_item && _active_mode_item != widget)
+  {
+    dt_gui_remove_class(_active_mode_item, "active_menu_item");
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(_active_mode_item), FALSE);
+  }
+  dt_gui_add_class(widget, "active_menu_item");
+  g_set_weak_pointer(&_active_mode_item, widget);
+
   dt_lib_modulegroups_t *d = self->data;
-  d->full_active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
-  const int cur = d->current;
-  _manage_direct_save(self);
-  d->current = cur;
-  _lib_modulegroups_update_iop_visibility(self);
+  const dt_lib_modulegroup_popup_mode_t mode =
+    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "modulegroups-popup-mode"));
+
+  switch(mode)
+  {
+    case DT_MODULEGROUP_POPUP_ALL:
+      DT_TRY_GUI_UPDATE();
+      _lib_modulegroups_switch_to(self, DT_MODULEGROUP_NONE);
+      DT_LEAVE_GUI_UPDATE();
+      break;
+
+    case DT_MODULEGROUP_POPUP_ACTIVE_HISTORY:
+    case DT_MODULEGROUP_POPUP_ACTIVE:
+    {
+      /* full_active is part of the modulegroups preset, so persist it */
+      d->full_active = (mode == DT_MODULEGROUP_POPUP_ACTIVE_HISTORY);
+      const int cur = d->current;
+      _manage_direct_save(self);
+      d->current = cur;
+
+      DT_TRY_GUI_UPDATE();
+      _lib_modulegroups_switch_to(self, DT_MODULEGROUP_ACTIVE_PIPE);
+      DT_LEAVE_GUI_UPDATE();
+      break;
+    }
+  }
+}
+
+/* build a check menu item for the active button popup; the options are made
+ * exclusive by hand in _manage_direct_active_mode_toggled, exactly like the
+ * module preset menus. the dt_transparent_background class gives the plain
+ * tick (no check box), matching every other module menu. */
+static GtkWidget *_popup_mode_item(const char *label,
+                                   const char *tooltip,
+                                   const gboolean active,
+                                   const dt_lib_modulegroup_popup_mode_t mode,
+                                   dt_lib_module_t *self)
+{
+  GtkWidget *item = gtk_check_menu_item_new_with_label(label);
+  gtk_widget_set_tooltip_text(item, tooltip);
+  gtk_widget_set_name(item, "modulegroups-popup-item");
+  dt_gui_add_class(item, "dt_transparent_background");
+  g_object_set_data(G_OBJECT(item), "modulegroups-popup-mode", GINT_TO_POINTER(mode));
+  if(active)
+  {
+    dt_gui_add_class(item, "active_menu_item");
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+    g_set_weak_pointer(&_active_mode_item, item);
+  }
+  g_signal_connect(G_OBJECT(item), "toggled",
+                   G_CALLBACK(_manage_direct_active_mode_toggled), self);
+  return item;
 }
 
 static void _manage_direct_active_popup(GtkGestureSingle *gesture,
@@ -2760,16 +2870,23 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
   GtkWidget *pop = gtk_menu_new();
   gtk_widget_set_name(pop, "modulegroups-popup");
 
-  GtkWidget *smt = gtk_check_menu_item_new_with_label(_("show all history modules"));
-  gtk_widget_set_tooltip_text(
-      smt,
-      _("show modules that are present in the history stack,"
-        " regardless of whether or not they are currently enabled"));
-  gtk_widget_set_name(smt, "modulegroups-popup-item");
-  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(smt), d->full_active);
-  g_signal_connect(G_OBJECT(smt), "toggled",
-                   G_CALLBACK(_manage_direct_full_active_toggled), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(pop), smt);
+  const gboolean all_modules = d->current == DT_MODULEGROUP_NONE;
+  const gboolean active_history = d->current == DT_MODULEGROUP_ACTIVE_PIPE && d->full_active;
+  const gboolean active_only = d->current == DT_MODULEGROUP_ACTIVE_PIPE && !d->full_active;
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(pop),
+                        _popup_mode_item(_("show all modules"),
+                                         _("show all modules, regardless of the selected group"),
+                                         all_modules, DT_MODULEGROUP_POPUP_ALL, self));
+  gtk_menu_shell_append(GTK_MENU_SHELL(pop),
+                        _popup_mode_item(_("show active and history modules"),
+                                         _("show the active modules and the modules present in the history stack,"
+                                           " whether enabled or not"),
+                                         active_history, DT_MODULEGROUP_POPUP_ACTIVE_HISTORY, self));
+  gtk_menu_shell_append(GTK_MENU_SHELL(pop),
+                        _popup_mode_item(_("show active modules only"),
+                                         _("show only the modules that are currently enabled"),
+                                         active_only, DT_MODULEGROUP_POPUP_ACTIVE, self));
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
@@ -3059,8 +3176,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
   d->current = dt_conf_get_int("plugins/darkroom/groups");
+
+  /* press the active button without running the toggle handler: the real
+   * selection was just restored from conf, and activating the active button
+   * while it is selected would switch to the all modules view */
+  DT_ENTER_GUI_UPDATE();
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn),
+                               d->current != DT_MODULEGROUP_NONE);
+  DT_LEAVE_GUI_UPDATE();
+
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(d->deprecated, TRUE);
@@ -3181,26 +3306,12 @@ static void _buttons_update(dt_lib_module_t *self)
     d->current = DT_MODULEGROUP_ACTIVE_PIPE;
   }
 
-  if(d->current == DT_MODULEGROUP_ACTIVE_PIPE)
-  {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
-  }
-  else if(d->current == DT_MODULEGROUP_BASICS)
-  {
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->basic_btn)))
-    {
-      // we need to manually refresh the list
-      _lib_modulegroups_update_iop_visibility(self);
-    }
-    else
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), TRUE);
-  }
-  else
-  {
-    dt_lib_modulegroups_group_t *gr = g_list_nth_data(d->groups, d->current - 1);
-    d->current = DT_MODULEGROUP_NONE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gr->button), TRUE);
-  }
+  /* restore the selected group; the button presses must not run the toggle
+   * handler (restoring the active pipe while it is selected must not be
+   * taken for a click switching to the all modules view) */
+  DT_ENTER_GUI_UPDATE();
+  _lib_modulegroups_switch_to(self, d->current);
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _manage_editor_group_move_right(GtkWidget *widget,
