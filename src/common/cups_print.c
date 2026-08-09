@@ -585,20 +585,22 @@ void dt_print_file(const dt_imgid_t imgid,
     num_options = cupsAddOption("media", pinfo->paper.name, num_options, &options);
 
     // the media type to print on
+    const char *PPDFile = cupsGetPPD(pinfo->printer.name);
+    ppd_file_t *ppd = ppdOpenFile(PPDFile);
+    const char *media_option = "MediaType";
 
-    const char *media_option = NULL;
+    if(ppd)
+    {
+      if(!ppdFindOption(ppd, "MediaType") &&
+         ppdFindOption(ppd, "CNIJMediaType"))
+      {
+        media_option = "CNIJMediaType";
+      }
+      ppdClose(ppd);
+      g_unlink(PPDFile);
+    }
 
-    if(ppdFindOption(ppd, "MediaType"))
-      media_option = "MediaType";
-    else if(ppdFindOption(ppd, "CNIJMediaType"))
-      media_option = "CNIJMediaType";
-
-    if(media_option)
-      num_options = cupsAddOption(
-          media_option,
-          pinfo->medium.name,
-          num_options,
-          &options);
+    num_options = cupsAddOption(media_option, pinfo->medium.name, num_options, &options);
 
     // never print two-side
 
