@@ -1837,10 +1837,8 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w,
 static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
                                                        const dt_stylemenu_data_t *menu_data)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
+  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
-  gdk_event_free(event);
 }
 
 static void _darkroom_ui_apply_style_button_callback(GtkGestureSingle *gesture,

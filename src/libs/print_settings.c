@@ -1211,12 +1211,8 @@ static void _update_style(const dt_stylemenu_data_t *menu_data)
 static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(event && dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
-  {
+  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
     _update_style(menu_data);
-  }
-  gdk_event_free(event);
 }
 
 static void _apply_style_button_callback(GtkGestureSingle *gesture,

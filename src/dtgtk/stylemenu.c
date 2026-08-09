@@ -22,6 +22,7 @@
 #include "common/utility.h"
 #include "dtgtk/stylemenu.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
 #include "gui/styles.h"
 
 static gboolean _styles_tooltip_callback(GtkWidget* self,
@@ -54,6 +55,36 @@ static void _free_menu_data(dt_stylemenu_data_t *data)
 {
   g_free(data->name);
   free(data);
+}
+
+/* The shell emits "activate" on mouse release as well (for any button), so
+ * the activate callback must tell keyboard activation (Enter/mnemonic/accel)
+ * apart from mouse clicks: the press gesture marks the item and
+ * dt_gui_menuitem_activated_by_keyboard() skips the release-time activate.
+ * This replaces the gtk_get_current_event() GDK_KEY_PRESS check, which does
+ * not exist in GTK4. */
+typedef struct
+{
+  dtgtk_menuitem_button_callback_fn *callback;
+  dt_stylemenu_data_t *data;
+} dt_stylemenu_button_conn_t;
+
+static void _style_menu_button_pressed(GtkGestureSingle *gesture,
+                                       gint n_press,
+                                       gdouble x,
+                                       gdouble y,
+                                       gpointer user_data)
+{
+  dt_stylemenu_button_conn_t *conn = user_data;
+  dt_gui_menuitem_mark_pressed(dt_gui_get_widget(gesture));
+  conn->callback(gesture, n_press, x, y, conn->data);
+}
+
+static void _free_button_conn(gpointer data)
+{
+  dt_stylemenu_button_conn_t *conn = data;
+  _free_menu_data(conn->data);
+  g_free(conn);
 }
 
 static void _build_style_submenus(GtkMenuShell *menu,
@@ -125,20 +156,20 @@ static void _build_style_submenus(GtkMenuShell *menu,
   }
   if(button_callback)
   {
-    dt_stylemenu_data_t *menu_data = malloc(sizeof(dt_stylemenu_data_t));
-    if(menu_data)
-    {
-      menu_data->name = g_strdup(style_name);
-      menu_data->user_data = user_data;
-      // pressed is the direct replacement of the old button-press-event
-      // connection; the closure notify keeps owning the data
-      GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(mi));
-      gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
-      dt_gui_add_controller(GTK_WIDGET(mi), gesture);
-      g_signal_connect_data(gesture, "pressed",
-                            G_CALLBACK(button_callback),
-                            menu_data, (GClosureNotify)_free_menu_data, 0);
-    }
+    dt_stylemenu_button_conn_t *conn = g_new0(dt_stylemenu_button_conn_t, 1);
+    conn->callback = button_callback;
+    conn->data = malloc(sizeof(dt_stylemenu_data_t));
+    conn->data->name = g_strdup(style_name);
+    conn->data->user_data = user_data;
+    // pressed is the direct replacement of the old button-press-event
+    // connection; the closure notify keeps owning the data.  the wrapper
+    // additionally marks the item as mouse-handled (see above).
+    GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(mi));
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    dt_gui_add_controller(GTK_WIDGET(mi), gesture);
+    g_signal_connect_data(gesture, "pressed",
+                          G_CALLBACK(_style_menu_button_pressed),
+                          conn, (GClosureNotify)_free_button_conn, 0);
   }
 
   gtk_widget_show(GTK_WIDGET(mi));
