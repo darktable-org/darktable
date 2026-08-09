@@ -400,7 +400,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->gain_local_contrast,
                               _("amount of local contrast enhancement"));
   dt_bauhaus_widget_set_quad(g->gain_local_contrast, self, dtgtk_cairo_paint_showmask, TRUE, show_details_callback,
-                             _("visualize details adjusted by the local"));
+                             _("visualize details adjusted by the local constrast"));
 
   // Filter settings section
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "filter settings")));
