@@ -58,9 +58,13 @@ static inline guint dt_gdk_event_get_click_count(const void *e)
 
 static inline GdkModifierType dt_gdk_event_get_state(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_event_get_modifier_state((const GdkEvent *)e);
+#else
   GdkModifierType s = 0;
   gdk_event_get_state((const GdkEvent *)e, &s);
   return s;
+#endif
 }
 
 static inline gdouble dt_gdk_event_get_x(const void *e)
@@ -111,6 +115,9 @@ static inline guint16 dt_gdk_event_get_keycode(const void *e)
 
 static inline GdkScrollDirection dt_gdk_event_get_scroll_direction(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_scroll_event_get_direction((GdkEvent *)e);
+#else
   GdkScrollDirection d = GDK_SCROLL_UP;
   if(!gdk_event_get_scroll_direction((const GdkEvent *)e, &d))
   {
@@ -122,22 +129,46 @@ static inline GdkScrollDirection dt_gdk_event_get_scroll_direction(const void *e
     d = GDK_SCROLL_SMOOTH;
   }
   return d;
+#endif
 }
 
 static inline gdouble dt_gdk_event_get_scroll_delta_x(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdouble dx = 0, dy = 0;
+  gdk_scroll_event_get_deltas((GdkEvent *)e, &dx, &dy);
+  (void)dy;
+  return dx;
+#else
   gdouble dx = 0, dy = 0;
   gdk_event_get_scroll_deltas((const GdkEvent *)e, &dx, &dy);
   (void)dy;
   return dx;
+#endif
 }
 
 static inline gdouble dt_gdk_event_get_scroll_delta_y(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdouble dx = 0, dy = 0;
+  gdk_scroll_event_get_deltas((GdkEvent *)e, &dx, &dy);
+  (void)dx;
+  return dy;
+#else
   gdouble dx = 0, dy = 0;
   gdk_event_get_scroll_deltas((const GdkEvent *)e, &dx, &dy);
   (void)dx;
   return dy;
+#endif
+}
+
+static inline gboolean dt_gdk_event_is_scroll_stop(const void *e)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_scroll_event_is_stop((GdkEvent *)e);
+#else
+  return gdk_event_is_scroll_stop_event((const GdkEvent *)e);
+#endif
 }
 
 static inline GdkWindow *dt_gdk_event_get_window(const void *e)
@@ -152,7 +183,13 @@ static inline GdkDevice *dt_gdk_event_get_device(const void *e)
 
 static inline GdkDevice *dt_gdk_event_get_source_device(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // GTK4 dropped the separate "source device": the event device is the
+  // source (the GdkDeviceTool distinguishes pen/eraser on top of it).
+  return gdk_event_get_device((const GdkEvent *)e);
+#else
   return gdk_event_get_source_device((const GdkEvent *)e);
+#endif
 }
 
 static inline GdkScreen *dt_gdk_event_get_screen(const void *e)
@@ -175,6 +212,58 @@ static inline gboolean dt_gdk_event_get_axis(const void *e,
                                               gdouble *value)
 {
   return gdk_event_get_axis((const GdkEvent *)e, axis_use, value);
+}
+
+/* --- touchpad gesture events ---
+ * GTK3 exposes the GdkEventTouchpadPinch/GdkEventTouchpadSwipe structs, GTK4
+ * the gdk_touchpad_event_* accessors; these wrappers keep both callable. */
+
+static inline GdkTouchpadGesturePhase dt_gdk_touchpad_pinch_get_phase(const void *e)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_touchpad_event_get_gesture_phase((GdkEvent *)e);
+#else
+  return ((const GdkEvent *)e)->touchpad_pinch.phase;
+#endif
+}
+
+static inline guint dt_gdk_touchpad_pinch_get_n_fingers(const void *e)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_touchpad_event_get_n_fingers((GdkEvent *)e);
+#else
+  return ((const GdkEvent *)e)->touchpad_pinch.n_fingers;
+#endif
+}
+
+static inline void dt_gdk_touchpad_pinch_get_deltas(const void *e,
+                                                     gdouble *dx,
+                                                     gdouble *dy)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_touchpad_event_get_deltas((GdkEvent *)e, dx, dy);
+#else
+  if(dx) *dx = ((const GdkEvent *)e)->touchpad_pinch.dx;
+  if(dy) *dy = ((const GdkEvent *)e)->touchpad_pinch.dy;
+#endif
+}
+
+static inline gdouble dt_gdk_touchpad_pinch_get_scale(const void *e)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_touchpad_event_get_pinch_scale((GdkEvent *)e);
+#else
+  return ((const GdkEvent *)e)->touchpad_pinch.scale;
+#endif
+}
+
+static inline GdkTouchpadGesturePhase dt_gdk_touchpad_swipe_get_phase(const void *e)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gdk_touchpad_event_get_gesture_phase((GdkEvent *)e);
+#else
+  return ((const GdkEvent *)e)->touchpad_swipe.phase;
+#endif
 }
 
 G_END_DECLS

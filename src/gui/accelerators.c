@@ -4918,7 +4918,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
        && (s.action || (s.action = dt_action_widget(darktable.control->mapping_widget))))
     {
       int delta;
-      if(middle_click || dt_gui_get_scroll_unit_delta(&event->scroll, &delta))
+      if(middle_click || dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta))
       {
         // delta < 0 -> 10^(-delta) increases speed
         s.speed = middle_click ? -1 : powf(10.0f, -delta);
@@ -5020,7 +5020,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
     _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
 
     int delta_x, delta_y;
-    if(dt_gui_get_scroll_unit_deltas(&event->scroll, &delta_x, &delta_y))
+    if(dt_gui_get_scroll_unit_deltas((const GdkEvent *)event, &delta_x, &delta_y))
     {
       if(delta_x)
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, dt_gdk_event_get_time(event),
