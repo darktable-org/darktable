@@ -1085,7 +1085,16 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
   if(!params) return;
   params->self = self;
   params->group = group;
-  g_main_context_invoke(NULL, _lib_modulegroups_set_gui_thread, params);
+
+  /* run synchronously on the gui thread: the visibility update must stay in
+   * the same main loop iteration as the caller (e.g. right after the module
+   * list was rebuilt), otherwise every module is visible for at least one
+   * frame before the current group filter applies. only defer when called
+   * from a worker thread. */
+  if(g_main_context_is_owner(g_main_context_default()))
+    _lib_modulegroups_set_gui_thread(params);
+  else
+    g_main_context_invoke(NULL, _lib_modulegroups_set_gui_thread, params);
 }
 
 /* this is a proxy function so it might be called from another thread */
@@ -1094,7 +1103,12 @@ static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
   _set_gui_thread_t *params = malloc(sizeof(_set_gui_thread_t));
   if(!params) return;
   params->self = self;
-  g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
+
+  /* same as above: run synchronously on the gui thread */
+  if(g_main_context_is_owner(g_main_context_default()))
+    _lib_modulegroups_upd_gui_thread(params);
+  else
+    g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
 }
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
