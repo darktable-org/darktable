@@ -130,7 +130,12 @@ static void _build_style_submenus(GtkMenuShell *menu,
     {
       menu_data->name = g_strdup(style_name);
       menu_data->user_data = user_data;
-      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
+      // pressed is the direct replacement of the old button-press-event
+      // connection; the closure notify keeps owning the data
+      GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(mi));
+      gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+      dt_gui_add_controller(GTK_WIDGET(mi), gesture);
+      g_signal_connect_data(gesture, "pressed",
                             G_CALLBACK(button_callback),
                             menu_data, (GClosureNotify)_free_menu_data, 0);
     }

@@ -290,12 +290,6 @@ static void _color_picker_clicked(GtkGestureSingle *gesture,
  *
  * GTK4 migration: the pattern is the same, just rename
  * GtkGestureMultiPress to GtkGestureClick. */
-static void _gesture_begin_claim(GtkGesture *gesture,
-                                  GdkEventSequence *sequence,
-                                  gpointer user_data)
-{
-  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
-}
 
 /*
  * Shared activation entry for standalone picker toggle buttons (created
@@ -531,7 +525,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
     g_signal_connect_data(gesture, "pressed",
                           G_CALLBACK(_color_picker_clicked),
                           color_picker, (GClosureNotify)_color_picker_destroy, 0);
-    g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
+    g_signal_connect(gesture, "begin", G_CALLBACK(dt_gui_gesture_claim), NULL);
     g_object_set_data(G_OBJECT(button), DT_COLOR_PICKER_INSTANCE_KEY, color_picker);
     if(w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 

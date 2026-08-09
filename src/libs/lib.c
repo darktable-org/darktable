@@ -449,15 +449,19 @@ static void _menuitem_activate_preset(GtkMenuItem *menuitem,
                        minfo->plugin_name, minfo->version);
 }
 
-static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
-                                        GdkEventButton *event,
-                                        dt_lib_module_info_t *minfo)
+/* secondary click copies the preset as lua and keeps the menu open: the
+ * gesture is in CAPTURE phase and claims the sequence, so the menu shell
+ * never sees the press or release and never activates the item.  primary
+ * clicks flow normally and apply via the "activate" signal. */
+static void _menuitem_button_preset_released(GtkGestureSingle *gesture,
+                                             gint n_press,
+                                             gdouble x,
+                                             gdouble y,
+                                             dt_lib_module_info_t *minfo)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY) return FALSE;
-
+  GtkMenuItem *menuitem = GTK_MENU_ITEM(dt_gui_get_widget(gesture));
   dt_shortcut_copy_lua((dt_action_t*)minfo->module,
-                        g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"));
-  return TRUE;
+                       g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"));
 }
 
 static void _free_module_info(GtkWidget *widget,
@@ -560,8 +564,11 @@ static void _dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
 
     g_signal_connect(G_OBJECT(mi), "activate",
                      G_CALLBACK(_menuitem_activate_preset), minfo);
-    g_signal_connect(G_OBJECT(mi), "button-release-event",
-                     G_CALLBACK(_menuitem_button_preset), minfo);
+    GtkGestureSingle *gesture =
+      dt_gui_connect_click(mi, NULL, _menuitem_button_preset_released, minfo);
+    gtk_gesture_single_set_button(gesture, GDK_BUTTON_SECONDARY);
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture), GTK_PHASE_CAPTURE);
+    g_signal_connect(G_OBJECT(gesture), "begin", G_CALLBACK(dt_gui_gesture_claim), NULL);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     gtk_widget_set_has_tooltip(mi, TRUE);
     cnt++;
