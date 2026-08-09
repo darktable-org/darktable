@@ -226,6 +226,12 @@ double dt_get_screen_resolution(GtkWidget *widget);
  * modifiers are pressed to indicate the control should be scrolled, then remove
  * the modifiers from the event before returning false */
 gboolean dt_gui_ignore_scroll(GdkEventScroll *event);
+/* Same decision for a GtkEventControllerScroll callback: the modifiers are
+ * taken from the current event (GTK4: gtk_event_controller_get_current_event_state).
+ * The GdkEvent flavor clears the sidebar_scroll_mask from the event to consume
+ * the modifier; the controller world cannot mutate events, so the decision is
+ * identical but there is no side effect. */
+gboolean dt_gui_ignore_scroll_controller(GtkEventControllerScroll *controller);
 /* Scale factor converting normalized smooth scroll deltas (as returned by
  * dt_gui_get_scroll_deltas() on macOS) back to pixels for panning. */
 #define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
@@ -594,6 +600,10 @@ void dt_gui_add_controller(GtkWidget *widget,
  * (borrowed) and drop this helper.
  */
 gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y);
+/* Current modifier state as seen by a controller callback.  GTK4 reads it from
+ * the controller; GTK3 (which has no gtk_event_controller_get_current_event*)
+ * reads the event currently being dispatched, same as dt_gui_get_current_root_coords. */
+GdkModifierType dt_gui_get_current_event_state(GtkEventController *controller);
 
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,

@@ -458,28 +458,53 @@ static void _borders_button_pressed(GtkGestureSingle *gesture,
 
 // FIXME: if this is only called from scroll handlers, move this logic to scroll proxy
 // FIXME: just call with GdkModifierType as state
-gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
+static gboolean _dt_gui_ignore_scroll(const GdkModifierType mods_pressed)
 {
   const gboolean ignore_without_mods =
     dt_conf_get_bool("darkroom/ui/sidebar_scroll_default");
-  const GdkModifierType mods_pressed =
-    (dt_gdk_event_get_state(event) & gtk_accelerator_get_default_mod_mask());
 
   if(mods_pressed == 0)
-  {
     return ignore_without_mods;
-  }
-  else
+  if(mods_pressed == darktable.gui->sidebar_scroll_mask)
+    return !ignore_without_mods;
+  return FALSE;
+}
+
+gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
+{
+  const GdkModifierType mods_pressed =
+    (dt_gdk_event_get_state(event) & gtk_accelerator_get_default_mod_mask());
+  const gboolean ignore = _dt_gui_ignore_scroll(mods_pressed);
+
+  // the mask is the "handle it here" modifier: consume it so the event
+  // carries it no further once the widget decides to handle the scroll
+  if(!ignore && mods_pressed == darktable.gui->sidebar_scroll_mask)
+    event->state &= ~darktable.gui->sidebar_scroll_mask;
+
+  return ignore;
+}
+
+gboolean dt_gui_ignore_scroll_controller(GtkEventControllerScroll *controller)
+{
+  const GdkModifierType state = dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  return _dt_gui_ignore_scroll(state & gtk_accelerator_get_default_mod_mask());
+}
+
+GdkModifierType dt_gui_get_current_event_state(GtkEventController *controller)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gtk_event_controller_get_current_event_state(controller);
+#else
+  (void)controller;
+  GdkEvent *event = gtk_get_current_event();
+  GdkModifierType state = 0;
+  if(event)
   {
-    if(mods_pressed == darktable.gui->sidebar_scroll_mask)
-    {
-      if(!ignore_without_mods) return TRUE;
-
-      event->state &= ~darktable.gui->sidebar_scroll_mask;
-    }
-
-    return FALSE;
+    gdk_event_get_state(event, &state);
+    gdk_event_free(event);
   }
+  return state;
+#endif
 }
 
 gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event,
@@ -3958,12 +3983,15 @@ static void _notebook_size_callback(GtkNotebook *notebook,
 // GTK_STATE_FLAG_PRELIGHT does not seem to get set on the label on
 // hover so state-flags-changed cannot update
 // darktable.control->element for shortcut mapping
-static gboolean _notebook_motion_notify_callback(GtkNotebook *notebook,
-                                                 const GdkEventMotion *event,
-                                                 gpointer user_data)
+static void _notebook_motion_notify_callback(GtkEventControllerMotion *controller,
+                                             gdouble x,
+                                             gdouble y,
+                                             gpointer user_data)
 {
-  if(gtk_get_event_widget((GdkEvent*)event) != GTK_WIDGET(notebook)) return FALSE;
-
+  // a TARGET-phase controller only fires when the notebook itself is the
+  // event target, i.e. not while hovering the tab labels - same gate as the
+  // old gtk_get_event_widget() check
+  GtkNotebook *notebook = GTK_NOTEBOOK(dt_gui_get_widget(controller));
   GtkAllocation notebook_alloc, label_alloc;
   gtk_widget_get_allocation(GTK_WIDGET(notebook), &notebook_alloc);
 
@@ -3973,14 +4001,12 @@ static gboolean _notebook_motion_notify_callback(GtkNotebook *notebook,
     gtk_widget_get_allocation(gtk_notebook_get_tab_label
                               (notebook, gtk_notebook_get_nth_page(notebook, i)),
                               &label_alloc);
-    if(dt_gdk_event_get_x(event) + notebook_alloc.x < label_alloc.x + label_alloc.width)
+    if(x + notebook_alloc.x < label_alloc.x + label_alloc.width)
     {
       darktable.control->element = i;
       break;
     }
   }
-
-  return FALSE;
 }
 
 static float _action_process_tabs(const gpointer target,
@@ -4083,33 +4109,36 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
   return _current_notebook;
 }
 
-static gboolean _notebook_scroll_callback(GtkNotebook *notebook,
-                                          GdkEventScroll *event,
-                                          gpointer user_data) {
-  if(dt_gui_ignore_scroll(event)) return FALSE;
+static void _notebook_scroll_callback(GtkEventControllerScroll *controller,
+                                      gdouble dx,
+                                      gdouble dy,
+                                      gpointer user_data)
+{
+  if(dt_gui_ignore_scroll_controller(controller)) return;
 
-  int delta_x = 0, delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
-  {
-    // RIGHT: delta_x > 0, DOWN: delta_y > 0 -> next, like in filmstrip and lists
-    const int delta = abs(delta_x) > abs(delta_y) ? -delta_x : -delta_y;
-    _action_process_tabs(notebook, DT_ACTION_EFFECT_DEFAULT_KEY,
-                         delta < 0
-                         ? DT_ACTION_EFFECT_NEXT
-                         : DT_ACTION_EFFECT_PREVIOUS, delta);
-  }
+  // the DISCRETE controller already accumulated smooth deltas into units
+  const int delta_x = (int)dx, delta_y = (int)dy;
+  if(delta_x == 0 && delta_y == 0) return;
 
-  return TRUE;
+  // RIGHT: delta_x > 0, DOWN: delta_y > 0 -> next, like in filmstrip and lists
+  const int delta = abs(delta_x) > abs(delta_y) ? -delta_x : -delta_y;
+  _action_process_tabs(GTK_NOTEBOOK(dt_gui_get_widget(controller)),
+                       DT_ACTION_EFFECT_DEFAULT_KEY,
+                       delta < 0
+                       ? DT_ACTION_EFFECT_NEXT
+                       : DT_ACTION_EFFECT_PREVIOUS, delta);
 }
 
-static gboolean _notebook_button_press_callback(GtkNotebook *notebook,
-                                                const GdkEventButton *event,
-                                                gpointer user_data)
+static void _notebook_button_press_callback(GtkGestureSingle *gesture,
+                                            gint n_press,
+                                            gdouble x,
+                                            gdouble y,
+                                            gpointer user_data)
 {
-  if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS && gtk_get_event_widget((GdkEvent*)event) == GTK_WIDGET(notebook))
-    _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
+  if(n_press != 2) return;
 
-  return FALSE;
+  GtkNotebook *notebook = GTK_NOTEBOOK(dt_gui_get_widget(gesture));
+  _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
@@ -4137,13 +4166,11 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
   {
     g_signal_connect(G_OBJECT(notebook), "size-allocate",
                      G_CALLBACK(_notebook_size_callback), NULL);
-    g_signal_connect(G_OBJECT(notebook), "motion-notify-event",
-                     G_CALLBACK(_notebook_motion_notify_callback), NULL);
-    g_signal_connect(G_OBJECT(notebook), "scroll-event",
-                     G_CALLBACK(_notebook_scroll_callback), NULL);
-    g_signal_connect(G_OBJECT(notebook), "button-press-event",
-                     G_CALLBACK(_notebook_button_press_callback), NULL);
-    gtk_widget_add_events(GTK_WIDGET(notebook), darktable.gui->scroll_mask);
+    dt_gui_connect_motion(GTK_WIDGET(notebook), _notebook_motion_notify_callback, NULL, NULL, NULL);
+    dt_gui_connect_scroll(GTK_WIDGET(notebook),
+                          GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _notebook_scroll_callback, NULL);
+    dt_gui_connect_click(GTK_WIDGET(notebook), _notebook_button_press_callback, NULL, NULL);
   }
   if(_current_action_def)
   {
