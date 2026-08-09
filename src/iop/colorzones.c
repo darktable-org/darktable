@@ -1867,7 +1867,14 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
 
   if(dt_modifier_is(dt_key_modifier_state(), GDK_MOD1_MASK))
   {
-    // FIXME: event forwarding to g->channel_tabs removed
+    // alt+scroll switches the channel tab (as before the controller conversion)
+    // GTK4: no gtk_widget_event() -- reimplement as a controller on the notebook
+    GdkEvent *event = gtk_get_current_event();
+    if(event)
+    {
+      gtk_widget_event(GTK_WIDGET(g->channel_tabs), event);
+      gdk_event_free(event);
+    }
     return;
   }
 
