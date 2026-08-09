@@ -1145,7 +1145,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       // 1:1 like the native scrollbars.  clicky wheels keep the
       // row-by-row path below.
       gdouble deltaf_x, deltaf_y;
-      did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
+      did_scroll = dt_gui_get_scroll_deltas((const GdkEvent *)e, &deltaf_x, &deltaf_y);
       if(did_scroll)
       {
         // file manager scroll: tilt right (delta_x > 0) or scroll down (delta_y > 0) -> down
@@ -1155,7 +1155,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     else
     {
       int delta_x, delta_y;
-      did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
+      did_scroll = dt_gui_get_scroll_unit_deltas((const GdkEvent *)e, &delta_x, &delta_y);
       if(did_scroll)
       {
         deltaf = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
@@ -1178,7 +1178,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
   // filmstrip and zoom mode always use clicky scroll:
   int delta_x, delta_y;
 
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  if(dt_gui_get_scroll_unit_deltas((const GdkEvent *)e, &delta_x, &delta_y))
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
@@ -1189,7 +1189,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       // keep the accumulated magnitude for the step size
       const int dominant = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
       const int delta =
-        dt_gui_scroll_zoom_delta((const GdkEventScroll *)e, delta_x, delta_y) > 0.0f
+        dt_gui_scroll_zoom_delta((const GdkEvent *)e, delta_x, delta_y) > 0.0f
           ? -abs(dominant)
           : abs(dominant);
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
