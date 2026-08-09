@@ -853,7 +853,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
   dt_gui_dialog_restore_size(GTK_DIALOG(dialog), "metadata");
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT,      // key
