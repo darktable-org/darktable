@@ -3067,6 +3067,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   g_free(prev_output);
 
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
+  dt_set_darktable_tags();
   dt_control_queue_redraw_center();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
