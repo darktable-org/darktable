@@ -1320,8 +1320,8 @@ static void _folders_button_press_cb(GtkGestureSingle *gesture, int n_press,
   gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(view),
                                                     (gint)x, (gint)y, &bin_x, &bin_y);
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   if(n_press == 1
      && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY

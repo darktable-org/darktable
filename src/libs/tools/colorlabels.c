@@ -283,8 +283,12 @@ static void _lib_colorlabels_button_press_callback(GtkGestureSingle *gesture, in
   {
     d->colorlabel = colorlabel;
     gdouble root_x, root_y;
-    if(dt_gui_get_current_root_coords(&root_x, &root_y))
+    const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+    if(event)
+    {
+      dt_gui_get_event_coords(event, &root_x, &root_y);
       _lib_colorlabels_edit(self, root_x, root_y);
+    }
   }
   else
   {

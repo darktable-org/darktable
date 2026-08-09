@@ -69,34 +69,64 @@ static inline GdkModifierType dt_gdk_event_get_state(const void *e)
 
 static inline gdouble dt_gdk_event_get_x(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdouble x = 0, y = 0;
+  gdk_event_get_position((const GdkEvent *)e, &x, &y);
+  (void)y;
+  return x;
+#else
   gdouble x = 0, y = 0;
   gdk_event_get_coords((const GdkEvent *)e, &x, &y);
   (void)y;
   return x;
+#endif
 }
 
 static inline gdouble dt_gdk_event_get_y(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdouble x = 0, y = 0;
+  gdk_event_get_position((const GdkEvent *)e, &x, &y);
+  (void)x;
+  return y;
+#else
   gdouble x = 0, y = 0;
   gdk_event_get_coords((const GdkEvent *)e, &x, &y);
   (void)x;
   return y;
+#endif
 }
 
 static inline gdouble dt_gdk_event_get_root_x(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // GTK4 has no root (screen-absolute) coordinates; fall back to the
+  // surface-relative position (delta-based consumers are unaffected).
+  gdouble x = 0, y = 0;
+  gdk_event_get_position((const GdkEvent *)e, &x, &y);
+  (void)y;
+  return x;
+#else
   gdouble x = 0, y = 0;
   gdk_event_get_root_coords((const GdkEvent *)e, &x, &y);
   (void)y;
   return x;
+#endif
 }
 
 static inline gdouble dt_gdk_event_get_root_y(const void *e)
 {
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdouble x = 0, y = 0;
+  gdk_event_get_position((const GdkEvent *)e, &x, &y);
+  (void)x;
+  return y;
+#else
   gdouble x = 0, y = 0;
   gdk_event_get_root_coords((const GdkEvent *)e, &x, &y);
   (void)x;
   return y;
+#endif
 }
 
 static inline guint dt_gdk_event_get_keyval(const void *e)

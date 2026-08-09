@@ -2105,11 +2105,21 @@ static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
     }
   }
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4: gtk_search_entry_handle_event() is gone -- the entry handles key
+   * events through its internal controller.  Focus the entry so typing
+   * lands in it; the very first keystroke is consumed (TODO: feed it via
+   * gdk_keyval_to_unicode for full search-as-you-type parity). */
+  (void)event;
+  gtk_entry_grab_focus_without_selecting(GTK_ENTRY(search_entry));
+  return TRUE;
+#else
   const gboolean handled =
     dt_gui_search_start(widget, (GdkEventKey *)event, GTK_SEARCH_ENTRY(search_entry));
   gdk_event_free(event);
   return handled;
+#endif
 }
 
 static void _add_shortcuts_to_tree()

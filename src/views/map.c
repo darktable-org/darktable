@@ -1879,7 +1879,7 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
                                 dt_view_t *self)
 {
   dt_map_t *lib = self->data;
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
 
   if(event)
   {
@@ -1895,12 +1895,13 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
      && lib->loc.main.id > 0)
   {
     gdouble root_x, root_y;
-    gdk_event_get_root_coords(event, &root_x, &root_y);
+    dt_gui_get_event_coords(event, &root_x, &root_y);
     if((abs(lib->start_drag_x - (int)ceil(root_x)) +
         abs(lib->start_drag_y - (int)ceil(root_y))) > DT_PIXEL_APPLY_DPI(8))
     {
       lib->loc.drag = FALSE;
       osm_gps_map_image_remove(lib->map, lib->loc.main.location);
+#if !GTK_CHECK_VERSION(4, 0, 0)
       GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
 
       GdkDragContext *context =
@@ -1923,7 +1924,14 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
         g_object_unref(location);
       }
       gtk_target_list_unref(targets);
+#else
+      /* GTK4 TODO: map-view drag-and-drop needs a GdkContentProvider
+       * rewrite; gtk_drag_begin_with_coordinates() takes different
+       * arguments and GtkTargetList is gone. */
+#endif
+#if !GTK_CHECK_VERSION(4, 0, 0)
       gdk_event_free(event);
+#endif
       return;
     }
   }
@@ -1932,7 +1940,7 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
      && lib->selected_images)
   {
     gdouble root_x, root_y;
-    gdk_event_get_root_coords(event, &root_x, &root_y);
+    dt_gui_get_event_coords(event, &root_x, &root_y);
     if((abs(lib->start_drag_x - (int)ceil(root_x)) +
         abs(lib->start_drag_y - (int)ceil(root_y))) > DT_PIXEL_APPLY_DPI(8))
     {
@@ -1962,6 +1970,7 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
       const int group_count = g_list_length(lib->selected_images);
 
       lib->start_drag = FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
       GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
       GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
                                                                 GDK_ACTION_MOVE, 1,
@@ -1970,11 +1979,17 @@ static void _view_map_motion_cb(GtkEventControllerMotion *controller,
                               group_count);
       gtk_target_list_unref(targets);
       gdk_event_free(event);
+#else
+      /* GTK4 TODO: map-view drag-and-drop needs a GdkContentProvider
+       * rewrite (see above). */
+#endif
       return;
     }
   }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
+#endif
 
   dt_map_image_t *entry = _view_map_get_entry_at_pos(self, x, y);
   if(entry)
@@ -2052,13 +2067,17 @@ static void _view_map_scroll_cb(GtkEventControllerScroll *controller,
   dt_map_t *lib = self->data;
 
   // get the current event for position and modifier state
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event) return;
   gdouble x, y;
   GdkModifierType state;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_get_position(event, &x, &y);
+  state = gdk_event_get_modifier_state(event);
+#else
   gdk_event_get_coords(event, &x, &y);
   gdk_event_get_state(event, &state);
-  gdk_event_free(event);
+#endif
 
   // determine scroll direction from dy
   const gboolean scroll_down = dy > 0;
@@ -2137,8 +2156,8 @@ static void _view_map_click_pressed_cb(GtkGestureSingle *gesture,
                                         dt_view_t *self)
 {
   dt_map_t *lib = self->data;
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   if(lib->selected_images)
   {

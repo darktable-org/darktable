@@ -2808,7 +2808,7 @@ static void _quickbutton_pressed_cb(GtkGestureSingle *gesture,
   }
   else
   {
-    _quickbutton_start_time = gtk_get_current_event_time();
+    _quickbutton_start_time = dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture));
   }
 }
 
@@ -2823,7 +2823,7 @@ static void _quickbutton_released_cb(GtkGestureSingle *gesture,
   {
     int delay = 0;
     g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
-    if(gtk_get_current_event_time() - _quickbutton_start_time > (guint)delay)
+    if(dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture)) - _quickbutton_start_time > (guint)delay)
       _toolbar_show_popup(popover);
   }
 }
@@ -5063,11 +5063,11 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-  GdkEvent *current = gtk_get_current_event();
+  GdkEvent *current = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!current) return;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 
   // A touchpad two-finger swipe pans the image, like the main darkroom view's
   // _scrolled()/gesture_pan path.  dt_gui_scroll_should_pan() restricts this to
@@ -5079,7 +5079,9 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
     gdouble pan_dx = 0.0, pan_dy = 0.0;
     if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy))
     {
-      gdk_event_free(current);
+      #if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(current);
+#endif
       return;
     }
     pan_dx *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
@@ -5088,14 +5090,18 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
              "[darkroom second window] pan dx=%.3f dy=%.3f", pan_dx, pan_dy);
     if(pan_dx != 0.0 || pan_dy != 0.0)
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, pan_dx, pan_dy, TRUE);
+    #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(current);
+#endif
     return;
   }
 
   int delta_x, delta_y;
   if(!dt_gui_get_scroll_unit_deltas(current, &delta_x, &delta_y))
   {
+    #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(current);
+#endif
     return;
   }
   const gboolean zoom_in = dt_gui_scroll_zoom_delta(current,
@@ -5103,12 +5109,18 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
   const gboolean constrained =
     dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   gdouble x = 0.0, y = 0.0;
+  #if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_get_position(current, &x, &y);
+#else
   gdk_event_get_coords(current, &x, &y);
+#endif
   dt_print(DT_DEBUG_INPUT,
            "[darkroom second window] scroll zoom zoom_in=%d", zoom_in);
   dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, zoom_in ? 1 : 0,
                    x, y, constrained);
-  gdk_event_free(current);
+  #if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(current);
+#endif
 }
 
 /* touchpad pinch in the second window via GtkGestureZoom: the old "event"
@@ -5259,8 +5271,8 @@ static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
   }
   if(button == GDK_BUTTON_MIDDLE)
   {
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     dt_dev_zoom_move(port, DT_ZOOM_1, 0.0f, -2, x, y, !dt_modifier_is(state, GDK_CONTROL_MASK));
     return;
   }
@@ -5285,8 +5297,8 @@ static void _second_window_mouse_moved_callback(GtkEventControllerMotion *contro
 {
   if(dev->gui_leaving) return;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
   if(state & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
@@ -5386,13 +5398,20 @@ static void _second_window_buttons_leave_notify_callback(GtkEventControllerMotio
 {
   // GDK_NOTIFY_INFERIOR means the pointer moved into a child window (still
   // within the second window); keep the buttons visible in that case.
-  GdkEvent *event = gtk_get_current_event();
-  if(event && event->crossing.detail == GDK_NOTIFY_INFERIOR)
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) == GDK_NOTIFY_INFERIOR) return;
+#else
+    if(event->crossing.detail == GDK_NOTIFY_INFERIOR)
+    {
+      gdk_event_free(event);
+      return;
+    }
     gdk_event_free(event);
-    return;
+#endif
   }
-  if(event) gdk_event_free(event);
 
   gtk_widget_set_opacity(button_box, 0.0);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),

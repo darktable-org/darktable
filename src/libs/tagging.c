@@ -1504,9 +1504,8 @@ static void _click_on_view_attached(GtkGestureSingle *gesture,
         if(n_press == 1 && button == GDK_BUTTON_SECONDARY)
         {
           dt_gui_claim(gesture);
-          GdkEvent *event = gtk_get_current_event();
+          const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
           _pop_menu_attached(view, (GdkEventButton *)event, self);
-          if(event) gdk_event_free(event);
           gtk_tree_path_free(path);
           return;
         }
@@ -2657,7 +2656,7 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
   GtkWidget *view = dt_gui_get_widget(gesture);
   _unselect_all_in_view(d->attached_view);
 
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   const GdkModifierType state = event ? dt_gdk_event_get_state(event) : 0;
   const guint button = gtk_gesture_single_get_current_button(gesture);
   const gboolean shift_pressed = dt_modifier_is(state, GDK_SHIFT_MASK);
@@ -2688,7 +2687,7 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
         d->drag.path = path;
         if(d->drag.lastpath) gtk_tree_path_free(d->drag.lastpath);
         d->drag.lastpath = NULL;
-        if(event) gdk_event_free(event);
+        /* event is borrowed (gesture) */
         return;
       }
       else
@@ -2700,7 +2699,7 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
           dt_gui_claim(gesture);
           _pop_menu_dictionary(view, (GdkEventButton *)event, self);
           gtk_tree_path_free(path);
-          if(event) gdk_event_free(event);
+          /* event is borrowed (gesture) */
           return;
         }
         else if(d->tree_flag
@@ -2710,7 +2709,7 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
           dt_gui_claim(gesture);
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
           gtk_tree_path_free(path);
-          if(event) gdk_event_free(event);
+          /* event is borrowed (gesture) */
           return;
         }
         else if(n_press == 2 && button == GDK_BUTTON_PRIMARY)
@@ -2718,14 +2717,14 @@ static void _click_on_view_dictionary(GtkGestureSingle *gesture,
           dt_gui_claim(gesture);
           _attach_selected_tag(self, d);
           gtk_tree_path_free(path);
-          if(event) gdk_event_free(event);
+          /* event is borrowed (gesture) */
           return;
         }
       }
     }
     gtk_tree_path_free(path);
   }
-  if(event) gdk_event_free(event);
+  /* event is borrowed (gesture) */
 }
 
 static gboolean _dictionary_key_pressed(GtkEventControllerKey *controller,

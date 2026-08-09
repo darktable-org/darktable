@@ -448,11 +448,19 @@ static gboolean _key_pressed_cb(GtkEventControllerKey *controller,
       break;
   }
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4: GtkTextView's internal key controller does the IM filtering
+   * itself; gtk_text_view_im_context_filter_keypress() is gone.  Let
+   * the event propagate so the textview handles it natively. */
+  (void)event;
+  return FALSE;
+#else
   const gboolean handled =
     gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), (GdkEventKey *)event);
   gdk_event_free(event);
   return handled;
+#endif
 }
 
 static gboolean _textview_focus(GtkWidget *widget,

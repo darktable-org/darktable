@@ -1064,8 +1064,8 @@ static void _lib_plugin_arrow_button_press_cb(GtkGestureSingle *gesture,
 {
   if(n_press > 1) return;
   const guint button = gtk_gesture_single_get_current_button(gesture);
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   if(button == GDK_BUTTON_PRIMARY)
   {
@@ -1130,16 +1130,16 @@ static void _lib_plugin_header_button_release_cb(GtkGestureSingle *gesture,
                                                     dt_lib_module_t *module)
 {
   // ignore clicks on buttons inside the header (presets, reset, enable)
-  // GTK4: use gtk_gesture_get_last_event(gesture) instead of gtk_get_current_event()
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   if(event)
   {
-    if(GTK_IS_BUTTON(gtk_get_event_widget(event)))
-    {
-      gdk_event_free(event);
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_event_get_surface(event) != gtk_widget_get_surface(dt_gui_get_widget(gesture)))
       return;
-    }
-    gdk_event_free(event);
+#else
+    if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
+      return;
+#endif
   }
   _lib_plugin_arrow_button_press_cb(gesture, n_press, x, y, module);
 }
@@ -1197,13 +1197,20 @@ static void _body_enter_callback(GtkEventControllerMotion *controller,
 {
   // set focused module when entering (not when opening popup)
   // only act on non-inferior (not from child) normal crossings
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) != GDK_NOTIFY_INFERIOR
+       && gdk_crossing_event_get_mode(event) == GDK_CROSSING_NORMAL)
+#else
     if(event->crossing.detail != GDK_NOTIFY_INFERIOR
        && event->crossing.mode == GDK_CROSSING_NORMAL)
+#endif
       darktable.lib->gui_module = module;
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
   }
 }
 
@@ -1212,13 +1219,20 @@ static void _body_leave_callback(GtkEventControllerMotion *controller,
 {
   // clear focused module when leaving
   // only act on non-inferior (not to child) normal crossings
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) != GDK_NOTIFY_INFERIOR
+       && gdk_crossing_event_get_mode(event) == GDK_CROSSING_NORMAL)
+#else
     if(event->crossing.detail != GDK_NOTIFY_INFERIOR
        && event->crossing.mode == GDK_CROSSING_NORMAL)
+#endif
       darktable.lib->gui_module = NULL;
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
   }
 }
 
