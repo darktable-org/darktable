@@ -701,14 +701,18 @@ static void _window_motion_handle(GtkWidget *widget,
 // handlers below are the fallback.  For GTK4, the popup should be migrated to
 // GtkPopover or a GtkWindow with proper event controllers.
 
-static gboolean _window_motion_handler(GtkWidget *widget, GdkEventMotion *event,
-                                        gpointer user_data)
+static void _window_motion_handler(GtkEventControllerMotion *controller,
+                                    gdouble x,
+                                    gdouble y,
+                                    gpointer user_data)
 {
-  _window_motion_handle(widget,
-                        dt_gdk_event_get_root_x(event),
-                        dt_gdk_event_get_root_y(event),
-                        dt_gdk_event_get_state(event));
-  return TRUE;
+  // the popup window is a toplevel, but take root coordinates anyway to stay
+  // in the same coordinate space as the old GdkEvent handler
+  gdouble root_x, root_y;
+  dt_gui_get_current_root_coords(&root_x, &root_y);
+  _window_motion_handle(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)),
+                        root_x, root_y,
+                        dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)));
 }
 
 static gboolean _popup_leave_handler(GtkWidget *widget, GdkEventCrossing *event,
@@ -1043,7 +1047,7 @@ void dt_bauhaus_init()
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_handler), NULL);
+  dt_gui_connect_motion(pop->window, _window_motion_handler, NULL, NULL, NULL);
   g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_handler), NULL);
   dt_gui_connect_key(area, _popup_key_press, NULL);
   dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
