@@ -64,7 +64,7 @@ changes (where available).
 
 ## Other Changes
 
-- N/A
+- Added a new collection filter for the original image dimensions.  
 
 ## Bug Fixes
 
