@@ -718,12 +718,6 @@ static gboolean _popup_leave_handler(GtkWidget *widget, GdkEventCrossing *event,
   return TRUE;
 }
 
-static gboolean _popup_key_handler(GtkWidget *widget, GdkEventKey *event,
-                                    gpointer user_data)
-{
-  return _popup_key_press(NULL, dt_gdk_event_get_keyval(event), 0, dt_gdk_event_get_state(event), NULL);
-}
-
 static void _popup_button_release_cb(GtkGestureSingle *gesture,
                                        gint n_press,
                                        gdouble x,
@@ -1051,7 +1045,7 @@ void dt_bauhaus_init()
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
   g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_handler), NULL);
   g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_handler), NULL);
-  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_handler), NULL);
+  dt_gui_connect_key(area, _popup_key_press, NULL);
   dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
   dt_gui_connect_scroll(area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
