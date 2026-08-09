@@ -1057,10 +1057,12 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 {
   _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
 
-  /* set current group and update visibility */
-  GtkWidget *bt = _buttons_get_from_pos(params->self, params->group);
-  if(bt) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
-  _lib_modulegroups_update_iop_visibility(params->self);
+  /* set current group and update visibility; the button state changes must
+   * not run the toggle handler (restoring the active pipe while it is selected
+   * must not be taken for a click switching to the all modules view) */
+  DT_ENTER_GUI_UPDATE();
+  _lib_modulegroups_switch_to(params->self, params->group);
+  DT_LEAVE_GUI_UPDATE();
 
   free(params);
   return G_SOURCE_REMOVE;
@@ -3160,8 +3162,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
   d->current = dt_conf_get_int("plugins/darkroom/groups");
+
+  /* press the active button without running the toggle handler: the real
+   * selection was just restored from conf, and activating the active button
+   * while it is selected would switch to the all modules view */
+  DT_ENTER_GUI_UPDATE();
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn),
+                               d->current != DT_MODULEGROUP_NONE);
+  DT_LEAVE_GUI_UPDATE();
+
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(d->deprecated, TRUE);
@@ -3282,26 +3292,12 @@ static void _buttons_update(dt_lib_module_t *self)
     d->current = DT_MODULEGROUP_ACTIVE_PIPE;
   }
 
-  if(d->current == DT_MODULEGROUP_ACTIVE_PIPE)
-  {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
-  }
-  else if(d->current == DT_MODULEGROUP_BASICS)
-  {
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->basic_btn)))
-    {
-      // we need to manually refresh the list
-      _lib_modulegroups_update_iop_visibility(self);
-    }
-    else
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), TRUE);
-  }
-  else
-  {
-    dt_lib_modulegroups_group_t *gr = g_list_nth_data(d->groups, d->current - 1);
-    d->current = DT_MODULEGROUP_NONE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gr->button), TRUE);
-  }
+  /* restore the selected group; the button presses must not run the toggle
+   * handler (restoring the active pipe while it is selected must not be
+   * taken for a click switching to the all modules view) */
+  DT_ENTER_GUI_UPDATE();
+  _lib_modulegroups_switch_to(self, d->current);
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static void _manage_editor_group_move_right(GtkWidget *widget,
