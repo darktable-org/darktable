@@ -715,11 +715,11 @@ static void _window_motion_handler(GtkEventControllerMotion *controller,
                         dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)));
 }
 
-static gboolean _popup_leave_handler(GtkWidget *widget, GdkEventCrossing *event,
-                                      gpointer user_data)
+static void _popup_leave_cb(GtkEventControllerMotion *controller,
+                             gpointer user_data)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
-  return TRUE;
 }
 
 static void _popup_button_release_cb(GtkGestureSingle *gesture,
@@ -1048,7 +1048,7 @@ void dt_bauhaus_init()
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
   dt_gui_connect_motion(pop->window, _window_motion_handler, NULL, NULL, NULL);
-  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_handler), NULL);
+  dt_gui_connect_motion(area, NULL, NULL, _popup_leave_cb, NULL);
   dt_gui_connect_key(area, _popup_key_press, NULL);
   dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
   dt_gui_connect_scroll(area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
