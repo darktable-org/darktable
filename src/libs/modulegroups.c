@@ -608,8 +608,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_container_add(GTK_CONTAINER(evb), header_box);
     gtk_widget_show_all(evb);
     g_object_set_data(G_OBJECT(evb), "module", item->module->so);
-    GtkGestureSingle *g_evb = dt_gui_connect_click(evb, _manage_direct_module_popup, NULL, self);
-    gtk_gesture_single_set_button(g_evb, GDK_BUTTON_SECONDARY);
+    dt_gui_connect_click_secondary(evb, _manage_direct_module_popup, NULL, self);
     gtk_widget_set_name(header_box, "basics-header-box");
     dt_gui_add_class(header_box, "dt_big_btn_canvas");
     gtk_box_pack_start(GTK_BOX(d->vbox_basic), evb, FALSE, FALSE, 0);
@@ -2731,9 +2730,6 @@ static void _manage_direct_popup(GtkGestureSingle *gesture,
                                  gdouble y,
                                  dt_lib_module_t *self)
 {
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
-    return;
-
   GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return;
@@ -2747,9 +2743,6 @@ static void _manage_direct_basic_popup(GtkGestureSingle *gesture,
                                        gdouble y,
                                        dt_lib_module_t *self)
 {
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
-    return;
-
   _manage_basics_add_popup(dt_gui_get_widget(gesture), self, TRUE);
 }
 
@@ -2759,9 +2752,6 @@ static void _manage_direct_module_popup(GtkGestureSingle *gesture,
                                         gdouble y,
                                         dt_lib_module_t *self)
 {
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
-    return;
-
   GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
@@ -2862,9 +2852,6 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
                                          gdouble y,
                                          dt_lib_module_t *self)
 {
-  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_SECONDARY)
-    return;
-
   dt_lib_modulegroups_t *d = self->data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkWidget *pop = gtk_menu_new();
@@ -3107,8 +3094,7 @@ void gui_init(dt_lib_module_t *self)
   // basic group button
   d->basic_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basics, 0, NULL);
   {
-    GtkGestureSingle *g = dt_gui_connect_click(d->basic_btn, _manage_direct_basic_popup, NULL, self);
-    gtk_gesture_single_set_button(g, GDK_BUTTON_SECONDARY);
+    dt_gui_connect_click_secondary(d->basic_btn, _manage_direct_basic_popup, NULL, self);
   }
   g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel\n"
@@ -3123,8 +3109,7 @@ void gui_init(dt_lib_module_t *self)
   // active group button
   d->active_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, 0, NULL);
   {
-    GtkGestureSingle *g = dt_gui_connect_click(d->active_btn, _manage_direct_active_popup, NULL, self);
-    gtk_gesture_single_set_button(g, GDK_BUTTON_SECONDARY);
+    dt_gui_connect_click_secondary(d->active_btn, _manage_direct_active_popup, NULL, self);
   }
   g_signal_connect(d->active_btn, "toggled",
                    G_CALLBACK(_lib_modulegroups_toggle), self);
@@ -3286,8 +3271,7 @@ static void _buttons_update(dt_lib_module_t *self)
     GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
     g_object_set_data(G_OBJECT(bt), "group", gr);
     {
-      GtkGestureSingle *g_bt = dt_gui_connect_click(bt, _manage_direct_popup, NULL, self);
-      gtk_gesture_single_set_button(g_bt, GDK_BUTTON_SECONDARY);
+      dt_gui_connect_click_secondary(bt, _manage_direct_popup, NULL, self);
     }
     g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
     char *tooltip = g_strdup_printf(_("%s\nright-click tab icon to add/remove modules"), gr->name);
