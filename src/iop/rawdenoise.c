@@ -850,6 +850,19 @@ static void rawdenoise_scrolled(GtkEventControllerScroll *controller, gdouble dx
 {
   dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
 
+  if(dt_modifier_eq(controller, GDK_MOD1_MASK))
+  {
+    // alt+scroll switches the channel tab (as before the controller conversion)
+    // GTK4: no gtk_widget_event() -- reimplement as a controller on the notebook
+    GdkEvent *event = gtk_get_current_event();
+    if(event)
+    {
+      gtk_widget_event(GTK_WIDGET(g->channel_tabs), event);
+      gdk_event_free(event);
+    }
+    return;
+  }
+
   if(dy != 0.0)
   {
     g->mouse_radius = CLAMP(g->mouse_radius * (1.0 - 0.1 * dy), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
