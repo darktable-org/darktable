@@ -110,6 +110,12 @@ static void _preview_quit(dt_view_t *self)
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
+  // refresh the layout buttons: exiting full preview via a path that doesn't
+  // go through the layout button handlers (e.g. closing the main window while
+  // in preview, which exits preview instead of quitting dt) would otherwise
+  // leave the full preview icon stuck in its active state.
+  dt_view_lighttable_update_layout_buttons(darktable.view_manager);
+
   // show/hide filmstrip & timeline when entering the view
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
      || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
