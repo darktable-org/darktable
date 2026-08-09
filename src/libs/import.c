@@ -2039,8 +2039,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 #endif
   dt_gui_dialog_restore_size(GTK_DIALOG(d->from.dialog), "import");
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
-  g_signal_connect(d->from.dialog, "key-press-event",
-                   G_CALLBACK(dt_handle_dialog_enter), self);
+  dt_gui_connect_key(d->from.dialog, dt_handle_dialog_enter, self);
 
   // images numbers in action-box
   GtkWidget *box = dt_gui_container_first_child(GTK_CONTAINER(d->from.dialog));

@@ -1790,13 +1790,16 @@ const dt_action_def_t dt_action_def_lib
       _action_elements,
       _action_fallbacks };
 
-gboolean dt_handle_dialog_enter(GtkWidget *widget,
-                                GdkEventKey *event,
+gboolean dt_handle_dialog_enter(GtkEventControllerKey *key,
+                                guint keyval,
+                                guint keycode,
+                                GdkModifierType state,
                                 gpointer data)
 {
-  if(dt_gdk_event_get_keyval(event) == GDK_KEY_Return || dt_gdk_event_get_keyval(event) == GDK_KEY_KP_Enter)
+  if(keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter)
   {
-    gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_ACCEPT);
+    gtk_dialog_response(GTK_DIALOG(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(key))),
+                        GTK_RESPONSE_ACCEPT);
     return TRUE;
   }
   return FALSE;
