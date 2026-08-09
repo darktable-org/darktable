@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,6 +195,10 @@ const char* dt_bauhaus_widget_get_label(GtkWidget *widget);
 void dt_bauhaus_widget_hide_label(GtkWidget *widget);
 void dt_bauhaus_widget_set_show_extended_label(GtkWidget *widget,
                                                gboolean show);
+// open the value-entry popup of a bauhaus widget, as if it were right-clicked.
+// Used by callers that want the popup without sending the widget a synthetic
+// button press (which a gesture-based widget cannot handle cleanly)
+void dt_bauhaus_widget_show_popup(GtkWidget *widget);
 void dt_bauhaus_widget_set_module(GtkWidget *widget,
                                   dt_action_t *module);
 gpointer dt_bauhaus_widget_get_module(GtkWidget *widget);

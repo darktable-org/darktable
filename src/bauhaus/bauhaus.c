@@ -3333,6 +3333,27 @@ static void _popup_show(GtkWidget *widget)
   gtk_widget_grab_focus(pop->area);
 }
 
+/** open the value-entry popup of a bauhaus widget, as if it were right-clicked.
+ *  GTK4: gtk_get_current_event() is gone; when porting, read the time from
+ *  the gesture's last event instead (gtk_gesture_get_last_event()). */
+void dt_bauhaus_widget_show_popup(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_t *bh = darktable.bauhaus;
+
+  if(w->type == DT_BAUHAUS_TOGGLE) return;
+
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    bh->opentime = gdk_event_get_time(event);
+    gdk_event_free(event);
+  }
+  bh->mouse_x = 0;
+  bh->mouse_y = 0;
+  _popup_show(widget);
+}
+
 static void _slider_add_step(GtkWidget *widget,
                              float delta,
                              const guint state,

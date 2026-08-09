@@ -2761,7 +2761,17 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
     else
       g->dragging = TRUE;
   }
-  // other buttons: forward not supported with event controllers, ignored
+  else
+  {
+    // other buttons (e.g. right-click): open the value-entry popup of the
+    // selected node's slider.  The old button-press-event handler forwarded
+    // the event to the slider widget; a gesture-based bauhaus widget cannot
+    // be fed a synthetic press (the unmatched release would leave its
+    // gesture with a stale sequence), so open the popup directly.  Claim the
+    // event so it does not bubble up to the module menu.
+    dt_bauhaus_widget_show_popup(_get_slider(g, g->selected));
+    dt_gui_claim(gesture);
+  }
 }
 
 static void _area_button_release_callback(GtkGestureSingle *gesture,
@@ -2771,8 +2781,9 @@ static void _area_button_release_callback(GtkGestureSingle *gesture,
                                            dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  if(button == GDK_BUTTON_PRIMARY)
     g->dragging = FALSE;
 }
 
