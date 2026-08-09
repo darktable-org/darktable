@@ -211,8 +211,7 @@ gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe,
                                       const gboolean store_masks)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height,
-                                 DT_PIPECACHE_MIN, 0);
+    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, DT_PIPECACHE_MIN, 0);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
@@ -224,8 +223,7 @@ gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe,
                                          const int32_t height)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height,
-                                 DT_PIPECACHE_MIN, 0);
+    dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, DT_PIPECACHE_MIN, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
@@ -244,7 +242,7 @@ gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe,
 gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 12 : DT_PIPECACHE_MIN, 0);
+    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 12 : DT_PIPECACHE_MIN, 32);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   pipe->average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   return res;
@@ -253,7 +251,7 @@ gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 5 : DT_PIPECACHE_MIN, 0);
+    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 5 : DT_PIPECACHE_MIN, 32);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   pipe->average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   return res;
@@ -261,10 +259,8 @@ gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  const size_t csize = MAX(64*1024*1024, darktable.dtresources.mipmap_memory / 4);
   const gboolean res =
-    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 64 : DT_PIPECACHE_MIN,
-                                 csize);
+    dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 64 : DT_PIPECACHE_MIN, 8);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
@@ -272,7 +268,7 @@ gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
                                       const size_t size,
                                       const int32_t entries,
-                                      const size_t memlimit)
+                                      const int32_t fraction)
 {
   pipe->devid = DT_DEVICE_CPU;
   pipe->loading = FALSE;
@@ -318,7 +314,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->bcache_hash = DT_INVALID_HASH;
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
-  return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
+  return dt_dev_pixelpipe_cache_init(pipe, entries, size, fraction);
 }
 
 static inline size_t _dev_used_cachemem(void)
@@ -3261,7 +3257,7 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
     : DT_DEVICE_CPU;
 
   if(!claimed)  // don't free cachelines as the caller is using them
-    dt_dev_pixelpipe_cache_checkmem(pipe);
+    dt_dev_pixelpipe_cache_checkmem(pipe, FALSE);
 
   if(pipe->devid > DT_DEVICE_CPU) dt_opencl_events_reset(pipe->devid);
 
