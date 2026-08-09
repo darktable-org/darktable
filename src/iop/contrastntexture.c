@@ -21,7 +21,7 @@ DOCUMENTATION
 This module implements a scene-referred local contrast enhancement algorithm,
 designed to enhance local details while preserving edges and avoiding artifacts.
 
-It builds upon the original proof-of-concept algorithm proposed by WileCoyote:  
+It builds upon the original proof-of-concept algorithm proposed by WileCoyote:
 https://discuss.pixls.us/t/experiments-with-a-scene-referred-local-contrast-module-proof-of-concept/55402
 
 And then further explored and optimized by Christian Bouhon
@@ -74,7 +74,7 @@ typedef struct dt_iop_contrast_params_t
   float gain_local_contrast;  // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
   float detail_level;         // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 4.0 $DESCRIPTION: "detail level"
   float edge_protection;      // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "adjust edge protection"
-  int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"  
+  int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"
   float noise_bias;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.001 $DESCRIPTION: "noise bias"
 } dt_iop_contrast_params_t;
 
@@ -174,7 +174,7 @@ static inline void compute_luminance_and_mask(const float *const restrict in,
 
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
-  { 
+  {
     luminance[k] += noise_bias;
   }
 
@@ -217,7 +217,7 @@ static inline void apply_local_contrast(const float *const restrict in,
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
   const float gain_local = (d->gain_local_contrast - 1.0f);
   const float noise_bias = d->noise_bias;
-  
+
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
@@ -227,7 +227,7 @@ static inline void apply_local_contrast(const float *const restrict in,
 
     // Correction as the scaled ev difference
     const float correction_ev = gain_local * local_ev;
-    
+
     // Apply correction in linear space
     const float multiplier = exp2f(correction_ev);;
     for_each_channel(c)
@@ -257,7 +257,7 @@ static inline void display_local_mask(const float *const restrict luminance_pixe
   for(size_t k = 0; k < npixels; k++)
   {
     const float local_ev = extract_details(luminance_pixel[k], luminance_smoothed[k], noise_bias);
-    
+
     // Detail in log space, mapped to [0, 1] for display
     // Detail range roughly [-2, +2] EV mapped to [0, 1]
     const float intensity = local_ev / sqrtf(local_ev * local_ev + 1.0f) * 0.5f + 0.5f; // Smooth mapping to [0, 1]
@@ -301,7 +301,7 @@ void process(dt_iop_module_t *self,
   }
 
   compute_luminance_and_mask(in, luminance_pixel, luminance_smoothed_local, roi_in, d);
-  
+
   // Display output
   if(g && g->details_display != DT_LC_MASK_OFF && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
@@ -386,7 +386,7 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_contrast_gui_data_t *g = IOP_GUI_ALLOC(contrast);
   g->details_display = DT_LC_MASK_OFF;
-    
+
   // Main container
   self->widget = dt_gui_vbox();
 
@@ -404,14 +404,14 @@ void gui_init(dt_iop_module_t *self)
 
   // Filter settings section
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "filter settings")));
-  
+
   g->detail_level = dt_bauhaus_slider_from_params(self, "detail_level");
   dt_bauhaus_slider_set_soft_range(g->detail_level, 2.0, 10.0);
   gtk_widget_set_tooltip_text(g->detail_level,
      _("detail level adjusted by the local contrast.\n"
        "higher = more contrast boost in finer details\n"
        "lower = more contrast boost in coarser details"));
-  
+
 
   g->edge_protection = dt_bauhaus_slider_from_params(self, "edge_protection");
   dt_bauhaus_slider_set_soft_range(g->edge_protection, -2.0, 2.0);
