@@ -631,6 +631,15 @@ GtkGestureSingle *(dt_gui_connect_click_secondary)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(released, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
   dt_gui_connect_click_secondary(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
 
+/* claim the event sequence for a gesture so that all its events (press,
+ * release, motion) are consumed and never reach the widget's class handlers
+ * or other controllers.  Connect to the gesture's "begin" signal; implies
+ * GTK_PHASE_CAPTURE.  Same pattern as dt_iop_togglebutton_new and the
+ * standalone picker buttons, survives GTK4 unchanged. */
+void dt_gui_gesture_claim(GtkGesture *gesture,
+                          GdkEventSequence *sequence,
+                          gpointer user_data);
+
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
                                   GCallback drag_end,
