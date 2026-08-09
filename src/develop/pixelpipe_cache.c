@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,13 +26,13 @@
 gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
                                      const int entries,
                                      const size_t size,
-                                     const size_t limit)
+                                     const int32_t fraction)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   cache->entries = entries;
   cache->allmem = cache->max_allmem = cache->hits = cache->calls = cache->tests = 0;
-  cache->memlimit = limit;
+  cache->mem_fraction = fraction;
 
   const size_t csize = sizeof(void *) + sizeof(size_t) + sizeof(dt_iop_buffer_dsc_t) + 2*sizeof(int32_t) + sizeof(uint64_t);
   cache->data = (void **) calloc(entries, csize);
@@ -480,7 +480,7 @@ static inline int _invalid(const dt_dev_pixelpipe_cache_t *cache)
   return cnt;
 }
 
-void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
+void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe, const gboolean trim)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
@@ -503,7 +503,12 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
     }
   }
 
-  while(cache->memlimit && (cache->memlimit < cache->allmem))
+  size_t trim_limit = cache->mem_fraction == 0 ? 0 : dt_get_available_mem() / cache->mem_fraction;
+  const gboolean lowmem = dt_get_available_mem() < DT_MEGA * 6000;
+  if(lowmem && trim) trim_limit = 0;
+  if(trim) trim_limit /= 4;
+
+  while(cache->mem_fraction && (trim_limit < cache->allmem))
   {
     const int k = _get_oldest_cacheline(cache, DT_CACHETEST_USED);
     if(k == 0) break;
@@ -513,19 +518,23 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
   }
 
   if(free_cnt + free_invalid_cnt)
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-      "Freed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB max=%zuMB",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, trim ? "pipe cache trim" : "pipe cache check",
+      pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "%sFreed lines invalid=%i used=%i. Freed mem invalid %zuMB used %zuMB. Now %zuMB limit=%zuMB max=%zuMB",
+      lowmem & trim ? "lowmem" : "",
       free_invalid_cnt, free_cnt, freed_invalid/DT_MEGA, freed / DT_MEGA,
-      cache->allmem / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA);
+      cache->allmem / DT_MEGA, trim_limit / DT_MEGA, cache->max_allmem / DT_MEGA);
 }
 
 void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  const size_t limit = cache->mem_fraction == 0 ? 0 : dt_get_available_mem() / cache->mem_fraction;
+
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
     "Lines=%i important=%i used=%i invalid=%i. Now=%zuMB limit=%zuMB max=%zuMB. Hits/run=%.2f. Hits/test=%.3f",
     cache->entries, _important(cache), _used(cache), _invalid(cache),
-    cache->allmem / DT_MEGA, cache->memlimit / DT_MEGA, cache->max_allmem / DT_MEGA,
+    cache->allmem / DT_MEGA, limit / DT_MEGA, cache->max_allmem / DT_MEGA,
     (double)(cache->hits) / fmax(1.0, pipe->runs),
     (double)(cache->hits) / fmax(1.0, cache->tests));
 }
