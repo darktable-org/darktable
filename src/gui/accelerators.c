@@ -4462,13 +4462,22 @@ static gboolean _key_release_delayed(gpointer timed_out)
 {
   _timeout_source = 0;
 
-  /* Run the shortcut action while the seat grab is still held, then
-   * ungrab.  Releasing the grab first makes GDK (and on macOS the
-   * Quartz tracking-area machinery behind it) emit phantom crossing
-   * events between the ungrab and the action, which clear the
-   * mouse-over id and make 'prioritize hovered image' fall back to the
-   * selection (see #21729).  This also matches the double/triple-press
-   * path, which processes the action while the grab is held.
+  /* Run the shortcut action after releasing the seat grab, but keep the
+   * grabbed flag set while the action runs.  Releasing the grab first
+   * lets modal dialogs opened by the action receive mouse events: on
+   * Windows the grab is implemented as SetCapture() on the main window
+   * and swallows every mouse event for as long as it is held, so a dialog
+   * opened synchronously inside the action (selective copy/paste, ...)
+   * would be dead to the mouse for its whole lifetime (see #21777).
+   * The flag is what dt_gui_pointer_is_grabbed() checks first, so the
+   * lighttable hover handlers keep filtering the phantom crossing events
+   * that the ungrab makes GDK (and on macOS the Quartz tracking-area
+   * machinery behind it) synthesize around the action -- both while the
+   * action runs and while a dialog's nested main loop is dispatching
+   * them -- and 'prioritize hovered image' keeps working (see #21729).
+   * The flag is cleared right after the action: any crossings still in
+   * the queue then settle to the correct mouse-over (the enter event
+   * re-sets it), so filtering them is no longer needed.
    *
    * A released hold key's action was already dispatched by the hold
    * machinery (DT_ACTION_EFFECT_ON at engage, OFF at release), so for it
@@ -4477,7 +4486,23 @@ static gboolean _key_release_delayed(gpointer timed_out)
   _hold_release_pending = FALSE;
 
   if(!timed_out && !hold_release)
+  {
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    /* GTK3 only: releasing the grab is done here (not in
+     * _ungrab_grab_widget()) so it happens before the action runs; the
+     * flag stays set until the action returns (see comment above).
+     * GTK4 migration: delete -- GTK4 removed the grab APIs, so there is
+     * nothing to release and no flag to keep. */
+    if(_pointer_grabbed)
+      gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+#endif
+
     dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    _pointer_grabbed = FALSE;
+#endif
+  }
 
   if(!_pressed_keys)
     _ungrab_grab_widget();
