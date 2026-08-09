@@ -4911,7 +4911,19 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
   dt_gui_add_controller(widget, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 
-  gtk_widget_add_events(widget, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK); // still needed for now by _main_do_event_keymap
+  /* GTK3: event controllers don't request input events from GDK -- the
+   * motion controller's event mask is 0 -- so the widget must keep its own
+   * event mask or it never receives enter/leave/motion events at all.  The
+   * pointer-motion mask is what makes the "motion" signal fire: without
+   * it, motion over a child window goes to the parent layout instead and
+   * hover-triggered updates (e.g. the thumbnail block overlays re-showing
+   * after their timeout) stop working (see #21782).
+   * The enter/leave masks are also still needed by _main_do_event_keymap.
+   * GTK4 migration: delete this call -- GTK4 delivers all input events
+   * to every widget automatically. */
+  gtk_widget_add_events(widget,
+                        GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_POINTER_MOTION_MASK);
 
   if(motion) g_signal_connect(controller, "motion", G_CALLBACK(motion), data);
   if(enter) g_signal_connect(controller, "enter", G_CALLBACK(enter), data);
