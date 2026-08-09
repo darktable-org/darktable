@@ -822,8 +822,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   _basics_hide(self);
 
   // if we have a module to force or still have none selected, set d-current to active pipe
-  if(d->current == DT_MODULEGROUP_INVALID || d->current == DT_MODULEGROUP_NONE)
-    d->current = DT_MODULEGROUP_ACTIVE_PIPE;
+  // note: DT_MODULEGROUP_NONE ("all modules", reached by clicking the active group
+  // button again or restored from conf) is a real group state and must be kept;
+  // only INVALID (no selection) is upgraded to the active pipe.
+  if(d->current == DT_MODULEGROUP_INVALID) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
 
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
