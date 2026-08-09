@@ -279,6 +279,18 @@ gboolean dt_gui_scroll_should_pan(const GdkEvent *event);
  * dominant delta.  dx/dy are the caller's deltas (raw or accumulated units). */
 float dt_gui_scroll_zoom_delta(const GdkEvent *event, gdouble dx, gdouble dy);
 
+/* Event timestamp as seen by a controller callback (same contract as
+ * dt_gui_get_current_event()). */
+static inline guint32 dt_gui_get_current_event_time(GtkEventController *controller)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GdkEvent *event = gtk_event_controller_get_current_event(controller);
+  return event ? gdk_event_get_time(event) : GDK_CURRENT_TIME;
+#else
+  return gtk_get_current_event_time();
+#endif
+}
+
 /* Current event as seen by a controller callback.  GTK4 reads the borrowed
  * event from the controller (do NOT free); GTK3 returns an owned copy of
  * gtk_get_current_event() which the caller must gdk_event_free(). */
@@ -288,6 +300,22 @@ static inline GdkEvent *dt_gui_get_current_event(GtkEventController *controller)
   return gtk_event_controller_get_current_event(controller);
 #else
   return gtk_get_current_event();
+#endif
+}
+
+/* Event coordinates in the frame the old root-coords convention used:
+ * GTK3 root (screen-absolute) coordinates, GTK4 the surface-relative
+ * position (GTK4 has no root-coords API).  Delta-based tracking (panel
+ * drag, culling/thumbtable pan) is unaffected; absolute positioning needs
+ * a coordinate decision on the GTK4 port. */
+static inline void dt_gui_get_event_coords(const GdkEvent *event,
+                                           gdouble *x,
+                                           gdouble *y)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_get_position(event, x, y);
+#else
+  gdk_event_get_root_coords(event, x, y);
 #endif
 }
 

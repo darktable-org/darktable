@@ -717,7 +717,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
                            gdouble dy,
                            dt_culling_t *table)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event) return;
 
   GdkDevice *device = dt_gdk_event_get_source_device(event);
@@ -753,7 +753,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
   // stop event at all.)
   if(direction == GDK_SCROLL_SMOOTH && is_stop)
   {
+    #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
     dt_culling_zoom_end(table);
     return;
   }
@@ -782,7 +784,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       if(fabsf(zoom_delta) > 0.001f)
         _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state, TRUE);
     }
+    #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
     return;
   }
 
@@ -821,7 +825,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       {
         dt_print(DT_DEBUG_INPUT, "[culling scroll] smooth pan: no delta");
       }
-      gdk_event_free(event);
+      #if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(event);
+#endif
       return;
     }
   }
@@ -861,7 +867,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       _thumbs_move(table, move);
     }
   }
-  gdk_event_free(event);
+  #if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(event);
+#endif
 }
 
 static gboolean _event_draw(GtkWidget *widget,
@@ -901,18 +909,27 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
    * mouse_inside (see #21729, #21745).
    * GTK4 migration: drop the pointer-grab check (see
    * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) != GDK_NOTIFY_INFERIOR
+       && gdk_crossing_event_get_mode(event) != GDK_CROSSING_GTK_GRAB
+       && gdk_crossing_event_get_mode(event) != GDK_CROSSING_GRAB
+       && !dt_gui_pointer_is_grabbed())
+#else
     if(event->crossing.detail != GDK_NOTIFY_INFERIOR
        && event->crossing.mode != GDK_CROSSING_GTK_GRAB
        && event->crossing.mode != GDK_CROSSING_GRAB
        && !dt_gui_pointer_is_grabbed())
+#endif
     {
       table->mouse_inside = FALSE;
       dt_control_set_mouse_over_id(NO_IMGID);
     }
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
   }
 }
 
@@ -944,15 +961,10 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
    * leave a stale hovered image (see #21729). */
   table->mouse_inside = TRUE;
 
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    /* GTK4 migration: drop the pointer-grab check (see
-     * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
-    if(!dt_gui_pointer_is_grabbed())
-      dt_control_set_mouse_over_id(_culling_image_at_pos(table, x, y));
-    gdk_event_free(event);
-  }
+  /* GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+  if(!dt_gui_pointer_is_grabbed())
+    dt_control_set_mouse_over_id(_culling_image_at_pos(table, x, y));
 }
 
 static void _event_button_press_cb(GtkGestureSingle *gesture,
@@ -972,8 +984,8 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
   if(button == GDK_BUTTON_MIDDLE)
   {
     // if shift is pressed, we work only with image hovered
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
       _toggle_zoom_current(table, x, y);
     else
@@ -1002,7 +1014,8 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
   }
 
   // start panning — need root coordinates for pan tracking
-  dt_gui_get_current_root_coords(&table->pan_x, &table->pan_y);
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(event) dt_gui_get_event_coords(event, &table->pan_x, &table->pan_y);
   table->panning = TRUE;
 }
 
@@ -1013,7 +1026,8 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
 {
   // get root coordinates for pan tracking
   gdouble root_x = 0, root_y = 0;
-  dt_gui_get_current_root_coords(&root_x, &root_y);
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
 
   table->mouse_inside = TRUE;
 
@@ -1030,6 +1044,9 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
   {
     table->pan_x = root_x;
     table->pan_y = root_y;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
     return;
   }
 
@@ -1037,7 +1054,12 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
   const int max_in_memory_images = _get_max_in_memory_images();
   if(table->mode == DT_CULLING_MODE_CULLING
      && table->thumbs_count > max_in_memory_images)
+  {
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
     return;
+  }
 
   float fz = 1.0f;
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -1053,8 +1075,8 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
     const float valx = (root_x - table->pan_x) * scale;
     const float valy = (root_y - table->pan_y) * scale;
 
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
@@ -1109,6 +1131,9 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
     dt_thumbnail_t *th = l->data;
     dt_thumbnail_image_refresh_position(th);
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
 static void _event_button_release_cb(GtkGestureSingle *gesture,

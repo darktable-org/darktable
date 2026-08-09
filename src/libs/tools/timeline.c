@@ -1165,8 +1165,8 @@ static void _lib_timeline_button_release_callback(GtkGestureSingle *gesture,
     }
     strip->selecting = FALSE;
 
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     if(!strip->move_edge && dt_modifier_is(state, GDK_SHIFT_MASK))
       _selection_collect(strip, DT_LIB_TIMELINE_MODE_RESET);
     else
@@ -1317,8 +1317,8 @@ static void _lib_timeline_scroll_cb(GtkEventControllerScroll *controller,
 {
   dt_lib_timeline_t *strip = self->data;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 
   // zoom change (with Ctrl key)
   if(dt_modifier_is(state, GDK_CONTROL_MASK))

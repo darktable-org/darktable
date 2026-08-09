@@ -707,12 +707,17 @@ static void _window_motion_handler(GtkEventControllerMotion *controller,
                                     gpointer user_data)
 {
   // the popup window is a toplevel, but take root coordinates anyway to stay
-  // in the same coordinate space as the old GdkEvent handler
-  gdouble root_x, root_y;
-  dt_gui_get_current_root_coords(&root_x, &root_y);
+  // in the same coordinate space as the old GdkEvent handler (GTK4 falls
+  // back to surface-relative coordinates, see dt_gui_get_event_coords())
+  gdouble root_x = 0.0, root_y = 0.0;
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
   _window_motion_handle(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)),
                         root_x, root_y,
                         dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)));
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
 static void _popup_leave_cb(GtkEventControllerMotion *controller,
@@ -743,16 +748,18 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
   const guint button = gtk_gesture_single_get_current_button(gesture);
 
   // reject clicks that come from outside the popup area window
-  GdkEvent *cur_event = gtk_get_current_event();
+  const GdkEvent *cur_event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   if(cur_event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_event_get_surface(cur_event) != gtk_widget_get_surface(dt_gui_get_widget(gesture)))
+#else
     if(dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(dt_gui_get_widget(gesture)))
+#endif
     {
-      gdk_event_free(cur_event);
       _popup_reject();
       return;
     }
-    gdk_event_free(cur_event);
   }
 
   if(button == GDK_BUTTON_PRIMARY)
@@ -765,8 +772,8 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
        && !dt_gui_long_click(gdk_event_get_time(gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL)), bh->opentime))
     {
       // counts as double click, reset:
-      GdkModifierType state;
-      gtk_get_current_event_state(&state);
+      const GdkModifierType state =
+        dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
       if(!(dt_modifier_is(state, GDK_CONTROL_MASK) && w->field
           && dt_gui_presets_autoapply_for_module((dt_iop_module_t *)w->module,
                                                  GTK_WIDGET(w))))
@@ -775,7 +782,7 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
 
     bh->change_active = TRUE;
     GtkWidget *w_current = dt_gui_get_widget(gesture);
-    GdkEvent *current_event = gtk_get_current_event();
+    const GdkEvent *current_event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
     if(current_event)
     {
       GdkModifierType motion_state = dt_gdk_event_get_state(current_event);
@@ -784,7 +791,6 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
                                 dt_gdk_event_get_root_x(current_event),
                                 dt_gdk_event_get_root_y(current_event),
                                 motion_state);
-      gdk_event_free(current_event);
     }
   }
   else if(button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
@@ -3395,7 +3401,7 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
                            double dx, double dy,
                            GtkWidget *widget)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event || gdk_event_get_event_type(event) != GDK_SCROLL)
     dt_print(DT_DEBUG_ALWAYS, "[_widget_scroll] called on non-scroll event");
   else if(darktable.control->mapping_widget)
@@ -3444,7 +3450,9 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
       }
     }
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
+#endif
 }
 
 static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
@@ -3879,18 +3887,41 @@ static gboolean _popup_key_press(GtkEventControllerKey *controller,
       break;
     default:
     {
+      /* GTK3 reads the key string from the event; GTK4 dropped the key-event
+       * string, so derive the unicode character from the keyval instead
+       * (single-character input only -- composed input goes through GTK4's
+       * IM handling, not this controller). */
+      const gchar *str;
+#if GTK_CHECK_VERSION(4, 0, 0)
+      gchar keybuf[7];
+      const gunichar uc = gdk_keyval_to_unicode(keyval);
+      if(!uc) return FALSE;
+      const gint len = g_unichar_to_utf8(uc, keybuf);
+      keybuf[len] = '\0';
+      str = keybuf;
+#else
       GdkEvent *event = gtk_get_current_event();
       if(!event) return FALSE;
-      const gchar *str = ((GdkEventKey *)event)->string;
-      if(!str || !g_utf8_validate(str, -1, NULL))
+      str = ((GdkEventKey *)event)->string;
+      if(!str)
       {
         gdk_event_free(event);
+        return FALSE;
+      }
+#endif
+      if(!str || !g_utf8_validate(str, -1, NULL))
+      {
+#if !GTK_CHECK_VERSION(4, 0, 0)
+        gdk_event_free(event);
+#endif
         return FALSE;
       }
       const gunichar c = g_utf8_get_char(str);
       if(!g_unichar_isprint(c))
       {
+#if !GTK_CHECK_VERSION(4, 0, 0)
         gdk_event_free(event);
+#endif
         return FALSE;
       }
       const long int char_width = g_utf8_next_char(str) - str;
@@ -3903,7 +3934,9 @@ static gboolean _popup_key_press(GtkEventControllerKey *controller,
 
         if(!is_combo) _start_cursor(-1);
       }
+#if !GTK_CHECK_VERSION(4, 0, 0)
       gdk_event_free(event);
+#endif
       break;
     }
   }
@@ -3957,12 +3990,8 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   }
   else if(button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
-    GdkEvent *const event = gtk_get_current_event();
-    if(event)
-    {
-      bh->opentime = gdk_event_get_time(event);
-      gdk_event_free(event);
-    }
+    const GdkEvent *const event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+    if(event) bh->opentime = gdk_event_get_time((GdkEvent *)event);
     bh->mouse_x = x;
     bh->mouse_y = y;
     _popup_show(widget);
@@ -4055,10 +4084,13 @@ static void _widget_motion(GtkEventControllerMotion *controller,
       const float steps = floorf((x - bh->mouse_x) / scaled_step);
       // the current event may be NULL for synthetic motions; fall back to
       // the global keyboard state in that case
-      GdkEvent *const event = gtk_get_current_event();
+      GdkEvent *const event =
+        dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
       const GdkModifierType motion_state = event ? dt_gdk_event_get_state(event)
                                                  : dt_key_modifier_state();
+#if !GTK_CHECK_VERSION(4, 0, 0)
       if(event) gdk_event_free(event);
+#endif
       _slider_add_step(widget, copysignf(1, d->factor) * steps,
                        motion_state, FALSE);
 

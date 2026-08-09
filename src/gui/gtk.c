@@ -1532,6 +1532,8 @@ void dt_open_url(const char* url)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   // TODO: call the web browser directly so that file:// style base for local installs works
+  // GTK4: gtk_show_uri_on_window() is gone (use gtk_show_uri()); this
+  // whole helper is GTK3-only until then.
   const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win),
                                                       url,
                                                       gtk_get_current_event_time(),
@@ -3070,9 +3072,12 @@ static void _panel_handle_button_pressed(GtkGestureSingle *gesture,
     return;
   }
 
-  gdouble root_x, root_y;
-  dt_gui_get_current_root_coords(&root_x, &root_y);
-  panel_drag_start_x = root_x;
+  {
+    const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+    gdouble root_x = 0, root_y = 0;
+    if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
+    panel_drag_start_x = root_x;
+  }
 
   if(strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0)
     panel_drag_start_size = gtk_widget_get_allocated_height(widget);
@@ -3159,8 +3164,9 @@ static void _panel_handle_motion_callback(GtkEventControllerMotion *controller,
   GtkWidget *widget = (GtkWidget *)user_data;
   if(darktable.gui->widgets.panel_handle_dragging)
   {
-    gdouble root_x, root_y;
-    dt_gui_get_current_root_coords(&root_x, &root_y);
+    gdouble root_x = 0, root_y = 0;
+    GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+    if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
     const gdouble delta_x = root_x - panel_drag_start_x;
 
     if(strcmp(gtk_widget_get_name(handle), "panel-handle-right") == 0)
@@ -3183,6 +3189,9 @@ static void _panel_handle_motion_callback(GtkEventControllerMotion *controller,
     }
 
     gtk_widget_queue_resize(widget);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
   }
 }
 
@@ -5124,28 +5133,6 @@ void dt_gui_add_controller(GtkWidget *widget,
   // the widget, see the comment on the declaration.
   g_signal_connect_swapped(widget, "destroy", G_CALLBACK(g_object_unref), controller);
 #endif
-}
-
-/*
- * Root (screen-absolute) coordinates of the current event, or FALSE if there
- * is no current event.  gtk_get_current_event() returns an owned copy on
- * GTK3 (transfer full), so the copy is released here -- the whole
- * get-event/use/free dance is confined to this one helper.
- *
- * GTK4 migration: gtk_get_current_event() disappears; gesture/controller
- * callbacks get the event from gtk_gesture_get_last_event() or
- * gtk_event_controller_get_current_event() (borrowed, no free).  Callers
- * of this helper should then switch to those and read the coordinates
- * directly, or drop the helper and use
- * gtk_gesture_get_last_event(gesture, NULL).
- */
-gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y)
-{
-  GdkEvent *event = gtk_get_current_event();
-  if(!event) return FALSE;
-  const gboolean ok = gdk_event_get_root_coords(event, x, y);
-  gdk_event_free(event);
-  return ok;
 }
 
 static void _gesture_cancel(GtkGestureSingle *gesture,

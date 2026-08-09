@@ -2604,10 +2604,12 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
   const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
   if(delta == 0) return;
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   const gboolean smooth = event
     && dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH;
+#if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
+#endif
 
   GtkWidget *widget = dt_gui_get_widget(controller);
   dt_presets_scroll_t *state
@@ -2862,16 +2864,16 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
   if(n_press >= 2) return;
 
   // ignore clicks on buttons inside the header (presets, reset, enable, multiinstance)
-  // GTK4: use gtk_gesture_get_last_event(gesture) instead of gtk_get_current_event()
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   if(event)
   {
-    if(GTK_IS_BUTTON(gtk_get_event_widget(event)))
-    {
-      gdk_event_free(event);
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_event_get_surface(event) != gtk_widget_get_surface(dt_gui_get_widget(gesture)))
       return;
-    }
-    gdk_event_free(event);
+#else
+    if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
+      return;
+#endif
   }
 
   const guint button = gtk_gesture_single_get_current_button(gesture);

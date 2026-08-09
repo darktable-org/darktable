@@ -648,8 +648,8 @@ static void _gesture_begin_claim(GtkGesture *gesture,
 {
   const dt_lib_collect_t *d = user_data;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   const gboolean modifier = dt_modifier_is(state, GDK_SHIFT_MASK)
     || dt_modifier_is(state, GDK_CONTROL_MASK)
@@ -717,7 +717,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
   GtkWidget *treeview = dt_gui_get_widget(gesture);
   static GdkModifierType last_mod_state = 0;
 
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
 
   /* gesture coordinates are relative to the widget allocation, while
    * gtk_tree_view_get_path_at_pos() expects bin-window coordinates */
@@ -731,8 +731,8 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
                                                           bin_x, bin_y,
                                                           &path, NULL, NULL, NULL);
 
-  GdkModifierType mod_state;
-  gtk_get_current_event_state(&mod_state);
+  const GdkModifierType mod_state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
   const guint button = gtk_gesture_single_get_current_button(gesture);
   const gboolean modifier = dt_modifier_is(mod_state, GDK_SHIFT_MASK)
     || dt_modifier_is(mod_state, GDK_CONTROL_MASK)
@@ -797,7 +797,6 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     gtk_tree_path_free(path);
-    gdk_event_free(event);
     return;
   }
 
@@ -818,7 +817,6 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     view_popup_menu(treeview, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
-    gdk_event_free(event);
     return;
   }
 
@@ -832,12 +830,10 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
-    gdk_event_free(event);
     return;
   }
 
   if(path) gtk_tree_path_free(path);
-  gdk_event_free(event);
 }
 
 static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
@@ -3776,9 +3772,8 @@ static void popup_button_callback_cb(GtkGestureSingle *gesture, int n_press,
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   gtk_menu_popup_at_pointer(GTK_MENU(menu), event);
-  gdk_event_free(event);
   return;
 }
 

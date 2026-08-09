@@ -809,7 +809,7 @@ static void _lib_keymap_button_pressed(GtkGestureSingle *gesture, gint n_press, 
 {
   darktable.control->confirm_mapping = !(dt_key_modifier_state() & GDK_CONTROL_MASK);
 
-  _keymap_button_start_time = gtk_get_current_event_time();
+  _keymap_button_start_time = dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture));
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
@@ -822,7 +822,7 @@ static void _lib_keymap_button_released(GtkGestureSingle *gesture, gint n_press,
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if(gtk_get_current_event_time() - _keymap_button_start_time > (guint)delay)
+  if(dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture)) - _keymap_button_start_time > (guint)delay)
   {
     _show_shortcuts_prefs(NULL);
   }

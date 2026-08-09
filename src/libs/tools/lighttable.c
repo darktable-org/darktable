@@ -220,8 +220,8 @@ static void _lib_lighttable_layout_btn_release_cb(GtkGestureSingle *gesture, int
       = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)); // note : this is the state before the change
   dt_lighttable_layout_t new_layout = DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   if(!active)
   {
