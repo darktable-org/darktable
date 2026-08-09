@@ -2857,13 +2857,13 @@ static void _iop_plugin_body_pressed(GtkGestureSingle *gesture,
                                      gdouble y,
                                      dt_iop_module_t *module)
 {
+  /* the body only reacts to a primary click (focus); right-clicks -- on
+   * the body background or bubbled up from a child widget without its own
+   * right-click handling -- must not open the preset menu, that is the
+   * header's job (see #21778) */
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(module);
-  }
-  else if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
-  {
-    _presets_popup_callback(NULL, NULL, module);
   }
 }
 
