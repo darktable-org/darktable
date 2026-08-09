@@ -571,11 +571,15 @@ static void _live_sample_button_cb(GtkGestureSingle *gesture,
 
     if(simulate_event)
     {
-      /* the primary picker button's activation is a CAPTURE-phase gesture
-       * that synthetic button-press-event signals cannot reach; use the
-       * shared click entry instead (left button -> point, right -> area) */
-      dt_color_picker_click(data->picker_button,
-                            data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_POINT);
+      // same entry real clicks and shortcuts use: a plain toggle starts a
+      // point pick, the right-variant an area pick (mimicking the old
+      // synthesized button-1/button-3 press on the picker button)
+      dt_iop_color_picker_toggle
+        (data->picker_button,
+         data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT
+         ? DT_ACTION_EFFECT_TOGGLE
+         : DT_ACTION_EFFECT_TOGGLE_RIGHT,
+         1.0);
     }
 
     if(picker && picker->module)

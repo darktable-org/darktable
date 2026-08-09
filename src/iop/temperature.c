@@ -1801,7 +1801,7 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
       break;
     case DT_IOP_TEMP_SPOT: // from image area wb, expose callback will set p->rgbg2.
       if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->colorpicker)))
-        dt_color_picker_toggle(g->colorpicker);
+        dt_iop_color_picker_toggle(g->colorpicker, DT_ACTION_EFFECT_TOGGLE, 1.0);
       break;
     case DT_IOP_TEMP_USER: // directly changing one of the coeff
                            // sliders also changes the mod_coeff so it
