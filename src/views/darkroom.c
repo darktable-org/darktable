@@ -5073,9 +5073,9 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
   // _scrolled()/gesture_pan path.  dt_gui_scroll_should_pan() restricts this to
   // touchpad-sourced events, so the mouse wheel zooms even where GTK delivers
   // wheel scrolls as smooth events.
-  if(dt_gui_scroll_should_pan((const GdkEventScroll *)current))
+  if(dt_gui_scroll_should_pan(current))
   {
-    const GdkEventScroll *scroll = (const GdkEventScroll *)current;
+    const GdkEvent *scroll = current;
     gdouble pan_dx = 0.0, pan_dy = 0.0;
     if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy))
     {
@@ -5093,12 +5093,12 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
   }
 
   int delta_x, delta_y;
-  if(!dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)current, &delta_x, &delta_y))
+  if(!dt_gui_get_scroll_unit_deltas(current, &delta_x, &delta_y))
   {
     gdk_event_free(current);
     return;
   }
-  const gboolean zoom_in = dt_gui_scroll_zoom_delta((const GdkEventScroll *)current,
+  const gboolean zoom_in = dt_gui_scroll_zoom_delta(current,
                                                     delta_x, delta_y) > 0.0f;
   const gboolean constrained =
     dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
@@ -5111,11 +5111,19 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
   gdk_event_free(current);
 }
 
-static gboolean _second_window_pinch_callback(GtkWidget *widget,
-                                              GdkEvent *event,
-                                              dt_develop_t *dev)
+/* touchpad pinch in the second window via GtkGestureZoom: the old "event"
+ * signal handler (GTK3-only) forwarded raw GDK_TOUCHPAD_PINCH events; the
+ * phase field becomes the begin/scale-changed/end signals ("end" fires on
+ * cancel too).  dx/dy are not used here (macOS delivers the pan as a separate
+ * scroll stream, see _second_window_scrolled_callback). */
+static gboolean _second_window_pinch_active = FALSE;
+
+static gboolean _second_window_pinch_phase(dt_develop_t *dev,
+                                           GtkWidget *widget,
+                                           const GdkTouchpadGesturePhase phase,
+                                           const gdouble scale,
+                                           const GdkEvent *event)
 {
-  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
   if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
@@ -5124,47 +5132,100 @@ static gboolean _second_window_pinch_callback(GtkWidget *widget,
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+  int state = 0;
+  gdouble x_root = 0.0, y_root = 0.0;
+  if(event)
+  {
+    state = dt_gdk_event_get_state(event) & 0xf;
+    // GtkGestureZoom also recognizes touchscreen pinches, never handled before
+    if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
+#if GTK_CHECK_VERSION(4, 0, 0)
+    // GTK4 has no root-coords API: surface-relative position (see gtk.c)
+    gdk_event_get_position(event, &x_root, &y_root);
+#else
+    x_root = dt_gdk_event_get_root_x(event);
+    y_root = dt_gdk_event_get_root_y(event);
+#endif
+  }
   const gboolean constrained =
-    dev->constrain_zoom && !dt_modifier_is(pinch->state, GDK_CONTROL_MASK);
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
 
   // Zoom the second window proportionally to the pinch scale, mirroring the
   // main darkroom view's gesture_pinch().
   static float begin_tscale = 0.0f;
 
-  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
     begin_tscale =
       dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, FALSE) * port->ppd;
     return TRUE;
   }
-  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_END
-     || pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+     || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
   {
     begin_tscale = 0.0f;
     return TRUE;
   }
-  if(pinch->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
-  if(begin_tscale <= 0.0f || pinch->scale <= 0.0) return FALSE;
+  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
+  if(begin_tscale <= 0.0f || scale <= 0.0) return FALSE;
 
   const float ppd = port->ppd;
   const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE);
   const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
-  const float tscale = CLAMP(begin_tscale * pinch->scale, tscalefloor, 16.0f);
+  const float tscale = CLAMP(begin_tscale * scale, tscalefloor, 16.0f);
   const float zoom_scale = tscale / ppd;
 
   // Convert root (screen-absolute) pinch coords to widget-local, which is the
   // coordinate space dt_dev_zoom_move() anchors the zoom to.
   int ox = 0, oy = 0;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // GTK4: event coords are already surface-relative, i.e. widget-local here
+  ox = oy = 0;
+#else
   GdkWindow *win = gtk_widget_get_window(widget);
   if(win) gdk_window_get_origin(win, &ox, &oy);
-  const float x_local = (float)pinch->x_root - ox;
-  const float y_local = (float)pinch->y_root - oy;
+#endif
+  const float x_local = (float)x_root - ox;
+  const float y_local = (float)y_root - oy;
   dt_print(DT_DEBUG_INPUT,
            "[darkroom second window] pinch scale=%.6f tscale=%.6f zoom_scale=%.6f",
-           pinch->scale, tscale, zoom_scale);
+           scale, tscale, zoom_scale);
   dt_dev_zoom_move(port, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
   return TRUE;
+}
+
+static void _second_window_pinch_begin(GtkGestureZoom *gesture,
+                                       gpointer user_data)
+{
+  dt_develop_t *dev = user_data;
+  // touchscreen pinches were never handled before: only touchpad pinches
+  // set the active flag
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
+  _second_window_pinch_active = TRUE;
+  _second_window_pinch_phase(dev, dt_gui_get_widget(gesture),
+                             GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, 1.0, event);
+}
+
+static void _second_window_pinch_scale_changed(GtkGestureZoom *gesture,
+                                               gdouble scale,
+                                               gpointer user_data)
+{
+  if(!_second_window_pinch_active) return;
+  dt_develop_t *dev = user_data;
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  _second_window_pinch_phase(dev, dt_gui_get_widget(gesture),
+                             GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, scale, event);
+}
+
+static void _second_window_pinch_end(GtkGestureZoom *gesture,
+                                     gpointer user_data)
+{
+  if(!_second_window_pinch_active) return;
+  _second_window_pinch_active = FALSE;
+  dt_develop_t *dev = user_data;
+  _second_window_pinch_phase(dev, dt_gui_get_widget(gesture),
+                             GDK_TOUCHPAD_GESTURE_PHASE_END, 1.0, NULL);
 }
 
 static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
@@ -5596,8 +5657,14 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                      G_CALLBACK(_second_window_draw_callback), dev);
     dt_gui_connect_scroll(dev->preview2.widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                           _second_window_scrolled_callback, dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "event",
-                     G_CALLBACK(_second_window_pinch_callback), dev);
+    // touchpad pinch via GtkGestureZoom (the old "event" signal handler is GTK3-only)
+    {
+      GtkGesture *zoom = gtk_gesture_zoom_new(dev->preview2.widget);
+      dt_gui_add_controller(dev->preview2.widget, zoom);
+      g_signal_connect(zoom, "begin", G_CALLBACK(_second_window_pinch_begin), dev);
+      g_signal_connect(zoom, "scale-changed", G_CALLBACK(_second_window_pinch_scale_changed), dev);
+      g_signal_connect(zoom, "end", G_CALLBACK(_second_window_pinch_end), dev);
+    }
     dt_gui_connect_click_all(dev->preview2.widget, _second_window_button_pressed_callback, _second_window_button_released_callback, dev);
     dt_gui_connect_motion(dev->preview2.widget, _second_window_mouse_moved_callback, NULL, _second_window_leave_callback, dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "configure-event",

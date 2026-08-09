@@ -238,13 +238,14 @@ gboolean dt_gui_ignore_scroll_controller(GtkEventControllerScroll *controller);
 /* Return requested scroll delta(s) from event. If delta_x or delta_y
  * is NULL, do not return that delta. Return TRUE if requested deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
- * GDK_SCROLL_SMOOTH style scroll events. */
-gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y);
+ * GDK_SCROLL_SMOOTH style scroll events.  Takes the opaque GdkEvent
+ * (GTK4-compatible); GTK3 callers may pass a GdkEventScroll*. */
+gboolean dt_gui_get_scroll_deltas(const GdkEvent *event, gdouble *delta_x, gdouble *delta_y);
 /* Same as above, except accumulate smooth scrolls deltas of < 1 and
  * only set deltas and return TRUE once scrolls accumulate to >= 1.
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
-gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEvent *event, int *delta_x, int *delta_y);
 
 /* Note that on macOS Shift+vertical scroll can be reported as Shift+horizontal scroll.
  * So if Shift changes scrolling effect, both scrolls should be handled the same.
@@ -253,12 +254,12 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
 /* Return delta of larger magnitude from the event. Return TRUE if any deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
  * GDK_SCROLL_SMOOTH style scroll events. */
-gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
+gboolean dt_gui_get_scroll_delta(const GdkEvent *event, gdouble *delta);
 /* Same as above, except accumulate smooth scrolls deltas of < 1 and
  * only set delta and return TRUE once scrolls accumulate to >= 1.
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
-gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
+gboolean dt_gui_get_scroll_unit_delta(const GdkEvent *event, int *delta);
 
 /* Return TRUE if a scroll event should be treated as a touchpad pan gesture
  * (two-finger swipe) rather than a plain scroll: requires the touchpad-gestures
@@ -267,7 +268,7 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
  * trackpad reports as a mouse; a device that just produced a pinch/swipe
  * gesture also qualifies).  Mouse wheels therefore never pan, even where GTK
  * delivers wheel scrolls as smooth events. */
-gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event);
+gboolean dt_gui_scroll_should_pan(const GdkEvent *event);
 
 /* Return the zoom delta (+/-0.5, positive = zoom in) for a scroll event.
  * Vertical scrolls zoom in on up.  Horizontal scrolls zoom in on LEFT when
@@ -276,7 +277,19 @@ gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event);
  * otherwise (wheel tilt, two-finger swipe).  Discrete events are resolved
  * from the normalized GDK direction; smooth (fractional) scrolls use their
  * dominant delta.  dx/dy are the caller's deltas (raw or accumulated units). */
-float dt_gui_scroll_zoom_delta(const GdkEventScroll *event, gdouble dx, gdouble dy);
+float dt_gui_scroll_zoom_delta(const GdkEvent *event, gdouble dx, gdouble dy);
+
+/* Current event as seen by a controller callback.  GTK4 reads the borrowed
+ * event from the controller (do NOT free); GTK3 returns an owned copy of
+ * gtk_get_current_event() which the caller must gdk_event_free(). */
+static inline GdkEvent *dt_gui_get_current_event(GtkEventController *controller)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gtk_event_controller_get_current_event(controller);
+#else
+  return gtk_get_current_event();
+#endif
+}
 
 /*
  * new ui api

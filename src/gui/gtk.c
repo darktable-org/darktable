@@ -507,7 +507,7 @@ GdkModifierType dt_gui_get_current_event_state(GtkEventController *controller)
 #endif
 }
 
-gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event,
+gboolean dt_gui_get_scroll_deltas(const GdkEvent *event,
                                   gdouble *delta_x,
                                   gdouble *delta_y)
 {
@@ -570,7 +570,7 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event,
   return handled;
 }
 
-gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event,
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEvent *event,
                                        int *delta_x,
                                        int *delta_y)
 {
@@ -620,7 +620,7 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event,
     // is trackpad (or touch) scroll
     case GDK_SCROLL_SMOOTH:
       // stop events reset accumulated delta
-      if(event->is_stop)
+      if(dt_gdk_event_is_scroll_stop(event))
       {
         acc_x = acc_y = 0.0;
         break;
@@ -655,7 +655,7 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event,
   return handled;
 }
 
-gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event,
+gboolean dt_gui_get_scroll_delta(const GdkEvent *event,
                                  gdouble *delta)
 {
   gdouble delta_x, delta_y;
@@ -668,7 +668,7 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event,
   return FALSE;
 }
 
-gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event,
+gboolean dt_gui_get_scroll_unit_delta(const GdkEvent *event,
                                       int *delta)
 {
   int delta_x, delta_y;
@@ -796,68 +796,128 @@ static void _touchpad_gestures_pref_changed(gpointer instance,
   gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
 }
 
-static gboolean _input_event(GtkWidget *widget,
-                             GdkEvent *event,
-                             gpointer user_data)
-{
-  (void)user_data;
+static gboolean _touchpad_pinch_active = FALSE;
 
-  switch(dt_gdk_event_get_type(event))
+/* record the device that produced a touchpad gesture, so a follow-up smooth
+ * scroll stream from a possibly-different device is still panned (see
+ * dt_gui_scroll_should_pan).  Replaces the old _input_event switch. */
+static void _record_touchpad_device(const GdkEvent *event)
+{
+  _touchpad = dt_gdk_event_get_source_device(event);
+  if(_touchpad)
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] gesture event type=%d source='%s' source_type=%d",
+             dt_gdk_event_get_type(event),
+             gdk_device_get_name(_touchpad),
+             gdk_device_get_source(_touchpad));
+  else
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] gesture event type=%d without source device",
+             dt_gdk_event_get_type(event));
+}
+
+/* GtkGestureZoom replaces the old "event" signal handler that forwarded raw
+ * GDK_TOUCHPAD_PINCH events: the phase field becomes the begin /
+ * scale-changed / end signals (and "end" fires on cancel as well, so the
+ * view's END/CANCEL reset still runs).  GtkGestureZoom also recognizes
+ * touchscreen pinches, which were never handled before -- ignore those for
+ * parity.  dx/dy are not part of the zoom API and are pulled from the last
+ * event, as are the focal point (root coords on GTK3) and the state. */
+static void _pinch_event(GtkGesture *gesture,
+                         const GdkTouchpadGesturePhase phase,
+                         const gboolean have_event)
+{
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  gdouble x_root = 0.0, y_root = 0.0, dx = 0.0, dy = 0.0, scale = 1.0;
+  int state = 0;
+
+  if(have_event)
   {
-    case GDK_TOUCHPAD_PINCH:
-    case GDK_TOUCHPAD_SWIPE:
-      _touchpad = gdk_event_get_source_device(event);
-      if(_touchpad)
+    const GdkEvent *event = gtk_gesture_get_last_event(gesture, NULL);
+    if(event)
+    {
+      _record_touchpad_device(event);
+      if(dt_gdk_event_get_type(event) == GDK_TOUCHPAD_PINCH)
       {
-        dt_print(DT_DEBUG_INPUT,
-                 "[touchpad] gesture event type=%d source='%s' source_type=%d",
-                 dt_gdk_event_get_type(event),
-                 gdk_device_get_name(_touchpad),
-                 gdk_device_get_source(_touchpad));
+        dt_gdk_touchpad_pinch_get_deltas(event, &dx, &dy);
+        scale = dt_gdk_touchpad_pinch_get_scale(event);
+        state = dt_gdk_event_get_state(event) & 0xf;
+#if GTK_CHECK_VERSION(4, 0, 0)
+        /* GTK4 has no root-coords API; the event position is surface-relative.
+         * The consumers convert root coords to widget-local via
+         * gdk_window_get_origin(), which is also GTK3-only -- passing the
+         * surface-relative position here keeps the offset error constant per
+         * widget position and needs a real coords decision on the GTK4 port. */
+        gdk_event_get_position(event, &x_root, &y_root);
+#else
+        x_root = dt_gdk_event_get_root_x(event);
+        y_root = dt_gdk_event_get_root_y(event);
+#endif
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT,
-                 "[touchpad] gesture event type=%d without source device",
-                 dt_gdk_event_get_type(event));
+        // touchscreen pinch: never handled before, keep ignoring it
+        return;
       }
-      break;
-    default:
-      break;
+    }
   }
 
-  if(dt_gdk_event_get_type(event) == GDK_TOUCHPAD_PINCH && darktable.gui->touchpad_gestures_enabled)
-  {
-    const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] pinch x=%.2f y=%.2f phase=%d scale=%.6f state=0x%x",
-             pinch->x, pinch->y, pinch->phase, pinch->scale, pinch->state);
-    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x_root, pinch->y_root,
-                                     pinch->dx, pinch->dy, pinch->phase,
-                                     pinch->scale, pinch->state & 0xf))
-    {
-      gtk_widget_queue_draw(widget);
-      return TRUE;
-    }
-
+  dt_print(DT_DEBUG_INPUT,
+           "[touchpad] pinch x=%.2f y=%.2f phase=%d dx=%.3f dy=%.3f scale=%.6f state=0x%x",
+           x_root, y_root, phase, dx, dy, scale, state);
+  if(dt_view_manager_gesture_pinch(darktable.view_manager, x_root, y_root,
+                                   dx, dy, phase, scale, state))
+    gtk_widget_queue_draw(widget);
+  else
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] pinch ignored by current view");
-  }
-  else if(dt_gdk_event_get_type(event) == GDK_TOUCHPAD_PINCH)
-  {
-    dt_print(DT_DEBUG_INPUT,
-             "[touchpad] pinch received but disabled by preference darkroom/ui/touchpad_gestures");
-  }
-
-  return FALSE;
 }
 
-gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event)
+static void _pinch_begin_cb(GtkGestureZoom *gesture, gpointer user_data)
+{
+  if(!darktable.gui->touchpad_gestures_enabled) return;
+  // GtkGestureZoom also recognizes touchscreen pinches, which were never
+  // handled before: only touchpad pinches set the active flag
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
+  _touchpad_pinch_active = TRUE;
+  _pinch_event(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, TRUE);
+}
+
+static void _pinch_scale_changed_cb(GtkGestureZoom *gesture,
+                                    gdouble scale,
+                                    gpointer user_data)
+{
+  if(!darktable.gui->touchpad_gestures_enabled || !_touchpad_pinch_active) return;
+  _pinch_event(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE);
+}
+
+static void _pinch_end_cb(GtkGestureZoom *gesture, gpointer user_data)
+{
+  // also fires after cancel (see gtkgesture.c: the cancel path ends the
+  // sequence), so the view's END/CANCEL handling always runs; the sequence's
+  // last event is already gone here, hence no event data
+  if(!_touchpad_pinch_active) return;
+  _touchpad_pinch_active = FALSE;
+  if(!darktable.gui->touchpad_gestures_enabled) return;
+  _pinch_event(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_END, FALSE);
+}
+
+/* touchpad swipe: only used to record the source device for the follow-up
+ * scroll-stream pan routing (GtkGestureSwipe handles GDK_TOUCHPAD_SWIPE in
+ * both GTK3 3.24 and GTK4) */
+static void _swipe_begin_cb(GtkGestureSwipe *gesture, gpointer user_data)
+{
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(event) _record_touchpad_device(event);
+}
+
+gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
 {
   if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
   if(dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)) return FALSE;
   if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH) return FALSE;
-  if(gdk_event_is_scroll_stop_event((GdkEvent *)event)) return FALSE;
+  if(dt_gdk_event_is_scroll_stop(event)) return FALSE;
 #ifdef GDK_WINDOWING_QUARTZ
   // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
   // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to pan so that
@@ -874,7 +934,7 @@ gboolean dt_gui_scroll_should_pan(const GdkEventScroll *event)
 #endif
 }
 
-float dt_gui_scroll_zoom_delta(const GdkEventScroll *event,
+float dt_gui_scroll_zoom_delta(const GdkEvent *event,
                                const gdouble dx, const gdouble dy)
 {
   // zoom direction convention: up (the backward scroll) zooms in, down zooms
@@ -910,15 +970,21 @@ float dt_gui_scroll_zoom_delta(const GdkEventScroll *event,
   }
 }
 
-static gboolean _scrolled(GtkWidget *widget,
-                          const GdkEventScroll *event,
-                          gpointer user_data)
+static void _scrolled(GtkEventControllerScroll *controller,
+                      gdouble dx,
+                      gdouble dy,
+                      gpointer user_data)
 {
+  (void)dx;
+  (void)dy;
   (void)user_data;
-  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(!event) return;
+  GdkDevice *device = dt_gdk_event_get_source_device(event);
   const gboolean ctrl_pressed = dt_modifier_is(dt_gdk_event_get_state(event), GDK_CONTROL_MASK);
   const gboolean is_smooth = dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH
-                             && !gdk_event_is_scroll_stop_event((GdkEvent *)event);
+                             && !dt_gdk_event_is_scroll_stop(event);
 
   dt_print(DT_DEBUG_INPUT,
            "[scroll] direction=%d smooth=%s stop=%s ctrl=%s"
@@ -926,7 +992,7 @@ static gboolean _scrolled(GtkWidget *widget,
            " device='%s' source-type=%d",
            dt_gdk_event_get_scroll_direction(event),
            dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH ? "yes" : "no",
-           gdk_event_is_scroll_stop_event((GdkEvent *)event) ? "yes" : "no",
+           dt_gdk_event_is_scroll_stop(event) ? "yes" : "no",
            ctrl_pressed ? "yes" : "no",
            dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), dt_gdk_event_get_scroll_delta_x(event), dt_gdk_event_get_scroll_delta_y(event), dt_gdk_event_get_state(event),
            device ? gdk_device_get_name(device) : "<none>",
@@ -940,7 +1006,7 @@ static gboolean _scrolled(GtkWidget *widget,
                "[touchpad] smooth scroll ignored (likely pointer emulated), source='%s' source_type=%d",
                device ? gdk_device_get_name(device) : "<none>",
                device ? gdk_device_get_source(device) : -1);
-      return TRUE;
+      goto out;
     }
 
     delta_x *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
@@ -954,7 +1020,7 @@ static gboolean _scrolled(GtkWidget *widget,
                dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), delta_x, delta_y,
                device ? gdk_device_get_name(device) : "<none>");
       gtk_widget_queue_draw(widget);
-      return TRUE;
+      goto out;
     }
     else if(delta_x != 0.0 || delta_y != 0.0)
     {
@@ -974,22 +1040,27 @@ static gboolean _scrolled(GtkWidget *widget,
              device ? (int)gdk_device_get_source(device) : -1);
   }
 
-  int delta_x, delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
   {
-    const gboolean up = dt_gui_scroll_zoom_delta(event, delta_x, delta_y) > 0.0f;
-    dt_print(DT_DEBUG_INPUT,
-             "[scroll] discrete fallback x=%.2f y=%.2f up=%d state=0x%x source='%s' source_type=%d",
-             dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), up, dt_gdk_event_get_state(event),
-             device ? gdk_device_get_name(device) : "<none>",
-             device ? gdk_device_get_source(device) : -1);
-    dt_view_manager_scrolled(darktable.view_manager, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
-                             up,
-                             dt_gdk_event_get_state(event) & 0xf);
-    gtk_widget_queue_draw(widget);
+    int delta_x, delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
+    {
+      const gboolean up = dt_gui_scroll_zoom_delta(event, delta_x, delta_y) > 0.0f;
+      dt_print(DT_DEBUG_INPUT,
+               "[scroll] discrete fallback x=%.2f y=%.2f up=%d state=0x%x source='%s' source_type=%d",
+               dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), up, dt_gdk_event_get_state(event),
+               device ? gdk_device_get_name(device) : "<none>",
+               device ? gdk_device_get_source(device) : -1);
+      dt_view_manager_scrolled(darktable.view_manager, dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
+                               up,
+                               dt_gdk_event_get_state(event) & 0xf);
+      gtk_widget_queue_draw(widget);
+    }
   }
 
-  return TRUE;
+out:
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_free(event);
+#endif
 }
 
 static gboolean
@@ -1336,63 +1407,86 @@ guint dt_gui_translated_key_state(const GdkEventKey *event)
     return dt_gdk_event_get_state(event) & gtk_accelerator_get_default_mod_mask();
 }
 
-static gboolean _button_pressed(GtkWidget *w,
-                                GdkEventButton *event,
-                                gpointer user_data)
+static void _button_pressed(GtkGestureSingle *gesture,
+                            gint n_press,
+                            gdouble x,
+                            gdouble y,
+                            gpointer user_data)
 {
   double pressure = 1.0;
-  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-
-  if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(gesture));
+  if(event)
   {
-    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+    GdkDevice *device = dt_gdk_event_get_source_device(event);
+    if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+      gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure);
   }
-  dt_control_button_pressed(dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), pressure,
-                            dt_gdk_event_get_button(event), dt_gdk_event_get_type(event), dt_gdk_event_get_state(event) & 0xf);
+  GtkWidget *w = dt_gui_get_widget(gesture);
+  // n_press replaces the old GDK_BUTTON_PRESS/GDK_2BUTTON_PRESS/GDK_3BUTTON_PRESS
+  // event-type distinction that dt_control_button_pressed() stores
+  dt_control_button_pressed(x, y, pressure,
+                            gtk_gesture_single_get_current_button(gesture),
+                            n_press >= 3 ? GDK_3BUTTON_PRESS
+                                         : (n_press == 2 ? GDK_2BUTTON_PRESS : GDK_BUTTON_PRESS),
+                            dt_gui_current_state(gesture) & 0xf);
   gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
-  return FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
-static gboolean _button_released(GtkWidget *w,
-                                 const GdkEventButton *event,
-                                 gpointer user_data)
+static void _button_released(GtkGestureSingle *gesture,
+                             gint n_press,
+                             gdouble x,
+                             gdouble y,
+                             gpointer user_data)
 {
-  dt_control_button_released(dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), dt_gdk_event_get_button(event), dt_gdk_event_get_state(event) & 0xf);
+  // the cancel handler re-emits a synthetic release with no button; the old
+  // handler never saw one (see the Phase 3 note in gtk.h)
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  if(!button) return;
+
+  GtkWidget *w = dt_gui_get_widget(gesture);
+  dt_control_button_released(x, y, button, dt_gui_current_state(gesture) & 0xf);
   gtk_widget_queue_draw(w);
-  return TRUE;
 }
 
-static gboolean _mouse_moved(GtkWidget *w,
-                             GdkEventMotion *event,
-                             dt_gui_gtk_t *gui)
+static void _mouse_moved(GtkEventControllerMotion *controller,
+                         gdouble x,
+                         gdouble y,
+                         dt_gui_gtk_t *gui)
 {
   double pressure = 1.0;
-  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-
-  if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event)
   {
-    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
-    gui->have_pen_pressure = pressure != 1.0;
+    GdkDevice *device = dt_gdk_event_get_source_device(event);
+    if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+    {
+      gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure);
+      gui->have_pen_pressure = pressure != 1.0;
+    }
   }
-  dt_control_mouse_moved(dt_gdk_event_get_x(event), dt_gdk_event_get_y(event), pressure, dt_gdk_event_get_state(event) & 0xf);
-  return FALSE;
+  dt_control_mouse_moved(x, y, pressure,
+                         dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & 0xf);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
-static gboolean _center_leave(GtkWidget *widget,
-                              GdkEventCrossing *event,
-                              gpointer user_data)
+static void _center_leave(GtkEventControllerMotion *controller,
+                          gpointer user_data)
 {
   dt_control_mouse_leave();
-  return TRUE;
 }
 
-static gboolean _center_enter(GtkWidget *widget,
-                              GdkEventCrossing *event,
-                              gpointer user_data)
+static void _center_enter(GtkEventControllerMotion *controller,
+                          gdouble x,
+                          gdouble y,
+                          gpointer user_data)
 {
   dt_control_mouse_enter();
-  return TRUE;
 }
 
 static const char* _get_source_name(const int pos)
@@ -1732,20 +1826,23 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
     g_signal_connect(G_OBJECT(widget), "draw",
                     G_CALLBACK(_draw), NULL);
-    g_signal_connect(G_OBJECT(widget), "event",
-                    G_CALLBACK(_input_event), NULL);
-    g_signal_connect(G_OBJECT(widget), "motion-notify-event",
-                    G_CALLBACK(_mouse_moved), gui);
-    g_signal_connect(G_OBJECT(widget), "leave-notify-event",
-                    G_CALLBACK(_center_leave), NULL);
-    g_signal_connect(G_OBJECT(widget), "enter-notify-event",
-                    G_CALLBACK(_center_enter), NULL);
-    g_signal_connect(G_OBJECT(widget), "button-press-event",
-                    G_CALLBACK(_button_pressed), NULL);
-    g_signal_connect(G_OBJECT(widget), "button-release-event",
-                    G_CALLBACK(_button_released), NULL);
-    g_signal_connect(G_OBJECT(widget), "scroll-event",
-                    G_CALLBACK(_scrolled), NULL);
+
+    // input via controllers (GTK4-compatible; the old motion/button/scroll
+    // event signals and the pinch "event" handler are GTK3-only)
+    dt_gui_connect_motion(widget, _mouse_moved, _center_enter, _center_leave, gui);
+    dt_gui_connect_click(widget, _button_pressed, _button_released, NULL);
+    dt_gui_connect_scroll(widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
+                          _scrolled, NULL);
+
+    GtkGesture *zoom = gtk_gesture_zoom_new(widget);
+    dt_gui_add_controller(widget, zoom);
+    g_signal_connect(zoom, "begin", G_CALLBACK(_pinch_begin_cb), NULL);
+    g_signal_connect(zoom, "scale-changed", G_CALLBACK(_pinch_scale_changed_cb), NULL);
+    g_signal_connect(zoom, "end", G_CALLBACK(_pinch_end_cb), NULL);
+
+    GtkGesture *swipe = gtk_gesture_swipe_new(widget);
+    dt_gui_add_controller(widget, swipe);
+    g_signal_connect(swipe, "begin", G_CALLBACK(_swipe_begin_cb), NULL);
   }
 
   // TODO: left, right, top, bottom:
@@ -2168,7 +2265,7 @@ static void _init_main_table(GtkWidget *container)
   darktable.gui->ui->toast_msg = gtk_label_new("");
   dt_gui_connect_click(eb, _ui_log_button_press_event, NULL, darktable.gui->ui->toast_msg);
   gtk_widget_set_events(eb, darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(eb), "scroll-event", G_CALLBACK(_scrolled), NULL);
+  dt_gui_connect_scroll(eb, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES, _scrolled, NULL);
   gtk_label_set_ellipsize(GTK_LABEL(darktable.gui->ui->toast_msg), PANGO_ELLIPSIZE_MIDDLE);
 
   PangoAttrList *attrlist = pango_attr_list_new();
@@ -4316,7 +4413,7 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw,
 {
   // no move needed
   int delta_y = 0;
-  dt_gui_get_scroll_unit_delta(event, &delta_y);
+  dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta_y);
 
   if(delta_y == 0 )
     return FALSE;
@@ -4363,7 +4460,7 @@ static gboolean _scroll_wrap_height(GtkWidget *w,
   if(dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     int delta_y;
-    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+    if(dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta_y))
     {
       //adjust height
       const int height = dt_conf_get_int(config_str) + delta_y;
