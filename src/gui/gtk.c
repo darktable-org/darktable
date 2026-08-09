@@ -4883,6 +4883,16 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   return (GtkGestureSingle *)gesture;
 }
 
+GtkGestureSingle *(dt_gui_connect_click_secondary)(GtkWidget *widget,
+                                                   GCallback pressed,
+                                                   GCallback released,
+                                                   gpointer data)
+{
+  GtkGestureSingle *gesture = dt_gui_connect_click(widget, pressed, released, data);
+  gtk_gesture_single_set_button(gesture, GDK_BUTTON_SECONDARY);
+  return gesture;
+}
+
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
                                   GCallback drag_end,

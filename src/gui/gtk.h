@@ -609,6 +609,18 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
   dt_gui_connect_click(widget, pressed, released, data)
 
+GtkGestureSingle *(dt_gui_connect_click_secondary)(GtkWidget *widget,
+                                                   GCallback pressed,
+                                                   GCallback released,
+                                                   gpointer data);
+/* dt_gui_connect_click() restricted to the right button: the gesture's button
+ * filter does the exclusivity, so the handler needs no button check.  This is
+ * the right-click-popup idiom, previously written by hand at every call site. */
+#define dt_gui_connect_click_secondary(widget, pressed, released, data) ( \
+  ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(released, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  dt_gui_connect_click_secondary(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
+
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
                                   GCallback drag_end,
