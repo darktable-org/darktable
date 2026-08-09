@@ -1219,19 +1219,18 @@ static void _apply_style_activate_callback(GtkMenuItem *menuitem,
   gdk_event_free(event);
 }
 
-static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
-                                             GdkEventButton *event,
-                                             const dt_stylemenu_data_t *menu_data)
+static void _apply_style_button_callback(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         const dt_stylemenu_data_t *menu_data)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     _update_style(menu_data);
-  }
   else
   {
     //??? dt_shortcut_copy_lua(NULL, name);
   }
-  return FALSE;
 }
 
 static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)

@@ -4900,6 +4900,13 @@ GtkGestureSingle *(dt_gui_connect_click_secondary)(GtkWidget *widget,
   return gesture;
 }
 
+void dt_gui_gesture_claim(GtkGesture *gesture,
+                          GdkEventSequence *sequence,
+                          gpointer user_data)
+{
+  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
                                   GCallback drag_end,
