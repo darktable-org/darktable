@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2012-2025 darktable developers.
+  Copyright (C) 2012-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
   You should have received a copy of the GNU General Public License
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -32,13 +33,12 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <gtk/gtk.h>
-#include <inttypes.h>
 
 #define UNBOUND_L 1
 #define UNBOUND_A 2

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -38,7 +39,6 @@
 #include "iop/iop_api.h"
 
 #include <regex.h>
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
