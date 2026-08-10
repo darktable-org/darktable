@@ -125,17 +125,20 @@ _preprocess_image(const uint8_t *rgb_data,
   if(!output)
     return NULL;
 
-  // bilinear resize + normalize + HWC->CHW in one pass
+  // bilinear resize + normalize + HWC->CHW in one pass, sampling on the
+  // pixel-centre convention like _crop_resize_mask. y / scale would shift the
+  // image by 0.5/scale - 0.5 source px (2.4 px at 6000 -> 1024), which the
+  // encoder bakes into the mask. the clamp keeps (int) a floor and fy >= 0
   for(int y = 0; y < new_h; y++)
   {
-    const float src_y = (float)y / scale;
+    const float src_y = MAX(((float)y + 0.5f) / scale - 0.5f, 0.0f);
     const int y0 = (int)src_y;
     const int y1 = (y0 + 1 < height) ? y0 + 1 : y0;
     const float fy = src_y - y0;
 
     for(int x = 0; x < new_w; x++)
     {
-      const float src_x = (float)x / scale;
+      const float src_x = MAX(((float)x + 0.5f) / scale - 0.5f, 0.0f);
       const int x0 = (int)src_x;
       const int x1 = (x0 + 1 < width) ? x0 + 1 : x0;
       const float fx = src_x - x0;
@@ -1180,9 +1183,12 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
 
 /* --- disk cache for encoder embeddings --- */
 
-// file format: magic + version + metadata + encoder outputs + RGB
+// file format: magic + version + metadata + encoder outputs + RGB.
+// bump the version when anything upstream of the encoder changes: the key
+// (imgid, distort hash, model) would not notice, and stale embeddings would
+// be reused forever. v2 = _preprocess_image moved to pixel-centre sampling
 #define SEG_CACHE_MAGIC 0x44545347  // "DTSG"
-#define SEG_CACHE_VERSION 1
+#define SEG_CACHE_VERSION 2
 #define SEG_CACHE_SUBDIR "objmasks"
 
 // build the per-database cache directory path.
