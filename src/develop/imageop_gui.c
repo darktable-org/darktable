@@ -27,7 +27,6 @@
 #include "osx/osx.h"
 #endif
 
-#include <assert.h>
 #include <gmodule.h>
 #include <math.h>
 #include <stdlib.h>
@@ -344,4 +343,3 @@ GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

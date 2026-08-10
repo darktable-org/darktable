@@ -35,7 +35,6 @@ Current status as implemented by Jandren:
 
 #include "common/extra_optimizations.h"
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>

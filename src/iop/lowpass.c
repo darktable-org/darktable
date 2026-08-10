@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2011-2023 darktable developers.
+  Copyright (C) 2011-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -34,12 +34,12 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <gtk/gtk.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 

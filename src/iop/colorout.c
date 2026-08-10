@@ -33,7 +33,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 #include <stdlib.h>
