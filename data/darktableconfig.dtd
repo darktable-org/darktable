@@ -20,6 +20,7 @@
         restart (true|false) #IMPLIED
         common (yes|no) #IMPLIED
         capability CDATA #IMPLIED
+        unavailable_text CDATA #IMPLIED
 >
 <!ELEMENT name (#PCDATA)>
 <!ELEMENT type (#PCDATA|enum)*>

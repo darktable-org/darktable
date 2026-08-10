@@ -163,13 +163,16 @@ static GtkWidget *setup_pref(GtkWidget **label,
 }
 
 static void setup_not_available(GtkWidget **widget,
-                                GtkWidget *labelev)
+                                GtkWidget *labelev,
+                                const char *tooltip)
 {
+  // an empty tooltip falls back to the generic reason
+  const char *reason = (tooltip && *tooltip) ? tooltip : _("not available on this system");
   gtk_widget_destroy(*widget);
   *widget = gtk_label_new(_("not available"));
   gtk_widget_set_halign(*widget, GTK_ALIGN_START);
-  gtk_widget_set_tooltip_text(labelev, _("not available on this system"));
-  gtk_widget_set_tooltip_text(*widget, _("not available on this system"));
+  gtk_widget_set_tooltip_text(labelev, reason);
+  gtk_widget_set_tooltip_text(*widget, reason);
   gtk_widget_set_sensitive(labelev, FALSE);
   gtk_widget_set_sensitive(*widget, FALSE);
 }
@@ -449,8 +452,22 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     <xsl:if test="@capability">
       <xsl:text>
     if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))
-    {
-      setup_not_available(&amp;widget, labelev);
+    {</xsl:text>
+      <xsl:choose>
+        <xsl:when test="@unavailable_text != ''">
+          <xsl:if test="contains(@unavailable_text,'%')">
+            <xsl:text>
+      /* xgettext:no-c-format */</xsl:text>
+          </xsl:if>
+          <xsl:text>
+      setup_not_available(&amp;widget, labelev, _("</xsl:text><xsl:value-of select="@unavailable_text"/><xsl:text>"));</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>
+      setup_not_available(&amp;widget, labelev, NULL);</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>
     }</xsl:text>
     </xsl:if>
     <xsl:text>
