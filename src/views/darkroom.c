@@ -3596,8 +3596,7 @@ void enter(dt_view_t *self)
 
 static inline void _clear_pipecache(dt_dev_pixelpipe_t *pipe)
 {
-  // As log as we don't have a better trim ...
-  dt_dev_pixelpipe_cache_checkmem(pipe);
+  dt_dev_pixelpipe_cache_checkmem(pipe, TRUE);
 
   if(pipe->bcache_data)
   {
