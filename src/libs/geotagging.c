@@ -1890,13 +1890,13 @@ void gui_init(dt_lib_module_t *self)
   label = dt_ui_section_label_new(C_("section", "GPX file"));
   gtk_grid_attach(grid, label, 0, line++, 4, 1);
 
-  d->map.gpx_button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  d->map.gpx_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+                                            _("select a GPX track file..."), NULL, NULL, NULL, NULL,
+                                            G_CALLBACK(_choose_gpx_callback), self);
   gtk_widget_set_hexpand(d->map.gpx_button, FALSE);
   gtk_widget_set_halign(d->map.gpx_button, GTK_ALIGN_START);
   gtk_widget_set_name(d->map.gpx_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->map.gpx_button, _("select a GPX track file..."));
   gtk_grid_attach(grid, d->map.gpx_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->map.gpx_button), "clicked", G_CALLBACK(_choose_gpx_callback), self);
 
   d->map.gpx_file = dt_ui_label_new("");
   gtk_label_set_ellipsize(GTK_LABEL(d->map.gpx_file ), PANGO_ELLIPSIZE_MIDDLE);

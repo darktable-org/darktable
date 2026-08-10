@@ -510,9 +510,9 @@ static GtkWidget *_insert_button(dt_workspace_t *session,
 
   if(with_del)
   {
-    del = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-    g_signal_connect(G_OBJECT(del), "clicked",
-                     G_CALLBACK(_workspace_delete_db), session);
+    del = dtgtk_button_new_full(dtgtk_cairo_paint_remove, 0, NULL, NULL,
+                                NULL, NULL, NULL, NULL,
+                                G_CALLBACK(_workspace_delete_db), session);
     g_object_set_data(G_OBJECT(del), "db", b);
     gtk_grid_attach(GTK_GRID(session->grid), del, 2, row, 1, 1);
 

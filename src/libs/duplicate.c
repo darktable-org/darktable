@@ -359,29 +359,27 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     // duplicate this image with its history stack; only useful once the image
     // has actually been developed - otherwise it is equivalent to "original"
     const gboolean altered = dt_image_altered(imgid);
-    GtkWidget *bt_dup = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
+    GtkWidget *bt_dup = dtgtk_button_new_full(dtgtk_cairo_paint_multiinstance, 0, NULL,
+                                              _("create a duplicate of this image with same history stack"),
+                                              NULL, NULL, NULL, NULL,
+                                              G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
     dt_gui_add_class(bt_dup, "dt_duplicate_duplicate");
-    gtk_widget_set_tooltip_text(bt_dup,
-                                _("create a duplicate of this image with same history stack"));
     g_object_set_data(G_OBJECT(bt_dup), "imgid", GINT_TO_POINTER(imgid));
-    g_signal_connect(
-      G_OBJECT(bt_dup), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
 
     // create a 'virgin' duplicate of this image, discarding the source history stack
-    GtkWidget *bt_orig = dtgtk_button_new(dtgtk_cairo_paint_plus, 0, NULL);
+    GtkWidget *bt_orig = dtgtk_button_new_full(dtgtk_cairo_paint_plus, 0, NULL,
+                                               _("create a 'virgin' duplicate, discarding the source history stack"),
+                                               NULL, NULL, NULL, NULL,
+                                               G_CALLBACK(_lib_duplicate_original_clicked_callback), self);
     dt_gui_add_class(bt_orig, "dt_duplicate_original");
-    gtk_widget_set_tooltip_text(
-      bt_orig, _("create a 'virgin' duplicate, discarding the source history stack"));
     g_object_set_data(G_OBJECT(bt_orig), "imgid", GINT_TO_POINTER(imgid));
-    g_signal_connect(
-      G_OBJECT(bt_orig), "clicked", G_CALLBACK(_lib_duplicate_original_clicked_callback), self);
 
-    bt = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    bt = dtgtk_button_new_full(dtgtk_cairo_paint_remove, 0, NULL,
+                               _("delete this duplicate"), NULL, NULL, NULL, NULL,
+                               G_CALLBACK(_lib_duplicate_delete), self);
     dt_gui_add_class(bt, "dt_duplicate_delete");
-    gtk_widget_set_tooltip_text(bt, _("delete this duplicate"));
     //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
-    g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
     gtk_grid_attach(GTK_GRID(hb), thumb->w_main, 0, 0, 1, 2);
     gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);

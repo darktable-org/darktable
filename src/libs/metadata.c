@@ -945,13 +945,13 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(plus, _("add metadata tags"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
+                                          _("add metadata tags"), NULL, NULL, NULL, NULL,
+                                          G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
 
-  GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
+                                           _("delete metadata tag"), NULL, NULL, NULL, NULL,
+                                           G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
   d->delete_button = minus;
 
 #ifdef GDK_WINDOWING_QUARTZ

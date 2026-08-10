@@ -21,6 +21,10 @@
 #include "paint.h"
 #include <gtk/gtk.h>
 
+/* forward declarations, see gui/accelerators.h for the real definitions */
+struct dt_action_t;
+typedef struct dt_action_def_t dt_action_def_t;
+
 G_BEGIN_DECLS
 
 #define DTKGTK_TYPE_BUTTON dtgtk_button_get_type()
@@ -43,6 +47,24 @@ struct _GtkDarktableButton
 
 /** instantiate a new darktable button control passing paint function as content */
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
+
+/** instantiate a new darktable button and wire the common extras: a tooltip,
+ * an action definition and a primary-click callback.  Pass NULL for any part
+ * that is not wanted.  This is the convenience constructor for the plain
+ * button idiom (dtgtk_button_new + tooltip + dt_action_define + "clicked");
+ * when a press/release gesture or a secondary click is needed, call
+ * dt_gui_connect_click()/dt_gui_connect_click_secondary() on the result
+ * instead of passing a clicked callback. */
+GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,
+                                 gint paintflags,
+                                 void *paintdata,
+                                 const gchar *tooltip,
+                                 struct dt_action_t *action,
+                                 const gchar *action_section,
+                                 const gchar *action_label,
+                                 const dt_action_def_t *action_def,
+                                 GCallback clicked_cb,
+                                 gpointer clicked_data);
 /** set the paint function for a button */
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 /** clear the stale hover/pressed state GTK3 leaves on buttons after a grab

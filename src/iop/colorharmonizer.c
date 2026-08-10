@@ -1412,11 +1412,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_hexpand(g->rule, TRUE);
   self->widget = main_box;
 
-  g->auto_detect = dtgtk_button_new(dtgtk_cairo_paint_camera, CPF_NONE, NULL);
+  g->auto_detect = dtgtk_button_new_full(dtgtk_cairo_paint_camera, CPF_NONE, NULL,
+                                         _("not yet available — wait for the preview to finish processing."),
+                                         NULL, NULL, NULL, NULL,
+                                         G_CALLBACK(_auto_detect_callback), self);
   gtk_widget_set_sensitive(g->auto_detect, FALSE);
-  gtk_widget_set_tooltip_text(g->auto_detect,
-    _("not yet available — wait for the preview to finish processing."));
-  g_signal_connect(G_OBJECT(g->auto_detect), "clicked", G_CALLBACK(_auto_detect_callback), self);
   dt_gui_box_add(rule_row, g->auto_detect);
 
   gtk_widget_set_tooltip_text(g->rule,
@@ -1528,12 +1528,11 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->sync_to_vectorscope), "value-changed",
                    G_CALLBACK(_sync_to_vectorscope_toggled), self);
 
-  g->set_from_vectorscope = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
-  gtk_widget_set_tooltip_text(g->set_from_vectorscope,
-    _("import the harmony rule and anchor hue currently displayed in the vectorscope.\n"
-      "also switches the histogram panel to the vectorscope view if it is not already active."));
-  g_signal_connect(G_OBJECT(g->set_from_vectorscope), "clicked",
-                   G_CALLBACK(_set_from_vectorscope_callback), self);
+  g->set_from_vectorscope = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
+                                                  _("import the harmony rule and anchor hue currently displayed in the vectorscope.\n"
+                                                    "also switches the histogram panel to the vectorscope view if it is not already active."),
+                                                  NULL, NULL, NULL, NULL,
+                                                  G_CALLBACK(_set_from_vectorscope_callback), self);
 
   gtk_widget_set_hexpand(g->sync_to_vectorscope, TRUE);
   dt_gui_box_add(sync_row, g->sync_to_vectorscope);

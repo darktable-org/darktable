@@ -339,19 +339,21 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
-    colors->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
+    colors->colors[k] = dtgtk_button_new_full(dtgtk_cairo_paint_label_sel, k, NULL,
+                                              _("filter by images color label"
+                                                "\nclick to toggle the color label selection"
+                                                "\nctrl+click to exclude the color label"
+                                                "\nthe gray button affects all color labels"),
+                                              DT_ACTION(self), N_("rules"), N_("color label"),
+                                              &dt_action_def_colors_rule,
+                                              NULL, NULL);
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_index", GINT_TO_POINTER(k));
     dt_gui_add_class(colors->colors[k], "dt_no_hover");
     dt_gui_add_class(colors->colors[k], "dt_dimmed");
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_self", colors);
     gtk_box_pack_start(GTK_BOX(hbox), colors->colors[k], FALSE, FALSE, 0);
-    gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"
-                                                     "\nclick to toggle the color label selection"
-                                                     "\nctrl+click to exclude the color label"
-                                                     "\nthe gray button affects all color labels"));
     dt_gui_connect_click(colors->colors[k], _colors_clicked_gesture, NULL, colors);
     dt_gui_connect_motion(colors->colors[k], NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(k));
-    dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
   colors->operator= dtgtk_button_new(dtgtk_cairo_paint_intersection, 0, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);

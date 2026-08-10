@@ -545,27 +545,21 @@ void gui_init(dt_lib_module_t *self)
      GDK_KEY_d, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
 
-  d->rotate_ccw_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);;
+  d->rotate_ccw_button = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
+                                               _("rotate selected images 90 degrees CCW"),
+                                               DT_ACTION(self), NULL, N_("rotate selected images 90 degrees CCW"),
+                                               &dt_action_def_button,
+                                               G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
   gtk_widget_set_name(d->rotate_ccw_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->rotate_ccw_button,
-                              _("rotate selected images 90 degrees CCW"));
   gtk_grid_attach(grid, d->rotate_ccw_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->rotate_ccw_button), "clicked",
-                   G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
-  dt_action_define(DT_ACTION(self), NULL,
-                   N_("rotate selected images 90 degrees CCW"),
-                   d->rotate_ccw_button, &dt_action_def_button);
 
-  d->rotate_cw_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_NONE, NULL);
+  d->rotate_cw_button = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, 1 | CPF_NONE, NULL,
+                                              _("rotate selected images 90 degrees CW"),
+                                              DT_ACTION(self), NULL, N_("rotate selected images 90 degrees CW"),
+                                              &dt_action_def_button,
+                                              G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
   gtk_widget_set_name(d->rotate_cw_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->rotate_cw_button,
-                              _("rotate selected images 90 degrees CW"));
   gtk_grid_attach(grid, d->rotate_cw_button, 1, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->rotate_cw_button), "clicked",
-                   G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
-  dt_action_define(DT_ACTION(self), NULL,
-                   N_("rotate selected images 90 degrees CW"),
-                   d->rotate_cw_button, &dt_action_def_button);
 
   d->reset_button = dt_action_button_new(self, N_("reset rotation"),
                                          button_clicked, GINT_TO_POINTER(6),
