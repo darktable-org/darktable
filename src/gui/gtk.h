@@ -692,6 +692,39 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(drag_update, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
   dt_gui_connect_drag(GTK_WIDGET(widget), G_CALLBACK(drag_begin), G_CALLBACK(drag_end), G_CALLBACK(drag_update), (data)))
 
+/* touchpad pinch via GtkGestureZoom: the old GTK3-only "event" signal
+ * handler forwarded raw GDK_TOUCHPAD_PINCH events; the phase field becomes
+ * the begin / scale-changed / end signals (and "end" fires on cancel as
+ * well, so the consumer's END/CANCEL reset still runs).  GtkGestureZoom also
+ * recognizes touchscreen pinches, which were never handled before -- ignored
+ * here for parity, only touchpad pinches reach the handler.  dx/dy, scale,
+ * state and the focal point are pulled from the gesture's last event (root
+ * coords on GTK3, surface-relative on GTK4 -- see dt_gui_get_event_coords);
+ * on END the event is already gone, so the handler gets NULL and the deltas
+ * default to zero.  The touchpad_gestures_enabled pref and the per-gesture
+ * active tracking live inside the helper; handlers only forward the parsed
+ * event (e.g. to dt_view_manager_gesture_pinch). */
+typedef struct dt_gui_pinch_event_t
+{
+  const GdkEvent *event;          /* borrowed, NULL on END (also on cancel) */
+  GdkTouchpadGesturePhase phase;  /* BEGIN / UPDATE / END */
+  gdouble x, y;                   /* focal point */
+  gdouble dx, dy;                 /* pan deltas */
+  gdouble scale;                  /* pinch scale */
+  guint state;                    /* modifier state (low 4 bits) */
+} dt_gui_pinch_event_t;
+
+typedef void (*dt_gui_pinch_handler_t)(GtkGesture *gesture,
+                                       const dt_gui_pinch_event_t *event,
+                                       gpointer user_data);
+
+GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
+                                   dt_gui_pinch_handler_t handler,
+                                   gpointer data);
+#define dt_gui_connect_pinch(widget, handler, data) ( \
+  ASSERT_FUNC_TYPE(handler, void(*)(GtkGesture *, const dt_gui_pinch_event_t *, __typeof__(data))), \
+  dt_gui_connect_pinch(GTK_WIDGET(widget), (handler), (data)))
+
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,
                                             GCallback enter,

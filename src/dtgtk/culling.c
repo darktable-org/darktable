@@ -629,84 +629,30 @@ static void _update_selected_thumbnail(dt_culling_t *table,
   }
 }
 
-/* touchpad pinch via GtkGestureZoom: the old "event" signal handler (GTK3-only)
- * forwarded raw GDK_TOUCHPAD_PINCH events; the phase field becomes the begin /
- * scale-changed / end signals ("end" fires on cancel too).  dx/dy are pulled
- * from the last event, as are the root focal point and the state. */
-static gboolean _culling_pinch_active = FALSE;
-
+/* touchpad pinch via dt_gui_connect_pinch: the old "event" signal handler
+ * (GTK3-only) forwarded raw GDK_TOUCHPAD_PINCH events; the phase field
+ * becomes the begin / scale-changed / end signals ("end" fires on cancel
+ * too, so the view's END/CANCEL reset still runs). */
 static void _event_pinch(GtkGesture *gesture,
-                         const GdkTouchpadGesturePhase phase,
-                         const gboolean have_event)
+                         const dt_gui_pinch_event_t *e,
+                         gpointer user_data)
 {
+  (void)user_data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
-  gdouble x_root = 0.0, y_root = 0.0, dx = 0.0, dy = 0.0, scale = 1.0;
-  int state = 0;
-
-  if(have_event)
-  {
-    const GdkEvent *event = gtk_gesture_get_last_event(gesture, NULL);
-    if(event)
-    {
-      if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH)
-      {
-        // touchscreen pinches were never handled before: keep ignoring them
-        return;
-      }
-      dt_gdk_touchpad_pinch_get_deltas(event, &dx, &dy);
-      scale = dt_gdk_touchpad_pinch_get_scale(event);
-      state = dt_gdk_event_get_state(event) & 0xf;
-#if GTK_CHECK_VERSION(4, 0, 0)
-      // GTK4 has no root-coords API: surface-relative position (see gtk.c)
-      gdk_event_get_position(event, &x_root, &y_root);
-#else
-      x_root = dt_gdk_event_get_root_x(event);
-      y_root = dt_gdk_event_get_root_y(event);
-#endif
-    }
-  }
 
   dt_print(DT_DEBUG_INPUT,
            "[culling gesture] pinch phase=%d x=%.1f y=%.1f dx=%.3f dy=%.3f scale=%.6f state=0x%x",
-           phase, x_root, y_root, dx, dy, scale, state);
+           e->phase, e->x, e->y, e->dx, e->dy, e->scale, e->state);
   // Forward root (screen-absolute) coordinates -- same convention as _event_scroll
   // passing e->x_root, e->y_root.  Using pinch->x_root avoids a manual conversion
   // via gdk_window_get_origin that was producing the wrong focal point.
   if(dt_view_manager_gesture_pinch(darktable.view_manager,
-                                   x_root, y_root,
-                                   dx, dy,
-                                   phase,
-                                   scale,
-                                   state))
+                                   e->x, e->y,
+                                   e->dx, e->dy,
+                                   e->phase,
+                                   e->scale,
+                                   e->state))
     gtk_widget_queue_draw(widget);
-}
-
-static void _event_pinch_begin(GtkGestureZoom *gesture, gpointer user_data)
-{
-  if(!darktable.gui->touchpad_gestures_enabled) return;
-  // touchscreen pinches were never handled before: only touchpad pinches
-  // set the active flag
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
-  _culling_pinch_active = TRUE;
-  _event_pinch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, TRUE);
-}
-
-static void _event_pinch_scale_changed(GtkGestureZoom *gesture,
-                                       gdouble scale,
-                                       gpointer user_data)
-{
-  if(!darktable.gui->touchpad_gestures_enabled || !_culling_pinch_active) return;
-  _event_pinch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE);
-}
-
-static void _event_pinch_end(GtkGestureZoom *gesture, gpointer user_data)
-{
-  // also fires after cancel, so the view's END/CANCEL handling always runs
-  if(!_culling_pinch_active) return;
-  _culling_pinch_active = FALSE;
-  if(!darktable.gui->touchpad_gestures_enabled) return;
-  _event_pinch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_END, FALSE);
 }
 
 // zoom direction for a scroll: see dt_gui_scroll_zoom_delta() in gtk.c for
@@ -1374,16 +1320,10 @@ dt_culling_t *dt_culling_new(const dt_culling_mode_t mode)
   dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);
 
-  // touchpad pinch via GtkGestureZoom (the old "event" signal handler is
-  // GTK3-only); the culling widget also keeps its own draw/scroll/motion/click
+  // touchpad pinch via dt_gui_connect_pinch (the old "event" signal handler
+  // is GTK3-only); the culling widget also keeps its own draw/scroll/motion/click
   // controllers below
-  {
-    GtkGesture *zoom = gtk_gesture_zoom_new(table->widget);
-    dt_gui_add_controller(table->widget, zoom);
-    g_signal_connect(zoom, "begin", G_CALLBACK(_event_pinch_begin), table);
-    g_signal_connect(zoom, "scale-changed", G_CALLBACK(_event_pinch_scale_changed), table);
-    g_signal_connect(zoom, "end", G_CALLBACK(_event_pinch_end), table);
-  }
+  dt_gui_connect_pinch(table->widget, _event_pinch, table);
 
   dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _event_scroll, table);
