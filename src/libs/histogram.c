@@ -490,11 +490,8 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
       // bubble to adjusting the overall widget size
-#if !GTK_CHECK_VERSION(4, 0, 0)
-      gtk_widget_event(s->scope_draw, event);
-#endif
-      // GTK4 TODO: no gtk_widget_event() -- the scopes drawable must
-      // handle widget-size adjustment via its own scroll controller.
+      dt_gui_forward_scroll(self, s->scope_draw);
+      return; // dt_gui_forward_scroll() already freed the event
     }
     else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
     {
