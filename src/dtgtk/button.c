@@ -168,7 +168,10 @@ GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,
 {
   GtkWidget *button = dtgtk_button_new(paint, paintflags, paintdata);
   if(!config) return button;
-  if(config->tooltip) gtk_widget_set_tooltip_text(button, config->tooltip);
+  if(config->tooltip)
+    gtk_widget_set_tooltip_text(button, config->tooltip);
+  else if(config->tooltip_markup)
+    gtk_widget_set_tooltip_markup(button, config->tooltip_markup);
   if(config->action)
     dt_action_define(config->action, config->action_section,
                      config->action_label, button, config->action_def);
