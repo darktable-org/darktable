@@ -148,10 +148,13 @@ void gui_init(dt_lib_module_t *self)
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, CPF_NONE, NULL,
-                                           _("create a style from the current history stack"),
-                                           DT_ACTION(self), NULL, N_("create style from history"),
-                                           &dt_action_def_button,
-                                           G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("create a style from the current history stack"),
+        .action = DT_ACTION(self),
+        .action_label = N_("create style from history"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_lib_history_create_style_button_clicked_callback),
+      });
   gtk_widget_set_name(d->create_button, "non-flat");
 
   self->widget = dt_gui_vbox
@@ -203,22 +206,28 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   gtk_label_set_markup (GTK_LABEL (lab), label);
   if(always_on)
   {
-    onoff = dtgtk_button_new_full(dtgtk_cairo_paint_switch_on, 0, NULL, _("always-on module"),
-                                  NULL, NULL, NULL, NULL, NULL, NULL);
+    onoff = dtgtk_button_new_full(dtgtk_cairo_paint_switch_on, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("always-on module"),
+      });
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
   }
   else if(default_enabled)
   {
-    onoff = dtgtk_button_new_full(dtgtk_cairo_paint_switch, 0, NULL, _("default enabled module"),
-                                  NULL, NULL, NULL, NULL, NULL, NULL);
+    onoff = dtgtk_button_new_full(dtgtk_cairo_paint_switch, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("default enabled module"),
+      });
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
   }
   else
   {
     if(deprecated)
     {
-      onoff = dtgtk_button_new_full(dtgtk_cairo_paint_switch_deprecated, 0, NULL, _("deprecated module"),
-                                    NULL, NULL, NULL, NULL, NULL, NULL);
+      onoff = dtgtk_button_new_full(dtgtk_cairo_paint_switch_deprecated, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("deprecated module"),
+        });
     }
     else
     {

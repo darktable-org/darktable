@@ -49,22 +49,37 @@ struct _GtkDarktableButton
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 
 /** instantiate a new darktable button and wire the common extras: a tooltip,
- * an action definition and a primary-click callback.  Pass NULL for any part
- * that is not wanted.  This is the convenience constructor for the plain
- * button idiom (dtgtk_button_new + tooltip + dt_action_define + "clicked");
- * when a press/release gesture or a secondary click is needed, call
- * dt_gui_connect_click()/dt_gui_connect_click_secondary() on the result
- * instead of passing a clicked callback. */
+ * an action definition and a primary-click callback.  paint/paintflags/
+ * paintdata are mandatory; the wiring is optional and passed as a config
+ * struct so callers can name the fields they use (designated initializers,
+ * everything left out stays off).  This is the convenience constructor for
+ * the plain button idiom (dtgtk_button_new + tooltip + dt_action_define +
+ * "clicked"); when a press/release gesture or a secondary click is needed,
+ * call dt_gui_connect_click()/dt_gui_connect_click_secondary() on the
+ * result instead of passing a clicked callback. */
+typedef struct dtgtk_button_config_t
+{
+  /** tooltip text, NULL for none */
+  const gchar *tooltip;
+  /** action owner for dt_action_define(), NULL for none; pass DT_ACTION(x)
+   * or &module->actions -- iop modules dispatch to dt_action_define_iop() */
+  struct dt_action_t *action;
+  /** action section (submenu), usually NULL */
+  const gchar *action_section;
+  /** action label, NULL defines an anonymous action */
+  const gchar *action_label;
+  /** action definition, e.g. &dt_action_def_button */
+  const dt_action_def_t *action_def;
+  /** "clicked" callback, NULL for none */
+  GCallback clicked_cb;
+  /** user data passed to clicked_cb */
+  gpointer clicked_data;
+} dtgtk_button_config_t;
+
 GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,
                                  gint paintflags,
                                  void *paintdata,
-                                 const gchar *tooltip,
-                                 struct dt_action_t *action,
-                                 const gchar *action_section,
-                                 const gchar *action_label,
-                                 const dt_action_def_t *action_def,
-                                 GCallback clicked_cb,
-                                 gpointer clicked_data);
+                                 const dtgtk_button_config_t *config);
 /** set the paint function for a button */
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 /** clear the stale hover/pressed state GTK3 leaves on buttons after a grab

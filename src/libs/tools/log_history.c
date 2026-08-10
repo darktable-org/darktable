@@ -168,7 +168,9 @@ void gui_init(dt_lib_module_t *self)
   self->data = d;
 
   d->button = dtgtk_button_new_full(dtgtk_cairo_paint_messages, CPF_NONE, NULL,
-                                    _("view log history"), NULL, NULL, NULL, NULL, NULL, NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("view log history"),
+      });
   dt_gui_add_help_link(d->button, "message_log");
 
   // overlay container to host button and status badge

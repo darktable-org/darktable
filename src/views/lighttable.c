@@ -1481,7 +1481,9 @@ void gui_init(dt_view_t *self)
 
   // create display profile button
   GtkWidget *const profile_button = dtgtk_button_new_full(dtgtk_cairo_paint_display, 0, NULL,
-                                                          _("set display profile"), NULL, NULL, NULL, NULL, NULL, NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("set display profile"),
+      });
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      profile_button, DT_VIEW_LIGHTTABLE);
 

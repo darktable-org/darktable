@@ -1440,21 +1440,27 @@ static void _set_places_list(GtkWidget *places_paned,
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
 
   GtkWidget *places_reset = dtgtk_button_new_full(dtgtk_cairo_paint_reset, 0, NULL,
-                                                  _("restore all default places you have removed"),
-                                                  NULL, NULL, NULL, NULL,
-                                                  G_CALLBACK(_places_reset_callback), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("restore all default places you have removed"),
+        .clicked_cb = G_CALLBACK(_places_reset_callback),
+        .clicked_data = self,
+      });
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
   d->remove_place_button = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
-                                                 _("remove the selected custom place"),
-                                                 NULL, NULL, NULL, NULL,
-                                                 G_CALLBACK(_remove_selected_place), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("remove the selected custom place"),
+        .clicked_cb = G_CALLBACK(_remove_selected_place),
+        .clicked_data = self,
+      });
   gtk_box_pack_end(GTK_BOX(places_header), d->remove_place_button, FALSE, FALSE, 0);
 
   GtkWidget *places_add = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
-                                                _("add a custom place"),
-                                                NULL, NULL, NULL, NULL,
-                                                G_CALLBACK(_lib_import_select_folder), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("add a custom place"),
+        .clicked_cb = G_CALLBACK(_lib_import_select_folder),
+        .clicked_data = self,
+      });
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(places_top_box), places_header, FALSE, FALSE, 0);
@@ -1989,8 +1995,11 @@ static void _set_expander_content(GtkWidget *rbox,
   gtk_box_pack_start(GTK_BOX(hbox), basedir, TRUE, TRUE, 0);
   g_object_unref(basedir);
   GtkWidget *browsedir = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
-                                               _("select directory"), NULL, NULL, NULL, NULL,
-                                               G_CALLBACK(_browse_basedir_clicked), basedir);
+      &(dtgtk_button_config_t){
+        .tooltip = _("select directory"),
+        .clicked_cb = G_CALLBACK(_browse_basedir_clicked),
+        .clicked_data = basedir,
+      });
   gtk_widget_set_name(browsedir, "non-flat");
 
   gtk_box_pack_start(GTK_BOX(hbox), browsedir, FALSE, FALSE, 0);

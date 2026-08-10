@@ -4522,8 +4522,11 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_output_dir_changed), self);
 
   d->output_dir_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, 0, NULL,
-                                               _("select output folder"), NULL, NULL, NULL, NULL,
-                                               G_CALLBACK(_output_dir_browse), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("select output folder"),
+        .clicked_cb = G_CALLBACK(_output_dir_browse),
+        .clicked_data = self,
+      });
 
   dt_gui_box_add(dir_box, d->output_dir_entry);
   dt_gui_box_add(dir_box, d->output_dir_button);

@@ -244,9 +244,11 @@ static gboolean _cancellable_gui_thread(gpointer user_data)
   _cancellable_gui_thread_t *params = (_cancellable_gui_thread_t *)user_data;
 
   GtkBox *hbox = GTK_BOX(params->instance->hbox);
-  GtkWidget *button = dtgtk_button_new_full(dtgtk_cairo_paint_cancel, 0, NULL, NULL,
-                                            NULL, NULL, NULL, NULL,
-                                            G_CALLBACK(_lib_backgroundjobs_cancel_callback_new), params->progress);
+  GtkWidget *button = dtgtk_button_new_full(dtgtk_cairo_paint_cancel, 0, NULL,
+      &(dtgtk_button_config_t){
+        .clicked_cb = G_CALLBACK(_lib_backgroundjobs_cancel_callback_new),
+        .clicked_data = params->progress,
+      });
   gtk_box_pack_start(hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_widget_show_all(button);
 

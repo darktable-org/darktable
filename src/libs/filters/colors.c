@@ -340,13 +340,16 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
     colors->colors[k] = dtgtk_button_new_full(dtgtk_cairo_paint_label_sel, k, NULL,
-                                              _("filter by images color label"
-                                                "\nclick to toggle the color label selection"
-                                                "\nctrl+click to exclude the color label"
-                                                "\nthe gray button affects all color labels"),
-                                              DT_ACTION(self), N_("rules"), N_("color label"),
-                                              &dt_action_def_colors_rule,
-                                              NULL, NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("filter by images color label"
+          "\nclick to toggle the color label selection"
+          "\nctrl+click to exclude the color label"
+          "\nthe gray button affects all color labels"),
+        .action = DT_ACTION(self),
+        .action_section = N_("rules"),
+        .action_label = N_("color label"),
+        .action_def = &dt_action_def_colors_rule,
+      });
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_index", GINT_TO_POINTER(k));
     dt_gui_add_class(colors->colors[k], "dt_no_hover");
     dt_gui_add_class(colors->colors[k], "dt_dimmed");
