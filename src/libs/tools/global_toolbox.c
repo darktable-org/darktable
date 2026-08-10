@@ -514,11 +514,15 @@ void gui_init(dt_lib_module_t *self)
   // that's done so that buttons added via Lua will come first.
 
   /* create the preference button */
-  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
-  ac = dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
-  gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
-  g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
-                   NULL);
+  d->preferences_button = dtgtk_button_new_full(dtgtk_cairo_paint_preferences, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("show global preferences"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("preferences"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_lib_preferences_button_clicked),
+      });
+  ac = dt_action_widget(d->preferences_button);
 
   // Register CMD+, for preferences (this is standard on macOS)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);

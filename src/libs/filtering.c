@@ -1976,10 +1976,12 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     if(num == 0)
       dt_action_define(DT_ACTION(self), NULL, _("sort direction"), sort->direction, &dt_action_def_toggle);
 
-    sort->close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    sort->close = dtgtk_button_new_full(dtgtk_cairo_paint_remove, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("remove this sort order"),
+      });
     gtk_widget_set_no_show_all(sort->close, TRUE);
     g_object_set_data(G_OBJECT(sort->close), "sort", sort);
-    gtk_widget_set_tooltip_text(sort->close, _("remove this sort order"));
     dt_gui_connect_click_all(sort->close, _sort_close_cb, NULL, self);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->close, FALSE, FALSE, 0);
   }
