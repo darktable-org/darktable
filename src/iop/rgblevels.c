@@ -1069,14 +1069,16 @@ void gui_init(dt_iop_module_t *self)
                        &dt_action_def_button);
   gtk_widget_set_tooltip_text(g->bt_auto_levels, _("apply auto levels"));
 
-  g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+  g->bt_select_region = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_colorpicker, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("apply auto levels based on a region defined by the user\n"
+          "click and drag to draw the area\n"
+          "right-click to cancel"),
+        .action = DT_ACTION(self),
+        .action_label = N_("auto region"),
+        .action_def = &dt_action_def_toggle,
+      });
   dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
-  dt_action_define_iop(self, NULL, N_("auto region"), g->bt_select_region,
-                       &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(g->bt_select_region,
-                              _("apply auto levels based on a region defined by the user\n"
-                                "click and drag to draw the area\n"
-                                "right-click to cancel"));
 
   dt_gui_box_add(self->widget, g->channel_tabs, g->area,
                  dt_gui_hbox(g->blackpick, g->greypick, g->whitepick),

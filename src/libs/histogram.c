@@ -831,12 +831,16 @@ void gui_init(dt_lib_module_t *self)
   {
     const char *const name = dt_scopes_call(&s->modes[i], name);
     s->modes[i].button_activate =
-      dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
+      dtgtk_togglebutton_new_full(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _(name),
+          .action = dark,
+          .action_section = N_("modes"),
+          .action_label = name,
+          .action_def = &dt_action_def_toggle,
+        });
     gtk_widget_set_halign(s->modes[i].button_activate, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(s->modes[i].button_activate, GTK_ALIGN_START);
-    gtk_widget_set_tooltip_text(s->modes[i].button_activate, _(name));
-    dt_action_define(dark, N_("modes"), name,
-                     s->modes[i].button_activate, &dt_action_def_toggle);
     // GTK4: use gtk_toggle_button_set_group(), GTK3: handle in callback
     s->modes[i].toggle_signal_handler =
       g_signal_connect_data(G_OBJECT(s->modes[i].button_activate), "toggled",

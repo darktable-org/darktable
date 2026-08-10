@@ -468,35 +468,57 @@ void gui_init(dt_lib_module_t *self)
   dt_action_t *ltv = &darktable.view_manager->proxy.lighttable.view->actions;
   dt_action_t *ac = NULL;
 
-  d->layout_filemanager = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_grid, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle filemanager layout"), d->layout_filemanager, NULL);
+  d->layout_filemanager = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_grid, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to enter filemanager layout."),
+        .action = ltv,
+        .action_label = N_("toggle filemanager layout"),
+      });
+  ac = dt_action_widget(d->layout_filemanager);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_filemanager, 0, 0);
   dt_gui_add_help_link(d->layout_filemanager, "layout_filemanager");
-  gtk_widget_set_tooltip_text(d->layout_filemanager, _("click to enter filemanager layout."));
   dt_gui_connect_click(d->layout_filemanager, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle zoomable lighttable layout"), d->layout_zoomable, NULL);
+  d->layout_zoomable = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to enter zoomable lighttable layout."),
+        .action = ltv,
+        .action_label = N_("toggle zoomable lighttable layout"),
+      });
+  ac = dt_action_widget(d->layout_zoomable);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_zoomable, 0, 0);
   dt_gui_add_help_link(d->layout_zoomable, "layout_zoomable");
-  gtk_widget_set_tooltip_text(d->layout_zoomable, _("click to enter zoomable lighttable layout."));
   dt_gui_connect_click(d->layout_zoomable, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, &_action_def_culling);
+  d->layout_culling_fix = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("toggle culling mode"),
+        .action_def = &_action_def_culling,
+      });
+  ac = dt_action_widget(d->layout_culling_fix);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, GDK_SHIFT_MASK);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
   dt_gui_connect_click(d->layout_culling_fix, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_culling_dynamic = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling dynamic mode"), d->layout_culling_dynamic, NULL);
+  d->layout_culling_dynamic = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("toggle culling dynamic mode"),
+      });
+  ac = dt_action_widget(d->layout_culling_dynamic);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_dynamic_mode, GDK_KEY_x, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_dynamic, "layout_culling");
   dt_gui_connect_click(d->layout_culling_dynamic, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("preview"), d->layout_preview, &_action_def_preview);
+  d->layout_preview = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("preview"),
+        .action_def = &_action_def_preview,
+      });
+  ac = dt_action_widget(d->layout_preview);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_f, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_f, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
@@ -518,8 +540,12 @@ void gui_init(dt_lib_module_t *self)
                                 "or the total number of thumbnails shown in culling layouts."));
 
   /* culling restricted icon */
-  d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling restricted"), d->layout_culling_restricted, NULL);
+  d->layout_culling_restricted = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lock, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("toggle culling restricted"),
+      });
+  ac = dt_action_widget(d->layout_culling_restricted);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_restricted_mode, GDK_KEY_r, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_restricted, "layout_culling");
   gtk_widget_set_no_show_all(d->layout_culling_restricted, TRUE);

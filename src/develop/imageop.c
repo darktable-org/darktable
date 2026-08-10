@@ -3288,18 +3288,19 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 
   if(element == DT_ACTION_ELEMENT_ENABLE)
   {
-    button = dtgtk_togglebutton_new(paint, 0, module);
-
     char tooltip[512];
     gchar *module_label = dt_history_item_get_name(module);
     snprintf(tooltip, sizeof(tooltip),
             module->enabled ? _("'%s' is switched on") : _("'%s' is switched off"),
             module_label);
     g_free(module_label);
-    gtk_widget_set_tooltip_text(button, tooltip);
+    button = dtgtk_togglebutton_new_full(paint, 0, module,
+        &(dtgtk_button_config_t){
+          .tooltip = tooltip,
+          .toggled_cb = G_CALLBACK(_gui_off_callback),
+          .toggled_data = module,
+        });
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
-
-    g_signal_connect(button, "toggled", G_CALLBACK(_gui_off_callback), module);
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else

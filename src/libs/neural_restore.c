@@ -4360,13 +4360,14 @@ void gui_init(dt_lib_module_t *self)
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;
   d->picking_thumbnail = FALSE;
-  d->pick_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
-                                          0, NULL);
-  gtk_widget_set_tooltip_text(d->pick_button,
-                              _("click to pick preview area on the image thumbnail\n"
-                                "double-click to reset to center"));
-  g_signal_connect(d->pick_button, "toggled",
-                   G_CALLBACK(_pick_toggled), self);
+  d->pick_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_colorpicker,
+                                               0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to pick preview area on the image thumbnail\n"
+          "double-click to reset to center"),
+        .toggled_cb = G_CALLBACK(_pick_toggled),
+        .toggled_data = self,
+      });
   dt_gui_connect_click_all(d->pick_button, _pick_double_click_cb, NULL, self);
 
   // preview area (resizable via dt_ui_resize_wrap)
