@@ -579,6 +579,15 @@ void dt_gui_menu_popup(GtkMenu *menu,
                        GdkGravity widget_anchor,
                        GdkGravity menu_anchor);
 
+/* Forward the scroll event a scroll controller is currently dispatching to
+ * another widget, as if that widget had received it directly (used for the
+ * alt+scroll channel-tab switching in the wavelet/channel-band modules).
+ * GTK3-only: raw event forwarding via gtk_widget_event(); the GTK4 migration
+ * is to reimplement the forwarding as a scroll controller on the target
+ * widget itself (GTK4 has no gtk_widget_event). */
+gboolean dt_gui_forward_scroll(GtkEventControllerScroll *controller,
+                               GtkWidget *target);
+
 void dt_gui_draw_rounded_rectangle(cairo_t *cr,
                                    const float width,
                                    const float height,

@@ -3546,16 +3546,10 @@ static void denoiseprofile_scrolled(GtkEventControllerScroll *controller,
   if(dt_modifier_eq(controller, GDK_MOD1_MASK))
   {
     // alt+scroll switches the channel tab (as before the controller conversion)
-    // GTK4: no gtk_widget_event() -- reimplement as a controller on the notebook
-    GdkEvent *event = gtk_get_current_event();
-    if(event)
-    {
-      gtk_widget_event(GTK_WIDGET(g->channel > DT_DENOISE_PROFILE_B
-                                  ? g->channel_tabs_Y0U0V0
-                                  : g->channel_tabs),
-                       event);
-      gdk_event_free(event);
-    }
+    dt_gui_forward_scroll(controller,
+                          GTK_WIDGET(g->channel > DT_DENOISE_PROFILE_B
+                                     ? g->channel_tabs_Y0U0V0
+                                     : g->channel_tabs));
     return;
   }
 
