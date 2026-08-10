@@ -1382,13 +1382,15 @@ static inline dt_dev_pixelpipe_stopper_t _module_pipe_stop(dt_dev_pixelpipe_t *p
   const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
 
   if(stopper <= DT_DEV_PIXELPIPE_PROCESSING)
-    return DT_DEV_PIXELPIPE_STOP_NO;    // as being zero we can do simple if()
+    return DT_DEV_PIXELPIPE_STOP_NO;
 
   /** Ignore some UI shutdown requests
       As every shutdown request is restarting the pipe it's better to ignore them
       by resetting shutdown to DT_DEV_PIXELPIPE_PROCESSING if
       - we do mask visualizing or are in fast pipe mode
-      - we are very late in the pipe
+      - we are very late in the pipe using "colorout" as reference
+      - we received DT_DEV_PIXELPIPE_STOP_DATA very early while pipe processing,
+        this happes when dragging a slider on systems without fast OpenCL graphics
   */
   const gboolean simple =
            stopper == DT_DEV_PIXELPIPE_STOP_NODES
@@ -1403,12 +1405,18 @@ static inline dt_dev_pixelpipe_stopper_t _module_pipe_stop(dt_dev_pixelpipe_t *p
   const gboolean ignore_visual = (stopper == DT_DEV_PIXELPIPE_STOP_ZOOM || stopper == DT_DEV_PIXELPIPE_STOP_DATA)
                               && (dt_pipe_mask_display(pipe) || dt_pipe_is_fast(pipe));
 
-  if(ignore_late || ignore_visual)
+  const gboolean ignore_early = stopper == DT_DEV_PIXELPIPE_STOP_DATA
+                              && darktable.develop->history_last_module
+                              && darktable.develop->history_last_module->iop_order > module->iop_order;
+
+  if(ignore_late || ignore_visual || ignore_early)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "ignore shutdown", pipe, module, pipe->devid, NULL, NULL,"%s because of %s%s",
+    dt_print_pipe(DT_DEBUG_PIPE, "ignore shutdown", pipe, module, pipe->devid, NULL, NULL,"%s because of %s%s%s%s",
         dt_dev_pixelpipe_shutdown_to_str(stopper),
+        ignore_early ? "early " : "",
         ignore_late ? "late " : "",
-        ignore_late ? module->op : dt_pipe_mask_display(pipe) ? "mask visual" : "fast pipe");
+        ignore_visual && dt_pipe_is_fast(pipe) ? "fast pipe " : "",
+        ignore_visual && dt_pipe_mask_display(pipe) ? "mask visual" : "");
     dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_PROCESSING);
     return DT_DEV_PIXELPIPE_STOP_NO;
   }
