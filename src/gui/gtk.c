@@ -4898,6 +4898,24 @@ void dt_gui_menu_popup(GtkMenu *menu,
   gdk_event_free(event);
 }
 
+gboolean dt_gui_forward_scroll(GtkEventControllerScroll *controller,
+                               GtkWidget *target)
+{
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(!event) return FALSE;
+  gtk_widget_event(target, event);
+  gdk_event_free(event);
+  return TRUE;
+#else
+  /* GTK4: no gtk_widget_event() -- reimplement as a scroll controller on the
+   * target widget (see the declaration in gtk.h). */
+  (void)controller;
+  (void)target;
+  return FALSE;
+#endif
+}
+
 // draw rounded rectangle
 void dt_gui_draw_rounded_rectangle(cairo_t *cr,
                                    const float width,

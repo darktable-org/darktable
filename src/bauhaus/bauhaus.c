@@ -3347,12 +3347,14 @@ void dt_bauhaus_widget_show_popup(GtkWidget *widget)
 
   if(w->type == DT_BAUHAUS_TOGGLE) return;
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
   GdkEvent *event = gtk_get_current_event();
   if(event)
   {
     bh->opentime = gdk_event_get_time(event);
     gdk_event_free(event);
   }
+#endif
   bh->mouse_x = 0;
   bh->mouse_y = 0;
   _popup_show(widget);
