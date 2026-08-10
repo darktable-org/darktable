@@ -453,21 +453,21 @@
     <shortdescription>DirectML GPU device index</shortdescription>
     <longdescription>which DirectX 12 adapter to use when DirectML is the active execution provider. matches IDXGIFactory1::EnumAdapters1 order. defaults to 0 (first adapter). takes effect on next restart. env var DT_DML_DEVICE_ID overrides this if set.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="opencl" capability="opencl">
+  <dtconfig prefs="processing" section="opencl" capability="opencl" unavailable_text="no usable OpenCL device was found or OpenCL had to be disabled after an initialization problem.\nstart darktable with -d opencl for details">
     <name>opencl</name>
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
     <longdescription>if found, use OpenCL runtime on your system to speed up processing by using your graphics card(s).\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="opencl" capability="opencl" restart="true">
+  <dtconfig prefs="processing" section="opencl" capability="opencl" restart="true" unavailable_text="no usable OpenCL device was found or OpenCL had to be disabled after an initialization problem.\nstart darktable with -d opencl for details">
     <name>opencl_fast</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>OpenCL fast mode</shortdescription>
     <longdescription>if set the OpenCL compiler uses aggressive optimizing for better performance with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="opencl" capability="opencl">
+  <dtconfig prefs="processing" section="opencl" capability="opencl" unavailable_text="no usable OpenCL device was found or OpenCL had to be disabled after an initialization problem.\nstart darktable with -d opencl for details">
     <name>opencl_scheduling_profile</name>
     <type>
       <enum>
@@ -480,49 +480,49 @@
     <shortdescription>OpenCL scheduling profile</shortdescription>
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems:\n - 'default': GPU processes full and CPU processes preview pipe (adaptable by config parameters),\n - 'multiple GPUs': process both pixelpipes in parallel on two different GPUs,\n - 'very fast GPU': process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="opencl" capability="multiopencl">
+  <dtconfig prefs="processing" section="opencl" capability="multiopencl" unavailable_text="this requires more than one usable OpenCL device, fewer were found on this system">
     <name>opencl_tune_headroom</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>tuned GPU memory</shortdescription>
     <longdescription>if enabled on a system with multiple OpenCL devices you may specify a safety margin per device (headroom, default is 600MB)</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
+  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true" unavailable_text="vendor provided OpenCL platforms are not available on macOS">
     <name>clplatform_intelropenclhdgraphics</name>
     <type>bool</type>
     <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>Intel GPU</shortdescription>
     <longdescription>Intel(R) OpenCL Graphics for all supported platforms (vendor provided)</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
+  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true" unavailable_text="vendor provided OpenCL platforms are not available on macOS">
     <name>clplatform_nvidiacuda</name>
     <type>bool</type>
     <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>Nvidia CUDA</shortdescription>
     <longdescription>Nvidia CUDA based OpenCL (vendor provided)</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
+  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true" unavailable_text="vendor provided OpenCL platforms are not available on macOS">
     <name>clplatform_amdacceleratedparallelprocessing</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>AMD ROCm</shortdescription>
     <longdescription>AMD Accelerated Parallel Processing (vendor provided)</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
+  <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true" unavailable_text="vendor provided OpenCL platforms are not available on macOS">
     <name>clplatform_rusticl</name>
     <type>bool</type>
     <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>RustiCL</shortdescription>
     <longdescription>RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="platform" capability="apple" restart="true">
+  <dtconfig prefs="processing" section="platform" capability="apple" restart="true" unavailable_text="the Apple OpenCL platform is only available on macOS">
     <name>clplatform_apple</name>
     <type>bool</type>
     <default>${DEFCONFIG_APPLE}</default>
     <shortdescription>Apple</shortdescription>
     <longdescription>Apple OpenCL (vendor provided)</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="platform" capability="windows" restart="true">
+  <dtconfig prefs="processing" section="platform" capability="windows" restart="true" unavailable_text="Microsoft OpenCLOn12 is only available on Windows">
     <name>clplatform_openclon12</name>
     <type>bool</type>
     <default>false</default>
@@ -4329,7 +4329,7 @@
     <shortdescription>height of the collect list</shortdescription>
     <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="interface" capability="midi">
+  <dtconfig prefs="misc" section="interface" capability="midi" unavailable_text="MIDI support is not available, this darktable was built without PortMidi">
     <name>plugins/midi/devices</name>
     <type>string</type>
     <default></default>
