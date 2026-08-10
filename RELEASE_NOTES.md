@@ -153,6 +153,10 @@ changes (where available).
   a star rating or color label while the first row was only partly
   visible.
 
+- Fixed calculation of pixelpipe cache payloads while preparing the
+  cache and while checking for requested tiling thus reducing oom kills
+  on small systems.
+
 ## Lua
 
 ### API Version

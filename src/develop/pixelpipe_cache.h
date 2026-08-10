@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ typedef struct dt_dev_pixelpipe_cache_t
 {
   int32_t entries;
   size_t allmem;
-  size_t memlimit;
+  size_t mem_fraction;
   void **data;
   size_t *size;
   struct dt_iop_buffer_dsc_t *dsc;
@@ -62,7 +62,7 @@ typedef enum dt_dev_pixelpipe_cache_test_t
 /** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
   \param[out] returns 0 if fail to allocate mem cache.
 */
-gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int entries, const size_t size, const size_t limit);
+gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int entries, const size_t size, const int32_t fraction);
 void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe);
 
 /** creates a hopefully unique hash from the complete module stack up to the module-th, including the roi. */
@@ -94,7 +94,7 @@ void dt_dev_pixelpipe_invalidate_cacheline(const struct dt_dev_pixelpipe_t *pipe
 
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
-void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe);
+void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe, const gboolean trim);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
