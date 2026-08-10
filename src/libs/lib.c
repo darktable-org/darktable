@@ -1350,16 +1350,26 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* check if module is expandable */
   if(!module->expandable(module))
   {
+    /* Non-expandable libs (modulegroups, ...) keep their whole widget -- and
+     * with it the presets button -- outside an expander, and that widget
+     * survives view switches: dt_lib_gui_get_expander() runs once per switch,
+     * so the "clicked" wiring and the action registration below must happen
+     * only on the first call, or every lighttable<->darkroom round trip would
+     * stack one more popup and one more action on the button.  Registering the
+     * button with the lib actions lets shortcuts and the action fallback
+     * (DT_ACTION_ELEMENT_PRESETS in _action_process) reach it, like the
+     * expandable header path does.  GtkButton::clicked is unchanged on GTK4
+     * and dt_action_define() is qdata-guarded, so this needs no
+     * #if GTK_CHECK_VERSION split. */
     if(module->presets_button
        && !g_object_get_data(G_OBJECT(module->presets_button),
-                             "dt-lib-presets-clicked"))
+                             "dt-lib-presets-wired"))
     {
-      // FIXME separately define as darkroom widget shortcut/action,
-      // because not automatically registered via lib if presets btn
-      // has been loaded to be shown outside expander
-      g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(_presets_popup_callback), module);
+      g_signal_connect(G_OBJECT(module->presets_button), "clicked",
+                       G_CALLBACK(_presets_popup_callback), module);
+      dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
       g_object_set_data(G_OBJECT(module->presets_button),
-                        "dt-lib-presets-clicked", GINT_TO_POINTER(TRUE));
+                        "dt-lib-presets-wired", GINT_TO_POINTER(TRUE));
     }
     module->expander = NULL;
     return NULL;
