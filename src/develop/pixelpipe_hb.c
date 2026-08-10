@@ -1325,6 +1325,9 @@ static inline gboolean _piece_wants_blending(const dt_dev_pixelpipe_iop_t *piece
   if(piece->pipe->bypass_blendif && dt_iop_has_focus(piece->module))
     return FALSE;
 
+  if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+    return FALSE;
+
   const dt_develop_blend_params_t *const d = piece->blendop_data;
   return d && (d->mask_mode & DEVELOP_MASK_ENABLED);
 }
