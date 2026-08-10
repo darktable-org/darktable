@@ -3506,8 +3506,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
     }
 
-    GtkWidget *presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-    gtk_widget_set_tooltip_text(presets_button, _("blending options"));
+    GtkWidget *presets_button = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
+                                                      _("blending options"), NULL, NULL, NULL, NULL, NULL, NULL);
     if(bd->blendif_support)
     {
       g_signal_connect(G_OBJECT(presets_button), "clicked",

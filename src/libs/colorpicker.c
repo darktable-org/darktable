@@ -797,12 +797,11 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(label), "size-allocate",
                    G_CALLBACK(_label_size_allocate_callback), &data->primary_sample);
 
-  data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_square_plus, 0, NULL);
+  data->add_sample_button = dtgtk_button_new_full(dtgtk_cairo_paint_square_plus, 0, NULL,
+                                                  NULL,
+                                                  DT_ACTION(self), NULL, N_("add sample"), &dt_action_def_button,
+                                                  G_CALLBACK(_add_sample), self);
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
-  g_signal_connect(G_OBJECT(data->add_sample_button), "clicked",
-                   G_CALLBACK(_add_sample), self);
-  dt_action_define(DT_ACTION(self), NULL, N_("add sample"),
-                   data->add_sample_button, &dt_action_def_button);
 
   gtk_container_add(GTK_CONTAINER(sample_row_events),
                     dt_gui_hbox(sample_patch_wrapper,
