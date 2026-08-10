@@ -400,10 +400,14 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the "show/hide overlays" button */
   d->overlays_button = dtgtk_button_new_full(dtgtk_cairo_paint_overlays, 0, NULL,
-                                             _("click to change the type of overlays shown on thumbnails"),
-                                             &darktable.control->actions_global, NULL,
-                                             N_("thumbnail overlays options"), &dt_action_def_button,
-                                             G_CALLBACK(_overlays_show_popup), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to change the type of overlays shown on thumbnails"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("thumbnail overlays options"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_overlays_show_popup),
+        .clicked_data = self,
+      });
   d->over_popup = gtk_popover_new(d->overlays_button);
   gtk_widget_set_size_request(d->over_popup, 350, -1);
   g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);

@@ -1312,9 +1312,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
    */
   /* add the expand indicator icon */
   module->arrow = dtgtk_button_new_full(dtgtk_cairo_paint_solid_arrow, 0, NULL,
-                                        _("show module"),
-                                        &module->actions, NULL, NULL, NULL,
-                                        NULL, NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("show module"),
+        .action = &module->actions,
+      });
 
   dt_gui_connect_click_all(module->arrow, _lib_plugin_arrow_button_press_cb, NULL, module);
   gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
@@ -1346,9 +1347,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
-                                                 _("presets and preferences"),
-                                                 &module->actions, NULL, NULL, NULL,
-                                                 G_CALLBACK(_presets_popup_callback), module);
+      &(dtgtk_button_config_t){
+        .tooltip = _("presets and preferences"),
+        .action = &module->actions,
+        .clicked_cb = G_CALLBACK(_presets_popup_callback),
+        .clicked_data = module,
+      });
   dt_gui_connect_motion(module->presets_button, NULL, _header_enter_notify_callback, NULL, GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
   if(!module->get_params
      && !module->set_preferences)
@@ -1357,9 +1361,11 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new_full(dtgtk_cairo_paint_reset, 0, NULL,
-                                               NULL,
-                                               &module->actions, NULL, NULL, NULL,
-                                               G_CALLBACK(_lib_gui_reset_button_clicked_callback), module);
+      &(dtgtk_button_config_t){
+        .action = &module->actions,
+        .clicked_cb = G_CALLBACK(_lib_gui_reset_button_clicked_callback),
+        .clicked_data = module,
+      });
   /* "clicked" rather than a custom gesture: see _lib_gui_reset_button_clicked_callback */
   dt_gui_connect_motion(module->reset_button, NULL, _header_enter_notify_callback, NULL, GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);

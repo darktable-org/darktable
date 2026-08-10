@@ -334,8 +334,11 @@ static GtkWidget *_build_page_widget(_dt_page_t *pg)
                        G_CALLBACK(_on_dir_entry_changed), q->conf_key);
 
       GtkWidget *btn = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
-                                             _("select directory"), NULL, NULL, NULL, NULL,
-                                             G_CALLBACK(_on_browse_dir_clicked), entry);
+      &(dtgtk_button_config_t){
+        .tooltip = _("select directory"),
+        .clicked_cb = G_CALLBACK(_on_browse_dir_clicked),
+        .clicked_data = entry,
+      });
       dt_gui_box_add(GTK_BOX(hbox), entry, btn);
 
       gtk_widget_set_hexpand(hbox, TRUE);

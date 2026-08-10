@@ -609,9 +609,11 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
                    G_CALLBACK(_entry_activated_callback), self);
 
   s->restore_button = dtgtk_button_new_full(dtgtk_cairo_paint_snapshots_restore, CPF_NONE, NULL,
-                                            _("restore snapshot into current history"),
-                                            NULL, NULL, NULL, NULL,
-                                            G_CALLBACK(_lib_snapshots_restore_callback), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("restore snapshot into current history"),
+        .clicked_cb = G_CALLBACK(_lib_snapshots_restore_callback),
+        .clicked_data = self,
+      });
   gtk_widget_set_name(s->restore_button, "non-flat");
 }
 

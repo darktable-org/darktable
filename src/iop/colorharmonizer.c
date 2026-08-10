@@ -1413,9 +1413,11 @@ void gui_init(dt_iop_module_t *self)
   self->widget = main_box;
 
   g->auto_detect = dtgtk_button_new_full(dtgtk_cairo_paint_camera, CPF_NONE, NULL,
-                                         _("not yet available — wait for the preview to finish processing."),
-                                         NULL, NULL, NULL, NULL,
-                                         G_CALLBACK(_auto_detect_callback), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("not yet available — wait for the preview to finish processing."),
+        .clicked_cb = G_CALLBACK(_auto_detect_callback),
+        .clicked_data = self,
+      });
   gtk_widget_set_sensitive(g->auto_detect, FALSE);
   dt_gui_box_add(rule_row, g->auto_detect);
 
@@ -1529,10 +1531,12 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_sync_to_vectorscope_toggled), self);
 
   g->set_from_vectorscope = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
-                                                  _("import the harmony rule and anchor hue currently displayed in the vectorscope.\n"
-                                                    "also switches the histogram panel to the vectorscope view if it is not already active."),
-                                                  NULL, NULL, NULL, NULL,
-                                                  G_CALLBACK(_set_from_vectorscope_callback), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("import the harmony rule and anchor hue currently displayed in the vectorscope.\n"
+          "also switches the histogram panel to the vectorscope view if it is not already active."),
+        .clicked_cb = G_CALLBACK(_set_from_vectorscope_callback),
+        .clicked_data = self,
+      });
 
   gtk_widget_set_hexpand(g->sync_to_vectorscope, TRUE);
   dt_gui_box_add(sync_row, g->sync_to_vectorscope);

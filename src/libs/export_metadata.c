@@ -278,12 +278,18 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(calculated), flags & DT_META_CALCULATED);
 
   GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
-                                          _("add an output metadata tag"), NULL, NULL, NULL, NULL,
-                                          G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+      &(dtgtk_button_config_t){
+        .tooltip = _("add an output metadata tag"),
+        .clicked_cb = G_CALLBACK(_add_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
   GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
-                                           _("delete metadata tag"), NULL, NULL, NULL, NULL,
-                                           G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+      &(dtgtk_button_config_t){
+        .tooltip = _("delete metadata tag"),
+        .clicked_cb = G_CALLBACK(_delete_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

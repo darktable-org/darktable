@@ -946,12 +946,18 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
-                                          _("add metadata tags"), NULL, NULL, NULL, NULL,
-                                          G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+      &(dtgtk_button_config_t){
+        .tooltip = _("add metadata tags"),
+        .clicked_cb = G_CALLBACK(_add_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
   GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
-                                           _("delete metadata tag"), NULL, NULL, NULL, NULL,
-                                           G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+      &(dtgtk_button_config_t){
+        .tooltip = _("delete metadata tag"),
+        .clicked_cb = G_CALLBACK(_delete_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
   d->delete_button = minus;
 
 #ifdef GDK_WINDOWING_QUARTZ

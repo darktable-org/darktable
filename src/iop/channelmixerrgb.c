@@ -4717,19 +4717,37 @@ void gui_init(dt_iop_module_t *self)
                               _("the delta E is using the CIE 2000 formula"));
 
   g->button_commit = dtgtk_button_new_full(dtgtk_cairo_paint_check_mark, 0, NULL,
-                                           _("accept the computed profile and set it in the module"),
-                                           DT_ACTION(self), N_("calibrate"), N_("accept"), &dt_action_def_button,
-                                           G_CALLBACK(_commit_profile_callback), (gpointer)self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("accept the computed profile and set it in the module"),
+        .action = DT_ACTION(self),
+        .action_section = N_("calibrate"),
+        .action_label = N_("accept"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_commit_profile_callback),
+        .clicked_data = (gpointer)self,
+      });
 
   g->button_profile = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, 0, NULL,
-                                            _("recompute the profile"),
-                                            DT_ACTION(self), N_("calibrate"), N_("recompute"), &dt_action_def_button,
-                                            G_CALLBACK(_run_profile_callback), (gpointer)self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("recompute the profile"),
+        .action = DT_ACTION(self),
+        .action_section = N_("calibrate"),
+        .action_label = N_("recompute"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_run_profile_callback),
+        .clicked_data = (gpointer)self,
+      });
 
   g->button_validate = dtgtk_button_new_full(dtgtk_cairo_paint_softproof, 0, NULL,
-                                             _("check the output delta E"),
-                                             DT_ACTION(self), N_("calibrate"), N_("validate"), &dt_action_def_button,
-                                             G_CALLBACK(_run_validation_callback), (gpointer)self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("check the output delta E"),
+        .action = DT_ACTION(self),
+        .action_section = N_("calibrate"),
+        .action_label = N_("validate"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_run_validation_callback),
+        .clicked_data = (gpointer)self,
+      });
 
   dt_gui_box_add(g->cs.container, g->checkers_list, g->optimize, g->safety,
                  g->label_delta_E, dt_gui_hbox(dt_gui_align_right(g->button_validate),

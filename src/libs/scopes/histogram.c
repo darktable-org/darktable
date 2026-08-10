@@ -240,9 +240,13 @@ static void _hist_add_options(dt_scopes_mode_t *const self,
 {
   dt_scopes_hist_t *d = self->data;
   d->scale_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
-                                          NULL,
-                                          dark, NULL, N_("switch histogram scale"), &dt_action_def_button,
-                                          G_CALLBACK(_hist_scale_clicked), self);
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("switch histogram scale"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_hist_scale_clicked),
+        .clicked_data = self,
+      });
   gtk_widget_set_valign(d->scale_button, GTK_ALIGN_START);
   dt_gui_box_add(self->options_box, d->scale_button);
 }
