@@ -3507,7 +3507,9 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     }
 
     GtkWidget *presets_button = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
-                                                      _("blending options"), NULL, NULL, NULL, NULL, NULL, NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("blending options"),
+      });
     if(bd->blendif_support)
     {
       g_signal_connect(G_OBJECT(presets_button), "clicked",

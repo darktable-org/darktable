@@ -1420,14 +1420,18 @@ static void _vec_add_options(dt_scopes_mode_t *const self,
   dt_scopes_vec_t *const d = self->data;
 
   d->colorspace_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
-                                               NULL,
-                                               dark, NULL, N_("cycle vectorscope types"), &dt_action_def_button,
-                                               NULL, NULL);
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("cycle vectorscope types"),
+        .action_def = &dt_action_def_button,
+      });
 
   d->vec_scale_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
-                                              NULL,
-                                              dark, NULL, N_("switch vectorscope scale"), &dt_action_def_button,
-                                              NULL, NULL);
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("switch vectorscope scale"),
+        .action_def = &dt_action_def_button,
+      });
   gtk_widget_set_valign(d->vec_scale_button, GTK_ALIGN_START);
 
   d->harmony_viewport = gtk_viewport_new(NULL, NULL);

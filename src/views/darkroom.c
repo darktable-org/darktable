@@ -3101,18 +3101,26 @@ void gui_init(dt_view_t *self)
 
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
-                                                      _("quick access to presets"),
-                                                      sa, NULL, N_("quick access to presets"), &dt_action_def_button,
-                                                      G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu), NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("quick access to presets"),
+        .action = sa,
+        .action_label = N_("quick access to presets"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
+      });
   dt_gui_add_help_link(favorite_presets, "favorite_presets");
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
-                                            _("quick access for applying any of your styles"),
-                                            sa, NULL, N_("quick access to styles"), &dt_action_def_button,
-                                            G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
+      &(dtgtk_button_config_t){
+        .tooltip = _("quick access for applying any of your styles"),
+        .action = sa,
+        .action_label = N_("quick access to styles"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_darkroom_ui_apply_style_popupmenu),
+      });
   dt_gui_add_help_link(styles, "bottom_panel_styles");
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
   /* ensure that we get strings from the style files shipped with darktable localized */

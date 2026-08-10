@@ -3618,9 +3618,14 @@ void gui_init(dt_lib_module_t *self)
   d->entry = GTK_ENTRY(w);
 
   button = dtgtk_button_new_full(dtgtk_cairo_paint_multiply_small, 0, NULL,
-                                 _("clear entry"),
-                                 DT_ACTION(self), NULL, N_("clear entry"), &dt_action_def_button,
-                                 G_CALLBACK(_clear_entry_button_callback), (gpointer)self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("clear entry"),
+        .action = DT_ACTION(self),
+        .action_label = N_("clear entry"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_clear_entry_button_callback),
+        .clicked_data = (gpointer)self,
+      });
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
   dt_gui_add_class(GTK_WIDGET(box), "dt_spacing_sw");

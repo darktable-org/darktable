@@ -1130,8 +1130,11 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_sensitive(ui->album_list, FALSE);
 
   GtkWidget *refresh_button = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
-                                                    _("refresh album list"), NULL, NULL, NULL, NULL,
-                                                    G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
+      &(dtgtk_button_config_t){
+        .tooltip = _("refresh album list"),
+        .clicked_cb = G_CALLBACK(_piwigo_refresh_clicked),
+        .clicked_data = (gpointer)ui,
+      });
 
   // new album
   ui->new_album_entry = GTK_ENTRY(gtk_entry_new()); // Album title

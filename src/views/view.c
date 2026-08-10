@@ -1655,9 +1655,11 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   vm->accels_window.sticky_btn = dtgtk_button_new_full(dtgtk_cairo_paint_multiinstance, 0, NULL,
-                                                       _("switch to a classic window which will stay open after key release"),
-                                                       NULL, NULL, NULL, NULL,
-                                                       G_CALLBACK(_accels_window_sticky), vm);
+      &(dtgtk_button_config_t){
+        .tooltip = _("switch to a classic window which will stay open after key release"),
+        .clicked_cb = G_CALLBACK(_accels_window_sticky),
+        .clicked_data = vm,
+      });
   dt_gui_add_class(vm->accels_window.sticky_btn, "dt_accels_stick");
   gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);

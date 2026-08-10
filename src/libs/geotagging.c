@@ -1891,8 +1891,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, label, 0, line++, 4, 1);
 
   d->map.gpx_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
-                                            _("select a GPX track file..."), NULL, NULL, NULL, NULL,
-                                            G_CALLBACK(_choose_gpx_callback), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("select a GPX track file..."),
+        .clicked_cb = G_CALLBACK(_choose_gpx_callback),
+        .clicked_data = self,
+      });
   gtk_widget_set_hexpand(d->map.gpx_button, FALSE);
   gtk_widget_set_halign(d->map.gpx_button, GTK_ALIGN_START);
   gtk_widget_set_name(d->map.gpx_button, "non-flat");

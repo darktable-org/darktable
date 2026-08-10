@@ -189,8 +189,11 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_variables_completion(d->entry);
 
   GtkWidget *widget = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
-                                            _("select directory"), NULL, NULL, NULL, NULL,
-                                            G_CALLBACK(button_clicked), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("select directory"),
+        .clicked_cb = G_CALLBACK(button_clicked),
+        .clicked_data = self,
+      });
   gtk_widget_set_name(widget, "non-flat");
 
   d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(title_changed_callback), self,

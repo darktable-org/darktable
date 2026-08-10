@@ -743,10 +743,12 @@ void gui_init(dt_iop_module_t *self)
      _("select the RGB channels taken into account to generate the raster mask"));
 
   g->fbutton = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
-                                     _("select the PFM/PNG file recorded as a raster mask,\n"
-                                       "CAUTION: path must be set in preferences/processing before choosing"),
-                                     NULL, NULL, NULL, NULL,
-                                     G_CALLBACK(_fbutton_clicked), self);
+      &(dtgtk_button_config_t){
+        .tooltip = _("select the PFM/PNG file recorded as a raster mask,\n"
+          "CAUTION: path must be set in preferences/processing before choosing"),
+        .clicked_cb = G_CALLBACK(_fbutton_clicked),
+        .clicked_data = self,
+      });
   gtk_widget_set_name(g->fbutton, "non-flat");
 
   g->file = dt_bauhaus_combobox_new(self);
