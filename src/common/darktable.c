@@ -2133,6 +2133,12 @@ int dt_init(int argc,
   dt_capabilities_add("nonapple");
 #endif
 
+#ifdef HAVE_OPENCV
+  // gates the HDR alignment preferences: without OpenCV the whole merge
+  // auto-alignment path is compiled out, so those prefs are shown greyed out
+  dt_capabilities_add("opencv");
+#endif
+
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);
 
