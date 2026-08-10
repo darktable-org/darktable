@@ -484,30 +484,40 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(vbox);
 
   /* create the widget help button */
-  d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("help"), d->help_button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
-  g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
+  d->help_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_help, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("enable this, then click on a control element to see its online help"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("help"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_lib_help_button_clicked),
+        .clicked_data = d,
+      });
 
   /* create the shortcuts button */
-  d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(d->keymap_button, _("define keyboard shortcuts for on-screen controls\n"
-                                                  "ctrl+click to switch off overwrite confirmations\n"
-                                                  "\n"
-                                                  "after activating:\n"
-                                                  "\n"
-                                                  "- hover over a control (button, slider, etc.) and press\n"
-                                                  "  a keystroke combination (optionally with mouse click,\n"
-                                                  "  move, or scroll while holding down the keys) to\n"
-                                                  "  define a shortcut for the control,\n"
-                                                  "- type an existing combination to delete that mapping\n"
-                                                  "\n"
-                                                  "click on a control, module or screen area to open the\n"
-                                                  "dialog for more detailed configuration\n"
-                                                  "\n"
-                                                  "right-click to exit mapping mode"));
-  g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
+  d->keymap_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_shortcut, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("define keyboard shortcuts for on-screen controls\n"
+          "ctrl+click to switch off overwrite confirmations\n"
+          "\n"
+          "after activating:\n"
+          "\n"
+          "- hover over a control (button, slider, etc.) and press\n"
+          "  a keystroke combination (optionally with mouse click,\n"
+          "  move, or scroll while holding down the keys) to\n"
+          "  define a shortcut for the control,\n"
+          "- type an existing combination to delete that mapping\n"
+          "\n"
+          "click on a control, module or screen area to open the\n"
+          "dialog for more detailed configuration\n"
+          "\n"
+          "right-click to exit mapping mode"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("shortcuts"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_lib_keymap_button_clicked),
+        .clicked_data = d,
+      });
   dt_gui_connect_click_all(d->keymap_button, _lib_keymap_button_pressed, _lib_keymap_button_released, (gpointer)(d));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.

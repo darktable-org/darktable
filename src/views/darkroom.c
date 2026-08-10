@@ -3126,13 +3126,15 @@ void gui_init(dt_view_t *self)
   /* ensure that we get strings from the style files shipped with darktable localized */
 
   /* create second window display button */
-  dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
-  dt_action_define(sa, NULL, N_("second window"),
-                   dev->second_wnd_button, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(dev->second_wnd_button), "clicked",
-                   G_CALLBACK(_second_window_quickbutton_clicked),dev);
-  gtk_widget_set_tooltip_text(dev->second_wnd_button,
-                              _("display a second darkroom image window"));
+  dev->second_wnd_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_display2, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("display a second darkroom image window"),
+        .action = sa,
+        .action_label = N_("second window"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_second_window_quickbutton_clicked),
+        .clicked_data = dev,
+      });
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    dev->second_wnd_button, DT_VIEW_DARKROOM);
 
@@ -3159,14 +3161,18 @@ void gui_init(dt_view_t *self)
 
   /* Enable color assessment conditions */
   {
-    dev->color_assessment.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
+    dev->color_assessment.button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_bulb, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle color assessment conditions\nright-click for options"),
+          .action = DT_ACTION(self),
+          .action_label = N_("color assessment"),
+          .action_def = &dt_action_def_toggle,
+          .toggled_cb = G_CALLBACK(_full_color_assessment_callback),
+          .toggled_data = dev,
+        });
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->color_assessment.button), dev->full.color_assessment);
-    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"), dev->color_assessment.button,
-                          &dt_action_def_toggle);
-    gtk_widget_set_tooltip_text(dev->color_assessment.button, _("toggle color assessment conditions\nright-click for options"));
+    ac = dt_action_widget(dev->color_assessment.button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
-    g_signal_connect(G_OBJECT(dev->color_assessment.button), "toggled",
-                     G_CALLBACK(_full_color_assessment_callback), dev);
 
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->color_assessment.button, DT_VIEW_DARKROOM);
     /* add pop-up window */
@@ -3205,15 +3211,17 @@ void gui_init(dt_view_t *self)
 
   /* Enable late-scaling button */
   dev->late_scaling.button =
-    dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  ac = dt_action_define(sa, NULL, N_("high quality processing"),
-                        dev->late_scaling.button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text
-    (dev->late_scaling.button,
-     _("toggle high quality processing."
-       " if activated darktable processes image data as it does while exporting"));
-  g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked",
-                   G_CALLBACK(_latescaling_quickbutton_clicked), dev);
+    dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("toggle high quality processing."
+          " if activated darktable processes image data as it does while exporting"),
+        .action = sa,
+        .action_label = N_("high quality processing"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_latescaling_quickbutton_clicked),
+        .clicked_data = dev,
+      });
+  ac = dt_action_widget(dev->late_scaling.button);
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      dev->late_scaling.button, DT_VIEW_DARKROOM);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->late_scaling.button),
@@ -3224,14 +3232,18 @@ void gui_init(dt_view_t *self)
   /* create rawoverexposed popup tool */
   {
     // the button
-    dev->rawoverexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, 0, NULL);
-    ac = dt_action_define(sa, N_("raw overexposed"), N_("toggle"),
-                          dev->rawoverexposed.button, &dt_action_def_toggle);
+    dev->rawoverexposed.button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_rawoverexposed, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle indication of raw overexposure\nright-click for options"),
+          .action = sa,
+          .action_section = N_("raw overexposed"),
+          .action_label = N_("toggle"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_rawoverexposed_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->rawoverexposed.button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
-    gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
-                                _("toggle indication of raw overexposure\nright-click for options"));
-    g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
-                     G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->rawoverexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->rawoverexposed.button, "rawoverexposed");
@@ -3288,17 +3300,18 @@ void gui_init(dt_view_t *self)
   /* create overexposed popup tool */
   {
     // the button
-    dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, 0, NULL);
-    ac = dt_action_define(DT_ACTION(self),
-                          N_("overexposed"),
-                          N_("toggle"),
-                          dev->overexposed.button,
-                          &dt_action_def_toggle);
+    dev->overexposed.button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_overexposed, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle clipping indication\nright-click for options"),
+          .action = DT_ACTION(self),
+          .action_section = N_("overexposed"),
+          .action_label = N_("toggle"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_overexposed_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->overexposed.button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, 0);
-    gtk_widget_set_tooltip_text(dev->overexposed.button,
-                                _("toggle clipping indication\nright-click for options"));
-    g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
-                     G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->overexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->overexposed.button, "overexposed");
@@ -3374,27 +3387,33 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, 0, NULL);
-    ac = dt_action_define(sa, NULL, N_("softproof"),
-                          dev->profile.softproof_button, &dt_action_def_toggle);
+    dev->profile.softproof_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_softproof, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle softproofing\nright-click for profile options"),
+          .action = sa,
+          .action_label = N_("softproof"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_softproof_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->profile.softproof_button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
-    gtk_widget_set_tooltip_text(dev->profile.softproof_button,
-                                _("toggle softproofing\nright-click for profile options"));
-    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
-                     G_CALLBACK(_softproof_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->profile.softproof_button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->profile.softproof_button, "softproof");
 
     // the gamut check button
-    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_warning, 0, NULL);
-    ac = dt_action_define(sa, NULL, N_("gamut check"),
-                          dev->profile.gamut_button, &dt_action_def_toggle);
+    dev->profile.gamut_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_warning, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle gamut checking\nright-click for profile options"),
+          .action = sa,
+          .action_label = N_("gamut check"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_gamut_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->profile.gamut_button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);
-    gtk_widget_set_tooltip_text(dev->profile.gamut_button,
-                 _("toggle gamut checking\nright-click for profile options"));
-    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
-                     G_CALLBACK(_gamut_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->profile.gamut_button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->profile.gamut_button, "gamut");
@@ -3561,13 +3580,16 @@ void gui_init(dt_view_t *self)
   {
     // the button
     darktable.view_manager->guides_toggle =
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, 0, NULL);
-    ac = dt_action_define(sa, N_("guide lines"), N_("toggle"),
-                          darktable.view_manager->guides_toggle,
-                          &dt_action_def_toggle);
+      dtgtk_togglebutton_new_full(dtgtk_cairo_paint_grid, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle guide lines\nright-click for guides options"),
+          .action = sa,
+          .action_section = N_("guide lines"),
+          .action_label = N_("toggle"),
+          .action_def = &dt_action_def_toggle,
+        });
+    ac = dt_action_widget(darktable.view_manager->guides_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, 0);
-    gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
-                                _("toggle guide lines\nright-click for guides options"));
     darktable.view_manager->guides_popover =
       dt_guides_popover(self, darktable.view_manager->guides_toggle);
     g_object_ref(darktable.view_manager->guides_popover);
@@ -5445,12 +5467,14 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
   GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
   // Create the pin button
-  GtkWidget *pin_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+  GtkWidget *pin_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_pin, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("pin current image"),
+        .toggled_cb = G_CALLBACK(_preview2_pin_button_clicked),
+        .toggled_data = dev,
+      });
   gtk_widget_set_name(pin_button, "dt_window2_pin_button");
   gtk_widget_set_size_request(pin_button, 24, 24);
-  gtk_widget_set_tooltip_text(pin_button, _("pin current image"));
-  g_signal_connect(G_OBJECT(pin_button), "toggled",
-                   G_CALLBACK(_preview2_pin_button_clicked), dev);
   gtk_box_pack_start(GTK_BOX(button_box), pin_button, FALSE, FALSE, 0);
 
   // Associate the pin button with the toggle COMMAND action registered in
