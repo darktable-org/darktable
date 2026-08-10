@@ -2864,17 +2864,22 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
   if(n_press >= 2) return;
 
   // ignore clicks on buttons inside the header (presets, reset, enable, multiinstance)
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(event)
-  {
 #if GTK_CHECK_VERSION(4, 0, 0)
-    if(gdk_event_get_surface(event) != gtk_widget_get_surface(dt_gui_get_widget(gesture)))
-      return;
+  /* GTK4 has no gtk_get_event_widget(): find the widget under the release
+   * point inside the header instead, and ignore the release if it lands on
+   * (or inside) a button -- the gesture receives releases over the whole
+   * header, including its child buttons (e.g. a press started on the header
+   * and released over a button).  The surface-compare alternative is wrong:
+   * gdk_event_get_surface() always returns this widget's own surface. */
+  GtkWidget *const header = dt_gui_get_widget(gesture);
+  GtkWidget *target = gtk_widget_pick(header, x, y, GTK_PICK_DEFAULT);
+  for(; target && target != header; target = gtk_widget_get_parent(target))
+    if(GTK_IS_BUTTON(target)) return;
 #else
-    if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
-      return;
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(event && GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
+    return;
 #endif
-  }
 
   const guint button = gtk_gesture_single_get_current_button(gesture);
 

@@ -2077,6 +2077,9 @@ static void _view_map_scroll_cb(GtkEventControllerScroll *controller,
 #else
   gdk_event_get_coords(event, &x, &y);
   gdk_event_get_state(event, &state);
+  // the GTK3 current event is an owned copy; free it once x/y/state are
+  // extracted -- the rest of the callback only uses dx/dy
+  gdk_event_free(event);
 #endif
 
   // determine scroll direction from dy
