@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,8 +30,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 #define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.15f
 

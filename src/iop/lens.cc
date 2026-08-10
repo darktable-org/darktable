@@ -43,7 +43,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <ctype.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <lensfun.h>
+
 
 #define MAXKNOTS 16
 #define VIGSPLINES 512

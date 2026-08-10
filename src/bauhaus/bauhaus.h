@@ -26,7 +26,6 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>

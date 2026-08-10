@@ -16,9 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/math.h"
@@ -34,8 +35,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(4, dt_iop_vignette_params_t)
 

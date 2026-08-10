@@ -31,7 +31,6 @@
 #include "imageio/imageio_common.h"
 #include "views/view.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <glib/gstdio.h>
 #include <lcms2.h>

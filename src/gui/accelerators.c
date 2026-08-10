@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "gui/accelerators.h"
@@ -27,7 +28,6 @@
 #include "dtgtk/expander.h"
 #include "bauhaus/bauhaus.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <math.h>
 

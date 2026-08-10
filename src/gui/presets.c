@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -29,10 +30,11 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
-#include <assert.h>
+
 #include <stdlib.h>
 
 #define MAX_FOCAL_LEN 100000

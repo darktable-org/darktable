@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -34,9 +35,10 @@
 #include "gui/presets.h"
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <stdlib.h>
 #include <string.h>
+
 
 DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 
