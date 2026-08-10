@@ -49,7 +49,6 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 
 //#include "common/extra_optimizations.h" // results in crashes on some systems
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>

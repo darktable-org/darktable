@@ -16,10 +16,12 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
 #include "common/bspline.h"
@@ -39,8 +41,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 // Downsampling factor for guided-laplacian
 #define DS_FACTOR 4

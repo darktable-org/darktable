@@ -82,7 +82,6 @@
   #endif
 #endif
 
-#include <assert.h>
 #include <glib/gstdio.h>
 #include <inttypes.h>
 #include <math.h>

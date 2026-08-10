@@ -15,8 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
-#include <assert.h>
+
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -38,6 +39,7 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "libs/colorpicker.h"
+
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 // special marker value for uninitialized (and thus invalid) levels.  Use this in preference

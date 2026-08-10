@@ -15,8 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
-#include <assert.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -803,4 +804,3 @@ void _iop_zonesystem_redraw_preview_callback(gpointer instance, dt_iop_module_t 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

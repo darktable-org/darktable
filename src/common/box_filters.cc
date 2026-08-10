@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #pragma GCC optimize ("finite-math-only", "no-math-errno", "fp-contract=fast", "fast-math")
 #endif
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
