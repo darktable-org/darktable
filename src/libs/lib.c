@@ -47,8 +47,6 @@ typedef struct dt_lib_presets_edit_dialog_t
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
 
-static gpointer _active_menu_item = NULL;
-
 static gchar *_get_lib_view_path(const dt_lib_module_t *module,
                                  const dt_view_t *cv,
                                  char *suffix);
@@ -473,177 +471,66 @@ static void _free_module_info(GtkWidget *widget,
   free(minfo);
 }
 
-static void _dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
-                                            GtkWidget *w)
+/* ---------- lib preset menu (dt_gui_presets_popup_menu_show() ops) ---------- */
+
+static gchar *_lib_presets_query(gpointer data)
 {
-  GtkMenu *menu = GTK_MENU(gtk_menu_new());
-
-  const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
+  (void)data;
   const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
-
-  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(_free_module_info), minfo);
-
-  GtkWidget *mi;
-  int active_preset = -1, cnt = 0;
-  gboolean selected_writeprotect = FALSE;
-  sqlite3_stmt *stmt;
-  // order like the pref value
   // clang-format off
-  gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect, description"
-                                 " FROM data.presets"
-                                 " WHERE operation=?1 AND op_version=?2"
-                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
-                                 default_first ? "DESC" : "ASC");
+  return g_strdup_printf("SELECT name, op_params, writeprotect, description"
+                         " FROM data.presets"
+                         " WHERE operation=?1 AND op_version=?2"
+                         " ORDER BY writeprotect %s, LOWER(name), rowid",
+                         default_first ? "DESC" : "ASC");
   // clang-format on
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+}
+
+static void _lib_presets_bind(sqlite3_stmt *stmt, gpointer data)
+{
+  const dt_lib_module_info_t *minfo = data;
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
-  g_free(query);
+}
 
-  // collect all presets for op from db
-  gboolean found = FALSE;
-  int last_wp = -1;
-  gchar **prev_split = NULL;
-  GtkWidget *submenu = GTK_WIDGET(menu);
-  GtkWidget *mainmenu = submenu;
-  GSList *menu_path = NULL; // stack of menuitems which are the parents of submenus on menu_stack
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+static gboolean _lib_presets_is_active(sqlite3_stmt *stmt, gpointer data,
+                                      gboolean *writeprotect)
+{
+  const dt_lib_module_info_t *minfo = data;
+  const void *op_params = sqlite3_column_blob(stmt, 1);
+  const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+
+  if(op_params_size == minfo->params_size
+     && !memcmp(minfo->params, op_params, op_params_size))
   {
-    // default vs built-in stuff
-    const gboolean writeprotect = sqlite3_column_int(stmt, 2);
-    if(hide_default && writeprotect)
-    {
-      // skip default module if set to hide them.
-      continue;
-    }
-    if(last_wp == -1)
-    {
-      last_wp = writeprotect;
-    }
-    else if(last_wp != writeprotect)
-    {
-      last_wp = writeprotect;
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-      *prev_split[0] = '\0'; // make first level mismatch so we start over
-    }
-
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-    const char *name = (char *)sqlite3_column_text(stmt, 0);
-
-    if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
-      found = TRUE;
-
-    mi = dt_insert_preset_in_menu_hierarchy(name,
-                                            &menu_path, mainmenu, &submenu, &prev_split,
-                                            FALSE, writeprotect);
-
-    // selected in bold:
-    // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
-    // for(int k=0;k<op_params_size && !memcmp(minfo->params, op_params, k);k++)
-    //   printf("compare [%c %c] %d:
-    // %d\n",
-    // ((const char*)(minfo->params))[k],
-    // ((const char*)(op_params))[k],
-    // k, memcmp(minfo->params, op_params, k));
-    if(op_params_size == minfo->params_size
-       && !memcmp(minfo->params, op_params, op_params_size))
-    {
-      active_preset = cnt;
-      selected_writeprotect = writeprotect;
-      dt_gui_add_class(mi, "active_menu_item");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      g_set_weak_pointer(&_active_menu_item, mi);
-      // walk back up the menu hierarchy and highlight the entire path down to the current leaf
-      for(const GSList *mp = menu_path; mp; mp = g_slist_next(mp))
-        dt_gui_add_class(gtk_bin_get_child(GTK_BIN(mp->data)), "active_menu_item");
-    }
-    g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-    g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
-    dt_action_define(&minfo->module->actions, "preset", name, mi, NULL);
-
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(_menuitem_activate_preset), minfo);
-    GtkGestureSingle *gesture =
-      dt_gui_connect_click(mi, NULL, _menuitem_button_preset_released, minfo);
-    gtk_gesture_single_set_button(gesture, GDK_BUTTON_SECONDARY);
-    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture), GTK_PHASE_CAPTURE);
-    g_signal_connect(G_OBJECT(gesture), "begin", G_CALLBACK(dt_gui_gesture_claim), NULL);
-    gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
-    gtk_widget_set_has_tooltip(mi, TRUE);
-    cnt++;
+    *writeprotect = sqlite3_column_int(stmt, 2);
+    return TRUE;
   }
-  sqlite3_finalize(stmt);
+  return FALSE;
+}
 
-  if(cnt > 0)
-  {
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-    cnt = 0;
-  }
+static void _lib_presets_connect_row(GtkWidget *mi, sqlite3_stmt *stmt, gpointer data)
+{
+  dt_lib_module_info_t *minfo = data;
+  const char *name = (const char *)sqlite3_column_text(stmt, 0);
 
-  if(minfo->module->manage_presets)
-  {
-    mi = gtk_menu_item_new_with_label(_("manage presets..."));
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_manage_presets), minfo);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    cnt++;
-  }
-  else if(active_preset >= 0) // FIXME: this doesn't seem to work.
-  {
-    if(!selected_writeprotect)
-    {
-      mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_edit_preset), minfo);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
+  g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
+  dt_action_define(&minfo->module->actions, "preset", name, mi, NULL);
 
-      mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_delete_preset), minfo);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-      cnt++;
-    }
-  }
-  else
-  {
-    mi = gtk_menu_item_new_with_label(_("store new preset.."));
-    if(minfo->params_size == 0)
-    {
-      gtk_widget_set_sensitive(mi, FALSE);
-      gtk_widget_set_tooltip_text(mi, _("nothing to save"));
-    }
-    else
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_new_preset), minfo);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  g_signal_connect(G_OBJECT(mi), "activate",
+                   G_CALLBACK(_menuitem_activate_preset), minfo);
+  GtkGestureSingle *gesture =
+    dt_gui_connect_click(mi, NULL, _menuitem_button_preset_released, minfo);
+  gtk_gesture_single_set_button(gesture, GDK_BUTTON_SECONDARY);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture), GTK_PHASE_CAPTURE);
+  g_signal_connect(G_OBJECT(gesture), "begin", G_CALLBACK(dt_gui_gesture_claim), NULL);
+}
 
-    if(darktable.gui->last_preset && found)
-    {
-      char *local_last_name = dt_util_localize_segmented_name(darktable.gui->last_preset, TRUE);
-      char *markup = g_markup_printf_escaped("%s <b>%s</b>",
-                                             _("update preset"),
-                                             local_last_name);
-      g_free(local_last_name);
-      mi = gtk_menu_item_new_with_label("");
-      gtk_widget_set_sensitive(mi, minfo->params_size > 0);
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_object_set_data_full(G_OBJECT(mi), "dt-preset-name",
-                             g_strdup(darktable.gui->last_preset), g_free);
-      g_signal_connect(G_OBJECT(mi), "activate",
-                       G_CALLBACK(_menuitem_update_preset), minfo);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-      g_free(markup);
-    }
-    cnt++;
-  }
-
-  if(minfo->module->set_preferences)
-  {
-    if(cnt>0)
-    {
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-    }
-    minfo->module->set_preferences(GTK_MENU_SHELL(menu), minfo->module);
-  }
-
-  dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+static void _lib_presets_prefs(GtkMenu *menu, gpointer data)
+{
+  const dt_lib_module_info_t *minfo = data;
+  minfo->module->set_preferences(GTK_MENU_SHELL(menu), minfo->module);
 }
 
 static int _lib_position(const dt_lib_module_t *module)
@@ -1007,8 +894,27 @@ static void _lib_gui_reset_button_clicked_callback(GtkWidget *widget,
 static void _presets_popup_callback(GtkWidget *button,
                                       dt_lib_module_t *module)
 {
-  dt_lib_module_info_t *mi = _get_module_info_for_module(module);
-  _dt_lib_presets_popup_menu_show(mi, button);
+  dt_lib_module_info_t *minfo = _get_module_info_for_module(module);
+
+  const dt_gui_presets_menu_ops_t ops = {
+    .data = minfo,
+    .hide_defaults_pref = "plugins/lighttable/hide_default_presets",
+    .query = _lib_presets_query,
+    .bind = _lib_presets_bind,
+    .is_active = _lib_presets_is_active,
+    .connect_row = _lib_presets_connect_row,
+    .params_size = minfo->params_size,
+    .manage_cb = minfo->module->manage_presets ? G_CALLBACK(_menuitem_manage_presets) : NULL,
+    .edit_cb = G_CALLBACK(_menuitem_edit_preset),
+    .del_cb = G_CALLBACK(_menuitem_delete_preset),
+    .store_cb = G_CALLBACK(_menuitem_new_preset),
+    .update_cb = G_CALLBACK(_menuitem_update_preset),
+    .prefs = minfo->module->set_preferences ? _lib_presets_prefs : NULL,
+  };
+
+  GtkMenu *menu = dt_gui_presets_popup_menu_show(&ops);
+  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(_free_module_info), minfo);
+  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
