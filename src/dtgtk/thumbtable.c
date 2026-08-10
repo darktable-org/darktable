@@ -1171,7 +1171,11 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       }
       table->scroll_value += deltaf;
     }
+    // GTK3: owned copy from dt_gui_get_current_event() (see the same guard
+    // on the other free in this function); GTK4: borrowed, nothing to free
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
     return;
   }
 
