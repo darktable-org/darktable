@@ -1646,10 +1646,11 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add style combo
 
-  GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  GtkWidget *styles_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+                                                   _("select style to be applied on export"),
+                                                   NULL, NULL, NULL, NULL,
+                                                   G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
   gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
-  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
-  gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on export"));
 //  dt_gui_add_help_link(styles, "bottom_panel_styles");
   GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(style_box), _("temporary style to use while exporting"));

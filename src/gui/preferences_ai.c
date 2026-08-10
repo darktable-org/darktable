@@ -1652,10 +1652,10 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     gtk_widget_set_hexpand(data->ort_path_entry, TRUE);
     g_free(cur_path);
 
-    GtkWidget *browse_btn = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+    GtkWidget *browse_btn = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+                                                  _("select a custom ONNX Runtime shared library"),
+                                                  NULL, NULL, NULL, NULL, NULL, NULL);
     gtk_widget_set_name(browse_btn, "non-flat");
-    gtk_widget_set_tooltip_text(browse_btn,
-                                _("select a custom ONNX Runtime shared library"));
 
     GtkWidget *detect_btn = gtk_button_new_with_label(_("detect"));
     gtk_widget_set_tooltip_text(detect_btn,

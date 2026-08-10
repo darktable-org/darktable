@@ -280,10 +280,10 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_variables_completion(d->entry);
   gtk_editable_set_position(GTK_EDITABLE(d->entry), -1);
 
-  GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  GtkWidget *widget = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+                                            _("select directory"), NULL, NULL, NULL, NULL,
+                                            G_CALLBACK(button_clicked), self);
   gtk_widget_set_name(widget, "non-flat");
-  gtk_widget_set_tooltip_text(widget, _("select directory"));
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->onsave_action, self, NULL, N_("on conflict"), NULL,
                                dt_conf_get_int("plugins/imageio/storage/disk/overwrite"),

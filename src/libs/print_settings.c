@@ -2924,10 +2924,11 @@ void gui_init(dt_lib_module_t *self)
 
   const char *current_style_name = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "style");
 
-  GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  GtkWidget *styles_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+                                                   _("select style to be applied on printing"),
+                                                   NULL, NULL, NULL, NULL,
+                                                   G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
   gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
-  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
-  gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on printing"));
   GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(style_box), _("temporary style to use while printing"));
   GtkWidget *styles_label = gtk_label_new(_("style"));

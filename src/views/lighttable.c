@@ -1480,8 +1480,8 @@ void gui_init(dt_view_t *self)
                                      DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM);
 
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, 0, NULL);
-  gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
+  GtkWidget *const profile_button = dtgtk_button_new_full(dtgtk_cairo_paint_display, 0, NULL,
+                                                          _("set display profile"), NULL, NULL, NULL, NULL, NULL, NULL);
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      profile_button, DT_VIEW_LIGHTTABLE);
 

@@ -3100,23 +3100,19 @@ void gui_init(dt_view_t *self)
    */
 
   /* create favorite plugin preset popup tool */
-  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-  dt_action_define(sa, NULL, N_("quick access to presets"),
-                   favorite_presets, &dt_action_def_button);
-  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
-  g_signal_connect(G_OBJECT(favorite_presets), "clicked",
-                   G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
-                   NULL);
+  GtkWidget *favorite_presets = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
+                                                      _("quick access to presets"),
+                                                      sa, NULL, N_("quick access to presets"), &dt_action_def_button,
+                                                      G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu), NULL);
   dt_gui_add_help_link(favorite_presets, "favorite_presets");
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
-  dt_action_define(sa, NULL, N_("quick access to styles"), styles, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(styles), "clicked",
-                   G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
-  gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
+  GtkWidget *styles = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+                                            _("quick access for applying any of your styles"),
+                                            sa, NULL, N_("quick access to styles"), &dt_action_def_button,
+                                            G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   dt_gui_add_help_link(styles, "bottom_panel_styles");
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
   /* ensure that we get strings from the style files shipped with darktable localized */
