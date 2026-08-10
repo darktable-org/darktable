@@ -2386,14 +2386,27 @@ static int _manage_editor_module_so_add_sort(gconstpointer a, gconstpointer b)
   return -res;
 }
 
+/* shared modulegroups popup: the "modulegroups-popup" css name and the
+ * popup anchoring are the same for every tab/basic-button menu */
+static GtkWidget *_manage_popup_new(void)
+{
+  GtkWidget *pop = gtk_menu_new();
+  gtk_widget_set_name(pop, "modulegroups-popup");
+  return pop;
+}
+
+static void _manage_popup_show(GtkWidget *pop, GtkWidget *widget)
+{
+  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+}
+
 static void _manage_module_add_popup(GtkWidget *widget,
                                      dt_lib_modulegroups_group_t *gr,
                                      GCallback callback,
                                      gpointer data,
                                      const gboolean toggle)
 {
-  GtkWidget *pop = gtk_menu_new();
-  gtk_widget_set_name(pop, "modulegroups-popup");
+  GtkWidget *pop = _manage_popup_new();
 
   int nba = 0; // nb of already present items
 
@@ -2477,7 +2490,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
     gtk_menu_shell_prepend(GTK_MENU_SHELL(pop), smt);
   }
 
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  _manage_popup_show(pop, widget);
 }
 
 static gchar *_action_label(dt_action_t *action)
@@ -2653,8 +2666,7 @@ static void _manage_basics_add_popup(GtkWidget *widget,
                                      const gboolean full_menu)
 {
   int nba = 0; // nb of already present items
-  GtkWidget *pop = gtk_menu_new();
-  gtk_widget_set_name(pop, "modulegroups-popup");
+  GtkWidget *pop = _manage_popup_new();
 
   GtkWidget *all_modules =
     _build_menu_from_actions(darktable.control->actions_iops.target, self, NULL,
@@ -2690,7 +2702,7 @@ static void _manage_basics_add_popup(GtkWidget *widget,
     pop = all_modules;
   }
 
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  _manage_popup_show(pop, widget);
 }
 
 static void _manage_editor_basics_add_popup(GtkWidget *widget,
@@ -2754,8 +2766,7 @@ static void _manage_direct_module_popup(GtkGestureSingle *gesture,
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
   int nba = 0; // nb of already present items
-  GtkWidget *pop = gtk_menu_new();
-  gtk_widget_set_name(pop, "modulegroups-popup");
+  GtkWidget *pop = _manage_popup_new();
 
   GtkWidget *this_module = _build_menu_from_actions(module->target, self,
                                                     NULL, pop, TRUE, &nba);
@@ -2852,8 +2863,7 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
 {
   dt_lib_modulegroups_t *d = self->data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
-  GtkWidget *pop = gtk_menu_new();
-  gtk_widget_set_name(pop, "modulegroups-popup");
+  GtkWidget *pop = _manage_popup_new();
 
   const gboolean all_modules = d->current == DT_MODULEGROUP_NONE;
   const gboolean active_history = d->current == DT_MODULEGROUP_ACTIVE_PIPE && d->full_active;
@@ -2873,7 +2883,7 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
                                          _("show only the modules that are currently enabled"),
                                          active_only, DT_MODULEGROUP_POPUP_ACTIVE, self));
 
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  _manage_popup_show(pop, widget);
 }
 
 static void _dt_dev_image_changed_callback(gpointer instance,
