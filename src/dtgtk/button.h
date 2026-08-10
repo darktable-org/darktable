@@ -45,7 +45,8 @@ struct _GtkDarktableButton
   GtkWidget *canvas;
 };
 
-/** instantiate a new darktable button control passing paint function as content */
+/** instantiate a new darktable button control passing paint function as content;
+ * for the tooltip/action/click wiring variant see dtgtk_button_new_full(). */
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 
 /** instantiate a new darktable button and wire the common extras: a tooltip,
@@ -61,6 +62,8 @@ typedef struct dtgtk_button_config_t
 {
   /** tooltip text, NULL for none */
   const gchar *tooltip;
+  /** tooltip markup (plain text wins if both are set), NULL for none */
+  const gchar *tooltip_markup;
   /** action owner for dt_action_define(), NULL for none; pass DT_ACTION(x)
    * or &module->actions -- iop modules dispatch to dt_action_define_iop() */
   struct dt_action_t *action;
