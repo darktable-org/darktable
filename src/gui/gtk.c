@@ -807,8 +807,6 @@ static void _touchpad_gestures_pref_changed(gpointer instance,
   gui->touchpad_gestures_enabled = dt_conf_get_bool("darkroom/ui/touchpad_gestures");
 }
 
-static gboolean _touchpad_pinch_active = FALSE;
-
 /* record the device that produced a touchpad gesture, so a follow-up smooth
  * scroll stream from a possibly-different device is still panned (see
  * dt_gui_scroll_should_pan).  Replaces the old _input_event switch. */
@@ -830,88 +828,27 @@ static void _record_touchpad_device(const GdkEvent *event)
 /* GtkGestureZoom replaces the old "event" signal handler that forwarded raw
  * GDK_TOUCHPAD_PINCH events: the phase field becomes the begin /
  * scale-changed / end signals (and "end" fires on cancel as well, so the
- * view's END/CANCEL reset still runs).  GtkGestureZoom also recognizes
- * touchscreen pinches, which were never handled before -- ignore those for
- * parity.  dx/dy are not part of the zoom API and are pulled from the last
- * event, as are the focal point (root coords on GTK3) and the state. */
+ * view's END/CANCEL reset still runs).  The gesture setup, the touchscreen
+ * pinch filter, the enabled pref and the active tracking are all inside
+ * dt_gui_connect_pinch(); this handler only records the pinch device (for the
+ * follow-up scroll pan routing) and forwards the parsed event. */
 static void _pinch_event(GtkGesture *gesture,
-                         const GdkTouchpadGesturePhase phase,
-                         const gboolean have_event)
+                         const dt_gui_pinch_event_t *e,
+                         gpointer user_data)
 {
+  (void)user_data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
-  gdouble x_root = 0.0, y_root = 0.0, dx = 0.0, dy = 0.0, scale = 1.0;
-  int state = 0;
-
-  if(have_event)
-  {
-    const GdkEvent *event = gtk_gesture_get_last_event(gesture, NULL);
-    if(event)
-    {
-      _record_touchpad_device(event);
-      if(dt_gdk_event_get_type(event) == GDK_TOUCHPAD_PINCH)
-      {
-        dt_gdk_touchpad_pinch_get_deltas(event, &dx, &dy);
-        scale = dt_gdk_touchpad_pinch_get_scale(event);
-        state = dt_gdk_event_get_state(event) & 0xf;
-#if GTK_CHECK_VERSION(4, 0, 0)
-        /* GTK4 has no root-coords API; the event position is surface-relative.
-         * The consumers convert root coords to widget-local via
-         * gdk_window_get_origin(), which is also GTK3-only -- passing the
-         * surface-relative position here keeps the offset error constant per
-         * widget position and needs a real coords decision on the GTK4 port. */
-        gdk_event_get_position(event, &x_root, &y_root);
-#else
-        x_root = dt_gdk_event_get_root_x(event);
-        y_root = dt_gdk_event_get_root_y(event);
-#endif
-      }
-      else
-      {
-        // touchscreen pinch: never handled before, keep ignoring it
-        return;
-      }
-    }
-  }
+  if(e->event) _record_touchpad_device(e->event);
 
   dt_print(DT_DEBUG_INPUT,
            "[touchpad] pinch x=%.2f y=%.2f phase=%d dx=%.3f dy=%.3f scale=%.6f state=0x%x",
-           x_root, y_root, phase, dx, dy, scale, state);
-  if(dt_view_manager_gesture_pinch(darktable.view_manager, x_root, y_root,
-                                   dx, dy, phase, scale, state))
+           e->x, e->y, e->phase, e->dx, e->dy, e->scale, e->state);
+  if(dt_view_manager_gesture_pinch(darktable.view_manager, e->x, e->y,
+                                   e->dx, e->dy, e->phase, e->scale, e->state))
     gtk_widget_queue_draw(widget);
   else
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] pinch ignored by current view");
-}
-
-static void _pinch_begin_cb(GtkGestureZoom *gesture, gpointer user_data)
-{
-  if(!darktable.gui->touchpad_gestures_enabled) return;
-  // GtkGestureZoom also recognizes touchscreen pinches, which were never
-  // handled before: only touchpad pinches set the active flag
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
-  _touchpad_pinch_active = TRUE;
-  _pinch_event(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, TRUE);
-}
-
-static void _pinch_scale_changed_cb(GtkGestureZoom *gesture,
-                                    gdouble scale,
-                                    gpointer user_data)
-{
-  if(!darktable.gui->touchpad_gestures_enabled || !_touchpad_pinch_active) return;
-  _pinch_event(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE);
-}
-
-static void _pinch_end_cb(GtkGestureZoom *gesture, gpointer user_data)
-{
-  // also fires after cancel (see gtkgesture.c: the cancel path ends the
-  // sequence), so the view's END/CANCEL handling always runs; the sequence's
-  // last event is already gone here, hence no event data
-  if(!_touchpad_pinch_active) return;
-  _touchpad_pinch_active = FALSE;
-  if(!darktable.gui->touchpad_gestures_enabled) return;
-  _pinch_event(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_END, FALSE);
 }
 
 /* touchpad swipe: only used to record the source device for the follow-up
@@ -1847,11 +1784,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     dt_gui_connect_scroll(widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                           _scrolled, NULL);
 
-    GtkGesture *zoom = gtk_gesture_zoom_new(widget);
-    dt_gui_add_controller(widget, zoom);
-    g_signal_connect(zoom, "begin", G_CALLBACK(_pinch_begin_cb), NULL);
-    g_signal_connect(zoom, "scale-changed", G_CALLBACK(_pinch_scale_changed_cb), NULL);
-    g_signal_connect(zoom, "end", G_CALLBACK(_pinch_end_cb), NULL);
+    dt_gui_connect_pinch(widget, _pinch_event, NULL);
 
     GtkGesture *swipe = gtk_gesture_swipe_new(widget);
     dt_gui_add_controller(widget, swipe);
@@ -5209,6 +5142,110 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
   if(drag_begin) g_signal_connect(gesture, "drag-begin", G_CALLBACK(drag_begin), data);
   if(drag_end) g_signal_connect(gesture, "drag-end", G_CALLBACK(drag_end), data);
   if(drag_update) g_signal_connect(gesture, "drag-update", G_CALLBACK(drag_update), data);
+
+  return gesture;
+}
+
+/* per-gesture state for dt_gui_connect_pinch: handler + active tracking.  Kept
+ * on the gesture object (g_object_set_data_full) so it lives exactly as long
+ * as the gesture -- no static state, safe for several pinch gestures at once. */
+typedef struct dt_gui_pinch_ctx_t
+{
+  dt_gui_pinch_handler_t handler;
+  gpointer user_data;
+  gboolean active;
+} dt_gui_pinch_ctx_t;
+
+static void _pinch_dispatch(GtkGesture *gesture,
+                            const GdkTouchpadGesturePhase phase,
+                            const gboolean have_event)
+{
+  dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
+  if(!ctx) return;
+
+  dt_gui_pinch_event_t e = { 0 };
+  e.phase = phase;
+  e.scale = 1.0;   /* the default when the sequence's last event is gone (END) */
+  if(have_event)
+  {
+    e.event = gtk_gesture_get_last_event(gesture, NULL);
+    if(e.event)
+    {
+      if(dt_gdk_event_get_type(e.event) != GDK_TOUCHPAD_PINCH)
+      {
+        // touchscreen pinches were never handled before: keep ignoring them
+        return;
+      }
+      dt_gdk_touchpad_pinch_get_deltas(e.event, &e.dx, &e.dy);
+      e.scale = dt_gdk_touchpad_pinch_get_scale(e.event);
+      e.state = dt_gdk_event_get_state(e.event) & 0xf;
+#if GTK_CHECK_VERSION(4, 0, 0)
+      // GTK4 has no root-coords API: surface-relative position (see gtk.c)
+      gdk_event_get_position(e.event, &e.x, &e.y);
+#else
+      e.x = dt_gdk_event_get_root_x(e.event);
+      e.y = dt_gdk_event_get_root_y(e.event);
+#endif
+    }
+  }
+
+  ctx->handler(gesture, &e, ctx->user_data);
+}
+
+static void _pinch_begin(GtkGestureZoom *gesture, gpointer user_data)
+{
+  (void)user_data;
+  dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
+  if(!ctx || !darktable.gui->touchpad_gestures_enabled) return;
+  // GtkGestureZoom also recognizes touchscreen pinches, which were never
+  // handled before: only touchpad pinches set the active flag
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
+  ctx->active = TRUE;
+  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, TRUE);
+}
+
+static void _pinch_scale_changed(GtkGestureZoom *gesture,
+                                 gdouble scale,
+                                 gpointer user_data)
+{
+  (void)scale;
+  (void)user_data;
+  dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
+  if(!ctx || !darktable.gui->touchpad_gestures_enabled || !ctx->active) return;
+  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE);
+}
+
+static void _pinch_end(GtkGestureZoom *gesture, gpointer user_data)
+{
+  (void)user_data;
+  dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
+  if(!ctx || !ctx->active) return;
+  ctx->active = FALSE;
+  if(!darktable.gui->touchpad_gestures_enabled) return;
+  // also fires after cancel (see gtkgesture.c: the cancel path ends the
+  // sequence), so the consumer's END/CANCEL handling always runs; the
+  // sequence's last event is already gone here, hence no event data
+  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_END, FALSE);
+}
+
+GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
+                                   dt_gui_pinch_handler_t handler,
+                                   gpointer data)
+{
+  GtkGesture *gesture = gtk_gesture_zoom_new(widget);
+  dt_gui_add_controller(widget, gesture);
+  // GTK4 GtkGesture *gesture = gtk_gesture_zoom_new();
+  //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
+
+  dt_gui_pinch_ctx_t *ctx = g_new0(dt_gui_pinch_ctx_t, 1);
+  ctx->handler = handler;
+  ctx->user_data = data;
+  g_object_set_data_full(G_OBJECT(gesture), "dt-gui-pinch-ctx", ctx, g_free);
+
+  g_signal_connect(gesture, "begin", G_CALLBACK(_pinch_begin), NULL);
+  g_signal_connect(gesture, "scale-changed", G_CALLBACK(_pinch_scale_changed), NULL);
+  g_signal_connect(gesture, "end", G_CALLBACK(_pinch_end), NULL);
 
   return gesture;
 }
