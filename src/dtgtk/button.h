@@ -73,10 +73,17 @@ typedef struct dtgtk_button_config_t
   const gchar *action_label;
   /** action definition, e.g. &dt_action_def_button */
   const dt_action_def_t *action_def;
-  /** "clicked" callback, NULL for none */
+  /** "clicked" callback, NULL for none; connected by
+   * dtgtk_button_new_full(), and by dtgtk_togglebutton_new_full() for the
+   * toggles that use a plain click */
   GCallback clicked_cb;
   /** user data passed to clicked_cb */
   gpointer clicked_data;
+  /** "toggled" callback, NULL for none; connected by
+   * dtgtk_togglebutton_new_full() */
+  GCallback toggled_cb;
+  /** user data passed to toggled_cb */
+  gpointer toggled_data;
 } dtgtk_button_config_t;
 
 GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,

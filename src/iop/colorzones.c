@@ -2672,11 +2672,13 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_edit_by_area_callback), self);
 
   // display selection
-  g->bt_showmask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
+  g->bt_showmask = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_showmask, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("display selection"),
+        .toggled_cb = G_CALLBACK(_display_mask_callback),
+        .toggled_data = self,
+      });
   dt_gui_add_class(g->bt_showmask, "dt_transparent_background");
-  gtk_widget_set_tooltip_text(g->bt_showmask, _("display selection"));
-  g_signal_connect(G_OBJECT(g->bt_showmask), "toggled",
-                   G_CALLBACK(_display_mask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
 
   self->widget = dt_gui_vbox

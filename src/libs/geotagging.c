@@ -1807,11 +1807,13 @@ void gui_init(dt_lib_module_t *self)
   box = _gui_init_datetime(_("original date/time"), &d->dt0, 1, self, group, NULL, NULL);
   gtk_grid_attach(grid, box, 0, line++, 4, 1);
 
-  d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  gtk_widget_set_tooltip_text(d->lock_offset,
-                              _("lock date/time offset value to apply it onto another selection"));
+  d->lock_offset = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lock, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("lock date/time offset value to apply it onto another selection"),
+        .clicked_cb = G_CALLBACK(_toggle_lock_button_callback),
+        .clicked_data = (gpointer)self,
+      });
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
-  g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
 
   box = _gui_init_datetime(_("date/time offset"), &d->of, 2, self, group, d->lock_offset,
                            _("offset or difference ([-]dd hh:mm:ss[.sss])"));

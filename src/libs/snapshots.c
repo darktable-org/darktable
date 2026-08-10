@@ -874,14 +874,16 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), d->take_button, TRUE, TRUE, 0);
-  d->sidebyside_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
-  dt_action_define(DT_ACTION(self), NULL, N_("side-by-side"),
-                   d->sidebyside_button, &dt_action_def_toggle);
+  d->sidebyside_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("place the snapshot side-by-side / above-below the current image instead of overlaying"),
+        .action = DT_ACTION(self),
+        .action_label = N_("side-by-side"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_sidebyside_button_clicked),
+        .clicked_data = self,
+      });
   gtk_box_pack_start(GTK_BOX(hbox), d->sidebyside_button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->sidebyside_button), "clicked",
-                   G_CALLBACK(_sidebyside_button_clicked), self);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->sidebyside_button),
-                              _("place the snapshot side-by-side / above-below the current image instead of overlaying"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 

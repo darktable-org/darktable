@@ -3108,30 +3108,33 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_buttons), scrollbox, TRUE, TRUE, 0);
 
   // basic group button
-  d->basic_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basics, 0, NULL);
-  {
-    dt_gui_connect_click_secondary(d->basic_btn, _manage_direct_basic_popup, NULL, self);
-  }
-  g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel\n"
-                                              "right-click tab icon to add/remove widgets"));
-  dt_action_define(DT_ACTION(self), NULL,
-                   N_("quick access panel"), d->basic_btn, &dt_action_def_toggle);
+  d->basic_btn = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_modulegroup_basics, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("quick access panel\n"
+          "right-click tab icon to add/remove widgets"),
+        .action = DT_ACTION(self),
+        .action_label = N_("quick access panel"),
+        .action_def = &dt_action_def_toggle,
+        .toggled_cb = G_CALLBACK(_lib_modulegroups_toggle),
+        .toggled_data = self,
+      });
+  dt_gui_connect_click_secondary(d->basic_btn, _manage_direct_basic_popup, NULL, self);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->basic_btn, TRUE, TRUE, 0);
 
   d->vbox_basic = NULL;
   d->basics = NULL;
 
   // active group button
-  d->active_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, 0, NULL);
-  {
-    dt_gui_connect_click_secondary(d->active_btn, _manage_direct_active_popup, NULL, self);
-  }
-  g_signal_connect(d->active_btn, "toggled",
-                   G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->active_btn, _("show only active modules"));
-  dt_action_define(DT_ACTION(self), NULL, N_("active modules"),
-                   d->active_btn, &dt_action_def_toggle);
+  d->active_btn = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_modulegroup_active, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("show only active modules"),
+        .action = DT_ACTION(self),
+        .action_label = N_("active modules"),
+        .action_def = &dt_action_def_toggle,
+        .toggled_cb = G_CALLBACK(_lib_modulegroups_toggle),
+        .toggled_data = self,
+      });
+  dt_gui_connect_click_secondary(d->active_btn, _manage_direct_active_popup, NULL, self);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->active_btn, TRUE, TRUE, 0);
 
   // cycle module groups action
@@ -3286,15 +3289,16 @@ static void _buttons_update(dt_lib_module_t *self)
   for(l = d->groups; l; l = g_list_next(l))
   {
     dt_lib_modulegroups_group_t *gr = l->data;
-    GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
-    g_object_set_data(G_OBJECT(bt), "group", gr);
-    {
-      dt_gui_connect_click_secondary(bt, _manage_direct_popup, NULL, self);
-    }
-    g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
     char *tooltip = g_strdup_printf(_("%s\nright-click tab icon to add/remove modules"), gr->name);
-    gtk_widget_set_tooltip_text(bt, tooltip);
+    GtkWidget *bt = dtgtk_togglebutton_new_full(_buttons_get_icon_fct(gr->icon), 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = tooltip,
+          .toggled_cb = G_CALLBACK(_lib_modulegroups_toggle),
+          .toggled_data = self,
+        });
     g_free(tooltip);
+    g_object_set_data(G_OBJECT(bt), "group", gr);
+    dt_gui_connect_click_secondary(bt, _manage_direct_popup, NULL, self);
     gr->button = bt;
     gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
     gtk_widget_show(bt);
