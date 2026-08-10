@@ -2849,6 +2849,9 @@ static void _side_panel_press(GtkGestureSingle *gesture,
                               gdouble y,
                               gpointer user_data)
 {
+  // this gesture only serves right clicks; a primary press would be a
+  // shortcut-activated toggle/activate effect (see dt_gui_current_button)
+  if(dt_gui_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
   _add_remove_modules(NULL);
 }
 
@@ -4285,7 +4288,18 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
     dt_gui_connect_scroll(GTK_WIDGET(notebook),
                           GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
                           _notebook_scroll_callback, NULL);
-    dt_gui_connect_click(GTK_WIDGET(notebook), _notebook_button_press_callback, NULL, NULL);
+    GtkGestureSingle *const notebook_click =
+      dt_gui_connect_click(GTK_WIDGET(notebook), _notebook_button_press_callback, NULL, NULL);
+#if GTK_CHECK_VERSION(4, 0, 0)
+    (void)notebook_click;
+#else
+    /* GtkNotebook overrides the button-press class handler and never chains
+     * up to gtk_widget_real_button_event(), so a BUBBLE-phase gesture never
+     * sees notebook presses; TARGET phase dispatches from
+     * gtk_widget_event_internal() for events delivered to the notebook
+     * itself (tab presses do target it -- GtkLabel has no own window). */
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(notebook_click), GTK_PHASE_TARGET);
+#endif
   }
   if(_current_action_def)
   {
@@ -5137,6 +5151,14 @@ GtkGestureSingle *(dt_gui_connect_click_secondary)(GtkWidget *widget,
 {
   GtkGestureSingle *gesture = dt_gui_connect_click(widget, pressed, released, data);
   gtk_gesture_single_set_button(gesture, GDK_BUTTON_SECONDARY);
+  /* make the right-button shortcut effects reachable: store the gesture under
+   * DT_ACTION_GESTURE_KEY so _action_process_toggle/_action_process_button
+   * route "right-toggle"/"right-on"/"activate-right" through the same
+   * "pressed" signal a real right-click produces.  Handlers must read
+   * dt_gui_current_button()/dt_gui_current_state() (gtk.h) so a
+   * primary-effect shortcut (which emits a synthetic primary press) is not
+   * mistaken for a right click. */
+  g_object_set_data(G_OBJECT(widget), DT_ACTION_GESTURE_KEY, gesture);
   return gesture;
 }
 

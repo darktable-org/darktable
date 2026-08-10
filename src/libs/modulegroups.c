@@ -2748,6 +2748,9 @@ static void _manage_direct_popup(GtkGestureSingle *gesture,
                                  gdouble y,
                                  dt_lib_module_t *self)
 {
+  // this gesture only serves right clicks; a primary press would be a
+  // shortcut-activated toggle effect (see dt_gui_current_button in gtk.h)
+  if(dt_gui_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
   GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return;
@@ -2761,6 +2764,16 @@ static void _manage_direct_basic_popup(GtkGestureSingle *gesture,
                                        gdouble y,
                                        dt_lib_module_t *self)
 {
+  /* a shortcut-activated primary press (toggle/on/off effect, see
+   * dt_gui_current_button() in gtk.h) flips the button; real clicks on
+   * this secondary-only gesture are always secondary and open the popup */
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  {
+    GtkWidget *widget = dt_gui_get_widget(gesture);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                 !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+    return;
+  }
   _manage_basics_add_popup(dt_gui_get_widget(gesture), self, TRUE);
 }
 
@@ -2770,6 +2783,9 @@ static void _manage_direct_module_popup(GtkGestureSingle *gesture,
                                         gdouble y,
                                         dt_lib_module_t *self)
 {
+  // this gesture only serves right clicks; a primary press would be a
+  // shortcut-activated toggle effect (see dt_gui_current_button in gtk.h)
+  if(dt_gui_current_button(gesture) != GDK_BUTTON_SECONDARY) return;
   GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
@@ -2869,6 +2885,16 @@ static void _manage_direct_active_popup(GtkGestureSingle *gesture,
                                          gdouble y,
                                          dt_lib_module_t *self)
 {
+  /* a shortcut-activated primary press (toggle/on/off effect, see
+   * dt_gui_current_button() in gtk.h) flips the button; real clicks on
+   * this secondary-only gesture are always secondary and open the popup */
+  if(dt_gui_current_button(gesture) == GDK_BUTTON_PRIMARY)
+  {
+    GtkWidget *widget = dt_gui_get_widget(gesture);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                 !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+    return;
+  }
   dt_lib_modulegroups_t *d = self->data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkWidget *pop = _manage_popup_new();

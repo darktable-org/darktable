@@ -1036,17 +1036,22 @@ static void _lib_plugin_header_button_release_cb(GtkGestureSingle *gesture,
                                                     dt_lib_module_t *module)
 {
   // ignore clicks on buttons inside the header (presets, reset, enable)
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(event)
-  {
 #if GTK_CHECK_VERSION(4, 0, 0)
-    if(gdk_event_get_surface(event) != gtk_widget_get_surface(dt_gui_get_widget(gesture)))
-      return;
+  /* GTK4 has no gtk_get_event_widget(): find the widget under the release
+   * point inside the header instead, and ignore the release if it lands on
+   * (or inside) a button -- the gesture receives releases over the whole
+   * header, including its child buttons.  The surface-compare alternative
+   * is wrong: gdk_event_get_surface() always returns this widget's own
+   * surface. */
+  GtkWidget *const header = dt_gui_get_widget(gesture);
+  GtkWidget *target = gtk_widget_pick(header, x, y, GTK_PICK_DEFAULT);
+  for(; target && target != header; target = gtk_widget_get_parent(target))
+    if(GTK_IS_BUTTON(target)) return;
 #else
-    if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
-      return;
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(event && GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
+    return;
 #endif
-  }
   _lib_plugin_arrow_button_press_cb(gesture, n_press, x, y, module);
 }
 

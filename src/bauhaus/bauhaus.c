@@ -747,20 +747,25 @@ static void _popup_button_press_cb(GtkGestureSingle *gesture,
   dt_bauhaus_widget_t *w = bh->current;
   const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  // reject clicks that come from outside the popup area window
-  const GdkEvent *cur_event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(cur_event)
-  {
+  // reject clicks that come from outside the popup area window.  Under GTK3
+  // the popup holds a grab (gtk_grab_add() in _window_show), so foreign
+  // clicks still arrive at this gesture and the window comparison rejects
+  // them.  GTK4 removed gtk_grab_add(): pointer events are only delivered
+  // inside the popup's own surface, so there is nothing foreign to reject --
+  // and gtk_widget_get_surface() is not public API; the naive
+  // gtk_native_get_surface(gtk_widget_get_native()) replacement would always
+  // return the event's own surface and never fire.
 #if GTK_CHECK_VERSION(4, 0, 0)
-    if(gdk_event_get_surface(cur_event) != gtk_widget_get_surface(dt_gui_get_widget(gesture)))
+  /* GTK4: no foreign clicks to reject (see above). */
 #else
-    if(dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(dt_gui_get_widget(gesture)))
-#endif
-    {
-      _popup_reject();
-      return;
-    }
+  const GdkEvent *cur_event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(cur_event
+     && dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(dt_gui_get_widget(gesture)))
+  {
+    _popup_reject();
+    return;
   }
+#endif
 
   if(button == GDK_BUTTON_PRIMARY)
   {

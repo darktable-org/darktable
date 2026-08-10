@@ -269,16 +269,33 @@ static float _action_process_toggle(gpointer target,
     }
     else
     {
-      /* no stored gesture: a plain GTK button.  Its internal press gesture
-       * is primary-button-only, so the synthetic press+release GTK3 used
-       * to toggle for the primary/ctrl variants and do nothing for the
-       * right variant (a secondary press is ignored by the button);
-       * gtk_widget_activate() is the GTK4-compatible equivalent of the
-       * primary press+release, and the right variant stays a no-op -- the
-       * widget's own secondary-click gesture, if any, is not reachable
-       * from keyboard shortcuts in GTK4. */
-      if(effect == DT_ACTION_EFFECT_TOGGLE || effect == DT_ACTION_EFFECT_TOGGLE_CTRL)
-        gtk_widget_activate(GTK_WIDGET(target));
+      /* no stored gesture: a plain GTK toggle button.  Its internal press
+       * gesture is primary-button-only and the "clicked"/"toggled" wiring
+       * lives in the button itself, so gtk_widget_activate() is the
+       * GTK4-compatible equivalent of the synthetic press+release GTK3
+       * used.  DT_ACTION_TOGGLE_NEEDED above already restricts the ON/OFF
+       * effects to the state change they demand, so a single flip via
+       * activate() is right for every effect: the toggle variants flip,
+       * the ON/OFF variants flip only when the button is in the wrong
+       * state, and the right variants have no distinct right-click handler
+       * on a plain button and flip like the primary (the old synthetic
+       * secondary press fell back to gtk_button_clicked() the same way;
+       * a widget whose right-click behavior lives in a gesture uses the
+       * stored-gesture branch above). */
+      switch(effect)
+      {
+        case DT_ACTION_EFFECT_TOGGLE:
+        case DT_ACTION_EFFECT_TOGGLE_CTRL:
+        case DT_ACTION_EFFECT_ON:
+        case DT_ACTION_EFFECT_OFF:
+        case DT_ACTION_EFFECT_ON_CTRL:
+        case DT_ACTION_EFFECT_TOGGLE_RIGHT:
+        case DT_ACTION_EFFECT_ON_RIGHT:
+          gtk_widget_activate(GTK_WIDGET(target));
+          break;
+        default:
+          break;
+      }
     }
 
     value = gtk_toggle_button_get_active(target);
@@ -316,10 +333,13 @@ static float _action_process_button(gpointer target,
     {
       /* no stored gesture: a plain GTK button.  Its internal press gesture
        * is primary-button-only, so the old synthetic press+release ran the
-       * "clicked" handler for the primary/ctrl variants and nothing for the
-       * right variant (a secondary press is ignored by the button);
-       * gtk_widget_activate() is the GTK4-compatible equivalent, and the
-       * right variant stays a no-op. */
+       * "clicked" handler for the primary/ctrl variants and reached the
+       * then-still-connected button-press-event handlers for the right
+       * variant; those handlers now live in gestures (routed through the
+       * stored-gesture branch above), so on a plain button a right-click
+       * shortcut has nothing left to reach and stays a no-op.
+       * gtk_widget_activate() is the GTK4-compatible equivalent of the
+       * primary press+release. */
       if(effect == DT_ACTION_EFFECT_ACTIVATE || effect == DT_ACTION_EFFECT_ACTIVATE_CTRL)
         gtk_widget_activate(GTK_WIDGET(target));
     }
