@@ -1732,21 +1732,21 @@ GtkMenu *dt_gui_presets_popup_menu_show(const dt_gui_presets_menu_ops_t *ops)
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ops->manage_cb), ops->data);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   }
-  else if(active_preset >= 0) // FIXME: this doesn't seem to work.
+  else if(active_preset >= 0 && !selected_writeprotect)
   {
-    if(!selected_writeprotect)
-    {
-      mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ops->edit_cb), ops->data);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    mi = gtk_menu_item_new_with_label(_("edit this preset.."));
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ops->edit_cb), ops->data);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
-      mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ops->del_cb), ops->data);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    }
+    mi = gtk_menu_item_new_with_label(_("delete this preset"));
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ops->del_cb), ops->data);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   }
   else
   {
+    /* no active preset, or the active preset is writeprotect (a shipped
+     * default): edit/delete are not allowed, so fall through to store/
+     * update instead of leaving a bare separator behind the preset list. */
     mi = gtk_menu_item_new_with_label(_("store new preset.."));
     if(ops->params_size == 0)
     {
