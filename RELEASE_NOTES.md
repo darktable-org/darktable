@@ -157,6 +157,9 @@ changes (where available).
   cache and while checking for requested tiling thus reducing oom kills
   on small systems.
 
+- Fixed possible over-allocations of OpenCL memory that could lead to
+  instabilities or dt crashing on small devices
+
 ## Lua
 
 ### API Version
