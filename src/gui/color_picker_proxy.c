@@ -577,6 +577,11 @@ gboolean dt_iop_color_picker_is_active(GtkWidget *w)
   return p && p->colorpick == w;
 }
 
+void dt_color_picker_toggle(GtkWidget *target)
+{
+  _color_picker_widget_toggle(target, DT_ACTION_EFFECT_TOGGLE, 1.0f);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
