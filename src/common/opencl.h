@@ -567,9 +567,6 @@ dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
 
-/** get size of allocatable single buffer */
-cl_ulong dt_opencl_get_device_memalloc(const int devid);
-
 /** round size to a multiple of the value given in the device specifig
  * config parameter for opencl_size_roundup */
 int dt_opencl_dev_roundup_width(const int size,
@@ -705,10 +702,6 @@ static inline void dt_opencl_update_settings(void)
   return ;
 }
 static inline size_t dt_opencl_get_device_available(const int devid)
-{
-  return 0;
-}
-static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
   return 0;
 }
