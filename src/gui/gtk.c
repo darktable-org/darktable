@@ -5007,10 +5007,29 @@ static void _scroll_proxy_real(GtkEventControllerScroll* controller,
      && !gdk_event_get_pointer_emulated(event)
      && !_scroll_sidebar(controller, dy, event))
   {
-    if(dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH)
+    const GdkScrollDirection direction = dt_gdk_event_get_scroll_direction(event);
+    if(direction == GDK_SCROLL_SMOOTH)
     {
+      // Wheel notches arrive here as GDK_SCROLL_SMOOTH events with
+      // |delta| == 1.0.  For the discrete proxy a notch must be exactly
+      // one step, so keep those deltas unattenuated: attenuating a notch
+      // to 0.95 (the Linux/Windows scale) left it below the 1.0 emit
+      // threshold, so the first notch of a direction silently did
+      // nothing, and the fractional remainder it built up made the first
+      // tick after a direction change do nothing either.  The non-
+      // discrete (smooth/touchpad) proxy keeps the attenuation.  macOS
+      // scroll deltas are distance-based (several units per event), so it
+      // keeps the compression on both paths.
+#ifdef GDK_WINDOWING_QUARTZ
       dx = _scroll_attenuate(dx);
       dy = _scroll_attenuate(dy);
+#else
+      if(!discrete)
+      {
+        dx = _scroll_attenuate(dx);
+        dy = _scroll_attenuate(dy);
+      }
+#endif
       if(discrete)
       {
         // a change in scroll direction must not be spent cancelling the
