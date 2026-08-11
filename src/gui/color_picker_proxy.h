@@ -111,6 +111,10 @@ gboolean dt_iop_color_picker_is_active(GtkWidget *w);
  * (dt_action_def_color_picker -> _color_picker_widget_toggle) */
 void dt_color_picker_toggle(GtkWidget *target);
 
+/* activate a standalone picker toggle button like a real click, with the
+ * right button selecting area mode and the left one point mode */
+void dt_color_picker_click(GtkWidget *target, const gboolean right);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
