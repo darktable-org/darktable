@@ -106,6 +106,11 @@ GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module,
 
 gboolean dt_iop_color_picker_is_active(GtkWidget *w);
 
+/* toggle a standalone picker toggle button programmatically; routes through
+ * the same shared entry as real clicks and shortcuts
+ * (dt_action_def_color_picker -> _color_picker_widget_toggle) */
+void dt_color_picker_toggle(GtkWidget *target);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
