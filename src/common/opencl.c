@@ -3180,6 +3180,8 @@ int dt_opencl_write_buffer_to_device(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  if(darktable.opencl->dev[devid].used_available < size)
+    return CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_event *eventp = _opencl_events_get_slot
     (devid, "[Write Buffer (from host to device)]");
 
@@ -3207,6 +3209,8 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
+  if(darktable.opencl->dev[devid].used_available < size)
+    return NULL;
   const gboolean oversize = size > (darktable.opencl->dev[devid].max_mem_constant / 8);
   const int mode = oversize ? CL_MEM_COPY_HOST_PTR : CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
 
@@ -3368,7 +3372,9 @@ void *dt_opencl_alloc_device(const int devid,
     return NULL;
 
   dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
+  if(cl->dev[devid].max_image_width < width
+      || cl->dev[devid].max_image_height < height
+      || cl->dev[devid].used_available < (size_t)width * height * bpp)
     return NULL;
 
   cl_int err = CL_SUCCESS;
@@ -3418,7 +3424,7 @@ void *dt_opencl_alloc_device_buffer(const int devid,
   if(!_cldev_running(devid))
     return NULL;
   dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].max_mem_alloc < size)
+  if(cl->dev[devid].used_available < size)
     return NULL;
   cl_int err = CL_SUCCESS;
 
@@ -3443,7 +3449,7 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
   if(!_cldev_running(devid))
     return NULL;
   dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].max_mem_alloc < size)
+  if(cl->dev[devid].used_available < size)
     return NULL;
 
   cl_int err = CL_SUCCESS;
@@ -3660,15 +3666,10 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   return darktable.opencl->dev[devid].used_available;
 }
 
-static cl_ulong _opencl_get_device_memalloc(const int devid)
-{
-  return darktable.opencl->dev[devid].max_mem_alloc;
-}
-
 cl_ulong dt_opencl_get_device_memalloc(const int devid)
 {
   if(!darktable.opencl->inited || devid <= DT_DEVICE_CPU) return 0;
-  return _opencl_get_device_memalloc(devid);
+  return darktable.opencl->dev[devid].used_available;
 }
 
 gboolean dt_opencl_image_fits_device(const int devid,
@@ -3687,9 +3688,9 @@ gboolean dt_opencl_image_fits_device(const int devid,
   if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
     return FALSE;
 
-  if(_opencl_get_device_memalloc(devid) < required)
+  if(cl->dev[devid].used_available < required)
     return FALSE;
-  if(dt_opencl_get_device_available(devid) < total)
+  if(cl->dev[devid].used_available < total)
     return FALSE;
   // We know here that total memory fits and if so the buffersize will
   // also fit as there is a factor of >=2
