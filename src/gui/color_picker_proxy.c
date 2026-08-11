@@ -579,7 +579,17 @@ gboolean dt_iop_color_picker_is_active(GtkWidget *w)
 
 void dt_color_picker_toggle(GtkWidget *target)
 {
-  _color_picker_widget_toggle(target, DT_ACTION_EFFECT_TOGGLE, 1.0f);
+  dt_color_picker_click(target, FALSE);
+}
+
+void dt_color_picker_click(GtkWidget *target, const gboolean right)
+{
+  /* same shared entry as real clicks and shortcuts; right activates the
+   * picker in area mode, left in point mode */
+  _color_picker_widget_toggle(target,
+                              right ? DT_ACTION_EFFECT_TOGGLE_RIGHT
+                                    : DT_ACTION_EFFECT_TOGGLE,
+                              1.0f);
 }
 
 // clang-format off
