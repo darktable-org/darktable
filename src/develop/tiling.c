@@ -1215,8 +1215,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
 
   const float available = (float)dt_opencl_get_device_available(devid);
   const float factor = fmaxf(tiling.factor_cl -1.0f, 1.0f);
-  const float singlebuffer = fminf(fmaxf((available - tiling.overhead) / factor, 0.0f),
-                                  (float)(dt_opencl_get_device_memalloc(devid)));
+  const float singlebuffer = fmaxf((available - tiling.overhead) / factor, 0.0f);
   const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
   int width = MIN(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = MIN(roi_in->height, darktable.opencl->dev[devid].max_image_height);
@@ -1464,8 +1463,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
 
   const float available = (float)dt_opencl_get_device_available(devid);
   const float factor = fmaxf(tiling.factor_cl - 1.0f, 1.0f);
-  const float singlebuffer = fminf(fmaxf((available - tiling.overhead) / factor, 0.0f),
-                                  (float)(dt_opencl_get_device_memalloc(devid)));
+  const float singlebuffer = fmaxf((available - tiling.overhead) / factor, 0.0f);
   const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
 
   int width = MIN(MAX(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
