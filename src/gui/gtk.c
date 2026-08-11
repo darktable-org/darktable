@@ -600,16 +600,27 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event,
         acc_x = acc_y = 0.0;
         break;
       }
-      // accumulate trackpad/touch scrolls until they make a unit
-      // scroll, and only then tell caller that there is a scroll to
-      // handle
+      {
+        // same direction-change handling as the discrete scroll proxy:
+        // drop the remainder accumulated in the previous direction so the
+        // first tick of the new direction is not spent cancelling it
+        const gdouble scroll_delta_x = dt_gdk_event_get_scroll_delta_x(event);
+        const gdouble scroll_delta_y = dt_gdk_event_get_scroll_delta_y(event);
+        if((scroll_delta_x < 0.0 && acc_x > 0.0) || (scroll_delta_x > 0.0 && acc_x < 0.0))
+          acc_x = 0.0;
+        if((scroll_delta_y < 0.0 && acc_y > 0.0) || (scroll_delta_y > 0.0 && acc_y < 0.0))
+          acc_y = 0.0;
+        // accumulate trackpad/touch scrolls until they make a unit
+        // scroll, and only then tell caller that there is a scroll to
+        // handle
 #ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
-      acc_x += dt_gdk_event_get_scroll_delta_x(event) / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
-      acc_y += dt_gdk_event_get_scroll_delta_y(event) / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+        acc_x += scroll_delta_x / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+        acc_y += scroll_delta_y / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
 #else
-      acc_x += dt_gdk_event_get_scroll_delta_x(event);
-      acc_y += dt_gdk_event_get_scroll_delta_y(event);
+        acc_x += scroll_delta_x;
+        acc_y += scroll_delta_y;
 #endif
+      }
       const gdouble amt_x = trunc(acc_x);
       const gdouble amt_y = trunc(acc_y);
       if(amt_x != 0 || amt_y != 0)
@@ -5002,6 +5013,15 @@ static void _scroll_proxy_real(GtkEventControllerScroll* controller,
       dy = _scroll_attenuate(dy);
       if(discrete)
       {
+        // a change in scroll direction must not be spent cancelling the
+        // remainder accumulated in the previous direction: if it is kept,
+        // the first tick of the new direction does nothing and a second
+        // one is needed before the value changes.  Drop the stale
+        // remainder so the new direction responds on its very first tick.
+        if((dx < 0.0 && _scroll_discrete_dx > 0.0) || (dx > 0.0 && _scroll_discrete_dx < 0.0))
+          _scroll_discrete_dx = 0.0;
+        if((dy < 0.0 && _scroll_discrete_dy > 0.0) || (dy > 0.0 && _scroll_discrete_dy < 0.0))
+          _scroll_discrete_dy = 0.0;
         _scroll_discrete_dx += dx;
         _scroll_discrete_dy += dy;
         dx = dy = 0.0;
