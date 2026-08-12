@@ -577,6 +577,21 @@ gboolean dt_iop_color_picker_is_active(GtkWidget *w)
   return p && p->colorpick == w;
 }
 
+void dt_color_picker_toggle(GtkWidget *target)
+{
+  dt_color_picker_click(target, FALSE);
+}
+
+void dt_color_picker_click(GtkWidget *target, const gboolean right)
+{
+  /* same shared entry as real clicks and shortcuts; right activates the
+   * picker in area mode, left in point mode */
+  _color_picker_widget_toggle(target,
+                              right ? DT_ACTION_EFFECT_TOGGLE_RIGHT
+                                    : DT_ACTION_EFFECT_TOGGLE,
+                              1.0f);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

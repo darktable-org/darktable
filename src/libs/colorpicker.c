@@ -571,13 +571,11 @@ static void _live_sample_button_cb(GtkGestureSingle *gesture,
 
     if(simulate_event)
     {
-      dt_gui_simulate_button_event
-        (data->picker_button,
-         GDK_BUTTON_PRESS,
-         /* button 1 to create use a point and 3 for a box */
-         data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT
-         ? 1
-         : 3);
+      /* the primary picker button's activation is a CAPTURE-phase gesture
+       * that synthetic button-press-event signals cannot reach; use the
+       * shared click entry instead (left button -> point, right -> area) */
+      dt_color_picker_click(data->picker_button,
+                            data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_POINT);
     }
 
     if(picker && picker->module)

@@ -740,11 +740,6 @@ static inline GtkWidget *dt_gui_scroll_wrap(GtkWidget *widget)
   return scrolled_window;
 }
 
-// Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
-void dt_gui_simulate_button_event(GtkWidget *widget,
-                                  const GdkEventType eventtype,
-                                  const int button);
-
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer,
                                  GtkCellEditable **active_editable);
