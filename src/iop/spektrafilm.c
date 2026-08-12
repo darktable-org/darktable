@@ -3218,16 +3218,41 @@ static void _section_reset_clicked(GtkButton *button, dt_iop_module_t *self)
      per widget rather than one per click -- correct, undoable, just chattier
      than ideal. */
   GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
-  gboolean after = FALSE;
-  for(const GList *l = kids; l; l = l->next)
+  /* Toggles go last, as dt_ui_notebook_page()'s own double-click page reset
+     does (_reset_all_bauhaus() in gui/gtk.c): a module may switch one of its
+     checkboxes in reaction to one of its sliders, so a checkbox reset while
+     sliders are still to come could be undone by a slider reset after it. This
+     button is the page reset narrowed to a range of widgets, so it should not
+     behave differently within that range. */
+  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
   {
-    GtkWidget *w = l->data;
-    if(w == hdr) { after = TRUE; continue; }
-    if(!after) continue;
-    if(g_object_get_data(G_OBJECT(w), "sf_section")) break; /* next section */
-    if(DT_IS_BAUHAUS_WIDGET(w)) dt_bauhaus_widget_reset(w);
+    gboolean after = FALSE;
+    for(const GList *l = kids; l; l = l->next)
+    {
+      GtkWidget *w = l->data;
+      if(w == hdr) { after = TRUE; continue; }
+      if(!after) continue;
+      if(g_object_get_data(G_OBJECT(w), "sf_section")) break; /* next section */
+      if(g_object_get_data(G_OBJECT(w), "sf_section_exempt")) continue;
+      if(!DT_IS_BAUHAUS_WIDGET(w)) continue;
+      if((dt_bauhaus_widget_get_type(w) == DT_BAUHAUS_TOGGLE) != (toggles_pass == 1)) continue;
+      dt_bauhaus_widget_reset(w);
+    }
   }
   g_list_free(kids);
+}
+
+/* Mark a widget as belonging to no section, so no section reset button touches
+   it however the page is later reordered. For the master switches: an effect's
+   on/off state is the tab's, not a subsection's, and sweeping it up would mean
+   a click meant to restore one group's defaults silently switched the whole
+   effect off -- most visibly on the diffusion stages, which default to off.
+   Every bauhaus widget still resets on its own double-click, so nothing is
+   lost. Returns its argument, to wrap the constructor at the point of use. */
+static GtkWidget *_section_exempt(GtkWidget *w)
+{
+  g_object_set_data(G_OBJECT(w), "sf_section_exempt", GINT_TO_POINTER(1));
+  return w;
 }
 
 /* Pack a section heading carrying a reset button, and return it. */
@@ -3362,7 +3387,7 @@ void gui_init(dt_iop_module_t *self)
       g->exposure_ev, _("film exposure compensation; with auto print exposure enabled, print"
                         " exposure follows automatically so this has no net brightness effect"
                         " (except on positive/reversal film, which has no print stage)"));
-  g->scan_film = dt_bauhaus_toggle_from_params(self, "scan_film");
+  g->scan_film = _section_exempt(dt_bauhaus_toggle_from_params(self, "scan_film"));
   gtk_widget_set_tooltip_text(g->scan_film,
                               _("view the developed film directly (no print stage)"));
 
@@ -3458,6 +3483,8 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *print_page = self->widget;
 
+  _section_add(self, C_("section", "exposure"));
+
   g->print_exposure_ev = dt_bauhaus_slider_from_params(self, "print_exposure_ev");
   dt_bauhaus_slider_set_format(g->print_exposure_ev, _(" EV"));
   gtk_widget_set_tooltip_text(g->print_exposure_ev, _("print brightness (enlarger exposure)"));
@@ -3529,7 +3556,9 @@ void gui_init(dt_iop_module_t *self)
   /* ---- tab 3: grain ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("grain"), NULL);
 
-  g->grain_on = dt_bauhaus_toggle_from_params(self, "grain_on");
+  g->grain_on = _section_exempt(dt_bauhaus_toggle_from_params(self, "grain_on"));
+
+  _section_add(self, C_("section", "grain"));
 
   g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
   dt_bauhaus_slider_set_soft_range(g->grain_amount, 0.0f, 2.0f);
@@ -3561,7 +3590,12 @@ void gui_init(dt_iop_module_t *self)
   /* ---- tab 4: halation ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);
 
-  g->halation_on = dt_bauhaus_toggle_from_params(self, "halation_on");
+  g->halation_on = _section_exempt(dt_bauhaus_toggle_from_params(self, "halation_on"));
+
+  /* Two distinct effects share this tab: scatter is the spread inside the
+     emulsion, halation the bounce off the film base behind it. They were run
+     together under no heading at all, which read as one four-slider group. */
+  _section_add(self, C_("section", "scatter"));
 
   g->scatter_amount = dt_bauhaus_slider_from_params(self, "scatter_amount");
   gtk_widget_set_tooltip_text(g->scatter_amount,
@@ -3590,6 +3624,8 @@ void gui_init(dt_iop_module_t *self)
                                 "whole frame softens quickly: the radius scales with the\n"
                                 "value, so 4.0 is a four times wider blur everywhere.\n"
                                 "drag up to 1.5, right-click to enter higher values"));
+
+  _section_add(self, C_("section", "halation"));
 
   g->halation_amount = dt_bauhaus_slider_from_params(self, "halation_amount");
   dt_bauhaus_slider_set_soft_range(g->halation_amount, 0.0f, 2.0f);
@@ -3624,7 +3660,11 @@ void gui_init(dt_iop_module_t *self)
   /* ---- tab 5: diffusion ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("diffusion"), NULL);
 
-  g->diffusion_on = dt_bauhaus_toggle_from_params(self, "diffusion_on");
+  g->diffusion_on = _section_exempt(dt_bauhaus_toggle_from_params(self, "diffusion_on"));
+
+  /* The film and print stages take the same four controls, so without headings
+     the tab was eight interchangeable-looking widgets in a row. */
+  _section_add(self, C_("section", "film"));
 
   g->diffusion_filter_family = dt_bauhaus_combobox_from_params(self, "diffusion_filter_family");
   gtk_widget_set_tooltip_text(
@@ -3653,7 +3693,10 @@ void gui_init(dt_iop_module_t *self)
                               _("diffusion halo warmth: >0 warm outer halo, <0 cool"
                                 " (added on top of the selected filter's own warmth bias)"));
 
-  g->print_diffusion_on = dt_bauhaus_toggle_from_params(self, "print_diffusion_on");
+  g->print_diffusion_on
+      = _section_exempt(dt_bauhaus_toggle_from_params(self, "print_diffusion_on"));
+
+  _section_add(self, C_("section", "print"));
 
   g->print_diffusion_filter_family
       = dt_bauhaus_combobox_from_params(self, "print_diffusion_filter_family");
@@ -3688,6 +3731,8 @@ void gui_init(dt_iop_module_t *self)
      module does, not the first. Its old position at the top implied an input
      control, which is why the picker "reading the processed look" was reported
      as a bug: the picker is right, the placement was misleading. */
+  _section_add(self, C_("section", "output"));
+
   g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");
   gtk_widget_set_tooltip_text(g->output_boost,
                               _("multiplies XYZ luminance just before the OkLCh gamut\n"
@@ -3699,6 +3744,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
                                      _("pick brightest tone in the selected area and set the"
                                        " boost so it lands just past the compressor's knee"));
+
+  _section_add(self, C_("section", "sharpness"));
 
   g->scan_blur = dt_bauhaus_slider_from_params(self, "scan_blur");
   gtk_widget_set_tooltip_text(g->scan_blur,
@@ -3713,6 +3760,8 @@ void gui_init(dt_iop_module_t *self)
                               _("scanner sharpening strength (0 = off). "
                                 "0.7 is what a scan of the film normally gets; "
                                 "leave at 0 if you prefer to sharpen downstream"));
+
+  _section_add(self, C_("section", "glare"));
 
   g->glare_percent = dt_bauhaus_slider_from_params(self, "glare_percent");
   gtk_widget_set_tooltip_text(g->glare_percent,
