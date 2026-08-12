@@ -311,19 +311,29 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->export_profile_info = NULL;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
+  pipe->bcache_size = 0;
   pipe->bcache_hash = DT_INVALID_HASH;
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, fraction);
 }
 
+static inline size_t _get_pipe_cache_mem(const dt_dev_pixelpipe_t *pipe)
+{
+  return  pipe->cache.allmem
+        + pipe->scharr.size
+        + pipe->bcache_size
+        + pipe->mask_distort_buf_size[0]
+        + pipe->mask_distort_buf_size[1];
+}
+
 static inline size_t _dev_used_cachemem(void)
 {
   const dt_develop_t *dev = darktable.develop;
-  // FIXME take care about other caches not defined by resource levels?
-  return  dev->full.pipe->cache.allmem
-        + dev->preview2.pipe->cache.allmem
-        + dev->preview_pipe->cache.allmem;
+  // FIXME size of details & raster masks cache is currently unknown
+  return  _get_pipe_cache_mem(dev->full.pipe)
+        + _get_pipe_cache_mem(dev->preview2.pipe)
+        + _get_pipe_cache_mem(dev->preview_pipe);
 }
 
 size_t dt_get_available_pipe_mem(const dt_dev_pixelpipe_t *pipe)
@@ -412,6 +422,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(pipe);
   dt_free_align(pipe->bcache_data);
+  pipe->bcache_size = 0;
   _free_distort_bufs(pipe);
 
   pipe->icc_type = DT_COLORSPACE_NONE;
@@ -1366,7 +1377,8 @@ static inline float *_get_fast_blendcache(const size_t nfloats,
 {
   dt_free_align(pipe->bcache_data);
   pipe->bcache_data = phash != DT_INVALID_HASH ? dt_alloc_align_float(nfloats) : NULL;
-  pipe->bcache_hash = phash;
+  pipe->bcache_size = pipe->bcache_data != NULL ? sizeof(float) * nfloats : 0;
+  pipe->bcache_hash = pipe->bcache_data != NULL ? phash : DT_INVALID_HASH;
   return pipe->bcache_data;
 }
 
@@ -2551,6 +2563,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               // for some reason reading from bcache failed so let's clear/invalidate it now and leave the error condition
               dt_free_align(pipe->bcache_data);
               pipe->bcache_data = NULL;
+              pipe->bcache_size = 0;
               pipe->bcache_hash = DT_INVALID_HASH;
               err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
             }
@@ -2579,6 +2592,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                     // for some reason writing to bcache failed so let's clear/invalidate it now and leave the error condition
                     dt_free_align(cache);
                     pipe->bcache_data = NULL;
+                    pipe->bcache_size = 0;
                     pipe->bcache_hash = DT_INVALID_HASH;
                   }
                 }
@@ -3916,6 +3930,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
   if(!mask) goto error;
 
   p->scharr.data = mask;
+  p->scharr.size = sizeof(float) * roi->width * roi->height;
   memcpy(&p->scharr.roi, roi, sizeof(dt_iop_roi_t));
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
@@ -3979,6 +3994,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   if(err != CL_SUCCESS) goto error;
 
   p->scharr.data = mask;
+  p->scharr.size = sizeof(float) * width * height;
   memcpy(&p->scharr.roi, roi, sizeof(dt_iop_roi_t));
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
