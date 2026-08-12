@@ -147,6 +147,7 @@ typedef struct dt_dev_detail_mask_t
   dt_iop_roi_t roi;
   dt_hash_t hash;
   float *data;
+  size_t size;
 } dt_dev_detail_mask_t;
 
 /**
@@ -257,6 +258,7 @@ typedef struct dt_dev_pixelpipe_t
   // module blending cache
   float *bcache_data;
   dt_hash_t bcache_hash;
+  size_t bcache_size;
 
   // reusable ping-pong buffers for mask distortion walks
   float *mask_distort_buf[2];
