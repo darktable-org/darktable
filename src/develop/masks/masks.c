@@ -548,7 +548,7 @@ int dt_masks_version(void)
   return DEVELOP_MASKS_VERSION;
 }
 
-static int dt_masks_legacy_params_v1_to_v2(const dt_develop_t *dev, void *params)
+static int _masks_legacy_params_v1_to_v2(const dt_develop_t *dev, void *params)
 {
   /*
    * difference: before v2 images were originally rotated on load, and then
@@ -648,7 +648,7 @@ static int dt_masks_legacy_params_v1_to_v2(const dt_develop_t *dev, void *params
   }
 }
 
-static void dt_masks_legacy_params_v2_to_v3_transform(const dt_image_t *img,
+static void _masks_legacy_params_v2_to_v3_transform(const dt_image_t *img,
                                                       float *points)
 {
   const float w = img->width;
@@ -668,7 +668,7 @@ static void dt_masks_legacy_params_v2_to_v3_transform(const dt_image_t *img,
   points[1] = ((points[1] * ch) + cy) / h;
 }
 
-static void dt_masks_legacy_params_v2_to_v3_transform_only_rescale
+static void _masks_legacy_params_v2_to_v3_transform_only_rescale
   (const dt_image_t *img,
    float *points,
    const size_t points_count)
@@ -687,7 +687,7 @@ static void dt_masks_legacy_params_v2_to_v3_transform_only_rescale
     points[i] = ((points[i] * MIN(cw, ch))) / MIN(w, h);
 }
 
-static int dt_masks_legacy_params_v2_to_v3(const dt_develop_t *dev, void *params)
+static int _masks_legacy_params_v2_to_v3(const dt_develop_t *dev, void *params)
 {
   /*
    * difference: before v3 images were originally cropped on load
@@ -714,49 +714,49 @@ static int dt_masks_legacy_params_v2_to_v3(const dt_develop_t *dev, void *params
     if(m->type & DT_MASKS_CIRCLE)
     {
       dt_masks_point_circle_t *circle = p->data;
-      dt_masks_legacy_params_v2_to_v3_transform(img, circle->center);
-      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, &circle->radius, 1);
-      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, &circle->border, 1);
+      _masks_legacy_params_v2_to_v3_transform(img, circle->center);
+      _masks_legacy_params_v2_to_v3_transform_only_rescale(img, &circle->radius, 1);
+      _masks_legacy_params_v2_to_v3_transform_only_rescale(img, &circle->border, 1);
     }
     else if(m->type & DT_MASKS_PATH)
     {
       for(; p; p = g_list_next(p))
       {
         dt_masks_point_path_t *path = p->data;
-        dt_masks_legacy_params_v2_to_v3_transform(img, path->corner);
-        dt_masks_legacy_params_v2_to_v3_transform(img, path->ctrl1);
-        dt_masks_legacy_params_v2_to_v3_transform(img, path->ctrl2);
-        dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, path->border, 2);
+        _masks_legacy_params_v2_to_v3_transform(img, path->corner);
+        _masks_legacy_params_v2_to_v3_transform(img, path->ctrl1);
+        _masks_legacy_params_v2_to_v3_transform(img, path->ctrl2);
+        _masks_legacy_params_v2_to_v3_transform_only_rescale(img, path->border, 2);
       }
     }
     else if(m->type & DT_MASKS_GRADIENT)
     {
       dt_masks_point_gradient_t *gradient = p->data;
-      dt_masks_legacy_params_v2_to_v3_transform(img, gradient->anchor);
+      _masks_legacy_params_v2_to_v3_transform(img, gradient->anchor);
     }
     else if(m->type & DT_MASKS_ELLIPSE)
     {
       dt_masks_point_ellipse_t *ellipse = p->data;
-      dt_masks_legacy_params_v2_to_v3_transform(img, ellipse->center);
-      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, ellipse->radius, 2);
-      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, &ellipse->border, 1);
+      _masks_legacy_params_v2_to_v3_transform(img, ellipse->center);
+      _masks_legacy_params_v2_to_v3_transform_only_rescale(img, ellipse->radius, 2);
+      _masks_legacy_params_v2_to_v3_transform_only_rescale(img, &ellipse->border, 1);
     }
     else if(m->type & DT_MASKS_BRUSH)
     {
       for(; p;  p = g_list_next(p))
       {
         dt_masks_point_brush_t *brush = p->data;
-        dt_masks_legacy_params_v2_to_v3_transform(img, brush->corner);
-        dt_masks_legacy_params_v2_to_v3_transform(img, brush->ctrl1);
-        dt_masks_legacy_params_v2_to_v3_transform(img, brush->ctrl2);
-        dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, brush->border, 2);
+        _masks_legacy_params_v2_to_v3_transform(img, brush->corner);
+        _masks_legacy_params_v2_to_v3_transform(img, brush->ctrl1);
+        _masks_legacy_params_v2_to_v3_transform(img, brush->ctrl2);
+        _masks_legacy_params_v2_to_v3_transform_only_rescale(img, brush->border, 2);
       }
     }
 
     if(m->type & DT_MASKS_CLONE)
     {
       // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
-      dt_masks_legacy_params_v2_to_v3_transform(img, m->source);
+      _masks_legacy_params_v2_to_v3_transform(img, m->source);
     }
 
     m->version = 3;
@@ -765,7 +765,7 @@ static int dt_masks_legacy_params_v2_to_v3(const dt_develop_t *dev, void *params
   }
 }
 
-static int dt_masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
+static int _masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
 {
   /*
    * difference affecting ellipse
@@ -792,7 +792,7 @@ static int dt_masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
 }
 
 
-static int dt_masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
+static int _masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
 {
   /*
    * difference affecting gradient
@@ -817,7 +817,7 @@ static int dt_masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
   return 0;
 }
 
-static int dt_masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
+static int _masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
 {
   /*
    * difference affecting gradient
@@ -858,33 +858,33 @@ int dt_masks_legacy_params(dt_develop_t *dev,
 
   if(old_version == 1 && new_version == 6)
   {
-    res = dt_masks_legacy_params_v1_to_v2(dev, params);
-    if(!res) res = dt_masks_legacy_params_v2_to_v3(dev, params);
-    if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
-    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+    res = _masks_legacy_params_v1_to_v2(dev, params);
+    if(!res) res = _masks_legacy_params_v2_to_v3(dev, params);
+    if(!res) res = _masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
   }
   else if(old_version == 2 && new_version == 6)
   {
-    res = dt_masks_legacy_params_v2_to_v3(dev, params);
-    if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
-    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+    res = _masks_legacy_params_v2_to_v3(dev, params);
+    if(!res) res = _masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
   }
   else if(old_version == 3 && new_version == 6)
   {
-    res = dt_masks_legacy_params_v3_to_v4(dev, params);
-    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+    res = _masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = _masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
   }
   else if(old_version == 4 && new_version == 6)
   {
-    res = dt_masks_legacy_params_v4_to_v5(dev, params);
-    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+    res = _masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = _masks_legacy_params_v5_to_v6(dev, params);
   }
   else if(old_version == 5 && new_version == 6)
   {
-    res = dt_masks_legacy_params_v5_to_v6(dev, params);
+    res = _masks_legacy_params_v5_to_v6(dev, params);
   }
 
   return res;
@@ -1527,7 +1527,7 @@ dt_masks_edit_mode_t dt_masks_get_edit_mode(void)
     : DT_MASKS_EDIT_OFF;
 }
 
-gboolean dt_masks_is_restricted_mode(void)
+static inline gboolean _masks_is_restricted_mode(void)
 {
   return dt_masks_get_edit_mode() == DT_MASKS_EDIT_RESTRICTED;
 }
@@ -1550,6 +1550,7 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
     dt_masks_group_ungroup(grp, form);
   }
 
+  const dt_masks_edit_mode_t old_shown = bd->masks_shown;
   bd->masks_shown = value;
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
@@ -1575,7 +1576,8 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   // history_mutex -- the reverse of the order a pixelpipe worker uses, so the
   // two deadlock.  Nothing is lost: after a history reload the pipe is dirty,
   // so dt_dev_process_image_job() runs the very same clamp itself.
-  if(!darktable.develop->history_updating)
+  // Also avoid if we didn't change edit mode
+  if(!darktable.develop->history_updating && old_shown != value)
     dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
 
   dt_control_queue_redraw_center();
@@ -1612,24 +1614,6 @@ void dt_masks_set_edit_mode_single_form(dt_iop_module_t *module,
   DT_LEAVE_GUI_UPDATE();
 
   dt_control_queue_redraw_center();
-}
-
-void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton,
-                                       dt_iop_module_t *module)
-{
-  if(!module) return;
-  dt_iop_gui_blend_data_t *bd = module->blend_data;
-  if(module->blend_params->mask_id == NO_MASKID)
-  {
-    bd->masks_shown = DT_MASKS_EDIT_OFF;
-    return;
-  }
-
-  // reset the gui
-  dt_masks_set_edit_mode(module,
-                         (bd->masks_shown == DT_MASKS_EDIT_OFF
-                          ? DT_MASKS_EDIT_FULL
-                          : DT_MASKS_EDIT_OFF));
 }
 
 static void _menu_no_masks(dt_iop_module_t *module)
@@ -2971,7 +2955,7 @@ void dt_masks_line_stroke(cairo_t *cr,
   dashed_restricted[0] /= zoom_scale;
   dashed_restricted[1] /= zoom_scale;
 
-  const gboolean restricted = dt_masks_is_restricted_mode();
+  const gboolean restricted = _masks_is_restricted_mode();
 
   // first the background draw, darker
   if(restricted && !border)
