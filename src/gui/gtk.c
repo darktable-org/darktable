@@ -5020,16 +5020,13 @@ static void _scroll_proxy_real(GtkEventControllerScroll* controller,
       // discrete (smooth/touchpad) proxy keeps the attenuation.  macOS
       // scroll deltas are distance-based (several units per event), so it
       // keeps the compression on both paths.
-#ifdef GDK_WINDOWING_QUARTZ
-      dx = _scroll_attenuate(dx);
-      dy = _scroll_attenuate(dy);
-#else
+#ifndef GDK_WINDOWING_QUARTZ
       if(!discrete)
+#endif
       {
         dx = _scroll_attenuate(dx);
         dy = _scroll_attenuate(dy);
       }
-#endif
       if(discrete)
       {
         // a change in scroll direction must not be spent cancelling the
