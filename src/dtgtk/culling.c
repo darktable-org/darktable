@@ -1090,6 +1090,17 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
 {
   table->panning = FALSE;
 
+  /* A gesture cancel is relayed to this handler so widgets can clean up
+   * their pressed state, but it is not a click (issue #21813).  Only a
+   * real GDK button release may toggle the culling selection. */
+  GdkEvent *release_event = gtk_get_current_event();
+  if(!release_event || release_event->type != GDK_BUTTON_RELEASE)
+  {
+    gdk_event_free(release_event);
+    return;
+  }
+  gdk_event_free(release_event);
+
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
   // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
