@@ -117,7 +117,7 @@ gboolean dt_iop_color_picker_is_active(GtkWidget *w);
 
 /* toggle a standalone picker toggle button programmatically; routes through
  * the same shared entry as real clicks and shortcuts
- * (dt_action_def_color_picker -> _color_picker_widget_toggle) */
+ * (dt_action_def_color_picker -> dt_iop_color_picker_toggle) */
 void dt_color_picker_toggle(GtkWidget *target);
 
 /* activate a standalone picker toggle button like a real click, with the
