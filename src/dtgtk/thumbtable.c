@@ -836,7 +836,14 @@ static gboolean _move(dt_thumbtable_t *table,
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
+    // Persist the pan position as soon as it changes. Depending on the
+    // platform/backend a mouse drag may be reported as a gesture cancel
+    // rather than a real button release, so relying on the release handler
+    // alone can leave a stale last_pos behind and make the next redraw snap
+    // back to the pre-pan position.
     dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+    dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+    dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
   }
 
   // update scrollbars
