@@ -3058,8 +3058,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
     if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
-      dt_control_job_set_progress_message(job, ngettext("importing %d/%d image",
-                                                        "importing %d/%d images", cntr), cntr, total);
+      dt_control_job_set_progress_message(job, _("importing image %d/%d"),
+                                               cntr, total);
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
     }
