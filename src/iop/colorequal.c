@@ -84,9 +84,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "iop/choleski.h"
 #include "common/colorspaces_inline_conversions.h"
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 #define NODES 8
 #define SATSIZE 4096

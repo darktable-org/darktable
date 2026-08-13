@@ -75,20 +75,18 @@ else()
     set(RPATH_ORIGIN $ORIGIN)
 endif()
 
-if (USE_OPENMP)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
-        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+    CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
-        # Clang has an option to specify the OpenMP standard to use. Specify it.
-        # FIXME: Implement this in FindOpenMP.cmake
-        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=51")
+    # Clang has an option to specify the OpenMP standard to use. Specify it.
+    # FIXME: Implement this in FindOpenMP.cmake
+    set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=51")
 
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
-    endif()
-
-    find_package(OpenMP 4.5 REQUIRED)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
 endif()
+
+find_package(OpenMP 4.5 REQUIRED)
 
 # Check for base threading library
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,9 +29,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 
 int32_t alloc_dummy(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
@@ -49,9 +47,7 @@ int main(int argc, char *arg[])
   dt_cache_init(&cache, 110000, 16, 64, 100);
   dt_cache_set_allocate_callback(&cache, alloc_dummy, NULL);
 
-#ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
-#endif
   for(int k = 0; k < 100000; k++)
   {
     void *data = (void *)(long int)k;
@@ -92,9 +88,7 @@ int main(int argc, char *arg[])
     dt_cache_init(&cache2, 1, 1, 64, 2);
     dt_cache_set_allocate_callback(&cache2, alloc_dummy, NULL);
 
-#ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(guided) shared(cache2, stderr) num_threads(16)
-#endif
     for(int k = 0; k < 100000; k++)
     {
       void *data = (void *)(long int)k;

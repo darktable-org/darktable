@@ -149,7 +149,6 @@ void dt_iop_image_copy(float *const __restrict__ out,
                        const float *const __restrict__ in,
                        const size_t nfloats)
 {
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     float *const outv __attribute__((aligned(16))) = out;
@@ -175,8 +174,7 @@ void dt_iop_image_copy(float *const __restrict__ out,
     }
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // image too small to bother parallelizing
   memcpy(out, in, nfloats * sizeof(float));
 }
 
@@ -245,7 +243,6 @@ void dt_iop_image_scaled_copy(float *const restrict buf,
                               const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -259,8 +256,7 @@ void dt_iop_image_scaled_copy(float *const restrict buf,
       buf[k] = scale * src[k];
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // or image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf, src : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = scale * src[k];
@@ -273,7 +269,6 @@ void dt_iop_image_fill(float *const buf,
                        const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     const size_t nthreads = MIN(16, dt_get_num_threads());
@@ -293,8 +288,7 @@ void dt_iop_image_fill(float *const buf,
     }
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // image too small to bother parallelizing
   if(fill_value == 0.0f)
   {
     // take advantage of compiler intrinsic which is hopefully highly optimized
@@ -315,7 +309,6 @@ void dt_iop_image_add_const(float *const buf,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -329,8 +322,7 @@ void dt_iop_image_add_const(float *const buf,
       buf[k] += add_value;
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // or image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] += add_value;
@@ -343,7 +335,6 @@ void dt_iop_image_add_image(float *const buf,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -357,8 +348,7 @@ void dt_iop_image_add_image(float *const buf,
       buf[k] += other_image[k];
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // or image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf, other_image : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] += other_image[k];
@@ -371,7 +361,6 @@ void dt_iop_image_sub_image(float *const buf,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -385,8 +374,7 @@ void dt_iop_image_sub_image(float *const buf,
       buf[k] -= other_image[k];
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf, other_image : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] -= other_image[k];
@@ -399,7 +387,6 @@ void dt_iop_image_invert(float *const buf,
                          const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -413,8 +400,7 @@ void dt_iop_image_invert(float *const buf,
       buf[k] = max_value - buf[k];
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = max_value - buf[k];
@@ -427,7 +413,6 @@ void dt_iop_image_mul_const(float *const buf,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -441,8 +426,7 @@ void dt_iop_image_mul_const(float *const buf,
       buf[k] *= mul_value;
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] *= mul_value;
@@ -458,7 +442,6 @@ void dt_iop_image_linear_blend(float *const restrict buf,
 {
   const size_t nfloats = width * height * ch;
   const float lambda_1 = 1.0f - lambda;
-#ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum/2) // is the task big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in
@@ -472,8 +455,7 @@ void dt_iop_image_linear_blend(float *const restrict buf,
       buf[k] = lambda*buf[k] + lambda_1*other[k];
     return;
   }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
+  // image too small to bother parallelizing
   DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = lambda*buf[k] + lambda_1*other[k];
