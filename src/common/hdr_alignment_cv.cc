@@ -18,11 +18,11 @@
 
 /* OpenCV backend for HDR frame registration (the C-ABI seam declared in
  * hdr_alignment.h).  This is the only translation unit that touches OpenCV.
- * It concentrates the feature-based primitives that the HDR path of
- * align_and_blend.py relies on:
+ * It concentrates the feature-based primitives registration needs:
  *
- *   dt_hdr_cv_feature_homography  <-  estimate_initial_warp_feature_ransac()
- *   dt_hdr_cv_count_features      <-  _count_lowres_sift_features()
+ *   dt_hdr_cv_features_create     -  detect + cache the reference's features
+ *   dt_hdr_cv_feature_homography  -  match a moving frame -> homography
+ *   dt_hdr_cv_count_features      -  feature-richness probe for auto-reference
  *
  * All image data crosses the seam as plain pointers operating on the reduced-
  * resolution luma proxy built by hdr_alignment.c; the homography crosses as a
@@ -62,7 +62,7 @@
 namespace
 {
 
-// --- Constants ported from the HDR path of align_and_blend.py --------------
+// --- Feature-matching tuning constants --------------------------------------
 constexpr double kSiftContrastThreshold = 0.04;
 constexpr double kSiftMinScalePx = 6.0;
 constexpr double kRatioThreshold = 0.75;
@@ -75,10 +75,10 @@ constexpr int kRansacMaxIters = 5000;
 constexpr double kRansacConfidence = 0.995;
 constexpr int kHomographyMinInliers = 50;
 constexpr double kHomographyMinInlierRatio = 0.40;
-constexpr int kSpatialGrid = 6;                      // FEATURE_SPATIAL_GRID_ROWS/COLS
-constexpr int kClusterDegradeMaxCells = 2;           // INLIER_CLUSTER_DEGRADE_MAX_CELLS
-constexpr double kClusterTranslationMaxMad = 5.0;    // INLIER_CLUSTER_TRANSLATION_MAX_MAD_PX
-constexpr int kSiftSpatialBalanceTarget = 5000;      // SIFT_SPATIAL_BALANCE_TARGET
+constexpr int kSpatialGrid = 6;                      // rows/cols of the match-spread grid
+constexpr int kClusterDegradeMaxCells = 2;           // inlier cells below which we degrade
+constexpr double kClusterTranslationMaxMad = 5.0;    // max inlier displacement MAD (px)
+constexpr int kSiftSpatialBalanceTarget = 5000;      // default per-frame keypoint budget
 
 // Wrap a borrowed 8-bit buffer as a single-channel cv::Mat header (no copy).
 cv::Mat wrapU8(const uint8_t *p, int w, int h)
@@ -103,13 +103,12 @@ cv::Ptr<cv::SIFT> makeSift()
 
 // Optional local-contrast enhancement (CLAHE) on the 8-bit feature image, with
 // clip limit `clip` (<= 0 disables it).  CLAHE recovers features in extreme
-// dynamic range, but -- as align_and_blend.py warns and defaults off
-// (SIFT_USE_CLAHE = False) -- on *repetitive* textures it changes descriptor
-// signatures between frames and manufactures false matches, so on a periodic
-// scene it makes the matcher consense on a period-aliased shift.  We therefore
-// leave it off by default and rely on the display-gamma proxy (which already
-// mimics the prototype's tone-mapped JPEG input); it stays available as a knob
-// for genuinely feature-starved / extreme-DR brackets.
+// dynamic range, but on *repetitive* textures it changes descriptor signatures
+// between frames and manufactures false matches, so on a periodic scene it makes
+// the matcher consense on a period-aliased shift.  We therefore leave it off by
+// default and rely on the display-gamma proxy (which already supplies the tonal
+// encoding SIFT wants); it stays available as a knob for genuinely
+// feature-starved / extreme-DR brackets.
 void applyClahe(cv::Mat &img, double clip)
 {
   if(clip <= 0.0) return;
@@ -117,7 +116,7 @@ void applyClahe(cv::Mat &img, double clip)
   clahe->apply(img, img);
 }
 
-// Indices of keypoints at or above the scale floor (SIFT_MIN_SCALE_PX): the
+// Indices of keypoints at or above the scale floor (kSiftMinScalePx): the
 // smallest octaves are descriptor-ambiguous noise on low-contrast scenes.
 // Returns an index list (rather than mutating in place) so the caller can apply
 // the same selection to the parallel descriptor matrix via gatherKpDesc().
@@ -150,8 +149,8 @@ void gatherKpDesc(std::vector<cv::KeyPoint> &kps, cv::Mat &des, const std::vecto
 }
 
 // Spatially balance keypoints down to `target`, keeping the strongest (by SIFT
-// response) in each cell of a frame-spanning grid.  Mirrors align_and_blend.py's
-// "SIFT spatial balance" step.  Two effects matter for the HDR raw path:
+// response) in each cell of a frame-spanning grid.  Two effects matter for the
+// HDR raw path:
 //   (1) it caps a feature-dense reference (we have seen 12888 vs 5075 between the
 //       two frames) so the descriptor matcher is not flooded with near-duplicate
 //       candidates that pass the ratio test at the *wrong* instance of a periodic
@@ -198,8 +197,8 @@ std::vector<int> spatialBalanceKeep(const std::vector<cv::KeyPoint> &kps, int wi
 }
 
 // Inlier reprojection-error stats (mean/median/max, in pixels) of warp H mapping
-// template `src` -> image `dst`, restricted to RANSAC inliers.  Mirrors the
-// "reproj mean/median/max" line of log_feature_init_stats().
+// template `src` -> image `dst`, restricted to RANSAC inliers.  Reported by the
+// C layer's "reproj mean/median/max" log line.
 void reprojStats(const std::vector<cv::Point2f> &src, const std::vector<cv::Point2f> &dst,
                  const cv::Mat &inliers, const cv::Mat &H, dt_hdr_cv_feature_stats_t *stats)
 {
@@ -228,7 +227,7 @@ void reprojStats(const std::vector<cv::Point2f> &src, const std::vector<cv::Poin
 
 // Subsample matches to an even spatial distribution over a kSpatialGrid^2 grid of
 // the image, so RANSAC is constrained by correspondences from the whole frame
-// instead of one dense, well-exposed region.  Mirrors _spatially_uniform_subsample().
+// instead of one dense, well-exposed region.
 std::vector<cv::DMatch> spatialSubsample(const std::vector<cv::DMatch> &matches,
                                          const std::vector<cv::KeyPoint> &kp_img,
                                          int width, int height, int target)
@@ -267,7 +266,7 @@ std::vector<cv::DMatch> spatialSubsample(const std::vector<cv::DMatch> &matches,
 // When RANSAC inliers cluster into <= kClusterDegradeMaxCells grid cells, an 8-DOF
 // homography overfits scale/shear/perspective to a tiny region and extrapolates
 // wildly.  If the inlier displacements are consistent (low MAD), refit as a pure
-// translation from their median.  Mirrors the INLIER_CLUSTER_DEGRADE_* logic.
+// translation from their median.
 bool degradeClusteredToTranslation(const std::vector<cv::Point2f> &src,
                                    const std::vector<cv::Point2f> &dst,
                                    const cv::Mat &inliers, int width, int height,
@@ -316,8 +315,8 @@ bool degradeClusteredToTranslation(const std::vector<cv::Point2f> &src,
  *  preference or the DT_HDR_DEBUG_IMAGE_DIR override), each aligned (moving)
  *  frame writes a numbered set of Netpbm images (PGM/PPM) to it: the CLAHE'd
  *  SIFT input, the detected keypoints, and the colour-coded match visualisation
- *  (green = inlier, red = outlier).  Mirrors align_and_blend.py's "Saved feature
- *  debug visuals".  Entirely diagnostic: no effect unless a directory is given.
+ *  (green = inlier, red = outlier).  Entirely diagnostic: no effect unless a
+ *  directory is given.
  * ------------------------------------------------------------------------- */
 
 // Longest side of a dumped image; large proxies are scaled down to stay viewable
@@ -405,7 +404,7 @@ void detectDescribe(const uint8_t *proxy, int width, int height, int balance_tar
   gatherKpDesc(kp, des, scaleFloorKeep(kp));
   after_floor = (int)kp.size();
   // Spatially balance to a common budget so a feature-dense frame cannot flood
-  // the matcher with aliased candidates.  Mirrors align_and_blend.py.
+  // the matcher with aliased candidates.
   gatherKpDesc(kp, des, spatialBalanceKeep(kp, width, height, balance_target));
 }
 
@@ -520,11 +519,11 @@ int dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
     }
 
     // FLANN kNN match with Lowe's ratio test, in both directions, then keep
-    // only the mutually-best correspondences (FEATURE_REQUIRE_MUTUAL_CONSISTENCY).
+    // only the mutually-best correspondences.
     //   it (image->template): query = moving (des_i), train = the cached
-    //      reference index -> queryIdx in image, trainIdx in template (the Python
-    //      convention).  Reuses ref->matcher, so the reference KD-tree is built
-    //      once per merge, not once per moving frame.
+    //      reference index -> queryIdx in image, trainIdx in template.  Reuses
+    //      ref->matcher, so the reference KD-tree is built once per merge, not
+    //      once per moving frame.
     //   ti (template->image): query = reference (des_t), train = a fresh index
     //      over the moving descriptors (rebuilt every frame, unavoidable).
     // The two directions are independent, so they run in two parallel sections;

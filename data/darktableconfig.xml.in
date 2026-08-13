@@ -405,7 +405,7 @@
     <type min="0.25" max="1.0">float</type>
     <default>0.625</default>
     <shortdescription>alignment detail (proxy scale)</shortdescription>
-    <longdescription>fraction of the full sensor resolution at which feature detection and alignment are computed.\nhigher values find more, more distinctive features (better on repetitive or low-contrast scenes) but cost roughly (scale / 0.5)^2 more time and memory.\n0.5 restores the legacy speed; 0.625 matches the reference prototype.</longdescription>
+    <longdescription>fraction of the full sensor resolution at which feature detection and alignment are computed.\nhigher values find more, more distinctive features (better on repetitive or low-contrast scenes) but cost roughly (scale / 0.5)^2 more time and memory.\n0.5 restores the legacy speed.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="hdr_alignment" capability="opencv">
     <name>plugins/lighttable/hdr_merge_feature_gamma</name>
