@@ -808,8 +808,7 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
 
   // Auto-reference pre-pass: probe every frame's feature richness and move the
   // richest one to the front, so it becomes both the geometry seed and the
-  // alignment reference (mirrors align_and_blend.py --auto-reference). Costs one
-  // extra decode pass, hence opt-in.
+  // alignment reference. Costs one extra decode pass, hence opt-in.
 #ifdef HAVE_OPENCV
   if(d.align_enabled && total > 1
      && dt_conf_get_bool("plugins/lighttable/hdr_merge_auto_reference"))

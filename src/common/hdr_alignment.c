@@ -16,12 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* C port of the HDR use-case (`--preset hdr`) of the reference
- * align_and_blend.py.  This translation unit owns everything that is naturally
- * C and darktable-shaped:
+/* HDR exposure-bracket registration. This translation unit owns everything that
+ * is naturally C and darktable-shaped:
  *
  *   - CFA mosaic  ->  reduced-resolution, CFA-free luma proxy
- *   - percentile normalization (np.percentile(1,99) + clip equivalent)
+ *   - percentile normalization (1st/99th percentile stretch + clip)
  *   - proxy-coordinate -> full-resolution homography rescale
  *   - CFA-aware (same-color) resampling of the full-resolution mosaic
  *   - warp sanity / corner-drift reliability gates
@@ -30,9 +29,6 @@
  * The OpenCV-dependent primitives (SIFT, FLANN, findHomography) are reached
  * through the C-ABI seam declared in hdr_alignment.h and implemented in
  * hdr_alignment_cv.cc.
- *
- * See dev-doc/HDR_Alignment_Design.md for the full design and the mapping back
- * to align_and_blend.py.
  */
 
 #include "common/hdr_alignment.h"
@@ -69,11 +65,10 @@ static inline int _fcol(const int row, const int col, const uint32_t filters,
 #endif // HAVE_OPENCV
 
 /* ------------------------------------------------------------------------- *
- *  Constants ported from the HDR path of align_and_blend.py.
- *  (Only the subset reached by `--preset hdr` is reproduced here.)
+ *  Tuning constants.
  * ------------------------------------------------------------------------- */
 
-// percentile_normalize() bounds
+// percentile-stretch bounds for the 8-bit feature proxy
 #define DT_HDR_PERCENTILE_LOW 1.0
 #define DT_HDR_PERCENTILE_HIGH 99.0
 #define DT_HDR_SMALL_EPS 1e-6
@@ -82,23 +77,23 @@ static inline int _fcol(const int row, const int col, const uint32_t filters,
 // kSiftSpatialBalanceTarget).  Kept here so it can seed the runtime parameter.
 #define DT_HDR_SIFT_KEYPOINTS 5000
 
-// Feature-proxy downscale relative to the full-resolution mosaic.  The Python
-// prototype does its SIFT work at ~0.627x of the (already demosaiced) image;
-// darktable historically used a 2x2-block proxy (0.5x).  A higher-resolution
+// Feature-proxy downscale relative to the full-resolution mosaic.  darktable's
+// merge historically reduced by whole 2x2 CFA blocks (0.5x).  A higher-resolution
 // proxy carries more distinctive detail -> more SIFT keypoints survive and the
 // matcher discriminates periodic structure better (fewer aliased lock-ons), at a
 // roughly (scale/0.5)^2 cost in SIFT time.  Built CFA-free (see _build_proxy).
-// This is the robust half of the distinctiveness work (the linear raw proxy
-// yields far fewer SIFT keypoints than the prototype's tone-mapped JPEG -- e.g.
-// 4242 vs 43626 raw on the same frame).  Override at build time
-// (-DDT_HDR_PROXY_SCALE=0.5) to restore the legacy behaviour / speed.
+// This matters because the *linear* raw proxy is far less feature-rich than the
+// display-referred images SIFT is normally fed: on a real bracket the raw proxy
+// detected 4242 keypoints where a tone-mapped rendition of the same frame gave
+// 43626.  Override at build time (-DDT_HDR_PROXY_SCALE=0.5) to restore the
+// legacy behaviour / speed.
 #ifndef DT_HDR_PROXY_SCALE
 #define DT_HDR_PROXY_SCALE 0.625
 #endif
 
 // Perceptual (display-gamma) encoding applied to the 8-bit SIFT proxy after the
 // percentile stretch, before CLAHE, to make the linear raw proxy more
-// display-like (closer to the prototype's tone-mapped JPEG input).  Note the
+// display-like (closer to the tone-mapped input SIFT is tuned for).  Note the
 // preceding percentile stretch already performs the global [1,99] stretch, so
 // this is mostly a *redistribution* on top of it: in testing it lifted keypoints
 // on mid-key scenes but slightly reduced them on noisy deep-shadow frames (where
@@ -110,22 +105,22 @@ static inline int _fcol(const int row, const int col, const uint32_t filters,
 #endif
 
 // CLAHE clip limit applied to the 8-bit SIFT proxy before detection.  0 disables
-// it.  Off by default: the display-gamma proxy already mimics the prototype's
-// tone-mapped JPEG, and -- as align_and_blend.py warns (SIFT_USE_CLAHE = False)
-// -- CLAHE on repetitive textures changes descriptor signatures and manufactures
-// false matches (the period-aliasing failure mode).  Raise it (e.g. 2.0) for
-// genuinely feature-starved / extreme-DR brackets.
+// it.  Off by default: the display-gamma proxy already provides the tonal
+// encoding SIFT wants, while CLAHE on repetitive textures changes descriptor
+// signatures between exposures and manufactures false matches (the
+// period-aliasing failure mode).  Raise it (e.g. 2.0) for genuinely
+// feature-starved / extreme-DR brackets.
 #ifndef DT_HDR_CLAHE_CLIP
 #define DT_HDR_CLAHE_CLIP 0.0
 #endif
 
-// Longest-side resolution of the auto-reference SIFT probe (AUTO_REFERENCE_PROBE_DIM).
+// Longest-side resolution of the auto-reference SIFT probe.
 #define DT_HDR_AUTO_REFERENCE_PROBE_DIM 1500
 
-// Feature-init reliability (FEATURE_HOMOGRAPHY_MIN_INLIERS).
+// Minimum RANSAC inlier count for the feature-init warp to be trusted.
 #define DT_HDR_FEATURE_MIN_INLIERS 50
 
-// Warp sanity bounds (WARP_SANITY_*).
+// Warp sanity bounds.
 #define DT_HDR_WARP_MAX_TRANSLATION_DIAG_FRAC 0.30
 #define DT_HDR_WARP_SCALE_MIN 0.5
 #define DT_HDR_WARP_SCALE_MAX 2.0
@@ -230,7 +225,7 @@ static void _h_scale_proxy_to_full(double H[9], double sx, double sy)
 #endif // HAVE_OPENCV
 
 /* ------------------------------------------------------------------------- *
- *  Percentile bounds (np.percentile(img, (1, 99)) equivalent).
+ *  Percentile bounds of the proxy (the 1st / 99th order statistics).
  *
  *  The bounds only gate an 8-bit normalization, so exact order statistics are
  *  unnecessary: a uniform histogram over [min,max] gives bucket-quantized
@@ -373,8 +368,7 @@ static float *_build_proxy(const float *mosaic, int width, int height, double sc
 // perceptual (display-gamma) encoding, then scale to [0,255].  The gamma step
 // lifts shadow detail out of the linear raw signal into SIFT's operating range
 // (see DT_HDR_PROXY_FEATURE_GAMMA); local-contrast enhancement (CLAHE) is applied
-// afterwards, in the backend, just before SIFT detection.  Mirrors
-// _to_feature_uint8() feeding display-referred data.
+// afterwards, in the backend, just before SIFT detection.
 //
 // The stretch and the gamma curve are fused into a single parallel pass (no
 // intermediate [0,1] buffer), and the gamma is read from a small LUT so the hot
@@ -412,7 +406,7 @@ static uint8_t *_proxy_to_u8(const float *proxy_f, int pw, int ph, double gamma)
 }
 
 /* ------------------------------------------------------------------------- *
- *  Reliability gates (ported from _warp_sanity_check).
+ *  Reliability gates.
  * ------------------------------------------------------------------------- */
 #ifdef HAVE_OPENCV
 
@@ -625,9 +619,8 @@ static void _warp_mosaic_cfa(const float *mosaic, float *out, int width, int hei
  * ------------------------------------------------------------------------- */
 
 #ifdef HAVE_OPENCV
-// Log a 3x3 homography (row-major) and its decomposition, matching the Python
-// reference's log_warp() / decompose_warp() (MOTION_HOMOGRAPHY) so the C output
-// can be compared line-by-line with align_and_blend.py.
+// Log a 3x3 homography (row-major) and its translation / rotation / scale /
+// shear decomposition, so a merge run can be inspected with `-d hdr_merge`.
 static void _log_warp(const char *title, const double H[9])
 {
   dt_print(DT_DEBUG_HDR_MERGE, "  %s:", title);
@@ -665,7 +658,7 @@ static void _log_warp(const char *title, const double H[9])
   dt_print(DT_DEBUG_HDR_MERGE, "    shear: %.2f", shear);
 }
 
-// Log the SIFT+RANSAC initialization metrics block (mirrors log_feature_init_stats).
+// Log the SIFT+RANSAC initialization metrics block.
 static void _log_feature_stats(const dt_hdr_cv_feature_stats_t *s)
 {
   dt_print(DT_DEBUG_HDR_MERGE, "  SIFT+RANSAC initialization metrics:");
@@ -967,8 +960,8 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
   }
 
   // --- Structured log ------------------------------------------------------
-  // Warps are reported in full-resolution coordinates so they line up with the
-  // Python reference, which works at full image resolution.
+  // Warps are reported in full-resolution coordinates, i.e. as they are actually
+  // applied to the mosaic, not in the proxy coordinates they were estimated in.
   _log_feature_stats(&fstats);
   if(status != DT_HDR_ALIGN_IDENTITY)
     _log_warp("Final warp matrix (SIFT feature-init)", H_final);
