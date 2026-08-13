@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.6.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-24 14:42-0600\n"
-"PO-Revision-Date: 2026-07-31 22:44-0600\n"
+"PO-Revision-Date: 2026-08-13 12:37-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2110,7 +2110,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4202 ../src/libs/copy_history.c:148
 msgid "XMP sidecar files"
-msgstr "Archivos asociados XMP"
+msgstr "archivos XMP asociados"
 
 #: ../build/bin/preferences_gen.h:4212
 msgid "create XMP files"
@@ -10403,7 +10403,7 @@ msgstr ""
 # dt•v5.6
 #: ../src/develop/blend_gui.c:2796 ../src/libs/masks.c:1880
 msgid "add AI object"
-msgstr "añadir objeto de IA"
+msgstr "Añadir objeto de IA"
 
 #: ../src/develop/blend_gui.c:2805 ../src/libs/masks.c:1041
 #: ../src/libs/masks.c:1835 ../src/libs/masks.c:1839
