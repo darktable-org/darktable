@@ -2343,7 +2343,7 @@ void gui_init(dt_lib_module_t *self)
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
-  gtk_tree_view_column_add_attribute(col, renderer, "text", TREE_TEXT);
+  gtk_tree_view_column_add_attribute(col, renderer, "markup", TREE_TEXT);
   gtk_tree_view_column_add_attribute(col, renderer, "editable", TREE_EDITABLE);
   g_signal_connect(renderer, "edited", G_CALLBACK(_tree_cell_edited), self);
   dt_gui_commit_on_focus_loss(renderer, NULL);
