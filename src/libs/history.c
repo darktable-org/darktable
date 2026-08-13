@@ -1249,6 +1249,14 @@ static void _lib_history_compress_pressed_callback(GtkGestureSingle *gesture,
                                                    gdouble y,
                                                    dt_lib_module_t *self)
 {
+  /* Claim the sequence, replacing the `return TRUE` of the button-press-event
+   * handler this gesture was converted from.  Without it GtkButton's own
+   * gesture still completes the click and emits "clicked", so
+   * _lib_history_compress_clicked_callback would run _lib_history_truncate()
+   * a second time -- on release, while the pixelpipe job started by this call
+   * is still running -- and ctrl+click would truncate and then compress. */
+  dt_gui_claim(gesture);
+
   const gboolean compress = !(dt_key_modifier_state() & GDK_CONTROL_MASK);
   _lib_history_truncate(compress);
 }
@@ -1272,6 +1280,12 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
   // shift-click just show the corresponding module in modulegroups
   if(dt_key_modifier_state() & GDK_SHIFT_MASK)
   {
+    /* Claim the sequence, replacing the `return TRUE` of the button-press-event
+     * handler this gesture was converted from: the history entry must only be
+     * revealed in modulegroups, not selected, so GtkToggleButton must not get
+     * to complete the click and flip its state. */
+    dt_gui_claim(gesture);
+
     const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
     dt_dev_history_item_t *hist = g_list_nth_data(darktable.develop->history, num - 1);
     if(hist)
