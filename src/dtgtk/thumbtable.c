@@ -1118,6 +1118,51 @@ static gboolean _event_scroll_compressed(gpointer user_data)
   return FALSE;
 }
 
+static gboolean _event_gesture(GtkWidget *widget,
+                               GdkEvent *event,
+                               gpointer user_data)
+{
+  dt_thumbtable_t *table = user_data;
+  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+
+  static int begin_zoom = 1;
+
+  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    begin_zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
+    return TRUE;
+  }
+
+  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+     || pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  {
+    begin_zoom = 1;
+    return TRUE;
+  }
+
+  if(pinch->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
+    return FALSE;
+
+  if(pinch->scale <= 0.0)
+    return FALSE;
+
+  const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
+  const int newzoom = CLAMP((int)roundf(begin_zoom / pinch->scale), 1, DT_LIGHTTABLE_MAX_ZOOM);
+
+  // Anchor the zoom at the pinch focal point.
+  table->last_x = (int)pinch->x_root;
+  table->last_y = (int)pinch->y_root;
+  table->mouse_inside = TRUE;
+
+  if(newzoom != old)
+    dt_thumbtable_zoom_changed(table, old, newzoom);
+
+  return TRUE;
+}
+
 static void _event_scroll(GtkEventControllerScroll *controller,
                            gdouble dx,
                            gdouble dy,
@@ -1176,6 +1221,25 @@ static void _event_scroll(GtkEventControllerScroll *controller,
 #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
 #endif
+    return;
+  }
+
+  // In zoomable mode a touchpad two-finger swipe pans the grid instead of
+  // zooming (pinch handles zoom). Mouse wheels and ctrl+scroll still zoom
+  // through the unit-delta path below.
+  if(table->mode == DT_THUMBTABLE_MODE_ZOOM
+     && dt_gui_scroll_should_pan(e))
+  {
+    gdouble ddx = 0.0, ddy = 0.0;
+    if(dt_gui_get_scroll_deltas(e, &ddx, &ddy)
+       && (ddx != 0.0 || ddy != 0.0))
+    {
+      const int pdx = (int)roundf(-ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
+      const int pdy = (int)roundf(-ddy * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
+      if(pdx != 0 || pdy != 0)
+        _move(table, pdx, pdy, TRUE);
+    }
+    gdk_event_free(event);
     return;
   }
 
@@ -2659,7 +2723,8 @@ dt_thumbtable_t *dt_thumbtable_new()
                         GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK
-                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_TOUCHPAD_GESTURE_MASK);
 #endif
   dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);
@@ -2681,6 +2746,8 @@ dt_thumbtable_t *dt_thumbtable_new()
 
   dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _event_scroll, table);
+  g_signal_connect(G_OBJECT(table->widget), "event",
+                   G_CALLBACK(_event_gesture), table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
   dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
