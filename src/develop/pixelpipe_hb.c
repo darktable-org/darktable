@@ -315,6 +315,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->bcache_hash = DT_INVALID_HASH;
   memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
   memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
+  pipe->mask_cache_size = 0;
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, fraction);
 }
 
@@ -324,13 +325,13 @@ static inline size_t _get_pipe_cache_mem(const dt_dev_pixelpipe_t *pipe)
         + pipe->scharr.size
         + pipe->bcache_size
         + pipe->mask_distort_buf_size[0]
-        + pipe->mask_distort_buf_size[1];
+        + pipe->mask_distort_buf_size[1]
+        + pipe->mask_cache_size;
 }
 
 static inline size_t _dev_used_cachemem(void)
 {
   const dt_develop_t *dev = darktable.develop;
-  // FIXME size of details & raster masks cache is currently unknown
   return  _get_pipe_cache_mem(dev->full.pipe)
         + _get_pipe_cache_mem(dev->preview2.pipe)
         + _get_pipe_cache_mem(dev->preview_pipe);
@@ -3561,6 +3562,59 @@ static dt_hash_t _raster_mask_cache_hash(dt_dev_pixelpipe_iop_t *piece,
   return hash;
 }
 
+/* The per-piece distorted mask caches are a pure performance optimization, without
+   them we simply distort from the source module for every request.
+   As one cacheline takes a full float mask at the pieces roi_out we don't want them
+   to compete with the pixelpipe cache and tiling on low-mem systems, we use the same
+   threshold as the pixelpipe cache trimming code here.
+*/
+static inline gboolean _use_mask_cache(void)
+{
+  return dt_get_available_mem() >= DT_MEGA * 6000;
+}
+
+// release a cached mask and account for the freed memory
+static void _clear_mask_cache(dt_dev_pixelpipe_t *pipe,
+                              dt_dev_distorted_mask_cache_t *c)
+{
+  dt_free_align(c->data);
+  if(pipe)
+    pipe->mask_cache_size -= MIN(pipe->mask_cache_size, c->size);
+  memset(c, 0, sizeof(dt_dev_distorted_mask_cache_t));
+}
+
+/* make sure the cacheline can hold num_floats, reallocating as required.
+   returns FALSE if we can't or don't want to cache, in that case any
+   possibly available data have been released.
+*/
+static gboolean _prepare_mask_cache(dt_dev_pixelpipe_iop_t *piece,
+                                    dt_dev_distorted_mask_cache_t *c,
+                                    const size_t num_floats)
+{
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const size_t needed = num_floats * sizeof(float);
+
+  // also releases data kept from before the user lowered the resource level
+  if(!_use_mask_cache() || num_floats == 0)
+  {
+    _clear_mask_cache(pipe, c);
+    return FALSE;
+  }
+
+  // realloc only if size changed
+  if(c->data && c->size != needed)
+    _clear_mask_cache(pipe, c);
+
+  if(!c->data)
+  {
+    c->data = dt_alloc_align_float(num_floats);
+    if(!c->data) return FALSE;
+    c->size = needed;
+    pipe->mask_cache_size += needed;
+  }
+  return TRUE;
+}
+
 // update the detail mask cache on a geometric piece after distortion.
 static void
 _update_detail_mask_cache(dt_dev_pixelpipe_iop_t *piece, const float *data,
@@ -3569,16 +3623,7 @@ _update_detail_mask_cache(dt_dev_pixelpipe_iop_t *piece, const float *data,
   dt_dev_distorted_mask_cache_t *c = &piece->detail_mask_cache;
   const size_t num_floats = (size_t)roi->width * roi->height;
 
-  // realloc only if size changed
-  if(c->data && (size_t)c->roi.width * c->roi.height != num_floats)
-  {
-    dt_free_align(c->data);
-    c->data = NULL;
-  }
-  if(!c->data)
-    c->data = dt_alloc_align_float(num_floats);
-
-  if(c->data)
+  if(_prepare_mask_cache(piece, c, num_floats))
   {
     dt_iop_image_copy(c->data, data, num_floats);
     c->roi = *roi;
@@ -3597,15 +3642,7 @@ static void _update_raster_mask_cache(dt_dev_pixelpipe_iop_t *piece,
   dt_dev_distorted_mask_cache_t *c = &piece->raster_mask_cache;
   const size_t num_floats = (size_t)roi->width * roi->height;
 
-  if(c->data && (size_t)c->roi.width * c->roi.height != num_floats)
-  {
-    dt_free_align(c->data);
-    c->data = NULL;
-  }
-  if(!c->data)
-    c->data = dt_alloc_align_float(num_floats);
-
-  if(c->data)
+  if(_prepare_mask_cache(piece, c, num_floats))
   {
     dt_iop_image_copy(c->data, data, num_floats);
     c->roi = *roi;
@@ -3615,10 +3652,8 @@ static void _update_raster_mask_cache(dt_dev_pixelpipe_iop_t *piece,
 
 static void _clear_piece_mask_caches(dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_free_align(piece->detail_mask_cache.data);
-  memset(&piece->detail_mask_cache, 0, sizeof(dt_dev_distorted_mask_cache_t));
-  dt_free_align(piece->raster_mask_cache.data);
-  memset(&piece->raster_mask_cache, 0, sizeof(dt_dev_distorted_mask_cache_t));
+  _clear_mask_cache(piece->pipe, &piece->detail_mask_cache);
+  _clear_mask_cache(piece->pipe, &piece->raster_mask_cache);
 }
 
 static inline gboolean _distort_piece_roi(const dt_dev_pixelpipe_iop_t *piece)
@@ -3769,7 +3804,7 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
         }
       }
 
-      if(target_iter)
+      if(target_iter && _use_mask_cache())
       {
         for(GList *iter = g_list_previous(target_iter); iter != source_iter;
             iter = g_list_previous(iter))
@@ -4071,7 +4106,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     }
   }
 
-  if(target_iter)
+  if(target_iter && _use_mask_cache())
   {
     for(GList *iter = g_list_previous(target_iter); iter != source_iter;
         iter = g_list_previous(iter))
