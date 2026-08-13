@@ -3581,8 +3581,6 @@ static void _btn_make_radio_cb(GtkToggleButton *btn,
     gtk_toggle_button_set_active(g->btn_curve_tool, btn == g->btn_curve_tool);
     gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
 
-    gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
-
     dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint
         = btn == g->btn_point_tool
         ? _("<b>add point</b>: click and drag\n<b>size</b>: scroll - "
