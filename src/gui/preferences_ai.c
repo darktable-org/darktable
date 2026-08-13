@@ -76,6 +76,7 @@ enum
   COL_ENABLED,
   COL_ENABLED_SENSITIVE, // whether the enabled checkbox is clickable
   COL_STATUS,
+  COL_REPOSITORY,
   COL_DEFAULT,
   COL_ID,
   NUM_COLS
@@ -94,12 +95,14 @@ typedef struct dt_prefs_ai_data_t
 #ifdef HAVE_AI_DOWNLOAD
   GtkWidget *download_selected_btn;
   GtkWidget *download_default_btn;
+  GtkWidget *install_repo_btn;
 #endif
   GtkWidget *install_btn;
   GtkWidget *delete_selected_btn;
   GtkWidget *parent_dialog;
   GtkWidget *select_all_toggle;
   GtkTreeViewColumn *info_col;
+  GtkTreeViewColumn *repo_col;  // hidden unless a third-party model exists
   GtkWidget *controls_box;  // container for all controls below the enable toggle
   GtkWidget *ort_path_entry;
   GtkWidget *ort_path_indicator;
@@ -211,6 +214,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
 
   const int count = dt_ai_models_get_count();
   dt_print(DT_DEBUG_AI, "[preferences_ai] refreshing model list, count=%d", count);
+  gboolean any_third_party = FALSE;
   for(int i = 0; i < count; i++)
   {
     dt_ai_model_t *model = dt_ai_models_get_by_index(i);
@@ -235,6 +239,13 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       g_free(active_id);
     }
 
+    // only a non-official origin is worth naming; the column is hidden
+    // entirely when nothing here has one
+    const gboolean third_party
+      = model->repository
+        && !dt_ai_models_is_official_repository(model->repository);
+    if(third_party) any_third_party = TRUE;
+
     GtkTreeIter iter;
     gtk_list_store_append(data->model_store, &iter);
     gtk_list_store_set(
@@ -254,6 +265,8 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       dt_ai_task_label(model->task),
       COL_STATUS,
       _status_to_string(model->status),
+      COL_REPOSITORY,
+      third_party ? model->repository : "",
       COL_DEFAULT,
       model->is_default ? _("yes") : _("no"),
       COL_VERSION,
@@ -267,6 +280,10 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       -1);
     dt_ai_model_free(model);
   }
+
+  // an all-official install never sees this column
+  if(data->repo_col)
+    gtk_tree_view_column_set_visible(data->repo_col, any_third_party);
 
   // reset select-all toggle
   if(data->select_all_toggle)
@@ -997,6 +1014,707 @@ static void _on_download_default(GtkButton *button, gpointer user_data)
   _refresh_model_list(data);
 }
 
+// --- install from repository -----------------------------------------
+// the bundled catalog is fixed at build time, so a model released
+// afterwards is undownloadable until darktable ships again. the repository's
+// versions.json lists the whole release, which is what this dialog offers
+
+enum
+{
+  REPO_COL_SELECTED = 0,
+  REPO_COL_NAME,
+  REPO_COL_VERSION,
+  REPO_COL_TASK,
+  REPO_COL_STATUS,
+  REPO_COL_SELECTABLE,
+  REPO_COL_TOOLTIP,
+  REPO_COL_ENTRY,
+  REPO_NUM_COLS
+};
+
+typedef struct dt_repo_fetch_t
+{
+  char *repository;
+  GList *models;        // dt_ai_repo_model_t*, owned once finished
+  char *error;
+  gboolean finished;    // set last, read by the gui via g_atomic
+} dt_repo_fetch_t;
+
+typedef struct dt_repo_dialog_t
+{
+  dt_prefs_ai_data_t *prefs;
+  GtkWidget *dialog;
+  GtkWidget *combo;
+  GtkWidget *stack;    // "list" or "message"
+  GtkWidget *message;
+  GtkWidget *manage_btn;
+  GtkListStore *store;
+  GHashTable *cache;    // repository -> GList* of dt_ai_repo_model_t*,
+                        // so switching back does not refetch
+  gboolean busy;
+  guint idle_id;        // pending initial fetch, see _repo_initial_fetch
+} dt_repo_dialog_t;
+
+static gpointer _repo_fetch_thread(gpointer user_data)
+{
+  dt_repo_fetch_t *fetch = (dt_repo_fetch_t *)user_data;
+  fetch->models = dt_ai_models_fetch_repository_list(fetch->repository,
+                                                     &fetch->error);
+  g_atomic_int_set(&fetch->finished, TRUE);
+  return NULL;
+}
+
+// install acts on the ticked rows, so it stays insensitive until there is
+// at least one. mirrors _update_download_selected_sensitivity above
+static void _repo_update_install_sensitivity(dt_repo_dialog_t *rd)
+{
+  gboolean any = FALSE;
+  GtkTreeIter iter;
+  gboolean valid
+    = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(rd->store), &iter);
+  while(valid)
+  {
+    gboolean sel = FALSE;
+    gtk_tree_model_get(GTK_TREE_MODEL(rd->store), &iter,
+                       REPO_COL_SELECTED, &sel, -1);
+    if(sel) { any = TRUE; break; }
+    valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(rd->store), &iter);
+  }
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(rd->dialog),
+                                    GTK_RESPONSE_ACCEPT, any);
+}
+
+static void _on_repo_toggle(GtkCellRendererToggle *renderer,
+                            gchar *path_str,
+                            gpointer user_data)
+{
+  dt_repo_dialog_t *rd = (dt_repo_dialog_t *)user_data;
+  GtkTreeIter iter;
+  GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
+
+  if(gtk_tree_model_get_iter(GTK_TREE_MODEL(rd->store), &iter, path))
+  {
+    gboolean selected = FALSE, selectable = FALSE;
+    gtk_tree_model_get(GTK_TREE_MODEL(rd->store), &iter,
+                       REPO_COL_SELECTED, &selected,
+                       REPO_COL_SELECTABLE, &selectable, -1);
+    if(selectable)
+      gtk_list_store_set(rd->store, &iter, REPO_COL_SELECTED, !selected, -1);
+  }
+  gtk_tree_path_free(path);
+
+  _repo_update_install_sensitivity(rd);
+}
+
+// the table area shows either the list or a centered message, never both
+static void _repo_show_message(dt_repo_dialog_t *rd, const char *text)
+{
+  gtk_label_set_text(GTK_LABEL(rd->message), text);
+  gtk_stack_set_visible_child_name(GTK_STACK(rd->stack), "message");
+}
+
+// fill the table from a repository's listing, fetching it unless already
+// cached for this dialog
+static void _repo_populate(dt_repo_dialog_t *rd, const char *repository)
+{
+  gtk_list_store_clear(rd->store);
+
+  GList *models = g_hash_table_lookup(rd->cache, repository);
+  if(!models)
+  {
+    rd->busy = TRUE;
+    gtk_widget_set_sensitive(rd->combo, FALSE);
+    // editing the list mid-fetch would rebuild the combo under us, freeing
+    // the very string this call is holding. the busy flag cannot help: the
+    // button is a separate handler, and the event pump below runs it
+    gtk_widget_set_sensitive(rd->manage_btn, FALSE);
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(rd->dialog),
+                                      GTK_RESPONSE_ACCEPT, FALSE);
+    _repo_show_message(rd, _("retrieving the list of models…"));
+    // paint the notice before blocking on the network, or the dialog just
+    // sits there looking hung
+    dt_gui_process_events();
+
+    dt_repo_fetch_t fetch = { (char *)repository, NULL, NULL, FALSE };
+    GThread *thread = g_thread_new("ai-repo-list", _repo_fetch_thread, &fetch);
+    while(!g_atomic_int_get(&fetch.finished))
+    {
+      dt_gui_process_events();
+      g_usleep(10000);
+    }
+    g_thread_join(thread);
+
+    rd->busy = FALSE;
+    gtk_widget_set_sensitive(rd->combo, TRUE);
+    gtk_widget_set_sensitive(rd->manage_btn, TRUE);
+
+    if(!fetch.models)
+    {
+      _repo_show_message(rd, fetch.error
+                               ? fetch.error
+                               : _("nothing to install from here"));
+      g_free(fetch.error);
+      return;
+    }
+    g_free(fetch.error);
+    g_hash_table_insert(rd->cache, g_strdup(repository), fetch.models);
+    models = fetch.models;
+  }
+
+  for(GList *l = models; l; l = g_list_next(l))
+  {
+    const dt_ai_repo_model_t *m = (const dt_ai_repo_model_t *)l->data;
+    const char *status = _status_to_string(m->status);
+    const gboolean actionable = m->status != DT_AI_MODEL_DOWNLOADED;
+
+    // description, license and size go in the tooltip, not the columns
+    GString *tip = g_string_new(NULL);
+    if(m->description) g_string_append_printf(tip, "%s\n\n", m->description);
+    g_string_append_printf(tip, "%s: %s", _("model"), m->id);
+    if(m->size > 0)
+    {
+      gchar *pretty = g_format_size((guint64)m->size);
+      g_string_append_printf(tip, "\n%s: %s", _("download size"), pretty);
+      g_free(pretty);
+    }
+    if(m->license)
+      g_string_append_printf(tip, "\n%s: %s", _("license"), m->license);
+
+    gtk_list_store_insert_with_values(
+      rd->store, NULL, -1,
+      REPO_COL_SELECTED, FALSE,
+      REPO_COL_NAME, m->name ? m->name : m->id,
+      REPO_COL_VERSION, m->version ? m->version : "",
+      REPO_COL_TASK, m->task ? m->task : "",
+      REPO_COL_STATUS, status,
+      REPO_COL_SELECTABLE, actionable,
+      REPO_COL_TOOLTIP, tip->str,
+      REPO_COL_ENTRY, m,
+      -1);
+    g_string_free(tip, TRUE);
+  }
+
+  // show what the repository holds even when all of it is installed: the
+  // versions and statuses are the point, and install is disabled anyway
+  gtk_stack_set_visible_child_name(GTK_STACK(rd->stack), "list");
+
+  // nothing is ticked in a freshly populated table
+  _repo_update_install_sensitivity(rd);
+}
+
+static void _on_repo_combo_changed(GtkWidget *combo, gpointer user_data)
+{
+  dt_repo_dialog_t *rd = (dt_repo_dialog_t *)user_data;
+  if(rd->busy) return;  // re-entry while the previous fetch pumps events
+
+  // the combo owns what it returns and repopulating frees it, so the fetch
+  // below must not be left holding a pointer into it
+  gchar *repository = g_strdup(dt_bauhaus_combobox_get_text(combo));
+  if(repository) _repo_populate(rd, repository);
+  g_free(repository);
+}
+
+// the first fetch must not run before gtk_dialog_run(): until its loop is
+// up, closing the window destroys the dialog outright, and the fetch pumps
+// events for as long as the network takes. from an idle the loop is
+// already running, and a close is a response rather than a destroy
+static gboolean _repo_initial_fetch(gpointer user_data)
+{
+  dt_repo_dialog_t *rd = (dt_repo_dialog_t *)user_data;
+  rd->idle_id = 0;
+  dt_bauhaus_combobox_set(rd->combo, 0);
+  return G_SOURCE_REMOVE;
+}
+
+// installing an id that already belongs elsewhere overwrites it on disk:
+// the archive extracts to <models>/<id>/, whoever published it
+static gboolean _confirm_replacement(const dt_ai_repo_model_t *m)
+{
+  dt_ai_model_t *existing = dt_ai_models_get_by_id(m->id);
+  if(!existing) return TRUE;
+
+  const gboolean same_source =
+    !g_strcmp0(existing->repository, m->repository)
+    || (existing->from_catalog
+        && dt_ai_models_is_official_repository(m->repository));
+  const gboolean on_disk = existing->status != DT_AI_MODEL_NOT_DOWNLOADED;
+
+  if(same_source || !on_disk)
+  {
+    dt_ai_model_free(existing);
+    return TRUE;
+  }
+
+  gchar *owner = g_strdup(existing->from_catalog
+                            ? _("the official repository")
+                            : (existing->repository ? existing->repository
+                                                    : _("a local install")));
+  dt_ai_model_free(existing);
+
+  const gboolean ok = dt_gui_show_yes_no_dialog(
+    _("replace installed model?"),
+    "ai_replace_model",
+    _("\"%s\" is already installed from %s.\n\n"
+      "installing it from %s replaces those files"),
+    m->id, owner, m->repository);
+  g_free(owner);
+  return ok;
+}
+
+// --- manage repositories --------------------------------------------
+// verifying means fetching the repository's listing — the same call the
+// combo makes. A repo that answers is usable; one that does not would only
+// fail later with less context
+static gboolean _verify_repository(GtkWindow *parent, const char *repository)
+{
+  dt_repo_fetch_t fetch = { (char *)repository, NULL, NULL, FALSE };
+  GThread *thread = g_thread_new("ai-repo-verify", _repo_fetch_thread, &fetch);
+  while(!g_atomic_int_get(&fetch.finished))
+  {
+    dt_gui_process_events();
+    g_usleep(10000);
+  }
+  g_thread_join(thread);
+
+  const int count = g_list_length(fetch.models);
+  char *error = fetch.error;
+  dt_ai_repo_model_list_free(fetch.models);
+
+  if(!count)
+  {
+    GtkWidget *err = gtk_message_dialog_new(
+      parent, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+      "%s", error ? error
+                  : _("this repository offers no models for this version "
+                      "of darktable"));
+    gtk_window_set_title(GTK_WINDOW(err), _("repository not usable"));
+    gtk_dialog_run(GTK_DIALOG(err));
+    gtk_widget_destroy(err);
+    g_free(error);
+    return FALSE;
+  }
+  g_free(error);
+
+  // adding a repository is the moment the trust decision is made, so say
+  // what it means while the user is making it
+  return dt_gui_show_yes_no_dialog(
+    _("add this repository?"), "ai_add_repository",
+    _("%s offers %d model(s) for this version of darktable\n\n"
+      "it is not maintained or reviewed by the darktable project, and a "
+      "model installed from it replaces any installed model of the same "
+      "name"),
+    repository, count);
+}
+
+#define DT_AI_REPO_PATTERN "^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"
+
+typedef struct dt_repo_edit_t
+{
+  GtkWidget *dialog;
+  GtkListStore *store;
+  GtkWidget *entry;
+  GtkWidget *view;
+  GtkWidget *add_btn;
+  GtkWidget *remove_btn;
+  gboolean busy;        // a verification is pumping events; ignore re-entry
+} dt_repo_edit_t;
+
+// add stays insensitive until the field holds something that could be a
+// repository, so the shape is taught by the button rather than by an error
+static void _on_repo_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+  dt_repo_edit_t *ed = (dt_repo_edit_t *)user_data;
+  gchar *repo = g_strstrip(g_strdup(gtk_entry_get_text(GTK_ENTRY(ed->entry))));
+  gtk_widget_set_sensitive(ed->add_btn,
+                           g_regex_match_simple(DT_AI_REPO_PATTERN, repo, 0, 0));
+  g_free(repo);
+}
+
+// the official repository is listed for context but is a different setting
+static void _on_repo_selection_changed(GtkTreeSelection *sel, gpointer user_data)
+{
+  dt_repo_edit_t *ed = (dt_repo_edit_t *)user_data;
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  gboolean removable = FALSE;
+  if(gtk_tree_selection_get_selected(sel, &model, &iter))
+    gtk_tree_model_get(model, &iter, 1, &removable, -1);
+  gtk_widget_set_sensitive(ed->remove_btn, removable);
+}
+
+static gboolean _repo_already_listed(GtkListStore *store, const char *repo)
+{
+  GtkTreeIter iter;
+  gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
+  while(valid)
+  {
+    gchar *existing = NULL;
+    gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &existing, -1);
+    const gboolean same = !g_strcmp0(existing, repo);
+    g_free(existing);
+    if(same) return TRUE;
+    valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter);
+  }
+  return FALSE;
+}
+
+// the work, so each signal gets a correctly typed callback below rather
+// than one handler doing duty for two different first arguments
+static void _repo_add(dt_repo_edit_t *ed)
+{
+  // _verify_repository pumps events, so add stays clickable; a second
+  // click would start a second verification
+  if(ed->busy) return;
+
+  GtkWindow *parent = GTK_WINDOW(ed->dialog);
+
+  gchar *repo = g_strstrip(g_strdup(gtk_entry_get_text(GTK_ENTRY(ed->entry))));
+
+  // shape is already guaranteed by the button's sensitivity; a duplicate
+  // still needs saying, since it looks perfectly valid
+  if(_repo_already_listed(ed->store, repo))
+  {
+    GtkWidget *err = gtk_message_dialog_new(
+      parent, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+      "%s", _("that repository is already listed"));
+    gtk_dialog_run(GTK_DIALOG(err));
+    gtk_widget_destroy(err);
+  }
+  else
+  {
+    ed->busy = TRUE;
+    const gboolean accepted = _verify_repository(parent, repo);
+    ed->busy = FALSE;
+    if(accepted)
+    {
+      gtk_list_store_insert_with_values(ed->store, NULL, -1,
+                                        0, repo, 1, TRUE, -1);
+      gtk_entry_set_text(GTK_ENTRY(ed->entry), "");
+    }
+  }
+  g_free(repo);
+}
+
+static void _on_repo_add_clicked(GtkButton *button, gpointer user_data)
+{
+  _repo_add((dt_repo_edit_t *)user_data);
+}
+
+static void _on_repo_entry_activate(GtkEntry *entry, gpointer user_data)
+{
+  dt_repo_edit_t *ed = (dt_repo_edit_t *)user_data;
+  // enter should do nothing when add itself is unavailable
+  if(gtk_widget_get_sensitive(ed->add_btn)) _repo_add(ed);
+}
+
+static void _on_repo_remove(GtkButton *button, gpointer user_data)
+{
+  dt_repo_edit_t *ed = (dt_repo_edit_t *)user_data;
+  GtkTreeSelection *sel
+    = gtk_tree_view_get_selection(GTK_TREE_VIEW(ed->view));
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  if(!gtk_tree_selection_get_selected(sel, &model, &iter)) return;
+
+  gboolean removable = FALSE;
+  gtk_tree_model_get(model, &iter, 1, &removable, -1);
+  if(removable) gtk_list_store_remove(ed->store, &iter);
+}
+
+static void _on_manage_repositories(GtkButton *button, gpointer user_data)
+{
+  dt_repo_dialog_t *rd = (dt_repo_dialog_t *)user_data;
+
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(
+    _("repositories"),
+    GTK_WINDOW(rd->dialog),
+    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+    _("_cancel"), GTK_RESPONSE_CANCEL,
+    _("_ok"), GTK_RESPONSE_ACCEPT,
+    NULL);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(460),
+                              DT_PIXEL_APPLY_DPI(300));
+
+  GtkListStore *store = gtk_list_store_new(2,
+                                           G_TYPE_STRING,   // repository
+                                           G_TYPE_BOOLEAN); // removable
+
+  gtk_list_store_insert_with_values(
+    store, NULL, -1,
+    0, dt_ai_models_official_repository(),
+    1, FALSE, -1);
+
+  GList *third_party = dt_ai_models_get_third_party_repositories();
+  for(GList *l = third_party; l; l = g_list_next(l))
+    gtk_list_store_insert_with_values(store, NULL, -1,
+                                      0, (const char *)l->data, 1, TRUE, -1);
+  g_list_free_full(third_party, g_free);
+
+  GtkWidget *view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  g_object_unref(store);
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+  gtk_tree_view_append_column(
+    GTK_TREE_VIEW(view),
+    gtk_tree_view_column_new_with_attributes(
+      "", gtk_cell_renderer_text_new(), "text", 0, NULL));
+  dt_gui_dialog_add(dialog, dt_gui_scroll_wrap(view));
+
+  GtkWidget *entry = gtk_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "owner/repo");
+  GtkWidget *add_btn = gtk_button_new_with_label(_("add"));
+  GtkWidget *remove_btn = gtk_button_new_with_label(_("remove"));
+  dt_gui_dialog_add(dialog,
+                    dt_gui_hbox(dt_gui_expand(entry), add_btn, remove_btn));
+
+  dt_repo_edit_t ed = { dialog, store, entry, view, add_btn, remove_btn, FALSE };
+  g_signal_connect(add_btn, "clicked", G_CALLBACK(_on_repo_add_clicked), &ed);
+  g_signal_connect(remove_btn, "clicked", G_CALLBACK(_on_repo_remove), &ed);
+  g_signal_connect(entry, "changed", G_CALLBACK(_on_repo_entry_changed), &ed);
+  // enter in the field does what the button does
+  g_signal_connect(entry, "activate", G_CALLBACK(_on_repo_entry_activate), &ed);
+  g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(view)), "changed",
+                   G_CALLBACK(_on_repo_selection_changed), &ed);
+
+  // empty field, nothing selected
+  gtk_widget_set_sensitive(add_btn, FALSE);
+  gtk_widget_set_sensitive(remove_btn, FALSE);
+
+  gtk_widget_show_all(dialog);
+  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  if(response == GTK_RESPONSE_ACCEPT)
+  {
+    // the official repository is row zero and not ours to write
+    GList *edited = NULL;
+    GtkTreeIter iter;
+    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
+    while(valid)
+    {
+      gchar *repo = NULL;
+      gboolean removable = FALSE;
+      gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+                         0, &repo, 1, &removable, -1);
+      if(removable && repo) edited = g_list_append(edited, repo);
+      else g_free(repo);
+      valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter);
+    }
+    dt_ai_models_set_third_party_repositories(edited);
+    g_list_free_full(edited, g_free);
+  }
+
+  gtk_widget_destroy(dialog);
+
+  if(response != GTK_RESPONSE_ACCEPT) return;
+
+  // rebuild the combo so an added repository is selectable straight away.
+  // the handler is blocked meanwhile: repopulating fires value-changed for
+  // every entry, and each one would start a fetch
+  const char *current = dt_bauhaus_combobox_get_text(rd->combo);
+  gchar *keep = g_strdup(current);
+
+  g_signal_handlers_block_by_func(rd->combo, _on_repo_combo_changed, rd);
+  dt_bauhaus_combobox_clear(rd->combo);
+
+  GList *repos = dt_ai_models_get_repositories();
+  int index = 0, restore = 0;
+  for(GList *l = repos; l; l = g_list_next(l), index++)
+  {
+    dt_bauhaus_combobox_add(rd->combo, (const char *)l->data);
+    if(!g_strcmp0((const char *)l->data, keep)) restore = index;
+  }
+  g_list_free_full(repos, g_free);
+  g_signal_handlers_unblock_by_func(rd->combo, _on_repo_combo_changed, rd);
+
+  // a removed repository leaves the selection elsewhere, so repopulate
+  dt_bauhaus_combobox_set(rd->combo, restore);
+  g_free(keep);
+}
+
+static void _on_install_from_repository(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+
+  GList *repositories = dt_ai_models_get_repositories();
+  if(!repositories)
+  {
+    dt_gui_show_yes_no_dialog(_("no repository configured"), "ai_no_repo",
+                              "%s", _("set plugins/ai/repository first"));
+    return;
+  }
+
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(
+    _("install models from repository"),
+    GTK_WINDOW(data->parent_dialog),
+    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+    _("_cancel"), GTK_RESPONSE_CANCEL,
+    _("_install"), GTK_RESPONSE_ACCEPT,
+    NULL);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(520),
+                              DT_PIXEL_APPLY_DPI(400));
+
+  GtkListStore *store = gtk_list_store_new(REPO_NUM_COLS,
+                                           G_TYPE_BOOLEAN,  // selected
+                                           G_TYPE_STRING,   // name
+                                           G_TYPE_STRING,   // version
+                                           G_TYPE_STRING,   // task
+                                           G_TYPE_STRING,   // status
+                                           G_TYPE_BOOLEAN,  // selectable
+                                           G_TYPE_STRING,   // tooltip
+                                           G_TYPE_POINTER); // entry, owned
+                                                            // by the cache
+
+  // handlers need the dialog state, and some are connected while widgets
+  // are still being built, so it is declared up front and filled in as it
+  // goes rather than assembled at the end
+  dt_repo_dialog_t rd = { 0 };
+  rd.prefs = data;
+  rd.dialog = dialog;
+  rd.store = store;
+  rd.cache = g_hash_table_new_full(
+    g_str_hash, g_str_equal, g_free,
+    (GDestroyNotify)dt_ai_repo_model_list_free);
+
+  GtkWidget *combo = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(combo, NULL, N_("repository"));
+  for(GList *r = repositories; r; r = g_list_next(r))
+    dt_bauhaus_combobox_add(combo, (const char *)r->data);
+
+  rd.combo = combo;
+  // a bauhaus widget carries its own label and expects the full row
+  dt_gui_dialog_add(dialog, combo);
+
+  GtkWidget *view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  g_object_unref(store);  // the view holds its own reference now
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), TRUE);
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), REPO_COL_TOOLTIP);
+
+  GtkCellRenderer *toggle = gtk_cell_renderer_toggle_new();
+  g_signal_connect(toggle, "toggled", G_CALLBACK(_on_repo_toggle), &rd);
+  gtk_tree_view_append_column(
+    GTK_TREE_VIEW(view),
+    gtk_tree_view_column_new_with_attributes(
+      "", toggle,
+      "active", REPO_COL_SELECTED,
+      "activatable", REPO_COL_SELECTABLE, NULL));
+  gtk_tree_view_append_column(
+    GTK_TREE_VIEW(view),
+    gtk_tree_view_column_new_with_attributes(
+      _("name"), gtk_cell_renderer_text_new(),
+      "text", REPO_COL_NAME, NULL));
+  gtk_tree_view_append_column(
+    GTK_TREE_VIEW(view),
+    gtk_tree_view_column_new_with_attributes(
+      _("version"), gtk_cell_renderer_text_new(),
+      "text", REPO_COL_VERSION, NULL));
+  gtk_tree_view_append_column(
+    GTK_TREE_VIEW(view),
+    gtk_tree_view_column_new_with_attributes(
+      _("task"), gtk_cell_renderer_text_new(),
+      "text", REPO_COL_TASK, NULL));
+  gtk_tree_view_append_column(
+    GTK_TREE_VIEW(view),
+    gtk_tree_view_column_new_with_attributes(
+      _("status"), gtk_cell_renderer_text_new(),
+      "text", REPO_COL_STATUS, NULL));
+
+  // a message replaces the table rather than sitting above it, so the
+  // dialog never shows an empty grid with an explanation floating over it
+  GtkWidget *message = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(message), TRUE);
+  gtk_label_set_justify(GTK_LABEL(message), GTK_JUSTIFY_CENTER);
+  gtk_widget_set_halign(message, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(message, GTK_ALIGN_CENTER);
+
+  GtkWidget *stack = gtk_stack_new();
+  gtk_widget_set_vexpand(stack, TRUE);
+  gtk_stack_add_named(GTK_STACK(stack), dt_gui_scroll_wrap(view), "list");
+  gtk_stack_add_named(GTK_STACK(stack), message, "message");
+  dt_gui_dialog_add(dialog, stack);
+
+  // editing the list is rare and its effect outlives this dialog, so it
+  // goes to the left of the action row, away from install. same treatment
+  // as the help button in dt_gui_dialog_add_help: GTK_RESPONSE_NONE with
+  // the dialog's own handler disconnected, so clicking does not close it
+  GtkWidget *manage_btn = gtk_dialog_add_button(
+    GTK_DIALOG(dialog), _("manage repositories…"), GTK_RESPONSE_NONE);
+  gtk_widget_set_tooltip_text(manage_btn,
+    _("add or remove the repositories models can be installed from"));
+  // the action row packs to the end, so reordering alone would only move
+  // it within the right-hand cluster; secondary puts it at the far left
+  GtkWidget *action_box = gtk_widget_get_parent(manage_btn);
+  gtk_button_box_set_child_non_homogeneous(GTK_BUTTON_BOX(action_box),
+                                           manage_btn, TRUE);
+  gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(action_box),
+                                     manage_btn, TRUE);
+  g_signal_handlers_disconnect_by_data(manage_btn, dialog);
+  g_signal_connect(manage_btn, "clicked",
+                   G_CALLBACK(_on_manage_repositories), &rd);
+
+  rd.stack = stack;
+  rd.message = message;
+  rd.manage_btn = manage_btn;
+
+  g_signal_connect(combo, "value-changed",
+                   G_CALLBACK(_on_repo_combo_changed), &rd);
+
+  gtk_widget_show_all(dialog);
+  rd.idle_id = g_idle_add(_repo_initial_fetch, &rd);  // fetches the first
+
+  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  // rd lives on this stack, so nothing may reference it past here
+  if(rd.idle_id) g_source_remove(rd.idle_id);
+
+  // collect the selection before tearing the dialog down
+  GList *to_install = NULL;
+  if(response == GTK_RESPONSE_ACCEPT)
+  {
+    GtkTreeIter iter;
+    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
+    while(valid)
+    {
+      gboolean selected = FALSE;
+      dt_ai_repo_model_t *entry = NULL;
+      gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+                         REPO_COL_SELECTED, &selected,
+                         REPO_COL_ENTRY, &entry, -1);
+      if(selected && entry) to_install = g_list_append(to_install, entry);
+      valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter);
+    }
+  }
+
+  gtk_widget_destroy(dialog);
+
+  // register first so the shared download dialog applies unchanged
+  gboolean any = FALSE;
+  for(GList *l = to_install; l; l = g_list_next(l))
+  {
+    const dt_ai_repo_model_t *m = (const dt_ai_repo_model_t *)l->data;
+    if(!_confirm_replacement(m)) continue;
+    if(!dt_ai_models_register_repository_model(m)) continue;
+    if(!_download_model_with_dialog(data, m->id))
+    {
+      // nothing landed on disk, so put back what the registration replaced
+      dt_ai_models_unregister_repository_model(m->id);
+      break;  // error or cancel
+    }
+    // only now is the publisher a fact worth recording
+    dt_ai_models_record_origin(m->id, m->repository);
+    any = TRUE;
+  }
+
+  if(any)
+  {
+    dt_ai_models_refresh_status();
+    _refresh_model_list(data);
+  }
+
+  g_list_free(to_install);
+  g_hash_table_destroy(rd.cache);
+  g_list_free_full(repositories, g_free);
+}
+
 #endif // HAVE_AI_DOWNLOAD
 
 static void _on_install_model(GtkButton *button, gpointer user_data)
@@ -1716,6 +2434,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     G_TYPE_BOOLEAN, // enabled
     G_TYPE_BOOLEAN, // enabled_sensitive
     G_TYPE_STRING,  // status
+    G_TYPE_STRING,  // repository
     G_TYPE_STRING,  // default
     G_TYPE_STRING); // id
 
@@ -1777,6 +2496,17 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     NULL);
   gtk_tree_view_column_set_expand(name_col, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), name_col);
+
+  // repository column, shown only when something not from the official
+  // repository is installed — otherwise it would be empty for everyone
+  data->repo_col = gtk_tree_view_column_new_with_attributes(
+    _("repository"),
+    text_renderer,
+    "text",
+    COL_REPOSITORY,
+    NULL);
+  gtk_tree_view_column_set_visible(data->repo_col, FALSE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), data->repo_col);
 
   // info icon column — click opens model card
   GtkCellRenderer *info_renderer
@@ -1891,6 +2621,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     G_CALLBACK(_on_download_selected),
     data);
   dt_gui_box_add(button_box, data->download_selected_btn);
+
 #endif // HAVE_AI_DOWNLOAD
 
   // import from file button
@@ -1900,6 +2631,21 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_widget_set_margin_start(data->install_btn, DT_PIXEL_APPLY_DPI(16));
   g_signal_connect(data->install_btn, "clicked", G_CALLBACK(_on_install_model), data);
   dt_gui_box_add(button_box, data->install_btn);
+
+#ifdef HAVE_AI_DOWNLOAD
+  // pairs with "import from file…", so no margin between the two
+  data->install_repo_btn
+    = gtk_button_new_with_label(_("install from repository…"));
+  gtk_widget_set_tooltip_text(data->install_repo_btn,
+    _("browse every model the configured repository offers for this version "
+      "of darktable, including any not listed above"));
+  g_signal_connect(
+    data->install_repo_btn,
+    "clicked",
+    G_CALLBACK(_on_install_from_repository),
+    data);
+  dt_gui_box_add(button_box, data->install_repo_btn);
+#endif // HAVE_AI_DOWNLOAD
 
   // delete selected button
   data->delete_selected_btn = gtk_button_new_with_label(_("delete selected"));
