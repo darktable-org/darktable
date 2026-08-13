@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 typedef struct dt_dev_distorted_mask_cache_t
 {
   float *data;      // the cached distorted mask at this piece's output
+  size_t size;      // allocated size of data, accounted in pipe->mask_cache_size
   dt_iop_roi_t roi; // the roi this mask corresponds to (piece->processed_roi_out)
   dt_hash_t hash;     // hash of pipe/geometry state for invalidation
   dt_hash_t src_hash; // hash of source data (e.g. threshold) for invalidation
@@ -155,6 +156,7 @@ typedef struct dt_dev_detail_mask_t
   dt_iop_roi_t roi;
   dt_hash_t hash;
   float *data;
+  size_t size;
 } dt_dev_detail_mask_t;
 
 /**
@@ -263,10 +265,13 @@ typedef struct dt_dev_pixelpipe_t
   // module blending cache
   float *bcache_data;
   dt_hash_t bcache_hash;
+  size_t bcache_size;
 
   // reusable ping-pong buffers for mask distortion walks
   float *mask_distort_buf[2];
   size_t mask_distort_buf_size[2];
+  // sum of all per-piece detail/raster mask caches currently allocated in this pipe
+  size_t mask_cache_size;
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
