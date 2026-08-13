@@ -17,22 +17,20 @@
 */
 
 /* Automatic registration of RAW CFA frames for the lighttable "merge HDR"
- * feature.  This is a C port of the HDR use-case (`--preset hdr`) of the
- * reference `align_and_blend.py`: SIFT feature initialization -> RANSAC
- * homography, applied to exposure brackets shot on a shaky tripod or handheld.
+ * feature: SIFT feature initialization -> RANSAC homography, applied to
+ * exposure brackets shot on a shaky tripod or handheld.
  *
- * Unlike the Python tool, which operates on demosaiced RGB, this code operates
- * on the undemosaiced Bayer / X-Trans mosaic that the merge job accumulates.
- * It therefore (1) builds a reduced-resolution, CFA-free luma proxy for all
- * feature work and (2) applies the resulting homography to the full resolution
- * mosaic with a CFA-aware (same-color) resampler that preserves the mosaic
- * phase.  See dev-doc/HDR_Alignment_Design.md for the full design.
+ * Registration runs on the undemosaiced Bayer / X-Trans mosaic that the merge
+ * job accumulates.  It therefore (1) builds a reduced-resolution, CFA-free luma
+ * proxy for all feature work and (2) applies the resulting homography to the
+ * full resolution mosaic with a CFA-aware (same-color) resampler that preserves
+ * the mosaic phase.
  *
  * The OpenCV-dependent primitives (SIFT, FLANN, findHomography) live behind a
  * narrow C-ABI seam implemented in hdr_alignment_cv.cc, because OpenCV 4's API
- * is C++ only.  When darktable is
- * built without OpenCV (HAVE_OPENCV undefined) the public functions degrade to
- * no-ops that report "no alignment", and the merge behaves exactly as before.
+ * is C++ only.  When darktable is built without OpenCV (HAVE_OPENCV undefined)
+ * the public functions degrade to no-ops that report "no alignment", and the
+ * merge behaves exactly as before.
  */
 
 #pragma once
@@ -122,8 +120,7 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
 
 /* Probe a frame's feature richness for auto-reference selection: builds the luma
  * proxy and returns its SIFT keypoint count at the auto-reference probe
- * resolution.  Returns 0 if built without OpenCV or the proxy cannot be built.
- * Mirrors _count_lowres_sift_features() that drives `--auto-reference`. */
+ * resolution.  Returns 0 if built without OpenCV or the proxy cannot be built. */
 int dt_hdr_alignment_probe_features(const float *mosaic, int width, int height);
 
 /* ------------------------------------------------------------------------- *
@@ -170,8 +167,7 @@ void dt_hdr_cv_features_destroy(void *features);
  * (`ref_features`, from dt_hdr_cv_features_create) and a moving 8-bit luma proxy
  * `img`, using SIFT + FLANN (Lowe ratio + mutual NN) + RANSAC findHomography,
  * with an estimateAffine2D fallback on weak homography support.  Only the moving
- * frame is detected here; the reference comes from the cache.  Mirrors
- * estimate_initial_warp_feature_ransac() for the HDR path.
+ * frame is detected here; the reference comes from the cache.
  *
  * Writes the 3x3 row-major homography into H and returns the inlier count
  * (0 => estimation failed or ref_features is NULL; H is left as identity).
@@ -196,7 +192,7 @@ int dt_hdr_cv_feature_homography(const void *ref_features,
 
 /* Count SIFT keypoints on a low-resolution copy of `luma` (longest side scaled
  * to <= probe_dim).  Used by the optional auto-reference pre-pass to pick the
- * richest-feature frame.  Mirrors _count_lowres_sift_features(). */
+ * richest-feature frame. */
 int dt_hdr_cv_count_features(const uint8_t *luma, int width, int height, int probe_dim);
 
 #ifdef __cplusplus
