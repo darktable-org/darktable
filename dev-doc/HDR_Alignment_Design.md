@@ -159,7 +159,7 @@ raw-decode cost.
 
 This section is the authoritative, end-to-end description of how a *merge HDR*
 action registers and accumulates frames in darktable, as implemented across
-`control_jobs.c`, `hdr_alignment.c` and `hdr_alignment_cv.cc`. Sections 1–2
+`control_jobs.c` and `hdr_alignment.cc`. Sections 1–2
 motivate it; sections 4–5 give the code/structure.
 
 ### 3.1 Data representations
@@ -215,7 +215,7 @@ final warp (when it is reliable and sane); there is no separate refinement stage
 flowchart TD
     A[moving CFA mosaic R0] --> B[_build_proxy → R1 luma<br/>stride-1 2×2, area-downscale, OMP]
     B --> C[_proxy_to_u8 → R2 8-bit<br/>percentile-normalize + display-gamma, OMP]
-    C --> D[Stage 1 - feature init<br/>dt_hdr_cv_feature_homography]
+    C --> D[Stage 1 - feature init<br/>featureHomography]
     D -- H_feature, inliers --> F{Stage 2 - gate:<br/>reliable and sane?}
     F -- yes --> H[H_final = H_feature<br/>status OK]
     F -- no --> J[H_final = identity<br/>status IDENTITY]
@@ -233,12 +233,12 @@ sub-pixel warp it is deliberately left untouched to skip a redundant full-frame
 copy. Callers must read `mosaic`, not `out`, whenever `FALSE` is returned;
 `info->status` still carries the OK/IDENTITY/DISABLED decision either way.
 
-### 3.4 Stage 1 - feature initialization (`hdr_alignment_cv.cc`, OpenCV)
+### 3.4 Stage 1 - feature initialization (OpenCV)
 
 The reference side of the pipeline (CLAHE → `detectAndCompute` → scale floor →
-spatial balance) runs **once** in `dt_hdr_cv_features_create()` (called from
+spatial balance) runs **once** in `detectReference()` (called from
 `set_reference`) and is cached; only the **moving** frame is detected per call in
-`dt_hdr_cv_feature_homography()`. So in the diagram below the "SIFT
+`featureHomography()`. So in the diagram below the "SIFT
 detect+describe … balance" chain executes per frame only for the moving proxy -
 the reference keypoints/descriptors come straight from the cache:
 
@@ -272,8 +272,8 @@ keypoints or matches, it returns identity with 0 inliers (the frame is then left
 unaligned).
 
 **SIFT spatial keypoint balancing (`spatialBalanceKeep`).** After the scale floor,
-both keypoint sets are capped to `hdr_merge_sift_keypoints` (default 5000, the
-backend's `kSiftSpatialBalanceTarget`), keeping the strongest (by SIFT response)
+both keypoint sets are capped to `hdr_merge_sift_keypoints` (default
+`DT_HDR_SIFT_KEYPOINTS` = 5000), keeping the strongest (by SIFT response)
 in each cell of a frame-spanning grid of ~5000 cells. This was the decisive fix
 for a real bracket that locked onto a translation one structure-period short of
 the true (large) camera motion: the reference frame had **12888** surviving
@@ -287,10 +287,10 @@ budget removes both the asymmetry and the local over-density that feed the alias
 tuned for display-referred, tone-mapped imagery; darktable feeds it the *linear*
 raw mosaic. The right transform to bridge that gap is a **display gamma** on the
 proxy (`DT_HDR_PROXY_FEATURE_GAMMA`, §3.1), which supplies the tonal encoding the
-detector expects and brings the keypoint count into a usable range. CLAHE - which
-an earlier revision applied unconditionally - is **off by default**: on
-*repetitive* textures it changes descriptor signatures between exposures and
-manufactures false matches. That is precisely the period-aliasing failure mode
+detector expects and brings the keypoint count into a usable range. CLAHE is
+**off by default**: on *repetitive* textures it changes descriptor signatures
+between exposures and manufactures false matches. That is precisely the
+period-aliasing failure mode
 seen on a real façade pair, where CLAHE inflated detection to **279 581** raw
 keypoints and the matcher consensed on a period-aliased small shift. It remains a
 runtime knob (`hdr_merge_clahe_clip`) for genuinely feature-starved / extreme-DR
@@ -314,7 +314,7 @@ Both are gated so they cannot hurt the clean case: on a well-featured synthetic
 pair neither the subsample nor the cluster-degrade fired (inliers already spanned
 the grid).
 
-### 3.5 Stage 2 - reliability gate (`hdr_alignment.c`, C)
+### 3.5 Stage 2 - reliability gate
 
 A single gate decides whether to apply the feature-init warp `H_feature`:
 
@@ -325,7 +325,7 @@ A single gate decides whether to apply the feature-init warp `H_feature`:
 If both hold the warp is applied (`status OK`); otherwise the frame is accumulated
 unwarped (`status IDENTITY` - never worse than the legacy, alignment-free merge).
 
-### 3.6 Stage 3 - CFA-aware warp (`hdr_alignment.c`, C, OMP)
+### 3.6 Stage 3 - CFA-aware warp (OMP)
 
 `H_final` is rescaled to full-res (§4.4) and applied by `_warp_mosaic_cfa`: for
 each output photosite `(x,y)` of CFA color `c`, map through `H_full` to a source
@@ -349,7 +349,7 @@ The two FLANN match directions (image→template and template→image, for the
 mutual-NN test) are independent, so darktable runs them concurrently in an `omp
 parallel sections` block capped to two threads. Their KD-trees are **not** rebuilt
 symmetrically per frame: the reference (template) index is trained **once** in
-`dt_hdr_cv_features_create()` and cached on `RefFeatures`, so the image→template
+`detectReference()` and cached on `RefFeatures`, so the image→template
 direction reuses it and only the template→image direction builds a fresh index
 over the moving descriptors. darktable's `DT_OMP_FOR` covers the per-pixel C hot
 paths, the heaviest of which is the full-resolution CFA warp. The
@@ -370,76 +370,70 @@ smaller size anyway.
 ### 4.1 Module layout
 
 ```
-src/common/hdr_alignment.h       Public C API + OpenCV backend seam (extern "C")
-src/common/hdr_alignment.c       Pure-C: proxy build, normalization, warp math,
-                                  CFA-aware resample, orchestration, gates
-src/common/hdr_alignment_cv.cc   OpenCV (C++) backend: SIFT, FLANN, findHomography,
-                                  low-res feature probe
+src/common/hdr_alignment.h    Public API, extern "C" so C callers can use it
+src/common/hdr_alignment.cc   The whole implementation: proxy build, normalization,
+                               SIFT/FLANN/RANSAC, warp math, CFA-aware resample,
+                               gates, orchestration
 ```
 
-### 4.2 The C / C++ split
+### 4.2 Why one C++ translation unit
 
-OpenCV 4's API is **C++ only** (the legacy C `cv.h` API was removed).
-A `.c` translation unit cannot include `<opencv2/...>` or call `cv::SIFT`.
+OpenCV 4's API is **C++ only** (the legacy C `cv.h` API was removed), so the
+translation unit that calls `cv::SIFT` has to be C++. That is the *only* reason
+this code is C++ — nothing else about it needs the language.
 
-The resolution is a **narrow C-ABI seam**:
+No C shim is needed to bridge that. `hdr_alignment.h` is wrapped in `extern "C"`,
+which gives every public function C language linkage, so `control_jobs.c` — plain
+C — calls the C++ definitions directly. That is the same pattern darktable
+already uses for `common/exif.cc`, `common/box_filters.cc` and
+`imageio/imageio_rawspeed.cc`.
 
-- `hdr_alignment.c` holds everything that is naturally C and darktable-shaped: CFA
-  proxy extraction, percentile normalization, warp matrix algebra, the CFA-aware
-  warp, the reliability gate and the per-frame orchestration.
-- The primitives that genuinely need OpenCV are declared `extern "C"` in
-  `hdr_alignment.h` and implemented in `hdr_alignment_cv.cc`. The reference is
-  detected once and cached behind an opaque handle, so the seam is four functions
-  rather than a single symmetric detect-both call:
+Keeping the implementation in one translation unit is what lets the per-merge
+state own its OpenCV data outright, rather than hiding it behind an opaque
+handle with a create/destroy pair:
 
-  ```c
-  // Detect + cache the reference frame's SIFT features (once per merge).
-  void  *dt_hdr_cv_features_create(const uint8_t *proxy, int width, int height,
-                                   int balance_target, double clahe_clip);
-  void   dt_hdr_cv_features_destroy(void *features);
+```cpp
+struct dt_hdr_align_t
+{
+  dt_hdr_align_params_t params;
+  std::string debug_dir;                      // empty => debug images off
+  int debug_frame;
+  std::unique_ptr<RefFeatures> ref_features;  // cached reference SIFT features
+  ...
+};
+```
 
-  // Match a moving proxy against the cached reference features -> homography.
-  int    dt_hdr_cv_feature_homography(const void *ref_features, const uint8_t *img,
-                                      int width, int height, int balance_target,
-                                      double clahe_clip, const char *debug_dir,
-                                      int frame_index, double H[9],
-                                      dt_hdr_cv_feature_stats_t *stats);
+`dt_hdr_alignment_free()` is therefore just `delete a;`, and no OpenCV type —
+nor any struct that exists only to carry OpenCV results across a boundary —
+appears in the public header.
 
-  // Auto-reference probe: SIFT keypoint count on a low-res copy.
-  int    dt_hdr_cv_count_features(const uint8_t *luma, int width, int height, int probe_dim);
-  ```
+Two details are worth knowing if you touch this file:
 
-  All image data crosses the seam as plain pointers + dimensions; the homography
-  crosses as a `double[9]` (row-major); the cached reference crosses as an opaque
-  `void *`. No OpenCV type appears in any `.c` or public header. `debug_dir` /
-  `frame_index` are owned by the per-merge caller, so no global debug state is
-  kept and concurrent merges stay independent.
+- `RefFeatures` lives in a **named** namespace (`dt_hdr_align`), not the anonymous
+  one that holds the rest of the OpenCV helpers. `dt_hdr_align_t` is declared in
+  the public header and therefore has external linkage; a member of
+  internal-linkage type trips `-Werror=subobject-linkage`.
+- Every function C calls is an exception boundary. The OpenCV helpers catch
+  `cv::Exception` and degrade to "no alignment"; `dt_hdr_alignment_new()` uses
+  `new(std::nothrow)` and guards the one allocating call it makes.
 
 ```mermaid
 flowchart TD
-    subgraph C [hdr_alignment.c - pure C]
+    subgraph TU [hdr_alignment.cc]
+        direction TB
         P1[CFA → reduced-res luma proxy] --> P2[percentile normalize + gamma → u8]
         P2 --> P3[orchestration]
-        P3 --> P8[reliability gate + sanity]
-        P3 --> P6[scale H proxy→full-res]
+        P3 --> B0[(cached reference features<br/>detected once in set_reference)]
+        P3 --> B1[SIFT detect+compute<br/>moving proxy only]
+        B0 --> B2[FLANN kNN + Lowe + mutual]
+        B1 --> B2
+        B2 --> B3[findHomography RANSAC + affine fallback<br/>+ cluster→translation degrade]
+        B3 -- "H, inliers" --> P8[reliability gate + sanity]
+        P8 --> P6[scale H proxy→full-res]
         P6 --> P7[CFA-aware same-color warp]
     end
-    subgraph CC [hdr_alignment_cv.cc - OpenCV C++]
-        B0[(cached reference features<br/>detected once in set_reference)]
-        B1[SIFT detect+compute<br/>moving proxy only]
-        B2[FLANN kNN + Lowe + mutual]
-        B3[findHomography RANSAC + affine fallback<br/>+ cluster→translation degrade]
-    end
-    P3 -- "reference u8 proxy (once)" --> B0
-    P3 -- "moving u8 proxy" --> B1
-    B0 --> B2
-    B1 --> B2 --> B3 -- "H, inliers" --> P3
+    CJ[control_jobs.c - plain C] -- "extern C" --> P3
 ```
-
-Note that the seam is a *language* boundary, not an architectural one: because the
-public header is `extern "C"`, C callers can reach C++ definitions directly, so
-the split is a matter of which TU each helper is most readable in rather than a
-technical constraint. See §7 for the trade-off.
 
 ### 4.3 Public API (`hdr_alignment.h`)
 
@@ -513,7 +507,7 @@ scaling between resolution levels.
 
 ### 4.5 Reliability gate (`_warp_is_sane`)
 
-Applied in `hdr_alignment.c` before committing the feature-init warp:
+Applied before committing the feature-init warp:
 
 - **Reliable**: at least `DT_HDR_FEATURE_MIN_INLIERS` (50) RANSAC inliers.
 - **Sanity** (`_warp_is_sane`): translation < 0.30 × image diagonal, and the
@@ -584,7 +578,8 @@ flowchart TD
 
 The patch is intentionally additive: without OpenCV the `#ifdef` leaves
 `align_enabled == FALSE`, `in_buf == ivoid`, and the path is byte-for-byte the
-current behavior. With OpenCV, it is gated by the preference
+current behavior — see §5.4 for why that does not depend on these `#ifdef`s
+being right. With OpenCV, it is gated by the preference
 `plugins/lighttable/hdr_merge_auto_align` (default **on**, registered in
 `data/darktableconfig.xml.in`). Both `d->first_filter` and `d->first_xtrans` are
 passed to the aligner - for Bayer `first_filter` is the crop-shifted pattern, for
@@ -631,8 +626,34 @@ override), each aligned moving frame writes a numbered set of Netpbm images
 inlier, red = outlier) to a per-merge directory resolved once in
 `dt_hdr_alignment_new()`. The directory (env or the default under the system temp
 dir) is created if missing; the reference-side visuals are written once. The path
-and frame index are threaded through the seam, so no global debug state is kept
-and concurrent merges do not interfere. Entirely diagnostic.
+and frame index are per-merge state on `dt_hdr_align_t`, not globals, so
+concurrent merges do not interfere. Entirely diagnostic.
+
+### 5.4 Behaviour in a build without OpenCV
+
+The `#ifdef HAVE_OPENCV` blocks in `control_jobs.c` are what stop the merge job
+from *reaching* the alignment path, but they are not what makes it safe. The
+module refuses from the inside:
+
+**`dt_hdr_alignment_new()` returns NULL when built without OpenCV.** Every other
+entry point rejects a NULL state, so a caller that merely checks the return value
+— as `_control_merge_hdr_job_run()` already does, clearing `align_enabled` when
+the constructor declines — cannot reach any alignment work. A caller that forgot
+its `#ifdef` entirely would still do nothing.
+
+That property matters because the entry points are not harmless no-ops in a
+half-guarded build. `dt_hdr_alignment_new()` resolves the debug-image directory
+and will `mkdir` it when the preference or `DT_HDR_DEBUG_IMAGE_DIR` is set;
+`dt_hdr_alignment_set_reference()` would run a full-resolution proxy build plus
+percentile and gamma passes, then report success. Neither is reachable now.
+
+Everything except the six public functions is compiled out. The whole
+implementation — proxy build, percentile stretch, CFA samplers, warp, gates,
+parameter clamps, debug-directory handling — is inside the `HAVE_OPENCV` guard,
+so the object file holds 581 bytes of code against 48 700 with OpenCV, and has no
+undefined references to `cv::` anything. `test_hdr_align_inert_without_opencv`
+asserts the contract in both configurations, and the white-box test has nothing
+left to inspect without OpenCV, so it compiles to a trivially passing `main`.
 
 ## 6. Known approximations and open questions
 
@@ -652,23 +673,32 @@ and concurrent merges do not interfere. Entirely diagnostic.
   full resolution, but it is worth remembering when interpreting the logs, which
   report full-resolution warps.
 
-## 7. Notes on the C / C++ boundary
+## 7. Tests
 
-Nothing in `hdr_alignment.c` requires C: `control_jobs.c` reaches the module
-through the `extern "C"` public header, so it would call a C++ implementation
-identically. The current split therefore buys readability for darktable
-contributors (the pixel math stays in the language the rest of `src/common` is
-written in, and the OpenCV dependency stays quarantined in a single TU) at the
-cost of a slightly wider seam than strictly necessary.
+Two cmocka binaries, wired up in `src/tests/unittests/CMakeLists.txt`. Both build
+and pass with or without OpenCV (§5.4).
 
-The main things that would have to move with the code if the split were
-consolidated into the `.cc`:
+| Target | Language | Covers |
+|--------|----------|--------|
+| `test_hdr_alignment` | **C** | the public API end-to-end: a synthetic Bayer mosaic warped by a known homography must come back better aligned; a CFA-modulated mosaic must warp without channel cross-talk; the reference cache must survive several moving frames; the probe must rank a textured frame above a flat one. Plus `test_hdr_align_inert_without_opencv`, which asserts the §5.4 contract in both configurations; the alignment tests skip themselves when the constructor declines |
+| `test_hdr_alignment_internal` | C++ | the static helpers, by `#include`-ing `hdr_alignment.cc`: percentile accuracy against a real sort, the flat-image edge case, `_proxy_to_u8` monotonicity, and the Bayer fast-path sampler being bit-for-bit identical to the general X-Trans one. Without OpenCV those helpers do not exist, so it compiles to a trivially passing `main` |
 
-- `src/tests/unittests/test_hdr_alignment_internal.c` `#include`s
-  `common/hdr_alignment.c` directly for white-box access to the static helpers; it
-  would have to become a `.cc`.
-- The no-OpenCV build currently gets its no-op public API from `hdr_alignment.c`;
-  a consolidated `.cc` would have to provide those stubs outside its `#ifdef
-  HAVE_OPENCV` guard.
-- `DT_OMP_FOR` and the `dt_alloc_align_*` helpers work in C++ (see
-  `common/box_filters.cc`, `common/densecrf.cc`), so the hot loops port as-is.
+That `test_hdr_alignment.c` is plain C is deliberate, not an accident of history:
+it is what actually pins down that the `extern "C"` interface is callable from C,
+which is the whole basis for §4.2.
+
+Two gotchas when editing the C++ test:
+
+- `<cmocka.h>` must be included **after** `common/hdr_alignment.cc`. cmocka
+  defines a function-like macro `fail()`, and OpenCV transitively pulls in
+  `<iostream>`, whose `std::basic_ios::fail()` the macro would otherwise rewrite
+  into a syntax error.
+- cmocka.h has **no** C++ linkage guards of its own (the `extern "C"` block near
+  its top is MSVC-only), so the include is wrapped in `extern "C"` by hand.
+  Without that every `assert_*` resolves to a mangled symbol and the link fails.
+
+Because the test `#include`s the implementation, its own object now contains the
+OpenCV calls — it no longer merely links against them. That works because
+`src/CMakeLists.txt` links OpenCV into `lib_darktable` as `PUBLIC` and declares
+`-DHAVE_OPENCV` plus the OpenCV include path at directory scope, before
+`add_subdirectory(tests)`, so both propagate to the test targets.

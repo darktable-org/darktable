@@ -19,7 +19,11 @@
 /* White-box unit tests for the internal (static) helpers of the HDR alignment
  * code.  Following the test_filmicrgb.c pattern, the translation unit is
  * #included directly so the static helpers are reachable; lib_darktable supplies
- * everything hdr_alignment.c links against (the OpenCV seam, glib, ...).
+ * everything hdr_alignment.cc links against (OpenCV, glib, ...).
+ *
+ * This test is C++ because hdr_alignment.cc is: OpenCV 4 has no C API.  The
+ * public API is exercised from plain C by test_hdr_alignment.c, which is what
+ * pins down that the `extern "C"` interface really is callable from C.
  *
  * Complements test_hdr_alignment.c, which exercises the public API end-to-end. */
 
@@ -31,13 +35,23 @@
 #include <string.h>
 #include <math.h>
 
-#include <cmocka.h>
+// The implementation must be included BEFORE <cmocka.h>: cmocka defines a
+// function-like macro `fail()`, and OpenCV transitively pulls in <iostream>,
+// whose std::basic_ios::fail() the macro would then rewrite into nonsense.
+#include "common/hdr_alignment.cc"
 
-#include "common/hdr_alignment.c"
+// cmocka.h has no C++ linkage guards of its own (the extern "C" block near its
+// top is MSVC-only), so wrap it or every assert_* resolves to a mangled symbol.
+// It includes no headers itself -- the prerequisites above are ours to provide.
+extern "C" {
+#include <cmocka.h>
+}
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
 #endif
+
+#ifdef HAVE_OPENCV
 
 static int _cmp_f(const void *a, const void *b)
 {
@@ -51,8 +65,8 @@ static void test_percentile_bounds_accuracy(void **state)
 {
   (void)state;
   const size_t n = 300000;
-  float *v = malloc(n * sizeof(float));
-  float *c = malloc(n * sizeof(float));
+  float *v = (float *)malloc(n * sizeof(float));
+  float *c = (float *)malloc(n * sizeof(float));
   assert_non_null(v);
   assert_non_null(c);
   unsigned s = 4242u;
@@ -105,7 +119,6 @@ static void test_proxy_to_u8_monotone(void **state)
   dt_free_align(u8);
 }
 
-#ifdef HAVE_OPENCV
 // The Bayer same-color fast path must be bit-for-bit identical to the general
 // X-Trans-capable sampler it replaces, across the whole sampling domain
 // (including out-of-bounds edges) and every CFA colour.  A divergence here would
@@ -115,7 +128,7 @@ static void test_bayer_sampler_bit_exact(void **state)
   (void)state;
   const int W = 71, H = 53;                 // odd dims exercise the edges
   const uint32_t filters = 0x94949494u;     // RGGB
-  float *m = malloc(sizeof(float) * W * H);
+  float *m = (float *)malloc(sizeof(float) * W * H);
   assert_non_null(m);
   for(int y = 0; y < H; y++)
     for(int x = 0; x < W; x++)
@@ -152,7 +165,7 @@ static void test_xtrans_sampler_same_color_only(void **state)
     { 2, 0, 1, 0, 2, 1 },
     { 1, 1, 2, 1, 1, 0 },
   };
-  float *m = malloc(sizeof(float) * W * H);
+  float *m = (float *)malloc(sizeof(float) * W * H);
   assert_non_null(m);
 
   // Only green (colour 1) photosites carry signal; R and B are zero.
@@ -177,16 +190,18 @@ static void test_xtrans_sampler_same_color_only(void **state)
 
 int main(void)
 {
+#ifdef HAVE_OPENCV
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_percentile_bounds_accuracy),
     cmocka_unit_test(test_percentile_bounds_flat),
     cmocka_unit_test(test_proxy_to_u8_monotone),
-#ifdef HAVE_OPENCV
     cmocka_unit_test(test_bayer_sampler_bit_exact),
     cmocka_unit_test(test_xtrans_sampler_same_color_only),
-#endif
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
+#else
+  return 0;  // nothing to white-box; see the note above
+#endif
 }
 
 // clang-format off

@@ -26,11 +26,12 @@
  * full resolution mosaic with a CFA-aware (same-color) resampler that preserves
  * the mosaic phase.
  *
- * The OpenCV-dependent primitives (SIFT, FLANN, findHomography) live behind a
- * narrow C-ABI seam implemented in hdr_alignment_cv.cc, because OpenCV 4's API
- * is C++ only.  When darktable is built without OpenCV (HAVE_OPENCV undefined)
- * the public functions degrade to no-ops that report "no alignment", and the
- * merge behaves exactly as before.
+ * The implementation lives in hdr_alignment.cc: OpenCV 4's API is C++ only, so
+ * the SIFT / FLANN / findHomography primitives force that translation unit to be
+ * C++, and this header gives it C linkage so the merge job (and the unit tests)
+ * can call it from C unchanged.  When darktable is built without OpenCV
+ * (HAVE_OPENCV undefined) the public functions degrade to no-ops that report
+ * "no alignment", and the merge behaves exactly as before.
  */
 
 #pragma once
@@ -80,7 +81,12 @@ void dt_hdr_alignment_default_params(dt_hdr_align_params_t *p);
 /* Create / destroy the alignment state for one HDR merge run.  `params` may be
  * NULL (use defaults); the values are clamped to sane ranges and copied.
  * Registration uses a projective (homography) motion model with an affine
- * fallback on weak support -- see hdr_alignment_cv.cc. */
+ * fallback on weak support.
+ *
+ * Returns NULL on failure and, in particular, ALWAYS returns NULL when built
+ * without OpenCV.  That is the switch that makes the feature inert: every other
+ * entry point rejects a NULL state, so a caller that simply checks the return
+ * value cannot reach any alignment work in a build that cannot align. */
 dt_hdr_align_t *dt_hdr_alignment_new(const dt_hdr_align_params_t *params);
 void dt_hdr_alignment_free(dt_hdr_align_t *a);
 
@@ -97,16 +103,12 @@ gboolean dt_hdr_alignment_set_reference(dt_hdr_align_t *a,
 
 /* Align one non-reference frame onto the cached reference.
  *
- *  - On success: writes the warped mosaic into `out` (caller-allocated,
- *    width*height floats) and returns TRUE.
- *  - Otherwise returns FALSE and the caller must accumulate the original
- *    `mosaic` (never worse than the current, alignment-free behavior).  `out` is
- *    NOT guaranteed to be populated when FALSE is returned: for a reliable but
- *    sub-pixel (static) frame it is deliberately left untouched to skip a
- *    redundant full-frame copy, and on some early rejections it holds a copy of
- *    `mosaic`.  Callers must therefore read `mosaic`, not `out`, whenever FALSE
- *    is returned.  `info->status` (if non-NULL) still carries the alignment
- *    decision (OK / IDENTITY / DISABLED) regardless of the return value.
+ * On success writes the warped mosaic into `out` (caller-allocated,
+ * width*height floats) and returns TRUE.  On FALSE the caller must accumulate
+ * the original `mosaic` -- `out` is NOT guaranteed to be populated, since a
+ * reliable sub-pixel warp deliberately skips the redundant full-frame copy.
+ * Read `mosaic`, never `out`, whenever FALSE is returned; `info->status` still
+ * carries the OK / IDENTITY / DISABLED decision either way.
  *
  * `out` may not alias `mosaic`.  `info` may be NULL. */
 gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
@@ -122,78 +124,6 @@ gboolean dt_hdr_alignment_align_frame(dt_hdr_align_t *a,
  * proxy and returns its SIFT keypoint count at the auto-reference probe
  * resolution.  Returns 0 if built without OpenCV or the proxy cannot be built. */
 int dt_hdr_alignment_probe_features(const float *mosaic, int width, int height);
-
-/* ------------------------------------------------------------------------- *
- *  OpenCV backend seam (implemented in hdr_alignment_cv.cc).
- *
- *  These are the only entry points that touch OpenCV.  All image data crosses
- *  as plain pointers; the homography crosses as a row-major double[9].  Kept in
- *  this header (rather than an internal one) so both the C and C++ translation
- *  units agree on the ABI.  Not part of the public darktable API.
- * ------------------------------------------------------------------------- */
-
-typedef struct dt_hdr_cv_feature_stats_t
-{
-  int kp_template;      // keypoints kept in the reference proxy (after scale floor)
-  int kp_image;         // keypoints kept in the moving proxy (after scale floor)
-  int kp_template_raw;  // keypoints before the scale floor (reference)
-  int kp_image_raw;     // keypoints before the scale floor (moving)
-  int ratio_matches;    // matches passing the Lowe ratio test
-  int good_matches;     // mutual-consistent matches fed to RANSAC
-  int inliers;          // RANSAC inliers supporting the returned homography
-  int used_affine;      // 1 if the affine fallback produced the result
-  int used_translation; // 1 if the result was refit to a pure translation
-                        //   (cluster-degradation); takes precedence over used_affine
-  // inlier reprojection error (pixels) in proxy coords; < 0 if unavailable
-  double reproj_mean;
-  double reproj_median;
-  double reproj_max;
-} dt_hdr_cv_feature_stats_t;
-
-/* Precompute and cache the reference frame's SIFT features (CLAHE -> detect ->
- * describe -> scale floor -> spatial balance) from its 8-bit luma proxy, so the
- * reference is detected ONCE per merge instead of being re-detected for every
- * moving frame.  Returns an opaque handle (free with dt_hdr_cv_features_destroy)
- * or NULL on failure.  `balance_target` / `clahe_clip` are as for
- * dt_hdr_cv_feature_homography(). */
-void *dt_hdr_cv_features_create(const uint8_t *proxy,
-                                int width,
-                                int height,
-                                int balance_target,
-                                double clahe_clip);
-void dt_hdr_cv_features_destroy(void *features);
-
-/* Estimate the reference->image homography between the cached reference features
- * (`ref_features`, from dt_hdr_cv_features_create) and a moving 8-bit luma proxy
- * `img`, using SIFT + FLANN (Lowe ratio + mutual NN) + RANSAC findHomography,
- * with an estimateAffine2D fallback on weak homography support.  Only the moving
- * frame is detected here; the reference comes from the cache.
- *
- * Writes the 3x3 row-major homography into H and returns the inlier count
- * (0 => estimation failed or ref_features is NULL; H is left as identity).
- * `balance_target` caps the moving keypoint set before matching (<= 0 disables
- * balancing); `clahe_clip` is the pre-SIFT CLAHE clip limit (<= 0 disables it)
- * and should match the value the reference cache was built with.
- *
- * `debug_dir` (NULL/"" disables) is the directory the per-frame debug visuals
- * are written to, and `frame_index` numbers them; both are owned by the caller
- * (the per-merge alignment state), so no global debug state is kept here and
- * concurrent merges do not interfere. */
-int dt_hdr_cv_feature_homography(const void *ref_features,
-                                 const uint8_t *img,
-                                 int width,
-                                 int height,
-                                 int balance_target,
-                                 double clahe_clip,
-                                 const char *debug_dir,
-                                 int frame_index,
-                                 double H[9],
-                                 dt_hdr_cv_feature_stats_t *stats);
-
-/* Count SIFT keypoints on a low-resolution copy of `luma` (longest side scaled
- * to <= probe_dim).  Used by the optional auto-reference pre-pass to pick the
- * richest-feature frame. */
-int dt_hdr_cv_count_features(const uint8_t *luma, int width, int height, int probe_dim);
 
 #ifdef __cplusplus
 }

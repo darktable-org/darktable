@@ -567,13 +567,10 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   }
 
   // Authoritative per-frame guard on the *decoded* buffer.
-  // _control_merge_hdr_validate() gives a friendly early failure, but it can only
-  // see the cached image flags, which are derived from metadata and can lag what
-  // rawspeed actually decodes here: DT_IMAGE_MONOCHROME / DT_IMAGE_HDR and the CFA
-  // layout are only settled during the load. A monochrome raw in particular
-  // carries DT_IMAGE_RAW yet decodes to filters == 0. The accumulation loop below
-  // indexes the raw CFA mosaic and the result is written as a CFA DNG, so a
-  // non-CFA / non-uint16 buffer here must abort rather than corrupt the output.
+  // _control_merge_hdr_validate() only sees cached image flags, which are
+  // metadata-derived and can lag the decode -- a monochrome raw carries
+  // DT_IMAGE_RAW yet decodes to filters == 0. The loop below indexes a raw CFA
+  // mosaic and writes a CFA DNG, so anything else must abort here.
   if(image.buf_dsc.filters == 0u
      || image.buf_dsc.channels != 1
      || image.buf_dsc.datatype != TYPE_UINT16)
@@ -725,13 +722,10 @@ static gboolean _control_merge_hdr_validate(GList *images)
     g_strlcpy(filename, img->filename, sizeof(filename));
     dt_image_cache_read_release(img);
 
-    // exposure bracketing operates on the raw CFA mosaic; reject anything that
-    // is not raw, reject already-merged HDR DNGs (floating point raws carry the
-    // DT_IMAGE_HDR flag) which look like raws but are not exposure brackets, and
-    // reject monochrome raws (no CFA -> filters == 0, cannot be merged as a CFA
-    // mosaic). These flags are extension/metadata derived and may not yet be set
-    // for a not-yet-decoded frame; _control_merge_hdr_process() re-checks the
-    // decoded buffer as the authoritative guard.
+    // Exposure bracketing operates on the raw CFA mosaic, so reject non-raws,
+    // already-merged HDR DNGs (float raws carry DT_IMAGE_HDR) and monochrome
+    // raws (no CFA). These flags are metadata-derived and may not be set yet for
+    // an undecoded frame; _control_merge_hdr_process() is the real guard.
     if(!(flags & DT_IMAGE_RAW) || (flags & DT_IMAGE_HDR) || (flags & DT_IMAGE_MONOCHROME))
     {
       dt_control_log(_("HDR merge aborted: `%s' is not a raw exposure"
