@@ -339,29 +339,40 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
-    colors->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
+    colors->colors[k] = dtgtk_button_new_full(dtgtk_cairo_paint_label_sel, k, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("filter by images color label"
+          "\nclick to toggle the color label selection"
+          "\nctrl+click to exclude the color label"
+          "\nthe gray button affects all color labels"),
+        .action = DT_ACTION(self),
+        .action_section = N_("rules"),
+        .action_label = N_("color label"),
+        .action_def = &dt_action_def_colors_rule,
+      });
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_index", GINT_TO_POINTER(k));
     dt_gui_add_class(colors->colors[k], "dt_no_hover");
     dt_gui_add_class(colors->colors[k], "dt_dimmed");
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_self", colors);
     gtk_box_pack_start(GTK_BOX(hbox), colors->colors[k], FALSE, FALSE, 0);
-    gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"
-                                                     "\nclick to toggle the color label selection"
-                                                     "\nctrl+click to exclude the color label"
-                                                     "\nthe gray button affects all color labels"));
     dt_gui_connect_click(colors->colors[k], _colors_clicked_gesture, NULL, colors);
     dt_gui_connect_motion(colors->colors[k], NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(k));
-    dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
-  colors->operator= dtgtk_button_new(dtgtk_cairo_paint_intersection, 0, NULL);
+  colors->operator = dtgtk_button_new_full(dtgtk_cairo_paint_intersection, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("filter by images color label"
+          "\nintersection: images having all selected color labels"
+          "\nunion: images with at least one of the selected color labels"),
+        .action = DT_ACTION(self),
+        .action_section = N_("rules"),
+        .action_label = N_("color label"),
+        .action_def = &dt_action_def_colors_rule,
+        .clicked_cb = G_CALLBACK(_colors_operator_clicked),
+        .clicked_data = colors,
+      });
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);
-  gtk_widget_set_tooltip_text(colors->operator,
-                              _("filter by images color label"
-                                "\nintersection: images having all selected color labels"
-                                "\nunion: images with at least one of the selected color labels"));
-  g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
   dt_gui_connect_motion(colors->operator, NULL, _colors_enter_cb, NULL, GINT_TO_POINTER(-1));
-  dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
+  dt_action_t *ac = dt_action_widget(colors->operator);
 
   dt_shortcut_register(ac, DT_COLORLABELS_RED    + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F1, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_COLORLABELS_YELLOW + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F2, GDK_SHIFT_MASK);

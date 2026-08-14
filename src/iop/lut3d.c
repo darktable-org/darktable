@@ -1694,17 +1694,21 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = IOP_GUI_ALLOC(lut3d);
 
-  g->button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-  gtk_widget_set_name(g->button, "non-flat");
 #ifdef HAVE_GMIC
-  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
+  const gchar *tooltip = _("select a png (haldclut)"
       ", a cube, a 3dl or a gmz (compressed LUT) file "
-      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
+      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file");
 #else
-  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
+  const gchar *tooltip = _("select a png (haldclut)"
       ", a cube or a 3dl file "
-      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
+      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file");
 #endif // HAVE_GMIC
+
+  g->button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = tooltip,
+      });
+  gtk_widget_set_name(g->button, "non-flat");
 
   g->filepath = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->filepath, PANGO_ELLIPSIZE_MIDDLE);

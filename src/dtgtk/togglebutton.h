@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "button.h"
 #include "paint.h"
 #include <gtk/gtk.h>
 
@@ -38,6 +39,16 @@ struct _GtkDarktableToggleButton
 
 /** instantiate a new darktable toggle button */
 GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag, void *paintdata);
+
+/** instantiate a new darktable toggle button and wire the same optional
+ * extras as dtgtk_button_new_full() (tooltip/markup, action definition,
+ * "clicked" or "toggled" callback), see dtgtk_button_config_t there.  The
+ * "toggled" callback is connected in addition to the internal repaint
+ * handler. */
+GtkWidget *dtgtk_togglebutton_new_full(DTGTKCairoPaintIconFunc paint,
+                                       gint paintflags,
+                                       void *paintdata,
+                                       const dtgtk_button_config_t *config);
 
 /** Set the paint function and paint flags */
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,

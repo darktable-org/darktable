@@ -277,13 +277,19 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   if(!ondisk)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(calculated), flags & DT_META_CALCULATED);
 
-  GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(plus, _("add an output metadata tag"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("add an output metadata tag"),
+        .clicked_cb = G_CALLBACK(_add_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
-  GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("delete metadata tag"),
+        .clicked_cb = G_CALLBACK(_delete_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

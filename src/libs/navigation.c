@@ -591,10 +591,10 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
                                             // FIXME: if unused don't pass
                                             dt_lib_module_t *self)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
-    GdkDevice *device = gdk_event_get_source_device(event);
+    GdkDevice *device = dt_gdk_event_get_source_device(event);
     if(device
        && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
        && dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH)
@@ -610,14 +610,16 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
                                           dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
                                           &x, &y))
       {
-        const gboolean zoom_in = dt_gui_scroll_zoom_delta((const GdkEventScroll *)event,
+        const gboolean zoom_in = dt_gui_scroll_zoom_delta(event,
                                                           dx, dy) > 0.0f;
 
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
                          0.0f, zoom_in ? 1 : 0, x, y, constrain);
       }
     }
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
   }
 }
 

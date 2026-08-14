@@ -2702,14 +2702,11 @@ static void _area_scrolled_callback(GtkEventControllerScroll *controller,
 {
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  GdkEvent *event = gtk_get_current_event();
-  if(!event) return;
-
-  GtkWidget *w = dt_modifier_is(dt_gdk_event_get_state(event), GDK_MOD1_MASK)
-               ? GTK_WIDGET(g->notebook)
-               : _get_slider(g, g->selected);
-  gtk_widget_event(w, event);
-  gdk_event_free(event);
+  const GdkModifierType state = dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  dt_gui_forward_scroll(controller,
+                        dt_modifier_is(state, GDK_MOD1_MASK)
+                          ? GTK_WIDGET(g->notebook)
+                          : _get_slider(g, g->selected));
 }
 
 static void _area_motion_notify_callback(GtkEventControllerMotion *controller,

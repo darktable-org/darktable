@@ -2223,8 +2223,8 @@ static void _blendop_blendif_enter_cb(GtkEventControllerMotion *controller,
 
   dt_dev_pixelpipe_display_mask_t mode = DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
-  GdkModifierType state;
-  if(gtk_get_current_event_state(&state))
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
   {
     // depending on shift modifiers we activate channel and/or mask display
     if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
@@ -3506,8 +3506,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
     }
 
-    GtkWidget *presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-    gtk_widget_set_tooltip_text(presets_button, _("blending options"));
+    GtkWidget *presets_button = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("blending options"),
+      });
     if(bd->blendif_support)
     {
       g_signal_connect(G_OBJECT(presets_button), "clicked",

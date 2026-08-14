@@ -1123,7 +1123,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
                            gdouble dy,
                            dt_thumbtable_t *table)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event) return;
   const GdkEventScroll *e = (const GdkEventScroll *)event;
   const GdkModifierType state = dt_gdk_event_get_state(event);
@@ -1145,7 +1145,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       // 1:1 like the native scrollbars.  clicky wheels keep the
       // row-by-row path below.
       gdouble deltaf_x, deltaf_y;
-      did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
+      did_scroll = dt_gui_get_scroll_deltas((const GdkEvent *)e, &deltaf_x, &deltaf_y);
       if(did_scroll)
       {
         // file manager scroll: tilt right (delta_x > 0) or scroll down (delta_y > 0) -> down
@@ -1155,7 +1155,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
     else
     {
       int delta_x, delta_y;
-      did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
+      did_scroll = dt_gui_get_scroll_unit_deltas((const GdkEvent *)e, &delta_x, &delta_y);
       if(did_scroll)
       {
         deltaf = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
@@ -1171,14 +1171,18 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       }
       table->scroll_value += deltaf;
     }
+    // GTK3: owned copy from dt_gui_get_current_event() (see the same guard
+    // on the other free in this function); GTK4: borrowed, nothing to free
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
     return;
   }
 
   // filmstrip and zoom mode always use clicky scroll:
   int delta_x, delta_y;
 
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  if(dt_gui_get_scroll_unit_deltas((const GdkEvent *)e, &delta_x, &delta_y))
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
@@ -1189,7 +1193,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       // keep the accumulated magnitude for the step size
       const int dominant = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
       const int delta =
-        dt_gui_scroll_zoom_delta((const GdkEventScroll *)e, delta_x, delta_y) > 0.0f
+        dt_gui_scroll_zoom_delta((const GdkEvent *)e, delta_x, delta_y) > 0.0f
           ? -abs(dominant)
           : abs(dominant);
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -1220,7 +1224,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
         dt_control_set_mouse_over_id(th->imgid);
     }
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
   gdk_event_free(event);
+#endif
 }
 
 static void _line_to(cairo_t *cr,
@@ -1408,18 +1414,27 @@ static void _event_leave_cb(GtkEventControllerMotion *controller,
    * mouse_inside (see #21729, #21745).
    * GTK4 migration: drop the pointer-grab check (see
    * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) != GDK_NOTIFY_INFERIOR
+       && gdk_crossing_event_get_mode(event) != GDK_CROSSING_GTK_GRAB
+       && gdk_crossing_event_get_mode(event) != GDK_CROSSING_GRAB
+       && !dt_gui_pointer_is_grabbed())
+#else
     if(event->crossing.detail != GDK_NOTIFY_INFERIOR
        && event->crossing.mode != GDK_CROSSING_GTK_GRAB
        && event->crossing.mode != GDK_CROSSING_GRAB
        && !dt_gui_pointer_is_grabbed())
+#endif
     {
       table->mouse_inside = FALSE;
       dt_control_set_mouse_over_id(NO_IMGID);
     }
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
   }
 }
 
@@ -1439,16 +1454,11 @@ static void _event_enter_cb(GtkEventControllerMotion *controller,
    * the crossing detail is required: redraws under the pointer make GDK
    * report VIRTUAL/NONLINEAR details instead of INFERIOR, which would
    * otherwise leave a stale hovered image (see #21729). */
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    /* GTK4 migration: drop the pointer-grab check (see
-     * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
-    if(!dt_gui_pointer_is_grabbed()
-       && !_thumb_get_at_pos(table, (int)x, (int)y))
-      dt_control_set_mouse_over_id(NO_IMGID);
-    gdk_event_free(event);
-  }
+  /* GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+  if(!dt_gui_pointer_is_grabbed()
+     && !_thumb_get_at_pos(table, (int)x, (int)y))
+    dt_control_set_mouse_over_id(NO_IMGID);
 }
 
 static gboolean _do_select_single(gpointer user_data)
@@ -1584,7 +1594,8 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
 
   // get root coordinates for drag tracking
   gdouble root_x = 0, root_y = 0;
-  dt_gui_get_current_root_coords(&root_x, &root_y);
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
 
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
@@ -1604,6 +1615,9 @@ static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
 
   table->last_x = ceil(root_x);
   table->last_y = ceil(root_y);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
 static void _event_button_release_cb(GtkGestureSingle *gesture,
@@ -1624,8 +1638,8 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
 
   if(dt_is_valid_imgid(id)
      && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)

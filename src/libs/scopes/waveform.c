@@ -399,13 +399,16 @@ static void _wave_add_options(dt_scopes_mode_t *const self,
                               dt_action_t *dark)
 {
   dt_scopes_wave_t *const d = self->data;
-  d->orient_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  d->orient_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("switch scope orientation"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_wave_orient_clicked),
+        .clicked_data = self,
+      });
   gtk_widget_set_valign(d->orient_button, GTK_ALIGN_START);
-  dt_action_define(dark, NULL, N_("switch scope orientation"),
-                   d->orient_button, &dt_action_def_button);
   dt_gui_box_add(self->options_box, d->orient_button);
-  g_signal_connect(G_OBJECT(d->orient_button), "clicked",
-                   G_CALLBACK(_wave_orient_clicked), self);
 }
 
 static void _wave_gui_cleanup(dt_scopes_mode_t *const self)

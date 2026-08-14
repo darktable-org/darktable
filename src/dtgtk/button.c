@@ -18,6 +18,7 @@
 
 #include "button.h"
 #include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <string.h>
 
@@ -158,6 +159,29 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint,
   gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   dtgtk_button_connect_stale_hover_cleanup(GTK_WIDGET(button));
   return (GtkWidget *)button;
+}
+
+GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,
+                                 gint paintflags,
+                                 void *paintdata,
+                                 const dtgtk_button_config_t *config)
+{
+  GtkWidget *button = dtgtk_button_new(paint, paintflags, paintdata);
+  if(!config) return button;
+  if(config->tooltip)
+    gtk_widget_set_tooltip_text(button, config->tooltip);
+  else if(config->tooltip_markup)
+    gtk_widget_set_tooltip_markup(button, config->tooltip_markup);
+  if(config->action)
+    dt_action_define(config->action, config->action_section,
+                     config->action_label, button, config->action_def);
+  if(config->clicked_cb)
+    /* g_signal_connect() is a type-checking macro that token-pastes the
+     * handler name, so the generic factory has to go through
+     * g_signal_connect_data() directly. */
+    g_signal_connect_data(G_OBJECT(button), "clicked", config->clicked_cb,
+                          config->clicked_data, NULL, (GConnectFlags) 0);
+  return button;
 }
 
 void dtgtk_button_connect_stale_hover_cleanup(GtkWidget *widget)

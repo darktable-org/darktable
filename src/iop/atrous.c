@@ -1532,13 +1532,7 @@ static void area_scrolled(GtkEventControllerScroll *controller,
   if(dt_modifier_eq(controller, GDK_MOD1_MASK))
   {
     // alt+scroll switches the channel tab (as before the controller conversion)
-    // GTK4: no gtk_widget_event() -- reimplement as a controller on the notebook
-    GdkEvent *event = gtk_get_current_event();
-    if(event)
-    {
-      gtk_widget_event(GTK_WIDGET(g->channel_tabs), event);
-      gdk_event_free(event);
-    }
+    dt_gui_forward_scroll(controller, GTK_WIDGET(g->channel_tabs));
     return;
   }
 

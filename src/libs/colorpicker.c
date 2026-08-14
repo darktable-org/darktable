@@ -571,11 +571,15 @@ static void _live_sample_button_cb(GtkGestureSingle *gesture,
 
     if(simulate_event)
     {
-      /* the primary picker button's activation is a CAPTURE-phase gesture
-       * that synthetic button-press-event signals cannot reach; use the
-       * shared click entry instead (left button -> point, right -> area) */
-      dt_color_picker_click(data->picker_button,
-                            data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_POINT);
+      // same entry real clicks and shortcuts use: a plain toggle starts a
+      // point pick, the right-variant an area pick (mimicking the old
+      // synthesized button-1/button-3 press on the picker button)
+      dt_iop_color_picker_toggle
+        (data->picker_button,
+         data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT
+         ? DT_ACTION_EFFECT_TOGGLE
+         : DT_ACTION_EFFECT_TOGGLE_RIGHT,
+         1.0);
     }
 
     if(picker && picker->module)
@@ -793,12 +797,15 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(label), "size-allocate",
                    G_CALLBACK(_label_size_allocate_callback), &data->primary_sample);
 
-  data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_square_plus, 0, NULL);
+  data->add_sample_button = dtgtk_button_new_full(dtgtk_cairo_paint_square_plus, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = DT_ACTION(self),
+        .action_label = N_("add sample"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_add_sample),
+        .clicked_data = self,
+      });
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
-  g_signal_connect(G_OBJECT(data->add_sample_button), "clicked",
-                   G_CALLBACK(_add_sample), self);
-  dt_action_define(DT_ACTION(self), NULL, N_("add sample"),
-                   data->add_sample_button, &dt_action_def_button);
 
   gtk_container_add(GTK_CONTAINER(sample_row_events),
                     dt_gui_hbox(sample_patch_wrapper,

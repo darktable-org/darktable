@@ -448,11 +448,19 @@ static gboolean _key_pressed_cb(GtkEventControllerKey *controller,
       break;
   }
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4: GtkTextView's internal key controller does the IM filtering
+   * itself; gtk_text_view_im_context_filter_keypress() is gone.  Let
+   * the event propagate so the textview handles it natively. */
+  (void)event;
+  return FALSE;
+#else
   const gboolean handled =
     gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), (GdkEventKey *)event);
   gdk_event_free(event);
   return handled;
+#endif
 }
 
 static gboolean _textview_focus(GtkWidget *widget,
@@ -853,7 +861,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
   dt_gui_dialog_restore_size(GTK_DIALOG(dialog), "metadata");
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT,      // key
@@ -937,13 +945,19 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(plus, _("add metadata tags"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("add metadata tags"),
+        .clicked_cb = G_CALLBACK(_add_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
-  GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("delete metadata tag"),
+        .clicked_cb = G_CALLBACK(_delete_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
   d->delete_button = minus;
 
 #ifdef GDK_WINDOWING_QUARTZ
