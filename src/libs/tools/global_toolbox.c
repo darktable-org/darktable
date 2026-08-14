@@ -399,13 +399,18 @@ void gui_init(dt_lib_module_t *self)
                    NULL);
 
   /* create the "show/hide overlays" button */
-  d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("thumbnail overlays options"), d->overlays_button, &dt_action_def_button);
-  gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
+  d->overlays_button = dtgtk_button_new_full(dtgtk_cairo_paint_overlays, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to change the type of overlays shown on thumbnails"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("thumbnail overlays options"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_overlays_show_popup),
+        .clicked_data = self,
+      });
   d->over_popup = gtk_popover_new(d->overlays_button);
   gtk_widget_set_size_request(d->over_popup, 350, -1);
   g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);
-  g_signal_connect(G_OBJECT(d->overlays_button), "clicked", G_CALLBACK(_overlays_show_popup), self);
   // we register size of overlay icon to keep in sync thumbtable overlays
   g_signal_connect(G_OBJECT(d->overlays_button), "size-allocate", G_CALLBACK(_main_icons_register_size), NULL);
 
@@ -479,41 +484,55 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(vbox);
 
   /* create the widget help button */
-  d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("help"), d->help_button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
-  g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
+  d->help_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_help, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("enable this, then click on a control element to see its online help"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("help"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_lib_help_button_clicked),
+        .clicked_data = d,
+      });
 
   /* create the shortcuts button */
-  d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(d->keymap_button, _("define keyboard shortcuts for on-screen controls\n"
-                                                  "ctrl+click to switch off overwrite confirmations\n"
-                                                  "\n"
-                                                  "after activating:\n"
-                                                  "\n"
-                                                  "- hover over a control (button, slider, etc.) and press\n"
-                                                  "  a keystroke combination (optionally with mouse click,\n"
-                                                  "  move, or scroll while holding down the keys) to\n"
-                                                  "  define a shortcut for the control,\n"
-                                                  "- type an existing combination to delete that mapping\n"
-                                                  "\n"
-                                                  "click on a control, module or screen area to open the\n"
-                                                  "dialog for more detailed configuration\n"
-                                                  "\n"
-                                                  "right-click to exit mapping mode"));
-  g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
+  d->keymap_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_shortcut, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("define keyboard shortcuts for on-screen controls\n"
+          "ctrl+click to switch off overwrite confirmations\n"
+          "\n"
+          "after activating:\n"
+          "\n"
+          "- hover over a control (button, slider, etc.) and press\n"
+          "  a keystroke combination (optionally with mouse click,\n"
+          "  move, or scroll while holding down the keys) to\n"
+          "  define a shortcut for the control,\n"
+          "- type an existing combination to delete that mapping\n"
+          "\n"
+          "click on a control, module or screen area to open the\n"
+          "dialog for more detailed configuration\n"
+          "\n"
+          "right-click to exit mapping mode"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("shortcuts"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_lib_keymap_button_clicked),
+        .clicked_data = d,
+      });
   dt_gui_connect_click_all(d->keymap_button, _lib_keymap_button_pressed, _lib_keymap_button_released, (gpointer)(d));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
 
   /* create the preference button */
-  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
-  ac = dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
-  gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
-  g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
-                   NULL);
+  d->preferences_button = dtgtk_button_new_full(dtgtk_cairo_paint_preferences, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("show global preferences"),
+        .action = &darktable.control->actions_global,
+        .action_label = N_("preferences"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_lib_preferences_button_clicked),
+      });
+  ac = dt_action_widget(d->preferences_button);
 
   // Register CMD+, for preferences (this is standard on macOS)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);
@@ -809,7 +828,7 @@ static void _lib_keymap_button_pressed(GtkGestureSingle *gesture, gint n_press, 
 {
   darktable.control->confirm_mapping = !(dt_key_modifier_state() & GDK_CONTROL_MASK);
 
-  _keymap_button_start_time = gtk_get_current_event_time();
+  _keymap_button_start_time = dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture));
 
   if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
   {
@@ -822,7 +841,7 @@ static void _lib_keymap_button_released(GtkGestureSingle *gesture, gint n_press,
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if(gtk_get_current_event_time() - _keymap_button_start_time > (guint)delay)
+  if(dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture)) - _keymap_button_start_time > (guint)delay)
   {
     _show_shortcuts_prefs(NULL);
   }

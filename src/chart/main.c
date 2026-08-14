@@ -99,7 +99,7 @@ static void get_pixel_region(const image_t *const image, const point_t *const co
                              int *x_end, int *y_end);
 static void reset_bb(image_t *image);
 static void free_image(image_t *image);
-static gboolean handle_motion(GtkWidget *widget, gdouble mx, gdouble my, dt_lut_t *self, image_t *image);
+static gboolean handle_motion(GtkEventControllerMotion *controller, gdouble mx, gdouble my, dt_lut_t *self, image_t *image);
 static int find_closest_corner(point_t *bb, float x, float y);
 static void map_mouse_to_0_1(GtkWidget *widget, gdouble mx, gdouble my, image_t *image, float *x, float *y);
 static void update_corner(image_t *image, int which, float *x, float *y);
@@ -176,8 +176,7 @@ static void _motion_cb_source(GtkEventControllerMotion *controller,
                               gdouble y,
                               dt_lut_t *self)
 {
-  GtkWidget *widget = dt_gui_get_widget(controller);
-  const gboolean res = handle_motion(widget, x, y, self, &self->source);
+  const gboolean res = handle_motion(controller, x, y, self, &self->source);
   if(res)
   {
     collect_source_patches(self);
@@ -190,8 +189,7 @@ static void _motion_cb_reference(GtkEventControllerMotion *controller,
                                  gdouble y,
                                  dt_lut_t *self)
 {
-  GtkWidget *widget = dt_gui_get_widget(controller);
-  const gboolean res = handle_motion(widget, x, y, self, &self->reference);
+  const gboolean res = handle_motion(controller, x, y, self, &self->reference);
   if(res)
   {
     collect_reference_patches(self);
@@ -199,10 +197,11 @@ static void _motion_cb_reference(GtkEventControllerMotion *controller,
   }
 }
 
-static gboolean handle_motion(GtkWidget *widget, gdouble mx, gdouble my, dt_lut_t *self, image_t *image)
+static gboolean handle_motion(GtkEventControllerMotion *controller, gdouble mx, gdouble my, dt_lut_t *self, image_t *image)
 {
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
   if(!(state & GDK_BUTTON1_MASK) || !image->image) return FALSE;
 
   // mouse -> 0..1

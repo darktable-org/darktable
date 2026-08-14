@@ -1019,7 +1019,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
                                                  _("_cancel"), GTK_RESPONSE_NONE,
                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);                                                 
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
   
   GtkWidget *preview_size;
   DT_BAUHAUS_COMBOBOX_NEW_FULL(preview_size, self, NULL, N_("preview size"),

@@ -299,8 +299,10 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   if(paint)
   {
-    button = dtgtk_button_new(paint, paintflags, NULL);
-    gtk_widget_set_tooltip_text(button, Q_(label));
+    button = dtgtk_button_new_full(paint, paintflags, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = Q_(label),
+      });
   }
   else
   {

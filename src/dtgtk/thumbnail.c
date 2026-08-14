@@ -1099,8 +1099,8 @@ static void _event_grouping_release_cb(GtkGestureSingle *gesture,
 
   if(!thumb->moved)
   {
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     //TODO: will succeed if either or *both* of Shift and Control are
     //pressed.  Do we want this?
     if(dt_modifier_is(state, GDK_SHIFT_MASK)

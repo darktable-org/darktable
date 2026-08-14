@@ -1034,21 +1034,9 @@ void _get_multi_show(dt_iop_module_t *module,
     multi_show->down = 0;
 }
 
-static gboolean _gui_multiinstance_callback(GtkButton *button,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *module)
+static void _gui_multiinstance_callback(GtkButton *button,
+                                        dt_iop_module_t *module)
 {
-  if(event && dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY)
-  {
-    if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
-      _gui_copy_callback(button, module);
-    return TRUE;
-  }
-  else if(event && dt_gdk_event_get_button(event) == GDK_BUTTON_MIDDLE)
-  {
-    return FALSE;
-  }
-
   dt_iop_gui_multi_show_t multi_show;
   _get_multi_show(module, &multi_show);
 
@@ -1102,8 +1090,6 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
   // make sure the button is deactivated now that the menu is opened
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
-
-  return TRUE;
 }
 
 static void _gui_off_button_clicked(GtkGestureSingle *gesture,
@@ -1143,7 +1129,7 @@ static void _gui_multiinstance_clicked(GtkGestureSingle *gesture,
   if(button == GDK_BUTTON_MIDDLE)
     return;
 
-  _gui_multiinstance_callback(GTK_BUTTON(dt_gui_get_widget(gesture)), NULL, module);
+  _gui_multiinstance_callback(GTK_BUTTON(dt_gui_get_widget(gesture)), module);
 }
 
 static gboolean _rename_module_key_pressed(GtkEventControllerKey *controller,
@@ -2618,10 +2604,12 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
   const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
   if(delta == 0) return;
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   const gboolean smooth = event
     && dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH;
+#if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
+#endif
 
   GtkWidget *widget = dt_gui_get_widget(controller);
   dt_presets_scroll_t *state
@@ -2876,17 +2864,22 @@ static void _iop_plugin_header_released(GtkGestureSingle *gesture,
   if(n_press >= 2) return;
 
   // ignore clicks on buttons inside the header (presets, reset, enable, multiinstance)
-  // GTK4: use gtk_gesture_get_last_event(gesture) instead of gtk_get_current_event()
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    if(GTK_IS_BUTTON(gtk_get_event_widget(event)))
-    {
-      gdk_event_free(event);
-      return;
-    }
-    gdk_event_free(event);
-  }
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4 has no gtk_get_event_widget(): find the widget under the release
+   * point inside the header instead, and ignore the release if it lands on
+   * (or inside) a button -- the gesture receives releases over the whole
+   * header, including its child buttons (e.g. a press started on the header
+   * and released over a button).  The surface-compare alternative is wrong:
+   * gdk_event_get_surface() always returns this widget's own surface. */
+  GtkWidget *const header = dt_gui_get_widget(gesture);
+  GtkWidget *target = gtk_widget_pick(header, x, y, GTK_PICK_DEFAULT);
+  for(; target && target != header; target = gtk_widget_get_parent(target))
+    if(GTK_IS_BUTTON(target)) return;
+#else
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(event && GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent *)event)))
+    return;
+#endif
 
   const guint button = gtk_gesture_single_get_current_button(gesture);
 
@@ -3300,18 +3293,19 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 
   if(element == DT_ACTION_ELEMENT_ENABLE)
   {
-    button = dtgtk_togglebutton_new(paint, 0, module);
-
     char tooltip[512];
     gchar *module_label = dt_history_item_get_name(module);
     snprintf(tooltip, sizeof(tooltip),
             module->enabled ? _("'%s' is switched on") : _("'%s' is switched off"),
             module_label);
     g_free(module_label);
-    gtk_widget_set_tooltip_text(button, tooltip);
+    button = dtgtk_togglebutton_new_full(paint, 0, module,
+        &(dtgtk_button_config_t){
+          .tooltip = tooltip,
+          .toggled_cb = G_CALLBACK(_gui_off_callback),
+          .toggled_data = module,
+        });
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
-
-    g_signal_connect(button, "toggled", G_CALLBACK(_gui_off_callback), module);
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -4364,7 +4358,7 @@ static float _action_process(gpointer target,
         _gui_delete_callback   (NULL, module);
       else if(effect == DT_ACTION_EFFECT_RENAME                               )
         _gui_rename_callback   (NULL, module);
-      else _gui_multiinstance_callback(NULL, NULL, module);
+      else _gui_multiinstance_callback(NULL, module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       {

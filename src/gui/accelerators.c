@@ -269,27 +269,33 @@ static float _action_process_toggle(gpointer target,
     }
     else
     {
-      GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-      event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
-                             || effect == DT_ACTION_EFFECT_ON_CTRL)
-                          ? GDK_CONTROL_MASK : 0;
-      event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
-                              || effect == DT_ACTION_EFFECT_ON_RIGHT)
-                           ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
-
-      if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-      event->button.window = gtk_widget_get_window(target);
-      g_object_ref(event->button.window);
-
-      // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
-      // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
-      gboolean handled;
-      g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
-      if(!handled) gtk_button_clicked(GTK_BUTTON(target));
-      event->type = GDK_BUTTON_RELEASE;
-      g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
-
-      gdk_event_free(event);
+      /* no stored gesture: a plain GTK toggle button.  Its internal press
+       * gesture is primary-button-only and the "clicked"/"toggled" wiring
+       * lives in the button itself, so gtk_widget_activate() is the
+       * GTK4-compatible equivalent of the synthetic press+release GTK3
+       * used.  DT_ACTION_TOGGLE_NEEDED above already restricts the ON/OFF
+       * effects to the state change they demand, so a single flip via
+       * activate() is right for every effect: the toggle variants flip,
+       * the ON/OFF variants flip only when the button is in the wrong
+       * state, and the right variants have no distinct right-click handler
+       * on a plain button and flip like the primary (the old synthetic
+       * secondary press fell back to gtk_button_clicked() the same way;
+       * a widget whose right-click behavior lives in a gesture uses the
+       * stored-gesture branch above). */
+      switch(effect)
+      {
+        case DT_ACTION_EFFECT_TOGGLE:
+        case DT_ACTION_EFFECT_TOGGLE_CTRL:
+        case DT_ACTION_EFFECT_ON:
+        case DT_ACTION_EFFECT_OFF:
+        case DT_ACTION_EFFECT_ON_CTRL:
+        case DT_ACTION_EFFECT_TOGGLE_RIGHT:
+        case DT_ACTION_EFFECT_ON_RIGHT:
+          gtk_widget_activate(GTK_WIDGET(target));
+          break;
+        default:
+          break;
+      }
     }
 
     value = gtk_toggle_button_get_active(target);
@@ -325,29 +331,17 @@ static float _action_process_button(gpointer target,
     }
     else
     {
-      if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-
-      if(effect != DT_ACTION_EFFECT_ACTIVATE
-        || !g_signal_handler_find(target, G_SIGNAL_MATCH_ID,
-                                  g_signal_lookup("clicked", gtk_button_get_type()),
-                                  0, NULL, NULL, NULL)
-        || !gtk_widget_activate(GTK_WIDGET(target)))
-      {
-        GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-        event->button.state = effect == DT_ACTION_EFFECT_ACTIVATE_CTRL
-                            ? GDK_CONTROL_MASK : 0;
-        event->button.button = effect == DT_ACTION_EFFECT_ACTIVATE_RIGHT
-                            ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
-
-        event->button.window = gtk_widget_get_window(target);
-        g_object_ref(event->button.window);
-
-        gtk_widget_event(target, event);
-        event->type = GDK_BUTTON_RELEASE;
-        gtk_widget_event(target, event);
-
-        gdk_event_free(event);
-      }
+      /* no stored gesture: a plain GTK button.  Its internal press gesture
+       * is primary-button-only, so the old synthetic press+release ran the
+       * "clicked" handler for the primary/ctrl variants and reached the
+       * then-still-connected button-press-event handlers for the right
+       * variant; those handlers now live in gestures (routed through the
+       * stored-gesture branch above), so on a plain button a right-click
+       * shortcut has nothing left to reach and stays a no-op.
+       * gtk_widget_activate() is the GTK4-compatible equivalent of the
+       * primary press+release. */
+      if(effect == DT_ACTION_EFFECT_ACTIVATE || effect == DT_ACTION_EFFECT_ACTIVATE_CTRL)
+        gtk_widget_activate(GTK_WIDGET(target));
     }
   }
 
@@ -2131,11 +2125,21 @@ static gboolean _view_key_pressed_cb(GtkEventControllerKey *controller,
     }
   }
 
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4: gtk_search_entry_handle_event() is gone -- the entry handles key
+   * events through its internal controller.  Focus the entry so typing
+   * lands in it; the very first keystroke is consumed (TODO: feed it via
+   * gdk_keyval_to_unicode for full search-as-you-type parity). */
+  (void)event;
+  gtk_entry_grab_focus_without_selecting(GTK_ENTRY(search_entry));
+  return TRUE;
+#else
   const gboolean handled =
     dt_gui_search_start(widget, (GdkEventKey *)event, GTK_SEARCH_ENTRY(search_entry));
   gdk_event_free(event);
   return handled;
+#endif
 }
 
 static void _add_shortcuts_to_tree()
@@ -2975,7 +2979,30 @@ static void _notice_clicked(GtkWidget *button,
  * in its own key handling before any handler connected on the treeview runs,
  * so the delete keys are intercepted at the toplevel instead, before the key
  * event is propagated to the focus widget.  GDK_KEY_BackSpace is the delete
- * key on macOS. */
+ * key on macOS.  On GTK4 a CAPTURE-phase key controller on the toplevel runs
+ * before the focus widget's own handling, which is the same "first"
+ * position; GTK3 delivers key events to the toplevel and then propagates
+ * them, so there the classic signal is connected instead (see
+ * _shortcuts_view_realized). */
+#if GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _shortcuts_dialog_key_pressed(GtkEventControllerKey *controller,
+                                              guint keyval,
+                                              guint keycode,
+                                              GdkModifierType state,
+                                              gpointer user_data)
+{
+  GtkWidget *toplevel = dt_gui_get_widget(controller);
+  GtkWidget *view = user_data;
+
+  if(gtk_window_get_focus(GTK_WINDOW(toplevel)) != view)
+    return GDK_EVENT_PROPAGATE;
+
+  if(keyval == GDK_KEY_Delete || keyval == GDK_KEY_KP_Delete || keyval == GDK_KEY_BackSpace)
+    return _shortcut_delete_selected(GTK_TREE_VIEW(view));
+
+  return GDK_EVENT_PROPAGATE;
+}
+#else
 static gboolean _shortcuts_dialog_key_pressed(GtkWidget *widget,
                                               GdkEventKey *event,
                                               gpointer user_data)
@@ -2993,6 +3020,7 @@ static gboolean _shortcuts_dialog_key_pressed(GtkWidget *widget,
 
   return FALSE;
 }
+#endif
 
 static void _shortcuts_view_realized(GtkWidget *widget, gpointer user_data)
 {
@@ -3004,8 +3032,16 @@ static void _shortcuts_view_realized(GtkWidget *widget, gpointer user_data)
   if(!toplevel || !GTK_IS_WINDOW(toplevel))
     return;
 
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GtkEventController *controller = gtk_event_controller_key_new();
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_CAPTURE);
+  dt_gui_add_controller(toplevel, controller);
+  g_signal_connect(controller, "key-pressed",
+                   G_CALLBACK(_shortcuts_dialog_key_pressed), widget);
+#else
   g_signal_connect(G_OBJECT(toplevel), "key-press-event",
                    G_CALLBACK(_shortcuts_dialog_key_pressed), widget);
+#endif
 }
 
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
@@ -4912,7 +4948,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
        && (s.action || (s.action = dt_action_widget(darktable.control->mapping_widget))))
     {
       int delta;
-      if(middle_click || dt_gui_get_scroll_unit_delta(&event->scroll, &delta))
+      if(middle_click || dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta))
       {
         // delta < 0 -> 10^(-delta) increases speed
         s.speed = middle_click ? -1 : powf(10.0f, -delta);
@@ -5014,7 +5050,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
     _sc.mods = _key_modifiers_clean(dt_gdk_event_get_state(event));
 
     int delta_x, delta_y;
-    if(dt_gui_get_scroll_unit_deltas(&event->scroll, &delta_x, &delta_y))
+    if(dt_gui_get_scroll_unit_deltas((const GdkEvent *)event, &delta_x, &delta_y))
     {
       if(delta_x)
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, dt_gdk_event_get_time(event),

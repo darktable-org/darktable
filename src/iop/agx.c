@@ -2075,10 +2075,16 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_gui_box_add(auto_tune_box, dt_gui_expand(auto_tune_label), g->range_exposure_picker);
   dt_gui_box_add(g->range_exposure_picker_group, auto_tune_box);
 
-  g->btn_read_exposure = dtgtk_button_new(dtgtk_cairo_paint_camera, 0, NULL);
-  gtk_widget_set_tooltip_text(g->btn_read_exposure, _("read exposure from metadata and exposure module"));
-  g_signal_connect(G_OBJECT(g->btn_read_exposure), "clicked", G_CALLBACK(_read_exposure_params_callback), real_self);
-  dt_action_define_iop(real_self, N_("exposure range"), N_("read exposure"), g->btn_read_exposure, &dt_action_def_button);
+  g->btn_read_exposure = dtgtk_button_new_full(dtgtk_cairo_paint_camera, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("read exposure from metadata and exposure module"),
+        .action = DT_ACTION(real_self),
+        .action_section = N_("exposure range"),
+        .action_label = N_("read exposure"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_read_exposure_params_callback),
+        .clicked_data = real_self,
+      });
   dt_gui_box_add(g->range_exposure_picker_group, g->btn_read_exposure);
 
   dt_gui_box_add(self->widget, g->range_exposure_picker_group);
@@ -2277,11 +2283,15 @@ static void _create_primaries_page(dt_iop_module_t *main,
        "especially with bright, saturated lights (e.g. LEDs).\n"
        "mainly intended to be used for experimenting."));
 
-  GtkWidget *primaries_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
-  gtk_widget_set_tooltip_text(primaries_button, _("reset primaries to a predefined configuration"));
-  g_signal_connect(primaries_button, "clicked", G_CALLBACK(_primaries_popupmenu_callback), main);
-  dt_action_define_iop(main, NULL, N_("reset primaries"),
-                       primaries_button, &dt_action_def_button);
+  GtkWidget *primaries_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("reset primaries to a predefined configuration"),
+        .action = DT_ACTION(main),
+        .action_label = N_("reset primaries"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_primaries_popupmenu_callback),
+        .clicked_data = main,
+      });
 
   g->primaries_controls_vbox = dt_gui_vbox(dt_gui_hbox(dt_ui_label_new(_("reset primaries")),
                                                        dt_gui_align_right(primaries_button)));

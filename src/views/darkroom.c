@@ -1837,23 +1837,20 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w,
 static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
                                                        const dt_stylemenu_data_t *menu_data)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
+  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
-  gdk_event_free(event);
 }
 
-static gboolean _darkroom_ui_apply_style_button_callback
-  (GtkMenuItem *menuitem,
-   GdkEventButton *event,
-   const dt_stylemenu_data_t *menu_data)
+static void _darkroom_ui_apply_style_button_callback(GtkGestureSingle *gesture,
+                                                     gint n_press,
+                                                     gdouble x,
+                                                     gdouble y,
+                                                     const dt_stylemenu_data_t *menu_data)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
   else
     dt_shortcut_copy_lua(NULL, menu_data->name);
-
-  return FALSE;
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w,
@@ -2811,7 +2808,7 @@ static void _quickbutton_pressed_cb(GtkGestureSingle *gesture,
   }
   else
   {
-    _quickbutton_start_time = gtk_get_current_event_time();
+    _quickbutton_start_time = dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture));
   }
 }
 
@@ -2826,7 +2823,7 @@ static void _quickbutton_released_cb(GtkGestureSingle *gesture,
   {
     int delay = 0;
     g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
-    if(gtk_get_current_event_time() - _quickbutton_start_time > (guint)delay)
+    if(dt_gui_get_current_event_time(GTK_EVENT_CONTROLLER(gesture)) - _quickbutton_start_time > (guint)delay)
       _toolbar_show_popup(popover);
   }
 }
@@ -3103,35 +3100,41 @@ void gui_init(dt_view_t *self)
    */
 
   /* create favorite plugin preset popup tool */
-  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-  dt_action_define(sa, NULL, N_("quick access to presets"),
-                   favorite_presets, &dt_action_def_button);
-  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
-  g_signal_connect(G_OBJECT(favorite_presets), "clicked",
-                   G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
-                   NULL);
+  GtkWidget *favorite_presets = dtgtk_button_new_full(dtgtk_cairo_paint_presets, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("quick access to presets"),
+        .action = sa,
+        .action_label = N_("quick access to presets"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
+      });
   dt_gui_add_help_link(favorite_presets, "favorite_presets");
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
-  dt_action_define(sa, NULL, N_("quick access to styles"), styles, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(styles), "clicked",
-                   G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
-  gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
+  GtkWidget *styles = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("quick access for applying any of your styles"),
+        .action = sa,
+        .action_label = N_("quick access to styles"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_darkroom_ui_apply_style_popupmenu),
+      });
   dt_gui_add_help_link(styles, "bottom_panel_styles");
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
   /* ensure that we get strings from the style files shipped with darktable localized */
 
   /* create second window display button */
-  dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
-  dt_action_define(sa, NULL, N_("second window"),
-                   dev->second_wnd_button, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(dev->second_wnd_button), "clicked",
-                   G_CALLBACK(_second_window_quickbutton_clicked),dev);
-  gtk_widget_set_tooltip_text(dev->second_wnd_button,
-                              _("display a second darkroom image window"));
+  dev->second_wnd_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_display2, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("display a second darkroom image window"),
+        .action = sa,
+        .action_label = N_("second window"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_second_window_quickbutton_clicked),
+        .clicked_data = dev,
+      });
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    dev->second_wnd_button, DT_VIEW_DARKROOM);
 
@@ -3158,14 +3161,18 @@ void gui_init(dt_view_t *self)
 
   /* Enable color assessment conditions */
   {
-    dev->color_assessment.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
+    dev->color_assessment.button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_bulb, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle color assessment conditions\nright-click for options"),
+          .action = DT_ACTION(self),
+          .action_label = N_("color assessment"),
+          .action_def = &dt_action_def_toggle,
+          .toggled_cb = G_CALLBACK(_full_color_assessment_callback),
+          .toggled_data = dev,
+        });
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->color_assessment.button), dev->full.color_assessment);
-    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"), dev->color_assessment.button,
-                          &dt_action_def_toggle);
-    gtk_widget_set_tooltip_text(dev->color_assessment.button, _("toggle color assessment conditions\nright-click for options"));
+    ac = dt_action_widget(dev->color_assessment.button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
-    g_signal_connect(G_OBJECT(dev->color_assessment.button), "toggled",
-                     G_CALLBACK(_full_color_assessment_callback), dev);
 
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->color_assessment.button, DT_VIEW_DARKROOM);
     /* add pop-up window */
@@ -3204,15 +3211,17 @@ void gui_init(dt_view_t *self)
 
   /* Enable late-scaling button */
   dev->late_scaling.button =
-    dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  ac = dt_action_define(sa, NULL, N_("high quality processing"),
-                        dev->late_scaling.button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text
-    (dev->late_scaling.button,
-     _("toggle high quality processing."
-       " if activated darktable processes image data as it does while exporting"));
-  g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked",
-                   G_CALLBACK(_latescaling_quickbutton_clicked), dev);
+    dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("toggle high quality processing."
+          " if activated darktable processes image data as it does while exporting"),
+        .action = sa,
+        .action_label = N_("high quality processing"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_latescaling_quickbutton_clicked),
+        .clicked_data = dev,
+      });
+  ac = dt_action_widget(dev->late_scaling.button);
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      dev->late_scaling.button, DT_VIEW_DARKROOM);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->late_scaling.button),
@@ -3223,14 +3232,18 @@ void gui_init(dt_view_t *self)
   /* create rawoverexposed popup tool */
   {
     // the button
-    dev->rawoverexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, 0, NULL);
-    ac = dt_action_define(sa, N_("raw overexposed"), N_("toggle"),
-                          dev->rawoverexposed.button, &dt_action_def_toggle);
+    dev->rawoverexposed.button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_rawoverexposed, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle indication of raw overexposure\nright-click for options"),
+          .action = sa,
+          .action_section = N_("raw overexposed"),
+          .action_label = N_("toggle"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_rawoverexposed_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->rawoverexposed.button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
-    gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
-                                _("toggle indication of raw overexposure\nright-click for options"));
-    g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
-                     G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->rawoverexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->rawoverexposed.button, "rawoverexposed");
@@ -3287,17 +3300,18 @@ void gui_init(dt_view_t *self)
   /* create overexposed popup tool */
   {
     // the button
-    dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, 0, NULL);
-    ac = dt_action_define(DT_ACTION(self),
-                          N_("overexposed"),
-                          N_("toggle"),
-                          dev->overexposed.button,
-                          &dt_action_def_toggle);
+    dev->overexposed.button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_overexposed, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle clipping indication\nright-click for options"),
+          .action = DT_ACTION(self),
+          .action_section = N_("overexposed"),
+          .action_label = N_("toggle"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_overexposed_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->overexposed.button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, 0);
-    gtk_widget_set_tooltip_text(dev->overexposed.button,
-                                _("toggle clipping indication\nright-click for options"));
-    g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
-                     G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->overexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->overexposed.button, "overexposed");
@@ -3373,27 +3387,33 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, 0, NULL);
-    ac = dt_action_define(sa, NULL, N_("softproof"),
-                          dev->profile.softproof_button, &dt_action_def_toggle);
+    dev->profile.softproof_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_softproof, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle softproofing\nright-click for profile options"),
+          .action = sa,
+          .action_label = N_("softproof"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_softproof_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->profile.softproof_button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
-    gtk_widget_set_tooltip_text(dev->profile.softproof_button,
-                                _("toggle softproofing\nright-click for profile options"));
-    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
-                     G_CALLBACK(_softproof_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->profile.softproof_button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->profile.softproof_button, "softproof");
 
     // the gamut check button
-    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_warning, 0, NULL);
-    ac = dt_action_define(sa, NULL, N_("gamut check"),
-                          dev->profile.gamut_button, &dt_action_def_toggle);
+    dev->profile.gamut_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_warning, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle gamut checking\nright-click for profile options"),
+          .action = sa,
+          .action_label = N_("gamut check"),
+          .action_def = &dt_action_def_toggle,
+          .clicked_cb = G_CALLBACK(_gamut_quickbutton_clicked),
+          .clicked_data = dev,
+        });
+    ac = dt_action_widget(dev->profile.gamut_button);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);
-    gtk_widget_set_tooltip_text(dev->profile.gamut_button,
-                 _("toggle gamut checking\nright-click for profile options"));
-    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
-                     G_CALLBACK(_gamut_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->profile.gamut_button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->profile.gamut_button, "gamut");
@@ -3560,13 +3580,16 @@ void gui_init(dt_view_t *self)
   {
     // the button
     darktable.view_manager->guides_toggle =
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, 0, NULL);
-    ac = dt_action_define(sa, N_("guide lines"), N_("toggle"),
-                          darktable.view_manager->guides_toggle,
-                          &dt_action_def_toggle);
+      dtgtk_togglebutton_new_full(dtgtk_cairo_paint_grid, 0, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _("toggle guide lines\nright-click for guides options"),
+          .action = sa,
+          .action_section = N_("guide lines"),
+          .action_label = N_("toggle"),
+          .action_def = &dt_action_def_toggle,
+        });
+    ac = dt_action_widget(darktable.view_manager->guides_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, 0);
-    gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
-                                _("toggle guide lines\nright-click for guides options"));
     darktable.view_manager->guides_popover =
       dt_guides_popover(self, darktable.view_manager->guides_toggle);
     g_object_ref(darktable.view_manager->guides_popover);
@@ -5066,23 +5089,25 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-  GdkEvent *current = gtk_get_current_event();
+  GdkEvent *current = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!current) return;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 
   // A touchpad two-finger swipe pans the image, like the main darkroom view's
   // _scrolled()/gesture_pan path.  dt_gui_scroll_should_pan() restricts this to
   // touchpad-sourced events, so the mouse wheel zooms even where GTK delivers
   // wheel scrolls as smooth events.
-  if(dt_gui_scroll_should_pan((const GdkEventScroll *)current))
+  if(dt_gui_scroll_should_pan(current))
   {
-    const GdkEventScroll *scroll = (const GdkEventScroll *)current;
+    const GdkEvent *scroll = current;
     gdouble pan_dx = 0.0, pan_dy = 0.0;
     if(!dt_gui_get_scroll_deltas(scroll, &pan_dx, &pan_dy))
     {
-      gdk_event_free(current);
+      #if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(current);
+#endif
       return;
     }
     pan_dx *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
@@ -5091,34 +5116,52 @@ static void _second_window_scrolled_callback(GtkEventControllerScroll *controlle
              "[darkroom second window] pan dx=%.3f dy=%.3f", pan_dx, pan_dy);
     if(pan_dx != 0.0 || pan_dy != 0.0)
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 1.0f, 0, pan_dx, pan_dy, TRUE);
+    #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(current);
+#endif
     return;
   }
 
   int delta_x, delta_y;
-  if(!dt_gui_get_scroll_unit_deltas((const GdkEventScroll *)current, &delta_x, &delta_y))
+  if(!dt_gui_get_scroll_unit_deltas(current, &delta_x, &delta_y))
   {
+    #if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(current);
+#endif
     return;
   }
-  const gboolean zoom_in = dt_gui_scroll_zoom_delta((const GdkEventScroll *)current,
+  const gboolean zoom_in = dt_gui_scroll_zoom_delta(current,
                                                     delta_x, delta_y) > 0.0f;
   const gboolean constrained =
     dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
   gdouble x = 0.0, y = 0.0;
+  #if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_get_position(current, &x, &y);
+#else
   gdk_event_get_coords(current, &x, &y);
+#endif
   dt_print(DT_DEBUG_INPUT,
            "[darkroom second window] scroll zoom zoom_in=%d", zoom_in);
   dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, zoom_in ? 1 : 0,
                    x, y, constrained);
-  gdk_event_free(current);
+  #if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(current);
+#endif
 }
 
-static gboolean _second_window_pinch_callback(GtkWidget *widget,
-                                              GdkEvent *event,
-                                              dt_develop_t *dev)
+/* touchpad pinch in the second window via GtkGestureZoom: the old "event"
+ * signal handler (GTK3-only) forwarded raw GDK_TOUCHPAD_PINCH events; the
+ * phase field becomes the begin/scale-changed/end signals ("end" fires on
+ * cancel too).  dx/dy are not used here (macOS delivers the pan as a separate
+ * scroll stream, see _second_window_scrolled_callback). */
+static gboolean _second_window_pinch_active = FALSE;
+
+static gboolean _second_window_pinch_phase(dt_develop_t *dev,
+                                           GtkWidget *widget,
+                                           const GdkTouchpadGesturePhase phase,
+                                           const gdouble scale,
+                                           const GdkEvent *event)
 {
-  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
   if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
@@ -5127,47 +5170,100 @@ static gboolean _second_window_pinch_callback(GtkWidget *widget,
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+  int state = 0;
+  gdouble x_root = 0.0, y_root = 0.0;
+  if(event)
+  {
+    state = dt_gdk_event_get_state(event) & 0xf;
+    // GtkGestureZoom also recognizes touchscreen pinches, never handled before
+    if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
+#if GTK_CHECK_VERSION(4, 0, 0)
+    // GTK4 has no root-coords API: surface-relative position (see gtk.c)
+    gdk_event_get_position(event, &x_root, &y_root);
+#else
+    x_root = dt_gdk_event_get_root_x(event);
+    y_root = dt_gdk_event_get_root_y(event);
+#endif
+  }
   const gboolean constrained =
-    dev->constrain_zoom && !dt_modifier_is(pinch->state, GDK_CONTROL_MASK);
+    dev->constrain_zoom && !dt_modifier_is(state, GDK_CONTROL_MASK);
 
   // Zoom the second window proportionally to the pinch scale, mirroring the
   // main darkroom view's gesture_pinch().
   static float begin_tscale = 0.0f;
 
-  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
     begin_tscale =
       dt_dev_get_zoom_scale(port, port->zoom, 1 << port->closeup, FALSE) * port->ppd;
     return TRUE;
   }
-  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_END
-     || pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+     || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
   {
     begin_tscale = 0.0f;
     return TRUE;
   }
-  if(pinch->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
-  if(begin_tscale <= 0.0f || pinch->scale <= 0.0) return FALSE;
+  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
+  if(begin_tscale <= 0.0f || scale <= 0.0) return FALSE;
 
   const float ppd = port->ppd;
   const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE);
   const float tscalefloor = MIN(0.5f * fitscale * ppd, 1.0f);
-  const float tscale = CLAMP(begin_tscale * pinch->scale, tscalefloor, 16.0f);
+  const float tscale = CLAMP(begin_tscale * scale, tscalefloor, 16.0f);
   const float zoom_scale = tscale / ppd;
 
   // Convert root (screen-absolute) pinch coords to widget-local, which is the
   // coordinate space dt_dev_zoom_move() anchors the zoom to.
   int ox = 0, oy = 0;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  // GTK4: event coords are already surface-relative, i.e. widget-local here
+  ox = oy = 0;
+#else
   GdkWindow *win = gtk_widget_get_window(widget);
   if(win) gdk_window_get_origin(win, &ox, &oy);
-  const float x_local = (float)pinch->x_root - ox;
-  const float y_local = (float)pinch->y_root - oy;
+#endif
+  const float x_local = (float)x_root - ox;
+  const float y_local = (float)y_root - oy;
   dt_print(DT_DEBUG_INPUT,
            "[darkroom second window] pinch scale=%.6f tscale=%.6f zoom_scale=%.6f",
-           pinch->scale, tscale, zoom_scale);
+           scale, tscale, zoom_scale);
   dt_dev_zoom_move(port, DT_ZOOM_FREE, zoom_scale, 0, x_local, y_local, constrained);
   return TRUE;
+}
+
+static void _second_window_pinch_begin(GtkGestureZoom *gesture,
+                                       gpointer user_data)
+{
+  dt_develop_t *dev = user_data;
+  // touchscreen pinches were never handled before: only touchpad pinches
+  // set the active flag
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
+  _second_window_pinch_active = TRUE;
+  _second_window_pinch_phase(dev, dt_gui_get_widget(gesture),
+                             GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, 1.0, event);
+}
+
+static void _second_window_pinch_scale_changed(GtkGestureZoom *gesture,
+                                               gdouble scale,
+                                               gpointer user_data)
+{
+  if(!_second_window_pinch_active) return;
+  dt_develop_t *dev = user_data;
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  _second_window_pinch_phase(dev, dt_gui_get_widget(gesture),
+                             GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, scale, event);
+}
+
+static void _second_window_pinch_end(GtkGestureZoom *gesture,
+                                     gpointer user_data)
+{
+  if(!_second_window_pinch_active) return;
+  _second_window_pinch_active = FALSE;
+  dt_develop_t *dev = user_data;
+  _second_window_pinch_phase(dev, dt_gui_get_widget(gesture),
+                             GDK_TOUCHPAD_GESTURE_PHASE_END, 1.0, NULL);
 }
 
 static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
@@ -5201,8 +5297,8 @@ static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
   }
   if(button == GDK_BUTTON_MIDDLE)
   {
-    GdkModifierType state;
-    gtk_get_current_event_state(&state);
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     dt_dev_zoom_move(port, DT_ZOOM_1, 0.0f, -2, x, y, !dt_modifier_is(state, GDK_CONTROL_MASK));
     return;
   }
@@ -5227,8 +5323,8 @@ static void _second_window_mouse_moved_callback(GtkEventControllerMotion *contro
 {
   if(dev->gui_leaving) return;
 
-  GdkModifierType state;
-  gtk_get_current_event_state(&state);
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
   if(state & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
@@ -5328,13 +5424,20 @@ static void _second_window_buttons_leave_notify_callback(GtkEventControllerMotio
 {
   // GDK_NOTIFY_INFERIOR means the pointer moved into a child window (still
   // within the second window); keep the buttons visible in that case.
-  GdkEvent *event = gtk_get_current_event();
-  if(event && event->crossing.detail == GDK_NOTIFY_INFERIOR)
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) == GDK_NOTIFY_INFERIOR) return;
+#else
+    if(event->crossing.detail == GDK_NOTIFY_INFERIOR)
+    {
+      gdk_event_free(event);
+      return;
+    }
     gdk_event_free(event);
-    return;
+#endif
   }
-  if(event) gdk_event_free(event);
 
   gtk_widget_set_opacity(button_box, 0.0);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
@@ -5364,12 +5467,14 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
   GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
   // Create the pin button
-  GtkWidget *pin_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+  GtkWidget *pin_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_pin, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("pin current image"),
+        .toggled_cb = G_CALLBACK(_preview2_pin_button_clicked),
+        .toggled_data = dev,
+      });
   gtk_widget_set_name(pin_button, "dt_window2_pin_button");
   gtk_widget_set_size_request(pin_button, 24, 24);
-  gtk_widget_set_tooltip_text(pin_button, _("pin current image"));
-  g_signal_connect(G_OBJECT(pin_button), "toggled",
-                   G_CALLBACK(_preview2_pin_button_clicked), dev);
   gtk_box_pack_start(GTK_BOX(button_box), pin_button, FALSE, FALSE, 0);
 
   // Associate the pin button with the toggle COMMAND action registered in
@@ -5599,8 +5704,14 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                      G_CALLBACK(_second_window_draw_callback), dev);
     dt_gui_connect_scroll(dev->preview2.widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                           _second_window_scrolled_callback, dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "event",
-                     G_CALLBACK(_second_window_pinch_callback), dev);
+    // touchpad pinch via GtkGestureZoom (the old "event" signal handler is GTK3-only)
+    {
+      GtkGesture *zoom = gtk_gesture_zoom_new(dev->preview2.widget);
+      dt_gui_add_controller(dev->preview2.widget, zoom);
+      g_signal_connect(zoom, "begin", G_CALLBACK(_second_window_pinch_begin), dev);
+      g_signal_connect(zoom, "scale-changed", G_CALLBACK(_second_window_pinch_scale_changed), dev);
+      g_signal_connect(zoom, "end", G_CALLBACK(_second_window_pinch_end), dev);
+    }
     dt_gui_connect_click_all(dev->preview2.widget, _second_window_button_pressed_callback, _second_window_button_released_callback, dev);
     dt_gui_connect_motion(dev->preview2.widget, _second_window_mouse_moved_callback, NULL, _second_window_leave_callback, dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "configure-event",

@@ -1187,27 +1187,22 @@ static void _update_style(const dt_stylemenu_data_t *menu_data)
 static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(event && dt_gdk_event_get_type(event) == GDK_KEY_PRESS)
-  {
+  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
     _update_style(menu_data);
-  }
-  gdk_event_free(event);
 }
 
-static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
-                                             GdkEventButton *event,
-                                             const dt_stylemenu_data_t *menu_data)
+static void _apply_style_button_callback(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         const dt_stylemenu_data_t *menu_data)
 {
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
-  {
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     _update_style(menu_data);
-  }
   else
   {
     //??? dt_shortcut_copy_lua(NULL, name);
   }
-  return FALSE;
 }
 
 static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
@@ -1651,10 +1646,13 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add style combo
 
-  GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  GtkWidget *styles_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("select style to be applied on export"),
+        .clicked_cb = G_CALLBACK(_style_popupmenu_callback),
+        .clicked_data = (gpointer)d,
+      });
   gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
-  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
-  gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on export"));
 //  dt_gui_add_help_link(styles, "bottom_panel_styles");
   GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(style_box), _("temporary style to use while exporting"));
