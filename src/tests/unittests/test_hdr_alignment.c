@@ -22,9 +22,10 @@
  * that the aligner recovers the motion and reduces the misalignment error; they
  * also check that the auto-reference probe ranks frames by feature richness.
  *
- * The assertions are robust to a build *without* OpenCV: in that case the public
- * API reports DT_HDR_ALIGN_DISABLED / a zero probe count and the tests verify the
- * documented graceful fall-through instead.
+ * Without OpenCV dt_hdr_alignment_new() returns NULL by design, so the
+ * alignment tests have nothing to run against and skip themselves;
+ * test_hdr_align_inert_without_opencv() is the one that asserts that contract,
+ * in both build configurations.
  */
 
 #include <limits.h>
@@ -138,22 +139,15 @@ static void test_hdr_align_reduces_misalignment(void **state)
       mov[y * TEST_W + x] = _bilin(ref, (float)(i0 * x + i1 * y + i2), (float)(i3 * x + i4 * y + i5));
 
   dt_hdr_align_t *a = dt_hdr_alignment_new(NULL);
-  assert_non_null(a);
-  assert_true(dt_hdr_alignment_set_reference(a, ref, TEST_W, TEST_H, TEST_FILTERS, NULL));
-
-  dt_hdr_align_result_t info;
-  const gboolean ok =
-      dt_hdr_alignment_align_frame(a, mov, out, TEST_W, TEST_H, TEST_FILTERS, NULL, &info);
-
-  if(info.status == DT_HDR_ALIGN_DISABLED)
+  if(a)  // NULL => built without OpenCV, covered by test_hdr_align_inert_without_opencv
   {
-    // Built without OpenCV: the frame must be passed through untouched.
-    assert_false(ok);
-    assert_memory_equal(out, mov, sizeof(float) * TEST_W * TEST_H);
-  }
-  else
-  {
-    // Built with OpenCV: alignment must meaningfully reduce the misalignment.
+    assert_true(dt_hdr_alignment_set_reference(a, ref, TEST_W, TEST_H, TEST_FILTERS, NULL));
+
+    dt_hdr_align_result_t info;
+    const gboolean ok =
+        dt_hdr_alignment_align_frame(a, mov, out, TEST_W, TEST_H, TEST_FILTERS, NULL, &info);
+
+    // Alignment must meaningfully reduce the misalignment.
     double e_before = 0.0, e_after = 0.0;
     for(int y = 48; y < TEST_H - 48; y++)
       for(int x = 48; x < TEST_W - 48; x++)
@@ -163,9 +157,9 @@ static void test_hdr_align_reduces_misalignment(void **state)
       }
     assert_true(ok);
     assert_true(e_after < 0.7 * e_before);
+    dt_hdr_alignment_free(a);
   }
 
-  dt_hdr_alignment_free(a);
   free(ref);
   free(mov);
   free(out);
@@ -223,20 +217,14 @@ static void test_hdr_align_cfa_modulated(void **state)
     }
 
   dt_hdr_align_t *a = dt_hdr_alignment_new(NULL);
-  assert_non_null(a);
-  assert_true(dt_hdr_alignment_set_reference(a, ref, TEST_W, TEST_H, TEST_FILTERS, NULL));
-
-  dt_hdr_align_result_t info;
-  const gboolean ok =
-      dt_hdr_alignment_align_frame(a, mov, out, TEST_W, TEST_H, TEST_FILTERS, NULL, &info);
-
-  if(info.status == DT_HDR_ALIGN_DISABLED)
+  if(a)  // NULL => built without OpenCV, covered by test_hdr_align_inert_without_opencv
   {
-    assert_false(ok);
-    assert_memory_equal(out, mov, sizeof(float) * TEST_W * TEST_H);
-  }
-  else
-  {
+    assert_true(dt_hdr_alignment_set_reference(a, ref, TEST_W, TEST_H, TEST_FILTERS, NULL));
+
+    dt_hdr_align_result_t info;
+    const gboolean ok =
+        dt_hdr_alignment_align_frame(a, mov, out, TEST_W, TEST_H, TEST_FILTERS, NULL, &info);
+
     double e_before = 0.0, e_after = 0.0;
     for(int y = 48; y < TEST_H - 48; y++)
       for(int x = 48; x < TEST_W - 48; x++)
@@ -246,9 +234,9 @@ static void test_hdr_align_cfa_modulated(void **state)
       }
     assert_true(ok);
     assert_true(e_after < 0.7 * e_before);
+    dt_hdr_alignment_free(a);
   }
 
-  dt_hdr_alignment_free(a);
   free(scene);
   free(ref);
   free(mov);
@@ -299,28 +287,22 @@ static void test_hdr_align_reference_reused_across_frames(void **state)
   _make_scene(ref, 1);
 
   dt_hdr_align_t *a = dt_hdr_alignment_new(NULL);
-  assert_non_null(a);
-  assert_true(dt_hdr_alignment_set_reference(a, ref, TEST_W, TEST_H, TEST_FILTERS, NULL));
-
-  const double shifts[3][2] = { { 4.0, -2.0 }, { -6.0, 3.0 }, { 2.0, 5.0 } };
-  for(int t = 0; t < 3; t++)
+  if(a)  // NULL => built without OpenCV, covered by test_hdr_align_inert_without_opencv
   {
-    const double tx = shifts[t][0], ty = shifts[t][1];
-    for(int y = 0; y < TEST_H; y++)
-      for(int x = 0; x < TEST_W; x++)
-        mov[y * TEST_W + x] = _bilin(ref, (float)(x - tx), (float)(y - ty));
+    assert_true(dt_hdr_alignment_set_reference(a, ref, TEST_W, TEST_H, TEST_FILTERS, NULL));
 
-    dt_hdr_align_result_t info;
-    const gboolean ok =
-        dt_hdr_alignment_align_frame(a, mov, out, TEST_W, TEST_H, TEST_FILTERS, NULL, &info);
+    const double shifts[3][2] = { { 4.0, -2.0 }, { -6.0, 3.0 }, { 2.0, 5.0 } };
+    for(int t = 0; t < 3; t++)
+    {
+      const double tx = shifts[t][0], ty = shifts[t][1];
+      for(int y = 0; y < TEST_H; y++)
+        for(int x = 0; x < TEST_W; x++)
+          mov[y * TEST_W + x] = _bilin(ref, (float)(x - tx), (float)(y - ty));
 
-    if(info.status == DT_HDR_ALIGN_DISABLED)
-    {
-      assert_false(ok);
-      assert_memory_equal(out, mov, sizeof(float) * TEST_W * TEST_H);
-    }
-    else
-    {
+      dt_hdr_align_result_t info;
+      const gboolean ok =
+          dt_hdr_alignment_align_frame(a, mov, out, TEST_W, TEST_H, TEST_FILTERS, NULL, &info);
+
       double e_before = 0.0, e_after = 0.0;
       for(int y = 48; y < TEST_H - 48; y++)
         for(int x = 48; x < TEST_W - 48; x++)
@@ -331,12 +313,52 @@ static void test_hdr_align_reference_reused_across_frames(void **state)
       assert_true(ok);
       assert_true(e_after < 0.7 * e_before);
     }
+    dt_hdr_alignment_free(a);
   }
 
-  dt_hdr_alignment_free(a);
   free(ref);
   free(mov);
   free(out);
+}
+
+// Without OpenCV the whole feature must be inert: dt_hdr_alignment_new() refuses
+// to hand out state, which is what stops every downstream entry point from doing
+// any work, and each of them must reject a NULL state rather than run.  With
+// OpenCV the state must of course be creatable.  This pins the property down in
+// the module itself, so it does not depend on callers guarding their call sites
+// with #ifdef HAVE_OPENCV.
+static void test_hdr_align_inert_without_opencv(void **state)
+{
+  (void)state;
+  dt_hdr_align_t *a = dt_hdr_alignment_new(NULL);
+
+#ifdef HAVE_OPENCV
+  assert_non_null(a);
+  dt_hdr_alignment_free(a);
+#else
+  assert_null(a);
+
+  float *buf = malloc(sizeof(float) * TEST_W * TEST_H);
+  float *out = malloc(sizeof(float) * TEST_W * TEST_H);
+  assert_non_null(buf);
+  assert_non_null(out);
+  _make_scene(buf, 1);
+
+  // No entry point may do work with the state the constructor refused to make.
+  assert_false(dt_hdr_alignment_set_reference(a, buf, TEST_W, TEST_H, TEST_FILTERS, NULL));
+
+  dt_hdr_align_result_t info;
+  assert_false(dt_hdr_alignment_align_frame(a, buf, out, TEST_W, TEST_H,
+                                            TEST_FILTERS, NULL, &info));
+  assert_int_equal(info.status, DT_HDR_ALIGN_IDENTITY);
+
+  // The auto-reference probe is state-free, so it has its own guard.
+  assert_int_equal(dt_hdr_alignment_probe_features(buf, TEST_W, TEST_H), 0);
+
+  dt_hdr_alignment_free(a);  // must be a safe no-op on NULL
+  free(buf);
+  free(out);
+#endif
 }
 
 int main(int argc, char *argv[])
@@ -344,6 +366,7 @@ int main(int argc, char *argv[])
   (void)argc;
   (void)argv;
   const struct CMUnitTest tests[] = {
+    cmocka_unit_test(test_hdr_align_inert_without_opencv),
     cmocka_unit_test(test_hdr_align_reduces_misalignment),
     cmocka_unit_test(test_hdr_align_cfa_modulated),
     cmocka_unit_test(test_hdr_align_reference_reused_across_frames),
