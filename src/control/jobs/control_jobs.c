@@ -1979,6 +1979,7 @@ end:
   // all threads free their fdata
   mformat->free_params(mformat, fdata);
 
+  dt_print(DT_DEBUG_ALWAYS, "[21829] EXPORT ENDED");
   // notify the user via the window manager
   dt_ui_notify_user();
 
@@ -2560,6 +2561,7 @@ void dt_control_export(GList *imgid_list,
 {
   dt_job_t *job = dt_control_job_create(&_control_export_job_run, "export");
   if(!job) return;
+  dt_print(DT_DEBUG_ALWAYS, "[21829] EXPORT STARTED (%d images)", g_list_length(imgid_list));
   dt_control_image_enumerator_t *params = _control_export_alloc();
   if(!params)
   {

@@ -2030,6 +2030,8 @@ static gboolean _focus_in_out_event(GtkWidget *widget,
                                     GdkEvent *event,
                                     const gpointer user_data)
 {
+  dt_print(DT_DEBUG_ALWAYS, "[21829] main window focus-%s",
+           event->focus_change.in ? "IN" : "OUT");
   gtk_window_set_urgency_hint(GTK_WINDOW(user_data), FALSE);
   return FALSE;
 }
