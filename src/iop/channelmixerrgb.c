@@ -2033,11 +2033,8 @@ static void _set_trouble_messages(dt_iop_module_t *self)
                             && !temperature_enabled
                             && chr->temperature->default_enabled;
 
-  const gboolean anyproblem = problem1 || problem2 || problem3;
-
-  const dt_image_t *img = &dev->image_storage;
-  dt_print_pipe(DT_DEBUG_PIPE, anyproblem ? "chroma trouble" : "chroma data",
-      NULL, self, DT_DEVICE_NONE, NULL, NULL,
+  if(problem1 || problem2 || problem3)
+    dt_print_pipe(DT_DEBUG_PIPE, "chroma trouble", NULL, self, DT_DEVICE_NONE, NULL, NULL,
       "%s%s%sD65=%s.  D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f ID=%i",
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
@@ -2045,7 +2042,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
       STR_YESNO(_dev_is_D65_chroma(dev)),
       chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
       chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
-      img->id);
+      dev->image_storage.id);
 
   if(problem2)
   {
