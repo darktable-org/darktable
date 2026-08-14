@@ -58,6 +58,8 @@ typedef struct dt_ai_model_t
   gboolean from_catalog;  // TRUE when parsed from the bundled
                             // ai_models.json; FALSE when found on disk or
                             // registered from a repository listing
+  gboolean from_file;    // TRUE when installed from a local .dtmodel; there
+                         // is no repository to go back to for updates
   gboolean enabled;      // User preference (stored in darktablerc)
   dt_ai_model_status_t status;
   double download_progress;  // 0.0 to 1.0 during download
