@@ -54,8 +54,7 @@ FILE(GLOB SOURCE_FILES
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"
-  "common/hdr_alignment.c"
-  "common/hdr_alignment_cv.cc"
+  "common/hdr_alignment.cc"
   "common/heal.c"
   "common/histogram.c"
   "common/history.c"
@@ -697,13 +696,14 @@ if(USE_OPENCV)
   #   calib3d/geometry    - findHomography / estimateAffine2D.
   # OpenCV 5 reorganized the modules: features2d was renamed to features and
   # calib3d was split into calib/geometry/stereo (the homography estimators we
-  # use landed in geometry).  Both layouts are supported; the C++ seam picks its
-  # headers via CV_VERSION_MAJOR.
+  # use landed in geometry). Both layouts are supported, hdr_alignment.cc picks
+  # its headers via CV_VERSION_MAJOR.
   set(DT_OPENCV5_MODULES core imgproc features flann geometry)
   set(DT_OPENCV4_MODULES core imgproc features2d flann calib3d)
   # First try the standard config (custom builds, or distros shipping the
   # unified OpenCVConfig.cmake).  QUIET: absence is fine, the HDR auto-alignment
-  # then compiles to a no-op (hdr_alignment_cv.cc is empty without HAVE_OPENCV).
+  # then compiles to a no-op (hdr_alignment.cc degrades to stubs without
+  # HAVE_OPENCV).
   # OpenCVConfig-version.cmake only accepts requests whose major version matches
   # the installed one, so 5 and 4 have to be probed separately.
   find_package(OpenCV 5 COMPONENTS ${DT_OPENCV5_MODULES} QUIET)

@@ -26,10 +26,11 @@ if(WIN32)
 endif(WIN32)
 
 # White-box tests for the internal (static) helpers of the HDR alignment code.
-# Following test_filmicrgb.c, the .c is #included directly for static access;
-# lib_darktable supplies what it links against (OpenCV seam, glib, ...).
+# Following test_filmicrgb.c, the implementation is #included directly for static
+# access; lib_darktable supplies what it links against (OpenCV, glib, ...).
+# C++ because hdr_alignment.cc is (OpenCV 4 has no C API).
 add_cmocka_test(test_hdr_alignment_internal
-                SOURCES test_hdr_alignment_internal.c
+                SOURCES test_hdr_alignment_internal.cc
                 LINK_LIBRARIES lib_darktable cmocka)
 
 if(WIN32)
