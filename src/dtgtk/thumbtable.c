@@ -410,7 +410,11 @@ static gboolean _compute_sizes(dt_thumbtable_t *table,
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
+    // seed the continuous zoom from the slider the first time; afterwards the
+    // pinch/scroll gestures drive it directly
+    if(table->zoom <= 0.0f)
+      table->zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
+    table->zoom = CLAMP(table->zoom, 1.0f, DT_LIGHTTABLE_MAX_ZOOM);
 
     if(force
        || allocation.width != table->view_width
@@ -419,7 +423,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table,
       table->thumbs_per_row = DT_ZOOMABLE_NB_PER_ROW;
       table->view_width = allocation.width;
       table->view_height = allocation.height;
-      table->thumb_size = table->view_width / npr;
+      table->thumb_size = (int)roundf(table->view_width / table->zoom);
       table->rows = (table->view_height - table->thumbs_area.y) / table->thumb_size + 1;
       table->center_offset = 0;
       ret = TRUE;
@@ -869,8 +873,8 @@ static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table,
 
 // change zoom value for the zoomable thumbtable
 static void _zoomable_zoom(dt_thumbtable_t *table,
-                           const int oldzoom,
-                           const int newzoom)
+                           const float oldzoom,
+                           const float newzoom)
 {
   // nothing to do if thumbtable is empty
   if(!table->list)
@@ -893,7 +897,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     y = table->view_height / 2;
   }
 
-  const int new_size = table->view_width / newzoom;
+  const int new_size = (int)roundf(table->view_width / newzoom);
   const double ratio = (double)new_size / (double)table->thumb_size;
 
   // we get row/column numbers of the image under cursor
@@ -931,6 +935,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
 
   // we update table values
   table->thumb_size = new_size;
+  table->zoom = newzoom;
   _pos_compute_area(table);
 
   // we ensure there's still some visible thumbnails
@@ -978,7 +983,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
 
-  dt_view_lighttable_set_zoom(darktable.view_manager, newzoom);
+  dt_view_lighttable_set_zoom(darktable.view_manager, (gint)roundf(newzoom));
   gtk_widget_queue_draw(table->widget);
 }
 
@@ -1043,8 +1048,8 @@ static void _filemanager_zoom(dt_thumbtable_t *table,
 }
 
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
-                                const int oldzoom,
-                                const int newzoom)
+                                const float oldzoom,
+                                const float newzoom)
 {
   if(oldzoom == newzoom)
     return;
@@ -1054,7 +1059,7 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    _filemanager_zoom(table, oldzoom, newzoom);
+    _filemanager_zoom(table, (int)oldzoom, (int)newzoom);
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
@@ -1125,49 +1130,59 @@ static gboolean _event_scroll_compressed(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _event_gesture(GtkWidget *widget,
-                               GdkEvent *event,
-                               gpointer user_data)
+/* touchpad pinch for the zoomable lighttable, via dt_gui_connect_pinch().
+ * The old GTK3-only "event" signal handler forwarded raw GDK_TOUCHPAD_PINCH
+ * events; GtkGestureZoom turns the phase field into the begin / update /
+ * end signals (and "end" fires on cancel as well), the same wiring the
+ * culling/lighttable views use. */
+static void _event_pinch(GtkGesture *gesture,
+                         const dt_gui_pinch_event_t *e,
+                         gpointer user_data)
 {
   dt_thumbtable_t *table = user_data;
-  if(dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return FALSE;
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return;
 
-  const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+  static float begin_zoom = 1.0f;
 
-  static int begin_zoom = 1;
-
-  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  if(e->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
-    begin_zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
-    return TRUE;
+    begin_zoom = (table->zoom > 0.0f) ? table->zoom
+                                      : dt_view_lighttable_get_zoom(darktable.view_manager);
+    return;
   }
 
-  if(pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_END
-     || pinch->phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  if(e->phase == GDK_TOUCHPAD_GESTURE_PHASE_END)
   {
-    begin_zoom = 1;
-    return TRUE;
+    begin_zoom = 1.0f;
+    return;
   }
 
-  if(pinch->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
-    return FALSE;
+  if(e->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
+    return;
 
-  if(pinch->scale <= 0.0)
-    return FALSE;
-
-  const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
-  const int newzoom = CLAMP((int)roundf(begin_zoom / pinch->scale), 1, DT_LIGHTTABLE_MAX_ZOOM);
-
-  // Anchor the zoom at the pinch focal point.
-  table->last_x = (int)pinch->x_root;
-  table->last_y = (int)pinch->y_root;
+  // Anchor the pinch at the focal point so the zoom keeps the spot under the
+  // fingers stable and the pan delta is measured from there.
+  table->last_x = (int)e->x;
+  table->last_y = (int)e->y;
   table->mouse_inside = TRUE;
 
-  if(newzoom != old)
-    dt_thumbtable_zoom_changed(table, old, newzoom);
+  // Combined pan component, mirroring the two-finger scroll pan (content
+  // moves against the finger motion) and the culling gesture_pinch.  This is
+  // what lets the user translate the grid without lifting their fingers.
+  if(e->dx != 0.0 || e->dy != 0.0)
+  {
+    const int pdx = (int)-roundf(e->dx);
+    const int pdy = (int)-roundf(e->dy);
+    if(pdx != 0 || pdy != 0)
+      _move(table, pdx, pdy, TRUE);
+  }
 
-  return TRUE;
+  // Continuous zoom component.
+  if(e->scale <= 0.0)
+    return;
+
+  const float newzoom = CLAMP(begin_zoom / e->scale, 1.0f, DT_LIGHTTABLE_MAX_ZOOM);
+  dt_thumbtable_zoom_changed(table, table->zoom, newzoom);
 }
 
 static void _event_scroll(GtkEventControllerScroll *controller,
@@ -1235,10 +1250,10 @@ static void _event_scroll(GtkEventControllerScroll *controller,
   // zooming (pinch handles zoom). Mouse wheels and ctrl+scroll still zoom
   // through the unit-delta path below.
   if(table->mode == DT_THUMBTABLE_MODE_ZOOM
-     && dt_gui_scroll_should_pan(e))
+     && dt_gui_scroll_should_pan((const GdkEvent *)e))
   {
     gdouble ddx = 0.0, ddy = 0.0;
-    if(dt_gui_get_scroll_deltas(e, &ddx, &ddy)
+    if(dt_gui_get_scroll_deltas((const GdkEvent *)e, &ddx, &ddy)
        && (ddx != 0.0 || ddy != 0.0))
     {
       const int pdx = (int)roundf(-ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
@@ -1263,19 +1278,27 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       // (a rotated wheel step) and right-without-shift (tilt/swipe) zoom in;
       // keep the accumulated magnitude for the step size
       const int dominant = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
-      const int delta =
-        dt_gui_scroll_zoom_delta((const GdkEvent *)e, delta_x, delta_y) > 0.0f
-          ? -abs(dominant)
-          : abs(dominant);
+      const gboolean zoom_in =
+        dt_gui_scroll_zoom_delta((const GdkEvent *)e, delta_x, delta_y) > 0.0f;
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       {
+        const int delta = zoom_in ? -abs(dominant) : abs(dominant);
         const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta) * 2 + 1),
                              dt_conf_get_int("min_panel_height"),
                              dt_conf_get_int("max_panel_height"));
         dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
       }
+      else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+      {
+        // continuous zoom: a wheel notch / smooth step moves the level by a
+        // fraction, keeping scroll consistent with the continuous pinch
+        const float delta = (zoom_in ? -1.0f : 1.0f) * (float)abs(dominant) * 0.25f;
+        const float new = CLAMP(table->zoom + delta, 1.0f, DT_LIGHTTABLE_MAX_ZOOM);
+        dt_thumbtable_zoom_changed(table, table->zoom, new);
+      }
       else
       {
+        const int delta = zoom_in ? -abs(dominant) : abs(dominant);
         const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
         const int new = CLAMP(old + delta, 1, DT_LIGHTTABLE_MAX_ZOOM);
         dt_thumbtable_zoom_changed(table, old, new);
@@ -1634,12 +1657,27 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
 
   if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {
+    // Anchor the pan at the pointer position where the press landed.  Motion
+    // over thumbnails is delivered to the child thumbnails rather than to
+    // this motion controller, so last_x/y can be left pointing at the
+    // previous gesture when a drag starts on top of a thumbnail; using that
+    // stale position would make the first motion jump by the gap between the
+    // two (see #21826).
+    GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(gesture));
+    gdouble rx = 0, ry = 0;
+    if(event) dt_gui_get_event_coords(event, &rx, &ry);
+    table->last_x = ceil(rx);
+    table->last_y = ceil(ry);
+
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
     table->drag_initial_imgid = id;
     table->drag_thumb = _thumbtable_get_thumb(table, id);
     if(table->drag_thumb)
       table->drag_thumb->moved = FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
   }
 }
 
@@ -2741,8 +2779,7 @@ dt_thumbtable_t *dt_thumbtable_new()
                         GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK
-                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                        | GDK_TOUCHPAD_GESTURE_MASK);
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
 #endif
   dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);
@@ -2764,12 +2801,27 @@ dt_thumbtable_t *dt_thumbtable_new()
 
   dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _event_scroll, table);
-  g_signal_connect(G_OBJECT(table->widget), "event",
-                   G_CALLBACK(_event_gesture), table);
+  dt_gui_connect_pinch(table->widget, _event_pinch, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
-  dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
-  dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
+  GtkEventController *motion_controller =
+    dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
+  /* The padding around a thumbnail's image is covered by an event box with
+   * its own window, so motion there targets that event box and never
+   * reaches a TARGET-phase controller on the table.  Run in the BUBBLE
+   * phase so the table sees motion bubbling up from the thumbnails and can
+   * pan even when the drag starts on the letterboxing padding
+   * (see #21826). */
+  gtk_event_controller_set_propagation_phase(motion_controller, GTK_PHASE_BUBBLE);
+  GtkGestureSingle *click_gesture =
+    dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
+  /* The thumbnail widgets (in particular the event box covering the area
+   * around the image surface) consume button presses, so a bubble-phase
+   * click on a thumbnail would never reach the table.  Run the click in the
+   * capture phase so the zoomable lighttable can start panning from a press
+   * on any part of a thumbnail, including its letterboxing padding
+   * (see #21826). */
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(click_gesture), GTK_PHASE_CAPTURE);
 
   // we register globals signals
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,

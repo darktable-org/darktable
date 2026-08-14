@@ -42,6 +42,7 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_preview;
   dt_lighttable_layout_t layout, base_layout;
   int current_zoom;
+  gboolean updating_zoom;  // true while we programmatically push a zoom value to the slider (avoid echo back)
   gboolean fullpreview_focus;
   dt_lighttable_culling_restriction_t culling_init_restriction;
 } dt_lib_tool_lighttable_t;
@@ -597,7 +598,8 @@ static void _lib_lighttable_zoom_slider_changed(GtkWidget *widget, dt_lib_module
   dt_lib_tool_lighttable_t *d = self->data;
 
   const int i = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  _set_zoom(self, i);
+  if(!d->updating_zoom)
+    _set_zoom(self, i);
   d->current_zoom = i;
 }
 
@@ -611,8 +613,15 @@ static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self)
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = self->data;
+  /* Setting the spin button emits "value-changed", which would echo the value
+   * back through _set_zoom()/dt_thumbtable_zoom_changed() and snap a
+   * continuous zoomable zoom to the rounded integer.  Suppress that echo
+   * while we push a programmatic value; the slider still displays the value,
+   * it just doesn't re-trigger the zoom. */
+  d->updating_zoom = TRUE;
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
   d->current_zoom = zoom;
+  d->updating_zoom = FALSE;
 }
 
 static gint _lib_lighttable_get_zoom(dt_lib_module_t *self)
