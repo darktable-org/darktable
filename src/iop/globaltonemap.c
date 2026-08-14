@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -29,10 +30,9 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <stdlib.h>
 #include <string.h>
-
 #include <gtk/gtk.h>
 #include <inttypes.h>
 

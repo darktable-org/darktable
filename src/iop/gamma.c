@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -336,7 +335,7 @@ void process(dt_iop_module_t *self,
   }
 
   if(mask_display)
-    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i);
+    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
 }
 
 void init(dt_iop_module_t *self)

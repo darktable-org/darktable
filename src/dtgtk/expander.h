@@ -30,6 +30,7 @@ struct _GtkDarktableExpander
 {
   GtkBox box;
   gboolean expanded;
+  gboolean state_set;
   GtkWidget *frame;
   GtkWidget *header;
   GtkWidget *header_evb;

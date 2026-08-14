@@ -1473,15 +1473,18 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
   }
 }
 
-static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_module_t *self)
+static void _mouse_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx, gdouble dy,
+                           dt_iop_module_t *self)
 {
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)view);
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gboolean next = FALSE;
-    if(dt_gdk_event_get_scroll_delta_y(event) > 0)
+    if(dy > 0)
       next = gtk_tree_model_iter_next(model, &iter);
     else
       next = gtk_tree_model_iter_previous(model, &iter);
@@ -1491,10 +1494,9 @@ static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_mod
       GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
       gtk_tree_view_set_cursor((GtkTreeView *)view, path, NULL, FALSE);
       gtk_tree_path_free(path);
-      return TRUE;
+      return;
     }
   }
-  return FALSE;
 }
 #endif // HAVE_GMIC
 
@@ -1748,7 +1750,9 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->lutwindow);
 
   g_signal_connect(G_OBJECT(g->lutentry), "changed", G_CALLBACK(_entry_callback), self);
-  g_signal_connect(G_OBJECT((GtkTreeView *)g->lutname), "scroll-event", G_CALLBACK(_mouse_scroll), (gpointer)self);
+  dt_gui_connect_scroll(g->lutname, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _mouse_scroll, self);
 #endif // HAVE_GMIC
 
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,6 +93,13 @@ void dt_shortcut_key_press(dt_input_device_t id, const guint time, const guint k
 void dt_shortcut_key_release(dt_input_device_t id, const guint time, const guint key);
 gboolean dt_shortcut_key_active(dt_input_device_t id, const guint key);
 float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const float move_size);
+
+// shortcut machinery seat-grab tracking (see dt_gui_pointer_is_grabbed):
+// the shortcut machinery keeps its own flag because the Quartz backend
+// cannot be trusted to report the grab state (GDK serials are always 0 there)
+#if !GTK_CHECK_VERSION(4, 0, 0)
+gboolean dt_shortcut_pointer_grabbed(void);
+#endif
 
 typedef enum dt_shortcut_flag_t
 {
@@ -217,6 +224,20 @@ void dt_action_cleanup_instance_iop(dt_iop_module_t *module);
 
 // UX miscellaneous functions
 void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *msg, ...);
+
+/* Widgets whose activation lives in a gesture controller (a GtkGesture*
+ * "pressed"/"released" handler instead of widget class vfuncs or "clicked"/
+ * "toggled" signals) register their gesture here so the shortcut machinery
+ * can invoke the same code path as a real click: synthetic GdkEvents never
+ * reach gesture controllers, so without this a shortcut would flip the
+ * widget's visual state without activating it.  See _action_process_toggle
+ * and _action_process_button in accelerators.c.
+ *
+ * GTK4: this stored-gesture path survives the switch -- "button-press-event"
+ * does not exist in GTK4 and GdkEvent is opaque
+ * (https://docs.gtk.org/gtk4/migrating-3to4.html, "Event controllers and
+ * gestures replace event signals"). */
+#define DT_ACTION_GESTURE_KEY "_dt_action_gesture"
 
 // check if widget intentionally hidden (to disable it)
 gboolean dt_action_widget_invisible(GtkWidget *w);

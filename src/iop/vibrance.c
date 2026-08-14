@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,10 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <assert.h>
+
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
@@ -29,8 +31,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(2, dt_iop_vibrance_params_t)
 
@@ -198,9 +198,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->amount_scale, "%");
   gtk_widget_set_tooltip_text(g->amount_scale, _("the amount of vibrance"));
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

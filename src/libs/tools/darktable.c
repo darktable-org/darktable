@@ -55,9 +55,11 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
                                              cairo_t *cr,
                                              dt_lib_module_t *self);
 /* button press callback */
-static gboolean _lib_darktable_button_press_callback(GtkWidget *widget,
-                                                     GdkEventButton *event,
-                                                     dt_lib_module_t *self);
+static void _lib_darktable_clicked(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -96,8 +98,7 @@ void gui_init(dt_lib_module_t *self)
   /* connect callbacks */
   g_signal_connect(G_OBJECT(self->widget), "draw",
                    G_CALLBACK(_lib_darktable_draw_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
-                   G_CALLBACK(_lib_darktable_button_press_callback), self);
+  dt_gui_connect_click(self->widget, _lib_darktable_clicked, NULL, self);
 
   /* create a cairo surface of dt icon */
 
@@ -275,13 +276,14 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _lib_darktable_button_press_callback(GtkWidget *widget,
-                                                     GdkEventButton *event,
-                                                     dt_lib_module_t *self)
+static void _lib_darktable_clicked(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_lib_module_t *self)
 {
   /* show about box */
   darktable_show_about_dialog();
-  return TRUE;
 }
 
 // clang-format off

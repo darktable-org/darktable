@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -29,10 +30,11 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
-#include <assert.h>
+
 #include <stdlib.h>
 
 #define MAX_FOCAL_LEN 100000
@@ -1089,7 +1091,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
        && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
-      dt_iop_commit_blend_params(module, blendop_params);
+      dt_iop_commit_blend_params(module, blendop_params, NULL);
     }
     else if(blendop_params
             && dt_develop_blend_legacy_params(module, blendop_params,
@@ -1100,7 +1102,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
     }
     else
     {
-      dt_iop_commit_blend_params(module, module->default_blendop_params);
+      dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     }
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);

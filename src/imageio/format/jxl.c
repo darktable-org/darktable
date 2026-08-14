@@ -386,12 +386,10 @@ int write_image(struct dt_imageio_module_data_t *data,
         chunk_size *= 2;
 
       out_len += chunk_size;
-      out_buf = g_realloc(out_buf, out_len);
+      out_buf = g_try_realloc(out_buf, out_len);
       if(!out_buf)
-      {
         JXL_FAIL("could not reallocate codestream buffer to size %zu", out_len);
-        goto end;
-      }
+
       out_cur = out_buf + offset;
       out_avail = out_len - offset;
     }

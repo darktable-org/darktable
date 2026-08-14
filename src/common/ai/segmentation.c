@@ -125,17 +125,20 @@ _preprocess_image(const uint8_t *rgb_data,
   if(!output)
     return NULL;
 
-  // bilinear resize + normalize + HWC->CHW in one pass
+  // bilinear resize + normalize + HWC->CHW in one pass, sampling on the
+  // pixel-centre convention like _crop_resize_mask. y / scale would shift the
+  // image by 0.5/scale - 0.5 source px (2.4 px at 6000 -> 1024), which the
+  // encoder bakes into the mask. the clamp keeps (int) a floor and fy >= 0
   for(int y = 0; y < new_h; y++)
   {
-    const float src_y = (float)y / scale;
+    const float src_y = MAX(((float)y + 0.5f) / scale - 0.5f, 0.0f);
     const int y0 = (int)src_y;
     const int y1 = (y0 + 1 < height) ? y0 + 1 : y0;
     const float fy = src_y - y0;
 
     for(int x = 0; x < new_w; x++)
     {
-      const float src_x = (float)x / scale;
+      const float src_x = MAX(((float)x + 0.5f) / scale - 0.5f, 0.0f);
       const int x0 = (int)src_x;
       const int x1 = (x0 + 1 < width) ? x0 + 1 : x0;
       const float fx = src_x - x0;
@@ -225,17 +228,26 @@ static void _crop_resize_mask(const float *const restrict src,
     }
   }
 
+  // inverse of the sampling mapping below, hoisted out of the pixel loops
+  const float inv_scale = (scale > 1e-6f) ? 1.0f / scale : 0.0f;
+
   DT_OMP_FOR(shared(range_lut))
   for(int y = 0; y < dst_h; y++)
   {
-    const float sy = (dst_h > 1) ? (float)y * (float)(valid_h - 1) / (float)(dst_h - 1) : 0.0f;
+    // pixel-centre convention: output pixel y covers [y, y+1[, whose
+    // centre y + 0.5 maps to (y + 0.5) * scale in mask space, i.e.
+    // sample index (y + 0.5) * scale - 0.5. the previous align-corners
+    // mapping was not the inverse of that and stretched the mask
+    // outwards; see the commit message for figures. the clamp is
+    // load-bearing: it keeps fy >= 0 and makes (int)sy a floor
+    const float sy = MAX(((float)y + 0.5f) * scale - 0.5f, 0.0f);
     const int y0 = MIN((int)sy, valid_h - 1);
     const int y1 = MIN(y0 + 1, valid_h - 1);
     const float fy = sy - (float)y0;
 
     for(int x = 0; x < dst_w; x++)
     {
-      const float sx = (dst_w > 1) ? (float)x * (float)(valid_w - 1) / (float)(dst_w - 1) : 0.0f;
+      const float sx = MAX(((float)x + 0.5f) * scale - 0.5f, 0.0f);
       const int x0 = MIN((int)sx, valid_w - 1);
       const int x1 = MIN(x0 + 1, valid_w - 1);
       const float fx = sx - (float)x0;
@@ -255,11 +267,13 @@ static void _crop_resize_mask(const float *const restrict src,
         // reference luma at the output pixel (guide is at dst resolution)
         const int luma_ref = _luma709(&guide_rgb[(y * guide_w + x) * 3]);
 
-        // map the 4 source-grid corners back into guide coords
-        const float gx0 = (valid_w > 1) ? (float)x0 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
-        const float gx1 = (valid_w > 1) ? (float)x1 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
-        const float gy0 = (valid_h > 1) ? (float)y0 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
-        const float gy1 = (valid_h > 1) ? (float)y1 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
+        // map the 4 source-grid corners back into guide coords -- exact
+        // inverse of the sampling mapping above, so that the range weights
+        // are read at the guide pixels the mask values actually come from
+        const float gx0 = ((float)x0 + 0.5f) * inv_scale - 0.5f;
+        const float gx1 = ((float)x1 + 0.5f) * inv_scale - 0.5f;
+        const float gy0 = ((float)y0 + 0.5f) * inv_scale - 0.5f;
+        const float gy1 = ((float)y1 + 0.5f) * inv_scale - 0.5f;
 
         const int ix00 = MIN(MAX((int)(gx0 + 0.5f), 0), guide_w - 1);
         const int ix01 = MIN(MAX((int)(gx1 + 0.5f), 0), guide_w - 1);
@@ -1169,9 +1183,12 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
 
 /* --- disk cache for encoder embeddings --- */
 
-// file format: magic + version + metadata + encoder outputs + RGB
+// file format: magic + version + metadata + encoder outputs + RGB.
+// bump the version when anything upstream of the encoder changes: the key
+// (imgid, distort hash, model) would not notice, and stale embeddings would
+// be reused forever. v2 = _preprocess_image moved to pixel-centre sampling
 #define SEG_CACHE_MAGIC 0x44545347  // "DTSG"
-#define SEG_CACHE_VERSION 1
+#define SEG_CACHE_VERSION 2
 #define SEG_CACHE_SUBDIR "objmasks"
 
 // build the per-database cache directory path.

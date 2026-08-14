@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
 #include "common/opencl.h"
@@ -28,13 +29,13 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <gtk/gtk.h>
-#include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_sharpen_params_t)
 

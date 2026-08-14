@@ -28,7 +28,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>

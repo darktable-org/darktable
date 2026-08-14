@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -346,4 +345,3 @@ clean:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

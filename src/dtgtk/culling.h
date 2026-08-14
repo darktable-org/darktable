@@ -88,6 +88,9 @@ typedef struct dt_culling_t
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(const dt_culling_mode_t mode);
+// release the resources owned by a culling table (pending timers, widget,
+// signal connections); the caller frees the table itself afterwards.
+void dt_culling_destroy(dt_culling_t *table);
 // reload all thumbs from scratch.
 void dt_culling_full_redraw(dt_culling_t *table,
                             const gboolean force);

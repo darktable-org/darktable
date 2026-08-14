@@ -917,8 +917,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       const dt_scopes_vec_color_harmony_t hm = _vec_color_harmonies[cur_harmony];
       PangoLayout *layout;
       PangoRectangle ink;
-      PangoFontDescription *desc =
-        pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      PangoFontDescription *desc = dt_gui_get_font();
       pango_font_description_set_weight(desc, PANGO_WEIGHT_NORMAL);
       pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);

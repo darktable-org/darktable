@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1072,44 +1072,47 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, dt_
   return TRUE;
 }
 
-static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
+static void _lib_timeline_button_press_callback(GtkGestureSingle *gesture,
+                                                   gint n_press,
+                                                   gdouble x,
+                                                   gdouble y,
+                                                   dt_lib_module_t *self)
 {
   dt_lib_timeline_t *strip = self->data;
 
-  if(e->button == GDK_BUTTON_PRIMARY)
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+
+  if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {
-    if(e->type == GDK_BUTTON_PRESS)
+    if(x - strip->start_x < 2 && x - strip->start_x > -2)
     {
-      if(e->x - strip->start_x < 2 && e->x - strip->start_x > -2)
-      {
-        strip->start_x = strip->stop_x;
-        strip->start_t = strip->stop_t;
-        strip->stop_x = e->x;
-        strip->stop_t = _time_get_from_pos(e->x, strip);
-        strip->move_edge = TRUE;
-      }
-      else if(e->x - strip->stop_x < 2 && e->x - strip->stop_x > -2)
-      {
-        strip->stop_x = e->x;
-        strip->stop_t = _time_get_from_pos(e->x, strip);
-        strip->move_edge = TRUE;
-      }
-      else
-      {
-        strip->start_x = strip->stop_x = e->x;
-        dt_datetime_t tt = _time_get_from_pos(e->x, strip);
-        if(_time_compare(tt, _time_init()) == 0)
-          strip->start_t = strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
-        else
-          strip->start_t = strip->stop_t = tt;
-        strip->move_edge = FALSE;
-      }
-      strip->selecting = TRUE;
-      strip->has_selection = TRUE;
-      gtk_widget_queue_draw(strip->timeline);
+      strip->start_x = strip->stop_x;
+      strip->start_t = strip->stop_t;
+      strip->stop_x = x;
+      strip->stop_t = _time_get_from_pos(x, strip);
+      strip->move_edge = TRUE;
     }
+    else if(x - strip->stop_x < 2 && x - strip->stop_x > -2)
+    {
+      strip->stop_x = x;
+      strip->stop_t = _time_get_from_pos(x, strip);
+      strip->move_edge = TRUE;
+    }
+    else
+    {
+      strip->start_x = strip->stop_x = x;
+      dt_datetime_t tt = _time_get_from_pos(x, strip);
+      if(_time_compare(tt, _time_init()) == 0)
+        strip->start_t = strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+      else
+        strip->start_t = strip->stop_t = tt;
+      strip->move_edge = FALSE;
+    }
+    strip->selecting = TRUE;
+    strip->has_selection = TRUE;
+    gtk_widget_queue_draw(strip->timeline);
   }
-  else if(e->button == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
     // we remove the last rule if it's a datetime one
     const int nb_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
@@ -1127,18 +1130,20 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
       }
     }
   }
-
-  return FALSE;
 }
 
-static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
+static void _lib_timeline_button_release_callback(GtkGestureSingle *gesture,
+                                                     gint n_press,
+                                                     gdouble x,
+                                                     gdouble y,
+                                                     dt_lib_module_t *self)
 {
   dt_lib_timeline_t *strip = self->data;
 
   if(strip->selecting)
   {
-    strip->stop_x = e->x;
-    dt_datetime_t tt = _time_get_from_pos(e->x, strip);
+    strip->stop_x = x;
+    dt_datetime_t tt = _time_get_from_pos(x, strip);
     if(_time_compare(tt, _time_init()) == 0)
       strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
     else
@@ -1160,14 +1165,14 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
     }
     strip->selecting = FALSE;
 
-    if(!strip->move_edge && dt_modifier_is(e->state, GDK_SHIFT_MASK))
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
+    if(!strip->move_edge && dt_modifier_is(state, GDK_SHIFT_MASK))
       _selection_collect(strip, DT_LIB_TIMELINE_MODE_RESET);
     else
       _selection_collect(strip, DT_LIB_TIMELINE_MODE_AND);
     gtk_widget_queue_draw(strip->timeline);
   }
-
-  return TRUE;
 }
 
 static void _selection_start(dt_action_t *action)
@@ -1258,14 +1263,17 @@ static gboolean _block_autoscroll(dt_lib_module_t *self)
   return TRUE;
 }
 
-static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_lib_module_t *self)
+static void _lib_timeline_motion_notify_cb(GtkEventControllerMotion *controller,
+                                              gdouble x,
+                                              gdouble y,
+                                              dt_lib_module_t *self)
 {
   dt_lib_timeline_t *strip = self->data;
 
   strip->in = TRUE;
 
   // auto-scroll if cursor is at one end of the panel
-  if((e->x < 10 || e->x > strip->panel_width - 10) && !strip->autoscroll)
+  if((x < 10 || x > strip->panel_width - 10) && !strip->autoscroll)
   {
     // first scroll immediately and then every 400ms until cursor quit the "auto-zone"
     if(_block_autoscroll(self))
@@ -1275,22 +1283,22 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
     }
   }
 
-  strip->current_x = e->x;
+  strip->current_x = x;
 
   if(strip->selecting)
   {
-    strip->stop_x = e->x;
-    strip->stop_t = _time_get_from_pos(e->x, strip);
+    strip->stop_x = x;
+    strip->stop_t = _time_get_from_pos(x, strip);
     dt_control_change_cursor("default");
   }
   else
   {
     // we change the cursor if we are close enough of a selection limit
-    if(e->x - strip->start_x < 2 && e->x - strip->start_x > -2)
+    if(x - strip->start_x < 2 && x - strip->start_x > -2)
     {
       dt_control_change_cursor("w-resize");
     }
-    else if(e->x - strip->stop_x < 2 && e->x - strip->stop_x > -2)
+    else if(x - strip->stop_x < 2 && x - strip->stop_x > -2)
     {
       dt_control_change_cursor("e-resize");
     }
@@ -1300,25 +1308,29 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
     }
   }
   gtk_widget_queue_draw(strip->timeline);
-  return TRUE;
 }
 
-static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, dt_lib_module_t *self)
+static void _lib_timeline_scroll_cb(GtkEventControllerScroll *controller,
+                                      gdouble dx,
+                                      gdouble dy,
+                                      dt_lib_module_t *self)
 {
   dt_lib_timeline_t *strip = self->data;
 
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+
   // zoom change (with Ctrl key)
-  if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     int z = strip->zoom;
-    int delta_y = 0;
-    if(dt_gui_get_scroll_unit_delta(e, &delta_y))
+    if(dy != 0.0)
     {
-      if(delta_y < 0)
+      if(dy < 0)
       {
         if(z != DT_LIB_TIMELINE_ZOOM_HOUR) z++;
       }
-      else if(delta_y > 0)
+      else if(dy > 0)
       {
         if(z != DT_LIB_TIMELINE_ZOOM_YEAR) z--;
       }
@@ -1338,37 +1350,32 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, d
       strip->surface = NULL;
       gtk_widget_queue_draw(strip->timeline);
     }
-    return TRUE;
+    return;
   }
   else
   {
     // timeline panning: right==down==forward
-    int delta_x = 0, delta_y = 0;
-    if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
-    {
-      int move = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
-      if(dt_modifier_is(e->state, GDK_SHIFT_MASK)) move *= 2;
+    int move = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
+    if(dt_modifier_is(state, GDK_SHIFT_MASK)) move *= 2;
 
-      _time_add(&(strip->time_pos), move, strip->zoom);
-      // we ensure that the fimlstrip stay in the bounds
-      strip->time_pos = _selection_scroll_to(strip->time_pos, strip);
+    _time_add(&(strip->time_pos), move, strip->zoom);
+    // we ensure that the fimlstrip stay in the bounds
+    strip->time_pos = _selection_scroll_to(strip->time_pos, strip);
 
-      cairo_surface_destroy(strip->surface);
-      strip->surface = NULL;
-      gtk_widget_queue_draw(strip->timeline);
-    }
+    cairo_surface_destroy(strip->surface);
+    strip->surface = NULL;
+    gtk_widget_queue_draw(strip->timeline);
   }
-  return FALSE;
 }
 
-static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, dt_lib_module_t *self)
+static void _lib_timeline_mouse_leave_cb(GtkEventControllerMotion *controller,
+                                           dt_lib_module_t *self)
 {
   dt_lib_timeline_t *strip = self->data;
 
   strip->in = FALSE;
 
   gtk_widget_queue_draw(strip->timeline);
-  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1396,20 +1403,14 @@ void gui_init(dt_lib_module_t *self)
   /* creating timeline box*/
   d->timeline = gtk_event_box_new();
 
-  gtk_widget_add_events(d->timeline, GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
-                                         | GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask
-                                         | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_add_events(d->timeline, 0);
 
   g_signal_connect(G_OBJECT(d->timeline), "draw", G_CALLBACK(_lib_timeline_draw_callback), self);
-  g_signal_connect(G_OBJECT(d->timeline), "button-press-event", G_CALLBACK(_lib_timeline_button_press_callback),
-                   self);
-  g_signal_connect(G_OBJECT(d->timeline), "button-release-event",
-                   G_CALLBACK(_lib_timeline_button_release_callback), self);
-  g_signal_connect(G_OBJECT(d->timeline), "scroll-event", G_CALLBACK(_lib_timeline_scroll_callback), self);
-  g_signal_connect(G_OBJECT(d->timeline), "motion-notify-event", G_CALLBACK(_lib_timeline_motion_notify_callback),
-                   self);
-  g_signal_connect(G_OBJECT(d->timeline), "leave-notify-event", G_CALLBACK(_lib_timeline_mouse_leave_callback),
-                   self);
+  dt_gui_connect_click_all(d->timeline, _lib_timeline_button_press_callback, _lib_timeline_button_release_callback, self);
+  dt_gui_connect_motion(d->timeline, _lib_timeline_motion_notify_cb, NULL, _lib_timeline_mouse_leave_cb, self);
+  dt_gui_connect_scroll(d->timeline, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                  | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _lib_timeline_scroll_cb, self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->timeline, TRUE, TRUE, 0);
 

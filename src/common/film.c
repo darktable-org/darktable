@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2025 darktable developers.
+   Copyright (C) 2009-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include "control/jobs.h"
 #include "views/view.h"
 
-#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
@@ -38,10 +37,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #ifdef USE_LUA
 #include "lua/glist.h"
 #include "lua/lua.h"
 #endif
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif

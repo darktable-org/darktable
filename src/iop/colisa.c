@@ -30,7 +30,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

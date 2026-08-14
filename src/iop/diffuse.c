@@ -1414,7 +1414,7 @@ void process(dt_iop_module_t *self,
     in = temp1;
   }
 
-  for(int it = 0; it < iterations; it++)
+  for(int it = 0; it < iterations && !dt_dev_piece_shutdown(piece, (iterations-it) > 5); it++)
   {
     if(it == 0)
     {
@@ -1680,7 +1680,7 @@ int process_cl(dt_iop_module_t *self,
     in = temp1;
   }
 
-  for(int it = 0; it < iterations && err == CL_SUCCESS; it++)
+  for(int it = 0; it < iterations && err == CL_SUCCESS && !dt_dev_piece_shutdown(piece, (iterations-it)>5); it++)
   {
     if(it == 0)
     {

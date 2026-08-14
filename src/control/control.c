@@ -31,7 +31,6 @@
 #include "imageio/imageio_common.h"
 #include "views/view.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <glib/gstdio.h>
 #include <lcms2.h>
@@ -486,8 +485,7 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
 {
   PangoRectangle ink;
   PangoLayout *layout;
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   const float fontsize = DT_PIXEL_APPLY_DPI(14);
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);

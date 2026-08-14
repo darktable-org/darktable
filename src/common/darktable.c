@@ -246,6 +246,14 @@ static int usage(const char *argv0)
          "--disable-opencl\n"
          "    Prevent darktable from initializing the OpenCL subsystem.\n"
          "\n"
+         "--opencl-tiling\n"
+         "    Enforce fast opencl tiling even if not required.\n"
+         "    Use for performance/debugging sessions only.\n"
+         "\n"
+         "--opencl-migrate\n"
+         "    Enforce safe on-device cl_mem allocation.\n"
+         "    Use for debugging sessions analysing cl_mem usage because of a performance penalty.\n"
+         "\n"
 #endif
          "--disable-pipecache\n"
          "    Disable the pixelpipe cache. This option allows only\n"
@@ -1332,6 +1340,20 @@ int dt_init(int argc,
       {
 #ifdef HAVE_OPENCL
         options |= DT_OPENCL_OPTION_EXCLUDE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-tiling"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_FAST_TILE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-migrate"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_MIGRATE;
 #endif
         argv[k] = NULL;
       }

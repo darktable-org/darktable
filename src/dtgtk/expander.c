@@ -87,6 +87,14 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
   expanded = expanded != FALSE;
 
+  /* the first time the state is applied (a freshly created expander being set
+   * to its saved state on darkroom entry) it must not animate: expanders are
+   * created revealed and immediately collapsed per conf before the panel is
+   * laid out. animating that would flash every module open on view switch.
+   * only later (user driven) state changes get the revealer transition. */
+  const gboolean animate = expander->state_set;
+  expander->state_set = TRUE;
+
   if(expander->expanded != expanded)
   {
     expander->expanded = expanded;
@@ -110,7 +118,8 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     if(frame)
     {
       gtk_widget_set_visible(frame, TRUE); // for collapsible sections
-      gtk_revealer_set_transition_duration(GTK_REVEALER(expander->frame), dt_conf_get_int("darkroom/ui/transition_duration"));
+      gtk_revealer_set_transition_duration(GTK_REVEALER(expander->frame),
+                                           animate ? dt_conf_get_int("darkroom/ui/transition_duration") : 0);
       gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), expander->expanded);
     }
   }

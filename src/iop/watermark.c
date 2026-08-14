@@ -35,7 +35,7 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <math.h>
@@ -1461,7 +1461,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button),
                               _("pick color from image"));
   dt_action_define_iop(self, NULL, N_("pick color"),
-                       g->color_picker_button, &dt_action_def_toggle);
+                       g->color_picker_button, &dt_action_def_color_picker);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);

@@ -326,7 +326,7 @@ After backing up your `~/.config/darktable` directory and the sidecar .XMP files
 with the master branch, you may obtain the source as follows:
 
 ```bash
-git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
+git clone --recurse-submodules https://github.com/darktable-org/darktable.git
 cd darktable
 ```
 
@@ -341,7 +341,7 @@ Minor revisions are tagged with a third digit (e.g. 4.4.1, 4.4.2) and mostly pro
 You may want to compile these stable releases yourself to get better performance for your particular computer:
 
 ```bash
-git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
+git clone --recurse-submodules https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
 git checkout tags/release-5.6.0

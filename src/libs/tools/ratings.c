@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/gdk_event_utils.h"
-
 #include "common/ratings.h"
 #include "common/collection.h"
 #include "common/debug.h"
@@ -40,17 +38,20 @@ typedef struct dt_lib_ratings_t
 /* redraw the ratings */
 static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self);
 /* motion notify handler*/
-static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                    dt_lib_module_t *self);
+static void _lib_ratings_motion_notify_callback(GtkEventControllerMotion *controller,
+                                                  double x, double y,
+                                                  dt_lib_module_t *self);
 /* motion leavel handler */
-static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                   dt_lib_module_t *self);
+static void _lib_ratings_leave_notify_callback(GtkEventControllerMotion *controller,
+                                                 dt_lib_module_t *self);
 /* button press handler */
-static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                   dt_lib_module_t *self);
+static void _lib_ratings_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                  double x, double y,
+                                                  dt_lib_module_t *self);
 /* button release handler */
-static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     dt_lib_module_t *self);
+static void _lib_ratings_button_release_callback(GtkGestureSingle *gesture, int n_press,
+                                                    double x, double y,
+                                                    dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -89,20 +90,17 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *drawing = gtk_drawing_area_new();
 
-  gtk_widget_set_events(drawing, GDK_EXPOSURE_MASK     | GDK_POINTER_MOTION_MASK
+  gtk_widget_set_events(drawing, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK
+                               | GDK_POINTER_MOTION_MASK
                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                               | GDK_STRUCTURE_MASK);
+                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
   /* connect callbacks */
   gtk_widget_set_tooltip_text(drawing, _("set star rating for selected images"));
   dt_gui_add_class(drawing, "dt_transparent_background");
   g_signal_connect(G_OBJECT(drawing), "draw", G_CALLBACK(_lib_ratings_draw_callback), self);
-  g_signal_connect(G_OBJECT(drawing), "button-press-event", G_CALLBACK(_lib_ratings_button_press_callback), self);
-  g_signal_connect(G_OBJECT(drawing), "button-release-event", G_CALLBACK(_lib_ratings_button_release_callback),
-                   self);
-  g_signal_connect(G_OBJECT(drawing), "motion-notify-event", G_CALLBACK(_lib_ratings_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(drawing), "leave-notify-event", G_CALLBACK(_lib_ratings_leave_notify_callback), self);
+  dt_gui_connect_click(drawing, _lib_ratings_button_press_callback, _lib_ratings_button_release_callback, self);
+  dt_gui_connect_motion(drawing, _lib_ratings_motion_notify_callback, NULL, _lib_ratings_leave_notify_callback, self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), drawing, TRUE, TRUE, 0);
 
@@ -180,19 +178,20 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_l
   return TRUE;
 }
 
-static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                    dt_lib_module_t *self)
+static void _lib_ratings_motion_notify_callback(GtkEventControllerMotion *controller,
+                                                  double x, double y,
+                                                  dt_lib_module_t *self)
 {
   dt_lib_ratings_t *d = self->data;
 
-  d->pointerx = dt_gdk_event_get_x(event);
-  d->pointery = dt_gdk_event_get_y(event);
+  d->pointerx = x;
+  d->pointery = y;
   gtk_widget_queue_draw(self->widget);
-  return TRUE;
 }
 
-static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                   dt_lib_module_t *self)
+static void _lib_ratings_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                  double x, double y,
+                                                  dt_lib_module_t *self)
 {
   dt_lib_ratings_t *d = self->data;
   if(d->current > 0)
@@ -203,22 +202,20 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
 
     dt_control_queue_redraw_center();
   }
-  return TRUE;
 }
 
-static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     dt_lib_module_t *self)
+static void _lib_ratings_button_release_callback(GtkGestureSingle *gesture, int n_press,
+                                                    double x, double y,
+                                                    dt_lib_module_t *self)
 {
-  return TRUE;
 }
 
-static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                   dt_lib_module_t *self)
+static void _lib_ratings_leave_notify_callback(GtkEventControllerMotion *controller,
+                                                 dt_lib_module_t *self)
 {
   dt_lib_ratings_t *d = self->data;
   d->pointery = d->pointerx = 0;
   gtk_widget_queue_draw(self->widget);
-  return TRUE;
 }
 
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
@@ -25,12 +26,12 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+#include "iop/equalizer_eaw.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "iop/equalizer_eaw.h"
 
 // #define DT_GUI_EQUALIZER_INSET 5
 // #define DT_GUI_CURVE_INFL .3f
@@ -242,4 +243,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1017,7 +1017,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker),
                               _("pick border color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("border color"),
-                       g->border_picker, &dt_action_def_toggle);
+                       g->border_picker, &dt_action_def_color_picker);
   dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(label), g->colorpick, g->border_picker));
 
   label = dtgtk_reset_label_new(_("frame line color"), self, &p->frame_color, 3 * sizeof(float));
@@ -1031,7 +1031,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker),
                               _("pick frame line color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("frame line color"),
-                       g->frame_picker, &dt_action_def_toggle);
+                       g->frame_picker, &dt_action_def_color_picker);
   dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(label), g->frame_colorpick, g->frame_picker));
 }
 

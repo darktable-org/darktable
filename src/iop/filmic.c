@@ -39,7 +39,6 @@
 #include "develop/imageop.h"
 #include "gui/draw.h"
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

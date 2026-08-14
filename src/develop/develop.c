@@ -282,7 +282,10 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->gui_attached || dev->full.pipe->processing) return;
+  if(!dev->gui_attached) return;
+  if(dt_pipe_processing(dev->full.pipe))
+    dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
 }
@@ -297,6 +300,8 @@ void dt_dev_process_preview(dt_develop_t *dev)
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
   if(!dev->gui_attached && !dev->preview2.widget) return;
+  if(dt_pipe_processing(dev->preview2.pipe))
+    dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
@@ -622,7 +627,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 
   dt_pthread_mutex_lock(&pipe->mutex);
 
-  if(dev->gui_leaving || (dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO))
+  if(dev->gui_leaving || dt_pipe_started(pipe))
   {
     dt_pthread_mutex_unlock(&pipe->mutex);
     return;
@@ -757,7 +762,30 @@ restart:
         dt_dev_zoom_move() possibly leaves port->pipe->changed DT_DEV_PIPE_ZOOMED;
         and might redraw the widgets as a side effect
     */
-    if(port_loading || require_zoom_test)
+    if(port->restore_zoom && port_loading && pipe->processed_width && pipe->processed_height)
+    {
+      /* An image switch just happened. port->zoom_x/zoom_y are in input pixel
+         coordinates of the *previous* image, so reprojecting them through this
+         image's geometry modules would drop the viewport at an arbitrary spot
+         (typically an edge or corner once clamped). Re-apply the normalised
+         centre snapshotted before the switch instead.
+      */
+      const float rx = port->restore_zoom_x;
+      const float ry = port->restore_zoom_y;
+      port->restore_zoom = FALSE;
+      dt_print_pipe(DT_DEBUG_PIPE,
+                    "dt_dev_zoom_move",
+                    pipe,
+                    NULL,
+                    DT_DEVICE_NONE,
+                    NULL,
+                    NULL,
+                    "restore centre %.4f/%.4f",
+                    rx,
+                    ry);
+      dt_dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, rx, ry, TRUE);
+    }
+    else if(port_loading || require_zoom_test)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
         port_loading ? "port_loading " : "",
@@ -787,7 +815,7 @@ restart:
 
   const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
   const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-  const gboolean stopped = early || shutdown != DT_DEV_PIXELPIPE_STOP_NO;
+  const gboolean stopped = early || shutdown > DT_DEV_PIXELPIPE_PROCESSING;
 
   const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
   dt_print_pipe(DT_DEBUG_PIPE, stopped ? "pixelpipe_process stopped" : "pixelpipe_process good",
@@ -799,7 +827,8 @@ restart:
                 pipe->input_changed ? "pipe_input_changed " : "",
                 pipe->changed & DT_DEV_PIPE_ZOOMED ? "zoomed " : "",
                 pipe->changed & DT_DEV_PIPE_SYNCH ? "synch" : "");
-  restarts++;
+  if(shutdown <= DT_DEV_PIXELPIPE_PROCESSING)
+    restarts++;
 
   if(stopped)
   {
@@ -819,10 +848,8 @@ restart:
       return;
     }
 
-    /* pixelpipe stopped due to changed pipe nodes, HQ mode changes or module aborts
-        while processing the pipe. All require restarts as pipe status is not valid yet.
-    */
-    if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
+    // pixelpipe stopped due to a shutdown request, all modes require a pipe restart as pipe status is not valid.
+    if(shutdown > DT_DEV_PIXELPIPE_PROCESSING)
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
       goto restart;
@@ -870,6 +897,8 @@ restart:
   dt_mipmap_cache_release(&buf);
   // if a widget needs to be redrawn there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_busy_leave();
+  if(dt_pipe_is_full(pipe))
+    dev->history_last_module = NULL;
   dt_pthread_mutex_unlock(&pipe->mutex);
 
   const gboolean signalling = dev->gui_attached && !dev->gui_leaving && signal != -1;
@@ -1051,7 +1080,7 @@ void dt_dev_configure(dt_dev_viewport_t *port)
     port->width = wd;
     port->height = ht;
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, TRUE, 0.0f, 0.0f, TRUE);
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 1, 0.0f, 0.0f, TRUE);
   }
 }
 
@@ -1624,8 +1653,13 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
   {
     dt_iop_module_t *module = modules->data;
     memcpy(module->params, module->default_params, module->params_size);
-    dt_iop_commit_blend_params(module, module->default_blendop_params);
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     module->enabled = module->default_enabled;
+
+    // reset the instance name too: per-position state restored from
+    // history below, else a later rename would leak into earlier positions
+    module->multi_name_hand_edited = FALSE;
+    g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
 
     if(module->multi_priority == 0)
       module->iop_order =
@@ -1646,7 +1680,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
       memcpy(hist->module->params, hist->module->default_params, hist->module->params_size);
     else
       memcpy(hist->module->params, hist->params, hist->module->params_size);
-    dt_iop_commit_blend_params(hist->module, hist->blend_params);
+    dt_iop_commit_blend_params(hist->module, hist->blend_params, NULL);
 
     hist->module->iop_order = hist->iop_order;
     hist->module->enabled = hist->enabled;
@@ -3091,10 +3125,19 @@ _dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x
     if(!gpt)
       continue;
 
-    // points[], border[] and source[] are interleaved (x, y) pairs
-    const float *const arrays[3] = { gpt->points, gpt->border, gpt->source };
-    const int counts[3] = { gpt->points_count, gpt->border_count, gpt->source_count };
-    for(int a = 0; a < 3; a++)
+    // points[] (shape outline) and source[] (clone source) are interleaved
+    // (x, y) pairs. The feather border[] is deliberately excluded: it is not a
+    // drag target, so it shouldn't enlarge the pannable region, and its
+    // degenerate segments are flagged with DT_INVALID_COORDINATE (== -FLT_MAX)
+    // sentinels. Folding those (or any other stray non-finite / extreme value)
+    // into the box would blow it up to ~1e35 and let the viewport pan away from
+    // the image without bound. Reject anything outside a generous window around
+    // the image (32x its size — far more than any reachable handle) so a single
+    // bad coordinate can't defeat the clamp.
+    const float *const arrays[2] = { gpt->points, gpt->source };
+    const int counts[2] = { gpt->points_count, gpt->source_count };
+    const float limx = 32.0f * wd, limy = 32.0f * ht;
+    for(int a = 0; a < 2; a++)
     {
       const float *p = arrays[a];
       if(!p)
@@ -3103,6 +3146,8 @@ _dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x
       {
         const float px = p[i * 2];
         const float py = p[i * 2 + 1];
+        if(!isfinite(px) || !isfinite(py) || px <= -limx || px >= limx || py <= -limy || py >= limy)
+          continue;
         minx = fminf(minx, px);
         maxx = fmaxf(maxx, px);
         miny = fminf(miny, py);
@@ -3381,14 +3426,19 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     return;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
-    "dt_dev_zoom_move sets DT_DEV_PIPE_ZOOMED", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
-      port->widget ? "redraw_widget " : "",
-      port == &dev->full ? "navigation_redraw" : "");
+    "dt_dev_zoom_move", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "set DT_DEV_PIPE_ZOOMED%s%s",
+      port->widget ? ", redraw_widget" : "",
+      port == &dev->full ? ", navigation_redraw" : "");
   // Mark pipe as needing zoom update
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
 
   if(port->widget)
+  {
+    if(dt_pipe_processing(port->pipe) && port == &dev->full)
+      dt_dev_pixelpipe_set_shutdown(port->pipe, DT_DEV_PIXELPIPE_STOP_ZOOM);
     dt_control_queue_redraw_widget(port->widget);
+  }
   if(port == &dev->full)
     dt_control_navigation_redraw();
 }
@@ -3456,13 +3506,45 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 
   if(x && y && port->pipe)
   {
-    float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop, port->pipe,
-                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
-    *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
-    *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
+    // A pipe that hasn't produced dimensions yet (never processed, or in the
+    // middle of an image switch) would turn the normalisation below into a
+    // division by zero and send the viewport off to infinity.
+    if(port->pipe->processed_width && port->pipe->processed_height)
+    {
+      float pts[2] = { port->zoom_x, port->zoom_y };
+      dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop,
+                                    port->pipe,
+                                    0.0f,
+                                    DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
+                                    pts,
+                                    1);
+      *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
+      *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
+    }
+    else
+      *x = *y = 0.0f;
   }
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+void dt_dev_snapshot_zoom_pos(dt_dev_viewport_t *port)
+{
+  if(!port || !port->pipe)
+    return;
+
+  // Nothing worth carrying over when the image is shown at fit: the centre is
+  // forced home anyway, and a stale snapshot would fight the next fit.
+  if(port->zoom == DT_ZOOM_FIT || !port->pipe->processed_width || !port->pipe->processed_height)
+  {
+    port->restore_zoom = FALSE;
+    return;
+  }
+
+  float zx = 0.0f, zy = 0.0f;
+  dt_dev_get_viewport_params(port, NULL, NULL, &zx, &zy);
+  port->restore_zoom_x = CLAMP(zx, -0.5f, 0.5f);
+  port->restore_zoom_y = CLAMP(zy, -0.5f, 0.5f);
+  port->restore_zoom = TRUE;
 }
 
 gboolean dt_dev_is_current_image(const dt_develop_t *dev,
@@ -3916,7 +3998,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO)
+    if(dt_atomic_get_int(&pipe->shutdown) > DT_DEV_PIXELPIPE_PROCESSING)
       return TRUE;  // stop waiting if pipe shuts down
 
     dt_hash_t probehash;

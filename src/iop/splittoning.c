@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
@@ -32,7 +33,7 @@
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>

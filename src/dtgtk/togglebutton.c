@@ -142,6 +142,7 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   dt_gui_add_class(GTK_WIDGET(button), "dt_module_btn");
   gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(gtk_widget_queue_draw), NULL);
+  dtgtk_button_connect_stale_hover_cleanup(GTK_WIDGET(button));
   return (GtkWidget *)button;
 }
 

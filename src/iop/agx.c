@@ -1427,7 +1427,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
 
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, g->allocation.width,
                                                        g->allocation.height);
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   cairo_t *cr = cairo_create(cst);
   PangoLayout *layout = pango_cairo_create_layout(cr);
 
@@ -2071,7 +2071,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   GtkWidget *auto_tune_label = dt_ui_label_new(_("auto tune levels"));
   g->range_exposure_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, NULL);
   gtk_widget_set_tooltip_text(g->range_exposure_picker, _("set black and white relative exposure using the selected area"));
-  dt_action_define_iop(real_self, N_("exposure range"), N_("auto tune levels"), g->range_exposure_picker, &dt_action_def_toggle);
+  dt_action_define_iop(real_self, N_("exposure range"), N_("auto tune levels"), g->range_exposure_picker, &dt_action_def_color_picker);
   dt_gui_box_add(auto_tune_box, dt_gui_expand(auto_tune_label), g->range_exposure_picker);
   dt_gui_box_add(g->range_exposure_picker_group, auto_tune_box);
 

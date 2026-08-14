@@ -98,7 +98,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget,
   return FALSE;
 }
 
-// create a 'virgin' duplicate of imgid, without any development
+// create a 'virgin' duplicate of imgid, discarding the source history stack
 static void _lib_duplicate_original(const dt_imgid_t imgid)
 {
   const dt_imgid_t newid = dt_image_duplicate(imgid);
@@ -176,40 +176,42 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
                              g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
 
-static gboolean _lib_duplicate_thumb_press_callback(GtkWidget *widget,
-                                                    GdkEventButton *event,
-                                                    dt_lib_module_t *self)
+static void _lib_duplicate_thumb_press_callback(GtkGestureSingle *gesture,
+                                                gint n_press,
+                                                gdouble x,
+                                                gdouble y,
+                                                dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = self->data;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
   const dt_imgid_t imgid = thumb->imgid;
 
-  if(dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    if(dt_gdk_event_get_type(event) == GDK_BUTTON_PRESS)
+    if(n_press == 1)
     {
       d->imgid = imgid;
       dt_control_queue_redraw_center();
     }
-    else if(dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS)
+    else if(n_press >= 2)
     {
       // let's switch to the new image
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     }
   }
-  return TRUE;
 }
 
-static gboolean _lib_duplicate_thumb_release_callback(GtkWidget *widget,
-                                                      GdkEventButton *event,
-                                                      dt_lib_module_t *self)
+static void _lib_duplicate_thumb_release_callback(GtkGestureSingle *gesture,
+                                                  gint n_press,
+                                                  gdouble x,
+                                                  gdouble y,
+                                                  dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = self->data;
 
   d->imgid = NO_IMGID;
   dt_control_queue_redraw_center();
-
-  return TRUE;
 }
 
 void view_leave(struct dt_lib_module_t *self,
@@ -336,10 +338,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
     if(imgid != dev->image_storage.id)
     {
-      g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event",
-                       G_CALLBACK(_lib_duplicate_thumb_press_callback), self);
-      g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event",
-                       G_CALLBACK(_lib_duplicate_thumb_release_callback), self);
+      dt_gui_connect_click(thumb->w_main, _lib_duplicate_thumb_press_callback,
+                            _lib_duplicate_thumb_release_callback, self);
     }
 
     gchar chl[256];
@@ -367,11 +367,11 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(
       G_OBJECT(bt_dup), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
 
-    // create a 'virgin' duplicate of this image, without any development
+    // create a 'virgin' duplicate of this image, discarding the source history stack
     GtkWidget *bt_orig = dtgtk_button_new(dtgtk_cairo_paint_plus, 0, NULL);
     dt_gui_add_class(bt_orig, "dt_duplicate_original");
     gtk_widget_set_tooltip_text(
-      bt_orig, _("create a 'virgin' duplicate of this image without any development"));
+      bt_orig, _("create a 'virgin' duplicate, discarding the source history stack"));
     g_object_set_data(G_OBJECT(bt_orig), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(
       G_OBJECT(bt_orig), "clicked", G_CALLBACK(_lib_duplicate_original_clicked_callback), self);

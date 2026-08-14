@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -1176,7 +1175,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   DT_LEAVE_GUI_UPDATE();
 
-  if(mode == DT_SPOT_MODE_CORRECT)
+  if(mode == DT_SPOT_MODE_CORRECT && dt_iop_color_picker_is_active(g->exposure))
     _auto_set_exposure(self, darktable.develop->full.pipe);
   // else : just record new values and do nothing
 }

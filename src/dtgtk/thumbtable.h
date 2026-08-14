@@ -84,6 +84,7 @@ typedef struct dt_thumbtable_t
 
   gboolean mouse_inside; // is the mouse pointer inside thumbtable widget ?
   gboolean key_inside;   // is the key move pointer inside thumbtable widget ?
+  dt_imgid_t key_pos;    // last image the keyboard navigated to (selection act_on algorithm)
 
   // when performing a drag, we store the list of items to drag here
   // as this can change during the drag and drop (esp. because of the image_over_id)

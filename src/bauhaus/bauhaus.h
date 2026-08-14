@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -195,6 +194,10 @@ const char* dt_bauhaus_widget_get_label(GtkWidget *widget);
 void dt_bauhaus_widget_hide_label(GtkWidget *widget);
 void dt_bauhaus_widget_set_show_extended_label(GtkWidget *widget,
                                                gboolean show);
+// open the value-entry popup of a bauhaus widget, as if it were right-clicked.
+// Used by callers that want the popup without sending the widget a synthetic
+// button press (which a gesture-based widget cannot handle cleanly)
+void dt_bauhaus_widget_show_popup(GtkWidget *widget);
 void dt_bauhaus_widget_set_module(GtkWidget *widget,
                                   dt_action_t *module);
 gpointer dt_bauhaus_widget_get_module(GtkWidget *widget);
@@ -265,20 +268,6 @@ void dt_bauhaus_toggle_set_default(GtkWidget *widget,
 gboolean dt_bauhaus_toggle_get_default(GtkWidget *widget);
 
 // slider:
-GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self);
-GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self,
-                                            float min,
-                                            float max,
-                                            float step,
-                                            float defval,
-                                            int digits);
-GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self,
-                                                         float min,
-                                                         float max,
-                                                         float step,
-                                                         float defval,
-                                                         int digits,
-                                                         int feedback);
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget,
                                          dt_iop_module_t *self,
                                          const float min,
@@ -287,12 +276,14 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget,
                                          const float defval,
                                          const int digits,
                                          const int feedback);
-GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self,
-                                        float min,
-                                        float max,
-                                        float step,
-                                        float defval,
-                                        int digits);
+#define dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, feedback) \
+  dt_bauhaus_slider_from_widget(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL), self, min, max, step, defval, digits, feedback)
+#define dt_bauhaus_slider_new_with_range(self, min, max, step, defval, digits) \
+  dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, 1)
+#define dt_bauhaus_slider_new_action(self, min, max, step, defval, digits) \
+  dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self, min, max, step, defval, digits)
+#define dt_bauhaus_slider_new(self) \
+  dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3)
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *widget,
@@ -449,7 +440,7 @@ void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget);
 
 static inline void set_color(cairo_t *cr, GdkRGBA color)
 {
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
 }
 
 #define DT_IOP_SECTION_FOR_PARAMS_UNWIND(self) \

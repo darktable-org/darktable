@@ -31,7 +31,7 @@
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -651,7 +651,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_gui_box_add(self->widget, g->mode_stack);
 }
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

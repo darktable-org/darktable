@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -94,6 +94,13 @@ typedef enum dt_opencl_scheduling_profile_t
   OPENCL_PROFILE_VERYFAST_GPU
 } dt_opencl_scheduling_profile_t;
 
+typedef enum dt_opencl_tilemode_t
+{
+  DT_OPENCL_NO_TILING,
+  DT_OPENCL_FAST_TILING,
+  DT_OPENCL_TILING,
+} dt_opencl_tilemode_t;
+
 /**
  * Accounting information used for OpenCL events.
  */
@@ -166,26 +173,11 @@ typedef struct dt_opencl_device_t
   // to time
   int micro_nap;
 
-  // During tiling huge amounts of memory need to be transferred
-  // between host and device.  For some OpenCL implementations direct
-  // memory transfers give a drastic performance penalty, this can
-  // often be avoided by using indirect transfers via pinned memory,
-  // other devices have more efficient direct memory transfer
-  // implementations.  We can't predict on solid grounds if a device
-  // belongs to the first or second group, also pinned mem transfer
-  // requires slightly more video ram plus system memory.  If TRUE in
-  // the device-specific conf pinned transfer is enabled
-  gboolean pinned_memory;
-
   // keep track of devices using unified memory so we can adopt
   // runtime code
   gboolean unified_memory;
   // fraction of system memory allowed for a device in percent
   float unified_fraction;
-
-  // flags reporting cl runtime error conditions
-  gboolean pinned_error;
-  gboolean clmem_error;
 
   // in OpenCL processing round width/height of global work groups to
   // a multiple of these values.  reasonable values are powers of
@@ -299,15 +291,6 @@ typedef struct dt_opencl_local_buffer_t
   int sizex;  // initial value and final values after optimization
   int sizey;  // initial value and final values after optimization
 } dt_opencl_local_buffer_t;
-
-/** internally calls dt_clGetDeviceInfo, and takes care of memory
- * allocation afterwards, *param_value will point to memory block of
- * size at least *param_value which needs to be free()'d manually */
-int dt_opencl_get_device_info(dt_opencl_t *cl,
-                              cl_device_id device,
-                              cl_device_info param_name,
-                              void **param_value,
-                              size_t *param_value_size);
 
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl,
@@ -572,22 +555,17 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
                              const gboolean input,
                              const char *pipe);
 
-void dt_opencl_memory_statistics(int devid,
-                                 const cl_mem mem,
-                                 dt_opencl_memory_t action);
-
-/** check if image size fit into limits given by OpenCL runtime */
-gboolean dt_opencl_image_fits_device(const int devid,
-                                     const size_t width,
-                                     const size_t height,
-                                     const uint32_t bpp,
-                                     const float factor,
-                                     const size_t overhead);
+/** check if image size fits into limits given by OpenCL runtime */
+dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
+                                                 const int width,
+                                                 const int height,
+                                                 const int32_t ibpp,
+                                                 const int32_t obpp,
+                                                 const float factor,
+                                                 const size_t overhead,
+                                                 const int overlap);
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
-
-/** get size of allocatable single buffer */
-cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
 /** round size to a multiple of the value given in the device specifig
  * config parameter for opencl_size_roundup */
@@ -615,7 +593,6 @@ cl_int dt_opencl_local_buffer_opt(const int devid,
 /** utility functions handling device specific properties */
 gboolean dt_opencl_avoid_atomics(const int devid);
 void dt_opencl_micro_nap(const int devid);
-gboolean dt_opencl_use_pinned_memory(const int devid);
 gboolean dt_opencl_unified_memory(const int devid);
 unsigned int dt_opencl_tiling_align(const int devid);
 
@@ -724,20 +701,7 @@ static inline void dt_opencl_update_settings(void)
 {
   return ;
 }
-static inline gboolean dt_opencl_image_fits_device(const int devid,
-                                                   const size_t width,
-                                                   const size_t height,
-                                                   const unsigned bpp,
-                                                   const float factor,
-                                                   const size_t overhead)
-{
-  return FALSE;
-}
 static inline size_t dt_opencl_get_device_available(const int devid)
-{
-  return 0;
-}
-static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
   return 0;
 }

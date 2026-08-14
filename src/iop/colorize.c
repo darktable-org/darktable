@@ -30,7 +30,6 @@
 #include "osx/osx.h"
 #endif
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <math.h>

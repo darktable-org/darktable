@@ -1,7 +1,6 @@
-/* -*- Mode: c; c-basic-offset: 2; -*- */
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -27,7 +26,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 

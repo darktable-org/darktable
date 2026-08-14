@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,10 +26,11 @@
 
 #define __STDC_FORMAT_MACROS
 
-#include <assert.h>
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
 
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
@@ -39,8 +40,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 #include "iop/Permutohedral.h"
 
@@ -236,4 +235,3 @@ G_END_DECLS
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
