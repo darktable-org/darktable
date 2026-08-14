@@ -1094,12 +1094,9 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
    * their pressed state, but it is not a click (issue #21813).  Only a
    * real GDK button release may toggle the culling selection. */
   GdkEvent *release_event = gtk_get_current_event();
-  if(!release_event || release_event->type != GDK_BUTTON_RELEASE)
-  {
-    gdk_event_free(release_event);
-    return;
-  }
+  const gboolean cancel = !release_event || release_event->type != GDK_BUTTON_RELEASE;
   gdk_event_free(release_event);
+  if(cancel) return;
 
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
   // if the act_on algorithm need a specific culling "selection",
