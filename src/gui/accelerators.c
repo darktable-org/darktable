@@ -291,6 +291,12 @@ static float _action_process_toggle(gpointer target,
         case DT_ACTION_EFFECT_ON_CTRL:
         case DT_ACTION_EFFECT_TOGGLE_RIGHT:
         case DT_ACTION_EFFECT_ON_RIGHT:
+          /* gtk_widget_activate() only acts on a realized widget, so a
+           * toggle in a module that has never been expanded (never realized)
+           * would be a silent no-op.  Realize it first, as the pre-gtk4-prep
+           * code did before the synthetic press+release was dropped. */
+          if(!gtk_widget_get_realized(GTK_WIDGET(target)))
+            gtk_widget_realize(GTK_WIDGET(target));
           gtk_widget_activate(GTK_WIDGET(target));
           break;
         default:
@@ -339,9 +345,18 @@ static float _action_process_button(gpointer target,
        * stored-gesture branch above), so on a plain button a right-click
        * shortcut has nothing left to reach and stays a no-op.
        * gtk_widget_activate() is the GTK4-compatible equivalent of the
-       * primary press+release. */
+       * primary press+release.  However it only schedules a click when the
+       * button is realized, so a button in a module that has never been
+       * expanded (and thus never realized) would be a silent no-op (see
+       * #21837: Ctrl+A on a collapsed selection module).  Realize it first,
+       * as the pre-gtk4-prep code did before the synthetic press+release
+       * was dropped. */
       if(effect == DT_ACTION_EFFECT_ACTIVATE || effect == DT_ACTION_EFFECT_ACTIVATE_CTRL)
+      {
+        if(!gtk_widget_get_realized(GTK_WIDGET(target)))
+          gtk_widget_realize(GTK_WIDGET(target));
         gtk_widget_activate(GTK_WIDGET(target));
+      }
     }
   }
 
