@@ -2375,12 +2375,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
         && !_avoid_cl_module(piece);
 
-    const uint32_t m_bpp = MAX(in_bpp, bpp);
-    const size_t m_width = MAX(roi_in.width, roi_out->width);
-    const size_t m_height = MAX(roi_in.height, roi_out->height);
-
     const dt_opencl_tilemode_t fitter =
-      dt_opencl_image_fits_device(pipe->devid, m_width, m_height,
+      dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height,
                                   in_bpp, bpp, tiling.factor_cl, tiling.overhead, tiling.overlap);
 
     const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING;
@@ -2501,11 +2497,12 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
       dt_print_pipe(DT_DEBUG_PIPE,
           bcaching ? "from blend cache" : no_tiling ? "process" : fast_tiling ? "process fast tiled" : "process tiled",
-                        pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s %zuMB",
+                        pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s %zuMB avail=%zuMB",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
-                        (size_t)(tiling.factor_cl * (m_width * m_height * m_bpp) + tiling.overhead) / DT_MEGA);
+                        (size_t)(sizeof(float) * 4 * roi_in.width * roi_in.height * tiling.factor_cl + tiling.overhead) / DT_MEGA,
+                        (size_t)dt_opencl_get_device_available(pipe->devid) / DT_MEGA);
 
       if(fits_on_device)
       {

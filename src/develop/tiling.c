@@ -1783,8 +1783,8 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   const int64_t allmem = dt_opencl_get_device_available(devid);
   const int64_t avail = allmem - (int64_t)(in_bpp + bpp)*width*height - overhead;
 
-  const int per_row = (in_bpp + bpp) * width;
-  const int tile_height = MIN(_align_up((int)(avail / per_row), aligner), height);
+  const int64_t per_line = sizeof(float) * 4 * width * tiling->factor;
+  const int tile_height = MIN(_align_up((int)(avail / per_line), aligner), height);
   const int valid_rows = tile_height - 2*border;
   if(valid_rows < 1) // should never happen - just make sure, see dt_opencl_image_fits_device()
     return DT_OPENCL_PROCESS_CL;
@@ -1792,7 +1792,8 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   const int num_tiles = (height + valid_rows - 1) / valid_rows;
   dt_print_pipe(DT_DEBUG_TILING,
     "  fast tiling", pipe, module, devid, roi, NULL,
-    "tiles=%d validrows=%d border=%d", num_tiles, valid_rows, border);
+    "tavail=%dMB tiles=%d validrows=%d border=%d perline=%dKB",
+    (int)(avail/DT_MEGA), num_tiles, valid_rows, border, (int)(per_line / 1024));
 
   cl_int err = CL_SUCCESS;
   cl_mem t_in = dt_opencl_alloc_device(devid, width, tile_height, in_bpp);
