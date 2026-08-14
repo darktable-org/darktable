@@ -122,6 +122,7 @@ static dt_ai_model_t *_model_copy(const dt_ai_model_t *src)
   copy->spatial_dim_w = g_strdup(src->spatial_dim_w);
   copy->is_default = src->is_default;
   copy->from_catalog = src->from_catalog;
+  copy->from_file = src->from_file;
   copy->enabled = src->enabled;
   copy->status = src->status;
   copy->download_progress = src->download_progress;
@@ -670,10 +671,45 @@ gboolean dt_ai_models_load_registry(void)
   return TRUE;
 }
 
-// where a model's publisher is recorded, alongside its /enabled sibling
+// where a model's origin is recorded, alongside its /enabled sibling
 static char *_origin_conf_key(const char *model_id)
 {
   return g_strdup_printf("%s%s/repository", CONF_MODEL_ENABLED_PREFIX, model_id);
+}
+
+// validate that a model_id is a plain directory name with no path separators
+// or ".." components that could escape the models directory
+static gboolean _valid_model_id(const char *model_id);
+
+// the key holds either an "owner/repo" or this word. a repository always
+// contains a slash, so the two can never be read for one another
+#define DT_AI_ORIGIN_FILE "file"
+
+// restore what was recorded when the model was installed. caller must hold
+// registry->lock, or own `model` outright
+static void _apply_origin(dt_ai_model_t *model)
+{
+  if(!model || model->repository || model->from_file
+     || !_valid_model_id(model->id))
+    return;
+
+  char *key = _origin_conf_key(model->id);
+  char *origin = dt_conf_key_exists(key) ? dt_conf_get_string(key) : NULL;
+  g_free(key);
+
+  if(!origin || !*origin)
+  {
+    g_free(origin);
+    return;
+  }
+
+  if(!g_strcmp0(origin, DT_AI_ORIGIN_FILE))
+  {
+    model->from_file = TRUE;
+    g_free(origin);
+  }
+  else
+    model->repository = origin;  // takes ownership
 }
 
 // a recorded publisher outlives the download support that fetched it, so
@@ -697,9 +733,6 @@ gboolean dt_ai_models_is_official_repository(const char *repository)
   return repository && official && !g_strcmp0(repository, official);
 }
 
-// validate that a model_id is a plain directory name with no path separators
-// or ".." components that could escape the models directory
-static gboolean _valid_model_id(const char *model_id);
 static dt_ai_model_t *_find_model_unlocked(dt_ai_registry_t *registry,
                                             const char *model_id);
 
@@ -875,20 +908,9 @@ void dt_ai_models_refresh_status(void)
     g_free(model_dir);
   }
 
-  // recover the publisher recorded at install time
+  // recover the origin recorded at install time
   for(GList *l3 = registry->models; l3; l3 = g_list_next(l3))
-  {
-    dt_ai_model_t *model = (dt_ai_model_t *)l3->data;
-    if(model->repository || !_valid_model_id(model->id)) continue;
-    char *key = _origin_conf_key(model->id);
-    if(dt_conf_key_exists(key))
-    {
-      char *origin = dt_conf_get_string(key);
-      if(origin && *origin) model->repository = origin;
-      else g_free(origin);
-    }
-    g_free(key);
-  }
+    _apply_origin((dt_ai_model_t *)l3->data);
 
   // pass 2: discover locally-installed models not in registry
   if(registry->models_dir)
@@ -916,14 +938,7 @@ void dt_ai_models_refresh_status(void)
           if(model)
           {
             model->status = DT_AI_MODEL_DOWNLOADED;
-            char *key = _origin_conf_key(entry_name);
-            if(dt_conf_key_exists(key))
-            {
-              char *origin = dt_conf_get_string(key);
-              if(origin && *origin) model->repository = origin;
-              else g_free(origin);
-            }
-            g_free(key);
+            _apply_origin(model);
             registry->models = g_list_append(registry->models, model);
             dt_print(DT_DEBUG_AI,
                      "[ai_models] discovered local model: %s (%s)",
@@ -1682,6 +1697,13 @@ char *dt_ai_models_install_local(const char *filepath)
     return g_strdup(_("failed to extract model archive"));
   }
 
+  // a file install is all we will ever know about where this came from:
+  // there is no repository to check back with and no digest to verify
+  // against. record it before the rescan, which reads the key back
+  char *origin_key = _origin_conf_key(installed_id);
+  dt_conf_set_string(origin_key, DT_AI_ORIGIN_FILE);
+  g_free(origin_key);
+
   // rescan models directory to pick up newly installed model
   dt_ai_models_refresh_status();
 
@@ -1763,6 +1785,9 @@ char *dt_ai_models_download_sync(const char *model_id,
   // copy fields we need outside the lock (repository can be replaced by reload)
   char *asset = g_strdup(model->github_asset);
   char *checksum_copy = g_strdup(model->checksum);
+  // the fallback below hides whether the model names a publisher of its
+  // own, which is what gets recorded once the download lands
+  const gboolean has_own_repository = model->repository != NULL;
   char *repository = g_strdup(model->repository ? model->repository
                                                 : registry->repository);
   g_mutex_unlock(&registry->lock);
@@ -2068,6 +2093,10 @@ retry_done:
   // compile, not a stale artifact from the previous model file
   dt_ai_backend_cache_invalidate(model_id);
 
+  // a download supersedes whatever was recorded before, so an id that was
+  // once installed from a file stops claiming to be one
+  dt_ai_models_record_origin(model_id, has_own_repository ? repository : NULL);
+
   // mark success
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
@@ -2075,6 +2104,7 @@ retry_done:
   {
     m->status = DT_AI_MODEL_DOWNLOADED;
     m->download_progress = 1.0;
+    m->from_file = FALSE;
   }
   g_mutex_unlock(&registry->lock);
 
