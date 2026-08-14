@@ -239,11 +239,18 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
     }
 
     // only a non-official origin is worth naming; the column is hidden
-    // entirely when nothing here has one
-    const gboolean third_party
-      = model->repository
-        && !dt_ai_models_is_official_repository(model->repository);
-    if(third_party) any_third_party = TRUE;
+    // entirely when nothing here has one. a model with no origin at all
+    // was copied into the models directory by hand, which is worth saying
+    // rather than leaving it to look official
+    const char *source = "";
+    if(model->repository
+       && !dt_ai_models_is_official_repository(model->repository))
+      source = model->repository;
+    else if(model->from_file)
+      source = _("imported from file");
+    else if(!model->from_catalog && !model->repository)
+      source = _("local");
+    if(*source) any_third_party = TRUE;
 
     GtkTreeIter iter;
     gtk_list_store_append(data->model_store, &iter);
@@ -263,7 +270,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       COL_STATUS,
       _status_to_string(model->status),
       COL_REPOSITORY,
-      third_party ? model->repository : "",
+      source,
       COL_DEFAULT,
       model->is_default ? _("yes") : _("no"),
       COL_VERSION,
@@ -2495,7 +2502,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   // repository column, shown only when something not from the official
   // repository is installed — otherwise it would be empty for everyone
   data->repo_col = gtk_tree_view_column_new_with_attributes(
-    _("repository"),
+    _("source"),
     text_renderer,
     "text",
     COL_REPOSITORY,
