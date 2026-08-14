@@ -321,6 +321,7 @@ static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_ba
 {
   // update the progress bar
   if(!dt_control_running()) return;
+  dt_print(DT_DEBUG_ALWAYS, "[21829] _lib_backgroundjobs_message_updated `%s'", message);
 
   _update_label_gui_thread_t *params = malloc(sizeof(_update_label_gui_thread_t));
   if(!params) return;

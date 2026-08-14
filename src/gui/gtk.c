@@ -2371,6 +2371,7 @@ void dt_ui_notify_user()
   if(darktable.gui
      && !gtk_window_is_active(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui))))
   {
+    dt_print(DT_DEBUG_ALWAYS, "[21829] dt_ui_notify_user setting urgency hint (window inactive)");
     gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), TRUE);
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
@@ -5598,6 +5599,7 @@ void dt_gui_cursor_set_busy()
     {
       GtkWidget *progress_widget = darktable.control->progress_system.proxy.module->widget;
       gtk_widget_realize(progress_widget);
+      dt_print(DT_DEBUG_ALWAYS, "[21829] dt_gui_cursor_set_busy gtk_grab_add on progress widget");
       gtk_grab_add(progress_widget);
     }
   }
