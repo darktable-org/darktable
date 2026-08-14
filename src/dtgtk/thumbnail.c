@@ -2425,12 +2425,15 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
      || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     _thumb_update_extended_infos_line(thumb);
 
-  // we read all other infos
+  // Always refresh the rating (and its greyed/rejected CSS class): when a
+  // thumbnail widget is reused for a different image while panning the
+  // zoomable lighttable, skipping this leaves the previous image's reject
+  // class in place and unrelated images look greyed out.  _image_get_infos()
+  // is safe when overlays are off -- it refreshes the rating and returns
+  // early -- only the on-screen overlay icons are gated on the overlay mode.
+  _image_get_infos(thumb);
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
-  {
-    _image_get_infos(thumb);
     _thumb_update_icons(thumb);
-  }
 
   _thumb_write_extension(thumb);
 
