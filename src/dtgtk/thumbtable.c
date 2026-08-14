@@ -1642,12 +1642,9 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
    * select/toggle, exactly like the pre-gesture button-release-event
    * handler. */
   GdkEvent *release_event = gtk_get_current_event();
-  if(!release_event || release_event->type != GDK_BUTTON_RELEASE)
-  {
-    gdk_event_free(release_event);
-    return;
-  }
+  const gboolean cancel = !release_event || release_event->type != GDK_BUTTON_RELEASE;
   gdk_event_free(release_event);
+  if(cancel) return;
 
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
