@@ -38,11 +38,12 @@ void dt_control_crawler_show_image_list(GList *images);
 // that startup does not have to wait for it
 void dt_control_crawler_start_background(void);
 
-// move a film roll to the head of the background crawler's queue.  called
-// when a film roll is opened so that the images the user is about to look
-// at are examined next.  does not block and does nothing if that film roll
-// has already been examined in this session
-void dt_control_crawler_prioritize_filmroll(const dt_filmid_t filmid);
+// examine a film roll now, waiting for it to finish, so that its images
+// are never shown or edited before their sidecar files have been checked.
+// called when a film roll is opened.  returns immediately once that film
+// roll has been examined in this session, which after the initial crawl
+// is the usual case
+void dt_control_crawler_ensure_filmroll(const dt_filmid_t filmid);
 
 // ask the background crawler to stop, optionally waiting for it to do so
 void dt_control_crawler_stop(const gboolean wait);
