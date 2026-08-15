@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/database.h"
 #include "common/debug.h"
@@ -110,194 +111,788 @@ static void _set_modification_time(char *filename,
 #define FAST_UPDATE 0.2
 #define SLOW_UPDATE 1.0
 
-GList *dt_control_crawler_run(void)
-{
-  sqlite3_stmt *stmt, *inner_stmt;
-  GList *result = NULL;
-  const gboolean look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
+// number of concurrent workers used to examine the filesystem.  the
+// crawl is dominated by filesystem latency rather than cpu work --
+// overwhelmingly so for libraries stored on a network share -- so we
+// deliberately oversubscribe instead of scaling with the core count.
+#define DEFAULT_CRAWLER_THREADS 16
+#define MAX_CRAWLER_THREADS 64
 
-  int total_images = 1;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM main.images", -1, &stmt, 0);
-  // clang-format on
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+// reported back to the caller while a scan is in progress.  the splash
+// screen uses this during startup, the background job uses it to drive
+// a progress bar in the gui.
+typedef void (*dt_crawler_progress_cb)(const double fraction,
+                                       const double elapsed,
+                                       void *data);
+
+// one image to be examined.  everything up to and including `flags' is
+// filled in by the collecting pass, the remaining fields are written by
+// the worker threads -- each worker touches only its own item, so no
+// locking is required.
+typedef struct dt_crawler_item_t
+{
+  dt_imgid_t id;
+  time_t timestamp_db;
+  int version;
+  int flags;
+  char *image_path;
+
+  int new_flags;
+  char *xmp_path;               // only set when xmp_newer is TRUE
+  time_t timestamp_xmp;
+  gboolean missing;
+  gboolean xmp_newer;
+} dt_crawler_item_t;
+
+typedef struct dt_crawler_scan_t
+{
+  dt_crawler_item_t *items;
+  int num_items;
+  gboolean look_for_xmp;
+  gint next;                    // atomic: next index to hand out
+  gint completed;               // atomic: items finished, drives progress
+  const gint *abort;            // optional, checked atomically by the workers
+} dt_crawler_scan_t;
+
+static inline gboolean _crawler_aborted(const dt_crawler_scan_t *scan)
+{
+  return scan->abort && g_atomic_int_get(scan->abort);
+}
+
+// examine a single image on disk.  this performs no database access and
+// no gui access whatsoever so that it is safe to run from a worker
+// thread.  the early returns mirror the `continue' statements of the
+// original serial implementation -- in particular an image whose xmp is
+// absent deliberately skips the .txt/.wav probe below.
+static void _crawler_examine(dt_crawler_item_t *item,
+                             const gboolean look_for_xmp)
+{
+  // if the image is missing we ignore it.
+  if(!g_file_test(item->image_path, G_FILE_TEST_EXISTS))
   {
-    total_images = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
+    item->missing = TRUE;
+    return;
   }
 
-  // clang-format off
-  sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "SELECT i.id, write_timestamp, version,"
-                     "       folder || '" G_DIR_SEPARATOR_S "' || filename, flags"
-                     " FROM main.images i, main.film_rolls f"
-                     " ON i.film_id = f.id"
-                     " ORDER BY f.id, filename",
-                     -1, &stmt, NULL);
-  sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
-                     &inner_stmt, NULL);
-  // clang-format on
+  // no need to look for xmp files if none get written anyway.
+  if(look_for_xmp)
+  {
+    // construct the xmp filename for this image
+    gchar xmp_path[PATH_MAX] = { 0 };
+    g_strlcpy(xmp_path, item->image_path, sizeof(xmp_path));
+    dt_image_path_append_version_no_db(item->version, xmp_path, sizeof(xmp_path));
+    size_t len = strlen(xmp_path);
+    if(len + 4 >= PATH_MAX) return;
+    xmp_path[len++] = '.';
+    xmp_path[len++] = 'x';
+    xmp_path[len++] = 'm';
+    xmp_path[len++] = 'p';
+    xmp_path[len] = '\0';
 
-  // let's wrap this into a transaction, it might make it a little faster.
-  dt_database_start_transaction(darktable.db);
+    // on Windows the encoding might not be UTF8
+    gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
+    int stat_res = -1;
+#ifdef _WIN32
+    // UTF8 paths fail in this context, but converting to UTF16 works
+    struct _stati64 statbuf;
+    if(xmp_path_locale) // in Windows dt_util_normalize_path returns
+                        // NULL if file does not exist
+    {
+      wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
+      stat_res = _wstati64(wfilename, &statbuf);
+      g_free(wfilename);
+    }
+#else
+    struct stat statbuf;
+    stat_res = stat(xmp_path_locale, &statbuf);
+#endif
+    g_free(xmp_path_locale);
+    if(stat_res) return; // TODO: shall we report these?
 
-  int image_count = 0;
+    // step 1: check if the xmp is newer than our db entry
+    if(item->timestamp_db + MAX_TIME_SKEW < statbuf.st_mtime)
+    {
+      item->xmp_newer = TRUE;
+      item->timestamp_xmp = statbuf.st_mtime;
+      item->xmp_path = g_strdup(xmp_path);
+    }
+    // older timestamps are the case for all images after the db
+    // upgrade. better not report these
+  }
+
+  // step 2: check if the image has associated files (.txt, .wav)
+  size_t len = strlen(item->image_path);
+  const char *c = item->image_path + len;
+  while((c > item->image_path) && (*c != '.')) c--;
+  len = c - item->image_path + 1;
+
+  char *extra_path = calloc(len + 3 + 1, sizeof(char));
+  if(extra_path)
+  {
+    g_strlcpy(extra_path, item->image_path, len + 1);
+
+    extra_path[len] = 't';
+    extra_path[len + 1] = 'x';
+    extra_path[len + 2] = 't';
+    gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+    if(!has_txt)
+    {
+      extra_path[len] = 'T';
+      extra_path[len + 1] = 'X';
+      extra_path[len + 2] = 'T';
+      has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+    }
+
+    extra_path[len] = 'w';
+    extra_path[len + 1] = 'a';
+    extra_path[len + 2] = 'v';
+    gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+    if(!has_wav)
+    {
+      extra_path[len] = 'W';
+      extra_path[len + 1] = 'A';
+      extra_path[len + 2] = 'V';
+      has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+    }
+
+    // TODO: decide if we want to remove the flag for images that lost
+    // their extra file. currently we do (the else cases)
+    int new_flags = item->flags;
+    if(has_txt)
+      new_flags |= DT_IMAGE_HAS_TXT;
+    else
+      new_flags &= ~DT_IMAGE_HAS_TXT;
+    if(has_wav)
+      new_flags |= DT_IMAGE_HAS_WAV;
+    else
+      new_flags &= ~DT_IMAGE_HAS_WAV;
+    item->new_flags = new_flags;
+
+    free(extra_path);
+  }
+}
+
+static gpointer _crawler_scan_thread(gpointer arg)
+{
+  dt_crawler_scan_t *scan = (dt_crawler_scan_t *)arg;
+
+  while(!_crawler_aborted(scan))
+  {
+    const int idx = g_atomic_int_add(&scan->next, 1);
+    if(idx >= scan->num_items) break;
+    _crawler_examine(&scan->items[idx], scan->look_for_xmp);
+    g_atomic_int_inc(&scan->completed);
+  }
+  return NULL;
+}
+
+static int _crawler_num_threads(void)
+{
+  int num_threads = dt_conf_get_int("crawler_threads");
+  if(num_threads < 1) num_threads = DEFAULT_CRAWLER_THREADS;
+  return MIN(num_threads, MAX_CRAWLER_THREADS);
+}
+
+// run the filesystem examination over all collected items.  the calling
+// thread stays responsible for progress reporting so that no gui call is
+// ever made from a worker.
+static void _crawler_scan_items(dt_crawler_scan_t *scan,
+                                const dt_crawler_progress_cb progress,
+                                void *progress_data)
+{
+  if(scan->num_items <= 0) return;
+
+  const int num_threads = MIN(_crawler_num_threads(), scan->num_items);
+
   const double start_time = dt_get_wtime();
   // set the "previous update" time to 10ms after a notional previous
   // update to ensure visibility of the first update (which might not
   // appear when done with zero delay) while minimizing the delay
-  double last_time = start_time - (FAST_UPDATE-0.01);
+  double last_time = start_time - (FAST_UPDATE - 0.01);
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  if(num_threads <= 1)
   {
-    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
-    const time_t timestamp = sqlite3_column_int64(stmt, 1);
-    const int version = sqlite3_column_int(stmt, 2);
-    const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
-    int flags = sqlite3_column_int(stmt, 4);
-    ++image_count;
-
-    // update the progress message - five times per second for first
-    // four seconds, then once per second.
-    const double curr_time = dt_get_wtime();
-    if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
+    // serial path, kept so that crawler_threads=1 reproduces the
+    // original behaviour exactly for comparison purposes
+    for(int i = 0; i < scan->num_items && !_crawler_aborted(scan); i++)
     {
-      const double fraction = image_count / (double)total_images;
-      dt_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
-                                            fraction,
-                                            curr_time - start_time);
+      _crawler_examine(&scan->items[i], scan->look_for_xmp);
+      scan->completed = i + 1;
+
+      const double curr_time = dt_get_wtime();
+      if(progress
+         && curr_time >= last_time + ((curr_time - start_time > 4.0)
+                                      ? SLOW_UPDATE : FAST_UPDATE))
+      {
+        progress((i + 1) / (double)scan->num_items,
+                 curr_time - start_time, progress_data);
+        last_time = curr_time;
+      }
+    }
+    return;
+  }
+
+  GThread **threads = calloc(num_threads, sizeof(GThread *));
+  if(!threads)
+  {
+    // out of memory: fall back to examining everything inline
+    for(int i = 0; i < scan->num_items; i++)
+      _crawler_examine(&scan->items[i], scan->look_for_xmp);
+    scan->completed = scan->num_items;
+    return;
+  }
+
+  for(int t = 0; t < num_threads; t++)
+    threads[t] = g_thread_new("crawler", _crawler_scan_thread, scan);
+
+  // drive the progress display while the workers do the waiting
+  while(g_atomic_int_get(&scan->completed) < scan->num_items
+        && !_crawler_aborted(scan))
+  {
+    const double curr_time = dt_get_wtime();
+    if(progress
+       && curr_time >= last_time + ((curr_time - start_time > 4.0)
+                                    ? SLOW_UPDATE : FAST_UPDATE))
+    {
+      progress(g_atomic_int_get(&scan->completed) / (double)scan->num_items,
+               curr_time - start_time, progress_data);
       last_time = curr_time;
     }
+    g_usleep(20000);
+  }
 
-    // if the image is missing we ignore it.
-    if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
+  for(int t = 0; t < num_threads; t++)
+    if(threads[t]) g_thread_join(threads[t]);
+  free(threads);
+}
+
+// collect the images to be examined.  when filmid is a valid film roll
+// only that roll is collected, otherwise the whole library is.
+static dt_crawler_item_t *_crawler_collect_items(const dt_filmid_t filmid,
+                                                 int *num_items)
+{
+  sqlite3_stmt *stmt;
+  int capacity = 1024;
+
+  // reserve based on the number of images we expect to see
+  // clang-format off
+  if(dt_is_valid_filmid(filmid))
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(*) FROM main.images WHERE film_id = ?1",
+                                -1, &stmt, 0);
+  else
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(*) FROM main.images", -1, &stmt, 0);
+  // clang-format on
+  if(dt_is_valid_filmid(filmid)) DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    capacity = MAX(1, sqlite3_column_int(stmt, 0));
+  sqlite3_finalize(stmt);
+
+  dt_crawler_item_t *items = calloc(capacity, sizeof(dt_crawler_item_t));
+  if(!items)
+  {
+    *num_items = 0;
+    return NULL;
+  }
+
+  // clang-format off
+  if(dt_is_valid_filmid(filmid))
+    sqlite3_prepare_v2(dt_database_get(darktable.db),
+                       "SELECT i.id, write_timestamp, version,"
+                       "       folder || '" G_DIR_SEPARATOR_S "' || filename, flags"
+                       " FROM main.images i, main.film_rolls f"
+                       " ON i.film_id = f.id"
+                       " WHERE f.id = ?1"
+                       " ORDER BY f.id, filename",
+                       -1, &stmt, NULL);
+  else
+    sqlite3_prepare_v2(dt_database_get(darktable.db),
+                       "SELECT i.id, write_timestamp, version,"
+                       "       folder || '" G_DIR_SEPARATOR_S "' || filename, flags"
+                       " FROM main.images i, main.film_rolls f"
+                       " ON i.film_id = f.id"
+                       " ORDER BY f.id, filename",
+                       -1, &stmt, NULL);
+  // clang-format on
+  if(dt_is_valid_filmid(filmid)) DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+
+  int count = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(count >= capacity)
     {
-      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing", image_path, id);
+      // the database changed underneath us, grow to fit
+      const int new_capacity = capacity * 2;
+      dt_crawler_item_t *grown =
+        realloc(items, new_capacity * sizeof(dt_crawler_item_t));
+      if(!grown) break;
+      memset(grown + capacity, 0,
+             (new_capacity - capacity) * sizeof(dt_crawler_item_t));
+      items = grown;
+      capacity = new_capacity;
+    }
+
+    dt_crawler_item_t *item = &items[count];
+    item->id = sqlite3_column_int(stmt, 0);
+    item->timestamp_db = sqlite3_column_int64(stmt, 1);
+    item->version = sqlite3_column_int(stmt, 2);
+    item->image_path = g_strdup((const char *)sqlite3_column_text(stmt, 3));
+    item->flags = sqlite3_column_int(stmt, 4);
+    item->new_flags = item->flags;
+    if(!item->image_path) continue;
+    count++;
+  }
+  sqlite3_finalize(stmt);
+
+  *num_items = count;
+  return items;
+}
+
+static void _crawler_free_items(dt_crawler_item_t *items,
+                                const int num_items)
+{
+  for(int i = 0; i < num_items; i++)
+  {
+    g_free(items[i].image_path);
+    g_free(items[i].xmp_path);
+  }
+  free(items);
+}
+
+// apply the results gathered by the workers: write back changed flags
+// and build the list of images whose xmp is newer than the database.
+// this runs single threaded on the caller's thread and walks the items
+// in collection order, so the resulting list is identical to the one
+// produced by the original serial implementation.
+static GList *_crawler_apply_results(dt_crawler_item_t *items,
+                                     const int num_items,
+                                     int *flags_changed)
+{
+  GList *result = NULL;
+  sqlite3_stmt *inner_stmt;
+  int changed = 0;
+
+  sqlite3_prepare_v2(dt_database_get(darktable.db),
+                     "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
+                     &inner_stmt, NULL);
+
+  // let's wrap this into a transaction, it might make it a little faster.
+  dt_database_start_transaction(darktable.db);
+
+  for(int i = 0; i < num_items; i++)
+  {
+    dt_crawler_item_t *item = &items[i];
+
+    if(item->missing)
+    {
+      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing",
+               item->image_path, item->id);
       continue;
     }
 
-    // no need to look for xmp files if none get written anyway.
-    if(look_for_xmp)
+    if(item->xmp_newer)
     {
-      // construct the xmp filename for this image
-      gchar xmp_path[PATH_MAX] = { 0 };
-      g_strlcpy(xmp_path, image_path, sizeof(xmp_path));
-      dt_image_path_append_version_no_db(version, xmp_path, sizeof(xmp_path));
-      size_t len = strlen(xmp_path);
-      if(len + 4 >= PATH_MAX) continue;
-      xmp_path[len++] = '.';
-      xmp_path[len++] = 'x';
-      xmp_path[len++] = 'm';
-      xmp_path[len++] = 'p';
-      xmp_path[len] = '\0';
-
-      // on Windows the encoding might not be UTF8
-      gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
-      int stat_res = -1;
-#ifdef _WIN32
-      // UTF8 paths fail in this context, but converting to UTF16 works
-      struct _stati64 statbuf;
-      if(xmp_path_locale) // in Windows dt_util_normalize_path returns
-                          // NULL if file does not exist
+      dt_control_crawler_result_t *entry = malloc(sizeof(dt_control_crawler_result_t));
+      if(entry)
       {
-        wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
-        stat_res = _wstati64(wfilename, &statbuf);
-        g_free(wfilename);
-      }
- #else
-      struct stat statbuf;
-      stat_res = stat(xmp_path_locale, &statbuf);
-#endif
-      g_free(xmp_path_locale);
-      if(stat_res) continue; // TODO: shall we report these?
+        entry->id = item->id;
+        entry->timestamp_xmp = item->timestamp_xmp;
+        entry->timestamp_db = item->timestamp_db;
+        entry->image_path = g_strdup(item->image_path);
+        entry->xmp_path = g_strdup(item->xmp_path);
 
-      // step 1: check if the xmp is newer than our db entry
-      if(timestamp + MAX_TIME_SKEW < statbuf.st_mtime)
-      {
-        dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
-        item->id = id;
-        item->timestamp_xmp = statbuf.st_mtime;
-        item->timestamp_db = timestamp;
-        item->image_path = g_strdup(image_path);
-        item->xmp_path = g_strdup(xmp_path);
-
-        result = g_list_prepend(result, item);
+        result = g_list_prepend(result, entry);
         dt_print(DT_DEBUG_CONTROL,
-                 "[crawler] `%s' (id: %d) is a newer XMP file", xmp_path, id);
+                 "[crawler] `%s' (id: %d) is a newer XMP file",
+                 item->xmp_path, item->id);
       }
-      // older timestamps are the case for all images after the db
-      // upgrade. better not report these
     }
 
-    // step 2: check if the image has associated files (.txt, .wav)
-    size_t len = strlen(image_path);
-    const char *c = image_path + len;
-    while((c > image_path) && (*c != '.')) c--;
-    len = c - image_path + 1;
-
-    char *extra_path = calloc(len + 3 + 1, sizeof(char));
-    if(extra_path)
+    if(item->new_flags != item->flags)
     {
-      g_strlcpy(extra_path, image_path, len + 1);
-
-      extra_path[len] = 't';
-      extra_path[len + 1] = 'x';
-      extra_path[len + 2] = 't';
-      gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-      if(!has_txt)
-      {
-        extra_path[len] = 'T';
-        extra_path[len + 1] = 'X';
-        extra_path[len + 2] = 'T';
-        has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-      }
-
-      extra_path[len] = 'w';
-      extra_path[len + 1] = 'a';
-      extra_path[len + 2] = 'v';
-      gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-      if(!has_wav)
-      {
-        extra_path[len] = 'W';
-        extra_path[len + 1] = 'A';
-        extra_path[len + 2] = 'V';
-        has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-      }
-
-      // TODO: decide if we want to remove the flag for images that lost
-      // their extra file. currently we do (the else cases)
-      int new_flags = flags;
-      if(has_txt)
-        new_flags |= DT_IMAGE_HAS_TXT;
-      else
-        new_flags &= ~DT_IMAGE_HAS_TXT;
-      if(has_wav)
-        new_flags |= DT_IMAGE_HAS_WAV;
-      else
-        new_flags &= ~DT_IMAGE_HAS_WAV;
-      if(flags != new_flags)
-      {
-        sqlite3_bind_int(inner_stmt, 1, new_flags);
-        sqlite3_bind_int(inner_stmt, 2, id);
-        sqlite3_step(inner_stmt);
-        sqlite3_reset(inner_stmt);
-        sqlite3_clear_bindings(inner_stmt);
-      }
-
-      free(extra_path);
+      sqlite3_bind_int(inner_stmt, 1, item->new_flags);
+      sqlite3_bind_int(inner_stmt, 2, item->id);
+      sqlite3_step(inner_stmt);
+      sqlite3_reset(inner_stmt);
+      sqlite3_clear_bindings(inner_stmt);
+      changed++;
     }
   }
 
   dt_database_release_transaction(darktable.db);
-
-  sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
 
+  if(flags_changed) *flags_changed = changed;
+
   return g_list_reverse(result); // list was built in reverse order, so un-reverse it
+}
+
+static void _splash_progress(const double fraction,
+                             const double elapsed,
+                             void *data)
+{
+  dt_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
+                                        fraction, elapsed);
+}
+
+// examine one film roll (or the whole library when filmid is NO_FILMID)
+// and return the list of images with a newer xmp file on disk.
+static GList *_crawler_run_filmroll(const dt_filmid_t filmid,
+                                    const dt_crawler_progress_cb progress,
+                                    void *progress_data,
+                                    const gint *abort,
+                                    int *flags_changed)
+{
+  dt_crawler_scan_t scan = { 0 };
+  scan.look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
+  scan.abort = abort;
+  scan.items = _crawler_collect_items(filmid, &scan.num_items);
+  if(!scan.items) return NULL;
+
+  const double start_time = dt_get_wtime();
+  _crawler_scan_items(&scan, progress, progress_data);
+  const double scan_time = dt_get_wtime() - start_time;
+
+  GList *result = _crawler_apply_results(scan.items, scan.num_items, flags_changed);
+  _crawler_free_items(scan.items, scan.num_items);
+
+  if(dt_is_valid_filmid(filmid))
+    dt_print(DT_DEBUG_CONTROL,
+             "[crawler] film roll %d: examined %d images in %.2fs,"
+             " %d updated XMP files found",
+             filmid, scan.num_items, scan_time, g_list_length(result));
+  else
+    dt_print(DT_DEBUG_CONTROL,
+             "[crawler] examined %d images in %.2fs using %d threads,"
+             " %d updated XMP files found",
+             scan.num_items, scan_time,
+             MIN(_crawler_num_threads(), MAX(scan.num_items, 1)),
+             g_list_length(result));
+
+  return result;
+}
+
+GList *dt_control_crawler_run(void)
+{
+  return _crawler_run_filmroll(NO_FILMID, _splash_progress, NULL, NULL, NULL);
+}
+
+/******************** background crawling ********************/
+
+static void _crawler_show_image_list(GList *images, const gboolean modal);
+static void _crawler_prioritize_current_collection(void);
+static void _crawler_collection_changed(gpointer instance,
+                                        dt_collection_change_t query_change,
+                                        dt_collection_properties_t changed_property,
+                                        gpointer imgs,
+                                        const int next,
+                                        gpointer user_data);
+
+/* The crawl is split up per film roll so that its order can be changed
+ * while it is running: opening a film roll that has not been examined
+ * yet moves it to the front of the queue rather than making the user
+ * wait for the rolls queued ahead of it.
+ *
+ * The queue is deliberately not persisted across restarts.  An XMP file
+ * can be modified while darktable is not running, so every session has
+ * to examine every image eventually -- the point of this queue is to
+ * take that work off the critical path, not to skip it.
+ */
+typedef struct dt_crawler_bg_t
+{
+  GList *pending;       // film roll ids, head is examined next
+  GList *conflicts;     // dt_control_crawler_result_t *, accumulated
+  int num_rolls;
+  int num_done;
+  gint abort;           // read atomically by the scan workers
+  gboolean running;
+} dt_crawler_bg_t;
+
+// static storage, so the mutex is zero-initialised as glib requires
+static GMutex _crawler_bg_lock;
+static dt_crawler_bg_t _crawler_bg = { 0 };
+
+static void _crawler_free_result_full(gpointer data)
+{
+  dt_control_crawler_result_t *item = (dt_control_crawler_result_t *)data;
+  _free_crawler_result(item);
+  free(item);
+}
+
+// runs on the gui thread once the crawl has stopped, for whatever reason
+static gboolean _crawler_bg_finished(gpointer data)
+{
+  GList *conflicts = (GList *)data;
+
+  // nothing left to reprioritize
+  DT_CONTROL_SIGNAL_DISCONNECT(_crawler_collection_changed, NULL);
+
+  if(conflicts)
+  {
+    const guint count = g_list_length(conflicts);
+    dt_control_log(ngettext("%u updated XMP sidecar file found",
+                            "%u updated XMP sidecar files found", count), count);
+
+    // shown non-modally: the crawl finishes long after startup, so this
+    // must not interrupt whatever the user is currently doing
+    _crawler_show_image_list(conflicts, FALSE);
+  }
+  return G_SOURCE_REMOVE;
+}
+
+static int32_t _crawler_bg_job_run(dt_job_t *job)
+{
+  dt_control_job_set_progress_message(job, "%s",
+                                      _("checking for updated sidecar files"));
+
+  while(TRUE)
+  {
+    g_mutex_lock(&_crawler_bg_lock);
+    if(g_atomic_int_get(&_crawler_bg.abort) || !_crawler_bg.pending)
+    {
+      g_mutex_unlock(&_crawler_bg_lock);
+      break;
+    }
+    const dt_filmid_t filmid = GPOINTER_TO_INT(_crawler_bg.pending->data);
+    _crawler_bg.pending = g_list_delete_link(_crawler_bg.pending,
+                                             _crawler_bg.pending);
+    g_mutex_unlock(&_crawler_bg_lock);
+
+    int flags_changed = 0;
+    GList *found = _crawler_run_filmroll(filmid, NULL, NULL,
+                                         &_crawler_bg.abort, &flags_changed);
+
+    g_mutex_lock(&_crawler_bg_lock);
+    _crawler_bg.conflicts = g_list_concat(_crawler_bg.conflicts, found);
+    _crawler_bg.num_done++;
+    const double fraction =
+      _crawler_bg.num_done / (double)MAX(_crawler_bg.num_rolls, 1);
+    g_mutex_unlock(&_crawler_bg_lock);
+
+    dt_control_job_set_progress(job, fraction);
+
+    // the .txt/.wav flags are drawn as thumbnail overlays, so a change
+    // needs to reach the screen.  this practically never fires.
+    if(flags_changed) dt_control_queue_redraw_center();
+  }
+
+  g_mutex_lock(&_crawler_bg_lock);
+  GList *conflicts = _crawler_bg.conflicts;
+  _crawler_bg.conflicts = NULL;
+  const gboolean aborted = g_atomic_int_get(&_crawler_bg.abort) != 0;
+  const int num_done = _crawler_bg.num_done;
+  const int num_rolls = _crawler_bg.num_rolls;
+  _crawler_bg.running = FALSE;
+  g_mutex_unlock(&_crawler_bg_lock);
+
+  dt_print(DT_DEBUG_CONTROL,
+           "[crawler] background crawl %s after %d of %d film rolls",
+           aborted ? "cancelled" : "finished", num_done, num_rolls);
+
+  if(aborted)
+  {
+    // darktable is shutting down: drop the findings rather than trying
+    // to put a dialog on screen on the way out
+    g_list_free_full(conflicts, _crawler_free_result_full);
+    conflicts = NULL;
+  }
+  g_main_context_invoke(NULL, _crawler_bg_finished, conflicts);
+
+  return 0;
+}
+
+static dt_job_t *_crawler_bg_job_create(void)
+{
+  dt_job_t *job = dt_control_job_create(&_crawler_bg_job_run, "crawl for updated sidecar files");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, NULL, NULL);
+  return job;
+}
+
+void dt_control_crawler_start_background(void)
+{
+  if(!dt_conf_get_bool("run_crawler_on_start") || dt_gimpmode()) return;
+
+  g_mutex_lock(&_crawler_bg_lock);
+  if(_crawler_bg.running)
+  {
+    g_mutex_unlock(&_crawler_bg_lock);
+    return;
+  }
+
+  // most recently opened film rolls first -- those are the ones the user
+  // is most likely to look at in this session.  rolls that have never
+  // been opened have a NULL access_timestamp and sort last.
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.film_rolls"
+                              " ORDER BY access_timestamp DESC, id DESC",
+                              -1, &stmt, NULL);
+  // clang-format on
+  GList *rolls = NULL;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    rolls = g_list_prepend(rolls, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  sqlite3_finalize(stmt);
+
+  _crawler_bg.pending = g_list_reverse(rolls);
+  _crawler_bg.num_rolls = g_list_length(_crawler_bg.pending);
+  _crawler_bg.num_done = 0;
+  _crawler_bg.conflicts = NULL;
+  g_atomic_int_set(&_crawler_bg.abort, 0);
+  _crawler_bg.running = _crawler_bg.num_rolls > 0;
+  const gboolean start = _crawler_bg.running;
+  const int num_rolls = _crawler_bg.num_rolls;
+  g_mutex_unlock(&_crawler_bg_lock);
+
+  if(!start) return;
+
+  dt_print(DT_DEBUG_CONTROL,
+           "[crawler] queued %d film rolls for background crawling", num_rolls);
+
+  // follow the user around the library while the crawl runs
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,
+                            _crawler_collection_changed, NULL);
+
+  // the collection restored at startup was set up before the signal above
+  // was connected, and it is the one the user is looking at right now
+  _crawler_prioritize_current_collection();
+
+  // note: dt_control_add_job() returns TRUE to report a *failure*
+  if(dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _crawler_bg_job_create()))
+  {
+    // nothing will run, so do not leave the queue looking busy -- that
+    // would make dt_control_crawler_stop() wait for a job that never was
+    dt_print(DT_DEBUG_CONTROL, "[crawler] could not queue the background job");
+    DT_CONTROL_SIGNAL_DISCONNECT(_crawler_collection_changed, NULL);
+    g_mutex_lock(&_crawler_bg_lock);
+    g_list_free(_crawler_bg.pending);
+    _crawler_bg.pending = NULL;
+    _crawler_bg.running = FALSE;
+    g_mutex_unlock(&_crawler_bg_lock);
+  }
+}
+
+void dt_control_crawler_prioritize_filmroll(const dt_filmid_t filmid)
+{
+  if(!dt_is_valid_filmid(filmid)) return;
+
+  g_mutex_lock(&_crawler_bg_lock);
+  if(_crawler_bg.running)
+  {
+    GList *link = g_list_find(_crawler_bg.pending, GINT_TO_POINTER(filmid));
+    // if it is already the head, or no longer queued at all, there is
+    // nothing to do -- it is being examined right now or is done
+    if(link && link != _crawler_bg.pending)
+    {
+      _crawler_bg.pending = g_list_remove_link(_crawler_bg.pending, link);
+      _crawler_bg.pending = g_list_concat(link, _crawler_bg.pending);
+      dt_print(DT_DEBUG_CONTROL,
+               "[crawler] film roll %d moved to the head of the queue", filmid);
+    }
+  }
+  g_mutex_unlock(&_crawler_bg_lock);
+}
+
+// how many images of the current collection to look at, and how many
+// distinct film rolls to take from them, when deciding what the user is
+// about to browse.  sampling rather than reading the whole collection
+// keeps this cheap enough to run on every collection change.
+#define CRAWLER_COLLECTION_SAMPLE 200
+#define CRAWLER_COLLECTION_ROLLS 8
+
+/* Selecting a film roll in the collect module does not go through
+ * dt_film_open(), it just changes the collection.  So follow the
+ * collection as well: whichever film rolls the images now on screen
+ * belong to are the ones worth examining next.  This also covers
+ * collections that are not film roll based at all, such as a tag or a
+ * rating -- the user is looking at those images, so they get priority.
+ */
+static void _crawler_prioritize_current_collection(void)
+{
+  g_mutex_lock(&_crawler_bg_lock);
+  const gboolean running = _crawler_bg.running;
+  g_mutex_unlock(&_crawler_bg_lock);
+  if(!running) return;
+
+  GList *images = dt_collection_get_all(darktable.collection,
+                                        CRAWLER_COLLECTION_SAMPLE);
+  if(!images) return;
+
+  // collect the distinct film rolls, keeping the order in which they
+  // appear in the collection
+  GList *rolls = NULL;
+  int num_rolls = 0;
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT film_id FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  // clang-format on
+  for(GList *iter = images;
+      iter && num_rolls < CRAWLER_COLLECTION_ROLLS;
+      iter = g_list_next(iter))
+  {
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, GPOINTER_TO_INT(iter->data));
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      gpointer filmid = GINT_TO_POINTER(sqlite3_column_int(stmt, 0));
+      if(!g_list_find(rolls, filmid))
+      {
+        rolls = g_list_prepend(rolls, filmid);
+        num_rolls++;
+      }
+    }
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
+  }
+  sqlite3_finalize(stmt);
+  g_list_free(images);
+
+  // `rolls' is in reverse order of appearance, and each call puts its
+  // film roll at the head, so this leaves the first film roll of the
+  // collection at the very front of the queue
+  for(GList *iter = rolls; iter; iter = g_list_next(iter))
+    dt_control_crawler_prioritize_filmroll(GPOINTER_TO_INT(iter->data));
+
+  g_list_free(rolls);
+}
+
+static void _crawler_collection_changed(gpointer instance,
+                                        dt_collection_change_t query_change,
+                                        dt_collection_properties_t changed_property,
+                                        gpointer imgs,
+                                        const int next,
+                                        gpointer user_data)
+{
+  _crawler_prioritize_current_collection();
+}
+
+void dt_control_crawler_stop(const gboolean wait)
+{
+  g_mutex_lock(&_crawler_bg_lock);
+  const gboolean running = _crawler_bg.running;
+  g_mutex_unlock(&_crawler_bg_lock);
+  if(!running) return;
+
+  g_atomic_int_set(&_crawler_bg.abort, 1);
+
+  if(wait)
+  {
+    // the workers check the abort flag per image, so this returns
+    // quickly unless a single stat() is stuck on an unresponsive mount
+    for(int i = 0; i < 1000; i++)
+    {
+      g_mutex_lock(&_crawler_bg_lock);
+      const gboolean still_running = _crawler_bg.running;
+      g_mutex_unlock(&_crawler_bg_lock);
+      if(!still_running) break;
+      g_usleep(10000);
+    }
+  }
 }
 
 
@@ -700,7 +1295,7 @@ static gchar* str_time_delta(const int time_delta)
 }
 
 // show a popup window with a list of updated images/xmp files and allow the user to tell dt what to do about them
-void dt_control_crawler_show_image_list(GList *images)
+static void _crawler_show_image_list(GList *images, const gboolean modal)
 {
   if(!images) return;
 
@@ -798,7 +1393,7 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons
     (_("updated XMP sidecar files found"), GTK_WINDOW(win),
-     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
+     GTK_DIALOG_DESTROY_WITH_PARENT | (modal ? GTK_DIALOG_MODAL : 0), _("_close"),
      GTK_RESPONSE_CLOSE, NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -850,6 +1445,12 @@ void dt_control_crawler_show_image_list(GList *images)
 
   g_signal_connect(dialog, "response",
                    G_CALLBACK(dt_control_crawler_response_callback), gui);
+}
+
+void dt_control_crawler_show_image_list(GList *images)
+{
+  // the synchronous startup crawl blocks the ui anyway, so keep it modal
+  _crawler_show_image_list(images, TRUE);
 }
 
 /* backthumb crawler */
