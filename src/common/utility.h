@@ -168,6 +168,15 @@ char *dt_copy_filename_extension(const char *filename1,
 char *dt_filename_change_extension(const char *filename,
                                    const char *ext);
 
+// true if filename already ends in ".ext" (case-insensitive)
+gboolean dt_util_str_ends_with_extension(const char *filename,
+                                         const char *ext);
+
+// offset into filename where ".ext" is (if already present, case-insensitively)
+// or would go if appended -- always the boundary right before the extension
+size_t dt_util_str_extension_offset(const char *filename,
+                                    const char *ext);
+
 //  returns a list of filenames read from dir_path and matching pattern_str
 GList *dt_read_file_pattern(const char *dir_path, const char *pattern_str);
 

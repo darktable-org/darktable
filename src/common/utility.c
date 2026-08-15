@@ -1150,6 +1150,26 @@ char *dt_filename_change_extension(const char *filename,
   return output;
 }
 
+gboolean dt_util_str_ends_with_extension(const char *filename,
+                                         const char *ext)
+{
+  if(!filename || !ext) return FALSE;
+  const size_t fn_len = strlen(filename);
+  const size_t ext_len = strlen(ext);
+  return fn_len > ext_len + 1
+    && filename[fn_len - ext_len - 1] == '.'
+    && !g_ascii_strcasecmp(filename + fn_len - ext_len, ext);
+}
+
+size_t dt_util_str_extension_offset(const char *filename,
+                                    const char *ext)
+{
+  const size_t fn_len = strlen(filename);
+  return dt_util_str_ends_with_extension(filename, ext)
+    ? fn_len - strlen(ext) - 1
+    : fn_len;
+}
+
 GList *dt_read_file_pattern(const char *dir_path,
                             const char *pattern_str)
 {
