@@ -5,23 +5,39 @@ A complete development environment for building and testing darktable with all d
 ## Purpose
 
 This devcontainer provides:
-- ✅ Build darktable from source
+- ✅ Build darktable from source in an environment **identical to the CI compile check** (`ubuntu:26.04`, GCC 16 / Clang 22)
 - ✅ Create AppImage for GUI testing on host
 - ✅ Debug with GDB
+- ✅ Sandbox AI coding agents so they cannot access host SSH keys, credentials, or private files
 - ❌ Does NOT run GUI inside container (use AppImage on host)
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/products/docker-desktop/)
-- [Visual Studio Code](https://code.visualstudio.com/) with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+- [Docker](https://www.docker.com/products/docker-desktop/) (or any OCI-compatible runtime)
+- Any [Dev Container-compatible tool](https://containers.dev/supporting):
+  - VS Code with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+  - JetBrains IDEs (CLion, IntelliJ, etc.) via Dev Containers plugin
+  - Neovim / other editors via [devcontainer CLI](https://github.com/devcontainers/cli)
+  - Plain terminal: `devcontainer up --workspace-folder .`
 
 ## Quick Start
+
+### VS Code
 
 1. Open this repository in VS Code
 2. Click "Reopen in Container" when prompted (or F1 → "Dev Containers: Reopen in Container")
 3. Wait for container build (~5-10 minutes first time)
 4. Git submodules are initialized automatically
-5. You're ready to build!
+
+### Terminal / other IDEs
+
+```bash
+# Build and start the container
+devcontainer up --workspace-folder .
+
+# Open a shell inside it
+devcontainer exec --workspace-folder . bash
+```
 
 ## Building Darktable
 
