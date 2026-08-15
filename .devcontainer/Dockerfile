@@ -33,6 +33,8 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     libcurl4-openssl-dev \
     libpng-dev \
+    libpotrace-dev \
+    libgmic-dev \
     libexiv2-dev \
     libpugixml-dev \
     liblensfun-dev \
@@ -59,6 +61,7 @@ RUN apt-get update && apt-get install -y \
     libopenexr-dev \
     libopenjp2-7-dev \
     libgraphicsmagick1-dev \
+    iso-codes \
     # Additional tools
     clang-format \
     vim \
