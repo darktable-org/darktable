@@ -1349,7 +1349,7 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->lut_valid = FALSE;            // TRUE if the gui_lut is ready
   g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
   g->user_param_valid = FALSE;     // TRUE if users params set in interactive view are in bounds
-  g->factors_valid = TRUE;         // TRUE if radial-basis coeffs are ready
+  g->factors_valid = FALSE;        // TRUE once radial-basis coeffs have been successfully solved
 
   g->valid_nodes_x = FALSE;        // TRUE if x coordinates of graph nodes have been inited
   g->valid_nodes_y = FALSE;        // TRUE if y coordinates of graph nodes have been inited
@@ -1499,6 +1499,13 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
   if(g == NULL) return;
 
   float *const restrict LUT = g->gui_lut;
+
+  if(!g->factors_valid)
+  {
+    for(size_t i = 0; i < UI_SAMPLES; i++) LUT[i] = offset;
+    return;
+  }
+
   const float *const restrict factors = g->factors;
   const float sigma = g->sigma;
 
@@ -1609,6 +1616,9 @@ void commit_params(dt_iop_module_t *self,
   /*
    * Perform a radial-based interpolation using a series gaussian functions
    */
+
+  gboolean curve_valid;
+
   if(self->dev->gui_attached && g)
   {
     dt_iop_gui_enter_critical_section(self);
@@ -1618,7 +1628,7 @@ void commit_params(dt_iop_module_t *self,
     g->user_param_valid = FALSE; // force updating channels factors
     dt_iop_gui_leave_critical_section(self);
 
-    update_curve_lut(self);
+    curve_valid = update_curve_lut(self);
 
     dt_iop_gui_enter_critical_section(self);
     dt_simd_memcpy(g->factors, d->factors, PIXEL_CHAN);
@@ -1632,14 +1642,23 @@ void commit_params(dt_iop_module_t *self,
 
     float A[CHANNELS * PIXEL_CHAN] DT_ALIGNED_ARRAY;
     build_interpolation_matrix(A, p->smoothing);
-    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, TRUE);
+    curve_valid = pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, TRUE);
 
     dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
   }
 
   // compute the correction LUT here to spare some time in process
   // when computing several times toneequalizer with same parameters
-  compute_correction_lut(d->correction_lut, d->smoothing, d->factors);
+  if(curve_valid)
+  {
+    compute_correction_lut(d->correction_lut, d->smoothing, d->factors);
+  }
+  else
+  {
+    // solver failed; make sure the operation is a no-op with/without darkroom GUI
+    for(size_t i = 0; i < LUT_RESOLUTION * PIXEL_CHAN + 1; i++)
+      d->correction_lut[i] = 1.0f;
+  }
 }
 
 
@@ -2392,8 +2411,15 @@ void gui_post_expose(dt_iop_module_t *self,
     exposure_in = g->cursor_exposure;
     luminance_in = exp2f(exposure_in);
 
-    // Get the corresponding correction and compute resulting exposure
-    correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
+    // avoid stale g->factors: only set correction if factors were successfully solved;
+    // otherwise, leave correction = 0 EV, which is what the pixels get — commit_params() fills
+    // correction_lut with 1.0 when there is no valid solution.
+    if(g->factors_valid)
+    {
+      // Get the corresponding correction and compute resulting exposure
+      correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
+    }
+
     exposure_out = exposure_in + correction;
     luminance_out = exp2f(exposure_out);
   }
