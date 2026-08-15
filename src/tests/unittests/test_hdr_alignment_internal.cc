@@ -33,7 +33,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <cmath>
+#include <tuple> // std::ignore, for discarding unused parameters
 
 // The implementation must be included BEFORE <cmocka.h>: cmocka defines a
 // function-like macro `fail()`, and OpenCV transitively pulls in <iostream>,
@@ -43,7 +44,8 @@
 // cmocka.h has no C++ linkage guards of its own (the extern "C" block near its
 // top is MSVC-only), so wrap it or every assert_* resolves to a mangled symbol.
 // It includes no headers itself -- the prerequisites above are ours to provide.
-extern "C" {
+extern "C"
+{
 #include <cmocka.h>
 }
 
@@ -55,7 +57,7 @@ extern "C" {
 
 static int _cmp_f(const void *a, const void *b)
 {
-  const float x = *(const float *)a, y = *(const float *)b;
+  const float x = *static_cast<const float *>(a), y = *static_cast<const float *>(b);
   return (x > y) - (x < y);
 }
 
@@ -63,29 +65,29 @@ static int _cmp_f(const void *a, const void *b)
 // to well under one part in a hundred of the data span.
 static void test_percentile_bounds_accuracy(void **state)
 {
-  (void)state;
-  const size_t n = 300000;
-  float *v = (float *)malloc(n * sizeof(float));
-  float *c = (float *)malloc(n * sizeof(float));
+  std::ignore = state;
+  const std::size_t n = 300000;
+  float *v = static_cast<float *>(malloc(n * sizeof(float)));
+  float *c = static_cast<float *>(malloc(n * sizeof(float)));
   assert_non_null(v);
   assert_non_null(c);
   unsigned s = 4242u;
-  for(size_t i = 0; i < n; i++)
+  for (std::size_t i = 0; i < n; i++)
   {
     s = s * 1103515245u + 12345u;
-    v[i] = ((s >> 9) & 0x7fff) / 32767.0f * 8.0f - 1.0f;  // ~[-1, 7]
+    v[i] = ((s >> 9) & 0x7fff) / 32767.0f * 8.0f - 1.0f; // ~[-1, 7]
   }
   memcpy(c, v, n * sizeof(float));
   qsort(c, n, sizeof(float), _cmp_f);
-  const float ex_lo = c[(size_t)(0.01 * (n - 1) + 0.5)];
-  const float ex_hi = c[(size_t)(0.99 * (n - 1) + 0.5)];
+  const float ex_lo = c[static_cast<std::size_t>(0.01 * (n - 1) + 0.5)];
+  const float ex_hi = c[static_cast<std::size_t>(0.99 * (n - 1) + 0.5)];
 
   float p_lo, p_hi;
   _percentile_bounds(v, n, DT_HDR_PERCENTILE_LOW, DT_HDR_PERCENTILE_HIGH, &p_lo, &p_hi);
 
   const float span = ex_hi - ex_lo;
-  assert_true(fabsf(p_lo - ex_lo) < 0.01f * span);
-  assert_true(fabsf(p_hi - ex_hi) < 0.01f * span);
+  assert_true(std::fabs(p_lo - ex_lo) < 0.01f * span);
+  assert_true(std::fabs(p_hi - ex_hi) < 0.01f * span);
   free(v);
   free(c);
 }
@@ -94,9 +96,10 @@ static void test_percentile_bounds_accuracy(void **state)
 // the downstream stretch is a well-defined no-op (no division blow-up).
 static void test_percentile_bounds_flat(void **state)
 {
-  (void)state;
+  std::ignore = state;
   float v[1024];
-  for(int i = 0; i < 1024; i++) v[i] = 0.5f;
+  for (int i = 0; i < 1024; i++)
+    v[i] = 0.5f;
   float p_lo = -1.0f, p_hi = -1.0f;
   _percentile_bounds(v, 1024, DT_HDR_PERCENTILE_LOW, DT_HDR_PERCENTILE_HIGH, &p_lo, &p_hi);
   assert_true(p_lo == 0.5f);
@@ -107,16 +110,17 @@ static void test_percentile_bounds_flat(void **state)
 // on a ramp, so SIFT sees the intended contrast.
 static void test_proxy_to_u8_monotone(void **state)
 {
-  (void)state;
+  std::ignore = state;
   const int pw = 256, ph = 1;
   float ramp[256];
-  for(int i = 0; i < pw; i++) ramp[i] = (float)i;
-  uint8_t *u8 = _proxy_to_u8(ramp, pw, ph, 2.2);
-  assert_non_null(u8);
-  for(int i = 1; i < pw; i++) assert_true(u8[i] >= u8[i - 1]);
+  for (int i = 0; i < pw; i++)
+    ramp[i] = static_cast<float>(i);
+  const AlignedBuf<std::uint8_t> u8 = _proxy_to_u8(ramp, pw, ph, 2.2);
+  assert_non_null(u8.get());
+  for (int i = 1; i < pw; i++)
+    assert_true(u8[i] >= u8[i - 1]);
   assert_int_equal(u8[0], 0);
   assert_int_equal(u8[pw - 1], 255);
-  dt_free_align(u8);
 }
 
 // The Bayer same-color fast path must be bit-for-bit identical to the general
@@ -125,19 +129,18 @@ static void test_proxy_to_u8_monotone(void **state)
 // silently corrupt every aligned Bayer frame.
 static void test_bayer_sampler_bit_exact(void **state)
 {
-  (void)state;
-  const int W = 71, H = 53;                 // odd dims exercise the edges
-  const uint32_t filters = 0x94949494u;     // RGGB
-  float *m = (float *)malloc(sizeof(float) * W * H);
+  std::ignore = state;
+  const int W = 71, H = 53;             // odd dims exercise the edges
+  const std::uint32_t filters = 0x94949494u; // RGGB
+  float *m = static_cast<float *>(malloc(sizeof(float) * W * H));
   assert_non_null(m);
-  for(int y = 0; y < H; y++)
-    for(int x = 0; x < W; x++)
-      m[y * W + x] = (float)((x * 7 + y * 13) % 101) / 101.0f
-                   + 0.013f * (float)((x * x + 3 * y) % 17);
+  for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++)
+      m[y * W + x] = static_cast<float>((x * 7 + y * 13) % 101) / 101.0f + 0.013f * static_cast<float>((x * x + 3 * y) % 17);
 
-  for(double sy = -2.0; sy <= H + 2.0; sy += 0.31)
-    for(double sx = -2.0; sx <= W + 2.0; sx += 0.27)
-      for(int c = 0; c < 3; c++)            // R=0, G=1, B=2
+  for (double sy = -2.0; sy <= H + 2.0; sy += 0.31)
+    for (double sx = -2.0; sx <= W + 2.0; sx += 0.27)
+      for (int c = 0; c < 3; c++) // R=0, G=1, B=2
       {
         const float fast = _sample_bayer_same_color(m, W, H, filters, c, sx, sy);
         const float general = _sample_cfa_same_color(m, W, H, filters, NULL, c, sx, sy);
@@ -154,28 +157,28 @@ static void test_bayer_sampler_bit_exact(void **state)
 // frame's phase.
 static void test_xtrans_sampler_same_color_only(void **state)
 {
-  (void)state;
+  std::ignore = state;
   const int W = 48, H = 42;
   // A valid X-Trans 6x6 layout (8 R, 20 G, 8 B per tile).
-  static const uint8_t xtrans[6][6] = {
-    { 1, 1, 0, 1, 1, 2 },
-    { 0, 2, 1, 2, 0, 1 },
-    { 1, 1, 2, 1, 1, 0 },
-    { 1, 1, 0, 1, 1, 2 },
-    { 2, 0, 1, 0, 2, 1 },
-    { 1, 1, 2, 1, 1, 0 },
+  static const std::uint8_t xtrans[6][6] = {
+      {1, 1, 0, 1, 1, 2},
+      {0, 2, 1, 2, 0, 1},
+      {1, 1, 2, 1, 1, 0},
+      {1, 1, 0, 1, 1, 2},
+      {2, 0, 1, 0, 2, 1},
+      {1, 1, 2, 1, 1, 0},
   };
-  float *m = (float *)malloc(sizeof(float) * W * H);
+  float *m = static_cast<float *>(malloc(sizeof(float) * W * H));
   assert_non_null(m);
 
   // Only green (colour 1) photosites carry signal; R and B are zero.
   const int target = 1;
-  for(int y = 0; y < H; y++)
-    for(int x = 0; x < W; x++)
+  for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++)
       m[y * W + x] = (_fcol(y, x, 9u, xtrans) == target) ? 1.0f : 0.0f;
 
-  for(double sy = -1.0; sy <= H + 1.0; sy += 0.5)
-    for(double sx = -1.0; sx <= W + 1.0; sx += 0.5)
+  for (double sy = -1.0; sy <= H + 1.0; sy += 0.5)
+    for (double sx = -1.0; sx <= W + 1.0; sx += 0.5)
     {
       // sampling green sees only green (all 1.0) -> exactly 1.0
       const float g = _sample_cfa_same_color(m, W, H, 9u, xtrans, target, sx, sy);
@@ -192,20 +195,14 @@ int main(void)
 {
 #ifdef HAVE_OPENCV
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_percentile_bounds_accuracy),
-    cmocka_unit_test(test_percentile_bounds_flat),
-    cmocka_unit_test(test_proxy_to_u8_monotone),
-    cmocka_unit_test(test_bayer_sampler_bit_exact),
-    cmocka_unit_test(test_xtrans_sampler_same_color_only),
+      cmocka_unit_test(test_percentile_bounds_accuracy),
+      cmocka_unit_test(test_percentile_bounds_flat),
+      cmocka_unit_test(test_proxy_to_u8_monotone),
+      cmocka_unit_test(test_bayer_sampler_bit_exact),
+      cmocka_unit_test(test_xtrans_sampler_same_color_only),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 #else
-  return 0;  // nothing to white-box; see the note above
+  return 0; // nothing to white-box; see the note above
 #endif
 }
-
-// clang-format off
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
-// clang-format on
