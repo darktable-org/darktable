@@ -166,11 +166,11 @@ gboolean dt_film_open(const dt_filmid_t id)
   }
   sqlite3_finalize(stmt);
 
-  // the user is about to look at this film roll, so have the background
-  // crawler examine it next instead of whenever its turn would come up.
-  // this does not block: the images are shown from the database right
-  // away, exactly as before.
-  dt_control_crawler_prioritize_filmroll(id);
+  // the user is about to look at this film roll, so make sure its sidecar
+  // files have been checked before its images can be edited.  this waits,
+  // but only for this one film roll rather than for the whole library,
+  // and only until the background crawl has reached it.
+  dt_control_crawler_ensure_filmroll(id);
 
   // TODO: prefetch to cache using image_open
   dt_film_set_query(id);

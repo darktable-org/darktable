@@ -583,7 +583,7 @@ GList *dt_control_crawler_run(void)
 /******************** background crawling ********************/
 
 static void _crawler_show_image_list(GList *images, const gboolean modal);
-static void _crawler_prioritize_current_collection(void);
+static void _crawler_ensure_current_collection(void);
 static void _crawler_collection_changed(gpointer instance,
                                         dt_collection_change_t query_change,
                                         dt_collection_properties_t changed_property,
@@ -609,10 +609,20 @@ typedef struct dt_crawler_bg_t
   int num_done;
   gint abort;           // read atomically by the scan workers
   gboolean running;
+
+  /* Only one film roll may be examined at a time, by either the
+   * background job or a caller waiting for a specific roll.  Besides
+   * keeping the two from examining the same roll twice, this keeps all
+   * of the crawler's database work on one thread at a time so that its
+   * transactions are never interleaved with each other.
+   */
+  gboolean scanning;    // someone is inside a scan right now
+  dt_filmid_t current;  // which film roll that is, NO_FILMID if none
 } dt_crawler_bg_t;
 
-// static storage, so the mutex is zero-initialised as glib requires
+// static storage, so these are zero-initialised as glib requires
 static GMutex _crawler_bg_lock;
+static GCond _crawler_bg_cond;
 static dt_crawler_bg_t _crawler_bg = { 0 };
 
 static void _crawler_free_result_full(gpointer data)
@@ -643,6 +653,35 @@ static gboolean _crawler_bg_finished(gpointer data)
   return G_SOURCE_REMOVE;
 }
 
+/* Examine one film roll and fold the findings into the accumulated list.
+ * The caller must already have claimed the scan (scanning == TRUE and
+ * current == filmid) so that nothing else touches the database at the
+ * same time.  Returns the conflicts found for this film roll alone,
+ * still owned by the accumulated list unless `take' is TRUE.
+ */
+static GList *_crawler_scan_claimed_roll(const dt_filmid_t filmid,
+                                         const gboolean take)
+{
+  int flags_changed = 0;
+  GList *found = _crawler_run_filmroll(filmid, NULL, NULL,
+                                       &_crawler_bg.abort, &flags_changed);
+
+  g_mutex_lock(&_crawler_bg_lock);
+  if(!take)
+    _crawler_bg.conflicts = g_list_concat(_crawler_bg.conflicts, found);
+  _crawler_bg.num_done++;
+  _crawler_bg.scanning = FALSE;
+  _crawler_bg.current = NO_FILMID;
+  g_cond_broadcast(&_crawler_bg_cond);
+  g_mutex_unlock(&_crawler_bg_lock);
+
+  // the .txt/.wav flags are drawn as thumbnail overlays, so a change
+  // needs to reach the screen.  this practically never fires.
+  if(flags_changed) dt_control_queue_redraw_center();
+
+  return take ? found : NULL;
+}
+
 static int32_t _crawler_bg_job_run(dt_job_t *job)
 {
   dt_control_job_set_progress_message(job, "%s",
@@ -651,6 +690,10 @@ static int32_t _crawler_bg_job_run(dt_job_t *job)
   while(TRUE)
   {
     g_mutex_lock(&_crawler_bg_lock);
+    // let anyone waiting for a specific film roll go first
+    while(_crawler_bg.scanning && !g_atomic_int_get(&_crawler_bg.abort))
+      g_cond_wait(&_crawler_bg_cond, &_crawler_bg_lock);
+
     if(g_atomic_int_get(&_crawler_bg.abort) || !_crawler_bg.pending)
     {
       g_mutex_unlock(&_crawler_bg_lock);
@@ -659,24 +702,15 @@ static int32_t _crawler_bg_job_run(dt_job_t *job)
     const dt_filmid_t filmid = GPOINTER_TO_INT(_crawler_bg.pending->data);
     _crawler_bg.pending = g_list_delete_link(_crawler_bg.pending,
                                              _crawler_bg.pending);
-    g_mutex_unlock(&_crawler_bg_lock);
-
-    int flags_changed = 0;
-    GList *found = _crawler_run_filmroll(filmid, NULL, NULL,
-                                         &_crawler_bg.abort, &flags_changed);
-
-    g_mutex_lock(&_crawler_bg_lock);
-    _crawler_bg.conflicts = g_list_concat(_crawler_bg.conflicts, found);
-    _crawler_bg.num_done++;
+    _crawler_bg.scanning = TRUE;
+    _crawler_bg.current = filmid;
     const double fraction =
-      _crawler_bg.num_done / (double)MAX(_crawler_bg.num_rolls, 1);
+      (_crawler_bg.num_done + 1) / (double)MAX(_crawler_bg.num_rolls, 1);
     g_mutex_unlock(&_crawler_bg_lock);
+
+    _crawler_scan_claimed_roll(filmid, FALSE);
 
     dt_control_job_set_progress(job, fraction);
-
-    // the .txt/.wav flags are drawn as thumbnail overlays, so a change
-    // needs to reach the screen.  this practically never fires.
-    if(flags_changed) dt_control_queue_redraw_center();
   }
 
   g_mutex_lock(&_crawler_bg_lock);
@@ -759,7 +793,7 @@ void dt_control_crawler_start_background(void)
 
   // the collection restored at startup was set up before the signal above
   // was connected, and it is the one the user is looking at right now
-  _crawler_prioritize_current_collection();
+  _crawler_ensure_current_collection();
 
   // note: dt_control_add_job() returns TRUE to report a *failure*
   if(dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _crawler_bg_job_create()))
@@ -776,89 +810,125 @@ void dt_control_crawler_start_background(void)
   }
 }
 
-void dt_control_crawler_prioritize_filmroll(const dt_filmid_t filmid)
+/* Make sure a film roll has been examined before its images are shown.
+ *
+ * The images of a film roll must not be edited before its sidecar files
+ * have been checked: darktable does not re-read an xmp when an image is
+ * opened, and dt_image_write_sidecar_file() overwrites whatever is on
+ * disk, so editing an image whose xmp was updated elsewhere would
+ * silently discard those changes.  The blocking startup crawl this
+ * replaces guaranteed that could not happen, and so must this.
+ *
+ * Examining a single film roll is cheap -- a few tens of milliseconds
+ * for a typical roll -- so only the roll being opened is waited for,
+ * rather than the whole library.
+ */
+static GList *_crawler_ensure_roll(const dt_filmid_t filmid)
 {
-  if(!dt_is_valid_filmid(filmid)) return;
+  if(!dt_is_valid_filmid(filmid)) return NULL;
 
   g_mutex_lock(&_crawler_bg_lock);
-  if(_crawler_bg.running)
+  if(!_crawler_bg.running)
   {
-    GList *link = g_list_find(_crawler_bg.pending, GINT_TO_POINTER(filmid));
-    // if it is already the head, or no longer queued at all, there is
-    // nothing to do -- it is being examined right now or is done
-    if(link && link != _crawler_bg.pending)
-    {
-      _crawler_bg.pending = g_list_remove_link(_crawler_bg.pending, link);
-      _crawler_bg.pending = g_list_concat(link, _crawler_bg.pending);
-      dt_print(DT_DEBUG_CONTROL,
-               "[crawler] film roll %d moved to the head of the queue", filmid);
-    }
+    g_mutex_unlock(&_crawler_bg_lock);
+    return NULL;
   }
+
+  // if the background job is examining this very film roll, wait for it
+  while(_crawler_bg.current == filmid
+        && _crawler_bg.running
+        && !g_atomic_int_get(&_crawler_bg.abort))
+    g_cond_wait(&_crawler_bg_cond, &_crawler_bg_lock);
+
+  // claim it, waiting for any other roll being examined to finish first
+  while(_crawler_bg.scanning && !g_atomic_int_get(&_crawler_bg.abort))
+    g_cond_wait(&_crawler_bg_cond, &_crawler_bg_lock);
+
+  GList *link = g_list_find(_crawler_bg.pending, GINT_TO_POINTER(filmid));
+  if(!link || g_atomic_int_get(&_crawler_bg.abort))
+  {
+    // already examined in this session, or we are shutting down
+    g_mutex_unlock(&_crawler_bg_lock);
+    return NULL;
+  }
+  _crawler_bg.pending = g_list_delete_link(_crawler_bg.pending, link);
+  _crawler_bg.scanning = TRUE;
+  _crawler_bg.current = filmid;
   g_mutex_unlock(&_crawler_bg_lock);
+
+  const double start_time = dt_get_wtime();
+  GList *found = _crawler_scan_claimed_roll(filmid, TRUE);
+  dt_print(DT_DEBUG_CONTROL,
+           "[crawler] film roll %d examined on demand in %.2fs, %d updated"
+           " XMP files found",
+           filmid, dt_get_wtime() - start_time, g_list_length(found));
+  return found;
 }
 
-// how many images of the current collection to look at, and how many
-// distinct film rolls to take from them, when deciding what the user is
-// about to browse.  sampling rather than reading the whole collection
-// keeps this cheap enough to run on every collection change.
-#define CRAWLER_COLLECTION_SAMPLE 200
-#define CRAWLER_COLLECTION_ROLLS 8
+/* Report on demand findings straight away rather than leaving them for
+ * the end of the crawl: the whole point of having waited is to tell the
+ * user before they start editing these images.
+ */
+static void _crawler_report(GList *found)
+{
+  if(!found) return;
+
+  const guint count = g_list_length(found);
+  dt_control_log(ngettext("%u updated XMP sidecar file found",
+                          "%u updated XMP sidecar files found", count), count);
+  _crawler_show_image_list(found, FALSE);
+}
+
+void dt_control_crawler_ensure_filmroll(const dt_filmid_t filmid)
+{
+  _crawler_report(_crawler_ensure_roll(filmid));
+}
 
 /* Selecting a film roll in the collect module does not go through
  * dt_film_open(), it just changes the collection.  So follow the
- * collection as well: whichever film rolls the images now on screen
- * belong to are the ones worth examining next.  This also covers
- * collections that are not film roll based at all, such as a tag or a
- * rating -- the user is looking at those images, so they get priority.
+ * collection as well, and for the same reason wait for it: the images it
+ * contains are about to be shown and may be edited, so their sidecar
+ * files have to have been checked first.
+ *
+ * Every film roll the collection covers is waited for, not a sample of
+ * them, since the user can scroll to any of the images.  In the worst
+ * case -- a collection spanning the whole library, opened immediately at
+ * startup -- this costs the same as the blocking crawl it replaces, and
+ * in every other case far less.  Once the background crawl has finished
+ * this does nothing at all.
  */
-static void _crawler_prioritize_current_collection(void)
+static void _crawler_ensure_current_collection(void)
 {
   g_mutex_lock(&_crawler_bg_lock);
   const gboolean running = _crawler_bg.running;
   g_mutex_unlock(&_crawler_bg_lock);
   if(!running) return;
 
-  GList *images = dt_collection_get_all(darktable.collection,
-                                        CRAWLER_COLLECTION_SAMPLE);
-  if(!images) return;
-
-  // collect the distinct film rolls, keeping the order in which they
-  // appear in the collection
+  // the collection is materialised in memory.collected_images, so its
+  // film rolls come out of a single query
   GList *rolls = NULL;
-  int num_rolls = 0;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT film_id FROM main.images WHERE id = ?1",
+                              "SELECT i.film_id"
+                              " FROM memory.collected_images AS c, main.images AS i"
+                              " ON i.id = c.imgid"
+                              " GROUP BY i.film_id"
+                              " ORDER BY MIN(c.rowid)",
                               -1, &stmt, NULL);
   // clang-format on
-  for(GList *iter = images;
-      iter && num_rolls < CRAWLER_COLLECTION_ROLLS;
-      iter = g_list_next(iter))
-  {
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, GPOINTER_TO_INT(iter->data));
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      gpointer filmid = GINT_TO_POINTER(sqlite3_column_int(stmt, 0));
-      if(!g_list_find(rolls, filmid))
-      {
-        rolls = g_list_prepend(rolls, filmid);
-        num_rolls++;
-      }
-    }
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-  }
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    rolls = g_list_prepend(rolls, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
   sqlite3_finalize(stmt);
-  g_list_free(images);
+  rolls = g_list_reverse(rolls);
 
-  // `rolls' is in reverse order of appearance, and each call puts its
-  // film roll at the head, so this leaves the first film roll of the
-  // collection at the very front of the queue
+  GList *found = NULL;
   for(GList *iter = rolls; iter; iter = g_list_next(iter))
-    dt_control_crawler_prioritize_filmroll(GPOINTER_TO_INT(iter->data));
+    found = g_list_concat(found,
+                          _crawler_ensure_roll(GPOINTER_TO_INT(iter->data)));
 
   g_list_free(rolls);
+  _crawler_report(found);
 }
 
 static void _crawler_collection_changed(gpointer instance,
@@ -868,7 +938,7 @@ static void _crawler_collection_changed(gpointer instance,
                                         const int next,
                                         gpointer user_data)
 {
-  _crawler_prioritize_current_collection();
+  _crawler_ensure_current_collection();
 }
 
 void dt_control_crawler_stop(const gboolean wait)
