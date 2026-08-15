@@ -6626,12 +6626,12 @@ msgstr "Débruitage RAW IA : échec de l’inférence GPU, repli sur CPU "
 
 #: ../src/common/ai/restore_rgb.c:668
 msgid "AI denoise: GPU inference failed, falling back to CPU"
-msgstr "Réduction du bruit IA : échec de l’inférence GPU, repli sur CPU "
+msgstr "Débruitage IA : échec de l’inférence GPU, repli sur CPU "
 
 #: ../src/common/ai_models.c:71 ../src/iop/atrous.c:805
 #: ../src/libs/neural_restore.c:1466 ../src/libs/neural_restore.c:4305
 msgid "denoise"
-msgstr "Réduction du bruit"
+msgstr "Débruitage"
 
 #. raw denoise sits first: it runs earliest in the denoise workflow
 #. (before demosaic-stage processing). bayer / linear variant selection
@@ -7576,7 +7576,7 @@ msgstr "Initialisation des préréglages de balance des blancs"
 #. Do locale-sensitive init BEFORE starting any background worker jobs
 #: ../src/common/darktable.c:1923
 msgid "loading noise profiles"
-msgstr "Chargement des profils pour la réduction du bruit"
+msgstr "Chargement des profils pour le débruitage"
 
 #: ../src/common/darktable.c:1926
 msgid "starting OpenCL"
@@ -19781,7 +19781,7 @@ msgstr "Global"
 
 #: ../src/iop/atrous.c:757
 msgid "denoise & sharpen"
-msgstr "Réduction du bruit et accentuation"
+msgstr "Débruitage et accentuation"
 
 #. add the preset.
 #: ../src/iop/atrous.c:773 ../src/iop/sharpen.c:104
@@ -23818,7 +23818,7 @@ msgstr "Ondelettes : seulement la chroma"
 
 #: ../src/iop/denoiseprofile.c:814
 msgid "denoise (profiled)"
-msgstr "Réduction du bruit (profil)"
+msgstr "Débruitage (profil)"
 
 #: ../src/iop/denoiseprofile.c:820
 msgid "denoise using noise statistics profiled on sensors"
@@ -23901,7 +23901,7 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
-"Adapte la réduction du bruit aux coefficients de la balance des blancs.\n"
+"Adapte le débruitage aux coefficients de la balance des blancs.\n"
 "Devrait être activé sur la première instance pour une meilleure réduction du "
 "bruit.\n"
 "Devrait être désactivé si une instance précédente a été utilisée\n"
@@ -23952,7 +23952,7 @@ msgid ""
 "non-local means works best for `lightness' blending,\n"
 "wavelets work best for `color' blending"
 msgstr ""
-"Méthode utilisée pour la réduction du bruit. \n"
+"Méthode utilisée pour le débruitage. \n"
 "« Moyennes non-locales » fonctionne mieux avec le mode de fusion "
 "« Luminosité »,\n"
 "« Ondelettes » fonctionne mieux avec le mode de fusion « Couleur »."
@@ -23978,7 +23978,7 @@ msgid ""
 msgstr ""
 "Rayon des patchs à rechercher.\n"
 "Augmenter pour plus de netteté sur les bords prononcés, et une meilleure "
-"réduction du bruit sur les zones uniformes.\n"
+"débruitage sur les zones uniformes.\n"
 "Si les détails sont trop lissés, réduire cette valeur ou augmenter le poids "
 "du pixel central."
 
@@ -24025,7 +24025,7 @@ msgid ""
 "this can happen if your image is underexposed."
 msgstr ""
 "Contrôle la façon dont les paramètres sont positionnés.\n"
-"Augmenter si la réduction du bruit des ombres n’est pas assez forte, ou si "
+"Augmenter si le débruitage des ombres n’est pas assez forte, ou si "
 "le bruit de chrominance persiste.\n"
 "Cela peut arriver si l’image est sous-exposée."
 
@@ -24035,7 +24035,7 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image."
 msgstr ""
-"Contrôle finement la réduction du bruit dans les ombres,\n"
+"Contrôle finement le débruitage dans les ombres,\n"
 "diminuer pour réduire le bruit plus agressivement dans les zones sombres."
 
 #: ../src/iop/denoiseprofile.c:3775
@@ -26774,11 +26774,11 @@ msgstr "Basculer les contrôles des couleurs"
 
 #: ../src/iop/nlmeans.c:76
 msgid "astrophoto denoise"
-msgstr "Réduction du bruit photo astro"
+msgstr "Débruitage photo astro"
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
-msgstr "Réduction du bruit (moy. non-locales)"
+msgstr "Débruitage (moy. non-locales)"
 
 #: ../src/iop/nlmeans.c:86
 msgid ""
@@ -28454,7 +28454,7 @@ msgid ""
 msgstr ""
 "Diamètre du flou en pourcentage du plus grand côté de l’image.\n"
 "Attention, une grande valeur peut ralentir conséquemment\n"
-"la prévisualisation si le module de réduction du bruit par profil est "
+"la prévisualisation si le module de débruitage par profil est "
 "utilisé."
 
 #: ../src/iop/toneequal.c:3372
@@ -32327,7 +32327,7 @@ msgstr "Restauration neuronale"
 
 #: ../src/libs/neural_restore.c:476
 msgid "AI-based image restoration: denoise and upscale"
-msgstr "Restauration d’image par IA : réduction du bruit et mise à l’échelle"
+msgstr "Restauration d’image par IA : débruitage et mise à l’échelle"
 
 #: ../src/libs/neural_restore.c:865
 #, c-format
@@ -32391,7 +32391,7 @@ msgstr "Restauration neuronale : trop de fichiers ouverts"
 #: ../src/libs/neural_restore.c:1611
 #, c-format
 msgid "denoising image %d/%d..."
-msgstr "Réduction du bruit de l’image %d/%d..."
+msgstr "Débruitage de l’image %d/%d..."
 
 #: ../src/libs/neural_restore.c:1612
 #, c-format
