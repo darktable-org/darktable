@@ -222,6 +222,48 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
                 }
               }
 
+              // capture top-level "ort_optimization" (same shape as coreml_format)
+              info->ort_optimization = NULL;
+              if(json_object_has_member(obj, "ort_optimization"))
+              {
+                JsonNode *oo_node
+                  = json_object_get_member(obj, "ort_optimization");
+                if(oo_node
+                   && (JSON_NODE_HOLDS_VALUE(oo_node)
+                       || JSON_NODE_HOLDS_OBJECT(oo_node)))
+                {
+                  JsonGenerator *gen = json_generator_new();
+                  json_generator_set_root(gen, oo_node);
+                  gchar *s = json_generator_to_data(gen, NULL);
+                  if(s)
+                  {
+                    _store_string(env, s, &info->ort_optimization);
+                    g_free(s);
+                  }
+                  g_object_unref(gen);
+                }
+              }
+
+              // capture top-level "ort_optimization_provider" (object)
+              info->ort_optimization_provider = NULL;
+              if(json_object_has_member(obj, "ort_optimization_provider"))
+              {
+                JsonNode *op_node
+                  = json_object_get_member(obj, "ort_optimization_provider");
+                if(op_node && JSON_NODE_HOLDS_OBJECT(op_node))
+                {
+                  JsonGenerator *gen = json_generator_new();
+                  json_generator_set_root(gen, op_node);
+                  gchar *s = json_generator_to_data(gen, NULL);
+                  if(s)
+                  {
+                    _store_string(env, s, &info->ort_optimization_provider);
+                    g_free(s);
+                  }
+                  g_object_unref(gen);
+                }
+              }
+
               env->models = g_list_prepend(env->models, info);
               g_hash_table_insert(
                 env->model_paths,
@@ -442,6 +484,13 @@ static dt_ai_provider_t _resolve_provider(dt_ai_provider_t configured,
                                           const char *model_file,
                                           uint32_t *inout_ep_flags);
 
+static dt_ai_opt_level_t
+_resolve_ort_optimization(const dt_ai_model_info_t *info,
+                          const char *model_file,
+                          dt_ai_provider_t provider);
+
+static const char *_opt_level_to_string(dt_ai_opt_level_t level);
+
 // model loading with backend dispatch
 
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
@@ -450,7 +499,7 @@ dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
                                   const dt_ai_provider_t provider)
 {
   return dt_ai_load_model_ext(env, model_id, model_file, provider,
-                              DT_AI_OPT_ALL, NULL, 0);
+                              DT_AI_OPT_DEFAULT, NULL, 0);
 }
 
 dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
@@ -481,6 +530,17 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
   const dt_ai_provider_t resolved
     = _resolve_provider(provider, model_id, model_info,
                         model_file, &ep_flags);
+  // sentinel: read from manifest; any concrete level is a caller override
+  const dt_ai_opt_level_t resolved_opt
+    = opt_level == DT_AI_OPT_DEFAULT
+      ? _resolve_ort_optimization(model_info, model_file, resolved)
+      : opt_level;
+
+  dt_print(DT_DEBUG_AI,
+           "[darktable_ai] loading %s/%s on %s (opt=%s)",
+           model_id, model_file ? model_file : "?",
+           dt_ai_provider_to_string(resolved),
+           _opt_level_to_string(resolved_opt));
 
   g_mutex_lock(&env->lock);
   const char *model_dir_orig
@@ -511,7 +571,7 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
 
   if(strcmp(backend_copy, "onnx") == 0)
   {
-    ctx = dt_ai_onnx_load_ext(model_dir, model_file, resolved, opt_level,
+    ctx = dt_ai_onnx_load_ext(model_dir, model_file, resolved, resolved_opt,
                                dim_overrides, n_overrides, ep_flags);
   }
   else
@@ -802,6 +862,138 @@ static gboolean _coreml_use_mlprogram(const dt_ai_model_info_t *info,
   }
   g_object_unref(parser);
   return use_mlprogram;
+}
+
+static const char *_opt_level_to_string(dt_ai_opt_level_t level)
+{
+  switch(level)
+  {
+    case DT_AI_OPT_DISABLED: return "disabled";
+    case DT_AI_OPT_BASIC:    return "basic";
+    case DT_AI_OPT_ALL:      return "all";
+    default:                 return "?";
+  }
+}
+
+// map "all"/"basic"/"disabled"/"none" to enum. FALSE on unknown
+static gboolean _parse_opt_string(const char *value, dt_ai_opt_level_t *out)
+{
+  if(!value) return FALSE;
+  if(!g_ascii_strcasecmp(value, "all"))      { *out = DT_AI_OPT_ALL;      return TRUE; }
+  if(!g_ascii_strcasecmp(value, "basic"))    { *out = DT_AI_OPT_BASIC;    return TRUE; }
+  if(!g_ascii_strcasecmp(value, "disabled")
+     || !g_ascii_strcasecmp(value, "none"))  { *out = DT_AI_OPT_DISABLED; return TRUE; }
+  return FALSE;
+}
+
+// pull a value from a JSON node that is either a string (all stems) or a
+// stem-keyed object. warns on unknown values so manifest typos surface
+static gboolean _lookup_opt_by_stem(JsonNode *node, const char *stem,
+                                    const char *model_id, const char *context,
+                                    dt_ai_opt_level_t *out)
+{
+  if(!node) return FALSE;
+  const char *value = NULL;
+  if(JSON_NODE_HOLDS_VALUE(node))
+  {
+    value = json_node_get_string(node);
+  }
+  else if(JSON_NODE_HOLDS_OBJECT(node) && stem)
+  {
+    JsonObject *obj = json_node_get_object(node);
+    if(json_object_has_member(obj, stem))
+    {
+      JsonNode *vn = json_object_get_member(obj, stem);
+      if(vn && JSON_NODE_HOLDS_VALUE(vn))
+        value = json_node_get_string(vn);
+    }
+  }
+  if(!value) return FALSE;
+  if(_parse_opt_string(value, out)) return TRUE;
+  dt_print(DT_DEBUG_AI,
+           "[darktable_ai] model '%s': unknown %s '%s', ignoring",
+           model_id ? model_id : "?", context, value);
+  return FALSE;
+}
+
+// per-provider override wins over the top-level ort_optimization;
+// unknown or missing values fall through to ALL
+static dt_ai_opt_level_t
+_resolve_ort_optimization(const dt_ai_model_info_t *info,
+                          const char *model_file,
+                          dt_ai_provider_t provider)
+{
+  dt_ai_opt_level_t level = DT_AI_OPT_ALL;
+  if(!info) return level;
+
+  // derive stem once ("encoder.onnx" -> "encoder")
+  gchar *stem = NULL;
+  if(model_file)
+  {
+    const char *dot = strrchr(model_file, '.');
+    stem = dot ? g_strndup(model_file, dot - model_file)
+               : g_strdup(model_file);
+  }
+
+  // per-provider override first
+  if(info->ort_optimization_provider && provider >= 0 && provider < DT_AI_PROVIDER_COUNT)
+  {
+    JsonParser *parser = json_parser_new();
+    if(json_parser_load_from_data(parser, info->ort_optimization_provider, -1, NULL))
+    {
+      JsonNode *root = json_parser_get_root(parser);
+      if(root && JSON_NODE_HOLDS_OBJECT(root))
+      {
+        // provider names in manifest are matched case-insensitively
+        // against dt_ai_providers[].config_string
+        const char *pname = dt_ai_providers[provider].config_string;
+        JsonObject *pobj = json_node_get_object(root);
+        JsonNode *match = NULL;
+        GList *members = json_object_get_members(pobj);
+        for(GList *l = members; l; l = l->next)
+        {
+          const char *k = (const char *)l->data;
+          if(!g_ascii_strcasecmp(k, pname))
+          {
+            match = json_object_get_member(pobj, k);
+            break;
+          }
+        }
+        g_list_free(members);
+        if(_lookup_opt_by_stem(match, stem, info->id,
+                               "ort_optimization_provider entry", &level))
+        {
+          g_object_unref(parser);
+          g_free(stem);
+          return level;
+        }
+      }
+    }
+    g_object_unref(parser);
+  }
+
+  // fall back to top-level ort_optimization
+  if(info->ort_optimization)
+  {
+    JsonParser *parser = json_parser_new();
+    GError *err = NULL;
+    if(json_parser_load_from_data(parser, info->ort_optimization, -1, &err))
+    {
+      _lookup_opt_by_stem(json_parser_get_root(parser), stem, info->id,
+                          "ort_optimization", &level);
+    }
+    else if(err)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] model '%s': malformed ort_optimization JSON (%s) — using all",
+               info->id ? info->id : "?", err->message);
+      g_error_free(err);
+    }
+    g_object_unref(parser);
+  }
+
+  g_free(stem);
+  return level;
 }
 
 // platform-specific candidate order for AUTO. each candidate is tried

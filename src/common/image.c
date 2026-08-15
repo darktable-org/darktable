@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2009-2025 darktable developers.
+  Copyright (C) 2009-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -42,16 +42,18 @@
 #include "imageio/imageio_rawspeed.h"
 #include "imageio/imageio_libraw.h"
 #include "win/filepath.h"
+
 #ifdef USE_LUA
 #include "lua/image.h"
 #endif
-#include <assert.h>
+
 #include <ctype.h>
 #include <math.h>
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+
 #ifndef _WIN32
 #include <glob.h>
 #endif
@@ -1874,8 +1876,13 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     if(img)
       img->flags &= ~DT_IMAGE_REMOVE;
     dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
-    _image_read_duplicates(id, normalized_filename, raise_signals);
-    dt_image_synch_all_xmp(normalized_filename);
+    // Reconcile with XMP sidecars unless library history is preferred to avoid
+    // overwriting library edit history with potentially stale XMP history.
+    if(!darktable.prefer_library_history)
+    {
+      _image_read_duplicates(id, normalized_filename, raise_signals);
+      dt_image_synch_all_xmp(normalized_filename);
+    }
     g_free(ext);
     g_free(normalized_filename);
     if(raise_signals)

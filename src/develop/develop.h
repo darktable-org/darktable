@@ -125,6 +125,15 @@ typedef struct dt_dev_viewport_t
   float zoom_x, zoom_y;
   float zoom_scale;
 
+  /* Viewport centre carried over to the next image, as a fraction of the
+     image in [-0.5, 0.5]. zoom_x/zoom_y themselves live in *input pixel*
+     coordinates of the currently loaded image (so they survive geometry
+     module changes), which makes them meaningless once another image with a
+     different geometry is loaded. So we snapshot the normalised centre before
+     the switch and re-apply it once the new pipe dimensions are known. */
+  gboolean restore_zoom;
+  float restore_zoom_x, restore_zoom_y;
+
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe;
   
@@ -181,6 +190,7 @@ typedef struct dt_develop_t
   uint32_t timestamp;
   uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
+  struct dt_iop_module_t *header_buttons_module; // module whose header buttons are currently shown (if any)
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *preview_pipe;
@@ -440,8 +450,8 @@ void dt_dev_toggle_preview2_pinned(dt_develop_t *dev);
 void dt_dev_pin_image(dt_develop_t *dev, dt_imgid_t imgid);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_reprocess_all(dt_develop_t *dev);
-void dt_dev_reprocess_center(dt_develop_t *dev);
-void dt_dev_reprocess_preview(dt_develop_t *dev);
+void dt_dev_reprocess_center(dt_develop_t *dev, const int32_t iop_order);
+void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order);
 
 gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,
@@ -462,6 +472,10 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       const float x,
                       const float y,
                       const gboolean constrain);
+/* Snapshot the current viewport centre as a fraction of the image so it can be
+   re-applied to the next image, see restore_zoom in dt_dev_viewport_t. Call
+   right before changing image, while the current pipe is still valid. */
+void dt_dev_snapshot_zoom_pos(dt_dev_viewport_t *port);
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             const dt_dev_zoom_t zoom,
                             const int closeup_factor,
@@ -643,8 +657,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   const int32_t snapshot_id,
                   GList *module_filter_out,
                   const int devid,
-                  const gboolean finalscale);
-
+                  const gboolean finalscale,
+                  const gboolean want_float);
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
 void dt_dev_reset_chroma(dt_develop_t *dev);

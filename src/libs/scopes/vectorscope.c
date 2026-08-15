@@ -917,8 +917,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       const dt_scopes_vec_color_harmony_t hm = _vec_color_harmonies[cur_harmony];
       PangoLayout *layout;
       PangoRectangle ink;
-      PangoFontDescription *desc =
-        pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      PangoFontDescription *desc = dt_gui_get_font();
       pango_font_description_set_weight(desc, PANGO_WEIGHT_NORMAL);
       pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
@@ -1172,7 +1171,8 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
 
   // FIXME: if have own drawable for vectorscope can set scroll handler directly
   // clamp as mouse wheel scrolls sometimes report a delta of 2
-  const int delta = CLAMP(delta_y, -1.0, 1.0);
+  const gdouble dominant_axis_delta = fabs(delta_x) > fabs(delta_y) ? -delta_x : delta_y;
+  const int delta = (int) CLAMP(dominant_axis_delta, -1.0, 1.0);
   if(dt_modifier_is(state, GDK_SHIFT_MASK)) //( SHIFT+SCROLL
   {
     d->harmony_guide.width = (d->harmony_guide.width + delta + DT_COLOR_HARMONY_WIDTH_N)
@@ -1180,8 +1180,12 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
   }
   else if(dt_modifier_is(state, GDK_MOD1_MASK)) // ALT+SCROLL
   {
+    // we want up, left: previous type; down, right: next type
+    const gdouble dominant_axis_selection_delta = fabs(delta_x) > fabs(delta_y) ? delta_x : delta_y;
+    const int selection_delta = (int) CLAMP(dominant_axis_selection_delta, -1.0, 1.0);
+
     const dt_color_harmony_type_t new_type =
-      (d->harmony_guide.type + delta + DT_COLOR_HARMONY_N) % DT_COLOR_HARMONY_N;
+      (d->harmony_guide.type + selection_delta + DT_COLOR_HARMONY_N) % DT_COLOR_HARMONY_N;
     if(new_type == DT_COLOR_HARMONY_NONE)
       // turn all buttons off
       gtk_toggle_button_set_active
@@ -1415,14 +1419,20 @@ static void _vec_add_options(dt_scopes_mode_t *const self,
 {
   dt_scopes_vec_t *const d = self->data;
 
-  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("cycle vectorscope types"),
-                   d->colorspace_button, &dt_action_def_button);
+  d->colorspace_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("cycle vectorscope types"),
+        .action_def = &dt_action_def_button,
+      });
 
-  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  d->vec_scale_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("switch vectorscope scale"),
+        .action_def = &dt_action_def_button,
+      });
   gtk_widget_set_valign(d->vec_scale_button, GTK_ALIGN_START);
-  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
-                   d->vec_scale_button, &dt_action_def_button);
 
   d->harmony_viewport = gtk_viewport_new(NULL, NULL);
   gtk_widget_set_halign(d->harmony_viewport, GTK_ALIGN_END);

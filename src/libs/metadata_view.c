@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -1153,11 +1154,10 @@ static void _jump_to()
   }
 }
 
-static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
+static void _filmroll_clicked(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, gpointer null)
 {
-  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  if(n_press < 2) return;
   _jump_to();
-  return TRUE;
 }
 
 static void _jump_to_accel(dt_action_t *data)
@@ -1218,8 +1218,7 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
       if(d->filmroll_event && GTK_IS_WIDGET(d->filmroll_event))
         g_signal_handlers_disconnect_by_func(d->filmroll_event,
                                              G_CALLBACK(_filmroll_clicked), NULL);
-      g_signal_connect(G_OBJECT(w_value), "button-press-event",
-                       G_CALLBACK(_filmroll_clicked), NULL);
+      dt_gui_connect_click(w_value, _filmroll_clicked, NULL, NULL);
       d->filmroll_event = G_OBJECT(w_value);
     }
 
@@ -1464,7 +1463,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT, G_TYPE_STRING, G_TYPE_BOOLEAN);

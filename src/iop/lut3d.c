@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
@@ -1472,15 +1473,18 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
   }
 }
 
-static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_module_t *self)
+static void _mouse_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx, gdouble dy,
+                           dt_iop_module_t *self)
 {
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)view);
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gboolean next = FALSE;
-    if(event->delta_y > 0)
+    if(dy > 0)
       next = gtk_tree_model_iter_next(model, &iter);
     else
       next = gtk_tree_model_iter_previous(model, &iter);
@@ -1490,10 +1494,9 @@ static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_mod
       GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
       gtk_tree_view_set_cursor((GtkTreeView *)view, path, NULL, FALSE);
       gtk_tree_path_free(path);
-      return TRUE;
+      return;
     }
   }
-  return FALSE;
 }
 #endif // HAVE_GMIC
 
@@ -1691,17 +1694,21 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = IOP_GUI_ALLOC(lut3d);
 
-  g->button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-  gtk_widget_set_name(g->button, "non-flat");
 #ifdef HAVE_GMIC
-  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
+  const gchar *tooltip = _("select a png (haldclut)"
       ", a cube, a 3dl or a gmz (compressed LUT) file "
-      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
+      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file");
 #else
-  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
+  const gchar *tooltip = _("select a png (haldclut)"
       ", a cube or a 3dl file "
-      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
+      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file");
 #endif // HAVE_GMIC
+
+  g->button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = tooltip,
+      });
+  gtk_widget_set_name(g->button, "non-flat");
 
   g->filepath = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->filepath, PANGO_ELLIPSIZE_MIDDLE);
@@ -1747,7 +1754,9 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->lutwindow);
 
   g_signal_connect(G_OBJECT(g->lutentry), "changed", G_CALLBACK(_entry_callback), self);
-  g_signal_connect(G_OBJECT((GtkTreeView *)g->lutname), "scroll-event", G_CALLBACK(_mouse_scroll), (gpointer)self);
+  dt_gui_connect_scroll(g->lutname, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _mouse_scroll, self);
 #endif // HAVE_GMIC
 
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");

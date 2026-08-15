@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/map_locations.h"
@@ -830,42 +831,47 @@ static void _selection_changed(GtkTreeSelection *selection, dt_lib_module_t *sel
   _display_buttons(self);
 }
 
-static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static void _click_on_view(GtkGestureSingle *gesture,
+                            gint n_press,
+                            gdouble x,
+                            gdouble y,
+                            dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = self->data;
+  GtkWidget *view = dt_gui_get_widget(gesture);
 
   gboolean editing;
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);
   if(editing)
   {
     dt_control_log(_("terminate edit (press enter or escape) before selecting another location"));
-    return TRUE;
+    return;
   }
 
-  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
-  const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  const guint button_pressed = gtk_gesture_single_get_current_button(gesture);
+  const gboolean ctrl_pressed = dt_key_modifier_state() & GDK_CONTROL_MASK;
   if(button_pressed == GDK_BUTTON_SECONDARY || button_pressed == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x,
-                                     (gint)event->y, &path, NULL, NULL, NULL))
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)x,
+                                     (gint)y, &path, NULL, NULL, NULL))
     {
       if(button_pressed == GDK_BUTTON_SECONDARY)
       {
         gtk_tree_selection_select_path(selection, path);
-        _pop_menu_view(view, event, self);
+        _pop_menu_view(view, NULL, self);
         gtk_tree_path_free(path);
         _display_buttons(self);
-        return TRUE;
+        return;
       }
       else if(button_pressed == GDK_BUTTON_PRIMARY && !ctrl_pressed)
       {
         if(gtk_tree_selection_path_is_selected(selection, path))
           g_timeout_add(100, (GSourceFunc)_force_selection_changed, self);
         gtk_tree_path_free(path);
-        return FALSE;
+        return;
       }
       else if(button_pressed == GDK_BUTTON_PRIMARY && ctrl_pressed)
       {
@@ -874,16 +880,15 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
         gtk_tree_view_set_cursor(GTK_TREE_VIEW(d->view), path, d->name_col, TRUE);
         gtk_tree_path_free(path);
         _display_buttons(self);
-        return TRUE;
+        return;
       }
     }
     else
     {
       g_timeout_add(10, (GSourceFunc)_force_selection_changed, self);
-      return FALSE;
+      return;
     }
   }
-  return FALSE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -920,7 +925,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view), self);
+  dt_gui_connect_click(view, _click_on_view, NULL, self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view),
                               _("list of user locations,"
                                 "\nclick to show or hide a location on the map:"

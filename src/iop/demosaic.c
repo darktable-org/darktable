@@ -217,7 +217,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_markesteijn_homo_max;
   int kernel_markesteijn_homo_max_corr;
   int kernel_markesteijn_homo_quench;
-  int kernel_markesteijn_zero;
   int kernel_markesteijn_accu;
   int kernel_markesteijn_final;
   int kernel_rcd_populate;
@@ -233,7 +232,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
   int gaussian_9x9_div;
-  int prefill_clip_mask;
   int prepare_blend;
   int modify_blend;
   int show_blend_mask;
@@ -1260,7 +1258,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_markesteijn_homo_max = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_max");
   gd->kernel_markesteijn_homo_max_corr = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_max_corr");
   gd->kernel_markesteijn_homo_quench = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_quench");
-  gd->kernel_markesteijn_zero = dt_opencl_create_kernel(markesteijn, "markesteijn_zero");
   gd->kernel_markesteijn_accu = dt_opencl_create_kernel(markesteijn, "markesteijn_accu");
   gd->kernel_markesteijn_final = dt_opencl_create_kernel(markesteijn, "markesteijn_final");
 
@@ -1280,7 +1277,6 @@ void init_global(dt_iop_module_so_t *self)
   const int capt = 38; // capture.cl, from programs.conf
   gd->gaussian_9x9_mul = dt_opencl_create_kernel(capt, "kernel_9x9_mul");
   gd->gaussian_9x9_div = dt_opencl_create_kernel(capt, "kernel_9x9_div");
-  gd->prefill_clip_mask = dt_opencl_create_kernel(capt, "prefill_clip_mask");
   gd->prepare_blend = dt_opencl_create_kernel(capt, "prepare_blend");
   gd->modify_blend = dt_opencl_create_kernel(capt, "modify_blend");
   gd->show_blend_mask = dt_opencl_create_kernel(capt, "show_blend_mask");
@@ -1326,7 +1322,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_markesteijn_homo_max);
   dt_opencl_free_kernel(gd->kernel_markesteijn_homo_max_corr);
   dt_opencl_free_kernel(gd->kernel_markesteijn_homo_quench);
-  dt_opencl_free_kernel(gd->kernel_markesteijn_zero);
   dt_opencl_free_kernel(gd->kernel_markesteijn_accu);
   dt_opencl_free_kernel(gd->kernel_markesteijn_final);
   dt_opencl_free_kernel(gd->kernel_rcd_populate);
@@ -1342,7 +1337,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
   dt_opencl_free_kernel(gd->gaussian_9x9_div);
-  dt_opencl_free_kernel(gd->prefill_clip_mask);
   dt_opencl_free_kernel(gd->prepare_blend);
   dt_opencl_free_kernel(gd->modify_blend);
   dt_opencl_free_kernel(gd->show_blend_mask);
@@ -1548,7 +1542,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->cs_center, do_capture && p->cs_boost);
   gtk_widget_set_visible(g->cs_iter, do_capture);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cs_enabled), p->cs_enabled);
+  dt_bauhaus_toggle_set(g->cs_enabled, p->cs_enabled);
   gtk_widget_set_visible(g->cs_enabled, capture_support);
   gtk_widget_set_visible(GTK_WIDGET(g->capture.expander), do_capture);
 
@@ -1636,7 +1630,7 @@ static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
   g->cs_boost_mask = FALSE;
 
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1650,7 +1644,7 @@ static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
   g->cs_boost_mask = FALSE;
 
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1664,7 +1658,7 @@ static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
   g->cs_mask = FALSE;
 
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
@@ -1672,7 +1666,7 @@ static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
   DT_GUARD_GUI_UPDATE();
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   g->new_radius = -1.0f;
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
@@ -1709,7 +1703,7 @@ static void _preset_applied_callback(gpointer instance, dt_iop_module_t *self)
   {
     dt_print(DT_DEBUG_PIPE, "demosaic auto preset applied, radius=%.3f thrs=%.3f",
       p->cs_radius, p->cs_thrs);
-    dt_dev_reprocess_center(self->dev);
+    dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
 
@@ -1726,7 +1720,7 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
     dt_bauhaus_widget_set_quad_active(g->cs_boost, FALSE);
     g->cs_boost_mask = FALSE;
 
-    if(was_masking) dt_dev_reprocess_center(self->dev);
+    if(was_masking) dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 }
 

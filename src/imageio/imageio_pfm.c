@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "common/pfm.h"
 #include "common/imagebuf.h"
 
-#include <assert.h>
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
 #include "common/color_picker.h"
@@ -339,8 +340,7 @@ static void _drawable_drag_update(GtkGestureDrag* gesture,
                                   dt_scopes_t *s)
 {
   dt_scopes_mode_t *const cur_mode = s->cur_mode;
-  // GTK4: use gtk_event_controller_get_current_event_state()
-  GdkEvent *event = gtk_get_current_event();
+  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_MOTION_NOTIFY)
   {
@@ -350,12 +350,11 @@ static void _drawable_drag_update(GtkGestureDrag* gesture,
     const gdouble ox = offset_x - s->last_offset_x;
     const gdouble oy = offset_y - s->last_offset_y;
     const double delta = dt_scopes_call(cur_mode, get_exposure_delta, ox, oy);
-    dt_dev_exposure_handle_event(1, delta, event->motion.state,
+    dt_dev_exposure_handle_event(1, delta, dt_gdk_event_get_state(event),
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     s->last_offset_x = offset_x;
     s->last_offset_y = offset_y;
   }
-  gdk_event_free(event);
 }
 
 static void _drawable_button_press(GtkGestureSingle *gesture,
@@ -483,18 +482,20 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                                       const gdouble dy,
                                       dt_scopes_t *s)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(self));
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_SCROLL)
   {
-    // FIXME: so long as we have event, test its flags -- and for GTK 4 we can
-    // use gtk_get_current_event() and get flags -- make a helper function to do
-    // this.
-    if(dt_modifier_is(event->scroll.state,
+    if(dt_modifier_is(dt_gdk_event_get_state(event),
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
       // bubble to adjusting the overall widget size
-      gtk_widget_event(s->scope_draw, event);
+      dt_gui_forward_scroll(self, s->scope_draw);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      // free our own copy; dt_gui_forward_scroll() acquires and frees its own
+      gdk_event_free(event);
+#endif
+      return;
     }
     else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
     {
@@ -502,19 +503,38 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
       // FIXME: should handle smooth scrolling rather than discrete?
       // FIXME: should scrolling of scope be handled in the drawable rather than
       //        the eventbox.
-      dt_dev_exposure_handle_event(0, dy - dx, event->scroll.state,
+
+      // get the dominant direction, standardize on delta < 0 => up==right
+      const gdouble delta = fabs(dx) > fabs(dy) ? -dx : dy;
+      // for exposure ('highlight') mode: we want up/right: brighten the image
+      // -> increase exposure, or decrease black point (exposure handles that);
+      // in vectorscope, rgb parade, parts of the visualization moves upwards;
+      // in histogram, to the right.
+      // dt_dev_exposure_handle_event requires 'delta' in the 'brighten' > 0 convention, that is also what
+      // drag events emit
+
+      dt_dev_exposure_handle_event(0, - delta, dt_gdk_event_get_state(event),
                                    s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     }
     else
     {
       int ebx, eby;
+#if GTK_CHECK_VERSION(4, 0, 0)
+      gdouble gdk_x = 0.0, gdk_y = 0.0;
+      gdk_event_get_position(event, &gdk_x, &gdk_y);
+      gtk_widget_translate_coordinates(dt_gui_get_widget(GTK_EVENT_CONTROLLER(self)), s->scope_draw,
+                                       (int)gdk_x, (int)gdk_y, &ebx, &eby);
+#else
       gtk_widget_translate_coordinates(gtk_get_event_widget(event), s->scope_draw,
-                                       (int)event->scroll.x, (int)event->scroll.y, &ebx, &eby);
+                                       (int)dt_gdk_event_get_x(event), (int)dt_gdk_event_get_y(event), &ebx, &eby);
+#endif
       dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, ebx, eby,
-                               dx, dy, event->scroll.state);
+                               dx, dy, dt_gdk_event_get_state(event));
     }
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
   gdk_event_free(event);
+#endif
 }
 
 // TRUE if the point (x, y) -- given in `from` widget coordinates -- lies
@@ -550,7 +570,7 @@ static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controlle
   // pass-through on otherwise -> exposure dragging reaches scope.
   // For the split option we test the inner button_box_split, not the full-width
   // outer_box_split, so dragging still works across the rest of the top.
-  GtkWidget *eb = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  GtkWidget *eb = dt_gui_get_widget(controller);
   gtk_overlay_set_overlay_pass_through
     (GTK_OVERLAY(s->overlay), s->button_box_left,
      !_pointer_over_widget(eb, s->button_box_left, x, y));
@@ -585,9 +605,14 @@ static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller
   // when click between buttons on the buttonbox a leave event is
   // generated -- ignore it (for GTK 4, replace this with the simpler
   // gtk_event_controller_get_current_event())
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_mode(event) == GDK_CROSSING_UNGRAB
+       && gdk_crossing_event_get_detail(event) == GDK_NOTIFY_INFERIOR)
+      return;
+#else
     if(gdk_event_get_event_type(event) == GDK_LEAVE_NOTIFY)
     {
       const GdkEventCrossing *xc = &event->crossing;
@@ -598,6 +623,7 @@ static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller
       }
     }
     gdk_event_free(event);
+#endif
   }
   gtk_widget_hide(s->button_box_left);
   gtk_widget_hide(s->button_box_right);
@@ -809,12 +835,16 @@ void gui_init(dt_lib_module_t *self)
   {
     const char *const name = dt_scopes_call(&s->modes[i], name);
     s->modes[i].button_activate =
-      dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
+      dtgtk_togglebutton_new_full(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL,
+        &(dtgtk_button_config_t){
+          .tooltip = _(name),
+          .action = dark,
+          .action_section = N_("modes"),
+          .action_label = name,
+          .action_def = &dt_action_def_toggle,
+        });
     gtk_widget_set_halign(s->modes[i].button_activate, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(s->modes[i].button_activate, GTK_ALIGN_START);
-    gtk_widget_set_tooltip_text(s->modes[i].button_activate, _(name));
-    dt_action_define(dark, N_("modes"), name,
-                     s->modes[i].button_activate, &dt_action_def_toggle);
     // GTK4: use gtk_toggle_button_set_group(), GTK3: handle in callback
     s->modes[i].toggle_signal_handler =
       g_signal_connect_data(G_OBJECT(s->modes[i].button_activate), "toggled",

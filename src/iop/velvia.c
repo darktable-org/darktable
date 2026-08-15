@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,10 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
@@ -33,8 +34,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 

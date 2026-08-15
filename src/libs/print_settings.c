@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include <glib.h>
 
@@ -1210,27 +1211,22 @@ static void _update_style(const dt_stylemenu_data_t *menu_data)
 static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(event && event->type == GDK_KEY_PRESS)
-  {
+  if(dt_gui_menuitem_activated_by_keyboard(GTK_WIDGET(menuitem)))
     _update_style(menu_data);
-  }
-  gdk_event_free(event);
 }
 
-static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
-                                             GdkEventButton *event,
-                                             const dt_stylemenu_data_t *menu_data)
+static void _apply_style_button_callback(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
-  {
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     _update_style(menu_data);
-  }
   else
   {
     //??? dt_shortcut_copy_lua(NULL, name);
   }
-  return FALSE;
 }
 
 static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
@@ -2124,8 +2120,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
     char dimensions[16];
     PangoLayout *layout;
     PangoRectangle ext;
-    PangoFontDescription *desc =
-      pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
     layout = pango_cairo_create_layout(cr);
@@ -2929,10 +2924,13 @@ void gui_init(dt_lib_module_t *self)
 
   const char *current_style_name = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "style");
 
-  GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  GtkWidget *styles_button = dtgtk_button_new_full(dtgtk_cairo_paint_styles, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("select style to be applied on printing"),
+        .clicked_cb = G_CALLBACK(_style_popupmenu_callback),
+        .clicked_data = (gpointer)d,
+      });
   gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
-  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
-  gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on printing"));
   GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(style_box), _("temporary style to use while printing"));
   GtkWidget *styles_label = gtk_label_new(_("style"));

@@ -1654,12 +1654,12 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   gtk_box_pack_start(GTK_BOX(hb), vm->accels_window.flow_box, TRUE, TRUE, 0);
 
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  vm->accels_window.sticky_btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
-  gtk_widget_set_tooltip_text(vm->accels_window.sticky_btn,
-                              _("switch to a classic window which will stay open after key release"));
-  g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "clicked",
-                   G_CALLBACK(_accels_window_sticky),
-                   vm);
+  vm->accels_window.sticky_btn = dtgtk_button_new_full(dtgtk_cairo_paint_multiinstance, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("switch to a classic window which will stay open after key release"),
+        .clicked_cb = G_CALLBACK(_accels_window_sticky),
+        .clicked_data = vm,
+      });
   dt_gui_add_class(vm->accels_window.sticky_btn, "dt_accels_stick");
   gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
@@ -1946,39 +1946,146 @@ void dt_view_paint_surface(cairo_t *cr,
   const int maxw = MIN(port->width, backbuf_scale * processed_width * (1<<closeup) / ppd);
   const int maxh = MIN(port->height, backbuf_scale * processed_height * (1<<closeup) / ppd);
 
+  // img_w/img_h are the full image in screen pixels; on screen the image spans
+  // [(-0.5 - zoom) * img .. (0.5 - zoom) * img] about the viewport centre.
+  const double img_w = processed_width * backbuf_scale * (1 << closeup) / ppd;
+  const double img_h = processed_height * backbuf_scale * (1 << closeup) / ppd;
+
+  // Visible image rectangle: the image, panned by zoom_x/zoom_y, intersected
+  // with the viewport. Used for the color-assessment frame (always) and, when
+  // panned off-image, for the clip.
+  const double vis_x0 = fmax(-0.5 * port->width, (-0.5 - zoom_x) * img_w);
+  const double vis_x1 = fmin(0.5 * port->width, (0.5 - zoom_x) * img_w);
+  const double vis_y0 = fmax(-0.5 * port->height, (-0.5 - zoom_y) * img_h);
+  const double vis_y1 = fmin(0.5 * port->height, (0.5 - zoom_y) * img_h);
+
+  // Whether the viewport is panned beyond the image, i.e. off-image content is
+  // deliberately in view. In normal use the pan clamp keeps the viewport inside
+  // the picture, so this is FALSE; it only becomes TRUE while editing a mask,
+  // where the clamp is relaxed to reach handles outside the image (see
+  // _clamp_zoom_to_mask). We keep darktable's original clip and coverage
+  // behaviour in the normal case so a stale backbuf lagging a drag can't leave a
+  // grey seam at the border (#21606) or a growing frame over the grey
+  // background (#21594); the viewport-centre-driven geometry is used only for
+  // the off-image mask-editing case it was introduced for.
+  const float halfw_img = img_w > 0 ? 0.5f * port->width / (float)img_w : 0.5f;
+  const float halfh_img = img_h > 0 ? 0.5f * port->height / (float)img_h : 0.5f;
+  const gboolean off_image =
+       fabsf(zoom_x) > fmaxf(0.0f, 0.5f - halfw_img) + 1e-4f
+    || fabsf(zoom_y) > fmaxf(0.0f, 0.5f - halfh_img) + 1e-4f;
+
   if(port->color_assessment
      && window != DT_WINDOW_SLIDESHOW)
   {
-    // draw the white frame around picture
+    // draw the white frame hugging the visible image edge. Sized from the
+    // visible rectangle (image intersected with viewport) so it can't grow out
+    // across the grey background as you zoom in (#21594).
     const double ratio = dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio");
-    const double borw = maxw + 2.0 * tb * ratio;
-    const double borh = maxh + 2.0 * tb * ratio;
-    cairo_rectangle(cr, -0.5 * borw, -0.5 * borh, borw, borh);
+    const double borw = fmax(0.0, vis_x1 - vis_x0) + 2.0 * tb * ratio;
+    const double borh = fmax(0.0, vis_y1 - vis_y0) + 2.0 * tb * ratio;
+    cairo_rectangle(cr, vis_x0 - tb * ratio, vis_y0 - tb * ratio, borw, borh);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_COLOR_ASSESSMENT_FG);
     cairo_fill(cr);
+
+    // The frame keeps a full white surround on all four sides even when the
+    // viewport shows only part of the image (zoomed past fit, or the canvas
+    // scrolled off the picture while editing a mask). A solid white border on
+    // every side then wrongly implies the whole image is present. So on any
+    // side whose *real* image edge is scrolled out of view, mark that side's
+    // white margin with a dashed line (in the assessment background grey) to
+    // signal "the image continues beyond here". A side whose real edge is in
+    // view keeps its crisp, solid white border.
+    const double rx0 = (-0.5 - zoom_x) * img_w, rx1 = (0.5 - zoom_x) * img_w;
+    const double ry0 = (-0.5 - zoom_y) * img_h, ry1 = (0.5 - zoom_y) * img_h;
+    const double eps = 1.0;
+    const gboolean cut_l = rx0 < -0.5 * port->width - eps;
+    const gboolean cut_r = rx1 > 0.5 * port->width + eps;
+    const gboolean cut_t = ry0 < -0.5 * port->height - eps;
+    const gboolean cut_b = ry1 > 0.5 * port->height + eps;
+    if(cut_l || cut_r || cut_t || cut_b)
+    {
+      cairo_save(cr);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_COLOR_ASSESSMENT_BG);
+      const double d = DT_PIXEL_APPLY_DPI(6.0);
+      const double dashes[2] = { d, d };
+      cairo_set_dash(cr, dashes, 2, 0.0);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
+      const double m = 0.5 * tb * ratio; // centre the dash in the white margin
+      if(cut_l)
+      {
+        cairo_move_to(cr, vis_x0 - m, vis_y0);
+        cairo_line_to(cr, vis_x0 - m, vis_y1);
+      }
+      if(cut_r)
+      {
+        cairo_move_to(cr, vis_x1 + m, vis_y0);
+        cairo_line_to(cr, vis_x1 + m, vis_y1);
+      }
+      if(cut_t)
+      {
+        cairo_move_to(cr, vis_x0, vis_y0 - m);
+        cairo_line_to(cr, vis_x1, vis_y0 - m);
+      }
+      if(cut_b)
+      {
+        cairo_move_to(cr, vis_x0, vis_y1 + m);
+        cairo_line_to(cr, vis_x1, vis_y1 + m);
+      }
+      cairo_stroke(cr);
+      cairo_restore(cr);
+    }
   }
 
-  cairo_rectangle(cr, -0.5 * maxw, -0.5 * maxh, maxw, maxh);
+  if(off_image)
+    // Editing a mask with the viewport panned past the picture: clip to the
+    // image's true border (intersected with the viewport) so the off-image
+    // background shows where the handles are being placed.
+    cairo_rectangle(cr, vis_x0, vis_y0, fmax(0.0, vis_x1 - vis_x0), fmax(0.0, vis_y1 - vis_y0));
+  else
+    // Original darktable clip: MIN(viewport, image) centred on the viewport. It
+    // never sits exactly on the image border while zoomed in, so a backbuf that
+    // lags a drag can't leave a grey seam at the border (#21606).
+    cairo_rectangle(cr, -0.5 * maxw, -0.5 * maxh, maxw, maxh);
   cairo_clip(cr);
   const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
   const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
   const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
+  // The coverage test below must measure the pan the renderer can still fix, not
+  // the raw one. The render ROI is clamped to the image (see dt_dev_process_image),
+  // so when the viewport is panned outside the picture to reach off-image mask
+  // handles, the backbuf centre (offset) can get no closer to the viewport centre
+  // (zoom) than the image edge. Measuring against the raw zoom centre would keep
+  // reporting the off-image (background) margin as "not covered" and re-trigger
+  // the pipe every frame. So in that case measure against the closest centre the
+  // renderer can actually reach. In normal use we measure against the real zoom
+  // centre, so a drag that brings the border into view still re-renders to fill
+  // it instead of leaving it grey.
+  float cov_zoom_x = zoom_x, cov_zoom_y = zoom_y;
+  if(off_image)
+  {
+    const float rhx = 0.5f * buf_width / fmaxf(1.0f, (float)processed_width * buf_scale);
+    const float rhy = 0.5f * buf_height / fmaxf(1.0f, (float)processed_height * buf_scale);
+    cov_zoom_x = rhx >= 0.5f ? 0.0f : CLAMP(zoom_x, -(0.5f - rhx), 0.5f - rhx);
+    cov_zoom_y = rhy >= 0.5f ? 0.0f : CLAMP(zoom_y, -(0.5f - rhy), 0.5f - rhy);
+  }
+  const double cov_trans_x = (offset_x - cov_zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
+  const double cov_trans_y = (offset_y - cov_zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
+
   // Check if we should use the preview pipe for fallback rendering
   // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
   const gboolean use_preview_fallback =
-     (dev == darktable.develop)
-     && pp->output_imgid == dev->image_storage.id
-     && (port->pipe->output_imgid != dev->image_storage.id
-         || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
-         || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
-         || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
-     && (port == &dev->full || port == &dev->preview2);
+    (dev == darktable.develop) && pp->output_imgid == dev->image_storage.id &&
+    (port->pipe->output_imgid != dev->image_storage.id ||
+     fabsf(backbuf_scale / buf_scale - 1.0f) > .09f ||
+     floor(maxw / 2 / back_scale) - 1 > MIN(-cov_trans_x, cov_trans_x + buf_width) ||
+     floor(maxh / 2 / back_scale) - 1 > MIN(-cov_trans_y, cov_trans_y + buf_height)) &&
+    (port == &dev->full || port == &dev->preview2);
 
   if(use_preview_fallback)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_EXPOSE | DT_DEBUG_VERBOSE,
-      "dt_view_paint_surface sets DT_DEV_PIPE_ZOOMED", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
+      "dt_view_paint_surface", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "preview fallback set DT_DEV_PIPE_ZOOMED");
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;

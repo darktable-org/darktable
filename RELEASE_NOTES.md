@@ -64,11 +64,18 @@ changes (where available).
 
 ## Other Changes
 
-- N/A
+- Added a new collection filter for the original image dimensions.  
 
 ## Bug Fixes
 
-- N/A
+- Clarified multi-image rating toasts for un-reject and for mixed
+  upgrade/downgrade results across the selection.
+
+- Fix blank module instance names when going back in darkroom action
+  history.
+
+- Do not override library edit history from XMP sidecar file when
+  using darktable-cli with a library file.
 
 ## Lua
 

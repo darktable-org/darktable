@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/debug.h"
 #include "common/file_location.h"
@@ -562,13 +563,16 @@ static void _refresh_display_all_tracks(GtkWidget *widget, dt_lib_module_t *self
   _refresh_displayed_images(self);
 }
 
-static gboolean _click_for_entire_track(GtkEntry *spin, GdkEventButton *event, dt_lib_module_t *self)
+static void _click_for_entire_track_pressed(GtkGestureSingle *gesture,
+                                             int n_press,
+                                             double x,
+                                             double y,
+                                             dt_lib_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(n_press == 2)
   {
     _refresh_display_all_tracks(NULL, self);
   }
-  return FALSE;
 }
 
 static void _track_seg_toggled(GtkCellRendererToggle *cell_renderer, gchar *path_str, dt_lib_module_t *self)
@@ -1446,7 +1450,7 @@ static void _datetime_scroll_over(GtkEventControllerScroll *controller,
   dt_lib_geotagging_t *d = self->data;
   if(!d->editing)
   {
-    GtkWidget* w = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+    GtkWidget* w = dt_gui_get_widget(controller);
     int i = 0;
     for(i = 0; i < DT_GEOTAG_PARTS_NB; i++)
       if(w == d->dt.widget[i]) break;
@@ -1564,10 +1568,14 @@ static GtkWidget *_gui_init_datetime(gchar *text,
   return flow;
 }
 
-static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean _datetime_key_pressed(GtkEventControllerKey *controller,
+                                      guint keyval,
+                                      guint keycode,
+                                      GdkModifierType state,
+                                      dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = self->data;
-  switch(event->keyval)
+  switch(keyval)
   {
     case GDK_KEY_Escape:
     {
@@ -1623,9 +1631,8 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
       g_signal_emit_by_name(d->dt.widget[0], "changed");
       return FALSE;
 
-    default: // let shortcut system deal with everything else
-      g_signal_stop_emission_by_name(entry, "key-press-event");
-      return FALSE;
+    default:
+      return TRUE;
   }
 }
 
@@ -1654,9 +1661,13 @@ static void _timezone_save(dt_lib_module_t *self)
 #endif
 }
 
-static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean _timezone_key_pressed(GtkEventControllerKey *controller,
+                                       guint keyval,
+                                       guint keycode,
+                                       GdkModifierType state,
+                                       dt_lib_module_t *self)
 {
-  switch(event->keyval)
+  switch(keyval)
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
@@ -1796,11 +1807,13 @@ void gui_init(dt_lib_module_t *self)
   box = _gui_init_datetime(_("original date/time"), &d->dt0, 1, self, group, NULL, NULL);
   gtk_grid_attach(grid, box, 0, line++, 4, 1);
 
-  d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  gtk_widget_set_tooltip_text(d->lock_offset,
-                              _("lock date/time offset value to apply it onto another selection"));
+  d->lock_offset = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lock, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("lock date/time offset value to apply it onto another selection"),
+        .clicked_cb = G_CALLBACK(_toggle_lock_button_callback),
+        .clicked_data = (gpointer)self,
+      });
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
-  g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
 
   box = _gui_init_datetime(_("date/time offset"), &d->of, 2, self, group, d->lock_offset,
                            _("offset or difference ([-]dd hh:mm:ss[.sss])"));
@@ -1860,7 +1873,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_completion_set_minimum_key_length(completion, 0);
   gtk_entry_set_completion(GTK_ENTRY(d->timezone), completion);
-  g_signal_connect(G_OBJECT(d->timezone), "key-press-event", G_CALLBACK(_timezone_key_pressed), self);
+  dt_gui_connect_key(d->timezone, _timezone_key_pressed, self);
   g_signal_connect(G_OBJECT(d->timezone), "focus-out-event", G_CALLBACK(_timezone_focus_out), self);
 
   // gpx
@@ -1879,13 +1892,16 @@ void gui_init(dt_lib_module_t *self)
   label = dt_ui_section_label_new(C_("section", "GPX file"));
   gtk_grid_attach(grid, label, 0, line++, 4, 1);
 
-  d->map.gpx_button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  d->map.gpx_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("select a GPX track file..."),
+        .clicked_cb = G_CALLBACK(_choose_gpx_callback),
+        .clicked_data = self,
+      });
   gtk_widget_set_hexpand(d->map.gpx_button, FALSE);
   gtk_widget_set_halign(d->map.gpx_button, GTK_ALIGN_START);
   gtk_widget_set_name(d->map.gpx_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->map.gpx_button, _("select a GPX track file..."));
   gtk_grid_attach(grid, d->map.gpx_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->map.gpx_button), "clicked", G_CALLBACK(_choose_gpx_callback), self);
 
   d->map.gpx_file = dt_ui_label_new("");
   gtk_label_set_ellipsize(GTK_LABEL(d->map.gpx_file ), PANGO_ELLIPSIZE_MIDDLE);
@@ -1927,7 +1943,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_object_set(G_OBJECT(d->map.gpx_view), "has-tooltip", TRUE, NULL);
   g_signal_connect(G_OBJECT(d->map.gpx_view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), self);
-  g_signal_connect(G_OBJECT(d->map.gpx_view), "button-press-event", G_CALLBACK(_click_for_entire_track), self);
+  dt_gui_connect_click(d->map.gpx_view, _click_for_entire_track_pressed, NULL, self);
 
   // avoid ugly console pixman messages due to headers
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->map.gpx_view), FALSE);
@@ -1997,7 +2013,7 @@ void gui_init(dt_lib_module_t *self)
   for(int i = 0; i < DT_GEOTAG_PARTS_NB; i++)
   {
     g_signal_connect(d->dt.widget[i], "changed", G_CALLBACK(_datetime_entry_changed), self);
-    g_signal_connect(d->dt.widget[i], "key-press-event", G_CALLBACK(_datetime_key_pressed), self);
+    dt_gui_connect_key(d->dt.widget[i], _datetime_key_pressed, self);
     dt_gui_connect_scroll(d->dt.widget[i],
                           GTK_EVENT_CONTROLLER_SCROLL_VERTICAL
                           | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,

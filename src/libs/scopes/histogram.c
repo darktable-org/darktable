@@ -239,13 +239,16 @@ static void _hist_add_options(dt_scopes_mode_t *const self,
                               dt_action_t *dark)
 {
   dt_scopes_hist_t *d = self->data;
-  d->scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  d->scale_button = dtgtk_button_new_full(dtgtk_cairo_paint_empty, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .action = dark,
+        .action_label = N_("switch histogram scale"),
+        .action_def = &dt_action_def_button,
+        .clicked_cb = G_CALLBACK(_hist_scale_clicked),
+        .clicked_data = self,
+      });
   gtk_widget_set_valign(d->scale_button, GTK_ALIGN_START);
-  dt_action_define(dark, NULL, N_("switch histogram scale"),
-                   d->scale_button, &dt_action_def_button);
   dt_gui_box_add(self->options_box, d->scale_button);
-  g_signal_connect(G_OBJECT(d->scale_button), "clicked",
-                   G_CALLBACK(_hist_scale_clicked), self);
 }
 
 static void _hist_gui_cleanup(dt_scopes_mode_t *const self)

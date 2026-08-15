@@ -662,7 +662,7 @@ int process_cl(dt_iop_module_t *self,
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
-    dt_print_pipe(DT_DEBUG_PIPE, "coeff correction",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "coeff correction",
       pipe, self, devid, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
       pipe->dsc.temperature.coeffs[0], coeffs[0],
@@ -1209,7 +1209,7 @@ void process(dt_iop_module_t *self,
       // note: tiling takes care about processed_maximum
       pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
-    dt_print_pipe(DT_DEBUG_PIPE, "coeff correction",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "coeff correction",
       pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
       pipe->dsc.temperature.coeffs[0], coeffs[0],
@@ -2037,6 +2037,20 @@ static void update_profile_list(dt_iop_module_t *self)
   }
 }
 
+static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *self)
+{
+  if(!self->gui_data) return;
+  dt_iop_colorin_params_t *p = self->params;
+  const gboolean on = p->blue_mapping;
+  dt_iop_set_module_trouble_message
+      (self,
+        on ? _("blue mapping") : NULL,
+        on ? _("the blue mapping mode has been deprecated since very long and has been removed.\n"
+              "reset to defaults or switch to any colorin profile and check results. minimal\n"
+              "visual differences might be possible.") : NULL,
+        on ? "blue mode detected in colorin module" : NULL);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -2071,6 +2085,7 @@ void gui_init(dt_iop_module_t *self)
   g->clipping_combobox = dt_bauhaus_combobox_from_params(self, "normalize");
   gtk_widget_set_tooltip_text(g->clipping_combobox,
                               _("confine Lab values to gamut of RGB color space"));
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _preview_pipe_finished_callback);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

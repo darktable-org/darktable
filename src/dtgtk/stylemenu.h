@@ -27,9 +27,11 @@ typedef struct {
 
 typedef void dtgtk_menuitem_activate_callback_fn(GtkMenuItem *menuitem,
                                                  const dt_stylemenu_data_t *menu_data);
-typedef gboolean dtgtk_menuitem_button_callback_fn(GtkMenuItem *,
-                                                   GdkEventButton *event,
-                                                   const dt_stylemenu_data_t *menu_data);
+typedef void dtgtk_menuitem_button_callback_fn(GtkGestureSingle *gesture,
+                                               gint n_press,
+                                               gdouble x,
+                                               gdouble y,
+                                               const dt_stylemenu_data_t *menu_data);
 
 GtkMenuShell *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
                                                dtgtk_menuitem_activate_callback_fn *activate_callback,

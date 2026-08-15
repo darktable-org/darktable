@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -369,6 +368,17 @@ void reload_defaults(dt_iop_module_t *self)
   // the new default is to compensate for highlight preservation mode,
   // but ONLY if we're the first instance (to avoid multiple application)
   d->compensate_hilite_pres = dt_iop_is_first_instance(self->dev->iop, self);
+
+  // both defaults above depend on the image and on the instance, so the
+  // widgets have to be told about them again, as for sliders and comboboxes
+  dt_iop_exposure_gui_data_t *g = self->gui_data;
+  if(g)
+  {
+    dt_bauhaus_toggle_set_default(g->compensate_exposure_bias,
+                                  d->compensate_exposure_bias);
+    dt_bauhaus_toggle_set_default(g->compensate_hilite_preserv,
+                                  d->compensate_hilite_pres);
+  }
 }
 
 static void _deflicker_prepare_histogram(dt_iop_module_t *self,
@@ -585,11 +595,9 @@ static float _get_highlight_bias(const dt_iop_module_t *self)
 {
   float bias = 0.0f;
 
-  // Nikon: Exif.Nikon3.Colorspace==4  --> +2 EV
-  // Fuji:  Exif.Fujifilm.DevelopmentDynamicRange
-  //             100 --> no comp
-  //             200 --> +1 EV
-  //             400 --> +2 EV
+  // exif_highlight_preservation holds the exposure (EV) that the camera withheld
+  // in an HDR / dynamic-range / HLG tone mode; so we compensate for it in exposure.
+  // Per-camera detection happens in _check_highlight_preservation() in common/exif.cc.
 
   if(self->dev && self->dev->image_storage.exif_highlight_preservation > 0.0f)
     bias = self->dev->image_storage.exif_highlight_preservation;
@@ -682,25 +690,19 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias),
-                               p->compensate_exposure_bias);
+  dt_bauhaus_toggle_set(g->compensate_exposure_bias,
+                        p->compensate_exposure_bias);
   gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
                                  _get_exposure_bias(self));
-  gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
-  gtk_label_set_ellipsize
-    (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))),
-     PANGO_ELLIPSIZE_MIDDLE);
+  dt_bauhaus_widget_set_label_text(g->compensate_exposure_bias, label);
   g_free(label);
 
   const float hlbias = _get_highlight_bias(self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_preserv),
-                               p->compensate_hilite_pres);
+  dt_bauhaus_toggle_set(g->compensate_hilite_preserv,
+                        p->compensate_hilite_pres);
   /* xgettext:no-c-format */
   label = g_strdup_printf(_("highlight preservation mode (%.1f EV)"), hlbias);
-  gtk_button_set_label(GTK_BUTTON(g->compensate_hilite_preserv), label);
-  gtk_label_set_ellipsize
-    (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_hilite_preserv))),
-     PANGO_ELLIPSIZE_MIDDLE);
+  dt_bauhaus_widget_set_label_text(g->compensate_hilite_preserv, label);
   g_free(label);
   gtk_widget_set_visible(GTK_WIDGET(g->compensate_hilite_preserv), hlbias > 0.0f);
 
@@ -840,6 +842,8 @@ static void _exposure_proxy_handle_event(int n_press,
                                   ? g->deflicker_target_level : g->exposure);
     const float val = dt_bauhaus_slider_get(widget);
     const float accel = dt_accel_get_speed_multiplier(widget, state);
+    // delta > 0 means 'brighten'; increase exposure or move the black point correction
+    // in the negative direction
     if(is_blackpoint)
       delta = -delta;
 
@@ -1171,7 +1175,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   DT_LEAVE_GUI_UPDATE();
 
-  if(mode == DT_SPOT_MODE_CORRECT)
+  if(mode == DT_SPOT_MODE_CORRECT && dt_iop_color_picker_is_active(g->exposure))
     _auto_set_exposure(self, darktable.develop->full.pipe);
   // else : just record new values and do nothing
 }
@@ -1195,18 +1199,21 @@ void gui_init(dt_iop_module_t *self)
 
   g->compensate_exposure_bias = dt_bauhaus_toggle_from_params
     (self, "compensate_exposure_bias");
+  // the label carries the bias read off the image, so shorten it in the
+  // middle rather than at the end, where that value sits
+  dt_bauhaus_widget_set_label_ellipsize(g->compensate_exposure_bias,
+                                        PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias,
                               _("automatically remove the camera exposure bias\n"
                                 "this is useful if you exposed the image to the right."));
 
   g->compensate_hilite_preserv = dt_bauhaus_toggle_from_params
     (self, "compensate_hilite_pres");
+  dt_bauhaus_widget_set_label_ellipsize(g->compensate_hilite_preserv,
+                                        PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->compensate_hilite_preserv,
                               _("remove the camera's hidden exposure bias in\n"
-                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
-                                "\n"
-                                "when enabled on an image with nonzero bias, tone mapping\n"
-                                "(e.g. sigmoid) is required to avoid blown-out highlights."));
+                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));

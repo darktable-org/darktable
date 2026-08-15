@@ -231,7 +231,10 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     const dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     // we start the form rotating or dragging
-    if(gui->pivot_selected)
+    // - dragging the pivot handle rotates (legacy gesture)
+    // - CTRL+drag anywhere rotates too, matching the rotate convention
+    //   used by the other masks (ellipse, path, brush)
+    if(gui->pivot_selected || dt_modifier_is(state, GDK_CONTROL_MASK))
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
@@ -384,6 +387,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
 
     // we change the center value
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     gradient->anchor[0] = pts[0] / iwidth;
@@ -555,6 +559,7 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_masks_clamp_move_pts(pts, wd, ht);
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     gradient->anchor[0] = pts[0] / iwidth;
@@ -1417,6 +1422,8 @@ static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                      0, _("[GRADIENT on pivot] rotate shape"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
+                                     GDK_CONTROL_MASK, _("[GRADIENT] rotate shape"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                      0, _("[GRADIENT creation] set rotation"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[GRADIENT] change curvature"));
@@ -1453,7 +1460,7 @@ static void _gradient_set_hint_message(const dt_masks_form_gui_t *const gui,
   else if(gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len,
                _("<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
-                 "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+                 "<b>rotate</b>: ctrl+drag, <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   else if(gui->pivot_selected)
     g_strlcat(msgbuf, _("<b>rotate</b>: drag"), msgbuf_len);
 }

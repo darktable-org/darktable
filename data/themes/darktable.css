@@ -599,6 +599,19 @@ dialog .sidebar row:selected:hover label,
   margin: 1em 0 1em 0.5em;
 }
 
+/* per-duplicate action buttons - styled independently via their classes */
+.dt_duplicate_ui .dt_duplicate_duplicate,
+.dt_duplicate_ui .dt_duplicate_original
+{
+  margin: 0;
+}
+
+/* space the delete button apart from the duplicate buttons */
+.dt_duplicate_ui .dt_duplicate_delete
+{
+  margin-left: 0.5em;
+}
+
 /* Set modules name header */
 #module-header
 {
@@ -901,6 +914,16 @@ menuitem > arrow
 .dt_bauhaus
 {
   margin: 0.2em 0;
+}
+
+/* the "show guides" checkbox, which is the one that carries an icon of its
+   own and is appended to modules that know nothing about it. Left moves its
+   tick box and label in from the start of the row, right pulls its icon in
+   from the end, and neither touches any other checkbox */
+.dt_guides_toggle
+{
+  padding-left: 0.65em;
+  padding-right: 0.65em;
 }
 
 /* and set menuitem related to sort of combobox like metadata presets in import module */

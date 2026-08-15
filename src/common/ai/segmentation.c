@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// SAM encoder expects 1024x1024 input
+// default SAM encoder input size
 #define SAM_INPUT_SIZE 1024
 
 // ImageNet normalization constants
@@ -48,7 +48,7 @@ static const float IMG_STD[3] = {58.395f, 57.12f, 57.375f};
 // model architecture type, determines preprocessing, decoder I/O, and refinement
 typedef enum dt_seg_model_type_t
 {
-  DT_SEG_MODEL_SAM,     // SAM/SAM2: multi-mask + IoU + low_res refinement
+  DT_SEG_MODEL_SAM,     // SAM: multi-mask + IoU + low_res refinement
   DT_SEG_MODEL_SEGNEXT  // SegNext: single mask, full-res prev_mask refinement
 } dt_seg_model_type_t;
 
@@ -78,7 +78,7 @@ struct dt_seg_context_t
   size_t enc_sizes[MAX_ENCODER_OUTPUTS];
 
   // previous mask for iterative refinement
-  // SAM: low-res [1][1][prev_mask_dim][prev_mask_dim] (typically 256x256)
+  // SAM: low-res [1][1][prev_mask_dim][prev_mask_dim]
   // SegNext: full-res [1][1][prev_mask_dim][prev_mask_dim] (typically 1024x1024)
   float *prev_mask;
   int prev_mask_dim;
@@ -87,7 +87,8 @@ struct dt_seg_context_t
   // image dimensions that were encoded
   int encoded_width;
   int encoded_height;
-  float scale; // SAM_INPUT_SIZE / max(w, h)
+  int input_size;
+  float scale; // input_size / max(w, h)
   gboolean image_encoded;
 
   // RGB at encoded resolution, used as JBU guide when upsampling
@@ -100,19 +101,19 @@ struct dt_seg_context_t
 
 /* --- preprocessing --- */
 
-// resize RGB image so longest side = SAM_INPUT_SIZE, pad with zeros,
+// resize RGB image so longest side = target, pad with zeros,
 // convert HWC -> CHW.  When normalize=TRUE, applies ImageNet mean/std
 // (SAM models).  When FALSE, scales to [0,1] only (SegNext bakes
 // normalization into the ONNX encoder graph).
-// output: float buffer [1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE]
+// output: float buffer [1, 3, target, target]
 static float *
 _preprocess_image(const uint8_t *rgb_data,
                   const int width,
                   const int height,
                   const gboolean normalize,
+                  const int target,
                   float *out_scale)
 {
-  const int target = SAM_INPUT_SIZE;
   const float scale = (float)target / (float)(width > height ? width : height);
   const int new_w = MIN((int)(width * scale + 0.5f), target);
   const int new_h = MIN((int)(height * scale + 0.5f), target);
@@ -124,17 +125,20 @@ _preprocess_image(const uint8_t *rgb_data,
   if(!output)
     return NULL;
 
-  // bilinear resize + normalize + HWC->CHW in one pass
+  // bilinear resize + normalize + HWC->CHW in one pass, sampling on the
+  // pixel-centre convention like _crop_resize_mask. y / scale would shift the
+  // image by 0.5/scale - 0.5 source px (2.4 px at 6000 -> 1024), which the
+  // encoder bakes into the mask. the clamp keeps (int) a floor and fy >= 0
   for(int y = 0; y < new_h; y++)
   {
-    const float src_y = (float)y / scale;
+    const float src_y = MAX(((float)y + 0.5f) / scale - 0.5f, 0.0f);
     const int y0 = (int)src_y;
     const int y1 = (y0 + 1 < height) ? y0 + 1 : y0;
     const float fy = src_y - y0;
 
     for(int x = 0; x < new_w; x++)
     {
-      const float src_x = (float)x / scale;
+      const float src_x = MAX(((float)x + 0.5f) / scale - 0.5f, 0.0f);
       const int x0 = (int)src_x;
       const int x1 = (x0 + 1 < width) ? x0 + 1 : x0;
       const float fx = src_x - x0;
@@ -224,17 +228,26 @@ static void _crop_resize_mask(const float *const restrict src,
     }
   }
 
+  // inverse of the sampling mapping below, hoisted out of the pixel loops
+  const float inv_scale = (scale > 1e-6f) ? 1.0f / scale : 0.0f;
+
   DT_OMP_FOR(shared(range_lut))
   for(int y = 0; y < dst_h; y++)
   {
-    const float sy = (dst_h > 1) ? (float)y * (float)(valid_h - 1) / (float)(dst_h - 1) : 0.0f;
+    // pixel-centre convention: output pixel y covers [y, y+1[, whose
+    // centre y + 0.5 maps to (y + 0.5) * scale in mask space, i.e.
+    // sample index (y + 0.5) * scale - 0.5. the previous align-corners
+    // mapping was not the inverse of that and stretched the mask
+    // outwards; see the commit message for figures. the clamp is
+    // load-bearing: it keeps fy >= 0 and makes (int)sy a floor
+    const float sy = MAX(((float)y + 0.5f) * scale - 0.5f, 0.0f);
     const int y0 = MIN((int)sy, valid_h - 1);
     const int y1 = MIN(y0 + 1, valid_h - 1);
     const float fy = sy - (float)y0;
 
     for(int x = 0; x < dst_w; x++)
     {
-      const float sx = (dst_w > 1) ? (float)x * (float)(valid_w - 1) / (float)(dst_w - 1) : 0.0f;
+      const float sx = MAX(((float)x + 0.5f) * scale - 0.5f, 0.0f);
       const int x0 = MIN((int)sx, valid_w - 1);
       const int x1 = MIN(x0 + 1, valid_w - 1);
       const float fx = sx - (float)x0;
@@ -254,11 +267,13 @@ static void _crop_resize_mask(const float *const restrict src,
         // reference luma at the output pixel (guide is at dst resolution)
         const int luma_ref = _luma709(&guide_rgb[(y * guide_w + x) * 3]);
 
-        // map the 4 source-grid corners back into guide coords
-        const float gx0 = (valid_w > 1) ? (float)x0 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
-        const float gx1 = (valid_w > 1) ? (float)x1 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
-        const float gy0 = (valid_h > 1) ? (float)y0 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
-        const float gy1 = (valid_h > 1) ? (float)y1 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
+        // map the 4 source-grid corners back into guide coords -- exact
+        // inverse of the sampling mapping above, so that the range weights
+        // are read at the guide pixels the mask values actually come from
+        const float gx0 = ((float)x0 + 0.5f) * inv_scale - 0.5f;
+        const float gx1 = ((float)x1 + 0.5f) * inv_scale - 0.5f;
+        const float gy0 = ((float)y0 + 0.5f) * inv_scale - 0.5f;
+        const float gy1 = ((float)y1 + 0.5f) * inv_scale - 0.5f;
 
         const int ix00 = MIN(MAX((int)(gx0 + 0.5f), 0), guide_w - 1);
         const int ix01 = MIN(MAX((int)(gx1 + 0.5f), 0), guide_w - 1);
@@ -302,6 +317,26 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
 {
   if(!env || !model_id)
     return NULL;
+
+  // detect model type from arch field in model registry
+  const dt_ai_model_info_t *minfo
+    = dt_ai_get_model_info_by_id(env, model_id);
+  const char *arch = minfo ? minfo->arch : "";
+  dt_seg_model_type_t model_type;
+
+  if(strcmp(arch, "sam") == 0 || strcmp(arch, "sam2") == 0)
+    model_type = DT_SEG_MODEL_SAM;
+  else if(strcmp(arch, "segnext") == 0)
+    model_type = DT_SEG_MODEL_SEGNEXT;
+  else
+  {
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] unknown arch '%s' for %s",
+             arch, model_id);
+    return NULL;
+  }
+
+  const gboolean is_sam_model = model_type == DT_SEG_MODEL_SAM;
 
   // honour explicit env override (e.g. CPU fallback after a CoreML failure);
   // CONFIGURED would re-read conf and lose the override
@@ -350,6 +385,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   dt_seg_context_t *ctx = g_new0(dt_seg_context_t, 1);
   ctx->encoder = encoder;
   ctx->decoder = decoder;
+  ctx->model_type = model_type;
   ctx->model_id = g_strdup(model_id);
   ctx->model_version = g_strdup(version);
 
@@ -425,32 +461,16 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
                     di ? ", " : "", di, ctx->enc_order[di]);
   dt_print(DT_DEBUG_AI, "[segmentation] tensor routing: %s", map);
 
-  // detect model type from arch field in model registry
-  const dt_ai_model_info_t *minfo
-    = dt_ai_get_model_info_by_id(env, model_id);
-  const char *arch = minfo ? minfo->arch : "";
+  ctx->input_size = dt_ai_model_attribute_int(minfo, "input_size", SAM_INPUT_SIZE);
 
-  if(strcmp(arch, "sam2") == 0)
-    ctx->model_type = DT_SEG_MODEL_SAM;
-  else if(strcmp(arch, "segnext") == 0)
-    ctx->model_type = DT_SEG_MODEL_SEGNEXT;
-  else
-  {
-    dt_print(DT_DEBUG_AI,
-             "[segmentation] unknown arch '%s' for %s",
-             arch, model_id);
-    dt_seg_free(ctx);
-    return NULL;
-  }
-
-  // SAM requires external ImageNet normalization; SegNext bakes it into the encoder
-  ctx->normalize = (ctx->model_type == DT_SEG_MODEL_SAM);
+  // SAM models require external ImageNet normalization; SegNext bakes it into the encoder
+  ctx->normalize = is_sam_model;
 
   // query decoder mask output shape: [1, N, H, W] (SAM) or [1, 1, H, W] (SegNext)
   int64_t dec_out_shape[MAX_TENSOR_DIMS];
   const int dec_out_ndim = dt_ai_get_output_shape(decoder, 0, dec_out_shape, MAX_TENSOR_DIMS);
 
-  if(ctx->model_type == DT_SEG_MODEL_SAM)
+  if(is_sam_model)
   {
     // SAM path
     ctx->num_masks = (dec_out_ndim >= 4 && dec_out_shape[1] > 1) ? (int)dec_out_shape[1] : 0;
@@ -517,20 +537,20 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
                ctx->dec_mask_h, ctx->dec_mask_w, ctx->num_masks);
     }
 
-    // if dims are still dynamic after override, fall back to SAM_INPUT_SIZE,
+    // if dims are still dynamic after override, fall back to input_size,
     // the backend uses ORT-allocated outputs for dynamic shapes and reports
     // actual dims after inference via the shape array
     if(ctx->dec_mask_h <= 0 || ctx->dec_mask_w <= 0)
     {
       dt_print(DT_DEBUG_AI,
                "[segmentation] using fallback mask dims %dx%d (runtime-resolved)",
-               SAM_INPUT_SIZE, SAM_INPUT_SIZE);
-      ctx->dec_mask_h = SAM_INPUT_SIZE;
-      ctx->dec_mask_w = SAM_INPUT_SIZE;
+               ctx->input_size, ctx->input_size);
+      ctx->dec_mask_h = ctx->input_size;
+      ctx->dec_mask_w = ctx->input_size;
     }
 
     // query low_res mask spatial dimensions from decoder output 2
-    ctx->prev_mask_dim = 256; // default
+    ctx->prev_mask_dim = dt_ai_model_attribute_int(minfo, "prev_mask_size", 256);
     {
       int64_t lr_shape[MAX_TENSOR_DIMS];
       const int lr_ndim = dt_ai_get_output_shape(decoder, 2, lr_shape, MAX_TENSOR_DIMS);
@@ -559,11 +579,12 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
-  const char *type_name = (ctx->model_type == DT_SEG_MODEL_SAM) ? "SAM" : "SegNext";
+  const char *type_name = ctx->model_type == DT_SEG_MODEL_SAM
+                          ? "SAM" : "SegNext";
   dt_print(DT_DEBUG_AI,
-           "[segmentation] model loaded: %s [%s] (enc_outputs=%d, num_masks=%d, "
+           "[segmentation] model loaded: %s [%s] (input_size=%d, enc_outputs=%d, num_masks=%d, "
            "dec_dims=%dx%d, prev_mask_dim=%d)",
-           model_id, type_name, ctx->n_enc_outputs, ctx->num_masks,
+           model_id, type_name, ctx->input_size, ctx->n_enc_outputs, ctx->num_masks,
            ctx->dec_mask_h, ctx->dec_mask_w, ctx->prev_mask_dim);
   return ctx;
 }
@@ -595,7 +616,7 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
 
   dt_print(DT_DEBUG_AI, "[segmentation] warming up decoder...");
   const double t0 = dt_get_wtime();
-  const gboolean is_sam = (ctx->model_type == DT_SEG_MODEL_SAM);
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM;
   const int pm_dim = ctx->prev_mask_dim;
   const int nm = ctx->num_masks;
   const int dec_h = ctx->dec_mask_h;
@@ -730,12 +751,13 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
     return TRUE;
 
   float scale;
-  float *preprocessed = _preprocess_image(rgb_data, width, height, ctx->normalize, &scale);
+  float *preprocessed = _preprocess_image(rgb_data, width, height,
+                                          ctx->normalize, ctx->input_size, &scale);
   if(!preprocessed)
     return FALSE;
 
   // run encoder
-  int64_t input_shape[4] = {1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE};
+  int64_t input_shape[4] = {1, 3, ctx->input_size, ctx->input_size};
   dt_ai_tensor_t input
     = { .data = preprocessed,
        .type  = DT_AI_FLOAT,
@@ -865,7 +887,7 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   if(!ctx || !ctx->image_encoded || !points || n_points <= 0)
     return NULL;
 
-  const gboolean is_sam = (ctx->model_type == DT_SEG_MODEL_SAM);
+  const gboolean is_sam = ctx->model_type == DT_SEG_MODEL_SAM;
 
   // build point prompts
   // SAM ONNX requires a padding point (0,0) with label -1 appended
@@ -1093,7 +1115,7 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
     return NULL;
   }
 
-  const float mask_scale = ctx->scale * (float)dec_h / (float)SAM_INPUT_SIZE;
+  const float mask_scale = ctx->scale * (float)dec_h / (float)ctx->input_size;
   _crop_resize_mask(masks + (size_t)best * per_mask,
                     dec_w, dec_h,
                     result, final_w, final_h,
@@ -1161,9 +1183,12 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
 
 /* --- disk cache for encoder embeddings --- */
 
-// file format: magic + version + metadata + encoder outputs + RGB
+// file format: magic + version + metadata + encoder outputs + RGB.
+// bump the version when anything upstream of the encoder changes: the key
+// (imgid, distort hash, model) would not notice, and stale embeddings would
+// be reused forever. v2 = _preprocess_image moved to pixel-centre sampling
 #define SEG_CACHE_MAGIC 0x44545347  // "DTSG"
-#define SEG_CACHE_VERSION 1
+#define SEG_CACHE_VERSION 2
 #define SEG_CACHE_SUBDIR "objmasks"
 
 // build the per-database cache directory path.

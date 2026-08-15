@@ -549,7 +549,6 @@ dt_dwt_cl_global_t *dt_dwt_init_cl_global()
   g->kernel_dwt_subtract_layer = dt_opencl_create_kernel(program, "dwt_subtract_layer");
   g->kernel_dwt_hat_transform_col = dt_opencl_create_kernel(program, "dwt_hat_transform_col");
   g->kernel_dwt_hat_transform_row = dt_opencl_create_kernel(program, "dwt_hat_transform_row");
-  g->kernel_dwt_init_buffer = dt_opencl_create_kernel(program, "dwt_init_buffer");
   return g;
 }
 
@@ -562,7 +561,6 @@ void dt_dwt_free_cl_global(dt_dwt_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_dwt_subtract_layer);
   dt_opencl_free_kernel(g->kernel_dwt_hat_transform_col);
   dt_opencl_free_kernel(g->kernel_dwt_hat_transform_row);
-  dt_opencl_free_kernel(g->kernel_dwt_init_buffer);
 
   free(g);
 }
@@ -672,8 +670,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   if(layers == NULL) goto cleanup;
 
   // init layer buffer
-  err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_init_buffer, p->width, p->height,
-      CLARG(layers), CLARG(p->width), CLARG(p->height));
+  err = dt_opencl_fill_buffer(devid, layers, (size_t)p->width * p->height, p->ch, 0.0f);
   if(err != CL_SUCCESS) goto cleanup;
 
   if(p->merge_from_scale > 0)
@@ -682,8 +679,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     if(merged_layers == NULL) goto cleanup;
 
     // init reconstruct buffer
-    err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_init_buffer, p->width, p->height,
-        CLARG(merged_layers), CLARG(p->width), CLARG(p->height));
+    err = dt_opencl_fill_buffer(devid, merged_layers, (size_t)p->width * p->height, p->ch, 0.0f);
     if(err != CL_SUCCESS) goto cleanup;
   }
 

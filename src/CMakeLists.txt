@@ -447,7 +447,12 @@ include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
 list(APPEND LIBS ${LensFun_LIBRARIES})
 
 find_package(SQLite3 3.26 REQUIRED)
-list(APPEND LIBS SQLite::SQLite3)
+
+if(NOT TARGET SQLite3::SQLite3) # Compatibility with CMake < 4.3
+  add_library(SQLite3::SQLite3 ALIAS SQLite::SQLite3)
+endif()
+
+list(APPEND LIBS SQLite3::SQLite3)
 
 foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
@@ -1088,6 +1093,11 @@ endif(HAVE_OPENCL)
 
 # have a command line interface
 add_subdirectory(cli)
+
+# have a Model Context Protocol server exposing the raw engine to AI agents
+if(USE_MCP)
+  add_subdirectory(mcp)
+endif()
 
 # have a command line utility to generate all the thumbnails
 add_subdirectory(generate-cache)

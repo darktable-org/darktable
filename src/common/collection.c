@@ -656,6 +656,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("group");
     case DT_COLLECTION_PROP_DUPLICATES:
       return N_("duplicates");
+    case DT_COLLECTION_PROP_DIMENSIONS:
+      return N_("image dimensions");
     case DT_COLLECTION_PROP_LOCAL_COPY:
       return N_("local copy");
     case DT_COLLECTION_PROP_MODULE:
@@ -1600,10 +1602,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           ("(mi.version > (SELECT MIN(version) FROM main.images"
            "               WHERE film_id = mi.film_id AND filename = mi.filename)) ");
       }
-      else // by default, we select all the images
+      break;
+
+    case DT_COLLECTION_PROP_DIMENSIONS: // image dimensions
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
       {
-        query = g_strdup("1 = 1");
+          gchar *dims = _add_wildcards(elems[i]);
+          dt_util_str_cat(&query,
+                          "%smi.width || 'x' || mi.height LIKE '%%%s%%'",
+                          i>0?" OR ":"", dims);
+          g_free(dims);
       }
+      g_strfreev(elems);
+      dt_util_str_cat(&query, ")");
       break;
 
     case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio

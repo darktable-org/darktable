@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include <gdk/gdkkeysyms.h>
 
 #include "common/collection.h"
@@ -43,6 +42,7 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_preview;
   dt_lighttable_layout_t layout, base_layout;
   int current_zoom;
+  gboolean updating_zoom;  // true while we programmatically push a zoom value to the slider (avoid echo back)
   gboolean fullpreview_focus;
   dt_lighttable_culling_restriction_t culling_init_restriction;
 } dt_lib_tool_lighttable_t;
@@ -210,24 +210,31 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self,
   _lib_lighttable_update_btn(self);
 }
 
-static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton *event, dt_lib_module_t *self)
+static void _lib_lighttable_layout_btn_release_cb(GtkGestureSingle *gesture, int n_press,
+                                                      double x, double y,
+                                                      dt_lib_module_t *self)
 {
+  GtkWidget *w = dt_gui_get_widget(gesture);
   dt_lib_tool_lighttable_t *d = self->data;
 
   const gboolean active
       = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)); // note : this is the state before the change
   dt_lighttable_layout_t new_layout = DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+
   if(!active)
   {
     // that means we want to activate the button
     if(w == d->layout_preview)
     {
-      d->fullpreview_focus = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+      d->fullpreview_focus = dt_modifier_is(state, GDK_CONTROL_MASK);
       new_layout = DT_LIGHTTABLE_LAYOUT_PREVIEW;
     }
     else if(w == d->layout_culling_fix)
     {
-      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      if(dt_modifier_is(state, GDK_CONTROL_MASK))
         d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
       else
         d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
@@ -248,23 +255,29 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
     else
     {
       // we can't exit from filemanager or zoomable
-      return TRUE;
+      return;
     }
   }
 
   _lib_lighttable_set_layout(self, new_layout);
-  return TRUE;
 }
 
-static gboolean _lib_lighttable_restricted_btn_release(GtkWidget *w, GdkEventButton *event, dt_lib_module_t *self)
+static void _lib_lighttable_do_restricted_btn(dt_lib_module_t *self, GtkWidget *w)
 {
   dt_lighttable_culling_restriction_t restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
-    restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION; // note : this is the state before the change
+    restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
 
   dt_view_lighttable_set_culling_restricted_state(darktable.view_manager, restriction);
   _lib_lighttable_update_btn(self);
-  return TRUE;
+}
+
+static void _lib_lighttable_restricted_btn_release_cb(GtkGestureSingle *gesture, int n_press,
+                                                         double x, double y,
+                                                         dt_lib_module_t *self)
+{
+  _lib_lighttable_do_restricted_btn(self,
+    dt_gui_get_widget(gesture));
 }
 
 static void _lib_lighttable_key_accel_toggle_filemanager(dt_action_t *action)
@@ -317,7 +330,7 @@ static void _lib_lighttable_key_accel_toggle_restricted_mode(dt_action_t *action
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || dt_view_lighttable_preview_state(darktable.view_manager))
   {
     // if we are already in culling layout or fullpreview, we switch between restricted and unrestricted
-    _lib_lighttable_restricted_btn_release(d->layout_culling_restricted, NULL, self);
+    _lib_lighttable_do_restricted_btn(self, d->layout_culling_restricted);
   }
 }
 
@@ -456,46 +469,63 @@ void gui_init(dt_lib_module_t *self)
   dt_action_t *ltv = &darktable.view_manager->proxy.lighttable.view->actions;
   dt_action_t *ac = NULL;
 
-  d->layout_filemanager = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_grid, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle filemanager layout"), d->layout_filemanager, NULL);
+  d->layout_filemanager = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_grid, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to enter filemanager layout."),
+        .action = ltv,
+        .action_label = N_("toggle filemanager layout"),
+      });
+  ac = dt_action_widget(d->layout_filemanager);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_filemanager, 0, 0);
   dt_gui_add_help_link(d->layout_filemanager, "layout_filemanager");
-  gtk_widget_set_tooltip_text(d->layout_filemanager, _("click to enter filemanager layout."));
-  g_signal_connect(G_OBJECT(d->layout_filemanager), "button-release-event",
-                   G_CALLBACK(_lib_lighttable_layout_btn_release), self);
+  dt_gui_connect_click(d->layout_filemanager, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle zoomable lighttable layout"), d->layout_zoomable, NULL);
+  d->layout_zoomable = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to enter zoomable lighttable layout."),
+        .action = ltv,
+        .action_label = N_("toggle zoomable lighttable layout"),
+      });
+  ac = dt_action_widget(d->layout_zoomable);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_zoomable, 0, 0);
   dt_gui_add_help_link(d->layout_zoomable, "layout_zoomable");
-  gtk_widget_set_tooltip_text(d->layout_zoomable, _("click to enter zoomable lighttable layout."));
-  g_signal_connect(G_OBJECT(d->layout_zoomable), "button-release-event",
-                   G_CALLBACK(_lib_lighttable_layout_btn_release), self);
+  dt_gui_connect_click(d->layout_zoomable, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, &_action_def_culling);
+  d->layout_culling_fix = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("toggle culling mode"),
+        .action_def = &_action_def_culling,
+      });
+  ac = dt_action_widget(d->layout_culling_fix);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, GDK_SHIFT_MASK);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
-  g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
-                   G_CALLBACK(_lib_lighttable_layout_btn_release), self);
+  dt_gui_connect_click(d->layout_culling_fix, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_culling_dynamic = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling dynamic mode"), d->layout_culling_dynamic, NULL);
+  d->layout_culling_dynamic = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("toggle culling dynamic mode"),
+      });
+  ac = dt_action_widget(d->layout_culling_dynamic);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_dynamic_mode, GDK_KEY_x, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_dynamic, "layout_culling");
-  g_signal_connect(G_OBJECT(d->layout_culling_dynamic), "button-release-event",
-                   G_CALLBACK(_lib_lighttable_layout_btn_release), self);
+  dt_gui_connect_click(d->layout_culling_dynamic, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
-  d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("preview"), d->layout_preview, &_action_def_preview);
+  d->layout_preview = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("preview"),
+        .action_def = &_action_def_preview,
+      });
+  ac = dt_action_widget(d->layout_preview);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_f, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_f, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_preview, "layout_preview");
-  g_signal_connect(G_OBJECT(d->layout_preview), "button-release-event",
-                   G_CALLBACK(_lib_lighttable_layout_btn_release), self);
+  dt_gui_connect_click(d->layout_preview, NULL, _lib_lighttable_layout_btn_release_cb, self);
 
   d->layout_box = dt_gui_hbox(d->layout_filemanager, d->layout_zoomable,
                               d->layout_culling_fix, d->layout_culling_dynamic,
@@ -511,13 +541,16 @@ void gui_init(dt_lib_module_t *self)
                                 "or the total number of thumbnails shown in culling layouts."));
 
   /* culling restricted icon */
-  d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling restricted"), d->layout_culling_restricted, NULL);
+  d->layout_culling_restricted = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lock, 0, NULL,
+      &(dtgtk_button_config_t){
+        .action = ltv,
+        .action_label = N_("toggle culling restricted"),
+      });
+  ac = dt_action_widget(d->layout_culling_restricted);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_restricted_mode, GDK_KEY_r, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_restricted, "layout_culling");
   gtk_widget_set_no_show_all(d->layout_culling_restricted, TRUE);
-  g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
-                   G_CALLBACK(_lib_lighttable_restricted_btn_release), self);
+  dt_gui_connect_click(d->layout_culling_restricted, NULL, _lib_lighttable_restricted_btn_release_cb, self);
 
   self->widget = dt_gui_hbox(d->layout_box, d->zoom, d->layout_culling_restricted);
 
@@ -565,7 +598,8 @@ static void _lib_lighttable_zoom_slider_changed(GtkWidget *widget, dt_lib_module
   dt_lib_tool_lighttable_t *d = self->data;
 
   const int i = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  _set_zoom(self, i);
+  if(!d->updating_zoom)
+    _set_zoom(self, i);
   d->current_zoom = i;
 }
 
@@ -579,8 +613,15 @@ static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self)
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = self->data;
+  /* Setting the spin button emits "value-changed", which would echo the value
+   * back through _set_zoom()/dt_thumbtable_zoom_changed() and snap a
+   * continuous zoomable zoom to the rounded integer.  Suppress that echo
+   * while we push a programmatic value; the slider still displays the value,
+   * it just doesn't re-trigger the zoom. */
+  d->updating_zoom = TRUE;
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
   d->current_zoom = zoom;
+  d->updating_zoom = FALSE;
 }
 
 static gint _lib_lighttable_get_zoom(dt_lib_module_t *self)

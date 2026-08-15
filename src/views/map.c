@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -212,20 +213,26 @@ static void _view_map_dnd_get_callback(GtkWidget *widget,
 static void _view_map_changed_callback(OsmGpsMap *map,
                                        dt_view_t *self);
 /* callback that handles mouse scroll */
-static gboolean _view_map_scroll_event(GtkWidget *w,
-                                       GdkEventScroll *event,
-                                       dt_view_t *self);
+static void _view_map_scroll_cb(GtkEventControllerScroll *controller,
+                                 gdouble dx,
+                                 gdouble dy,
+                                 dt_view_t *self);
 /* callback that handles clicks on the map */
-static gboolean _view_map_button_press_callback(GtkWidget *w,
-                                                GdkEventButton *e,
-                                                dt_view_t *self);
-static gboolean _view_map_button_release_callback(GtkWidget *w,
-                                                  GdkEventButton *e,
-                                                  dt_view_t *self);
+static void _view_map_click_pressed_cb(GtkGestureSingle *gesture,
+                                        int n_press,
+                                        double x,
+                                        double y,
+                                        dt_view_t *self);
+static void _view_map_click_released_cb(GtkGestureSingle *gesture,
+                                         int n_press,
+                                         double x,
+                                         double y,
+                                         dt_view_t *self);
 /* callback when the mouse is moved */
-static gboolean _view_map_motion_notify_callback(GtkWidget *w,
-                                                 GdkEventMotion *e,
-                                                 dt_view_t *self);
+static void _view_map_motion_cb(GtkEventControllerMotion *controller,
+                                gdouble x,
+                                gdouble y,
+                                dt_view_t *self);
 static gboolean _view_map_drag_motion_callback(GtkWidget *widget,
                                                GdkDragContext *dc,
                                                const gint x,
@@ -766,8 +773,10 @@ void init(dt_view_t *self)
 
     gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL,
                       target_list_internal, n_targets_internal, GDK_ACTION_MOVE);
-    g_signal_connect(GTK_WIDGET(lib->map), "scroll-event",
-                     G_CALLBACK(_view_map_scroll_event), self);
+    dt_gui_connect_scroll(GTK_WIDGET(lib->map),
+                          GTK_EVENT_CONTROLLER_SCROLL_VERTICAL
+                          | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _view_map_scroll_cb, self);
     g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received",
                      G_CALLBACK(_drag_and_drop_received), self);
     g_signal_connect(GTK_WIDGET(lib->map), "drag-data-get",
@@ -777,13 +786,28 @@ void init(dt_view_t *self)
 
     g_signal_connect(GTK_WIDGET(lib->map), "changed",
                      G_CALLBACK(_view_map_changed_callback), self);
-    g_signal_connect_after(G_OBJECT(lib->map), "button-press-event",
-                           G_CALLBACK(_view_map_button_press_callback), self);
-    g_signal_connect_after(G_OBJECT(lib->map), "button-release-event",
-                          G_CALLBACK(_view_map_button_release_callback), self);
-    g_signal_connect(G_OBJECT(lib->map), "motion-notify-event",
-                     G_CALLBACK(_view_map_motion_notify_callback),
-                     self);
+    /* OsmGpsMap uses widget class vfuncs (button_press_event,
+     * motion_notify_event) for its event handling — not GtkGesture.
+     * In GTK3, the vfunc fires AFTER CAPTURE controllers and BEFORE
+     * BUBBLE controllers on the same widget.  If the vfunc returns
+     * TRUE (event consumed), BUBBLE controllers never fire, which
+     * is why BUBBLE phase doesn't work here.
+     *
+     * Use CAPTURE phase so our controllers run first.  We don't
+     * claim the sequence, so the event continues to the widget class
+     * vfunc and the map handles it normally. */
+    {
+      GtkGestureSingle *g
+        = dt_gui_connect_click(lib->map, _view_map_click_pressed_cb,
+                                _view_map_click_released_cb, self);
+      gtk_event_controller_set_propagation_phase(
+        GTK_EVENT_CONTROLLER(g), GTK_PHASE_CAPTURE);
+    }
+    {
+      GtkEventController *m
+        = dt_gui_connect_motion(lib->map, _view_map_motion_cb, NULL, NULL, self);
+      gtk_event_controller_set_propagation_phase(m, GTK_PHASE_CAPTURE);
+    }
     g_signal_connect(G_OBJECT(lib->map), "drag-motion",
                      G_CALLBACK(_view_map_drag_motion_callback),
                      self);
@@ -1849,91 +1873,125 @@ static gboolean _view_map_drag_motion_callback(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _view_map_motion_notify_callback(GtkWidget *widget,
-                                                 GdkEventMotion *e,
-                                                 dt_view_t *self)
+static void _view_map_motion_cb(GtkEventControllerMotion *controller,
+                                gdouble x,
+                                gdouble y,
+                                dt_view_t *self)
 {
   dt_map_t *lib = self->data;
-  OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, (GdkEventButton *)e);
-  float lat, lon;
-  osm_gps_map_point_get_degrees(p, &lat, &lon);
-  _toast_log_lat_lon(lat, lon);
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
 
-  if(lib->loc.drag
-     && lib->loc.main.id > 0
-     && (abs(lib->start_drag_x - (int)ceil(e->x_root)) +
-         abs(lib->start_drag_y - (int)ceil(e->y_root))) > DT_PIXEL_APPLY_DPI(8))
+  if(event)
   {
-    lib->loc.drag = FALSE;
-    osm_gps_map_image_remove(lib->map, lib->loc.main.location);
-    GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
-
-    GdkDragContext *context =
-      gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                      GDK_ACTION_MOVE, 1,
-                                      (GdkEvent *)e, -1, -1);
-
-    int width;
-    int height;
-    GdkPixbuf *location = _draw_location(lib, &width, &height, &lib->loc.main.data, TRUE);
-    if(location)
-    {
-      GtkWidget *image = gtk_image_new_from_pixbuf(location);
-      dt_gui_add_class(image, "dt_transparent_background");
-      gtk_widget_set_name(image, "map-drag-icon");
-      gtk_widget_show(image);
-      gtk_drag_set_icon_widget(context, image,
-                               DT_PIXEL_APPLY_DPI(width),
-                               DT_PIXEL_APPLY_DPI(height));
-      g_object_unref(location);
-    }
-    gtk_target_list_unref(targets);
-    return TRUE;
+    OsmGpsMapPoint *p = osm_gps_map_point_new_degrees(0.0, 0.0);
+    osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
+    float lat, lon;
+    osm_gps_map_point_get_degrees(p, &lat, &lon);
+    osm_gps_map_point_free(p);
+    _toast_log_lat_lon(lat, lon);
   }
 
-  if(lib->start_drag
-     && lib->selected_images
-     && (abs(lib->start_drag_x - (int)ceil(e->x_root)) +
-         abs(lib->start_drag_y - (int)ceil(e->y_root))) > DT_PIXEL_APPLY_DPI(8))
+  if(event && lib->loc.drag
+     && lib->loc.main.id > 0)
   {
-    const int nb = g_list_length(lib->selected_images);
-    for(const GSList *iter = lib->images;
-        iter;
-        iter = g_slist_next(iter))
+    gdouble root_x, root_y;
+    dt_gui_get_event_coords(event, &root_x, &root_y);
+    if((abs(lib->start_drag_x - (int)ceil(root_x)) +
+        abs(lib->start_drag_y - (int)ceil(root_y))) > DT_PIXEL_APPLY_DPI(8))
     {
-      dt_map_image_t *entry = iter->data;
-      if(entry->image)
+      lib->loc.drag = FALSE;
+      osm_gps_map_image_remove(lib->map, lib->loc.main.location);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
+
+      GdkDragContext *context =
+        gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
+                                        GDK_ACTION_MOVE, 1,
+                                        event, -1, -1);
+
+      int width;
+      int height;
+      GdkPixbuf *location = _draw_location(lib, &width, &height, &lib->loc.main.data, TRUE);
+      if(location)
       {
-        const GList *sel_img = lib->selected_images;
-        if(entry->imgid == GPOINTER_TO_INT(sel_img->data))
+        GtkWidget *image = gtk_image_new_from_pixbuf(location);
+        dt_gui_add_class(image, "dt_transparent_background");
+        gtk_widget_set_name(image, "map-drag-icon");
+        gtk_widget_show(image);
+        gtk_drag_set_icon_widget(context, image,
+                                 DT_PIXEL_APPLY_DPI(width),
+                                 DT_PIXEL_APPLY_DPI(height));
+        g_object_unref(location);
+      }
+      gtk_target_list_unref(targets);
+#else
+      /* GTK4 TODO: map-view drag-and-drop needs a GdkContentProvider
+       * rewrite; gtk_drag_begin_with_coordinates() takes different
+       * arguments and GtkTargetList is gone. */
+#endif
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      gdk_event_free(event);
+#endif
+      return;
+    }
+  }
+
+  if(event && lib->start_drag
+     && lib->selected_images)
+  {
+    gdouble root_x, root_y;
+    dt_gui_get_event_coords(event, &root_x, &root_y);
+    if((abs(lib->start_drag_x - (int)ceil(root_x)) +
+        abs(lib->start_drag_y - (int)ceil(root_y))) > DT_PIXEL_APPLY_DPI(8))
+    {
+      const int nb = g_list_length(lib->selected_images);
+      for(const GSList *iter = lib->images;
+          iter;
+          iter = g_slist_next(iter))
+      {
+        dt_map_image_t *entry = iter->data;
+        if(entry->image)
         {
-          if(entry->group_count == nb)
+          const GList *sel_img = lib->selected_images;
+          if(entry->imgid == GPOINTER_TO_INT(sel_img->data))
           {
-            osm_gps_map_image_remove(lib->map, entry->image);
-            entry->image = NULL;
+            if(entry->group_count == nb)
+            {
+              osm_gps_map_image_remove(lib->map, entry->image);
+              entry->image = NULL;
+            }
+            else
+              _display_next_image(self, entry, TRUE);
+            break;
           }
-          else
-            _display_next_image(self, entry, TRUE);
-          break;
         }
       }
+
+      const int group_count = g_list_length(lib->selected_images);
+
+      lib->start_drag = FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
+      GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
+                                                                GDK_ACTION_MOVE, 1,
+                                                                event, -1, -1);
+      _view_map_drag_set_icon(self, context, GPOINTER_TO_INT(lib->selected_images->data),
+                              group_count);
+      gtk_target_list_unref(targets);
+      gdk_event_free(event);
+#else
+      /* GTK4 TODO: map-view drag-and-drop needs a GdkContentProvider
+       * rewrite (see above). */
+#endif
+      return;
     }
-
-    const int group_count = g_list_length(lib->selected_images);
-
-    lib->start_drag = FALSE;
-    GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
-    GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                                              GDK_ACTION_MOVE, 1,
-                                                              (GdkEvent *)e, -1, -1);
-    _view_map_drag_set_icon(self, context, GPOINTER_TO_INT(lib->selected_images->data),
-                            group_count);
-    gtk_target_list_unref(targets);
-    return TRUE;
   }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 
-  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, e->x, e->y);
+  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, x, y);
   if(entry)
   {
     // show image information if image is hovered
@@ -1943,7 +2001,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget,
     {
       _view_map_draw_image(entry, TRUE, DT_MAP_THUMB_THUMB, self);
       lib->last_hovered_entry = entry;
-      return TRUE;
+      return;
     }
   }
   else
@@ -1956,7 +2014,6 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget,
       lib->last_hovered_entry = NULL;
     }
   }
-  return FALSE;
 }
 
 static gboolean _zoom_and_center(const gint x,
@@ -2002,48 +2059,75 @@ static gboolean _zoom_and_center(const gint x,
   return TRUE;
 }
 
-static gboolean _view_map_scroll_event(GtkWidget *w,
-                                       GdkEventScroll *event,
-                                       dt_view_t *self)
+static void _view_map_scroll_cb(GtkEventControllerScroll *controller,
+                                gdouble dx,
+                                gdouble dy,
+                                dt_view_t *self)
 {
   dt_map_t *lib = self->data;
-  // check if the click was on image(s) or just some random position
-  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, event->x, event->y);
+
+  // get the current event for position and modifier state
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(!event) return;
+  gdouble x, y;
+  GdkModifierType state;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_get_position(event, &x, &y);
+  state = gdk_event_get_modifier_state(event);
+#else
+  gdk_event_get_coords(event, &x, &y);
+  gdk_event_get_state(event, &state);
+  // the GTK3 current event is an owned copy; free it once x/y/state are
+  // extracted -- the rest of the callback only uses dx/dy
+  gdk_event_free(event);
+#endif
+
+  // determine scroll direction from dy
+  const gboolean scroll_down = dy > 0;
+  const gboolean scroll_up = dy < 0;
+
+  // check if the scroll was on image(s) or just some random position
+  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, x, y);
   if(entry)
   {
-    if(_display_next_image(self, entry, event->direction == GDK_SCROLL_DOWN))
-      return TRUE;
+    if(_display_next_image(self, entry, scroll_down))
+      return;
   }
 
-  OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, (GdkEventButton *)event);
+  OsmGpsMapPoint *p = osm_gps_map_point_new_degrees(0.0, 0.0);
+  osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
   float lat, lon;
   osm_gps_map_point_get_degrees(p, &lat, &lon);
+  osm_gps_map_point_free(p);
+
   if(lib->loc.main.id > 0)
   {
+    const gboolean increase = scroll_up;
+    const gboolean decrease = scroll_down;
     if(dt_map_location_included(lon, lat, &lib->loc.main.data))
     {
-      if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(increase)
           lib->loc.main.data.delta1 *= 1.1;
-        else
+        else if(decrease)
           lib->loc.main.data.delta1 /= 1.1;
       }
-      else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      else if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(increase)
           lib->loc.main.data.delta2 *= 1.1;
-        else
+        else if(decrease)
           lib->loc.main.data.delta2 /= 1.1;
       }
       else
       {
-        if(event->direction == GDK_SCROLL_DOWN)
+        if(increase)
         {
           lib->loc.main.data.delta1 *= 1.1;
           lib->loc.main.data.delta2 *= 1.1;
         }
-        else
+        else if(decrease)
         {
           lib->loc.main.data.delta1 /= 1.1;
           lib->loc.main.data.delta2 /= 1.1;
@@ -2052,27 +2136,32 @@ static gboolean _view_map_scroll_event(GtkWidget *w,
       _view_map_draw_main_location(lib, &lib->loc.main);
       _view_map_update_location_geotag(self);
       _view_map_signal_change_wait(self, 3);  // wait 3/10 sec after last scroll
-      return TRUE;
+      return;
     }
     else  // scroll on the map. try to keep the map where it is
     {
       _toast_log_lat_lon(lat, lon);
-      return _zoom_and_center(event->x, event->y, event->direction, self);
+      _zoom_and_center(x, y, scroll_up ? GDK_SCROLL_UP : GDK_SCROLL_DOWN, self);
+      return;
     }
   }
   else
   {
     _toast_log_lat_lon(lat, lon);
-    return _zoom_and_center(event->x, event->y, event->direction, self);
+    _zoom_and_center(x, y, scroll_up ? GDK_SCROLL_UP : GDK_SCROLL_DOWN, self);
   }
-  return FALSE;
 }
 
-static gboolean _view_map_button_press_callback(GtkWidget *w,
-                                                GdkEventButton *e,
-                                                dt_view_t *self)
+static void _view_map_click_pressed_cb(GtkGestureSingle *gesture,
+                                        int n_press,
+                                        double x,
+                                        double y,
+                                        dt_view_t *self)
 {
   dt_map_t *lib = self->data;
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+
   if(lib->selected_images)
   {
     g_list_free(lib->selected_images);
@@ -2082,9 +2171,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w,
   if(lib->osd)
   {
     // check if the OSD circle was clicked
-    GValue value = {
-      0,
-    };
+    GValue value = { 0 };
 
     g_object_get_property((GObject*) lib->osd, "osd-x", &value);
     const gint osd_x = g_value_get_int(&value);
@@ -2093,46 +2180,52 @@ static gboolean _view_map_button_press_callback(GtkWidget *w,
     g_object_get_property((GObject*) lib->osd, "dpad-radius", &value);
     const gint dpad_radius = g_value_get_int(&value);
     g_object_get_property((GObject*) lib->osd, "show-zoom", &value);
-    // g_value_get_boolean returns FALSE although the value is 1! Bug?
     const gint show_zoom = g_value_get_int(&value);
-    const gint zoom_height = show_zoom? 40:0;
+    const gint zoom_height = show_zoom ? 40 : 0;
 
-    if(e->x >= osd_x && e->x <= osd_x+2*dpad_radius &&
-       e->y >= osd_y && e->y <= osd_y+2*dpad_radius+zoom_height)
+    if(x >= osd_x && x <= osd_x + 2 * dpad_radius
+       && y >= osd_y && y <= osd_y + 2 * dpad_radius + zoom_height)
     {
-      return FALSE;
+      return;
     }
   }
 
-  if(e->button == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    // check if the click was in a location form - crtl gives priority to images
+    // check if the click was in a location form - ctrl gives priority to images
     if(lib->loc.main.id > 0
        && (lib->loc.main.data.shape != MAP_LOCATION_SHAPE_POLYGONS)
-       && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
+       && !dt_modifier_is(state, GDK_CONTROL_MASK))
     {
-
-      OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
+      OsmGpsMapPoint *p = osm_gps_map_point_new_degrees(0.0, 0.0);
+      osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
       float lat, lon;
       osm_gps_map_point_get_degrees(p, &lat, &lon);
+      osm_gps_map_point_free(p);
       if(dt_map_location_included(lon, lat, &lib->loc.main.data))
       {
-        if(!dt_modifier_is(e->state, GDK_SHIFT_MASK))
+        if(!dt_modifier_is(state, GDK_SHIFT_MASK))
         {
-          lib->start_drag_x = ceil(e->x_root);
-          lib->start_drag_y = ceil(e->y_root);
+          GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(lib->map));
+          GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(display));
+          gint root_x, root_y;
+          gdk_device_get_position(pointer, NULL, &root_x, &root_y);
+          lib->start_drag_x = root_x;
+          lib->start_drag_y = root_y;
           lib->loc.drag = TRUE;
-          return TRUE;
+          return;
         }
       }
     }
     // check if another location is clicked - ctrl gives priority to images
-    if(!dt_modifier_is(e->state, GDK_CONTROL_MASK) &&
-        dt_conf_get_bool("plugins/map/showalllocations"))
+    if(!dt_modifier_is(state, GDK_CONTROL_MASK)
+       && dt_conf_get_bool("plugins/map/showalllocations"))
     {
-      OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
+      OsmGpsMapPoint *p = osm_gps_map_point_new_degrees(0.0, 0.0);
+      osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
       float lat, lon;
       osm_gps_map_point_get_degrees(p, &lat, &lon);
+      osm_gps_map_point_free(p);
       for(GList *other = lib->loc.others;
           other;
           other = g_list_next(other))
@@ -2149,44 +2242,42 @@ static gboolean _view_map_button_press_callback(GtkWidget *w,
                                             G_CALLBACK(_view_map_collection_changed), self);
           dt_control_signal_unblock_by_func(darktable.signals,
                                             G_CALLBACK(_view_map_geotag_changed), self);
-          return TRUE;
+          return;
         }
       }
     }
     // check if the click was on image(s) or just some random position
     lib->selected_images =
-      _view_map_get_imgs_at_pos(self, e->x, e->y,
+      _view_map_get_imgs_at_pos(self, x, y,
                                 &lib->start_drag_offset_x, &lib->start_drag_offset_y,
-                                !dt_modifier_is(e->state, GDK_SHIFT_MASK));
-    if(e->type == GDK_BUTTON_PRESS)
+                                !dt_modifier_is(state, GDK_SHIFT_MASK));
+    if(n_press == 1)
     {
       if(lib->selected_images)
       {
-        lib->start_drag_x = ceil(e->x_root);
-        lib->start_drag_y = ceil(e->y_root);
+        GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(lib->map));
+        GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(display));
+        gint root_x, root_y;
+        gdk_device_get_position(pointer, NULL, &root_x, &root_y);
+        lib->start_drag_x = root_x;
+        lib->start_drag_y = root_y;
         lib->start_drag = TRUE;
-        return TRUE;
-      }
-      else
-      {
-        return FALSE;
       }
     }
-    if(e->type == GDK_2BUTTON_PRESS)
+    else if(n_press == 2)
     {
       if(lib->selected_images)
       {
         // open the image in darkroom
         dt_control_set_mouse_over_id(GPOINTER_TO_INT(lib->selected_images->data));
         dt_ctl_switch_mode_to("darkroom");
-        return TRUE;
       }
       else
       {
         // zoom into that position
         float longitude, latitude;
         OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
-        osm_gps_map_convert_screen_to_geographic(lib->map, e->x, e->y, pt);
+        osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
         osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
         osm_gps_map_point_free(pt);
         int zoom, max_zoom;
@@ -2194,22 +2285,21 @@ static gboolean _view_map_button_press_callback(GtkWidget *w,
         zoom = MIN(zoom + 1, max_zoom);
         _view_map_center_on_location(self, longitude, latitude, zoom);
       }
-      return TRUE;
     }
   }
-  return FALSE;
 }
 
-static gboolean _view_map_button_release_callback(GtkWidget *w,
-                                                  GdkEventButton *e,
-                                                  dt_view_t *self)
+static void _view_map_click_released_cb(GtkGestureSingle *gesture,
+                                         int n_press,
+                                         double x,
+                                         double y,
+                                         dt_view_t *self)
 {
   dt_map_t *lib = self->data;
   lib->start_drag = FALSE;
   lib->start_drag_offset_x = 0;
   lib->start_drag_offset_y = 0;
   lib->loc.drag = FALSE;
-  return FALSE;
 }
 
 static gboolean _view_map_display_selected(const gpointer user_data)

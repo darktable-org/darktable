@@ -203,20 +203,20 @@ static int _process_image(dt_slideshow_t *d,
 
   dt_pthread_mutex_unlock(&d->lock);
 
-  dt_dev_image
-    (imgid,
-     d->width / darktable.gui->ppd,
-     d->height / darktable.gui->ppd,
-     -1,
-     &buf,
-     NULL,
-     &width,
-     &height,
-     NULL,
-     -1,
-     NULL,
-     DT_DEVICE_NONE,
-     FALSE);
+  dt_dev_image(imgid,
+               d->width / darktable.gui->ppd,
+               d->height / darktable.gui->ppd,
+               -1,
+               &buf,
+               NULL,
+               &width,
+               &height,
+               NULL,
+               -1,
+               NULL,
+               DT_DEVICE_NONE,
+               FALSE,
+               FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 

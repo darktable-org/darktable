@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/darktable.h"
 #include "bauhaus/bauhaus.h"
@@ -147,8 +148,7 @@ static void _draw_sym(cairo_t *cr,
   const double inv = inverted ? -0.1 : 1.0;
 
   PangoRectangle ink;
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(12) * PANGO_SCALE);
   PangoLayout *layout = pango_cairo_create_layout(cr);
@@ -235,11 +235,20 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->buf = NULL;
 
       // export image with proper size
-      dt_dev_image(snap->imgid, width, height,
+      dt_dev_image(snap->imgid,
+                   width,
+                   height,
                    snap->history_end,
-                   &snap->buf, &snap->scale,
-                   &snap->width, &snap->height, snap->zoom_pos,
-                   snap->id, NULL, DT_DEVICE_NONE, FALSE);
+                   &snap->buf,
+                   &snap->scale,
+                   &snap->width,
+                   &snap->height,
+                   snap->zoom_pos,
+                   snap->id,
+                   NULL,
+                   DT_DEVICE_NONE,
+                   FALSE,
+                   FALSE);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
@@ -552,15 +561,18 @@ static void _entry_activated_callback(GtkEntry *entry, dt_lib_module_t *self)
   gtk_widget_grab_focus(d->snapshot[index].button);
 }
 
-static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
-                                                    GdkEventButton *event,
-                                                    dt_lib_module_t *self)
+static void _lib_button_button_pressed_callback(GtkGestureSingle *gesture,
+                                                gint n_press,
+                                                gdouble x,
+                                                gdouble y,
+                                                dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
 
   const int index = _look_for_widget(self, widget, FALSE);
 
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_key_modifier_state() & GDK_CONTROL_MASK)
   {
     gtk_widget_hide(d->snapshot[index].name);
     gtk_widget_show(d->snapshot[index].entry);
@@ -568,7 +580,6 @@ static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
   }
 
   gtk_widget_set_focus_on_click(widget, FALSE);
-  return gtk_widget_has_focus(d->snapshot[index].entry);
 }
 
 static void _init_snapshot_entry(dt_lib_module_t *self,
@@ -579,8 +590,7 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
   gtk_widget_set_name(s->button, "snapshot-button");
   g_signal_connect(G_OBJECT(s->button), "toggled",
                    G_CALLBACK(_lib_snapshots_toggled_callback), self);
-  g_signal_connect(G_OBJECT(s->button), "button-press-event",
-                   G_CALLBACK(_lib_button_button_pressed_callback), self);
+  dt_gui_connect_click(s->button, _lib_button_button_pressed_callback, NULL, self);
 
   s->num = gtk_label_new("");
   gtk_widget_set_name(s->num, "history-number");
@@ -598,12 +608,13 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
   g_signal_connect(G_OBJECT(s->entry), "activate",
                    G_CALLBACK(_entry_activated_callback), self);
 
-  s->restore_button = dtgtk_button_new(dtgtk_cairo_paint_snapshots_restore, CPF_NONE, NULL);
+  s->restore_button = dtgtk_button_new_full(dtgtk_cairo_paint_snapshots_restore, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("restore snapshot into current history"),
+        .clicked_cb = G_CALLBACK(_lib_snapshots_restore_callback),
+        .clicked_data = self,
+      });
   gtk_widget_set_name(s->restore_button, "non-flat");
-  gtk_widget_set_tooltip_text(s->restore_button,
-                              _("restore snapshot into current history"));
-  g_signal_connect(G_OBJECT(s->restore_button), "clicked",
-                   G_CALLBACK(_lib_snapshots_restore_callback), self);
 }
 
 static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
@@ -863,14 +874,16 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), d->take_button, TRUE, TRUE, 0);
-  d->sidebyside_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
-  dt_action_define(DT_ACTION(self), NULL, N_("side-by-side"),
-                   d->sidebyside_button, &dt_action_def_toggle);
+  d->sidebyside_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("place the snapshot side-by-side / above-below the current image instead of overlaying"),
+        .action = DT_ACTION(self),
+        .action_label = N_("side-by-side"),
+        .action_def = &dt_action_def_toggle,
+        .clicked_cb = G_CALLBACK(_sidebyside_button_clicked),
+        .clicked_data = self,
+      });
   gtk_box_pack_start(GTK_BOX(hbox), d->sidebyside_button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->sidebyside_button), "clicked",
-                   G_CALLBACK(_sidebyside_button_clicked), self);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->sidebyside_button),
-                              _("place the snapshot side-by-side / above-below the current image instead of overlaying"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 

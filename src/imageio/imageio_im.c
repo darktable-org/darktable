@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <strings.h>
-#include <assert.h>
 
 #ifdef HAVE_IMAGEMAGICK7
 #include <MagickWand/MagickWand.h>

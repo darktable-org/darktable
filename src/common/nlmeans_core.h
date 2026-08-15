@@ -32,7 +32,6 @@ struct dt_nlmeans_param_t
   int decimate;         // set to 1 to search only half the patches in the neighborhood (default = 0)
   const float* const norm; // array of four per-channel weight factors
   dt_dev_pixelpipe_type_t pipetype;
-  int kernel_init;	// CL: initialization (runs once)
   int kernel_dist;	// CL: compute channel-normed squared pixel differences (runs for each patch)
   int kernel_horiz;	// CL: horizontal sum (runs for each patch)
   int kernel_vert;	// CL: vertical sum (runs for each patch)

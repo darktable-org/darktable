@@ -52,6 +52,14 @@
 
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
+// Margins (as a fraction of the image size) by which the editable "canvas" may
+// extend beyond the image while working on a mask, so off-image content can be
+// panned into view. MASK_HANDLE_MARGIN keeps an off-image node clear of the
+// viewport border; MASK_CREATION_MARGIN gives room to drop new nodes outside
+// the picture while drawing.
+#define MASK_HANDLE_MARGIN 0.03f
+#define MASK_CREATION_MARGIN 0.15f
+
 // Forward declaration
 static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid);
 
@@ -274,7 +282,10 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->gui_attached || dev->full.pipe->processing) return;
+  if(!dev->gui_attached) return;
+  if(dt_pipe_processing(dev->full.pipe))
+    dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
 }
@@ -289,6 +300,8 @@ void dt_dev_process_preview(dt_develop_t *dev)
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
   if(!dev->gui_attached && !dev->preview2.widget) return;
+  if(dt_pipe_processing(dev->preview2.pipe))
+    dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
@@ -614,7 +627,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 
   dt_pthread_mutex_lock(&pipe->mutex);
 
-  if(dev->gui_leaving || (dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO))
+  if(dev->gui_leaving || dt_pipe_started(pipe))
   {
     dt_pthread_mutex_unlock(&pipe->mutex);
     return;
@@ -749,7 +762,30 @@ restart:
         dt_dev_zoom_move() possibly leaves port->pipe->changed DT_DEV_PIPE_ZOOMED;
         and might redraw the widgets as a side effect
     */
-    if(port_loading || require_zoom_test)
+    if(port->restore_zoom && port_loading && pipe->processed_width && pipe->processed_height)
+    {
+      /* An image switch just happened. port->zoom_x/zoom_y are in input pixel
+         coordinates of the *previous* image, so reprojecting them through this
+         image's geometry modules would drop the viewport at an arbitrary spot
+         (typically an edge or corner once clamped). Re-apply the normalised
+         centre snapshotted before the switch instead.
+      */
+      const float rx = port->restore_zoom_x;
+      const float ry = port->restore_zoom_y;
+      port->restore_zoom = FALSE;
+      dt_print_pipe(DT_DEBUG_PIPE,
+                    "dt_dev_zoom_move",
+                    pipe,
+                    NULL,
+                    DT_DEVICE_NONE,
+                    NULL,
+                    NULL,
+                    "restore centre %.4f/%.4f",
+                    rx,
+                    ry);
+      dt_dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, rx, ry, TRUE);
+    }
+    else if(port_loading || require_zoom_test)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
         port_loading ? "port_loading " : "",
@@ -779,7 +815,7 @@ restart:
 
   const gboolean early = dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid);
   const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-  const gboolean stopped = early || shutdown != DT_DEV_PIXELPIPE_STOP_NO;
+  const gboolean stopped = early || shutdown > DT_DEV_PIXELPIPE_PROCESSING;
 
   const dt_iop_roi_t proi = (dt_iop_roi_t) {.x = x, .y = y, .width = wd, .height = ht, .scale = scale };
   dt_print_pipe(DT_DEBUG_PIPE, stopped ? "pixelpipe_process stopped" : "pixelpipe_process good",
@@ -791,7 +827,8 @@ restart:
                 pipe->input_changed ? "pipe_input_changed " : "",
                 pipe->changed & DT_DEV_PIPE_ZOOMED ? "zoomed " : "",
                 pipe->changed & DT_DEV_PIPE_SYNCH ? "synch" : "");
-  restarts++;
+  if(shutdown <= DT_DEV_PIXELPIPE_PROCESSING)
+    restarts++;
 
   if(stopped)
   {
@@ -811,10 +848,8 @@ restart:
       return;
     }
 
-    /* pixelpipe stopped due to changed pipe nodes, HQ mode changes or module aborts
-        while processing the pipe. All require restarts as pipe status is not valid yet.
-    */
-    if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
+    // pixelpipe stopped due to a shutdown request, all modes require a pipe restart as pipe status is not valid.
+    if(shutdown > DT_DEV_PIXELPIPE_PROCESSING)
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "image_job restart", pipe, NULL, DT_DEVICE_NONE, &proi, NULL);
       goto restart;
@@ -862,6 +897,8 @@ restart:
   dt_mipmap_cache_release(&buf);
   // if a widget needs to be redrawn there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_busy_leave();
+  if(dt_pipe_is_full(pipe))
+    dev->history_last_module = NULL;
   dt_pthread_mutex_unlock(&pipe->mutex);
 
   const gboolean signalling = dev->gui_attached && !dev->gui_leaving && signal != -1;
@@ -1043,7 +1080,7 @@ void dt_dev_configure(dt_dev_viewport_t *port)
     port->width = wd;
     port->height = ht;
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, TRUE, 0.0f, 0.0f, TRUE);
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 1, 0.0f, 0.0f, TRUE);
   }
 }
 
@@ -1465,17 +1502,9 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
   gboolean enable = _enable;
 
   // no module means that is called from the mask manager, so find the iop
-  if(module == NULL)
+  if (module == NULL)
   {
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *mod = modules->data;
-      if(dt_iop_module_is(mod, "mask_manager"))
-      {
-        module = mod;
-        break;
-      }
-    }
+    module = dt_iop_get_module("mask_manager");
     enable = FALSE;
   }
   if(module)
@@ -1624,8 +1653,13 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
   {
     dt_iop_module_t *module = modules->data;
     memcpy(module->params, module->default_params, module->params_size);
-    dt_iop_commit_blend_params(module, module->default_blendop_params);
+    dt_iop_commit_blend_params(module, module->default_blendop_params, NULL);
     module->enabled = module->default_enabled;
+
+    // reset the instance name too: per-position state restored from
+    // history below, else a later rename would leak into earlier positions
+    module->multi_name_hand_edited = FALSE;
+    g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
 
     if(module->multi_priority == 0)
       module->iop_order =
@@ -1646,7 +1680,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
       memcpy(hist->module->params, hist->module->default_params, hist->module->params_size);
     else
       memcpy(hist->module->params, hist->params, hist->module->params_size);
-    dt_iop_commit_blend_params(hist->module, hist->blend_params);
+    dt_iop_commit_blend_params(hist->module, hist->blend_params, NULL);
 
     hist->module->iop_order = hist->iop_order;
     hist->module->enabled = hist->enabled;
@@ -2794,13 +2828,13 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
   }
 }
 
-void dt_dev_reprocess_center(dt_develop_t *dev)
+void dt_dev_reprocess_center(dt_develop_t *dev, const int32_t iop_order)
 {
   DT_GUARD_GUI_UPDATE();
   if(dev && dev->gui_attached)
   {
     dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->full.pipe->cache_obsolete = TRUE;
+    dev->full.pipe->cache_obsolete_order = iop_order;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
@@ -2810,13 +2844,13 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   }
 }
 
-void dt_dev_reprocess_preview(dt_develop_t *dev)
+void dt_dev_reprocess_preview(dt_develop_t *dev, const int32_t iop_order)
 {
   if(DT_IN_GUI_UPDATE() || !dev || !dev->gui_attached)
     return;
 
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->cache_obsolete = TRUE;
+  dev->preview_pipe->cache_obsolete_order = iop_order;
 
   dt_dev_invalidate_preview(dev);
   dt_control_queue_redraw_center();
@@ -3066,6 +3100,135 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
   return TRUE;
 }
 
+// Compute the bounding box of the mask overlay currently being edited
+// (all displayed points, borders and clone sources), expressed in
+// normalised image coordinates where the image spans [-0.5, 0.5]. The
+// overlay points live in preview-pipe output space, so we normalise by
+// the preview-pipe processed size. Returns FALSE when no overlay is
+// available, leaving the outputs untouched. Used to let the user pan
+// beyond the canvas to reach mask handles that lie outside it.
+static gboolean
+_dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x1, float *y1)
+{
+  if(!dev->form_visible || !dev->form_gui || !dev->form_gui->points)
+    return FALSE;
+
+  float wd, ht;
+  if(!dt_dev_get_preview_size(dev, &wd, &ht))
+    return FALSE;
+
+  float minx = FLT_MAX, miny = FLT_MAX, maxx = -FLT_MAX, maxy = -FLT_MAX;
+
+  for(GList *l = dev->form_gui->points; l; l = g_list_next(l))
+  {
+    const dt_masks_form_gui_points_t *gpt = l->data;
+    if(!gpt)
+      continue;
+
+    // points[] (shape outline) and source[] (clone source) are interleaved
+    // (x, y) pairs. The feather border[] is deliberately excluded: it is not a
+    // drag target, so it shouldn't enlarge the pannable region, and its
+    // degenerate segments are flagged with DT_INVALID_COORDINATE (== -FLT_MAX)
+    // sentinels. Folding those (or any other stray non-finite / extreme value)
+    // into the box would blow it up to ~1e35 and let the viewport pan away from
+    // the image without bound. Reject anything outside a generous window around
+    // the image (32x its size — far more than any reachable handle) so a single
+    // bad coordinate can't defeat the clamp.
+    const float *const arrays[2] = { gpt->points, gpt->source };
+    const int counts[2] = { gpt->points_count, gpt->source_count };
+    const float limx = 32.0f * wd, limy = 32.0f * ht;
+    for(int a = 0; a < 2; a++)
+    {
+      const float *p = arrays[a];
+      if(!p)
+        continue;
+      for(int i = 0; i < counts[a]; i++)
+      {
+        const float px = p[i * 2];
+        const float py = p[i * 2 + 1];
+        if(!isfinite(px) || !isfinite(py) || px <= -limx || px >= limx || py <= -limy || py >= limy)
+          continue;
+        minx = fminf(minx, px);
+        maxx = fmaxf(maxx, px);
+        miny = fminf(miny, py);
+        maxy = fmaxf(maxy, py);
+      }
+    }
+  }
+
+  if(minx > maxx) // no points contributed to the bounding box
+    return FALSE;
+
+  *x0 = minx / wd - 0.5f;
+  *x1 = maxx / wd - 0.5f;
+  *y0 = miny / ht - 0.5f;
+  *y1 = maxy / ht - 0.5f;
+  return TRUE;
+}
+
+// Clamp the viewport centre (zoom_x, zoom_y, in [-0.5, 0.5] image space) to the
+// editable "canvas". Normally the canvas is just the image, so the viewport
+// can't pan past the picture. While working on a mask the canvas is enlarged so
+// off-image content can be panned into view (it is otherwise never on screen
+// once the image fills the viewport, e.g. at fit):
+//   - while drawing, by MASK_CREATION_MARGIN all round, giving room to drop new
+//     nodes outside the picture;
+//   - by any overlay point already outside the image (e.g. a node dragged past
+//     the edge), plus MASK_HANDLE_MARGIN so it isn't flush to the border.
+// boxw/boxh are the viewport extents in image units along each axis.
+static void _clamp_zoom_to_mask(
+  const dt_develop_t *dev, const float boxw, const float boxh, float *zoom_x, float *zoom_y)
+{
+  const gboolean creating = dev->form_gui && dev->form_gui->creation;
+
+  float lox = -0.5f, hix = 0.5f, loy = -0.5f, hiy = 0.5f;
+  if(creating)
+  {
+    lox -= MASK_CREATION_MARGIN;
+    hix += MASK_CREATION_MARGIN;
+    loy -= MASK_CREATION_MARGIN;
+    hiy += MASK_CREATION_MARGIN;
+  }
+  float mx0, my0, mx1, my1;
+  if(_dev_mask_overlay_bounds(dev, &mx0, &my0, &mx1, &my1))
+  {
+    if(mx0 < -0.5f)
+      lox = fminf(lox, mx0 - MASK_HANDLE_MARGIN);
+    if(mx1 > 0.5f)
+      hix = fmaxf(hix, mx1 + MASK_HANDLE_MARGIN);
+    if(my0 < -0.5f)
+      loy = fminf(loy, my0 - MASK_HANDLE_MARGIN);
+    if(my1 > 0.5f)
+      hiy = fmaxf(hiy, my1 + MASK_HANDLE_MARGIN);
+  }
+
+  // Clamp the viewport CENTRE to the editable region. On each side the centre
+  // may travel between two positions:
+  //
+  //  - its "home": image centred when the image fits the viewport (homew == 0),
+  //    or the image edge held at the viewport edge when the image is larger than
+  //    the viewport (homew == 0.5 - halfw, the plain darktable clamp);
+  //  - the node position (lox/hix, MASK_HANDLE_MARGIN already included), if that
+  //    side was extended for off-image mask content, so the node can be reached.
+  //
+  // The home position is NOT forced -- the incoming (cursor-anchored or panned)
+  // centre is merely clamped into [home..node] -- so a plain zoom that leaves
+  // the centre near home keeps the image centred, while a deliberate pan can
+  // still travel out to a node. Crucially the node bound does not depend on
+  // zoom, so the framing neither drifts nor swims as you zoom in/out while
+  // reaching an off-image node (an earlier "... - halfw" bound, or centring the
+  // whole canvas, dragged the picture across the screen on every zoom step).
+  const float halfw = 0.5f * boxw, halfh = 0.5f * boxh;
+  const float homew = boxw >= 1.0f ? 0.0f : 0.5f - halfw;
+  const float homeh = boxh >= 1.0f ? 0.0f : 0.5f - halfh;
+  const float cminx = (lox < -0.5f) ? lox : -homew;
+  const float cmaxx = (hix > 0.5f) ? hix : homew;
+  const float cminy = (loy < -0.5f) ? loy : -homeh;
+  const float cmaxy = (hiy > 0.5f) ? hiy : homeh;
+  *zoom_x = CLAMP(*zoom_x, cminx, cmaxx);
+  *zoom_y = CLAMP(*zoom_y, cminy, cmaxy);
+}
+
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
                       float scale,
@@ -3231,8 +3394,9 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
       zoom_y += mouse_off_y / cur_scale - mouse_off_y / new_scale;
     }
 
-    zoom_x = boxw > 1.0f ? 0.0f : CLAMP(zoom_x, boxw / 2 - .5, .5 - boxw / 2);
-    zoom_y = boxh > 1.0f ? 0.0f : CLAMP(zoom_y, boxh / 2 - .5, .5 - boxh / 2);
+    // While editing a mask, allow panning beyond the canvas to reach
+    // handles that lie outside the image (see helper for the details).
+    _clamp_zoom_to_mask(dev, boxw, boxh, &zoom_x, &zoom_y);
   }
 
   pts[0] = (zoom_x + 0.5f) * procw;
@@ -3262,14 +3426,19 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     return;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_CONTROL | DT_DEBUG_VERBOSE,
-    "dt_dev_zoom_move sets DT_DEV_PIPE_ZOOMED", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
-      port->widget ? "redraw_widget " : "",
-      port == &dev->full ? "navigation_redraw" : "");
+    "dt_dev_zoom_move", port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+      "set DT_DEV_PIPE_ZOOMED%s%s",
+      port->widget ? ", redraw_widget" : "",
+      port == &dev->full ? ", navigation_redraw" : "");
   // Mark pipe as needing zoom update
   port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
 
   if(port->widget)
+  {
+    if(dt_pipe_processing(port->pipe) && port == &dev->full)
+      dt_dev_pixelpipe_set_shutdown(port->pipe, DT_DEV_PIXELPIPE_STOP_ZOOM);
     dt_control_queue_redraw_widget(port->widget);
+  }
   if(port == &dev->full)
     dt_control_navigation_redraw();
 }
@@ -3337,13 +3506,45 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 
   if(x && y && port->pipe)
   {
-    float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop, port->pipe,
-                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
-    *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
-    *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
+    // A pipe that hasn't produced dimensions yet (never processed, or in the
+    // middle of an image switch) would turn the normalisation below into a
+    // division by zero and send the viewport off to infinity.
+    if(port->pipe->processed_width && port->pipe->processed_height)
+    {
+      float pts[2] = { port->zoom_x, port->zoom_y };
+      dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop,
+                                    port->pipe,
+                                    0.0f,
+                                    DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
+                                    pts,
+                                    1);
+      *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
+      *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
+    }
+    else
+      *x = *y = 0.0f;
   }
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+void dt_dev_snapshot_zoom_pos(dt_dev_viewport_t *port)
+{
+  if(!port || !port->pipe)
+    return;
+
+  // Nothing worth carrying over when the image is shown at fit: the centre is
+  // forced home anyway, and a stale snapshot would fight the next fit.
+  if(port->zoom == DT_ZOOM_FIT || !port->pipe->processed_width || !port->pipe->processed_height)
+  {
+    port->restore_zoom = FALSE;
+    return;
+  }
+
+  float zx = 0.0f, zy = 0.0f;
+  dt_dev_get_viewport_params(port, NULL, NULL, &zx, &zy);
+  port->restore_zoom_x = CLAMP(zx, -0.5f, 0.5f);
+  port->restore_zoom_y = CLAMP(zy, -0.5f, 0.5f);
+  port->restore_zoom = TRUE;
 }
 
 gboolean dt_dev_is_current_image(const dt_develop_t *dev,
@@ -3526,7 +3727,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, base->so, base->dev))
   {
-    free(module);
+    // failed module already freed while failing to load
     return NULL;
   }
   module->instance = base->instance;
@@ -3797,7 +3998,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO)
+    if(dt_atomic_get_int(&pipe->shutdown) > DT_DEV_PIXELPIPE_PROCESSING)
       return TRUE;  // stop waiting if pipe shuts down
 
     dt_hash_t probehash;
@@ -3931,7 +4132,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   const int snapshot_id,
                   GList *module_filter_out,
                   const int devid,
-                  const gboolean finalscale)
+                  const gboolean finalscale,
+                  const gboolean want_float)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -3939,6 +4141,11 @@ void dt_dev_image(const dt_imgid_t imgid,
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
   pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : DT_DEV_PIXELPIPE_NONE);
+  // want_float: keep gamma as the terminal module (so backbuf dimensions stay
+  // consistent) but have it pass the linear-float working RGB straight through
+  // instead of packing it to 8-bit. See gamma.c process().
+  if(want_float)
+    pipe->type |= DT_DEV_PIXELPIPE_IMAGE_FLOAT;
   // load image and set history_end
 
   dev.snapshot_id = snapshot_id;
@@ -3969,10 +4176,16 @@ void dt_dev_image(const dt_imgid_t imgid,
 
   // record resulting image and dimensions
 
-  const uint32_t bufsize =
-    sizeof(uint32_t) * pipe->backbuf_width * pipe->backbuf_height;
+  // Destination size the caller expects: 16 B/px for float, else 8-bit ARGB.
+  // The pipe's terminate step (dt_dev_pixelpipe_process) sizes pipe->backbuf to
+  // match: 4 floats/px when want_float (gamma passed the linear float through),
+  // 8-bit ARGB otherwise. So a straight copy of bufsize is exact.
+  const size_t bufsize = (want_float ? 4 * sizeof(float) : sizeof(uint32_t)) * pipe->backbuf_width *
+                         pipe->backbuf_height;
   *buf = dt_alloc_aligned(bufsize);
-  memcpy(*buf, pipe->backbuf, bufsize);
+  memset(*buf, 0, bufsize);
+  if(pipe->backbuf)
+    memcpy(*buf, pipe->backbuf, MIN(bufsize, pipe->backbuf_size));
 
   if(buf_width) *buf_width = pipe->backbuf_width;
   if(buf_height) *buf_height = pipe->backbuf_height;

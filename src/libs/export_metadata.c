@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "common/darktable.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -131,7 +132,7 @@ static void _delete_tag_button_clicked(GtkButton *button, dt_lib_export_metadata
 
 static gboolean _key_press_on_list(GtkWidget *widget, GdkEventKey *event, dt_lib_export_metadata_t *d)
 {
-  if(event->type == GDK_KEY_PRESS && event->keyval == GDK_KEY_Delete && !event->state)
+  if(dt_gdk_event_get_type(event) == GDK_KEY_PRESS && dt_gdk_event_get_keyval(event) == GDK_KEY_Delete && !dt_gdk_event_get_state(event))
   {
     _remove_tag_from_list(d);
     return TRUE;
@@ -276,13 +277,19 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   if(!ondisk)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(calculated), flags & DT_META_CALCULATED);
 
-  GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(plus, _("add an output metadata tag"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("add an output metadata tag"),
+        .clicked_cb = G_CALLBACK(_add_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
-  GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("delete metadata tag"),
+        .clicked_cb = G_CALLBACK(_delete_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
