@@ -56,6 +56,24 @@ struct dt_ai_registry_t
 #define CONF_MODEL_ENABLED_PREFIX "plugins/ai/models/"
 #define CONF_ACTIVE_MODEL_PREFIX "plugins/ai/models/active/"
 
+// what each task darktable dispatches on is called on screen. ADD A LINE
+// HERE WHEN ADDING A TASK, or it will show its identifier
+//
+// tasks are identifiers, not prose: they come from a model's config.json
+// and end up in conf keys, so nothing translates them in place. only the
+// label below is localized, and a task missing from this table keeps its
+// own name rather than being hidden or guessed at
+static const struct
+{
+  const char *task;
+  const char *label;
+} _task_labels[] = {
+  { "denoise",    N_("denoise")     },
+  { "rawdenoise", N_("raw denoise") },
+  { "upscale",    N_("upscale")     },
+  { "mask",       N_("mask")        },
+};
+
 // compare version strings "X.Y", returns -1 if a<b, 0 if a==b, 1 if a>b
 static int _version_compare(const char *a, const char *b)
 {
@@ -2072,6 +2090,19 @@ void dt_ai_models_set_enabled(const char *model_id, gboolean enabled)
   char *conf_key = g_strdup_printf("%s%s/enabled", CONF_MODEL_ENABLED_PREFIX, model_id);
   dt_conf_set_bool(conf_key, enabled);
   g_free(conf_key);
+}
+
+// _task_labels is at the top of this file, next to the other constants
+const char *dt_ai_task_label(const char *task)
+{
+  if(!task || !task[0])
+    return "";
+
+  for(size_t i = 0; i < sizeof(_task_labels) / sizeof(_task_labels[0]); i++)
+    if(!strcmp(task, _task_labels[i].task))
+      return _(_task_labels[i].label);
+
+  return task;
 }
 
 char *dt_ai_models_get_active_for_task(const char *task)

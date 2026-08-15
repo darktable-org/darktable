@@ -71,7 +71,8 @@ enum
   COL_NAME,
   COL_INFO,     // info icon visibility flag (TRUE on downloaded rows)
   COL_VERSION,
-  COL_TASK,
+  COL_TASK,       // the identifier, which reaches conf keys — never shown
+  COL_TASK_LABEL, // what the task column displays
   COL_ENABLED,
   COL_ENABLED_SENSITIVE, // whether the enabled checkbox is clickable
   COL_STATUS,
@@ -249,6 +250,8 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       model->name ? model->name : model->id,
       COL_TASK,
       model->task ? model->task : "",
+      COL_TASK_LABEL,
+      dt_ai_task_label(model->task),
       COL_STATUS,
       _status_to_string(model->status),
       COL_DEFAULT,
@@ -1709,6 +1712,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     G_TYPE_BOOLEAN, // info icon visible
     G_TYPE_STRING,  // version
     G_TYPE_STRING,  // task
+    G_TYPE_STRING,  // task label
     G_TYPE_BOOLEAN, // enabled
     G_TYPE_BOOLEAN, // enabled_sensitive
     G_TYPE_STRING,  // status
@@ -1801,7 +1805,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     _("task"),
     text_renderer,
     "text",
-    COL_TASK,
+    COL_TASK_LABEL,
     NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), task_col);
 
