@@ -867,6 +867,12 @@ char *version = g_strdup_printf(
                "  OpenCL                 -> DISABLED - GPU acceleration is NOT available\n"
 #endif
 
+#ifdef HAVE_OPENCV
+               "  OpenCV                 -> ENABLED  - HDR bracket auto-alignment is available\n"
+#else
+               "  OpenCV                 -> DISABLED - HDR bracket auto-alignment is NOT available\n"
+#endif
+
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
