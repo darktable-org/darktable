@@ -513,7 +513,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
   cl->dev[dev].max_mem_constant = 0;
-  cl->dev[dev].alignsize = 0;
   cl->dev[dev].compute_units = 0;
   cl->dev[dev].workgroup_size = 0;
   cl->dev[dev].local_size = 0;
@@ -737,36 +736,25 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT,
                                            sizeof(cl_bool), &image_support, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].max_image_height), NULL);
+                                           sizeof(size_t), &cl->dev[dev].max_image_height, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].max_image_width), NULL);
+                                           sizeof(size_t), &cl->dev[dev].max_image_width, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
-                                           sizeof(cl_ulong),
-                                           &(cl->dev[dev].max_mem_alloc), NULL);
+                                           sizeof(cl_ulong), &cl->dev[dev].max_mem_alloc, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE,
                                            sizeof(cl_bool), &little_endian, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
-                                           sizeof(cl_ulong),
-                                           &(cl->dev[dev].max_mem_constant), NULL);
-  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MEM_BASE_ADDR_ALIGN,
-                                           sizeof(cl_uint),
-                                           &(cl->dev[dev].alignsize), NULL);
+                                           sizeof(cl_ulong), &cl->dev[dev].max_mem_constant, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_COMPUTE_UNITS,
-                                           sizeof(cl_uint),
-                                           &(cl->dev[dev].compute_units), NULL);
+                                           sizeof(cl_uint), &cl->dev[dev].compute_units, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].workgroup_size), NULL);
+                                           sizeof(size_t), &cl->dev[dev].workgroup_size, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_LOCAL_MEM_SIZE,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].local_size), NULL);
+                                           sizeof(size_t), &cl->dev[dev].local_size, NULL);
 
 #if CL_TARGET_OPENCL_VERSION >= 300
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].workgroup_size_rec), NULL);
+                                           sizeof(size_t), &cl->dev[dev].workgroup_size_rec, NULL);
 #endif
 
   // FIXME This test is deprecated for post 1.2 versions so if we do some cl version bump
@@ -890,8 +878,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   MAX CONSTANT BUFFER:      %zu KB\n", (size_t)(cl->dev[dev].max_mem_constant / 1024));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   LOCAL MEM SIZE:           %zu KB\n", (size_t)(cl->dev[dev].local_size / 1024));
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   ADDRESS ALIGN:            %d B\n", cl->dev[dev].alignsize / 8);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   COMPUTE UNITS:            %d\n", cl->dev[dev].compute_units);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -3898,13 +3884,13 @@ void dt_opencl_update_settings(void)
       res->cl_uni_memory += cl->dev[i].used_available;
     }
     dt_print_nts(DT_DEBUG_OPENCL,
-         "   AVAILABLE CLMEM SIZE:     %zu MB%s\n",
+         "   AVAILABLE MEM SIZE:       %zu MB%s\n",
               (size_t)(cl->dev[i].used_available / DT_MEGA),
               cl->dev[i].tunehead ? ", tuned" : "");
   }
   if(res->cl_uni_memory)
     dt_print_nts(DT_DEBUG_OPENCL,
-         "   UNIFIED SYSMEM SIZE:      %zu MB\n", (size_t)(res->cl_uni_memory / DT_MEGA));
+         "   UNIFIED MEM SIZE:         %zu MB\n", (size_t)(res->cl_uni_memory / DT_MEGA));
 }
 
 /** read scheduling profile for config variables */

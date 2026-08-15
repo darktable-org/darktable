@@ -134,7 +134,6 @@ typedef struct dt_opencl_device_t
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
   cl_ulong max_mem_constant;
-  cl_uint alignsize; 
   cl_uint compute_units;
   size_t workgroup_size; 
   size_t workgroup_size_rec;
