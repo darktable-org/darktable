@@ -376,6 +376,9 @@ jobs:
           popd
       - name: Install Base Dependencies
         run: |
+          # The GitHub runner images ship aws/tap, which Homebrew does not trust and
+          # thus warns about on every invocation. We don't use it, so drop it.
+          brew untap --force aws/tap || true
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
