@@ -948,13 +948,15 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
       // during the previous GDK_BUTTON_PRESS event
       const dt_imgid_t old_selection = table->selection;
       table->selection = id;
-      dt_view_manager_switch(darktable.view_manager, "darkroom");
       if(id != old_selection)
       {
         _update_selected_thumbnail(table, old_selection);
         dt_act_on_reset_cache(TRUE);
         dt_act_on_reset_cache(FALSE);
       }
+      // never switch view from here directly: Gtk is still propagating this
+      // very event through widgets the switch would unrealize on the way out
+      dt_ctl_switch_mode_to("darkroom");
     }
     return;
   }

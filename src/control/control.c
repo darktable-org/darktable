@@ -606,6 +606,45 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
+/* Run the switch, postponing it when we are inside Gtk event delivery.
+
+   Switching views tears down the widget hierarchy of the view we leave:
+   dt_view_manager_switch_by_view() removes every lib module widget from its
+   container and the thumbtable is left without any parent until the filmstrip
+   re-parents it from its draw handler.  Doing that while Gtk is delivering an
+   event -- a thumbnail double-click for instance is handled in the gesture
+   capture phase, so Gtk still has to propagate the very same event through the
+   widget tree afterwards -- makes gtk_propagate_event() walk widgets which are
+   not realized any more:
+     Gtk-CRITICAL gtk_widget_event: assertion
+                  'WIDGET_REALIZED_FOR_EVENT (widget, event)' failed
+   A callback can only run once the event has been fully propagated, so nothing
+   is pulled away under Gtk's feet.  We queue it at G_PRIORITY_HIGH so it still
+   runs before any further input is dispatched: the switch is only moved out of
+   the event propagation, not behind the events following it.
+
+   Note that g_main_context_invoke() alone does not postpone anything: called
+   from the thread owning the main context, ie. our gui thread, it runs the
+   callback synchronously. */
+static void _dt_ctl_switch_mode_invoke(GSourceFunc callback,
+                                       gpointer data)
+{
+  // only the thread running the main loop can be inside event delivery, from
+  // any other thread g_main_context_invoke() queues the switch anyway
+  if(g_main_context_is_owner(g_main_context_default()))
+  {
+    GdkEvent *event = gtk_get_current_event();
+    if(event)
+    {
+      gdk_event_free(event);
+      g_idle_add_full(G_PRIORITY_HIGH, callback, data, NULL);
+      return;
+    }
+  }
+
+  g_main_context_invoke(NULL, callback, data);
+}
+
 void dt_ctl_switch_mode_to(const char *mode)
 {
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -617,14 +656,14 @@ void dt_ctl_switch_mode_to(const char *mode)
     return;
   }
 
-  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, (gpointer)mode);
+  _dt_ctl_switch_mode_invoke(_dt_ctl_switch_mode_to, (gpointer)mode);
 }
 
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view)
 {
   if(view == dt_view_manager_get_current_view(darktable.view_manager))
     return;
-  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to_by_view, (gpointer)view);
+  _dt_ctl_switch_mode_invoke(_dt_ctl_switch_mode_to_by_view, (gpointer)view);
 }
 
 void dt_ctl_switch_mode()
