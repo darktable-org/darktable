@@ -20,21 +20,32 @@
 
 #include <glib.h>
 
-/** this isn't a background job on purpose. it has to be really fast so it shouldn't
- *  require locking from image cache or anything like that.
- *  should we find out that we want to have a background job that crawls over all images
- *  we can maybe refactor this, but for now it's good the way it is.
- */
+#include "common/darktable.h"
 
 // this function iterates over ALL images from the database and checks whether
 // - the XMP file on disk is newer than the timestamp from db
 // - there is a .txt or .wav file associated with the image and mark so in the db
 //   or if such a file no longer exists
 // it returns the list of images with a (supposedly) updated xmp file to let the user decide
+// this blocks the calling thread; see dt_control_crawler_start_background()
 GList *dt_control_crawler_run();
 
 // show a popup with the images, let the user decide what to do and free the list afterwards
 void dt_control_crawler_show_image_list(GList *images);
+
+// perform the same crawl as dt_control_crawler_run(), but from a background
+// job and one film roll at a time, most recently opened film roll first, so
+// that startup does not have to wait for it
+void dt_control_crawler_start_background(void);
+
+// move a film roll to the head of the background crawler's queue.  called
+// when a film roll is opened so that the images the user is about to look
+// at are examined next.  does not block and does nothing if that film roll
+// has already been examined in this session
+void dt_control_crawler_prioritize_filmroll(const dt_filmid_t filmid);
+
+// ask the background crawler to stop, optionally waiting for it to do so
+void dt_control_crawler_stop(const gboolean wait);
 
 // background thread updating all thumbnails is there is no user activity while being in lightroom
 void dt_update_thumbs_thread(void *ptr);
