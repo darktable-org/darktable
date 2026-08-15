@@ -315,6 +315,20 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 
+# When GTK3 carries the Wayland backend, gui/gtk.c calls into libwayland-client
+# directly (registry roundtrip for server-side decoration support), so we have to
+# link it ourselves. gtk+-3.0.pc does not list it, and relying on libgdk-3 to drag
+# it in breaks with linkers using --no-undefined (e.g. openSUSE's default LDFLAGS).
+if(NOT WIN32 AND NOT APPLE)
+  pkg_check_modules(GTK3_WAYLAND QUIET gtk+-wayland-3.0)
+  if(GTK3_WAYLAND_FOUND)
+    pkg_check_modules(WAYLAND_CLIENT REQUIRED wayland-client)
+    include_directories(SYSTEM ${WAYLAND_CLIENT_INCLUDE_DIRS})
+    link_directories(${WAYLAND_CLIENT_LIBRARY_DIRS})
+    list(APPEND LIBS ${WAYLAND_CLIENT_LIBRARIES})
+  endif()
+endif()
+
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
 include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
