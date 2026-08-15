@@ -655,6 +655,14 @@ undefined references to `cv::` anything. `test_hdr_align_inert_without_opencv`
 asserts the contract in both configurations, and the white-box test has nothing
 left to inspect without OpenCV, so it compiles to a trivially passing `main`.
 
+Which way a given binary was built is visible in `darktable --version`, next to
+the other optional dependencies:
+
+```
+  OpenCV                 -> ENABLED  - HDR bracket auto-alignment is available
+  OpenCV                 -> DISABLED - HDR bracket auto-alignment is NOT available
+```
+
 ## 6. Known approximations and open questions
 
 - **X-Trans luma proxy.** The stride-1 2×2 luma window is exact for Bayer (any
