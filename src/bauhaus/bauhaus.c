@@ -3620,20 +3620,13 @@ float dt_bauhaus_slider_get_step(GtkWidget *widget)
     const float max = zoom ? d->max : d->soft_max;
 
     const float top = fminf(max-min, fmaxf(fabsf(min), fabsf(max)));
-    if(top >= 100)
-    {
-      step = 1.f;
-    }
-    else
-    {
-      step = top * fabsf(d->factor) / 100;
-      const float log10step = log10f(step);
-      const float fdigits = floorf(log10step+.1);
-      step = powf(10.f,fdigits);
-      if(log10step - fdigits > .5)
-        step *= 5;
-      step /= fabsf(d->factor);
-    }
+    step = top * fabsf(d->factor) / 100;
+    const float log10step = log10f(step);
+    const float fdigits = floorf(log10step+.1);
+    step = powf(10.f,fdigits);
+    if(log10step - fdigits > .5)
+      step *= 5;
+    step /= fabsf(d->factor);
   }
 
   return copysignf(step, d->factor);
