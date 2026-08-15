@@ -62,10 +62,11 @@
  * order, maybe one day, to have a general linear solving lib that
  * could for example iterate over methods until one succeed.
  *
- * We didn't bother to parallelize the code nor to make it use double
- * floating point precision because it's already fast enough (2 to 45
- * ms for 16×16 matrix on Xeon) and used for properly conditioned
- * matrices.
+ * We didn't bother to parallelize the code because it's already
+ * fast enough. Double precision is required to limit rounding error
+ * accumulation in the summing loops: forming A'A squares the condition
+ * number, and the last Cholesky pivot is then a difference of nearly
+ * equal quantities that float cannot resolve.
  *
  * Vectorization leads to slow-downs here since we access matrices
  * row-wise and column-wise, in a non-contiguous fashion.
@@ -83,8 +84,8 @@
 
 
 __DT_CLONE_TARGETS__
-static inline gboolean _choleski_decompose(const float *const restrict A,
-                                           float *const restrict L,
+static inline gboolean _choleski_decompose(const double *const restrict A,
+                                           double *const restrict L,
                                            size_t n,
                                            const gboolean verbose)
 {
@@ -92,35 +93,35 @@ static inline gboolean _choleski_decompose(const float *const restrict A,
   // slow and safe variant : we check values for negatives in sqrt and
   // divisions by 0.
 
-  if(A[0] <= 0.0f) return FALSE; // failure : non positive definite matrice
+  if(A[0] <= 0.0) return FALSE; // failure : non positive definite matrix
 
   gboolean valid = TRUE;
 
   for(size_t i = 0; i < n; i++)
     for(size_t j = 0; j < (i + 1); j++)
     {
-      float sum = 0.0f;
+      double sum = 0.0;
 
       for(size_t k = 0; k < j; k++)
         sum += L[i * n + k] * L[j * n + k];
 
       if(i == j)
       {
-        const float temp = A[i * n + i] - sum;
+        const double temp = A[i * n + i] - sum;
 
-        if(temp < 0.0f)
+        if(temp < 0.0)
         {
           valid = FALSE;
           L[i * n + j] = NAN;
         }
         else
-          L[i * n + j] = sqrtf(A[i * n + i] - sum);
+          L[i * n + j] = sqrt(temp);
       }
       else
       {
-        const float temp = L[j * n + j];
+        const double temp = L[j * n + j];
 
-        if(temp == 0.0f)
+        if(temp == 0.0)
         {
           valid = FALSE;
           L[i * n + j] = NAN;
@@ -137,9 +138,9 @@ static inline gboolean _choleski_decompose(const float *const restrict A,
 
 
 __DT_CLONE_TARGETS__
-static inline gboolean _triangular_descent(const float *const restrict L,
-                                           const float *const restrict y,
-                                           float *const restrict b,
+static inline gboolean _triangular_descent(const double *const restrict L,
+                                           const double *const restrict y,
+                                           double *const restrict b,
                                            const size_t n,
                                            const gboolean verbose)
 {
@@ -150,13 +151,13 @@ static inline gboolean _triangular_descent(const float *const restrict L,
 
   for(size_t i = 0; i < n; ++i)
   {
-    float sum = y[i];
+    double sum = y[i];
     for(size_t j = 0; j < i; ++j)
       sum -= L[i * n + j] * b[j];
 
-    const float temp = L[i * n + i];
+    const double temp = L[i * n + i];
 
-    if(temp != 0.0f)
+    if(temp != 0.0)
       b[i] = sum / temp;
     else
     {
@@ -170,9 +171,9 @@ static inline gboolean _triangular_descent(const float *const restrict L,
 }
 
 __DT_CLONE_TARGETS__
-static inline gboolean _triangular_ascent(const float *const restrict L,
-                                          const float *const restrict b,
-                                          float *const restrict x,
+static inline gboolean _triangular_ascent(const double *const restrict L,
+                                          const double *const restrict b,
+                                          double *const restrict x,
                                           const size_t n,
                                           const gboolean verbose)
 {
@@ -183,12 +184,12 @@ static inline gboolean _triangular_ascent(const float *const restrict L,
 
   for(int i = (n - 1); i > -1 ; --i)
   {
-    float sum = b[i];
+    double sum = b[i];
     for(int j = (n - 1); j > i; --j)
       sum -= L[j * n + i] * x[j];
 
-    const float temp = L[i * n + i];
-    if(temp != 0.0f)
+    const double temp = L[i * n + i];
+    if(temp != 0.0)
       x[i] = sum / temp;
     else
     {
@@ -204,16 +205,16 @@ static inline gboolean _triangular_ascent(const float *const restrict L,
 
 
 __DT_CLONE_TARGETS__
-static inline gboolean _solve_hermitian(const float *const restrict A,
-                                        float *const restrict y,
+static inline gboolean _solve_hermitian(const double *const restrict A,
+                                        double *const restrict y,
                                         const size_t n,
                                         const gboolean verbose)
 {
   // Solve A x = y where A an hermitian positive definite matrix n × n
   // x and y are n vectors. Output the result in y
 
-  float *const restrict x = dt_alloc_align_float(n);
-  float *const restrict L = dt_alloc_align_float(n * n);
+  double *const restrict x = dt_alloc_align_double(n);
+  double *const restrict L = dt_alloc_align_double(n * n);
 
   if(!x || !L)
   {
@@ -247,7 +248,7 @@ static inline gboolean _solve_hermitian(const float *const restrict A,
 
 __DT_CLONE_TARGETS__
 static inline void _transpose_dot_matrix(float *const restrict A, // input
-                                         float *const restrict A_square, // output
+                                         double *const restrict A_square, // output
                                          const size_t m,
                                          const size_t n)
 {
@@ -257,9 +258,9 @@ static inline void _transpose_dot_matrix(float *const restrict A, // input
   for(size_t i = 0; i < n; ++i)
     for(size_t j = 0; j < (i + 1); ++j)
     {
-      float sum = 0.0f;
+      double sum = 0.0;
       for(size_t k = 0; k < m; ++k)
-        sum += A[k * n + i] * A[k * n + j];
+        sum += (double)A[k * n + i] * (double)A[k * n + j];
 
       A_square[i * n + j] = sum;
     }
@@ -269,16 +270,16 @@ static inline void _transpose_dot_matrix(float *const restrict A, // input
 __DT_CLONE_TARGETS__
 static inline void _transpose_dot_vector(float *const restrict A, // input
                                          float *const restrict y, // input
-                                         float *const restrict y_square, // output
+                                         double *const restrict y_square, // output
                                          const size_t m,
                                          const size_t n)
 {
   // Construct the vector A' y
   for(size_t i = 0; i < n; ++i)
   {
-    float sum = 0.0f;
+    double sum = 0.0;
     for(size_t k = 0; k < m; ++k)
-      sum += A[k * n + i] * y[k];
+      sum += (double)A[k * n + i] * (double)y[k];
 
     y_square[i] = sum;
   }
@@ -302,8 +303,8 @@ static inline gboolean pseudo_solve(float *const restrict A,
     return FALSE;
   }
 
-  float *const restrict A_square = dt_alloc_align_float(n * n);
-  float *const restrict y_square = dt_alloc_align_float(n);
+  double *const restrict A_square = dt_alloc_align_double(n * n);
+  double *const restrict y_square = dt_alloc_align_double(n);
 
   if(!A_square || !y_square)
   {
@@ -331,7 +332,11 @@ static inline gboolean pseudo_solve(float *const restrict A,
 
   // Solve A' A x = A' y for x
   gboolean valid = _solve_hermitian(A_square, y_square, n, verbose);
-  if(valid) dt_simd_memcpy(y_square, y, n);
+  if(valid)
+  {
+    for(size_t i = 0; i < n; i++)
+      y[i] = (float) y_square[i];
+  }
 
   dt_free_align(y_square);
   dt_free_align(A_square);
