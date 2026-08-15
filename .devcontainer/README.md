@@ -78,11 +78,26 @@ chmod +x Darktable-*.AppImage
 
 **Using `--configdir`** creates a separate configuration to avoid conflicts with your production darktable installation.
 
+## CI Environment Alignment
+
+This container uses `ubuntu:26.04` and the **exact same packages** installed by the CI workflow
+(`.github/workflows/ci.yml`), so builds here are directly comparable to CI results.
+
+Compilers available (matching CI):
+- **Primary:** GCC 16 (`gcc-16` / `g++-16`) — default CI compiler
+- **Alternative:** Clang 22 (`clang-22` / `clang++-22`)
+
+To switch compilers:
+```bash
+export CC=clang-22 CXX=clang++-22
+./build.sh --prefix /tmp/dt --build-type RelWithDebInfo
+```
+
 ## Development Tools Included
 
-- **Compilers:** GCC 13, Clang
-- **Build Systems:** CMake, Ninja, Make
-- **Libraries:** GTK3, GLib, SQLite, libcurl, Exiv2, libavif, libheif, libjxl, WebP, and more
+- **Compilers:** GCC 16, Clang 22
+- **Build Systems:** CMake, Ninja
+- **Libraries:** GTK3, GLib, SQLite, libcurl, Exiv2, libavif, libheif, libjxl, WebP, ONNX Runtime, and more
 - **VS Code Extensions:** C/C++ tools, CMake Tools, clang-format
 - **Editors:** vim, nano
 
@@ -115,15 +130,10 @@ sudo apt-get update
 sudo apt-get install <package-name>
 ```
 
-### Want to enable unit tests?
-
-Tests are disabled by default and require additional dependencies. To enable:
+### Want to run unit tests?
 
 ```bash
-# Install test framework
-sudo apt-get install -y libcmocka-dev
-
-# Build with tests enabled
+# Build with tests enabled (libcmocka-dev is already installed)
 ./build.sh --prefix /tmp/dt --build-type RelWithDebInfo -- -DBUILD_TESTING=ON
 
 # Run tests
