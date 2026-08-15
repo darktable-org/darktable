@@ -513,7 +513,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
   cl->dev[dev].max_mem_constant = 0;
-  cl->dev[dev].alignsize = 0;
   cl->dev[dev].compute_units = 0;
   cl->dev[dev].workgroup_size = 0;
   cl->dev[dev].local_size = 0;
@@ -737,36 +736,25 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT,
                                            sizeof(cl_bool), &image_support, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].max_image_height), NULL);
+                                           sizeof(size_t), &cl->dev[dev].max_image_height, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].max_image_width), NULL);
+                                           sizeof(size_t), &cl->dev[dev].max_image_width, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
-                                           sizeof(cl_ulong),
-                                           &(cl->dev[dev].max_mem_alloc), NULL);
+                                           sizeof(cl_ulong), &cl->dev[dev].max_mem_alloc, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE,
                                            sizeof(cl_bool), &little_endian, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
-                                           sizeof(cl_ulong),
-                                           &(cl->dev[dev].max_mem_constant), NULL);
-  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MEM_BASE_ADDR_ALIGN,
-                                           sizeof(cl_uint),
-                                           &(cl->dev[dev].alignsize), NULL);
+                                           sizeof(cl_ulong), &cl->dev[dev].max_mem_constant, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_COMPUTE_UNITS,
-                                           sizeof(cl_uint),
-                                           &(cl->dev[dev].compute_units), NULL);
+                                           sizeof(cl_uint), &cl->dev[dev].compute_units, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].workgroup_size), NULL);
+                                           sizeof(size_t), &cl->dev[dev].workgroup_size, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_LOCAL_MEM_SIZE,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].local_size), NULL);
+                                           sizeof(size_t), &cl->dev[dev].local_size, NULL);
 
 #if CL_TARGET_OPENCL_VERSION >= 300
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-                                           sizeof(size_t),
-                                           &(cl->dev[dev].workgroup_size_rec), NULL);
+                                           sizeof(size_t), &cl->dev[dev].workgroup_size_rec, NULL);
 #endif
 
   // FIXME This test is deprecated for post 1.2 versions so if we do some cl version bump
@@ -890,8 +878,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   MAX CONSTANT BUFFER:      %zu KB\n", (size_t)(cl->dev[dev].max_mem_constant / 1024));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   LOCAL MEM SIZE:           %zu KB\n", (size_t)(cl->dev[dev].local_size / 1024));
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   ADDRESS ALIGN:            %d B\n", cl->dev[dev].alignsize / 8);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   COMPUTE UNITS:            %d\n", cl->dev[dev].compute_units);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -3760,27 +3746,34 @@ dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
 
   const int64_t iplane = (int64_t)width * height * ibpp;
   const int64_t oplane = (int64_t)width * height * obpp;
+  const int64_t avail = cl->dev[devid].used_available;
 
-  // always tile as processed image is larger than what device or dt are providing
-  if(cl->dev[devid].max_image_width < width
-      || cl->dev[devid].max_image_height < height
-      || cl->dev[devid].used_available < MAX(iplane, oplane))
-    return DT_OPENCL_TILING;
-
-  const int64_t avail = dt_opencl_get_device_available(devid);
   // total amount of used cl_mem as requested by module tiling code
-  const int64_t tiling_total = iplane * factor + overhead;
+  const int64_t tiling_total = sizeof(float) * 4 * width * height * factor + overhead;
 
-  // available cl_mem allows processing whole image in one bunch
-  if(avail > tiling_total)
-    return cl->fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_NO_TILING;
+  const gboolean miss_minimal =
+         cl->dev[devid].max_image_width < width
+      || cl->dev[devid].max_image_height < height
+      || avail < (iplane + oplane);
+  const gboolean total_fit = avail > tiling_total;
 
   // how much is available for each fast tile
-  const int64_t tile_mem = avail - overhead - iplane - oplane;
-  if(tile_mem < DT_MEGA) return DT_OPENCL_TILING;
+  const int64_t tilemem = avail - overhead - iplane - oplane;
+  const int64_t perline = sizeof(float) * 4 * width * factor;
+  const int64_t tlines = tilemem / perline;
 
-  const int64_t per_line = width * (ibpp + obpp);
-  const int64_t tlines = tile_mem / per_line;
+  dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
+    "test cl tiling: dim=%dx%d, avail=%dMB overhead=%zuMB factor=%.3f tmem=%dMB perline=%dkB tlines=%d",
+    width, height, (int)(avail/DT_MEGA), overhead, factor, (int)(tilemem/DT_MEGA), (int)(perline/1024), (int)tlines);
+
+  // always tile as processed image is larger than what device or dt are providing
+  if(miss_minimal || tilemem < DT_MEGA)
+    return DT_OPENCL_TILING;
+
+  // available cl_mem allows processing whole image in one bunch
+  if(total_fit)
+    return cl->fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_NO_TILING;
+
   // fast internal OpenCL tiling possible and with a good bet on performance?
   const gboolean good_bet = (tlines - 2*overlap) > (tlines / 5);
   return good_bet ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
@@ -3891,13 +3884,13 @@ void dt_opencl_update_settings(void)
       res->cl_uni_memory += cl->dev[i].used_available;
     }
     dt_print_nts(DT_DEBUG_OPENCL,
-         "   AVAILABLE CLMEM SIZE:     %zu MB%s\n",
+         "   AVAILABLE MEM SIZE:       %zu MB%s\n",
               (size_t)(cl->dev[i].used_available / DT_MEGA),
               cl->dev[i].tunehead ? ", tuned" : "");
   }
   if(res->cl_uni_memory)
     dt_print_nts(DT_DEBUG_OPENCL,
-         "   UNIFIED SYSMEM SIZE:      %zu MB\n", (size_t)(res->cl_uni_memory / DT_MEGA));
+         "   UNIFIED MEM SIZE:         %zu MB\n", (size_t)(res->cl_uni_memory / DT_MEGA));
 }
 
 /** read scheduling profile for config variables */
