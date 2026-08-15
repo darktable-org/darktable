@@ -3856,6 +3856,20 @@
     <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>run_crawler_in_background</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>look for updated XMP files in the background</shortdescription>
+    <longdescription>examine one film roll at a time from a background job, most recently opened film roll first, instead of examining the whole library before the user interface appears. opening a film roll that has not been examined yet moves it to the front of the queue.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>crawler_threads</name>
+    <type>int</type>
+    <default>16</default>
+    <shortdescription>number of threads used to look for updated XMP files</shortdescription>
+    <longdescription>the search for updated XMP files is limited by filesystem latency rather than by processing power, so using considerably more threads than there are CPU cores is beneficial, especially when the images are stored on a network share. set to 1 to search serially.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>colorlabel/red</name>
     <type>string</type>
     <default></default>
