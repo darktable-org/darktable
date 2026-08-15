@@ -69,6 +69,7 @@ typedef struct dt_thumbtable_t
   int thumbs_per_row; // number of image in a row (1 for filmstrip ; MAX_ZOOM for zoomable)
   int rows; // number of rows (the last one is not fully visible) for filmstrip it's the number of columns
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
+  float zoom;                  // continuous zoom level of the zoomable lighttable (thumb_size = view_width / zoom)
   int prefs_size;              // size value to determine overlays mode and css class
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
@@ -130,10 +131,11 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table,
                                         const dt_imgid_t imgid,
                                         const gboolean redraw);
 
-// fired when the zoom level change
+// fired when the zoom level change.  Zoomable layout accepts a continuous
+// (float) zoom; filemanager/culling stay integer.
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
-                                const int oldzoom,
-                                const int newzoom);
+                                const float oldzoom,
+                                const float newzoom);
 
 // ensure that the mentioned image is visible by moving the view if needed
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table,
