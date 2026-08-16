@@ -1629,7 +1629,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_heal_free_cl_global(cl->heal);
     dt_colorspaces_free_cl_global(cl->colorspaces);
     dt_guided_filter_free_cl_global(cl->guided_filter);
-
+    dt_local_laplacian_free_cl_global(cl->local_laplacian);
     for(int i = 0; i < cl->num_devs; i++)
     {
       _cleanup_cl_device_context(cl, i);
