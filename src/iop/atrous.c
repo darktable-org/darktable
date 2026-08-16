@@ -454,12 +454,21 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  // add the residue (the coarse scale from the final decomposition)
-  // to the accumulated details
-  // work around CL 1.20 restriction is safe with the kernel,
+  /* Add the residue, the coarse scale from the final decomposition, to the accumulated
+     details. The kernel reads its accumulator and writes the sum, so the two cannot be
+     the same image: clSetKernelArg leaves the result undefined when one image object is
+     bound as both a read_only and a write_only argument.
+
+     After the loop pp_coarse holds the residue and is one of the two scratch buffers,
+     which leaves the other free to receive the sum before it is copied out. */
+  cl_mem residue_dst = (pp_coarse == dev_tmp) ? dev_tmp2 : dev_tmp;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_addbuffers, width, height,
-          CLARG(dev_out), CLARG(dev_out), CLARG(pp_coarse),
+          CLARG(residue_dst), CLARG(dev_out), CLARG(pp_coarse),
           CLARG(width), CLARG(height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_copy_image(devid, residue_dst, dev_out,
+                                     CLIMG_ORIGIN, CLIMG_ORIGIN, area);
 error:
   dt_opencl_release_mem_object(dev_filter);
   dt_opencl_release_mem_object(dev_tmp);
