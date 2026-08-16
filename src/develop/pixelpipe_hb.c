@@ -2328,7 +2328,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       c) modules having the IOP_FLAGS_WRITE_PIPECACHE_IN
 
   */
-  const gboolean has_focus = module == dt_dev_gui_module();
+  const gboolean has_focus = module == dt_dev_gui_module() && module->enabled;
   const gboolean last_history = darktable.develop->history_last_module == module;
   const gboolean iop_wanting = module->flags() & IOP_FLAGS_WRITE_PIPECACHE_IN;
   const gboolean important_input =
