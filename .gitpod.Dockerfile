@@ -54,7 +54,7 @@ RUN sudo apt-get update && \
     libpugixml-dev \
     librsvg2-dev \
     libsaxon-java \
-    libsdl2-dev \
+    libsdl3-dev \
     libsecret-1-dev \
     libsqlite3-dev \
     libtiff5-dev \
