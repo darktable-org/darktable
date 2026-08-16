@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gpx.h"
 #include "common/geo.h"
 #include "common/darktable.h"
@@ -238,7 +239,7 @@ gboolean dt_gpx_get_location(const dt_gpx_t *gpx, GDateTime *timestamp, dt_image
         geoloc->longitude = lon;
 
         /* make a simple linear interpolation on elevation */
-        if(tp_next->elevation == NAN || tp->elevation == NAN)
+        if(isnan(tp_next->elevation) || isnan(tp->elevation))
           geoloc->elevation = NAN;
         else
           geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
