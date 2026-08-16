@@ -246,8 +246,8 @@ static int usage(const char *argv0)
          "--disable-opencl\n"
          "    Prevent darktable from initializing the OpenCL subsystem.\n"
          "\n"
-         "--opencl-tiling\n"
-         "    Enforce fast opencl tiling even if not required.\n"
+         "--opencl-tiling --opencl-no-tiling\n"
+         "    Enforce or disable fast opencl tiling even if not required.\n"
          "    Use for performance/debugging sessions only.\n"
          "\n"
          "--opencl-migrate\n"
@@ -1347,6 +1347,13 @@ int dt_init(int argc,
       {
 #ifdef HAVE_OPENCL
         options |= DT_OPENCL_OPTION_FAST_TILE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-no-tiling"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_NOFAST_TILE;
 #endif
         argv[k] = NULL;
       }
