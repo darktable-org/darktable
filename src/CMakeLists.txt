@@ -161,6 +161,7 @@ FILE(GLOB SOURCE_FILES
   "gui/splash.c"
   "gui/welcome.c"
   "gui/styles_dialog.c"
+  "gui/theme_variants.c"
   "imageio/imageio.c"
   "imageio/imageio_dng.c"
   "imageio/imageio_jpeg.c"

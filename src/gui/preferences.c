@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/theme_variants.h"
 #include "gui/preferences.h"
 #ifdef HAVE_AI
 #include "gui/preferences_ai.h"
@@ -123,7 +124,9 @@ static void load_themes_dir(const char *basedir)
       // files that are not meant to be used as themes, but only included in
       // other CSS files. This allows us to have a modular structure for our CSS
       // and avoid code duplication between themes.
-      if(!g_str_has_prefix(d_name, "chunk-"))
+      // .variants manifests sit beside the themes and are not themes
+      if(!g_str_has_prefix(d_name, "chunk-")
+         && g_str_has_suffix(d_name, ".css"))
         darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
     }
     g_dir_close(dir);
@@ -154,6 +157,9 @@ static void reload_ui_last_theme(void)
   dt_bauhaus_load_theme();
 }
 
+typedef struct dt_variants_ui_t dt_variants_ui_t;
+static void _build_theme_variants(dt_variants_ui_t *ui);
+
 static void theme_callback(GtkWidget *widget, gpointer user_data)
 {
   const int selected = dt_bauhaus_combobox_get(widget);
@@ -162,6 +168,9 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   if(i) *i = '\0';
   dt_gui_load_theme(theme);
   dt_bauhaus_load_theme();
+
+  // a different theme declares different options
+  if(user_data) _build_theme_variants((dt_variants_ui_t *)user_data);
 }
 
 static void usercss_callback(GtkWidget *widget, gpointer user_data)
@@ -205,49 +214,125 @@ static void use_sys_font_callback(GtkWidget *widget,
   reload_ui_last_theme();
 }
 
-static void use_rounded_header_callback(GtkWidget *widget,
-                                        gpointer user_data)
+// theme variants are declared by the theme, so one pair of callbacks
+// serves every control; the variant itself rides in user_data
+static void _variant_bool_callback(GtkWidget *widget,
+                                   gpointer user_data)
 {
-  dt_conf_set_bool("themes/rounded-header",
-                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  const dt_theme_variant_t *variant = (const dt_theme_variant_t *)user_data;
+  char *key = dt_theme_variant_conf_key(variant);
+  dt_conf_set_string(key,
+                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
+                       ? "true" : "false");
+  g_free(key);
 
   reload_ui_last_theme();
 }
 
-static void use_condensed_control_callback(GtkWidget *widget,
-                                           gpointer user_data)
+static void _variant_enum_callback(GtkWidget *widget,
+                                   gpointer user_data)
 {
-  dt_conf_set_bool("themes/condensed",
-                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-
-  reload_ui_last_theme();
-}
-
-static void use_accent_color_callback(GtkWidget *widget,
-                                        gpointer user_data)
-{
+  const dt_theme_variant_t *variant = (const dt_theme_variant_t *)user_data;
   const int selected = dt_bauhaus_combobox_get(widget);
+  const char *value = g_list_nth_data(variant->values, MAX(selected, 0));
+  if(!value) return;
 
-  dt_conf_set_int("themes/accent-color", selected);
+  char *key = dt_theme_variant_conf_key(variant);
+  dt_conf_set_string(key, value);
+  g_free(key);
+
   reload_ui_last_theme();
 }
 
-static void use_focused_module_border_callback(GtkWidget *widget,
-                                               gpointer user_data)
+// theme variants get a grid of their own: a theme change replaces the
+// whole set, and some rows below are placed at absolute positions that a
+// varying number of variant rows would displace
+typedef struct dt_variants_ui_t
 {
-  const int selected = dt_bauhaus_combobox_get(widget);
+  GtkWidget *grid;
+  GtkSizeGroup *labels;    // shared with the preferences grid, which
+  GtkSizeGroup *controls;  // sizes its columns separately from ours
+  GList *variants;
+} dt_variants_ui_t;
 
-  dt_conf_set_int("themes/focused-module-border", selected);
-  reload_ui_last_theme();
+static void _variants_ui_free(void *data)
+{
+  dt_variants_ui_t *ui = (dt_variants_ui_t *)data;
+  dt_theme_variants_free(ui->variants);
+  if(ui->labels) g_object_unref(ui->labels);
+  if(ui->controls) g_object_unref(ui->controls);
+  g_free(ui);
 }
 
-static void use_expanded_module_border_callback(GtkWidget *widget,
-                                                gpointer user_data)
+// (re)create one control per option the current theme declares. called
+// again whenever the theme changes, since the options change with it.
+// the controls share the main grid so they line up with everything else
+static void _build_theme_variants(dt_variants_ui_t *ui)
 {
-  const int selected = dt_bauhaus_combobox_get(widget);
+  GList *children = gtk_container_get_children(GTK_CONTAINER(ui->grid));
+  for(GList *c = children; c; c = g_list_next(c))
+    gtk_widget_destroy(GTK_WIDGET(c->data));
+  g_list_free(children);
 
-  dt_conf_set_int("themes/expanded-module-border", selected);
-  reload_ui_last_theme();
+  dt_theme_variants_free(ui->variants);
+  ui->variants =
+    dt_theme_variants_load(dt_conf_get_string_const("ui_last/theme"));
+
+  int row = 0;
+  for(GList *v = ui->variants; v; v = g_list_next(v))
+  {
+    dt_theme_variant_t *variant = (dt_theme_variant_t *)v->data;
+    const char *current = dt_theme_variant_get(variant);
+    const int line = row++;
+    GtkWidget *widget = NULL;
+
+    GtkWidget *label = gtk_label_new(variant->label);
+    gtk_widget_set_name(label, "theme-variant");
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    GtkWidget *labelev = gtk_event_box_new();
+    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+    gtk_container_add(GTK_CONTAINER(labelev), label);
+    gtk_grid_attach(GTK_GRID(ui->grid), labelev, 0, line, 1, 1);
+    gtk_size_group_add_widget(ui->labels, labelev);
+
+    if(variant->type == DT_THEME_VARIANT_BOOL)
+    {
+      widget = gtk_check_button_new();
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                   !g_strcmp0(current, "true"));
+      g_signal_connect(G_OBJECT(widget), "toggled",
+                       G_CALLBACK(_variant_bool_callback), variant);
+    }
+    else
+    {
+      widget = dt_bauhaus_combobox_new(NULL);
+      // as the language and theme combos above: left for the closed
+      // widget, left for the popup list
+      dt_bauhaus_combobox_set_selected_text_align(widget,
+                                                  DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+      int active = 0, index = 0;
+      for(GList *o = variant->values, *n = variant->labels;
+          o && n;
+          o = g_list_next(o), n = g_list_next(n), index++)
+      {
+        dt_bauhaus_combobox_add_aligned(widget, (const char *)n->data,
+                                        DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+        if(!g_strcmp0((const char *)o->data, current)) active = index;
+      }
+      dt_bauhaus_combobox_set(widget, active);
+      // match the combos above, not the longest option name
+      gtk_size_group_add_widget(ui->controls, widget);
+      g_signal_connect(G_OBJECT(widget), "value-changed",
+                       G_CALLBACK(_variant_enum_callback), variant);
+    }
+
+    gtk_grid_attach_next_to(GTK_GRID(ui->grid), widget, labelev,
+                            GTK_POS_RIGHT, 1, 1);
+    if(variant->tooltip) gtk_widget_set_tooltip_text(widget, variant->tooltip);
+
+    gtk_widget_show_all(labelev);
+    gtk_widget_show_all(widget);
+  }
 }
 
 static void save_usercss(GtkTextBuffer *buffer)
@@ -388,6 +473,11 @@ static void init_tab_general(GtkWidget *dialog,
 
   gtk_stack_add_titled(GTK_STACK(stack), container, _("general"), _("general"));
 
+  // the theme variants grid sizes its columns separately from this one;
+  // these keep the two aligned
+  GtkSizeGroup *label_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+  GtkSizeGroup *control_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
   // language
 
   GtkWidget *label = gtk_label_new(_("interface language"));
@@ -418,6 +508,8 @@ static void init_tab_general(GtkWidget *dialog,
                                 "(restart required)"));
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(label_group, labelev);
+  gtk_size_group_add_widget(control_group, widget);
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
                    G_CALLBACK(reset_language_widget), (gpointer)widget);
 
@@ -435,6 +527,8 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(label_group, labelev);
+  gtk_size_group_add_widget(control_group, widget);
 
   // read all themes
   char *theme_name = dt_conf_get_string("ui_last/theme");
@@ -454,118 +548,23 @@ static void init_tab_general(GtkWidget *dialog,
 
   dt_bauhaus_combobox_set(widget, selected);
 
+  // the variant controls, just below the theme selector
+  dt_variants_ui_t *variants_ui = g_malloc0(sizeof(dt_variants_ui_t));
+  variants_ui->grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(variants_ui->grid), DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(GTK_GRID(variants_ui->grid),
+                              DT_PIXEL_APPLY_DPI(5));
+  variants_ui->labels = label_group;      // takes the references
+  variants_ui->controls = control_group;
+  g_object_set_data_full(G_OBJECT(dialog), "dt-theme-variants",
+                         variants_ui, _variants_ui_free);
+
   g_signal_connect(G_OBJECT(widget), "value-changed",
-                   G_CALLBACK(theme_callback), 0);
+                   G_CALLBACK(theme_callback), variants_ui);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
-  // theme variants
-
-  // condensed controls
-  GtkWidget *t_condensed = gtk_check_button_new();
-  label = gtk_label_new(_("condensed module controls"));
-  gtk_widget_set_name(label, "theme-variant");
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), t_condensed, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(t_condensed, _("use condensed module controls"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(t_condensed),
-                               dt_conf_get_bool("themes/condensed"));
-  g_signal_connect(G_OBJECT(t_condensed), "toggled",
-                   G_CALLBACK(use_condensed_control_callback),
-                  (gpointer)t_condensed);
-
-  // rounded header
-  GtkWidget *t_rounded = gtk_check_button_new();
-  label = gtk_label_new(_("rounded module headers"));
-  gtk_widget_set_name(label, "theme-variant");
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), t_rounded, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(t_rounded, _("use rounded module headers variant"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(t_rounded),
-                               dt_conf_get_bool("themes/rounded-header"));
-  g_signal_connect(G_OBJECT(t_rounded), "toggled",
-                   G_CALLBACK(use_rounded_header_callback), (gpointer)t_rounded);
-
-  // focused module border
-  label = gtk_label_new(_("focused module border"));
-  gtk_widget_set_name(label, "theme-variant");
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  widget = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
-  dt_bauhaus_combobox_add_aligned(widget, _("none"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("light"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("dark"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("green"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("blue"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("yellow"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("orange"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_set(widget, dt_conf_get_int("themes/focused-module-border"));
-  g_signal_connect(G_OBJECT(widget), "value-changed",
-                   G_CALLBACK(use_focused_module_border_callback), 0);
-  gtk_widget_set_tooltip_text(widget,
-                              _("set the focused module border color"));
-
-  // expanded module border
-  label = gtk_label_new(_("expanded module border"));
-  gtk_widget_set_name(label, "theme-variant");
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  widget = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
-  dt_bauhaus_combobox_add_aligned(widget, _("none"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("light"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("dark"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("green"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("blue"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("yellow"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("orange"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_set(widget, dt_conf_get_int("themes/expanded-module-border"));
-  g_signal_connect(G_OBJECT(widget), "value-changed",
-                   G_CALLBACK(use_expanded_module_border_callback), 0);
-  gtk_widget_set_tooltip_text(widget,
-                              _("set the expanded module border color"));
-
-  // accent color
-  label = gtk_label_new(_("accent color"));
-  gtk_widget_set_name(label, "theme-variant");
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  widget = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
-  dt_bauhaus_combobox_add_aligned(widget, _("none"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("green"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("blue"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("yellow"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_add_aligned(widget, _("orange"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-  dt_bauhaus_combobox_set
-    (widget, dt_conf_get_int("themes/accent-color"));
-  g_signal_connect(G_OBJECT(widget), "value-changed",
-                   G_CALLBACK(use_accent_color_callback), 0);
-  gtk_widget_set_tooltip_text(widget,
-                              _("set the theme accent color for the interface"));
+  gtk_grid_attach(GTK_GRID(grid), variants_ui->grid, 0, line++, 2, 1);
+  _build_theme_variants(variants_ui);
 
   //Font size check and spin buttons
   GtkWidget *usesysfont = gtk_check_button_new();
@@ -586,7 +585,16 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, i, i?2:line++, 1, 1);
+  // font_prefs_align_right moves these to a narrower column
+  if(!i) gtk_size_group_add_widget(label_group, labelev);
   gtk_grid_attach_next_to(GTK_GRID(grid), usesysfont, labelev, GTK_POS_RIGHT, 1, 1);
+  // opposite row 2 is the variants grid, as tall as the theme declares
+  // options; stay with the two rows above rather than centering on it
+  if(i)
+  {
+    gtk_widget_set_valign(labelev, GTK_ALIGN_START);
+    gtk_widget_set_valign(usesysfont, GTK_ALIGN_START);
+  }
   gtk_widget_set_tooltip_text(usesysfont, _("use system font size"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(usesysfont),
                                dt_conf_get_bool("use_system_font"));
@@ -609,6 +617,7 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, i, i?0:line++, 1, 1);
+  if(!i) gtk_size_group_add_widget(label_group, labelev);
   gtk_grid_attach_next_to(GTK_GRID(grid), fontsize, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(fontsize, _("font size in points"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
@@ -622,6 +631,7 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, i, i?1:line++, 1, 1);
+  if(!i) gtk_size_group_add_widget(label_group, labelev);
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_dpi_overwrite, labelev,
                           GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text
@@ -653,6 +663,7 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_size_group_add_widget(label_group, labelev);
   gtk_grid_attach_next_to(GTK_GRID(grid), tw->apply_toggle, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(tw->apply_toggle,
                               _("modify theme with CSS keyed below (saved to user.css)"));
