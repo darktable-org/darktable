@@ -160,6 +160,11 @@ changes (where available).
 - Fixed possible over-allocations of OpenCL memory that could lead to
   instabilities or dt crashing on small devices
 
+- Fixed corrupted pixels on some AMD GPUs using the Mesa rusticl OpenCL
+  driver. Colorspace conversions, the lookup table module and the contrast
+  equalizer no longer read from and write to the same image buffer on the
+  GPU, which the OpenCL specification leaves undefined.
+
 ## Lua
 
 ### API Version
