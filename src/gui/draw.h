@@ -95,6 +95,173 @@ static inline void dt_draw_line(cairo_t *cr,
   cairo_line_to(cr, right, bottom);
 }
 
+/** fills the current clip region with evenly spaced diagonal hatch lines.
+ * center is the (x, y) coordinates of the region to draw; span is the
+ * distance of the region's bounds to the center, over (x, y) axes.
+ */
+static inline void dt_draw_hatches(cairo_t *cr,
+                                   const double center[2],
+                                   const double span[2],
+                                   const int instances,
+                                   const double line_width,
+                                   const double shade)
+{
+  const double C0[2] = { center[0] - span[0], center[1] - span[1] };
+  const double C2[2] = { center[0] + span[0], center[1] + span[1] };
+
+  const double delta[2] = { 2.0 * span[0] / (double)instances,
+                            2.0 * span[1] / (double)instances };
+
+  cairo_set_line_width(cr, line_width);
+  cairo_set_source_rgb(cr, shade, shade, shade);
+
+  for(int i = -instances / 2 - 1; i <= instances / 2 + 1; i++)
+  {
+    cairo_move_to(cr, C0[0] + (double)i * delta[0], C0[1]);
+    cairo_line_to(cr, C2[0] + (double)i * delta[0], C2[1]);
+    cairo_stroke(cr);
+  }
+}
+
+/** one filled, optionally hatched circle of dt_draw_correction_cursor(). */
+static inline void _dt_draw_cursor_circle(cairo_t *cr,
+                                          const double x,
+                                          const double y,
+                                          const double radius,
+                                          const float color[3],
+                                          const float alpha,
+                                          const float zoom_scale,
+                                          const gboolean hatch,
+                                          const float frame_color[3])
+{
+  const double radius_z = radius / zoom_scale;
+
+  cairo_set_source_rgba(cr, color[0], color[1], color[2], alpha);
+  cairo_arc(cr, x, y, radius_z, 0, 2 * M_PI);
+  cairo_fill_preserve(cr);
+  cairo_save(cr);
+  cairo_clip(cr);
+
+  if(hatch)
+  {
+    const double pointer_coord[2] = { x, y };
+    const double span[2] = { radius_z, radius_z };
+    dt_draw_hatches(cr, pointer_coord, span, 6, DT_PIXEL_APPLY_DPI(1.0 / zoom_scale), 0.3);
+  }
+  cairo_restore(cr);
+
+  // outline the circle in the same color as the crosshair/wedge, so it
+  // stays legible against any background
+  cairo_set_source_rgb(cr, frame_color[0], frame_color[1], frame_color[2]);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0 / zoom_scale));
+  cairo_arc(cr, x, y, radius_z, 0, 2 * M_PI);
+  cairo_stroke(cr);
+}
+
+/**
+ * dt_draw_correction_cursor — the on-canvas cursor shown by iop modules
+ * that let the user adjust a per-pixel correction by hovering/scrolling
+ * over the image (tone equalizer, color equalizer, ...): a crosshair
+ * frame, a pie-wedge on the left showing the magnitude/direction of the
+ * correction, one or two concentric filled circles, and a text label to
+ * the right. Factored out so every such module shares the same design.
+ *
+ * pointerx, pointery: cursor position, in the same coordinate space as
+ *   the rest of the module's gui_post_expose() drawing.
+ * correction_norm: signed magnitude of the correction, roughly in
+ *   [-1 ; 1] (not clamped here — pre-scale if your natural range is
+ *   larger); drives the wedge's angular span, up to ±45°.
+ * frame_color: color of the wedge outline, the crosshair/ground-level
+ *   lines, and the outline stroked around both circles.
+ * outer_color, inner_color: fill colors of the outer (radius 16) and
+ *   inner (radius 8) circles — pass the same color for both for a plain
+ *   single-color dot, or two different colors to show e.g. a value
+ *   before/after the correction.
+ * outer_hatch, inner_hatch: overlay diagonal hatching on that circle
+ *   (e.g. to flag an out-of-range value); pass FALSE to disable.
+ * text: label drawn in a background pill to the right of the circle
+ *   (e.g. "+1.2 EV", "+12%", "-4.2°"); pass NULL or "" to omit it.
+ */
+static inline void dt_draw_correction_cursor(cairo_t *cr,
+                                             const double pointerx,
+                                             const double pointery,
+                                             const float zoom_scale,
+                                             const float correction_norm,
+                                             const float frame_color[3],
+                                             const float outer_color[3],
+                                             const gboolean outer_hatch,
+                                             const float inner_color[3],
+                                             const gboolean inner_hatch,
+                                             const char *text)
+{
+  const double outer_radius = 16.0;
+  const double inner_radius = outer_radius / 2.0;
+  const double padding = 4.0; // matches the bauhaus quad padding (kept in sync manually)
+  const double setting_offset_x = (outer_radius + 4.0 * padding) / zoom_scale;
+  const double fill_width = DT_PIXEL_APPLY_DPI(4.0 / zoom_scale);
+
+  // wedge showing the magnitude/direction of the correction
+  cairo_set_source_rgb(cr, frame_color[0], frame_color[1], frame_color[2]);
+  cairo_set_line_width(cr, 2.0 * fill_width);
+  cairo_move_to(cr, pointerx - setting_offset_x, pointery);
+  if(correction_norm > 0.0f)
+    cairo_arc(cr, pointerx, pointery, setting_offset_x,
+             M_PI, M_PI + correction_norm * M_PI_4);
+  else
+    cairo_arc_negative(cr, pointerx, pointery, setting_offset_x,
+                       M_PI, M_PI + correction_norm * M_PI_4);
+  cairo_stroke(cr);
+
+  // ground-level reference bars
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5 / zoom_scale));
+  cairo_move_to(cr, pointerx + (outer_radius + 2.0 * padding) / zoom_scale, pointery);
+  cairo_line_to(cr, pointerx + outer_radius / zoom_scale, pointery);
+  cairo_move_to(cr, pointerx - outer_radius / zoom_scale, pointery);
+  cairo_line_to(cr, pointerx - setting_offset_x - 4.0 * padding / zoom_scale, pointery);
+  cairo_stroke(cr);
+
+  // crosshair
+  cairo_move_to(cr, pointerx, pointery + setting_offset_x + fill_width);
+  cairo_line_to(cr, pointerx, pointery + outer_radius / zoom_scale);
+  cairo_move_to(cr, pointerx, pointery - outer_radius / zoom_scale);
+  cairo_line_to(cr, pointerx, pointery - setting_offset_x - fill_width);
+  cairo_stroke(cr);
+
+  _dt_draw_cursor_circle(cr, pointerx, pointery, outer_radius, outer_color, 0.9f, zoom_scale, outer_hatch, frame_color);
+  _dt_draw_cursor_circle(cr, pointerx, pointery, inner_radius, inner_color, 0.9f, zoom_scale, inner_hatch, frame_color);
+
+  if(!text || !*text) return;
+
+  PangoFontDescription *desc = dt_gui_get_font();
+  const int old_size = pango_font_description_get_size(desc);
+  pango_font_description_set_size(desc, (int)(old_size / zoom_scale));
+
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
+  pango_layout_set_text(layout, text, -1);
+
+  PangoRectangle ink;
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+
+  const double pad = padding / zoom_scale;
+  const double tx = pointerx + (outer_radius + 2.0 * padding) / zoom_scale;
+  const double ty = pointery - ink.y - ink.height / 2.0 - pad;
+
+  cairo_rectangle(cr, tx, ty,
+                  ink.width + 2.0 * ink.x + 2.0 * pad, ink.height + 2.0 * ink.y + 2.0 * pad);
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.8);
+  cairo_fill(cr);
+
+  cairo_move_to(cr, tx + pad, pointery - ink.y - ink.height / 2.0);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+  pango_cairo_show_layout(cr, layout);
+  cairo_stroke(cr);
+
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+}
+
 static inline void dt_draw_grid(cairo_t *cr,
                                 const int num,
                                 const int left,

@@ -108,6 +108,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/preview_data.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
@@ -231,9 +232,10 @@ typedef struct dt_iop_toneequalizer_gui_data_t
 
   // 6 uint64 to pack - contiguous-ish memory
   dt_hash_t ui_preview_hash;
-  dt_hash_t thumb_preview_hash;
   size_t full_preview_buf_width, full_preview_buf_height;
-  size_t thumb_preview_buf_width, thumb_preview_buf_height;
+
+  // shared preview pipe under-cursor data (buffer + freshness hash)
+  dt_preview_data_t pd;
 
   // Misc stuff, contiguity, length and alignment unknown
   float scale;
@@ -243,7 +245,6 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float histogram_last_decile;
 
   // Heap arrays, 64 bits-aligned, unknown length
-  float *thumb_preview_buf;
   float *full_preview_buf;
 
   // GTK garbage, nobody cares, no SIMD here
@@ -630,10 +631,19 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   g->max_histogram = 1;
   g->luminance_valid = FALSE;
   g->histogram_valid = FALSE;
-  g->thumb_preview_hash = DT_INVALID_HASH;
   g->ui_preview_hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
+  dt_preview_data_invalidate(&g->pd);
   dt_iop_refresh_all(self);
+}
+
+static void _toneeq_preview_resized(void *const user_data)
+{
+  // Called under the module GUI lock when the preview buffer has been
+  // reallocated: don't let the GUI read it before it has been recomputed.
+  dt_iop_module_t *const self = (dt_iop_module_t *)user_data;
+  dt_iop_toneequalizer_gui_data_t *const g = self->gui_data;
+  if(g) g->luminance_valid = FALSE;
 }
 
 // gaussian-ish kernel - sum is == 1.0f so we don't care much about actual coeffs
@@ -730,9 +740,9 @@ static float _luminance_from_module_buffer(const dt_iop_module_t *self)
 
   _get_point(self, c_x, c_y, &b_x, &b_y);
 
-  return get_luminance_from_buffer(g->thumb_preview_buf,
-                                   g->thumb_preview_buf_width,
-                                   g->thumb_preview_buf_height,
+  return get_luminance_from_buffer(g->pd.buf,
+                                   g->pd.width,
+                                   g->pd.height,
                                    b_x,
                                    b_y);
 }
@@ -1027,11 +1037,11 @@ void toneeq_process(dt_iop_module_t *self,
     {
       dt_iop_gui_enter_critical_section(self);
       g->ui_preview_hash = DT_INVALID_HASH;
-      g->thumb_preview_hash = DT_INVALID_HASH;
       g->pipe_order = piece->module->iop_order;
       g->luminance_valid = FALSE;
       g->histogram_valid = FALSE;
       dt_iop_gui_leave_critical_section(self);
+      dt_preview_data_invalidate(&g->pd);
     }
 
     if(dt_pipe_is_full(piece->pipe))
@@ -1056,23 +1066,11 @@ void toneeq_process(dt_iop_module_t *self,
     {
       // For preview pipe we need to cache it too because we have to
       // compute the full image stats upon user request in GUI threads.
-      // Locks are required since GUI reads and writes on that buffer.
-
-      // Re-allocate a new buffer if the thumb preview size has changed
-      dt_iop_gui_enter_critical_section(self);
-      if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
-      {
-        dt_free_align(g->thumb_preview_buf);
-        g->thumb_preview_buf = dt_alloc_align_float(num_elem);
-        g->thumb_preview_buf_width = width;
-        g->thumb_preview_buf_height = height;
-        g->luminance_valid = FALSE;
-      }
-
-      luminance = g->thumb_preview_buf;
+      // The shared under-cursor service owns the buffer and its locks.
+      // The resize and the luminance_valid invalidation happen under one
+      // GUI lock so the GUI never reads a resized, not-yet-recomputed buffer.
+      luminance = dt_preview_data_resize(&g->pd, width, height, _toneeq_preview_resized, self);
       cached = TRUE;
-
-      dt_iop_gui_leave_critical_section(self);
     }
     else // just to please GCC
     {
@@ -1116,8 +1114,7 @@ void toneeq_process(dt_iop_module_t *self,
     }
     else if(dt_pipe_is_preview(piece->pipe))
     {
-      dt_hash_t saved_hash;
-      hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
+      const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
 
       dt_iop_gui_enter_critical_section(self);
       const gboolean luminance_valid = g->luminance_valid;
@@ -1126,10 +1123,18 @@ void toneeq_process(dt_iop_module_t *self,
       if(saved_hash != hash || !luminance_valid)
       {
         /* compute only if upstream pipe state has changed */
+        // Flag the cache as being recomputed so the GUI threads never
+        // read a partially filled buffer, then commit hash + validity
+        // once the data is ready.
         dt_iop_gui_enter_critical_section(self);
-        g->thumb_preview_hash = hash;
         g->histogram_valid = FALSE;
+        g->luminance_valid = FALSE;
+        dt_iop_gui_leave_critical_section(self);
+
         compute_luminance_mask(in, luminance, width, height, d);
+        dt_preview_data_set_hash(&g->pd, piece);
+
+        dt_iop_gui_enter_critical_section(self);
         g->luminance_valid = TRUE;
         dt_iop_gui_leave_critical_section(self);
         dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
@@ -1337,7 +1342,7 @@ static void gui_cache_init(dt_iop_module_t *self)
 
   dt_iop_gui_enter_critical_section(self);
   g->ui_preview_hash = DT_INVALID_HASH;
-  g->thumb_preview_hash = DT_INVALID_HASH;
+  dt_preview_data_alloc(&g->pd, self);
   g->max_histogram = 1;
   g->scale = 1.0f;
   g->sigma = M_SQRT2_F;
@@ -1361,10 +1366,6 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->full_preview_buf = NULL;
   g->full_preview_buf_width = 0;
   g->full_preview_buf_height = 0;
-
-  g->thumb_preview_buf = NULL;
-  g->thumb_preview_buf_width = 0;
-  g->thumb_preview_buf_height = 0;
 
   g->desc = NULL;
   g->layout = NULL;
@@ -1477,8 +1478,8 @@ static inline void update_histogram(dt_iop_module_t *const self)
   dt_iop_gui_enter_critical_section(self);
   if(!g->histogram_valid && g->luminance_valid)
   {
-    const size_t num_elem = g->thumb_preview_buf_height * g->thumb_preview_buf_width;
-    compute_log_histogram_and_stats(g->thumb_preview_buf, g->histogram, num_elem,
+    const size_t num_elem = g->pd.height * g->pd.width;
+    compute_log_histogram_and_stats(g->pd.buf, g->histogram, num_elem,
                                     &g->max_histogram,
                                     &g->histogram_first_decile, &g->histogram_last_decile);
     g->histogram_average = (g->histogram_first_decile + g->histogram_last_decile) / 2.0f;
@@ -2263,80 +2264,18 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
                                      dt_iop_toneequalizer_gui_data_t *const restrict g);
 
 
-void cairo_draw_hatches(cairo_t *cr,
-                        double center[2],
-                        double span[2],
-                        const int instances,
-                        const double line_width,
-                        const double shade)
-{
-  // center is the (x, y) coordinates of the region to draw
-  // span is the distance of the region's bounds to the center, over (x, y) axes
+// The on-canvas correction cursor itself (crosshair, wedge, circles, text
+// label) is shared with other modules via dt_draw_correction_cursor() in
+// gui/draw.h; only the exposure-specific grey shades fed into it stay here.
 
-  // Get the coordinates of the corners of the bounding box of the region
-  const double C0[2] = { center[0] - span[0], center[1] - span[1] };
-  const double C2[2] = { center[0] + span[0], center[1] + span[1] };
-
-  const double delta[2] = { 2.0 * span[0] / (double)instances,
-                      2.0 * span[1] / (double)instances };
-
-  cairo_set_line_width(cr, line_width);
-  cairo_set_source_rgb(cr, shade, shade, shade);
-
-  for(int i = -instances / 2 - 1; i <= instances / 2 + 1; i++)
-  {
-    cairo_move_to(cr, C0[0] + (double)i * delta[0], C0[1]);
-    cairo_line_to(cr, C2[0] + (double)i * delta[0], C2[1]);
-    cairo_stroke(cr);
-  }
-}
-
-static void get_shade_from_luminance(cairo_t *cr,
-                                     const float luminance,
-                                     const float alpha)
+static float _shade_from_luminance(const float luminance)
 {
   // TODO: fetch screen gamma from ICC display profile
   const float gamma = 1.0f / 2.2f;
-  const float shade = powf(luminance, gamma);
-  cairo_set_source_rgba(cr, shade, shade, shade, alpha);
+  return powf(luminance, gamma);
 }
 
-
-static void draw_exposure_cursor(cairo_t *cr,
-                                 const double pointerx,
-                                 const double pointery,
-                                 const double radius,
-                                 const float luminance,
-                                 const float zoom_scale,
-                                 const int instances,
-                                 const float alpha)
-{
-  // Draw a circle cursor filled with a grey shade corresponding to a luminance value
-  // or hatches if the value is above the overexposed threshold
-
-  const double radius_z = radius / zoom_scale;
-
-  get_shade_from_luminance(cr, luminance, alpha);
-  cairo_arc(cr, pointerx, pointery, radius_z, 0, 2 * M_PI);
-  cairo_fill_preserve(cr);
-  cairo_save(cr);
-  cairo_clip(cr);
-
-  if(log2f(luminance) > 0.0f)
-  {
-    // if overexposed, draw hatches
-    double pointer_coord[2] = { pointerx, pointery };
-    double span[2] = { radius_z, radius_z };
-    cairo_draw_hatches(cr, pointer_coord, span, instances,
-                       DT_PIXEL_APPLY_DPI(1. / zoom_scale), 0.3);
-  }
-  cairo_restore(cr);
-}
-
-
-static void match_color_to_background(cairo_t *cr,
-                                      const float exposure,
-                                      const float alpha)
+static void _match_color_to_background(float rgb[3], const float exposure)
 {
   float shade = 0.0f;
   // TODO: put that as a preference in darktablerc
@@ -2347,7 +2286,7 @@ static void match_color_to_background(cairo_t *cr,
   else
     shade = (fmaxf(exposure / contrast, -5.0f) + 2.5f);
 
-  get_shade_from_luminance(cr, exp2f(shade), alpha);
+  rgb[0] = rgb[1] = rgb[2] = _shade_from_luminance(exp2f(shade));
 }
 
 
@@ -2420,90 +2359,24 @@ void gui_post_expose(dt_iop_module_t *self,
 
   if(dt_isnan(exposure_in)) return; // something went wrong
 
-  // set custom cursor dimensions
-  const double outer_radius = 16.;
-  const double inner_radius = outer_radius / 2.0;
-  const double setting_offset_x = (outer_radius + 4. * g->inner_padding) / zoom_scale;
-  const double fill_width = DT_PIXEL_APPLY_DPI(4. / zoom_scale);
-
-  // setting fill bars
-  match_color_to_background(cr, exposure_out, 1.0);
-  cairo_set_line_width(cr, 2.0 * fill_width);
-  cairo_move_to(cr, x_pointer - setting_offset_x, y_pointer);
-
-  if(correction > 0.0f)
-    cairo_arc(cr, x_pointer, y_pointer, setting_offset_x,
-              M_PI, M_PI + correction * M_PI_4);
-  else
-    cairo_arc_negative(cr, x_pointer, y_pointer, setting_offset_x,
-                       M_PI, M_PI + correction * M_PI_4);
-
-  cairo_stroke(cr);
-
-  // setting ground level
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5 / zoom_scale));
-  cairo_move_to(cr, x_pointer + (outer_radius + 2. * g->inner_padding) / zoom_scale,
-                y_pointer);
-  cairo_line_to(cr, x_pointer + outer_radius / zoom_scale, y_pointer);
-  cairo_move_to(cr, x_pointer - outer_radius / zoom_scale, y_pointer);
-  cairo_line_to(cr, x_pointer - setting_offset_x - 4.0 * g->inner_padding / zoom_scale,
-                y_pointer);
-  cairo_stroke(cr);
-
-  // setting cursor cross hair
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5 / zoom_scale));
-  cairo_move_to(cr, x_pointer, y_pointer + setting_offset_x + fill_width);
-  cairo_line_to(cr, x_pointer, y_pointer + outer_radius / zoom_scale);
-  cairo_move_to(cr, x_pointer, y_pointer - outer_radius / zoom_scale);
-  cairo_line_to(cr, x_pointer, y_pointer - setting_offset_x - fill_width);
-  cairo_stroke(cr);
-
-  // draw exposure cursor
-  draw_exposure_cursor(cr, x_pointer, y_pointer, outer_radius,
-                       luminance_in, zoom_scale, 6, .9);
-  draw_exposure_cursor(cr, x_pointer, y_pointer, inner_radius,
-                       luminance_out, zoom_scale, 3, .9);
-
-  // Create Pango objects : texts
   char text[256];
-  PangoLayout *layout;
-  PangoRectangle ink;
-  PangoFontDescription *desc = dt_gui_get_font();
-
-  // Avoid text resizing based on zoom level
-  const int old_size = pango_font_description_get_size(desc);
-  pango_font_description_set_size (desc, (int)(old_size / zoom_scale));
-  layout = pango_cairo_create_layout(cr);
-  pango_layout_set_font_description(layout, desc);
-  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
-
-  // Build text object
   if(g->luminance_valid && self->enabled)
     snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
   else
     snprintf(text, sizeof(text), "? EV");
-  pango_layout_set_text(layout, text, -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
 
-  // Draw the text plain blackground
-  get_shade_from_luminance(cr, luminance_out, 0.75);
-  cairo_rectangle(cr,
-                  x_pointer + (outer_radius + 2. * g->inner_padding) / zoom_scale,
-                  y_pointer - ink.y - ink.height / 2.0 - g->inner_padding / zoom_scale,
-                  ink.width + 2.0 * ink.x + 4. * g->inner_padding / zoom_scale,
-                  ink.height + 2.0 * ink.y + 2. * g->inner_padding / zoom_scale);
-  cairo_fill(cr);
+  float frame_color[3];
+  _match_color_to_background(frame_color, exposure_out);
+  const float outer_shade = _shade_from_luminance(luminance_in);
+  const float inner_shade = _shade_from_luminance(luminance_out);
+  const float outer_color[3] = { outer_shade, outer_shade, outer_shade };
+  const float inner_color[3] = { inner_shade, inner_shade, inner_shade };
 
-  // Display the EV reading
-  match_color_to_background(cr, exposure_out, 1.0);
-  cairo_move_to(cr, x_pointer + (outer_radius + 4. * g->inner_padding) / zoom_scale,
-                    y_pointer - ink.y - ink.height / 2.);
-  pango_cairo_show_layout(cr, layout);
-
-  cairo_stroke(cr);
-
-  pango_font_description_free(desc);
-  g_object_unref(layout);
+  dt_draw_correction_cursor(cr, x_pointer, y_pointer, zoom_scale, correction,
+                            frame_color,
+                            outer_color, log2f(luminance_in) > 0.0f,
+                            inner_color, log2f(luminance_out) > 0.0f,
+                            text);
 
   if(g->luminance_valid && self->enabled)
   {
@@ -3435,7 +3308,7 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/toneequal/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
 
-  dt_free_align(g->thumb_preview_buf);
+  dt_preview_data_free((dt_preview_data_t *)&g->pd);
   dt_free_align(g->full_preview_buf);
 
   if(g->desc)   pango_font_description_free(g->desc);
