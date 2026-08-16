@@ -44,6 +44,19 @@ dt_local_laplacian_cl_global_t *dt_local_laplacian_init_cl_global()
   return g;
 }
 
+void dt_local_laplacian_free_cl_global(dt_local_laplacian_cl_global_t *b)
+{
+  if(!b) return;
+  // destroy kernels
+  dt_opencl_free_kernel(b->kernel_pad_input);
+  dt_opencl_free_kernel(b->kernel_gauss_reduce);
+  dt_opencl_free_kernel(b->kernel_laplacian_assemble);
+  dt_opencl_free_kernel(b->kernel_process_curve);
+  dt_opencl_free_kernel(b->kernel_write_back);
+  free(b);
+}
+
+
 void dt_local_laplacian_free_cl(dt_local_laplacian_cl_t *g)
 {
   if(!g) return;
