@@ -227,6 +227,7 @@ typedef struct dt_opencl_t
   gboolean stopped;
   gboolean fastcl;  // for fast runtime checks instead of reading the conf
   gboolean fast_tiling;
+  gboolean no_fast_tiling;
   gboolean spurious;
   gboolean migrate;
   int num_devs;
