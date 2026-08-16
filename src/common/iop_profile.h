@@ -236,6 +236,22 @@ gboolean dt_ioppr_transform_image_colorspace_cl
    dt_iop_colorspace_type_t *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info);
 
+/** Convert an image whose source and target are the same buffer.
+ * A kernel may not take one image object as both its read_only source and its write_only
+ * target, so this converts into a second image and hands it back in place of the original,
+ * releasing the original. Peak use is two images for the duration of the call.
+ * On failure the original is left untouched and still owned by the caller. */
+gboolean dt_ioppr_transform_image_colorspace_replace_cl
+  (struct dt_iop_module_t *self,
+   const int devid,
+   cl_mem *dev_img,
+   const int width,
+   const int height,
+   const dt_iop_colorspace_type_t cst_from,
+   const dt_iop_colorspace_type_t cst_to,
+   dt_iop_colorspace_type_t *converted_cst,
+   const dt_iop_order_iccprofile_info_t *const profile_info);
+
 gboolean dt_ioppr_transform_image_colorspace_rgb_cl
   (const int devid,
    cl_mem dev_img_in,
