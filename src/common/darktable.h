@@ -179,12 +179,13 @@ typedef int32_t dt_filmid_t;
 #define DT_DEVICE_NONE -2
 
 // We have several bitmask opencl start options passed to dt_opencl_init()
-#define DT_OPENCL_OPTION_NONE 0       // default
-#define DT_OPENCL_OPTION_EXCLUDE 1    // --disable-opencl:  disables OpenCL for the session
+#define DT_OPENCL_OPTION_NONE 0         // default
+#define DT_OPENCL_OPTION_EXCLUDE 1      // --disable-opencl:  disables OpenCL for the session
 // some reserved options, mentioned cli options might not be available depending on build
-#define DT_OPENCL_OPTION_FAST_TILE 2  // --cl-tiling:       use OpenCL tiling mode (debugging session)
-#define DT_OPENCL_OPTION_SPURIOS 4    // --cl-spurious:     insert random OpenCL errors while processing modules (debugging session)
-#define DT_OPENCL_OPTION_MIGRATE 8    // --cl-migrate:      enforce cl_mem migration while allocating cl_mem (debugging session)
+#define DT_OPENCL_OPTION_FAST_TILE 2    // --opencl-tiling:   use OpenCL tiling mode (debugging session)
+#define DT_OPENCL_OPTION_SPURIOS 4      // --opencl-spurious: insert random OpenCL errors while processing modules (debugging session)
+#define DT_OPENCL_OPTION_MIGRATE 8      // --opencl-migrate:  enforce cl_mem migration while allocating cl_mem (debugging session)
+#define DT_OPENCL_OPTION_NOFAST_TILE 16 // --opencl-notiling: disable OpenCL fast tiling mode (debugging session)
 
 typedef int32_t dt_mask_id_t;
 #define INVALID_MASKID (-1)
