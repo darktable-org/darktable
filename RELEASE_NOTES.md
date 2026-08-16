@@ -56,7 +56,8 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- N/A
+- Checkboxes are now Bauhaus widgets and are reset to default values
+  when e.g. a tab or a module is reset.
 
 ## Performance Improvements
 
@@ -64,7 +65,8 @@ changes (where available).
 
 ## Other Changes
 
-- Added a new collection filter for the original image dimensions.  
+- Added a new collection filter for the original image dimensions.
+- Support for Canon's Highlight Tone Priority
 
 ## Bug Fixes
 
@@ -77,6 +79,11 @@ changes (where available).
 - Do not override library edit history from XMP sidecar file when
   using darktable-cli with a library file.
 
+- Fixed corrupted pixels on some AMD GPUs using the Mesa rusticl OpenCL
+  driver. Colorspace conversions, the lookup table module and the contrast
+  equalizer no longer read from and write to the same image buffer on the
+  GPU, which the OpenCL specification leaves undefined.
+  
 ## Lua
 
 ### API Version
