@@ -18,6 +18,25 @@ it useful — see [Use cases](#use-cases) below.
   the mounted workspace — host SSH keys, credentials, private documents, and other
   projects are not visible to them.
 
+## Installing Docker or Podman
+
+Any OCI-compatible runtime works. Install one for your platform:
+
+| Platform | Command |
+| -------- | ------- |
+| Debian / Ubuntu | `sudo apt install docker.io` or [Docker Engine docs](https://docs.docker.com/engine/install/ubuntu/) |
+| Fedora / RHEL | `sudo dnf install docker` or [Docker Engine docs](https://docs.docker.com/engine/install/fedora/) |
+| Arch | `sudo pacman -S docker` |
+| openSUSE | `sudo zypper install docker` |
+| macOS | `brew install --cask docker` (Docker Desktop) or `brew install podman` |
+| Windows | [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) |
+
+On Linux, **Podman** is a rootless drop-in replacement (`alias docker=podman`).
+See the [Podman installation guide](https://podman.io/docs/installation) for all distros.
+
+After installing, make sure your user is in the `docker` group (Linux) or that
+Docker Desktop is running (macOS/Windows) before running the commands below.
+
 ## Usage tiers
 
 | Tier | Requirements | Good for |
@@ -118,15 +137,12 @@ chmod +x build/Darktable-*.AppImage
 cd build && ctest
 ```
 
-## CI environment details
+## CI environment
 
-| Item | Value |
-| ---- | ----- |
-| Base image | `ubuntu:26.04` (same as `.github/workflows/ci.yml`) |
-| Primary compiler | GCC 16 (`gcc-16` / `g++-16`) |
-| Alt. compiler | Clang 22 (`clang-22` / `clang++-22`) |
-| Package list | Exact copy of "Install Base Dependencies" in `ci.yml` |
-| Dev extras (not in CI) | `ocl-icd-opencl-dev`, `libjxl-dev`, `clang-format-22`, `vim`, `nano`, `sudo` |
+The [Dockerfile](Dockerfile) is the single source of truth for the build
+environment. It mirrors the "Install Base Dependencies" step in
+`.github/workflows/ci.yml` exactly. Check the Dockerfile for the current base
+image, compiler versions, and package list.
 
 ## Troubleshooting
 
