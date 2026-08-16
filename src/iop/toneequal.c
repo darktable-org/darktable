@@ -1519,7 +1519,15 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
   }
 }
 
-
+// Mark g->interpolation_matrix as invalid to force a recompute, and update g->sigma
+// which the matrix computation in update_curve_lut uses.
+// Important: the caller must hold the GUI critical section.
+static inline void _invalidate_interpolation_matrix_on_sigma_change(dt_iop_toneequalizer_gui_data_t *g,
+                                                                    const float smoothing)
+{
+  if(g->sigma != smoothing) g->interpolation_valid = FALSE;
+  g->sigma = smoothing;
+}
 
 static inline gboolean update_curve_lut(dt_iop_module_t *self)
 {
@@ -1622,9 +1630,7 @@ void commit_params(dt_iop_module_t *self,
   if(self->dev->gui_attached && g)
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->sigma != p->smoothing)
-      g->interpolation_valid = FALSE;
-    g->sigma = p->smoothing;
+    _invalidate_interpolation_matrix_on_sigma_change(g, p->smoothing);
     g->user_param_valid = FALSE; // force updating channels factors
     dt_iop_gui_leave_critical_section(self);
 
@@ -1780,12 +1786,14 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_toneequalizer_params_t *p = self->params;
-  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   p->smoothing= powf(M_SQRT2_F, 1.0f +  dt_bauhaus_slider_get(slider));
 
-  float factors[CHANNELS] DT_ALIGNED_ARRAY;
-  get_channels_factors(factors, p);
+  // avoid stale matrix; commit_params(), which also performs the invalidation, has not run yet
+  dt_iop_gui_enter_critical_section(self);
+  _invalidate_interpolation_matrix_on_sigma_change(g, p->smoothing);
+  dt_iop_gui_leave_critical_section(self);
 
   // Solve the interpolation by least-squares to check the validity of the smoothing param
   if(!update_curve_lut(self))
