@@ -86,8 +86,7 @@ static inline float curve_to_factor_cl(const float c)
 }
 
 // maximum HSB saturation reachable at the gamut boundary for given J, h in dt UCS;
-// mirrors satcurve_ucs_gamut_saturation() on CPU -- single source of truth for the
-// gamut-boundary fit, do not re-derive it inline in the kernel.
+// mirrors satcurve_ucs_gamut_saturation() on CPU
 static inline float satcurve_ucs_gamut_saturation_cl(const float J, const float h,
                                                       const float L_white,
                                                       global const float *const gamut_lut)
@@ -104,9 +103,7 @@ static inline float satcurve_ucs_gamut_saturation_cl(const float J, const float 
   return fmax(HSB_gamut_boundary.y, FLT_MIN);
 }
 
-// s_in_norm only (no full pixel transform) -- used by the histogram
-// reduction kernel below. Mirrors the s_in_norm computation embedded in each
-// branch of satcurvergb() below and pixel_s_in_norm() on the CPU side.
+// s_in_norm only (no full pixel transform) -- used by the histogram reduction kernel
 static inline float satcurve_s_in_norm_cl(const float4 rgb_in,
                                           constant const float *const matrix_in,
                                           global const float *const gamut_lut,
@@ -162,6 +159,7 @@ satcurve_histogram(read_only image2d_t in, const int width, const int height,
 
 kernel void
 satcurvergb(read_only image2d_t in, write_only image2d_t out,
+            read_only image2d_t guided_mask, const int use_gf,
             const int width, const int height,
             constant const float *const matrix_in, constant const float *const matrix_out,
             global const float *const sat_lut, global const float *const bri_lut,
@@ -187,7 +185,10 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
     float4 HSB = { HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
 
     const float gamut_s = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
-    const float s_in_norm = HSB.y / gamut_s;
+
+    // Determine input saturation: either from the filtered mask or directly from the pixel
+    const float s_in_norm = use_gf ? clamp(Areadsingle(guided_mask, x, y), 0.f, 1.f)
+                                   : (HSB.y / gamut_s);
 
     const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_norm), 0.f, 1.f);
     const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_norm), 0.f, 1.f);
@@ -224,7 +225,9 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
     const float ch = dtcl_cos(h), sh = dtcl_sin(h);
     const float gamut = fmax(satcurve_lookup_gamut_cl(gamut_lut, h), FLT_MIN);
 
-    const float s_in_norm = (Jz > 0.f ? Cz / Jz : 0.f) / gamut;
+    // Determine input saturation: either from the filtered mask or directly from the pixel
+    const float s_in_norm = use_gf ? clamp(Areadsingle(guided_mask, x, y), 0.f, 1.f)
+                                   : ((Jz > 0.f ? Cz / Jz : 0.f) / gamut);
 
     const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_norm), 0.f, 1.f);
     const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_norm), 0.f, 1.f);
@@ -254,9 +257,8 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
 
   write_imagef(out, (int2)(x, y), pixout);
 }
-// Visualisierung der Sättigungsmaske für die GUI-Anzeige: schreibt
-// sqrt(s_in_norm) als Graustufe in alle 3 RGB-Kanäle, Alpha unverändert.
-// Mirrors display_saturation_mask() auf der CPU-Seite.
+
+// Visualization of the saturation mask for GUI display
 kernel void
 satcurve_mask(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,

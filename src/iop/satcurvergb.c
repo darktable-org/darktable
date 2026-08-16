@@ -19,6 +19,7 @@
 #include "common/color_picker.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/dtpthread.h"
+#include "common/eigf.h"
 #include "common/fast_guided_filter.h"
 #include "common/guided_filter.h"
 #include "common/gamut_mapping.h"
@@ -82,7 +83,6 @@ typedef struct dt_iop_satcurve_params_t
   float gf_radius;            // $MIN: 0.5 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "filter radius"
   float gf_feathering;        // $MIN: 0.1 $MAX: 50.0 $DEFAULT: 1.0 $DESCRIPTION: "edge feathering"
   int gf_iterations;          // $MIN: 1 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations"
-  float gf_quantization;      // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
 } dt_iop_satcurve_params_t;
 
 typedef struct dt_iop_satcurve_channel_data_t
@@ -105,7 +105,6 @@ typedef struct dt_iop_satcurve_data_t
   float gf_radius;
   float gf_feathering;
   int gf_iterations;
-  float gf_quantization;
 } dt_iop_satcurve_data_t;
 
 typedef struct dt_iop_satcurve_gui_channel_t
@@ -128,7 +127,6 @@ typedef struct dt_iop_satcurve_gui_data_t
   GtkWidget *gf_radius;
   GtkWidget *gf_feathering;
   GtkWidget *gf_iterations;
-  GtkWidget *gf_quantization;
   dt_gui_collapsible_section_t gf_section;
 
   dt_iop_satcurve_gui_channel_t channel[DT_IOP_SATCURVE_CHANNELS];
@@ -155,7 +153,6 @@ typedef struct dt_iop_satcurve_global_data_t
   int kernel_satcurve_mask;
   int kernel_satcurve_scalar_mask;
   int kernel_satcurve_mask_from_scalar;
-  int kernel_satcurve_apply_guided_mask;
   int kernel_fgf_resample;
   int kernel_fgf_quantize;
   int kernel_fgf_covar_products;
@@ -223,7 +220,6 @@ static inline void reset_params(dt_iop_satcurve_params_t *p)
   p->gf_radius = 10.0f;
   p->gf_feathering = 1.0f;
   p->gf_iterations = 1;
-  p->gf_quantization = 0.0f;
 }
 
 static inline float lookup_lut(const float *lut, const float x)
@@ -444,7 +440,8 @@ static void _update_sat_histogram(dt_iop_module_t *self,
 
 static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
                                                 dt_aligned_pixel_t xyz,
-                                                const float L_white)
+                                                const float L_white,
+                                                const float s_in_norm)
 {
   dt_aligned_pixel_t xyY, JCH, HCB, HSB;
 
@@ -458,7 +455,8 @@ static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
   HSB[3] = 0.f;
 
   const float gamut_s = satcurve_ucs_gamut_saturation(JCH[0], JCH[2], L_white, d->gamut_lut);
-  const float s_in_norm = HSB[1] / gamut_s;
+
+  // Compute curve factors based on the passed s_in_norm parameter
   const dt_iop_satcurve_factors_t f = eval_curve_factors(d, s_in_norm);
 
   HSB[1] = MAX(HSB[1] * f.sat_factor, 0.f);
@@ -488,7 +486,8 @@ static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
 }
 
 static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t *d,
-                                                   dt_aligned_pixel_t xyz)
+                                                   dt_aligned_pixel_t xyz,
+                                                   const float s_in_norm)
 {
   dt_aligned_pixel_t jab;
   dt_XYZ_2_JzAzBz(xyz, jab);
@@ -499,7 +498,7 @@ static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t 
   const float ch = cosf(h), sh = sinf(h);
   const float gamut = MAX(satcurve_lookup_gamut(d->gamut_lut, h), FLT_MIN);
 
-  const float s_in_norm = (Jz > 0.f ? Cz / Jz : 0.f) / gamut;
+  // Compute curve factors based on the passed s_in_norm parameter
   const dt_iop_satcurve_factors_t f = eval_curve_factors(d, s_in_norm);
 
   const float s_out = satcurve_soft_clip(MAX(s_in_norm * f.sat_factor, 0.f), .8f, 1.f) * gamut;
@@ -569,12 +568,12 @@ static inline void apply_guided_filter_to_mask(const dt_iop_satcurve_data_t *d,
   fast_surface_blur(mask,
                     width,
                     height,
-                    (int)d->gf_radius,
+                    d->gf_radius,
                     d->gf_feathering,
                     d->gf_iterations,
                     DT_GF_BLENDING_LINEAR,
                     1.0f,
-                    d->gf_quantization,
+                    0.0f,
                     exp2f(-14.0f),
                     4.0f);
 }
@@ -640,9 +639,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     return;
   }
 
-  // Guided-filter strength mask, derived from normalized input saturation and
-  // edge-aware blurred, so that the correction fades smoothly across saturation
-  // edges instead of being applied uniformly or with hard transitions.
+  // Compute filtered saturation mask as input signal for the curves
   float *restrict gf_mask = NULL;
 
   if (d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0)
@@ -667,23 +664,18 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     dt_vector_clipneg(rgb);
     dt_apply_transposed_color_matrix(rgb, inputmatrix_trans, xyz);
 
+    // Determine input saturation: either from the filtered mask or directly from the pixel
+    const float s_in_norm = gf_mask ? CLAMP(gf_mask[k], 0.f, 1.f)
+                                    : pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
+
     if (d->formula == DT_IOP_SATCURVE_DTUCS)
-      apply_sat_and_brilliance_ucs(d, xyz, L_white);
+      apply_sat_and_brilliance_ucs(d, xyz, L_white, s_in_norm);
     else
-      apply_sat_and_brilliance_jzazbz(d, xyz);
+      apply_sat_and_brilliance_jzazbz(d, xyz, s_in_norm);
 
     dt_apply_transposed_color_matrix(xyz, outputmatrix_trans, pixout);
     dt_vector_clipneg(pixout);
     pixout[3] = in[4 * k + 3];
-
-    if (gf_mask)
-    {
-      // blend the corrected pixel back towards the untouched input, using the
-      // blurred saturation mask as per-pixel strength (1 = full correction)
-      const float w = CLAMP(gf_mask[k], 0.f, 1.f);
-      for (int c = 0; c < 3; c++)
-        pixout[c] = rgb[c] + w * (pixout[c] - rgb[c]);
-    }
 
     copy_pixel_nontemporal(out + 4 * k, pixout);
   }
@@ -695,10 +687,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
 #if HAVE_OPENCL
 
-// box-blur a single-channel device buffer over a window of 2*radius+1,
-// reusing the generic box-mean kernels from common/guided_filter.c (they are
-// guide-agnostic single-channel passes, not RGB-specific -- see
-// _cl_box_mean() in guided_filter.c, which this mirrors exactly).
+// Forward declaration
+static cl_int _satcurve_guided_filter_cl(const dt_iop_satcurve_global_data_t *gd,
+                                         const int devid,
+                                         cl_mem mask_in, cl_mem mask_out,
+                                         const int width, const int height,
+                                         const int radius, const float feathering,
+                                         const int iterations);
+
 static cl_int _cl_fgf_box_mean(const int devid, const int width, const int height,
                                const int radius, cl_mem in, cl_mem out, cl_mem temp)
 {
@@ -713,24 +709,12 @@ static cl_int _cl_fgf_box_mean(const int devid, const int width, const int heigh
       CLARG(width), CLARG(height), CLARG(temp), CLARG(out), CLARG(radius));
 }
 
-// GPU port of fast_surface_blur() from common/fast_guided_filter.h, operating
-// on a full-resolution single-channel scalar mask. mask_in and mask_out must
-// be distinct buffers (OpenCL images cannot safely be read and written by the
-// same kernel invocation). Returns a non-CL_SUCCESS error on any failure,
-// without touching mask_out, so the caller's own error handling (which in
-// process_cl ultimately triggers darktable's per-module CPU fallback) applies
-// unchanged.
-//
-// CAVEAT: unlike guided_filter.c's guided_filter_cl(), this does not tile the
-// computation to stay within GPU memory limits for very large images -- see
-// _guided_filter_cl_impl()'s tiling logic for the pattern that would need to
-// be replicated here for full parity.
 static cl_int _satcurve_guided_filter_cl(const dt_iop_satcurve_global_data_t *gd,
                                          const int devid,
                                          cl_mem mask_in, cl_mem mask_out,
                                          const int width, const int height,
                                          const int radius, const float feathering,
-                                         const int iterations, const float quantization)
+                                         const int iterations)
 {
   const float scaling = 4.0f;
   const int ds_radius = (radius < 4) ? 1 : (int)(radius / scaling);
@@ -770,6 +754,7 @@ static cl_int _satcurve_guided_filter_cl(const dt_iop_satcurve_global_data_t *gd
   {
     const float qmin = exp2f(-14.0f);
     const float qmax = 4.0f;
+    const float quantization = 0.0f;
 
     err = dt_opencl_enqueue_kernel_2d_args(
         devid, gd->kernel_fgf_quantize, ds_width, ds_height,
@@ -867,10 +852,8 @@ void tiling_callback(dt_iop_module_t *self,
   dt_iop_satcurve_data_t *d = piece->data;
 
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-
   const gboolean gf_active = d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
 
-  // default pixel-to-pixel case: input + output
   tiling->factor = 1.0f + ioratio;
   tiling->factor_cl = tiling->factor;
   tiling->maxbuf = 1.0f;
@@ -882,39 +865,16 @@ void tiling_callback(dt_iop_module_t *self,
   if (!gf_active)
     return;
 
-  // Additional OpenCL allocations in process_cl():
-  // corrected_cl    : full-res RGBA -> 1.00
+  // OpenCL allocations for guided filter:
   // mask_scalar_cl  : full-res float -> 0.25
   // mask_filtered_cl: full-res float -> 0.25
-  //
-  // Additional allocations in _satcurve_guided_filter_cl():
-  // ds_image, ds_blend_tmp, ds_g, ds_gg, ds_gp,
-  // mean_g, mean_p, mean_gg, mean_gp, a, b, temp_ds : ds float, 12x -> 12/16 = 0.75
-  //
-  // a_full, b_full : full-res float -> 0.25 + 0.25
-  //
-  // total guided-filter extras: 1.00 + 0.25 + 0.25 + 0.75 + 0.25 + 0.25 = 2.75
-  tiling->factor_cl += 2.75f;
+  // ds_image etc.   : downsampled float (12x) -> 0.75
+  // a_full, b_full  : full-res float -> 0.50
+  // Total overhead factor: 1.75
+  tiling->factor_cl += 1.75f;
 
-  // largest single extra allocation is corrected_cl
-  tiling->maxbuf_cl = MAX(tiling->maxbuf_cl, 1.0f);
-
-  // Guided-filter neighbourhood requirement: each iteration re-runs the
-  // box-blur chain (quantize -> covar -> mean -> solve -> mean(a,b) ->
-  // blend) on the *current* intermediate image, so the effective support
-  // of the filter grows roughly linearly with gf_iterations, not just with
-  // gf_radius. A single-iteration overlap of ceil(gf_radius) is only
-  // correct for gf_iterations == 1; for more iterations, information from
-  // outside the tile can propagate inward by an extra ~radius per
-  // iteration. Scale the overlap accordingly, and clamp to something
-  // sane so pathological radius/iteration combos don't request an
-  // absurd amount of overlap.
   const int base_overlap = (int)ceilf(d->gf_radius);
   const int scaled_overlap = base_overlap * d->gf_iterations;
-
-  // upsampling from the downsampled (factor 4) working resolution can add
-  // up to ~1 extra full-res pixel of bilinear blur at tile edges per
-  // resample pass; fold in a small fixed margin to stay safe.
   const int resample_margin = 2;
 
   tiling->overlap = MAX(tiling->overlap, scaled_overlap + resample_margin);
@@ -941,7 +901,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const gboolean gf_active = d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
+  // not const anymore: may be downgraded to FALSE below if the guided-filter
+  // scratch buffers fail to allocate, mirroring the CPU fallback in process()
+  gboolean gf_active = d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
 
   const gboolean want_mask =
       self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display;
@@ -954,7 +916,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   cl_mem hist_bins_cl = NULL;
   cl_mem mask_scalar_cl = NULL;
   cl_mem mask_filtered_cl = NULL;
-  cl_mem corrected_cl = NULL;
 
   dt_colormatrix_t input_matrix = {{0.0f}};
   dt_colormatrix_t output_matrix = {{0.0f}};
@@ -972,9 +933,57 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   const float L_white = Y_to_dt_UCS_L_star(1.f);
 
-  // Mask-preview path: use a simpler kernel than the main satcurvergb path.
+  // Histogram update: runs independently of want_mask/neutral, mirroring
+  // _update_sat_histogram() on the CPU path, which also runs before every
+  // early return.
+  const gboolean want_histogram =
+      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe;
+
+  if (want_histogram)
+  {
+    int hist_bins_host[DT_IOP_SATCURVE_HIST_RES] = {0};
+    const size_t hist_bins_size = sizeof(int) * DT_IOP_SATCURVE_HIST_RES;
+
+    hist_bins_cl = dt_opencl_alloc_device_buffer(devid, hist_bins_size);
+    if (hist_bins_cl && dt_opencl_write_buffer_to_device(devid, hist_bins_host, hist_bins_cl, 0,
+                                                         hist_bins_size, TRUE) == CL_SUCCESS)
+    {
+      const cl_int hist_err = dt_opencl_enqueue_kernel_2d_args(
+          devid, gd->kernel_satcurve_histogram, width, height,
+          CLARG(dev_in), CLARG(width), CLARG(height),
+          CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
+          CLARG(d->formula), CLARG(L_white),
+          CLARG(hist_bins_cl));
+
+      if (hist_err == CL_SUCCESS && dt_opencl_read_buffer_from_device(devid, hist_bins_host, hist_bins_cl, 0,
+                                                                      hist_bins_size, TRUE) == CL_SUCCESS)
+        _commit_sat_histogram(self, hist_bins_host);
+    }
+
+    dt_opencl_release_mem_object(hist_bins_cl);
+    hist_bins_cl = NULL;
+  }
+
+  // Mask preview mode
   if (want_mask)
   {
+    if (gf_active)
+    {
+      mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+      mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+      if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
+      {
+        // fallback: show the unfiltered mask instead of aborting the preview
+        dt_control_log(_("satcurve: guided filter failed to allocate memory, "
+                         "disabling it for this preview"));
+        dt_opencl_release_mem_object(mask_scalar_cl);
+        dt_opencl_release_mem_object(mask_filtered_cl);
+        mask_scalar_cl = NULL;
+        mask_filtered_cl = NULL;
+        gf_active = FALSE;
+      }
+    }
+
     if (!gf_active)
     {
       err = dt_opencl_enqueue_kernel_2d_args(
@@ -989,15 +998,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       goto error;
     }
 
-    // guided filter enabled: show the actually-filtered mask, not the raw one
-    mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
-    {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto error;
-    }
-
     err = dt_opencl_enqueue_kernel_2d_args(
         devid, gd->kernel_satcurve_scalar_mask, width, height,
         CLARG(dev_in), CLARG(mask_scalar_cl),
@@ -1009,7 +1009,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
     err = _satcurve_guided_filter_cl(gd, devid, mask_scalar_cl, mask_filtered_cl,
                                      width, height, (int)d->gf_radius, d->gf_feathering,
-                                     d->gf_iterations, d->gf_quantization);
+                                     d->gf_iterations);
     if (err != CL_SUCCESS)
       goto error;
 
@@ -1048,36 +1048,24 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     goto error;
   }
 
-  const gboolean want_histogram =
-      self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && dt_iop_has_focus(self) && piece->pipe == self->dev->full.pipe;
-
-  cl_mem correction_target = dev_out;
-
+  // 1. Prepare filtered saturation mask if guided filter is enabled
   if (gf_active)
   {
-    corrected_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
     mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    if (corrected_cl == NULL || mask_scalar_cl == NULL || mask_filtered_cl == NULL)
+    if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
     {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto error;
+      // fallback: proceed without guided filter instead of aborting the
+      // whole correction, mirroring process() on the CPU
+      dt_control_log(_("satcurve: guided filter failed to allocate memory, "
+                       "disabling it for this run"));
+      dt_opencl_release_mem_object(mask_scalar_cl);
+      dt_opencl_release_mem_object(mask_filtered_cl);
+      mask_scalar_cl = NULL;
+      mask_filtered_cl = NULL;
+      gf_active = FALSE;
     }
-    correction_target = corrected_cl;
   }
-
-  // pipeline-critical kernel goes first: the histogram below is pure UI
-  // feedback and must never delay the actual image processing on the queue
-  err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_satcurvergb, width, height,
-      CLARG(dev_in), CLARG(correction_target),
-      CLARG(width), CLARG(height),
-      CLARG(input_matrix_cl), CLARG(output_matrix_cl),
-      CLARG(sat_lut_cl), CLARG(bri_lut_cl), CLARG(gamut_lut_cl),
-      CLARG(d->formula), CLARG(L_white));
-
-  if (err != CL_SUCCESS)
-    goto error;
 
   if (gf_active)
   {
@@ -1092,43 +1080,26 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
     err = _satcurve_guided_filter_cl(gd, devid, mask_scalar_cl, mask_filtered_cl,
                                      width, height, (int)d->gf_radius, d->gf_feathering,
-                                     d->gf_iterations, d->gf_quantization);
-    if (err != CL_SUCCESS)
-      goto error;
-
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_satcurve_apply_guided_mask, width, height,
-        CLARG(dev_in), CLARG(corrected_cl), CLARG(mask_filtered_cl), CLARG(dev_out),
-        CLARG(width), CLARG(height));
+                                     d->gf_iterations);
     if (err != CL_SUCCESS)
       goto error;
   }
 
-  // GPU-side histogram reduction: only DT_IOP_SATCURVE_HIST_RES ints cross
-  // the PCIe bus, instead of the full width*height*4 floats of the old
-  // copy-to-host approach. Reuses input_matrix_cl/gamut_lut_cl already
-  // uploaded above -- no second matrix upload needed.
-  if (want_histogram)
-  {
-    int hist_bins_host[DT_IOP_SATCURVE_HIST_RES] = {0};
-    const size_t hist_bins_size = sizeof(int) * DT_IOP_SATCURVE_HIST_RES;
+  const int use_gf = gf_active ? 1 : 0;
+  cl_mem guided_mask_arg = gf_active ? mask_filtered_cl : dev_in;
 
-    hist_bins_cl = dt_opencl_alloc_device_buffer(devid, hist_bins_size);
-    if (hist_bins_cl && dt_opencl_write_buffer_to_device(devid, hist_bins_host, hist_bins_cl, 0,
-                                                         hist_bins_size, TRUE) == CL_SUCCESS)
-    {
-      const cl_int hist_err = dt_opencl_enqueue_kernel_2d_args(
-          devid, gd->kernel_satcurve_histogram, width, height,
-          CLARG(dev_in), CLARG(width), CLARG(height),
-          CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-          CLARG(d->formula), CLARG(L_white),
-          CLARG(hist_bins_cl));
+  // 2. Main processing pass: evaluate curves using the smoothed mask
+  err = dt_opencl_enqueue_kernel_2d_args(
+      devid, gd->kernel_satcurvergb, width, height,
+      CLARG(dev_in), CLARG(dev_out),
+      CLARG(guided_mask_arg), CLARG(use_gf),
+      CLARG(width), CLARG(height),
+      CLARG(input_matrix_cl), CLARG(output_matrix_cl),
+      CLARG(sat_lut_cl), CLARG(bri_lut_cl), CLARG(gamut_lut_cl),
+      CLARG(d->formula), CLARG(L_white));
 
-      if (hist_err == CL_SUCCESS && dt_opencl_read_buffer_from_device(devid, hist_bins_host, hist_bins_cl, 0,
-                                                                      hist_bins_size, TRUE) == CL_SUCCESS)
-        _commit_sat_histogram(self, hist_bins_host);
-    }
-  }
+  if (err != CL_SUCCESS)
+    goto error;
 
 error:
   dt_opencl_release_mem_object(input_matrix_cl);
@@ -1139,7 +1110,6 @@ error:
   dt_opencl_release_mem_object(hist_bins_cl);
   dt_opencl_release_mem_object(mask_scalar_cl);
   dt_opencl_release_mem_object(mask_filtered_cl);
-  dt_opencl_release_mem_object(corrected_cl);
   return err;
 }
 
@@ -1155,7 +1125,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_satcurve_mask = dt_opencl_create_kernel(program, "satcurve_mask");
   gd->kernel_satcurve_scalar_mask = dt_opencl_create_kernel(program, "satcurve_scalar_mask");
   gd->kernel_satcurve_mask_from_scalar = dt_opencl_create_kernel(program, "satcurve_mask_from_scalar");
-  gd->kernel_satcurve_apply_guided_mask = dt_opencl_create_kernel(program_fgf, "satcurve_apply_guided_mask");
   gd->kernel_fgf_resample = dt_opencl_create_kernel(program_fgf, "fastguided_resample");
   gd->kernel_fgf_quantize = dt_opencl_create_kernel(program_fgf, "fastguided_quantize");
   gd->kernel_fgf_covar_products = dt_opencl_create_kernel(program_fgf, "fastguided_covar_products");
@@ -1171,7 +1140,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_satcurve_mask);
   dt_opencl_free_kernel(gd->kernel_satcurve_scalar_mask);
   dt_opencl_free_kernel(gd->kernel_satcurve_mask_from_scalar);
-  dt_opencl_free_kernel(gd->kernel_satcurve_apply_guided_mask);
   dt_opencl_free_kernel(gd->kernel_fgf_resample);
   dt_opencl_free_kernel(gd->kernel_fgf_quantize);
   dt_opencl_free_kernel(gd->kernel_fgf_covar_products);
@@ -1317,7 +1285,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->gf_radius = p->gf_radius;
   d->gf_feathering = p->gf_feathering;
   d->gf_iterations = p->gf_iterations;
-  d->gf_quantization = p->gf_quantization;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
       dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
@@ -1643,7 +1610,7 @@ static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
 
   if (g->selected < 0)
-    return FALSE; // nur wenn ein Knoten selektiert ist
+    return FALSE;
 
   int delta_y = 0;
   if (dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta_y))
@@ -1987,12 +1954,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->gf_iterations,
                               _("number of times the guided filter is applied recursively; "
                                 "increases smoothing but costs more time"));
-
-  g->gf_quantization = dt_bauhaus_slider_from_params(gf_section, "gf_quantization");
-  dt_bauhaus_slider_set_format(g->gf_quantization, _("EV"));
-  gtk_widget_set_tooltip_text(g->gf_quantization,
-                              _("posterize the guiding mask in log2 space to produce smoother, "
-                                "more contoured transitions; 0 disables quantization"));
 
   dt_gui_box_add(self->widget, gf_box);
 }
