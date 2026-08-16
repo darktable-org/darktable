@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -689,7 +689,10 @@ gboolean dt_confgen_is_common(const char *name)
     return item->is_common;
   }
 
-  return FALSE;
+  // a theme declares its own variants, so those keys are not in
+  // darktableconfig.xml. the theme is loaded before the main config is
+  // read, so they belong in the common file like every other themes/ key
+  return g_str_has_prefix(name, "themes/");
 }
 
 const char *dt_confgen_get_label(const char *name)

@@ -37,6 +37,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/theme_variants.h"
 
 #include "common/styles.h"
 #include "common/usermanual_url.h"
@@ -3635,8 +3636,12 @@ void _add_theme_import(char **themecss,
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  // this stores `theme` in ui_last/theme, freeing whatever that key held
+  // – and callers pass exactly that. work from a copy
+  gchar *theme_name = g_strdup(theme);
+
   char theme_css[PATH_MAX] = { 0 };
-  g_snprintf(theme_css, sizeof(theme_css), "%s.css", theme);
+  g_snprintf(theme_css, sizeof(theme_css), "%s.css", theme_name);
 
   if(!dt_conf_key_exists("use_system_font"))
     dt_conf_set_bool("use_system_font", TRUE);
@@ -3673,14 +3678,17 @@ void dt_gui_load_theme(const char *theme)
       // fallback to default theme
       g_free(path);
       // NOTE: When changing the default theme, don't forget to change it here!
-      path = g_build_filename(datadir, "themes", "darktable-elegant-grey.css", NULL);
-      dt_conf_set_string("ui_last/theme", "darktable-elegant-grey");
+      g_free(theme_name);
+      theme_name = g_strdup("darktable-elegant-grey");
+      char *css = g_strconcat(theme_name, ".css", NULL);
+      path = g_build_filename(datadir, "themes", css, NULL);
+      g_free(css);
     }
-    else
-      dt_conf_set_string("ui_last/theme", theme);
   }
-  else
-    dt_conf_set_string("ui_last/theme", theme);
+
+  // whatever actually loaded is what this session is using, and what its
+  // variants are looked up against below
+  dt_conf_set_string("ui_last/theme", theme_name);
 
   GError *error = NULL;
 
@@ -3690,7 +3698,7 @@ void dt_gui_load_theme(const char *theme)
 
   // We load the themes in this specific order:
   //   1. The main darktable-*.css
-  //   2. condensed.css (if enabled)
+  //   2. the chunks the theme's variants select (if any)
   //   3. OS specific tweaks (linux|macos|windows).css (if any)
   //   4. user.css (if enabled)
 
@@ -3702,73 +3710,25 @@ void dt_gui_load_theme(const char *theme)
 
   gchar *themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
 
-  // chunk-condensed.css
-
-  if(dt_conf_get_bool("themes/condensed"))
+  // the options the theme declares in <theme>.variants, each selecting
+  // one chunk to import after the theme itself
+  GList *variants = dt_theme_variants_load(theme_name);
+  for(GList *v = variants; v; v = g_list_next(v))
   {
-    _add_theme_import(&themecss, datadir, "themes", "chunk-condensed.css");
-  }
+    const dt_theme_variant_t *variant = (const dt_theme_variant_t *)v->data;
+    char *chunk = dt_theme_variant_css(variant, dt_theme_variant_get(variant));
+    if(!chunk) continue;
 
-  // chunk-rounded-header
-
-  if(dt_conf_get_bool("themes/rounded-header"))
-  {
-    _add_theme_import(&themecss, datadir, "themes", "chunk-rounded-header.css");
-  }
-
-  // chunk-colored-accent
-
-  int index = dt_conf_get_int("themes/accent-color");
-
-  if(index > 0)
-  {
-    const char *colors[] =
-        {
-            "none",
-            "green",
-            "blue",
-            "yellow",
-            "orange"
-        };
-
-    char *chunk = g_strdup_printf
-      ("chunk-%s-accent-color.css",
-       colors[index]);
-    _add_theme_import(&themecss, datadir, "themes", chunk);
+    // a user theme may ship its own chunks, so look beside it first
+    char *user = g_build_filename(configdir, "themes", chunk, NULL);
+    _add_theme_import(&themecss,
+                      g_file_test(user, G_FILE_TEST_EXISTS)
+                        ? configdir : datadir,
+                      "themes", chunk);
+    g_free(user);
     g_free(chunk);
   }
-
-  // focused module border
-
-  const char *border_colors[] =
-      {
-          "none",
-          "light",
-          "dark",
-          "green",
-          "blue",
-          "yellow",
-          "orange"};
-
-  index = dt_conf_get_int("themes/focused-module-border");
-
-  if (index > 0)
-  {
-    char *chunk = g_strdup_printf("chunk-%s-focused-module-border.css",
-                                  border_colors[index]);
-    _add_theme_import(&themecss, datadir, "themes", chunk);
-    g_free(chunk);
-  }
-
-  index = dt_conf_get_int("themes/expanded-module-border");
-
-  if (index > 0)
-  {
-    char *chunk = g_strdup_printf("chunk-%s-expanded-module-border.css",
-                                  border_colors[index]);
-    _add_theme_import(&themecss, datadir, "themes", chunk);
-    g_free(chunk);
-  }
+  dt_theme_variants_free(variants);
 
   // load any OS specific themes tweak file to fix some platform specific issues
 
@@ -3810,6 +3770,8 @@ void dt_gui_load_theme(const char *theme)
   g_free(themecss);
 
   g_object_unref(themes_style_provider);
+
+  g_free(theme_name);
 }
 
 void dt_gui_apply_theme()

@@ -1,0 +1,89 @@
+# Options offered on top of this theme, shown in preferences below the
+# theme selector. Every theme shipped with darktable @imports darktable.css,
+# so all of them inherit this file and none needs a copy.
+#
+# Each group is one control. `$value` in `css` is replaced by the selected
+# option; `css_<option>` overrides it for one option, and an empty value
+# means that option adds no CSS at all.
+#
+# A `[<control>/labels]` group names the options; without one an option
+# shows its own id. Keys prefixed with `_` are translated at build time by
+# intltool, which only accepts letters and digits in a key – so an option
+# id here must be alphanumeric for its label to reach translators. A theme
+# of your own has no such limit: write `light-blue[de]=...` by hand.
+#
+# A theme of your own goes beside your .css as <theme>.variants. Add
+# `inherits=darktable` under a [theme] group to keep these and add your own.
+#
+# A theme without a manifest inherits the one belonging to whatever its CSS
+# @imports. That only reaches a theme installed alongside this file: GTK
+# resolves an @import relative to the importing file, so a theme in
+# ~/.config/darktable/themes cannot import a shipped one. Such a theme has
+# to carry its own CSS in full, and name its parent with `inherits=` – which
+# is looked up by theme name, in the config dir first and then here.
+
+[condensed]
+type=bool
+_label=condensed module controls
+_tooltip=use condensed module controls
+default=false
+css=chunk-condensed.css
+
+[rounded-header]
+type=bool
+_label=rounded module headers
+_tooltip=use rounded corners on module headers
+default=false
+css=chunk-rounded-header.css
+
+[accent-color]
+type=enum
+_label=accent color
+_tooltip=set the theme accent color for the interface
+values=none;green;blue;yellow;orange
+default=none
+css=chunk-$value-accent-color.css
+css_none=
+
+[accent-color/labels]
+_none=none
+_green=green
+_blue=blue
+_yellow=yellow
+_orange=orange
+
+[focused-module-border]
+type=enum
+_label=focused module border
+_tooltip=draw a border around the focused module
+values=none;light;dark;green;blue;yellow;orange
+default=none
+css=chunk-$value-focused-module-border.css
+css_none=
+
+[focused-module-border/labels]
+_none=none
+_light=light
+_dark=dark
+_green=green
+_blue=blue
+_yellow=yellow
+_orange=orange
+
+[expanded-module-border]
+type=enum
+_label=expanded module border
+_tooltip=draw a border around expanded modules
+values=none;light;dark;green;blue;yellow;orange
+default=none
+css=chunk-$value-expanded-module-border.css
+css_none=
+
+[expanded-module-border/labels]
+_none=none
+_light=light
+_dark=dark
+_green=green
+_blue=blue
+_yellow=yellow
+_orange=orange

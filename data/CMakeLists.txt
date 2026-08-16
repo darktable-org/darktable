@@ -7,6 +7,33 @@ endif(USE_OPENCL)
 
 FILE(GLOB THEME_FILES "themes/*.css")
 FILE(COPY ${THEME_FILES} DESTINATION "${DARKTABLE_DATADIR}/themes")
+
+# theme variant manifests carry the labels shown in preferences, so they
+# go through intltool the same way the .desktop and appdata files do
+FILE(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
+FILE(GLOB VARIANTS_IN "themes/*.variants.in")
+foreach(variants_in ${VARIANTS_IN})
+  get_filename_component(variants_name ${variants_in} NAME_WE)
+  set(variants_out "${DARKTABLE_DATADIR}/themes/${variants_name}.variants")
+  add_custom_command(
+    OUTPUT ${variants_out}
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${DARKTABLE_DATADIR}/themes"
+    COMMAND sh -c "${intltool_merge_BIN} --desktop-style \"${CMAKE_CURRENT_SOURCE_DIR}/../po\" \"${variants_in}\" \"${variants_out}\""
+    MAIN_DEPENDENCY ${variants_in}
+    DEPENDS ${PO_FILES}
+    )
+  list(APPEND VARIANTS_FILES ${variants_out})
+endforeach()
+if(VARIANTS_FILES)
+  add_custom_target(darktable.theme_variants ALL DEPENDS ${VARIANTS_FILES})
+  # darktable cannot show a theme's options without this file, so building
+  # the binary alone has to produce it too - not only a full `make`
+  add_dependencies(darktable darktable.theme_variants)
+  install(FILES ${VARIANTS_FILES}
+          DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes
+          COMPONENT DTApplication)
+endif()
+
 install(FILES ${THEME_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
 
 #

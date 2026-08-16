@@ -96,6 +96,7 @@ build/lib/darktable/plugins/introspection_vignette.c
 build/lib/darktable/plugins/introspection_watermark.c
 build/lib/darktable/plugins/introspection_zonesystem.c
 build/share/darktable/org.darktable.darktable.desktop.in
+[type: gettext/keys] data/themes/darktable.variants.in
 data/org.darktable.darktable.appdata.xml.in
 data/org.darktable.darktable.desktop.in
 src/bauhaus/bauhaus.c
