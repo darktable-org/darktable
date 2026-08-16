@@ -18,7 +18,6 @@
       "extensions": [
         "ms-vscode.cpptools",
         "ms-vscode.cmake-tools",
-        "xaver.clang-format",
         "ms-vscode.cpptools-extension-pack"
       ],
       "settings": {
