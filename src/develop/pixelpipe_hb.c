@@ -2375,9 +2375,17 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         && !(dt_pipe_is_preview(pipe) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
         && !_avoid_cl_module(piece);
 
+    /* A colorspace conversion of the input is done before the module runs, into a second
+       image that replaces the original, so one extra full-size buffer is live while it
+       happens. Reserve it in the untiled decision only: if the module has to tile, the
+       conversion is done on the host instead and no device buffer is needed. */
+    const gboolean converting_cl =
+      input_cst_cl != module->input_colorspace(module, pipe, piece);
+    const float untiled_factor_cl = tiling.factor_cl + (converting_cl ? 1.0f : 0.0f);
+
     const dt_opencl_tilemode_t fitter =
       dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height,
-                                  in_bpp, bpp, tiling.factor_cl, tiling.overhead, tiling.overlap);
+                                  in_bpp, bpp, untiled_factor_cl, tiling.overhead, tiling.overlap);
 
     const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING;
     const gboolean fast_tiling = fitter == DT_OPENCL_FAST_TILING
@@ -2482,9 +2490,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
         if(cl_mem_input)
         {
-          success_opencl = dt_ioppr_transform_image_colorspace_cl(module, pipe->devid,
-                                                                cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
+          /* The conversion hands back a different buffer holding the converted contents,
+             so the original is released for us and cl_mem_input has to follow it. On
+             failure it is left pointing at the untouched original. */
+          cl_mem converted = cl_mem_input;
+          success_opencl = dt_ioppr_transform_image_colorspace_replace_cl(module, pipe->devid,
+                                                                &converted, roi_in.width, roi_in.height,
                                                                 cst_from, cst_to, &cst_tmp, work_profile);
+          cl_mem_input = converted;
         }
         else // data for tiling have already been written to host so we transform but have to invalidate
         {
@@ -2687,17 +2700,25 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            && _transform_for_blend(module, piece))
         {
 
-          success_opencl = dt_ioppr_transform_image_colorspace_cl(module, pipe->devid,
-                                                                  cl_mem_input, cl_mem_input,
+          cl_mem blend_in = cl_mem_input;
+          cl_mem blend_out = *cl_mem_output;
+
+          success_opencl = dt_ioppr_transform_image_colorspace_replace_cl(module, pipe->devid,
+                                                                  &blend_in,
                                                                   roi_in.width, roi_in.height,
                                                                   cst_tmp, blend_cst, &cst_tmp,
                                                                   work_profile);
 
-          success_opencl &= dt_ioppr_transform_image_colorspace_cl(module, pipe->devid,
-                                                                   *cl_mem_output, *cl_mem_output,
+          success_opencl &= dt_ioppr_transform_image_colorspace_replace_cl(module, pipe->devid,
+                                                                   &blend_out,
                                                                    roi_out->width, roi_out->height,
                                                                    pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
                                                                    work_profile);
+
+          /* Each conversion that succeeded replaced its buffer; the ones that did not
+             left theirs alone. Either way these now hold the buffers to carry on with. */
+          cl_mem_input = blend_in;
+          *cl_mem_output = blend_out;
           if(success_opencl && blend_picking)
           {
             _pixelpipe_picker_cl(pipe->devid, module, piece, &piece->dsc_in,

@@ -25,6 +25,7 @@
 #include "common/iop_profile.h"
 #include "common/utility.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -1032,6 +1033,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
   cl_mem clut_cl = NULL;
+  cl_mem scratch = NULL;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1044,18 +1046,28 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
+    /* A kernel may not take one image object as both its read_only source and its
+       write_only target, so the profile conversions and the lookup cannot pass dev_out
+       for both. dev_out belongs to the caller and cannot be swapped for another buffer,
+       so a scratch image carries the intermediate: convert into it, apply the lookup
+       from it back into dev_out, then convert dev_out into it and back once more. */
     if(transform)
     {
-      const gboolean success = dt_ioppr_transform_image_colorspace_rgb_cl(devid,
-        dev_in, dev_out, width, height,
-        work_profile, lut_profile, "work profile to LUT profile");
-      if(!success)
-       transform = FALSE;
+      scratch = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+      if(scratch == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto cleanup;
+      }
+
+      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, scratch, width, height,
+        work_profile, lut_profile, "work profile to LUT profile"))
+        transform = FALSE;
     }
+
     if(transform)
-      // FIXME OPENCL is this safe here ?
       err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-              CLARG(dev_out), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
+              CLARG(scratch), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
     else
       err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
               CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
@@ -1064,9 +1076,15 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
     if(transform)
     {
-      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
-        lut_profile, work_profile, "LUT profile to work profile"))
+      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, scratch, width, height,
+           lut_profile, work_profile, "LUT profile to work profile"))
         err = DT_OPENCL_PROCESS_CL;
+      else
+      {
+        const size_t region[2] = { width, height };
+        err = dt_opencl_enqueue_copy_image(devid, scratch, dev_out,
+                                           CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+      }
     }
   }
   else
@@ -1077,9 +1095,32 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 cleanup:
   dt_opencl_release_mem_object(clut_cl);
+  dt_opencl_release_mem_object(scratch);
   return err;
 }
 #endif
+
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
+{
+  const float ioratio = ((float)roi_out->width * roi_out->height)
+                      / ((float)roi_in->width * roi_in->height);
+
+  tiling->factor = 1.0f + ioratio;
+  /* The OpenCL path carries the profile-converted intermediates in a scratch image the
+     size of the input, since the lookup kernel and the conversions cannot read and write
+     one image object. Only allocated when a profile conversion is needed, so this is the
+     worst case. */
+  tiling->factor_cl = tiling->factor + 1.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = tiling->maxbuf;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->align = 1;
+}
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
