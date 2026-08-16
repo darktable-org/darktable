@@ -443,6 +443,8 @@ If you experience crashes at startup, try launching darktable from a terminal wi
 
 There is a comprehensive list of build instructions for [Ubuntu/Debian related distributions](https://github.com/darktable-org/darktable/wiki/Build-instructions-for-Ubuntu) or for [Fedora and related distributions](https://github.com/darktable-org/darktable/wiki/Build-Instructions-for-Fedora). These build instructions can be easily adapted to many other Linux distributions.
 
+For contributors who prefer a **container-based build environment** that exactly mirrors CI (ubuntu:26.04 with GCC 16 / Clang 22), see [.devcontainer/README.md](.devcontainer/README.md). It works with Docker or Podman alone (no IDE required), or with any [Dev Container-compatible IDE](https://containers.dev/supporting). This is particularly useful on immutable/atomic Linux systems, for infrequent contributors, or when reproducing a CI failure locally.
+
 
 Contributing
 ------------
