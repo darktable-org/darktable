@@ -698,27 +698,43 @@ static void _window_motion_handle(GtkWidget *widget,
 // GTK4 TODO: This popup uses GTK_WINDOW_POPUP which has compatibility issues
 // with GtkEventControllerKey and GtkEventControllerMotion on GTK3 — motion
 // and key events don't reach the controllers on this window type.  The signal
-// handlers below are the fallback.  For GTK4, the popup should be migrated to
-// GtkPopover or a GtkWindow with proper event controllers.
-
+// handlers below are the fallback, GTK3-only.  For GTK4, the popup should be
+// migrated to GtkPopover or a GtkWindow with proper event controllers; until
+// then GTK4 keeps the controller, since (unlike GTK3) it isn't known to have
+// this gap on GTK_WINDOW_POPUP.
+//
+// GTK3's controller variant regressed silently once before: a gtk4-prep
+// sweep (b91b228482) moved this from the raw signal (added for exactly this
+// quirk by f098290bdf) to a controller along with everything else elsewhere
+// in the file, breaking dragging inside this specific popup (e.g. a
+// right-click precise-numeric-entry popup opened via
+// dt_bauhaus_widget_show_popup()) without anyone noticing, since regular
+// in-place widgets don't hit this window type at all. Keep the GTK3 branch
+// on the raw signal.
+#if GTK_CHECK_VERSION(4, 0, 0)
 static void _window_motion_handler(GtkEventControllerMotion *controller,
                                     gdouble x,
                                     gdouble y,
                                     gpointer user_data)
 {
-  // the popup window is a toplevel, but take root coordinates anyway to stay
-  // in the same coordinate space as the old GdkEvent handler (GTK4 falls
-  // back to surface-relative coordinates, see dt_gui_get_event_coords())
   gdouble root_x = 0.0, root_y = 0.0;
   GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
   _window_motion_handle(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)),
                         root_x, root_y,
                         dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)));
-#if !GTK_CHECK_VERSION(4, 0, 0)
-  if(event) gdk_event_free(event);
-#endif
 }
+#else
+static gboolean _window_motion_handler(GtkWidget *widget, GdkEventMotion *event,
+                                        gpointer user_data)
+{
+  _window_motion_handle(widget,
+                        dt_gdk_event_get_root_x(event),
+                        dt_gdk_event_get_root_y(event),
+                        dt_gdk_event_get_state(event));
+  return TRUE;
+}
+#endif
 
 static void _popup_leave_cb(GtkEventControllerMotion *controller,
                              gpointer user_data)
@@ -1058,7 +1074,11 @@ void dt_bauhaus_init()
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
+#if GTK_CHECK_VERSION(4, 0, 0)
   dt_gui_connect_motion(pop->window, _window_motion_handler, NULL, NULL, NULL);
+#else
+  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_handler), NULL);
+#endif
   dt_gui_connect_motion(area, NULL, NULL, _popup_leave_cb, NULL);
   dt_gui_connect_key(area, _popup_key_press, NULL);
   dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
