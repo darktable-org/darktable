@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2026 darktable developers.
+   Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,17 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
+#ifdef _WIN32
+  #include "win/win32_print.h"
+  #include <windows.h>
+  #include <prntvpt.h>   // PTOpenProvider, PTConvertDevModeToPrintTicket
+  #include <objidl.h>    // IStream
+#endif
+#ifdef GDK_WINDOWING_WIN32
+  #include <gdk/gdkwin32.h>
+#endif
+
 
 DT_MODULE(4)
 
@@ -123,6 +134,19 @@ typedef struct dt_lib_print_settings_t
 
   GList *printer_list;
   dt_pthread_mutex_t printer_list_mutex;
+
+  // for windows side printing support
+#ifdef _WIN32  
+  char *waiting_for_printer;
+  GtkWidget *printer_combo;
+  GtkWidget *papers_combo;
+  GtkWidget *quality;
+  GtkWidget *quality_combo;
+  GList *quality_list;                     // list of quality settings (windows only)
+  GtkButton *print_settings_button; // button to open printer settings (windows only)
+
+  struct dt_win32_printer_ctx_t *settings_ctx;
+#endif
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_print_job_t
@@ -138,6 +162,10 @@ typedef struct dt_lib_print_job_t
   uint16_t *buf; // ??? should be removed
   dt_pdf_page_t *pdf_page;
   char pdf_filename[PATH_MAX];
+#ifdef _WIN32
+  void *print_ticket_data; // Windows only: print ticket data for the job
+  size_t print_ticket_size; // Windows only: size of the print ticket data
+#endif
 } dt_lib_print_job_t;
 
 typedef struct dt_lib_export_profile_t
@@ -437,6 +465,8 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   return 0;
 }
 
+#ifndef _WIN32
+
 static void _create_pdf(dt_job_t *job,
                         dt_images_box imgs,
                         const float width,
@@ -501,6 +531,7 @@ static void _create_pdf(dt_job_t *job,
     box->buf = NULL;
   }
 }
+#endif
 
 void _fill_box_values(dt_lib_print_settings_t *ps)
 {
@@ -586,6 +617,49 @@ static int _print_job_run(dt_job_t *job)
     return 0;
   dt_control_job_set_progress(job, 0.9);
 
+#ifdef _WIN32
+  // on Windows, leverage the XPS print api
+
+  float width, height;
+  _get_page_dimension(&params->prt, &width, &height);
+
+  // pull icc profile info to pass to win32_print.c to include in the job sent to the printer
+  void *icc_data = NULL;
+  size_t icc_size = 0;
+  {
+    dt_colorspaces_color_profile_type_t out_type =
+      *params->prt.printer.profile ? params->p_icc_type : params->buf_icc_type;
+    const char *out_filename =
+      *params->prt.printer.profile ? params->p_icc_profile : params->buf_icc_profile;
+
+    const dt_colorspaces_color_profile_t *cprof =
+      dt_colorspaces_get_output_profile(imgid, out_type, out_filename);
+    if(cprof && cprof->profile)
+    {
+      cmsUInt32Number len = 0;
+      cmsSaveProfileToMem(cprof->profile, NULL, &len);
+      if(len > 0)
+      {
+        icc_data = malloc(len);
+        if(icc_data) cmsSaveProfileToMem(cprof->profile, icc_data, &len);
+        icc_size = (size_t)len;
+      }
+    }
+  }
+
+  // send the print job to win32_print.c
+  if(!dt_win_print_file(&params->imgs, params->job_title, &params->prt,
+                     params->print_ticket_data, params->print_ticket_size,
+                     icc_data, icc_size, width, height))
+  {
+    dt_control_log(_("Windows printing failed"));
+  }
+
+  free(icc_data);
+
+#else
+  // on Linux/OSX, print directly as a PDF
+
   dt_loc_get_tmp_dir(params->pdf_filename, sizeof(params->pdf_filename));
   g_strlcat(params->pdf_filename, "/pf.XXXXXX.pdf", sizeof(params->pdf_filename));
 
@@ -609,6 +683,9 @@ static int _print_job_run(dt_job_t *job)
   // send to CUPS
 
   dt_print_file(imgid, params->pdf_filename, params->job_title, &params->prt);
+
+#endif
+
   dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
@@ -701,8 +778,128 @@ static void _print_job_cleanup(void *p)
   g_free(params->buf_icc_profile);
   g_free(params->p_icc_profile);
   g_free(params->job_title);
+#ifdef _WIN32
+  free(params->print_ticket_data);
+#endif
   free(params);
 }
+
+#ifdef _WIN32
+// idle callback to force a redraw once GTK is back in control
+static gboolean
+_redraw_later(gpointer user_data)
+{
+  GtkWidget *widget = GTK_WIDGET(user_data);
+  if(GTK_IS_WIDGET(widget))
+    gtk_widget_queue_draw(widget);
+  return G_SOURCE_REMOVE; // run once, then remove
+}
+
+
+static void
+_print_settings_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+  if(!ps) return;
+
+  // safer: use the toplevel window as owner
+  GtkWidget *toplevel = gtk_widget_get_toplevel(self->widget);
+  HWND hwnd_owner = NULL;
+  if(GTK_IS_WINDOW(toplevel)) {
+    GdkWindow *gdk_win = gtk_widget_get_window(toplevel);
+    if(gdk_win)
+      hwnd_owner = gdk_win32_window_get_handle(gdk_win);
+  }
+
+  if(ps->settings_ctx)
+  {
+    dt_win_open_printer_settings(ps->settings_ctx, hwnd_owner);
+    dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx);
+    dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+  }
+  else {
+    DBG_MARK("no settings context");}
+
+  // schedule redraw on idle so it runs after dialog closes
+  g_idle_add(_redraw_later, self->widget);
+}
+
+// Convert the cached DEVMODE in ctx into a PrintTicket buffer the
+// background job can carry across without touching any live COM/GDI
+// handles itself. Returns TRUE and sets *out_data/*out_size on success;
+// on failure, leaves *out_data NULL and logs — caller decides whether
+// that's fatal or just "print with driver defaults".
+static gboolean _win_build_print_ticket(dt_win32_print_ctx_t *ctx,
+                                        void **out_data,
+                                        size_t *out_size)
+{
+  *out_data = NULL;
+  *out_size = 0;
+
+  if(!ctx || !ctx->cached_dm || !ctx->base
+     || !*ctx->base->printer.name)
+    return FALSE;
+
+  gunichar2 *wprinter = g_utf8_to_utf16(ctx->base->printer.name,
+                                       -1, NULL, NULL, NULL);
+  if(!wprinter) return FALSE;
+
+  HPTPROVIDER hProvider = NULL;
+  HRESULT hr = PTOpenProvider((PCWSTR)wprinter, 1, &hProvider);
+  g_free(wprinter);
+  if(FAILED(hr) || !hProvider)
+  {
+    dt_control_log(_("could not open print ticket provider"));
+    return FALSE;
+  }
+
+  gboolean ok = FALSE;
+  IStream *pStream = NULL;
+  hr = CreateStreamOnHGlobal(NULL, TRUE, &pStream);
+  if(SUCCEEDED(hr) && pStream)
+  {
+    hr = PTConvertDevModeToPrintTicket(hProvider,
+                                       ctx->cached_dm->dmSize
+                                         + ctx->cached_dm->dmDriverExtra,
+                                       (PDEVMODE)ctx->cached_dm,
+                                       kPTJobScope,
+                                       pStream);
+    if(SUCCEEDED(hr))
+    {
+      // pull the raw bytes out of the stream into a plain buffer —
+      // deliberately not handing the job an IStream/COM object, since
+      // the job runs on a different thread and shouldn't inherit any
+      // COM apartment or lifetime concerns from this one.
+      HGLOBAL hGlobal = NULL;
+      if(SUCCEEDED(GetHGlobalFromStream(pStream, &hGlobal)) && hGlobal)
+      {
+        SIZE_T size = GlobalSize(hGlobal);
+        void *src = GlobalLock(hGlobal);
+        if(src && size > 0)
+        {
+          void *buf = malloc(size);
+          if(buf)
+          {
+            memcpy(buf, src, size);
+            *out_data = buf;
+            *out_size = (size_t)size;
+            ok = TRUE;
+          }
+          GlobalUnlock(hGlobal);
+        }
+      }
+    }
+    else
+    {
+      dt_control_log(_("could not convert printer settings to print ticket"));
+    }
+    pStream->lpVtbl->Release(pStream);
+  }
+
+  PTCloseProvider(hProvider);
+  return ok;
+}
+#endif
 
 static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
@@ -736,6 +933,34 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     dt_control_log(_("cannot print until a paper is selected"));
     return;
   }
+#ifdef _WIN32
+  if(ps->settings_ctx && !ps->settings_ctx->settings_opened)
+  {
+    GtkWidget *toplevel = gtk_widget_get_toplevel(self->widget);
+    HWND hwnd_owner = NULL;
+    if(GTK_IS_WINDOW(toplevel)) 
+    {
+      GdkWindow *gdk_win = gtk_widget_get_window(toplevel);
+      if(gdk_win)
+        hwnd_owner = gdk_win32_window_get_handle(gdk_win);
+    }
+
+    gboolean updated = dt_win_open_printer_settings(ps->settings_ctx, hwnd_owner);
+    if(!updated)
+    {
+      dt_control_log(_("print cancelled (printer settings not confirmed)"));
+    }
+    else 
+    {
+      dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx); 
+      dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+    }
+    ps->settings_ctx->settings_opened = TRUE;
+
+    // schedule redraw on idle so it runs after dialog closes
+    g_idle_add(_redraw_later, self->widget);
+  }
+#endif
 
   dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
   if(!job) return;
@@ -745,6 +970,20 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
   memcpy(&params->prt,  &ps->prt, sizeof(dt_print_info_t));
   memcpy(&params->imgs, &ps->imgs, sizeof(ps->imgs));
+
+  #ifdef _WIN32
+  if(ps->settings_ctx)
+  {
+    if(!_win_build_print_ticket(ps->settings_ctx,
+                                &params->print_ticket_data,
+                                &params->print_ticket_size))
+    {
+      // not fatal — dt_win_print_file can fall back to driver
+      // defaults if print_ticket_data is NULL
+      dt_control_log(_("printing with default printer settings"));
+    }
+  }
+#endif
 
   // what to call the image?
   GList *res = dt_metadata_get_lock(imgid, "Xmp.dc.title", NULL);
@@ -838,17 +1077,103 @@ static void _set_printer(const dt_lib_module_t *self,
   if(!dt_bauhaus_combobox_set_from_text(ps->media, default_medium))
     dt_bauhaus_combobox_set(ps->media, 0);
 
+#ifdef _WIN32
+  // add corresponding supported resolutions (quality)
+  dt_bauhaus_combobox_clear(ps->quality);
+  if(ps->quality_list)
+    g_list_free_full(ps->quality_list, g_free);
+
+  ps->quality_list = dt_get_quality_list(ps->prt.printer.name);
+
+  int idx = 0, active = -1;
+  for(GList *l = ps->quality_list; l; l = l->next, idx++)
+  {
+    dt_win_quality_t *q = l->data;
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%d dpi", q->ydpi);
+    dt_bauhaus_combobox_add(ps->quality, buf);
+
+    if(q->ydpi == ps->prt.printer.resolution)
+      active = idx;
+  }
+
+  if(active >= 0)
+    dt_bauhaus_combobox_set(ps->quality, active);
+  else if(ps->quality_list)
+    dt_bauhaus_combobox_set(ps->quality, 0);
+#endif
+
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
-}
+#ifdef _WIN32
+  // free old context
+  if(ps->settings_ctx)
+    dt_win32_print_ctx_free(ps->settings_ctx);
+  // populate for this printer to settings_ctx for windows print dialog caching
+    ps->settings_ctx = dt_win32_print_ctx_new(&ps->prt);
+#endif
 
-static void
-_printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
+}
+//Callback when printer details are ready (Windows only)
+#ifdef _WIN32
+static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
 {
-  const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = self->data;
 
-  if(printer_name)
-    _set_printer (self, printer_name);
+  // What’s currently selected in the combo box?
+  const gchar *current = dt_bauhaus_combobox_get_text(self->widget);
+
+  if((ps->waiting_for_printer &&
+      g_strcmp0(ps->waiting_for_printer, pinfo->name) == 0) ||
+     (current && g_strcmp0(current, pinfo->name) == 0))
+  {
+    _set_printer(self, pinfo->name);
+    dt_conf_set_string("plugins/lighttable/print/printer", pinfo->name);
+
+    g_clear_pointer(&ps->waiting_for_printer, g_free);
+
+    // Re‑enable the combo box now that details are ready
+    gtk_widget_set_sensitive(ps->printer_combo, TRUE);
+    gtk_widget_set_sensitive(ps->papers_combo, TRUE);
+
+// Now force a GUI refresh of the module
+    if(self->gui_update)
+    {
+      self->gui_update(self);
+    }
+
+  }
 }
+#endif
+
+static void _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = self->data;
+  const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
+  if(!printer_name) return;
+
+#ifdef _WIN32
+  // Ask backend if details are ready
+  if(!dt_printer_details_valid(printer_name))
+  {
+    g_free(ps->waiting_for_printer);
+    ps->waiting_for_printer = g_strdup(printer_name);
+
+    // Disable combo box to prevent multiple overlapping jobs
+    gtk_widget_set_sensitive(ps->printer_combo, FALSE);
+    gtk_widget_set_sensitive(ps->papers_combo, FALSE);
+        // gtk_widget_set_sensitive(ps->papers_combo, FALSE);
+    dt_control_log(_("loading printer details for %s…"), printer_name);
+
+    return;
+  }
+#endif
+
+  // Default path (Linux, or Windows once details are valid)
+  _set_printer(self, printer_name);
+  dt_conf_set_string("plugins/lighttable/print/printer", printer_name);
+}
+
 
 static void
 _paper_changed(GtkWidget *combo, const dt_lib_module_t *self)
@@ -887,13 +1212,61 @@ _media_changed(GtkWidget *combo, const dt_lib_module_t *self)
   const dt_medium_info_t *medium = dt_get_medium(ps->media_list, medium_name);
 
   if(medium)
+  {
     memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
 
   dt_conf_set_string(PRINT_CONFIG_PREFIX "medium", medium_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
+    _update_slider(ps);
+  }
+  else
+  {
+    // No matching medium found: clear or fall back gracefully for NULL state
+    memset(&ps->prt.medium, 0, sizeof(dt_medium_info_t));
+    dt_bauhaus_combobox_set(ps->media, 0); // fallback to first entry if any
+  }
+}
 
+#ifdef _WIN32
+static void
+_quality_changed(GtkWidget *combo, const dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  // Get the selected index from the Bauhaus combo
+  int idx = dt_bauhaus_combobox_get(combo);
+  if(idx < 0) return;
+
+  // Look up the corresponding resolution struct in our cached list
+  GList *l = g_list_nth(ps->quality_list, idx);
+  if(l && l->data)
+  {
+    dt_win_quality_t *q = (dt_win_quality_t *)l->data;
+
+    // Update the print settings with the chosen resolution
+    ps->prt.printer.resolution = q->ydpi;
+
+    // Persist the choice so it’s remembered across sessions
+    dt_conf_set_int(PRINT_CONFIG_PREFIX "resolution", q->ydpi);
+
+    // Refresh the preview and any dependent controls
+    dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
   _update_slider(ps);
 }
+  else
+  {
+    // // Fallback: set to Darktable’s default resolution (300 dpi)
+    // ps->prt.printer.resolution = 300;
+    // dt_conf_set_int(PRINT_CONFIG_PREFIX "resolution", 300);
+
+    // Reset combo to first entry if available
+    if(ps->quality_list)
+      dt_bauhaus_combobox_set(ps->quality, 0);
+  }
+}
+#endif
+
+
 
 static void
 _update_slider(dt_lib_print_settings_t *ps)
@@ -1282,11 +1655,69 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   ps->v_iccprofile = g_strdup("");
 }
 
+#ifdef _WIN32
+/* Helper to rebuild the image/export profile combo on windows depending on driver
+or printer color management to prevent misinterpretation of color data within
+the printer driver which likely expects sRGB or AdobeRGB only. Still allow
+anything wider (ProPhoto, Rec2020, "image settings") when darktable is managing
+color through internal color management controls */
+static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
+                                         gboolean driver_managed)
+{
+  dt_bauhaus_combobox_clear(ps->profile);
+  int n = 0;
+  int srgb_pos = -1, adobergb_pos = -1;
+
+  if(!driver_managed)
+    dt_bauhaus_combobox_add(ps->profile, _("image settings"));
+  // pos 0 reserved for "image settings" in unrestricted mode;
+  // in driver-managed mode there is no pos 0 placeholder — first
+  // real entry starts the list.
+
+  for(GList *l = ps->profiles; l; l = g_list_next(l))
+  {
+    dt_lib_export_profile_t *prof = l->data;
+
+    if(driver_managed && prof->type != DT_COLORSPACE_SRGB
+       && prof->type != DT_COLORSPACE_ADOBERGB)
+      continue; // restricted list: skip everything else
+
+    dt_bauhaus_combobox_add(ps->profile, prof->name);
+    prof->pos = n++;
+    if(driver_managed)
+    {
+      if(prof->type == DT_COLORSPACE_SRGB)     srgb_pos = prof->pos;
+      if(prof->type == DT_COLORSPACE_ADOBERGB) adobergb_pos = prof->pos;
+    }
+  }
+
+  if(driver_managed)
+  {
+    // preserve AdobeRGB if that's already the selection; otherwise sRGB
+    const int target = (ps->v_icctype == DT_COLORSPACE_ADOBERGB && adobergb_pos >= 0)
+                          ? adobergb_pos : srgb_pos;
+    dt_bauhaus_combobox_set(ps->profile, target);
+    // fires _profile_changed, which updates ps->v_icctype/v_iccprofile
+    // and persists to conf — no separate assignment needed here
+  }
+  else
+  {
+    // per your decision: stateless reset, not a restore of prior selection
+    dt_bauhaus_combobox_set(ps->profile, 0); // "image settings"
+  }
+}
+#endif
+
 static void
 _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
+
+#ifdef _WIN32
+  _rebuild_image_profile_combo(ps, pos == 0); // triggers a limitation in image profiles to Windows printer driver typical supported profiles (sRGB, AdobeRGB)
+#endif
+
   for(const GList *prof = ps->profiles; prof; prof = g_list_next(prof))
   {
     dt_lib_export_profile_t *pp = prof->data;
@@ -2399,6 +2830,10 @@ void gui_init(dt_lib_module_t *self)
 
   d->paper_list = NULL;
   d->media_list = NULL;
+#ifdef _WIN32
+  d->quality_list = NULL;
+  d->settings_ctx = NULL;
+#endif
   d->unit = 0;
   d->width = d->height = NULL;
   d->v_piccprofile = NULL;
@@ -2418,6 +2853,10 @@ void gui_init(dt_lib_module_t *self)
   d->profiles = _get_profiles();
 
   d->imgs.motion_over = -1;
+
+  // Initialize the new async tracking field
+  d->waiting_for_printer = NULL;
+
 
   const char *str = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "unit");
   const char **names = _unit_names;
@@ -2503,7 +2942,21 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->media), "value-changed",
                    G_CALLBACK(_media_changed), self);
+#ifndef _WIN32
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
+#endif
+//
+// quality (windows only)
+#ifdef _WIN32
+  d->quality = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  d->quality_combo = d->quality;
+  dt_bauhaus_widget_set_label(d->quality, N_("printer"), N_("resolution"));
+  g_signal_connect(G_OBJECT(d->quality), "value-changed",
+                   G_CALLBACK(_quality_changed), self);
+  //gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->quality), TRUE, TRUE, 0); //Hidden for now, inclear if any windows drivers actually expose this
+#endif
+
+
 
   //  Add printer profile combo
 
@@ -2958,7 +3411,19 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(d->style_mode), is_style_set);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
 
-  _update_style_label(d, is_style_set ? current_style_name : "");
+  _update_style_label(d, current_style_name ? current_style_name : "");
+
+#ifdef _WIN32
+  GtkWidget *settings_button = dt_action_button_new(self, N_("print settings"),
+                                           _print_settings_button_clicked, self,
+                                           _("open printer settings"),
+                                           GDK_KEY_s, GDK_CONTROL_MASK);
+  d->print_settings_button = GTK_BUTTON(settings_button);
+  gtk_box_pack_start(GTK_BOX(self->widget), settings_button, TRUE, TRUE, 0);
+  // dt_gui_add_help_link(settings_button, "print_settings_button");
+#endif
+
+
 
   // Print button
 
@@ -2972,7 +3437,13 @@ void gui_init(dt_lib_module_t *self)
 
   // Let's start the printer discovery now
 
+#ifdef _WIN32
+  // Start discovery with both callbacks
+  dt_win_printers_discovery(_new_printer_callback, _printer_ready_cb, self);
+#else
+  // Linux path: just the discovery callback
   dt_printers_discovery(_new_printer_callback, self);
+#endif
 }
 
 void *legacy_params(dt_lib_module_t *self,
@@ -3475,6 +3946,17 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(ps->v_iccprofile);
   g_free(ps->v_piccprofile);
   g_free(ps->v_style);
+
+#ifdef _WIN32
+  g_list_free_full(ps->quality_list, free);
+  g_free(ps->waiting_for_printer);
+
+  if(ps->settings_ctx) 
+  {
+    dt_win32_print_ctx_free(ps->settings_ctx);
+    ps->settings_ctx = NULL;   // important!
+  }
+#endif
 
   free(self->data);
   self->data = NULL;
