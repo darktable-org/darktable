@@ -115,6 +115,11 @@ if(CUPS_FOUND)
   set(MODULES ${MODULES} print_settings)
 endif(CUPS_FOUND)
 
+if(WIN32)
+  add_library(print_settings MODULE "print_settings.c")
+  set(MODULES ${MODULES} print_settings)
+endif(WIN32)
+
 # AI neural restore module
 if(USE_AI)
   add_library(neural_restore MODULE "neural_restore.c")

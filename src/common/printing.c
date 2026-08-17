@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -328,8 +328,9 @@ void dt_printing_setup_image(dt_images_box *imgs,
   box->print.y      = box->pos.y * imgs->page_height;
   box->print.width  = box->pos.width * imgs->page_width;
   box->print.height = box->pos.height * imgs->page_height;
-
-  dt_image_pos pos;
+  
+  // Instantiate position structure to avoid compiler warning in MinGW_w64 for Windows
+  dt_image_pos pos = {0};
   _align_pos(&box->print, box->alignment, box->exp_width, box->exp_height, &pos);
 
   box->print.x = pos.x;

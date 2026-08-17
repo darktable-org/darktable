@@ -27,6 +27,11 @@ if(CUPS_FOUND)
     set(MODULES ${MODULES} print)
 endif(CUPS_FOUND)
 
+if(WIN32)
+    add_library(print MODULE "print.c")
+    set(MODULES ${MODULES} print)
+endif(WIN32)
+
 foreach(module ${MODULES})
     target_link_libraries(${module} lib_darktable)
 endforeach(module)
