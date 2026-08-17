@@ -281,6 +281,15 @@ void dt_ai_models_set_enabled(const char *model_id, gboolean enabled);
 char *dt_ai_models_get_active_for_task(const char *task);
 
 /**
+ * @brief A task identifier as it should be shown to the user
+ *
+ * @param task The task type (e.g. "mask", "denoise"), may be NULL
+ * @return Translated label, or `task` unchanged when it is not one of the
+ *         tasks darktable dispatches on; never NULL. Do not free.
+ */
+const char *dt_ai_task_label(const char *task);
+
+/**
  * @brief Get the version string of a model by ID.
  * @return Version string (e.g. "1.0"), or "0.0" if not set.
  *         Pointer valid until next registry refresh. Do not free.

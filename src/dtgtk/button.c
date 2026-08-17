@@ -18,6 +18,7 @@
 
 #include "button.h"
 #include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <string.h>
 
@@ -25,6 +26,38 @@ G_DEFINE_TYPE(GtkDarktableButton, dtgtk_button, GTK_TYPE_BUTTON)
 
 static void dtgtk_button_init(GtkDarktableButton *button)
 {
+}
+
+/* GTK3 synthesizes a fake enter crossing (GDK_CROSSING_GTK_UNGRAB) on every
+ * widget a grab was shadowing when that grab ends -- menus, popovers, modal
+ * dialogs, ... -- so the button's internal enter handler marks the pointer as
+ * inside and the button keeps its hover state even after the pointer has
+ * left.  The stale highlight then only clears on the next genuine crossing,
+ * which users see as a "sticky" hover after closing a menu or dialog.
+ * When a grab that shadowed the button ends, drop the stale hover/pressed
+ * flags unless the pointer really is over the button; genuine crossings
+ * re-add them as appropriate.
+ * GTK4 migration: delete this handler together with the rest of this file
+ * (GtkButton has no event window, gtk_container_add() is gone, ...); GTK4
+ * removed grabs, so no synthetic crossings exist and the bug disappears. */
+static void _dtgtk_button_grab_notify(GtkWidget *widget,
+                                      gboolean was_grabbed,
+                                      gpointer user_data)
+{
+  if(!was_grabbed || !gtk_widget_get_realized(widget)) return;
+
+  gint x, y;
+  gdk_window_get_device_position(gtk_widget_get_window(widget),
+                                 gdk_seat_get_pointer(
+                                   gdk_display_get_default_seat(gdk_display_get_default())),
+                                 &x, &y, NULL);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  if(x < allocation.x || y < allocation.y
+     || x >= allocation.x + allocation.width
+     || y >= allocation.y + allocation.height)
+    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT | GTK_STATE_FLAG_ACTIVE);
 }
 
 static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
@@ -124,7 +157,37 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint,
   gtk_container_add(GTK_CONTAINER(button), button->canvas);
   dt_gui_add_class(GTK_WIDGET(button), "dt_module_btn");
   gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
+  dtgtk_button_connect_stale_hover_cleanup(GTK_WIDGET(button));
   return (GtkWidget *)button;
+}
+
+GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,
+                                 gint paintflags,
+                                 void *paintdata,
+                                 const dtgtk_button_config_t *config)
+{
+  GtkWidget *button = dtgtk_button_new(paint, paintflags, paintdata);
+  if(!config) return button;
+  if(config->tooltip)
+    gtk_widget_set_tooltip_text(button, config->tooltip);
+  else if(config->tooltip_markup)
+    gtk_widget_set_tooltip_markup(button, config->tooltip_markup);
+  if(config->action)
+    dt_action_define(config->action, config->action_section,
+                     config->action_label, button, config->action_def);
+  if(config->clicked_cb)
+    /* g_signal_connect() is a type-checking macro that token-pastes the
+     * handler name, so the generic factory has to go through
+     * g_signal_connect_data() directly. */
+    g_signal_connect_data(G_OBJECT(button), "clicked", config->clicked_cb,
+                          config->clicked_data, NULL, (GConnectFlags) 0);
+  return button;
+}
+
+void dtgtk_button_connect_stale_hover_cleanup(GtkWidget *widget)
+{
+  g_signal_connect(G_OBJECT(widget), "grab-notify",
+                   G_CALLBACK(_dtgtk_button_grab_notify), NULL);
 }
 
 void dtgtk_button_set_paint(GtkDarktableButton *button,

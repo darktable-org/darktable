@@ -15,7 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <assert.h>
+
+#include "common/gdk_event_utils.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -38,6 +40,7 @@
 #include "iop/iop_api.h"
 #include "libs/colorpicker.h"
 
+
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 // special marker value for uninitialized (and thus invalid) levels.  Use this in preference
 // to NAN so that we can enable optimizations from -ffinite-math-only.
@@ -46,11 +49,11 @@
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
 static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
-static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self);
-static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self);
-static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self);
-static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self);
-static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self);
+static void dt_iop_levels_motion_notify(GtkEventControllerMotion *controller, gdouble x, gdouble y, dt_iop_module_t *self);
+static void dt_iop_levels_button_press(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self);
+static void dt_iop_levels_button_release(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self);
+static void dt_iop_levels_leave_notify(GtkEventControllerMotion *controller, dt_iop_module_t *self);
+static void dt_iop_levels_scroll(GtkEventControllerScroll *controller, gdouble dx, gdouble dy, dt_iop_module_t *self);
 static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self);
 //static void dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data);
 //static void dt_iop_levels_percentiles_callback(GtkWidget *slider, gpointer user_data);
@@ -636,11 +639,11 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("levels"), GTK_WIDGET(g->area), NULL);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_levels_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_levels_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
+  dt_gui_connect_click(g->area, dt_iop_levels_button_press, dt_iop_levels_button_release, self);
+  dt_gui_connect_motion(g->area, dt_iop_levels_motion_notify, NULL, dt_iop_levels_leave_notify, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        dt_iop_levels_scroll, self);
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
@@ -696,12 +699,11 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free(g->modes);
 }
 
-static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static void dt_iop_levels_leave_notify(GtkEventControllerMotion *controller, dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   g->mouse_x = g->mouse_y = -1.0;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -862,26 +864,27 @@ static void dt_iop_levels_move_handle(dt_iop_module_t *self, int handle_move, fl
   g->last_picked_color = -1;
 }
 
-static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static void dt_iop_levels_motion_notify(GtkEventControllerMotion *controller, gdouble x, gdouble y, dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   dt_iop_levels_params_t *p = self->params;
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!g->dragging)
   {
-    g->mouse_x = CLAMP(event->x - inset, 0, width);
+    g->mouse_x = CLAMP(x - inset, 0, width);
     g->drag_start_percentage = (p->levels[1] - p->levels[0]) / (p->levels[2] - p->levels[0]);
   }
-  g->mouse_y = CLAMP(event->y - inset, 0, height);
+  g->mouse_y = CLAMP(y - inset, 0, height);
 
   if(g->dragging)
   {
     if(g->handle_move >= 0 && g->handle_move < 3)
     {
-      const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
+      const float mx = (CLAMP(x - inset, 0, width)) / (float)width;
 
       dt_iop_levels_move_handle(self, g->handle_move, mx, p->levels, g->drag_start_percentage);
     }
@@ -890,7 +893,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   else
   {
     g->handle_move = 0;
-    const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+    const float mx = CLAMP(x - inset, 0, width) / (float)width;
     float dist = fabsf(p->levels[0] - mx);
     for(int k = 1; k < 3; k++)
     {
@@ -903,77 +906,63 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
     }
   }
   gtk_widget_queue_draw(widget);
-
-  return TRUE;
 }
 
-static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static void dt_iop_levels_button_press(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self)
 {
-  // set active point
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
+
+  if(n_press >= 2)
   {
-    if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
+    // Reset
+    dt_iop_levels_gui_data_t *g = self->gui_data;
+    memcpy(self->params, self->default_params, self->params_size);
 
-    if(event->type == GDK_2BUTTON_PRESS)
-    {
-      // Reset
-      dt_iop_levels_gui_data_t *g = self->gui_data;
-      memcpy(self->params, self->default_params, self->params_size);
-
-      // Needed in case the user scrolls or drags immediately after a reset,
-      // as drag_start_percentage is only updated when the mouse is moved.
-      g->drag_start_percentage = 0.5;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    }
-    else
-    {
-      dt_iop_levels_gui_data_t *g = self->gui_data;
-      g->dragging = 1;
-    }
-    return TRUE;
+    // Needed in case the user scrolls or drags immediately after a reset,
+    // as drag_start_percentage is only updated when the mouse is moved.
+    g->drag_start_percentage = 0.5;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  return FALSE;
-}
-
-static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  if(event->button == GDK_BUTTON_PRIMARY)
+  else
   {
     dt_iop_levels_gui_data_t *g = self->gui_data;
-    g->dragging = 0;
-    return TRUE;
+    g->dragging = 1;
   }
-  return FALSE;
 }
 
-static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
+static void dt_iop_levels_button_release(GtkGestureSingle *gesture, gint n_press, gdouble x, gdouble y, dt_iop_module_t *self)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  g->dragging = 0;
+}
+
+static void dt_iop_levels_scroll(GtkEventControllerScroll *controller, gdouble dx, gdouble dy, dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   dt_iop_levels_params_t *p = self->params;
-
-  if(dt_gui_ignore_scroll(event)) return FALSE;
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   dt_iop_color_picker_reset(self, TRUE);
 
   if(g->dragging)
-  {
-    return FALSE;
-  }
+    return;
 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state); // Distance moved for each scroll event
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dy != 0.0)
   {
-    float new_position = p->levels[g->handle_move] - interval * delta_y;
+    const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, dt_key_modifier_state());
+    float new_position = p->levels[g->handle_move] - interval * dy;
     dt_iop_levels_move_handle(self, g->handle_move, new_position, p->levels, g->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    return TRUE;
   }
-
-  return TRUE; // Ensure that scrolling the widget cannot move side panel
 }
 
 static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self)

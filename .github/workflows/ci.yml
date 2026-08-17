@@ -49,7 +49,7 @@ jobs:
 
   Linux:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Linux_${{ matrix.distro }}_${{ matrix.compiler.compiler }}_${{ matrix.btype }}
+    name: Linux_${{ matrix.distro }}_${{ matrix.compiler.compiler }}_${{ matrix.btype }}${{ matrix.name_suffix }}
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.distro }}
@@ -77,6 +77,16 @@ jobs:
             target: skiptest
             generator: Ninja
             eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
+          # The other entries use the skiptest target, which never configures
+          # BUILD_TESTING and so never even compiles the unit tests. This one
+          # builds them and runs ctest.
+          - distro: "ubuntu:26.04"
+            btype: Release
+            compiler: { compiler: GNU16, CC: gcc-16, CXX: g++-16, packages: gcc-16 g++-16 }
+            target: build
+            generator: Ninja
+            eco: -DDONT_USE_INTERNAL_LIBRAW=ON
+            name_suffix: _tests
     env:
       DISTRO: ${{ matrix.distro }}
       CC: ${{ matrix.compiler.CC }}
@@ -125,6 +135,7 @@ jobs:
             libatk1.0-dev \
             libavif-dev \
             libcairo2-dev \
+            libcmocka-dev \
             libcolord-dev \
             libcolord-gtk-dev \
             libcups2-dev \
@@ -168,7 +179,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: false
           path: src
@@ -281,7 +292,7 @@ jobs:
           update: true
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: false
           path: src
@@ -343,7 +354,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: false
           path: src
@@ -357,6 +368,9 @@ jobs:
           cd -
       - name: Install Base Dependencies
         run: |
+          # The GitHub runner images ship aws/tap, which Homebrew does not trust and
+          # thus warns about on every invocation. We don't use it, so drop it.
+          brew untap --force aws/tap || true
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1

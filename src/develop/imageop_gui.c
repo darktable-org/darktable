@@ -27,35 +27,12 @@
 #include "osx/osx.h"
 #endif
 
-#include <assert.h>
 #include <gmodule.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <time.h>
-
-typedef struct dt_module_param_t
-{
-  dt_iop_module_t *module;
-  void            *param;
-} dt_module_param_t;
-
-static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *data)
-{
-  DT_GUARD_GUI_UPDATE();
-
-  dt_iop_module_t *self = data->module;
-  gboolean *field = (gboolean*)(data->param);
-
-  gboolean previous = *field;
-  *field = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton));
-
-  if(*field != previous)
-  {
-    dt_iop_gui_changed(DT_ACTION(self), togglebutton, &previous);
-  }
-}
 
 static gchar *_iop_section_for_params(dt_iop_module_t *self)
 {
@@ -224,43 +201,59 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   gchar *section = _iop_section_for_params(self);
 
   dt_iop_params_t *p = self->params;
+  dt_iop_params_t *d = self->default_params;
   dt_introspection_field_t *f = self->get_f(param);
 
-  GtkWidget *button = NULL;
+  GtkWidget *toggle = dt_bauhaus_toggle_new(self);
   gchar *str = NULL;
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
   {
+    // the field has to be attached before the label is set: setting the
+    // label is what registers the widget as an action, and only widgets
+    // that already carry a field are collected for the automatic
+    // params-to-gui updates
+    dt_bauhaus_widget_set_field(toggle, (uint8_t *)p + f->header.offset,
+                                DT_INTROSPECTION_TYPE_BOOL);
+
     // we do not want to support a context as it break all translations see #5498
-    // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
     str = *f->header.description
         ? g_strdup(f->header.description)
         : dt_util_str_replace(param, "_", " ");
 
-    GtkWidget *label = gtk_label_new(_(str));
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    button = gtk_check_button_new();
-    gtk_container_add(GTK_CONTAINER(button), label);
-    dt_module_param_t *module_param = g_malloc(sizeof(dt_module_param_t));
-    module_param->module = self;
-    DT_IOP_SECTION_FOR_PARAMS_UNWIND(module_param->module);
-    module_param->param = (uint8_t *)p + f->header.offset;
-    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+    dt_bauhaus_widget_set_label(toggle, section, str);
 
-    dt_action_define_iop(module_param->module, section, str, button, &dt_action_def_toggle);
+    dt_bauhaus_toggle_set_default(toggle,
+                                  *(gboolean *)((uint8_t *)d + f->header.offset));
   }
   else
   {
     str = g_strdup_printf("'%s' is not a bool/togglebutton parameter", param);
 
-    button = gtk_check_button_new_with_label(str);
+    dt_bauhaus_widget_set_label(toggle, section, str);
   }
 
   g_free(str);
 
-  dt_gui_box_add(self->widget, button);
+  dt_gui_box_add(self->widget, toggle);
 
-  return button;
+  return toggle;
+}
+
+/* Claim the event sequence in CAPTURE phase so the togglebutton's
+ * internal GtkGestureMultiPress (GTK_PHASE_BUBBLE) does NOT process
+ * the event.  This prevents GtkButton from emitting "clicked" and
+ * toggling the button state behind our callback, which would conflict
+ * with callbacks that implement radio-button behaviour by explicitly
+ * managing all toggle states.
+ *
+ * GTK4 migration: the pattern is the same — just rename
+ * GtkGestureMultiPress to GtkGestureClick. */
+static void _gesture_begin_claim(GtkGesture *gesture,
+                                  GdkEventSequence *sequence,
+                                  gpointer user_data)
+{
+  gtk_gesture_set_sequence_state(gesture, sequence, GTK_EVENT_SEQUENCE_CLAIMED);
 }
 
 GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, const gchar *label, const gchar *ctrl_label,
@@ -268,7 +261,18 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
                                    DTGTKCairoPaintIconFunc paint, GtkWidget *box)
 {
   GtkWidget *w = dtgtk_togglebutton_new(paint, 0, NULL);
-  g_signal_connect_data(G_OBJECT(w), "button-press-event", callback, self, NULL, 0);
+  {
+    GtkGesture *gesture = gtk_gesture_multi_press_new(w);
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                               GTK_PHASE_CAPTURE);
+    dt_gui_add_controller(w, gesture);
+    g_signal_connect_data(gesture, "pressed", callback, self, NULL, 0);
+    g_signal_connect(gesture, "begin", G_CALLBACK(_gesture_begin_claim), NULL);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    /* shortcut activation routes through this gesture (DT_ACTION_GESTURE_KEY,
+     * see _action_process_toggle in accelerators.c) */
+    g_object_set_data(G_OBJECT(w), DT_ACTION_GESTURE_KEY, gesture);
+  }
 
   if(!ctrl_label)
     gtk_widget_set_tooltip_text(w, _(label));
@@ -295,8 +299,10 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   if(paint)
   {
-    button = dtgtk_button_new(paint, paintflags, NULL);
-    gtk_widget_set_tooltip_text(button, Q_(label));
+    button = dtgtk_button_new_full(paint, paintflags, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = Q_(label),
+      });
   }
   else
   {
@@ -339,4 +345,3 @@ GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

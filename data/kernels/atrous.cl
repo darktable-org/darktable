@@ -88,17 +88,6 @@ eaw_synthesize(__write_only image2d_t out,
 }
 
 __kernel void
-eaw_zero(__write_only image2d_t out,
-         const int width,
-         const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-  write_imagef(out, (int2)(x, y), (float4)0.0f);
-}
-
-__kernel void
 eaw_addbuffers(__write_only image2d_t out_out,
                __read_only image2d_t out_in,  
                __read_only image2d_t diff,

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/eaw.h"
@@ -198,7 +199,6 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_precondition;
   int kernel_denoiseprofile_precondition_v2;
   int kernel_denoiseprofile_precondition_Y0U0V0;
-  int kernel_denoiseprofile_init;
   int kernel_denoiseprofile_dist;
   int kernel_denoiseprofile_horiz;
   int kernel_denoiseprofile_vert;
@@ -2028,7 +2028,6 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
         .decimate = 0,
         .norm = norm2,
         .pipetype = piece->pipe->type,
-        .kernel_init = gd->kernel_denoiseprofile_init,
         .kernel_dist = gd->kernel_denoiseprofile_dist,
         .kernel_horiz = gd->kernel_denoiseprofile_horiz,
         .kernel_vert = gd->kernel_denoiseprofile_vert,
@@ -2080,8 +2079,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
   else
     vblocksize = 1;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_init, width, height,
-            CLARG(dev_U2), CLARG(width), CLARG(height));
+  err = dt_opencl_fill_buffer(devid, dev_U2, (size_t)width * height, 4, 0.0f);
   if(err != CL_SUCCESS) goto error;
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
@@ -2732,6 +2730,10 @@ void reload_defaults(dt_iop_module_t *self)
     }
     dt_bauhaus_combobox_set(g->profile, 0);
 
+    // depends on the image, unlike the other bool defaults set above
+    dt_bauhaus_toggle_set_default(g->compensate_hilite_pres,
+                                  d->compensate_hilite_pres);
+
     gui_update(self);
   }
 }
@@ -2748,8 +2750,6 @@ void init_global(dt_iop_module_so_t *self)
     dt_opencl_create_kernel(program, "denoiseprofile_precondition_v2");
   gd->kernel_denoiseprofile_precondition_Y0U0V0 =
     dt_opencl_create_kernel(program, "denoiseprofile_precondition_Y0U0V0");
-  gd->kernel_denoiseprofile_init =
-    dt_opencl_create_kernel(program, "denoiseprofile_init");
   gd->kernel_denoiseprofile_dist =
     dt_opencl_create_kernel(program, "denoiseprofile_dist");
   gd->kernel_denoiseprofile_horiz =
@@ -2783,7 +2783,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_iop_denoiseprofile_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition_v2);
-  dt_opencl_free_kernel(gd->kernel_denoiseprofile_init);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_dist);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_horiz);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_vert);
@@ -3115,14 +3114,14 @@ void gui_update(dt_iop_module_t *self)
     }
   }
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe),
-                               p->wb_adaptive_anscombe);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_pres), p->compensate_hilite_pres);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm),
-                               p->fix_anscombe_and_nlmeans_norm);
+  dt_bauhaus_toggle_set(g->wb_adaptive_anscombe,
+                        p->wb_adaptive_anscombe);
+  dt_bauhaus_toggle_set(g->compensate_hilite_pres, p->compensate_hilite_pres);
+  dt_bauhaus_toggle_set(g->fix_anscombe_and_nlmeans_norm,
+                        p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm,
                          !p->fix_anscombe_and_nlmeans_norm);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
+  dt_bauhaus_toggle_set(g->use_new_vst, p->use_new_vst);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
 
   const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
@@ -3399,8 +3398,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   // draw labels:
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size(desc, (.08 * height) * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
@@ -3443,18 +3441,20 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
-                                             GdkEventMotion *event,
-                                             dt_iop_module_t *self)
+static void denoiseprofile_motion_notify(GtkEventControllerMotion *controller,
+                                          gdouble x,
+                                          gdouble y,
+                                          dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   dt_iop_denoiseprofile_params_t *p = self->params;
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_IOP_DENOISE_PROFILE_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
   if(g->dragging)
   {
     *p = g->drag_params;
@@ -3471,16 +3471,22 @@ static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
     g->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean denoiseprofile_button_press(GtkWidget *widget,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *self)
+static void denoiseprofile_button_press(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   const int ch = g->channel;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+
+  if(n_press >= 2)
   {
     // reset current curve
     dt_iop_denoiseprofile_params_t *p = self->params;
@@ -3494,7 +3500,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else
   {
     g->drag_params = *(dt_iop_denoiseprofile_params_t *)self->params;
     const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -3503,57 +3509,56 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
     g->mouse_pick
         = dt_draw_curve_calc_value(g->transition_curve,
-                                   CLAMP(event->x - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+                                   CLAMP(x - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(y - inset, 0, height) / (float)height;
     g->dragging = 1;
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean denoiseprofile_button_release(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self)
+static void denoiseprofile_button_release(GtkGestureSingle *gesture,
+                                           gint n_press,
+                                           gdouble x,
+                                           gdouble y,
+                                           dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
-  {
-    dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
-    g->dragging = 0;
-    return TRUE;
-  }
-  return FALSE;
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  g->dragging = 0;
 }
 
-static gboolean denoiseprofile_leave_notify(GtkWidget *widget,
-                                            GdkEventCrossing *event,
-                                            dt_iop_module_t *self)
+static void denoiseprofile_leave_notify(GtkEventControllerMotion *controller,
+                                         dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
-static gboolean denoiseprofile_scrolled(GtkWidget *widget,
-                                        GdkEventScroll *event,
-                                        dt_iop_module_t *self)
+static void denoiseprofile_scrolled(GtkEventControllerScroll *controller,
+                                     gdouble dx,
+                                     gdouble dy,
+                                     dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
-  if(dt_modifier_is(event->state, GDK_MOD1_MASK))
-    return gtk_widget_event(GTK_WIDGET(g->channel > DT_DENOISE_PROFILE_B ? g->channel_tabs_Y0U0V0 : g->channel_tabs), (GdkEvent*)event);
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dt_modifier_eq(controller, GDK_MOD1_MASK))
   {
-    g->mouse_radius = CLAMP(g->mouse_radius * (1.f + 0.1f * delta_y),
-                            0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
-    gtk_widget_queue_draw(widget);
+    // alt+scroll switches the channel tab (as before the controller conversion)
+    dt_gui_forward_scroll(controller,
+                          GTK_WIDGET(g->channel > DT_DENOISE_PROFILE_B
+                                     ? g->channel_tabs_Y0U0V0
+                                     : g->channel_tabs));
+    return;
   }
 
-  return TRUE;
+  if(dy != 0.0)
+  {
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.f - 0.1f * dy),
+                            0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
+    gtk_widget_queue_draw(dt_gui_get_widget(controller));
+  }
 }
 
 static void denoiseprofile_tab_switch(GtkNotebook *notebook,
@@ -3633,16 +3638,11 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(denoiseprofile_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(denoiseprofile_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(denoiseprofile_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(denoiseprofile_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(denoiseprofile_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(denoiseprofile_scrolled), self);
+  dt_gui_connect_click(g->area, denoiseprofile_button_press, denoiseprofile_button_release, self);
+  dt_gui_connect_motion(g->area, denoiseprofile_motion_notify, NULL, denoiseprofile_leave_notify, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        denoiseprofile_scrolled, self);
 
   dt_gui_box_add(g->box_wavelets, g->channel_tabs, g->channel_tabs_Y0U0V0, g->area);
 

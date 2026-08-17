@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2025 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx,
                              char *filename,
                              const gboolean isauth);
 
-static size_t curl_write_data_cb(void *ptr,
+static size_t _curl_write_data_cb(void *ptr,
                                  const size_t size,
                                  const size_t nmemb,
                                  void *data)
@@ -289,7 +289,7 @@ static void _piwigo_free_account(void *data)
 
 static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
 {
-  if(!ui->accounts)
+  if(ui->accounts)
   {
     g_list_free_full(ui->accounts, _piwigo_free_account);
     ui->accounts = NULL;
@@ -407,7 +407,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx,
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1L);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
   if(isauth)
@@ -1129,10 +1129,12 @@ void gui_init(dt_imageio_module_storage_t *self)
                    G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
 
-  GtkWidget *refresh_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
-  gtk_widget_set_tooltip_text(refresh_button, _("refresh album list"));
-  g_signal_connect(G_OBJECT(refresh_button), "clicked",
-                   G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
+  GtkWidget *refresh_button = dtgtk_button_new_full(dtgtk_cairo_paint_refresh, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("refresh album list"),
+        .clicked_cb = G_CALLBACK(_piwigo_refresh_clicked),
+        .clicked_data = (gpointer)ui,
+      });
 
   // new album
   ui->new_album_entry = GTK_ENTRY(gtk_entry_new()); // Album title

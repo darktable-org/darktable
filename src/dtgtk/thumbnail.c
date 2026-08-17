@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1024,38 +1024,41 @@ static void _thumbs_show_overlays(dt_thumbnail_t *thumb)
   }
 }
 
-static gboolean _event_main_motion(GtkWidget *widget,
-                                   GdkEventMotion *event,
-                                   gpointer user_data)
+static void _event_main_motion_cb(GtkEventControllerMotion *controller,
+                                   gdouble x,
+                                   gdouble y,
+                                   dt_thumbnail_t *thumb)
 {
-  if(!user_data) return TRUE;
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(!thumb) return;
   // first, we hide the block overlays after a delay if the mouse hasn't move
   _thumbs_show_overlays(thumb);
 
   if(!thumb->mouse_over && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
-  return FALSE;
 }
 
-static gboolean _event_rating_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static void _event_rating_press_cb(GtkGestureSingle *gesture,
+                                    gint n_press,
+                                    gdouble x,
+                                    gdouble y,
+                                    dt_thumbnail_t *thumb)
 {
-  return TRUE;
+  // claims the click via the gesture
 }
 
-static gboolean _event_rating_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      gpointer user_data)
+static void _event_rating_release_cb(GtkGestureSingle *gesture,
+                                      gint n_press,
+                                      gdouble x,
+                                      gdouble y,
+                                      dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(thumb->disable_actions)
-    return FALSE;
+    return;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
-    return FALSE;
+    return;
 
-  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
+  if(!thumb->moved)
   {
     dt_view_image_over_t rating = DT_VIEW_DESERT;
     if(widget == thumb->w_reject)
@@ -1080,25 +1083,28 @@ static gboolean _event_rating_release(GtkWidget *widget,
                                  g_list_prepend(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
   }
-  return TRUE;
 }
 
-static gboolean _event_grouping_release(GtkWidget *widget,
-                                        GdkEventButton *event,
-                                        gpointer user_data)
+static void _event_grouping_release_cb(GtkGestureSingle *gesture,
+                                        gint n_press,
+                                        gdouble x,
+                                        gdouble y,
+                                        dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(thumb->disable_actions)
-    return FALSE;
+    return;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
-    return FALSE;
+    return;
 
-  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
+  if(!thumb->moved)
   {
+    const GdkModifierType state =
+      dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
     //TODO: will succeed if either or *both* of Shift and Control are
     //pressed.  Do we want this?
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK)
-       | dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, GDK_SHIFT_MASK)
+       | dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // just add the whole group to the selection. TODO: make this
       // also work for collapsed groups.
@@ -1130,20 +1136,21 @@ static gboolean _event_grouping_release(GtkWidget *widget,
                                DT_COLLECTION_PROP_UNDEF,
                                NULL);
   }
-  return FALSE;
 }
 
-static gboolean _event_audio_release(GtkWidget *widget,
-                                     GdkEventButton *event,
-                                     gpointer user_data)
+static void _event_audio_release_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   if(thumb->disable_actions)
-    return FALSE;
+    return;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
-    return FALSE;
+    return;
 
-  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
+  if(!thumb->moved)
   {
     gboolean start_audio = TRUE;
     if(darktable.view_manager->audio.audio_player_id != -1)
@@ -1159,7 +1166,6 @@ static gboolean _event_audio_release(GtkWidget *widget,
       dt_view_audio_start(darktable.view_manager, thumb->imgid);
     }
   }
-  return FALSE;
 }
 
 // this is called each time the images info change
@@ -1307,69 +1313,81 @@ static void _dt_mipmaps_updated_callback(gpointer instance,
   gtk_widget_queue_draw(thumb->w_main);
 }
 
-static gboolean _event_box_enter_leave(GtkWidget *widget,
-                                       GdkEventCrossing *event,
-                                       gpointer user_data)
+static void _event_box_enter_cb(GtkEventControllerMotion *controller,
+                                  gdouble x,
+                                  gdouble y,
+                                  dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
-  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+  if(!thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
-  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
-  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT,
-            (event->type == GDK_ENTER_NOTIFY));
-  return FALSE;
+  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
 }
 
-static gboolean _event_image_enter_leave(GtkWidget *widget,
-                                         GdkEventCrossing *event,
-                                         gpointer user_data)
+static void _event_box_leave_cb(GtkEventControllerMotion *controller,
+                                 dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
-  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, FALSE);
+}
+
+static void _event_image_enter_cb(GtkEventControllerMotion *controller,
+                                    gdouble x,
+                                    gdouble y,
+                                    dt_thumbnail_t *thumb)
+{
+  if(!thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
-  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT,
-            (event->type == GDK_ENTER_NOTIFY));
-  return FALSE;
+  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
 }
 
-static gboolean _event_btn_enter_leave(GtkWidget *widget,
-                                       GdkEventCrossing *event,
-                                       gpointer user_data)
+static void _event_image_leave_cb(GtkEventControllerMotion *controller,
+                                   dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-
-  if(event->type == GDK_ENTER_NOTIFY)
-  {
-    if(widget == thumb->w_reject)
-      darktable.control->element = DT_VIEW_REJECT;
-
-    if(thumb->disable_actions)
-      return TRUE;
-
-    if(!thumb->disable_mouseover)
-      dt_control_set_mouse_over_id(thumb->imgid);
-    _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
-    _thumb_update_tags_tooltip(thumb);
-  }
-  else if(event->type == GDK_LEAVE_NOTIFY)
-  {
-    if(widget == thumb->w_reject)
-      darktable.control->element = -1;
-  }
-
-  return FALSE;
+  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, FALSE);
 }
 
-static gboolean _event_star_enter(GtkWidget *widget,
-                                  GdkEventCrossing *event,
-                                  gpointer user_data)
+static void _event_btn_enter_cb(GtkEventControllerMotion *controller,
+                                  gdouble x,
+                                  gdouble y,
+                                  dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(thumb->disable_actions) return TRUE;
+  GtkWidget *widget = dt_gui_get_widget(controller);
+
+  if(widget == thumb->w_reject)
+    darktable.control->element = DT_VIEW_REJECT;
+
+  if(thumb->disable_actions)
+    return;
+
+  if(!thumb->disable_mouseover)
+    dt_control_set_mouse_over_id(thumb->imgid);
+  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  _thumb_update_tags_tooltip(thumb);
+}
+
+static void _event_btn_leave_cb(GtkEventControllerMotion *controller,
+                                 dt_thumbnail_t *thumb)
+{
+  GtkWidget *widget = dt_gui_get_widget(controller);
+
+  if(widget == thumb->w_reject)
+    darktable.control->element = -1;
+}
+
+static void _event_star_enter_cb(GtkEventControllerMotion *controller,
+                                   gdouble x,
+                                   gdouble y,
+                                   dt_thumbnail_t *thumb)
+{
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  if(thumb->disable_actions) return;
 
   if(!thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
@@ -1389,21 +1407,18 @@ static gboolean _event_star_enter(GtkWidget *widget,
       pre = FALSE;
     }
   }
-  return TRUE;
 }
-static gboolean _event_star_leave(GtkWidget *widget,
-                                  GdkEventCrossing *event,
-                                  gpointer user_data)
-{
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(thumb->disable_actions) return TRUE;
+static void _event_star_leave_cb(GtkEventControllerMotion *controller,
+                                  dt_thumbnail_t *thumb)
+{
+
+  if(thumb->disable_actions) return;
   for(int i = 0; i < MAX_STARS; i++)
   {
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_stars[i]);
   }
-  return TRUE;
 }
 
 // we only want to specify that the mouse is hovereing the thumbnail
@@ -1414,7 +1429,14 @@ static gboolean _event_main_drag_motion(GtkWidget *widget,
                                         const guint time,
                                         gpointer user_data)
 {
-  _event_main_motion(widget, NULL, user_data);
+  if(user_data)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+    _thumbs_show_overlays(thumb);
+
+    if(!thumb->mouse_over && !thumb->disable_mouseover)
+      dt_control_set_mouse_over_id(thumb->imgid);
+  }
   return TRUE;
 }
 
@@ -1475,14 +1497,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
 
     // the background
     thumb->w_back = gtk_event_box_new();
-    gtk_widget_set_events(thumb->w_back,
-                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                          | GDK_STRUCTURE_MASK
-                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_POINTER_MOTION_MASK);
     gtk_widget_set_name(thumb->w_back, "thumb-back");
-    g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event",
-                     G_CALLBACK(_event_main_motion), thumb);
+    dt_gui_connect_motion(thumb->w_back, _event_main_motion_cb, NULL, NULL, thumb);
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
@@ -1508,16 +1524,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     GtkWidget *evt_image = gtk_event_box_new();
     gtk_widget_set_valign(evt_image, GTK_ALIGN_FILL);
     gtk_widget_set_halign(evt_image, GTK_ALIGN_FILL);
-    gtk_widget_set_events(evt_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                          | GDK_STRUCTURE_MASK
-                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_POINTER_MOTION_MASK);
-    g_signal_connect(G_OBJECT(evt_image), "motion-notify-event",
-                     G_CALLBACK(_event_main_motion), thumb);
-    g_signal_connect(G_OBJECT(evt_image), "enter-notify-event",
-                     G_CALLBACK(_event_image_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(evt_image), "leave-notify-event",
-                     G_CALLBACK(_event_image_enter_leave), thumb);
+    dt_gui_connect_motion(evt_image, _event_main_motion_cb, _event_image_enter_cb, _event_image_leave_cb, thumb);
     gtk_widget_show(evt_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), evt_image);
     thumb->w_image = gtk_drawing_area_new();
@@ -1525,18 +1532,9 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
     // the size will be defined at the end, inside dt_thumbnail_resize
-    gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK
-                          | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_POINTER_MOTION_MASK);
     g_signal_connect(G_OBJECT(thumb->w_image), "draw",
                      G_CALLBACK(_event_image_draw), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event",
-                     G_CALLBACK(_event_main_motion), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event",
-                     G_CALLBACK(_event_image_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_image), "leave-notify-event",
-                     G_CALLBACK(_event_image_enter_leave), thumb);
+    dt_gui_connect_motion(thumb->w_image, _event_main_motion_cb, _event_image_enter_cb, _event_image_leave_cb, thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "style-updated",
                      G_CALLBACK(_event_image_style_updated), thumb);
     gtk_widget_show(thumb->w_image);
@@ -1560,12 +1558,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
     gtk_widget_set_name(thumb->w_bottom_eb, "thumb-bottom");
-    g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "enter-notify-event",
-                     G_CALLBACK(_event_box_enter_leave),
-                     thumb);
-    g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "leave-notify-event",
-                     G_CALLBACK(_event_box_enter_leave),
-                     thumb);
+    dt_gui_connect_motion(thumb->w_bottom_eb, NULL, _event_box_enter_cb, _event_box_leave_cb, thumb);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
@@ -1599,29 +1592,16 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_reject);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "button-press-event",
-                     G_CALLBACK(_event_rating_press), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event",
-                     G_CALLBACK(_event_rating_release), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_click(thumb->w_reject, _event_rating_press_cb, _event_rating_release_cb, thumb);
+    dt_gui_connect_motion(thumb->w_reject, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_reject);
 
     // the stars
     for(int i = 0; i < MAX_STARS; i++)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event",
-                       G_CALLBACK(_event_star_enter), thumb);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event",
-                       G_CALLBACK(_event_star_leave), thumb);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-press-event",
-                       G_CALLBACK(_event_rating_press), thumb);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-release-event",
-                       G_CALLBACK(_event_rating_release),
-                       thumb);
+      dt_gui_connect_click(thumb->w_stars[i], _event_rating_press_cb, _event_rating_release_cb, thumb);
+      dt_gui_connect_motion(thumb->w_stars[i], NULL, _event_star_enter_cb, _event_star_leave_cb, thumb);
       gtk_widget_set_name(thumb->w_stars[i], "thumb-star");
       dt_action_define(&darktable.control->actions_thumb, NULL, "rating",
                        thumb->w_stars[i], &dt_action_def_rating);
@@ -1640,10 +1620,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_color, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_color), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_color), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_motion(thumb->w_color, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_color);
 
     // the local copy indicator
@@ -1653,12 +1630,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_local_copy, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_local_copy), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave),
-                     thumb);
-    g_signal_connect(G_OBJECT(thumb->w_local_copy), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave),
-                     thumb);
+    dt_gui_connect_motion(thumb->w_local_copy, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_local_copy);
 
     // the altered icon
@@ -1667,10 +1639,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_altered, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_altered), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_altered), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_motion(thumb->w_altered, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_altered);
 
     // the tags icon
@@ -1679,21 +1648,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_tags, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_tags, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_tags, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_tags), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_tags), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_motion(thumb->w_tags, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_tags);
 
     // the group bouton
     thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, 0, NULL);
     gtk_widget_set_name(thumb->w_group, "thumb-group-audio");
-    g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event",
-                     G_CALLBACK(_event_grouping_release), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_group), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_group), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_click(thumb->w_group, _event_rating_press_cb, _event_grouping_release_cb, thumb);
+    dt_gui_connect_motion(thumb->w_group, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_group, TRUE);
@@ -1702,12 +1664,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     // the sound icon
     thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, 0, NULL);
     gtk_widget_set_name(thumb->w_audio, "thumb-group-audio");
-    g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event",
-                     G_CALLBACK(_event_audio_release), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_audio), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_audio), "leave-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_click(thumb->w_audio, _event_rating_press_cb, _event_audio_release_cb, thumb);
+    dt_gui_connect_motion(thumb->w_audio, NULL, _event_btn_enter_cb, _event_btn_leave_cb, thumb);
     gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_audio, TRUE);
@@ -1715,8 +1673,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
 
     // the zoom indicator
     thumb->w_zoom_eb = gtk_event_box_new();
-    g_signal_connect(G_OBJECT(thumb->w_zoom_eb), "enter-notify-event",
-                     G_CALLBACK(_event_btn_enter_leave), thumb);
+    dt_gui_connect_motion(thumb->w_zoom_eb, NULL, _event_btn_enter_cb, NULL, thumb);
     gtk_widget_set_name(thumb->w_zoom_eb, "thumb-zoom");
     gtk_widget_set_valign(thumb->w_zoom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_zoom_eb, GTK_ALIGN_START);
@@ -2468,12 +2425,15 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
      || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     _thumb_update_extended_infos_line(thumb);
 
-  // we read all other infos
+  // Always refresh the rating (and its greyed/rejected CSS class): when a
+  // thumbnail widget is reused for a different image while panning the
+  // zoomable lighttable, skipping this leaves the previous image's reject
+  // class in place and unrelated images look greyed out.  _image_get_infos()
+  // is safe when overlays are off -- it refreshes the rating and returns
+  // early -- only the on-screen overlay icons are gated on the overlay mode.
+  _image_get_infos(thumb);
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
-  {
-    _image_get_infos(thumb);
     _thumb_update_icons(thumb);
-  }
 
   _thumb_write_extension(thumb);
 

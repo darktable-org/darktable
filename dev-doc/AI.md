@@ -497,8 +497,9 @@ for each task, see **[AI_Tasks.md](AI_Tasks.md)**.
 The neural-restore consumer (denoise / upscale / rawdenoise) writes
 its output to a sibling file (TIFF or DNG), then auto-imports it via
 `_import_image` in `neural_restore.c`. The new image is grouped with
-its source and inherits the source's user-applied tags so the output
-shows up in tag-based collections that contained the source.
+its source and inherits the source's user-applied tags, rating, color
+labels, and other metadata so the output appears in any filtered views
+or collections where the source image does.
 
 ---
 

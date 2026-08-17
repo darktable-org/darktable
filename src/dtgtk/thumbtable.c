@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
 
 #include "dtgtk/thumbtable.h"
@@ -30,6 +31,7 @@
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
+#include "gui/gtk.h"
 #include "views/view.h"
 #include "bauhaus/bauhaus.h"
 
@@ -408,7 +410,11 @@ static gboolean _compute_sizes(dt_thumbtable_t *table,
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
+    // seed the continuous zoom from the slider the first time; afterwards the
+    // pinch/scroll gestures drive it directly
+    if(table->zoom <= 0.0f)
+      table->zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
+    table->zoom = CLAMP(table->zoom, 1.0f, DT_LIGHTTABLE_MAX_ZOOM);
 
     if(force
        || allocation.width != table->view_width
@@ -417,7 +423,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table,
       table->thumbs_per_row = DT_ZOOMABLE_NB_PER_ROW;
       table->view_width = allocation.width;
       table->view_height = allocation.height;
-      table->thumb_size = table->view_width / npr;
+      table->thumb_size = (int)roundf(table->view_width / table->zoom);
       table->rows = (table->view_height - table->thumbs_area.y) / table->thumb_size + 1;
       table->center_offset = 0;
       ret = TRUE;
@@ -834,7 +840,14 @@ static gboolean _move(dt_thumbtable_t *table,
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
+    // Persist the pan position as soon as it changes. Depending on the
+    // platform/backend a mouse drag may be reported as a gesture cancel
+    // rather than a real button release, so relying on the release handler
+    // alone can leave a stale last_pos behind and make the next redraw snap
+    // back to the pre-pan position.
     dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+    dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+    dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
   }
 
   // update scrollbars
@@ -860,8 +873,8 @@ static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table,
 
 // change zoom value for the zoomable thumbtable
 static void _zoomable_zoom(dt_thumbtable_t *table,
-                           const int oldzoom,
-                           const int newzoom)
+                           const float oldzoom,
+                           const float newzoom)
 {
   // nothing to do if thumbtable is empty
   if(!table->list)
@@ -884,7 +897,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     y = table->view_height / 2;
   }
 
-  const int new_size = table->view_width / newzoom;
+  const int new_size = (int)roundf(table->view_width / newzoom);
   const double ratio = (double)new_size / (double)table->thumb_size;
 
   // we get row/column numbers of the image under cursor
@@ -922,6 +935,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
 
   // we update table values
   table->thumb_size = new_size;
+  table->zoom = newzoom;
   _pos_compute_area(table);
 
   // we ensure there's still some visible thumbnails
@@ -969,7 +983,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
 
-  dt_view_lighttable_set_zoom(darktable.view_manager, newzoom);
+  dt_view_lighttable_set_zoom(darktable.view_manager, (gint)roundf(newzoom));
   gtk_widget_queue_draw(table->widget);
 }
 
@@ -1034,8 +1048,8 @@ static void _filemanager_zoom(dt_thumbtable_t *table,
 }
 
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
-                                const int oldzoom,
-                                const int newzoom)
+                                const float oldzoom,
+                                const float newzoom)
 {
   if(oldzoom == newzoom)
     return;
@@ -1045,7 +1059,7 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    _filemanager_zoom(table, oldzoom, newzoom);
+    _filemanager_zoom(table, (int)oldzoom, (int)newzoom);
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
@@ -1116,29 +1130,103 @@ static gboolean _event_scroll_compressed(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _event_scroll(GtkWidget *widget,
-                              GdkEvent *event,
-                              dt_thumbtable_t *table)
+/* touchpad pinch for the zoomable lighttable, via dt_gui_connect_pinch().
+ * The old GTK3-only "event" signal handler forwarded raw GDK_TOUCHPAD_PINCH
+ * events; GtkGestureZoom turns the phase field into the begin / update /
+ * end signals (and "end" fires on cancel as well), the same wiring the
+ * culling/lighttable views use. */
+static void _event_pinch(GtkGesture *gesture,
+                         const dt_gui_pinch_event_t *e,
+                         gpointer user_data)
 {
-  GdkEventScroll *e = (GdkEventScroll *)event;
-  int delta_x, delta_y;
+  dt_thumbtable_t *table = user_data;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return;
+
+  static float begin_zoom = 1.0f;
+
+  if(e->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    begin_zoom = (table->zoom > 0.0f) ? table->zoom
+                                      : dt_view_lighttable_get_zoom(darktable.view_manager);
+    return;
+  }
+
+  if(e->phase == GDK_TOUCHPAD_GESTURE_PHASE_END)
+  {
+    begin_zoom = 1.0f;
+    return;
+  }
+
+  if(e->phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
+    return;
+
+  // Anchor the pinch at the focal point so the zoom keeps the spot under the
+  // fingers stable and the pan delta is measured from there.
+  table->last_x = (int)e->x;
+  table->last_y = (int)e->y;
+  table->mouse_inside = TRUE;
+
+  // Combined pan component, mirroring the two-finger scroll pan (content
+  // moves against the finger motion) and the culling gesture_pinch.  This is
+  // what lets the user translate the grid without lifting their fingers.
+  if(e->dx != 0.0 || e->dy != 0.0)
+  {
+    const int pdx = (int)-roundf(e->dx);
+    const int pdy = (int)-roundf(e->dy);
+    if(pdx != 0 || pdy != 0)
+      _move(table, pdx, pdy, TRUE);
+  }
+
+  // Continuous zoom component.
+  if(e->scale <= 0.0)
+    return;
+
+  const float newzoom = CLAMP(begin_zoom / e->scale, 1.0f, DT_LIGHTTABLE_MAX_ZOOM);
+  dt_thumbtable_zoom_changed(table, table->zoom, newzoom);
+}
+
+static void _event_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx,
+                           gdouble dy,
+                           dt_thumbtable_t *table)
+{
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(!event) return;
+  const GdkEventScroll *e = (const GdkEventScroll *)event;
+  const GdkModifierType state = dt_gdk_event_get_state(event);
 
   // file manager can either scroll fractionally and smoothly for precision
   // touch pads, or in one-thumbnail increments for clicky scroll wheels,
   // except while control is held, as that indicates zooming
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
-      && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
+      && !dt_modifier_is(state, GDK_CONTROL_MASK))
   {
-    gdouble deltaf_x, deltaf_y;
+    gdouble deltaf = 0.f;
     gboolean did_scroll;
-    if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
+    if(dt_conf_get_bool("thumbtable_fractional_scrolling")
+       && dt_gdk_event_get_scroll_direction(e) == GDK_SCROLL_SMOOTH)
     {
-      did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
+      // pixel-precise scrolling for precision touch pads: use the raw
+      // platform deltas (scaled back up in _event_scroll_compressed), not
+      // the attenuated controller deltas, so movement tracks the finger
+      // 1:1 like the native scrollbars.  clicky wheels keep the
+      // row-by-row path below.
+      gdouble deltaf_x, deltaf_y;
+      did_scroll = dt_gui_get_scroll_deltas((const GdkEvent *)e, &deltaf_x, &deltaf_y);
+      if(did_scroll)
+      {
+        // file manager scroll: tilt right (delta_x > 0) or scroll down (delta_y > 0) -> down
+        deltaf = fabs(deltaf_x) > fabs(deltaf_y) ? deltaf_x : deltaf_y;
+      }
     }
     else
     {
-      did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
-      deltaf_y = (float)delta_y;
+      int delta_x, delta_y;
+      did_scroll = dt_gui_get_scroll_unit_deltas((const GdkEvent *)e, &delta_x, &delta_y);
+      if(did_scroll)
+      {
+        deltaf = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      }
     }
     if(did_scroll)
     {
@@ -1148,36 +1236,79 @@ static gboolean _event_scroll(GtkWidget *widget,
       {
         table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
       }
-      table->scroll_value += deltaf_y;
+      table->scroll_value += deltaf;
     }
-    // we stop here to avoid scrolledwindow to move
-    return TRUE;
+    // GTK3: owned copy from dt_gui_get_current_event() (see the same guard
+    // on the other free in this function); GTK4: borrowed, nothing to free
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(event);
+#endif
+    return;
+  }
+
+  // In zoomable mode a touchpad two-finger swipe pans the grid instead of
+  // zooming (pinch handles zoom). Mouse wheels and ctrl+scroll still zoom
+  // through the unit-delta path below.
+  if(table->mode == DT_THUMBTABLE_MODE_ZOOM
+     && dt_gui_scroll_should_pan((const GdkEvent *)e))
+  {
+    gdouble ddx = 0.0, ddy = 0.0;
+    if(dt_gui_get_scroll_deltas((const GdkEvent *)e, &ddx, &ddy)
+       && (ddx != 0.0 || ddy != 0.0))
+    {
+      const int pdx = (int)roundf(-ddx * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
+      const int pdy = (int)roundf(-ddy * DT_UI_SCROLL_SMOOTH_DELTA_SCALE);
+      if(pdx != 0 || pdy != 0)
+        _move(table, pdx, pdy, TRUE);
+    }
+    gdk_event_free(event);
+    return;
   }
 
   // filmstrip and zoom mode always use clicky scroll:
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  int delta_x, delta_y;
+
+  if(dt_gui_get_scroll_unit_deltas((const GdkEvent *)e, &delta_x, &delta_y))
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
-       || dt_modifier_is(e->state, GDK_CONTROL_MASK))
+       || dt_modifier_is(state, GDK_CONTROL_MASK))
     {
+      // zoom sign follows dt_gui_scroll_zoom_delta(): up, left-with-shift
+      // (a rotated wheel step) and right-without-shift (tilt/swipe) zoom in;
+      // keep the accumulated magnitude for the step size
+      const int dominant = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      const gboolean zoom_in =
+        dt_gui_scroll_zoom_delta((const GdkEvent *)e, delta_x, delta_y) > 0.0f;
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       {
-        const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + (delta_x+delta_y)) * 2 + 1),
+        const int delta = zoom_in ? -abs(dominant) : abs(dominant);
+        const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta) * 2 + 1),
                              dt_conf_get_int("min_panel_height"),
                              dt_conf_get_int("max_panel_height"));
         dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
       }
+      else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+      {
+        // continuous zoom: a wheel notch / smooth step moves the level by a
+        // fraction, keeping scroll consistent with the continuous pinch
+        const float delta = (zoom_in ? -1.0f : 1.0f) * (float)abs(dominant) * 0.25f;
+        const float new = CLAMP(table->zoom + delta, 1.0f, DT_LIGHTTABLE_MAX_ZOOM);
+        dt_thumbtable_zoom_changed(table, table->zoom, new);
+      }
       else
       {
+        const int delta = zoom_in ? -abs(dominant) : abs(dominant);
         const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
-        const int new = CLAMP(old + delta_y, 1, DT_LIGHTTABLE_MAX_ZOOM);
+        const int new = CLAMP(old + delta, 1, DT_LIGHTTABLE_MAX_ZOOM);
         dt_thumbtable_zoom_changed(table, old, new);
       }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      _move(table, -(delta_x+delta_y) * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
+      // filmstrip scroll: tilt right (delta_x >) 0 or scroll down (delta_y > 0) -> down (towards the last image)
+      const int delta = abs(delta_x) > abs(delta_y) ? delta_x : delta_y;
+      _move(table, -delta * (dt_modifier_is(state, GDK_SHIFT_MASK)
                   ? table->view_width - table->thumb_size
                   : table->thumb_size), 0, TRUE);
 
@@ -1187,8 +1318,9 @@ static gboolean _event_scroll(GtkWidget *widget,
         dt_control_set_mouse_over_id(th->imgid);
     }
   }
-  // we stop here to avoid scrolledwindow to move
-  return TRUE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_free(event);
+#endif
 }
 
 static void _line_to(cairo_t *cr,
@@ -1250,8 +1382,7 @@ static void _lighttable_expose_empty(cairo_t *cr,
   const float offy = height * 0.2f;
   const float offx = width * 0.05f;
   PangoLayout *layout = pango_cairo_create_layout(cr);
-  PangoFontDescription *desc =
-    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc = dt_gui_get_font();
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(20.0f) * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
@@ -1360,43 +1491,68 @@ static gboolean _event_draw(GtkWidget *widget,
   return FALSE; // let's propagate this event
 }
 
-static gboolean _event_leave_notify(GtkWidget *widget,
-                                    GdkEventCrossing *event,
-                                    dt_thumbtable_t *table)
+static void _event_leave_cb(GtkEventControllerMotion *controller,
+                              dt_thumbtable_t *table)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget))
   {
     table->mouse_inside = FALSE;
-    return FALSE;
+    return;
   }
 
-  // if we leave thumbtable in favour of an inferior (a thumbnail)
-  // it's not a real leave !  same if this is not a mouse move action
-  // (shortcut that activate a button for example)
-  if(event->detail == GDK_NOTIFY_INFERIOR
-     || event->mode == GDK_CROSSING_GTK_GRAB
-     || event->mode == GDK_CROSSING_GRAB)
-    return FALSE;
-
-  table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(NO_IMGID);
-  return TRUE;
+  /* Don't clear the mouse-over nor the inside-table state when leaving to a
+   * child widget (thumbnail), or while the pointer is grabbed: the shortcut
+   * machinery's synthetic crossings must not lose the hovered image nor
+   * mouse_inside (see #21729, #21745).
+   * GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    if(gdk_crossing_event_get_detail(event) != GDK_NOTIFY_INFERIOR
+       && gdk_crossing_event_get_mode(event) != GDK_CROSSING_GTK_GRAB
+       && gdk_crossing_event_get_mode(event) != GDK_CROSSING_GRAB
+       && !dt_gui_pointer_is_grabbed())
+#else
+    if(event->crossing.detail != GDK_NOTIFY_INFERIOR
+       && event->crossing.mode != GDK_CROSSING_GTK_GRAB
+       && event->crossing.mode != GDK_CROSSING_GRAB
+       && !dt_gui_pointer_is_grabbed())
+#endif
+    {
+      table->mouse_inside = FALSE;
+      dt_control_set_mouse_over_id(NO_IMGID);
+    }
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    gdk_event_free(event);
+#endif
+  }
 }
 
-static gboolean _event_enter_notify(GtkWidget *widget,
-                                    GdkEventCrossing *event,
-                                    dt_thumbtable_t *table)
+static void _event_enter_cb(GtkEventControllerMotion *controller,
+                              gdouble x,
+                              gdouble y,
+                              dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
 
-  // we only handle the case where we enter thumbtable from an inferior (a thumbnail)
-  // this is when the mouse enter an "empty" area of thumbtable
-  if(event->detail != GDK_NOTIFY_INFERIOR)
-    return FALSE;
+  table->mouse_inside = TRUE;
 
-  dt_control_set_mouse_over_id(NO_IMGID);
-  return TRUE;
+  /* The pointer entered the thumbtable area (from a thumbnail, a panel, or
+   * after a redraw of the table).  Clear the mouse-over only if the pointer
+   * landed on the table itself; if it landed on a thumbnail, the thumbnail's
+   * own enter handler sets it.  Hit-testing the pointer instead of trusting
+   * the crossing detail is required: redraws under the pointer make GDK
+   * report VIRTUAL/NONLINEAR details instead of INFERIOR, which would
+   * otherwise leave a stale hovered image (see #21729). */
+  /* GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+  if(!dt_gui_pointer_is_grabbed()
+     && !_thumb_get_at_pos(table, (int)x, (int)y))
+    dt_control_set_mouse_over_id(NO_IMGID);
 }
 
 static gboolean _do_select_single(gpointer user_data)
@@ -1412,25 +1568,28 @@ static gboolean _do_select_single(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _event_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    dt_thumbtable_t *table)
+static void _event_button_press_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
 
+  const guint button = gtk_gesture_single_get_current_button(gesture);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY)
+  if(button == GDK_BUTTON_PRIMARY && n_press == 2)
   {
-    //  double-click
-    if(event->type == GDK_2BUTTON_PRESS)
+    // double-click
+    if(dt_is_valid_imgid(id))
     {
       switch(table->mode)
       {
         case DT_THUMBTABLE_MODE_FILEMANAGER:
         case DT_THUMBTABLE_MODE_ZOOM:
           dt_view_manager_switch(darktable.view_manager, "darkroom");
-          break;
+          return;
 
         case DT_THUMBTABLE_MODE_FILMSTRIP:
           if(dt_view_get_current() == DT_VIEW_DARKROOM)
@@ -1440,35 +1599,34 @@ static gboolean _event_button_press(GtkWidget *widget,
               g_source_remove(table->sel_single_cb);
               table->sel_single_cb = 0;
             }
-            // disable next BUTTON_RELEASE event (see _event_motion_release)
+            // disable next BUTTON_RELEASE event
             table->to_selid = -1;
             // unselect currently edited picture, select new one
             dt_selection_deselect(darktable.selection,
                                   darktable.develop->image_storage.id);
             dt_selection_select(darktable.selection, id);
             DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
-            return FALSE;
+            return;
           }
         default:
           break;
       }
     }
-
-    if(event->type == GDK_BUTTON_PRESS
-       && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-      return FALSE;
   }
 
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
+  if(button == GDK_BUTTON_PRIMARY && n_press == 1
+     && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    return;
+
+  if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   }
 
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM
-     && !dt_is_valid_imgid(id)
-     && event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_BUTTON_PRESS)
+  if(button == GDK_BUTTON_PRIMARY && n_press == 1
+     && table->mode != DT_THUMBTABLE_MODE_ZOOM
+     && !dt_is_valid_imgid(id))
   {
     const dt_view_type_flags_t cv = dt_view_get_current();
 
@@ -1484,65 +1642,98 @@ static gboolean _event_button_press(GtkWidget *widget,
                           darktable.develop->image_storage.id);
     }
 
-    PangoRectangle *button = &table->manual_button;
-    if(event->x < button->x && event->x > button->x - button->width
-       && event->y < button->y && event->y > button->y - button->height)
+    PangoRectangle *button_rect = &table->manual_button;
+    if(x < button_rect->x && x > button_rect->x - button_rect->width
+       && y < button_rect->y && y > button_rect->y - button_rect->height)
     {
       dt_gui_show_help(NULL);
     }
 
-    return TRUE;
+    return;
   }
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
-    return TRUE;
+    return;
 
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
+  if(button == GDK_BUTTON_PRIMARY && n_press == 1)
   {
+    // Anchor the pan at the pointer position where the press landed.  Motion
+    // over thumbnails is delivered to the child thumbnails rather than to
+    // this motion controller, so last_x/y can be left pointing at the
+    // previous gesture when a drag starts on top of a thumbnail; using that
+    // stale position would make the first motion jump by the gap between the
+    // two (see #21826).
+    GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(gesture));
+    gdouble rx = 0, ry = 0;
+    if(event) dt_gui_get_event_coords(event, &rx, &ry);
+    table->last_x = ceil(rx);
+    table->last_y = ceil(ry);
+
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
     table->drag_initial_imgid = id;
     table->drag_thumb = _thumbtable_get_thumb(table, id);
     if(table->drag_thumb)
       table->drag_thumb->moved = FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
   }
-  return TRUE;
 }
 
-static gboolean _event_motion_notify(GtkWidget *widget,
-                                     GdkEventMotion *event,
-                                     dt_thumbtable_t *table)
+static void _event_motion_notify_cb(GtkEventControllerMotion *controller,
+                                      gdouble x,
+                                      gdouble y,
+                                      dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
 
   table->mouse_inside = TRUE;
 
-  gboolean ret = FALSE;
+  /* The pointer is over the table itself (not a thumbnail): make sure no
+   * stale image stays hovered.  The enter/leave crossings cannot be relied
+   * on here -- redraws under the pointer make GDK miss the crossing from a
+   * thumbnail into the table area (see #21729).
+   * GTK4 migration: drop the pointer-grab check (see
+   * dt_gui_pointer_is_grabbed()) -- GTK4 has no grabs. */
+  if(!table->dragging
+     && !dt_gui_pointer_is_grabbed()
+     && !_thumb_get_at_pos(table, (int)x, (int)y))
+    dt_control_set_mouse_over_id(NO_IMGID);
+
+  // get root coordinates for drag tracking
+  gdouble root_x = 0, root_y = 0;
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
+
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    const int dx = ceil(event->x_root) - table->last_x;
-    const int dy = ceil(event->y_root) - table->last_y;
+    const int dx = ceil(root_x) - table->last_x;
+    const int dy = ceil(root_y) - table->last_y;
     _move(table, dx, dy, TRUE);
     table->drag_dx += dx;
     table->drag_dy += dy;
     if(table->drag_thumb && !table->drag_thumb->moved)
     {
-      // we only considers that this is a real move if the total
+      // we only consider that this is a real move if the total
       // distance is not too low
       table->drag_thumb->moved =
         ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
     }
-    ret = TRUE;
   }
 
-  table->last_x = ceil(event->x_root);
-  table->last_y = ceil(event->y_root);
-  return ret;
+  table->last_x = ceil(root_x);
+  table->last_y = ceil(root_y);
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
 }
 
-static gboolean _event_button_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      dt_thumbtable_t *table)
+static void _event_button_release_cb(GtkGestureSingle *gesture,
+                                       gint n_press,
+                                       gdouble x,
+                                       gdouble y,
+                                       dt_thumbtable_t *table)
 {
   // we select only in LIGHTTABLE, DARKROOM & MAP mode
   const dt_view_type_flags_t cv = dt_view_get_current();
@@ -1551,21 +1742,37 @@ static gboolean _event_button_release(GtkWidget *widget,
      && cv != DT_VIEW_LIGHTTABLE
      && cv != DT_VIEW_MAP
      && cv != DT_VIEW_PRINT)
-    return FALSE;
+    return;
+
+  /* A gesture cancel is relayed to this handler so widgets can clean up
+   * their pressed state, but it is not a click: cancels can also fire for
+   * a long-dead press while merely hovering (issue #21813 -- the thumbtable
+   * re-selected the hovered image).  Only a real GDK button release may
+   * select/toggle, exactly like the pre-gesture button-release-event
+   * handler. */
+  GdkEvent *release_event = gtk_get_current_event();
+  const gboolean cancel = !release_event || release_event->type != GDK_BUTTON_RELEASE;
+  gdk_event_free(release_event);
+  if(cancel) return;
 
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+
   if(dt_is_valid_imgid(id)
-     && event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_BUTTON_RELEASE)
+     && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK)
-       || dt_modifier_is(event->state, GDK_MOD2_MASK)) // CMD key on macOS
+    /* the keyboard cursor continues from the image we clicked on */
+    table->key_pos = id;
+
+    if(dt_modifier_is(state, GDK_CONTROL_MASK)
+       || dt_modifier_is(state, GDK_MOD2_MASK)) // CMD key on macOS
     {
       dt_selection_toggle(darktable.selection, id);
     }
-    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       dt_selection_select_range(darktable.selection, id);
     }
@@ -1587,7 +1794,8 @@ static gboolean _event_button_release(GtkWidget *widget,
           }
           else
           {
-            GtkSettings *settings = gtk_widget_get_settings(GTK_WIDGET (widget));
+            GtkWidget *w = dt_gui_get_widget(gesture);
+            GtkSettings *settings = gtk_widget_get_settings(GTK_WIDGET(w));
             guint double_click_time = 400;
 
             if(settings)
@@ -1616,7 +1824,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   //  Left now if not in zoom mode
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
-    return TRUE;
+    return;
 
   // in some case, image_over_id can get out of sync at the end of dragging
   // this happen esp. if the pointer as been out of the center area during drag
@@ -1647,7 +1855,6 @@ static gboolean _event_button_release(GtkWidget *widget,
   // we register the position
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
-  return TRUE;
 }
 
 // set scrollbars visibility
@@ -2083,7 +2290,9 @@ static void _dt_collection_changed_callback(gpointer instance,
       if(tmpoff != table->offset_imgid)
       {
         old_offset = table->offset_imgid;
-        table->offset = _thumb_get_rowid(tmpoff);
+        const int active_rowid = _thumb_get_rowid(tmpoff);
+        if(active_rowid > 0)
+          table->offset = active_rowid;
         table->offset_imgid = tmpoff;
         dt_thumbtable_full_redraw(table, TRUE);
       }
@@ -2552,14 +2761,27 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_free(cl);
 
   table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/collect/history_pos0"));
+  table->key_pos = NO_IMGID;
 
   // set widget signals
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK3: event controllers don't request input events from GDK -- the
+   * motion controller's event mask is 0 and gestures only request touch
+   * events -- so the widget must keep its own event mask or it never
+   * receives enter/leave/motion/button events at all (the GtkLayout bin
+   * window only adds exposure/scroll masks on top of this).  Without
+   * them, hover tracking (mouse_inside / mouse_over_id) breaks in the
+   * culling and file-manager layouts, and clicks on empty areas are
+   * dropped.
+   * GTK4 migration: delete this call -- GTK4 delivers all input events
+   * to every widget automatically. */
   gtk_widget_set_events(table->widget,
                         GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_STRUCTURE_MASK
                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gtk_widget_set_app_paintable(table->widget, TRUE);
+#endif
+  dt_gui_add_class(table->widget, "dt_transparent_background");
   gtk_widget_set_can_focus(table->widget, TRUE);
 
   // drag and drop : used for reordering, interactions with maps,
@@ -2577,20 +2799,29 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(table->widget, "drag-data-received",
                    G_CALLBACK(dt_thumbtable_event_dnd_received), table);
 
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
-                   G_CALLBACK(_event_scroll), table);
+  dt_gui_connect_scroll(table->widget, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
+                        _event_scroll, table);
+  dt_gui_connect_pinch(table->widget, _event_pinch, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
-  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event",
-                   G_CALLBACK(_event_leave_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
-                   G_CALLBACK(_event_enter_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-press-event",
-                   G_CALLBACK(_event_button_press), table);
-  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
-                   G_CALLBACK(_event_motion_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-release-event",
-                   G_CALLBACK(_event_button_release), table);
+  GtkEventController *motion_controller =
+    dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
+  /* The padding around a thumbnail's image is covered by an event box with
+   * its own window, so motion there targets that event box and never
+   * reaches a TARGET-phase controller on the table.  Run in the BUBBLE
+   * phase so the table sees motion bubbling up from the thumbnails and can
+   * pan even when the drag starts on the letterboxing padding
+   * (see #21826). */
+  gtk_event_controller_set_propagation_phase(motion_controller, GTK_PHASE_BUBBLE);
+  GtkGestureSingle *click_gesture =
+    dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
+  /* The thumbnail widgets (in particular the event box covering the area
+   * around the image surface) consume button presses, so a bubble-phase
+   * click on a thumbnail would never reach the table.  Run the click in the
+   * capture phase so the zoomable lighttable can start panning from a press
+   * on any part of a thumbnail, including its letterboxing padding
+   * (see #21826). */
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(click_gesture), GTK_PHASE_CAPTURE);
 
   // we register globals signals
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,
@@ -2681,6 +2912,15 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     {
       // in filemanager, we need to take care of the center offset
       posx = table->center_offset;
+
+      // keep partial first-row scroll across forced redraws
+      // (rating/colorlabel → collection RELOAD)
+      if(table->thumb_size > 0)
+      {
+        posy = table->thumbs_area.y % table->thumb_size;
+        // cover the viewport when the first row is only partly shown
+        table->rows = (table->view_height - posy) / table->thumb_size + 1;
+      }
 
       // ensure that the overall layout doesn't change
       // (i.e. we don't get empty spaces in the very first row)
@@ -3290,17 +3530,42 @@ gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table,
   return FALSE;
 }
 
+// get the image the keyboard navigation should continue from: the last image
+// the keyboard navigated to (key_pos), falling back to the last single-selected
+// image, then the mouse hover -- so a stationary mouse cannot move the keyboard
+// cursor
+static dt_imgid_t _thumb_key_base(dt_thumbtable_t *table)
+{
+  const dt_imgid_t keyid = table->key_pos;
+  const dt_imgid_t selid = dt_selection_get_last_single_id(darktable.selection);
+  return dt_is_valid_imgid(keyid) && _thumb_get_rowid(keyid) > 0 ? keyid
+       : dt_is_valid_imgid(selid) && _thumb_get_rowid(selid) > 0 ? selid
+       : dt_control_get_mouse_over_id();
+}
+
+// move the selection to imgid (plain navigation) or extend it from the fixed
+// anchor (shift navigation), keeping the keyboard cursor on it
+static void _thumb_key_select(dt_thumbtable_t *table,
+                              const dt_imgid_t imgid,
+                              const gboolean select)
+{
+  if(!dt_is_valid_imgid(imgid)) return;
+  if(select)
+    dt_selection_select_range(darktable.selection, imgid);
+  else
+    dt_selection_select_single(darktable.selection, imgid);
+  table->key_pos = imgid;
+}
+
 static gboolean _filemanager_key_move(dt_thumbtable_t *table,
                                       const dt_thumbtable_move_t move,
                                       const gboolean select)
 {
-  // base point
-  dt_imgid_t baseid = dt_control_get_mouse_over_id();
+  /* the keyboard cursor is anchored on the real selection, not the mouse
+   * hover */
+  dt_imgid_t baseid = _thumb_key_base(table);
   const gboolean first_move = (baseid <= 0);
   int newrowid = -1;
-  // let's be sure that the current image is selected
-  if(dt_is_valid_imgid(baseid) && select)
-    dt_selection_select(darktable.selection, baseid);
 
   int baserowid = 1;
 
@@ -3383,9 +3648,8 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table,
   if(newrowid != -1)
     _filemanager_ensure_rowid_visibility(table, newrowid);
 
-  // if needed, we set the selection
-  if(select && dt_is_valid_imgid(imgid))
-    dt_selection_select_range(darktable.selection, imgid);
+  // move the selection with the keyboard
+  _thumb_key_select(table, imgid, select);
   return TRUE;
 }
 
@@ -3393,11 +3657,6 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
                                    const dt_thumbtable_move_t move,
                                    const gboolean select)
 {
-  // let's be sure that the current image is selected
-  const dt_imgid_t baseid = dt_control_get_mouse_over_id();
-  if(dt_is_valid_imgid(baseid) && select)
-    dt_selection_select(darktable.selection, baseid);
-
   // first, we move the view by 1 thumb_size
   // move step
   const int step = table->thumb_size;
@@ -3446,10 +3705,11 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
   // and we set mouseover if we can
   dt_thumbnail_t *thumb = _thumb_get_under_mouse(table);
   if(thumb)
+  {
     dt_control_set_mouse_over_id(thumb->imgid);
-  // if needed, we set the selection
-  if(thumb && select)
-    dt_selection_select_range(darktable.selection, thumb->imgid);
+    // move the selection with the keyboard
+    _thumb_key_select(table, thumb->imgid, select);
+  }
 
   // and we record new positions values
   const dt_thumbnail_t *first = table->list->data;

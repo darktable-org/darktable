@@ -427,12 +427,16 @@ dt_restore_context_t *dt_restore_load_denoise(dt_restore_env_t *env)
 
 dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img)
 {
-  if(!img || !(img->flags & DT_IMAGE_RAW))
+  if(!img || !(img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW)))
     return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
   if(img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER))
     return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
   if(img->flags & DT_IMAGE_4BAYER)
     return DT_RESTORE_SENSOR_CLASS_LINEAR;
+  // legacy Fuji Super CCD: diamond-in-square CFA layout that neither
+  // path can process correctly; marker set by rawspeed's `fuji_rotate`
+  if(img->fuji_rotation_pos != 0)
+    return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
   const uint32_t filters = img->buf_dsc.filters;
   if(filters == 9u) return DT_RESTORE_SENSOR_CLASS_XTRANS;
   if(filters != 0u) return DT_RESTORE_SENSOR_CLASS_BAYER;

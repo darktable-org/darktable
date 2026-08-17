@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/calculator.h"
@@ -87,6 +88,13 @@ typedef struct dt_bauhaus_combobox_data_t
   dt_bauhaus_combobox_entry_select_fct entry_select; // function to select an entry based on context
 } dt_bauhaus_combobox_data_t;
 
+// data portion for a toggle
+typedef struct dt_bauhaus_toggle_data_t
+{
+  gboolean active;  // current value
+  gboolean defpos;  // default value
+} dt_bauhaus_toggle_data_t;
+
 struct _DtBauhausWidget
 {
   // gtk base widget
@@ -103,6 +111,8 @@ struct _DtBauhausWidget
   // label text, short
   char *label;
   gboolean show_label;
+  // how the label is shortened when it does not fit
+  PangoEllipsizeMode label_ellipsis;
   // section, short
   gchar *section;
   gboolean show_extended_label;
@@ -129,6 +139,7 @@ struct _DtBauhausWidget
   {
     dt_bauhaus_slider_data_t slider;
     dt_bauhaus_combobox_data_t combobox;
+    dt_bauhaus_toggle_data_t toggle;
   };
 };
 
@@ -148,6 +159,7 @@ enum
 };
 
 static const dt_action_def_t _action_def_slider, _action_def_combo,
+                             _action_def_toggle,
                              _action_def_focus_slider, _action_def_focus_combo,
                              _action_def_focus_button;
 
@@ -159,12 +171,22 @@ static double INNER_PADDING = 4.0;
 static void _popup_reject(void);
 static void _popup_hide(void);
 static gboolean _popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
-static gboolean _popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+static void _window_motion_handle(GtkWidget *widget,
+                                    gdouble root_x,
+                                    gdouble root_y,
+                                    GdkModifierType state);
+static gboolean _popup_key_press(GtkEventControllerKey *controller,
+                                  guint keyval,
+                                  guint keycode,
+                                  GdkModifierType state,
+                                  gpointer user_data);
 static void _combobox_set(dt_bauhaus_widget_t *w,
                           const int pos,
                           const gboolean mute);
 static void _slider_set_normalized(dt_bauhaus_widget_t *w,
                                    const float pos);
+static void _toggle_set(dt_bauhaus_widget_t *w,
+                        const gboolean active);
 
 static void _request_focus(dt_bauhaus_widget_t *w)
 {
@@ -503,20 +525,30 @@ static void _slider_zoom_toast(dt_bauhaus_widget_t *w)
   g_free(max_text);
 }
 
-static gboolean _popup_scroll(GtkWidget *widget,
-                              GdkEventScroll *event,
+static void _popup_scroll_cb(GtkEventControllerScroll *controller,
+                              gdouble dx,
+                              gdouble dy,
                               gpointer user_data)
 {
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
-  int delta_y = 0;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(w->type == DT_BAUHAUS_COMBOBOX)
   {
-    if(w->type == DT_BAUHAUS_COMBOBOX)
-      _combobox_next_sensitive(w, delta_y, 0, w->combobox.mute_scrolling);
-    else
-      _slider_zoom_range(w, delta_y);
+    // match keyboard: right & down -> next
+    // the DISCRETE scroll proxy already accumulated smooth deltas into unit
+    // steps, so dx/dy are integer steps here.
+    const int delta = fabs(dx) > fabs(dy) ? (int)dx : (int)dy;
+    if(delta != 0)
+      _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
   }
-  return TRUE;
+  else
+  {
+    // only zoom the range on a real scroll step: delta == 0 means no unit
+    // was accumulated yet and must NOT trigger the "reset zoom range"
+    // branch of _slider_zoom_range() (the middle-click action).
+    const int delta = (int)dy;
+    if(delta != 0)
+      _slider_zoom_range(w, delta);
+  }
 }
 
 static void _window_moved_to_rect(GdkWindow *window,
@@ -544,12 +576,19 @@ static void _window_position(const int offset)
       pop->offcut += offset;
       return;
     }
-    gtk_widget_set_app_paintable(pop->window, TRUE);
-    GdkScreen *screen = gtk_widget_get_screen(pop->window);
-    GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
     pop->offcut = -height;
     height *= 2;
+    // In GTK4 all visuals are RGBA and GdkVisual/GdkScreen no longer exist.
+    // The RGBA visual setup below is only needed on GTK3 Wayland where
+    // gdk_screen_is_composited() returns TRUE but popups would otherwise be
+    // opaque. At switch time the entire Wayland workaround block must be
+    // reworked (GdkWindow -> GdkSurface, gdk_window_resize removed, etc.).
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    dt_gui_add_class(pop->window, "dt_transparent_background");
+    GdkScreen *screen = gtk_widget_get_screen(pop->window);
+    GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
     gtk_widget_set_visual(pop->window, visual);
+#endif
   }
 #endif
 
@@ -567,9 +606,10 @@ static void _window_position(const int offset)
                           0, - pop->offset + pop->offcut);
 }
 
-static gboolean _window_motion_notify(GtkWidget *widget,
-                                      GdkEventMotion *event,
-                                      gpointer user_data)
+static void _window_motion_handle(GtkWidget *widget,
+                                    gdouble root_x,
+                                    gdouble root_y,
+                                    GdkModifierType state)
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
@@ -583,16 +623,16 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   // recalculate event coords so we get useful values outside window
   GdkWindow *window = gtk_widget_get_window(pop->area);
   gdk_window_get_origin(window, &allocation.x, &allocation.y);
-  const gint ex = event->x_root - allocation.x;
-  const gint ey = event->y_root - allocation.y;
+  const gint ex = root_x - allocation.x;
+  const gint ey = root_y - allocation.y;
 
-  const int tol = DT_PIXEL_APPLY_DPI(event->state & GDK_BUTTON1_MASK ? 400 : 50);
+  const int tol = DT_PIXEL_APPLY_DPI(state & GDK_BUTTON1_MASK ? 400 : 50);
   if(ex < - tol || ex > allocation.width + tol
      || ey + pop->offcut < - tol
      || ey + pop->offcut > pop->position.height + tol)
   {
     _popup_reject();
-    return TRUE;
+    return;
   }
 
   if(bh->keys_cnt == 0) _stop_cursor();
@@ -629,7 +669,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
                           : _slider_get_line_offset
       (pop->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / fabsf(d->factor),
        bh->mouse_x / (width - _widget_get_quad_width(w)), bh->mouse_y / width, ht / width);
-    if(event->state & GDK_BUTTON1_MASK
+    if(state & GDK_BUTTON1_MASK
        || (bh->mouse_line_distance
            && ((bh->mouse_line_distance * mouse_off <= 0) ^
                (fabsf(bh->mouse_line_distance - mouse_off) > .5f))))
@@ -644,7 +684,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
     const int active = (bh->mouse_y - w->top_gap) / bh->line_height;
     if(active >= 0 && active < d->entries->len)
     {
-      if(_combobox_entry(d, active)->sensitive && event->state & GDK_BUTTON1_MASK)
+      if(_combobox_entry(d, active)->sensitive && state & GDK_BUTTON1_MASK)
       {
         if(active != d->active)
           _combobox_set(w, active, w->combobox.mute_scrolling);
@@ -653,72 +693,123 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   }
 
   gtk_widget_queue_draw(pop->area);
-  return TRUE;
 }
 
-static gboolean _popup_leave_notify(GtkWidget *widget,
-                                    GdkEventCrossing *event,
+// GTK4 TODO: This popup uses GTK_WINDOW_POPUP which has compatibility issues
+// with GtkEventControllerKey and GtkEventControllerMotion on GTK3 — motion
+// and key events don't reach the controllers on this window type.  The signal
+// handlers below are the fallback.  For GTK4, the popup should be migrated to
+// GtkPopover or a GtkWindow with proper event controllers.
+
+static void _window_motion_handler(GtkEventControllerMotion *controller,
+                                    gdouble x,
+                                    gdouble y,
                                     gpointer user_data)
 {
+  // the popup window is a toplevel, but take root coordinates anyway to stay
+  // in the same coordinate space as the old GdkEvent handler (GTK4 falls
+  // back to surface-relative coordinates, see dt_gui_get_event_coords())
+  gdouble root_x = 0.0, root_y = 0.0;
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+  if(event) dt_gui_get_event_coords(event, &root_x, &root_y);
+  _window_motion_handle(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller)),
+                        root_x, root_y,
+                        dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)));
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  if(event) gdk_event_free(event);
+#endif
+}
+
+static void _popup_leave_cb(GtkEventControllerMotion *controller,
+                             gpointer user_data)
+{
+  GtkWidget *widget = dt_gui_get_widget(controller);
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
-  return TRUE;
 }
 
-static gboolean _popup_button_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      gpointer user_data)
+static void _popup_button_release_cb(GtkGestureSingle *gesture,
+                                       gint n_press,
+                                       gdouble x,
+                                       gdouble y,
+                                       gpointer user_data)
 {
-  if(darktable.bauhaus->change_active && event->button != GDK_BUTTON_MIDDLE)
+  if(darktable.bauhaus->change_active && gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_MIDDLE)
     _popup_hide();
-
-  return TRUE;
 }
 
-static gboolean _popup_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static void _popup_button_press_cb(GtkGestureSingle *gesture,
+                                     gint n_press,
+                                     gdouble x,
+                                     gdouble y,
+                                     gpointer user_data)
 {
-  if(event->window != gtk_widget_get_window(widget))
-  {
-    _popup_reject();
-    return TRUE;
-  }
-
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  // reject clicks that come from outside the popup area window.  Under GTK3
+  // the popup holds a grab (gtk_grab_add() in _window_show), so foreign
+  // clicks still arrive at this gesture and the window comparison rejects
+  // them.  GTK4 removed gtk_grab_add(): pointer events are only delivered
+  // inside the popup's own surface, so there is nothing foreign to reject --
+  // and gtk_widget_get_surface() is not public API; the naive
+  // gtk_native_get_surface(gtk_widget_get_native()) replacement would always
+  // return the event's own surface and never fire.
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4: no foreign clicks to reject (see above). */
+#else
+  const GdkEvent *cur_event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(cur_event
+     && dt_gdk_event_get_window(cur_event) != gtk_widget_get_window(dt_gui_get_widget(gesture)))
+  {
+    _popup_reject();
+    return;
+  }
+#endif
+
+  if(button == GDK_BUTTON_PRIMARY)
   {
     // only accept left mouse click
     gtk_widget_set_state_flags(GTK_WIDGET(w),
                                GTK_STATE_FLAG_FOCUSED, FALSE);
 
     if(w->type == DT_BAUHAUS_COMBOBOX
-       && !dt_gui_long_click(event->time, bh->opentime))
+       && !dt_gui_long_click(gdk_event_get_time(gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL)), bh->opentime))
     {
       // counts as double click, reset:
-      if(!(dt_modifier_is(event->state, GDK_CONTROL_MASK) && w->field
+      const GdkModifierType state =
+        dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+      if(!(dt_modifier_is(state, GDK_CONTROL_MASK) && w->field
           && dt_gui_presets_autoapply_for_module((dt_iop_module_t *)w->module,
                                                  GTK_WIDGET(w))))
         dt_bauhaus_widget_reset(GTK_WIDGET(w));
     }
 
     bh->change_active = TRUE;
-    event->state |= GDK_BUTTON1_MASK;
-    _window_motion_notify(widget, (GdkEventMotion*)event, user_data);
+    GtkWidget *w_current = dt_gui_get_widget(gesture);
+    const GdkEvent *current_event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+    if(current_event)
+    {
+      GdkModifierType motion_state = dt_gdk_event_get_state(current_event);
+      motion_state |= GDK_BUTTON1_MASK;
+      _window_motion_handle(w_current,
+                                dt_gdk_event_get_root_x(current_event),
+                                dt_gdk_event_get_root_y(current_event),
+                                motion_state);
+    }
   }
-  else if(event->button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
+  else if(button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
     _slider_zoom_range(w, 0);
   else
     _popup_reject();
-
-  return TRUE;
 }
 
 static void _window_show(GtkWidget *w, gpointer user_data)
 {
   // make sure combo popup handles button release
   gtk_grab_add(GTK_WIDGET(user_data));
+  // grab keyboard focus so the popup receives key events
+  gtk_widget_grab_focus(GTK_WIDGET(user_data));
 }
 
 static void _widget_leave(GtkEventControllerMotion *controller,
@@ -750,7 +841,7 @@ static void _widget_finalize(GObject *widget)
     free(d->grad_col);
     free(d->grad_pos);
   }
-  else
+  else if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     dt_bauhaus_combobox_data_t *d = &w->combobox;
     g_ptr_array_free(d->entries, TRUE);
@@ -786,6 +877,22 @@ void dt_bauhaus_load_theme()
                                  &bh->color_border);
   gtk_style_context_lookup_color(ctx, "bauhaus_fill",
                                  &bh->color_fill);
+
+  // a context that css sees as the check node of a check button inside a
+  // module, so that gtk_render_check() below draws exactly what every other
+  // checkbox in the panels looks like, in whichever theme is loaded
+  if(bh->check_context) g_object_unref(bh->check_context);
+  bh->check_context = gtk_style_context_new();
+  GtkWidgetPath *check_path = gtk_widget_path_new();
+  const int plugin_pos = gtk_widget_path_append_type(check_path, GTK_TYPE_WIDGET);
+  gtk_widget_path_iter_add_class(check_path, plugin_pos, "dt_plugin_ui");
+  gtk_widget_path_append_type(check_path, GTK_TYPE_CHECK_BUTTON);
+  const int check_pos = gtk_widget_path_append_type(check_path, G_TYPE_NONE);
+  gtk_widget_path_iter_set_object_name(check_path, check_pos, "check");
+  gtk_style_context_set_path(bh->check_context, check_path);
+  gtk_style_context_set_screen(bh->check_context,
+                               gtk_widget_get_screen(root_window));
+  gtk_widget_path_unref(check_path);
   gtk_style_context_lookup_color(ctx, "bauhaus_indicator_border",
                                  &bh->indicator_border);
 
@@ -868,6 +975,39 @@ void dt_bauhaus_load_theme()
     bh->border_width = 2.0f;
     bh->marker_size = (bh->baseline_size + bh->border_width) * 0.95f;
   }
+
+  // size a toggle's tick box the way gtk sizes a check button's indicator:
+  // the minimum the css asks for, plus the border and padding it draws
+  // around it
+  gint min_width = 0, min_height = 0;
+  GtkBorder check_padding = { 0 }, check_border = { 0 };
+  bh->check_margin = (GtkBorder){ 0 };
+  if(bh->check_context)
+  {
+    const GtkStateFlags check_state = gtk_style_context_get_state(bh->check_context);
+    gtk_style_context_get(bh->check_context, check_state,
+                          "min-width", &min_width,
+                          "min-height", &min_height,
+                          NULL);
+    gtk_style_context_get_padding(bh->check_context, check_state, &check_padding);
+    gtk_style_context_get_border(bh->check_context, check_state, &check_border);
+    // gtk lays a check button out with these around the indicator, and
+    // gtk_render_check() does not apply them, so the space in front of the
+    // box and between the box and the label are ours to add
+    gtk_style_context_get_margin(bh->check_context, check_state, &bh->check_margin);
+  }
+  // only the gap between the box and the label is used, and never less than
+  // the spacing the other widget types keep between their own parts
+  bh->check_margin.right = MAX(bh->check_margin.right, INNER_PADDING);
+  const gint css_width = min_width + check_padding.left + check_padding.right
+                                   + check_border.left + check_border.right;
+  const gint css_height = min_height + check_padding.top + check_padding.bottom
+                                     + check_border.top + check_border.bottom;
+  // a theme that leaves the size to gtk still gets a box that follows the
+  // font, and the row is only one line tall whatever the css asks for
+  bh->check_size = CLAMP(MAX(css_width, css_height),
+                         round(bh->quad_width * 0.75),
+                         bh->line_height);
 }
 
 void dt_bauhaus_init()
@@ -898,6 +1038,7 @@ void dt_bauhaus_init()
   gtk_window_set_modal(GTK_WINDOW(pop->window), TRUE);
   gtk_window_set_type_hint(GTK_WINDOW(pop->window),
                            GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_widget_add_events(pop->window, GDK_POINTER_MOTION_MASK);
 
   pop->area = gtk_drawing_area_new();
   g_object_set(pop->area, "expand", TRUE, NULL);
@@ -916,13 +1057,14 @@ void dt_bauhaus_init()
   g_signal_connect(gtk_widget_get_window(pop->window),
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
   g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
-  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
   g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_notify), NULL);
-  g_signal_connect(area, "button-press-event", G_CALLBACK(_popup_button_press), NULL);
-  g_signal_connect(area, "button-release-event", G_CALLBACK (_popup_button_release), NULL);
-  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
-  g_signal_connect(area, "scroll-event", G_CALLBACK(_popup_scroll), NULL);
+  dt_gui_connect_motion(pop->window, _window_motion_handler, NULL, NULL, NULL);
+  dt_gui_connect_motion(area, NULL, NULL, _popup_leave_cb, NULL);
+  dt_gui_connect_key(area, _popup_key_press, NULL);
+  dt_gui_connect_click_all(area, _popup_button_press_cb, _popup_button_release_cb, NULL);
+  dt_gui_connect_scroll(area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                  | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _popup_scroll_cb, NULL);
 
   dt_action_define(&darktable.control->actions_focus, NULL, N_("sliders"),
                    NULL, &_action_def_focus_slider);
@@ -934,6 +1076,11 @@ void dt_bauhaus_init()
 
 void dt_bauhaus_cleanup()
 {
+  if(darktable.bauhaus->check_context)
+  {
+    g_object_unref(darktable.bauhaus->check_context);
+    darktable.bauhaus->check_context = NULL;
+  }
 }
 
 // end static init/cleanup
@@ -1064,8 +1211,8 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
     if(!darktable.bauhaus->skip_accel || w->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
     {
       ac = dt_action_define(w->module, section, label, widget,
-                            w->type == DT_BAUHAUS_SLIDER
-                            ? &_action_def_slider
+                            w->type == DT_BAUHAUS_SLIDER   ? &_action_def_slider
+                            : w->type == DT_BAUHAUS_TOGGLE ? &_action_def_toggle
                             : &_action_def_combo);
       if(w->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
         w->module = ac;
@@ -1074,6 +1221,42 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
   return ac;
+}
+
+void dt_bauhaus_widget_set_label_text(GtkWidget *widget,
+                                      const char *label)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  g_free(w->label);
+  w->label = label ? g_strdup(label) : NULL;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+}
+
+void dt_bauhaus_widget_set_label_ellipsize(GtkWidget *widget,
+                                           const PangoEllipsizeMode ellipsize)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->label_ellipsis = ellipsize;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+}
+
+void dt_bauhaus_widget_get_quad_rect(GtkWidget *widget,
+                                     GdkRectangle *rect)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  // the quad is the last thing on the row, drawn INNER_PADDING * 4 into the
+  // width _widget_get_quad_width() reserves for it at the end
+  const int right = allocation.width - w->margin.right - w->padding.right;
+  const int top = w->margin.top + w->padding.top;
+
+  rect->width = darktable.bauhaus->quad_width;
+  rect->height = allocation.height - top - w->margin.bottom - w->padding.bottom;
+  rect->x = right - _widget_get_quad_width(w) + INNER_PADDING * 4;
+  rect->y = top;
 }
 
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
@@ -1223,6 +1406,8 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
         is_changed = fabsf(d->pos - d->curve((d->defpos - d->min) / (d->max - d->min),
                                              DT_BAUHAUS_SET)) > 0.001f;
       }
+      else if(b->type == DT_BAUHAUS_TOGGLE)
+        is_changed = b->toggle.active != b->toggle.defpos;
       else
         is_changed = b->combobox.entries->len
           && b->combobox.active != b->combobox.defpos;
@@ -1235,6 +1420,39 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
     dt_gui_add_class(label, "changed");
   else
     dt_gui_remove_class(label, "changed");
+}
+
+static void _toggle_set(dt_bauhaus_widget_t *w,
+                        const gboolean active)
+{
+  dt_bauhaus_toggle_data_t *d = &w->toggle;
+  const gboolean new_active = active ? TRUE : FALSE;
+  // match GtkToggleButton: skip when the state does not change
+  if(d->active == new_active) return;
+  d->active = new_active;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+
+  // while the gui is being brought in line with the params there is
+  // nothing to write back and no history item to add; the redraw above is
+  // all that is wanted. Same as for the slider and combobox setters
+  if(DT_IN_GUI_UPDATE()) return;
+
+  if(w->field)
+  {
+    if(w->field_type == DT_INTROSPECTION_TYPE_BOOL)
+    {
+      gboolean *b = w->field, prevb = *b;
+      *b = d->active;
+      if(*b != prevb) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &prevb);
+    }
+    else
+      dt_print(DT_DEBUG_ALWAYS, "[_toggle_set] unsupported toggle data type");
+  }
+
+  _highlight_changed_notebook_tab(GTK_WIDGET(w),
+                                  GINT_TO_POINTER(d->active != d->defpos));
+  g_signal_emit(G_OBJECT(w),
+                darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
 }
 
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,
@@ -1303,6 +1521,13 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
             dt_print(DT_DEBUG_ALWAYS,
                      "[dt_bauhaus_update_from_field] unsupported combo data type");
         }
+        break;
+      case DT_BAUHAUS_TOGGLE:
+        if(bhw->field_type == DT_INTROSPECTION_TYPE_BOOL)
+          dt_bauhaus_toggle_set(widget, *(gboolean *)field);
+        else
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_bauhaus_update_from_field] unsupported toggle data type");
         break;
       default:
         dt_print
@@ -1402,46 +1627,6 @@ static float _curve_log10(const float inval,
     return (expf(M_LN10 * inval * 3.0f) - 1.0f) / 999.0f;
 }
 
-GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self)
-{
-  return dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3);
-}
-
-GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self,
-                                            const float min,
-                                            const float max,
-                                            const float step,
-                                            const float defval,
-                                            const int digits)
-{
-  return dt_bauhaus_slider_new_with_range_and_feedback
-    (self, min, max, step, defval, digits, 1);
-}
-
-GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self,
-                                        const float min,
-                                        const float max,
-                                        const float step,
-                                        const float defval,
-                                        const int digits)
-{
-  return dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self,
-                                          min, max, step, defval, digits);
-}
-
-GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self,
-                                                         const float min,
-                                                         const float max,
-                                                         const float step,
-                                                         const float defval,
-                                                         const int digits,
-                                                         const int feedback)
-{
-  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
-  return dt_bauhaus_slider_from_widget(w, self, min, max, step, defval, digits, feedback);
-}
-
-
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,
                                          dt_iop_module_t *self,
                                          const float min,
@@ -1536,6 +1721,57 @@ GtkWidget *dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,
   gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
 
   return GTK_WIDGET(w);
+}
+
+GtkWidget *dt_bauhaus_toggle_new(dt_iop_module_t *self)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
+  return dt_bauhaus_toggle_from_widget(w, self);
+}
+
+GtkWidget *dt_bauhaus_toggle_from_widget(dt_bauhaus_widget_t *w,
+                                         dt_iop_module_t *self)
+{
+  w->type = DT_BAUHAUS_TOGGLE;
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(self);
+  w->module = DT_ACTION(self);
+  dt_bauhaus_toggle_data_t *d = &w->toggle;
+  d->active = FALSE;
+  d->defpos = FALSE;
+
+  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-toggle");
+
+  return GTK_WIDGET(w);
+}
+
+void dt_bauhaus_toggle_set(GtkWidget *widget,
+                           const gboolean active)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_TOGGLE) return;
+  _toggle_set(w, active);
+}
+
+gboolean dt_bauhaus_toggle_get(GtkWidget *widget)
+{
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_TOGGLE) return FALSE;
+  return w->toggle.active;
+}
+
+void dt_bauhaus_toggle_set_default(GtkWidget *widget,
+                                   const gboolean def)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_TOGGLE) return;
+  w->toggle.defpos = def ? TRUE : FALSE;
+}
+
+gboolean dt_bauhaus_toggle_get_default(GtkWidget *widget)
+{
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_TOGGLE) return FALSE;
+  return w->toggle.defpos;
 }
 
 static dt_bauhaus_combobox_data_t *_combobox_data(GtkWidget *widget)
@@ -1803,7 +2039,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget,
                                   const char *text)
 {
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
-  if(!d || !d->editable) return;
+  if(!d || !d->editable || !text) return;
 
   g_strlcpy(d->text, text, DT_BAUHAUS_MAX_TEXT);
   gtk_widget_queue_draw(GTK_WIDGET(widget));
@@ -2123,6 +2359,7 @@ static void _draw_quad(dt_bauhaus_widget_t *w,
         cairo_stroke(cr);
         gdk_rgba_free(text_color);
         break;
+      case DT_BAUHAUS_TOGGLE:
       case DT_BAUHAUS_SLIDER:
         break;
       default:
@@ -2310,12 +2547,58 @@ static void _popup_reject(void)
   _popup_hide();
 }
 
+// side of the square tick box, computed from the check node's css when the
+// theme is loaded
+static float _toggle_box_size()
+{
+  return darktable.bauhaus->check_size;
+}
+
+static void _draw_toggle_box(dt_bauhaus_widget_t *w,
+                             cairo_t *cr,
+                             const float x,
+                             const int height,
+                             const float size)
+{
+  GtkStyleContext *check = darktable.bauhaus->check_context;
+  if(!check) return;
+
+  GtkStateFlags state = GTK_STATE_FLAG_NORMAL;
+  if(w->toggle.active) state |= GTK_STATE_FLAG_CHECKED;
+  if(!gtk_widget_is_sensitive(GTK_WIDGET(w))) state |= GTK_STATE_FLAG_INSENSITIVE;
+  if(darktable.bauhaus->hovered == GTK_WIDGET(w)) state |= GTK_STATE_FLAG_PRELIGHT;
+  gtk_style_context_set_state(check, state);
+
+  const double y = round(height * 0.5 - size * 0.5);
+
+  cairo_save(cr);
+  gtk_render_background(check, cr, x, y, size, size);
+  gtk_render_frame(check, cr, x, y, size, size);
+  gtk_render_check(check, cr, x, y, size, size);
+  cairo_restore(cr);
+}
+
 static gchar *_build_label(const dt_bauhaus_widget_t *w)
 {
   if(w->show_extended_label && w->section)
     return g_strdup_printf("%s - %s", w->section, w->label);
   else
     return g_strdup(w->label);
+}
+
+// Helper: query CSS color for a specific pseudo-class state without passing a
+// non-current state to gtk_style_context_get_color() (which GTK4 rejects).
+//
+// GTK4 switch-time: remove the state argument from get_color() — the context
+// is already in the desired state via gtk_style_context_set_state().
+static void _popup_get_state_color(GtkStyleContext *context,
+                                    GtkStateFlags state,
+                                    GdkRGBA *color)
+{
+  gtk_style_context_save(context);
+  gtk_style_context_set_state(context, state);
+  gtk_style_context_get_color(context, state, color);
+  gtk_style_context_restore(context);
 }
 
 static gboolean _popup_draw(GtkWidget *widget,
@@ -2335,19 +2618,18 @@ static gboolean _popup_draw(GtkWidget *widget,
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
-  // look up some colors once
-  GdkRGBA text_color, text_color_selected, text_color_hover, text_color_insensitive;
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &text_color);
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_SELECTED, &text_color_selected);
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_PRELIGHT, &text_color_hover);
-  gtk_style_context_get_color(context, GTK_STATE_FLAG_INSENSITIVE, &text_color_insensitive);
-
   GdkRGBA *fg_color = _default_color_assign();
   GdkRGBA *bg_color;
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
   gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   gtk_style_context_get_color(context, state, fg_color);
+
+  GdkRGBA text_color, text_color_selected, text_color_hover, text_color_insensitive;
+  _popup_get_state_color(context, GTK_STATE_FLAG_NORMAL, &text_color);
+  _popup_get_state_color(context, GTK_STATE_FLAG_SELECTED, &text_color_selected);
+  _popup_get_state_color(context, GTK_STATE_FLAG_PRELIGHT, &text_color_hover);
+  _popup_get_state_color(context, GTK_STATE_FLAG_INSENSITIVE, &text_color_insensitive);
 
   // draw background
   gtk_render_background(context, cr, 0, - pop->offcut, width, pop->position.height);
@@ -2575,8 +2857,7 @@ static gboolean _popup_draw(GtkWidget *widget,
     // make extra large, but without dependency on popup window height
     // (that might differ for comboboxes for example). only fall back
     // to height dependency if the popup is really small.
-    PangoFontDescription *desc =
-      pango_font_description_copy_static(bh->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
 
@@ -2752,6 +3033,26 @@ static gboolean _widget_draw(GtkWidget *widget,
       g_free(label_text);
     }
     break;
+    case DT_BAUHAUS_TOGGLE:
+    {
+      // the box starts where the other types start their label, so that a
+      // checkbox lines up with them down the left of a module, and the
+      // label follows it after the gap the css keeps between a check
+      // button's indicator and its own label
+      const float size = _toggle_box_size();
+      const float indent = size + darktable.bauhaus->check_margin.right;
+      _draw_toggle_box(w, cr, 0, h3, size);
+
+      gchar *label_text = _build_label(w);
+      if(label_text && w->show_label && w3 > indent)
+      {
+        set_color(cr, *text_color);
+        _show_pango_text(w, context, cr, label_text, indent, 0, w3 - indent,
+                         FALSE, FALSE, w->label_ellipsis, FALSE, TRUE, NULL, NULL);
+      }
+      g_free(label_text);
+    }
+    break;
     default:
       break;
   }
@@ -2818,6 +3119,11 @@ static gint _natural_width(GtkWidget *widget,
 
       natural_size = MAX(natural_size, label_width + entry_width / PANGO_SCALE);
     }
+  }
+  else if(w->type == DT_BAUHAUS_TOGGLE)
+  {
+    // the box sits in front of the label rather than in the quad column
+    natural_size += _toggle_box_size() + darktable.bauhaus->check_margin.right;
   }
   else
   {
@@ -2896,6 +3202,10 @@ static void _popup_show(GtkWidget *widget)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
+
+  // a toggle has two states and both are visible on the widget itself,
+  // so there is nothing a popup could offer
+  if(w->type == DT_BAUHAUS_TOGGLE) return;
 
   if(bh->current) _popup_hide();
   bh->current = w;
@@ -3032,6 +3342,29 @@ static void _popup_show(GtkWidget *widget)
   gtk_widget_grab_focus(pop->area);
 }
 
+/** open the value-entry popup of a bauhaus widget, as if it were right-clicked.
+ *  GTK4: gtk_get_current_event() is gone; when porting, read the time from
+ *  the gesture's last event instead (gtk_gesture_get_last_event()). */
+void dt_bauhaus_widget_show_popup(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_t *bh = darktable.bauhaus;
+
+  if(w->type == DT_BAUHAUS_TOGGLE) return;
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    bh->opentime = gdk_event_get_time(event);
+    gdk_event_free(event);
+  }
+#endif
+  bh->mouse_x = 0;
+  bh->mouse_y = 0;
+  _popup_show(widget);
+}
+
 static void _slider_add_step(GtkWidget *widget,
                              float delta,
                              const guint state,
@@ -3075,7 +3408,7 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
                            double dx, double dy,
                            GtkWidget *widget)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!event || gdk_event_get_event_type(event) != GDK_SCROLL)
     dt_print(DT_DEBUG_ALWAYS, "[_widget_scroll] called on non-scroll event");
   else if(darktable.control->mapping_widget)
@@ -3087,29 +3420,46 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
   {
     gtk_widget_grab_focus(widget);
 
-    int delta = dx + dy;
-    if(delta != 0)
+    int magnitude_x = fabs(dx);
+    int magnitude_y = fabs(dy);
+
+    if(magnitude_x || magnitude_y)
     {
       dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
       _request_focus(w);
 
       if(w->type == DT_BAUHAUS_SLIDER)
       {
+        int delta = magnitude_x > magnitude_y ? -dx : dy;
         const gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
-                            && event->scroll.window == gtk_widget_get_window(widget);
-        if(force && dt_modifier_is(event->scroll.state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+                            && dt_gdk_event_get_window(event) == gtk_widget_get_window(widget);
+        if(force && dt_modifier_is(dt_gdk_event_get_state(event), GDK_SHIFT_MASK | GDK_CONTROL_MASK))
         {
           _slider_zoom_range(w, delta);
           _slider_zoom_toast(w);
         }
         else
-          _slider_add_step(widget, - delta, event->scroll.state, force);
+          _slider_add_step(widget, - delta, dt_gdk_event_get_state(event), force);
+      }
+      else if(w->type == DT_BAUHAUS_TOGGLE)
+      {
+        // up and right switch on, down and left switch off, in the same
+        // direction as scrolling a slider up raises its value
+        const int delta = magnitude_x > magnitude_y ? -dx : dy;
+        _toggle_set(w, delta < 0);
       }
       else
+      {
+        // match keyboard: right & down -> next
+        int delta = magnitude_x > magnitude_y ? dx : dy;
+
         _combobox_next_sensitive(w, delta, 0, FALSE);
+      }
     }
   }
+#if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
+#endif
 }
 
 static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
@@ -3117,7 +3467,7 @@ static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
 
   int delta = -1;
-  switch(event->keyval)
+  switch(dt_gdk_event_get_keyval(event))
   {
     case GDK_KEY_Right:
     case GDK_KEY_KP_Right:
@@ -3133,14 +3483,29 @@ static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
       _request_focus(w);
 
       if(w->type == DT_BAUHAUS_SLIDER)
-        _slider_add_step(widget, delta, event->state, FALSE);
+        _slider_add_step(widget, delta, dt_gdk_event_get_state(event), FALSE);
+      else if(w->type == DT_BAUHAUS_TOGGLE)
+        _toggle_set(w, delta > 0);
       else
         _combobox_next_sensitive(w, delta, 0, FALSE);
 
       return TRUE;
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
-      _popup_show(widget);
+      if(w->type == DT_BAUHAUS_TOGGLE)
+        _toggle_set(w, !w->toggle.active);
+      else
+        _popup_show(widget);
+      return TRUE;
+    case GDK_KEY_space:
+    case GDK_KEY_KP_Space:
+      // gtk activates any button with space, so a checkbox is expected to
+      // respond to it wherever one appears. The other types have nothing to
+      // activate and leave the key to whatever handles it next
+      if(w->type != DT_BAUHAUS_TOGGLE) return FALSE;
+
+      _request_focus(w);
+      _toggle_set(w, !w->toggle.active);
       return TRUE;
     default:
       return FALSE;
@@ -3255,20 +3620,13 @@ float dt_bauhaus_slider_get_step(GtkWidget *widget)
     const float max = zoom ? d->max : d->soft_max;
 
     const float top = fminf(max-min, fmaxf(fabsf(min), fabsf(max)));
-    if(top >= 100)
-    {
-      step = 1.f;
-    }
-    else
-    {
-      step = top * fabsf(d->factor) / 100;
-      const float log10step = log10f(step);
-      const float fdigits = floorf(log10step+.1);
-      step = powf(10.f,fdigits);
-      if(log10step - fdigits > .5)
-        step *= 5;
-      step /= fabsf(d->factor);
-    }
+    step = top * fabsf(d->factor) / 100;
+    const float log10step = log10f(step);
+    const float fdigits = floorf(log10step+.1);
+    step = powf(10.f,fdigits);
+    if(log10step - fdigits > .5)
+      step *= 5;
+    step /= fabsf(d->factor);
   }
 
   return copysignf(step, d->factor);
@@ -3299,20 +3657,30 @@ void dt_bauhaus_widget_reset(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
-  if(w->type == DT_BAUHAUS_SLIDER)
+  // an explicit switch rather than "slider or else combobox": reading the
+  // wrong member of the data union would be silent corruption
+  switch(w->type)
   {
-    dt_bauhaus_slider_data_t *d = &w->slider;
-    d->is_dragging = 0;
+    case DT_BAUHAUS_SLIDER:
+    {
+      dt_bauhaus_slider_data_t *d = &w->slider;
+      d->is_dragging = 0;
 
-    d->min = d->soft_min;
-    d->max = d->soft_max;
+      d->min = d->soft_min;
+      d->max = d->soft_max;
 
-    dt_bauhaus_slider_set(widget, d->defpos);
+      dt_bauhaus_slider_set(widget, d->defpos);
+      break;
+    }
+    case DT_BAUHAUS_COMBOBOX:
+      dt_bauhaus_combobox_set_from_value(widget, w->combobox.defpos);
+      break;
+    case DT_BAUHAUS_TOGGLE:
+      _toggle_set(w, w->toggle.defpos);
+      break;
+    default:
+      break;
   }
-  else
-    dt_bauhaus_combobox_set_from_value(widget, w->combobox.defpos);
-
-  return;
 }
 
 void dt_bauhaus_slider_set_format(GtkWidget *widget,
@@ -3438,16 +3806,18 @@ static void _slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   }
 }
 
-static gboolean _popup_key_press(GtkWidget *widget,
-                                 GdkEventKey *event,
-                                 gpointer user_data)
+static gboolean _popup_key_press(GtkEventControllerKey *controller,
+                                  guint keyval,
+                                  guint keycode,
+                                  GdkModifierType state,
+                                  gpointer user_data)
 {
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
   const gboolean is_combo = w->type == DT_BAUHAUS_COMBOBOX;
   int delta = -1;
 
-  switch(event->keyval)
+  switch(keyval)
   {
     case GDK_KEY_BackSpace:
     case GDK_KEY_Delete:
@@ -3513,22 +3883,62 @@ static gboolean _popup_key_press(GtkWidget *widget,
       if(is_combo)
         _combobox_next_sensitive(w, delta, 0, w->combobox.mute_scrolling);
       else
-        _slider_add_step(GTK_WIDGET(w), delta, event->state, FALSE);
+        _slider_add_step(GTK_WIDGET(w), delta, state, FALSE);
       break;
     default:
-      if(!event->string || !g_utf8_validate(event->string, -1, NULL)) return FALSE;
-      const gunichar c = g_utf8_get_char(event->string);
-      if(!g_unichar_isprint(c)) return FALSE;
-      const long int char_width = g_utf8_next_char(event->string) - event->string;
+    {
+      /* GTK3 reads the key string from the event; GTK4 dropped the key-event
+       * string, so derive the unicode character from the keyval instead
+       * (single-character input only -- composed input goes through GTK4's
+       * IM handling, not this controller). */
+      const gchar *str;
+#if GTK_CHECK_VERSION(4, 0, 0)
+      gchar keybuf[7];
+      const gunichar uc = gdk_keyval_to_unicode(keyval);
+      if(!uc) return FALSE;
+      const gint len = g_unichar_to_utf8(uc, keybuf);
+      keybuf[len] = '\0';
+      str = keybuf;
+#else
+      GdkEvent *event = gtk_get_current_event();
+      if(!event) return FALSE;
+      str = ((GdkEventKey *)event)->string;
+      if(!str)
+      {
+        gdk_event_free(event);
+        return FALSE;
+      }
+#endif
+      if(!str || !g_utf8_validate(str, -1, NULL))
+      {
+#if !GTK_CHECK_VERSION(4, 0, 0)
+        gdk_event_free(event);
+#endif
+        return FALSE;
+      }
+      const gunichar c = g_utf8_get_char(str);
+      if(!g_unichar_isprint(c))
+      {
+#if !GTK_CHECK_VERSION(4, 0, 0)
+        gdk_event_free(event);
+#endif
+        return FALSE;
+      }
+      const long int char_width = g_utf8_next_char(str) - str;
       if(bh->keys_cnt + 1 + char_width < DT_BAUHAUS_MAX_TEXT
-         && (is_combo || strchr("0123456789.,%%+-*Xx/:^~ ()", event->string[0])))
+         && (is_combo || strchr("0123456789.,%%+-*Xx/:^~ ()", str[0])))
       {
         // only accept valid keys for slider; combo is checked in _popup_draw
-        strncpy(bh->keys + bh->keys_cnt, event->string, char_width);
+        strncpy(bh->keys + bh->keys_cnt, str, char_width);
         bh->keys_cnt += char_width;
 
         if(!is_combo) _start_cursor(-1);
       }
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      gdk_event_free(event);
+#endif
+      break;
+    }
   }
   gtk_widget_queue_draw(bh->popup.area);
   return TRUE;
@@ -3543,7 +3953,7 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_t *bh = darktable.bauhaus;
   gboolean passthrough_from_histogram =
-    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)) != widget;
+    dt_gui_get_widget(gesture) != widget;
 
   if(!passthrough_from_histogram)
   {
@@ -3571,11 +3981,17 @@ static void _widget_button_press(GtkGestureSingle *gesture,
     // (except in weird corner cases where the popup is under the -1st entry
     _popup_hide();
   }
+  else if(w->type == DT_BAUHAUS_TOGGLE)
+  {
+    // any other button is left to the widget below, as a toggle has no
+    // popup to open and no range to drag
+    if(button == GDK_BUTTON_PRIMARY)
+      _toggle_set(w, !w->toggle.active);
+  }
   else if(button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
-    GdkEvent *const event = gtk_get_current_event();
-    bh->opentime = gdk_event_get_time(event);
-    gdk_event_free(event);
+    const GdkEvent *const event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+    if(event) bh->opentime = gdk_event_get_time((GdkEvent *)event);
     bh->mouse_x = x;
     bh->mouse_y = y;
     _popup_show(widget);
@@ -3622,7 +4038,9 @@ static void _widget_button_release(GtkGestureSingle *gesture,
 static void _widget_button_stopped(GtkGestureSingle *gesture,
                                    dt_bauhaus_widget_t *w)
 {
-  if(w->slider.timeout_handle == G_MAXUINT)
+  // reading slider.timeout_handle for another type would read whatever the
+  // data union happens to hold there
+  if(w->type == DT_BAUHAUS_SLIDER && w->slider.timeout_handle == G_MAXUINT)
     _slider_value_change_dragging(w);
 }
 
@@ -3644,6 +4062,12 @@ static void _widget_motion(GtkEventControllerMotion *controller,
       pos > 1.0f && w->quad_paint
       ? DT_ACTION_ELEMENT_BUTTON : DT_ACTION_ELEMENT_SELECTION;
   }
+  else if(w->type == DT_BAUHAUS_TOGGLE)
+  {
+    darktable.control->element =
+      pos > 1.0f && w->quad_paint
+      ? DT_ACTION_ELEMENT_BUTTON : DT_ACTION_ELEMENT_VALUE;
+  }
   else if(d->is_dragging)
   {
     if(dt_isnan(bh->mouse_x))
@@ -3658,10 +4082,17 @@ static void _widget_motion(GtkEventControllerMotion *controller,
       const float scaled_step =
         width * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
       const float steps = floorf((x - bh->mouse_x) / scaled_step);
-      GdkEvent *const event = gtk_get_current_event(); // TODO cleanup
+      // the current event may be NULL for synthetic motions; fall back to
+      // the global keyboard state in that case
+      GdkEvent *const event =
+        dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+      const GdkModifierType motion_state = event ? dt_gdk_event_get_state(event)
+                                                 : dt_key_modifier_state();
+#if !GTK_CHECK_VERSION(4, 0, 0)
+      if(event) gdk_event_free(event);
+#endif
       _slider_add_step(widget, copysignf(1, d->factor) * steps,
-                       event->motion.state, FALSE);
-      gdk_event_free(event);
+                       motion_state, FALSE);
 
       bh->mouse_x += steps * scaled_step;
     }
@@ -3703,6 +4134,7 @@ static void dt_bh_init(DtBauhausWidget *w)
 {
   w->field = NULL;
   w->label = NULL;
+  w->label_ellipsis = PANGO_ELLIPSIZE_END;
   w->section = NULL;
 
   // no quad icon and no toggle button:
@@ -4026,6 +4458,30 @@ static float _action_process_focus_button(gpointer widget,
   return DT_ACTION_NOT_VALID;
 }
 
+static float _action_process_toggle(gpointer target,
+                                    const dt_action_element_t element,
+                                    const dt_action_effect_t effect,
+                                    const float move_size)
+{
+  GtkWidget *widget = GTK_WIDGET(target);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+
+  float value = w->toggle.active;
+
+  // the macro filters out the requests that ask for a state the widget is
+  // already in, so "on" twice in a row does not add a second history item
+  if(DT_ACTION_TOGGLE_NEEDED(effect, move_size, value))
+  {
+    _toggle_set(w, !w->toggle.active);
+    value = w->toggle.active;
+
+    if(!gtk_widget_is_visible(widget))
+      dt_action_widget_toast(w->module, widget, value ? _("on") : _("off"));
+  }
+
+  return value;
+}
+
 static const dt_action_element_def_t _action_elements_slider[]
   = { { N_("value"), dt_action_effect_value },
       { N_("button"), dt_action_effect_toggle },
@@ -4082,6 +4538,26 @@ static const dt_action_def_t _action_def_combo
       _action_process_combo,
       _action_elements_combo,
       _action_fallbacks_combo };
+
+// deliberately the same single unnamed element, effect vocabulary, name and
+// fallbacks as the plain GtkToggleButton definition in gui/accelerators.c.
+// Shortcuts are stored by action path plus element and effect name, so
+// keeping all three identical means shortcuts that users already bound to
+// these checkboxes keep resolving to the same thing
+static const dt_action_element_def_t _action_elements_toggle[]
+  = { { NULL, dt_action_effect_toggle } };
+
+static const dt_shortcut_fallback_t _action_fallbacks_toggle[]
+  = { { .mods   = GDK_CONTROL_MASK   , .effect = DT_ACTION_EFFECT_TOGGLE_CTRL  },
+      { .button = DT_SHORTCUT_RIGHT  , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
+      { .press  = DT_SHORTCUT_LONG   , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
+      { } };
+
+static const dt_action_def_t _action_def_toggle
+  = { N_("toggle"),
+      _action_process_toggle,
+      _action_elements_toggle,
+      _action_fallbacks_toggle };
 
 static const dt_action_def_t _action_def_focus_slider
   = { N_("sliders"),

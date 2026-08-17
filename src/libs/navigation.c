@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
@@ -48,9 +49,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
                                               cairo_t *crf,
                                               gpointer user_data);
 /* motion notify callback handler*/
-static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
-                                                       GdkEventMotion *event,
-                                                       dt_lib_module_t *self);
+static void _lib_navigation_motion_notify_callback(GtkEventControllerMotion *controller,
+                                                      double x, double y,
+                                                      dt_lib_module_t *self);
 /* scroll callback */
 static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller,
                                             double dx, double dy,
@@ -64,17 +65,16 @@ static void _lib_navigation_pinch_scale_callback(GtkGesture *gesture,
                                                 gdouble scale,
                                                 dt_lib_module_t *self);
 /* button press callback */
-static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
-                                                      GdkEvent *event,
-                                                      dt_lib_module_t *self);
+static void _lib_navigation_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                     double x, double y,
+                                                     dt_lib_module_t *self);
 /* button release callback */
-static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
-                                                        GdkEventButton *event,
-                                                        dt_lib_module_t *self);
+static void _lib_navigation_button_release_callback(GtkGestureSingle *gesture, int n_press,
+                                                       double x, double y,
+                                                       dt_lib_module_t *self);
 /* leave notify callback */
-static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget,
-                                                      GdkEventCrossing *event,
-                                                      dt_lib_module_t *self);
+static void _lib_navigation_leave_notify_callback(GtkEventControllerMotion *controller,
+                                                    dt_lib_module_t *self);
 
 /* helper function for position set */
 static void _lib_navigation_set_position(struct dt_lib_module_t *self,
@@ -225,26 +225,20 @@ void gui_init(dt_lib_module_t *self)
      _("navigation\nclick or drag to position zoomed area in center view"));
 
   /* connect callbacks */
-  gtk_widget_set_app_paintable(thumbnail, TRUE);
+  dt_gui_add_class(thumbnail, "dt_transparent_background");
   g_signal_connect(G_OBJECT(thumbnail), "draw",
                    G_CALLBACK(_lib_navigation_draw_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "button-press-event",
-                   G_CALLBACK(_lib_navigation_button_press_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "button-release-event",
-                   G_CALLBACK(_lib_navigation_button_release_callback), self);
+  dt_gui_connect_click_all(thumbnail, _lib_navigation_button_press_callback, _lib_navigation_button_release_callback, self);
   dt_gui_connect_scroll(thumbnail, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
                         _lib_navigation_scroll_callback, self);
   // FIXME: Make helper function for zoom gesture. If discrete zooming
   //        as here is a well-used pattern, make proxy which handles
   //        this so don't need to implement a "begin" handler here.
   GtkGesture *zoom_gesture = gtk_gesture_zoom_new(thumbnail);
-  g_object_weak_ref(G_OBJECT(thumbnail), (GWeakNotify) g_object_unref, zoom_gesture);
+  dt_gui_add_controller(thumbnail, zoom_gesture);
   g_signal_connect(zoom_gesture, "begin", G_CALLBACK(_lib_navigation_pinch_begin_callback), self);
   g_signal_connect(zoom_gesture, "scale-changed", G_CALLBACK(_lib_navigation_pinch_scale_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "motion-notify-event",
-                   G_CALLBACK(_lib_navigation_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "leave-notify-event",
-                   G_CALLBACK(_lib_navigation_leave_notify_callback), self);
+  dt_gui_connect_motion(thumbnail, _lib_navigation_motion_notify_callback, NULL, _lib_navigation_leave_notify_callback, self);
 
   /* set size of navigation draw area */
   // gtk_widget_set_size_request(thumbnail, -1, DT_PIXEL_APPLY_DPI(175));
@@ -306,6 +300,68 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// Draw a small arrow on the thumbnail border pointing toward the viewport
+// centre when it has been panned outside the image (e.g. reaching off-image
+// mask handles), where the view box would otherwise shrink to nothing and
+// vanish. Expects the current transform to map the thumbnail image to
+// [0,wd]x[0,ht]; scale is that transform's scale (to keep the outline 1px).
+static void _draw_offview_arrow(cairo_t *cr,
+                                const int wd,
+                                const int ht,
+                                const float zoom_x,
+                                const float zoom_y,
+                                const float scale)
+{
+  const float cx = wd * (0.5f + zoom_x);
+  const float cy = ht * (0.5f + zoom_y);
+  if(cx >= 0.0f && cx <= wd && cy >= 0.0f && cy <= ht)
+    return; // view centre still inside the thumbnail: the box itself suffices
+
+  const float ox = 0.5f * wd, oy = 0.5f * ht;
+  float dx = cx - ox, dy = cy - oy;
+  const float dlen = hypotf(dx, dy);
+  if(dlen <= 1e-3f)
+    return;
+
+  dx /= dlen;
+  dy /= dlen;
+  // where the centre->view ray exits the image rectangle
+  float t = 1e9f;
+  if(dx > 0.0f)
+    t = fminf(t, (wd - ox) / dx);
+  else if(dx < 0.0f)
+    t = fminf(t, (0.0f - ox) / dx);
+  if(dy > 0.0f)
+    t = fminf(t, (ht - oy) / dy);
+  else if(dy < 0.0f)
+    t = fminf(t, (0.0f - oy) / dy);
+  t = fmaxf(0.0f, t);
+
+  // Draw a chevron ( ">" shape ) whose apex points outward along the view
+  // direction: an open two-armed stroke reads its direction more clearly than
+  // a solid triangle.
+  const float a = fminf(wd, ht) * 0.08f;          // chevron reach in thumbnail units
+  const float tipx = ox + dx * t - dx * a * 0.3f; // apex just inside the border
+  const float tipy = oy + dy * t - dy * a * 0.3f;
+  const float perpx = -dy, perpy = dx;
+  const float spread = a * 0.85f; // half-width of the arms (~90 deg opening)
+  const float ax1 = tipx - dx * a + perpx * spread, ay1 = tipy - dy * a + perpy * spread;
+  const float ax2 = tipx - dx * a - perpx * spread, ay2 = tipy - dy * a - perpy * spread;
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+  cairo_move_to(cr, ax1, ay1);
+  cairo_line_to(cr, tipx, tipy);
+  cairo_line_to(cr, ax2, ay2);
+  // dark halo first, then a white core, so it reads on any background
+  cairo_set_source_rgba(cr, 0., 0., 0., 0.7);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4) / scale);
+  cairo_stroke_preserve(cr);
+  cairo_set_source_rgb(cr, 1., 1., 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2) / scale);
+  cairo_stroke(cr);
+}
+
 static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
                                               cairo_t *crf,
                                               gpointer user_data)
@@ -357,7 +413,10 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
       cairo_fill(cr);
 
-      // Repaint the original image in the area of interest
+      // Repaint the original image in the area of interest. Isolate the box
+      // clip/translate in its own save so the off-view arrow below is drawn in
+      // plain thumbnail coordinates.
+      cairo_save(cr);
       cairo_set_source_surface(cr, surface, 0, 0);
       cairo_translate(cr, wd * (.5f + zoom_x), ht * (.5f + zoom_y));
       boxw *= wd;
@@ -375,6 +434,12 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_rectangle(cr, -boxw / 2, -boxh / 2, boxw, boxh);
       cairo_stroke(cr);
+      cairo_restore(cr);
+
+      // While editing a mask the viewport can be panned outside the image; the
+      // view box then shrinks against the thumbnail edge and disappears, losing
+      // any sense of where one is looking. Point an arrow the way it has gone.
+      _draw_offview_arrow(cr, wd, ht, zoom_x, zoom_y, scale);
     }
     cairo_restore(cr);
 
@@ -421,15 +486,15 @@ void _lib_navigation_set_position(dt_lib_module_t *self,
   }
 }
 
-static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
-                                                       GdkEventMotion *event,
-                                                       dt_lib_module_t *self)
+static void _lib_navigation_motion_notify_callback(GtkEventControllerMotion *controller,
+                                                      double x, double y,
+                                                      dt_lib_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  _lib_navigation_set_position(self, event->x, event->y,
+  _lib_navigation_set_position(self, x, y,
                                allocation.width, allocation.height);
-  return TRUE;
 }
 
 static void _zoom_changed(GtkWidget *widget, gpointer user_data)
@@ -526,13 +591,13 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
                                             // FIXME: if unused don't pass
                                             dt_lib_module_t *self)
 {
-  GdkEvent *event = gtk_get_current_event();
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(event)
   {
-    GdkDevice *device = gdk_event_get_source_device(event);
+    GdkDevice *device = dt_gdk_event_get_source_device(event);
     if(device
        && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
-       && event->scroll.direction == GDK_SCROLL_SMOOTH)
+       && dt_gdk_event_get_scroll_direction(event) == GDK_SCROLL_SMOOTH)
     {
       dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE,
                        15.0, 0, dx, dy, TRUE);
@@ -542,12 +607,19 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
       const gboolean constrain = !dt_modifier_eq(controller, GDK_CONTROL_MASK);
       gdouble x, y;
       if(_lib_navigation_widget_to_center(GTK_EVENT_CONTROLLER(controller),
-                                          event->scroll.x, event->scroll.y,
+                                          dt_gdk_event_get_x(event), dt_gdk_event_get_y(event),
                                           &x, &y))
+      {
+        const gboolean zoom_in = dt_gui_scroll_zoom_delta(event,
+                                                          dx, dy) > 0.0f;
+
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
-                         0.0f, dy < 0, x, y, constrain);
+                         0.0f, zoom_in ? 1 : 0, x, y, constrain);
+      }
     }
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
   }
 }
 
@@ -586,48 +658,53 @@ static void _lib_navigation_pinch_scale_callback(GtkGesture *gesture,
   }
 }
 
-static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
-                                                      GdkEvent *event,
-                                                      dt_lib_module_t *self)
+static void _lib_navigation_button_press_callback(GtkGestureSingle *gesture, int n_press,
+                                                     double x, double y,
+                                                     dt_lib_module_t *self)
 {
   dt_lib_navigation_t *d = self->data;
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(event->type == GDK_BUTTON_PRESS && event->button.button != 2)
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+
+  if(button == GDK_BUTTON_PRIMARY || button == GDK_BUTTON_SECONDARY)
   {
     d->dragging = 1;
-    _lib_navigation_set_position(self, event->button.x, event->button.y,
+    _lib_navigation_set_position(self, x, y,
                                  allocation.width, allocation.height);
-
-    return TRUE;
   }
-  else
+  else if(button == GDK_BUTTON_MIDDLE)
   {
     GtkWidget *center = dt_ui_center(darktable.gui->ui);
     GtkAllocation center_alloc;
     gtk_widget_get_allocation(center, &center_alloc);
-    event->button.x *= (gdouble)center_alloc.width / allocation.width;
-    event->button.y *= (gdouble)center_alloc.height / allocation.height;
 
-    return gtk_widget_event(center, event);
+    GdkEvent *ev = gdk_event_new(GDK_BUTTON_PRESS);
+    gdk_event_set_screen(ev, gtk_widget_get_screen(center));
+    ev->button.window = gtk_widget_get_window(center);
+    ev->button.button = GDK_BUTTON_MIDDLE;
+    ev->button.x = x * (gdouble)center_alloc.width / allocation.width;
+    ev->button.y = y * (gdouble)center_alloc.height / allocation.height;
+    ev->button.type = GDK_BUTTON_PRESS;
+    ev->button.time = GDK_CURRENT_TIME;
+    if(ev->button.window) g_object_ref(ev->button.window);
+    gtk_widget_event(center, ev);
+    gdk_event_free(ev);
   }
 }
 
-static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
-                                                        GdkEventButton *event,
-                                                        dt_lib_module_t *self)
+static void _lib_navigation_button_release_callback(GtkGestureSingle *gesture, int n_press,
+                                                       double x, double y,
+                                                       dt_lib_module_t *self)
 {
   dt_lib_navigation_t *d = self->data;
   d->dragging = 0;
-
-  return TRUE;
 }
 
-static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget,
-                                                      GdkEventCrossing *event,
-                                                      dt_lib_module_t *self)
+static void _lib_navigation_leave_notify_callback(GtkEventControllerMotion *controller,
+                                                    dt_lib_module_t *self)
 {
-  return TRUE;
 }
 
 // clang-format off

@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "common/metadata.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -419,24 +418,27 @@ static void _cancel_button_clicked(GtkButton *button,
   gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
 }
 
-static gboolean _key_pressed(GtkWidget *textview,
-                             GdkEventKey *event,
-                             dt_lib_module_t *self)
+static gboolean _key_pressed_cb(GtkEventControllerKey *controller,
+                                   guint keyval,
+                                   guint keycode,
+                                   GdkModifierType state,
+                                   dt_lib_module_t *self)
 {
+  GtkWidget *textview = dt_gui_get_widget(controller);
   dt_lib_metadata_t *d = self->data;
 
-  switch(event->keyval)
+  switch(keyval)
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
-      if(!dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      if(!dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         gtk_button_clicked(GTK_BUTTON(d->apply_button));
         return TRUE;
       }
       break;
     case GDK_KEY_Escape:
-      if(dt_modifier_is(event->state, 0))
+      if(dt_modifier_is(state, 0))
       {
         gtk_button_clicked(GTK_BUTTON(d->cancel_button));
         return TRUE;
@@ -446,7 +448,19 @@ static gboolean _key_pressed(GtkWidget *textview,
       break;
   }
 
-  return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event);
+  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4: GtkTextView's internal key controller does the IM filtering
+   * itself; gtk_text_view_im_context_filter_keypress() is gone.  Let
+   * the event propagate so the textview handles it natively. */
+  (void)event;
+  return FALSE;
+#else
+  const gboolean handled =
+    gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), (GdkEventKey *)event);
+  gdk_event_free(event);
+  return handled;
+#endif
 }
 
 static gboolean _textview_focus(GtkWidget *widget,
@@ -568,11 +582,11 @@ static void _populate_popup_multi(GtkTextView *textview,
   gtk_widget_show_all(popup);
 }
 
-static gboolean _metadata_reset(GtkWidget *label,
-                                GdkEventButton *event,
-                                GtkWidget *widget)
+static void _metadata_reset_cb(GtkGestureSingle *gesture, int n_press,
+                                  double x, double y,
+                                  GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(n_press >= 2)
   {
     g_object_set_data(G_OBJECT(widget), "tv_multiple", GINT_TO_POINTER(FALSE));
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
@@ -581,7 +595,6 @@ static gboolean _metadata_reset(GtkWidget *label,
     else
       g_signal_emit_by_name(G_OBJECT(buffer), "changed"); // even if unchanged
   }
-  return TRUE;
 }
 
 static void _add_grid_row(dt_metadata_t *metadata, int row, dt_lib_module_t *self)
@@ -639,10 +652,10 @@ static void _add_grid_row(dt_metadata_t *metadata, int row, dt_lib_module_t *sel
   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
   gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
   gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK);
-  g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
+  dt_gui_connect_key(textview, _key_pressed_cb, self);
   g_signal_connect(textview, "focus", G_CALLBACK(_textview_focus), self);
   g_signal_connect(textview, "populate-popup", G_CALLBACK(_populate_popup_multi), self);
-  g_signal_connect(labelev, "button-press-event", G_CALLBACK(_metadata_reset), textview);
+  dt_gui_connect_click_all(labelev, _metadata_reset_cb, NULL, textview);
   g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
   gtk_widget_set_hexpand(textview, TRUE);
   gtk_widget_set_vexpand(textview, TRUE);
@@ -848,7 +861,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
   dt_gui_dialog_restore_size(GTK_DIALOG(dialog), "metadata");
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT,      // key
@@ -932,13 +945,19 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(plus, _("add metadata tags"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  GtkWidget *plus = dtgtk_button_new_full(dtgtk_cairo_paint_plus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("add metadata tags"),
+        .clicked_cb = G_CALLBACK(_add_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
 
-  GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  GtkWidget *minus = dtgtk_button_new_full(dtgtk_cairo_paint_minus_simple, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("delete metadata tag"),
+        .clicked_cb = G_CALLBACK(_delete_tag_button_clicked),
+        .clicked_data = (gpointer)d,
+      });
   d->delete_button = minus;
 
 #ifdef GDK_WINDOWING_QUARTZ

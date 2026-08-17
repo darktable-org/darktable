@@ -3058,8 +3058,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
     if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
-      dt_control_job_set_progress_message(job, ngettext("importing %d/%d image",
-                                                        "importing %d/%d images", cntr), cntr, total);
+      dt_control_job_set_progress_message(job, _("importing image %d/%d"),
+                                               cntr, total);
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
     }
@@ -3067,6 +3067,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   g_free(prev_output);
 
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
+  dt_set_darktable_tags();
   dt_control_queue_redraw_center();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);

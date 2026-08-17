@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,6 +207,11 @@ void dt_selection_select(dt_selection_t *selection,
   selection->last_single_id = imgid;
 }
 
+dt_imgid_t dt_selection_get_last_single_id(const dt_selection_t *selection)
+{
+  return selection->last_single_id;
+}
+
 void dt_selection_deselect(dt_selection_t *selection,
                            const dt_imgid_t imgid)
 {
@@ -373,13 +378,19 @@ void dt_selection_select_range(dt_selection_t *selection,
     sqlite3_finalize(stmt);
   }
 
-  /* select the images in range from start to end */
+  /* set the selection to the range between the anchor (last_single_id) and
+   * imgid: clear the previous selection first, then select the new range.
+   * This allows shrinking the selection by moving back towards the anchor
+   * while keeping the anchor fixed. */
   const uint32_t old_flags = dt_collection_get_query_flags(selection->collection);
 
   /* use the limit to select range of images */
   dt_collection_set_query_flags(selection->collection, (old_flags | COLLECTION_QUERY_USE_LIMIT));
 
   dt_collection_update(selection->collection);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   gchar *fullq = g_strdup_printf
     ("INSERT OR IGNORE INTO main.selected_images (imgid) %s",
@@ -397,10 +408,11 @@ void dt_selection_select_range(dt_selection_t *selection,
   dt_collection_set_query_flags(selection->collection, old_flags);
   dt_collection_update(selection->collection);
 
-  // The logic above doesn't handle groups, so explicitly select the
-  // beginning and end to make sure those are selected properly
-  dt_selection_select(selection, srid);
-  dt_selection_select(selection, imgid);
+  /* the range query can miss the endpoints with grouped images, so select
+   * them explicitly; unlike dt_selection_select() this does not move the
+   * range anchor (last_single_id) */
+  _selection_select(selection, srid);
+  _selection_select(selection, imgid);
 
   g_free(fullq);
 }

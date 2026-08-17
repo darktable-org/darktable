@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
@@ -24,6 +25,7 @@
 #include "common/iop_profile.h"
 #include "common/utility.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -483,7 +485,8 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
 
   _get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align_float(buf_size_lut);
+  // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+  lclut = dt_alloc_align_float(buf_size_lut + 1);
   if(!lclut)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error allocating buffer for gmz LUT");
@@ -500,6 +503,7 @@ static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
       lut3d_decompress_clut((const unsigned char *const)c_clut, p->nb_keypoints,
         level, lclut, cache_filename);
     }
+    lclut[buf_size_lut] = 0.0f; // padding
   }
   *clut = lclut;
   return level;
@@ -821,11 +825,13 @@ static uint16_t _calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube LUT - level %d", buf_size, level);
-        lclut = dt_alloc_align_float(buf_size);
+        // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+        lclut = dt_alloc_align_float(buf_size + 1);
         if(!lclut)
         {
           dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for cube LUT");
           dt_control_log(_("error - allocating buffer for cube LUT"));
+          dt_free_align(lclut);
           free(line);
           fclose(cube_file);
           return 0;
@@ -875,6 +881,7 @@ static uint16_t _calculate_clut_cube(const char *const filepath, float **clut)
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] warning - %u values out of range [0,1]", out_of_range_nb);
     dt_control_log(_("warning - cube LUT has %d values out of range [0,1]"), out_of_range_nb);
   }
+  lclut[buf_size] = 0.0f; // padding
   *clut = lclut;
   free(line);
   fclose(cube_file);
@@ -926,7 +933,8 @@ static uint16_t _calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for 3dl LUT - level %d", buf_size, level);
-            lclut = dt_alloc_align_float(buf_size);
+            // for_each_channel() reads 4 floats per entry but we store 3; over-allocate by 1
+            lclut = dt_alloc_align_float(buf_size + 1);
             if(!lclut)
             {
               dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for 3dl LUT");
@@ -995,6 +1003,7 @@ static uint16_t _calculate_clut_3dl(const char *const filepath, float **clut)
   // normalize the lut
   for(i =0; i < buf_size; i++)
     lclut[i] = CLAMP(lclut[i] * norm, 0.0f, 1.0f);
+  lclut[buf_size] = 0.0f; // padding
   *clut = lclut;
   return level;
 }
@@ -1024,6 +1033,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
   cl_mem clut_cl = NULL;
+  cl_mem scratch = NULL;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1036,18 +1046,28 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
+    /* A kernel may not take one image object as both its read_only source and its
+       write_only target, so the profile conversions and the lookup cannot pass dev_out
+       for both. dev_out belongs to the caller and cannot be swapped for another buffer,
+       so a scratch image carries the intermediate: convert into it, apply the lookup
+       from it back into dev_out, then convert dev_out into it and back once more. */
     if(transform)
     {
-      const gboolean success = dt_ioppr_transform_image_colorspace_rgb_cl(devid,
-        dev_in, dev_out, width, height,
-        work_profile, lut_profile, "work profile to LUT profile");
-      if(!success)
-       transform = FALSE;
+      scratch = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+      if(scratch == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto cleanup;
+      }
+
+      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, scratch, width, height,
+        work_profile, lut_profile, "work profile to LUT profile"))
+        transform = FALSE;
     }
+
     if(transform)
-      // FIXME OPENCL is this safe here ?
       err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-              CLARG(dev_out), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
+              CLARG(scratch), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
     else
       err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
               CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
@@ -1056,9 +1076,15 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
     if(transform)
     {
-      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
-        lut_profile, work_profile, "LUT profile to work profile"))
+      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, scratch, width, height,
+           lut_profile, work_profile, "LUT profile to work profile"))
         err = DT_OPENCL_PROCESS_CL;
+      else
+      {
+        const size_t region[2] = { width, height };
+        err = dt_opencl_enqueue_copy_image(devid, scratch, dev_out,
+                                           CLIMG_ORIGIN, CLIMG_ORIGIN, region);
+      }
     }
   }
   else
@@ -1069,9 +1095,32 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 cleanup:
   dt_opencl_release_mem_object(clut_cl);
+  dt_opencl_release_mem_object(scratch);
   return err;
 }
 #endif
+
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
+{
+  const float ioratio = ((float)roi_out->width * roi_out->height)
+                      / ((float)roi_in->width * roi_in->height);
+
+  tiling->factor = 1.0f + ioratio;
+  /* The OpenCL path carries the profile-converted intermediates in a scratch image the
+     size of the input, since the lookup kernel and the conversions cannot read and write
+     one image object. Only allocated when a profile conversion is needed, so this is the
+     worst case. */
+  tiling->factor_cl = tiling->factor + 1.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = tiling->maxbuf;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->align = 1;
+}
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -1465,15 +1514,18 @@ static void _lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self
   }
 }
 
-static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_module_t *self)
+static void _mouse_scroll(GtkEventControllerScroll *controller,
+                           gdouble dx, gdouble dy,
+                           dt_iop_module_t *self)
 {
+  GtkWidget *view = dt_gui_get_widget(controller);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)view);
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gboolean next = FALSE;
-    if(event->delta_y > 0)
+    if(dy > 0)
       next = gtk_tree_model_iter_next(model, &iter);
     else
       next = gtk_tree_model_iter_previous(model, &iter);
@@ -1483,10 +1535,9 @@ static gboolean _mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_mod
       GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
       gtk_tree_view_set_cursor((GtkTreeView *)view, path, NULL, FALSE);
       gtk_tree_path_free(path);
-      return TRUE;
+      return;
     }
   }
-  return FALSE;
 }
 #endif // HAVE_GMIC
 
@@ -1684,17 +1735,21 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = IOP_GUI_ALLOC(lut3d);
 
-  g->button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-  gtk_widget_set_name(g->button, "non-flat");
 #ifdef HAVE_GMIC
-  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
+  const gchar *tooltip = _("select a png (haldclut)"
       ", a cube, a 3dl or a gmz (compressed LUT) file "
-      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
+      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file");
 #else
-  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
+  const gchar *tooltip = _("select a png (haldclut)"
       ", a cube or a 3dl file "
-      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
+      "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file");
 #endif // HAVE_GMIC
+
+  g->button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = tooltip,
+      });
+  gtk_widget_set_name(g->button, "non-flat");
 
   g->filepath = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->filepath, PANGO_ELLIPSIZE_MIDDLE);
@@ -1740,7 +1795,9 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->lutwindow);
 
   g_signal_connect(G_OBJECT(g->lutentry), "changed", G_CALLBACK(_entry_callback), self);
-  g_signal_connect(G_OBJECT((GtkTreeView *)g->lutname), "scroll-event", G_CALLBACK(_mouse_scroll), (gpointer)self);
+  dt_gui_connect_scroll(g->lutname, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _mouse_scroll, self);
 #endif // HAVE_GMIC
 
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");

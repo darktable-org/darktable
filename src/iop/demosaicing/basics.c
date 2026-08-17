@@ -339,14 +339,11 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
       dev_out2 = dev_out;
       break;
     case DT_IOP_GREEN_EQ_BOTH:
+    default:
       dev_in1 = dev_in;
       dev_out1 = dev_tmp;
       dev_in2 = dev_tmp;
       dev_out2 = dev_out;
-      break;
-    case DT_IOP_GREEN_EQ_NO:
-    default:
-      goto error;
   }
 
   if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH)

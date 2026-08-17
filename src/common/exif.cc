@@ -985,9 +985,13 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
    * Sony lens correction data
    */
   if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
-    && _exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
-    && _exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
-    && _exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
+    && ((_exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
+         && _exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
+         && _exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
+        // DNG round-trip: dt_exif_read_blob copies these to IFD0 by numeric ID
+        || (_exif_read_exif_tag(exifData, &posd, "Exif.Image.0x7037")
+            && _exif_read_exif_tag(exifData, &posc, "Exif.Image.0x7035")
+            && _exif_read_exif_tag(exifData, &posv, "Exif.Image.0x7032"))))
   {
     // Validate
     const int nc = posd->toLong(0);
@@ -1136,6 +1140,64 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
     }
   }
 
+  /*
+   * Panasonic distortion correction (RW2/RWL)
+   *
+   * The DistortionInfo tag (0x0119 in IFD0 of the RW2) is a 32-byte blob of
+   * 16 signed 16-bit little-endian entries. Exiv2 exposes it as an Undefined
+   * byte array under the numeric key; we parse the fields ourselves.
+   *
+   * Layout (from ExifTool PanasonicRaw.pm + trou/panasonic-rw2 notes):
+   *   [0,1]  checksums (ignored)
+   *   [2]    DistortionParam02 (unknown; leave for future investigation)
+   *   [3]    usually 0
+   *   [4]    DistortionParam04 -> b (r^5)
+   *   [5]    DistortionScale
+   *   [6]    unused
+   *   [7]    DistortionCorrection flag: low nibble 0=off, 1=on
+   *   [8]    DistortionParam08 -> a (r^3)
+   *   [9]    DistortionParam09 (unknown)
+   *   [10]   unused
+   *   [11]   DistortionParam11 -> c (r^7)
+   *   [12]   DistortionN (constant 2500; disables correction if changed)
+   *   [13..] unused / trailing
+   *
+   * Formula (Rigo, https://github.com/trou/panasonic-rw2/blob/master/notes.txt):
+   *   Ru = Rd + scale * (a*Rd^3 + b*Rd^5 + c*Rd^7)  (Rd, Ru normalised to half-diag)
+   *   scale = 1 / (1 + DistortionScale/32768)
+   *   a = DistortionParam08 / 32768
+   *   b = DistortionParam04 / 32768
+   *   c = DistortionParam11 / 32768
+   * we store the raw a/b/c and scale here; _init_coeffs_md_v2 applies scale
+   * when evaluating the polynomial so the two factors stay separable
+   */
+  if((_exif_read_exif_tag(exifData, &pos, "Exif.PanasonicRaw.0x0119")
+      // TIFF/DNG round-trip: dt_exif_read_blob copies the blob here
+      || _exif_read_exif_tag(exifData, &pos, "Exif.Image.0xf119"))
+     && pos->size() == 32)
+  {
+    uint8_t buf[32];
+    pos->copy(buf, Exiv2::littleEndian);
+    int16_t v[16];
+    memcpy(v, buf, sizeof(v));
+
+    const int enabled = (v[7] & 0x0f) == 1;
+    if(enabled)
+    {
+      img->exif_correction_type = CORRECTION_TYPE_PANASONIC;
+      img->exif_correction_data.panasonic.scale = 1.0f / (1.0f + (float)v[5] / 32768.0f);
+      img->exif_correction_data.panasonic.a = (float)v[8]  / 32768.0f;
+      img->exif_correction_data.panasonic.b = (float)v[4]  / 32768.0f;
+      img->exif_correction_data.panasonic.c = (float)v[11] / 32768.0f;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exif] Panasonic distortion: scale=%.6f a=%.6f b=%.6f c=%.6f",
+               img->exif_correction_data.panasonic.scale,
+               img->exif_correction_data.panasonic.a,
+               img->exif_correction_data.panasonic.b,
+               img->exif_correction_data.panasonic.c);
+    }
+  }
+
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
@@ -1171,6 +1233,13 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
           img->exif_highlight_preservation = 0.33f;     // estimated strength for Low
        else if(state == 2)
           img->exif_highlight_preservation = 0.66f;     // estimated strength for Strong
+    }
+    // Canon Highlight Tone Priority. D+ (1) and D+2 (2) both apply ~1 EV sensor underexposure.
+    if(FIND_EXIF_TAG("Exif.CanonLiOp.HighlightTonePriority"))
+    {
+       const long state = pos->toLong(0);
+       if(state > 0)
+          img->exif_highlight_preservation += 1.0f; 
     }
     else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
        || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
@@ -1973,12 +2042,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", utf8);
+      g_free(utf8);
     }
     else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", utf8);
+      g_free(utf8);
     }
 
     // FIXME: Should the UserComment go into the description? Or do we
@@ -1994,13 +2067,17 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if(FIND_EXIF_TAG("Exif.Image.ImageDescription"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", utf8);
+      g_free(utf8);
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", str.c_str());
+      gchar *utf8 = dt_util_foo_to_utf8(str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", utf8);
+      g_free(utf8);
     }
 
     if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
@@ -2754,13 +2831,62 @@ int dt_exif_read_blob(uint8_t **buf,
     // also for DNG files.
 
     // Remove subimage* trees, related to thumbnails or HDR usually; also UserCrop.
+    // Keep Sony lens-correction tags that live in SubImage1
     for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
     {
       static const std::string needle = "Exif.SubImage";
-      if(i->key().compare(0, needle.length(), needle) == 0)
+      const std::string &key = i->key();
+      if(key.compare(0, needle.length(), needle) == 0
+         && key != "Exif.SubImage1.DistortionCorrParams"
+         && key != "Exif.SubImage1.ChromaticAberrationCorrParams"
+         && key != "Exif.SubImage1.VignettingCorrParams")
         i = exifData.erase(i);
       else
         ++i;
+    }
+
+    // copy Sony SubImage1 lens-correction tags to IFD0 by numeric ID.
+    // exiv2 knows the Sony tag names only via its Sony parser, so it
+    // silently drops Exif.SubImage1.*CorrParams when writing into
+    // generic TIFF/DNG containers; the numeric Exif.Image.0xNNNN form
+    // survives as an unknown TIFF tag with its original type preserved
+    static const struct { const char *src; const char *dst; } sony_copies[] = {
+      { "Exif.SubImage1.DistortionCorrParams",          "Exif.Image.0x7037" },
+      { "Exif.SubImage1.ChromaticAberrationCorrParams", "Exif.Image.0x7035" },
+      { "Exif.SubImage1.VignettingCorrParams",          "Exif.Image.0x7032" },
+    };
+    for(size_t k = 0; k < G_N_ELEMENTS(sony_copies); k++)
+    {
+      try
+      {
+        Exiv2::ExifData::iterator src =
+          exifData.findKey(Exiv2::ExifKey(sony_copies[k].src));
+        if(src != exifData.end())
+          exifData.add(Exiv2::ExifKey(sony_copies[k].dst), &src->value());
+      }
+      catch(const Exiv2::AnyError &e)
+      {
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "[exiv2 dt_exif_read_blob] failed to copy %s -> %s: %s",
+                 sony_copies[k].src, sony_copies[k].dst, e.what());
+      }
+    }
+
+    // copy Panasonic DistortionInfo to IFD0 by numeric ID; the
+    // Exif.PanasonicRaw namespace is dropped by exiv2 on TIFF/DNG write.
+    // 0xF119 is in TIFF's private range (>= 0x8000) so no standard collision
+    try
+    {
+      Exiv2::ExifData::iterator src =
+        exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.0x0119"));
+      if(src != exifData.end())
+        exifData.add(Exiv2::ExifKey("Exif.Image.0xf119"), &src->value());
+    }
+    catch(const Exiv2::AnyError &e)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exiv2 dt_exif_read_blob] failed to copy Panasonic distortion: %s",
+               e.what());
     }
 
     {

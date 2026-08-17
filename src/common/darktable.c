@@ -246,6 +246,14 @@ static int usage(const char *argv0)
          "--disable-opencl\n"
          "    Prevent darktable from initializing the OpenCL subsystem.\n"
          "\n"
+         "--opencl-tiling --opencl-no-tiling\n"
+         "    Enforce or disable fast opencl tiling even if not required.\n"
+         "    Use for performance/debugging sessions only.\n"
+         "\n"
+         "--opencl-migrate\n"
+         "    Enforce safe on-device cl_mem allocation.\n"
+         "    Use for debugging sessions analysing cl_mem usage because of a performance penalty.\n"
+         "\n"
 #endif
          "--disable-pipecache\n"
          "    Disable the pixelpipe cache. This option allows only\n"
@@ -727,11 +735,11 @@ static int32_t _detect_opencl_job_run(dt_job_t *job)
   return 0;
 }
 
-static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
+static dt_job_t *_detect_opencl_job_create(int options)
 {
   dt_job_t *job = dt_control_job_create(&_detect_opencl_job_run, "detect opencl devices");
   if(!job) return NULL;
-  dt_control_job_set_params(job, GINT_TO_POINTER(exclude_opencl), NULL);
+  dt_control_job_set_params(job, GINT_TO_POINTER(options), NULL);
   return job;
 }
 
@@ -795,6 +803,20 @@ static char *_get_version_string(void)
   const char *libraw_version = LIBRAW_VERSION_STR "\n";
 #endif
 
+#ifdef _WIN32
+  const char *system_name = "windows";
+#else
+  #ifdef __APPLE__
+    const char *system_name = "mac";
+  #else
+    #ifdef __linux__
+      const char *system_name = "linux";
+    #else
+      const char *system_name = "other";
+    #endif
+  #endif
+#endif
+
 #ifdef USE_LUA
   const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
                                        STR(LUA_API_VERSION_MAJOR) "."
@@ -807,7 +829,7 @@ static char *_get_version_string(void)
 #endif
 
 char *version = g_strdup_printf(
-               "darktable %s\n"
+               "darktable %s [%s]\n"
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "  Bit depth              -> %zu bit\n"
@@ -815,6 +837,7 @@ char *version = g_strdup_printf(
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
                darktable_package_version,
+               system_name,
                darktable_last_commit_year,
                CHAR_BIT * sizeof(void *),
 
@@ -1007,10 +1030,10 @@ int dt_init(int argc,
   darktable.tmp_directory = NULL;
   darktable.bench_module = NULL;
 
-  gboolean exclude_opencl = TRUE;
+  int options = DT_OPENCL_OPTION_EXCLUDE;
   gboolean print_statistics = FALSE;
 #ifdef HAVE_OPENCL
-  exclude_opencl = FALSE;
+  options = DT_OPENCL_OPTION_NONE;
   print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
 #endif
 
@@ -1316,7 +1339,28 @@ int dt_init(int argc,
       else if(!strcmp(argv[k], "--disable-opencl"))
       {
 #ifdef HAVE_OPENCL
-        exclude_opencl = TRUE;
+        options |= DT_OPENCL_OPTION_EXCLUDE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-tiling"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_FAST_TILE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-no-tiling"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_NOFAST_TILE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-migrate"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_MIGRATE;
 #endif
         argv[k] = NULL;
       }
@@ -1830,6 +1874,7 @@ int dt_init(int argc,
   size_t total_mb = _get_total_memory() / 1024lu;
   if(total_mb < 8192) total_mb -= 1024;
   res->total_memory = total_mb * DT_MEGA;
+  res->cl_uni_memory = 0;
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
@@ -1892,9 +1937,9 @@ int dt_init(int argc,
 
   // Only then kick off the OpenCL background job
   if(init_gui)
-    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(options));
   else
-    dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
+    dt_opencl_init(darktable.opencl, options, print_statistics);
 
   // must come before mipmap_cache, because that one will need to access image dimensions stored in here:
   dt_image_cache_init();
@@ -2125,14 +2170,14 @@ void dt_get_sysresource_level()
   if(level != oldlevel)
   {
     oldlevel = res->level = level;
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "[dt_get_sysresource_level] switched to `%s'", config);
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  total mem:       %luMB", res->total_memory / DT_MEGA);
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  available mem:   %luMB", dt_get_available_mem() / DT_MEGA);
-    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / DT_MEGA);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "[dt_get_sysresource_level] switched to `%s'\n", config);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "  total mem:       %luMB\n", res->total_memory / DT_MEGA);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "  available mem:   %luMB\n", dt_get_available_mem() / DT_MEGA);
+    dt_print_nts(DT_DEBUG_MEMORY | DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+             "  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / DT_MEGA);
   }
 }
 
@@ -2457,7 +2502,7 @@ size_t dt_get_available_mem()
     return res->refresource[4*(-level-1)] * DT_MEGA;
 
   const int fraction = res->fractions[4*level];
-  return MAX(512lu * DT_MEGA, res->total_memory / 1024lu * fraction);
+  return MAX(512lu * DT_MEGA, (res->total_memory - res->cl_uni_memory) / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()

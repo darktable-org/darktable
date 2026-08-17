@@ -22,6 +22,7 @@
 #include "common/utility.h"
 #include "dtgtk/stylemenu.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
 #include "gui/styles.h"
 
 static gboolean _styles_tooltip_callback(GtkWidget* self,
@@ -56,6 +57,36 @@ static void _free_menu_data(dt_stylemenu_data_t *data)
   free(data);
 }
 
+/* The shell emits "activate" on mouse release as well (for any button), so
+ * the activate callback must tell keyboard activation (Enter/mnemonic/accel)
+ * apart from mouse clicks: the press gesture marks the item and
+ * dt_gui_menuitem_activated_by_keyboard() skips the release-time activate.
+ * This replaces the gtk_get_current_event() GDK_KEY_PRESS check, which does
+ * not exist in GTK4. */
+typedef struct
+{
+  dtgtk_menuitem_button_callback_fn *callback;
+  dt_stylemenu_data_t *data;
+} dt_stylemenu_button_conn_t;
+
+static void _style_menu_button_pressed(GtkGestureSingle *gesture,
+                                       gint n_press,
+                                       gdouble x,
+                                       gdouble y,
+                                       gpointer user_data)
+{
+  dt_stylemenu_button_conn_t *conn = user_data;
+  dt_gui_menuitem_mark_pressed(dt_gui_get_widget(gesture));
+  conn->callback(gesture, n_press, x, y, conn->data);
+}
+
+static void _free_button_conn(gpointer data)
+{
+  dt_stylemenu_button_conn_t *conn = data;
+  _free_menu_data(conn->data);
+  g_free(conn);
+}
+
 static void _build_style_submenus(GtkMenuShell *menu,
                                   const gchar *style_name,
                                   gchar **splits,
@@ -66,7 +97,6 @@ static void _build_style_submenus(GtkMenuShell *menu,
 {
   // localize the name of the current level in the hierarchy
   const char *split0 = dt_util_localize_string(splits[index]);
-  GtkMenuItem *mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label(split0[0] ? split0 : _("none")));
 
   // check if we already have an item or sub-menu with this name
   GtkMenu *sm = NULL;
@@ -82,35 +112,44 @@ static void _build_style_submenus(GtkMenuShell *menu,
   }
   g_list_free(children);
 
-  if(!splits[index+1])
+  if(splits[index+1])
   {
-    // we've reached the bottom level, so build a final menu item with preview popup
-    // need a tooltip for the signal below to be raised
-    gtk_menu_shell_append(menu, GTK_WIDGET(mi));
-    if(style_name && style_name[0]) // don't add tooltip for "none" style
-    {
-      gtk_widget_set_has_tooltip(GTK_WIDGET(mi), TRUE);
-      g_signal_connect_data(mi, "query-tooltip",
-                            G_CALLBACK(_styles_tooltip_callback),
-                            g_strdup(style_name), (GClosureNotify)g_free, 0);
-      dt_action_define(&darktable.control->actions_global, "styles", style_name, GTK_WIDGET(mi), NULL);
-    }
-    else
-      gtk_widget_set_has_tooltip(GTK_WIDGET(mi), FALSE);
-  }
-  else
-  {
+    // an intermediate level of the hierarchy: reuse the sub-menu built for an
+    // earlier style in the same group, or create the item that opens it
     if(!sm)
     {
-      // we need a sub-menu, but it doesn't exist yet
+      GtkMenuItem *node = GTK_MENU_ITEM(gtk_menu_item_new_with_label(split0));
       sm = (GtkMenu*)gtk_menu_new();
-      gtk_menu_item_set_submenu(mi, GTK_WIDGET(sm));
-      gtk_menu_shell_append(menu, GTK_WIDGET(mi));
+      gtk_menu_item_set_submenu(node, GTK_WIDGET(sm));
+      gtk_menu_shell_append(menu, GTK_WIDGET(node));
+      gtk_widget_show(GTK_WIDGET(node));
     }
     _build_style_submenus(GTK_MENU_SHELL(sm), style_name, splits, index+1,
                           activate_callback, button_callback, user_data);
+    return;
   }
 
+  // we've reached the bottom level, so build a final menu item with preview popup
+  // need a tooltip for the signal below to be raised
+  GtkMenuItem *mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label(split0[0] ? split0 : _("none")));
+  gtk_menu_shell_append(menu, GTK_WIDGET(mi));
+  if(style_name && style_name[0]) // don't add tooltip for "none" style
+  {
+    gtk_widget_set_has_tooltip(GTK_WIDGET(mi), TRUE);
+    g_signal_connect_data(mi, "query-tooltip",
+                          G_CALLBACK(_styles_tooltip_callback),
+                          g_strdup(style_name), (GClosureNotify)g_free, 0);
+    dt_action_define(&darktable.control->actions_global, "styles", style_name, GTK_WIDGET(mi), NULL);
+  }
+  else
+    gtk_widget_set_has_tooltip(GTK_WIDGET(mi), FALSE);
+
+  /* Only the leaf item of a "group|style" hierarchy applies a style.  The
+   * intermediate items merely open their sub-menu, and GtkMenuShell activates
+   * an item that owns a sub-menu as soon as that item is *selected*
+   * (gtk_menu_shell_select_item() calls gtk_widget_activate() on it), so a
+   * style bound there would be applied by moving the pointer over the group
+   * entry, without any click. */
   if(activate_callback)
   {
     dt_stylemenu_data_t *menu_data = malloc(sizeof(dt_stylemenu_data_t));
@@ -125,15 +164,20 @@ static void _build_style_submenus(GtkMenuShell *menu,
   }
   if(button_callback)
   {
-    dt_stylemenu_data_t *menu_data = malloc(sizeof(dt_stylemenu_data_t));
-    if(menu_data)
-    {
-      menu_data->name = g_strdup(style_name);
-      menu_data->user_data = user_data;
-      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
-                            G_CALLBACK(button_callback),
-                            menu_data, (GClosureNotify)_free_menu_data, 0);
-    }
+    dt_stylemenu_button_conn_t *conn = g_new0(dt_stylemenu_button_conn_t, 1);
+    conn->callback = button_callback;
+    conn->data = malloc(sizeof(dt_stylemenu_data_t));
+    conn->data->name = g_strdup(style_name);
+    conn->data->user_data = user_data;
+    // pressed is the direct replacement of the old button-press-event
+    // connection; the closure notify keeps owning the data.  the wrapper
+    // additionally marks the item as mouse-handled (see above).
+    GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(mi));
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+    dt_gui_add_controller(GTK_WIDGET(mi), gesture);
+    g_signal_connect_data(gesture, "pressed",
+                          G_CALLBACK(_style_menu_button_pressed),
+                          conn, (GClosureNotify)_free_button_conn, 0);
   }
 
   gtk_widget_show(GTK_WIDGET(mi));

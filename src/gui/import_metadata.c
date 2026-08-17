@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "common/debug.h"
 #include "common/metadata.h"
 #include "control/conf.h"
@@ -66,15 +65,14 @@ static void _import_metadata_changed(GtkWidget *widget,
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
 }
 
-static gboolean _import_metadata_reset(GtkWidget *label,
-                                       GdkEventButton *event,
-                                       GtkWidget *widget)
+static void _import_metadata_reset_cb(GtkGestureSingle *gesture, int n_press,
+                                          double x, double y,
+                                          GtkWidget *widget)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(n_press >= 2)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), "");
   }
-  return FALSE;
 }
 
 static void _metadata_reset_all(dt_import_metadata_t *metadata,
@@ -104,15 +102,14 @@ static void _metadata_reset_all(dt_import_metadata_t *metadata,
   }
 }
 
-static gboolean _import_metadata_reset_all(GtkWidget *label,
-                                           GdkEventButton *event,
-                                           dt_import_metadata_t *metadata)
+static void _import_metadata_reset_all_cb(GtkGestureSingle *gesture, int n_press,
+                                              double x, double y,
+                                              dt_import_metadata_t *metadata)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(n_press >= 2)
   {
     _metadata_reset_all(metadata, FALSE);
   }
-  return FALSE;
 }
 
 static void _import_metadata_toggled(GtkWidget *widget,
@@ -451,8 +448,7 @@ static void _fill_metadata_grid(dt_import_metadata_t *metadata)
     g_free(setting);
     g_signal_connect(GTK_ENTRY(metadata_entry), "changed",
                      G_CALLBACK(_import_metadata_changed), metadata);
-    g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
-                     G_CALLBACK(_import_metadata_reset), metadata_entry);
+    dt_gui_connect_click_all(labelev, _import_metadata_reset_cb, NULL, metadata_entry);
 
     GtkWidget *metadata_imported = gtk_check_button_new();
     g_object_set_data(G_OBJECT(metadata_imported), "tagname", md->tagname);
@@ -488,8 +484,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"
                                                    "\ndouble-click on a label to clear the corresponding entry"
                                                    "\ndouble-click on 'preset' to clear all entries"));
-  g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
-                   G_CALLBACK(_import_metadata_reset_all), metadata);
+  dt_gui_connect_click_all(labelev, _import_metadata_reset_all_cb, NULL, metadata);
 
 
   GtkWidget *presets = _set_up_combobox(metadata->m_model, DT_META_META_HEADER, metadata);
@@ -526,8 +521,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_widget_set_tooltip_text(entry, _("comma separated list of tags"));
   g_signal_connect(GTK_ENTRY(entry), "changed",
                    G_CALLBACK(_import_tags_changed), metadata);
-  g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
-                   G_CALLBACK(_import_metadata_reset), entry);
+  dt_gui_connect_click_all(labelev, _import_metadata_reset_cb, NULL, entry);
 
   GtkWidget *tags_imported = gtk_check_button_new();
   _set_up_toggle_button(tags_imported, dt_conf_get_bool("ui_last/import_last_tags_imported"),

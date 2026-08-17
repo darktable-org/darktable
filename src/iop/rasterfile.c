@@ -673,7 +673,7 @@ void gui_changed(dt_iop_module_t *self,
     dt_pthread_mutex_unlock(&cd->lock);
 
     if(other)
-      dt_dev_reprocess_center(self->dev);
+      dt_dev_reprocess_center(self->dev, self->iop_order);
   }
 
   gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
@@ -730,7 +730,7 @@ void cleanup(dt_iop_module_t *self)
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -742,14 +742,14 @@ void gui_init(dt_iop_module_t *self)
     (g->mode,
      _("select the RGB channels taken into account to generate the raster mask"));
 
-  g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  g->fbutton = dtgtk_button_new_full(dtgtk_cairo_paint_directory, CPF_NONE, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("select the PFM/PNG file recorded as a raster mask,\n"
+          "CAUTION: path must be set in preferences/processing before choosing"),
+        .clicked_cb = G_CALLBACK(_fbutton_clicked),
+        .clicked_data = self,
+      });
   gtk_widget_set_name(g->fbutton, "non-flat");
-  gtk_widget_set_tooltip_text
-    (g->fbutton,
-     _("select the PFM/PNG file recorded as a raster mask,\n"
-       "CAUTION: path must be set in preferences/processing before choosing"));
-  g_signal_connect(G_OBJECT(g->fbutton), "clicked",
-                   G_CALLBACK(_fbutton_clicked), self);
 
   g->file = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->file, PANGO_ELLIPSIZE_MIDDLE);

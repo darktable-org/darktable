@@ -34,7 +34,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -1281,6 +1280,7 @@ void gui_init(dt_iop_module_t *self)
     { _("golden cut"), 16180340, 10000000 },
     { _("16:9, HDTV"), 16, 9 },
     { _("widescreen"), 185, 100 },
+    { _("1.91:1"), 1080, 566 },
     { _("2:1, Univisium"), 2, 1 },
     { _("CinemaScope"), 235, 100 },
     { _("21:9"), 237, 100 },
@@ -1574,7 +1574,7 @@ void gui_post_expose(dt_iop_module_t *self,
 
     PangoLayout *layout;
     PangoRectangle ext;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    PangoFontDescription *desc = dt_gui_get_font();
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
     layout = pango_cairo_create_layout(cr);

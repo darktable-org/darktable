@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // neural restore — lighttable module for AI-based image restoration
 //
 // overview
@@ -176,6 +175,7 @@
 //                            blend at the re-mosaic sample level)
 // CONF_ACTIVE_PAGE         — last active notebook tab
 // CONF_BIT_DEPTH           — output TIFF bit depth (0=8, 1=16, 2=32)
+// CONF_COMPRESSION         — output TIFF compression (0=none, 1=deflate, 2=deflate+predictor)
 // CONF_ADD_CATALOG         — auto-import output into library
 // CONF_OUTPUT_DIR          — output directory pattern (supports variables)
 // CONF_ICC_TYPE            — output ICC profile type (image settings by default)
@@ -201,6 +201,8 @@
 #include "common/film.h"
 #include "common/grouping.h"
 #include "common/image_cache.h"
+#include "common/colorlabels.h"
+#include "common/metadata.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "control/jobs/control_jobs.h"
@@ -227,6 +229,7 @@ DT_MODULE(1)
 #define CONF_RAW_STRENGTH "plugins/lighttable/neural_restore/raw_strength"
 #define CONF_ACTIVE_PAGE "plugins/lighttable/neural_restore/active_page"
 #define CONF_BIT_DEPTH "plugins/lighttable/neural_restore/bit_depth"
+#define CONF_COMPRESSION "plugins/lighttable/neural_restore/compression"
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
@@ -252,6 +255,13 @@ typedef enum dt_neural_bpp_t
   NEURAL_BPP_16 = 1,
   NEURAL_BPP_32 = 2,
 } dt_neural_bpp_t;
+
+typedef enum dt_neural_compress_t
+{
+  NEURAL_COMPRESS_NONE = 0,
+  NEURAL_COMPRESS_DEFLATE = 1,
+  NEURAL_COMPRESS_DEFLATE_PREDICTOR = 2,
+} dt_neural_compress_t;
 
 // preview-area placeholder state when no rendered preview exists
 typedef enum dt_nr_preview_err_t
@@ -316,6 +326,9 @@ typedef struct dt_lib_neural_restore_t
   // X-Trans / linear) so re-picking a new crop on the same image skips
   // the slow load + demosaic; freed on imgid or sensor-type change.
   dt_imgid_t preview_raw_imgid;
+  // imgid we last showed the "pre-demosaiced" warning for, so the
+  // toast doesn't fire every patch-click move during preview
+  dt_imgid_t preview_linear_warned_imgid;
   dt_restore_sensor_class_t preview_raw_sensor_class;
   float *preview_full_cfa;       // Bayer: full sensor (w*h floats)
   int preview_full_w;
@@ -361,6 +374,7 @@ typedef struct dt_lib_neural_restore_t
   // output settings (collapsible)
   dt_gui_collapsible_section_t cs_output;
   GtkWidget *bpp_combo;
+  GtkWidget *compress_combo;
   GtkWidget *profile_combo;
   GtkWidget *preserve_wide_gamut_toggle;
   GtkWidget *catalog_toggle;
@@ -384,6 +398,7 @@ typedef struct dt_neural_job_t
   dt_restore_sensor_class_t raw_ctx_sensor_class;
   dt_lib_module_t *self;
   dt_neural_bpp_t bpp;
+  dt_neural_compress_t compression;
   gboolean add_to_catalog;
   char *output_dir;  // NULL = same as source
   // output color profile. DT_COLORSPACE_NONE means "use image's working profile"
@@ -391,6 +406,10 @@ typedef struct dt_neural_job_t
   char *icc_filename;  // only used when icc_type == DT_COLORSPACE_FILE
   // when TRUE, wide-gamut pixels pass through unchanged on denoise
   gboolean preserve_wide_gamut;
+  // raw denoise only: TRUE after we've toasted the "pre-demosaiced"
+  // caveat for any LINEAR image in this batch; avoids one warning
+  // per file when the user kicks off a multi-image job
+  gboolean linear_warned;
 } dt_neural_job_t;
 
 typedef struct dt_neural_format_params_t
@@ -862,6 +881,27 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
                TIFFDefaultStripSize(tif, 0));
 
+  // compression — mirrors src/imageio/format/tiff.c
+  const int zlevel
+    = dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel")
+        ? dt_conf_get_int("plugins/imageio/format/tiff/compresslevel")
+        : 6;
+  if(job->compression == NEURAL_COMPRESS_DEFLATE)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_NONE);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)zlevel);
+  }
+  else if(job->compression == NEURAL_COMPRESS_DEFLATE_PREDICTOR)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    if(sample_fmt == SAMPLEFORMAT_IEEEFP)
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_FLOATINGPOINT);
+    else
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)zlevel);
+  }
+
   // embed destination profile so re-import / external viewers
   // interpret the saved pixels correctly
   if(dst_cp && dst_cp->profile)
@@ -987,7 +1027,7 @@ static void _import_image(const char *filename,
   char *dir = g_path_get_dirname(filename);
   const dt_filmid_t filmid = dt_film_new(&film, dir);
   g_free(dir);
-  const dt_imgid_t newid = dt_image_import(filmid, filename, FALSE, FALSE);
+  const dt_imgid_t newid = dt_image_import(filmid, filename, TRUE, FALSE);
   dt_film_cleanup(&film);
 
   if(dt_is_valid_imgid(newid))
@@ -995,6 +1035,45 @@ static void _import_image(const char *filename,
     dt_print(DT_DEBUG_AI, "[neural_restore] imported imgid=%d: %s", newid, filename);
     if(dt_is_valid_imgid(source_imgid))
     {
+      // retrieve and copy image rating from the source image
+      const dt_image_t *src_rate = dt_image_cache_get(source_imgid, 'r');
+      const int rating = dt_image_get_xmp_rating(src_rate);
+      dt_image_cache_read_release(src_rate);
+      dt_image_t *img = dt_image_cache_get(newid, 'w');
+      dt_image_set_xmp_rating(img, rating);
+      dt_image_cache_write_release(img, DT_IMAGE_CACHE_SAFE);
+
+      // retrieve and copy color labels from the source image
+      const int color_labels = dt_colorlabels_get_labels(source_imgid);
+      for(int color = 0; color < DT_COLORLABELS_LAST; color++)
+      {
+        if(color_labels & (1 << color))
+        {
+          dt_colorlabels_set_label(newid, color);
+        }
+      }
+
+      // retrieve and copy manual geolocation metadata
+      dt_image_geoloc_t geoloc;
+      geoloc.longitude = NAN;
+      geoloc.latitude = NAN;
+      geoloc.elevation = NAN;
+      dt_image_get_location(source_imgid, &geoloc);
+      if(!isnan(geoloc.longitude) && !isnan(geoloc.latitude))
+      {
+        dt_image_set_location(newid, &geoloc, FALSE, FALSE);
+      }
+
+      // retrieve and copy database-only metadata like title, description, etc.
+      GList *meta = dt_metadata_get_list_id(source_imgid);
+      if(meta)
+      {
+        GList *imgs = g_list_prepend(NULL, GINT_TO_POINTER(newid));
+        dt_metadata_set_list_id(imgs, meta, FALSE, FALSE);
+        g_list_free(imgs);
+        g_list_free_full(meta, g_free);
+      }
+
       dt_grouping_add_to_group(source_imgid, newid);
       // promote the output as group leader, but only when the source
       // was the current leader — preserves any manually-set leader the
@@ -1016,6 +1095,9 @@ static void _import_image(const char *filename,
         g_list_free(targets);
       }
       dt_tag_free_result(&src_tags);
+
+      // sync metadata changes to sidecar files and trigger UI updates
+      dt_image_synch_xmp(newid);
     }
     // refresh the collection so the new image appears in the thumb grid
     dt_collection_update_query(darktable.collection,
@@ -1064,6 +1146,8 @@ static gboolean _job_finished_idle(gpointer data)
     for(GList *l = fd->images; l; l = g_list_next(l))
       g_hash_table_remove(d->processing_images, l->data);
     _update_button_sensitivity(d);
+    if (fd->images)
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
   }
   g_list_free(fd->images);
   g_free(fd);
@@ -1356,6 +1440,18 @@ static int _process_raw_denoise_one(dt_neural_job_t *j,
       return _process_raw_denoise_linear(j, imgid, out_filename,
                                          src_path, &img_meta);
     case DT_RESTORE_SENSOR_CLASS_LINEAR:
+      // most LINEAR-class inputs are computational raws (Apple
+      // ProRAW, Google HDR+, etc.) that have already been denoised
+      // on-device; the model will run but adds little; Canon/Nikon
+      // sRAW is the exception; warn once per job and proceed.
+      // 4BAYER (CYGM/RGBE) piggybacks on LINEAR class but isn't a
+      // computational raw — skip the misleading toast
+      if(!j->linear_warned && !(flags & DT_IMAGE_4BAYER))
+      {
+        j->linear_warned = TRUE;
+        dt_control_log(_("raw denoise: this image is already pre-demosaiced "
+                         "(sRaw / computational raw); results may be limited"));
+      }
       return _process_raw_denoise_linear(j, imgid, out_filename,
                                          src_path, &img_meta);
     default:
@@ -1678,6 +1774,19 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
                           : _("output: LinearRaw DNG"));
   }
 
+  // 4BAYER preview shows no denoise effect (no RGB→CFA mapping)
+  if(d->task == NEURAL_TASK_RAW_DENOISE && dt_is_valid_imgid(imgid))
+  {
+    const dt_image_t *cached = dt_image_cache_get(imgid, 'r');
+    if(cached)
+    {
+      if(cached->flags & DT_IMAGE_4BAYER)
+        snprintf(d->warning_text, sizeof(d->warning_text), "%s",
+                 _("preview unavailable – process to save result"));
+      dt_image_cache_read_release(cached);
+    }
+  }
+
   // gamut note (informational, not a warning): reuse the same info
   // line as the upscale size display. for denoise, shows standalone
   // in info_text_left; for upscale, appended to the size info. not
@@ -1768,6 +1877,8 @@ static void _task_changed(dt_lib_neural_restore_t *d)
     = (d->task == NEURAL_TASK_DENOISE);
   if(d->bpp_combo)
     gtk_widget_set_visible(d->bpp_combo, tiff_knobs_visible);
+  if(d->compress_combo)
+    gtk_widget_set_visible(d->compress_combo, tiff_knobs_visible);
   if(d->profile_combo)
     gtk_widget_set_visible(d->profile_combo, tiff_knobs_visible);
   if(d->preserve_wide_gamut_toggle)
@@ -2676,23 +2787,43 @@ static gpointer _preview_thread_raw(gpointer data)
 
   const uint32_t filters = img_meta.buf_dsc.filters;
   const dt_restore_sensor_class_t cls = dt_restore_classify_sensor(&img_meta);
-  const gboolean is_xtrans = (cls == DT_RESTORE_SENSOR_CLASS_XTRANS);
-  if(cls != DT_RESTORE_SENSOR_CLASS_BAYER
-     && cls != DT_RESTORE_SENSOR_CLASS_XTRANS)
+  // today x-trans piggybacks on the linear pipeline because we don't
+  // ship a dedicated x-trans denoise model yet. when one lands, drop
+  // XTRANS from use_linear and add an x-trans branch alongside the
+  // use_linear and bayer paths (buffer fetch, preview pipe, max_disp)
+  const gboolean use_linear = (cls == DT_RESTORE_SENSOR_CLASS_XTRANS
+                               || cls == DT_RESTORE_SENSOR_CLASS_LINEAR);
+  if(cls != DT_RESTORE_SENSOR_CLASS_BAYER && !use_linear)
   {
     dt_print(DT_DEBUG_AI,
-             "[neural_restore] raw preview: imgid %d is not bayer/xtrans "
+             "[neural_restore] raw preview: imgid %d unsupported "
              "(filters=0x%x class=%d)",
              pd->imgid, filters, cls);
     bail_err = DT_NR_PREVIEW_ERR_UNSUPPORTED;
     goto cleanup;
   }
+  const char *cls_name = (cls == DT_RESTORE_SENSOR_CLASS_XTRANS) ? "x-trans"
+                       : use_linear                              ? "linear"
+                       :                                           "bayer";
   dt_print(DT_DEBUG_AI,
            "[neural_restore] raw preview: imgid=%d %s patch=(%.3f,%.3f) "
            "widget=%dx%d filters=0x%x",
-           pd->imgid, is_xtrans ? "x-trans" : "bayer",
+           pd->imgid, cls_name,
            pd->patch_center[0], pd->patch_center[1],
            pd->preview_w, pd->preview_h, filters);
+
+  // same caveat as the batch path: LINEAR is usually a computational
+  // raw that's already been denoised on-device. warn once per imgid
+  // so picking a different patch doesn't re-toast. 4BAYER piggybacks
+  // on LINEAR class but isn't computational — skip the toast for it
+  if(cls == DT_RESTORE_SENSOR_CLASS_LINEAR
+     && !(img_meta.flags & DT_IMAGE_4BAYER)
+     && d->preview_linear_warned_imgid != pd->imgid)
+  {
+    d->preview_linear_warned_imgid = pd->imgid;
+    dt_control_log(_("raw denoise: this image is already pre-demosaiced "
+                     "(sRaw / computational raw); results may be limited"));
+  }
 
   // 2. ensure the right ctx is loaded (matches batch logic in
   //    _ensure_raw_ctx). reload if cached_task is wrong or if the
@@ -2714,6 +2845,9 @@ static gpointer _preview_thread_raw(gpointer data)
           break;
         case DT_RESTORE_SENSOR_CLASS_XTRANS:
           d->cached_ctx = dt_restore_load_rawdenoise_xtrans(pd->env);
+          break;
+        case DT_RESTORE_SENSOR_CLASS_LINEAR:
+          d->cached_ctx = dt_restore_load_rawdenoise_linear(pd->env);
           break;
         default:
           d->cached_ctx = NULL;
@@ -2753,12 +2887,12 @@ static gpointer _preview_thread_raw(gpointer data)
   const gboolean cache_matches
     = d->preview_raw_imgid == pd->imgid
       && d->preview_raw_sensor_class == cls
-      && ((is_xtrans && d->preview_full_lin)
-          || (!is_xtrans && d->preview_full_cfa));
+      && ((use_linear && d->preview_full_lin)
+          || (!use_linear && d->preview_full_cfa));
 
   if(cache_matches)
   {
-    if(is_xtrans)
+    if(use_linear)
     {
       full_lin_use = d->preview_full_lin;
       full_w = d->preview_lin_w;
@@ -2771,7 +2905,7 @@ static gpointer _preview_thread_raw(gpointer data)
       full_h = d->preview_full_h;
     }
   }
-  else if(is_xtrans)
+  else if(use_linear)
   {
     if(dt_restore_raw_linear_prepare(ctx, pd->imgid, &take_full_lin,
                                      &full_w, &full_h) != 0
@@ -2901,7 +3035,7 @@ static gpointer _preview_thread_raw(gpointer data)
   // crop in sensor pixels:
   //   bayer:  2*T - 4*overlap_packed = 2*T - 128  (for OVERLAP_PACKED=32)
   //   linear: T   - 2*overlap_linear = T   - 64   (for OVERLAP_LINEAR=32)
-  const int max_disp = is_xtrans ? (T - 64) : (2 * T - 128);
+  const int max_disp = use_linear ? (T - 64) : (2 * T - 128);
 
   // the raw buffer is always landscape (sensor layout), but the preview
   // thumbnail the user clicks on is oriented per EXIF. un-rotate the
@@ -2913,7 +3047,7 @@ static gpointer _preview_thread_raw(gpointer data)
   int crop_w = MIN(swap_xy ? pd->preview_h : pd->preview_w, max_disp);
   int crop_h = MIN(swap_xy ? pd->preview_w : pd->preview_h, max_disp);
   // Bayer: snap to mod 2 (CFA grid)
-  if(!is_xtrans)
+  if(!use_linear)
   {
     crop_w = (crop_w / 2) * 2;
     crop_h = (crop_h / 2) * 2;
@@ -2943,7 +3077,7 @@ static gpointer _preview_thread_raw(gpointer data)
   int crop_y = (int)sy - crop_h / 2;
   crop_x = CLAMP(crop_x, 0, full_w - crop_w);
   crop_y = CLAMP(crop_y, 0, full_h - crop_h);
-  if(!is_xtrans)
+  if(!use_linear)
   {
     crop_x = (crop_x / 2) * 2;
     crop_y = (crop_y / 2) * 2;
@@ -2954,8 +3088,7 @@ static gpointer _preview_thread_raw(gpointer data)
            "patch_center=(%.3f,%.3f) -> sensor=(%d,%d %dx%d) %s",
            full_w, full_h, (unsigned)ori,
            pd->patch_center[0], pd->patch_center[1],
-           crop_x, crop_y, crop_w, crop_h,
-           is_xtrans ? "linear" : "bayer");
+           crop_x, crop_y, crop_w, crop_h, cls_name);
 
   // 5. inference
   // Bayer path uses the _piped variant which runs darktable's full
@@ -2968,7 +3101,7 @@ static gpointer _preview_thread_raw(gpointer data)
   float *denoised_rgb = NULL;
   int actual_w = 0, actual_h = 0;
   int err;
-  if(is_xtrans)
+  if(use_linear)
     err = dt_restore_raw_linear_preview_piped(ctx, &img_meta, pd->imgid,
                                               full_lin_use,
                                               full_w, full_h,
@@ -3290,6 +3423,9 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->bpp = dt_conf_key_exists(CONF_BIT_DEPTH)
     ? dt_conf_get_int(CONF_BIT_DEPTH)
     : NEURAL_BPP_16;
+  job_data->compression = dt_conf_key_exists(CONF_COMPRESSION)
+    ? dt_conf_get_int(CONF_COMPRESSION)
+    : NEURAL_COMPRESS_DEFLATE_PREDICTOR;
   job_data->add_to_catalog
     = dt_conf_key_exists(CONF_ADD_CATALOG)
       ? dt_conf_get_bool(CONF_ADD_CATALOG)
@@ -3400,11 +3536,11 @@ static void _pick_toggled(GtkToggleButton *btn,
   gtk_widget_queue_draw(d->preview_area);
 }
 
-static gboolean _pick_double_click(GtkWidget *widget,
-                                   GdkEventButton *event,
-                                   dt_lib_module_t *self)
+static void _pick_double_click_cb(GtkGestureSingle *gesture, int n_press,
+                                     double x, double y,
+                                     dt_lib_module_t *self)
 {
-  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  if(n_press < 2) return;
   dt_lib_neural_restore_t *d = self->data;
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;
@@ -3416,7 +3552,6 @@ static gboolean _pick_double_click(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
   d->preview_requested = TRUE;
   _trigger_preview(self);
-  return TRUE;
 }
 
 // upper bound on tooltip pixel dimensions so we never overflow the
@@ -3826,18 +3961,14 @@ static gboolean _preview_draw(GtkWidget *widget,
 // clicks within this distance grip the divider without snapping it
 #define PREVIEW_DIVIDER_NEAR_PX  3.0
 
-static gboolean _preview_button_press(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      dt_lib_module_t *self)
+static void _preview_button_press_cb(GtkGestureSingle *gesture, int n_press,
+                                        double ex, double ey,
+                                        dt_lib_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(gesture);
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
-  guint button = 0;
-  gdk_event_get_button((GdkEvent *)event, &button);
-  if(button != 1) return FALSE;
-
-  double ex = 0.0, ey = 0.0;
-  gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
+  if(gtk_gesture_single_get_current_button(gesture) != 1) return;
 
   // thumbnail picking mode: click to select area and trigger preview
   if(d->picking_thumbnail && d->export_cairo)
@@ -3848,17 +3979,10 @@ static gboolean _preview_button_press(GtkWidget *widget,
     _picking_geometry(d, w, h, &img_w, &img_h, &ox, &oy);
 
     // convert click to normalized image coords.
-    //  * RGB denoise / upscale: clamp so the crop rectangle stays
-    //    within the image (master behaviour — the export-based preview
-    //    needs this because the worker and draw share a single
-    //    export_w-based scale).
-    //  * raw denoise: no inner-margin clamp — user can pick corners.
-    //    the raw worker CLAMPs crop_x/y, and _preview_draw pushes the
-    //    rectangle inward to match.
     const float nx = (float)((ex - ox) / img_w);
     const float ny = (float)((ey - oy) / img_h);
     if(nx < 0.0f || nx > 1.0f || ny < 0.0f || ny > 1.0f)
-      return TRUE;
+      return;
 
     if(d->task == NEURAL_TASK_RAW_DENOISE)
     {
@@ -3886,7 +4010,7 @@ static gboolean _preview_button_press(GtkWidget *widget,
     d->preview_requested = TRUE;
     dt_control_log(_("generating preview..."));
     _trigger_preview(self);
-    return TRUE;
+    return;
   }
 
   // click to start preview generation
@@ -3894,55 +4018,50 @@ static gboolean _preview_button_press(GtkWidget *widget,
   {
     d->preview_requested = TRUE;
     _trigger_preview(self);
-    return TRUE;
+    return;
   }
 
-  if(!d->preview_ready) return FALSE;
+  if(!d->preview_ready) return;
 
   const int w = gtk_widget_get_allocated_width(widget);
   const int h = gtk_widget_get_allocated_height(widget);
   const int pw = d->preview_w;
   const int ph = d->preview_h;
-  if(pw <= 0 || ph <= 0) return FALSE;
+  if(pw <= 0 || ph <= 0) return;
   const double scale = fmax(1.0, fmin((double)w / pw, (double)h / ph));
-  const double ox = (w - pw * scale) / 2.0;
-  const double div_x = ox + d->split_pos * pw * scale;
+  const double div_ox = (w - pw * scale) / 2.0;
+  const double div_x = div_ox + d->split_pos * pw * scale;
 
   if(fabs(ex - div_x) < PREVIEW_DIVIDER_NEAR_PX)
   {
     // precision grip on the divider — drag without snapping
     d->dragging_split = TRUE;
-    return TRUE;
+    return;
   }
 
   // click anywhere else snaps the divider then enters drag
-  d->split_pos = CLAMP((ex - ox) / (pw * scale), 0.0, 1.0);
+  d->split_pos = CLAMP((ex - div_ox) / (pw * scale), 0.0, 1.0);
   d->dragging_split = TRUE;
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean _preview_button_release(GtkWidget *widget,
-                                        GdkEventButton *event,
-                                        dt_lib_module_t *self)
+static void _preview_button_release_cb(GtkGestureSingle *gesture, int n_press,
+                                          double x, double y,
+                                          dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   if(d->dragging_split)
   {
     d->dragging_split = FALSE;
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean _preview_motion(GtkWidget *widget,
-                                GdkEventMotion *event,
-                                dt_lib_module_t *self)
+static void _preview_motion_cb(GtkEventControllerMotion *controller,
+                                 double ex, double ey,
+                                 dt_lib_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
-
-  double ex = 0.0, ey = 0.0;
-  gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
 
   // move crop rectangle while hovering in picking mode
   if(d->picking_thumbnail && d->export_cairo)
@@ -3971,7 +4090,7 @@ static gboolean _preview_motion(GtkWidget *widget,
       d->patch_center[1] = CLAMP(ry, half_h, 1.0f - half_h);
     }
     gtk_widget_queue_draw(widget);
-    return TRUE;
+    return;
   }
 
   if(d->dragging_split)
@@ -3979,7 +4098,7 @@ static gboolean _preview_motion(GtkWidget *widget,
     const int w = gtk_widget_get_allocated_width(widget);
     const int pw = d->preview_w;
     const int ph = d->preview_h;
-    if(pw <= 0 || ph <= 0) return FALSE;
+    if(pw <= 0 || ph <= 0) return;
     const int ah = gtk_widget_get_allocated_height(widget);
     const double scale = fmax(1.0, fmin((double)w / pw,
                                         (double)ah / ph));
@@ -3988,7 +4107,7 @@ static gboolean _preview_motion(GtkWidget *widget,
 
     d->split_pos = CLAMP((ex - ox) / img_w, 0.0, 1.0);
     gtk_widget_queue_draw(widget);
-    return TRUE;
+    return;
   }
 
   // change cursor near divider
@@ -4022,7 +4141,7 @@ static gboolean _preview_motion(GtkWidget *widget,
     }
   }
 
-  return FALSE;
+  return;
 }
 
 static void _selection_changed_callback(gpointer instance,
@@ -4065,6 +4184,13 @@ static void _bpp_combo_changed(GtkWidget *w,
 {
   const int idx = dt_bauhaus_combobox_get(w);
   dt_conf_set_int(CONF_BIT_DEPTH, idx);
+}
+
+static void _compress_combo_changed(GtkWidget *w,
+                                    dt_lib_module_t *self)
+{
+  const int idx = dt_bauhaus_combobox_get(w);
+  dt_conf_set_int(CONF_COMPRESSION, idx);
 }
 
 // mirror of export.c: combo index 0 = "image settings", 1..N = profiles
@@ -4234,30 +4360,22 @@ void gui_init(dt_lib_module_t *self)
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;
   d->picking_thumbnail = FALSE;
-  d->pick_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
-                                          0, NULL);
-  gtk_widget_set_tooltip_text(d->pick_button,
-                              _("click to pick preview area on the image thumbnail\n"
-                                "double-click to reset to center"));
-  g_signal_connect(d->pick_button, "toggled",
-                   G_CALLBACK(_pick_toggled), self);
-  g_signal_connect(d->pick_button, "button-press-event",
-                   G_CALLBACK(_pick_double_click), self);
+  d->pick_button = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_colorpicker,
+                                               0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("click to pick preview area on the image thumbnail\n"
+          "double-click to reset to center"),
+        .toggled_cb = G_CALLBACK(_pick_toggled),
+        .toggled_data = self,
+      });
+  dt_gui_connect_click_all(d->pick_button, _pick_double_click_cb, NULL, self);
 
   // preview area (resizable via dt_ui_resize_wrap)
   d->preview_area = GTK_WIDGET(dt_ui_resize_wrap(NULL, 200, CONF_PREVIEW_HEIGHT));
-  gtk_widget_add_events(d->preview_area,
-                        GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_POINTER_MOTION_MASK);
   g_signal_connect(d->preview_area, "draw",
                    G_CALLBACK(_preview_draw), self);
-  g_signal_connect(d->preview_area, "button-press-event",
-                   G_CALLBACK(_preview_button_press), self);
-  g_signal_connect(d->preview_area, "button-release-event",
-                   G_CALLBACK(_preview_button_release), self);
-  g_signal_connect(d->preview_area, "motion-notify-event",
-                   G_CALLBACK(_preview_motion), self);
+  dt_gui_connect_click(d->preview_area, _preview_button_press_cb, _preview_button_release_cb, self);
+  dt_gui_connect_motion(d->preview_area, _preview_motion_cb, NULL, NULL, self);
   // hover-zoom tooltip: shows the same preview at 2x so the user can
   // see individual pixels. only fires when there's a valid preview;
   // suppressed during inference / picking / dragging
@@ -4301,6 +4419,17 @@ void gui_init(dt_lib_module_t *self)
                                saved_bpp, _bpp_combo_changed, self,
                                N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
   dt_gui_box_add(cs_box, d->bpp_combo);
+
+  // compression — same options as the TIFF export module
+  const int saved_compress = dt_conf_key_exists(CONF_COMPRESSION)
+    ? dt_conf_get_int(CONF_COMPRESSION)
+    : NEURAL_COMPRESS_DEFLATE_PREDICTOR;
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->compress_combo, self, NULL, N_("compression"),
+                               _("output TIFF compression"),
+                               saved_compress, _compress_combo_changed, self,
+                               N_("uncompressed"), N_("deflate"),
+                               N_("deflate with predictor"));
+  dt_gui_box_add(cs_box, d->compress_combo);
 
   // output color profile: 0 = image settings (working profile), then the
   // same list the standard export dialog uses; out-of-gamut colors are
@@ -4393,10 +4522,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->output_dir_entry, "changed",
                    G_CALLBACK(_output_dir_changed), self);
 
-  d->output_dir_button = dtgtk_button_new(dtgtk_cairo_paint_directory, 0, NULL);
-  gtk_widget_set_tooltip_text(d->output_dir_button, _("select output folder"));
-  g_signal_connect(d->output_dir_button, "clicked",
-                   G_CALLBACK(_output_dir_browse), self);
+  d->output_dir_button = dtgtk_button_new_full(dtgtk_cairo_paint_directory, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("select output folder"),
+        .clicked_cb = G_CALLBACK(_output_dir_browse),
+        .clicked_data = self,
+      });
 
   dt_gui_box_add(dir_box, d->output_dir_entry);
   dt_gui_box_add(dir_box, d->output_dir_button);

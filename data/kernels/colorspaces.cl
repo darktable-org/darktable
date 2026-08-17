@@ -107,6 +107,9 @@ colorspaces_transform_gamma(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = fmax(0.0f, Areadpixel(in, x, y));
-  write_imagef(out, (int2)(x, y), dtcl_pow(pixel, gamma));
+  float4 pixel = Areadpixel(in, x, y);
+  // sanitize and fix NaN as we do for CPU
+  pixel = select(fmax(pixel, -1e6f), (float4)(0.0f), isnan(pixel));
+  pixel = copysign(dtcl_pow(fabs(pixel), gamma), pixel);
+  write_imagef(out, (int2)(x, y), pixel);
 }

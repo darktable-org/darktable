@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "common/darktable.h"
 #include "common/geo.h"
 #include "common/curl_tools.h"
@@ -88,9 +87,9 @@ typedef struct _callback_param_t
 static void _lib_location_entry_activated(GtkButton *button,
                                           dt_lib_module_t *self);
 
-static gboolean _lib_location_result_item_activated(GtkButton *button,
-                                                    GdkEventButton *ev,
-                                                    gpointer user_data);
+static void _lib_location_result_item_activated(GtkGestureSingle *gesture, int n_press,
+                                                     double x, double y,
+                                                     gpointer user_data);
 
 static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
                                                const char *element_name,
@@ -155,16 +154,16 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _event_box_enter_leave(GtkWidget *widget,
-                                       GdkEventCrossing *event,
-                                       gpointer user_data)
+static void _event_box_enter(GtkEventControllerMotion *controller, gdouble x, gdouble y, gpointer user_data)
 {
-  if(event->type == GDK_ENTER_NOTIFY)
-    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
-  else
-    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+}
 
-  return FALSE;
+static void _event_box_leave(GtkEventControllerMotion *controller, gpointer user_data)
+{
+  GtkWidget *widget = dt_gui_get_widget(controller);
+  gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
 }
 
 static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
@@ -173,10 +172,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
   GtkWidget *eb, *vb, *w;
   eb = gtk_event_box_new();
   gtk_widget_set_name(eb, "dt-map-location");
-  g_signal_connect(G_OBJECT(eb), "enter-notify-event",
-                   G_CALLBACK(_event_box_enter_leave), NULL);
-  g_signal_connect(G_OBJECT(eb), "leave-notify-event",
-                   G_CALLBACK(_event_box_enter_leave), NULL);
+  dt_gui_connect_motion(eb, NULL, _event_box_enter, _event_box_leave, NULL);
 
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -211,9 +207,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
     lib->callback_params = g_list_append(lib->callback_params, param);
     param->lib = lib;
     param->result = place;
-    g_signal_connect(G_OBJECT(eb), "button-press-event",
-                     G_CALLBACK(_lib_location_result_item_activated),
-                     (gpointer)param);
+    dt_gui_connect_click(eb, _lib_location_result_item_activated, NULL, (gpointer)param);
   }
   return eb;
 }
@@ -442,15 +436,14 @@ bail_out:
   return FALSE;
 }
 
-gboolean _lib_location_result_item_activated(GtkButton *button,
-                                             GdkEventButton *ev,
-                                             gpointer user_data)
+static void _lib_location_result_item_activated(GtkGestureSingle *gesture, int n_press,
+                                                     double x, double y,
+                                                     gpointer user_data)
 {
   _callback_param_t *param = (_callback_param_t *)user_data;
   dt_lib_location_t *lib = param->lib;
   _lib_location_result_t *result = param->result;
   _show_location(lib, result);
-  return TRUE;
 }
 
 void _lib_location_entry_activated(GtkButton *button,

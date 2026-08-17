@@ -27,18 +27,10 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <curl/curl.h>
+#include <errno.h>
 #include <json-glib/json-glib.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef _WIN32
-// windows doesn't have realpath, use _fullpath instead
-static inline char *realpath(const char *path, char *resolved_path)
-{
-  (void)resolved_path; // ignored, always allocate
-  return _fullpath(NULL, path, _MAX_PATH);
-}
-#endif
 
 // internal layout of the registry singleton (darktable.ai_registry);
 // external callers go through the accessors in ai_models.h — the lock
@@ -63,6 +55,24 @@ struct dt_ai_registry_t
 #define CONF_AI_REPOSITORY "plugins/ai/repository"
 #define CONF_MODEL_ENABLED_PREFIX "plugins/ai/models/"
 #define CONF_ACTIVE_MODEL_PREFIX "plugins/ai/models/active/"
+
+// what each task darktable dispatches on is called on screen. ADD A LINE
+// HERE WHEN ADDING A TASK, or it will show its identifier
+//
+// tasks are identifiers, not prose: they come from a model's config.json
+// and end up in conf keys, so nothing translates them in place. only the
+// label below is localized, and a task missing from this table keeps its
+// own name rather than being hidden or guessed at
+static const struct
+{
+  const char *task;
+  const char *label;
+} _task_labels[] = {
+  { "denoise",    N_("denoise")     },
+  { "rawdenoise", N_("raw denoise") },
+  { "upscale",    N_("upscale")     },
+  { "mask",       N_("mask")        },
+};
 
 // compare version strings "X.Y", returns -1 if a<b, 0 if a==b, 1 if a>b
 static int _version_compare(const char *a, const char *b)
@@ -180,7 +190,8 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
 
   CURLcode res = curl_easy_perform(curl);
   long http_code = 0;
@@ -300,7 +311,8 @@ static char *_fetch_asset_digest(
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
 
   CURLcode res = curl_easy_perform(curl);
   long http_code = 0;
@@ -395,12 +407,14 @@ static gboolean _setup_registry(dt_ai_registry_t *registry)
   gboolean ok = TRUE;
   if(!_ensure_directory(models))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create models dir: %s", models);
+    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create models dir %s: %s",
+             models, strerror(errno));
     ok = FALSE;
   }
   if(!_ensure_directory(cache))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create cache dir: %s", cache);
+    dt_print(DT_DEBUG_ALWAYS, "[ai_models] cannot create cache dir %s: %s",
+             cache, strerror(errno));
     ok = FALSE;
   }
 
@@ -822,95 +836,16 @@ void dt_ai_models_refresh_status(void)
   g_mutex_unlock(&registry->lock);
 }
 
-void dt_ai_models_check_updates(void)
+// takes ownership of `parser`
+static gboolean _apply_updates_idle(gpointer user_data)
 {
+  JsonParser *parser = (JsonParser *)user_data;
   dt_ai_registry_t *registry = darktable.ai_registry;
-  if(!registry) return;
-
-  // only check once per session
-  g_mutex_lock(&registry->lock);
-  if(registry->updates_checked)
-  {
-    g_mutex_unlock(&registry->lock);
-    return;
-  }
-  registry->updates_checked = TRUE;
-  const char *repository = g_strdup(registry->repository);
-  g_mutex_unlock(&registry->lock);
-
-  if(!repository || !repository[0])
-  {
-    g_free((char *)repository);
-    return;
-  }
-
-  // find the latest compatible release tag
-  char *error_msg = NULL;
-  char *release_tag
-    = _find_latest_compatible_release(repository, &error_msg);
-  if(!release_tag)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] check_updates: no compatible release found%s%s",
-             error_msg ? ": " : "", error_msg ? error_msg : "");
-    g_free(error_msg);
-    g_free((char *)repository);
-    return;
-  }
-  g_free(error_msg);
-
-  // fetch versions.json from the release
-  char *url = g_strdup_printf(
-    "https://github.com/%s/releases/download/%s/versions.json",
-    repository, release_tag);
-
-  CURL *curl = curl_easy_init();
-  if(!curl)
-  {
-    g_free(url);
-    g_free(release_tag);
-    g_free((char *)repository);
-    return;
-  }
-  dt_curl_init(curl, FALSE);
-
-  GString *response = g_string_new(NULL);
-  curl_easy_setopt(curl, CURLOPT_URL, url);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-  CURLcode res = curl_easy_perform(curl);
-  long http_code = 0;
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-  curl_easy_cleanup(curl);
-  g_free(url);
-  g_free(release_tag);
-  g_free((char *)repository);
-
-  if(res != CURLE_OK || http_code != 200)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] check_updates: failed to fetch versions.json"
-             " (curl=%d, http=%ld)",
-             res, http_code);
-    g_string_free(response, TRUE);
-    return;
-  }
-
-  // parse versions.json
-  JsonParser *parser = json_parser_new();
-  if(!json_parser_load_from_data(parser, response->str,
-                                 response->len, NULL))
+  if(!registry)
   {
     g_object_unref(parser);
-    g_string_free(response, TRUE);
-    dt_print(DT_DEBUG_AI,
-             "[ai_models] check_updates: failed to parse versions.json");
-    return;
+    return G_SOURCE_REMOVE;
   }
-  g_string_free(response, TRUE);
 
   JsonNode *root = json_parser_get_root(parser);
   JsonObject *root_obj = json_node_get_object(root);
@@ -925,7 +860,7 @@ void dt_ai_models_check_updates(void)
     dt_print(DT_DEBUG_AI,
              "[ai_models] check_updates: no 'models' object in "
              "versions.json");
-    return;
+    return G_SOURCE_REMOVE;
   }
 
   // populate model->checksum from sha256 so downloads skip re-fetching
@@ -964,6 +899,115 @@ void dt_ai_models_check_updates(void)
   }
   g_mutex_unlock(&registry->lock);
   g_object_unref(parser);
+
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+  return G_SOURCE_REMOVE;
+}
+
+// takes ownership of `repository`; no registry access
+static gpointer _check_updates_worker(gpointer data)
+{
+  char *repository = (char *)data;
+
+  // find the latest compatible release tag
+  char *error_msg = NULL;
+  char *release_tag
+    = _find_latest_compatible_release(repository, &error_msg);
+  if(!release_tag)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: no compatible release found%s%s",
+             error_msg ? ": " : "", error_msg ? error_msg : "");
+    g_free(error_msg);
+    g_free(repository);
+    return NULL;
+  }
+  g_free(error_msg);
+
+  // fetch versions.json from the release
+  char *url = g_strdup_printf(
+    "https://github.com/%s/releases/download/%s/versions.json",
+    repository, release_tag);
+
+  CURL *curl = curl_easy_init();
+  if(!curl)
+  {
+    g_free(url);
+    g_free(release_tag);
+    g_free(repository);
+    return NULL;
+  }
+  dt_curl_init(curl, FALSE);
+
+  GString *response = g_string_new(NULL);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  curl_easy_cleanup(curl);
+  g_free(url);
+  g_free(release_tag);
+  g_free(repository);
+
+  if(res != CURLE_OK || http_code != 200)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: failed to fetch versions.json"
+             " (curl=%d, http=%ld)",
+             res, http_code);
+    g_string_free(response, TRUE);
+    return NULL;
+  }
+
+  // parse versions.json
+  JsonParser *parser = json_parser_new();
+  if(!json_parser_load_from_data(parser, response->str,
+                                 response->len, NULL))
+  {
+    g_object_unref(parser);
+    g_string_free(response, TRUE);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: failed to parse versions.json");
+    return NULL;
+  }
+  g_string_free(response, TRUE);
+
+  g_idle_add(_apply_updates_idle, parser);
+  return NULL;
+}
+
+void dt_ai_models_check_updates(void)
+{
+  dt_ai_registry_t *registry = darktable.ai_registry;
+  if(!registry) return;
+
+  // only check once per session
+  g_mutex_lock(&registry->lock);
+  if(registry->updates_checked)
+  {
+    g_mutex_unlock(&registry->lock);
+    return;
+  }
+  registry->updates_checked = TRUE;
+  char *repository = g_strdup(registry->repository);
+  g_mutex_unlock(&registry->lock);
+
+  if(!repository || !repository[0])
+  {
+    g_free(repository);
+    return;
+  }
+
+  // detached: worker owns `repository`, off the GTK main thread
+  GThread *t = g_thread_new("ai-model-updates",
+                            _check_updates_worker, repository);
+  g_thread_unref(t);
 }
 
 void dt_ai_models_cleanup(void)
@@ -1137,6 +1181,64 @@ static gboolean _verify_checksum(const char *filepath,
 
 static gboolean _rmdir_recursive(const char *path);
 
+// libarchive narrow-char APIs use the ANSI code page on Windows, so UTF-8
+// paths with non-ASCII chars fail; route through the _w variants on Windows
+
+static int _archive_open_utf8(struct archive *a,
+                              const char *path)
+{
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  if(!wpath)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] UTF-8 to UTF-16 conversion failed for archive path: %s",
+             path);
+    return ARCHIVE_FATAL;
+  }
+  const int r = archive_read_open_filename_w(a, wpath, 10240);
+  g_free(wpath);
+  return r;
+#else
+  return archive_read_open_filename(a, path, 10240);
+#endif
+}
+
+static gboolean _archive_entry_set_pathname_utf8(struct archive_entry *entry,
+                                                 const char *path)
+{
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  if(!wpath) return FALSE;
+  archive_entry_copy_pathname_w(entry, wpath);
+  g_free(wpath);
+#else
+  archive_entry_set_pathname(entry, path);
+#endif
+  return TRUE;
+}
+
+// canonical path, g_free-able; NULL if unresolvable
+static gchar *_canonical_path_utf8(const char *path)
+{
+#ifdef _WIN32
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  if(!wpath) return NULL;
+  wchar_t wresolved[_MAX_PATH];
+  gchar *out = NULL;
+  if(_wfullpath(wresolved, wpath, _MAX_PATH))
+    out = g_utf16_to_utf8((gunichar2 *)wresolved, -1, NULL, NULL, NULL);
+  g_free(wpath);
+  return out;
+#else
+  char *p = realpath(path, NULL);
+  if(!p) return NULL;
+  gchar *out = g_strdup(p);
+  free(p);
+  return out;
+#endif
+}
+
 static gboolean _extract_zip(const char *zippath,
                              const char *destdir)
 {
@@ -1154,11 +1256,11 @@ static gboolean _extract_zip(const char *zippath,
       | ARCHIVE_EXTRACT_SECURE_SYMLINKS
       | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
 
-  if((r = archive_read_open_filename(a, zippath, 10240)) != ARCHIVE_OK)
+  if((r = _archive_open_utf8(a, zippath)) != ARCHIVE_OK)
   {
     dt_print(DT_DEBUG_AI,
-             "[ai_models] failed to open archive: %s",
-             archive_error_string(a));
+             "[ai_models] failed to open archive %s: %s",
+             zippath, archive_error_string(a));
     archive_read_free(a);
     archive_write_free(ext);
     return FALSE;
@@ -1167,7 +1269,7 @@ static gboolean _extract_zip(const char *zippath,
   _ensure_directory(destdir);
 
   // resolve destdir to a canonical path for path traversal validation
-  char *real_destdir = realpath(destdir, NULL);
+  gchar *real_destdir = _canonical_path_utf8(destdir);
   if(!real_destdir)
   {
     dt_print(DT_DEBUG_AI, "[ai_models] failed to resolve destdir: %s", destdir);
@@ -1193,16 +1295,16 @@ static gboolean _extract_zip(const char *zippath,
     }
 
     // build full path in destination
-    char *full_path = g_build_filename(real_destdir, entry_name, NULL);
+    gchar *full_path = g_build_filename(real_destdir, entry_name, NULL);
 
     // verify the resolved path is within destdir
-    char *real_full_path = realpath(full_path, NULL);
-    // for new files, realpath returns NULL; check the parent directory instead
+    gchar *real_full_path = _canonical_path_utf8(full_path);
+    // for new files, the canonical form is unresolvable; check the parent instead
     if(!real_full_path)
     {
-      char *parent = g_path_get_dirname(full_path);
+      gchar *parent = g_path_get_dirname(full_path);
       _ensure_directory(parent);
-      char *real_parent = realpath(parent, NULL);
+      gchar *real_parent = _canonical_path_utf8(parent);
       g_free(parent);
       if(
         !real_parent || strncmp(real_parent, real_destdir, destdir_len) != 0
@@ -1210,11 +1312,11 @@ static gboolean _extract_zip(const char *zippath,
             && real_parent[destdir_len] != '\0'))
       {
         dt_print(DT_DEBUG_AI, "[ai_models] path traversal blocked: %s", entry_name);
-        free(real_parent);
+        g_free(real_parent);
         g_free(full_path);
         continue;
       }
-      free(real_parent);
+      g_free(real_parent);
     }
     else
     {
@@ -1224,14 +1326,21 @@ static gboolean _extract_zip(const char *zippath,
             && real_full_path[destdir_len] != '\0'))
       {
         dt_print(DT_DEBUG_AI, "[ai_models] path traversal blocked: %s", entry_name);
-        free(real_full_path);
+        g_free(real_full_path);
         g_free(full_path);
         continue;
       }
-      free(real_full_path);
+      g_free(real_full_path);
     }
 
-    archive_entry_set_pathname(entry, full_path);
+    if(!_archive_entry_set_pathname_utf8(entry, full_path))
+    {
+      dt_print(DT_DEBUG_AI,
+               "[ai_models] failed to convert entry path, skipping: %s",
+               entry_name);
+      g_free(full_path);
+      continue;
+    }
 
     r = archive_write_header(ext, entry);
     if(r == ARCHIVE_OK)
@@ -1266,7 +1375,7 @@ static gboolean _extract_zip(const char *zippath,
       break;
   }
 
-  free(real_destdir);
+  g_free(real_destdir);
   archive_read_close(a);
   archive_read_free(a);
   archive_write_close(ext);
@@ -1583,32 +1692,23 @@ char *dt_ai_models_download_sync(const char *model_id,
 
   dt_print(DT_DEBUG_AI, "[ai_models] downloading: %s", url);
 
-  // prepare download path using local copy
-  char *download_path = g_build_filename(registry->cache_dir, asset, NULL);
+  // write to a .part temp file so interrupted transfers can resume from
+  // the partial bytes; rename to final path only on success
+  char *final_path = g_build_filename(registry->cache_dir, asset, NULL);
+  char *download_path = g_strconcat(final_path, ".part", NULL);
 
-  FILE *file = g_fopen(download_path, "wb");
-  if(!file)
-  {
-    char *err = g_strdup_printf(_("failed to create file: %s"), download_path);
-    g_free(download_path);
-    g_free(url);
-    SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, err);
-  }
-
-  // set up download data (uses model_id copy, not model pointer)
   dt_ai_download_data_t dl = {
     .registry = registry,
     .model_id = (char *)model_id,
     .callback = callback,
     .user_data = user_data,
-    .file = file,
+    .file = NULL,
     .cancel_flag = cancel_flag};
 
-  // initialize curl
   CURL *curl = curl_easy_init();
   if(!curl)
   {
-    fclose(file);
+    g_free(final_path);
     g_free(download_path);
     g_free(url);
     SET_STATUS_AND_RETURN(
@@ -1623,39 +1723,109 @@ char *dt_ai_models_download_sync(const char *model_id,
   curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, _curl_progress_callback);
   curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &dl);
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+  // cap connect at 15s (default 300s is far too long for a UI path)
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 15L);
+  // stalled-transfer abort: < 1 KB/s for 60s -> CURLE_OPERATION_TIMEDOUT,
+  // caught by the retry loop. no overall CURLOPT_TIMEOUT: a slow but
+  // progressing transfer isn't broken
+  curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);
+  curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);
 
-  CURLcode res = curl_easy_perform(curl);
-
-  fclose(file);
-
+  // retry with exponential backoff on transient failures; each attempt
+  // resumes from the .part file's current size via CURLOPT_RESUME_FROM_LARGE
+  const int MAX_ATTEMPTS = 4;
+  const int BACKOFF_S[] = {2, 8, 30};
+  CURLcode res = CURLE_OK;
+  long http_code = 0;
   char *error = NULL;
+  int attempt = 0;
 
-  if(res != CURLE_OK)
+  while(attempt < MAX_ATTEMPTS)
   {
-    if(res == CURLE_ABORTED_BY_CALLBACK)
-      error = g_strdup(_("download cancelled"));
-    else
-      error = g_strdup_printf(_("download failed: %s"), curl_easy_strerror(res));
-    g_unlink(download_path);
-  }
-  else
-  {
-    // check http response code
-    long http_code = 0;
+    if(attempt > 0)
+    {
+      // sleep in 1s slices so cancel is honoured promptly
+      const int wait_s = BACKOFF_S[MIN(attempt - 1, (int)(sizeof(BACKOFF_S)/sizeof(BACKOFF_S[0])) - 1)];
+      for(int i = 0; i < wait_s; i++)
+      {
+        if(cancel_flag && g_atomic_int_get(cancel_flag))
+        {
+          res = CURLE_ABORTED_BY_CALLBACK;
+          goto retry_done;
+        }
+        g_usleep(G_USEC_PER_SEC);
+      }
+      dt_print(DT_DEBUG_AI, "[ai_models] retry %d/%d", attempt + 1, MAX_ATTEMPTS);
+    }
+
+    curl_off_t resume_from = 0;
+    {
+      GStatBuf st;
+      if(g_stat(download_path, &st) == 0 && st.st_size > 0)
+        resume_from = (curl_off_t)st.st_size;
+    }
+
+    FILE *file = g_fopen(download_path, resume_from > 0 ? "ab" : "wb");
+    if(!file)
+    {
+      error = g_strdup_printf(_("failed to open %s"), download_path);
+      goto retry_done;
+    }
+    dl.file = file;
+    curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, resume_from);
+
+    res = curl_easy_perform(curl);
+    fclose(file);
+    dl.file = NULL;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if(http_code != 200)
+    if(res == CURLE_ABORTED_BY_CALLBACK) break; // user cancelled
+
+    if(res == CURLE_OK && (http_code == 200 || http_code == 206))
     {
-      error = g_strdup_printf(_("http error: %ld"), http_code);
-      g_unlink(download_path);
+      // server returned full content despite our range request: the
+      // partial file is now appended to itself and corrupt
+      if(resume_from > 0 && http_code == 200)
+      {
+        dt_print(DT_DEBUG_AI, "[ai_models] server ignored range; discarding partial");
+        g_unlink(download_path);
+        attempt++;
+        continue;
+      }
+      break; // success
     }
+
+    const gboolean retryable =
+         res == CURLE_OPERATION_TIMEDOUT
+      || res == CURLE_COULDNT_CONNECT
+      || res == CURLE_COULDNT_RESOLVE_HOST
+      || res == CURLE_RECV_ERROR
+      || res == CURLE_SEND_ERROR
+      || res == CURLE_PARTIAL_FILE
+      || (res == CURLE_OK && (http_code >= 500 || http_code == 429));
+    if(!retryable) break;
+    attempt++;
   }
 
+retry_done:
   curl_easy_cleanup(curl);
   g_free(url);
 
+  if(!error)
+  {
+    if(res == CURLE_ABORTED_BY_CALLBACK)
+      error = g_strdup(_("download cancelled"));
+    else if(res != CURLE_OK)
+      error = g_strdup_printf(_("download failed after %d attempts: %s"),
+                              attempt + 1, curl_easy_strerror(res));
+    else if(http_code != 200 && http_code != 206)
+      error = g_strdup_printf(_("http error: %ld"), http_code);
+  }
+
   if(error)
   {
+    // leave .part in place so the next attempt can resume from it
+    g_free(final_path);
     g_free(download_path);
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, error);
   }
@@ -1665,7 +1835,9 @@ char *dt_ai_models_download_sync(const char *model_id,
   {
     if(!_verify_checksum(download_path, checksum_copy))
     {
+      // fully downloaded but corrupt — delete so the next try starts fresh
       g_unlink(download_path);
+      g_free(final_path);
       g_free(download_path);
       SET_STATUS_AND_RETURN(
         DT_AI_MODEL_ERROR,
@@ -1676,6 +1848,7 @@ char *dt_ai_models_download_sync(const char *model_id,
   {
     // should not reach here — checksum is now required before download
     g_unlink(download_path);
+    g_free(final_path);
     g_free(download_path);
     SET_STATUS_AND_RETURN(
       DT_AI_MODEL_ERROR,
@@ -1684,20 +1857,32 @@ char *dt_ai_models_download_sync(const char *model_id,
                       asset));
   }
 
+  // promote .part to its final name now that content is verified
+  if(g_rename(download_path, final_path) != 0)
+  {
+    g_unlink(download_path);
+    g_free(final_path);
+    g_free(download_path);
+    SET_STATUS_AND_RETURN(
+      DT_AI_MODEL_ERROR,
+      g_strdup(_("failed to finalize downloaded file")));
+  }
+  g_free(download_path);
+
   // extract to models directory (zip already contains model_id folder).
   // atomic: staging dir + rename, so a partial extract never leaves a
   // half-written model_id directory that refresh_status would treat as
   // DOWNLOADED.
-  if(!_extract_zip_atomic(download_path, registry->models_dir, model_id))
+  if(!_extract_zip_atomic(final_path, registry->models_dir, model_id))
   {
-    g_unlink(download_path);
-    g_free(download_path);
+    g_unlink(final_path);
+    g_free(final_path);
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, g_strdup(_("failed to extract archive")));
   }
 
   // clean up downloaded zip
-  g_unlink(download_path);
-  g_free(download_path);
+  g_unlink(final_path);
+  g_free(final_path);
 
   // invalidate before flipping status so the next session sees a fresh
   // compile, not a stale artifact from the previous model file
@@ -1905,6 +2090,19 @@ void dt_ai_models_set_enabled(const char *model_id, gboolean enabled)
   char *conf_key = g_strdup_printf("%s%s/enabled", CONF_MODEL_ENABLED_PREFIX, model_id);
   dt_conf_set_bool(conf_key, enabled);
   g_free(conf_key);
+}
+
+// _task_labels is at the top of this file, next to the other constants
+const char *dt_ai_task_label(const char *task)
+{
+  if(!task || !task[0])
+    return "";
+
+  for(size_t i = 0; i < sizeof(_task_labels) / sizeof(_task_labels[0]); i++)
+    if(!strcmp(task, _task_labels[i].task))
+      return _(_task_labels[i].label);
+
+  return task;
 }
 
 char *dt_ai_models_get_active_for_task(const char *task)

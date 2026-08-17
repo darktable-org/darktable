@@ -16,10 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
@@ -36,8 +37,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <gtk/gtk.h>
-#include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 

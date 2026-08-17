@@ -147,6 +147,8 @@ typedef struct dt_gui_gtk_t
   gint scroll_mask;
   guint sidebar_scroll_mask;
 
+  GMainLoop *main_loop;
+
   cairo_filter_t filter_image;    // filtering used to scale images to screen
 } dt_gui_gtk_t;
 
@@ -200,6 +202,9 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
 // call class function to add or remove CSS classes (need to be set on top of this file as first function is used in this file)
 void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
 void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
+/* true while the pointer is grabbed by our own shortcut machinery; used to
+ * ignore the synthetic crossing events GDK generates for those grabs */
+gboolean dt_gui_pointer_is_grabbed(void);
 
 void dt_open_url(const char *url);
 int dt_gui_theme_init(dt_gui_gtk_t *gui);
@@ -221,30 +226,98 @@ double dt_get_screen_resolution(GtkWidget *widget);
  * modifiers are pressed to indicate the control should be scrolled, then remove
  * the modifiers from the event before returning false */
 gboolean dt_gui_ignore_scroll(GdkEventScroll *event);
+/* Same decision for a GtkEventControllerScroll callback: the modifiers are
+ * taken from the current event (GTK4: gtk_event_controller_get_current_event_state).
+ * The GdkEvent flavor clears the sidebar_scroll_mask from the event to consume
+ * the modifier; the controller world cannot mutate events, so the decision is
+ * identical but there is no side effect. */
+gboolean dt_gui_ignore_scroll_controller(GtkEventControllerScroll *controller);
+/* Scale factor converting normalized smooth scroll deltas (as returned by
+ * dt_gui_get_scroll_deltas() on macOS) back to pixels for panning. */
+#define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
 /* Return requested scroll delta(s) from event. If delta_x or delta_y
  * is NULL, do not return that delta. Return TRUE if requested deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
- * GDK_SCROLL_SMOOTH style scroll events. */
-gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y);
+ * GDK_SCROLL_SMOOTH style scroll events.  Takes the opaque GdkEvent
+ * (GTK4-compatible); GTK3 callers may pass a GdkEventScroll*. */
+gboolean dt_gui_get_scroll_deltas(const GdkEvent *event, gdouble *delta_x, gdouble *delta_y);
 /* Same as above, except accumulate smooth scrolls deltas of < 1 and
  * only set deltas and return TRUE once scrolls accumulate to >= 1.
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
-gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEvent *event, int *delta_x, int *delta_y);
 
 /* Note that on macOS Shift+vertical scroll can be reported as Shift+horizontal scroll.
  * So if Shift changes scrolling effect, both scrolls should be handled the same.
  * For this case (or if it's otherwise useful) use the following 2 functions. */
 
-/* Return sum of scroll deltas from event. Return TRUE if any deltas
+/* Return delta of larger magnitude from the event. Return TRUE if any deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
  * GDK_SCROLL_SMOOTH style scroll events. */
-gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
+gboolean dt_gui_get_scroll_delta(const GdkEvent *event, gdouble *delta);
 /* Same as above, except accumulate smooth scrolls deltas of < 1 and
  * only set delta and return TRUE once scrolls accumulate to >= 1.
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
-gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
+gboolean dt_gui_get_scroll_unit_delta(const GdkEvent *event, int *delta);
+
+/* Return TRUE if a scroll event should be treated as a touchpad pan gesture
+ * (two-finger swipe) rather than a plain scroll: requires the touchpad-gestures
+ * preference, a smooth non-stop scroll without ctrl, and a touchpad source
+ * device (on macOS any smooth non-ctrl scroll qualifies, as the built-in
+ * trackpad reports as a mouse; a device that just produced a pinch/swipe
+ * gesture also qualifies).  Mouse wheels therefore never pan, even where GTK
+ * delivers wheel scrolls as smooth events. */
+gboolean dt_gui_scroll_should_pan(const GdkEvent *event);
+
+/* Return the zoom delta (+/-0.5, positive = zoom in) for a scroll event.
+ * Vertical scrolls zoom in on up.  Horizontal scrolls zoom in on LEFT when
+ * the shift modifier is set (the OS rotated a vertical wheel step into a
+ * left/right scroll, so LEFT keeps meaning "wheel up") and on RIGHT
+ * otherwise (wheel tilt, two-finger swipe).  Discrete events are resolved
+ * from the normalized GDK direction; smooth (fractional) scrolls use their
+ * dominant delta.  dx/dy are the caller's deltas (raw or accumulated units). */
+float dt_gui_scroll_zoom_delta(const GdkEvent *event, gdouble dx, gdouble dy);
+
+/* Event timestamp as seen by a controller callback (same contract as
+ * dt_gui_get_current_event()). */
+static inline guint32 dt_gui_get_current_event_time(GtkEventController *controller)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GdkEvent *event = gtk_event_controller_get_current_event(controller);
+  return event ? gdk_event_get_time(event) : GDK_CURRENT_TIME;
+#else
+  return gtk_get_current_event_time();
+#endif
+}
+
+/* Current event as seen by a controller callback.  GTK4 reads the borrowed
+ * event from the controller (do NOT free); GTK3 returns an owned copy of
+ * gtk_get_current_event() which the caller must gdk_event_free(). */
+static inline GdkEvent *dt_gui_get_current_event(GtkEventController *controller)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gtk_event_controller_get_current_event(controller);
+#else
+  return gtk_get_current_event();
+#endif
+}
+
+/* Event coordinates in the frame the old root-coords convention used:
+ * GTK3 root (screen-absolute) coordinates, GTK4 the surface-relative
+ * position (GTK4 has no root-coords API).  Delta-based tracking (panel
+ * drag, culling/thumbtable pan) is unaffected; absolute positioning needs
+ * a coordinate decision on the GTK4 port. */
+static inline void dt_gui_get_event_coords(const GdkEvent *event,
+                                           gdouble *x,
+                                           gdouble *y)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gdk_event_get_position(event, x, y);
+#else
+  gdk_event_get_root_coords(event, x, y);
+#endif
+}
 
 /*
  * new ui api
@@ -506,6 +579,15 @@ void dt_gui_menu_popup(GtkMenu *menu,
                        GdkGravity widget_anchor,
                        GdkGravity menu_anchor);
 
+/* Forward the scroll event a scroll controller is currently dispatching to
+ * another widget, as if that widget had received it directly (used for the
+ * alt+scroll channel-tab switching in the wavelet/channel-band modules).
+ * GTK3-only: raw event forwarding via gtk_widget_event(); the GTK4 migration
+ * is to reimplement the forwarding as a scroll controller on the target
+ * widget itself (GTK4 has no gtk_widget_event). */
+gboolean dt_gui_forward_scroll(GtkEventControllerScroll *controller,
+                               GtkWidget *target);
+
 void dt_gui_draw_rounded_rectangle(cairo_t *cr,
                                    const float width,
                                    const float height,
@@ -543,7 +625,35 @@ void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 gboolean dt_gui_long_click(const guint second,
                            const guint first);
 
-#define ASSERT_FUNC_TYPE(func, expected_type) (void)(1 ? (func) : (expected_type)0)
+#define ASSERT_FUNC_TYPE(func, expected_type) (void)((expected_type)(func))
+
+/*
+ * Give our controller reference to the widget, like GTK4's
+ * gtk_widget_add_controller() (transfer full).  On GTK3 the widget only weakly
+ * points at the controller, so we unref on "destroy" — never from a weak
+ * notify on the widget: the controller's dispose removes its own weak pointer,
+ * which reenters the weak reference list being torn down and corrupts the heap.
+ *
+ * GTK4 migration: keep the calls, drop the widget argument from the
+ * gtk_gesture_*_new() / gtk_event_controller_*_new() calls above them.
+ */
+void dt_gui_add_controller(GtkWidget *widget,
+                           gpointer controller);
+
+/*
+ * Root (screen-absolute) coordinates of the current event, or FALSE when
+ * there is no current event.  Owns and releases the gtk_get_current_event()
+ * copy internally (GTK3 returns transfer-full).
+ *
+ * GTK4 migration: gtk_get_current_event() disappears; use
+ * gtk_gesture_get_last_event()/gtk_event_controller_get_current_event()
+ * (borrowed) and drop this helper.
+ */
+gboolean dt_gui_get_current_root_coords(gdouble *x, gdouble *y);
+/* Current modifier state as seen by a controller callback.  GTK4 reads it from
+ * the controller; GTK3 (which has no gtk_event_controller_get_current_event*)
+ * reads the event currently being dispatched, same as dt_gui_get_current_root_coords. */
+GdkModifierType dt_gui_get_current_event_state(GtkEventController *controller);
 
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
@@ -553,8 +663,32 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
   ASSERT_FUNC_TYPE(released, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
   dt_gui_connect_click(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
+/* dt_gui_connect_click() already listens to any button (button=0): callbacks
+ * decide via gtk_gesture_single_get_current_button(), as the old
+ * button-press-event handlers did.  This alias only documents that intent. */
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
-  gtk_gesture_single_set_button(dt_gui_connect_click(widget, pressed, released, data), 0)
+  dt_gui_connect_click(widget, pressed, released, data)
+
+GtkGestureSingle *(dt_gui_connect_click_secondary)(GtkWidget *widget,
+                                                   GCallback pressed,
+                                                   GCallback released,
+                                                   gpointer data);
+/* dt_gui_connect_click() restricted to the right button: the gesture's button
+ * filter does the exclusivity, so the handler needs no button check.  This is
+ * the right-click-popup idiom, previously written by hand at every call site. */
+#define dt_gui_connect_click_secondary(widget, pressed, released, data) ( \
+  ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(released, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  dt_gui_connect_click_secondary(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
+
+/* claim the event sequence for a gesture so that all its events (press,
+ * release, motion) are consumed and never reach the widget's class handlers
+ * or other controllers.  Connect to the gesture's "begin" signal; implies
+ * GTK_PHASE_CAPTURE.  Same pattern as dt_iop_togglebutton_new and the
+ * standalone picker buttons, survives GTK4 unchanged. */
+void dt_gui_gesture_claim(GtkGesture *gesture,
+                          GdkEventSequence *sequence,
+                          gpointer user_data);
 
 GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
                                   GCallback drag_begin,
@@ -566,6 +700,39 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(drag_end, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
   ASSERT_FUNC_TYPE(drag_update, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
   dt_gui_connect_drag(GTK_WIDGET(widget), G_CALLBACK(drag_begin), G_CALLBACK(drag_end), G_CALLBACK(drag_update), (data)))
+
+/* touchpad pinch via GtkGestureZoom: the old GTK3-only "event" signal
+ * handler forwarded raw GDK_TOUCHPAD_PINCH events; the phase field becomes
+ * the begin / scale-changed / end signals (and "end" fires on cancel as
+ * well, so the consumer's END/CANCEL reset still runs).  GtkGestureZoom also
+ * recognizes touchscreen pinches, which were never handled before -- ignored
+ * here for parity, only touchpad pinches reach the handler.  dx/dy, scale,
+ * state and the focal point are pulled from the gesture's last event (root
+ * coords on GTK3, surface-relative on GTK4 -- see dt_gui_get_event_coords);
+ * on END the event is already gone, so the handler gets NULL and the deltas
+ * default to zero.  The touchpad_gestures_enabled pref and the per-gesture
+ * active tracking live inside the helper; handlers only forward the parsed
+ * event (e.g. to dt_view_manager_gesture_pinch). */
+typedef struct dt_gui_pinch_event_t
+{
+  const GdkEvent *event;          /* borrowed, NULL on END (also on cancel) */
+  GdkTouchpadGesturePhase phase;  /* BEGIN / UPDATE / END */
+  gdouble x, y;                   /* focal point */
+  gdouble dx, dy;                 /* pan deltas */
+  gdouble scale;                  /* pinch scale */
+  guint state;                    /* modifier state (low 4 bits) */
+} dt_gui_pinch_event_t;
+
+typedef void (*dt_gui_pinch_handler_t)(GtkGesture *gesture,
+                                       const dt_gui_pinch_event_t *event,
+                                       gpointer user_data);
+
+GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
+                                   dt_gui_pinch_handler_t handler,
+                                   gpointer data);
+#define dt_gui_connect_pinch(widget, handler, data) ( \
+  ASSERT_FUNC_TYPE(handler, void(*)(GtkGesture *, const dt_gui_pinch_event_t *, __typeof__(data))), \
+  dt_gui_connect_pinch(GTK_WIDGET(widget), (handler), (data)))
 
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,
@@ -585,6 +752,47 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
 #define dt_gui_connect_scroll(widget, flags, scroll, data) ( \
   ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
   dt_gui_connect_scroll(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
+
+GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
+                                          GCallback pressed,
+                                          gpointer data);
+#define dt_gui_connect_key(widget, pressed, data) ( \
+  ASSERT_FUNC_TYPE(pressed, gboolean(*)(GtkEventControllerKey *, guint, guint, GdkModifierType, __typeof__(data))), \
+  dt_gui_connect_key(GTK_WIDGET(widget), G_CALLBACK(pressed), (data)))
+
+#define dt_gui_get_widget(controller) \
+      gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
+
+/* object-data key on the gesture carrying a shortcut-activated press'
+ * button+state, encoded as (state << 8) | button (see
+ * _action_process_toggle/_action_process_button).  Set right before the
+ * synthetic "pressed" emit and cleared after it, so a NULL means the press
+ * came from a real event. */
+#define DT_ACTION_GESTURE_SYNTH_KEY "_dt_action_gesture_synth"
+
+/* button of the current gesture press; for a shortcut-activated press the
+ * effect-determined button, else the real press' button (GtkGestureSingle
+ * resets current-button to 0 on release, so a 0 is never a real press and
+ * stands for a primary click) */
+static inline guint dt_gui_current_button(GtkGestureSingle *gesture)
+{
+  const gpointer synth = g_object_get_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY);
+  if(synth) return GPOINTER_TO_INT(synth) & 0xff;
+  const guint button = gtk_gesture_single_get_current_button(gesture);
+  return button ? button : GDK_BUTTON_PRIMARY;
+}
+
+/* modifiers of the current gesture press: for a shortcut-activated press the
+ * effect-determined modifiers (the action effect wins over whatever key
+ * produced the shortcut), else the current event's */
+static inline GdkModifierType dt_gui_current_state(GtkGestureSingle *gesture)
+{
+  const gpointer synth = g_object_get_data(G_OBJECT(gesture), DT_ACTION_GESTURE_SYNTH_KEY);
+  if(synth) return (GdkModifierType)(GPOINTER_TO_INT(synth) >> 8);
+  GdkModifierType state;
+  gtk_get_current_event_state(&state);
+  return state;
+}
 
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
@@ -646,10 +854,28 @@ static inline GtkWidget *dt_gui_scroll_wrap(GtkWidget *widget)
   return scrolled_window;
 }
 
-// Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
-void dt_gui_simulate_button_event(GtkWidget *widget,
-                                  const GdkEventType eventtype,
-                                  const int button);
+/* Menu items: the shell emits "activate" for mouse clicks as well as for
+ * keyboard (Enter/mnemonic/accel) activation, so handlers that apply on
+ * press (item gestures, see the menu conversion commits) mark the item
+ * here and skip the release-time activate.  This replaces the
+ * gtk_get_current_event() GDK_KEY_PRESS check, which does not exist in
+ * GTK4. */
+#define DT_GUI_MENUITEM_MOUSE_KEY "dt-gui-menuitem-mouse"
+
+static inline void dt_gui_menuitem_mark_pressed(GtkWidget *menuitem)
+{
+  g_object_set_data(G_OBJECT(menuitem), DT_GUI_MENUITEM_MOUSE_KEY, GINT_TO_POINTER(TRUE));
+}
+
+static inline gboolean dt_gui_menuitem_activated_by_keyboard(GtkWidget *menuitem)
+{
+  if(g_object_get_data(G_OBJECT(menuitem), DT_GUI_MENUITEM_MOUSE_KEY))
+  {
+    g_object_set_data(G_OBJECT(menuitem), DT_GUI_MENUITEM_MOUSE_KEY, NULL);
+    return FALSE;
+  }
+  return TRUE;
+}
 
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer,
@@ -658,6 +884,8 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer,
 // restore dialog size from config file
 void dt_gui_dialog_restore_size(GtkDialog *dialog,
                                 const char *conf);
+
+PangoFontDescription *dt_gui_get_font(void);
 
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);

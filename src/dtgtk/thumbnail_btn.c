@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c)2020 Aldric Renaudin.
+    copyright (c)2020-2026 Aldric Renaudin.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 #include "thumbnail_btn.h"
 #include "gui/gtk.h"
 #include <string.h>
@@ -103,7 +104,7 @@ static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, Gd
 {
   g_return_val_if_fail(widget != NULL, FALSE);
 
-  if(event->type == GDK_ENTER_NOTIFY)
+  if(dt_gdk_event_get_type(event) == GDK_ENTER_NOTIFY)
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
   else
     gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
@@ -125,7 +126,7 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
                                                 | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                                 | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                                 | GDK_ENTER_NOTIFY_MASK | GDK_ALL_EVENTS_MASK);
-  gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
+  dt_gui_add_class(GTK_WIDGET(button), "dt_transparent_background");
   gtk_widget_set_name(GTK_WIDGET(button), "thumbnail_btn");
   return (GtkWidget *)button;
 }

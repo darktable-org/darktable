@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ static inline char *_conf_get_var(const char *name)
   }
 
   // FIXME: why insert garbage?
-  // still no luck? insert garbage:
+  // still no luck? insert a garbage string with length=0:
   str = (char *)g_malloc0(sizeof(int32_t));
   g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
 
@@ -346,9 +346,7 @@ const char *dt_conf_get_string_const(const char *name)
 gboolean dt_conf_key_not_empty(const char *name)
 {
   const char *val = dt_conf_get_string_const(name);
-  if(val == NULL)      return FALSE;
-  if(strlen(val) == 0) return FALSE;
-  return TRUE;
+  return strlen(val) != 0;
 }
 
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser)
@@ -552,6 +550,8 @@ void dt_conf_init(dt_conf_t *cf,
     g_strlcpy(cf->filename, filename, sizeof(cf->filename));
   }
 
+  // guard inserting conf values
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
   dt_conf_read_values(filename, _conf_insert_value);
 
   if(override_entries)
@@ -564,6 +564,7 @@ void dt_conf_init(dt_conf_t *cf,
                           g_strdup(entry->value));
     }
   }
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 
 #undef LINE_SIZE
 

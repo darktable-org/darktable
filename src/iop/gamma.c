@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common/colorspaces_inline_conversions.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"
@@ -293,6 +293,17 @@ void process(dt_iop_module_t *self,
   if(roi_in->width != roi_out->width || roi_in->height != roi_out->height)
     return;
 
+  // dt_dev_image(want_float): the caller wants the scene-referred linear float
+  // working RGB, not display-encoded 8-bit ARGB. Pass the 4-channel float buffer
+  // straight through (the output buffer is already allocated 16 B/px). gamma
+  // stays the terminal module so backbuf dimensions remain consistent.
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE_FLOAT)
+  {
+    dt_iop_image_copy_by_size(
+      (float *const restrict)o, (const float *const restrict)i, roi_out->width, roi_out->height, 4);
+    return;
+  }
+
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
   const gboolean fcolor = dt_conf_is_equal("channel_display", "false color");
 
@@ -324,7 +335,7 @@ void process(dt_iop_module_t *self,
   }
 
   if(mask_display)
-    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i);
+    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i, "gamma mask display");
 }
 
 void init(dt_iop_module_t *self)

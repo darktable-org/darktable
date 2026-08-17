@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -48,6 +47,7 @@ typedef enum dt_bauhaus_type_t
   DT_BAUHAUS_BUTTON = 0,
   DT_BAUHAUS_SLIDER = 1,
   DT_BAUHAUS_COMBOBOX = 2,
+  DT_BAUHAUS_TOGGLE = 3,
   // TODO: all the fancy color sliders..
 } dt_bauhaus_type_t;
 
@@ -128,6 +128,12 @@ typedef struct dt_bauhaus_t
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
 
+  // resolves to the same css as the check part of a gtk check button, so
+  // that toggles are drawn by the theme rather than from hardcoded colours
+  GtkStyleContext *check_context;
+  float check_size;                      // side of a toggle's tick box
+  GtkBorder check_margin;                // space the css keeps around it
+
   // initialise or connect accelerators in set_label
   int skip_accel;
   GHashTable *combo_introspection, *combo_list;
@@ -170,10 +176,28 @@ dt_bauhaus_type_t dt_bauhaus_widget_get_type(GtkWidget *widget);
 dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
                                          const char *section,
                                          const char *label);
+// replace only the text that is drawn, for labels that carry a value read
+// from the image. The action the widget was registered under keeps the name
+// it was given, so shortcuts bound to it are unaffected
+void dt_bauhaus_widget_set_label_text(GtkWidget *widget,
+                                      const char *label);
+// how the label is shortened when it does not fit. The default is to drop
+// the end of it; a label that carries a value wants the middle dropped
+// instead, so that the value survives
+void dt_bauhaus_widget_set_label_ellipsize(GtkWidget *widget,
+                                           const PangoEllipsizeMode ellipsize);
+// where the quad is drawn, in widget coordinates, for anchoring a popup to
+// the icon rather than to the whole widget
+void dt_bauhaus_widget_get_quad_rect(GtkWidget *widget,
+                                     GdkRectangle *rect);
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget);
 void dt_bauhaus_widget_hide_label(GtkWidget *widget);
 void dt_bauhaus_widget_set_show_extended_label(GtkWidget *widget,
                                                gboolean show);
+// open the value-entry popup of a bauhaus widget, as if it were right-clicked.
+// Used by callers that want the popup without sending the widget a synthetic
+// button press (which a gesture-based widget cannot handle cleanly)
+void dt_bauhaus_widget_show_popup(GtkWidget *widget);
 void dt_bauhaus_widget_set_module(GtkWidget *widget,
                                   dt_action_t *module);
 gpointer dt_bauhaus_widget_get_module(GtkWidget *widget);
@@ -226,21 +250,24 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
 // reset widget to default value
 void dt_bauhaus_widget_reset(GtkWidget *widget);
 
+// toggle:
+GtkWidget *dt_bauhaus_toggle_new(dt_iop_module_t *self);
+GtkWidget *dt_bauhaus_toggle_from_widget(dt_bauhaus_widget_t *w,
+                                         dt_iop_module_t *self);
+// setting the value writes through to the linked field and adds a history
+// item, just like the slider and combobox setters do
+void dt_bauhaus_toggle_set(GtkWidget *widget,
+                           const gboolean active);
+gboolean dt_bauhaus_toggle_get(GtkWidget *widget);
+// the value a reset returns to, and the value the notebook tab "changed"
+// indicator compares against. Modules that compute a bool default per
+// image in reload_defaults() have to keep this up to date, as they already
+// do for sliders and comboboxes
+void dt_bauhaus_toggle_set_default(GtkWidget *widget,
+                                   const gboolean def);
+gboolean dt_bauhaus_toggle_get_default(GtkWidget *widget);
+
 // slider:
-GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self);
-GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self,
-                                            float min,
-                                            float max,
-                                            float step,
-                                            float defval,
-                                            int digits);
-GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self,
-                                                         float min,
-                                                         float max,
-                                                         float step,
-                                                         float defval,
-                                                         int digits,
-                                                         int feedback);
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget,
                                          dt_iop_module_t *self,
                                          const float min,
@@ -249,12 +276,14 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget,
                                          const float defval,
                                          const int digits,
                                          const int feedback);
-GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self,
-                                        float min,
-                                        float max,
-                                        float step,
-                                        float defval,
-                                        int digits);
+#define dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, feedback) \
+  dt_bauhaus_slider_from_widget(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL), self, min, max, step, defval, digits, feedback)
+#define dt_bauhaus_slider_new_with_range(self, min, max, step, defval, digits) \
+  dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, 1)
+#define dt_bauhaus_slider_new_action(self, min, max, step, defval, digits) \
+  dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self, min, max, step, defval, digits)
+#define dt_bauhaus_slider_new(self) \
+  dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3)
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *widget,
@@ -411,7 +440,7 @@ void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget);
 
 static inline void set_color(cairo_t *cr, GdkRGBA color)
 {
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
 }
 
 #define DT_IOP_SECTION_FOR_PARAMS_UNWIND(self) \

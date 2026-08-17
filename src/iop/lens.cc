@@ -43,7 +43,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <ctype.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <lensfun.h>
+
 
 #define MAXKNOTS 16
 #define VIGSPLINES 512
@@ -2417,6 +2418,52 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         vig[i] = 1;
     }
   }
+  else if(img->exif_correction_type == CORRECTION_TYPE_PANASONIC)
+  {
+    // Panasonic distortion polynomial (Rigo, trou/panasonic-rw2):
+    //   Ru = Rd + scale * (a*Rd^3 + b*Rd^5 + c*Rd^7)
+    // where Rd is the source (distorted) radius, Ru is the destination
+    // (undistorted) radius, both normalised to the half-diagonal, and
+    // scale is DistortionScale from Panasonic firmware. The pipeline
+    // needs the multiplier dr = Rd/Ru at each destination radius r;
+    // invert with two fixed-point iterations (Rd_new = Ru / f(Rd_old)),
+    // which reduce error by ~1000x for the small distortions typical
+    // of Panasonic bodies
+    const float a  = cd->panasonic.a;
+    const float b  = cd->panasonic.b;
+    const float c  = cd->panasonic.c;
+    const float sc = cd->panasonic.scale;
+
+    nc = MAXKNOTS;
+
+    for(int i = 0; i < nc; i++)
+    {
+      const float r = (float)i / (float)(nc - 1);
+      knots_dist[i] = knots_vig[i] = r;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        // invert Ru -> Rd via two fixed-point iterations
+        float rd = r;
+        for(int k = 0; k < 2; k++)
+        {
+          const float rd2 = rd * rd;
+          const float rd4 = rd2 * rd2;
+          const float rd6 = rd4 * rd2;
+          const float f = 1.0f + sc * (a*rd2 + b*rd4 + c*rd6);
+          rd = (f > 1e-6f) ? r / f : r;
+        }
+        const float dr = (r > 0.0f) ? rd / r : 1.0f;
+        const float fine = p->cor_dist_ft * (dr - 1.0f) + 1.0f;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = fine;
+      }
+      else if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
+
+      if(vig)
+        vig[i] = 1.0f;
+    }
+  }
 
 
   // calculate the optimal scaling value to show the maximum
@@ -3722,9 +3769,28 @@ static void _camera_set(dt_iop_module_t *self, const lfCamera *cam)
 
   if(!cam)
   {
+    // Lensfun doesn't know this body. still show what the file says it
+    // was shot with, so it's clear what was searched for rather than
+    // leaving the user with a blank field.
+    const dt_image_t *img = &self->dev->image_storage;
+    g->camera = NULL;
+
+    if(img->exif_model[0])
+      fm = img->exif_maker[0]
+        ? g_strdup_printf("%s, %s", img->exif_maker, img->exif_model)
+        : g_strdup(img->exif_model);
+    else
+      fm = g_strdup(p->camera);
+
     gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))),
-                       "");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->camera_model), "");
+                       fm);
+    gtk_widget_set_tooltip_text
+      (GTK_WIDGET(g->camera_model),
+       *fm ? _("this camera is not in the Lensfun database\n"
+               "click to pick one manually")
+           : _("no camera information found\n"
+               "click to pick one manually"));
+    g_free(fm);
     return;
   }
 
@@ -3940,6 +4006,18 @@ static void _lens_set(dt_iop_module_t *self,
 
   if(!lens)
   {
+    // keep whatever the file claims the lens was, and point at the
+    // picker -- searching without a camera lists the whole database
+    const dt_image_t *img = &self->dev->image_storage;
+    const char *name = p->lens[0] ? p->lens : img->exif_lens;
+
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))),
+                       name);
+    gtk_widget_set_tooltip_text
+      (GTK_WIDGET(g->lens_model),
+       _("no matching lens in the Lensfun database\n"
+         "click to pick one from the full list"));
+
     g->lensfun_trouble = TRUE;
     return;
   }
@@ -4231,7 +4309,9 @@ static void _display_errors(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message
       (self, _("camera/lens not found"),
-       _("please select your lens manually\n"
+       _("pick a camera or lens from the buttons below --\n"
+         "the lens button lists the whole database when the body is unknown\n"
+         "scale, target geometry and the TCA override work without a profile\n"
          "you might also want to check if your Lensfun database is up-to-date\n"
          "by running lensfun-update-data"),
        "camera/lens not found");
@@ -4253,13 +4333,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "lensfun");
 
-    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), !g->lensfun_trouble);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->message), !g->lensfun_trouble);
+    // none of these need a lens profile to work -- scale, geometry and
+    // the TCA override are independent of the database -- so they stay
+    // usable even when the camera or lens wasn't recognised. graying
+    // them out only made the panel look broken.
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
 
     const gboolean raw_monochrome =
       dt_image_is_monochrome(&self->dev->image_storage);
@@ -4291,8 +4375,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       img->exif_correction_type != CORRECTION_TYPE_DNG
       && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_latest_md_algo),
-                                 FALSE);
+    // guard: the callback re-enters gui_changed -> infinite recursion
+    DT_ENTER_GUI_UPDATE();
+    dt_bauhaus_toggle_set(g->use_latest_md_algo, FALSE);
+    DT_LEAVE_GUI_UPDATE();
     gtk_widget_set_visible
       (g->use_latest_md_algo,
        p->md_version != DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2);
@@ -4357,7 +4443,7 @@ static void _visualize_callback(GtkWidget *quad,
   DT_GUARD_GUI_UPDATE();
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   g->vig_masking = dt_bauhaus_widget_get_quad_active(quad);
-  dt_dev_reprocess_center(self->dev);
+  dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -4478,15 +4564,18 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *only_vig = dt_gui_vbox();
 
   /* embedded metadata widgets */
-  g->use_latest_md_algo =
-    gtk_check_button_new_with_label(_("use latest algorithm"));
+  // no field: this only switches the module over to the newer correction
+  // algorithm, it is not one of the module's parameters
+  g->use_latest_md_algo = dt_bauhaus_toggle_new(self);
+  dt_bauhaus_widget_set_label(g->use_latest_md_algo, NULL,
+                              N_("use latest algorithm"));
   gtk_widget_set_tooltip_text
     (g->use_latest_md_algo,
      _("you're using an old version of the algorithm.\n"
        "once enabled, you won't be able to\n"
        "return back to old algorithm."));
   GtkWidget *box_md = dt_gui_vbox(g->use_latest_md_algo);
-  g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled",
+  g_signal_connect(G_OBJECT(g->use_latest_md_algo), "value-changed",
                    G_CALLBACK(_use_latest_md_algo_callback), self);
 
   // we put fine-tuning values under an expander
@@ -4611,7 +4700,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
     g->vig_masking = FALSE;
     if(was_visualize)
-      dt_dev_reprocess_center(self->dev);
+      dt_dev_reprocess_center(self->dev, self->iop_order);
   }
   _display_errors(self);
 }
@@ -4646,8 +4735,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->camera_model, "");
   gtk_widget_set_tooltip_text(g->lens_model, "");
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override),
-                               p->tca_override);
+  dt_bauhaus_toggle_set(g->tca_override,
+                        p->tca_override);
 
   const lfCamera **cam = NULL;
   g->camera = NULL;
@@ -4656,13 +4745,13 @@ void gui_update(dt_iop_module_t *self)
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     cam = dt_iop_lensfun_db->FindCamerasExt(NULL, p->camera, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    if(cam)
-      _camera_set(self, cam[0]);
-    else
-      _camera_set(self, NULL);
   }
+  // always call this: with no match it falls back to the EXIF name
+  _camera_set(self, cam ? cam[0] : NULL);
 
-  if(g->camera && p->lens[0])
+  // an unknown body is no reason to give up on the lens -- searching
+  // without a camera simply widens the search to the whole database
+  if(p->lens[0])
   {
     char model[200];
     _parse_model(p->lens, model, sizeof(model));

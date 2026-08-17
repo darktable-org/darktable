@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1040,7 +1040,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
       GtkWidget *da = gtk_drawing_area_new();
       gtk_widget_set_size_request(da, data.psize, data.psize);
       gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
-      gtk_widget_set_app_paintable(da, TRUE);
+      dt_gui_add_class(da, "dt_transparent_background");
       gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
       data.first_draw = TRUE;
       g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);

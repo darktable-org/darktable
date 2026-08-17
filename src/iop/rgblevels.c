@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "common/iop_profile.h"
 #include "bauhaus/bauhaus.h"
@@ -359,14 +360,12 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_stroke(cr);
 }
 
-static gboolean _area_leave_notify_callback(GtkWidget *widget,
-                                            GdkEventCrossing *event,
-                                            dt_iop_module_t *self)
+static void _area_leave_notify_callback(GtkEventControllerMotion *controller,
+                                         dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   g->mouse_x = g->mouse_y = -1.0;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  gtk_widget_queue_draw(dt_gui_get_widget(controller));
 }
 
 static gboolean _area_draw_callback(GtkWidget *widget,
@@ -548,28 +547,30 @@ static void _rgblevels_move_handle(dt_iop_module_t *self,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static gboolean _area_motion_notify_callback(GtkWidget *widget,
-                                             GdkEventMotion *event,
-                                             dt_iop_module_t *self)
+static void _area_motion_notify_callback(GtkEventControllerMotion *controller,
+                                          gdouble x,
+                                          gdouble y,
+                                          dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   dt_iop_rgblevels_params_t *p = self->params;
+  GtkWidget *widget = dt_gui_get_widget(controller);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!g->dragging)
   {
-    g->mouse_x = CLAMP(event->x - inset, 0, width);
+    g->mouse_x = CLAMP(x - inset, 0, width);
     g->drag_start_percentage = (p->levels[g->channel][1] - p->levels[g->channel][0]) / (p->levels[g->channel][2] - p->levels[g->channel][0]);
   }
-  g->mouse_y = CLAMP(event->y - inset, 0, height);
+  g->mouse_y = CLAMP(y - inset, 0, height);
 
   if(g->dragging)
   {
     if(g->handle_move >= 0 && g->handle_move < 3)
     {
-      const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
+      const float mx = (CLAMP(x - inset, 0, width)) / (float)width;
 
       _rgblevels_move_handle(self, g->handle_move, mx, p->levels[g->channel], g->drag_start_percentage);
     }
@@ -577,7 +578,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   else
   {
     g->handle_move = 0;
-    const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+    const float mx = CLAMP(x - inset, 0, width) / (float)width;
     float dist = fabsf(p->levels[g->channel][0] - mx);
     for(int k = 1; k < 3; k++)
     {
@@ -593,91 +594,81 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
     gtk_widget_queue_draw(widget);
   }
-
-  return TRUE;
 }
 
-static gboolean _area_button_press_callback(GtkWidget *widget,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *self)
+static void _area_button_press_callback(GtkGestureSingle *gesture,
+                                         gint n_press,
+                                         gdouble x,
+                                         gdouble y,
+                                         dt_iop_module_t *self)
 {
-  // set active point
-  if(event->button == GDK_BUTTON_PRIMARY)
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
+
+  if(n_press >= 2)
   {
-    if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
+    _turn_selregion_picker_off(self);
 
-    if(event->type == GDK_2BUTTON_PRESS)
-    {
-      _turn_selregion_picker_off(self);
-
-      // Reset
-      dt_iop_rgblevels_gui_data_t *g = self->gui_data;
-      dt_iop_rgblevels_params_t *p = self->params;
-      const dt_iop_rgblevels_params_t *const default_params = self->default_params;
-
-      for(int i = 0; i < 3; i++)
-        p->levels[g->channel][i] = default_params->levels[g->channel][i];
-
-      // Needed in case the user scrolls or drags immediately after a reset,
-      // as drag_start_percentage is only updated when the mouse is moved.
-      g->drag_start_percentage = 0.5;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    }
-    else
-    {
-      _turn_selregion_picker_off(self);
-
-      dt_iop_rgblevels_gui_data_t *g = self->gui_data;
-      g->dragging = 1;
-    }
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static gboolean _area_button_release_callback(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self)
-{
-  if(event->button == GDK_BUTTON_PRIMARY)
-  {
+    // Reset
     dt_iop_rgblevels_gui_data_t *g = self->gui_data;
-    g->dragging = 0;
-    return TRUE;
+    dt_iop_rgblevels_params_t *p = self->params;
+    const dt_iop_rgblevels_params_t *const default_params = self->default_params;
+
+    for(int i = 0; i < 3; i++)
+      p->levels[g->channel][i] = default_params->levels[g->channel][i];
+
+    // Needed in case the user scrolls or drags immediately after a reset,
+    // as drag_start_percentage is only updated when the mouse is moved.
+    g->drag_start_percentage = 0.5;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  return FALSE;
+  else
+  {
+    _turn_selregion_picker_off(self);
+
+    dt_iop_rgblevels_gui_data_t *g = self->gui_data;
+    g->dragging = 1;
+  }
 }
 
-static gboolean _area_scroll_callback(GtkWidget *widget,
-                                      GdkEventScroll *event,
-                                      dt_iop_module_t *self)
+static void _area_button_release_callback(GtkGestureSingle *gesture,
+                                           gint n_press,
+                                           gdouble x,
+                                           gdouble y,
+                                           dt_iop_module_t *self)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY)
+    return;
+
+  dt_iop_rgblevels_gui_data_t *g = self->gui_data;
+  g->dragging = 0;
+}
+
+static void _area_scroll_callback(GtkEventControllerScroll *controller,
+                                   gdouble dx,
+                                   gdouble dy,
+                                   dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   dt_iop_rgblevels_params_t *p = self->params;
-
-  if(dt_gui_ignore_scroll(event)) return FALSE;
+  GtkWidget *widget = dt_gui_get_widget(controller);
 
   _turn_selregion_picker_off(self);
 
   if(g->dragging)
-  {
-    return FALSE;
-  }
+    return;
 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state);
-  // Distance moved for each scroll event
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dy != 0.0)
   {
-    const float new_position = p->levels[g->channel][g->handle_move] - interval * delta_y;
+    const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, dt_key_modifier_state());
+    const float new_position = p->levels[g->channel][g->handle_move] - interval * dy;
     _rgblevels_move_handle(self, g->handle_move, new_position, p->levels[g->channel], g->drag_start_percentage);
-    return TRUE;
   }
-
-  return TRUE; // Ensure that scrolling the widget cannot move side panel
 }
 
 static void _auto_levels_callback(GtkButton *button,
@@ -1054,21 +1045,16 @@ void gui_init(dt_iop_module_t *self)
                                 "operates on L channel."));
   g_signal_connect(G_OBJECT(g->area), "draw",
                    G_CALLBACK(_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(_area_button_release_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(_area_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(_area_scroll_callback), self);
+  dt_gui_connect_click(g->area, _area_button_press_callback, _area_button_release_callback, self);
+  dt_gui_connect_motion(g->area, _area_motion_notify_callback, NULL, _area_leave_notify_callback, self);
+  dt_gui_connect_scroll(g->area, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                   | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _area_scroll_callback, self);
 
 #define PICKER_SETUP(color, name, tooltip)                                 \
   g->color##pick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL); \
   dt_action_define_iop(self, N_("pickers"), name, g->color##pick,          \
-                       &dt_action_def_toggle);                             \
+                       &dt_action_def_color_picker);                             \
   gtk_widget_set_tooltip_text(g->color##pick, tooltip);                    \
   gtk_widget_set_name(GTK_WIDGET(g->color##pick), "picker-"#color);        \
   g_signal_connect(dt_gui_expand(g->color##pick), "toggled",               \
@@ -1083,14 +1069,16 @@ void gui_init(dt_iop_module_t *self)
                        &dt_action_def_button);
   gtk_widget_set_tooltip_text(g->bt_auto_levels, _("apply auto levels"));
 
-  g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+  g->bt_select_region = dtgtk_togglebutton_new_full(dtgtk_cairo_paint_colorpicker, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("apply auto levels based on a region defined by the user\n"
+          "click and drag to draw the area\n"
+          "right-click to cancel"),
+        .action = DT_ACTION(self),
+        .action_label = N_("auto region"),
+        .action_def = &dt_action_def_toggle,
+      });
   dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
-  dt_action_define_iop(self, NULL, N_("auto region"), g->bt_select_region,
-                       &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(g->bt_select_region,
-                              _("apply auto levels based on a region defined by the user\n"
-                                "click and drag to draw the area\n"
-                                "right-click to cancel"));
 
   dt_gui_box_add(self->widget, g->channel_tabs, g->area,
                  dt_gui_hbox(g->blackpick, g->greypick, g->whitepick),

@@ -50,7 +50,6 @@
 #include "lua/image.h"
 #endif
 
-#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <gdk/gdkkeysyms.h>
@@ -109,6 +108,12 @@ static void _preview_quit(dt_view_t *self)
   lib->preview_state = FALSE;
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
+
+  // refresh the layout buttons: exiting full preview via a path that doesn't
+  // go through the layout button handlers (e.g. closing the main window while
+  // in preview, which exits preview instead of quitting dt) would otherwise
+  // leave the full preview icon stuck in its active state.
+  dt_view_lighttable_update_layout_buttons(darktable.view_manager);
 
   // show/hide filmstrip & timeline when entering the view
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
@@ -450,7 +455,9 @@ static gboolean is_image_visible_cb(lua_State *L)
 void cleanup(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
+  dt_culling_destroy(lib->culling);
   free(lib->culling);
+  dt_culling_destroy(lib->preview);
   free(lib->preview);
   free(self->data);
 }
@@ -633,6 +640,13 @@ static void _preview_set_state(dt_view_t *self,
     _preview_enter(self, sticky, focus, restriction);
   else
     _preview_quit(self);
+}
+
+static void _profile_popup_show_cb(GtkGestureSingle *gesture, int n_press,
+                                      double x, double y,
+                                      GtkWidget *popover)
+{
+  gtk_widget_show_all(popover);
 }
 
 void init(dt_view_t *self)
@@ -1466,8 +1480,10 @@ void gui_init(dt_view_t *self)
                                      DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM);
 
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, 0, NULL);
-  gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
+  GtkWidget *const profile_button = dtgtk_button_new_full(dtgtk_cairo_paint_display, 0, NULL,
+      &(dtgtk_button_config_t){
+        .tooltip = _("set display profile"),
+      });
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      profile_button, DT_VIEW_LIGHTTABLE);
 
@@ -1475,8 +1491,7 @@ void gui_init(dt_view_t *self)
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
-  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event",
-                           G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
+  dt_gui_connect_click_all(profile_button, _profile_popup_show_cb, NULL, lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -1568,29 +1583,45 @@ void gui_init(dt_view_t *self)
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_STARTEND), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Home, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Home, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_End, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_End, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("horizontal"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEFTRIGHT), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Left, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Left, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_Right, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_Right, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("vertical"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_UPDOWN), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Down, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Down, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_Up, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_Up, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("page"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS,
                        GDK_KEY_Page_Down, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_PREVIOUS,
+                       GDK_KEY_Page_Down, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT,
                        GDK_KEY_Page_Up, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_SELECT, DT_ACTION_EFFECT_NEXT,
+                       GDK_KEY_Page_Up, GDK_SHIFT_MASK);
 
   ac = dt_action_define(sa, N_("move"), N_("leave"),
                         GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEAVE), &_action_def_move);

@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2020-2024 darktable developers.
+  Copyright (C) 2020-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include <assert.h>
+
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2025 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
@@ -2724,9 +2725,14 @@ void gui_post_expose(dt_iop_module_t *self,
   }
 }
 
-static gboolean btn_make_radio_callback(GtkToggleButton *btn,
-                                        const GdkEventButton *event,
-                                        dt_iop_module_t *self);
+static void _btn_make_radio_cb(GtkToggleButton *btn,
+                                gboolean ctrl_pressed,
+                                dt_iop_module_t *self);
+static void btn_make_radio_callback(GtkGestureSingle *gesture,
+                                      int n_press,
+                                      double x,
+                                      double y,
+                                      dt_iop_module_t *self);
 
 void gui_focus(dt_iop_module_t *self,
                const gboolean in)
@@ -2734,7 +2740,7 @@ void gui_focus(dt_iop_module_t *self,
   if(!in)
   {
     dt_collection_hint_message(darktable.collection);
-    btn_make_radio_callback(NULL, NULL, self);
+    _btn_make_radio_cb(NULL, FALSE, self);
   }
 }
 
@@ -3091,6 +3097,10 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
+  // avoid unexpected back to lighttable mode on double-click
+  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
+    return 1;
+
   dt_iop_liquify_gui_data_t *g = self->gui_data;
   dt_iop_liquify_params_t *p = self->params;
 
@@ -3229,7 +3239,7 @@ int button_released(dt_iop_module_t *self,
       if(g->creation_continuous)
         _start_new_shape(self);
       else
-        btn_make_radio_callback(g->btn_node_tool, NULL, self);
+        _btn_make_radio_cb(GTK_TOGGLE_BUTTON(g->btn_node_tool), FALSE, self);
       handled = 2;
     }
     else if(gtk_toggle_button_get_active(g->btn_line_tool))
@@ -3290,7 +3300,7 @@ int button_released(dt_iop_module_t *self,
       else
       {
         g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
-        btn_make_radio_callback(g->btn_node_tool, NULL, self);
+        _btn_make_radio_cb(GTK_TOGGLE_BUTTON(g->btn_node_tool), FALSE, self);
       }
       handled = 2;
       goto done;
@@ -3299,7 +3309,7 @@ int button_released(dt_iop_module_t *self,
     // right click on background toggles node tool
     if(g->last_hit.layer == DT_LIQUIFY_LAYER_BACKGROUND)
     {
-      btn_make_radio_callback(g->btn_node_tool, NULL, self);
+      _btn_make_radio_cb(GTK_TOGGLE_BUTTON(g->btn_node_tool), FALSE, self);
       handled = 1;
       goto done;
     }
@@ -3521,9 +3531,9 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr,
 
 // we need this only because darktable has no radiobutton support
 
-static gboolean btn_make_radio_callback(GtkToggleButton *btn,
-                                        const GdkEventButton *event,
-                                        dt_iop_module_t *self)
+static void _btn_make_radio_cb(GtkToggleButton *btn,
+                                gboolean ctrl_pressed,
+                                dt_iop_module_t *self)
 {
   dt_iop_liquify_gui_data_t *g = self->gui_data;
   dt_iop_liquify_params_t *p = self->params;
@@ -3532,10 +3542,10 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
   // does nothing (expect resetting the toggle button status).
   if(is_dragging(g) && g->temp && node_prev(p, g->temp))
   {
-    return TRUE;
+    return;
   }
 
-  g->creation_continuous = event != NULL && dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  g->creation_continuous = ctrl_pressed;
 
   dt_control_hinter_message("");
 
@@ -3549,14 +3559,26 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
     g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
   }
 
+  /* Called from GtkGestureMultiPress::pressed (via our CAPTURE-phase
+   * gesture that claims the sequence).  The signal fires BEFORE the
+   * togglebutton toggles, so we manage all toggle states explicitly. */
+  if(!btn)
+  {
+    /* NULL btn from gui_focus() / gui_reset() — disable all tools. */
+    gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
+    gtk_toggle_button_set_active(g->btn_line_tool, FALSE);
+    gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
+    gtk_toggle_button_set_active(g->btn_node_tool, FALSE);
+    dt_control_hinter_message("");
+    return;
+  }
+
   // now, let's enable and start a new form safely
-  if(!btn || !gtk_toggle_button_get_active(btn))
+  if(!gtk_toggle_button_get_active(btn))
   {
     gtk_toggle_button_set_active(g->btn_point_tool, btn == g->btn_point_tool);
     gtk_toggle_button_set_active(g->btn_line_tool,  btn == g->btn_line_tool);
     gtk_toggle_button_set_active(g->btn_curve_tool, btn == g->btn_curve_tool);
-    gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
-
     gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
 
     dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint
@@ -3584,12 +3606,29 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
   }
   else
   {
-    gtk_toggle_button_set_active(btn, FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn), FALSE);
   }
 
   sync_pipe(self, FALSE);
+}
 
-  return TRUE;
+static void btn_make_radio_callback(GtkGestureSingle *gesture,
+                                      int n_press,
+                                      double x,
+                                      double y,
+                                      dt_iop_module_t *self)
+{
+  /* read the modifier state from the gesture: for a real click this is
+   * the live event state, for a shortcut-activated press it is the
+   * declared effect carried by _action_effect_button_state() (see
+   * DT_ACTION_GESTURE_SYNTH_KEY in gtk.h); gtk_get_current_event() would
+   * return the key event during shortcut dispatch and lose the declared
+   * ctrl variant */
+  const gboolean ctrl_pressed = dt_modifier_is(dt_gui_current_state(gesture), GDK_CONTROL_MASK);
+
+  GtkWidget *btn = dt_gui_get_widget(gesture);
+
+  _btn_make_radio_cb(GTK_TOGGLE_BUTTON(btn), ctrl_pressed, self);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -3675,7 +3714,7 @@ void gui_reset(dt_iop_module_t *self)
   g->dragging = NOWHERE;
   g->temp = NULL;
   g->status = 0;
-  btn_make_radio_callback(NULL, NULL, self);
+  _btn_make_radio_cb(NULL, FALSE, self);
 }
 
 // defgroup Button paint functions

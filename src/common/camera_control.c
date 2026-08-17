@@ -2251,13 +2251,14 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c,
       // https://redmine.darktable.org/issues/12004 for the crash
       // resulting from that.
 
-      // Get new_config and old_config value to be compared
+      // Get new_config and old_config value to be compared independent from locale
       if(new_config_type == GP_WIDGET_RANGE)
       {
         float value;
         if(gp_widget_get_value(new_config, &value) != GP_OK)
           goto end;
-        new_config_value = g_strdup_printf("%.0f", value);
+        new_config_value = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+        g_ascii_dtostr(new_config_value, G_ASCII_DTOSTR_BUF_SIZE, value);
       }
       else
         if(gp_widget_get_value(new_config, &new_config_value) != GP_OK)
@@ -2268,7 +2269,8 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c,
         float value;
         if(gp_widget_get_value(old_config_child, &value) != GP_OK)
           goto end;
-        old_config_value = g_strdup_printf("%.0f", value);
+        old_config_value = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+        g_ascii_dtostr(old_config_value, G_ASCII_DTOSTR_BUF_SIZE, value);
       }
       else
         if(gp_widget_get_value(old_config_child, &old_config_value) != GP_OK)

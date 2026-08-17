@@ -315,6 +315,20 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 
+# When GTK3 carries the Wayland backend, gui/gtk.c calls into libwayland-client
+# directly (registry roundtrip for server-side decoration support), so we have to
+# link it ourselves. gtk+-3.0.pc does not list it, and relying on libgdk-3 to drag
+# it in breaks with linkers using --no-undefined (e.g. openSUSE's default LDFLAGS).
+if(NOT WIN32 AND NOT APPLE)
+  pkg_check_modules(GTK3_WAYLAND QUIET gtk+-wayland-3.0)
+  if(GTK3_WAYLAND_FOUND)
+    pkg_check_modules(WAYLAND_CLIENT REQUIRED wayland-client)
+    include_directories(SYSTEM ${WAYLAND_CLIENT_INCLUDE_DIRS})
+    link_directories(${WAYLAND_CLIENT_LIBRARY_DIRS})
+    list(APPEND LIBS ${WAYLAND_CLIENT_LIBRARIES})
+  endif()
+endif()
+
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
 include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
@@ -447,7 +461,12 @@ include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
 list(APPEND LIBS ${LensFun_LIBRARIES})
 
 find_package(SQLite3 3.26 REQUIRED)
-list(APPEND LIBS SQLite::SQLite3)
+
+if(NOT TARGET SQLite3::SQLite3) # Compatibility with CMake < 4.3
+  add_library(SQLite3::SQLite3 ALIAS SQLite::SQLite3)
+endif()
+
+list(APPEND LIBS SQLite3::SQLite3)
 
 foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
@@ -1110,6 +1129,11 @@ endif(HAVE_OPENCL)
 
 # have a command line interface
 add_subdirectory(cli)
+
+# have a Model Context Protocol server exposing the raw engine to AI agents
+if(USE_MCP)
+  add_subdirectory(mcp)
+endif()
 
 # have a command line utility to generate all the thumbnails
 add_subdirectory(generate-cache)

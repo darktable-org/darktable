@@ -156,6 +156,12 @@ static void view_leave_wrapper(struct dt_lib_module_t *self,struct dt_view_t *ol
       LUA_ASYNC_DONE);
 }
 
+static gboolean has_preset_label_wrapper(struct dt_lib_module_t *self)
+{
+  //Lua modules do not support presets
+  return FALSE;
+}
+
 static dt_lib_module_t ref_lib = {
   .module = NULL,
   .data = NULL,
@@ -164,6 +170,7 @@ static dt_lib_module_t ref_lib = {
   .expander = NULL,
   .version = version_wrapper,
   .name = name_wrapper,
+  .has_preset_label = has_preset_label_wrapper,
   .views = view_wrapper,
   .container = container_wrapper,
   .expandable = expandable_wrapper,

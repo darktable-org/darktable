@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
 #include <inttypes.h>
 #include <memory.h>
 #include <png.h>
@@ -247,7 +246,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img,
     {
       mipbuf[4 * index]     = (buf[2 * (3 * index)]     * 256.0f + buf[2 * (3 * index)     + 1]) * normalizer;
       mipbuf[4 * index + 1] = (buf[2 * (3 * index + 1)] * 256.0f + buf[2 * (3 * index + 1) + 1]) * normalizer;
-      mipbuf[4 * index + 2] = (buf[2 * (3 * index + 2)] * 256.0f + buf[2 * (3 * index + 1) + 1]) * normalizer;
+      mipbuf[4 * index + 2] = (buf[2 * (3 * index + 2)] * 256.0f + buf[2 * (3 * index + 2) + 1]) * normalizer;
     }
   }
 

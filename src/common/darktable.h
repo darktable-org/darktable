@@ -178,6 +178,15 @@ typedef int32_t dt_filmid_t;
 #define DT_DEVICE_CPU -1
 #define DT_DEVICE_NONE -2
 
+// We have several bitmask opencl start options passed to dt_opencl_init()
+#define DT_OPENCL_OPTION_NONE 0         // default
+#define DT_OPENCL_OPTION_EXCLUDE 1      // --disable-opencl:  disables OpenCL for the session
+// some reserved options, mentioned cli options might not be available depending on build
+#define DT_OPENCL_OPTION_FAST_TILE 2    // --opencl-tiling:   use OpenCL tiling mode (debugging session)
+#define DT_OPENCL_OPTION_SPURIOS 4      // --opencl-spurious: insert random OpenCL errors while processing modules (debugging session)
+#define DT_OPENCL_OPTION_MIGRATE 8      // --opencl-migrate:  enforce cl_mem migration while allocating cl_mem (debugging session)
+#define DT_OPENCL_OPTION_NOFAST_TILE 16 // --opencl-notiling: disable OpenCL fast tiling mode (debugging session)
+
 typedef int32_t dt_mask_id_t;
 #define INVALID_MASKID (-1)
 #define NO_MASKID (0)
@@ -196,7 +205,7 @@ typedef int32_t dt_mask_id_t;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 19
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 20
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -395,6 +404,7 @@ typedef struct dt_sys_resources_t
 {
   size_t total_memory;
   size_t mipmap_memory;
+  size_t cl_uni_memory;
   int *fractions;   // fractions are calculated as res=input / 1024  * fraction
   int *refresource; // for the debug resource modes we use fixed settings
   int level;
@@ -486,6 +496,9 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   gboolean pipe_cache;
+  // Keep database history for known images rather than replacing it from XMP.
+  // Set by darktable-cli with explicit --library <db>; GUI and CLI use XMP by default.
+  gboolean prefer_library_history;
   int gui_running;		// atomic, access with g_atomic_int_*()
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;
