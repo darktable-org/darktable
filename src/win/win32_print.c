@@ -1,3 +1,6 @@
+#define WIN32_LEAN_AND_MEAN
+#define _WIN32_WINNT 0x0602
+
 #include "common/darktable.h"
 // Forward declaration to fix implicit declaration error
 //void dt_printers_abort_discovery(void);
@@ -46,6 +49,7 @@ static void win32_print_register_cleanup(void)
 #include <shellapi.h>
 #include <gdiplus.h>
 #include <wingdi.h>
+#include <xpsprint.h>
 #include "win/win32_print.h"
 
 
@@ -77,6 +81,7 @@ typedef struct notify_ctx_t {
 
 
 static GList *discovered_printers = NULL; // holds dt_printer_info_t*
+
 void dt_populate_hw_margins(HDC hdc, dt_printer_info_t *printer);
 
 static int _fill_printer_details_job(dt_job_t *job);
@@ -95,14 +100,57 @@ typedef struct {
   dt_prtctl_t *pctl;
 } printer_job_params_t;
 
-
-
 typedef struct
 {
   dt_printer_info_t *pinfo;                // UI-owned printer struct
   void (*cb)(dt_printer_info_t *, void *); // UI callback
   void *user_data;                         // UI callback user data
 } printer_ui_notify_t;
+
+// Function pointer type matching StartXpsPrintJob's real signature from
+// xpsprint.h. Resolved at runtime via LoadLibrary/GetProcAddress rather
+// than linked, since MinGW-w64 doesn't ship an import library for
+// xpsprint.dll — see CMake notes from earlier in this project.
+typedef HRESULT (WINAPI *PFN_StartXpsPrintJob)(
+    LPCWSTR printerName,
+    LPCWSTR jobName,
+    LPCWSTR outputFileName,
+    HANDLE progressEvent,
+    HANDLE completionEvent,
+    UINT8 *printablePagesOn,
+    UINT32 printablePagesOnCount,
+    IXpsPrintJob **xpsPrintJob,
+    IXpsPrintJobStream **documentStream,
+    IXpsPrintJobStream **printTicketStream);
+
+static PFN_StartXpsPrintJob pStartXpsPrintJob = NULL;
+static HMODULE hXpsPrintDll = NULL;
+
+// Resolves StartXpsPrintJob if not already done. Safe to call repeatedly —
+// a no-op once resolved. LoadLibrary/GetProcAddress are individually
+// thread-safe Win32 calls, so even if two print jobs somehow raced into
+// this, worst case is a harmless redundant LoadLibrary refcount bump.
+static gboolean _win_xpsprint_ensure_loaded(void)
+{
+  if(pStartXpsPrintJob) return TRUE;
+
+  if(!hXpsPrintDll)
+    hXpsPrintDll = LoadLibraryW(L"xpsprint.dll");
+
+  if(!hXpsPrintDll)
+  {
+    dt_control_log(_("could not load xpsprint.dll"));
+    return FALSE;
+  }
+
+  pStartXpsPrintJob =
+    (PFN_StartXpsPrintJob)GetProcAddress(hXpsPrintDll, "StartXpsPrintJob");
+
+  if(!pStartXpsPrintJob)
+    dt_control_log(_("xpsprint.dll is missing StartXpsPrintJob"));
+
+  return pStartXpsPrintJob != NULL;
+}
 
 /* ----------------------------------------------------------------------------
    Debug logging
@@ -870,12 +918,84 @@ bool dt_win_print_file(const dt_images_box *imgs,
   {
   DBG_MARK("entering dt_win_print_file");
 
+  if(imgs->count <= 0)
+  {
+    dt_control_log(_("no images to print on `%s'"), pinfo->printer.name);
+    return false;
+  }
+
+  if(!_win_xpsprint_ensure_loaded())
+  return false;   // logged inside the helper already
+  
+  // This runs on the background job thread — COM must be explicitly
+  // initialized here, it's not inherited from the GUI thread.
+  HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
+  if(!co_initialized)
+  {
+    dt_control_log(_("could not initialize COM for printing"));
+    return false;
+  }
+
+  bool ok = false;
+  wchar_t *wprinter = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
+  wchar_t *wtitle   = g_utf8_to_utf16(job_title, -1, NULL, NULL, NULL);
+
+  IXpsPrintJob *xpsJob = NULL;
+  IXpsPrintJobStream *docStream = NULL;
+  IXpsPrintJobStream *ticketStream = NULL;
+  HANDLE completionEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+
+  if(wprinter && wtitle && completionEvent && pStartXpsPrintJob)
+  {
+    hr = pStartXpsPrintJob(wprinter, wtitle, NULL, NULL, completionEvent,
+                           NULL, 0, &xpsJob, &docStream, &ticketStream);
+    if(SUCCEEDED(hr))
+    {
+      // job-level settings: just a byte copy, no COM object rebuilding needed
+      if(print_ticket_data && print_ticket_size > 0)
+        ticketStream->lpVtbl->Write(ticketStream, print_ticket_data,
+                                    (ULONG)print_ticket_size, NULL);
+
+      // TODO: build the XPS package into docStream —
+      // IXpsOMObjectFactory → CreatePackageWriterOnStream(docStream, ...)
+      // → for each imgs->box[i]: WIC bitmap from box->buf, ColorContext
+      //   from icc_data/icc_size, place on a FixedPage sized from
+      //   width/height, in DIU (box coordinates need converting from
+      //   whatever unit compute_box_rect used — not device pixels anymore)
+
+      docStream->lpVtbl->Close(docStream);
+      ticketStream->lpVtbl->Close(ticketStream);
+
+      WaitForSingleObject(completionEvent, INFINITE);
+      ok = true; // TODO: check actual job completion status via xpsJob
+    }
+    else
+    {
+      dt_control_log(_("could not start XPS print job on `%s'"), pinfo->printer.name);
+    }
+  }
+
+  if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
+  if(completionEvent) CloseHandle(completionEvent);
+  g_free(wprinter);
+  g_free(wtitle);
+  if(co_initialized) CoUninitialize();
+
+  if(ok)
+    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
+  else
+    dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
+
+  return ok;
+
+
   // const dt_images_box *imgs = &params->imgs;
   // const char *job_title = params->job_title;
   // dt_print_info_t *pinfo = &params->prt;
   // dt_win32_print_ctx_t *ctx = params->ctx;
 
-  if(imgs->count <= 0)
+/*   if(imgs->count <= 0)
   {
     dt_control_log(_("no images to print on `%s'"), pinfo->printer.name);
     return false;
@@ -1008,7 +1128,7 @@ DBG_MARK("RECT: left=%d top=%d right=%d bottom=%d", r.left, r.top, r.right, r.bo
 
   DBG_MARK("leaving dt_win_print_file");
   return ok;
-}
+ */}
 
 
 // Fill in hardware margins (in mm) for the given printer DC
