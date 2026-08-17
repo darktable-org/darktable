@@ -1654,6 +1654,41 @@ static gsize _history_hash_compute_from_db(const dt_imgid_t imgid,
     }
     sqlite3_finalize(stmt);
 
+    // masks (main.masks_history): shape/group state -- points, the inversion
+    // bit, refinements, ... -- lives here, not in blendop_params, so it must
+    // be hashed too or a mask-only edit (move/resize/invert a shape, change
+    // a group's operator, ...) leaves this hash unchanged and the stale
+    // lighttable thumbnail is never regenerated (see
+    // dt_history_hash_is_mipmap_synced). Same "latest row per formid, up to
+    // history_end" read dt_masks_read_masks_history uses, so this tracks
+    // exactly what darkroom would actually render.
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT form, points, points_count, source, MAX(num)"
+       " FROM main.masks_history"
+       " WHERE imgid = ?1 AND num < ?2"
+       " GROUP BY formid"
+       " ORDER BY formid",
+       -1, &stmt, NULL);
+    // clang-format on
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, history_end);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int form_type = sqlite3_column_int(stmt, 0);
+      g_checksum_update(checksum, (const guchar *)&form_type, sizeof(form_type));
+      const guchar *buf = sqlite3_column_blob(stmt, 1);
+      int len = sqlite3_column_bytes(stmt, 1);
+      if(buf) g_checksum_update(checksum, buf, len);
+      const int points_count = sqlite3_column_int(stmt, 2);
+      g_checksum_update(checksum, (const guchar *)&points_count, sizeof(points_count));
+      buf = sqlite3_column_blob(stmt, 3);
+      len = sqlite3_column_bytes(stmt, 3);
+      if(buf) g_checksum_update(checksum, buf, len);
+    }
+    sqlite3_finalize(stmt);
+
     const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
     *hash = g_malloc(checksum_len);
     hash_len = checksum_len;
