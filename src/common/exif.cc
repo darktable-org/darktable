@@ -37,6 +37,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 // avoid error reported when including exiv2.hpp on macOS (XCode 15.2)
 #pragma GCC diagnostic push
@@ -477,53 +478,60 @@ static void _exif_value_str(const int value,
   g_free(str_value);
 }
 
-static void _deleteXmpTag(Exiv2::XmpData &xmp, const char *tag)
+// Returns true if `key` is exactly `tag`, or an array element of it
+// (`tag[n]`).
+static bool _xmp_key_matches_tag(const std::string &key,
+                                  const char *tag,
+                                  const size_t tag_len)
 {
-  try {
-    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(tag));
-
-    while(pos != xmp.end())
-    {
-      std::string key = pos->key();
-      const char *ckey = key.c_str();
-      size_t len = key.size();
-
-      // Stop iterating once the key no longer matches what we are
-      // trying to delete. This assumes sorted input.
-      if(!(g_str_has_prefix(ckey, tag)
-        && (ckey[len] == '[' || ckey[len] == '\0')))
-        break;
-      pos = xmp.erase(pos);
-    }
-  }
-  catch(const Exiv2::AnyError &e)
-  {
-    // The only exception we may get is "invalid" tag, which is not
-    // important enough to either stop the function, or even display
-    // a message (it's probably the tag that is not implemented in
-    // the Exiv2 version used).
-  }
+  return key.compare(0, tag_len, tag) == 0
+    && (key.size() == tag_len || key[tag_len] == '[');
 }
 
 // Function to remove known dt keys and subtrees from xmpdata, so not
 // to append them twice. This should work because dt first reads all
 // known keys.
+//
+// Exiv2::XmpData is vector-backed, so erasing one element at a time
+// (the previous implementation) is O(n) per erase due to the shift of
+// all following elements -- for a history stack with many entries (and
+// therefore many array elements per key, e.g. history_params[1..N])
+// that makes this function O(n^2). Instead, do a single pass and copy
+// over only the entries we want to keep.
 static void _remove_known_keys(Exiv2::XmpData &xmp)
 {
-  xmp.sortByKey();
-
-  // dt internal tags
-  for(unsigned int i = 0; i < dt_xmp_keys_n; i++)
-    _deleteXmpTag(xmp, dt_xmp_keys[i]);
-
-  // now the tags from the metadata editor
+  std::vector<std::string> metadata_tags;
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-    _deleteXmpTag(xmp, metadata->tagname);
+    metadata_tags.emplace_back(metadata->tagname);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
+  const bool use_packet = xmp.usePacket();
+  const std::string packet = xmp.xmpPacket();
+
+  Exiv2::XmpData filtered;
+  for(Exiv2::XmpData::const_iterator pos = xmp.begin(); pos != xmp.end(); ++pos)
+  {
+    const std::string key = pos->key();
+
+    bool known = false;
+    for(unsigned int i = 0; !known && i < dt_xmp_keys_n; i++)
+      known = _xmp_key_matches_tag(key, dt_xmp_keys[i], strlen(dt_xmp_keys[i]));
+    for(const std::string &tag : metadata_tags)
+    {
+      if(known) break;
+      known = _xmp_key_matches_tag(key, tag.c_str(), tag.size());
+    }
+
+    if(!known) filtered.add(*pos);
+  }
+
+  xmp = filtered;
+  xmp.setPacket(packet);
+  xmp.usePacket(use_packet);
 }
 
 static void _remove_exif_keys(Exiv2::ExifData &exif,
