@@ -73,6 +73,29 @@ uint8_t dt_loc_init(const char *datadir,
   return 0;
 }
 
+void dt_loc_print_paths(FILE *out, const char *library_path, gboolean as_flags)
+{
+  if(as_flags)
+  {
+    fprintf(out,
+            "--configdir %s --cachedir %s --tmpdir %s --datadir %s"
+            " --moduledir %s --localedir %s --library %s\n",
+            darktable.configdir, darktable.cachedir, darktable.tmpdir,
+            darktable.datadir, darktable.plugindir, darktable.localedir,
+            library_path);
+  }
+  else
+  {
+    fprintf(out, "configdir   %s\n", darktable.configdir);
+    fprintf(out, "cachedir    %s\n", darktable.cachedir);
+    fprintf(out, "tmpdir      %s\n", darktable.tmpdir);
+    fprintf(out, "datadir     %s\n", darktable.datadir);
+    fprintf(out, "moduledir   %s\n", darktable.plugindir);
+    fprintf(out, "localedir   %s\n", darktable.localedir);
+    fprintf(out, "library     %s\n", library_path);
+  }
+}
+
 gchar *dt_loc_get_home_dir(const gchar *user)
 {
   if(user == NULL || g_strcmp0(user, g_get_user_name()) == 0)
