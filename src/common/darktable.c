@@ -222,6 +222,15 @@ static int usage(const char *argv0)
          "    Typical locations are /opt/darktable/share/darktable/noiseprofile.json\n"
          "    and /usr/share/darktable/noiseprofile.json\n"
          "\n"
+         "--print-paths\n"
+         "    Print the resolved configdir, cachedir, tmpdir, datadir,\n"
+         "    moduledir, localedir and library paths for this install,\n"
+         "    honoring any of the above overrides, then exit.\n"
+         "\n"
+         "--print-paths-as-flags\n"
+         "    Like --print-paths, but printed as a single line of\n"
+         "    --flag value pairs ready to splice into another invocation.\n"
+         "\n"
          "-t, --threads NUM\n"
          "    Limit number of openmp threads to use in openmp parallel sections\n"
          "\n"
@@ -1023,6 +1032,8 @@ int dt_init(int argc,
   char *tmpdir_from_command = NULL;
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
+  gboolean print_paths = FALSE;
+  gboolean print_paths_as_flags = FALSE;
 
   darktable.dump_pfm_module = NULL;
   darktable.dump_pfm_pipe = NULL;
@@ -1102,6 +1113,18 @@ int dt_init(int argc,
       {
         dbfilename_from_command = argv[++k];
         argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--print-paths"))
+      {
+        print_paths = TRUE;
+        print_paths_as_flags = FALSE;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--print-paths-as-flags"))
+      {
+        print_paths_as_flags = TRUE;
+        print_paths = FALSE;
         argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--datadir") && argc > k + 1)
@@ -1610,6 +1633,53 @@ int dt_init(int argc,
   // This files contains all preferences with the attribute common="true" in
   // darktableconfig.xml.in.
   dt_conf_init(darktable.conf, darktablerc_common, TRUE, config_override);
+
+  if(print_paths || print_paths_as_flags)
+  {
+    // Resolve the same darktablerc-<label>/database-key path real
+    // startup uses below, but before gtk_init()/dt_workspace_create()
+    // ever run - so this needs no display and never shows the
+    // workspace picker. Reports the current default, same as what a
+    // headless darktable-cli run (which skips that GUI code too) would use.
+    const char *dblabel = dt_conf_get_string_const("workspace/label");
+    const gboolean default_dbname = strcmp(dblabel, "") == 0;
+
+    char darktablerc[PATH_MAX] = { 0 };
+    snprintf(darktablerc, sizeof(darktablerc),
+             "%s/darktablerc%s%s", datadir,
+             default_dbname ? "" : "-",
+             default_dbname ? "" : dblabel);
+
+    dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
+
+    // mirrors the alternative/database-key/:memory:/relative/absolute
+    // resolution in dt_database_init() (database.c), without its
+    // migration and mipmap-cleanup side effects.
+    gchar library_path[PATH_MAX] = { 0 };
+    if(dbfilename_from_command)
+    {
+      g_strlcpy(library_path, dbfilename_from_command, sizeof(library_path));
+    }
+    else
+    {
+      const char *libname = dt_conf_get_string_const("database");
+      if(!libname)
+        snprintf(library_path, sizeof(library_path),
+                 "%s%slibrary.db", datadir, G_DIR_SEPARATOR_S);
+      else if(!strcmp(libname, ":memory:"))
+        g_strlcpy(library_path, libname, sizeof(library_path));
+      else if(libname[0] != '/')
+        snprintf(library_path, sizeof(library_path),
+                 "%s%s%s", datadir, G_DIR_SEPARATOR_S, libname);
+      else
+        g_strlcpy(library_path, libname, sizeof(library_path));
+    }
+    dt_loc_print_paths(stdout, library_path, print_paths_as_flags);
+    // dt_init()'s return value only signals error-vs-continue to its
+    // callers (0 means "keep starting up") - exit directly so we
+    // don't fall through into normal GUI/CLI startup.
+    exit(0);
+  }
 
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
