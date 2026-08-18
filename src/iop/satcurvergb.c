@@ -34,6 +34,7 @@
 #include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
@@ -1538,12 +1539,17 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
 static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE(FALSE);
+
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
   dt_iop_satcurve_gui_channel_t *gc = get_active_gui_channel(self);
 
   GtkAllocation a;
   gtk_widget_get_allocation(widget, &a);
+
+  if (event->y >= a.height - DT_RESIZE_HANDLE_SIZE)
+    return FALSE;
 
   float gx0, gy0, w, h;
   _get_graph_geometry(&a, &gx0, &gy0, &w, &h);
@@ -1606,6 +1612,8 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
 static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
                             dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE(FALSE);
+
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
 
@@ -1628,6 +1636,8 @@ static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
 
 static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE(FALSE);
+
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
 
@@ -1653,13 +1663,15 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
                            cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
 
   cp->curve[n].y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, FALSE);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 static gboolean area_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
+  DT_GUARD_GUI_UPDATE(FALSE);
+
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   if (g->dragging)
   {
@@ -1794,11 +1806,22 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
 void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  dt_iop_satcurve_params_t *p = self->params;
   if (!g)
     return;
 
-  if (widget == g->formula)
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  // g->formula is a _from_params widget: the framework already commits
+  // the history item internally after this callback returns (Path A).
+  // No manual dt_dev_add_history_item() needed here.
+  if (!widget || widget == g->formula)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+  if (!widget || widget == g->use_guided_filter)
+  {
+    gtk_widget_set_sensitive(g->gf_radius, p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_feathering, p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_iterations, p->use_guided_filter);
+  }
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -1814,6 +1837,10 @@ void gui_update(dt_iop_module_t *self)
   if (g->notebook)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(g->notebook),
                                   g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? 1 : 0);
+
+  gtk_widget_set_sensitive(g->gf_radius, p->use_guided_filter);
+  gtk_widget_set_sensitive(g->gf_feathering, p->use_guided_filter);
+  gtk_widget_set_sensitive(g->gf_iterations, p->use_guided_filter);
 
   if (g->area)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -1863,28 +1890,24 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = dt_gui_vbox();
 
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static dt_action_def_t notebook_def = {};
+
+  g->notebook = dt_ui_notebook_new(&notebook_def);
   gtk_notebook_set_show_border(g->notebook, FALSE);
   gtk_notebook_set_scrollable(g->notebook, FALSE);
   gtk_notebook_popup_disable(g->notebook);
 
-  GtkWidget *page_sat = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *page_bri = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *page_sat = dt_ui_notebook_page(g->notebook, N_("saturation"), NULL);
+  GtkWidget *page_bri = dt_ui_notebook_page(g->notebook, N_("brilliance"), NULL);
   gtk_widget_set_size_request(page_sat, -1, 0);
   gtk_widget_set_size_request(page_bri, -1, 0);
 
-  GtkWidget *tab_sat = gtk_label_new(_("saturation"));
-  GtkWidget *tab_bri = gtk_label_new(_("brilliance"));
-
-  gtk_widget_set_size_request(tab_sat, DT_PIXEL_APPLY_DPI(130), -1);
-  gtk_widget_set_size_request(tab_bri, DT_PIXEL_APPLY_DPI(130), -1);
-
-  gtk_notebook_append_page(g->notebook, page_sat, tab_sat);
-  gtk_notebook_append_page(g->notebook, page_bri, tab_bri);
   gtk_notebook_set_current_page(g->notebook, 0);
 
   g_signal_connect(G_OBJECT(g->notebook), "switch-page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
+
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   dt_gui_box_add(self->widget, GTK_WIDGET(g->notebook));
 
@@ -1899,14 +1922,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll), self);
   dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
 
-  g->formula = dt_bauhaus_combobox_from_params(self, "formula");
-  dt_bauhaus_combobox_add(g->formula, _("JzAzBz"));
-  dt_bauhaus_combobox_add(g->formula, _("darktable UCS"));
-  gtk_widget_set_tooltip_text(g->formula,
-                              _("choose the perceptual saturation definition used by both curves"));
-
-  g_object_ref(g->formula);
-  gtk_container_remove(GTK_CONTAINER(self->widget), g->formula);
+  GtkWidget *main_vbox = self->widget;
 
   GtkWidget *controls_hbox = dt_gui_hbox();
   gtk_box_set_spacing(GTK_BOX(controls_hbox), DT_PIXEL_APPLY_DPI(5));
@@ -1922,9 +1938,22 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(controls_hbox), g->colorpicker, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(controls_hbox), g->show_saturation_mask, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(controls_hbox), g->formula, FALSE, FALSE, 0);
-  g_object_unref(g->formula);
 
+  // Temporarily set packing target to controls_hbox
+  self->widget = controls_hbox;
+
+  g->formula = dt_bauhaus_combobox_from_params(self, "formula");
+  dt_bauhaus_combobox_add(g->formula, _("JzAzBz"));
+  dt_bauhaus_combobox_add(g->formula, _("darktable UCS"));
+  gtk_widget_set_tooltip_text(g->formula,
+                              _("choose the perceptual saturation definition used by both curves"));
+
+  // Expand to fill remaining horizontal space and align the widget to the right end
+  gtk_widget_set_hexpand(g->formula, TRUE);
+  gtk_widget_set_halign(g->formula, GTK_ALIGN_END);
+
+  // Restore main container packing target
+  self->widget = main_vbox;
   dt_gui_box_add(self->widget, controls_hbox);
 
   GtkWidget *gf_box = dt_gui_vbox();
@@ -1943,14 +1972,17 @@ void gui_init(dt_iop_module_t *self)
 
   g->gf_radius = dt_bauhaus_slider_from_params(gf_section, "gf_radius");
   dt_bauhaus_slider_set_format(g->gf_radius, _("px"));
+  dt_bauhaus_slider_set_digits(g->gf_radius, 1);
   gtk_widget_set_tooltip_text(g->gf_radius, _("size of the neighbourhood used to guide the filter"));
 
   g->gf_feathering = dt_bauhaus_slider_from_params(gf_section, "gf_feathering");
+  dt_bauhaus_slider_set_digits(g->gf_feathering, 1);
   gtk_widget_set_tooltip_text(g->gf_feathering,
                               _("precision of the feathering: higher values produce softer, "
                                 "less edge-sensitive transitions"));
 
   g->gf_iterations = dt_bauhaus_slider_from_params(gf_section, "gf_iterations");
+  dt_bauhaus_slider_set_digits(g->gf_iterations, 0);
   gtk_widget_set_tooltip_text(g->gf_iterations,
                               _("number of times the guided filter is applied recursively; "
                                 "increases smoothing but costs more time"));

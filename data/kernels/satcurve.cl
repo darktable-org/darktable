@@ -56,10 +56,14 @@ static inline float clip_jz_chroma_cl(const float Jz, const float Cz, const floa
   float Iz = (Jz + d0) / (1.f + dd - dd * (Jz + d0));
   Iz = fmax(Iz, 0.f);
 
+  // Use explicit row-major arrays matching the CPU transposed matrix representation
+  const float AI_trans_1[3] = { 0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f };
+  const float AI_trans_2[3] = { 0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f };
+
   const float4 AI[3] = {
-    { 1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-    { 1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-    { 1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f }
+    { 1.0f,  AI_trans_1[0],  AI_trans_2[0], 0.0f },
+    { 1.0f,  AI_trans_1[1],  AI_trans_2[1], 0.0f },
+    { 1.0f,  AI_trans_1[2],  AI_trans_2[2], 0.0f }
   };
 
   const float4 izab = { Iz, Cz * ch, Cz * sh, 0.f };
@@ -68,9 +72,10 @@ static inline float clip_jz_chroma_cl(const float Jz, const float Cz, const floa
   const float lms2 = dot(AI[2], izab);
 
   float max_c = Cz;
-  if(lms0 < 0.f) max_c = fmin(max_c, -Iz / (AI[0].y * ch + AI[0].z * sh));
-  if(lms1 < 0.f) max_c = fmin(max_c, -Iz / (AI[1].y * ch + AI[1].z * sh));
-  if(lms2 < 0.f) max_c = fmin(max_c, -Iz / (AI[2].y * ch + AI[2].z * sh));
+  if(lms0 < 0.f) max_c = fmin(max_c, -Iz / (AI_trans_1[0] * ch + AI_trans_2[0] * sh));
+  if(lms1 < 0.f) max_c = fmin(max_c, -Iz / (AI_trans_1[1] * ch + AI_trans_2[1] * sh));
+  if(lms2 < 0.f) max_c = fmin(max_c, -Iz / (AI_trans_1[2] * ch + AI_trans_2[2] * sh));
+
   return fmax(max_c, 0.f);
 }
 
