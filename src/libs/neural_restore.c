@@ -200,6 +200,7 @@
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/grouping.h"
+#include "common/history.h"
 #include "common/image_cache.h"
 #include "common/colorlabels.h"
 #include "common/metadata.h"
@@ -312,6 +313,11 @@ typedef struct dt_lib_neural_restore_t
   int export_h;
   unsigned char *export_cairo;
   int export_cairo_stride;
+  // fingerprint of the history the cached preview + export were built
+  // from, so an edit between two previews invalidates both
+  guint8 *preview_hash;
+  int preview_hash_len;
+  dt_imgid_t preview_hash_imgid;
 
   // raw denoise preview state — disjoint from the export-based preview
   // above. cached per-image (CFA for Bayer, demosaicked lin_rec2020 for
@@ -427,12 +433,13 @@ typedef struct dt_neural_preview_data_t
   int preview_w;
   int preview_h;
   float patch_center[2];
-  // when re-picking, borrow cached export instead of re-exporting.
-  // pointer is valid for the thread's lifetime (main thread joins
-  // before freeing). thread must NOT free this
-  const float *reuse_pixels;
+  // when re-picking, a private copy of the cached export saves a
+  // re-export. owned by the worker, which frees it on every exit
+  float *reuse_pixels;
   int reuse_w;
   int reuse_h;
+  // whether a picker thumbnail existed when this worker was launched
+  gboolean have_export;
 } dt_neural_preview_data_t;
 
 typedef struct dt_neural_preview_result_t
@@ -2312,6 +2319,7 @@ static gpointer _preview_thread(gpointer data)
   result->patch_center[0] = pd->patch_center[0];
   result->patch_center[1] = pd->patch_center[1];
   g_idle_add(_preview_result_idle, result);
+  g_free(pd->reuse_pixels);
   g_free(pd);
   return NULL;
 
@@ -2319,6 +2327,7 @@ cleanup:
   // bail: clear preview_generating on UI thread (stale-sequence bails dropped)
   if(pd->sequence == g_atomic_int_get(&d->preview_sequence))
     _schedule_preview_failed(pd->self, err);
+  g_free(pd->reuse_pixels);
   g_free(pd);
   return NULL;
 }
@@ -2331,12 +2340,11 @@ static void _cancel_preview(dt_lib_module_t *self)
   // bump sequence so any in-flight worker (and its idle callback)
   // discards its result. we DO NOT join here — that would block the
   // UI for the full duration of a running inference. the worker
-  // keeps running in the background and exits silently. but: we DO
-  // need to wait for it before freeing export_pixels below, since the
-  // worker may still be reading from them. take + release the
-  // inference lock as a synchronisation barrier — the worker holds
-  // it during the heavy work, so once we get it we know it's done
-  // touching shared buffers
+  // keeps running in the background and exits silently. the barrier
+  // below (take + release the inference lock, which the worker holds
+  // for its whole run) is kept as a conservative serialisation point
+  // on image change; its original reason — waiting before freeing
+  // export_pixels — no longer applies now that workers copy those
   g_atomic_int_inc(&d->preview_sequence);
   if(d->preview_trigger_timer)
   {
@@ -2713,6 +2721,9 @@ static gpointer _preview_thread_raw(gpointer data)
 
   // bail reason for cleanup path; unsupported-sensor branch overrides
   dt_nr_preview_err_t bail_err = DT_NR_PREVIEW_ERR_INIT_FAILED;
+  // declared up here so every `goto cleanup` below can free it: the
+  // export is expensive to redo and large enough to matter
+  float *take_export_pixels = NULL;
 
   // 1. load source image metadata to determine sensor type.
   //    on a fresh session dt_image_cache_get returns img_meta with a
@@ -2926,10 +2937,15 @@ static gpointer _preview_thread_raw(gpointer data)
   //      full pipeline at ~1024 long edge, giving a display-accurate
   //      thumbnail whose colours match what the user sees in darkroom
   //      (and match our before/after ROI pipe outputs).
-  float *take_export_pixels = NULL;
-  int    export_thumb_w = 0;
-  int    export_thumb_h = 0;
-  if(!cache_matches)
+  int export_thumb_w = 0;
+  int export_thumb_h = 0;
+  // NB: also gated on the thumbnail itself. _cancel_preview frees
+  // export_pixels but leaves preview_full_cfa alone, so keying this on
+  // cache_matches alone left the picker (which tests export_pixels)
+  // insensitive until restart — issue #21879. the flag is a snapshot
+  // taken on the main thread at launch, so this never reads
+  // d->export_pixels from the worker
+  if(!cache_matches || !pd->have_export)
   {
     dt_neural_preview_capture_t cap = {0};
     const int export_size = dt_conf_get_int(CONF_PREVIEW_EXPORT_SIZE);
@@ -3014,21 +3030,47 @@ static gpointer _preview_thread_raw(gpointer data)
     goto cleanup;
   }
 
-  // display-normalised click (u, v) -> sensor pixel, inverting whatever
-  // combination of swap/flip the flip iop will apply during display.
-  // matches dt_iop_flip:distort_backtransform semantics
-  const int disp_w = swap_xy ? full_h : full_w;
-  const int disp_h = swap_xy ? full_w : full_h;
-  float dx_disp = pd->patch_center[0] * disp_w;
-  float dy_disp = pd->patch_center[1] * disp_h;
-  float sx, sy;
-  if(swap_xy) { sx = dy_disp; sy = dx_disp; }
-  else        { sx = dx_disp; sy = dy_disp; }
-  if(ori & ORIENTATION_FLIP_X) sx = (float)full_w - sx;
-  if(ori & ORIENTATION_FLIP_Y) sy = (float)full_h - sy;
+  // display-normalised click (u, v) -> sensor patch. the picker
+  // normalises against the exported thumbnail — the fully processed
+  // image — so the whole geometry chain has to be inverted, not just
+  // the flip iop (issue #21879). the helper also validates the rect
+  // against the forward transform, so a pick near a cropped border
+  // retreats inward instead of rendering nothing.
+  //
+  // it answers in raw sensor coords. the Bayer buffer is the raw
+  // sensor, but the linear one is the post-rawprepare visible area,
+  // so shift into whichever space full_w / full_h are
+  const int buf_off_x = use_linear ? img_meta.crop_x : 0;
+  const int buf_off_y = use_linear ? img_meta.crop_y : 0;
 
-  int crop_x = (int)sx - crop_w / 2;
-  int crop_y = (int)sy - crop_h / 2;
+  int crop_x = 0, crop_y = 0;
+  if(dt_restore_display_to_sensor(pd->imgid, img_meta.width, img_meta.height,
+                                  pd->patch_center[0], pd->patch_center[1],
+                                  crop_w, crop_h, use_linear ? 1 : 2,
+                                  &crop_x, &crop_y) == 0)
+  {
+    crop_x -= buf_off_x;
+    crop_y -= buf_off_y;
+  }
+  else
+  {
+    // no geometry chain: fall back to orientation-only, correct for
+    // an uncropped image and better than failing outright
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] raw preview: geometry backtransform "
+             "failed, falling back to orientation-only mapping");
+    const int disp_w = swap_xy ? full_h : full_w;
+    const int disp_h = swap_xy ? full_w : full_h;
+    const float dx_disp = pd->patch_center[0] * disp_w;
+    const float dy_disp = pd->patch_center[1] * disp_h;
+    float sx, sy;
+    if(swap_xy) { sx = dy_disp; sy = dx_disp; }
+    else        { sx = dx_disp; sy = dy_disp; }
+    if(ori & ORIENTATION_FLIP_X) sx = (float)full_w - sx;
+    if(ori & ORIENTATION_FLIP_Y) sy = (float)full_h - sy;
+    crop_x = (int)sx - crop_w / 2;
+    crop_y = (int)sy - crop_h / 2;
+  }
   crop_x = CLAMP(crop_x, 0, full_w - crop_w);
   crop_y = CLAMP(crop_y, 0, full_h - crop_h);
   if(!use_linear)
@@ -3113,11 +3155,14 @@ static gpointer _preview_thread_raw(gpointer data)
   res->export_thumb_w = export_thumb_w;
   res->export_thumb_h = export_thumb_h;
   g_idle_add(_preview_raw_result_idle, res);
+  g_free(pd->reuse_pixels);
   g_free(pd);
   return NULL;
 
 cleanup:
   // bail: clear preview_generating on UI thread (stale-sequence bails dropped)
+  g_free(take_export_pixels);
+  g_free(pd->reuse_pixels);
   if(pd->sequence == g_atomic_int_get(&d->preview_sequence))
     _schedule_preview_failed(pd->self, bail_err);
   g_free(pd);
@@ -3142,6 +3187,7 @@ static gpointer _preview_thread_dispatch(gpointer data)
   if(pd->sequence != g_atomic_int_get(&d->preview_sequence))
   {
     g_mutex_unlock(&d->preview_inference_lock);
+    g_free(pd->reuse_pixels);
     g_free(pd);
     return NULL;
   }
@@ -3203,6 +3249,61 @@ static void _trigger_preview(dt_lib_module_t *self)
 
   if(!dt_is_valid_imgid(imgid)) return;
 
+  // an edit since the last preview invalidates the cached results AND
+  // the exported thumbnail. the thumbnail matters beyond freshness:
+  // the picker normalises clicks against it while the raw worker
+  // inverts the CURRENT geometry chain, so a stale export would
+  // reintroduce the #21879 offset from the other side. the history
+  // write above has already brought the DB hash up to date
+  dt_history_hash_values_t hh = { 0 };
+  dt_history_hash_read(imgid, &hh);
+  if(d->preview_hash_imgid != imgid
+     || d->preview_hash_len != hh.current_len
+     || (hh.current_len > 0
+         && (!d->preview_hash
+             || memcmp(d->preview_hash, hh.current, hh.current_len) != 0)))
+  {
+    // bump the sequence first: in-flight results then discard
+    // themselves on delivery, and a worker that has not started yet
+    // exits before touching any of the state below
+    g_atomic_int_inc(&d->preview_sequence);
+    _preview_cache_invalidate_all(d);
+    // the export needs no barrier: workers get their own copy of the
+    // pixels, and their own snapshot of whether one existed at launch
+    g_free(d->export_pixels);
+    d->export_pixels = NULL;
+    g_free(d->export_cairo);
+    d->export_cairo = NULL;
+    // NB: preview_full_lin is deliberately NOT dropped here, though
+    // it is history-dependent (it comes out of rawprepare +
+    // highlights). an in-flight raw worker borrows it for the whole of
+    // its run, so freeing it needs either a barrier — which would
+    // block the GTK thread for an entire inference — or a deferred
+    // ownership scheme. neither belongs in a mapping fix. the cost is
+    // that on linear / X-Trans, editing highlight reconstruction or
+    // the raw black/white point leaves the model reading a stale
+    // demosaic while the un-prepare math uses current metadata, which
+    // can show as a level step in the patched region
+    g_free(d->preview_hash);
+    d->preview_hash = NULL;
+    if(hh.current && hh.current_len > 0)
+    {
+      d->preview_hash = g_malloc(hh.current_len);
+      memcpy(d->preview_hash, hh.current, hh.current_len);
+    }
+    d->preview_hash_len = hh.current_len;
+    d->preview_hash_imgid = imgid;
+    // the picker draws from the export we just dropped: close it
+    // through the toggle so the button visual follows, and refresh
+    // sensitivity now that export_pixels is NULL
+    if(d->picking_thumbnail)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
+    _update_button_sensitivity(d);
+  }
+  g_free(hh.basic);
+  g_free(hh.auto_apply);
+  g_free(hh.current);
+
   // per-task cache lookup: if we already have a result for this exact
   // (task, imgid, patch_center) tuple, install it and skip the worker
   if(_preview_cache_hit(d, d->task, imgid))
@@ -3247,14 +3348,24 @@ static void _trigger_preview(dt_lib_module_t *self)
   pd->patch_center[0] = d->patch_center[0];
   pd->patch_center[1] = d->patch_center[1];
 
-  // borrow cached export pixels if available (re-pick scenario).
-  // the pointer is valid for the thread's lifetime because
-  // _cancel_preview joins before freeing export_pixels
-  if(d->export_pixels)
+  // hand the worker its OWN copy of the cached export (re-pick
+  // scenario). aliasing d->export_pixels would tie every invalidation
+  // to a barrier against the in-flight reader; a copy costs one memcpy
+  // and lets the main thread replace the buffer whenever it likes.
+  // the raw worker exports its own thumbnail and never reads this
+  pd->have_export = (d->export_pixels != NULL);
+  if(d->task != NEURAL_TASK_RAW_DENOISE
+     && d->export_pixels && d->export_w > 0 && d->export_h > 0)
   {
-    pd->reuse_pixels = d->export_pixels;
-    pd->reuse_w = d->export_w;
-    pd->reuse_h = d->export_h;
+    const size_t n = (size_t)d->export_w * d->export_h * 4;
+    float *dup = g_try_malloc(n * sizeof(float));
+    if(dup)
+    {
+      memcpy(dup, d->export_pixels, n * sizeof(float));
+      pd->reuse_pixels = dup;
+      pd->reuse_w = d->export_w;
+      pd->reuse_h = d->export_h;
+    }
   }
   // detach the previous worker (don't join — that would block the
   // UI thread for the duration of the in-flight inference / pipe
@@ -4316,6 +4427,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_notebook_set_current_page(d->notebook, saved_page);
   _update_task_from_ui(d);
   d->model_available = _check_model_available(d, d->task);
+  d->preview_hash_imgid = NO_IMGID;
 
   // pick area button
   d->patch_center[0] = 0.5f;
@@ -4546,6 +4658,7 @@ void gui_cleanup(dt_lib_module_t *self)
     g_free(d->cairo_after);
     g_free(d->export_pixels);
     g_free(d->export_cairo);
+    g_free(d->preview_hash);
 
     g_free(d->preview_full_cfa);
     dt_free_align(d->preview_full_lin);
