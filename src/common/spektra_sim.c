@@ -1181,6 +1181,9 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   memcpy(p->gamma_inter_b_rg, gb, sizeof(gb));
   p->inhibition_samelayer = 1.0;
   p->inhibition_interlayer = 1.0;
+  p->coupler_diffusion_um = -1.0;
+  p->coupler_tail_um = -1.0;
+  p->coupler_tail_weight = -1.0;
   p->grain_density_min[0] = p->grain_density_min[1] = p->grain_density_min[2] = 0.03;
   p->enlarger_illuminant = "TH-KG3";
   p->dichroic_brand = "custom";
@@ -2959,6 +2962,15 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
     s->coupler_tail_w = 0.0;
     sf_pack_film_coupler_diffusion(pack, film->stock, &s->coupler_diff_um,
                                    &s->coupler_tail_um, &s->coupler_tail_w);
+    /* caller overrides land on top of the pack's per-stock numbers; negative
+       means it did not ask, so the pack's value stands. The darktable module
+       always passes absolutes, having seeded its sliders from the same pack
+       lookup, but the sentinel keeps the engine usable without that. */
+    if(p->coupler_diffusion_um >= 0.0) s->coupler_diff_um = p->coupler_diffusion_um;
+    if(p->coupler_tail_um >= 0.0) s->coupler_tail_um = p->coupler_tail_um;
+    if(p->coupler_tail_weight >= 0.0) s->coupler_tail_w = p->coupler_tail_weight;
+    /* a tail needs both a length and a weight to mean anything; drop it whole
+       rather than leaving half of it live */
     if(s->coupler_tail_w <= 0.0 || s->coupler_tail_um <= 0.0)
     {
       s->coupler_tail_um = 0.0;

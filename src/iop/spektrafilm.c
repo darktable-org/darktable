@@ -177,6 +177,18 @@ typedef struct dt_iop_spektrafilm_params_t
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
+  /* Inhibitor spread, in micrometres on the film. Absolute values, re-seeded
+     from the stock's own numbers on every film change the way development_min
+     is -- a sentinel meaning "ask the pack" would have been re-displayed as the
+     sentinel itself, since dt_iop_gui_update() drives params-bound widgets
+     straight from the params. Ranges follow the reference's own GUI manifest
+     (min 0 throughout, tail weight up to 1); the compiled defaults are its
+     DirCouplersParams, used only until a film is chosen. */
+  float couplers_diffusion_um; // $MIN: 0.0 $MAX: 60.0 $DEFAULT: 20.0 $DESCRIPTION: "diffusion size"
+  float couplers_tail_um;      // $MIN: 0.0 $MAX: 400.0 $DEFAULT: 200.0 $DESCRIPTION: "diffusion tail"
+  float couplers_tail_weight;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "tail weight"
+  float couplers_inhibition_same;  // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "same-layer inhibition"
+  float couplers_inhibition_inter; // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "interlayer inhibition"
   float preflash_exposure;  // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash exposure"
   float preflash_m_shift;   // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash M filter shift"
   float preflash_y_shift;   // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "preflash Y filter shift"
@@ -267,6 +279,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *quality, *adaptation_bandwidth, *adaptation_surface;
   GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
   GtkWidget *filter_m, *filter_y, *couplers_amount;
+  GtkWidget *couplers_diffusion_um, *couplers_tail_um, *couplers_tail_weight;
+  GtkWidget *couplers_inhibition_same, *couplers_inhibition_inter;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *grain_on, *grain_amount, *grain_size;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
@@ -868,6 +882,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->filter_m, sizeof p->filter_m);
   key = _mix64(key, &p->filter_y, sizeof p->filter_y);
   key = _mix64(key, &p->couplers_amount, sizeof p->couplers_amount);
+  key = _mix64(key, &p->couplers_diffusion_um, sizeof p->couplers_diffusion_um);
+  key = _mix64(key, &p->couplers_tail_um, sizeof p->couplers_tail_um);
+  key = _mix64(key, &p->couplers_tail_weight, sizeof p->couplers_tail_weight);
+  key = _mix64(key, &p->couplers_inhibition_same, sizeof p->couplers_inhibition_same);
+  key = _mix64(key, &p->couplers_inhibition_inter, sizeof p->couplers_inhibition_inter);
   key = _mix64(key, &p->preflash_exposure, sizeof p->preflash_exposure);
   key = _mix64(key, &p->preflash_m_shift, sizeof p->preflash_m_shift);
   key = _mix64(key, &p->preflash_y_shift, sizeof p->preflash_y_shift);
@@ -1063,6 +1082,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.y_filter_shift = p->filter_y;
     sp.couplers_active = (p->couplers_amount > 0.0f);
     sp.couplers_amount = p->couplers_amount;
+    sp.coupler_diffusion_um = p->couplers_diffusion_um;
+    sp.coupler_tail_um = p->couplers_tail_um;
+    sp.coupler_tail_weight = p->couplers_tail_weight;
+    sp.inhibition_samelayer = p->couplers_inhibition_same;
+    sp.inhibition_interlayer = p->couplers_inhibition_inter;
     sp.preflash_exposure = p->preflash_exposure;
     sp.preflash_m_shift = p->preflash_m_shift;
     sp.preflash_y_shift = p->preflash_y_shift;
@@ -2404,6 +2428,9 @@ static void _update_print_sensitivity(dt_iop_module_t *self);
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
                                             const dt_iop_spektrafilm_params_t *p);
 static float _development_default(const sf_prof_entry_t *e);
+static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
+                                    dt_iop_spektrafilm_params_t *p,
+                                    const sf_prof_entry_t *e);
 
 /* forward: needs _entry_by_hash(), which is defined below with the rest of the
    stock lookups */
@@ -2451,6 +2478,11 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
      selected, so the entry is already correct if the paper is set back to auto
      later. The pipeline resolves it identically either way (_resolve_stock). */
   _update_paper_auto_entry(self);
+  /* The pack carries the inhibitor spread per stock, so it follows the film the
+     way the development time does: a value tuned for the previous stock means
+     nothing here, and silently keeping it would leave the sliders describing a
+     film that is no longer loaded. */
+  _sync_coupler_diffusion(g, p, e);
   /* last, once scan_film and the auto-followed paper have settled: both
      development sliders are gated on their own stock, and the print one also on
      there being a print stage at all */
@@ -2594,6 +2626,49 @@ static void _update_paper_auto_entry(dt_iop_module_t *self)
 static float _development_default(const sf_prof_entry_t *e)
 {
   return (e && e->n_dev > 1) ? (float)e->dev_times[(e->n_dev - 1) / 2] : 0.0f;
+}
+
+/* The inhibitor spread this stock ships, so the sliders can show real numbers
+   instead of the -1 sentinel the params carry for "ask the pack". Falls back to
+   the reference's own DirCouplersParams defaults when the pack has no entry for
+   the stock, which is also what sf_sim_build() lands on. */
+static void _coupler_diffusion_default(const sf_prof_entry_t *e, float *size_um,
+                                       float *tail_um, float *tail_w)
+{
+  double d = SF_COUPLER_BLUR_UM, t = 0.0, w = 0.0;
+  dt_pthread_mutex_lock(&_pack_lock);
+  if(_pack && e) sf_pack_film_coupler_diffusion(_pack, e->stock, &d, &t, &w);
+  dt_pthread_mutex_unlock(&_pack_lock);
+  if(w <= 0.0 || t <= 0.0) { t = 0.0; w = 0.0; }
+  *size_um = (float)d;
+  *tail_um = (float)t;
+  *tail_w = (float)w;
+}
+
+/* Move the three diffusion sliders onto this stock's own numbers, params and
+   widgets alike, the way _film_changed() already re-seeds the development time.
+   Writing the params rather than only the widgets is what makes it stick:
+   dt_iop_gui_update() drives a params-bound widget straight from its param, so
+   a display-only value would be overwritten by the next history change. The
+   reset target moves too, so a reset gesture lands on what this film ships
+   rather than on the compiled default of some other stock. */
+static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
+                                    dt_iop_spektrafilm_params_t *p,
+                                    const sf_prof_entry_t *e)
+{
+  float d, t, w;
+  _coupler_diffusion_default(e, &d, &t, &w);
+  p->couplers_diffusion_um = d;
+  p->couplers_tail_um = t;
+  p->couplers_tail_weight = w;
+  DT_ENTER_GUI_UPDATE();
+  dt_bauhaus_slider_set_default(g->couplers_diffusion_um, d);
+  dt_bauhaus_slider_set_default(g->couplers_tail_um, t);
+  dt_bauhaus_slider_set_default(g->couplers_tail_weight, w);
+  dt_bauhaus_slider_set(g->couplers_diffusion_um, d);
+  dt_bauhaus_slider_set(g->couplers_tail_um, t);
+  dt_bauhaus_slider_set(g->couplers_tail_weight, w);
+  DT_LEAVE_GUI_UPDATE();
 }
 
 /* Point one development slider at one stock: sensitive only where that stock is
@@ -3439,18 +3514,57 @@ void gui_init(dt_iop_module_t *self)
       _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
         " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
 
-  /* "couplers and quality" named its first two controls, which stopped
-     describing the section once the adaptation switches joined them -- and
-     enumerating members does not scale anyway. What all four have in common is
-     that they are the knobs you reach for last: the coupler strength and the
-     two adaptation halves change how faithful the model is rather than what the
-     look is, and the quality setting trades accuracy for speed. */
-  _section_add(self, C_("section", "advanced"));
+  /* The couplers earn a section of their own: they are one mechanism with six
+     controls, and the two that matter most in practice -- how far the released
+     inhibitor spreads -- read as sharpening rather than as colour, so finding
+     them under a heading named for something else was hopeless. */
+  _section_add(self, C_("section", "DIR couplers"));
 
   g->couplers_amount = dt_bauhaus_slider_from_params(self, "couplers_amount");
   gtk_widget_set_tooltip_text(g->couplers_amount,
-                              _("DIR coupler strength: inter-layer inhibition drives saturation"
-                                " and edge effects (1.0 = film-accurate, 0 = off)"));
+                              _("overall coupler strength: inter-layer inhibition drives"
+                                " saturation and edge effects (1.0 = film-accurate, 0 = off)"));
+
+  g->couplers_inhibition_same = dt_bauhaus_slider_from_params(self, "couplers_inhibition_same");
+  gtk_widget_set_tooltip_text(g->couplers_inhibition_same,
+                              _("how strongly a layer inhibits its own development.\n"
+                                "raising it flattens contrast within each channel"));
+
+  g->couplers_inhibition_inter = dt_bauhaus_slider_from_params(self, "couplers_inhibition_inter");
+  gtk_widget_set_tooltip_text(g->couplers_inhibition_inter,
+                              _("how strongly each layer inhibits the other two.\n"
+                                "this is the part that produces the saturation couplers are"
+                                " known for; at 0 the channels develop independently"));
+
+  g->couplers_diffusion_um = dt_bauhaus_slider_from_params(self, "couplers_diffusion_um");
+  dt_bauhaus_slider_set_format(g->couplers_diffusion_um, _(" \302\265m"));
+  gtk_widget_set_tooltip_text(
+      g->couplers_diffusion_um,
+      _("how far the released inhibitor spreads through the emulsion.\n\n"
+        "this is what turns the couplers into an edge effect: a wide spread lets\n"
+        "a bright area hold back development well beyond its own edge, which\n"
+        "reads as added clarity or sharpening. shorten it for a softer, more\n"
+        "purely tonal coupler response; the reference's own GUI suggests 5-20 um.\n\n"
+        "re-seeded from the film stock's own value whenever you change film"));
+
+  g->couplers_tail_um = dt_bauhaus_slider_from_params(self, "couplers_tail_um");
+  dt_bauhaus_slider_set_format(g->couplers_tail_um, _(" \302\265m"));
+  gtk_widget_set_tooltip_text(
+      g->couplers_tail_um,
+      _("length of the long, faint tail on the spread above, which carries the\n"
+        "inhibitor much further at low weight.\n\n"
+        "it is what gives large bright areas a broad, gentle falloff rather than\n"
+        "a halo that stops abruptly. set the weight to 0 to drop it entirely"));
+
+  g->couplers_tail_weight = dt_bauhaus_slider_from_params(self, "couplers_tail_weight");
+  gtk_widget_set_tooltip_text(g->couplers_tail_weight,
+                              _("how much of the inhibitor travels in the long tail rather"
+                                " than the main spread. 0 removes the tail"));
+
+  /* what is left over: the knobs you reach for last. the adaptation switches
+     change how faithful the model is rather than what the look is, and the
+     quality setting trades accuracy for speed. */
+  _section_add(self, C_("section", "advanced"));
 
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
   gtk_widget_set_tooltip_text(g->quality,
