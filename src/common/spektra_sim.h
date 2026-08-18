@@ -358,6 +358,18 @@ typedef struct sf_sim_params_t
   double gamma_inter_r_gb[2], gamma_inter_g_rb[2], gamma_inter_b_rg[2];
   double inhibition_samelayer;  /* 1 */
   double inhibition_interlayer; /* 1 */
+  /* [dt] Spatial extent of the released inhibitor, overriding the per-film
+   * numbers the pack ships. Negative means "keep the pack's", which is what a
+   * caller that does not care should pass and what the defaults below are: the
+   * pack is fitted per stock, so a blanket constant would be worse than what is
+   * already there. The reference exposes these as DirCouplersParams
+   * diffusion_size_um / diffusion_tail_um / diffusion_tail_weight, and its own
+   * defaults of 20 um and a 200 um tail at 0.06 are wide enough to read as
+   * added clarity on fine detail -- which is why being able to shorten them
+   * matters more than the numbers themselves. */
+  double coupler_diffusion_um;  /* -1 = from pack */
+  double coupler_tail_um;       /* -1 = from pack */
+  double coupler_tail_weight;   /* -1 = from pack */
 
   /* grain reference floor — used for table ranges even when grain itself
    * runs in the caller (reference: GrainParams.density_min) */
