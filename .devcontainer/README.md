@@ -47,22 +47,25 @@ Docker Desktop is running (macOS/Windows) before running the commands below.
 
 ## Tier 1: Docker/Podman CLI only
 
-The most lightweight option. No IDE, no extra tooling.
+The most lightweight option. No IDE, no extra tooling — just pull the same
+image that CI uses.
 
 ```bash
-# Build the image once (from the repository root)
-docker build -t darktable-dev -f .devcontainer/Dockerfile .
+# Pull the pre-built CI image
+docker pull ghcr.io/darktable-org/darktable-build:latest
 
 # Verify the build compiles cleanly (same environment as CI)
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD":/workspace -w /workspace \
-    darktable-dev bash -lc './build.sh --prefix /tmp/dt --build-type Release'
+    ghcr.io/darktable-org/darktable-build:latest \
+    bash -lc './build.sh --prefix /tmp/dt --build-type Release'
 
 # Build an AppImage for GUI testing on the host
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD":/workspace -w /workspace \
     -e APPIMAGE_EXTRACT_AND_RUN=1 \
-    darktable-dev bash -lc './tools/appimage-build-script.sh'
+    ghcr.io/darktable-org/darktable-build:latest \
+    bash -lc './tools/appimage-build-script.sh'
 ```
 
 The AppImage appears in `build/Darktable-*.AppImage` and can be run directly on the host.
