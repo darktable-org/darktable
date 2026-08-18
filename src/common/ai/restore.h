@@ -320,6 +320,38 @@ int dt_restore_get_tile_size(const dt_restore_context_t *ctx);
 // @return TRUE on success, FALSE if the CPU session also fails to load
 gboolean dt_restore_reload_session_cpu(dt_restore_context_t *ctx);
 
+// @brief map a click on the displayed image to a sensor-space patch.
+//
+// Inverse of the ROI mapping in dt_restore_run_user_pipe_roi below:
+// the picker normalises clicks against the fully processed image
+// (post crop / rotation / lens / flip), while the raw-denoise preview
+// needs a sensor-space rectangle to pack its inference tile from.
+//
+// The returned rect is validated by round trip — its corners are
+// forward-transformed the way the bridge below does — and walked back
+// toward the image centre until it renders, so a pick near a
+// geometry-trimmed border yields a usable patch instead of failing.
+//
+// @param imgid      image whose geometry chain to invert
+// @param iw, ih     sensor (pipe input) dimensions
+// @param u, v       click, normalised to the processed image
+// @param roi_w      patch width in sensor pixels
+// @param roi_h      patch height in sensor pixels
+// @param align      origin alignment, e.g. 2 to stay on the CFA grid
+// @param out_roi_x  receives the patch origin in sensor coords
+// @param out_roi_y  as out_roi_x
+// @return 0 on success; outputs untouched on failure
+int dt_restore_display_to_sensor(dt_imgid_t imgid,
+                                 int iw,
+                                 int ih,
+                                 float u,
+                                 float v,
+                                 int roi_w,
+                                 int roi_h,
+                                 int align,
+                                 int *out_roi_x,
+                                 int *out_roi_y);
+
 // @brief run darktable's real user pixelpipe on a sensor buffer, ROI-clipped.
 //
 // Shared bridge for the raw-denoise preview paths. Both Bayer and
