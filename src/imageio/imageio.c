@@ -1622,6 +1622,44 @@ void dt_imageio_set_hdr_tag(dt_image_t *img)
 //   combined reading
 // =================================================
 
+// Compute the raw 20-byte SHA-1 digest and exact byte count of a file, for
+// image identity tracking (see plugins/darkroom/compute_checksum). This is
+// a dedicated, sequential second read pass rather than a hook into a
+// loader's own I/O: only rawspeed reads the whole file into one buffer up
+// front, libraw/tiff/jpeg/the magick fallback all stream via their own
+// internal (partly vendored/third-party) I/O with no buffer we could tap.
+// Size is derived from bytes actually read here, not a separate stat(),
+// so the two values are always consistent with each other.
+static gboolean _compute_sha1sum(const char *filename,
+                                 unsigned char sha1sum_out[20],
+                                 uint64_t *filesize_out)
+{
+  FILE *f = g_fopen(filename, "rb");
+  if(!f)
+    return FALSE;
+
+  GChecksum *chk = g_checksum_new(G_CHECKSUM_SHA1);
+  unsigned char buf[65536];
+  size_t n;
+  uint64_t total = 0;
+  while((n = fread(buf, 1, sizeof(buf), f)) > 0)
+  {
+    g_checksum_update(chk, buf, n);
+    total += n;
+  }
+  const gboolean ok = !ferror(f);
+  fclose(f);
+
+  if(ok)
+  {
+    gsize digest_len = 20;
+    g_checksum_get_digest(chk, sha1sum_out, &digest_len);
+    *filesize_out = total;
+  }
+  g_checksum_free(chk);
+  return ok;
+}
+
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf)
@@ -1674,6 +1712,17 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
   img->p_width = img->width - img->crop_x - img->crop_right;
   img->p_height = img->height - img->crop_y - img->crop_bottom;
+
+  // lazily compute image identity (sha1sum + filesize) on first
+  // successful full read, opt-in only, and only once per image -- a
+  // failed/unsupported load has nothing worth identifying.
+  if((ret == DT_IMAGEIO_OK)
+     && !(img->flags & DT_IMAGE_HAS_SHA1SUM)
+     && dt_conf_get_bool("plugins/darkroom/compute_checksum"))
+  {
+    if(_compute_sha1sum(filename, img->sha1sum, &img->filesize))
+      img->flags |= DT_IMAGE_HAS_SHA1SUM;
+  }
 
   return ret;
 }

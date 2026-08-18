@@ -408,6 +408,9 @@ static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
                                  dt_image_t *img,
                                  const int xmp_version);
 
+static void _read_xmp_checksum(Exiv2::XmpData &xmpData,
+                               dt_image_t *img);
+
 static void _read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
                                     dt_image_t *img,
                                     const int xmp_version);
@@ -4699,6 +4702,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
 
     _read_xmp_timestamps(xmpData, img, xmp_version);
 
+    _read_xmp_checksum(xmpData, img);
+
     _read_xmp_harmony_guide(xmpData, img, xmp_version);
 
     if(stmt)
@@ -4994,6 +4999,46 @@ static void _set_xmp_timestamps(Exiv2::XmpData &xmpData,
   sqlite3_finalize(stmt);
 }
 
+// Add the sha1sum + filesize identity fields to XmpData, if computed
+// (see plugins/darkroom/compute_checksum). Written as an uppercase hex
+// string, "sha1:<40 hex chars>" -- plain text, no base64/zlib encoding
+// needed since it's already a short scalar value.
+static void _set_xmp_checksum(Exiv2::XmpData &xmpData,
+                              const dt_imgid_t imgid)
+{
+  static const char *keys[] =
+  {
+    "Xmp.darktable.image_checksum",
+    "Xmp.darktable.image_size"
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  _remove_xmp_keys(xmpData, keys, n_keys);
+
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT sha1sum, filesize"
+      " FROM main.images"
+      " WHERE id = ?1",
+      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  // clang-format on
+
+  if(sqlite3_step(stmt) == SQLITE_ROW
+     && sqlite3_column_type(stmt, 0) != SQLITE_NULL
+     && sqlite3_column_bytes(stmt, 0) == 20)
+  {
+    const unsigned char *digest = (const unsigned char *)sqlite3_column_blob(stmt, 0);
+    char hex[41];
+    for(int i = 0; i < 20; i++)
+      snprintf(hex + i * 2, 3, "%02X", digest[i]);
+    xmpData["Xmp.darktable.image_checksum"] = std::string("sha1:") + hex;
+    xmpData["Xmp.darktable.image_size"] = sqlite3_column_int64(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+}
+
 static void _set_xmp_harmony_guide(Exiv2::XmpData &xmpData,
                                    const dt_imgid_t imgid)
 {
@@ -5060,6 +5105,47 @@ void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
     else if(pos->toLong() >= 1)
       img->print_timestamp = _convert_unix_to_gtimespan(pos->toLong());
   }
+}
+
+// Read sha1sum + filesize identity fields from XmpData. Tolerant: an
+// absent or unparseable value is simply skipped, same as every other
+// optional darktable: field -- this lets old sidecars (written before
+// this feature existed) load without error or warning.
+void _read_xmp_checksum(Exiv2::XmpData &xmpData,
+                        dt_image_t *img)
+{
+  Exiv2::XmpData::iterator pos;
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.image_checksum")))
+     != xmpData.end())
+  {
+    const std::string val = pos->toString();
+    // accept "sha1:<40 hex chars>" or a bare 40-char hex string; hex
+    // decoding is inherently case-insensitive regardless of how the
+    // value was written.
+    const size_t hex_start = (val.size() >= 5 && val.compare(0, 5, "sha1:") == 0) ? 5 : 0;
+    if(val.size() - hex_start == 40)
+    {
+      unsigned char digest[20];
+      gboolean valid = TRUE;
+      for(int i = 0; i < 20 && valid; i++)
+      {
+        const int hi = g_ascii_xdigit_value(val[hex_start + i * 2]);
+        const int lo = g_ascii_xdigit_value(val[hex_start + i * 2 + 1]);
+        if(hi < 0 || lo < 0)
+          valid = FALSE;
+        else
+          digest[i] = (unsigned char)((hi << 4) | lo);
+      }
+      if(valid)
+      {
+        memcpy(img->sha1sum, digest, sizeof(digest));
+        img->flags |= DT_IMAGE_HAS_SHA1SUM;
+      }
+    }
+  }
+
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.image_size"))) != xmpData.end())
+    img->filesize = pos->toLong();
 }
 
 // Read color harmony guides from XmpData
@@ -5281,6 +5367,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   // Timestamps
   _set_xmp_timestamps(xmpData, imgid);
+
+  // Image identity (sha1sum + filesize), if computed
+  _set_xmp_checksum(xmpData, imgid);
 
   _set_xmp_harmony_guide(xmpData, imgid);
 

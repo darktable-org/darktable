@@ -101,6 +101,10 @@ typedef enum
   DT_IMAGE_MONOCHROME_BAYER = 1 << 19,
   // image has a flag set to use the monochrome workflow in the modules supporting it
   DT_IMAGE_MONOCHROME_WORKFLOW = 1 << 20,
+  // set once sha1sum/filesize have been computed for this image (see
+  // plugins/darkroom/compute_checksum) -- guards against rehashing the
+  // file on every open
+  DT_IMAGE_HAS_SHA1SUM = 1 << 21,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -312,6 +316,11 @@ typedef struct dt_image_t
   dt_imgid_t group_id;
   //timestamps
   GTimeSpan import_timestamp, change_timestamp, export_timestamp, print_timestamp;
+  // image identity: raw 20-byte binary SHA-1 digest of the source file
+  // (not a hex string) and its size in bytes, valid only when
+  // flags & DT_IMAGE_HAS_SHA1SUM
+  unsigned char sha1sum[20];
+  uint64_t filesize;
 
   dt_image_loader_t loader;
 
