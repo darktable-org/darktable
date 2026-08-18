@@ -1,30 +1,26 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2014-2026 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0602
 
 #include "common/darktable.h"
-// Forward declaration to fix implicit declaration error
-//void dt_printers_abort_discovery(void);
 #include <stdbool.h>
 #include <stdlib.h>
-// Ensure discovery thread is aborted and cleaned up at exit
-/* static void win32_print_cleanup(void)
-{
-  dt_printers_abort_discovery();
-}
-
-__attribute__((constructor))
-static void win32_print_register_cleanup(void)
-{
-  atexit(win32_print_cleanup);
-} */
-/*
-    This file is part of darktable,
-    Windows printing backend.
-
-    Provides async printer discovery and GUI-friendly signaling:
-      - NULL (clear) -> one per printer -> NULL (complete)
-*/
-
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
