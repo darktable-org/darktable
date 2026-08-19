@@ -15,10 +15,15 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
+# Match the CI "Update base packages" step
+RUN apt-get update && apt-get install -y eatmydata && \
+    eatmydata apt-get --yes upgrade && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install compilers matching CI:
 #   - Primary:     GNU16   (gcc-16 / g++-16)
 #   - Alternative: LLVM22  (clang-22 / clang++-22)
-RUN apt-get update && apt-get install -y \
+RUN eatmydata apt-get update && eatmydata apt-get --yes install \
     gcc-16 \
     g++-16 \
     clang-22 \
@@ -34,7 +39,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install base dependencies — exact match with CI
 # (see "Install Base Dependencies" step in .github/workflows/ci.yml)
-RUN apt-get update && apt-get install -y \
+RUN eatmydata apt-get update && eatmydata apt-get --yes install \
     build-essential \
     cmake \
     appstream-util \
@@ -66,6 +71,11 @@ RUN apt-get update && apt-get install -y \
     liblensfun-dev \
     liblua5.4-dev \
     libonnxruntime-dev \
+    libopencv-calib3d-dev \
+    libopencv-core-dev \
+    libopencv-features2d-dev \
+    libopencv-flann-dev \
+    libopencv-imgproc-dev \
     libopenexr-dev \
     libopenjp2-7-dev \
     libosmgpsmap-1.0-dev \
@@ -91,21 +101,6 @@ RUN apt-get update && apt-get install -y \
     python3-jsonschema \
     xsltproc \
     zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install additional packages for development (not required by CI)
-RUN apt-get update && apt-get install -y \
-    # OpenCL support (optional GPU acceleration)
-    ocl-icd-opencl-dev \
-    # JXL image format (available on other platforms in CI)
-    libjxl-dev \
-    # Development conveniences
-    clang-format-22 \
-    sudo \
-    curl \
-    wget \
-    vim \
-    nano \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
