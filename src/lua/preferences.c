@@ -168,7 +168,7 @@ static GtkWidget *_make_pref_grid(void)
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
+  gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   return grid;
 }
