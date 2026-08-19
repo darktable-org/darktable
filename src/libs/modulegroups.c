@@ -749,6 +749,13 @@ static void _basics_show(dt_lib_module_t *self)
 
   if(d->vbox_basic && gtk_widget_get_visible(d->vbox_basic)) return;
 
+  /* QAP construction creates activation buttons whose callbacks are already
+   * connected before their initial active state is synchronized. Every QAP
+   * rebuild must therefore be a programmatic GUI update, including the path
+   * reached when the last character is deleted from module search. Without
+   * this scope, that initial toggled signal can recursively rebuild QAP. */
+  DT_ENTER_GUI_UPDATE();
+
   if(!d->vbox_basic)
   {
     d->vbox_basic = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -791,6 +798,8 @@ static void _basics_show(dt_lib_module_t *self)
   }
 
   gtk_widget_show(d->vbox_basic);
+
+  DT_LEAVE_GUI_UPDATE();
 }
 
 static uint32_t _lib_modulegroups_get_activated(dt_lib_module_t *self)
