@@ -47,6 +47,10 @@
 #define DT_IOP_SATCURVE_MIN_X_DISTANCE 0.0025f
 #define DT_IOP_SATCURVE_GAMUT_STEPS 92
 #define DT_IOP_SATCURVE_CHANNELS 2
+// squared normalized distance below which a curve node is considered grabbed by
+// the pointer (radius ~0.05). Shared by the button-press and motion handlers so
+// a node that is hovered is also the one a click picks up and drags.
+#define DT_IOP_SATCURVE_NODE_GRAB_SQ 0.0025f
 
 DT_MODULE_INTROSPECTION(1, dt_iop_satcurve_params_t)
 
@@ -537,8 +541,10 @@ static inline void compute_saturation_mask(const dt_iop_satcurve_data_t *d,
   }
 }
 
-// Render the saturation mask as a grayscale preview. Using a sqrt-like gamma
-// makes low values easier to see, analogous to display_luminance_mask() in toneequal.c.
+// Render the saturation mask as a color preview. Zero saturation is shown as
+// white, full saturation as purple/magenta, matching the chroma gradient end
+// color {0.5, 0.0, 0.5} used in blend_gui.c. A sqrt-like gamma makes low
+// values easier to see, analogous to display_luminance_mask() in toneequal.c.
 static inline void display_saturation_mask(const float *const restrict in,
                                            const float *const restrict mask,
                                            float *const restrict out,
@@ -547,10 +553,11 @@ static inline void display_saturation_mask(const float *const restrict in,
   DT_OMP_FOR()
   for (size_t k = 0; k < npixels; k++)
   {
-    const float intensity = sqrtf(CLAMP(mask[k], 0.f, 1.f));
-    out[4 * k + 0] = intensity;
-    out[4 * k + 1] = intensity;
-    out[4 * k + 2] = intensity;
+    // white at t = 0, magenta {0.5, 0.0, 0.5} at t = 1
+    const float t = sqrtf(CLAMP(mask[k], 0.f, 1.f));
+    out[4 * k + 0] = 1.0f - 0.5f * t;
+    out[4 * k + 1] = 1.0f - t;
+    out[4 * k + 2] = 1.0f - 0.5f * t;
     out[4 * k + 3] = in[4 * k + 3];
   }
 }
@@ -1402,7 +1409,7 @@ static void _draw_sat_picker(cairo_t *cr, dt_iop_module_t *self, const int w, co
   cairo_rectangle(cr, x_min, 0, MAX(1.f, x_max - x_min), h);
   cairo_fill(cr);
 
-  cairo_set_source_rgba(cr, 1.0, 0.6, 0.2, 0.9);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.2));
   cairo_move_to(cr, x_mean, 0);
   cairo_line_to(cr, x_mean, h);
@@ -1527,14 +1534,43 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   cairo_restore(cr);
 
+  // Saturation axis gradient: white at zero saturation, purple/magenta
+  // {0.5, 0.0, 0.5} at full saturation, matching the mask preview and the
+  // chroma gradient end color in blend_gui.c.
   cairo_pattern_t *grad = cairo_pattern_create_linear(gx0, 0.0, gx0 + gw, 0.0);
-  dt_cairo_perceptual_gradient(grad, 1.0);
+  cairo_pattern_add_color_stop_rgba(grad, 0.0, 1.0, 1.0, 1.0, 1.0);
+  cairo_pattern_add_color_stop_rgba(grad, 1.0, 0.5, 0.0, 0.5, 1.0);
   cairo_rectangle(cr, gx0, gy0 + gh + DT_IOP_SATCURVE_GRADIENT_GAP, gw, DT_IOP_SATCURVE_GRADIENT_SIZE);
   cairo_set_source(cr, grad);
   cairo_fill(cr);
   cairo_pattern_destroy(grad);
 
   return FALSE;
+}
+
+// Returns the index of the curve node nearest to (x, y) in normalized graph
+// coordinates, within the shared grab radius, or -1 if none is close enough.
+// Picking the nearest (rather than the first within range) avoids ambiguities
+// when two nodes sit close together. This is what makes a node moveable on
+// hover: the motion handler drags g->selected, the scroll handler nudges it,
+// and the draw code renders it larger.
+static inline int _node_hit_at(const dt_iop_satcurve_channel_params_t *cp,
+                               const float x, const float y)
+{
+  int nearest = -1;
+  float best = DT_IOP_SATCURVE_NODE_GRAB_SQ;
+  for (int i = 0; i < cp->curve_num_nodes; i++)
+  {
+    const float dx = x - cp->curve[i].x;
+    const float dy = y - cp->curve[i].y;
+    const float d2 = dx * dx + dy * dy;
+    if (d2 < best)
+    {
+      best = d2;
+      nearest = i;
+    }
+  }
+  return nearest;
 }
 
 static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
@@ -1557,17 +1593,7 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
   const float x = CLAMP((event->x - gx0) / w, 0.f, 1.f);
   const float y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
 
-  int hit = -1;
-  for (int i = 0; i < cp->curve_num_nodes; i++)
-  {
-    const float dx = x - cp->curve[i].x;
-    const float dy = y - cp->curve[i].y;
-    if (dx * dx + dy * dy < .0025f)
-    {
-      hit = i;
-      break;
-    }
-  }
+  int hit = _node_hit_at(cp, x, y);
 
   if (event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
   {
@@ -1641,31 +1667,56 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
   dt_iop_satcurve_channel_params_t *cp = get_active_channel_params(self);
 
-  if (!g->dragging || g->selected < 0)
-    return FALSE;
-
   GtkAllocation a;
   gtk_widget_get_allocation(widget, &a);
 
   float gx0, gy0, w, h;
   _get_graph_geometry(&a, &gx0, &gy0, &w, &h);
 
-  const float x = CLAMP((event->x - gx0) / w, 0.f, 1.f);
-  const int n = g->selected;
+  // Dragging a node that was grabbed by a button press.
+  if (g->dragging && g->selected >= 0)
+  {
+    const float x = CLAMP((event->x - gx0) / w, 0.f, 1.f);
+    const int n = g->selected;
 
-  if (n == 0)
-    cp->curve[n].x = 0.f;
-  else if (n == cp->curve_num_nodes - 1)
-    cp->curve[n].x = 1.f;
-  else
-    cp->curve[n].x = CLAMP(x,
-                           cp->curve[n - 1].x + DT_IOP_SATCURVE_MIN_X_DISTANCE,
-                           cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
+    if (n == 0)
+      cp->curve[n].x = 0.f;
+    else if (n == cp->curve_num_nodes - 1)
+      cp->curve[n].x = 1.f;
+    else
+      cp->curve[n].x = CLAMP(x,
+                             cp->curve[n - 1].x + DT_IOP_SATCURVE_MIN_X_DISTANCE,
+                             cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
 
-  cp->curve[n].y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
-  dt_dev_add_history_item(darktable.develop, self, FALSE);
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+    cp->curve[n].y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
+    dt_dev_add_history_item(darktable.develop, self, FALSE);
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+  }
+
+  // Otherwise, pick up the node under the pointer so it becomes moveable: a
+  // subsequent press drags it, the scroll wheel nudges it, and it is drawn
+  // highlighted. Hit-test only inside the graph rectangle -- clamping would
+  // otherwise grab an endpoint node from the inset/gradient margin.
+  const gboolean inside = event->x >= gx0 && event->x <= gx0 + w && event->y >= gy0 && event->y <= gy0 + h;
+
+  int hit = -1;
+  if (inside)
+  {
+    const float x = (event->x - gx0) / w;
+    const float y = 1.f - (event->y - gy0) / h;
+    hit = _node_hit_at(cp, x, y);
+  }
+
+  if (hit != g->selected)
+  {
+    g->selected = hit;
+    gtk_widget_queue_draw(widget);
+    if (g->selected >= 0)
+      gtk_widget_grab_focus(widget);
+  }
+
+  return FALSE;
 }
 
 static gboolean area_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
