@@ -41,7 +41,6 @@
 /* configuration                                                          */
 /* ---------------------------------------------------------------------- */
 
-#define CONF_ENABLED "plugins/darkroom/spektrafilm/allow_download"
 #define CONF_REPOSITORY "plugins/darkroom/spektrafilm/repository"
 #define CONF_REF "plugins/darkroom/spektrafilm/ref"
 
@@ -56,7 +55,7 @@
    different reason -- an immutable ref is what makes an old edit reproducible,
    where a branch hands whatever is current to a darktable that may predate
    it. */
-#define SF_DEFAULT_REPOSITORY "piratenpanda/darktable-spektrafilm"
+#define SF_DEFAULT_REPOSITORY "darktable-org/darktable-spektrafilm"
 #define SF_DEFAULT_REF "main"
 
 /* Files are read straight out of the repository tree over HTTPS. This keeps the
@@ -153,11 +152,6 @@ void sf_fetch_cleanup(void)
   if(t) g_thread_join(t);
   g_mutex_clear(&_sf.lock);
   _sf.inited = FALSE;
-}
-
-gboolean sf_fetch_downloads_enabled(void)
-{
-  return dt_conf_key_exists(CONF_ENABLED) ? dt_conf_get_bool(CONF_ENABLED) : FALSE;
 }
 
 sf_fetch_state_t sf_fetch_status(char *msg, size_t msgsz, double *progress)
@@ -1050,13 +1044,6 @@ out:
 gboolean sf_fetch_start(const uint32_t wanted_lut_hash)
 {
   if(!_sf.inited) return FALSE;
-
-  if(!sf_fetch_downloads_enabled())
-  {
-    dt_control_log(
-        _("spektrafilm: downloading data is disabled in preferences"));
-    return FALSE;
-  }
 
   g_mutex_lock(&_sf.lock);
   if(_sf.state == SF_FETCH_RUNNING)

@@ -2773,17 +2773,10 @@
     <shortdescription>crossover ISO for X-Trans FDC demosaicing</shortdescription>
     <longdescription>up to, and including, this ISO, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher ISO values the pure FDC is used.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security" section="other">
-    <name>plugins/darkroom/spektrafilm/allow_download</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>allow spektrafilm to download data packs</shortdescription>
-    <longdescription>allow the spektrafilm module to fetch its spectral data pack over the network when the pack an edit needs is not installed locally. every file is verified against a checksum from the repository manifest before it is installed, and downloaded packs are written to the spektrafilm/packs subfolder of the configuration folder, so they are backed up with the rest of the configuration and survive clearing the cache. a pack installed by hand directly in spektrafilm/ is always preferred over a downloaded one.</longdescription>
-  </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/spektrafilm/repository</name>
     <type>string</type>
-    <default>piratenpanda/darktable-spektrafilm</default>
+    <default>darktable-org/darktable-spektrafilm</default>
     <shortdescription>spektrafilm data repository</shortdescription>
     <longdescription>repository holding the spektrafilm spectral data packs, as owner/repo. the files are read over https; git is not required.</longdescription>
   </dtconfig>
