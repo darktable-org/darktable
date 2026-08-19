@@ -121,10 +121,6 @@ void sf_fetch_cancel(void);
  * msg and progress may be NULL. Safe to call from any thread. */
 sf_fetch_state_t sf_fetch_status(char *msg, size_t msgsz, double *progress);
 
-/* TRUE when the user has allowed spektrafilm to reach the network at all.
- * Downloads are opt-in and never happen on their own. */
-gboolean sf_fetch_downloads_enabled(void);
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

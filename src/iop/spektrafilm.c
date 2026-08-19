@@ -57,6 +57,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe_cache.h"
@@ -87,6 +88,10 @@
 #include "common/spektra_sim.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
+
+/* Where the data packs are fetched from. Owned by common/spektra_fetch.c, named
+   here only for the darktablerc migration in init_global(). */
+#define SF_CONF_REPOSITORY "plugins/darkroom/spektrafilm/repository"
 
 /* Spatial-scale constants, micrometres on film unless noted (see the LUT
    module for the full rationale; these are shared with modify_roi_in() and
@@ -447,6 +452,23 @@ void init_global(dt_iop_module_so_t *self)
 {
   dt_pthread_mutex_init(&_pack_lock, NULL);
   sf_fetch_init();
+  /* Two darktablerc migrations, here rather than in a shared upgrade path
+     because both keys belong to this module and nothing else reads them.
+
+     The download used to be gated behind a preference defaulting to off. That
+     is gone, but an existing darktablerc keeps whatever it held: a setting
+     that reads as live and does nothing, most likely still saying off, which
+     claims the module cannot fetch when it now can. */
+  dt_conf_remove_key("plugins/darkroom/spektrafilm/allow_download");
+
+  /* The pack repository moved to darktable-org. Changing the compiled and XML
+     defaults only reaches a fresh install -- darktablerc writes every key out,
+     so an existing one keeps pointing at the old location and would 404 once
+     it goes away. Rewrite it only when it still holds exactly the old default,
+     so anyone who deliberately set a fork of their own keeps it. */
+  if(dt_conf_is_equal(SF_CONF_REPOSITORY, "piratenpanda/darktable-spektrafilm"))
+    dt_conf_set_string(SF_CONF_REPOSITORY, "darktable-org/darktable-spektrafilm");
+
   const int program = 42; /* spektrafilm.cl in data/kernels/programs.conf */
   dt_iop_spektrafilm_global_data_t *gd = malloc(sizeof(dt_iop_spektrafilm_global_data_t));
   self->data = gd;
@@ -2980,15 +3002,8 @@ static void _update_data_row(dt_iop_module_t *self)
           ? _("the table this edit was developed with is not installed")
           : _("no data pack installed -- the module's controls appear once one is"));
   gtk_button_set_label(GTK_BUTTON(g->data_button), _("download data pack"));
-
-  /* The button stays visible but dead when downloads are switched off, so the
-     reason the module cannot render is discoverable rather than silent. */
-  const gboolean allowed = sf_fetch_downloads_enabled();
-  gtk_widget_set_sensitive(g->data_button, allowed);
-  gtk_widget_set_tooltip_text(
-      g->data_button,
-      allowed ? _("fetch the matching spectral data pack over the network")
-              : _("enable \"allow spektrafilm to download data\" in preferences first"));
+  gtk_widget_set_tooltip_text(g->data_button,
+                              _("fetch the matching spectral data pack over the network"));
   gtk_widget_set_visible(g->data_box, TRUE);
 }
 
