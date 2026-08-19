@@ -1212,7 +1212,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
   if(!_win_xpsprint_ensure_loaded())
     return false;
 
-  HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
   bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
   if(!co_initialized)
   {
@@ -1231,24 +1231,31 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
   if(wprinter && wtitle && completionEvent && pStartXpsPrintJob)
   {
-    hr = pStartXpsPrintJob(wprinter, wtitle,
-                           NULL, NULL, completionEvent,
-                           NULL, 0,
-                           &xpsJob, &docStream, &ticketStream);
-if(FAILED(hr))
-{
-  DBG_MARK("StartXpsPrintJob failed: hr=0x%08lx", hr);
-}
+    hr = pStartXpsPrintJob(wprinter,
+                           wtitle,
+                           NULL,
+                           NULL,
+                           completionEvent,
+                           NULL,
+                           0,
+                           &xpsJob,
+                           &docStream,
+                           &ticketStream);
+
+    DBG_MARK("StartXpsPrintJob: hr=0x%08lx xpsJob=%p docStream=%p ticketStream=%p",
+             hr, (void *)xpsJob, (void *)docStream, (void *)ticketStream);
+
     if(SUCCEEDED(hr))
     {
-      if(print_ticket_data && print_ticket_size > 0)
+      if(ticketStream && print_ticket_data && print_ticket_size > 0)
       {
         ULONG bytes_written = 0;
         hr = ticketStream->lpVtbl->Write(ticketStream,
                                         print_ticket_data,
                                         (ULONG)print_ticket_size,
                                         &bytes_written);
-        (void)bytes_written;
+        if(FAILED(hr))
+          DBG_MARK("ticketStream Write failed: hr=0x%08lx", hr);
       }
 
       IXpsOMObjectFactory *factory = NULL;
@@ -1257,64 +1264,126 @@ if(FAILED(hr))
                             CLSCTX_INPROC_SERVER,
                             &IID_IXpsOMObjectFactory,
                             (void **)&factory);
-if(FAILED(hr))
-{
-  DBG_MARK("CoCreateInstance failed: hr=0x%08lx", hr);
-}
+
+      DBG_MARK("CoCreateInstance(XpsOMObjectFactory): hr=0x%08lx factory=%p",
+               hr, (void *)factory);
+
       if(SUCCEEDED(hr) && factory)
       {
-        IXpsOMPackageWriter *writer = NULL;
-        hr = factory->lpVtbl->CreatePackageWriterOnStream(factory,
-                                                          (ISequentialStream *)docStream,
-                                                          FALSE,
-                                                          XPS_INTERLEAVING_OFF,
-                                                          NULL,
-                                                          NULL,
-                                                          NULL,
-                                                          NULL,
-                                                          NULL,
-                                                          &writer);
-if(FAILED(hr))
-{
-  DBG_MARK("CreatePackageWriterOnStream failed: hr=0x%08lx", hr);
-}
-        if(SUCCEEDED(hr) && writer)
+        IStream *package_stream = NULL;
+        hr = CreateStreamOnHGlobal(NULL, TRUE, &package_stream);
+
+        DBG_MARK("CreateStreamOnHGlobal: hr=0x%08lx package_stream=%p",
+                 hr, (void *)package_stream);
+
+        if(SUCCEEDED(hr) && package_stream)
         {
-          writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
+          IXpsOMPackageWriter *writer = NULL;
 
-          IXpsOMPage *page = NULL;
-          XPS_SIZE page_size = { page_width, page_height };
+          hr = factory->lpVtbl->CreatePackageWriterOnStream(
+                  factory,
+                  (ISequentialStream *)package_stream,
+                  FALSE,
+                  XPS_INTERLEAVING_OFF,
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  &writer);
 
-          hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", NULL, &page);
+          DBG_MARK("CreatePackageWriterOnStream: hr=0x%08lx writer=%p",
+                   hr, (void *)writer);
 
-          IXpsOMColorProfileResource *profile_resource = NULL;
-          if(icc_data && icc_size > 0)
-            profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/Colors/OutputProfile.icc");
-if(FAILED(hr))
-{
-  DBG_MARK("CreatePage failed: hr=0x%08lx", hr);
-}
-          if(SUCCEEDED(hr) && page)
+          if(SUCCEEDED(hr) && writer)
           {
-            for(int i = 0; i < imgs->count; i++)
+            writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
+
+            IXpsOMPage *page = NULL;
+            XPS_SIZE page_size = { page_width, page_height };
+
+            hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", NULL, &page);
+            DBG_MARK("CreatePage: hr=0x%08lx page=%p", hr, (void *)page);
+
+            IXpsOMColorProfileResource *profile_resource = NULL;
+            if(icc_data && icc_size > 0)
             {
-              const dt_image_box *box = &imgs->box[i];
-              IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
-              if(res)
-              {
-                _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution);
-                res->lpVtbl->Release(res);
-              }
+              profile_resource = _win_build_color_profile_resource(factory,
+                                                                  icc_data,
+                                                                  icc_size,
+                                                                  L"/Resources/Colors/OutputProfile.icc");
+              DBG_MARK("profile_resource=%p", (void *)profile_resource);
             }
 
-            writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
-            profile_resource->lpVtbl->Release(profile_resource);
-            page->lpVtbl->Release(page);
+            if(SUCCEEDED(hr) && page)
+            {
+              for(int i = 0; i < imgs->count; i++)
+              {
+                const dt_image_box *box = &imgs->box[i];
+                IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
+                if(res)
+                {
+                  _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution);
+                  res->lpVtbl->Release(res);
+                }
+              }
+
+              writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
+              DBG_MARK("AddPage: hr=0x%08lx", hr);
+
+              page->lpVtbl->Release(page);
+              page = NULL;
+            }
+
+            writer->lpVtbl->Close(writer);
+            writer->lpVtbl->Release(writer);
+            writer = NULL;
+
+            if(SUCCEEDED(hr))
+            {
+              LARGE_INTEGER zero = {0};
+              hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
+              DBG_MARK("seek package stream: hr=0x%08lx", hr);
+
+              if(SUCCEEDED(hr) && docStream)
+              {
+                BYTE buffer[4096];
+                ULONG total_written = 0;
+
+                for(;;)
+                {
+                  ULONG read = 0;
+                  hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+                  if(FAILED(hr))
+                  {
+                    DBG_MARK("package_stream Read failed: hr=0x%08lx", hr);
+                    break;
+                  }
+
+                  if(read == 0)
+                  {
+                    hr = S_OK;
+                    break;
+                  }
+
+                  ULONG written = 0;
+                  hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
+                  total_written += written;
+
+                  if(FAILED(hr))
+                  {
+                    DBG_MARK("docStream Write failed: hr=0x%08lx written=%lu", hr, (unsigned long)written);
+                    break;
+                  }
+                }
+
+                DBG_MARK("package copy complete: hr=0x%08lx total_written=%lu",
+                         hr, (unsigned long)total_written);
+              }
+            }
           }
 
-          writer->lpVtbl->Close(writer);
-          writer->lpVtbl->Release(writer);
-          ok = true;
+          package_stream->lpVtbl->Release(package_stream);
         }
 
         factory->lpVtbl->Release(factory);
@@ -1324,6 +1393,7 @@ if(FAILED(hr))
       if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
 
       WaitForSingleObject(completionEvent, INFINITE);
+      ok = true;
     }
     else
     {
@@ -1335,6 +1405,7 @@ if(FAILED(hr))
   if(completionEvent) CloseHandle(completionEvent);
   g_free(wprinter);
   g_free(wtitle);
+
   if(co_initialized) CoUninitialize();
 
   if(ok)
