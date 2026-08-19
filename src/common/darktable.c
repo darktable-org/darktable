@@ -272,9 +272,9 @@ static int usage(const char *argv0)
          "    Enable debug output to the terminal (or to the log file if on Windows).\n"
          "    Valid channels are:\n\n"
          "    act_on, ai, cache, camctl, camsupport, control, dev, expose,\n"
-         "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
-         "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
-         "    sql, tiling, picker, undo\n"
+         "    hdr_merge, imageio, input, ioporder, lighttable, lua, masks,\n"
+         "    memory, nan, opencl, params, perf, pipe, print, pwstorage,\n"
+         "    signal, sql, tiling, picker, undo\n"
          "\n"
          "    It is also possible to specify names that activate all channels\n"
          "    or a certain subset, as well as increase verbosity:\n"
@@ -867,6 +867,12 @@ char *version = g_strdup_printf(
                "  OpenCL                 -> DISABLED - GPU acceleration is NOT available\n"
 #endif
 
+#ifdef HAVE_OPENCV
+               "  OpenCV                 -> ENABLED  - HDR bracket auto-alignment is available\n"
+#else
+               "  OpenCV                 -> DISABLED - HDR bracket auto-alignment is NOT available\n"
+#endif
+
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
@@ -1180,6 +1186,7 @@ int dt_init(int argc,
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
+          !strcmp(darg, "hdr_merge") ? DT_DEBUG_HDR_MERGE : // HDR bracket merge + auto-alignment
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -2130,6 +2137,12 @@ int dt_init(int argc,
 #else
   dt_capabilities_add("linux");
   dt_capabilities_add("nonapple");
+#endif
+
+#ifdef HAVE_OPENCV
+  // gates the HDR alignment preferences: without OpenCV the whole merge
+  // auto-alignment path is compiled out, so those prefs are shown greyed out
+  dt_capabilities_add("opencv");
 #endif
 
   dt_print(DT_DEBUG_CONTROL,
