@@ -101,6 +101,9 @@ typedef enum
   DT_IMAGE_MONOCHROME_BAYER = 1 << 19,
   // image has a flag set to use the monochrome workflow in the modules supporting it
   DT_IMAGE_MONOCHROME_WORKFLOW = 1 << 20,
+  // image is currently loaded from proxy media (e.g. IMG_1234.CR2.proxy.avif)
+  // because the original raw file is not available on this machine
+  DT_IMAGE_PROXY_MEDIA = 1 << 21,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t

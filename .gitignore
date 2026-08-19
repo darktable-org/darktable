@@ -1,3 +1,14 @@
+.claude
+src/p2p/pep
+*.so
+.env
+*/.env
+src/mobile/android/libs
+src/mobile/assets
+src/mobile/android/libs/arm64-v8a/libdt-p2p-daemon.so
+src/mobile/assets/dt-p2p-daemon
+aqtinstall.log
+src/p2p/p2p
 build*/
 obj*/
 *~

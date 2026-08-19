@@ -176,10 +176,32 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive, G
       g_free(fullname);
     }
     /* or test if we found a supported image format to import */
-    else if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(filename))
-      *result = g_list_prepend(*result, fullname);
-    else
-      g_free(fullname);
+    else if(!g_file_test(fullname, G_FILE_TEST_IS_DIR))
+    {
+      /* Proxy media sidecar: IMG.CR2.proxy.avif lives next to IMG.CR2.
+       * Skip the proxy when the original exists (dt_imageio_open will fall
+       * back to it transparently).  When only the proxy exists, enqueue the
+       * canonical raw path so _image_import_internal detects the proxy. */
+      static const char proxy_sfx[] = ".proxy.avif";
+      const size_t fn_len = strlen(filename);
+      const size_t sfx_len = sizeof(proxy_sfx) - 1;
+      if(fn_len > sfx_len
+         && g_ascii_strcasecmp(filename + fn_len - sfx_len, proxy_sfx) == 0)
+      {
+        char *raw_name = g_strndup(filename, fn_len - sfx_len);
+        char *raw_fullname = g_build_filename(path, raw_name, NULL);
+        g_free(raw_name);
+        if(!g_file_test(raw_fullname, G_FILE_TEST_IS_REGULAR))
+          *result = g_list_prepend(*result, raw_fullname); // import as canonical raw name
+        else
+          g_free(raw_fullname); // raw present, proxy used transparently
+        g_free(fullname);
+      }
+      else if(dt_supported_image(filename))
+        *result = g_list_prepend(*result, fullname);
+      else
+        g_free(fullname);
+    }
 
   } while(TRUE);
 

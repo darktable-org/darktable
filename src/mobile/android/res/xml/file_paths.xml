@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Expose the app's imports/ and proxies/ dirs for FileProvider sharing -->
+    <files-path name="imports" path="imports/"/>
+    <files-path name="proxies" path="proxies/"/>
+</paths>

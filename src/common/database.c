@@ -5882,7 +5882,39 @@ void dt_database_release_transaction(const dt_database_t *db)
 
   if(trxid == 1)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+    const int max_attempts = 5;
+    const int delay_ms = 1000;
+    int rc = SQLITE_OK;
+    for(int attempt = 0; attempt < max_attempts; attempt++)
+    {
+      rc = sqlite3_exec(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+      if(rc == SQLITE_OK) break;
+      const int is_lock_error = (rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
+      if(!is_lock_error)
+      {
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_database_release_transaction] COMMIT TRANSACTION failed with sqlite error %d (%s)",
+                 rc,
+                 sqlite3_errmsg(dt_database_get(db)));
+        break;
+      }
+
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_database_release_transaction] COMMIT TRANSACTION got %d (%s), retrying in %dms (attempt %d/%d)",
+               rc,
+               sqlite3_errmsg(dt_database_get(db)),
+               delay_ms,
+               attempt + 1,
+               max_attempts);
+      sqlite3_sleep(delay_ms);
+    }
+
+    if(rc != SQLITE_OK)
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_database_release_transaction] COMMIT TRANSACTION failed after %d attempts: %d (%s)",
+               max_attempts,
+               rc,
+               sqlite3_errmsg(dt_database_get(db)));
   }
   else
 #ifdef USE_NESTED_TRANSACTIONS
