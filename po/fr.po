@@ -28289,7 +28289,7 @@ msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
 msgstr ""
-"Positionne la balance des blans sur le point de référence du boîtier,\n"
+"Positionne la balance des blancs sur le point de référence du boîtier,\n"
 "D65 dans la plupart des cas."
 
 #: ../src/iop/temperature.c:2095
