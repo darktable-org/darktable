@@ -73,7 +73,25 @@ bool dt_win_print_file(const dt_images_box *imgs,
                         float width, float height);
 
 RECT compute_box_rect(const dt_image_box *box, HDC hdc, int dpiX, int dpiY, int paper_width, int paper_height);
-                                
+
+static inline float _win_pixel_to_diu(float pixels, int resolution);
+
+static inline float _win_mm_to_diu(float mm);
+
+static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
+                                               IWICBitmapSource *bitmap,
+                                               IStream **stream_out);
+
+static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *factory,
+                                                   const dt_image_box *box,
+                                                   const void *icc_data,
+                                                   size_t icc_size);
+                                                   
+static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
+                                       IXpsOMPage *page,
+                                       IXpsOMImageResource *resource,
+                                       const dt_image_box *box,
+                                       int resolution);                                                   
 
 typedef enum {
   QUALITY_SRC_CAPS,
