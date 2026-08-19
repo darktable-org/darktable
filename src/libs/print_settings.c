@@ -818,7 +818,7 @@ _print_settings_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
   }
   else {
-    DBG_MARK("no settings context");}
+    dt_control_log(_("no settings context"));}
 
   // schedule redraw on idle so it runs after dialog closes
   g_idle_add(_redraw_later, self->widget);

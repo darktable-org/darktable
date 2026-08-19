@@ -45,6 +45,7 @@
 #include <shellapi.h>
 #include <gdiplus.h>
 #include <wingdi.h>
+#include <wincodec.h>
 #include <xpsprint.h>
 #include "win/win32_print.h"
 
@@ -920,6 +921,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
     return false;
   }
 
+  const float page_width  = _win_mm_to_diu(width);
+  const float page_height = _win_mm_to_diu(height);
+
   if(!_win_xpsprint_ensure_loaded())
   return false;   // logged inside the helper already
   
@@ -945,186 +949,85 @@ bool dt_win_print_file(const dt_images_box *imgs,
   if(wprinter && wtitle && completionEvent && pStartXpsPrintJob)
   {
     hr = pStartXpsPrintJob(wprinter, wtitle, NULL, NULL, completionEvent,
-                           NULL, 0, &xpsJob, &docStream, &ticketStream);
+                          NULL, 0, &xpsJob, &docStream, &ticketStream);
     if(SUCCEEDED(hr))
     {
-      // job-level settings: just a byte copy, no COM object rebuilding needed
-      if(print_ticket_data && print_ticket_size > 0)
-        ticketStream->lpVtbl->Write(ticketStream, print_ticket_data,
-                                    (ULONG)print_ticket_size, NULL);
+     if(print_ticket_data && print_ticket_size > 0)
+       ticketStream->lpVtbl->Write(ticketStream, print_ticket_data,
+                                  (ULONG)print_ticket_size, NULL);
 
-      // TODO: build the XPS package into docStream —
-      // IXpsOMObjectFactory → CreatePackageWriterOnStream(docStream, ...)
-      // → for each imgs->box[i]: WIC bitmap from box->buf, ColorContext
-      //   from icc_data/icc_size, place on a FixedPage sized from
-      //   width/height, in DIU (box coordinates need converting from
-      //   whatever unit compute_box_rect used — not device pixels anymore)
+     IXpsOMObjectFactory *factory = NULL;
+     hr = CoCreateInstance(&CLSID_XpsOMObjectFactory, NULL, CLSCTX_INPROC_SERVER,
+                           &IID_IXpsOMObjectFactory, (void **)&factory);
 
-      docStream->lpVtbl->Close(docStream);
-      ticketStream->lpVtbl->Close(ticketStream);
+     if(SUCCEEDED(hr) && factory)
+     {
+       IXpsOMPackageWriter *writer = NULL;
+       hr = factory->lpVtbl->CreatePackageWriterOnStream(factory, docStream,
+                                                         FALSE,
+                                                         XPS_INTERLEAVING_OFF,
+                                                         NULL,
+                                                         NULL,
+                                                         NULL,
+                                                         NULL,
+                                                         NULL,
+                                                         &writer);
 
-      WaitForSingleObject(completionEvent, INFINITE);
-      ok = true; // TODO: check actual job completion status via xpsJob
-    }
-    else
-    {
-      dt_control_log(_("could not start XPS print job on `%s'"), pinfo->printer.name);
-    }
-  }
+       if(SUCCEEDED(hr) && writer)
+       {
+         writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
 
-  if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
-  if(completionEvent) CloseHandle(completionEvent);
-  g_free(wprinter);
-  g_free(wtitle);
-  if(co_initialized) CoUninitialize();
+         IXpsOMPage *page = NULL;
+         XPS_SIZE page_size = { page_width, page_height };
+         hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", NULL, &page);
+         if(SUCCEEDED(hr) && page)
+         {
+           for(int i = 0; i < imgs->count; i++)
+           {
+             const dt_image_box *box = &imgs->box[i];
+             IXpsOMImageResource *res = _win_build_image_resource(factory, box, icc_data, icc_size);
+             if(res)
+             {
+               _win_place_image_on_page(factory, page, res, box, pinfo->printer.resolution);
+               res->lpVtbl->Release(res);
+             }
+           }
 
-  if(ok)
-    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
-  else
-    dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
+           writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
+           page->lpVtbl->Release(page);
+         }
 
-  return ok;
+         writer->lpVtbl->Close(writer);
+         writer->lpVtbl->Release(writer);
+         ok = true;
+       }
+       factory->lpVtbl->Release(factory);
+     }
 
+     if(docStream) docStream->lpVtbl->Close(docStream);
+     if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
 
-  // const dt_images_box *imgs = &params->imgs;
-  // const char *job_title = params->job_title;
-  // dt_print_info_t *pinfo = &params->prt;
-  // dt_win32_print_ctx_t *ctx = params->ctx;
+     WaitForSingleObject(completionEvent, INFINITE);
+   }
+   else
+   {
+     dt_control_log(_("could not start XPS print job on `%s'"), pinfo->printer.name);
+   }
+ }
 
-/*   if(imgs->count <= 0)
-  {
-    dt_control_log(_("no images to print on `%s'"), pinfo->printer.name);
-    return false;
-  }
+ if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
+ if(completionEvent) CloseHandle(completionEvent);
+ g_free(wprinter);
+ g_free(wtitle);
+ if(co_initialized) CoUninitialize();
 
-  wchar_t *wprinter = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
-  if(!wprinter) return false;
+ if(ok)
+   dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
+ else
+   dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
 
-  size_t dm_size = ctx->cached_dm->dmSize + ctx->cached_dm->dmDriverExtra;
-  DEVMODEW *dm = (DEVMODEW *)malloc(dm_size);
-  if(!dm)
-  {
-    g_free(wprinter);
-    return false;
-  }
-  memcpy(dm, ctx->cached_dm, dm_size);
-
-  dm->dmFields |= DM_ORIENTATION;
-  dm->dmOrientation = pinfo->page.landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
-
-  dm->dmFields |= DM_ICMMETHOD;
-  if(pinfo->printer.profile[0] == '\0')
-  {
-    dm->dmICMMethod = DMICMMETHOD_DRIVER;
-    DBG_MARK("using printer profile via DMICMMETHOD_DRIVER");
-  }
-  else
-  {
-    dm->dmICMMethod = DMICMMETHOD_NONE;
-    DBG_MARK("using explicit profile via DMICMMETHOD_NONE");
-  }
-
-  HDC hdc = CreateDCW(L"WINSPOOL", wprinter, NULL, dm);
-  free(dm);
-  g_free(wprinter);
-
-  if(!hdc)
-  {
-    dt_control_log(_("cannot create DC for printer `%s'"), pinfo->printer.name);
-    return false;
-  }
-
-  int dpiX   = GetDeviceCaps(hdc, LOGPIXELSX);
-  int dpiY   = GetDeviceCaps(hdc, LOGPIXELSY);
-  int horzRes= GetDeviceCaps(hdc, HORZRES);
-  int vertRes= GetDeviceCaps(hdc, VERTRES);
-  int physW  = GetDeviceCaps(hdc, PHYSICALWIDTH);
-  int physH  = GetDeviceCaps(hdc, PHYSICALHEIGHT);
-  int offX   = GetDeviceCaps(hdc, PHYSICALOFFSETX);
-  int offY   = GetDeviceCaps(hdc, PHYSICALOFFSETY);
-
-  DBG_MARK("caps: dpi=(%d,%d) horzRes=%d vertRes=%d physW=%d physH=%d offX=%d offY=%d",
-           dpiX, dpiY, horzRes, vertRes, physW, physH, offX, offY);
-
-  wchar_t *wtitle = g_utf8_to_utf16(job_title, -1, NULL, NULL, NULL);
-  DOCINFOW di = {0};
-  di.cbSize = sizeof(di);
-  di.lpszDocName = wtitle;
-  di.lpszOutput = NULL;
-  di.lpszDatatype = NULL;
-  di.fwType = DI_APPBANDING;
-
-  bool ok = false;
-  if(StartDocW(hdc, &di) > 0)
-  {
-    if(StartPage(hdc) > 0)
-    {
-      SetICMMode(hdc, ICM_ON);
-      SetStretchBltMode(hdc, HALFTONE);
-      SetBrushOrgEx(hdc, 0, 0, NULL);
-
-      dt_win_dib_t *dibs = malloc(imgs->count * sizeof(dt_win_dib_t));
-
-      for(int i = 0; i < imgs->count; i++)
-      {
-        const dt_image_box *box = &imgs->box[i];
-
-        DBG_MARK("pre-render: box[%d] imgid=%d buf=%p exp=%dx%d", i,
-         box->imgid, box->buf,
-         box->exp_width, box->exp_height);
-
-        if(win_render_box_to_dib(box, &dibs[i]))
-        {
-
-          RECT r = compute_box_rect(box, hdc, dpiX, dpiY, pinfo->paper.width, pinfo->paper.height);
-DBG_MARK("printing box %d at (%d,%d %dx%d)", i,
-                   r.left, r.top, r.right - r.left, r.bottom - r.top);
-
-DBG_MARK("dib: width=%d height=%d pixels=%p bi=%p", dibs[i].width, dibs[i].height, dibs[i].pixels, dibs[i].bi);
-DBG_MARK("biBitCount=%d biSizeImage=%d", dibs[i].bi->bmiHeader.biBitCount, dibs[i].bi->bmiHeader.biSizeImage);
-DBG_MARK("RECT: left=%d top=%d right=%d bottom=%d", r.left, r.top, r.right, r.bottom);
-
-          int result = StretchDIBits(hdc,
-                                     r.left, r.top,
-                                     r.right - r.left, r.bottom - r.top,
-                                     0, 0, dibs[i].width, dibs[i].height,
-                                     dibs[i].pixels, dibs[i].bi,
-                                     DIB_RGB_COLORS, SRCCOPY);
-
-          if(result == GDI_ERROR)
-            DBG_MARK("StretchDIBits failed for box %d", i);
-          else
-            DBG_MARK("StretchDIBits succeeded for box %d", i);
-        }
-        else
-        {
-          DBG_MARK("skipping box %d: invalid DIB", i);
-        }
-      }
-
-      ok = true;
-      EndPage(hdc);
-
-      for (int i = 0; i < imgs->count; i++) {
-        g_free(dibs[i].pixels);
-        g_free(dibs[i].bi);
-      }
-      free(dibs);
-    }
-    EndDoc(hdc);
-  }
-
-  DeleteDC(hdc);
-  g_free(wtitle);
-
-  if(ok)
-    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
-  else
-    dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
-
-  DBG_MARK("leaving dt_win_print_file");
-  return ok;
- */}
+ return ok;
+}
 
 
 // Fill in hardware margins (in mm) for the given printer DC
@@ -1234,6 +1137,237 @@ DBG_MARK("layout: px=%.2f py=%.2f pwidth=%.2f pheight=%.2f ax=%.2f ay=%.2f aw=%.
          *px, *py, *pwidth, *pheight,
          *ax, *ay, *awidth, *aheight);
 }
+// //  PRINT HELPERS // //
+
+// mirrors dt_pdf_pixel_to_point for XPS printing: convert pixels to device-independent units (1/96 inch)
+static inline float _win_pixel_to_diu(float pixels, int resolution)
+{
+  return pixels / (float)resolution * 96.0f;
+}
+
+// mirrors dt_pdf_mm_to_point — for page-level dimensions, convert millimeters to device-independent units (1/96 inch)
+static inline float _win_mm_to_diu(float mm)
+{
+  return mm / 25.4f * 96.0f;
+}
+
+static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
+                                               IWICBitmapSource *bitmap,
+                                               IStream **stream_out)
+{
+  if(!wic || !bitmap || !stream_out) return E_POINTER;
+  *stream_out = NULL;
+
+  IStream *stream = NULL;
+  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, &stream);
+  if(FAILED(hr)) return hr;
+
+  IWICBitmapEncoder *encoder = NULL;
+  IWICBitmapFrameEncode *frame = NULL;
+
+  hr = wic->lpVtbl->CreateEncoder(wic, &GUID_ContainerFormatPng, NULL, &encoder);
+  if(SUCCEEDED(hr))
+  {
+    hr = encoder->lpVtbl->Initialize(encoder, stream, WICBitmapEncoderNoCache);
+    if(SUCCEEDED(hr))
+    {
+      hr = encoder->lpVtbl->CreateNewFrame(encoder, &frame, NULL);
+      if(SUCCEEDED(hr))
+      {
+        hr = frame->lpVtbl->Initialize(frame, NULL);
+        if(SUCCEEDED(hr))
+        {
+          UINT w = 0, h = 0;
+          bitmap->lpVtbl->GetSize(bitmap, &w, &h);
+
+          WICPixelFormatGUID format = GUID_WICPixelFormat24bppRGB;
+          hr = frame->lpVtbl->SetSize(frame, w, h);
+          if(SUCCEEDED(hr))
+            hr = frame->lpVtbl->SetPixelFormat(frame, &format);
+          if(SUCCEEDED(hr))
+            hr = frame->lpVtbl->WriteSource(frame, bitmap, NULL);
+          if(SUCCEEDED(hr))
+            hr = frame->lpVtbl->Commit(frame);
+        }
+        if(frame) frame->lpVtbl->Release(frame);
+      }
+      if(SUCCEEDED(hr))
+        hr = encoder->lpVtbl->Commit(encoder, NULL);
+    }
+    if(encoder) encoder->lpVtbl->Release(encoder);
+  }
+
+  if(SUCCEEDED(hr))
+  {
+    LARGE_INTEGER zero = {0};
+    stream->lpVtbl->Seek(stream, zero, STREAM_SEEK_SET, NULL);
+    *stream_out = stream;
+    return S_OK;
+  }
+
+  stream->lpVtbl->Release(stream);
+  return hr;
+}
+
+// Wraps box->buf as a WIC bitmap, encodes it as JPEG, and returns an XPS image
+// resource ready to place on a page. Caller owns releasing the returned resource.
+static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *factory,
+                                                   const dt_image_box *box,
+                                                   const void *icc_data,
+                                                   size_t icc_size)
+{
+  if(!factory || !box || !box->buf || box->exp_width <= 0 || box->exp_height <= 0)
+    return NULL;
+
+  IWICImagingFactory *wic = NULL;
+  IWICBitmap *bitmap = NULL;
+  IWICColorContext *color_ctx = NULL;
+  IXpsOMImageResource *resource = NULL;
+  IStream *img_stream = NULL;
+
+  HRESULT hr = CoCreateInstance(&CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER,
+                               &IID_IWICImagingFactory, (void **)&wic);
+  if(FAILED(hr) || !wic) return NULL;
+
+  const UINT stride = (UINT)box->exp_width * 3;
+  hr = wic->lpVtbl->CreateBitmapFromMemory(wic, box->exp_width, box->exp_height,
+                                         &GUID_WICPixelFormat24bppRGB,
+                                         stride, stride * box->exp_height,
+                                         (BYTE *)box->buf, &bitmap);
+
+  if(SUCCEEDED(hr) && bitmap && icc_data && icc_size > 0)
+  {
+    hr = wic->lpVtbl->CreateColorContext(wic, &color_ctx);
+    if(SUCCEEDED(hr) && color_ctx)
+      hr = color_ctx->lpVtbl->InitializeFromMemory(color_ctx,
+                                                 (const BYTE *)icc_data,
+                                                 (UINT)icc_size);
+    if(FAILED(hr))
+    {
+      color_ctx->lpVtbl->Release(color_ctx);
+      color_ctx = NULL;
+    }
+  }
+
+  if(SUCCEEDED(hr) && bitmap)
+  {
+    hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, &img_stream);
+    if(SUCCEEDED(hr) && img_stream)
+    {
+      hr = factory->lpVtbl->CreateImageResource(factory, img_stream,
+                                              XPS_IMAGE_TYPE_PNG, NULL,
+                                              &resource);
+      if(SUCCEEDED(hr) && resource && color_ctx)
+        resource->lpVtbl->SetColorContext(resource, color_ctx);
+      img_stream->lpVtbl->Release(img_stream);
+    }
+  }
+
+  if(color_ctx) color_ctx->lpVtbl->Release(color_ctx);
+  if(bitmap) bitmap->lpVtbl->Release(bitmap);
+  if(wic) wic->lpVtbl->Release(wic);
+
+  return resource;
+}
+
+// Adds one positioned image to an already-open XPS page.
+static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
+                                       IXpsOMPage *page,
+                                       IXpsOMImageResource *resource,
+                                       const dt_image_box *box,
+                                       int resolution)
+{
+  if(!factory || !page || !resource || !box) return E_POINTER;
+
+  const float x = _win_pixel_to_diu(box->print.x, resolution);
+  const float y = _win_pixel_to_diu(box->print.y, resolution);
+  const float w = _win_pixel_to_diu(box->print.width, resolution);
+  const float h = _win_pixel_to_diu(box->print.height, resolution);
+
+  IXpsOMPath *path = NULL;
+  IXpsOMImageBrush *brush = NULL;
+  IXpsOMGeometry *geom = NULL;
+  IXpsOMGeometryFigure *figure = NULL;
+  IXpsOMGeometryFigureCollection *figures = NULL;
+  IXpsOMVisualCollection *visuals = NULL;
+
+  XPS_RECT viewbox = { 0.0f, 0.0f, (float)box->exp_width, (float)box->exp_height };
+  XPS_RECT viewport = { x, y, w, h };
+
+  HRESULT hr = factory->lpVtbl->CreateImageBrush(factory, resource, &viewbox, &viewport, &brush);
+  if(FAILED(hr)) return hr;
+
+  hr = factory->lpVtbl->CreatePath(factory, &path);
+  if(FAILED(hr)) goto cleanup;
+
+  hr = factory->lpVtbl->CreateGeometry(factory, &geom);
+  if(FAILED(hr)) goto cleanup;
+
+  hr = factory->lpVtbl->CreateGeometryFigure(factory, &(XPS_POINT){x, y}, &figure);
+  if(FAILED(hr)) goto cleanup;
+
+  // Rectangle: start at (x, y), then line to (x+w, y), (x+w, y+h), (x, y+h), and close.
+  static const XPS_SEGMENT_TYPE seg_types[] = {
+    XPS_SEGMENT_TYPE_LINE,
+    XPS_SEGMENT_TYPE_LINE,
+    XPS_SEGMENT_TYPE_LINE,
+    XPS_SEGMENT_TYPE_LINE
+  };
+  static const FLOAT seg_data[] = {
+    x + w, y,
+    x + w, y + h,
+    x,     y + h,
+    x,     y
+  };
+  static const WINBOOL seg_strokes[] = { TRUE, TRUE, TRUE, TRUE };
+
+  hr = figure->lpVtbl->SetSegments(figure,
+                                 4,
+                                 8,
+                                 seg_types,
+                                 seg_data,
+                                 seg_strokes);
+  if(SUCCEEDED(hr))
+    hr = figure->lpVtbl->SetIsClosed(figure, TRUE);
+  if(SUCCEEDED(hr))
+    hr = figure->lpVtbl->SetIsFilled(figure, TRUE);
+
+  if(SUCCEEDED(hr))
+  {
+    hr = geom->lpVtbl->GetFigures(geom, &figures);
+    if(SUCCEEDED(hr) && figures)
+      hr = figures->lpVtbl->Append(figures, figure);
+  }
+
+  if(SUCCEEDED(hr))
+  {
+    hr = path->lpVtbl->SetGeometryLocal(path, geom);
+    if(SUCCEEDED(hr))
+      hr = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
+    if(SUCCEEDED(hr))
+    {
+      hr = page->lpVtbl->GetVisuals(page, &visuals);
+      if(SUCCEEDED(hr) && visuals)
+        hr = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
+    }
+  }
+
+cleanup:
+  if(figures) figures->lpVtbl->Release(figures);
+  if(figure) figure->lpVtbl->Release(figure);
+  if(geom) geom->lpVtbl->Release(geom);
+  if(brush) brush->lpVtbl->Release(brush);
+  if(path) path->lpVtbl->Release(path);
+  if(visuals) visuals->lpVtbl->Release(visuals);
+
+  return hr;
+}
+
+
+
+
+
+
 
 // // Compute the destination rectangle in device units (pixels on printer DC)
 // RECT compute_target_rect(const dt_print_info_t *pinfo,
