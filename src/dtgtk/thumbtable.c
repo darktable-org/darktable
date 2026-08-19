@@ -2517,29 +2517,27 @@ static void _event_dnd_get(GtkWidget *widget,
         GList *l = table->drag_list;
 
         int idx = 0;
-        // make sure that imgs[0] is the last selected imgid, that is the
-        // one clicked when starting the d&d.
-        if(dt_is_valid_imgid(darktable.control->last_clicked_filmstrip_id))
-        {
-          imgs[idx] = darktable.control->last_clicked_filmstrip_id;
-          idx++;
-        }
+        // Put the drag origin first only if it belongs to the stable drag set.
+        // A pointer grab can change the transient hover before drag-begin; it
+        // must never inject that unrelated image and displace a selected one.
+        const dt_imgid_t origin = darktable.control->last_clicked_filmstrip_id;
+        const gboolean have_origin =
+          dt_is_valid_imgid(origin)
+          && g_list_find(table->drag_list, GINT_TO_POINTER(origin));
+        if(have_origin)
+          imgs[idx++] = origin;
 
         while(l)
         {
           const dt_imgid_t id = GPOINTER_TO_INT(l->data);
-          if(id != imgs[0])
-          {
-            imgs[idx] = id;
-            idx++;
-            if(idx >= imgs_nb)
-              break;
-          }
+          if(!have_origin || id != origin)
+            imgs[idx++] = id;
           l = g_list_next(l);
         }
         gtk_selection_data_set(selection_data,
                                gtk_selection_data_get_target(selection_data),
-                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(dt_imgid_t));
+                               _DWORD, (guchar *)imgs, idx * sizeof(dt_imgid_t));
+        free(imgs);
       }
       break;
     }
@@ -2593,9 +2591,23 @@ static void _event_dnd_begin(GtkWidget *widget,
 {
   const int ts = DT_PIXEL_APPLY_DPI(128);
 
-  darktable.control->last_clicked_filmstrip_id =
-    dt_control_get_mouse_over_id();
+  const dt_imgid_t hover = dt_control_get_mouse_over_id();
+  darktable.control->last_clicked_filmstrip_id = hover;
   table->drag_list = dt_act_on_get_images(FALSE, TRUE, TRUE);
+
+  GList *selection = dt_selection_get_list(darktable.selection, FALSE, TRUE);
+  // DnD owns a stable snapshot keyed by the actual drag origin. Dragging a
+  // selected image moves the selection; dragging an unselected image moves
+  // only that image. Do not let the generic act-on fallback substitute an
+  // unrelated selection if hover/grab state changes during GTK3 drag setup.
+  if(dt_is_valid_imgid(hover))
+  {
+    g_list_free(table->drag_list);
+    table->drag_list = g_list_find(selection, GINT_TO_POINTER(hover))
+                       ? g_list_copy(selection)
+                       : g_list_append(NULL, GINT_TO_POINTER(hover));
+  }
+  g_list_free(selection);
 
 #ifdef HAVE_MAP
   dt_view_manager_t *vm = darktable.view_manager;
@@ -2603,9 +2615,14 @@ static void _event_dnd_begin(GtkWidget *widget,
   if(!strcmp(view->module_name, "map"))
   {
     if(table->drag_list)
-      dt_view_map_drag_set_icon(darktable.view_manager, context,
-                                GPOINTER_TO_INT(table->drag_list->data),
+    {
+      const dt_imgid_t icon_id =
+        dt_is_valid_imgid(hover)
+        && g_list_find(table->drag_list, GINT_TO_POINTER(hover))
+        ? hover : GPOINTER_TO_INT(table->drag_list->data);
+      dt_view_map_drag_set_icon(darktable.view_manager, context, icon_id,
                                 g_list_length(table->drag_list));
+    }
   }
   else
 #endif
