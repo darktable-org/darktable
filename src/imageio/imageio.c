@@ -1660,6 +1660,23 @@ static gboolean _compute_sha1sum(const char *filename,
   return ok;
 }
 
+// Whether dt_imageio_open() should (re)compute the sha1sum + filesize
+// identity for an image: yes if none is recorded yet, or if the
+// file's current size no longer matches what was recorded -- catches
+// a stale/foreign checksum (e.g. copied from another image's sidecar)
+// as well as a genuinely replaced file. If stat() itself failed we
+// can't tell either way, so an existing value is trusted rather than
+// unnecessarily rehashed.
+gboolean dt_imageio_identity_needs_recompute(const gboolean has_checksum,
+                                             const uint64_t recorded_filesize,
+                                             const gboolean stat_ok,
+                                             const uint64_t actual_filesize)
+{
+  if(!has_checksum)
+    return TRUE;
+  return stat_ok && (recorded_filesize != actual_filesize);
+}
+
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf)
@@ -1714,13 +1731,18 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   img->p_height = img->height - img->crop_y - img->crop_bottom;
 
   // lazily compute image identity (sha1sum + filesize) on first
-  // successful full read, opt-in only, and only once per image -- a
-  // failed/unsupported load has nothing worth identifying.
-  if((ret == DT_IMAGEIO_OK)
-     && !(img->flags & DT_IMAGE_HAS_SHA1SUM)
-     && dt_conf_get_bool("plugins/darkroom/compute_checksum"))
+  // successful full read, opt-in only -- a failed/unsupported load has
+  // nothing worth identifying. Also recomputed if the size on disk no
+  // longer matches a previously recorded value (see
+  // dt_imageio_identity_needs_recompute()).
+  if((ret == DT_IMAGEIO_OK) && dt_conf_get_bool("plugins/darkroom/compute_checksum"))
   {
-    if(_compute_sha1sum(filename, img->sha1sum, &img->filesize))
+    GStatBuf st;
+    const gboolean stat_ok = (g_stat(filename, &st) == 0);
+    if(dt_imageio_identity_needs_recompute(img->flags & DT_IMAGE_HAS_SHA1SUM,
+                                           img->filesize, stat_ok,
+                                           (uint64_t)st.st_size)
+       && _compute_sha1sum(filename, img->sha1sum, &img->filesize))
       img->flags |= DT_IMAGE_HAS_SHA1SUM;
   }
 
