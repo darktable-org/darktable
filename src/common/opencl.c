@@ -1223,6 +1223,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->error_count = 0;
   cl->fastcl = dt_conf_get_bool("opencl_fast");
   cl->fast_tiling = options & DT_OPENCL_OPTION_FAST_TILE;
+  cl->no_fast_tiling = (options & DT_OPENCL_OPTION_NOFAST_TILE) || dt_conf_get_bool("no_opencl_fast_tiling");
   cl->spurious = options & DT_OPENCL_OPTION_SPURIOS;
   cl->migrate = options & DT_OPENCL_OPTION_MIGRATE;
 #if CL_TARGET_OPENCL_VERSION == 300
@@ -1629,7 +1630,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_heal_free_cl_global(cl->heal);
     dt_colorspaces_free_cl_global(cl->colorspaces);
     dt_guided_filter_free_cl_global(cl->guided_filter);
-
+    dt_local_laplacian_free_cl_global(cl->local_laplacian);
     for(int i = 0; i < cl->num_devs; i++)
     {
       _cleanup_cl_device_context(cl, i);
@@ -3776,7 +3777,7 @@ dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
 
   // fast internal OpenCL tiling possible and with a good bet on performance?
   const gboolean good_bet = (tlines - 2*overlap) > (tlines / 5);
-  return good_bet ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
+  return good_bet && !cl->no_fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
 }
 
 /** round size to a multiple of the value given in the device specifig

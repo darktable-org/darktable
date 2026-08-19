@@ -72,6 +72,11 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
+            libopencv-calib3d-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-flann-dev \
+            libopencv-imgproc-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -258,6 +263,7 @@ jobs:
             libxml2:p
             lua54:p
             omp:p
+            opencv:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p
@@ -376,6 +382,9 @@ jobs:
           popd
       - name: Install Base Dependencies
         run: |
+          # The GitHub runner images ship aws/tap, which Homebrew does not trust and
+          # thus warns about on every invocation. We don't use it, so drop it.
+          brew untap --force aws/tap || true
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1

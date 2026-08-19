@@ -16,21 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "develop/imageop.h"         // for IOP_CS_RGB
-#include "imageio/imageio_pfm.h"
-#include "common/pfm.h"
-#include "common/imagebuf.h"
+#include <stddef.h>              // for size_t
 
-#include <errno.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <strings.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
+#include "common/colorspaces.h"  // for IOP_CS_RGB
+#include "common/imagebuf.h"     // for dt_iop_image_copy
+#include "common/mipmap_cache.h" // for dt_mipmap_cache_alloc
+#include "common/pfm.h"          // for dt_read_pfm
 
 dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
                                         const char *filename,

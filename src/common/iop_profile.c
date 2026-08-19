@@ -1483,6 +1483,55 @@ void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_p
   *_dev_profile_lut = NULL;
 }
 
+/** Converts an image whose source and target are the same buffer.
+
+    The conversion kernels take their source as read_only and their target as write_only,
+    and OpenCL leaves the result undefined when one image object is bound as both (see
+    clSetKernelArg). Rather than converting a buffer onto itself, this allocates a second
+    image, converts into it, and hands it back in place of the original, which is then
+    released. Callers therefore end up with converted contents in a different object.
+
+    Peak use is two images for the duration of the call, so callers close to the device
+    memory limit should account for the extra one.
+
+    On failure the original buffer is left untouched and still owned by the caller. */
+gboolean dt_ioppr_transform_image_colorspace_replace_cl
+  (struct dt_iop_module_t *self,
+   const int devid,
+   cl_mem *dev_img,
+   const int width,
+   const int height,
+   const dt_iop_colorspace_type_t cst_from,
+   const dt_iop_colorspace_type_t cst_to,
+   dt_iop_colorspace_type_t *converted_cst,
+   const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  if(dev_img == NULL || *dev_img == NULL) return FALSE;
+
+  // Nothing to do, and no reason to spend an allocation on it.
+  if(cst_from == cst_to)
+  {
+    *converted_cst = cst_to;
+    return TRUE;
+  }
+
+  cl_mem replacement = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(replacement == NULL) return FALSE;
+
+  const gboolean ok = dt_ioppr_transform_image_colorspace_cl(self, devid, *dev_img, replacement,
+                                                             width, height, cst_from, cst_to,
+                                                             converted_cst, profile_info);
+  if(!ok)
+  {
+    dt_opencl_release_mem_object(replacement);
+    return FALSE;
+  }
+
+  dt_opencl_release_mem_object(*dev_img);
+  *dev_img = replacement;
+  return TRUE;
+}
+
 gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
                                                 const int devid,
                                                 cl_mem dev_img_in,
