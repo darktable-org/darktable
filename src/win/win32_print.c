@@ -47,6 +47,9 @@
 #include <wingdi.h>
 #include <wincodec.h>
 #include <xpsprint.h>
+#include <xpsobjectmodel.h>
+#include <msopc.h>
+#include <strsafe.h>
 #include "win/win32_print.h"
 
 
@@ -911,9 +914,46 @@ static inline float _win_mm_to_diu(float mm)
   return mm / 25.4f * 96.0f;
 }
 
+static IXpsOMColorProfileResource *_win_build_color_profile_resource(IXpsOMObjectFactory *factory,
+                                                                    const void *icc_data,
+                                                                    size_t icc_size,
+                                                                    const wchar_t *name)
+{
+  if(!factory || !icc_data || icc_size == 0 || !name)
+    return NULL;
+
+  IStream *profile_stream = NULL;
+  IOpcPartUri *part_uri = NULL;
+  IXpsOMColorProfileResource *profile_resource = NULL;
+
+  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, &profile_stream);
+  if(FAILED(hr)) return NULL;
+
+  ULONG written = 0;
+  hr = profile_stream->lpVtbl->Write(profile_stream, icc_data, (ULONG)icc_size, &written);
+  if(SUCCEEDED(hr))
+  {
+    LARGE_INTEGER zero = {0};
+    profile_stream->lpVtbl->Seek(profile_stream, zero, STREAM_SEEK_SET, NULL);
+
+    hr = factory->lpVtbl->CreatePartUri(factory, name, &part_uri);
+    if(SUCCEEDED(hr) && part_uri)
+    {
+      hr = factory->lpVtbl->CreateColorProfileResource(factory,
+                                                       profile_stream,
+                                                       part_uri,
+                                                       &profile_resource);
+      part_uri->lpVtbl->Release(part_uri);
+    }
+  }
+
+  profile_stream->lpVtbl->Release(profile_stream);
+  return profile_resource;
+}
+
 static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
-                                               IWICBitmapSource *bitmap,
-                                               IStream **stream_out)
+                                                IWICBitmapSource *bitmap,
+                                                IStream **stream_out)
 {
   if(!wic || !bitmap || !stream_out) return E_POINTER;
   *stream_out = NULL;
@@ -952,7 +992,7 @@ static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
         if(frame) frame->lpVtbl->Release(frame);
       }
       if(SUCCEEDED(hr))
-        hr = encoder->lpVtbl->Commit(encoder, NULL);
+        hr = encoder->lpVtbl->Commit(encoder);
     }
     if(encoder) encoder->lpVtbl->Release(encoder);
   }
@@ -969,61 +1009,63 @@ static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
   return hr;
 }
 
-// Wraps box->buf as a WIC bitmap, encodes it as JPEG, and returns an XPS image
+// Wraps box->buf as a WIC bitmap, encodes it as PNG, and returns an XPS image
 // resource ready to place on a page. Caller owns releasing the returned resource.
 static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *factory,
-                                                   const dt_image_box *box,
-                                                   const void *icc_data,
-                                                   size_t icc_size)
+                                                    const dt_image_box *box,
+                                                    int image_index)
 {
   if(!factory || !box || !box->buf || box->exp_width <= 0 || box->exp_height <= 0)
     return NULL;
 
   IWICImagingFactory *wic = NULL;
   IWICBitmap *bitmap = NULL;
-  IWICColorContext *color_ctx = NULL;
   IXpsOMImageResource *resource = NULL;
   IStream *img_stream = NULL;
+  IOpcPartUri *part_uri = NULL;
 
-  HRESULT hr = CoCreateInstance(&CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER,
-                               &IID_IWICImagingFactory, (void **)&wic);
-  if(FAILED(hr) || !wic) return NULL;
+  HRESULT hr = CoCreateInstance(&CLSID_WICImagingFactory,
+                                NULL,
+                                CLSCTX_INPROC_SERVER,
+                                &IID_IWICImagingFactory,
+                                (void **)&wic);
+  if(FAILED(hr) || !wic)
+    return NULL;
 
   const UINT stride = (UINT)box->exp_width * 3;
-  hr = wic->lpVtbl->CreateBitmapFromMemory(wic, box->exp_width, box->exp_height,
-                                         &GUID_WICPixelFormat24bppRGB,
-                                         stride, stride * box->exp_height,
-                                         (BYTE *)box->buf, &bitmap);
-
-  if(SUCCEEDED(hr) && bitmap && icc_data && icc_size > 0)
-  {
-    hr = wic->lpVtbl->CreateColorContext(wic, &color_ctx);
-    if(SUCCEEDED(hr) && color_ctx)
-      hr = color_ctx->lpVtbl->InitializeFromMemory(color_ctx,
-                                                 (const BYTE *)icc_data,
-                                                 (UINT)icc_size);
-    if(FAILED(hr))
-    {
-      color_ctx->lpVtbl->Release(color_ctx);
-      color_ctx = NULL;
-    }
-  }
+  hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
+                                           box->exp_width,
+                                           box->exp_height,
+                                           &GUID_WICPixelFormat24bppRGB,
+                                           stride,
+                                           stride * box->exp_height,
+                                           (BYTE *)box->buf,
+                                           &bitmap);
 
   if(SUCCEEDED(hr) && bitmap)
   {
     hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, &img_stream);
     if(SUCCEEDED(hr) && img_stream)
     {
-      hr = factory->lpVtbl->CreateImageResource(factory, img_stream,
-                                              XPS_IMAGE_TYPE_PNG, NULL,
-                                              &resource);
-      if(SUCCEEDED(hr) && resource && color_ctx)
-        resource->lpVtbl->SetColorContext(resource, color_ctx);
+      wchar_t uri[64];
+      hr = StringCchPrintfW(uri, G_N_ELEMENTS(uri), L"/Resources/image_%d.png", image_index);
+      if(SUCCEEDED(hr))
+      {
+        hr = factory->lpVtbl->CreatePartUri(factory, uri, &part_uri);
+        if(SUCCEEDED(hr) && part_uri)
+        {
+          hr = factory->lpVtbl->CreateImageResource(factory,
+                                                    img_stream,
+                                                    XPS_IMAGE_TYPE_PNG,
+                                                    part_uri,
+                                                    &resource);
+          part_uri->lpVtbl->Release(part_uri);
+        }
+      }
       img_stream->lpVtbl->Release(img_stream);
     }
   }
 
-  if(color_ctx) color_ctx->lpVtbl->Release(color_ctx);
   if(bitmap) bitmap->lpVtbl->Release(bitmap);
   if(wic) wic->lpVtbl->Release(wic);
 
@@ -1034,6 +1076,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
 static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
                                        IXpsOMPage *page,
                                        IXpsOMImageResource *resource,
+                                       IXpsOMColorProfileResource *profile_resource,
                                        const dt_image_box *box,
                                        int resolution)
 {
@@ -1056,6 +1099,15 @@ static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
 
   HRESULT hr = factory->lpVtbl->CreateImageBrush(factory, resource, &viewbox, &viewport, &brush);
   if(FAILED(hr)) return hr;
+
+  if(profile_resource)
+  {
+    hr = brush->lpVtbl->SetColorProfileResource(brush, profile_resource);
+    if(FAILED(hr))
+      DBG_MARK("SetColorProfileResource failed: hr=0x%08lx", hr);
+    // deliberately not fatal — worth seeing whether output looks right
+    // even if this call fails, rather than aborting the whole page
+  }
 
   hr = factory->lpVtbl->CreatePath(factory, &path);
   if(FAILED(hr)) goto cleanup;
@@ -1131,16 +1183,16 @@ PRINT JOB MANAGEMENT
 
 ______________________________________________________________________________________  */
 bool dt_win_print_file(const dt_images_box *imgs,
-                        const char *job_title,
-                        const dt_print_info_t *pinfo,
-                        const void *print_ticket_data,
-                        size_t print_ticket_size,
-                        void *icc_data, size_t icc_size,
-                        float width, float height)
-  {
+                       const char *job_title,
+                       const dt_print_info_t *pinfo,
+                       const void *print_ticket_data,
+                       size_t print_ticket_size,
+                       void *icc_data, size_t icc_size,
+                       float width, float height)
+{
   DBG_MARK("entering dt_win_print_file");
 
-  if(imgs->count <= 0)
+  if(!imgs || imgs->count <= 0)
   {
     dt_control_log(_("no images to print on `%s'"), pinfo->printer.name);
     return false;
@@ -1150,10 +1202,8 @@ bool dt_win_print_file(const dt_images_box *imgs,
   const float page_height = _win_mm_to_diu(height);
 
   if(!_win_xpsprint_ensure_loaded())
-  return false;   // logged inside the helper already
-  
-  // This runs on the background job thread — COM must be explicitly
-  // initialized here, it's not inherited from the GUI thread.
+    return false;
+
   HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
   bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
   if(!co_initialized)
@@ -1173,87 +1223,106 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
   if(wprinter && wtitle && completionEvent && pStartXpsPrintJob)
   {
-    hr = pStartXpsPrintJob(wprinter, wtitle, NULL, NULL, completionEvent,
-                          NULL, 0, &xpsJob, &docStream, &ticketStream);
+    hr = pStartXpsPrintJob(wprinter, wtitle,
+                           NULL, NULL, completionEvent,
+                           NULL, 0,
+                           &xpsJob, &docStream, &ticketStream);
     if(SUCCEEDED(hr))
     {
-     if(print_ticket_data && print_ticket_size > 0)
-       ticketStream->lpVtbl->Write(ticketStream, print_ticket_data,
-                                  (ULONG)print_ticket_size, NULL);
+      if(print_ticket_data && print_ticket_size > 0)
+      {
+        ULONG bytes_written = 0;
+        hr = ticketStream->lpVtbl->Write(ticketStream,
+                                        print_ticket_data,
+                                        (ULONG)print_ticket_size,
+                                        &bytes_written);
+        (void)bytes_written;
+      }
 
-     IXpsOMObjectFactory *factory = NULL;
-     hr = CoCreateInstance(&CLSID_XpsOMObjectFactory, NULL, CLSCTX_INPROC_SERVER,
-                           &IID_IXpsOMObjectFactory, (void **)&factory);
+      IXpsOMObjectFactory *factory = NULL;
+      hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
+                            NULL,
+                            CLSCTX_INPROC_SERVER,
+                            &IID_IXpsOMObjectFactory,
+                            (void **)&factory);
 
-     if(SUCCEEDED(hr) && factory)
-     {
-       IXpsOMPackageWriter *writer = NULL;
-       hr = factory->lpVtbl->CreatePackageWriterOnStream(factory, docStream,
-                                                         FALSE,
-                                                         XPS_INTERLEAVING_OFF,
-                                                         NULL,
-                                                         NULL,
-                                                         NULL,
-                                                         NULL,
-                                                         NULL,
-                                                         &writer);
+      if(SUCCEEDED(hr) && factory)
+      {
+        IXpsOMPackageWriter *writer = NULL;
+        hr = factory->lpVtbl->CreatePackageWriterOnStream(factory,
+                                                          docStream,
+                                                          FALSE,
+                                                          XPS_INTERLEAVING_OFF,
+                                                          NULL,
+                                                          NULL,
+                                                          NULL,
+                                                          NULL,
+                                                          NULL,
+                                                          &writer);
 
-       if(SUCCEEDED(hr) && writer)
-       {
-         writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
+        if(SUCCEEDED(hr) && writer)
+        {
+          writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
 
-         IXpsOMPage *page = NULL;
-         XPS_SIZE page_size = { page_width, page_height };
-         hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", NULL, &page);
-         if(SUCCEEDED(hr) && page)
-         {
-           for(int i = 0; i < imgs->count; i++)
-           {
-             const dt_image_box *box = &imgs->box[i];
-             IXpsOMImageResource *res = _win_build_image_resource(factory, box, icc_data, icc_size);
-             if(res)
-             {
-               _win_place_image_on_page(factory, page, res, box, pinfo->printer.resolution);
-               res->lpVtbl->Release(res);
-             }
-           }
+          IXpsOMPage *page = NULL;
+          XPS_SIZE page_size = { page_width, page_height };
 
-           writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
-           page->lpVtbl->Release(page);
-         }
+          hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", NULL, &page);
 
-         writer->lpVtbl->Close(writer);
-         writer->lpVtbl->Release(writer);
-         ok = true;
-       }
-       factory->lpVtbl->Release(factory);
-     }
+          IXpsOMColorProfileResource *profile_resource = NULL;
+          if(icc_data && icc_size > 0)
+            profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/Colors/OutputProfile.icc");
 
-     if(docStream) docStream->lpVtbl->Close(docStream);
-     if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
+          if(SUCCEEDED(hr) && page)
+          {
+            for(int i = 0; i < imgs->count; i++)
+            {
+              const dt_image_box *box = &imgs->box[i];
+              IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
+              if(res)
+              {
+                _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution);
+                res->lpVtbl->Release(res);
+              }
+            }
 
-     WaitForSingleObject(completionEvent, INFINITE);
-   }
-   else
-   {
-     dt_control_log(_("could not start XPS print job on `%s'"), pinfo->printer.name);
-   }
- }
+            writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
+            profile_resource->lpVtbl->Release(profile_resource);
+            page->lpVtbl->Release(page);
+          }
 
- if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
- if(completionEvent) CloseHandle(completionEvent);
- g_free(wprinter);
- g_free(wtitle);
- if(co_initialized) CoUninitialize();
+          writer->lpVtbl->Close(writer);
+          writer->lpVtbl->Release(writer);
+          ok = true;
+        }
 
- if(ok)
-   dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
- else
-   dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
+        factory->lpVtbl->Release(factory);
+      }
 
- return ok;
+      if(docStream) docStream->lpVtbl->Close(docStream);
+      if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
+
+      WaitForSingleObject(completionEvent, INFINITE);
+    }
+    else
+    {
+      dt_control_log(_("could not start XPS print job on `%s'"), pinfo->printer.name);
+    }
+  }
+
+  if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
+  if(completionEvent) CloseHandle(completionEvent);
+  g_free(wprinter);
+  g_free(wtitle);
+  if(co_initialized) CoUninitialize();
+
+  if(ok)
+    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
+  else
+    dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
+
+  return ok;
 }
-
 
 // Fill in hardware margins (in mm) for the given printer DC
 void dt_populate_hw_margins(HDC hdc, dt_printer_info_t *printer)
