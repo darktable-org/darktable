@@ -159,8 +159,21 @@ void dt_ai_models_refresh_status(void);
  *        UPDATE_REQUIRED means darktable cannot use the installed
  *        model with the current code; UPDATE_AVAILABLE is a soft
  *        nudge — the installed model still works.
+ *
+ * @param force TRUE for a check the user explicitly asked for: it runs
+ *        regardless of plugins/ai/auto_check_updates and repeats within
+ *        a session. FALSE for automatic checks, which honour the
+ *        preference and run at most once per session.
  */
-void dt_ai_models_check_updates(void);
+void dt_ai_models_check_updates(const gboolean force);
+
+/**
+ * @brief How many repositories failed to answer the last update check.
+ *        Only meaningful once DT_SIGNAL_AI_UPDATE_CHECK_DONE has fired.
+ *        Non-zero means "we could not ask", which is not the same as
+ *        "nothing newer was published".
+ */
+int dt_ai_models_last_check_failures(void);
 
 /**
  * @brief Clean up and free the registry singleton (sets it to NULL).
