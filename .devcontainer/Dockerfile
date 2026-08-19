@@ -103,6 +103,17 @@ RUN eatmydata apt-get update && eatmydata apt-get --yes install \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install packages useful for building AppImages for GUI testing on host machine
+# TODO: Remove this layer once we have a dedicated AppImage container
+RUN eatmydata apt-get update && eatmydata apt-get --yes install \
+    # Required for building AppImages
+    wget \
+    # OpenCL support (optional GPU acceleration)
+    ocl-icd-opencl-dev \
+    # JXL image format
+    libjxl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory
 WORKDIR /workspace
 
