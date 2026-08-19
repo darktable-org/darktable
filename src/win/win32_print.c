@@ -1275,6 +1275,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
         DBG_MARK("CreateStreamOnHGlobal: hr=0x%08lx package_stream=%p",
                  hr, (void *)package_stream);
+        IOpcPartUri *doc_seq_uri = NULL;
+        hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_seq_uri);
+        DBG_MARK("CreatePartUri: hr=0x%08lx doc_seq_uri=%p", hr, (void *)doc_seq_uri);
 
         if(SUCCEEDED(hr) && package_stream)
         {
@@ -1285,7 +1288,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   (ISequentialStream *)package_stream,
                   FALSE,
                   XPS_INTERLEAVING_OFF,
-                  NULL,
+                  doc_seq_uri,
                   NULL,
                   NULL,
                   NULL,
@@ -1294,6 +1297,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
           DBG_MARK("CreatePackageWriterOnStream: hr=0x%08lx writer=%p",
                    hr, (void *)writer);
+            doc_seq_uri->lpVtbl->Release(doc_seq_uri);
 
           if(SUCCEEDED(hr) && writer)
           {
@@ -1302,8 +1306,16 @@ bool dt_win_print_file(const dt_images_box *imgs,
             IXpsOMPage *page = NULL;
             XPS_SIZE page_size = { page_width, page_height };
 
-            hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", NULL, &page);
+            IOpcPartUri *page_uri = NULL;
+            hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc/Pages/1.fpage", &page_uri);
+            DBG_MARK("CreatePartUri: hr=0x%08lx page_uri=%p", hr, (void *)page_uri);
+            
+            if(SUCCEEDED(hr) && page_uri)
+            {
+            hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", page_uri, &page);
             DBG_MARK("CreatePage: hr=0x%08lx page=%p", hr, (void *)page);
+            page_uri->lpVtbl->Release(page_uri);
+            }
 
             IXpsOMColorProfileResource *profile_resource = NULL;
             if(icc_data && icc_size > 0)
