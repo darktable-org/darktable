@@ -455,6 +455,13 @@
     <longdescription>enable AI-powered features such as denoising and upscaling using neural networks</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/ai/auto_check_updates</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>automatically check for model updates</shortdescription>
+    <longdescription>contact the model repositories to look for newer versions of the installed AI models. when off, updates are only looked for when you ask for them in the AI preferences</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/ai/provider</name>
     <type>string</type>
     <default>auto</default>
