@@ -222,6 +222,17 @@ void process(dt_iop_module_t *self,
   const float detail = -1.0f; // bilateral base layer
 
   dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+  if(!b)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[monochrome] error: memory allocation failed for bilateral filter, the module does nothing");
+    dt_control_log(_("error: bilateral filter failed to allocate memory, check your RAM usage!"));
+    // Copy the input buffer to the output buffer, making the processing no-op
+    // Another possible option is to not copy the buffer so that the garbage
+    // output will be more likely to draw the user's attention to the warning
+    // that the operation cannot be performed
+    dt_iop_copy_image_roi(o, i, piece->colors, roi_in, roi_out);
+    return;
+  }
   dt_bilateral_splat(b, (float *)o);
   dt_bilateral_blur(b);
   dt_bilateral_slice(b, (float *)o, (float *)o, detail);
