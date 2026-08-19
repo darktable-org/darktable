@@ -19,7 +19,8 @@
 #pragma once
 
 #include <glib.h>
-
+#include <wincodec.h>
+#include <xpsprint.h>
 
 G_BEGIN_DECLS
 
