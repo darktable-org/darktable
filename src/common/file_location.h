@@ -19,6 +19,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <stdio.h>
 #include <string.h>
 
 G_BEGIN_DECLS
@@ -31,6 +32,11 @@ G_BEGIN_DECLS
 
 // Returns the users home directory
 gchar *dt_loc_get_home_dir(const gchar *user);
+
+// Print the already-resolved darktable.* paths plus library_path,
+// either as an aligned human-readable table or as a single line of
+// ready-to-splice --flag value pairs.
+void dt_loc_print_paths(FILE *out, const char *library_path, gboolean as_flags);
 
 // Init all dirs
 uint8_t dt_loc_init(const char *datadir,
