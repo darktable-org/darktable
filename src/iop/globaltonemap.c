@@ -298,6 +298,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(data->detail != 0.0f)
   {
     b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+    if(!b)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[globaltonemap] error: memory allocation failed for bilateral filter, the module does nothing");
+      dt_control_log(_("error: bilateral filter failed to allocate memory, check your RAM usage!"));
+      // Copy the input buffer to the output buffer, making the processing no-op
+      // Another possible option is to not copy the buffer so that the garbage
+      // output will be more likely to draw the user's attention to the warning
+      // that the operation cannot be performed
+      dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
+      return;
+    }
     // get detail from unchanged input buffer
     dt_bilateral_splat(b, (float *)ivoid);
   }

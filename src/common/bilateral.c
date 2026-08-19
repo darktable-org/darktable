@@ -201,13 +201,14 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 DT_OMP_DECLARE_SIMD(aligned(in:64))
 void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
 {
+  if(!b || !b->buf) return;
+
   const int ox = b->size_z;
   const int oy = b->size_x * b->size_z;
   const int oz = 1;
   const float sigma_s = b->sigma_s * b->sigma_s;
   float *const buf = b->buf;
 
-  if(!buf) return;
   // splat into downsampled grid
   const int nthreads = dt_get_num_threads();
   const size_t offsets[8] =
@@ -379,8 +380,7 @@ static void blur_line(float *buf,
 
 void dt_bilateral_blur(const dt_bilateral_t *b)
 {
-  if(!b || !b->buf)
-    return;
+  if(!b || !b->buf) return;
 
   const int ox = b->size_z;
   const int oy = b->size_x * b->size_z;
@@ -400,6 +400,8 @@ void dt_bilateral_slice(const dt_bilateral_t *const b,
                         float *out,
                         const float detail)
 {
+  if(!b || !b->buf) return;
+
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
   const int ox = b->size_z;
@@ -409,7 +411,6 @@ void dt_bilateral_slice(const dt_bilateral_t *const b,
   const int width = b->width;
   const int height = b->height;
 
-  if(!buf) return;
   DT_OMP_FOR(collapse(2))
   for(int j = 0; j < height; j++)
   {
@@ -442,6 +443,8 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
                                   float *out,
                                   const float detail)
 {
+  if(!b || !b->buf) return;
+
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
   const int ox = b->size_z;
@@ -451,7 +454,6 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
   const int width = b->width;
   const int height = b->height;
 
-  if(!buf) return;
   DT_OMP_FOR(collapse(2))
   for(int j = 0; j < height; j++)
   {
