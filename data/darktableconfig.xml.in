@@ -476,6 +476,13 @@
     <longdescription>GitHub repository for downloading AI models (format: owner/repo)</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/ai/third_party_repositories</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>additional AI model repositories</shortdescription>
+    <longdescription>comma-separated list of additional GitHub repositories offering AI models (format: owner/repo,owner/repo). these are not maintained or reviewed by the darktable project; a model installed from one replaces any installed model of the same name. each listed repository is contacted when checking for model updates.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/ai/models_path</name>
     <type>string</type>
     <default></default>
