@@ -229,11 +229,47 @@ static void _fullscreen_key_accel_callback(dt_action_t *action)
 #endif
 }
 
+static void _set_tooltip_css(const gboolean hidden)
+{
+  if(!darktable.gui->tooltip_css_provider)
+  {
+    darktable.gui->tooltip_css_provider = gtk_css_provider_new();
+#if GTK_CHECK_VERSION(4, 0, 0)
+    gtk_style_context_add_provider_for_display
+      (gdk_display_get_default(),
+       GTK_STYLE_PROVIDER(darktable.gui->tooltip_css_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+#else
+    gtk_style_context_add_provider_for_screen
+      (gdk_screen_get_default(),
+       GTK_STYLE_PROVIDER(darktable.gui->tooltip_css_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+#endif
+  }
+
+  const char *css = hidden
+    ? "tooltip { opacity: 0; background: transparent; }"
+    : "";
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider, css, -1);
+#else
+  GError *error = NULL;
+  if(!gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider,
+                                      css, -1, &error))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "%s: error parsing tooltip CSS: %s",
+             G_STRFUNC, error->message);
+    g_clear_error(&error);
+  }
+#endif
+}
+
 static void _toggle_tooltip_visibility(dt_action_t *action)
 {
   const gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
   dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
   darktable.gui->hide_tooltips += tooltip_hidden ? 1 : -1;
+  _set_tooltip_css(tooltip_hidden);
   dt_toast_log(tooltip_hidden ? _("tooltips off") : _("tooltips on"));
 }
 
@@ -1580,6 +1616,22 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget)
   g_signal_chain_from_overridden_handler(widget);
 }
 #endif
+
+void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
+{
+  if(gui->tooltip_css_provider)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    gtk_style_context_remove_provider_for_display
+      (gdk_display_get_default(), GTK_STYLE_PROVIDER(gui->tooltip_css_provider));
+#else
+    gtk_style_context_remove_provider_for_screen
+      (gdk_screen_get_default(), GTK_STYLE_PROVIDER(gui->tooltip_css_provider));
+#endif
+    g_clear_object(&gui->tooltip_css_provider);
+  }
+  g_clear_pointer(&gui->last_preset, g_free);
+}
 
 int dt_gui_theme_init(dt_gui_gtk_t *gui)
 {
@@ -3989,14 +4041,6 @@ void dt_gui_load_theme(const char *theme)
   g_free(path_uri);
   g_free(path);
 
-  if(dt_conf_get_bool("ui/hide_tooltips"))
-  {
-    gchar *newcss = g_strjoin(NULL, themecss,
-                              " tooltip {opacity: 0; background: transparent;}", NULL);
-    g_free(themecss);
-    themecss = newcss;
-  }
-
   if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider),
                                       themecss, -1, &error))
   {
@@ -4009,6 +4053,7 @@ void dt_gui_load_theme(const char *theme)
   g_free(themecss);
 
   g_object_unref(themes_style_provider);
+  _set_tooltip_css(dt_conf_get_bool("ui/hide_tooltips"));
 }
 
 void dt_gui_apply_theme()
