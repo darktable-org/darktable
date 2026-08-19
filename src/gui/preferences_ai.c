@@ -108,6 +108,10 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *ort_path_indicator;
   GtkWidget *settings_grid;
   int controls_start_row;   // first row to grey out when AI disabled
+  GtkWidget *auto_check_toggle;
+  GtkWidget *auto_check_indicator;
+  GtkWidget *check_updates_btn;
+  gboolean   check_updates_pending;  // report the result of this run
   guint supported_providers;
 } dt_prefs_ai_data_t;
 
@@ -210,7 +214,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
   gtk_list_store_clear(data->model_store);
 
   dt_ai_models_refresh_status();
-  dt_ai_models_check_updates();
+  dt_ai_models_check_updates(FALSE);
 
   const int count = dt_ai_models_get_count();
   dt_print(DT_DEBUG_AI, "[preferences_ai] refreshing model list, count=%d", count);
@@ -307,10 +311,19 @@ static void _ai_models_changed_cb(gpointer instance, gpointer user_data)
   if(data) _refresh_model_list(data);
 }
 
+#ifdef HAVE_AI_DOWNLOAD
+static void _ai_update_check_done_cb(gpointer instance, gpointer user_data);
+static gboolean _download_model_with_dialog(dt_prefs_ai_data_t *data,
+                                            const char *model_id);
+#endif
+
 // disconnect before free so a late signal dispatch can't touch freed data
 static void _prefs_ai_data_free(gpointer user_data)
 {
   DT_CONTROL_SIGNAL_DISCONNECT(_ai_models_changed_cb, user_data);
+#ifdef HAVE_AI_DOWNLOAD
+  DT_CONTROL_SIGNAL_DISCONNECT(_ai_update_check_done_cb, user_data);
+#endif
   g_free(user_data);
 }
 
@@ -643,6 +656,174 @@ static void _reset_enable_click_cb(GtkGestureSingle *gesture, int n_press,
   const gboolean def = dt_confgen_get_bool("plugins/ai/enabled", DT_DEFAULT);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), def);
 }
+
+#ifdef HAVE_AI_DOWNLOAD
+// the check is asynchronous, so the button reports nothing here — it goes
+// insensitive until DT_SIGNAL_AI_UPDATE_CHECK_DONE arrives, and the result
+// is summarised there. without that, a network failure and a clean result
+// look identical
+static void _on_check_updates(GtkWidget *widget, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+
+  // insensitive is the whole in-flight indication: a label swap would
+  // resize the button
+  data->check_updates_pending = TRUE;
+  gtk_widget_set_sensitive(data->check_updates_btn, FALSE);
+
+  dt_ai_models_check_updates(TRUE);
+}
+
+// every repository has reported back; statuses are settled
+static void _ai_update_check_done_cb(gpointer instance, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  if(!data) return;
+
+  if(data->check_updates_btn)
+    gtk_widget_set_sensitive(data->check_updates_btn, TRUE);
+
+  // deliberately no _refresh_model_list here: it calls back into
+  // dt_ai_models_check_updates, which raises this signal on its no-op paths,
+  // which would land us straight back in this handler. anything that
+  // actually changed a status already raised AI_MODELS_CHANGED and got its
+  // refresh from there; a check that found nothing has nothing to redraw
+
+  // only speak up for a check the user asked for; the automatic one on
+  // opening this page should stay quiet
+  if(!data->check_updates_pending) return;
+  data->check_updates_pending = FALSE;
+
+  // collect rather than just count: the update below must act on exactly
+  // what was reported, not on whatever the registry looks like afterwards
+  // two different claims. UPDATE_AVAILABLE is what this check found on the
+  // remote; UPDATE_REQUIRED is a local min_version verdict the check never
+  // looks at, since _apply_updates only compares DOWNLOADED models. both
+  // want downloading, but only one of them is news
+  GList *outdated = NULL;
+  guint n_available = 0, n_required = 0;
+  const int count = dt_ai_models_get_count();
+  for(int i = 0; i < count; i++)
+  {
+    dt_ai_model_t *m = dt_ai_models_get_by_index(i);
+    if(!m) continue;
+    if(m->status == DT_AI_MODEL_UPDATE_AVAILABLE
+       || m->status == DT_AI_MODEL_UPDATE_REQUIRED)
+    {
+      if(m->status == DT_AI_MODEL_UPDATE_AVAILABLE) n_available++;
+      else n_required++;
+      outdated = g_list_prepend(outdated, g_strdup(m->id));
+    }
+    dt_ai_model_free(m);  // get_by_index hands over a copy
+  }
+  outdated = g_list_reverse(outdated);
+  const guint n = n_available + n_required;
+
+  // a repository that could not be reached tells us nothing, so "nothing
+  // found" from a failed check must not be reported as "up to date"
+  const int failed = dt_ai_models_last_check_failures();
+
+  if(!n)
+  {
+    gchar *none = failed
+      ? g_strdup_printf(ngettext("could not reach %d model repository",
+                                 "could not reach %d model repositories",
+                                 failed), failed)
+      : g_strdup(_("all installed models are up to date"));
+
+    GtkWidget *msg = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL,
+      failed ? GTK_MESSAGE_WARNING : GTK_MESSAGE_INFO,
+      GTK_BUTTONS_OK,
+      "%s", none);
+    gtk_window_set_title(GTK_WINDOW(msg), _("check for updates"));
+    gtk_dialog_run(GTK_DIALOG(msg));
+    gtk_widget_destroy(msg);
+    g_free(none);
+    return;
+  }
+
+  gchar *avail_txt = n_available
+    ? g_strdup_printf(ngettext("%u model has an update available",
+                               "%u models have updates available",
+                               n_available), n_available)
+    : NULL;
+
+  gchar *req_txt = n_required
+    ? g_strdup_printf(ngettext("%u model is too old for this version of"
+                               " darktable and must be updated",
+                               "%u models are too old for this version of"
+                               " darktable and must be updated",
+                               n_required), n_required)
+    : NULL;
+
+  gchar *found = (avail_txt && req_txt)
+    ? g_strdup_printf("%s\n\n%s", avail_txt, req_txt)
+    : g_strdup(avail_txt ? avail_txt : req_txt);
+  g_free(avail_txt);
+  g_free(req_txt);
+
+  // partial failure: what was found is real, but the list may be short
+  gchar *text = failed
+    ? g_strdup_printf(ngettext("%s\n\n%d repository could not be reached,"
+                               " so there may be more",
+                               "%s\n\n%d repositories could not be reached,"
+                               " so there may be more", failed),
+                      found, failed)
+    : g_strdup(found);
+  g_free(found);
+
+  GtkWidget *msg = gtk_message_dialog_new(
+    GTK_WINDOW(data->parent_dialog),
+    GTK_DIALOG_MODAL,
+    GTK_MESSAGE_QUESTION,
+    GTK_BUTTONS_NONE,
+    "%s", text);
+  gtk_dialog_add_buttons(GTK_DIALOG(msg),
+                         _("_later"), GTK_RESPONSE_CLOSE,
+                         _("_update now"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(msg), GTK_RESPONSE_ACCEPT);
+  gtk_window_set_title(GTK_WINDOW(msg), _("check for updates"));
+  const gint response = gtk_dialog_run(GTK_DIALOG(msg));
+  // destroyed before downloading: each download runs its own modal dialog,
+  // which must not be nested inside this one's run loop
+  gtk_widget_destroy(msg);
+  g_free(text);
+
+  if(response == GTK_RESPONSE_ACCEPT)
+  {
+    for(GList *l = outdated; l; l = g_list_next(l))
+      if(!_download_model_with_dialog(data, (const char *)l->data))
+        break;  // failed or cancelled — leave the rest alone
+    _refresh_model_list(data);
+  }
+
+  g_list_free_full(outdated, g_free);
+}
+#endif // HAVE_AI_DOWNLOAD
+
+#ifdef HAVE_AI_DOWNLOAD
+static void _on_auto_check_toggled(GtkWidget *widget, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  const gboolean on = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_conf_set_bool("plugins/ai/auto_check_updates", on);
+  if(data->auto_check_indicator)
+    _update_string_indicator(data->auto_check_indicator,
+                             "plugins/ai/auto_check_updates");
+}
+
+static void _reset_auto_check_click_cb(GtkGestureSingle *gesture, int n_press,
+                                       double x, double y,
+                                       GtkWidget *widget)
+{
+  if(n_press < 2) return;
+  const gboolean def =
+    dt_confgen_get_bool("plugins/ai/auto_check_updates", DT_DEFAULT);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), def);
+}
+#endif // HAVE_AI_DOWNLOAD
 
 // double-click on label resets the provider combo to default
 static void
@@ -2297,6 +2478,39 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   data->controls_start_row = row;
   const gboolean ai_on = dt_conf_get_bool("plugins/ai/enabled");
 
+#ifdef HAVE_AI_DOWNLOAD
+  // with the other global switches rather than beside the model list: it
+  // governs whether darktable reaches the network on its own
+  GtkWidget *auto_check_label =
+    gtk_label_new(_("automatically check for model updates"));
+  gtk_widget_set_halign(auto_check_label, GTK_ALIGN_START);
+  GtkWidget *auto_check_labelev = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(auto_check_labelev), auto_check_label);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(auto_check_labelev), FALSE);
+  gtk_widget_set_tooltip_text(auto_check_labelev,
+                              _("contact the model repositories to look for"
+                                " newer versions of the installed models.\n"
+                                "when off, updates are only looked for when"
+                                " you press the button below"));
+
+  data->auto_check_indicator =
+    _create_indicator("plugins/ai/auto_check_updates");
+  data->auto_check_toggle = gtk_check_button_new();
+  gtk_toggle_button_set_active(
+    GTK_TOGGLE_BUTTON(data->auto_check_toggle),
+    dt_conf_get_bool("plugins/ai/auto_check_updates"));
+  g_signal_connect(data->auto_check_toggle, "toggled",
+                   G_CALLBACK(_on_auto_check_toggled), data);
+  dt_gui_connect_click_all(auto_check_labelev, _reset_auto_check_click_cb,
+                           NULL, data->auto_check_toggle);
+
+  gtk_grid_attach(GTK_GRID(settings_grid), auto_check_labelev, 0, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(settings_grid), data->auto_check_indicator,
+                  1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(settings_grid), data->auto_check_toggle,
+                  2, row++, 1, 1);
+#endif // HAVE_AI_DOWNLOAD
+
   // provider dropdown
   GtkWidget *provider_label = gtk_label_new(_("AI acceleration"));
   gtk_widget_set_halign(provider_label, GTK_ALIGN_START);
@@ -2664,12 +2878,32 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     data);
   dt_gui_box_add(button_box, data->delete_selected_btn);
 
+#ifdef HAVE_AI_DOWNLOAD
+  // right-anchored with the help button: this refreshes state rather than
+  // acting on the models
+  data->check_updates_btn
+    = gtk_button_new_with_label(_("check for updates"));
+  gtk_widget_set_tooltip_text(data->check_updates_btn,
+    _("look for newer versions of the installed models"));
+  g_signal_connect(data->check_updates_btn, "clicked",
+                   G_CALLBACK(_on_check_updates), data);
+#endif // HAVE_AI_DOWNLOAD
+
   // help button (right-anchored, matches other prefs tabs)
   GtkWidget *help_btn = gtk_button_new_with_label(_("?"));
   gtk_widget_set_tooltip_text(help_btn, _("open help page for AI settings"));
   dt_gui_add_help_link(help_btn, "ai");
   g_signal_connect(help_btn, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-  dt_gui_box_add(button_box, dt_gui_align_right(help_btn));
+
+  // one box for the trailing pair, aligned once. dt_gui_align_right also
+  // expands the widget it is given, so aligning the two separately would
+  // split the free space between them and leave a gap
+#ifdef HAVE_AI_DOWNLOAD
+  GtkWidget *tail = dt_gui_hbox(data->check_updates_btn, help_btn);
+#else
+  GtkWidget *tail = dt_gui_hbox(help_btn);
+#endif
+  dt_gui_box_add(button_box, dt_gui_align_right(tail));
 
   dt_gui_box_add(data->controls_box, models_grid);
 
@@ -2685,6 +2919,10 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_AI_MODELS_CHANGED,
                             _ai_models_changed_cb, data);
+#ifdef HAVE_AI_DOWNLOAD
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_AI_UPDATE_CHECK_DONE,
+                            _ai_update_check_done_cb, data);
+#endif
 
   g_object_set_data_full(G_OBJECT(tab_box), "prefs-ai-data",
                          data, _prefs_ai_data_free);

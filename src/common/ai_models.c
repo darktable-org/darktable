@@ -46,6 +46,8 @@ struct dt_ai_registry_t
   gboolean ai_enabled;        // global AI enable/disable
   dt_ai_provider_t provider;  // selected execution provider
   gboolean updates_checked;   // TRUE after first check_updates call
+  int updates_in_flight;      // repositories still to report back
+  int updates_failed;         // of those, how many never answered
   struct dt_ai_environment_t *env;  // lazily created backend environment
   GMutex lock;                // thread safety for registry access
 };
@@ -53,6 +55,7 @@ struct dt_ai_registry_t
 // config keys
 #define CONF_AI_ENABLED "plugins/ai/enabled"
 #define CONF_AI_REPOSITORY "plugins/ai/repository"
+#define CONF_AI_AUTO_CHECK_UPDATES "plugins/ai/auto_check_updates"
 #define CONF_AI_THIRD_PARTY_REPOSITORIES "plugins/ai/third_party_repositories"
 #define CONF_MODEL_ENABLED_PREFIX "plugins/ai/models/"
 #define CONF_ACTIVE_MODEL_PREFIX "plugins/ai/models/active/"
@@ -822,7 +825,11 @@ void dt_ai_models_refresh_status(void)
   g_mutex_lock(&registry->lock);
 
   // remove previously-discovered local models (no github_asset)
-  // these will be re-discovered from disk below if still present
+  // these will be re-discovered from disk below if still present.
+  //
+  // nothing needs carrying across: UPDATE_AVAILABLE is only ever set by
+  // _apply_updates, which skips models without a github_asset precisely
+  // because their update could not be downloaded anyway
   GList *l = registry->models;
   while(l)
   {
@@ -852,6 +859,12 @@ void dt_ai_models_refresh_status(void)
     if(g_file_test(model_dir, G_FILE_TEST_IS_DIR)
        && g_file_test(config_path, G_FILE_TEST_EXISTS))
     {
+      // the update flag comes from the remote versions.json, which this
+      // rescan knows nothing about; clobbering it would undo every check the
+      // moment the list refreshes. keep it while the version is unchanged
+      const dt_ai_model_status_t prev_status = model->status;
+      char *prev_version = g_strdup(model->version);
+
       model->status = DT_AI_MODEL_DOWNLOADED;
       // read version from the model's own config.json
       dt_ai_model_t *local = _parse_local_model_config(config_path, model->id);
@@ -898,6 +911,16 @@ void dt_ai_models_refresh_status(void)
                    model->min_version);
         }
       }
+
+      // restore a remote-derived flag the rescan just overwrote, unless the
+      // installed version moved (the update was applied) or the local state
+      // is now worse than what the remote said
+      if(model->status == DT_AI_MODEL_DOWNLOADED
+         && prev_status == DT_AI_MODEL_UPDATE_AVAILABLE
+         && !g_strcmp0(prev_version, model->version))
+        model->status = DT_AI_MODEL_UPDATE_AVAILABLE;
+
+      g_free(prev_version);
     }
     else
     {
@@ -975,16 +998,46 @@ static void _updates_free(dt_ai_updates_t *upd)
   g_free(upd);
 }
 
-// takes ownership of `upd`
-static gboolean _apply_updates_idle(gpointer user_data)
+// one repository has reported back. announce completion once the last one
+// has, so a listener can count results rather than guessing when to look
+static void _updates_one_done(void)
 {
-  dt_ai_updates_t *upd = (dt_ai_updates_t *)user_data;
+  dt_ai_registry_t *registry = darktable.ai_registry;
+  if(!registry) return;
+
+  g_mutex_lock(&registry->lock);
+  const gboolean last = (--registry->updates_in_flight <= 0);
+  if(last) registry->updates_in_flight = 0;
+  g_mutex_unlock(&registry->lock);
+
+  if(last) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_UPDATE_CHECK_DONE);
+}
+
+// a worker that fetched nothing still has to report in, or the count never
+// reaches zero and the caller waits forever. it is counted separately so the
+// summary can tell "nothing newer published" from "could not ask"
+static gboolean _updates_failed_idle(gpointer user_data)
+{
+  dt_ai_registry_t *registry = darktable.ai_registry;
+  if(registry)
+  {
+    g_mutex_lock(&registry->lock);
+    registry->updates_failed++;
+    g_mutex_unlock(&registry->lock);
+  }
+  _updates_one_done();
+  return G_SOURCE_REMOVE;
+}
+
+// takes ownership of `upd`
+static void _apply_updates(dt_ai_updates_t *upd)
+{
   JsonParser *parser = upd->parser;
   dt_ai_registry_t *registry = darktable.ai_registry;
   if(!registry)
   {
     _updates_free(upd);
-    return G_SOURCE_REMOVE;
+    return;
   }
 
   JsonNode *root = json_parser_get_root(parser);
@@ -1000,7 +1053,7 @@ static gboolean _apply_updates_idle(gpointer user_data)
              "[ai_models] check_updates: no 'models' object in %s's "
              "versions.json", upd->repository);
     _updates_free(upd);
-    return G_SOURCE_REMOVE;
+    return;
   }
 
   // populate model->checksum from sha256 so downloads skip re-fetching
@@ -1034,7 +1087,11 @@ static gboolean _apply_updates_idle(gpointer user_data)
       model->checksum = g_strdup(remote_sha256);
     }
 
+    // an update nobody can apply is not worth flagging: a model installed
+    // by hand has no github_asset, so the download refuses it outright and
+    // the offer would only abort whatever batch it appeared in
     if(remote_version
+       && model->github_asset
        && model->status == DT_AI_MODEL_DOWNLOADED
        && _version_compare(model->version, remote_version) < 0)
     {
@@ -1050,6 +1107,15 @@ static gboolean _apply_updates_idle(gpointer user_data)
   _updates_free(upd);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+}
+
+// reporting in lives here rather than on each exit inside _apply_updates:
+// three returns already meant one of them forgot, and a repository that
+// never reports blocks every later check for the session
+static gboolean _apply_updates_idle(gpointer user_data)
+{
+  _apply_updates((dt_ai_updates_t *)user_data);
+  _updates_one_done();
   return G_SOURCE_REMOVE;
 }
 
@@ -1069,6 +1135,7 @@ static gpointer _check_updates_worker(gpointer data)
              error_msg ? ": " : "", error_msg ? error_msg : "");
     g_free(error_msg);
     g_free(repository);
+    g_idle_add(_updates_failed_idle, NULL);
     return NULL;
   }
   g_free(error_msg);
@@ -1084,6 +1151,7 @@ static gpointer _check_updates_worker(gpointer data)
     g_free(url);
     g_free(release_tag);
     g_free(repository);
+    g_idle_add(_updates_failed_idle, NULL);
     return NULL;
   }
   dt_curl_init(curl, FALSE);
@@ -1111,6 +1179,7 @@ static gpointer _check_updates_worker(gpointer data)
              repository, res, http_code);
     g_string_free(response, TRUE);
     g_free(repository);
+    g_idle_add(_updates_failed_idle, NULL);
     return NULL;
   }
 
@@ -1125,6 +1194,7 @@ static gpointer _check_updates_worker(gpointer data)
              "[ai_models] check_updates: failed to parse %s's versions.json",
              repository);
     g_free(repository);
+    g_idle_add(_updates_failed_idle, NULL);
     return NULL;
   }
   g_string_free(response, TRUE);
@@ -1146,25 +1216,68 @@ static gpointer _check_updates_worker(gpointer data)
   return NULL;
 }
 
-void dt_ai_models_check_updates(void)
+void dt_ai_models_check_updates(const gboolean force)
 {
   dt_ai_registry_t *registry = darktable.ai_registry;
-  if(!registry) return;
 
-  // only check once per session
-  g_mutex_lock(&registry->lock);
-  if(registry->updates_checked)
+  // a caller that greyed out its button waits for
+  // DT_SIGNAL_AI_UPDATE_CHECK_DONE, so a bail-out an explicit check can
+  // reach has to announce it. the automatic-only bail-outs below stay
+  // silent: nobody is waiting on them, and raising there would re-enter
+  // through _refresh_model_list, which calls back into this function
+  if(!registry)
   {
-    g_mutex_unlock(&registry->lock);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_UPDATE_CHECK_DONE);
     return;
   }
-  registry->updates_checked = TRUE;
+
+  // an automatic check reaches the network unasked, so it needs AI switched
+  // on as well as the preference — which is greyed out when AI is off, so it
+  // could not be used to stop this. an explicit check is the user asking
+  if(!force
+     && (!dt_ai_registry_is_enabled()
+         || !dt_conf_get_bool(CONF_AI_AUTO_CHECK_UPDATES)))
+    return;
+
+  // automatic checks happen once per session; an explicit one repeats.
+  // a run already in flight is never doubled up: pressing the button twice
+  // would otherwise spawn a second thread per repository
+  g_mutex_lock(&registry->lock);
+  const gboolean in_flight = registry->updates_in_flight > 0;
+  const gboolean already_done = !force && registry->updates_checked;
+  g_mutex_unlock(&registry->lock);
+
+  if(in_flight || already_done) return;
+
+  // this run's tally starts clean, including on the no-repositories path
+  // below, which would otherwise report the previous run's failures
+  g_mutex_lock(&registry->lock);
+  registry->updates_failed = 0;
   g_mutex_unlock(&registry->lock);
 
   // every repository publishes its own versions.json, so a model only
   // learns about updates from the one it came from. checking just the
   // official repository would leave everything else on its install version
   GList *repositories = dt_ai_models_get_repositories();
+  const int n = (int)g_list_length(repositories);
+
+  if(n == 0)
+  {
+    g_list_free(repositories);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_UPDATE_CHECK_DONE);
+    return;
+  }
+
+  // set before spawning: a fast worker could otherwise report in and drive
+  // the count negative while the rest are still being created.
+  //
+  // updates_checked is marked here rather than on entry, so a session that
+  // begins with no usable repository does not burn its one automatic check
+  // before the user has had a chance to configure one
+  g_mutex_lock(&registry->lock);
+  registry->updates_in_flight = n;
+  registry->updates_checked = TRUE;
+  g_mutex_unlock(&registry->lock);
 
   for(GList *l = repositories; l; l = g_list_next(l))
   {
@@ -1180,7 +1293,7 @@ void dt_ai_models_check_updates(void)
 #else
 // checking for updates is entirely network work, so a build without
 // download support has nothing to do here
-void dt_ai_models_check_updates(void) {}
+void dt_ai_models_check_updates(const gboolean force) {}
 #endif // HAVE_AI_DOWNLOAD
 
 void dt_ai_models_cleanup(void)
@@ -1230,6 +1343,17 @@ int dt_ai_models_get_count(void)
   int count = g_list_length(registry->models);
   g_mutex_unlock(&registry->lock);
   return count;
+}
+
+int dt_ai_models_last_check_failures(void)
+{
+  dt_ai_registry_t *registry = darktable.ai_registry;
+  if(!registry) return 0;
+
+  g_mutex_lock(&registry->lock);
+  const int failed = registry->updates_failed;
+  g_mutex_unlock(&registry->lock);
+  return failed;
 }
 
 dt_ai_model_t *dt_ai_models_get_by_index(const int index)
