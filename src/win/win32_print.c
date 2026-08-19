@@ -46,6 +46,8 @@
 #include <gdiplus.h>
 #include <wingdi.h>
 #include <wincodec.h>
+#define INITGUID
+#include <initguid.h>
 #include <xpsprint.h>
 #include <xpsobjectmodel.h>
 #include <msopc.h>
@@ -1060,6 +1062,10 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
                                                     part_uri,
                                                     &resource);
           part_uri->lpVtbl->Release(part_uri);
+if(FAILED(hr))
+{
+  DBG_MARK("CreateImageResource failed: hr=0x%08lx", hr);
+}
         }
       }
       img_stream->lpVtbl->Release(img_stream);
@@ -1115,23 +1121,25 @@ static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
   hr = factory->lpVtbl->CreateGeometry(factory, &geom);
   if(FAILED(hr)) goto cleanup;
 
-  hr = factory->lpVtbl->CreateGeometryFigure(factory, &(XPS_POINT){x, y}, &figure);
-  if(FAILED(hr)) goto cleanup;
+XPS_POINT start = { x, y };
+XPS_SEGMENT_TYPE seg_types[4] = {
+  XPS_SEGMENT_TYPE_LINE,
+  XPS_SEGMENT_TYPE_LINE,
+  XPS_SEGMENT_TYPE_LINE,
+  XPS_SEGMENT_TYPE_LINE
+};
 
-  // Rectangle: start at (x, y), then line to (x+w, y), (x+w, y+h), (x, y+h), and close.
-  static const XPS_SEGMENT_TYPE seg_types[] = {
-    XPS_SEGMENT_TYPE_LINE,
-    XPS_SEGMENT_TYPE_LINE,
-    XPS_SEGMENT_TYPE_LINE,
-    XPS_SEGMENT_TYPE_LINE
-  };
-  static const FLOAT seg_data[] = {
-    x + w, y,
-    x + w, y + h,
-    x,     y + h,
-    x,     y
-  };
-  static const WINBOOL seg_strokes[] = { TRUE, TRUE, TRUE, TRUE };
+FLOAT seg_data[8] = {
+  x + w, y,
+  x + w, y + h,
+  x,     y + h,
+  x,     y
+};
+
+WINBOOL seg_strokes[4] = { TRUE, TRUE, TRUE, TRUE };
+
+hr = factory->lpVtbl->CreateGeometryFigure(factory, &start, &figure);
+if(FAILED(hr)) goto cleanup;
 
   hr = figure->lpVtbl->SetSegments(figure,
                                  4,
@@ -1227,6 +1235,10 @@ bool dt_win_print_file(const dt_images_box *imgs,
                            NULL, NULL, completionEvent,
                            NULL, 0,
                            &xpsJob, &docStream, &ticketStream);
+if(FAILED(hr))
+{
+  DBG_MARK("StartXpsPrintJob failed: hr=0x%08lx", hr);
+}
     if(SUCCEEDED(hr))
     {
       if(print_ticket_data && print_ticket_size > 0)
@@ -1245,12 +1257,15 @@ bool dt_win_print_file(const dt_images_box *imgs,
                             CLSCTX_INPROC_SERVER,
                             &IID_IXpsOMObjectFactory,
                             (void **)&factory);
-
+if(FAILED(hr))
+{
+  DBG_MARK("CoCreateInstance failed: hr=0x%08lx", hr);
+}
       if(SUCCEEDED(hr) && factory)
       {
         IXpsOMPackageWriter *writer = NULL;
         hr = factory->lpVtbl->CreatePackageWriterOnStream(factory,
-                                                          docStream,
+                                                          (ISequentialStream *)docStream,
                                                           FALSE,
                                                           XPS_INTERLEAVING_OFF,
                                                           NULL,
@@ -1259,7 +1274,10 @@ bool dt_win_print_file(const dt_images_box *imgs,
                                                           NULL,
                                                           NULL,
                                                           &writer);
-
+if(FAILED(hr))
+{
+  DBG_MARK("CreatePackageWriterOnStream failed: hr=0x%08lx", hr);
+}
         if(SUCCEEDED(hr) && writer)
         {
           writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
@@ -1272,7 +1290,10 @@ bool dt_win_print_file(const dt_images_box *imgs,
           IXpsOMColorProfileResource *profile_resource = NULL;
           if(icc_data && icc_size > 0)
             profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/Colors/OutputProfile.icc");
-
+if(FAILED(hr))
+{
+  DBG_MARK("CreatePage failed: hr=0x%08lx", hr);
+}
           if(SUCCEEDED(hr) && page)
           {
             for(int i = 0; i < imgs->count; i++)
@@ -1422,14 +1443,14 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   *awidth  = br - bx;
   *aheight = bb - by;
 
-    DBG_MARK("hw_mm: L=%.2f T=%.2f R=%.2f B=%.2f | user_mm: L=%.2f T=%.2f R=%.2f B=%.2f",
+/*     DBG_MARK("hw_mm: L=%.2f T=%.2f R=%.2f B=%.2f | user_mm: L=%.2f T=%.2f R=%.2f B=%.2f",
          np_left, np_top, np_right, np_bottom,
          prt->page.margin_left, prt->page.margin_top,
          prt->page.margin_right, prt->page.margin_bottom);
 
 DBG_MARK("layout: px=%.2f py=%.2f pwidth=%.2f pheight=%.2f ax=%.2f ay=%.2f aw=%.2f ah=%.2f",
          *px, *py, *pwidth, *pheight,
-         *ax, *ay, *awidth, *aheight);
+         *ax, *ay, *awidth, *aheight); */
 }
 
 
