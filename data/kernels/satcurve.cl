@@ -33,9 +33,11 @@ static inline float satcurve_lookup_gamut_cl(global const float *const gamut_lut
 // smoothly map x from knee onwards towards maximum; mirrors satcurve_soft_clip() on CPU
 static inline float satcurve_soft_clip_cl(const float x, const float knee, const float maximum)
 {
-  if(x <= knee) return x;
+  if (x <= knee)
+    return x;
   const float range = maximum - knee;
-  if(range <= 0.f) return maximum;
+  if (range <= 0.f)
+    return maximum;
   return knee + range * (1.f - dtcl_exp(-(x - knee) / range));
 }
 
@@ -57,24 +59,26 @@ static inline float clip_jz_chroma_cl(const float Jz, const float Cz, const floa
   Iz = fmax(Iz, 0.f);
 
   // Use explicit row-major arrays matching the CPU transposed matrix representation
-  const float AI_trans_1[3] = { 0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f };
-  const float AI_trans_2[3] = { 0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f };
+  const float AI_trans_1[3] = {0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f};
+  const float AI_trans_2[3] = {0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f};
 
   const float4 AI[3] = {
-    { 1.0f,  AI_trans_1[0],  AI_trans_2[0], 0.0f },
-    { 1.0f,  AI_trans_1[1],  AI_trans_2[1], 0.0f },
-    { 1.0f,  AI_trans_1[2],  AI_trans_2[2], 0.0f }
-  };
+      {1.0f, AI_trans_1[0], AI_trans_2[0], 0.0f},
+      {1.0f, AI_trans_1[1], AI_trans_2[1], 0.0f},
+      {1.0f, AI_trans_1[2], AI_trans_2[2], 0.0f}};
 
-  const float4 izab = { Iz, Cz * ch, Cz * sh, 0.f };
+  const float4 izab = {Iz, Cz * ch, Cz * sh, 0.f};
   const float lms0 = dot(AI[0], izab);
   const float lms1 = dot(AI[1], izab);
   const float lms2 = dot(AI[2], izab);
 
   float max_c = Cz;
-  if(lms0 < 0.f) max_c = fmin(max_c, -Iz / (AI_trans_1[0] * ch + AI_trans_2[0] * sh));
-  if(lms1 < 0.f) max_c = fmin(max_c, -Iz / (AI_trans_1[1] * ch + AI_trans_2[1] * sh));
-  if(lms2 < 0.f) max_c = fmin(max_c, -Iz / (AI_trans_1[2] * ch + AI_trans_2[2] * sh));
+  if (lms0 < 0.f)
+    max_c = fmin(max_c, -Iz / (AI_trans_1[0] * ch + AI_trans_2[0] * sh));
+  if (lms1 < 0.f)
+    max_c = fmin(max_c, -Iz / (AI_trans_1[1] * ch + AI_trans_2[1] * sh));
+  if (lms2 < 0.f)
+    max_c = fmin(max_c, -Iz / (AI_trans_1[2] * ch + AI_trans_2[2] * sh));
 
   return fmax(max_c, 0.f);
 }
@@ -93,16 +97,13 @@ static inline float curve_to_factor_cl(const float c)
 // maximum HSB saturation reachable at the gamut boundary for given J, h in dt UCS;
 // mirrors satcurve_ucs_gamut_saturation() on CPU
 static inline float satcurve_ucs_gamut_saturation_cl(const float J, const float h,
-                                                      const float L_white,
-                                                      global const float *const gamut_lut)
+                                                     const float L_white,
+                                                     global const float *const gamut_lut)
 {
   const float max_colorfulness = fmax(satcurve_lookup_gamut_cl(gamut_lut, h), FLT_MIN);
-  const float max_chroma = 15.932993652962535f
-                         * dtcl_pow(J / L_white, 0.6523997524738018f)
-                         * dtcl_pow(max_colorfulness, 0.6007557017508491f)
-                         / L_white;
+  const float max_chroma = 15.932993652962535f * dtcl_pow(J / L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
 
-  const float4 JCH_gamut_boundary = { J, max_chroma, h, 0.f };
+  const float4 JCH_gamut_boundary = {J, max_chroma, h, 0.f};
   const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
   return fmax(HSB_gamut_boundary.y, FLT_MIN);
@@ -118,7 +119,7 @@ static inline float satcurve_s_in_norm_cl(const float4 rgb_in,
   const float4 rgb = fmax(rgb_in, 0.f);
   const float4 xyz = matrix_product_float4(rgb, matrix_in);
 
-  if(formula == DT_IOP_SATCURVE_DTUCS)
+  if (formula == DT_IOP_SATCURVE_DTUCS)
   {
     const float4 xyY = dt_D65_XYZ_to_xyY(xyz);
     const float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
@@ -153,7 +154,8 @@ satcurve_histogram(read_only image2d_t in, const int width, const int height,
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float4 rgb_in = Areadpixel(in, x, y);
   const float s_in_norm = satcurve_s_in_norm_cl(rgb_in, matrix_in, gamut_lut, formula, L_white);
@@ -173,7 +175,8 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   float4 pix_in = Areadpixel(in, x, y);
   float4 rgb = fmax(pix_in, 0.f);
@@ -181,13 +184,13 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
   float4 xyz = matrix_product_float4(rgb, matrix_in);
   float4 pixout;
 
-  if(formula == DT_IOP_SATCURVE_DTUCS)
+  if (formula == DT_IOP_SATCURVE_DTUCS)
   {
     float4 xyY = dt_D65_XYZ_to_xyY(xyz);
     float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
     float4 HCB = dt_UCS_JCH_to_HCB(JCH);
 
-    float4 HSB = { HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
+    float4 HSB = {HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f};
 
     const float gamut_s = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
 
@@ -213,7 +216,7 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
 
     const float gamut_s_out = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
 
-    float4 HSB_out = { HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
+    float4 HSB_out = {HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f};
     HSB_out.y = satcurve_soft_clip_cl(HSB_out.y, 0.8f * gamut_s_out, gamut_s_out);
 
     JCH = dt_UCS_HSB_to_JCH(HSB_out);
@@ -263,7 +266,9 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
   write_imagef(out, (int2)(x, y), pixout);
 }
 
-// Visualization of the saturation mask for GUI display
+// Visualization of the saturation mask for GUI display. Zero saturation is
+// shown as white, full saturation as purple/magenta {0.5, 0.0, 0.5}, matching
+// the chroma gradient end color used in blend_gui.c.
 kernel void
 satcurve_mask(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
@@ -273,13 +278,15 @@ satcurve_mask(read_only image2d_t in, write_only image2d_t out,
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float4 pix_in = Areadpixel(in, x, y);
   const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
 
-  const float intensity = sqrt(clamp(s_in_norm, 0.f, 1.f));
-  float4 pixout = { intensity, intensity, intensity, pix_in.w };
+  // white at t = 0, magenta {0.5, 0.0, 0.5} at t = 1
+  const float t = sqrt(clamp(s_in_norm, 0.f, 1.f));
+  float4 pixout = {1.0f - 0.5f * t, 1.0f - t, 1.0f - 0.5f * t, pix_in.w};
 
   write_imagef(out, (int2)(x, y), pixout);
 }
@@ -297,7 +304,8 @@ satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float4 pix_in = Areadpixel(in, x, y);
   const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
@@ -310,7 +318,10 @@ satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
 // the guided filter is enabled, so the preview shows the mask that is
 // actually used to modulate the correction. Mirrors display_saturation_mask()
 // on the CPU side, but reading a pre-computed scalar buffer instead of
-// recomputing s_in_norm.
+// recomputing s_in_norm. Zero saturation is shown as white, full saturation as
+// purple/magenta {0.5, 0.0, 0.5}, matching the chroma gradient end color in
+// blend_gui.c.
+
 kernel void
 satcurve_mask_from_scalar(read_only image2d_t scalar_mask, read_only image2d_t in,
                           write_only image2d_t out,
@@ -318,13 +329,15 @@ satcurve_mask_from_scalar(read_only image2d_t scalar_mask, read_only image2d_t i
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
+  if (x >= width || y >= height)
+    return;
 
   const float mask_value = Areadsingle(scalar_mask, x, y);
   const float4 pix_in = Areadpixel(in, x, y);
 
-  const float intensity = sqrt(clamp(mask_value, 0.f, 1.f));
-  float4 pixout = { intensity, intensity, intensity, pix_in.w };
+  // white at t = 0, magenta {0.5, 0.0, 0.5} at t = 1
+  const float t = sqrt(clamp(mask_value, 0.f, 1.f));
+  float4 pixout = {1.0f - 0.5f * t, 1.0f - t, 1.0f - 0.5f * t, pix_in.w};
 
   write_imagef(out, (int2)(x, y), pixout);
 }
