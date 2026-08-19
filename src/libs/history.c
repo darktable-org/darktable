@@ -56,6 +56,10 @@ typedef struct dt_lib_history_t
   GtkWidget *history_box;
   GtkWidget *create_button;
   GtkWidget *compress_button;
+  /* any one member of the history-row radio group, valid only while
+   * gui_update() is (re)building the list; used to join newly created
+   * rows into the same group so exactly one of them can ever be active */
+  GtkWidget *history_group_leader;
   gboolean record_undo;
   int record_history_level; // set to +1 in signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
                             // and back to -1 in DT_SIGNAL_DEVELOP_HISTORY_CHANGE. We want
@@ -196,8 +200,16 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   GtkWidget *onoff = NULL;
 
-  /* create toggle button */
-  GtkWidget *widget = gtk_toggle_button_new_with_label("");
+  /* create toggle button, joined into a radio group so that exactly one
+   * history row is ever active. A click on the already-active row is
+   * then a guaranteed GTK no-op. gtk_toggle_button_set_mode(FALSE) disables
+   * the no round radio indicator.  */
+  dt_lib_history_t *d = self->data;
+  GtkWidget *widget =
+    gtk_radio_button_new_with_label_from_widget
+      (d->history_group_leader ? GTK_RADIO_BUTTON(d->history_group_leader) : NULL, "");
+  gtk_toggle_button_set_mode(GTK_TOGGLE_BUTTON(widget), FALSE);
+  d->history_group_leader = widget;
   dt_gui_add_class(widget, "dt_transparent_background");
   GtkWidget *lab = gtk_bin_get_child(GTK_BIN(widget));
   gtk_widget_set_halign(lab, GTK_ALIGN_START);
@@ -1143,6 +1155,7 @@ void gui_update(dt_lib_module_t *self)
 
   /* first destroy all buttons in list */
   dt_gui_container_destroy_children(GTK_CONTAINER(d->history_box));
+  d->history_group_leader = NULL;
 
   /* add default which always should be */
   GtkWidget *widget =
@@ -1277,10 +1290,6 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!dt_is_valid_imgid(imgid)) return;
 
-  static gboolean reset = FALSE;
-
-  if(reset) return;
-
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
 
   // shift-click just show the corresponding module in modulegroups
@@ -1302,21 +1311,6 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
     return;
   }
 
-  dt_lib_history_t *d = self->data;
-  reset = TRUE;
-
-  /* deactivate all toggle buttons */
-  GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
-  for(GList *l = children; l != NULL; l = g_list_next(l))
-  {
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON
-      (dt_gui_container_nth_child(GTK_CONTAINER(l->data), HIST_WIDGET_MODULE));
-    if(b != GTK_TOGGLE_BUTTON(widget))
-      g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
-  }
-  g_list_free(children);
-
-  reset = FALSE;
   if(dt_atomic_get_int(&darktable.gui->reset) != 0) return;
 
   dt_dev_undo_start_record(darktable.develop);
