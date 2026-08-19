@@ -1254,6 +1254,9 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
     // set mask indicator sensitive according to module activation and raster mask
     if(module->mask_indicator)
       gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
+
+    if(!gtk_widget_is_visible(module->header))
+      dt_dev_modulegroups_update_visibility(darktable.develop);
   }
 
   char tooltip[512];
@@ -1269,9 +1272,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-
-  if(!gtk_widget_is_visible(module->header))
-    dt_dev_modulegroups_update_visibility(darktable.develop);
 }
 
 gboolean dt_iop_so_is_hidden(const dt_iop_module_so_t *module)
