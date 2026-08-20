@@ -980,15 +980,21 @@ static void _prepare_process(const float roi_scale,
   _init_satweights(d->contrast);
 }
 
-static void _copy_hue_cb(void *const user_data,
+static void _copy_HSB_cb(void *const user_data,
                          float *const buf,
                          const size_t npixels)
 {
-  // pix_out[0] = HSB hue (radians UCS)
+  // pix_out[0..2] = HSB of the module input pixel: hue (radians UCS),
+  // saturation, brightness — computed in process() before any correction.
+  // npixels covers components floats per pixel (3·width·height).
   const float *const src = (const float *)user_data;
   DT_OMP_FOR()
-  for(size_t k = 0; k < npixels; k++)
-    buf[k] = src[k * 4];
+  for(size_t k = 0; k < npixels / 3; k++)
+  {
+    buf[k * 3 + 0] = src[k * 4 + 0];
+    buf[k * 3 + 1] = src[k * 4 + 1];
+    buf[k * 3 + 2] = src[k * 4 + 2];
+  }
 }
 
 void process(dt_iop_module_t *self,
@@ -1129,13 +1135,15 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  // Cache the UCS hue (radians) in the preview buffer for mouse_moved/scrolled.
-  // The service resizes, fills and commits the freshness hash under one GUI
-  // lock so the GUI thread can never observe a resized but not-yet-filled buffer.
+  // Cache the HSB (hue in radians, saturation, brightness) of the module
+  // *input* pixel in the preview buffer for mouse_moved/scrolled and the
+  // cursor in/out colors.  The service resizes, fills and commits the
+  // freshness hash under one GUI lock so the GUI thread can never observe
+  // a resized but not-yet-filled buffer.
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_colorequal_gui_data_t *gui = self->gui_data; // non-const for writing
-    dt_preview_data_store(&gui->pd, width, height, piece, _copy_hue_cb, (void *)out);
+    dt_preview_data_store(&gui->pd, width, height, piece, _copy_HSB_cb, (void *)out);
   }
 
   if(d->use_filter && !run_fast)
@@ -1636,10 +1644,10 @@ int process_cl(dt_iop_module_t *self,
                 CLARG(width),  CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
-  // On the preview pipe, read the original (uncorrected) hue back from the
+  // On the preview pipe, read the original (uncorrected) HSB back from the
   // GPU pixout buffer to populate the shared preview buffer for
-  // mouse_moved/scrolled.  pixout[k].x contains the raw HSB hue (same as
-  // the CPU process() path).
+  // mouse_moved/scrolled.  pixout[k].xyz contains the raw HSB of the
+  // module input (same as the CPU process() path).
   if(self->gui_data && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_colorequal_gui_data_t *gui = (dt_iop_colorequal_gui_data_t *)self->gui_data;
@@ -1650,7 +1658,7 @@ int process_cl(dt_iop_module_t *self,
     {
       err = dt_opencl_read_buffer_from_device(devid, host_pixout, pixout, 0, px_sz, TRUE);
       if(err == CL_SUCCESS)
-        dt_preview_data_store(&gui->pd, width, height, piece, _copy_hue_cb, (void *)host_pixout);
+        dt_preview_data_store(&gui->pd, width, height, piece, _copy_HSB_cb, (void *)host_pixout);
       dt_free_align(host_pixout);
     }
   }
@@ -2303,10 +2311,10 @@ void init_presets(dt_iop_module_so_t *self)
 
 /* _switch_cursors — mirrors the tone equalizer's on-canvas cursor
  * handling: hide the native GTK cursor so only our own indicator
- * (gui_post_expose) is visible while a valid reading is available and the
- * preview pipe is idle; show a "wait" cursor while it is (re)computing;
- * fall back to the default cursor otherwise (mask editing, module not
- * focused, no valid reading yet).
+ * (gui_post_expose) is visible while a valid reading is available,
+ * whether or not the preview pipe is still (re)computing.  No busy/wait
+ * animation is shown while hovering.  Falls back to the default cursor
+ * otherwise (mask editing, module not focused, no valid reading yet).
  */
 static void _switch_cursors(dt_iop_module_t *self)
 {
@@ -2329,15 +2337,11 @@ static void _switch_cursors(dt_iop_module_t *self)
   if(!self->expanded)
     return; // module not focused: let the app decide
 
-  if(g->cursor_valid && dt_pipe_processing(self->dev->preview_pipe))
+  if(g->cursor_valid)
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "wait");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
-  }
-  else if(g->cursor_valid)
-  {
-    // pipe idle with a valid reading: hide the native cursor
+    // valid reading: hide the native cursor and rely on the custom
+    // indicator drawn by gui_post_expose, whatever the pipe processing
+    // state (no busy animation while hovering)
     dt_control_change_cursor("none");
   }
   else
@@ -2629,6 +2633,23 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     cairo_fill(cr);
   }
 
+  // Draw a white vertical line showing the hue currently under the mouse
+  // cursor on the main image (mirroring the tone equalizer's exposure
+  // cursor line).  The graph x-axis is linear in conventional GUI degrees,
+  // shifted by hue_shift, so the hue is mapped directly to x.
+  if(self->enabled && g->cursor_valid)
+  {
+    float x_cursor = (g->cursor_hue / 360.0f + dx) * graph_width;
+    x_cursor = fmodf(x_cursor, graph_width); // hue is periodic
+    if(x_cursor < 0.0f) x_cursor += graph_width;
+
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+    set_color(cr, darktable.bauhaus->graph_fg);
+    cairo_move_to(cr, x_cursor, 0.0);
+    cairo_line_to(cr, x_cursor, graph_height);
+    cairo_stroke(cr);
+  }
+
   dt_free_align(g->LUT);
 
   if(self->enabled && self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
@@ -2705,7 +2726,7 @@ int mouse_moved(dt_iop_module_t *self,
     return 0;
   }
 
-  // Read hue from the preview buffer
+  // Read hue (component 0 of the stored HSB) from the preview buffer
   float hue_rad = 0.f;
   gboolean have_hue = FALSE;
   dt_iop_gui_enter_critical_section(self);
@@ -2716,7 +2737,7 @@ int mouse_moved(dt_iop_module_t *self,
   {
     const int cx = CLAMP((int)(pzx * bwidth),  0, bwidth  - 1);
     const int cy = CLAMP((int)(pzy * bheight), 0, bheight - 1);
-    hue_rad = buf[(size_t)cy * bwidth + cx];
+    hue_rad = buf[3 * ((size_t)cy * bwidth + cx)];
     have_hue = TRUE;
   }
   dt_iop_gui_leave_critical_section(self);
@@ -2871,7 +2892,80 @@ void gui_post_expose(dt_iop_module_t *self,
     correction_norm = value - 1.0f;
   }
 
-  const float sampled_color[3] = { cr_f, cg_f, cb_f };
+  // Module input/output colors at the cursor, read from the shared
+  // preview buffer (same HSB of the module *input* pixel that mouse_moved
+  // and scrolled use, stored by process() from the pre-correction values).
+  // The "out" color replays the exact process() correction math — the three
+  // RBF LUTs from the current params combined as in STEP 4/5 of process().
+  float in_color[3]  = { cr_f, cg_f, cb_f };
+  float out_color[3] = { cr_f, cg_f, cb_f };
+
+  if(g->pd.buf && g->pd.width > 0 && g->pd.height > 0 && g->gamut_LUT)
+  {
+    const int p_cx = CLAMP((int)(g->cursor_pos_x * g->pd.width),  0, (int)g->pd.width  - 1);
+    const int p_cy = CLAMP((int)(g->cursor_pos_y * g->pd.height), 0, (int)g->pd.height - 1);
+
+    // Read the 3 HSB components under one lock, like mouse_moved does.
+    float hue_in = 0.f, sat_in = 0.f, bright_in = 0.f;
+    gboolean have_hsb = FALSE;
+    dt_iop_gui_enter_critical_section(self);
+    const float *buf = g->pd.buf;
+    if(buf)
+    {
+      const size_t idx = (size_t)p_cy * g->pd.width + p_cx;
+      hue_in    = buf[3 * idx + 0];
+      sat_in    = buf[3 * idx + 1];
+      bright_in = buf[3 * idx + 2];
+      have_hsb = TRUE;
+    }
+    dt_iop_gui_leave_critical_section(self);
+
+    if(have_hsb)
+    {
+      // Rebuild the three RBF LUTs from the current params, exactly as
+      // commit_params() does for the pipe data.
+      float DT_ALIGNED_ARRAY sat_values[NODES];
+      float DT_ALIGNED_ARRAY hue_values[NODES];
+      float DT_ALIGNED_ARRAY bright_values[NODES];
+      float DT_ALIGNED_ARRAY LUT_hue[LUT_ELEM];
+      float DT_ALIGNED_ARRAY LUT_sat[LUT_ELEM];
+      float DT_ALIGNED_ARRAY LUT_bright[LUT_ELEM];
+
+      _pack_saturation(p, sat_values);
+      _periodic_RBF_interpolate(sat_values, M_PI_F, LUT_sat, p->hue_shift, TRUE);
+      _pack_hue(p, hue_values);
+      _periodic_RBF_interpolate(hue_values, 1.f / p->smoothing_hue * M_PI_F,
+                                LUT_hue, p->hue_shift, FALSE);
+      _pack_brightness(p, bright_values);
+      _periodic_RBF_interpolate(bright_values, M_PI_F, LUT_bright, p->hue_shift, TRUE);
+
+      // Corrections as in process() STEP 3/4 (hue is an offset, sat a gain,
+      // brightness a gain applied through b_corrections).
+      const float corr_hue  = lookup_gamut(LUT_hue, hue_in);
+      const float corr_sat  = lookup_gamut(LUT_sat, hue_in);
+      const float b_corr    = sat_in * (lookup_gamut(LUT_bright, hue_in) - 1.0f);
+
+      const float hue_out    = hue_in + corr_hue;
+      const float sat_out    = MAX(0.f, sat_in * (1.f + SAT_EFFECT * (corr_sat - 1.f)));
+      const float bright_out = MAX(0.f, bright_in * (1.f + BRIGHT_EFFECT * b_corr));
+
+      // gamut-map + convert to display RGB, same path as the module's
+      // sliders/graphs (g->white_adapted_profile may be NULL → sRGB fallback
+      // inside _build_dt_UCS_HSB_gradients).
+      dt_aligned_pixel_t RGB = { 1.f };
+      _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue_in, sat_in, bright_in, 1.0f },
+                                  RGB, g->white_adapted_profile, g->gamut_LUT);
+      in_color[0] = RGB[0];
+      in_color[1] = RGB[1];
+      in_color[2] = RGB[2];
+
+      _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue_out, sat_out, bright_out, 1.0f },
+                                  RGB, g->white_adapted_profile, g->gamut_LUT);
+      out_color[0] = RGB[0];
+      out_color[1] = RGB[1];
+      out_color[2] = RGB[2];
+    }
+  }
 
   // Crosshair/wedge/outline color adapts to the sampled background, same
   // spirit as the tone equalizer's cursor: white over dark content, black
@@ -2882,9 +2976,12 @@ void gui_post_expose(dt_iop_module_t *self,
 
   dt_draw_correction_cursor(cr, cx, cy, zoom_scale, correction_norm,
                             frame_color,
-                            sampled_color, FALSE,
-                            sampled_color, FALSE,
+                            in_color, FALSE,   // outer: module input color
+                            out_color, FALSE,  // inner: module output color
                             text);
+
+  // keep the graph's cursor indicator (white vertical line) in sync
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 /* _get_param_ptr — returns a direct pointer to the parameter value
@@ -3119,7 +3216,7 @@ int scrolled(dt_iop_module_t *self,
   {
     const int cx = CLAMP((int)(x * g->pd.width),  0, (int)g->pd.width  - 1);
     const int cy = CLAMP((int)(y * g->pd.height), 0, (int)g->pd.height - 1);
-    have_hue = dt_preview_data_get(&g->pd, cx, cy, &hue_rad);
+    have_hue = dt_preview_data_get(&g->pd, cx, cy, 0, &hue_rad);
   }
   if(!have_hue) return 0;
 
@@ -3669,6 +3766,7 @@ void gui_init(dt_iop_module_t *self)
   g->graph_cursor_x = 0.f;
   g->graph_cursor_valid = FALSE;
   dt_preview_data_alloc(&g->pd, self);
+  g->pd.components = 3; // store the HSB of the module input pixel per sample
   for(dt_iop_colorequal_channel_t chan = 0; chan < NUM_CHANNELS; chan++)
   {
     g->b_data[chan] = NULL;

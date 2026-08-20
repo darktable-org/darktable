@@ -53,9 +53,10 @@ extern "C"
 
 typedef struct dt_preview_data_t
 {
-  float *buf;              // one float per pixel of the preview pipe
+  float *buf;              // components floats per pixel of the preview pipe
   size_t width;            // buffer width in pixels
   size_t height;           // buffer height in pixels
+  size_t components;       // floats per pixel (1 = scalar, default; e.g. 3 = HSB)
   dt_hash_t hash;          // cumulative pipe hash when the buffer was last filled
   const dt_iop_module_t *module;  // owning module
 } dt_preview_data_t;
@@ -123,19 +124,22 @@ void dt_preview_data_set_hash(dt_preview_data_t *pd,
                               const dt_dev_pixelpipe_iop_t *piece);
 
 /**
- * Read the scalar value at buffer pixel (x, y).
+ * Read a component of the per-pixel value at buffer pixel (x, y).
  *
  * Thread-safe: takes the module GUI lock around the read.
  * Returns TRUE and fills *value on success, FALSE if there is no data
- * stored yet or if (x, y) is outside the buffer.
+ * stored yet, if (x, y) is outside the buffer or if comp is out of the
+ * [0, components) range.
  *
  * @param x, y: coordinates in buffer pixels.  The mapping from the
  *              cursor position to buffer pixels is module specific and
  *              must be done by the caller (see comment at top of file).
+ * @param comp: component index, in [0, components).
  */
 gboolean dt_preview_data_get(dt_preview_data_t *pd,
                              const size_t x,
                              const size_t y,
+                             const size_t comp,
                              float *value);
 
 /**

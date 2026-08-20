@@ -169,8 +169,8 @@ static inline void _dt_draw_cursor_circle(cairo_t *cr,
  * pointerx, pointery: cursor position, in the same coordinate space as
  *   the rest of the module's gui_post_expose() drawing.
  * correction_norm: signed magnitude of the correction, roughly in
- *   [-1 ; 1] (not clamped here — pre-scale if your natural range is
- *   larger); drives the wedge's angular span, up to ±45°.
+ *   [-1 ; 1] (values are clamped to that range here — pre-scale if your
+ *   natural range is larger); drives the wedge's angular span, up to ±90°.
  * frame_color: color of the wedge outline, the crosshair/ground-level
  *   lines, and the outline stroked around both circles.
  * outer_color, inner_color: fill colors of the outer (radius 16) and
@@ -200,16 +200,17 @@ static inline void dt_draw_correction_cursor(cairo_t *cr,
   const double setting_offset_x = (outer_radius + 4.0 * padding) / zoom_scale;
   const double fill_width = DT_PIXEL_APPLY_DPI(4.0 / zoom_scale);
 
-  // wedge showing the magnitude/direction of the correction
+  // wedge showing the magnitude/direction of the correction.
+  // Opens up to ±90° (M_PI_2) at full magnitude (|correction_norm| = 1),
+  // whereas a neutral (0) correction leaves a bare horizontal bar.
+  const double wedge_end = M_PI + CLAMP(correction_norm, -1.0, 1.0) * M_PI_2;
   cairo_set_source_rgb(cr, frame_color[0], frame_color[1], frame_color[2]);
   cairo_set_line_width(cr, 2.0 * fill_width);
   cairo_move_to(cr, pointerx - setting_offset_x, pointery);
-  if(correction_norm > 0.0f)
-    cairo_arc(cr, pointerx, pointery, setting_offset_x,
-             M_PI, M_PI + correction_norm * M_PI_4);
+  if(correction_norm >= 0.0f)
+    cairo_arc(cr, pointerx, pointery, setting_offset_x, M_PI, wedge_end);
   else
-    cairo_arc_negative(cr, pointerx, pointery, setting_offset_x,
-                       M_PI, M_PI + correction_norm * M_PI_4);
+    cairo_arc_negative(cr, pointerx, pointery, setting_offset_x, M_PI, wedge_end);
   cairo_stroke(cr);
 
   // ground-level reference bars
