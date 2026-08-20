@@ -606,6 +606,48 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
+static gboolean _dt_ctl_reload_view(gpointer user_data)
+{
+  const dt_view_t *view = (const dt_view_t*)user_data;
+  dt_view_manager_switch_by_view(darktable.view_manager, view);
+  return G_SOURCE_REMOVE;
+}
+
+/* Run a view switch now when it is safe, but never while GTK is propagating an
+ * event.  A view switch removes the old view's widgets from their containers
+ * and can therefore unrealize a widget which GTK still has to visit for the
+ * current event.  g_main_context_invoke() is not enough here: when called by
+ * the GUI thread that owns the default context it invokes the callback
+ * synchronously.  A high-priority idle is genuinely deferred until the
+ * current event has returned to GTK, while still running before the next
+ * normal-priority input source. */
+static void _dt_ctl_switch_mode_invoke(GSourceFunc callback,
+                                       gpointer data,
+                                       GDestroyNotify notify)
+{
+  GMainContext *context = g_main_context_default();
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  /* GTK4 has no process-wide current event.  Keep the invariant unconditional
+   * rather than trying to infer event delivery from the main-context owner. */
+  g_idle_add_full(G_PRIORITY_HIGH, callback, data, notify);
+  return;
+#else
+  if(g_main_context_is_owner(context))
+  {
+    GdkEvent *event = gtk_get_current_event();
+    if(event)
+    {
+      gdk_event_free(event);
+      g_idle_add_full(G_PRIORITY_HIGH, callback, data, notify);
+      return;
+    }
+  }
+
+  g_main_context_invoke_full(context, G_PRIORITY_DEFAULT, callback, data, notify);
+#endif
+}
+
 void dt_ctl_switch_mode_to(const char *mode)
 {
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -617,14 +659,21 @@ void dt_ctl_switch_mode_to(const char *mode)
     return;
   }
 
-  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, (gpointer)mode);
+  // Own the string: a genuinely deferred callback cannot borrow a caller's
+  // stack or temporary storage.
+  _dt_ctl_switch_mode_invoke(_dt_ctl_switch_mode_to, g_strdup(mode), g_free);
 }
 
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view)
 {
   if(view == dt_view_manager_get_current_view(darktable.view_manager))
     return;
-  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to_by_view, (gpointer)view);
+  _dt_ctl_switch_mode_invoke(_dt_ctl_switch_mode_to_by_view, (gpointer)view, NULL);
+}
+
+void dt_ctl_reload_view(const dt_view_t *view)
+{
+  _dt_ctl_switch_mode_invoke(_dt_ctl_reload_view, (gpointer)view, NULL);
 }
 
 void dt_ctl_switch_mode()
