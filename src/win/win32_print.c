@@ -1347,167 +1347,95 @@ DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
 
 
 
-              
-// --- DEBUG: force a tiny solid red image at the page origin ---
+
+// --- smoke test: draw a solid red rectangle with no image resource ---
 {
-  BYTE debug_rgb[10 * 10 * 3];
-  for(int i = 0; i < 10 * 10; i++)
+  IXpsOMSolidColorBrush *brush = NULL;
+  IXpsOMPath *path = NULL;
+  IXpsOMGeometry *geom = NULL;
+  IXpsOMGeometryFigure *figure = NULL;
+  IXpsOMGeometryFigureCollection *figures = NULL;
+  IXpsOMVisualCollection *visuals = NULL;
+
+  // XPS_COLOR order is usually A,R,G,B in float form
+  XPS_COLOR red = { 1.0f, 1.0f, 0.0f, 0.0f };
+
+  HRESULT hr_smoke = factory->lpVtbl->CreateSolidColorBrush(factory, &red, &brush);
+  DBG_MARK("CreateSolidColorBrush(smoke): hr=0x%08lx brush=%p", hr_smoke, (void *)brush);
+
+  if(SUCCEEDED(hr_smoke) && brush)
   {
-    debug_rgb[i * 3 + 0] = 0xFF; // R
-    debug_rgb[i * 3 + 1] = 0x00; // G
-    debug_rgb[i * 3 + 2] = 0x00; // B
-  }
+    hr_smoke = factory->lpVtbl->CreatePath(factory, &path);
+    DBG_MARK("CreatePath(smoke): hr=0x%08lx path=%p", hr_smoke, (void *)path);
 
-  IWICImagingFactory *wic = NULL;
-  IWICBitmap *bitmap = NULL;
-  IStream *png_stream = NULL;
-  IXpsOMImageResource *debug_resource = NULL;
-  IOpcPartUri *debug_uri = NULL;
-
-  HRESULT hr_debug = CoCreateInstance(&CLSID_WICImagingFactory,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      &IID_IWICImagingFactory,
-                                      (void **)&wic);
-  if(SUCCEEDED(hr_debug) && wic)
-  {
-    hr_debug = wic->lpVtbl->CreateBitmapFromMemory(wic,
-                                                   10,
-                                                   10,
-                                                   &GUID_WICPixelFormat24bppRGB,
-                                                   10 * 3,
-                                                   sizeof(debug_rgb),
-                                                   debug_rgb,
-                                                   &bitmap);
-    DBG_MARK("CreateBitmapFromMemory(debug): hr=0x%08lx bitmap=%p", hr_debug, (void *)bitmap);
-
-    if(SUCCEEDED(hr_debug) && bitmap)
+    if(SUCCEEDED(hr_smoke) && path)
     {
-      hr_debug = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, &png_stream);
-      DBG_MARK("encode debug PNG: hr=0x%08lx stream=%p", hr_debug, (void *)png_stream);
+      hr_smoke = factory->lpVtbl->CreateGeometry(factory, &geom);
+      DBG_MARK("CreateGeometry(smoke): hr=0x%08lx geom=%p", hr_smoke, (void *)geom);
 
-      if(SUCCEEDED(hr_debug) && png_stream)
+      if(SUCCEEDED(hr_smoke) && geom)
       {
-        hr_debug = factory->lpVtbl->CreatePartUri(factory, L"/Resources/debug-red.png", &debug_uri);
-        DBG_MARK("CreatePartUri(debug): hr=0x%08lx uri=%p", hr_debug, (void *)debug_uri);
+        XPS_POINT start = { 0.0f, 0.0f };
+        XPS_SEGMENT_TYPE seg_types[4] = {
+          XPS_SEGMENT_TYPE_LINE,
+          XPS_SEGMENT_TYPE_LINE,
+          XPS_SEGMENT_TYPE_LINE,
+          XPS_SEGMENT_TYPE_LINE
+        };
+        FLOAT seg_data[8] = {
+          100.0f, 0.0f,
+          100.0f, 100.0f,
+          0.0f, 100.0f,
+          0.0f, 0.0f
+        };
+        WINBOOL seg_strokes[4] = { TRUE, TRUE, TRUE, TRUE };
 
-        if(SUCCEEDED(hr_debug) && debug_uri)
+        hr_smoke = factory->lpVtbl->CreateGeometryFigure(factory, &start, &figure);
+        DBG_MARK("CreateGeometryFigure(smoke): hr=0x%08lx figure=%p", hr_smoke, (void *)figure);
+
+        if(SUCCEEDED(hr_smoke) && figure)
         {
-          hr_debug = factory->lpVtbl->CreateImageResource(factory,
-                                                          png_stream,
-                                                          XPS_IMAGE_TYPE_PNG,
-                                                          debug_uri,
-                                                          &debug_resource);
-          DBG_MARK("CreateImageResource(debug): hr=0x%08lx res=%p",
-                   hr_debug, (void *)debug_resource);
+          hr_smoke = figure->lpVtbl->SetSegments(figure, 4, 8, seg_types, seg_data, seg_strokes);
+          if(SUCCEEDED(hr_smoke))
+            hr_smoke = figure->lpVtbl->SetIsClosed(figure, TRUE);
+          if(SUCCEEDED(hr_smoke))
+            hr_smoke = figure->lpVtbl->SetIsFilled(figure, TRUE);
 
-          if(debug_uri) debug_uri->lpVtbl->Release(debug_uri);
-        }
-      }
-    }
-
-    if(bitmap) bitmap->lpVtbl->Release(bitmap);
-    if(wic) wic->lpVtbl->Release(wic);
-  }
-
-  if(SUCCEEDED(hr_debug) && debug_resource)
-  {
-    hr_debug = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)debug_resource);
-    DBG_MARK("AddResource(debug): hr=0x%08lx", hr_debug);
-
-    if(SUCCEEDED(hr_debug))
-    {
-      IXpsOMImageBrush *brush = NULL;
-      IXpsOMPath *path = NULL;
-      IXpsOMGeometry *geom = NULL;
-      IXpsOMGeometryFigure *figure = NULL;
-      IXpsOMGeometryFigureCollection *figures = NULL;
-      IXpsOMVisualCollection *visuals = NULL;
-
-      XPS_RECT viewbox = { 0.0f, 0.0f, 10.0f, 10.0f };
-      XPS_RECT viewport = { 0.0f, 0.0f, 10.0f, 10.0f };
-
-      hr_debug = factory->lpVtbl->CreateImageBrush(factory, debug_resource, &viewbox, &viewport, &brush);
-      DBG_MARK("CreateImageBrush(debug): hr=0x%08lx brush=%p", hr_debug, (void *)brush);
-
-      if(SUCCEEDED(hr_debug))
-      {
-        hr_debug = factory->lpVtbl->CreatePath(factory, &path);
-        DBG_MARK("CreatePath(debug): hr=0x%08lx path=%p", hr_debug, (void *)path);
-
-        if(SUCCEEDED(hr_debug))
-        {
-          hr_debug = factory->lpVtbl->CreateGeometry(factory, &geom);
-          DBG_MARK("CreateGeometry(debug): hr=0x%08lx geom=%p", hr_debug, (void *)geom);
-
-          if(SUCCEEDED(hr_debug))
+          if(SUCCEEDED(hr_smoke))
           {
-            XPS_POINT start = { 0.0f, 0.0f };
-            XPS_SEGMENT_TYPE seg_types[4] = {
-              XPS_SEGMENT_TYPE_LINE,
-              XPS_SEGMENT_TYPE_LINE,
-              XPS_SEGMENT_TYPE_LINE,
-              XPS_SEGMENT_TYPE_LINE
-            };
-            FLOAT seg_data[8] = {
-              10.0f, 0.0f,
-              10.0f, 10.0f,
-              0.0f, 10.0f,
-              0.0f, 0.0f
-            };
-            WINBOOL seg_strokes[4] = { TRUE, TRUE, TRUE, TRUE };
-
-            hr_debug = factory->lpVtbl->CreateGeometryFigure(factory, &start, &figure);
-            DBG_MARK("CreateGeometryFigure(debug): hr=0x%08lx figure=%p", hr_debug, (void *)figure);
-
-            if(SUCCEEDED(hr_debug) && figure)
-            {
-              hr_debug = figure->lpVtbl->SetSegments(figure, 4, 8, seg_types, seg_data, seg_strokes);
-              if(SUCCEEDED(hr_debug))
-                hr_debug = figure->lpVtbl->SetIsClosed(figure, TRUE);
-              if(SUCCEEDED(hr_debug))
-                hr_debug = figure->lpVtbl->SetIsFilled(figure, TRUE);
-            }
-
-            if(SUCCEEDED(hr_debug))
-            {
-              hr_debug = geom->lpVtbl->GetFigures(geom, &figures);
-              if(SUCCEEDED(hr_debug) && figures)
-                hr_debug = figures->lpVtbl->Append(figures, figure);
-            }
-
-            if(SUCCEEDED(hr_debug))
-            {
-              hr_debug = path->lpVtbl->SetGeometryLocal(path, geom);
-              if(SUCCEEDED(hr_debug))
-                hr_debug = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
-
-              if(SUCCEEDED(hr_debug))
-              {
-                hr_debug = page->lpVtbl->GetVisuals(page, &visuals);
-                if(SUCCEEDED(hr_debug) && visuals)
-                  hr_debug = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
-                DBG_MARK("append debug image to page: hr=0x%08lx", hr_debug);
-              }
-            }
+            hr_smoke = geom->lpVtbl->GetFigures(geom, &figures);
+            if(SUCCEEDED(hr_smoke) && figures)
+              hr_smoke = figures->lpVtbl->Append(figures, figure);
           }
         }
       }
 
-      if(path) path->lpVtbl->Release(path);
-      if(geom) geom->lpVtbl->Release(geom);
-      if(figure) figure->lpVtbl->Release(figure);
-      if(figures) figures->lpVtbl->Release(figures);
-      if(brush) brush->lpVtbl->Release(brush);
-      if(visuals) visuals->lpVtbl->Release(visuals);
-    }
+      if(SUCCEEDED(hr_smoke))
+      {
+        hr_smoke = path->lpVtbl->SetGeometryLocal(path, geom);
+        if(SUCCEEDED(hr_smoke))
+          hr_smoke = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
 
-    debug_resource->lpVtbl->Release(debug_resource);
+        if(SUCCEEDED(hr_smoke))
+        {
+          hr_smoke = page->lpVtbl->GetVisuals(page, &visuals);
+          if(SUCCEEDED(hr_smoke) && visuals)
+            hr_smoke = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
+
+          DBG_MARK("append smoke rectangle to page: hr=0x%08lx", hr_smoke);
+        }
+      }
+    }
   }
 
-  if(png_stream) png_stream->lpVtbl->Release(png_stream);
+  if(brush) brush->lpVtbl->Release(brush);
+  if(path) path->lpVtbl->Release(path);
+  if(geom) geom->lpVtbl->Release(geom);
+  if(figure) figure->lpVtbl->Release(figure);
+  if(figures) figures->lpVtbl->Release(figures);
+  if(visuals) visuals->lpVtbl->Release(visuals);
 }
-// --- end debug image ---
+// --- end smoke test ---
 
 
 
