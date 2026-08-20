@@ -214,14 +214,45 @@ typedef struct dt_iop_spektrafilm_params_t
   float print_diffusion_warmth;   // $MIN: -1.5 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "print diffusion halo warmth"
   gboolean grain_on;        // $DEFAULT: TRUE $DESCRIPTION: "enable grain"
   float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain strength"
-  float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain size"
+  /* Was "grain size", which it never was: it only ever scaled the blur applied
+     to the sampled grain, leaving the particle population untouched, so raising
+     it smoothed the grain rather than coarsening it. It is the reference's
+     GrainParams.blur, whose own description calls it a blur sigma to raise at
+     high magnification, and it keeps that job under an honest name. Actual
+     coarseness is grain_granularity below. */
+  float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain blur"
+  /* The reference's GrainParams.rms_granularity, as a scale on the stock's own
+     datasheet figure rather than an absolute: it is per-channel there (6/8/10
+     for the default profile), and a single multiplier keeps a film's measured
+     colour balance while moving all three together. Particle area goes as the
+     square of it, so this is the control that actually makes grain coarser --
+     bigger particles, fewer of them, more fluctuation at every density. */
+  float grain_granularity;  // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "granularity"
+  /* GrainParams.uniformity, again as a scale. Lower bends the noise toward the
+     Selwyn bell -- grain that grows and then falls away again with density
+     rather than rising forever. */
+  float grain_uniformity;   // $MIN: 0.5 $MAX: 1.03 $DEFAULT: 1.0 $DESCRIPTION: "uniformity"
+  /* GrainParams.particle_scale_sublayers, as a scale on the whole array. Real
+     emulsions layer coarse crystals over fine ones; this moves the finer
+     sub-layers relative to the coarsest, which stays the reference at 1. */
+  float grain_sublayer_scale; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "sublayer particle scale"
+  /* GrainParams.density_min, absolute as the reference has it. The floor each
+     grain particle sits at, and the reason grain does not vanish entirely in
+     clear film. Shared with the enlarger and scan table ranges, so it is a
+     property of the emulsion rather than of the drawing. */
+  float grain_density_min;  // $MIN: 0.0 $MAX: 0.2 $DEFAULT: 0.03 $DESCRIPTION: "density floor"
+  /* GrainParams.blur_dye_clouds_um, as a scale on the reference's own 2 um.
+     Each developed crystal produces a small cloud of dye rather than a hard
+     dot; this is how far that cloud spreads, in real emulsion units, so it only
+     becomes visible when a micrometre covers more than a pixel. */
+  float grain_dye_cloud;    // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "dye cloud size"
   /* The format combobox above picks a film GAUGE (35mm); this is the frame's
      LONG EDGE (36 mm). Both are right and both were called "format", which read
      as the preset contradicting the slider. */
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
-  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "grain recovery sharpness"
-  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.5 $DESCRIPTION: "grain recovery strength"
+  float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "recovery radius"
+  float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.5 $DESCRIPTION: "recovery strength"
   float film_gamma_factor;      // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "development gamma"
   float film_gamma_factor_fast; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "fast layer gamma"
   float film_gamma_factor_slow; // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "slow layer gamma"
@@ -287,6 +318,8 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *couplers_inhibition_same, *couplers_inhibition_inter;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
   GtkWidget *grain_on, *grain_amount, *grain_size;
+  GtkWidget *grain_granularity, *grain_uniformity, *grain_sublayer_scale;
+  GtkWidget *grain_density_min, *grain_dye_cloud;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
   GtkWidget *development_min, *print_development_min;
   GtkWidget *grain_usm_sigma, *grain_usm_amount;
@@ -913,6 +946,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->development_min, sizeof p->development_min);
   key = _mix64(key, &p->print_development_min, sizeof p->print_development_min);
   key = _mix64(key, &p->quality, sizeof p->quality);
+  /* these three rebuild the grain layer tables, which live in the sim */
+  key = _mix64(key, &p->grain_granularity, sizeof p->grain_granularity);
+  key = _mix64(key, &p->grain_uniformity, sizeof p->grain_uniformity);
+  key = _mix64(key, &p->grain_sublayer_scale, sizeof p->grain_sublayer_scale);
+  key = _mix64(key, &p->grain_density_min, sizeof p->grain_density_min);
   /* both change the tc LUT, which is built once per sim */
   key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
@@ -1118,6 +1156,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.y_filter_shift = p->filter_y;
     sp.couplers_active = (p->couplers_amount > 0.0f);
     sp.couplers_amount = p->couplers_amount;
+    sp.grain_rms_scale = p->grain_granularity;
+    sp.grain_uniformity_scale = p->grain_uniformity;
+    sp.grain_particle_scale = p->grain_sublayer_scale;
+    for(int c = 0; c < 3; c++) sp.grain_density_min[c] = p->grain_density_min;
     sp.coupler_diffusion_um = p->couplers_diffusion_um;
     sp.coupler_tail_um = p->couplers_tail_um;
     sp.coupler_tail_weight = p->couplers_tail_weight;
@@ -1541,7 +1583,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         const float npart_c = (float)layers.layer_npart[sl][c] * npart_scale;
         const float od_particle = (float)layers.layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-        dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
+        dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * d->p.grain_dye_cloud
+                           * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
       }
 
     float *raw[SF_GRAIN_MAX_SUBLAYERS] = { 0 };
@@ -2249,7 +2292,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         {
           const float npart_c = g->grain_layer_npart[sl][c] * npart_scale;
           const float od_particle = g->grain_layer_dmax[sl][c] / fmaxf(npart_c, 1e-6f);
-          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
+          dye_sigma[c][sl] = SF_GRAIN_DYE_BLUR_UM * d->p.grain_dye_cloud
+                           * sqrtf(fmaxf(od_particle, 0.0f)) * preview_scale;
         }
 
       cl_mem raw_buf[SF_GRAIN_MAX_SUBLAYERS] = { NULL };
@@ -2855,7 +2899,12 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
 
   const gboolean grn = p->grain_on;
   gtk_widget_set_sensitive(g->grain_amount, grn);
+  gtk_widget_set_sensitive(g->grain_granularity, grn);
+  gtk_widget_set_sensitive(g->grain_uniformity, grn);
+  gtk_widget_set_sensitive(g->grain_sublayer_scale, grn);
+  gtk_widget_set_sensitive(g->grain_density_min, grn);
   gtk_widget_set_sensitive(g->grain_size, grn);
+  gtk_widget_set_sensitive(g->grain_dye_cloud, grn);
   gtk_widget_set_sensitive(g->grain_usm_sigma, grn);
   gtk_widget_set_sensitive(g->grain_usm_amount, grn);
 
@@ -3731,34 +3780,95 @@ void gui_init(dt_iop_module_t *self)
 
   g->grain_on = _section_exempt(dt_bauhaus_toggle_from_params(self, "grain_on"));
 
-  _section_add(self, C_("section", "grain"));
+  /* The reference groups these as "pixel statistics" and "texture": the first
+     describes the emulsion, the second how it is drawn. Keeping that split
+     matters here because it is exactly the distinction that was missing --
+     granularity changes the film, blur only changes the rendering of it. */
+  _section_add(self, C_("section", "emulsion"));
+
+  g->grain_granularity = dt_bauhaus_slider_from_params(self, "grain_granularity");
+  dt_bauhaus_slider_set_soft_range(g->grain_granularity, 0.25f, 2.5f);
+  gtk_widget_set_tooltip_text(
+      g->grain_granularity,
+      _("how coarse the film's crystals are, relative to this stock's own\n"
+        "measured granularity. 1.0 is the datasheet figure.\n\n"
+        "this is the physical size control: the particles grow, there are fewer\n"
+        "of them, and the grain becomes stronger as well as coarser -- the same\n"
+        "way a faster film differs from a slower one. it rebuilds the emulsion,\n"
+        "so unlike grain strength it behaves the same on negative and slide film"));
 
   g->grain_amount = dt_bauhaus_slider_from_params(self, "grain_amount");
   dt_bauhaus_slider_set_soft_range(g->grain_amount, 0.0f, 2.0f);
-  gtk_widget_set_tooltip_text(g->grain_amount,
-                              _("grain strength (1.0 = film-accurate; drag up to 2,"
-                                " right-click to enter higher values -- useful for pushing"
-                                " naturally fine-grained stocks further than their"
-                                " catalogue amount allows)"));
+  gtk_widget_set_tooltip_text(
+      g->grain_amount,
+      _("how far the grain is allowed to move each pixel, scaling the result\n"
+        "rather than the emulsion. 1.0 is film-accurate, 0 is off.\n\n"
+        "note that a negative's grain is amplified again by the print stage,\n"
+        "while a slide is scanned directly with nothing to amplify it -- so the\n"
+        "same value reads much weaker on slide film. reach for granularity above\n"
+        "rather than pushing this past 2 (right-click for up to 8)"));
+
+  g->grain_uniformity = dt_bauhaus_slider_from_params(self, "grain_uniformity");
+  dt_bauhaus_slider_set_soft_range(g->grain_uniformity, 0.9f, 1.02f);
+  gtk_widget_set_tooltip_text(
+      g->grain_uniformity,
+      _("how evenly the crystals are distributed, relative to the stock's own\n"
+        "figure. lowering it bends the noise toward a bell: grain that peaks in\n"
+        "the midtones and eases off again in the densest areas, rather than\n"
+        "climbing all the way up"));
+
+  g->grain_sublayer_scale = dt_bauhaus_slider_from_params(self, "grain_sublayer_scale");
+  gtk_widget_set_tooltip_text(
+      g->grain_sublayer_scale,
+      _("a real emulsion layers coarse crystals over finer ones. this scales the\n"
+        "finer sub-layers against the coarsest, which stays fixed.\n"
+        "lower makes the fine layers finer still, so the coarse layer dominates;\n"
+        "at 0 only the coarsest layer is left. no effect on single-layer stocks"));
+
+  g->grain_density_min = dt_bauhaus_slider_from_params(self, "grain_density_min");
+  dt_bauhaus_slider_set_digits(g->grain_density_min, 3);
+  gtk_widget_set_tooltip_text(
+      g->grain_density_min,
+      _("the density each crystal sits at even where the film received no light,\n"
+        "which is why grain does not disappear entirely in clear areas.\n"
+        "typical stocks measure between 0.03 and 0.06"));
+
+  _section_add(self, C_("section", "texture"));
 
   g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
-  gtk_widget_set_tooltip_text(g->grain_size,
-                              _("grain particle size (1.0 = film default; higher = coarser)"));
+  gtk_widget_set_tooltip_text(
+      g->grain_size,
+      _("blur applied to the grain after it is drawn, in pixels. this softens\n"
+        "the grain rather than resizing it -- the crystals are unchanged.\n\n"
+        "raise it at high magnification, where one crystal covers several\n"
+        "pixels; lower it for small output. use granularity to make grain\n"
+        "genuinely coarser"));
 
-  _section_add(self, C_("section", "acutance recovery"));
+  g->grain_dye_cloud = dt_bauhaus_slider_from_params(self, "grain_dye_cloud");
+  gtk_widget_set_tooltip_text(
+      g->grain_dye_cloud,
+      _("each developed crystal leaves a small cloud of dye rather than a hard\n"
+        "dot. this scales how far that cloud spreads, measured on the film\n"
+        "itself, so it only becomes visible at magnifications where a single\n"
+        "crystal covers more than a pixel"));
 
   g->grain_usm_sigma = dt_bauhaus_slider_from_params(self, "grain_usm_sigma");
   dt_bauhaus_slider_set_soft_range(g->grain_usm_sigma, 0.0f, 3.0f);
-  gtk_widget_set_tooltip_text(g->grain_usm_sigma,
-                              _("sharpening radius (0 = off). "
-                                "higher = wider halos, lower = finer detail"));
+  gtk_widget_set_tooltip_text(
+      g->grain_usm_sigma,
+      _("radius of the recovery sharpening, in pixels. 0 switches it off.\n"
+        "a broad radius puts the crispness back in the mid detail range rather\n"
+        "than at the pixel level, which is what keeps the sampling grid from\n"
+        "showing through"));
 
   g->grain_usm_amount = dt_bauhaus_slider_from_params(self, "grain_usm_amount");
   dt_bauhaus_slider_set_soft_range(g->grain_usm_amount, 0.0f, 2.0f);
-  gtk_widget_set_tooltip_text(g->grain_usm_amount,
-                              _("sharpening strength (0 = off). "
-                                "restores crispness that the grain blur softened; "
-                                "overdo it and grain starts to look crunchy"));
+  gtk_widget_set_tooltip_text(
+      g->grain_usm_amount,
+      _("strength of the recovery sharpening, restoring what the grain blur\n"
+        "softened. it moves density around without adding any, so it is not a\n"
+        "denoiser and cannot invent detail. 0 switches it off; overdo it and\n"
+        "grain starts to look crunchy"));
 
   /* ---- tab 4: halation ---- */
   self->widget = dt_ui_notebook_page(g->notebook, N_("halation"), NULL);

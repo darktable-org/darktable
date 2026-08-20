@@ -1181,6 +1181,9 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   memcpy(p->gamma_inter_b_rg, gb, sizeof(gb));
   p->inhibition_samelayer = 1.0;
   p->inhibition_interlayer = 1.0;
+  p->grain_rms_scale = -1.0;
+  p->grain_uniformity_scale = -1.0;
+  p->grain_particle_scale = -1.0;
   p->coupler_diffusion_um = -1.0;
   p->coupler_tail_um = -1.0;
   p->coupler_tail_weight = -1.0;
@@ -2879,6 +2882,19 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
     sf_pack_film_grain(pack, film->stock, s->grain_rms, s->grain_uniformity,
                        p->grain_density_min, particle_scale, &n_scale);
     if(n_scale <= 0) n_scale = 3; /* pack had a "grain" entry but no scale array */
+    /* Caller overrides, applied before the layers are built so they change the
+       particle population itself. Scaling rms_granularity is the physical way
+       to make grain coarser or finer: particle area goes as its square, so the
+       particles get bigger and fewer, and the fluctuation grows accordingly at
+       every density. Uniformity is clamped below 1 because at 1 the Selwyn term
+       in the variance collapses. */
+    if(p->grain_rms_scale >= 0.0)
+      for(int c = 0; c < 3; c++) s->grain_rms[c] *= p->grain_rms_scale;
+    if(p->grain_uniformity_scale >= 0.0)
+      for(int c = 0; c < 3; c++)
+        s->grain_uniformity[c] = fmin(s->grain_uniformity[c] * p->grain_uniformity_scale, 0.999);
+    if(p->grain_particle_scale >= 0.0)
+      for(int i = 0; i < n_scale; i++) particle_scale[i] *= p->grain_particle_scale;
     _sf_build_grain_layers(s, film, p->grain_density_min, s->grain_uniformity,
                            s->grain_rms, particle_scale, n_scale);
   }
