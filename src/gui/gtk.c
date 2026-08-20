@@ -3216,7 +3216,7 @@ static void _ui_init_panel_left(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 1, 1, 1);
@@ -3256,7 +3256,7 @@ static void _ui_init_panel_right(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 3, 1, 1, 1);
@@ -3332,7 +3332,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 2, 3, 1);
