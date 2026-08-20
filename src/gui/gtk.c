@@ -2855,14 +2855,14 @@ static void _restore_default_modules(GtkMenuItem *menuitem,
   gchar *prefix = g_strdup_printf("plugins/%s/", cv->module_name);
   g_hash_table_foreach_remove(darktable.conf->table, _remove_modules_visibility, prefix);
   g_free(prefix);
-  dt_view_manager_switch_by_view(darktable.view_manager, cv);
+  dt_ctl_reload_view(cv);
 }
 
 static void _toggle_module_visibility(GtkMenuItem *menuitem,
                                       dt_lib_module_t *module)
 {
   dt_lib_set_visible(module, !dt_lib_is_visible(module));
-  dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
+  dt_ctl_reload_view(dt_view_manager_get_current_view(darktable.view_manager));
 }
 
 static void _add_remove_modules(dt_action_t *action)

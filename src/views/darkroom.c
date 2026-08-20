@@ -273,23 +273,49 @@ static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
   return DT_DARKROOM_LAYOUT_EDITING;
 }
 
+static gboolean _darkroom_module_is_active(const dt_view_t *view,
+                                           const dt_iop_module_t *module)
+{
+  if(!view || !module || view != dt_view_manager_get_current_view(darktable.view_manager)
+     || view->data != darktable.develop)
+    return FALSE;
+
+  // Trouble messages are delivered asynchronously and carry a borrowed module
+  // pointer.  Compare pointers while walking the live IOP list before reading
+  // anything from the payload; the old darkroom may have freed the module
+  // while its queued signal was waiting for the GUI thread.
+  const dt_develop_t *dev = view->data;
+  for(const GList *iter = dev->iop; iter; iter = g_list_next(iter))
+    if(iter->data == module)
+      return TRUE;
+
+  return FALSE;
+}
+
 void _display_module_trouble_message_callback(gpointer instance,
                                               dt_iop_module_t *module,
                                               const char *const trouble_msg,
                                               const char *const trouble_tooltip)
 {
-  GtkWidget *label_widget = NULL;
+  if(!_darkroom_module_is_active(instance, module)
+     || !module->gui_data
+     || !module->widget)
+    return;
 
-  if(module && module->has_trouble && module->widget)
+  GtkWidget *label_widget = NULL;
+  GtkWidget *module_widget = module->widget;
+  GtkWidget *module_parent = module_widget ? gtk_widget_get_parent(module_widget) : NULL;
+
+  if(module->has_trouble && module_parent && GTK_IS_CONTAINER(module_parent))
   {
-    label_widget = dt_gui_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
-    if(g_strcmp0(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
+    label_widget = dt_gui_container_first_child(GTK_CONTAINER(module_parent));
+    if(!label_widget || g_strcmp0(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
       label_widget = NULL;
   }
 
   if(trouble_msg && *trouble_msg)
   {
-    if(module && module->widget)
+    if(module_widget && module_parent && GTK_IS_BOX(module_parent))
     {
       if(label_widget)
       {
@@ -305,9 +331,8 @@ void _display_module_trouble_message_callback(gpointer instance,
         gtk_widget_set_name(label_widget, "iop-plugin-warning");
         dt_gui_add_class(label_widget, "dt_warning");
 
-        GtkWidget *iopw = gtk_widget_get_parent(module->widget);
-        gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
-        gtk_box_reorder_child(GTK_BOX(iopw), label_widget, 0);
+        gtk_box_pack_start(GTK_BOX(module_parent), label_widget, TRUE, TRUE, 0);
+        gtk_box_reorder_child(GTK_BOX(module_parent), label_widget, 0);
         gtk_widget_show(label_widget);
       }
 
@@ -858,7 +883,9 @@ void expose(dt_view_t *self,
         if(dev->image_invalid_cnt > 8)
         {
           dev->image_invalid_cnt = 0;
-          dt_view_manager_switch(darktable.view_manager, "lighttable");
+          // Do not tear down the darkroom while its expose callback is
+          // still being delivered.
+          dt_ctl_switch_mode_to("lighttable");
           g_free(load_txt);
           return;
         }

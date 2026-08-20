@@ -755,7 +755,7 @@ static void _pop_menu_update_filmstrip(GtkWidget *menuitem, dt_lib_module_t *sel
 static void _pop_menu_goto_collection(GtkWidget *menuitem, dt_lib_module_t *self)
 {
   if(_set_location_collection(self))
-    dt_view_manager_switch(darktable.view_manager, "lighttable");
+    dt_ctl_switch_mode_to("lighttable");
 }
 
 static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
