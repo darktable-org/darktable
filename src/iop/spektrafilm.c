@@ -282,6 +282,10 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *push_pull_stops, *film_gamma_factor;
   GtkWidget *film_gamma_factor_fast, *film_gamma_factor_slow, *film_developer_exhaustion;
   GtkWidget *quality, *adaptation_bandwidth, *adaptation_surface;
+  /* Last status the preview pipe reported, copied out of piece->data at the
+     end of commit_params(). The GUI cannot read piece->data itself: it has no
+     piece, and the pipes are torn down and rebuilt underneath it. */
+  char status_error[256], status_warning[256];
   GtkWidget *print_exposure_ev, *print_auto_exposure, *print_contrast;
   GtkWidget *filter_m, *filter_y, *couplers_amount;
   GtkWidget *couplers_diffusion_um, *couplers_tail_um, *couplers_tail_weight;
@@ -392,6 +396,11 @@ typedef struct dt_iop_spektrafilm_data_t
   uint64_t sim_key;  /* hash of everything the sim build depends on */
   char sim_error[256];
   char sim_warning[256];
+  /* Set by commit_params() for the preview pipe only, NULL everywhere else, so
+     that exactly one pipe publishes its status to the GUI (see _ensure_sim).
+     Letting every pipe write would have them racing over the same buffers for
+     no gain -- they all reach the same verdict from the same params. */
+  dt_iop_module_t *self;
   /* multi-sublayer grain GPU constant buffers (see process_cl's grain
      stage): built from d->gpu's grain_layer_* tables, which only change
      when d->gpu itself is rebuilt (a new film/paper/quality choice), never
@@ -845,6 +854,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 {
   dt_iop_spektrafilm_data_t *d = (dt_iop_spektrafilm_data_t *)piece->data;
   d->p = *(dt_iop_spektrafilm_params_t *)p1;
+  /* Only the preview pipe reports status to the module banner; see the field's
+     declaration. Re-set on every commit because a pipe can be rebuilt. */
+  d->self = dt_pipe_is_preview(pipe) ? self : NULL;
   /* the sim itself is (re)built lazily in process(), where the pipe's work
      profile is reliably known; a stale sim is detected via sim_key there. */
   /* exact-spectral quality has no GPU kernels: stay on the CPU path */
@@ -877,6 +889,10 @@ static int _quality_steps(dt_iop_spektrafilm_quality_t q)
 /* make sure d->sim matches the current params + work profile; returns the sim
    or NULL (passthrough). Called from process() under no assumption of being
    single-threaded (full/preview pipes run concurrently). */
+/* forward: _ensure_sim() posts the banner refresh from the pipe thread */
+static gboolean _trouble_idle_cb(gpointer user_data);
+static void _update_trouble_message(dt_iop_module_t *self);
+
 static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
                              const dt_iop_order_iccprofile_info_t *work_profile)
 {
@@ -929,6 +945,16 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->push_pull_stops, sizeof p->push_pull_stops);
   key = _mix64(key, m_in, sizeof m_in);
   key = _mix64(key, m_out, sizeof m_out);
+  /* Installing a data pack changes no parameter, so without this the key still
+     matches and a sim built against the old data is handed straight back --
+     along with whatever warning it recorded. That is what left a "developed
+     with a different spectral table" banner standing after the matching pack
+     had been downloaded and installed, until the darkroom was left and
+     re-entered and piece->data was rebuilt from scratch. The generation is
+     bumped once per successful install, so this only forces a rebuild when
+     something actually arrived. */
+  const guint fetch_gen = sf_fetch_generation();
+  key = _mix64(key, &fetch_gen, sizeof fetch_gen);
 
   dt_pthread_mutex_lock(&d->lock);
   if(d->sim && d->sim_key == key)
@@ -972,7 +998,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   char want_dir[SF_PATH_LEN];
   _resolve_pack_dir(p->lut_hash, want_dir, sizeof want_dir);
 
-  const guint gen = sf_fetch_generation();
+  const guint gen = fetch_gen;
 
   dt_pthread_mutex_lock(&_pack_lock);
   /* The loaded pack and the error from failing to load both belong to one
@@ -1019,7 +1045,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   {
     /* Without this the module renders nothing behind an empty trouble banner
        and the reason only ever reaches the terminal. */
-    g_strlcpy(d->sim_error, pack_error[0] ? pack_error : "no data pack found",
+    g_strlcpy(d->sim_error,
+              pack_error[0] ? pack_error
+                            : _("no data pack installed\n"
+                                "use the download button in the module to fetch one"),
               sizeof d->sim_error);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
@@ -1031,7 +1060,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(!_resolve_stock(entries, p->film_hash, FALSE, "kodak_portra_400", film_stock,
                      sizeof film_stock))
   {
-    g_strlcpy(d->sim_error, "no filming profiles found", sizeof d->sim_error);
+    g_strlcpy(d->sim_error,
+              _("the installed data pack contains no film stocks\n"
+                "it may have downloaded incompletely -- try fetching it again"),
+              sizeof d->sim_error);
     dt_print(DT_DEBUG_DEV, "[spektrafilm] no filming profiles under %s/profiles\n",
              pack_dir);
     g_list_free_full(entries, g_free);
@@ -1048,7 +1080,10 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      && !_resolve_stock(entries, p->paper_hash, TRUE, target_print, paper_stock,
                         sizeof paper_stock))
   {
-    g_strlcpy(d->sim_error, "no printing profiles found", sizeof d->sim_error);
+    g_strlcpy(d->sim_error,
+              _("the installed data pack contains no print papers\n"
+                "it may have downloaded incompletely -- try fetching it again"),
+              sizeof d->sim_error);
     dt_print(DT_DEBUG_DEV, "[spektrafilm] no printing profiles under %s/profiles\n",
              pack_dir);
     g_list_free_full(entries, g_free);
@@ -1085,7 +1120,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      only branch that reports err sits inside the "film loaded" path below, so
      this failure rendered as a silently disabled module. */
   if(!film || (!paper && !p->scan_film))
-    g_strlcpy(d->sim_error, err ? err : "profile could not be loaded",
+    g_strlcpy(d->sim_error, err ? err : _("this film or paper could not be loaded"),
               sizeof d->sim_error);
 
   if(film && (paper || p->scan_film))
@@ -1182,6 +1217,25 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(paper) sf_profile_free(paper);
 
   sf_sim_t *s = d->sim;
+  /* Hand the outcome to the GUI while it is fresh. The banner is set from
+     gui_update(), which has no piece to read this out of, and the strings are
+     only ever written here -- so copying them out at the one point they settle
+     is both the cheapest and the only reliable moment. Guarded on the module
+     having a GUI at all, since export pipes run with none. */
+  dt_iop_spektrafilm_gui_data_t *g = d->self ? d->self->gui_data : NULL;
+  if(g
+     && (strcmp(g->status_error, d->sim_error)
+         || strcmp(g->status_warning, d->sim_warning)))
+  {
+    g_strlcpy(g->status_error, d->sim_error, sizeof g->status_error);
+    g_strlcpy(g->status_warning, d->sim_warning, sizeof g->status_warning);
+    /* The banner is only redrawn from gui_update(), which a pipe run does not
+       trigger -- without this it would show the previous run's verdict until
+       something else happened to refresh the module. Only on an actual change,
+       so an unchanging error costs nothing, and through the main loop because
+       this runs on a pipe thread. */
+    g_idle_add(_trouble_idle_cb, d->self);
+  }
   dt_pthread_mutex_unlock(&d->lock);
   return s;
 }
@@ -3035,15 +3089,26 @@ static void _data_button_clicked(GtkButton *button, dt_iop_module_t *self)
    data pack, an unreadable profile or a spectral-table mismatch all produced a
    silently wrong or blank render. Route them to the module's trouble banner,
    which is darktable's own mechanism for exactly this. */
+/* Refresh the banner from the main loop, posted by _ensure_sim() when the
+   status changed. Rechecks gui_data, since the module can be collapsed or the
+   darkroom left between the pipe run and this firing. */
+static gboolean _trouble_idle_cb(gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self && self->gui_data) _update_trouble_message(self);
+  return G_SOURCE_REMOVE;
+}
+
 static void _update_trouble_message(dt_iop_module_t *self)
 {
-  const dt_iop_spektrafilm_data_t *d = (const dt_iop_spektrafilm_data_t *)self->data;
+  const dt_iop_spektrafilm_gui_data_t *g =
+      (const dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   _update_data_row(self);
-  if(!d) return;
-  if(d->sim_error[0])
-    dt_iop_set_module_trouble_message(self, _("cannot render"), d->sim_error, NULL);
-  else if(d->sim_warning[0])
-    dt_iop_set_module_trouble_message(self, _("data mismatch"), d->sim_warning, NULL);
+  if(!g) return;
+  if(g->status_error[0])
+    dt_iop_set_module_trouble_message(self, _("cannot render"), g->status_error, NULL);
+  else if(g->status_warning[0])
+    dt_iop_set_module_trouble_message(self, _("data mismatch"), g->status_warning, NULL);
   else
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
