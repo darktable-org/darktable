@@ -1578,11 +1578,10 @@ bool dt_win_print_file(const dt_images_box *imgs,
     return false;
   }
 
+  // Keep the XPS loader in place for the real print-job path.
   if(!_win_xpsprint_ensure_loaded())
   {
-    DBG_MARK("xpsprint loader failed");
-    CoUninitialize();
-    return false;
+    DBG_MARK("xpsprint loader failed; continuing with direct XPS package test only");
   }
 
   IXpsOMObjectFactory *factory = NULL;
@@ -1600,6 +1599,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
   IXpsOMGeometryFigureCollection *figures = NULL;
   IXpsOMVisualCollection *visuals = NULL;
 
+  // Build XPS package object model
   hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
                         NULL,
                         CLSCTX_INPROC_SERVER,
@@ -1705,12 +1705,13 @@ bool dt_win_print_file(const dt_images_box *imgs,
     goto cleanup;
   }
 
+  // Build red square / smoke-box test
   XPS_COLOR red = {0};
   red.colorType = XPS_COLOR_TYPE_SRGB;
   red.value.sRGB.alpha = 255;
-  red.value.sRGB.red = 255;
+  red.value.sRGB.red   = 255;
   red.value.sRGB.green = 0;
-  red.value.sRGB.blue = 0;
+  red.value.sRGB.blue  = 0;
 
   hr = factory->lpVtbl->CreateSolidColorBrush(factory, &red, NULL, &brush);
   DBG_MARK("CreateSolidColorBrush: hr=0x%08lx brush=%p", hr, (void *)brush);
@@ -1822,126 +1823,185 @@ bool dt_win_print_file(const dt_images_box *imgs,
     goto cleanup;
   }
 
-  // Seek back to start so we can copy the finished XPS package into the job output stream.
-  LARGE_INTEGER zero = {0};
-  hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
-  DBG_MARK("Seek package stream: hr=0x%08lx", hr);
-
-  if(FAILED(hr))
+  // Direct XPS file save: validates the package bytes themselves.
   {
-    DBG_MARK("Seek package stream failed");
-    goto cleanup;
-  }
+    LARGE_INTEGER zero = {0};
+    hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
+    DBG_MARK("Seek package stream: hr=0x%08lx", hr);
 
-  // Use the actual printer if available, otherwise use a safe fallback.
-  // This prints to an XPS file, not directly to PDF.
-  const wchar_t *printer_name = pinfo && pinfo->printer.name
-      ? g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL)
-      : L"Microsoft Print to PDF";
-
-  // If you want a true file, this is the output path we write to.
-  // For PDF, you must swap the target printer or convert XPS->PDF afterward.
-  const wchar_t *output_file = L"C:\\temp\\darktable_debug_redbox.xps";
-
-  // Build job title for the XPS print job.
-  WCHAR job_name_buf[256];
-  DWORD job_name_len = 0;
-
-  if(job_title && job_title[0])
-  {
-    MultiByteToWideChar(CP_UTF8, 0, job_title, -1, job_name_buf, 255);
-    job_name_buf[255] = 0;
-  }
-  else
-  {
-    wcscpy(job_name_buf, L"darktable-debug-redbox");
-  }
-
-  HANDLE progressEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
-  HANDLE completionEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
-
-  if(!progressEvent || !completionEvent)
-  {
-    DBG_MARK("CreateEvent failed for XPS print job");
-    if(progressEvent) CloseHandle(progressEvent);
-    if(completionEvent) CloseHandle(completionEvent);
-    goto cleanup;
-  }
-
-  IXpsPrintJob *xpsJob = NULL;
-  IXpsPrintJobStream *docStream = NULL;
-  IXpsPrintJobStream *ticketStream = NULL;
-
-  hr = pStartXpsPrintJob(
-      printer_name,
-      job_name_buf,
-      output_file,
-      progressEvent,
-      completionEvent,
-      NULL,
-      0,
-      &xpsJob,
-      &docStream,
-      &ticketStream);
-
-  DBG_MARK("StartXpsPrintJob: hr=0x%08lx xpsJob=%p docStream=%p ticketStream=%p",
-           hr, (void *)xpsJob, (void *)docStream, (void *)ticketStream);
-
-  if(SUCCEEDED(hr) && xpsJob && docStream)
-  {
-    BYTE buffer[4096];
-    ULONG total_written = 0;
-
-    for(;;)
+    if(SUCCEEDED(hr))
     {
-      ULONG read = 0;
-      hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
-      if(FAILED(hr))
+      HANDLE hFile = CreateFileW(L"C:\\temp\\darktable_debug_redbox.xps",
+                                GENERIC_WRITE,
+                                0,
+                                NULL,
+                                CREATE_ALWAYS,
+                                FILE_ATTRIBUTE_NORMAL,
+                                NULL);
+
+      if(hFile != INVALID_HANDLE_VALUE)
       {
-        DBG_MARK("package_stream Read failed: hr=0x%08lx", hr);
-        break;
+        BYTE buffer[4096];
+        for(;;)
+        {
+          ULONG read = 0;
+          hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+          if(FAILED(hr))
+          {
+            DBG_MARK("package_stream Read failed: hr=0x%08lx", hr);
+            break;
+          }
+
+          if(read == 0)
+          {
+            hr = S_OK;
+            break;
+          }
+
+          DWORD written = 0;
+          if(!WriteFile(hFile, buffer, read, &written, NULL))
+          {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            DBG_MARK("WriteFile for direct XPS package failed: hr=0x%08lx", hr);
+            break;
+          }
+        }
+
+        CloseHandle(hFile);
+        DBG_MARK("saved direct XPS package to C:\\temp\\darktable_debug_redbox.xps hr=0x%08lx", hr);
       }
-
-      if(read == 0)
+      else
       {
-        hr = S_OK;
-        break;
-      }
-
-      ULONG written = 0;
-      hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
-      total_written += written;
-
-      DBG_MARK("docStream Write: hr=0x%08lx read=%lu written=%lu",
-               hr, (unsigned long)read, (unsigned long)written);
-
-      if(FAILED(hr))
-      {
-        DBG_MARK("docStream Write failed: hr=0x%08lx", hr);
-        break;
+        DBG_MARK("CreateFileW for direct XPS package failed");
       }
     }
-
-    DBG_MARK("package copy complete: hr=0x%08lx total_written=%lu",
-             hr, (unsigned long)total_written);
-
-    if(docStream) docStream->lpVtbl->Close(docStream);
-    if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
-
-    WaitForSingleObject(completionEvent, INFINITE);
   }
-  else
+
+  // Real print-job path: attempt to print the exact same package to PDF.
+  if(pStartXpsPrintJob)
   {
-    DBG_MARK("StartXpsPrintJob failed or stream missing");
-    hr = E_FAIL;
+    gunichar2 *printer_name_utf16 = NULL;
+    const wchar_t *printer_name = L"Microsoft Print to PDF";
+    const wchar_t *output_file = L"C:\\temp\\darktable_debug_redbox.pdf";
+
+    if(pinfo && pinfo->printer.name)
+    {
+      printer_name_utf16 = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
+      if(printer_name_utf16)
+        printer_name = (const wchar_t *)printer_name_utf16;
+    }
+
+    WCHAR job_name_buf[256];
+    if(job_title && job_title[0])
+    {
+      MultiByteToWideChar(CP_UTF8, 0, job_title, -1, job_name_buf, 255);
+      job_name_buf[255] = 0;
+    }
+    else
+    {
+      wcscpy(job_name_buf, L"darktable-debug-redbox");
+    }
+
+    HANDLE progressEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+    HANDLE completionEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+
+    if(progressEvent && completionEvent)
+    {
+      IXpsPrintJob *xpsJob = NULL;
+      IXpsPrintJobStream *docStream = NULL;
+      IXpsPrintJobStream *ticketStream = NULL;
+
+      LARGE_INTEGER zero = {0};
+      hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
+      DBG_MARK("Seek package stream for print job: hr=0x%08lx", hr);
+
+      if(SUCCEEDED(hr))
+      {
+        hr = pStartXpsPrintJob(
+            printer_name,
+            job_name_buf,
+            output_file,
+            progressEvent,
+            completionEvent,
+            NULL,
+            0,
+            &xpsJob,
+            &docStream,
+            &ticketStream);
+
+        DBG_MARK("StartXpsPrintJob: hr=0x%08lx xpsJob=%p docStream=%p ticketStream=%p",
+                 hr, (void *)xpsJob, (void *)docStream, (void *)ticketStream);
+
+        if(SUCCEEDED(hr) && xpsJob && docStream)
+        {
+          BYTE buffer[4096];
+          for(;;)
+          {
+            ULONG read = 0;
+            hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+            if(FAILED(hr))
+            {
+              DBG_MARK("package_stream read for print job failed: hr=0x%08lx", hr);
+              break;
+            }
+
+            if(read == 0)
+            {
+              hr = S_OK;
+              break;
+            }
+
+            ULONG written = 0;
+            hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
+            DBG_MARK("docStream write: hr=0x%08lx read=%lu written=%lu",
+                     hr, (unsigned long)read, (unsigned long)written);
+
+            if(FAILED(hr))
+            {
+              DBG_MARK("docStream Write failed: hr=0x%08lx", hr);
+              break;
+            }
+          }
+
+          if(docStream)
+            docStream->lpVtbl->Close(docStream);
+
+          if(ticketStream)
+            ticketStream->lpVtbl->Close(ticketStream);
+
+          WaitForSingleObject(completionEvent, INFINITE);
+
+          if(xpsJob)
+          {
+            XPS_JOB_STATUS status = {0};
+            hr = xpsJob->lpVtbl->GetJobStatus(xpsJob, &status);
+            DBG_MARK("GetJobStatus: hr=0x%08lx status=%lu", hr, (unsigned long)status.jobStatus);
+          }
+        }
+        else
+        {
+          DBG_MARK("StartXpsPrintJob failed or missing streams");
+        }
+
+        if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
+        if(docStream) docStream->lpVtbl->Release(docStream);
+        if(ticketStream) ticketStream->lpVtbl->Release(ticketStream);
+      }
+
+      CloseHandle(progressEvent);
+      CloseHandle(completionEvent);
+    }
+    else
+    {
+      DBG_MARK("CreateEventW for print job failed");
+    }
+
+    if(printer_name_utf16)
+    {
+      g_free(printer_name_utf16);
+      printer_name_utf16 = NULL;
+    }
   }
-
-  if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
-  if(docStream) docStream->lpVtbl->Release(docStream);
-  if(ticketStream) ticketStream->lpVtbl->Release(ticketStream);
-
-  if(progressEvent) CloseHandle(progressEvent);
-  if(completionEvent) CloseHandle(completionEvent);
 
 cleanup:
   if(figure) figure->lpVtbl->Release(figure);
