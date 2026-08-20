@@ -668,7 +668,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
 
   GdkDevice *device = dt_gdk_event_get_source_device(event);
   const GdkScrollDirection direction = dt_gdk_event_get_scroll_direction(event);
-  const gboolean is_stop = gdk_event_is_scroll_stop_event(event);
+  const gboolean is_stop = dt_gdk_event_is_scroll_stop(event);
   const GdkModifierType state = dt_gdk_event_get_state(event);
   const gdouble x_root = dt_gdk_event_get_root_x(event);
   const gdouble y_root = dt_gdk_event_get_root_y(event);
