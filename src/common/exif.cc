@@ -4799,6 +4799,25 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
   return FALSE;
 }
 
+// append a brand-new (never-before-present) key/value pair straight onto
+// xmpData, without Exiv2::XmpData::operator[]'s implicit findKey() lookup.
+// operator[] always linear-scans the whole (vector-backed) xmpData first to
+// see whether the key already exists, even when the caller already knows it
+// doesn't -- for a history stack with many entries (each contributing several
+// masks_history[n]/history[n] array-element keys) that turns populating this
+// array into O(n^2) in the number of XMP entries, the same class of bug fixed
+// for tag removal in _remove_known_keys/_deleteXmpTag. Every masks_history[n]
+// and history[n] key below is a fresh index that cannot already exist in
+// xmpData (by the same "caller already stripped the known dt keys" contract
+// _remove_known_keys documents, relied on already by this function's own
+// xmpData.add() calls for the two top-level array keys), so add() is safe.
+template <typename T>
+static void _xmp_add_new(Exiv2::XmpData &xmpData, const char *key, const T &value)
+{
+  Exiv2::XmpTextValue v(Exiv2::toString(value));
+  xmpData.add(Exiv2::XmpKey(key), &v);
+}
+
 // add history metadata to XmpData
 static void _set_xmp_dt_history(Exiv2::XmpData &xmpData,
                                 const dt_imgid_t imgid,
@@ -4843,28 +4862,28 @@ static void _set_xmp_dt_history(Exiv2::XmpData &xmpData,
 
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_num", num);
-    xmpData[key] = mask_num;
+    _xmp_add_new(xmpData, key, mask_num);
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_id", num);
-    xmpData[key] = mask_id;
+    _xmp_add_new(xmpData, key, mask_id);
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_type", num);
-    xmpData[key] = mask_type;
+    _xmp_add_new(xmpData, key, mask_type);
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_name", num);
-    xmpData[key] = mask_name;
+    _xmp_add_new(xmpData, key, mask_name ? mask_name : "");
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_version", num);
-    xmpData[key] = mask_version;
+    _xmp_add_new(xmpData, key, mask_version);
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_points", num);
-    xmpData[key] = mask_d;
+    _xmp_add_new(xmpData, key, mask_d);
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_nb", num);
-    xmpData[key] = mask_nb;
+    _xmp_add_new(xmpData, key, mask_nb);
     snprintf(key, sizeof(key),
              "Xmp.darktable.masks_history[%d]/darktable:mask_src", num);
-    xmpData[key] = mask_src;
+    _xmp_add_new(xmpData, key, mask_src);
 
     free(mask_d);
     free(mask_src);
@@ -4912,27 +4931,27 @@ static void _set_xmp_dt_history(Exiv2::XmpData &xmpData,
 
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:num", num);
-    xmpData[key] = hist_num;
+    _xmp_add_new(xmpData, key, hist_num);
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:operation", num);
-    xmpData[key] = operation;
+    _xmp_add_new(xmpData, key, operation);
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:enabled", num);
-    xmpData[key] = enabled;
+    _xmp_add_new(xmpData, key, enabled);
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:modversion", num);
-    xmpData[key] = modversion;
+    _xmp_add_new(xmpData, key, modversion);
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:params", num);
-    xmpData[key] = params;
+    _xmp_add_new(xmpData, key, params);
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:multi_name", num);
-    xmpData[key] = multi_name ? multi_name : "";
+    _xmp_add_new(xmpData, key, multi_name ? multi_name : "");
     snprintf(key, sizeof(key),
              "Xmp.darktable.history[%d]/darktable:multi_name_hand_edited", num);
-    xmpData[key] = multi_name_hand_edited;
+    _xmp_add_new(xmpData, key, multi_name_hand_edited);
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
-    xmpData[key] = multi_priority;
+    _xmp_add_new(xmpData, key, multi_priority);
 
     if(blendop_blob)
     {
@@ -4942,10 +4961,10 @@ static void _set_xmp_dt_history(Exiv2::XmpData &xmpData,
         dt_exif_xmp_encode((const unsigned char *)blendop_blob, blendop_params_len, NULL);
       snprintf(key, sizeof(key),
                "Xmp.darktable.history[%d]/darktable:blendop_version", num);
-      xmpData[key] = blendop_version;
+      _xmp_add_new(xmpData, key, blendop_version);
       snprintf(key, sizeof(key),
                "Xmp.darktable.history[%d]/darktable:blendop_params", num);
-      xmpData[key] = blendop_params;
+      _xmp_add_new(xmpData, key, blendop_params);
       free(blendop_params);
     }
 
