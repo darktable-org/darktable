@@ -99,6 +99,8 @@ void dt_control_navigation_redraw(void);
 void dt_ctl_switch_mode(void);
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
+/* Rebuild an existing view without changing the selected mode. */
+void dt_ctl_reload_view(const dt_view_t *view);
 
 struct dt_control_t;
 

@@ -2416,6 +2416,10 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
   gtk_widget_destroy(module->expander ? module->expander : module->widget);
+  // Do not leave borrowed GTK pointers behind while asynchronous signals can
+  // still carry this module until the GUI thread drains their queue.
+  module->expander = NULL;
+  module->widget = NULL;
   dt_iop_gui_cleanup_blending(module);
   dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
