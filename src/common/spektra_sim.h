@@ -374,6 +374,18 @@ typedef struct sf_sim_params_t
   /* grain reference floor — used for table ranges even when grain itself
    * runs in the caller (reference: GrainParams.density_min) */
   double grain_density_min[3];  /* (0.03, 0.03, 0.03) */
+  /* [dt] Overrides for the per-stock grain statistics the pack supplies, which
+   * are what actually decide how coarse the grain is: rms_granularity sets the
+   * particle area through particle_area_from_rms_granularity(), so scaling it
+   * changes the particle population rather than post-multiplying the result.
+   * Negative means "keep the pack's", which is what a caller that does not care
+   * should pass. The reference exposes all three directly as GrainParams
+   * rms_granularity / uniformity / particle_scale_sublayers; these are scale
+   * factors instead, so a stock's own measured values stay the reference point
+   * and one slider can move all three channels together. */
+  double grain_rms_scale;       /* -1 = from pack */
+  double grain_uniformity_scale;/* -1 = from pack */
+  double grain_particle_scale;  /* -1 = from pack; scales the sub-layer areas */
 
   /* enlarger */
   const char *enlarger_illuminant; /* "TH-KG3" */
