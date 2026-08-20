@@ -916,7 +916,7 @@ static inline float _win_mm_to_diu(float mm)
   return mm / 25.4f * 96.0f;
 }
 
-static IXpsOMColorProfileResource *_win_build_color_profile_resource(IXpsOMObjectFactory *factory,
+/* static IXpsOMColorProfileResource *_win_build_color_profile_resource(IXpsOMObjectFactory *factory,
                                                                     const void *icc_data,
                                                                     size_t icc_size,
                                                                     const wchar_t *name)
@@ -952,7 +952,7 @@ static IXpsOMColorProfileResource *_win_build_color_profile_resource(IXpsOMObjec
   profile_stream->lpVtbl->Release(profile_stream);
   return profile_resource;
 }
-
+ */
 static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
                                                 IWICBitmapSource *bitmap,
                                                 IStream **stream_out)
@@ -1199,8 +1199,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
                        void *icc_data, size_t icc_size,
                        float width, float height)
 {
-  DBG_MARK("entering dt_win_print_file");
-
+DBG_MARK("starting XPS package build: printer=%s job=%s imgs=%d page=(%.3f, %.3f)",
+         pinfo->printer.name, job_title, imgs->count, page_width, page_height);
+         
   if(!imgs || imgs->count <= 0)
   {
     dt_control_log(_("no images to print on `%s'"), pinfo->printer.name);
@@ -1278,7 +1279,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                  hr, (void *)package_stream);
         IOpcPartUri *doc_seq_uri = NULL;
         hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
-        DBG_MARK("CreatePartUri: hr=0x%08lx doc_seq_uri=%p", hr, (void *)doc_seq_uri);
+DBG_MARK("CreatePartUri: hr=0x%08lx doc_seq_uri=%p", hr, (void *)doc_seq_uri);
 
         if(SUCCEEDED(hr) && package_stream)
         {
@@ -1296,29 +1297,32 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   NULL,
                   &writer);
 
-          DBG_MARK("CreatePackageWriterOnStream: hr=0x%08lx writer=%p",
+DBG_MARK("CreatePackageWriterOnStream: hr=0x%08lx writer=%p",
                    hr, (void *)writer);
 
           if(SUCCEEDED(hr) && writer)
           {
             IOpcPartUri *doc_uri = NULL;
             hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_uri);
-            
+DBG_MARK("CreatePartUri: hr=0x%08lx doc_uri=%p", hr, (void *)doc_uri);
             writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
             doc_seq_uri->lpVtbl->Release(doc_seq_uri);
             doc_uri->lpVtbl->Release(doc_uri);
 
             IXpsOMPage *page = NULL;
+DBG_MARK("page dims: requested width_mm=%.2f height_mm=%.2f -> diu width=%.6f height=%.6f",
+         width, height, page_width, page_height);
             XPS_SIZE page_size = { page_width, page_height };
-
+DBG_MARK("page_size: width=%.6f height=%.6f", page_size.width, page_size.height);
             IOpcPartUri *page_uri = NULL;
             hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc/Pages/1.fpage", &page_uri);
-            DBG_MARK("CreatePartUri: hr=0x%08lx page_uri=%p", hr, (void *)page_uri);
+DBG_MARK("CreatePartUri: hr=0x%08lx page_uri=%p", hr, (void *)page_uri);
             
             if(SUCCEEDED(hr) && page_uri)
             {
             hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", page_uri, &page);
-            DBG_MARK("CreatePage: hr=0x%08lx page=%p", hr, (void *)page);
+DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
+         page_size.width, page_size.height);
             page_uri->lpVtbl->Release(page_uri);
             }
 
@@ -1353,13 +1357,13 @@ bool dt_win_print_file(const dt_images_box *imgs,
               }
 
               writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
-              DBG_MARK("AddPage: hr=0x%08lx", hr);
-
+DBG_MARK("AddPage: hr=0x%08lx page=%p", hr, (void *)page);
               page->lpVtbl->Release(page);
               page = NULL;
             }
 
             writer->lpVtbl->Close(writer);
+            DBG_MARK("Close writer: hr=0x%08lx", hr);
             writer->lpVtbl->Release(writer);
             writer = NULL;
 
@@ -1378,6 +1382,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                 {
                   ULONG read = 0;
                   hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+                  DBG_MARK("read package stream: hr=0x%08lx", hr);                  
                   if(FAILED(hr))
                   {
                     DBG_MARK("package_stream Read failed: hr=0x%08lx", hr);
@@ -1393,7 +1398,8 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   ULONG written = 0;
                   hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
                   total_written += written;
-
+BG_MARK("docStream write: hr=0x%08lx read=%lu written=%lu", hr,
+         (unsigned long)read, (unsigned long)written);
                   if(FAILED(hr))
                   {
                     DBG_MARK("docStream Write failed: hr=0x%08lx written=%lu", hr, (unsigned long)written);
@@ -1436,7 +1442,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
     dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
   else
     dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
-
+DBG_MARK("XPS package finished: ok=%d hr=0x%08lx", ok, hr);
   return ok;
 }
 
