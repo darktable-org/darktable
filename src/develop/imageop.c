@@ -565,6 +565,11 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 
   DT_ENTER_GUI_UPDATE();
 
+  // GUI teardown destroys data and a mutex that commit_params()/process()
+  // may use. Stop every screen pipe and keep them locked until the module is
+  // removed from develop state and all pipe topologies are marked for rebuild.
+  dt_dev_pixelpipe_stop_and_lock_all(dev);
+
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
@@ -620,6 +625,8 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   dev->alliop = g_list_append(dev->alliop, module);
 
   dt_dev_pixelpipe_rebuild(dev);
+
+  dt_dev_pixelpipe_unlock_all(dev);
 
   /* redraw */
   dt_control_queue_redraw_center();
@@ -2412,6 +2419,7 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   dt_iop_gui_cleanup_blending(module);
   dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
+  module->gui_data = NULL;
 }
 
 void dt_iop_gui_update(dt_iop_module_t *module)
