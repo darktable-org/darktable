@@ -1169,7 +1169,7 @@ if(FAILED(hr)) goto cleanup;
       hr = page->lpVtbl->GetVisuals(page, &visuals);
       if(SUCCEEDED(hr) && visuals)
         hr = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
-        DBG_MARK("placed image on page: hr=0x%08lx", hr);
+      DBG_MARK("placed image on page: hr=0x%08lx", hr);
     }
   }
 
@@ -1277,7 +1277,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
         DBG_MARK("CreateStreamOnHGlobal: hr=0x%08lx package_stream=%p",
                  hr, (void *)package_stream);
         IOpcPartUri *doc_seq_uri = NULL;
-        hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_seq_uri);
+        hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
         DBG_MARK("CreatePartUri: hr=0x%08lx doc_seq_uri=%p", hr, (void *)doc_seq_uri);
 
         if(SUCCEEDED(hr) && package_stream)
@@ -1298,11 +1298,15 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
           DBG_MARK("CreatePackageWriterOnStream: hr=0x%08lx writer=%p",
                    hr, (void *)writer);
-            doc_seq_uri->lpVtbl->Release(doc_seq_uri);
 
           if(SUCCEEDED(hr) && writer)
           {
-            writer->lpVtbl->StartNewDocument(writer, NULL, NULL, NULL, NULL, NULL);
+            IOpcPartUri *doc_uri = NULL;
+            hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_uri);
+            
+            writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
+            doc_seq_uri->lpVtbl->Release(doc_seq_uri);
+            doc_uri->lpVtbl->Release(doc_uri);
 
             IXpsOMPage *page = NULL;
             XPS_SIZE page_size = { page_width, page_height };
@@ -1321,18 +1325,15 @@ bool dt_win_print_file(const dt_images_box *imgs,
             IXpsOMColorProfileResource *profile_resource = NULL;
             if(icc_data && icc_size > 0)
             {
-              profile_resource = _win_build_color_profile_resource(factory,
-                                                                  icc_data,
-                                                                  icc_size,
-                                                                  L"/Resources/Colors/OutputProfile.icc");
-              DBG_MARK("profile_resource=%p", (void *)profile_resource);
+ //             profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/Colors/OutputProfile.icc");
+ //             DBG_MARK("profile_resource=%p", (void *)profile_resource);
             }
 
             if(SUCCEEDED(hr) && profile_resource)
             {
-              hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)profile_resource);
-              if(FAILED(hr))
-                DBG_MARK("AddResource(color profile) failed: hr=0x%08lx", hr);
+//              HRESULT profile_hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)profile_resource);
+//              if(FAILED(hr))
+//                DBG_MARK("AddResource(color profile) failed: profile_hr=0x%08lx", profile_hr);
             }
 
             if(SUCCEEDED(hr) && page)
@@ -1343,7 +1344,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                 IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
                 if(res)
                 {
-                  hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)res);
+//                  hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)res);
                   DBG_MARK("AddResource(image): hr=0x%08lx", hr);  
                   
                   _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution);
