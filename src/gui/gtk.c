@@ -229,11 +229,47 @@ static void _fullscreen_key_accel_callback(dt_action_t *action)
 #endif
 }
 
+static void _set_tooltip_css(const gboolean hidden)
+{
+  if(!darktable.gui->tooltip_css_provider)
+  {
+    darktable.gui->tooltip_css_provider = gtk_css_provider_new();
+#if GTK_CHECK_VERSION(4, 0, 0)
+    gtk_style_context_add_provider_for_display
+      (gdk_display_get_default(),
+       GTK_STYLE_PROVIDER(darktable.gui->tooltip_css_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+#else
+    gtk_style_context_add_provider_for_screen
+      (gdk_screen_get_default(),
+       GTK_STYLE_PROVIDER(darktable.gui->tooltip_css_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+#endif
+  }
+
+  const char *css = hidden
+    ? "tooltip { opacity: 0; background: transparent; }"
+    : "";
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider, css, -1);
+#else
+  GError *error = NULL;
+  if(!gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider,
+                                      css, -1, &error))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "%s: error parsing tooltip CSS: %s",
+             G_STRFUNC, error->message);
+    g_clear_error(&error);
+  }
+#endif
+}
+
 static void _toggle_tooltip_visibility(dt_action_t *action)
 {
   const gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
   dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
   darktable.gui->hide_tooltips += tooltip_hidden ? 1 : -1;
+  _set_tooltip_css(tooltip_hidden);
   dt_toast_log(tooltip_hidden ? _("tooltips off") : _("tooltips on"));
 }
 
@@ -1581,6 +1617,22 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget)
 }
 #endif
 
+void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
+{
+  if(gui->tooltip_css_provider)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    gtk_style_context_remove_provider_for_display
+      (gdk_display_get_default(), GTK_STYLE_PROVIDER(gui->tooltip_css_provider));
+#else
+    gtk_style_context_remove_provider_for_screen
+      (gdk_screen_get_default(), GTK_STYLE_PROVIDER(gui->tooltip_css_provider));
+#endif
+    g_clear_object(&gui->tooltip_css_provider);
+  }
+  g_clear_pointer(&gui->last_preset, g_free);
+}
+
 int dt_gui_theme_init(dt_gui_gtk_t *gui)
 {
   if(gui->gtkrc[0] != '\0')
@@ -2803,14 +2855,14 @@ static void _restore_default_modules(GtkMenuItem *menuitem,
   gchar *prefix = g_strdup_printf("plugins/%s/", cv->module_name);
   g_hash_table_foreach_remove(darktable.conf->table, _remove_modules_visibility, prefix);
   g_free(prefix);
-  dt_view_manager_switch_by_view(darktable.view_manager, cv);
+  dt_ctl_reload_view(cv);
 }
 
 static void _toggle_module_visibility(GtkMenuItem *menuitem,
                                       dt_lib_module_t *module)
 {
   dt_lib_set_visible(module, !dt_lib_is_visible(module));
-  dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
+  dt_ctl_reload_view(dt_view_manager_get_current_view(darktable.view_manager));
 }
 
 static void _add_remove_modules(dt_action_t *action)
@@ -3164,7 +3216,7 @@ static void _ui_init_panel_left(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 1, 1, 1);
@@ -3204,7 +3256,7 @@ static void _ui_init_panel_right(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 3, 1, 1, 1);
@@ -3280,7 +3332,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 2, 3, 1);
@@ -3989,14 +4041,6 @@ void dt_gui_load_theme(const char *theme)
   g_free(path_uri);
   g_free(path);
 
-  if(dt_conf_get_bool("ui/hide_tooltips"))
-  {
-    gchar *newcss = g_strjoin(NULL, themecss,
-                              " tooltip {opacity: 0; background: transparent;}", NULL);
-    g_free(themecss);
-    themecss = newcss;
-  }
-
   if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider),
                                       themecss, -1, &error))
   {
@@ -4009,6 +4053,7 @@ void dt_gui_load_theme(const char *theme)
   g_free(themecss);
 
   g_object_unref(themes_style_provider);
+  _set_tooltip_css(dt_conf_get_bool("ui/hide_tooltips"));
 }
 
 void dt_gui_apply_theme()
@@ -5349,6 +5394,90 @@ GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
   g_signal_connect(gesture, "end", G_CALLBACK(_pinch_end), NULL);
 
   return gesture;
+}
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+static GdkWindow *_dt_gui_cursor_window(GtkWidget *widget)
+{
+  if(!widget) return NULL;
+
+  GdkWindow *window = gtk_widget_get_window(widget);
+  if(GTK_IS_TREE_VIEW(widget))
+  {
+    GdkWindow *bin = gtk_tree_view_get_bin_window(GTK_TREE_VIEW(widget));
+    if(bin) window = bin;
+  }
+  return window;
+}
+#endif
+
+GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_name)
+{
+  if(!display || !cursor_name) return NULL;
+
+  GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // GTK3 fallback: some CSS cursor names are not supported by all
+  // backends (for example "wait", "help", and "none"). GTK4 supports
+  // the CSS cursor name API on all backends, so this branch disappears
+  // when the application moves to GTK4.
+  if(!cursor)
+  {
+    GdkCursorType type = GDK_LEFT_PTR;
+    if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
+    else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
+    else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
+    else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
+    else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
+    cursor = gdk_cursor_new_for_display(display, type);
+  }
+#endif
+
+  return cursor;
+}
+
+GdkCursor *dt_gui_cursor_get(GtkWidget *widget)
+{
+  if(!widget) return NULL;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gtk_widget_get_cursor(widget);
+#else
+  GdkWindow *window = _dt_gui_cursor_window(widget);
+  return window ? gdk_window_get_cursor(window) : NULL;
+#endif
+}
+
+void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor)
+{
+  if(!widget) return;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_widget_set_cursor(widget, cursor);
+#else
+  GdkWindow *window = _dt_gui_cursor_window(widget);
+  if(window) gdk_window_set_cursor(window, cursor);
+#endif
+}
+
+void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner)
+{
+  if(!widget) return;
+
+  dt_control_cursor_debug(owner,
+                          cursor_name ? "set" : "clear",
+                          widget,
+                          cursor_name);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  if(cursor_name)
+    gtk_widget_set_cursor_from_name(widget, cursor_name);
+  else
+    gtk_widget_set_cursor(widget, NULL);
+#else
+  GdkCursor *cursor = dt_gui_cursor_new_for_name(gtk_widget_get_display(widget), cursor_name);
+  dt_gui_cursor_apply(widget, cursor);
+  if(cursor) g_object_unref(cursor);
+#endif
 }
 
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
