@@ -208,6 +208,13 @@
     <shortdescription>database location</shortdescription>
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (restart required)</longdescription>
   </dtconfig>
+  <dtconfig common="yes">
+    <name>workspace/label</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>selected workspace</shortdescription>
+    <longdescription>label of the workspace to open at startup; empty for the default workspace</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>storage/piwigo/last_album</name>
     <type>string</type>
