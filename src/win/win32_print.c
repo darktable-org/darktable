@@ -1325,57 +1325,7 @@ DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
          page_size.width, page_size.height);
             page_uri->lpVtbl->Release(page_uri);
             }
-// --- DEBUG: force a tiny guaranteed image on the page ---
-{
-  uint8_t *debug_pixels = g_malloc0(10 * 10 * 3);
 
-  // solid red 10x10 image
-  for(int i = 0; i < 10 * 10; i++)
-  {
-    debug_pixels[i * 3 + 0] = 0xFF; // R
-    debug_pixels[i * 3 + 1] = 0x00; // G
-    debug_pixels[i * 3 + 2] = 0x00; // B
-  }
-
-  dt_image_box debug_box = {0};
-  debug_box.buf = debug_pixels;
-  debug_box.exp_width = 10;
-  debug_box.exp_height = 10;
-  debug_box.img_width = 10;
-  debug_box.img_height = 10;
-  debug_box.max_width = 10;
-  debug_box.max_height = 10;
-  debug_box.print.x = 0.0f;
-  debug_box.print.y = 0.0f;
-  debug_box.print.width = 10.0f;
-  debug_box.print.height = 10.0f;
-
-  IXpsOMImageResource *debug_res = _win_build_image_resource(factory, &debug_box, 0);
-
-  DBG_MARK("debug image resource: %p", (void *)debug_res);
-
-  if(debug_res)
-  {
-    hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)debug_res);
-    DBG_MARK("AddResource(debug image): hr=0x%08lx", hr);
-
-    if(SUCCEEDED(hr))
-    {
-      hr = _win_place_image_on_page(factory,
-                                   page,
-                                   debug_res,
-                                   NULL,
-                                   &debug_box,
-                                   pinfo->printer.resolution);
-      DBG_MARK("place debug image: hr=0x%08lx", hr);
-    }
-
-    debug_res->lpVtbl->Release(debug_res);
-  }
-
-  g_free(debug_pixels);
-}
-// --- end debug image ---
             IXpsOMColorProfileResource *profile_resource = NULL;
             if(icc_data && icc_size > 0)
             {
@@ -1392,6 +1342,177 @@ DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
 
             if(SUCCEEDED(hr) && page)
             {
+
+
+
+
+
+              
+// --- DEBUG: force a tiny solid red image at the page origin ---
+{
+  BYTE debug_rgb[10 * 10 * 3];
+  for(int i = 0; i < 10 * 10; i++)
+  {
+    debug_rgb[i * 3 + 0] = 0xFF; // R
+    debug_rgb[i * 3 + 1] = 0x00; // G
+    debug_rgb[i * 3 + 2] = 0x00; // B
+  }
+
+  IWICImagingFactory *wic = NULL;
+  IWICBitmap *bitmap = NULL;
+  IStream *png_stream = NULL;
+  IXpsOMImageResource *debug_resource = NULL;
+  IOpcPartUri *debug_uri = NULL;
+
+  HRESULT hr_debug = CoCreateInstance(&CLSID_WICImagingFactory,
+                                      NULL,
+                                      CLSCTX_INPROC_SERVER,
+                                      &IID_IWICImagingFactory,
+                                      (void **)&wic);
+  if(SUCCEEDED(hr_debug) && wic)
+  {
+    hr_debug = wic->lpVtbl->CreateBitmapFromMemory(wic,
+                                                   10,
+                                                   10,
+                                                   &GUID_WICPixelFormat24bppRGB,
+                                                   10 * 3,
+                                                   sizeof(debug_rgb),
+                                                   debug_rgb,
+                                                   &bitmap);
+    DBG_MARK("CreateBitmapFromMemory(debug): hr=0x%08lx bitmap=%p", hr_debug, (void *)bitmap);
+
+    if(SUCCEEDED(hr_debug) && bitmap)
+    {
+      hr_debug = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, &png_stream);
+      DBG_MARK("encode debug PNG: hr=0x%08lx stream=%p", hr_debug, (void *)png_stream);
+
+      if(SUCCEEDED(hr_debug) && png_stream)
+      {
+        hr_debug = factory->lpVtbl->CreatePartUri(factory, L"/Resources/debug-red.png", &debug_uri);
+        DBG_MARK("CreatePartUri(debug): hr=0x%08lx uri=%p", hr_debug, (void *)debug_uri);
+
+        if(SUCCEEDED(hr_debug) && debug_uri)
+        {
+          hr_debug = factory->lpVtbl->CreateImageResource(factory,
+                                                          png_stream,
+                                                          XPS_IMAGE_TYPE_PNG,
+                                                          debug_uri,
+                                                          &debug_resource);
+          DBG_MARK("CreateImageResource(debug): hr=0x%08lx res=%p",
+                   hr_debug, (void *)debug_resource);
+
+          if(debug_uri) debug_uri->lpVtbl->Release(debug_uri);
+        }
+      }
+    }
+
+    if(bitmap) bitmap->lpVtbl->Release(bitmap);
+    if(wic) wic->lpVtbl->Release(wic);
+  }
+
+  if(SUCCEEDED(hr_debug) && debug_resource)
+  {
+    hr_debug = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)debug_resource);
+    DBG_MARK("AddResource(debug): hr=0x%08lx", hr_debug);
+
+    if(SUCCEEDED(hr_debug))
+    {
+      IXpsOMImageBrush *brush = NULL;
+      IXpsOMPath *path = NULL;
+      IXpsOMGeometry *geom = NULL;
+      IXpsOMGeometryFigure *figure = NULL;
+      IXpsOMGeometryFigureCollection *figures = NULL;
+      IXpsOMVisualCollection *visuals = NULL;
+
+      XPS_RECT viewbox = { 0.0f, 0.0f, 10.0f, 10.0f };
+      XPS_RECT viewport = { 0.0f, 0.0f, 10.0f, 10.0f };
+
+      hr_debug = factory->lpVtbl->CreateImageBrush(factory, debug_resource, &viewbox, &viewport, &brush);
+      DBG_MARK("CreateImageBrush(debug): hr=0x%08lx brush=%p", hr_debug, (void *)brush);
+
+      if(SUCCEEDED(hr_debug))
+      {
+        hr_debug = factory->lpVtbl->CreatePath(factory, &path);
+        DBG_MARK("CreatePath(debug): hr=0x%08lx path=%p", hr_debug, (void *)path);
+
+        if(SUCCEEDED(hr_debug))
+        {
+          hr_debug = factory->lpVtbl->CreateGeometry(factory, &geom);
+          DBG_MARK("CreateGeometry(debug): hr=0x%08lx geom=%p", hr_debug, (void *)geom);
+
+          if(SUCCEEDED(hr_debug))
+          {
+            XPS_POINT start = { 0.0f, 0.0f };
+            XPS_SEGMENT_TYPE seg_types[4] = {
+              XPS_SEGMENT_TYPE_LINE,
+              XPS_SEGMENT_TYPE_LINE,
+              XPS_SEGMENT_TYPE_LINE,
+              XPS_SEGMENT_TYPE_LINE
+            };
+            FLOAT seg_data[8] = {
+              10.0f, 0.0f,
+              10.0f, 10.0f,
+              0.0f, 10.0f,
+              0.0f, 0.0f
+            };
+            WINBOOL seg_strokes[4] = { TRUE, TRUE, TRUE, TRUE };
+
+            hr_debug = factory->lpVtbl->CreateGeometryFigure(factory, &start, &figure);
+            DBG_MARK("CreateGeometryFigure(debug): hr=0x%08lx figure=%p", hr_debug, (void *)figure);
+
+            if(SUCCEEDED(hr_debug) && figure)
+            {
+              hr_debug = figure->lpVtbl->SetSegments(figure, 4, 8, seg_types, seg_data, seg_strokes);
+              if(SUCCEEDED(hr_debug))
+                hr_debug = figure->lpVtbl->SetIsClosed(figure, TRUE);
+              if(SUCCEEDED(hr_debug))
+                hr_debug = figure->lpVtbl->SetIsFilled(figure, TRUE);
+            }
+
+            if(SUCCEEDED(hr_debug))
+            {
+              hr_debug = geom->lpVtbl->GetFigures(geom, &figures);
+              if(SUCCEEDED(hr_debug) && figures)
+                hr_debug = figures->lpVtbl->Append(figures, figure);
+            }
+
+            if(SUCCEEDED(hr_debug))
+            {
+              hr_debug = path->lpVtbl->SetGeometryLocal(path, geom);
+              if(SUCCEEDED(hr_debug))
+                hr_debug = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
+
+              if(SUCCEEDED(hr_debug))
+              {
+                hr_debug = page->lpVtbl->GetVisuals(page, &visuals);
+                if(SUCCEEDED(hr_debug) && visuals)
+                  hr_debug = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
+                DBG_MARK("append debug image to page: hr=0x%08lx", hr_debug);
+              }
+            }
+          }
+        }
+      }
+
+      if(path) path->lpVtbl->Release(path);
+      if(geom) geom->lpVtbl->Release(geom);
+      if(figure) figure->lpVtbl->Release(figure);
+      if(figures) figures->lpVtbl->Release(figures);
+      if(brush) brush->lpVtbl->Release(brush);
+      if(visuals) visuals->lpVtbl->Release(visuals);
+    }
+
+    debug_resource->lpVtbl->Release(debug_resource);
+  }
+
+  if(png_stream) png_stream->lpVtbl->Release(png_stream);
+}
+// --- end debug image ---
+
+
+
+
+
               for(int i = 0; i < imgs->count; i++)
               {
                 const dt_image_box *box = &imgs->box[i];
