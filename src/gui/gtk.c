@@ -5396,6 +5396,90 @@ GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
   return gesture;
 }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+static GdkWindow *_dt_gui_cursor_window(GtkWidget *widget)
+{
+  if(!widget) return NULL;
+
+  GdkWindow *window = gtk_widget_get_window(widget);
+  if(GTK_IS_TREE_VIEW(widget))
+  {
+    GdkWindow *bin = gtk_tree_view_get_bin_window(GTK_TREE_VIEW(widget));
+    if(bin) window = bin;
+  }
+  return window;
+}
+#endif
+
+GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_name)
+{
+  if(!display || !cursor_name) return NULL;
+
+  GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // GTK3 fallback: some CSS cursor names are not supported by all
+  // backends (for example "wait", "help", and "none"). GTK4 supports
+  // the CSS cursor name API on all backends, so this branch disappears
+  // when the application moves to GTK4.
+  if(!cursor)
+  {
+    GdkCursorType type = GDK_LEFT_PTR;
+    if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
+    else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
+    else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
+    else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
+    else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
+    cursor = gdk_cursor_new_for_display(display, type);
+  }
+#endif
+
+  return cursor;
+}
+
+GdkCursor *dt_gui_cursor_get(GtkWidget *widget)
+{
+  if(!widget) return NULL;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gtk_widget_get_cursor(widget);
+#else
+  GdkWindow *window = _dt_gui_cursor_window(widget);
+  return window ? gdk_window_get_cursor(window) : NULL;
+#endif
+}
+
+void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor)
+{
+  if(!widget) return;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_widget_set_cursor(widget, cursor);
+#else
+  GdkWindow *window = _dt_gui_cursor_window(widget);
+  if(window) gdk_window_set_cursor(window, cursor);
+#endif
+}
+
+void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner)
+{
+  if(!widget) return;
+
+  dt_control_cursor_debug(owner,
+                          cursor_name ? "set" : "clear",
+                          widget,
+                          cursor_name);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  if(cursor_name)
+    gtk_widget_set_cursor_from_name(widget, cursor_name);
+  else
+    gtk_widget_set_cursor(widget, NULL);
+#else
+  GdkCursor *cursor = dt_gui_cursor_new_for_name(gtk_widget_get_display(widget), cursor_name);
+  dt_gui_cursor_apply(widget, cursor);
+  if(cursor) g_object_unref(cursor);
+#endif
+}
+
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,
                                             GCallback enter,

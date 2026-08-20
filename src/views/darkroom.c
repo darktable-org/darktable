@@ -4994,10 +4994,7 @@ GSList *mouse_actions(const dt_view_t *self)
 static void _dt_second_window_change_cursor(dt_develop_t *dev,
                                             const gchar *curs)
 {
-  GtkWidget *widget = dev->second_wnd;
-  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), curs);
-  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  g_object_unref(cursor);
+  dt_gui_cursor_set(dev->second_wnd, curs, "darkroom/second-window");
 }
 
 static void _second_window_leave(dt_develop_t *dev)

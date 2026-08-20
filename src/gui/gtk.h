@@ -764,6 +764,14 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
 
+/* Cursor compatibility boundary. GTK3 applies cursors to the widget's
+ * backing window (using a TreeView's bin window when needed); GTK4 applies
+ * them to the widget itself. The owner string is used by -d input tracing. */
+GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_name);
+GdkCursor *dt_gui_cursor_get(GtkWidget *widget);
+void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor);
+void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner);
+
 /* object-data key on the gesture carrying a shortcut-activated press'
  * button+state, encoded as (state << 8) | button (see
  * _action_process_toggle/_action_process_button).  Set right before the
