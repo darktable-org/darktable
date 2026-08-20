@@ -54,6 +54,7 @@
 #include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
+#include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
@@ -2585,11 +2586,7 @@ int mouse_moved(dt_iop_module_t *self,
   else
   {
     // fall back to default cursor
-    GdkCursor *const cursor =
-      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),
-                          cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
   }
 
   dt_control_queue_redraw_center();
