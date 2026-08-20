@@ -506,7 +506,7 @@ static void sycc420_to_rgb(opj_image_t *img)
       sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
       sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
       sycc_to_rgb(offset, upb, y[nextrow+j], curr_cb, curr_cr, r+nextrow+j, g+nextrow+j, b+nextrow+j);
-      sycc_to_rgb(offset, upb, y[nextrow+j+1], curr_cb, *cr, r+nextrow+j+1, g+nextrow+j+1, b+nextrow+j+1);
+      sycc_to_rgb(offset, upb, y[nextrow+j+1], curr_cb, curr_cr, r+nextrow+j+1, g+nextrow+j+1, b+nextrow+j+1);
     }
   }
   free(img->comps[0].data);
