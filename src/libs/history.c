@@ -244,8 +244,13 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
-  /* set callback when clicked */
-  dt_gui_connect_click(widget, _lib_history_button_clicked_callback, NULL, self);
+  /* Handle the press before GtkToggleButton's TARGET-phase default gesture.
+   * This lets an active-row re-click claim the sequence before the widget can
+   * toggle itself off, while unclaimed presses still reach normal handling. */
+  GtkGestureSingle *history_gesture =
+    dt_gui_connect_click(widget, _lib_history_button_clicked_callback, NULL, self);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(history_gesture),
+                                             GTK_PHASE_CAPTURE);
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
@@ -1281,7 +1286,13 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
 
   if(reset) return;
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    // Exactly one history row must stay selected. Claiming the press prevents
+    // GtkToggleButton's default gesture from toggling the active row off.
+    dt_gui_claim(gesture);
+    return;
+  }
 
   // shift-click just show the corresponding module in modulegroups
   if(dt_key_modifier_state() & GDK_SHIFT_MASK)
