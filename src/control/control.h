@@ -69,6 +69,11 @@ void dt_control_set_temp_cursor(const char *cursor_name);
 // return to the cursor most rececently set by dt_control_change_cursor
 void dt_control_clear_temp_cursor();
 void dt_control_change_cursor(const char *cursor_name);
+/** Log cursor ownership/lifecycle state when -d input is enabled. */
+void dt_control_cursor_debug(const char *owner,
+                            const char *action,
+                            GtkWidget *widget,
+                            const char *cursor_name);
 void dt_control_write_sidecar_files(void);
 void dt_control_delete_images(void);
 
@@ -99,6 +104,8 @@ void dt_control_navigation_redraw(void);
 void dt_ctl_switch_mode(void);
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
+/* Rebuild an existing view without changing the selected mode. */
+void dt_ctl_reload_view(const dt_view_t *view);
 
 struct dt_control_t;
 

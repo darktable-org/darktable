@@ -367,8 +367,7 @@ static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
     return;
 
   g_hash_table_foreach_remove(darktable.conf->table, _remove_panel_config, NULL);
-  dt_view_manager_switch_by_view(darktable.view_manager,
-                                 dt_view_manager_get_current_view(darktable.view_manager));
+  dt_ctl_reload_view(dt_view_manager_get_current_view(darktable.view_manager));
 }
 
 // forward declaration for use in init_tab_general

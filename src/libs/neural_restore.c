@@ -190,6 +190,7 @@
 #include "common/ai/restore_raw_bayer.h"
 #include "common/ai/restore_raw_linear.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "bauhaus/bauhaus.h"
 #include "common/act_on.h"
 #include "common/collection.h"
@@ -4177,6 +4178,7 @@ static void _preview_motion_cb(GtkEventControllerMotion *controller,
   // move crop rectangle while hovering in picking mode
   if(d->picking_thumbnail && d->export_cairo)
   {
+    dt_gui_cursor_set(widget, NULL, "neural-restore/divider");
     const int w = gtk_widget_get_allocated_width(widget);
     const int h = gtk_widget_get_allocated_height(widget);
     double img_w, img_h, ox, oy;
@@ -4206,6 +4208,7 @@ static void _preview_motion_cb(GtkEventControllerMotion *controller,
 
   if(d->dragging_split)
   {
+    dt_gui_cursor_set(widget, NULL, "neural-restore/divider");
     const int w = gtk_widget_get_allocated_width(widget);
     const int pw = d->preview_w;
     const int ph = d->preview_h;
@@ -4221,7 +4224,9 @@ static void _preview_motion_cb(GtkEventControllerMotion *controller,
     return;
   }
 
-  // change cursor near divider
+  // Change the cursor near the divider. The same helper also clears it
+  // when the preview is unavailable, so a completed/cancelled preview
+  // cannot leave the resize cursor behind.
   if(d->preview_ready
      && d->preview_w > 0
      && d->preview_h > 0)
@@ -4233,26 +4238,22 @@ static void _preview_motion_cb(GtkEventControllerMotion *controller,
     const double ox = (w - d->preview_w * scale) / 2.0;
     const double div_x
       = ox + d->split_pos * d->preview_w * scale;
-
-    GdkWindow *win = gtk_widget_get_window(widget);
-    if(win)
-    {
-      const gboolean near = fabs(ex - div_x) < PREVIEW_DIVIDER_NEAR_PX;
-      if(near)
-      {
-        GdkCursor *cursor = gdk_cursor_new_from_name(
-          gdk_display_get_default(), "col-resize");
-        gdk_window_set_cursor(win, cursor);
-        g_object_unref(cursor);
-      }
-      else
-      {
-        gdk_window_set_cursor(win, NULL);
-      }
-    }
+    const gboolean near = fabs(ex - div_x) < PREVIEW_DIVIDER_NEAR_PX;
+    dt_gui_cursor_set(widget,
+                      near ? "col-resize" : NULL,
+                      "neural-restore/divider");
   }
+  else
+    dt_gui_cursor_set(widget, NULL, "neural-restore/divider");
 
   return;
+}
+
+static void _preview_leave_cb(GtkEventControllerMotion *controller,
+                              gpointer user_data)
+{
+  (void)user_data;
+  dt_gui_cursor_set(dt_gui_get_widget(controller), NULL, "neural-restore/divider");
 }
 
 static void _selection_changed_callback(gpointer instance,
@@ -4487,7 +4488,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->preview_area, "draw",
                    G_CALLBACK(_preview_draw), self);
   dt_gui_connect_click(d->preview_area, _preview_button_press_cb, _preview_button_release_cb, self);
-  dt_gui_connect_motion(d->preview_area, _preview_motion_cb, NULL, NULL, self);
+  dt_gui_connect_motion(d->preview_area, _preview_motion_cb, NULL, _preview_leave_cb, self);
   // hover-zoom tooltip: shows the same preview at 2x so the user can
   // see individual pixels. only fires when there's a valid preview;
   // suppressed during inference / picking / dragging

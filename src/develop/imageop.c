@@ -565,6 +565,11 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 
   DT_ENTER_GUI_UPDATE();
 
+  // GUI teardown destroys data and a mutex that commit_params()/process()
+  // may use. Stop every screen pipe and keep them locked until the module is
+  // removed from develop state and all pipe topologies are marked for rebuild.
+  dt_dev_pixelpipe_stop_and_lock_all(dev);
+
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
@@ -620,6 +625,8 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   dev->alliop = g_list_append(dev->alliop, module);
 
   dt_dev_pixelpipe_rebuild(dev);
+
+  dt_dev_pixelpipe_unlock_all(dev);
 
   /* redraw */
   dt_control_queue_redraw_center();
@@ -1254,6 +1261,9 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
     // set mask indicator sensitive according to module activation and raster mask
     if(module->mask_indicator)
       gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
+
+    if(!gtk_widget_is_visible(module->header))
+      dt_dev_modulegroups_update_visibility(darktable.develop);
   }
 
   char tooltip[512];
@@ -1269,9 +1279,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-
-  if(!gtk_widget_is_visible(module->header))
-    dt_dev_modulegroups_update_visibility(darktable.develop);
 }
 
 gboolean dt_iop_so_is_hidden(const dt_iop_module_so_t *module)
@@ -2409,9 +2416,14 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
   gtk_widget_destroy(module->expander ? module->expander : module->widget);
+  // Do not leave borrowed GTK pointers behind while asynchronous signals can
+  // still carry this module until the GUI thread drains their queue.
+  module->expander = NULL;
+  module->widget = NULL;
   dt_iop_gui_cleanup_blending(module);
   dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
+  module->gui_data = NULL;
 }
 
 void dt_iop_gui_update(dt_iop_module_t *module)
