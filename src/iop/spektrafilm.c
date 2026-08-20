@@ -108,7 +108,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
 #define SF_GLARE_ROUGHNESS 0.7f
 #define SF_GLARE_BLUR_PX 0.5f
 #define SF_GRAIN_BLUR_FACTOR 0.8f
-#define SF_GRAIN_SIZE_MIN 0.05f
+#define SF_GRAIN_BLUR_MIN 0.05f
 /* Upstream's GrainParams.blur_dye_clouds_um (params_schema.py): a SECOND,
  * per-sub-layer blur applied to the raw particle draw INSIDE the particle
  * sampler itself (layer_particle_model in grain.py), before the main
@@ -177,15 +177,15 @@ typedef struct dt_iop_spektrafilm_params_t
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
-  /* Inhibitor spread, in micrometres on the film. Absolute values, re-seeded
-     from the stock's own numbers on every film change the way development_min
-     is -- a sentinel meaning "ask the pack" would have been re-displayed as the
-     sentinel itself, since dt_iop_gui_update() drives params-bound widgets
-     straight from the params. Ranges follow the reference's own GUI manifest
-     (min 0 throughout, tail weight up to 1); the compiled defaults are its
-     DirCouplersParams, used only until a film is chosen. */
-  float couplers_diffusion_um; // $MIN: 0.0 $MAX: 60.0 $DEFAULT: 20.0 $DESCRIPTION: "diffusion size"
-  float couplers_tail_um;      // $MIN: 0.0 $MAX: 400.0 $DEFAULT: 200.0 $DESCRIPTION: "diffusion tail"
+  /* Inhibitor spread, in micrometres on the film. Absolute values rather than
+     scales, re-seeded from the stock's own numbers on every film change by
+     _sync_coupler_diffusion(), which writes the params and not only the widgets
+     so that dt_iop_gui_update() cannot drive them back. Ranges follow the
+     reference's GUI manifest (minimum 0 throughout, tail weight up to 1); the
+     compiled defaults are its DirCouplersParams and apply until a film is
+     chosen. */
+  float couplers_diffusion_um; // $MIN: 0.0 $MAX: 60.0 $DEFAULT: 20.0 $DESCRIPTION: "inhibitor spread"
+  float couplers_tail_um;      // $MIN: 0.0 $MAX: 400.0 $DEFAULT: 200.0 $DESCRIPTION: "spread tail"
   float couplers_tail_weight;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "tail weight"
   float couplers_inhibition_same;  // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "same-layer inhibition"
   float couplers_inhibition_inter; // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "interlayer inhibition"
@@ -214,13 +214,12 @@ typedef struct dt_iop_spektrafilm_params_t
   float print_diffusion_warmth;   // $MIN: -1.5 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "print diffusion halo warmth"
   gboolean grain_on;        // $DEFAULT: TRUE $DESCRIPTION: "enable grain"
   float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain strength"
-  /* Was "grain size", which it never was: it only ever scaled the blur applied
-     to the sampled grain, leaving the particle population untouched, so raising
-     it smoothed the grain rather than coarsening it. It is the reference's
-     GrainParams.blur, whose own description calls it a blur sigma to raise at
-     high magnification, and it keeps that job under an honest name. Actual
-     coarseness is grain_granularity below. */
-  float grain_size;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain blur"
+  /* Blur applied to the sampled grain, in pixels (reference: GrainParams.blur).
+     Softens grain without touching the particle population, so it makes grain
+     less distinct rather than coarser; grain_granularity below is what changes
+     the crystals. Measured on the output rather than on the film, so the right
+     value depends on magnification. */
+  float grain_blur;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain blur"
   /* The reference's GrainParams.rms_granularity, as a scale on the stock's own
      datasheet figure rather than an absolute: it is per-channel there (6/8/10
      for the default profile), and a single multiplier keeps a film's measured
@@ -317,7 +316,7 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *couplers_diffusion_um, *couplers_tail_um, *couplers_tail_weight;
   GtkWidget *couplers_inhibition_same, *couplers_inhibition_inter;
   GtkWidget *preflash_exposure, *preflash_m_shift, *preflash_y_shift;
-  GtkWidget *grain_on, *grain_amount, *grain_size;
+  GtkWidget *grain_on, *grain_amount, *grain_blur;
   GtkWidget *grain_granularity, *grain_uniformity, *grain_sublayer_scale;
   GtkWidget *grain_density_min, *grain_dye_cloud;
   GtkWidget *scan_blur, *scan_usm_sigma, *scan_usm_amount, *glare_percent;
@@ -962,14 +961,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->push_pull_stops, sizeof p->push_pull_stops);
   key = _mix64(key, m_in, sizeof m_in);
   key = _mix64(key, m_out, sizeof m_out);
-  /* Installing a data pack changes no parameter, so without this the key still
-     matches and a sim built against the old data is handed straight back --
-     along with whatever warning it recorded. That is what left a "developed
-     with a different spectral table" banner standing after the matching pack
-     had been downloaded and installed, until the darkroom was left and
-     re-entered and piece->data was rebuilt from scratch. The generation is
-     bumped once per successful install, so this only forces a rebuild when
-     something actually arrived. */
+  /* Installing a data pack changes no parameter, but it changes the data the sim
+     was built from and any mismatch warning it recorded, so the generation has
+     to be part of the key. It is bumped once per successful install, which
+     makes this force a rebuild exactly when new data arrived and never
+     otherwise. */
   const guint fetch_gen = sf_fetch_generation();
   key = _mix64(key, &fetch_gen, sizeof fetch_gen);
 
@@ -1320,7 +1316,7 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
                      * inv_um;
   const float grain = (p->grain_on && p->grain_amount > 0.0f)
                           ? SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
-                                * fmaxf(p->grain_size, SF_GRAIN_SIZE_MIN) * inv_um
+                                * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN) * inv_um
                           : 0.0f;
   /* coupler halo: gaussian core plus the widest exponential-tail component;
      the per-film tail size is unknown before the sim exists, so assume the
@@ -1690,7 +1686,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
        image at a temporarily reduced resolution for interactive speed,
        so this fixed radius needs shrinking there or it over-affects real
        scene detail relative to what 1:1/export shows. */
-    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
+    const float sigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                          * preview_scale;
     /* No variance-restoration renorm here -- upstream's own grain
        finalization (_finalize_grain in grain.py) has none either; it just
@@ -2361,7 +2357,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     SF_CL_STEP("grain add");
     /* fixed pixel sigma, matching process()'s CPU-side fix -- see comment
        there for the empirical validation. */
-    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_size, SF_GRAIN_SIZE_MIN)
+    const float gsigma = SF_GRAIN_BLUR_FACTOR * fmaxf(d->p.grain_blur, SF_GRAIN_BLUR_MIN)
                           * preview_scale;
     SF_GAUSS_BLUR4(plane2, gsigma, "grain blur");
     if(d->p.grain_usm_sigma > 0.0f && d->p.grain_usm_amount > 0.0f)
@@ -2578,9 +2574,8 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
      later. The pipeline resolves it identically either way (_resolve_stock). */
   _update_paper_auto_entry(self);
   /* The pack carries the inhibitor spread per stock, so it follows the film the
-     way the development time does: a value tuned for the previous stock means
-     nothing here, and silently keeping it would leave the sliders describing a
-     film that is no longer loaded. */
+     way the development time does: the numbers describe an emulsion, and
+     carrying one stock's across to another would describe neither. */
   _sync_coupler_diffusion(g, p, e);
   /* last, once scan_film and the auto-followed paper have settled: both
      development sliders are gated on their own stock, and the print one also on
@@ -2744,13 +2739,11 @@ static void _coupler_diffusion_default(const sf_prof_entry_t *e, float *size_um,
   *tail_w = (float)w;
 }
 
-/* Move the three diffusion sliders onto this stock's own numbers, params and
-   widgets alike, the way _film_changed() already re-seeds the development time.
-   Writing the params rather than only the widgets is what makes it stick:
-   dt_iop_gui_update() drives a params-bound widget straight from its param, so
-   a display-only value would be overwritten by the next history change. The
-   reset target moves too, so a reset gesture lands on what this film ships
-   rather than on the compiled default of some other stock. */
+/* Move the three diffusion sliders onto this stock's own numbers. Writes the
+   params as well as the widgets, because dt_iop_gui_update() drives a
+   params-bound widget straight from its param and would otherwise undo a
+   widget-only change at the next history entry. The reset targets move too, so
+   a reset gesture lands on what this film ships. */
 static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
                                     dt_iop_spektrafilm_params_t *p,
                                     const sf_prof_entry_t *e)
@@ -2903,7 +2896,7 @@ static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
   gtk_widget_set_sensitive(g->grain_uniformity, grn);
   gtk_widget_set_sensitive(g->grain_sublayer_scale, grn);
   gtk_widget_set_sensitive(g->grain_density_min, grn);
-  gtk_widget_set_sensitive(g->grain_size, grn);
+  gtk_widget_set_sensitive(g->grain_blur, grn);
   gtk_widget_set_sensitive(g->grain_dye_cloud, grn);
   gtk_widget_set_sensitive(g->grain_usm_sigma, grn);
   gtk_widget_set_sensitive(g->grain_usm_amount, grn);
@@ -3622,10 +3615,9 @@ void gui_init(dt_iop_module_t *self)
       _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
         " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
 
-  /* The couplers earn a section of their own: they are one mechanism with six
-     controls, and the two that matter most in practice -- how far the released
-     inhibitor spreads -- read as sharpening rather than as colour, so finding
-     them under a heading named for something else was hopeless. */
+  /* One mechanism, six controls, and the two spread values read as sharpening
+     rather than as colour -- enough of a group, and enough of a surprise, to
+     want a heading naming it. */
   _section_add(self, C_("section", "DIR couplers"));
 
   g->couplers_amount = dt_bauhaus_slider_from_params(self, "couplers_amount");
@@ -3652,7 +3644,7 @@ void gui_init(dt_iop_module_t *self)
         "this is what turns the couplers into an edge effect: a wide spread lets\n"
         "a bright area hold back development well beyond its own edge, which\n"
         "reads as added clarity or sharpening. shorten it for a softer, more\n"
-        "purely tonal coupler response; the reference's own GUI suggests 5-20 um.\n\n"
+        "purely tonal coupler response; 5-20 um is the useful range.\n\n"
         "re-seeded from the film stock's own value whenever you change film"));
 
   g->couplers_tail_um = dt_bauhaus_slider_from_params(self, "couplers_tail_um");
@@ -3669,9 +3661,9 @@ void gui_init(dt_iop_module_t *self)
                               _("how much of the inhibitor travels in the long tail rather"
                                 " than the main spread. 0 removes the tail"));
 
-  /* what is left over: the knobs you reach for last. the adaptation switches
-     change how faithful the model is rather than what the look is, and the
-     quality setting trades accuracy for speed. */
+  /* The knobs to reach for last: the adaptation switches change how faithful
+     the model is rather than what the look is, and quality trades accuracy for
+     speed. */
   _section_add(self, C_("section", "advanced"));
 
   g->quality = dt_bauhaus_combobox_from_params(self, "quality");
@@ -3780,10 +3772,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->grain_on = _section_exempt(dt_bauhaus_toggle_from_params(self, "grain_on"));
 
-  /* The reference groups these as "pixel statistics" and "texture": the first
-     describes the emulsion, the second how it is drawn. Keeping that split
-     matters here because it is exactly the distinction that was missing --
-     granularity changes the film, blur only changes the rendering of it. */
+  /* Split as the reference groups these, "pixel statistics" and "texture": the
+     first describes the emulsion and rebuilds the crystals, the second only
+     changes how those crystals are drawn at the output size. */
   _section_add(self, C_("section", "emulsion"));
 
   g->grain_granularity = dt_bauhaus_slider_from_params(self, "grain_granularity");
@@ -3835,9 +3826,9 @@ void gui_init(dt_iop_module_t *self)
 
   _section_add(self, C_("section", "texture"));
 
-  g->grain_size = dt_bauhaus_slider_from_params(self, "grain_size");
+  g->grain_blur = dt_bauhaus_slider_from_params(self, "grain_blur");
   gtk_widget_set_tooltip_text(
-      g->grain_size,
+      g->grain_blur,
       _("blur applied to the grain after it is drawn, in pixels. this softens\n"
         "the grain rather than resizing it -- the crystals are unchanged.\n\n"
         "raise it at high magnification, where one crystal covers several\n"
