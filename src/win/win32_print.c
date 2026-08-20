@@ -1200,8 +1200,8 @@ bool dt_win_print_file(const dt_images_box *imgs,
                        float width, float height)
 {
 DBG_MARK("starting XPS package build: printer=%s job=%s imgs=%d page=(%.3f, %.3f)",
-         pinfo->printer.name, job_title, imgs->count, page_width, page_height);
-         
+         pinfo->printer.name, job_title, imgs->count, width, height);
+
   if(!imgs || imgs->count <= 0)
   {
     dt_control_log(_("no images to print on `%s'"), pinfo->printer.name);
@@ -1325,7 +1325,57 @@ DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
          page_size.width, page_size.height);
             page_uri->lpVtbl->Release(page_uri);
             }
+// --- DEBUG: force a tiny guaranteed image on the page ---
+{
+  uint8_t *debug_pixels = g_malloc0(10 * 10 * 3);
 
+  // solid red 10x10 image
+  for(int i = 0; i < 10 * 10; i++)
+  {
+    debug_pixels[i * 3 + 0] = 0xFF; // R
+    debug_pixels[i * 3 + 1] = 0x00; // G
+    debug_pixels[i * 3 + 2] = 0x00; // B
+  }
+
+  dt_image_box debug_box = {0};
+  debug_box.buf = debug_pixels;
+  debug_box.exp_width = 10;
+  debug_box.exp_height = 10;
+  debug_box.img_width = 10;
+  debug_box.img_height = 10;
+  debug_box.max_width = 10;
+  debug_box.max_height = 10;
+  debug_box.print.x = 0.0f;
+  debug_box.print.y = 0.0f;
+  debug_box.print.width = 10.0f;
+  debug_box.print.height = 10.0f;
+
+  IXpsOMImageResource *debug_res = _win_build_image_resource(factory, &debug_box, 0);
+
+  DBG_MARK("debug image resource: %p", (void *)debug_res);
+
+  if(debug_res)
+  {
+    hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)debug_res);
+    DBG_MARK("AddResource(debug image): hr=0x%08lx", hr);
+
+    if(SUCCEEDED(hr))
+    {
+      hr = _win_place_image_on_page(factory,
+                                   page,
+                                   debug_res,
+                                   NULL,
+                                   &debug_box,
+                                   pinfo->printer.resolution);
+      DBG_MARK("place debug image: hr=0x%08lx", hr);
+    }
+
+    debug_res->lpVtbl->Release(debug_res);
+  }
+
+  g_free(debug_pixels);
+}
+// --- end debug image ---
             IXpsOMColorProfileResource *profile_resource = NULL;
             if(icc_data && icc_size > 0)
             {
@@ -1398,7 +1448,7 @@ DBG_MARK("AddPage: hr=0x%08lx page=%p", hr, (void *)page);
                   ULONG written = 0;
                   hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
                   total_written += written;
-BG_MARK("docStream write: hr=0x%08lx read=%lu written=%lu", hr,
+DBG_MARK("docStream write: hr=0x%08lx read=%lu written=%lu", hr,
          (unsigned long)read, (unsigned long)written);
                   if(FAILED(hr))
                   {
