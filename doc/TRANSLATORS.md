@@ -6,7 +6,6 @@ darktable's user interface can be translated into many languages.
 In short, to support a translation, the build process needs a xx.po file with the two-letter language code, e.g. fr.po.
 
 To make sure your translation makes it into an official build:
-- subscribe to the relevant [mailing list](https://www.darktable.org/contact/)
 - ensure you keep your translation up to date to avoid large work just before the release
 - entry criteria:
   - no more than 20 untranslated strings 
@@ -22,7 +21,6 @@ The application uses gettext engine for translation, and it works like this, a t
 The build system then creates a binary version of each PO file with MO file extension and places it in a system directory where a running instance of darktable will pick it up and use it to replace English text with target language text.
 
 ## How to contribute your translation:
-- Send your po file via email (see `(officially) Translate the darktable User Interface for darktable releases (how-to, no git, just email)` below)
 - Submit a pull request with your po file
 
 # Translate the darktable User Interface for darktable releases
@@ -43,6 +41,6 @@ The build system then creates a binary version of each PO file with MO file exte
 
 6. Start translating. Saving will update `<lang>.po`.
 
-7. When you are done, `bzip2` your PO file and send it to the [mailing list](https://www.darktable.org/contact/) or per instructions on the [wiki](https://github.com/darktable-org/darktable/wiki/Translations).
+7. When you are done, open a PR for the corresponding `<lang>.po`.
 
 8. That's all!
