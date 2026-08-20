@@ -123,8 +123,8 @@ static double _dist_from_white(const double xy[2])
 }
 
 /* A sim carrying nothing but what the film-develop entry points read: a linear
-   density ramp from 0 at log-exposure LE0 to dmax at LE0 + LE_SPAN, unit gamma,
-   negative film, linear (non-Langmuir) couplers. Linear so that the expected
+   density ramp from 0 at log-exposure LE0 to dmax at LE0 + LE_SPAN, negative
+   film, linear (non-Langmuir) couplers. Linear so that the expected
    density at any exposure is a closed form the test can state on its own rather
    than borrowing the interpolator it is checking. Caller frees. */
 static sf_sim_t *_sim_linear_ramp(const double dmax[3])
@@ -136,7 +136,6 @@ static sf_sim_t *_sim_linear_ramp(const double dmax[3])
   sim->inv_le_step = (float)(1.0 / LE_STEP);
   for(int c = 0; c < 3; c++)
   {
-    sim->gamma[c] = 1.0;
     sim->film_dmax[c] = dmax[c];
     for(int i = 0; i < SF_NLE; i++)
     {

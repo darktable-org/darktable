@@ -312,7 +312,6 @@ struct sf_sim_t
    * apply_print_curves_morph_with_layers intent. */
   double film_curve_layers[SF_NLE][SF_GRAIN_MAX_SUBLAYERS][3];
   bool film_morph_applied; /* true when film_curve_layers holds valid (morphed) data */
-  double gamma[3];
   double couplers_M[3][3];
   /* Langmuir saturating couplers (spektrafilm dev/0.4+); K = INFINITY keeps
      the 0.3.x linear model. Donor side (negative film): inhibitor release
@@ -1168,7 +1167,6 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
 {
   memset(p, 0, sizeof(*p));
   p->exposure_comp_ev = 0.0;
-  p->density_curve_gamma = 1.0;
   p->couplers_active = true;
   p->couplers_amount = 1.0;
   /* generic negative-film gammas ([st] params_builder); overwritten from the
@@ -1679,10 +1677,10 @@ static double interp_general(double x, const double *xp, const double *fp, int n
 /* [dc] interpolate one channel of a (SF_NLE, 3) curve table over the uniform
  * log-exposure grid divided by the per-channel gamma factor:
  *   x-axis = le/gamma  ->  index t = (x*gamma - le0) / le_step               */
-static inline double interp_curve_uniform(double x, double gammac, double le0,
+static inline double interp_curve_uniform(double x, double le0,
                                           double le_step, const double (*curves)[3], int c)
 {
-  const double t = (x * gammac - le0) / le_step;
+  const double t = (x - le0) / le_step;
   if(t <= 0.0) return curves[0][c];
   if(t >= (double)(SF_NLE - 1)) return curves[SF_NLE - 1][c];
   const int i = (int)t;
@@ -1692,11 +1690,11 @@ static inline double interp_curve_uniform(double x, double gammac, double le0,
 
 /* Float variant using precomputed inv_le_step — avoids double→float conversions
    and replaces division with multiply in the hot per-pixel path. */
-static inline float interp_curve_uniform_f(float x, float gammac, float le0,
+static inline float interp_curve_uniform_f(float x, float le0,
                                            float inv_le_step,
                                            const float (*curves)[3], int c)
 {
-  const float t = (x * gammac - le0) * inv_le_step;
+  const float t = (x - le0) * inv_le_step;
   if(t <= 0.0f) return curves[0][c];
   if(t >= (float)(SF_NLE - 1)) return curves[SF_NLE - 1][c];
   const int i = (int)t;
@@ -2494,7 +2492,7 @@ static void midgray_density_spectral(const sf_sim_t *s, const sf_profile_t *film
   {
     const double lograw = log10(raw[c] + SF_LOG_EPS);
     /* develop_simple: UNNORMALIZED stock curves */
-    cmy[c] = interp_curve_uniform(lograw, s->gamma[c], s->le0, s->le_step,
+    cmy[c] = interp_curve_uniform(lograw, s->le0, s->le_step,
                                   film->density_curves, c);
   }
   for(int l = 0; l < SF_NWL; l++)
@@ -2810,7 +2808,6 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
   s->le0 = film->log_exposure[0];
   s->le_step = (film->log_exposure[SF_NLE - 1] - film->log_exposure[0]) / (SF_NLE - 1);
   s->inv_le_step = (float)(1.0 / s->le_step);
-  for(int c = 0; c < 3; c++) s->gamma[c] = p->density_curve_gamma;
   if(p->film_morph_active && film->curves_model.n_layers > 0)
   {
     double curves_tmp[SF_NLE][3];
@@ -3462,7 +3459,7 @@ void sf_sim_develop_corr(const sf_sim_t *sim, const float *lograw, float *corr,
     float silver[3];
     for(int c = 0; c < 3; c++)
     {
-      const float d = interp_curve_uniform_f(in[c], (float)sim->gamma[c], (float)sim->le0,
+      const float d = interp_curve_uniform_f(in[c], (float)sim->le0,
                                              sim->inv_le_step, sim->curves_norm_f, c);
       silver[c] = sim->film_positive ? (float)sim->film_dmax[c] - d : d;
       if(sim->couplers_donor_lm)
@@ -3500,7 +3497,7 @@ void sf_sim_develop(const sf_sim_t *sim, const float *lograw, const float *corr,
         crv = crv * ((float)sim->couplers_recv_Kr[c] + (float)sim->couplers_recv_cref[c])
               / ((float)sim->couplers_recv_Kr[c] + crv);
       const float x = in[c] - crv;
-      out[c] = interp_curve_uniform_f(x, (float)sim->gamma[c], (float)sim->le0,
+      out[c] = interp_curve_uniform_f(x, (float)sim->le0,
                                       sim->inv_le_step, curves, c);
     }
   }
@@ -3565,7 +3562,7 @@ void sf_sim_print_develop(const sf_sim_t *sim, const float *lograw, float *cmy,
     const float *in = lograw + px * nch_in;
     float *out = cmy + px * nch_out;
     for(int c = 0; c < 3; c++)
-      out[c] = interp_curve_uniform_f(in[c], 1.0f, (float)sim->le0,
+      out[c] = interp_curve_uniform_f(in[c], (float)sim->le0,
                                       sim->inv_le_step, sim->print_curves_f, c);
   }
 }
@@ -3675,7 +3672,6 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   g->tc_n = s->tc_n;
   g->tc_lut = dup_f(s->tc_lut, (size_t)s->tc_n * s->tc_n * 3);
 
-  for(int c = 0; c < 3; c++) g->gamma[c] = (float)s->gamma[c];
   g->le0 = (float)s->le0;
   g->le_step = (float)s->le_step;
   g->curves_norm = dup_f3(s->curves_norm, SF_NLE);
