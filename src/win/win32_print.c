@@ -1169,6 +1169,7 @@ if(FAILED(hr)) goto cleanup;
       hr = page->lpVtbl->GetVisuals(page, &visuals);
       if(SUCCEEDED(hr) && visuals)
         hr = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
+        DBG_MARK("placed image on page: hr=0x%08lx", hr);
     }
   }
 
@@ -1327,6 +1328,13 @@ bool dt_win_print_file(const dt_images_box *imgs,
               DBG_MARK("profile_resource=%p", (void *)profile_resource);
             }
 
+            if(SUCCEEDED(hr) && profile_resource)
+            {
+              hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)profile_resource);
+              if(FAILED(hr))
+                DBG_MARK("AddResource(color profile) failed: hr=0x%08lx", hr);
+            }
+
             if(SUCCEEDED(hr) && page)
             {
               for(int i = 0; i < imgs->count; i++)
@@ -1335,6 +1343,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
                 IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
                 if(res)
                 {
+                  hr = writer->lpVtbl->AddResource(writer, (IXpsOMResource *)res);
+                  DBG_MARK("AddResource(image): hr=0x%08lx", hr);  
+                  
                   _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution);
                   res->lpVtbl->Release(res);
                 }
