@@ -38,6 +38,7 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
       { "FILE.FOLDER", N_("$(FILE.FOLDER) - folder containing the input image") },
       { "FILE.NAME", N_("$(FILE.NAME) - basename of the input image") },
       { "FILE.EXTENSION", N_("$(FILE.EXTENSION) - extension of the input image") },
+      { "EXPORT_EXTENSION", N_("$(EXPORT_EXTENSION) - extension of the export format") },
       { "VERSION", N_("$(VERSION) - duplicate version") },
       { "VERSION.IF_MULTI", N_("$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version exists") },
       { "VERSION.NAME", N_("$(VERSION.NAME) - version name from metadata") },
