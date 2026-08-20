@@ -78,6 +78,12 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf);
+// decides whether dt_imageio_open() should (re)compute an image's
+// sha1sum + filesize identity, see plugins/darkroom/compute_checksum
+gboolean dt_imageio_identity_needs_recompute(const gboolean has_checksum,
+                                             const uint64_t recorded_filesize,
+                                             const gboolean stat_ok,
+                                             const uint64_t actual_filesize);
 // tries to open the files not opened by the other routines using
 // GraphicsMagick (if supported)
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,

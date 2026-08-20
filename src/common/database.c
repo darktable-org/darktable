@@ -51,7 +51,7 @@
 #define LAST_FULL_DATABASE_VERSION_DATA    10
 
 // You HAVE TO bump THESE versions whenever you add an update branches to _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 57
+#define CURRENT_DATABASE_VERSION_LIBRARY 58
 #define CURRENT_DATABASE_VERSION_DATA    13
 
 #define USE_NESTED_TRANSACTIONS
@@ -2966,6 +2966,23 @@ static int _upgrade_library_schema_step(dt_database_t *db,
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN flash_tagvalue INTEGER DEFAULT -1",
              "[init] can't add `flash_tagvalue' column to images table in database\n");
     new_version = 57;
+  }
+  else if(version == 57)
+  {
+    // image identity: raw SHA-1 digest + file size, computed lazily on
+    // first full read (opt-in via plugins/darkroom/compute_checksum),
+    // used to match a sidecar to its image after a rename/move.
+    // BLOB(20), not CHAR(20): CHAR would give the column TEXT affinity
+    // (misleading for binary data, even though a bound BLOB value still
+    // round-trips through it unconverted); the trailing comment is kept
+    // by SQLite as part of the column definition, so it stays visible in
+    // `.schema images` for anyone inspecting the live database, not just
+    // in this source file.
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN sha1sum BLOB(20) /* 20-byte binary SHA-1 digest, not hex text */",
+             "[init] can't add `sha1sum' column to images table in database\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN filesize INTEGER",
+             "[init] can't add `filesize' column to images table in database\n");
+    new_version = 58;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop

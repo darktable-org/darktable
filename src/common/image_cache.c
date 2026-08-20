@@ -49,7 +49,8 @@ static void _image_cache_allocate(void *data,
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
       "       output_width, output_height, cm.maker, cm.model, cm.alias,"
-      "       wb.name, fl.name, ep.name, mm.name, flash_tagvalue"
+      "       wb.name, fl.name, ep.name, mm.name, flash_tagvalue,"
+      "       sha1sum, filesize"
       "  FROM main.images AS mi"
       "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
       "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
@@ -155,6 +156,20 @@ static void _image_cache_allocate(void *data,
     if(str) g_strlcpy(img->exif_metering_mode, str, sizeof(img->exif_metering_mode));
 
     img->exif_flash_tagvalue = sqlite3_column_int(stmt, 42);
+
+    const void *sha1sum = sqlite3_column_blob(stmt, 43);
+    if(sha1sum && sqlite3_column_bytes(stmt, 43) == sizeof(img->sha1sum))
+    {
+      memcpy(img->sha1sum, sha1sum, sizeof(img->sha1sum));
+      img->filesize = sqlite3_column_int64(stmt, 44);
+      img->flags |= DT_IMAGE_HAS_SHA1SUM;
+    }
+    else
+    {
+      memset(img->sha1sum, 0, sizeof(img->sha1sum));
+      img->filesize = 0;
+      img->flags &= ~DT_IMAGE_HAS_SHA1SUM;
+    }
 
     dt_color_harmony_get(entry->key, &img->color_harmony_guide);
 
@@ -347,7 +362,8 @@ void dt_image_cache_write_release_info(dt_image_t *img,
      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
      "     print_timestamp = ?31, output_width = ?32, output_height = ?33,"
      "     whitebalance_id = ?36, flash_id = ?37,"
-     "     exposure_program_id = ?38, metering_mode_id = ?39, flash_tagvalue = ?41"
+     "     exposure_program_id = ?38, metering_mode_id = ?39, flash_tagvalue = ?41,"
+     "     sha1sum = ?42, filesize = ?43"
      " WHERE id = ?40",
      -1, &stmt, NULL);
 
@@ -414,6 +430,16 @@ void dt_image_cache_write_release_info(dt_image_t *img,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 39, metering_mode_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 40, img->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 41, img->exif_flash_tagvalue);
+  if(img->flags & DT_IMAGE_HAS_SHA1SUM)
+  {
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 42, img->sha1sum, sizeof(img->sha1sum), SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 43, img->filesize);
+  }
+  else
+  {
+    sqlite3_bind_null(stmt, 42);
+    sqlite3_bind_null(stmt, 43);
+  }
 
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
