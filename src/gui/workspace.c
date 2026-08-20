@@ -40,6 +40,9 @@ typedef struct _workspace_t {
   GtkWidget *template_radio_leader;
   const char *datadir;
   char *selected_template;
+  // TRUE once the user picks or creates a workspace; closing the dialog
+  // without choosing leaves it FALSE
+  gboolean selected;
 } dt_workspace_t;
 
 static gboolean _workspace_label_is_default(const char *label)
@@ -386,6 +389,7 @@ static void _workspace_select_db(GtkWidget *button,
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->remember_selection_check)))
     dt_conf_set_bool("database/multiple_workspace", FALSE);
 
+  session->selected = TRUE;
   _workspace_screen_destroy(session);
 }
 
@@ -444,6 +448,7 @@ static void _workspace_new_db(GtkWidget *button,
     dt_conf_set_bool("database/multiple_workspace", FALSE);
 
   g_free(label);
+  session->selected = TRUE;
   _workspace_screen_destroy(session);
 }
 
@@ -672,10 +677,13 @@ gboolean dt_workspace_create(const char *datadir)
      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->copy_template_check)));
   while(gtk_dialog_run(GTK_DIALOG(session->db_screen)) == GTK_RESPONSE_ACCEPT);
 
+  // only an actual choice may override the per-workspace rc
+  const gboolean selected = session->selected;
+
   _workspace_screen_destroy(session);
   g_free(session);
 
-  return TRUE;
+  return selected;
 }
 
 // clang-format off
