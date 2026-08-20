@@ -953,7 +953,7 @@ static inline float _win_mm_to_diu(float mm)
   return profile_resource;
 }
  */
-static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
+/* static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
                                                 IWICBitmapSource *bitmap,
                                                 IStream **stream_out)
 {
@@ -1191,7 +1191,7 @@ cleanup:
 PRINT JOB MANAGEMENT
 
 ______________________________________________________________________________________  */
-bool dt_win_print_file(const dt_images_box *imgs,
+/*bool dt_win_print_file(const dt_images_box *imgs,
                        const char *job_title,
                        const dt_print_info_t *pinfo,
                        const void *print_ticket_data,
@@ -1455,13 +1455,13 @@ DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
                 }
               }
 
-              writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
+              hr = writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
 DBG_MARK("AddPage: hr=0x%08lx page=%p", hr, (void *)page);
               page->lpVtbl->Release(page);
               page = NULL;
             }
 
-            writer->lpVtbl->Close(writer);
+            hr = writer->lpVtbl->Close(writer);
             DBG_MARK("Close writer: hr=0x%08lx", hr);
             writer->lpVtbl->Release(writer);
             writer = NULL;
@@ -1543,7 +1543,278 @@ DBG_MARK("docStream write: hr=0x%08lx read=%lu written=%lu", hr,
     dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
 DBG_MARK("XPS package finished: ok=%d hr=0x%08lx", ok, hr);
   return ok;
+} */
+
+///_____________________________________________________________
+//     DEBUG PRINT ENGINE
+bool dt_win_print_file(const dt_images_box *imgs,
+                       const char *job_title,
+                       const dt_print_info_t *pinfo,
+                       const void *print_ticket_data,
+                       size_t print_ticket_size,
+                       void *icc_data, size_t icc_size,
+                       float width, float height)
+{
+  (void)imgs;
+  (void)job_title;
+  (void)pinfo;
+  (void)print_ticket_data;
+  (void)print_ticket_size;
+  (void)icc_data;
+  (void)icc_size;
+
+  const float page_width  = _win_mm_to_diu(width);
+  const float page_height = _win_mm_to_diu(height);
+
+  DBG_MARK("DEBUG TEST: start job_title=%s page_width_mm=%.2f page_height_mm=%.2f "
+           "page_width_diu=%.3f page_height_diu=%.3f",
+           job_title ? job_title : "(null)",
+           width, height, page_width, page_height);
+
+  HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
+  DBG_MARK("CoInitializeEx: hr=0x%08lx co_initialized=%d", hr, co_initialized);
+
+  if(!co_initialized)
+  {
+    DBG_MARK("CoInitializeEx failed");
+    return false;
+  }
+
+  IXpsOMObjectFactory *factory = NULL;
+  hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
+                        NULL,
+                        CLSCTX_INPROC_SERVER,
+                        &IID_IXpsOMObjectFactory,
+                        (void **)&factory);
+  DBG_MARK("CoCreateInstance(XpsOMObjectFactory): hr=0x%08lx factory=%p",
+           hr, (void *)factory);
+
+  if(FAILED(hr) || !factory)
+  {
+    DBG_MARK("factory creation failed");
+    CoUninitialize();
+    return false;
+  }
+
+  IStream *package_stream = NULL;
+  hr = CreateStreamOnHGlobal(NULL, TRUE, &package_stream);
+  DBG_MARK("CreateStreamOnHGlobal: hr=0x%08lx package_stream=%p",
+           hr, (void *)package_stream);
+
+  if(FAILED(hr) || !package_stream)
+  {
+    DBG_MARK("package_stream creation failed");
+    factory->lpVtbl->Release(factory);
+    CoUninitialize();
+    return false;
+  }
+
+  IOpcPartUri *doc_seq_uri = NULL;
+  hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
+  DBG_MARK("CreatePartUri(seq): hr=0x%08lx doc_seq_uri=%p", hr, (void *)doc_seq_uri);
+
+  if(FAILED(hr) || !doc_seq_uri)
+  {
+    DBG_MARK("doc_seq_uri creation failed");
+    package_stream->lpVtbl->Release(package_stream);
+    factory->lpVtbl->Release(factory);
+    CoUninitialize();
+    return false;
+  }
+
+  IXpsOMPackageWriter *writer = NULL;
+  hr = factory->lpVtbl->CreatePackageWriterOnStream(factory,
+                                                    (ISequentialStream *)package_stream,
+                                                    FALSE,
+                                                    XPS_INTERLEAVING_OFF,
+                                                    doc_seq_uri,
+                                                    NULL,
+                                                    NULL,
+                                                    NULL,
+                                                    NULL,
+                                                    &writer);
+  DBG_MARK("CreatePackageWriterOnStream: hr=0x%08lx writer=%p", hr, (void *)writer);
+
+  if(FAILED(hr) || !writer)
+  {
+    DBG_MARK("CreatePackageWriterOnStream failed");
+    doc_seq_uri->lpVtbl->Release(doc_seq_uri);
+    package_stream->lpVtbl->Release(package_stream);
+    factory->lpVtbl->Release(factory);
+    CoUninitialize();
+    return false;
+  }
+
+  IOpcPartUri *doc_uri = NULL;
+  hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_uri);
+  DBG_MARK("CreatePartUri(doc): hr=0x%08lx doc_uri=%p", hr, (void *)doc_uri);
+
+  if(SUCCEEDED(hr) && doc_uri)
+  {
+    hr = writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
+    DBG_MARK("StartNewDocument: hr=0x%08lx", hr);
+  }
+  else
+  {
+    DBG_MARK("doc_uri invalid, cannot start document");
+  }
+
+  IXpsOMPage *page = NULL;
+  IOpcPartUri *page_uri = NULL;
+
+  hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc/Pages/1.fpage", &page_uri);
+  DBG_MARK("CreatePartUri(page): hr=0x%08lx page_uri=%p", hr, (void *)page_uri);
+
+  if(SUCCEEDED(hr) && page_uri)
+  {
+    XPS_SIZE page_size = { page_width, page_height };
+    DBG_MARK("page_size: width=%.6f height=%.6f", page_size.width, page_size.height);
+
+    hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", page_uri, &page);
+    DBG_MARK("CreatePage: hr=0x%08lx page=%p", hr, (void *)page);
+  }
+  else
+  {
+    DBG_MARK("page_uri invalid, cannot create page");
+  }
+
+  if(SUCCEEDED(hr) && page)
+  {
+    // smoke rectangle test
+    IXpsOMSolidColorBrush *brush = NULL;
+    IXpsOMPath *path = NULL;
+    IXpsOMGeometry *geom = NULL;
+    IXpsOMGeometryFigure *figure = NULL;
+    IXpsOMGeometryFigureCollection *figures = NULL;
+    IXpsOMVisualCollection *visuals = NULL;
+
+    XPS_COLOR red = {0};
+    red.colorType = XPS_COLOR_TYPE_SRGB;
+    red.value.sRGB.alpha = 255;
+    red.value.sRGB.red = 255;
+    red.value.sRGB.green = 0;
+    red.value.sRGB.blue = 0;
+
+    hr = factory->lpVtbl->CreateSolidColorBrush(factory, &red, NULL, &brush);
+    DBG_MARK("CreateSolidColorBrush: hr=0x%08lx brush=%p", hr, (void *)brush);
+
+    if(SUCCEEDED(hr) && brush)
+    {
+      hr = factory->lpVtbl->CreatePath(factory, &path);
+      DBG_MARK("CreatePath: hr=0x%08lx path=%p", hr, (void *)path);
+    }
+
+    if(SUCCEEDED(hr) && path)
+    {
+      hr = factory->lpVtbl->CreateGeometry(factory, &geom);
+      DBG_MARK("CreateGeometry: hr=0x%08lx geom=%p", hr, (void *)geom);
+    }
+
+    if(SUCCEEDED(hr) && geom)
+    {
+      XPS_POINT start = { 0.0f, 0.0f };
+      XPS_SEGMENT_TYPE seg_types[4] = {
+        XPS_SEGMENT_TYPE_LINE,
+        XPS_SEGMENT_TYPE_LINE,
+        XPS_SEGMENT_TYPE_LINE,
+        XPS_SEGMENT_TYPE_LINE
+      };
+      FLOAT seg_data[8] = {
+        100.0f, 0.0f,
+        100.0f, 100.0f,
+        0.0f, 100.0f,
+        0.0f, 0.0f
+      };
+      WINBOOL seg_strokes[4] = { TRUE, TRUE, TRUE, TRUE };
+
+      hr = factory->lpVtbl->CreateGeometryFigure(factory, &start, &figure);
+      DBG_MARK("CreateGeometryFigure: hr=0x%08lx figure=%p", hr, (void *)figure);
+
+      if(SUCCEEDED(hr) && figure)
+      {
+        hr = figure->lpVtbl->SetSegments(figure, 4, 8, seg_types, seg_data, seg_strokes);
+        DBG_MARK("SetSegments: hr=0x%08lx", hr);
+
+        if(SUCCEEDED(hr))
+          hr = figure->lpVtbl->SetIsClosed(figure, TRUE);
+        DBG_MARK("SetIsClosed: hr=0x%08lx", hr);
+
+        if(SUCCEEDED(hr))
+          hr = figure->lpVtbl->SetIsFilled(figure, TRUE);
+        DBG_MARK("SetIsFilled: hr=0x%08lx", hr);
+
+        if(SUCCEEDED(hr))
+        {
+          hr = geom->lpVtbl->GetFigures(geom, &figures);
+          DBG_MARK("GetFigures: hr=0x%08lx figures=%p", hr, (void *)figures);
+
+          if(SUCCEEDED(hr) && figures)
+          {
+            hr = figures->lpVtbl->Append(figures, figure);
+            DBG_MARK("Append figure: hr=0x%08lx", hr);
+          }
+        }
+      }
+    }
+
+    if(SUCCEEDED(hr) && path)
+    {
+      hr = path->lpVtbl->SetGeometryLocal(path, geom);
+      DBG_MARK("SetGeometryLocal: hr=0x%08lx", hr);
+
+      if(SUCCEEDED(hr))
+      {
+        hr = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
+        DBG_MARK("SetFillBrushLocal: hr=0x%08lx", hr);
+      }
+
+      if(SUCCEEDED(hr))
+      {
+        hr = page->lpVtbl->GetVisuals(page, &visuals);
+        DBG_MARK("GetVisuals: hr=0x%08lx visuals=%p", hr, (void *)visuals);
+
+        if(SUCCEEDED(hr) && visuals)
+        {
+          hr = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
+          DBG_MARK("Append visual: hr=0x%08lx", hr);
+        }
+      }
+    }
+
+    if(page_uri) page_uri->lpVtbl->Release(page_uri);
+    if(doc_uri) doc_uri->lpVtbl->Release(doc_uri);
+    if(doc_seq_uri) doc_seq_uri->lpVtbl->Release(doc_seq_uri);
+
+    hr = writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
+    DBG_MARK("AddPage: hr=0x%08lx page=%p", hr, (void *)page);
+
+    if(figure) figure->lpVtbl->Release(figure);
+    if(figures) figures->lpVtbl->Release(figures);
+    if(geom) geom->lpVtbl->Release(geom);
+    if(path) path->lpVtbl->Release(path);
+    if(visuals) visuals->lpVtbl->Release(visuals);
+    if(brush) brush->lpVtbl->Release(brush);
+
+    if(page) page->lpVtbl->Release(page);
+  }
+
+  if(writer)
+  {
+    hr = writer->lpVtbl->Close(writer);
+    DBG_MARK("Close writer: hr=0x%08lx", hr);
+    writer->lpVtbl->Release(writer);
+  }
+
+  if(package_stream) package_stream->lpVtbl->Release(package_stream);
+  if(factory) factory->lpVtbl->Release(factory);
+  if(co_initialized) CoUninitialize();
+
+  DBG_MARK("DEBUG TEST: exit hr=0x%08lx", hr);
+  return SUCCEEDED(hr);
 }
+//______________________________________________________________
+//______________________________________________________________
 
 // Fill in hardware margins (in mm) for the given printer DC
 void dt_populate_hw_margins(HDC hdc, dt_printer_info_t *printer)
