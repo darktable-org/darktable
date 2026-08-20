@@ -608,6 +608,32 @@ static void _dev_average_delay_update(const dt_times_t *start,
                      - *average_delay / DT_DEV_AVERAGE_DELAY_COUNT);
 }
 
+void dt_dev_pixelpipe_stop_and_lock_all(dt_develop_t *dev)
+  ACQUIRE(&dev->preview_pipe->mutex, &dev->preview2.pipe->mutex, &dev->full.pipe->mutex)
+{
+  assert(dev && dev->preview_pipe && dev->preview2.pipe && dev->full.pipe);
+
+  dt_dev_pixelpipe_set_shutdown(dev->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+
+  // Canonical all-screen-pipe lock order. Workers hold at most one pipe mutex,
+  // then may take history_mutex while synchronizing nodes.
+  dt_pthread_mutex_lock(&dev->preview_pipe->mutex);
+  dt_pthread_mutex_lock(&dev->preview2.pipe->mutex);
+  dt_pthread_mutex_lock(&dev->full.pipe->mutex);
+}
+
+void dt_dev_pixelpipe_unlock_all(dt_develop_t *dev)
+  RELEASE(&dev->preview_pipe->mutex, &dev->preview2.pipe->mutex, &dev->full.pipe->mutex)
+{
+  assert(dev && dev->preview_pipe && dev->preview2.pipe && dev->full.pipe);
+
+  dt_pthread_mutex_unlock(&dev->full.pipe->mutex);
+  dt_pthread_mutex_unlock(&dev->preview2.pipe->mutex);
+  dt_pthread_mutex_unlock(&dev->preview_pipe->mutex);
+}
+
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               dt_dev_pixelpipe_t *pipe,

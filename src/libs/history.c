@@ -574,6 +574,11 @@ static void _pop_undo(gpointer user_data,
 
     GList *iop_temp = g_list_copy(dev->iop);
 
+    // Undo/redo can destroy module GUI data and alter the module topology.
+    // Keep all screen pipes quiescent until the replacement develop state is
+    // complete, so no old node can resume with a cleaned-up module GUI.
+    dt_dev_pixelpipe_stop_and_lock_all(dev);
+
     // topology has changed?
     gboolean pipe_remove = FALSE;
 
@@ -627,6 +632,8 @@ static void _pop_undo(gpointer user_data,
     dt_pthread_mutex_unlock(&dev->history_mutex);
 
     dt_ioppr_resync_modules_order(dev);
+
+    dt_dev_pixelpipe_unlock_all(dev);
 
     dt_dev_modulegroups_set(darktable.develop,
                             dt_dev_modulegroups_get(darktable.develop));
