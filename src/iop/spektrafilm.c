@@ -2181,7 +2181,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   {
     err = dt_opencl_enqueue_kernel_2d_args(
         devid, gd->kernel_develop_corr, w, h, CLARG(plane), CLARG(acc), CLARG(w), CLARG(h),
-        CLARG(cn_cl), CLARG(mats_cl), CLARG(g->gamma[0]), CLARG(g->gamma[1]), CLARG(g->gamma[2]),
+        CLARG(cn_cl), CLARG(mats_cl),
         CLARG(g->le0), CLARG(g->le_step), CLARG(g->film_dmax[0]), CLARG(g->film_dmax[1]),
         CLARG(g->film_dmax[2]), CLARG(g->film_positive));
     SF_CL_STEP("develop_corr");
@@ -2220,8 +2220,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem corr_buf = (g->coupler_tail_w > 0.0f) ? tmpa : acc;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_develop, w, h, CLARG(plane),
                                          CLARG(corr_buf), CLARG(use_corr), CLARG(plane2), CLARG(w),
-                                         CLARG(h), CLARG(cb_cl), CLARG(mats_cl), CLARG(g->gamma[0]),
-                                         CLARG(g->gamma[1]), CLARG(g->gamma[2]), CLARG(g->le0),
+                                         CLARG(h), CLARG(cb_cl), CLARG(mats_cl), CLARG(g->le0),
                                          CLARG(g->le_step));
   SF_CL_STEP("develop");
 

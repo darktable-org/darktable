@@ -144,10 +144,10 @@ static float3 sf_cubic2d(__global const float *lut, int L, float x, float y)
 
 /* ---- [dc] density curve interpolation over the uniform le grid ---------- */
 /* x-axis = le/gamma  ->  index t = (x*gamma - le0)/le_step, endpoint-clamped */
-static inline float sf_curve(__global const float *curves, float x, float gammac,
+static inline float sf_curve(__global const float *curves, float x,
                              float le0, float le_step, int c)
 {
-  const float t = (x * gammac - le0) / le_step;
+  const float t = (x - le0) / le_step;
   if(t <= 0.0f) return curves[c];
   if(t >= (float)(SF_NLE - 1)) return curves[(SF_NLE - 1) * 3 + c];
   const int i = (int)t;
@@ -363,8 +363,7 @@ __kernel void spektrafilm_lograw(__global float4 *plane, const int w, const int 
 __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global float4 *corr,
                                        const int w, const int h,
                                        __global const float *curves_norm,
-                                       __constant float *mats, const float g0,
-                                       const float g1, const float g2, const float le0,
+                                       __constant float *mats, const float le0,
                                        const float le_step, const float dmax0,
                                        const float dmax1, const float dmax2,
                                        const int positive)
@@ -373,13 +372,12 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
   if(x >= w || y >= h) return;
   const size_t k = (size_t)y * w + x;
   const float4 lg = lograw[k];
-  const float gam[3] = { g0, g1, g2 };
   const float dmx[3] = { dmax0, dmax1, dmax2 };
   const float lgv[3] = { lg.x, lg.y, lg.z };
   float silver[3];
   for(int c = 0; c < 3; c++)
   {
-    const float d = sf_curve(curves_norm, lgv[c], gam[c], le0, le_step, c);
+    const float d = sf_curve(curves_norm, lgv[c], le0, le_step, c);
     silver[c] = positive ? dmx[c] - d : d;
     /* Langmuir donor saturation (dev packs); K=1e30 degenerates to linear */
     const float K = mats[SF_M_LM_DONOR + c], Dref = mats[SF_M_LM_DONOR + 3 + c];
@@ -397,8 +395,7 @@ __kernel void spektrafilm_develop_corr(__global const float4 *lograw, __global f
 __kernel void spektrafilm_develop(__global const float4 *lograw, __global const float4 *corr,
                                   const int use_corr, __global float4 *cmy, const int w,
                                   const int h, __global const float *curves,
-                                  __constant float *mats, const float g0,
-                                  const float g1, const float g2, const float le0,
+                                  __constant float *mats, const float le0,
                                   const float le_step)
 {
   const int x = get_global_id(0), y = get_global_id(1);
@@ -414,10 +411,9 @@ __kernel void spektrafilm_develop(__global const float4 *lograw, __global const 
     const float Kr = mats[SF_M_LM_RECV + c], cref = mats[SF_M_LM_RECV + 3 + c];
     crv[c] = crv[c] * (Kr + cref) / (Kr + crv[c]);
   }
-  const float gam[3] = { g0, g1, g2 };
   const float lgv[3] = { lg.x - crv[0], lg.y - crv[1], lg.z - crv[2] };
   float out[3];
-  for(int c = 0; c < 3; c++) out[c] = sf_curve(curves, lgv[c], gam[c], le0, le_step, c);
+  for(int c = 0; c < 3; c++) out[c] = sf_curve(curves, lgv[c], le0, le_step, c);
   cmy[k] = (float4)(out[0], out[1], out[2], lg.w);
 }
 
@@ -640,7 +636,7 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
   const float lgv[3] = { in.x, in.y, in.z };
   float out[3];
   for(int c = 0; c < 3; c++)
-    out[c] = sf_curve(print_curves, lgv[c], 1.0f, le0, le_step, c);
+    out[c] = sf_curve(print_curves, lgv[c], le0, le_step, c);
   cmy[k] = (float4)(out[0], out[1], out[2], in.w);
 }
 

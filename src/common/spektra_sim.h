@@ -162,7 +162,6 @@ typedef struct sf_sim_gpu_t
   int tc_n;
   float *tc_lut; /* tc_n * tc_n * 3 */
   /* film develop */
-  float gamma[3];
   float le0, le_step;
   float *curves_norm;   /* SF_NLE*3 */
   float *curves_before; /* SF_NLE*3 (== curves_norm when couplers off) */
@@ -332,7 +331,6 @@ typedef struct sf_sim_params_t
 {
   /* camera / filming */
   double exposure_comp_ev;      /* 0 */
-  double density_curve_gamma;   /* 1 */
   /* [su] SettingsParams.apply_hanatos2025_adaptation_bandwidth /
    * ..._adaptation_surface: the two halves of the hanatos2025 sensitivity
    * adaptation, both applied in sf_sim_build() and both skipped for a profile
