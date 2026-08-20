@@ -251,93 +251,109 @@ void dt_control_init(const gboolean withgui)
 
 void dt_control_forbid_change_cursor()
 {
+  dt_control_cursor_debug("control/lock", "forbid", NULL, NULL);
   darktable.control->lock_cursor_shape = TRUE;
 }
 
 void dt_control_allow_change_cursor()
 {
+  dt_control_cursor_debug("control/lock", "allow", NULL, NULL);
   darktable.control->lock_cursor_shape = FALSE;
 }
 
-// last cursor set by dt_control_change_cursor() or a direct call to
-// gdk_window_set_cursor() outside of functions below
+// Last cursor set by dt_control_change_cursor(). Widget-local cursors use
+// dt_gui_cursor_set() and do not participate in this temporary override.
 static GdkCursor* _prev_cursor = NULL;
 
-void _change_cursor_with_fallback(const char *cursor_name,
-                                  gboolean is_temp)
+void dt_control_cursor_debug(const char *owner,
+                             const char *action,
+                             GtkWidget *widget,
+                             const char *cursor_name)
 {
-  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(!window) return;
-  GdkDisplay *display = gdk_window_get_display(window);
-  GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+  const GdkCursor *current = dt_gui_cursor_get(widget);
+  dt_print(DT_DEBUG_INPUT,
+           "[cursor] owner=%s action=%s target=%p requested=%s current=%p temp=%s locked=%d thread=%p",
+           owner ? owner : "?",
+           action ? action : "?",
+           (void *)widget,
+           cursor_name ? cursor_name : "<clear>",
+           (void *)current,
+           _prev_cursor ? "yes" : "no",
+           darktable.control ? darktable.control->lock_cursor_shape : FALSE,
+           (void *)g_thread_self());
+}
 
-  // GTK3 fallback: some CSS cursor names are not supported by all
-  // backends (e.g. "wait" and "help" are missing from the GTK3 Win32
-  // mapping table despite Windows having IDC_WAIT and IDC_HELP;
-  // "none" is missing from both the Win32 and X11 backends).
-  // Fall back to the legacy GdkCursorType enum API for these cases.
-  // TODO(GTK4): remove this fallback when migrating to GTK4, where
-  // all backends support the full CSS cursor name spec.
-  if(!cursor)
-  {
-    GdkCursorType type = GDK_LEFT_PTR;
-    if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
-    else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
-    else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
-    else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
-    else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
-    else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
-    cursor = gdk_cursor_new_for_display(display, type);
-  }
+static void _change_cursor_with_fallback(const char *cursor_name,
+                                         gboolean is_temp,
+                                         const char *owner)
+{
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+  if(!widget) return;
+  GdkCursor *cursor = dt_gui_cursor_new_for_name(gtk_widget_get_display(widget), cursor_name);
 
+  dt_control_cursor_debug(owner,
+                          !is_temp && _prev_cursor ? "change-deferred" : "set",
+                          widget,
+                          cursor_name);
   if(!is_temp && _prev_cursor)
   {
-    // cursor change request via dt_control_change_cursor() is overriden
-    // by temp cursor, save new cursor to use when clear temp cursor
+    // A cursor change request is overridden by the temporary cursor; save
+    // the new cursor to use when the temporary cursor is cleared.
     g_object_unref(_prev_cursor);
     _prev_cursor = g_object_ref(cursor);
   }
   else if(!darktable.control->lock_cursor_shape)
   {
-    gdk_window_set_cursor(window, cursor);
+    dt_gui_cursor_apply(widget, cursor);
+    g_object_unref(cursor);
+  }
+  else
+  {
     g_object_unref(cursor);
   }
 }
 
 void dt_control_set_temp_cursor(const char *cursor_name)
 {
-  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(!window) return;
-  // store cursor to return to once clear temp cursor if this is the
-  // initial setup of this temp cursor (as can call this multiple
-  // times to vary a temp cursor)
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+  dt_control_cursor_debug("control/temp", "request", widget, cursor_name);
+  if(!widget) return;
+  // Store the cursor to restore when this is the initial setup of this
+  // temporary cursor. Subsequent calls may vary the temporary cursor.
   if(!_prev_cursor)
   {
-    _prev_cursor = gdk_window_get_cursor(window);
+    _prev_cursor = dt_gui_cursor_get(widget);
     if(_prev_cursor)
       g_object_ref(_prev_cursor);
   }
-  _change_cursor_with_fallback(cursor_name, TRUE);
+  _change_cursor_with_fallback(cursor_name, TRUE, "control/temp");
 }
 
 void dt_control_clear_temp_cursor()
 {
-  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+  dt_control_cursor_debug("control/temp", "clear", widget, NULL);
   if(!_prev_cursor)
   {
-    if(window)
-      gdk_window_set_cursor(window, NULL);
+    if(widget)
+    {
+      dt_control_cursor_debug("control/temp", "clear-default", widget, NULL);
+      dt_gui_cursor_apply(widget, NULL);
+    }
     return;
   }
-  if(window)
-    gdk_window_set_cursor(window, _prev_cursor);
+  if(widget)
+  {
+    dt_control_cursor_debug("control/temp", "restore", widget, "<saved>");
+    dt_gui_cursor_apply(widget, _prev_cursor);
+  }
   g_object_unref(_prev_cursor);
   _prev_cursor = NULL;
 }
 
 void dt_control_change_cursor(const char *cursor_name)
 {
-  _change_cursor_with_fallback(cursor_name, FALSE);
+  _change_cursor_with_fallback(cursor_name, FALSE, "control/change");
 }
 
 /* Some implementation and how-to use notes about control->running

@@ -648,14 +648,15 @@ static gboolean _resize_shortcuts_dialog(GtkWidget *widget, GdkEvent *event, gpo
 
 static void _set_mapping_mode_cursor(GtkWidget *widget)
 {
-  GdkDisplay *display = gdk_display_get_default();
-  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  if(!main_window) return;
+  GdkDisplay *display = gtk_widget_get_display(main_window);
   GdkCursor *cursor = NULL;
 
   if(GTK_IS_EVENT_BOX(widget)) widget = gtk_bin_get_child(GTK_BIN(widget));
 
   if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
-    cursor = gdk_cursor_new_from_name(display, "context-menu");
+    cursor = dt_gui_cursor_new_for_name(display, "context-menu");
   else if(dt_action_widget(darktable.control->mapping_widget)
           && darktable.develop)
   {
@@ -665,16 +666,21 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
 
     dtgtk_cairo_paint_flags_t flags = dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE);
     dtgtk_cairo_paint_shortcut(cr, 0, 0, size, size, flags, GINT_TO_POINTER(TRUE));
+    // GTK4 migration: replace this GTK3 cairo-surface cursor with a
+    // GdkTexture-backed cursor; application remains in dt_gui_cursor_apply().
     cursor = gdk_cursor_new_from_surface(display, surface, size/2, size/2);
     cairo_surface_destroy(surface);
 
-    gdk_window_set_cursor(window, NULL); // work around bug where gtk seems to buffer surface cursors
+    dt_control_cursor_debug("shortcut-mapping", "clear-before-custom", main_window, NULL);
+    dt_gui_cursor_apply(main_window, NULL); // work around bug where gtk seems to buffer surface cursors
   }
   else
-    cursor = gdk_cursor_new_from_name(display, "not-allowed");
+    cursor = dt_gui_cursor_new_for_name(display, "not-allowed");
 
-  gdk_window_set_cursor(window, cursor);
-  g_object_unref(cursor);
+  dt_control_cursor_debug("shortcut-mapping", "set", main_window,
+                          cursor ? "custom-or-not-allowed" : NULL);
+  dt_gui_cursor_apply(main_window, cursor);
+  if(cursor) g_object_unref(cursor);
 }
 
 static gboolean _shortcuts_dialog_open = FALSE;
