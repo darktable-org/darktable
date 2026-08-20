@@ -113,7 +113,7 @@ typedef struct
 // xpsprint.h. Resolved at runtime via LoadLibrary/GetProcAddress rather
 // than linked, since MinGW-w64 doesn't ship an import library for
 // xpsprint.dll — see CMake notes from earlier in this project.
-/* typedef HRESULT (WINAPI *PFN_StartXpsPrintJob)(
+typedef HRESULT (WINAPI *PFN_StartXpsPrintJob)(
     LPCWSTR printerName,
     LPCWSTR jobName,
     LPCWSTR outputFileName,
@@ -153,7 +153,7 @@ static gboolean _win_xpsprint_ensure_loaded(void)
 
   return pStartXpsPrintJob != NULL;
 }
- */
+
 /* ----------------------------------------------------------------------------
    Debug logging
 ---------------------------------------------------------------------------- */
@@ -1185,7 +1185,7 @@ cleanup:
 }
 
 
-
+*/
 /*______________________________________________________________________________________
 
 PRINT JOB MANAGEMENT
@@ -1556,8 +1556,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
                        float width, float height)
 {
   (void)imgs;
-  (void)job_title;
-  (void)pinfo;
   (void)print_ticket_data;
   (void)print_ticket_size;
   (void)icc_data;
@@ -1566,10 +1564,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
   const float page_width  = _win_mm_to_diu(width);
   const float page_height = _win_mm_to_diu(height);
 
-  DBG_MARK("DEBUG TEST: start job_title=%s page_width_mm=%.2f page_height_mm=%.2f "
+  DBG_MARK("DEBUG XPS FILE TEST: job_title=%s width_mm=%.2f height_mm=%.2f "
            "page_width_diu=%.3f page_height_diu=%.3f",
-           job_title ? job_title : "(null)",
-           width, height, page_width, page_height);
+           job_title ? job_title : "(null)", width, height, page_width, page_height);
 
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
   bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
@@ -1578,6 +1575,13 @@ bool dt_win_print_file(const dt_images_box *imgs,
   if(!co_initialized)
   {
     DBG_MARK("CoInitializeEx failed");
+    return false;
+  }
+
+  if(!_win_xpsprint_ensure_loaded())
+  {
+    DBG_MARK("xpsprint loader failed");
+    CoUninitialize();
     return false;
   }
 
@@ -1623,7 +1627,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
     return false;
   }
 
-  // Valid XPS package hierarchy
   hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
   DBG_MARK("CreatePartUri(seq): hr=0x%08lx doc_seq_uri=%p", hr, (void *)doc_seq_uri);
 
@@ -1681,7 +1684,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
     goto cleanup;
   }
 
-  // Important: page part is a concrete part, not a directory-like path.
   hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
   DBG_MARK("CreatePartUri(page): hr=0x%08lx page_uri=%p", hr, (void *)page_uri);
 
@@ -1703,7 +1705,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
     goto cleanup;
   }
 
-  // Red smoke rectangle
   XPS_COLOR red = {0};
   red.colorType = XPS_COLOR_TYPE_SRGB;
   red.value.sRGB.alpha = 255;
@@ -1815,6 +1816,133 @@ bool dt_win_print_file(const dt_images_box *imgs,
   hr = writer->lpVtbl->Close(writer);
   DBG_MARK("Close writer: hr=0x%08lx", hr);
 
+  if(FAILED(hr))
+  {
+    DBG_MARK("writer close failed: hr=0x%08lx", hr);
+    goto cleanup;
+  }
+
+  // Seek back to start so we can copy the finished XPS package into the job output stream.
+  LARGE_INTEGER zero = {0};
+  hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
+  DBG_MARK("Seek package stream: hr=0x%08lx", hr);
+
+  if(FAILED(hr))
+  {
+    DBG_MARK("Seek package stream failed");
+    goto cleanup;
+  }
+
+  // Use the actual printer if available, otherwise use a safe fallback.
+  // This prints to an XPS file, not directly to PDF.
+  const wchar_t *printer_name = pinfo && pinfo->printer.name
+      ? g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL)
+      : L"Microsoft Print to PDF";
+
+  // If you want a true file, this is the output path we write to.
+  // For PDF, you must swap the target printer or convert XPS->PDF afterward.
+  const wchar_t *output_file = L"C:\\temp\\darktable_debug_redbox.xps";
+
+  // Build job title for the XPS print job.
+  WCHAR job_name_buf[256];
+  DWORD job_name_len = 0;
+
+  if(job_title && job_title[0])
+  {
+    MultiByteToWideChar(CP_UTF8, 0, job_title, -1, job_name_buf, 255);
+    job_name_buf[255] = 0;
+  }
+  else
+  {
+    wcscpy(job_name_buf, L"darktable-debug-redbox");
+  }
+
+  HANDLE progressEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+  HANDLE completionEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+
+  if(!progressEvent || !completionEvent)
+  {
+    DBG_MARK("CreateEvent failed for XPS print job");
+    if(progressEvent) CloseHandle(progressEvent);
+    if(completionEvent) CloseHandle(completionEvent);
+    goto cleanup;
+  }
+
+  IXpsPrintJob *xpsJob = NULL;
+  IXpsPrintJobStream *docStream = NULL;
+  IXpsPrintJobStream *ticketStream = NULL;
+
+  hr = pStartXpsPrintJob(
+      printer_name,
+      job_name_buf,
+      output_file,
+      progressEvent,
+      completionEvent,
+      NULL,
+      0,
+      &xpsJob,
+      &docStream,
+      &ticketStream);
+
+  DBG_MARK("StartXpsPrintJob: hr=0x%08lx xpsJob=%p docStream=%p ticketStream=%p",
+           hr, (void *)xpsJob, (void *)docStream, (void *)ticketStream);
+
+  if(SUCCEEDED(hr) && xpsJob && docStream)
+  {
+    BYTE buffer[4096];
+    ULONG total_written = 0;
+
+    for(;;)
+    {
+      ULONG read = 0;
+      hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+      if(FAILED(hr))
+      {
+        DBG_MARK("package_stream Read failed: hr=0x%08lx", hr);
+        break;
+      }
+
+      if(read == 0)
+      {
+        hr = S_OK;
+        break;
+      }
+
+      ULONG written = 0;
+      hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
+      total_written += written;
+
+      DBG_MARK("docStream Write: hr=0x%08lx read=%lu written=%lu",
+               hr, (unsigned long)read, (unsigned long)written);
+
+      if(FAILED(hr))
+      {
+        DBG_MARK("docStream Write failed: hr=0x%08lx", hr);
+        break;
+      }
+    }
+
+    DBG_MARK("package copy complete: hr=0x%08lx total_written=%lu",
+             hr, (unsigned long)total_written);
+
+    if(docStream) docStream->lpVtbl->Close(docStream);
+    if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
+
+    WaitForSingleObject(completionEvent, INFINITE);
+  }
+  else
+  {
+    DBG_MARK("StartXpsPrintJob failed or stream missing");
+    hr = E_FAIL;
+  }
+
+  if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
+  if(docStream) docStream->lpVtbl->Release(docStream);
+  if(ticketStream) ticketStream->lpVtbl->Release(ticketStream);
+
+  if(progressEvent) CloseHandle(progressEvent);
+  if(completionEvent) CloseHandle(completionEvent);
+
 cleanup:
   if(figure) figure->lpVtbl->Release(figure);
   if(figures) figures->lpVtbl->Release(figures);
@@ -1824,7 +1952,6 @@ cleanup:
   if(brush) brush->lpVtbl->Release(brush);
 
   if(page) page->lpVtbl->Release(page);
-
   if(page_uri) page_uri->lpVtbl->Release(page_uri);
   if(doc_uri) doc_uri->lpVtbl->Release(doc_uri);
   if(doc_seq_uri) doc_seq_uri->lpVtbl->Release(doc_seq_uri);
@@ -1835,7 +1962,7 @@ cleanup:
 
   if(co_initialized) CoUninitialize();
 
-  DBG_MARK("DEBUG TEST: exit hr=0x%08lx", hr);
+  DBG_MARK("DEBUG XPS FILE TEST: final hr=0x%08lx", hr);
   return SUCCEEDED(hr);
 }//______________________________________________________________
 //______________________________________________________________
