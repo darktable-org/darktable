@@ -103,7 +103,8 @@ typedef struct sf_sim_t sf_sim_t;
 
 /* Load a data pack directory (pack.json + spectra_lut.f32 + profiles/).
  * On failure returns NULL and sets *errmsg (caller frees with free()). */
-sf_pack_t *sf_pack_load(const char *dir, char **errmsg);
+sf_pack_t *sf_pack_load(const char *dir,
+                        char **errmsg);
 /* Identity of the spectral upsampling table this pack carries. The hash is what
  * params record; the string is for the message shown when they disagree. */
 uint32_t sf_pack_lut_hash(const sf_pack_t *pack);
@@ -113,8 +114,10 @@ const char *sf_pack_version(const sf_pack_t *pack);
 
 /* Neutral enlarger filter database lookup (Kodak CC units, CMY order).
  * Returns true and fills cmy[3] when a calibration exists for the triple. */
-bool sf_pack_neutral_filters(const sf_pack_t *pack, const char *print_stock,
-                             const char *illuminant, const char *film_stock,
+bool sf_pack_neutral_filters(const sf_pack_t *pack,
+                             const char *print_stock,
+                             const char *illuminant,
+                             const char *film_stock,
                              double cmy[3]);
 
 /* Per-film digested render defaults from the release (DIR coupler gamma
@@ -122,10 +125,13 @@ bool sf_pack_neutral_filters(const sf_pack_t *pack, const char *print_stock,
  * stock has no entry (generic defaults are then left untouched). */
 /* Langmuir K factors from film_render_defaults (dev/0.4+ packs); returns
    false and leaves outputs untouched when the pack predates them. */
-bool sf_pack_film_langmuir(const sf_pack_t *pack, const char *film_stock,
-                           double donor_k[3], double receiver_k[3]);
+bool sf_pack_film_langmuir(const sf_pack_t *pack,
+                           const char *film_stock,
+                           double donor_k[3],
+                           double receiver_k[3]);
 
-bool sf_pack_film_defaults(const sf_pack_t *pack, const char *film_stock,
+bool sf_pack_film_defaults(const sf_pack_t *pack,
+                           const char *film_stock,
                            double gamma_samelayer[3],
                            double gamma_inter_r_gb[2],
                            double gamma_inter_g_rb[2],
@@ -145,7 +151,9 @@ bool sf_pack_film_defaults(const sf_pack_t *pack, const char *film_stock,
  * and for stocks with no family. */
 /* Widest development-time family we index (kodak_doublex ships 5). */
 #define SF_MAX_DEV_TIMES 8
-sf_profile_t *sf_profile_load(const char *path, float development_min, char **errmsg);
+sf_profile_t *sf_profile_load(const char *path,
+                              float development_min,
+                              char **errmsg);
 void sf_profile_free(sf_profile_t *profile);
 /* ---------------------------------------------------------- GPU export -- */
 
@@ -227,7 +235,10 @@ int sf_sim_film_bw(const sf_sim_t *sim);
 /* per-film grain catalogue data (rms_granularity, uniformity, density_min);
    falls back to the legacy fixed constants (SF_GRAIN_LEGACY_* in
    spektra_core.h) when sim is NULL or the pack predates per-film grain. */
-void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], float dmin[3]);
+void sf_sim_film_grain3(const sf_sim_t *sim,
+                        float rms[3],
+                        float uniformity[3],
+                        float dmin[3]);
 /* Sum of the per-sub-layer density floors, per channel -- the amount the grain
  * sampler actually adds to a pixel's density, and so the amount the caller has
  * to take back off to recover a zero-mean delta. Equals grain_density_min for a
@@ -235,7 +246,8 @@ void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], 
  * density_max_fractions[l] * density_min and their sum is not constrained to
  * density_min. Subtracting grain_density_min instead left the delta with a
  * constant positive mean of (sum - density_min) per unit grain strength. */
-void sf_sim_grain_dmin_total(const sf_sim_t *sim, float dmin_total[3]);
+void sf_sim_grain_dmin_total(const sf_sim_t *sim,
+                             float dmin_total[3]);
 
 /* Multi-sublayer grain model (see _sf_build_grain_layers in spektra_sim.c):
  * n==1 for any stock whose own fitted density-curve model is single-layer
@@ -254,7 +266,8 @@ typedef struct sf_grain_layers_t
   const float (*layer_curve)[SF_GRAIN_MAX_SUBLAYERS][3]; /* [SF_NLE][sublayer][channel] */
   const float (*layer_curve_total)[3];                   /* [SF_NLE][channel] */
 } sf_grain_layers_t;
-void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out);
+void sf_sim_grain_layers(const sf_sim_t *sim,
+                         sf_grain_layers_t *out);
 /* Multi-sublayer grain delta (see _sf_build_grain_layers / sf_grain_layers_t
  * above). A single-layer curve fit is the trivial n == 1 case of the same
  * model, so every stock goes through here.
@@ -262,9 +275,16 @@ void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out);
  * fixed SF_GRAIN_REF_UM reference scale, since it depends on curve/coupler
  * state baked in at sf_sim_build time, not just resolution) up to the live
  * pipe's real pixel_um: pass (pixel_um*pixel_um)/(SF_GRAIN_REF_UM*SF_GRAIN_REF_UM). */
-void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], float amount,
-                       float out_delta[3], uint32_t xi, uint32_t yi, int mono,
-                       const float dmin_c[3], const float unif_c[3], float npart_scale);
+void sf_grain_delta_ml(const sf_grain_layers_t *layers,
+                       const float dens[3],
+                       float amount,
+                       float out_delta[3],
+                       uint32_t xi,
+                       uint32_t yi,
+                       int mono,
+                       const float dmin_c[3],
+                       const float unif_c[3],
+                       float npart_scale);
 /* Same per-sub-layer sampling as sf_grain_delta_ml, but returns each
  * sub-layer's raw (un-combined, pre-dmin-subtraction) sample into
  * raw_out[0..layers->n-1] instead, so the caller can dye-cloud-blur each
@@ -272,14 +292,24 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], flo
  * layer_particle_model blur_particle) before summing them -- see the
  * definition in spektra_sim.c for the full rationale. raw_out must have
  * room for at least layers->n floats. */
-void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers, float density, int channel_idx,
-                             int seed_ch, uint32_t xi, uint32_t yi, float unif_c,
-                             float npart_scale, float *raw_out);
+void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
+                             float density,
+                             int channel_idx,
+                             int seed_ch,
+                             uint32_t xi,
+                             uint32_t yi,
+                             float unif_c,
+                             float npart_scale,
+                             float *raw_out);
 /* SF_GRAIN_MAX_SUBLAYERS is defined earlier in this header, next to SF_NLE
    (both are needed by sf_sim_gpu_t above, which comes before this point). */
-bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
-                        double rms[3], double uniformity[3], double density_min[3],
-                        double particle_scale[SF_GRAIN_MAX_SUBLAYERS], int *n_scale);
+bool sf_pack_film_grain(const sf_pack_t *pack,
+                        const char *film_stock,
+                        double rms[3],
+                        double uniformity[3],
+                        double density_min[3],
+                        double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
+                        int *n_scale);
 #define SF_COUPLER_BLUR_UM 20.0 /* gaussian core default when pack lacks it */
 /* exponential-tail gaussian mixture (upstream fit, n=3) — shared with halation */
 #define SF_EXPTAIL_A0 0.1633
@@ -289,10 +319,15 @@ bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
 #define SF_EXPTAIL_R1 1.5236
 #define SF_EXPTAIL_R2 2.7684
 
-void sf_sim_coupler_diffusion(const sf_sim_t *sim, double *size_um, double *tail_um,
+void sf_sim_coupler_diffusion(const sf_sim_t *sim,
+                              double *size_um,
+                              double *tail_um,
                               double *tail_w);
-bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stock,
-                                    double *size_um, double *tail_um, double *tail_w);
+bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack,
+                                    const char *film_stock,
+                                    double *size_um,
+                                    double *tail_um,
+                                    double *tail_w);
 
 /* per-film halation preset (film_render_defaults[stock].halation in the pack):
  * back-reflection strength per channel (R/G/B) and the first-bounce Gaussian
@@ -301,11 +336,15 @@ bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stoc
  * strong-antihalation baseline (SF_HALATION_STRENGTH_DEFAULT_* /
  * SF_HALATION_SIGMA_DEFAULT_UM in spektra_sim.c) when `sim` is NULL or the
  * pack predates per-stock halation data. */
-void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *first_sigma_um);
+void sf_sim_halation_params(const sf_sim_t *sim,
+                            double strength[3],
+                            double *first_sigma_um);
 /* [df] per-film in-emulsion scatter PSF: Gaussian core radius, exponential tail
  * decay (both micrometres on film) and the core/tail mix weight, per channel.
  * Falls back to the schema defaults when sim is NULL or the pack has no entry. */
-void sf_sim_scatter_params(const sf_sim_t *sim, double core_um[3], double tail_um[3],
+void sf_sim_scatter_params(const sf_sim_t *sim,
+                           double core_um[3],
+                           double tail_um[3],
                            double tail_weight[3]);
 
 const char *sf_profile_stock(const sf_profile_t *p);
@@ -316,7 +355,9 @@ const char *sf_profile_target_print(const sf_profile_t *p); /* may be NULL */
 const char *sf_profile_channel_model(const sf_profile_t *p); /* "color" / "bw" / NULL */
 /* Copies out the development times this stock is characterised at, in minutes,
  * and returns how many there are (0 when it has no family). */
-int sf_profile_dev_times(const sf_profile_t *p, double *out, int maxn);
+int sf_profile_dev_times(const sf_profile_t *p,
+                         double *out,
+                         int maxn);
 
 /* -------------------------------------------------------------- params -- */
 
@@ -447,13 +488,16 @@ void sf_sim_params_set_output_rec2020(sf_sim_params_t *p);
 /* Build all runtime tables. print may be NULL when params->scan_film.
  * Seeds params->gamma_* coupler defaults and neutral filters from the pack
  * unless the caller already customized them (see .neutral_from_db). */
-sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
-                       const sf_profile_t *print, const sf_sim_params_t *params,
+sf_sim_t *sf_sim_build(const sf_pack_t *pack,
+                       const sf_profile_t *film,
+                       const sf_profile_t *print,
+                       const sf_sim_params_t *params,
                        char **errmsg);
 void sf_sim_free(sf_sim_t *sim);
 
 /* info for the caller's spatial effects */
-double sf_sim_film_dmax(const sf_sim_t *sim, int ch); /* normalized curve max */
+double sf_sim_film_dmax(const sf_sim_t *sim,
+                        int ch); /* normalized curve max */
 
 /* ------------------------------------------------------ per-pixel API --- */
 /* All buffers are interleaved float with `nch` floats per pixel (>= 3);
@@ -461,41 +505,69 @@ double sf_sim_film_dmax(const sf_sim_t *sim, int ch); /* normalized curve max */
  * In-place operation (in == out) is allowed for every stage. */
 
 /* linear input RGB -> linear film raw exposure (includes 2^ev) */
-void sf_sim_expose(const sf_sim_t *sim, const float *rgb_in, float *raw,
-                   size_t npix, int nch_in, int nch_out);
+void sf_sim_expose(const sf_sim_t *sim,
+                   const float *rgb_in,
+                   float *raw,
+                   size_t npix,
+                   int nch_in,
+                   int nch_out);
 
 /* raw -> log10(max(raw,0) + 1e-10), in place */
-void sf_sim_lograw(float *raw, size_t npix, int nch);
+void sf_sim_lograw(float *raw,
+                   size_t npix,
+                   int nch);
 
 /* DIR coupler correction field (to be spatially blurred by the caller).
  * corr is a 3-channel interleaved buffer. No-op fill of zeros when couplers
  * are inactive. */
-void sf_sim_develop_corr(const sf_sim_t *sim, const float *lograw, float *corr,
-                         size_t npix, int nch_in);
+void sf_sim_develop_corr(const sf_sim_t *sim,
+                         const float *lograw,
+                         float *corr,
+                         size_t npix,
+                         int nch_in);
 
 /* (lograw, blurred corr) -> cmy film density. corr may be NULL (no couplers). */
-void sf_sim_develop(const sf_sim_t *sim, const float *lograw, const float *corr,
-                    float *cmy, size_t npix, int nch_in, int nch_out);
+void sf_sim_develop(const sf_sim_t *sim,
+                    const float *lograw,
+                    const float *corr,
+                    float *cmy,
+                    size_t npix,
+                    int nch_in,
+                    int nch_out);
 
 /* cmy film density -> log print raw exposure (through the enlarger) */
-void sf_sim_print_expose(const sf_sim_t *sim, const float *cmy, float *lograw,
-                         size_t npix, int nch_in, int nch_out);
+void sf_sim_print_expose(const sf_sim_t *sim,
+                         const float *cmy,
+                         float *lograw,
+                         size_t npix,
+                         int nch_in,
+                         int nch_out);
 
 /* log print raw -> cmy print density */
-void sf_sim_print_develop(const sf_sim_t *sim, const float *lograw, float *cmy,
-                          size_t npix, int nch_in, int nch_out);
+void sf_sim_print_develop(const sf_sim_t *sim,
+                          const float *lograw,
+                          float *cmy,
+                          size_t npix,
+                          int nch_in,
+                          int nch_out);
 
 /* cmy density (print, or film when scan_film) -> linear output RGB,
  * gamut compressed per params->output_compress */
-void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out,
-                 size_t npix, int nch_in, int nch_out);
+void sf_sim_scan(const sf_sim_t *sim,
+                 const float *cmy,
+                 float *rgb_out,
+                 size_t npix,
+                 int nch_in,
+                 int nch_out);
 
 
 /* pre-compression OkLab lightness a single RGB triple would land at, using
  * boost_override in place of the sim's own out_luminance_boost -- see
  * spektra_sim.c for the full rationale (used by the precompression-boost
  * picker in spektrafilm.c). */
-float sf_sim_probe_lightness(const sf_sim_t *sim, const float rgb_in[3], float boost_override);
+float sf_sim_probe_lightness(const sf_sim_t *sim,
+                             const float rgb_in[3],
+                             float boost_override);
 
 #ifdef __cplusplus
 }

@@ -154,7 +154,9 @@ void sf_fetch_cleanup(void)
   _sf.inited = FALSE;
 }
 
-sf_fetch_state_t sf_fetch_status(char *msg, size_t msgsz, double *progress)
+sf_fetch_state_t sf_fetch_status(char *msg,
+                                 size_t msgsz,
+                                 double *progress)
 {
   g_mutex_lock(&_sf.lock);
   const sf_fetch_state_t s = _sf.state;
@@ -175,7 +177,8 @@ void sf_fetch_cancel(void)
 /* local pack discovery                                                   */
 /* ---------------------------------------------------------------------- */
 
-static void _config_pack_dir(char *dst, size_t dstsz)
+static void _config_pack_dir(char *dst,
+                             size_t dstsz)
 {
   char cfg[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(cfg, sizeof(cfg));
@@ -198,7 +201,8 @@ static void _config_pack_dir(char *dst, size_t dstsz)
    The `packs` subdirectory keeps them apart from a hand-installed pack, which
    lives directly in <config>/spektrafilm/. That separation is what lets the
    resolver promise that a download never overwrites what the user put there. */
-static void _packs_dir(char *dst, size_t dstsz)
+static void _packs_dir(char *dst,
+                       size_t dstsz)
 {
   char cfg[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(cfg, sizeof(cfg));
@@ -214,7 +218,8 @@ static void _packs_dir(char *dst, size_t dstsz)
  * where sf_pack_load() would pull roughly 12 MB of floats through the page
  * cache to answer the same question. That matters because the answer is needed
  * once per candidate directory, on the pixelpipe thread. */
-static gboolean _peek_lut_hash(const char *packdir, uint32_t *out_hash)
+static gboolean _peek_lut_hash(const char *packdir,
+                               uint32_t *out_hash)
 {
   gboolean ok = FALSE;
   char *lut = g_build_filename(packdir, "spectra_lut.f32", NULL);
@@ -253,7 +258,9 @@ out:
   return ok;
 }
 
-static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash, char *dst, size_t dstsz)
+static gboolean _downloaded_dir_for_hash(const uint32_t lut_hash,
+                                         char *dst,
+                                         size_t dstsz)
 {
   char packs[PATH_MAX] = { 0 };
   _packs_dir(packs, sizeof(packs));
@@ -396,7 +403,10 @@ typedef struct sf_buf_t
   size_t cap;
 } sf_buf_t;
 
-static size_t _write_to_buf(void *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t _write_to_buf(void *ptr,
+                            size_t size,
+                            size_t nmemb,
+                            void *userdata)
 {
   sf_buf_t *b = (sf_buf_t *)userdata;
   const size_t n = size * nmemb;
@@ -415,7 +425,10 @@ typedef struct sf_dl_t
   guint64 total_bytes;
 } sf_dl_t;
 
-static size_t _write_to_file(void *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t _write_to_file(void *ptr,
+                             size_t size,
+                             size_t nmemb,
+                             void *userdata)
 {
   sf_dl_t *d = (sf_dl_t *)userdata;
   const size_t n = size * nmemb;
@@ -445,7 +458,8 @@ static int _progress_cb(void *clientp,
   return 0;
 }
 
-static void _curl_common(CURL *curl, const char *url)
+static void _curl_common(CURL *curl,
+                         const char *url)
 {
   dt_curl_init(curl, FALSE);
   curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -467,7 +481,9 @@ static void _curl_common(CURL *curl, const char *url)
 
 /* GET a small document into memory. Returns a NUL-terminated string the caller
    frees, or NULL. */
-static char *_http_get_string(CURL *curl, const char *url, const size_t maxlen)
+static char *_http_get_string(CURL *curl,
+                              const char *url,
+                              const size_t maxlen)
 {
   sf_buf_t buf = { .data = g_malloc0(maxlen + 1), .len = 0, .cap = maxlen };
 
@@ -545,7 +561,8 @@ static char *_sha256_file(const char *path)
   return hex;
 }
 
-static gboolean _verify(const char *path, const char *expected_hex)
+static gboolean _verify(const char *path,
+                        const char *expected_hex)
 {
   char *got = _sha256_file(path);
   if(!got) return FALSE;

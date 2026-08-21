@@ -59,8 +59,9 @@
 #if defined(__ARM_NEON)
 #include <arm_neon.h>
 
-static inline void neon_mat3_mulv_batch(const float m[9], const float *in,
-                                         float out[12])
+static inline void neon_mat3_mulv_batch(const float m[9],
+                                        const float *in,
+                                        float out[12])
 {
   float32x4x3_t rgb = vld3q_f32(in);
   const float32x4_t r0 = rgb.val[0], r1 = rgb.val[1], r2 = rgb.val[2];
@@ -136,7 +137,9 @@ static inline void neon_mat3_mulv_batch(const float m[9], const float *in,
 /* small linear algebra                                                     */
 /* ------------------------------------------------------------------------ */
 
-static void mat3_mul(double out[9], const double a[9], const double b[9])
+static void mat3_mul(double out[9],
+                     const double a[9],
+                     const double b[9])
 {
   double r[9];
   for(int i = 0; i < 3; i++)
@@ -145,7 +148,9 @@ static void mat3_mul(double out[9], const double a[9], const double b[9])
   memcpy(out, r, sizeof(r));
 }
 
-static void mat3_mulv(double out[3], const double m[9], const double v[3])
+static void mat3_mulv(double out[3],
+                      const double m[9],
+                      const double v[3])
 {
   double r0 = m[0] * v[0] + m[1] * v[1] + m[2] * v[2];
   double r1 = m[3] * v[0] + m[4] * v[1] + m[5] * v[2];
@@ -155,7 +160,8 @@ static void mat3_mulv(double out[3], const double m[9], const double v[3])
   out[2] = r2;
 }
 
-static int mat3_inv(double out[9], const double m[9])
+static int mat3_inv(double out[9],
+                    const double m[9])
 {
   const double a = m[0], b = m[1], c = m[2];
   const double d = m[3], e = m[4], f = m[5];
@@ -177,7 +183,8 @@ static int mat3_inv(double out[9], const double m[9])
 }
 
 /* whitepoint xy (Y=1) -> XYZ */
-static void xy_to_XYZ(double out[3], const double xy[2])
+static void xy_to_XYZ(double out[3],
+                      const double xy[2])
 {
   const double y = fmax(xy[1], 1e-10);
   out[0] = xy[0] / y;
@@ -187,7 +194,9 @@ static void xy_to_XYZ(double out[3], const double xy[2])
 
 /* von Kries chromatic adaptation matrix in a given cone space:
  * A = M^-1 · diag(cone_dst / cone_src) · M */
-static void cat_matrix(double out[9], const double cone_m[9], const double src_xy[2],
+static void cat_matrix(double out[9],
+                       const double cone_m[9],
+                       const double src_xy[2],
                        const double dst_xy[2])
 {
   double src_XYZ[3], dst_XYZ[3], cs[3], cd[3], minv[9], d[9] = { 0 };
@@ -436,14 +445,18 @@ struct sf_sim_t
 
 /* null JSON elements decode to NaN (JSON has no NaN literal; the exporter
  * writes null for non-finite values) */
-static inline double json_elem_double(JsonArray *arr, int i)
+static inline double json_elem_double(JsonArray *arr,
+                                      int i)
 {
   JsonNode *node = json_array_get_element(arr, i);
   if(!node || json_node_is_null(node)) return NAN;
   return json_node_get_double(node);
 }
 
-static gboolean json_read_darray(JsonObject *obj, const char *key, double *out, int n)
+static gboolean json_read_darray(JsonObject *obj,
+                                 const char *key,
+                                 double *out,
+                                 int n)
 {
   if(!json_object_has_member(obj, key)) return FALSE;
   JsonNode *node = json_object_get_member(obj, key);
@@ -456,7 +469,10 @@ static gboolean json_read_darray(JsonObject *obj, const char *key, double *out, 
 
 /* read an n×m nested array into row-major out */
 /* Read an array of unknown length, up to `maxn`; returns how many were read. */
-static int json_read_darray_upto(JsonObject *obj, const char *key, double *out, int maxn)
+static int json_read_darray_upto(JsonObject *obj,
+                                 const char *key,
+                                 double *out,
+                                 int maxn)
 {
   if(!json_object_has_member(obj, key)) return 0;
   JsonNode *node = json_object_get_member(obj, key);
@@ -501,7 +517,11 @@ static inline float _sf_half_to_float(const uint16_t h)
   return f;
 }
 
-static gboolean json_read_dmatrix(JsonObject *obj, const char *key, double *out, int n, int m)
+static gboolean json_read_dmatrix(JsonObject *obj,
+                                  const char *key,
+                                  double *out,
+                                  int n,
+                                  int m)
 {
   if(!json_object_has_member(obj, key)) return FALSE;
   JsonNode *node = json_object_get_member(obj, key);
@@ -517,7 +537,8 @@ static gboolean json_read_dmatrix(JsonObject *obj, const char *key, double *out,
   return TRUE;
 }
 
-static char *json_dup_string(JsonObject *obj, const char *key)
+static char *json_dup_string(JsonObject *obj,
+                             const char *key)
 {
   if(!json_object_has_member(obj, key)) return NULL;
   JsonNode *node = json_object_get_member(obj, key);
@@ -525,7 +546,9 @@ static char *json_dup_string(JsonObject *obj, const char *key)
   return g_strdup(json_node_get_string(node));
 }
 
-static void set_error(char **errmsg, const char *fmt, ...)
+static void set_error(char **errmsg,
+                      const char *fmt,
+                      ...)
 {
   if(!errmsg) return;
   va_list ap;
@@ -553,7 +576,8 @@ void sf_pack_free(sf_pack_t *pack)
   g_free(pack);
 }
 
-sf_pack_t *sf_pack_load(const char *dir, char **errmsg)
+sf_pack_t *sf_pack_load(const char *dir,
+                        char **errmsg)
 {
   sf_pack_t *pack = g_new0(sf_pack_t, 1);
   char *json_path = g_build_filename(dir, "pack.json", NULL);
@@ -755,8 +779,11 @@ const char *sf_pack_version(const sf_pack_t *pack)
   return pack ? pack->version : NULL;
 }
 
-bool sf_pack_neutral_filters(const sf_pack_t *pack, const char *print_stock,
-                             const char *illuminant, const char *film_stock, double cmy[3])
+bool sf_pack_neutral_filters(const sf_pack_t *pack,
+                             const char *print_stock,
+                             const char *illuminant,
+                             const char *film_stock,
+                             double cmy[3])
 {
   if(!pack || !pack->neutral_filters) return false;
   JsonObject *db = json_node_get_object(pack->neutral_filters);
@@ -771,8 +798,11 @@ bool sf_pack_neutral_filters(const sf_pack_t *pack, const char *print_stock,
   return true;
 }
 
-bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stock,
-                                    double *size_um, double *tail_um, double *tail_w)
+bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack,
+                                    const char *film_stock,
+                                    double *size_um,
+                                    double *tail_um,
+                                    double *tail_w)
 {
   if(!pack || !pack->film_defaults) return false;
   JsonObject *db = json_node_get_object(pack->film_defaults);
@@ -803,9 +833,13 @@ bool sf_pack_film_coupler_diffusion(const sf_pack_t *pack, const char *film_stoc
    *n_scale is left at 0 in that case so the caller falls back to its
    single-layer default). Returns false and leaves outputs untouched if the
    stock has no "grain" entry at all. */
-bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
-                        double rms[3], double uniformity[3], double density_min[3],
-                        double particle_scale[SF_GRAIN_MAX_SUBLAYERS], int *n_scale)
+bool sf_pack_film_grain(const sf_pack_t *pack,
+                        const char *film_stock,
+                        double rms[3],
+                        double uniformity[3],
+                        double density_min[3],
+                        double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
+                        int *n_scale)
 {
   if(!pack || !pack->film_defaults) return false;
   JsonObject *db = json_node_get_object(pack->film_defaults);
@@ -838,8 +872,10 @@ bool sf_pack_film_grain(const sf_pack_t *pack, const char *film_stock,
   return ok;
 }
 
-bool sf_pack_film_langmuir(const sf_pack_t *pack, const char *film_stock,
-                           double donor_k[3], double receiver_k[3])
+bool sf_pack_film_langmuir(const sf_pack_t *pack,
+                           const char *film_stock,
+                           double donor_k[3],
+                           double receiver_k[3])
 {
   if(!pack || !pack->film_defaults) return false;
   JsonObject *db = json_node_get_object(pack->film_defaults);
@@ -853,11 +889,16 @@ bool sf_pack_film_langmuir(const sf_pack_t *pack, const char *film_stock,
   return true;
 }
 
-bool sf_pack_film_defaults(const sf_pack_t *pack, const char *film_stock,
-                           double gamma_samelayer[3], double gamma_inter_r_gb[2],
-                           double gamma_inter_g_rb[2], double gamma_inter_b_rg[2],
-                           double halation_strength[3], double halation_sigma_um[3],
-                           double scatter_core_um[3], double scatter_tail_um[3],
+bool sf_pack_film_defaults(const sf_pack_t *pack,
+                           const char *film_stock,
+                           double gamma_samelayer[3],
+                           double gamma_inter_r_gb[2],
+                           double gamma_inter_g_rb[2],
+                           double gamma_inter_b_rg[2],
+                           double halation_strength[3],
+                           double halation_sigma_um[3],
+                           double scatter_core_um[3],
+                           double scatter_tail_um[3],
                            double scatter_tail_weight[3])
 {
   if(!pack || !pack->film_defaults) return false;
@@ -905,7 +946,9 @@ void sf_profile_free(sf_profile_t *p)
   g_free(p);
 }
 
-sf_profile_t *sf_profile_load(const char *path, const float development_min, char **errmsg)
+sf_profile_t *sf_profile_load(const char *path,
+                              const float development_min,
+                              char **errmsg)
 {
   JsonParser *parser = json_parser_new();
   GError *gerr = NULL;
@@ -1134,7 +1177,9 @@ const char *sf_profile_stage(const sf_profile_t *p) { return p->stage; }
 const char *sf_profile_type(const sf_profile_t *p) { return p->type; }
 const char *sf_profile_target_print(const sf_profile_t *p) { return p->target_print; }
 const char *sf_profile_channel_model(const sf_profile_t *p) { return p->channel_model; }
-int sf_profile_dev_times(const sf_profile_t *p, double *out, int maxn)
+int sf_profile_dev_times(const sf_profile_t *p,
+                         double *out,
+                         int maxn)
 {
   if(!p || p->n_dev_times <= 1) return 0;
   const int n = MIN(p->n_dev_times, maxn);
@@ -1248,7 +1293,8 @@ void sf_sim_params_set_output_rec2020(sf_sim_params_t *p)
 /* [su] triangular <-> square chromaticity coordinates                      */
 /* ------------------------------------------------------------------------ */
 
-static inline void tri2quad(double out[2], const double tc[2])
+static inline void tri2quad(double out[2],
+                            const double tc[2])
 {
   const double tx = tc[0], ty = tc[1];
   double y = ty / fmax(1.0 - tx, 1e-10);
@@ -1260,7 +1306,8 @@ static inline void tri2quad(double out[2], const double tc[2])
 /* [su] hanika_sigmoid: algebraic sigmoid matching Jakob & Hanika 2019, bounding
    the polynomial to +-max_val. Soft, so the surface approaches the bound
    asymptotically instead of flattening onto it. */
-static inline double hanika_sigmoid(double z, double max_val)
+static inline double hanika_sigmoid(double z,
+                                    double max_val)
 {
   const double t = z / max_val;
   return z / sqrt(1.0 + t * t);
@@ -1270,7 +1317,8 @@ static inline double hanika_sigmoid(double z, double max_val)
    params[0] is deliberately unread -- upstream drops the constant term so the
    correction is exactly zero at the centre, which is what keeps the reference
    white unmoved. */
-static double poly2d_deg4(const double tc[2], const double params[SF_SURFACE_NCOEF],
+static double poly2d_deg4(const double tc[2],
+                          const double params[SF_SURFACE_NCOEF],
                           const double center_tc[2])
 {
   const double x = tc[0] - center_tc[0], y = tc[1] - center_tc[1];
@@ -1282,14 +1330,16 @@ static double poly2d_deg4(const double tc[2], const double params[SF_SURFACE_NCO
          + params[12] * (x3 * y) + params[13] * (x2 * y2) + params[14] * (x * y3);
 }
 
-static inline void quad2tri(double out[2], const double xy[2])
+static inline void quad2tri(double out[2],
+                            const double xy[2])
 {
   const double sq = sqrt(xy[0]);
   out[0] = 1.0 - sq;
   out[1] = xy[1] * sq;
 }
 
-static inline void tri2quad_f(float out[2], const float tc[2])
+static inline void tri2quad_f(float out[2],
+                              const float tc[2])
 {
   const float tx = tc[0], ty = tc[1];
   float y = ty / fmaxf(1.0f - tx, 1e-10f);
@@ -1302,7 +1352,10 @@ static inline void tri2quad_f(float out[2], const float tc[2])
 /* [gc] Reinhard knee, radial xy compression toward the spectral locus      */
 /* ------------------------------------------------------------------------ */
 
-static inline double reinhard_knee(double d, double threshold, double limit, double power)
+static inline double reinhard_knee(double d,
+                                   double threshold,
+                                   double limit,
+                                   double power)
 {
   if(d <= threshold) return d;
   const double scale = limit - threshold;
@@ -1312,8 +1365,10 @@ static inline double reinhard_knee(double d, double threshold, double limit, dou
 }
 
 /* distance from origin along unit direction to the first polygon crossing */
-static double ray_polygon_distance(const double origin[2], const double dir[2],
-                                   const double (*poly)[2], int n_vertices)
+static double ray_polygon_distance(const double origin[2],
+                                   const double dir[2],
+                                   const double (*poly)[2],
+                                   int n_vertices)
 {
   double t_min = INFINITY;
   for(int k = 0; k + 1 < n_vertices; k++)
@@ -1330,8 +1385,11 @@ static double ray_polygon_distance(const double origin[2], const double dir[2],
   return t_min;
 }
 
-static void compress_xy_radial(double out[2], const double xy[2], const double white[2],
-                               const double (*locus)[2], int locus_n)
+static void compress_xy_radial(double out[2],
+                               const double xy[2],
+                               const double white[2],
+                               const double (*locus)[2],
+                               int locus_n)
 {
   const double dx = xy[0] - white[0], dy = xy[1] - white[1];
   const double dist = sqrt(dx * dx + dy * dy);
@@ -1368,14 +1426,18 @@ static inline double mitchell_weight(double t)
   return 0.0;
 }
 
-static inline int safe_index(int idx, int L)
+static inline int safe_index(int idx,
+                             int L)
 {
   if(idx < 0) return -idx;
   if(idx >= L) return 2 * (L - 1) - idx;
   return idx;
 }
 
-static inline void cubic_base_fraction(double coord, int L, int *base, double *frac)
+static inline void cubic_base_fraction(double coord,
+                                       int L,
+                                       int *base,
+                                       double *frac)
 {
   coord = CLAMP(coord, 0.0, (double)(L - 1));
   if(coord >= (double)(L - 1))
@@ -1389,7 +1451,11 @@ static inline void cubic_base_fraction(double coord, int L, int *base, double *f
 }
 
 /* lut: L×L×3 doubles, coords already scaled to [0, L-1] */
-static void cubic_interp_2d(double out[3], const double *lut, int L, double x, double y)
+static void cubic_interp_2d(double out[3],
+                            const double *lut,
+                            int L,
+                            double x,
+                            double y)
 {
   int xb, yb;
   double xf, yf;
@@ -1428,7 +1494,11 @@ static void cubic_interp_2d(double out[3], const double *lut, int L, double x, d
 
 /* bilinear sampling on the same layout with clamped ("nearest") bounds —
  * used only for the tc_lut compression remap at build time */
-static void bilinear_2d_clamped(double out[3], const double *lut, int L, double x, double y)
+static void bilinear_2d_clamped(double out[3],
+                                const double *lut,
+                                int L,
+                                double x,
+                                double y)
 {
   x = CLAMP(x, 0.0, (double)(L - 1));
   y = CLAMP(y, 0.0, (double)(L - 1));
@@ -1448,7 +1518,11 @@ static void bilinear_2d_clamped(double out[3], const double *lut, int L, double 
 /* Fast bilinear 2D on a float LUT — replaces Mitchell 4×4 cubic for the hot
    TC upsampling path. The 192² grid is fine enough that the cubic-vs-linear
    difference between grid points is invisible. ~48 ops vs ~12 ops per pixel. */
-static void bilinear_interp_2d_f(float out[3], const float *lut, int L, float x, float y)
+static void bilinear_interp_2d_f(float out[3],
+                                 const float *lut,
+                                 int L,
+                                 float x,
+                                 float y)
 {
   x = CLAMP(x, 0.0f, (float)(L - 1));
   y = CLAMP(y, 0.0f, (float)(L - 1));
@@ -1469,7 +1543,12 @@ static void bilinear_interp_2d_f(float out[3], const float *lut, int L, float x,
 /* Trilinear 3D on a float LUT — replaces PCHIP 3D cubic for the hot scan/print
    LUT path. The 17³ grid is smooth (density→log XYZ from spectral integrals),
    so PCHIP's monotonicity guarantee adds negligible quality over linear. */
-static void trilinear_interp_3d_f(float out[3], const float *lut, int n, float r, float g, float b)
+static void trilinear_interp_3d_f(float out[3],
+                                  const float *lut,
+                                  int n,
+                                  float r,
+                                  float g,
+                                  float b)
 {
   r = CLAMP(r, 0.0f, (float)(n - 1));
   g = CLAMP(g, 0.0f, (float)(n - 1));
@@ -1504,7 +1583,9 @@ static void trilinear_interp_3d_f(float out[3], const float *lut, int n, float r
 /* [fi] monotone PCHIP 3D LUT interpolation                                 */
 /* ------------------------------------------------------------------------ */
 
-static void fill_monotone_slopes_1d(const double *values, double *slopes, int size)
+static void fill_monotone_slopes_1d(const double *values,
+                                    double *slopes,
+                                    int size)
 {
   if(size == 1)
   {
@@ -1544,8 +1625,13 @@ typedef struct sf_pchip3d_t
 } sf_pchip3d_t;
 
 /* precompute per-axis monotone slopes and per-cell bounds for an n³×3 LUT */
-static void pchip3d_prepare(const double *lut, int n, double *sx, double *sy, double *sz,
-                            double *cmin, double *cmax)
+static void pchip3d_prepare(const double *lut,
+                            int n,
+                            double *sx,
+                            double *sy,
+                            double *sz,
+                            double *cmin,
+                            double *cmax)
 {
   double line[64], slopes[64];
 #define LUT(i, j, k, c) lut[((((size_t)(i)) * n + (j)) * n + (k)) * 3 + (c)]
@@ -1597,17 +1683,27 @@ static void pchip3d_prepare(const double *lut, int n, double *sx, double *sy, do
 #undef SLOT
 }
 
-static inline double hermite_value(double y0, double y1, double m0, double m1, double t)
+static inline double hermite_value(double y0,
+                                   double y1,
+                                   double m0,
+                                   double m1,
+                                   double t)
 {
   const double t2 = t * t, t3 = t2 * t;
   return (2.0 * t3 - 3.0 * t2 + 1.0) * y0 + (t3 - 2.0 * t2 + t) * m0
          + (-2.0 * t3 + 3.0 * t2) * y1 + (t3 - t2) * m1;
 }
 
-static inline double linear_mix(double v0, double v1, double t) { return v0 + t * (v1 - v0); }
+static inline double linear_mix(double v0,
+                                double v1,
+                                double t) { return v0 + t * (v1 - v0); }
 
 /* r, g, b in [0, n-1] index units */
-static void pchip3d_interp(const sf_pchip3d_t *P, double r, double g, double b, double out[3])
+static void pchip3d_interp(const sf_pchip3d_t *P,
+                           double r,
+                           double g,
+                           double b,
+                           double out[3])
 {
   const int n = P->n, m = n - 1;
   int i, j, k;
@@ -1655,7 +1751,10 @@ static void pchip3d_interp(const sf_pchip3d_t *P, double r, double g, double b, 
 /* ------------------------------------------------------------------------ */
 
 /* np.interp over an increasing xp of size n, endpoint-clamped */
-static double interp_general(double x, const double *xp, const double *fp, int n)
+static double interp_general(double x,
+                             const double *xp,
+                             const double *fp,
+                             int n)
 {
   if(x <= xp[0]) return fp[0];
   if(x >= xp[n - 1]) return fp[n - 1];
@@ -1677,8 +1776,11 @@ static double interp_general(double x, const double *xp, const double *fp, int n
 /* [dc] interpolate one channel of a (SF_NLE, 3) curve table over the uniform
  * log-exposure grid divided by the per-channel gamma factor:
  *   x-axis = le/gamma  ->  index t = (x*gamma - le0) / le_step               */
-static inline double interp_curve_uniform(double x, double le0,
-                                          double le_step, const double (*curves)[3], int c)
+static inline double interp_curve_uniform(double x,
+                                          double le0,
+                                          double le_step,
+                                          const double (*curves)[3],
+                                          int c)
 {
   const double t = (x - le0) / le_step;
   if(t <= 0.0) return curves[0][c];
@@ -1690,9 +1792,11 @@ static inline double interp_curve_uniform(double x, double le0,
 
 /* Float variant using precomputed inv_le_step — avoids double→float conversions
    and replaces division with multiply in the hot per-pixel path. */
-static inline float interp_curve_uniform_f(float x, float le0,
+static inline float interp_curve_uniform_f(float x,
+                                           float le0,
                                            float inv_le_step,
-                                           const float (*curves)[3], int c)
+                                           const float (*curves)[3],
+                                           int c)
 {
   const float t = (x - le0) * inv_le_step;
   if(t <= 0.0f) return curves[0][c];
@@ -1714,7 +1818,8 @@ static inline double norm_cdf(double z) { return 0.5 * (1.0 + erf(z * M_SQRT1_2)
  * 0.5 crossing stays on the layer centre for every alpha, and alpha == 0
  * reproduces the symmetric Gaussian fit to within the minimax fit error. */
 #define SF_SEPT_K 5.8013
-static double sept_cdf(double z, double alpha)
+static double sept_cdf(double z,
+                       double alpha)
 {
   double u = z / SF_SEPT_K + 0.5;
   u = u < 0.0 ? 0.0 : (u > 1.0 ? 1.0 : u);
@@ -1731,16 +1836,25 @@ static double sept_cdf(double z, double alpha)
 
 /* One emulsion layer's sigmoid, dispatched by the profile's model_type
  * ([dc] _layer_cdf_values). `alpha` is ignored by the Gaussian family. */
-static double layer_cdf(double z, int sept, double alpha)
+static double layer_cdf(double z,
+                        int sept,
+                        double alpha)
 {
   return sept ? sept_cdf(z, alpha) : norm_cdf(z);
 }
 
 /* evaluate one channel of the cdfs model over the log-exposure grid.
  * signed z: negated for positive profiles ([mc] _signed_z) */
-static void eval_cdfs_channel(double *out, const double *le, int nle, const double *centers,
-                              const double *amps, const double *sigmas, const double *alphas,
-                              int sept, int n_layers, int positive)
+static void eval_cdfs_channel(double *out,
+                              const double *le,
+                              int nle,
+                              const double *centers,
+                              const double *amps,
+                              const double *sigmas,
+                              const double *alphas,
+                              int sept,
+                              int n_layers,
+                              int positive)
 {
   for(int i = 0; i < nle; i++) out[i] = 0.0;
   for(int l = 0; l < n_layers; l++)
@@ -1778,9 +1892,12 @@ static void eval_cdfs_channel(double *out, const double *le, int nle, const doub
  * Writes s->grain_n_sublayers, grain_particle_scale, grain_layer_dmax,
  * grain_layer_npart, grain_layer_dmin, grain_layer_curve and
  * grain_layer_curve_total. */
-static void _sf_build_grain_layers(sf_sim_t *s, const sf_profile_t *film,
-                                   const double density_min[3], const double uniformity[3],
-                                   const double rms[3], const double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
+static void _sf_build_grain_layers(sf_sim_t *s,
+                                   const sf_profile_t *film,
+                                   const double density_min[3],
+                                   const double uniformity[3],
+                                   const double rms[3],
+                                   const double particle_scale[SF_GRAIN_MAX_SUBLAYERS],
                                    int n_scale)
 {
   const sf_curves_model_t *m = &film->curves_model;
@@ -1942,7 +2059,10 @@ static double _sf_gumbel_matched_cdf(double z)
  * per-layer building block for developer exhaustion (matches
  * morph_curves.py's _layer_cdf; `z` already sign-flipped for positive
  * stocks by the caller, matching eval_cdfs_channel's own convention). */
-static double _sf_layer_cdf_mixed(double z, int sept, double alpha, double gumbel_mix)
+static double _sf_layer_cdf_mixed(double z,
+                                  int sept,
+                                  double alpha,
+                                  double gumbel_mix)
 {
   double cdf = layer_cdf(z, sept, alpha);
   if(gumbel_mix > 0.0) cdf = (1.0 - gumbel_mix) * cdf + gumbel_mix * _sf_gumbel_matched_cdf(z);
@@ -1954,9 +2074,15 @@ static double _sf_layer_cdf_mixed(double z, int sept, double alpha, double gumbe
  * all zero) -- the evaluation primitive the exhaustion offset solver below
  * needs (matches morph_curves.py's _evaluate_channel_density, at a single
  * point since that's all the solver needs). */
-static double _sf_channel_density_at(double x, const double *centers, const double *amps,
-                                     const double *sigmas, const double *alphas, int sept,
-                                     int n_layers, const double *gumbel_mix, int positive)
+static double _sf_channel_density_at(double x,
+                                     const double *centers,
+                                     const double *amps,
+                                     const double *sigmas,
+                                     const double *alphas,
+                                     int sept,
+                                     int n_layers,
+                                     const double *gumbel_mix,
+                                     int positive)
 {
   double total = 0.0;
   for(int l = 0; l < n_layers; l++)
@@ -1979,10 +2105,14 @@ static double _sf_channel_density_at(double x, const double *centers, const doub
  * and precision matters far more than speed here since this runs once per
  * channel per sim build, never per pixel. Returns 0 if gumbel_mix is zero
  * or no sign change is found (matching upstream's own fallback-to-zero). */
-static double _sf_developer_exhaustion_offset(const double *centers, const double *amps,
-                                              const double *sigmas, const double *alphas,
-                                              int sept, int n_layers,
-                                              double gumbel_mix, int positive)
+static double _sf_developer_exhaustion_offset(const double *centers,
+                                              const double *amps,
+                                              const double *sigmas,
+                                              const double *alphas,
+                                              int sept,
+                                              int n_layers,
+                                              double gumbel_mix,
+                                              int positive)
 {
   if(gumbel_mix <= 0.0) return 0.0;
 
@@ -2037,11 +2167,20 @@ static double _sf_developer_exhaustion_offset(const double *centers, const doubl
  * touched by the morph -- upstream's _morph_channel_params carries it through
  * unchanged too -- but it is passed on so the exhaustion solver evaluates the
  * same sigmoid family the curves are built from. */
-static void _sf_morph_channel(const double centers_in[], const double sigmas_in[],
-                              const double alphas_in[], int sept, int nl,
-                              int positive, double gamma, double gamma_fast, double gamma_slow,
-                              double exhaustion, const double amps[],
-                              double centers_out[], double sigmas_out[], double gumbel_mix_out[])
+static void _sf_morph_channel(const double centers_in[],
+                              const double sigmas_in[],
+                              const double alphas_in[],
+                              int sept,
+                              int nl,
+                              int positive,
+                              double gamma,
+                              double gamma_fast,
+                              double gamma_slow,
+                              double exhaustion,
+                              const double amps[],
+                              double centers_out[],
+                              double sigmas_out[],
+                              double gumbel_mix_out[])
 {
   int order[SF_GRAIN_MAX_SUBLAYERS];
   for(int i = 0; i < nl; i++) order[i] = i;
@@ -2089,8 +2228,10 @@ static void _sf_morph_channel(const double centers_in[], const double sigmas_in[
  * also writes the per-sublayer breakdown to layers_out. Only called when
  * film->curves_model.n_layers > 0; the caller falls back to the profile's
  * static density_curves array otherwise (matching upstream's own check). */
-static void build_film_curves(double (*curves)[3], double (*layers_out)[SF_GRAIN_MAX_SUBLAYERS][3],
-                              const sf_profile_t *film, const sf_sim_params_t *p)
+static void build_film_curves(double (*curves)[3],
+                              double (*layers_out)[SF_GRAIN_MAX_SUBLAYERS][3],
+                              const sf_profile_t *film,
+                              const sf_sim_params_t *p)
 {
   const int positive = (film->type && strcmp(film->type, "positive") == 0);
   const sf_curves_model_t *m = &film->curves_model;
@@ -2134,7 +2275,8 @@ static void build_film_curves(double (*curves)[3], double (*layers_out)[SF_GRAIN
   }
 }
 
-static void build_print_curves(double (*curves)[3], const sf_profile_t *print,
+static void build_print_curves(double (*curves)[3],
+                               const sf_profile_t *print,
                                const sf_sim_params_t *p)
 {
   const int positive = (print->type && strcmp(print->type, "positive") == 0);
@@ -2189,7 +2331,9 @@ static void build_print_curves(double (*curves)[3], const sf_profile_t *print,
 /* ------------------------------------------------------------------------ */
 
 /* filtered[l] = src[l] * prod_c (1 - (1 - F[l][c]) * (1 - 10^(-cc_c/100))) */
-static void apply_dichroic_cc(double *out, const double *src, const double *filters,
+static void apply_dichroic_cc(double *out,
+                              const double *src,
+                              const double *filters,
                               const double cc[3])
 {
   double dim[3];
@@ -2208,7 +2352,9 @@ static void apply_dichroic_cc(double *out, const double *src, const double *filt
 
 /* [st] printing._film_cmy_to_print_log_raw — WITHOUT the print_exposure and
  * second log step, which run outside the (optional) 3D table */
-static void cmy_to_print_lograw(const sf_sim_t *s, const double cmy[3], double out[3])
+static void cmy_to_print_lograw(const sf_sim_t *s,
+                                const double cmy[3],
+                                double out[3])
 {
   double raw[3] = { 0.0, 0.0, 0.0 };
   for(int l = 0; l < SF_NWL; l++)
@@ -2229,7 +2375,10 @@ static void cmy_to_print_lograw(const sf_sim_t *s, const double cmy[3], double o
 
 /* np.interp equivalent over xp = -curve[i] (ascending for positive film),
    fp = le[i]; endpoint-clamped exactly like numpy */
-static double interp_ascending(double x, const double *curve, const double *le, int n)
+static double interp_ascending(double x,
+                               const double *curve,
+                               const double *le,
+                               int n)
 {
   if(x <= -curve[0]) return le[0];
   if(x >= -curve[n - 1]) return le[n - 1];
@@ -2246,7 +2395,9 @@ static double interp_ascending(double x, const double *curve, const double *le, 
 }
 
 /* [st] scanning cmy_to_log_xyz */
-static void cmy_to_log_xyz(const sf_sim_t *s, const double cmy[3], double out[3])
+static void cmy_to_log_xyz(const sf_sim_t *s,
+                           const double cmy[3],
+                           double out[3])
 {
   double xyz[3] = { 0.0, 0.0, 0.0 };
   for(int l = 0; l < SF_NWL; l++)
@@ -2265,7 +2416,8 @@ static void cmy_to_log_xyz(const sf_sim_t *s, const double cmy[3], double out[3]
 /* [gc] OkLab conversions and output C_max(L, h) table                      */
 /* ------------------------------------------------------------------------ */
 
-static inline void xyz_to_oklab(const double xyz[3], double lab[3])
+static inline void xyz_to_oklab(const double xyz[3],
+                                double lab[3])
 {
   double lms[3];
   mat3_mulv(lms, SF_OKLAB_M1, xyz);
@@ -2273,7 +2425,9 @@ static inline void xyz_to_oklab(const double xyz[3], double lab[3])
   mat3_mulv(lab, SF_OKLAB_M2, lms);
 }
 
-static inline void oklab_to_xyz(const sf_sim_t *s, const double lab[3], double xyz[3])
+static inline void oklab_to_xyz(const sf_sim_t *s,
+                                const double lab[3],
+                                double xyz[3])
 {
   double lms[3];
   mat3_mulv(lms, s->oklab_m2inv, lab);
@@ -2320,7 +2474,9 @@ static void build_cmax_table(sf_sim_t *s)
 }
 
 /* [gc] _c_max_lookup — bilinear, L clamped, hue wrapped */
-static inline double cmax_lookup(const sf_sim_t *s, double L, double h)
+static inline double cmax_lookup(const sf_sim_t *s,
+                                 double L,
+                                 double h)
 {
   L = CLAMP(L, SF_CMAX_L_LO, SF_CMAX_L_HI);
   const double h_step = 2.0 * M_PI / SF_CMAX_NH;
@@ -2348,7 +2504,8 @@ static inline double cmax_lookup(const sf_sim_t *s, double L, double h)
 }
 
 /* [gc] compress_rgb_oklch_chroma with lightness_compression (0.7, 1, 2.2) */
-static void compress_rgb_oklch(const sf_sim_t *s, double rgb[3])
+static void compress_rgb_oklch(const sf_sim_t *s,
+                               double rgb[3])
 {
   double xyz[3], lab[3];
   mat3_mulv(xyz, s->out_rgb2xyz, rgb);
@@ -2395,7 +2552,9 @@ static void compress_rgb_aces(double rgb[3])
  * linear combination of LMS^(1/3), so L(boost) = boost^(1/3) * L(1) exactly.
  * One probe at any boost value is enough to solve for the boost that hits a
  * target L in closed form (see the caller in spektrafilm.c). */
-float sf_sim_probe_lightness(const sf_sim_t *sim, const float rgb_in[3], float boost_override)
+float sf_sim_probe_lightness(const sf_sim_t *sim,
+                             const float rgb_in[3],
+                             float boost_override)
 {
   sf_sim_t tmp_sim = *sim;
   tmp_sim.out_luminance_boost = (double)boost_override;
@@ -2427,7 +2586,8 @@ float sf_sim_probe_lightness(const sf_sim_t *sim, const float rgb_in[3], float b
 /* build                                                                    */
 /* ------------------------------------------------------------------------ */
 
-static void illuminant_xy_from_spd(double out[2], const double *spd,
+static void illuminant_xy_from_spd(double out[2],
+                                   const double *spd,
                                    const double cmfs[][3])
 {
   double xyz[3] = { 0.0, 0.0, 0.0 };
@@ -2439,8 +2599,11 @@ static void illuminant_xy_from_spd(double out[2], const double *spd,
 }
 
 /* [su] one 2D LUT lookup of the filming stage: linear RGB -> raw exposure */
-static void expose_pixel(const double m_in[9], const double *tc_lut, int tc_n,
-                         const double rgb[3], double raw[3])
+static void expose_pixel(const double m_in[9],
+                         const double *tc_lut,
+                         int tc_n,
+                         const double rgb[3],
+                         double raw[3])
 {
   double xyz[3];
   mat3_mulv(xyz, m_in, rgb);
@@ -2456,8 +2619,11 @@ static void expose_pixel(const double m_in[9], const double *tc_lut, int tc_n,
 
 /* Float per-pixel expose using float LUT/input. The linear color matrix
    product is the same as expose_pixel but stored/operated in float. */
-static void expose_pixel_f(const float m_in[9], const float *tc_lut, int tc_n,
-                           const float rgb[3], float raw[3])
+static void expose_pixel_f(const float m_in[9],
+                           const float *tc_lut,
+                           int tc_n,
+                           const float rgb[3],
+                           float raw[3])
 {
   float xyz[3];
   for(int i = 0; i < 3; i++)
@@ -2475,8 +2641,10 @@ static void expose_pixel_f(const float m_in[9], const float *tc_lut, int tc_n,
 /* [st] filming._simple_rgb_to_density_spectral: the gray reference used to
  * balance the print exposure. NOTE the reference computes this in *sRGB*
  * (the _rgb_to_film_raw defaults), independent of the io input space. */
-static void midgray_density_spectral(const sf_sim_t *s, const sf_profile_t *film,
-                                     const double film_ref_xy[2], double gray,
+static void midgray_density_spectral(const sf_sim_t *s,
+                                     const sf_profile_t *film,
+                                     const double film_ref_xy[2],
+                                     double gray,
                                      double ds[SF_NWL])
 {
   double m_srgb[9], cat[9];
@@ -2503,7 +2671,8 @@ static void midgray_density_spectral(const sf_sim_t *s, const sf_profile_t *film
 }
 
 /* [st] printing._exposure_factor: 1 / geomean of the midgray print raw */
-static double exposure_factor(const sf_sim_t *s, const double ds[SF_NWL])
+static double exposure_factor(const sf_sim_t *s,
+                              const double ds[SF_NWL])
 {
   double raw[3] = { 0.0, 0.0, 0.0 };
   for(int l = 0; l < SF_NWL; l++)
@@ -2520,9 +2689,17 @@ static double exposure_factor(const sf_sim_t *s, const double ds[SF_NWL])
 /* fill a steps^3 table by sampling fn over [lo, hi]^3 and prepare PCHIP */
 typedef void (*sf_cell_fn)(const sf_sim_t *, const double[3], double[3]);
 
-static void build_lut3d(const sf_sim_t *s, sf_cell_fn fn, const double lo[3],
-                        const double hi[3], int steps, double **lut, double **sx,
-                        double **sy, double **sz, double **cmin, double **cmax_)
+static void build_lut3d(const sf_sim_t *s,
+                        sf_cell_fn fn,
+                        const double lo[3],
+                        const double hi[3],
+                        int steps,
+                        double **lut,
+                        double **sx,
+                        double **sy,
+                        double **sz,
+                        double **cmin,
+                        double **cmax_)
 {
   const size_t n3 = (size_t)steps * steps * steps * 3;
   const size_t m3 = (size_t)(steps - 1) * (steps - 1) * (steps - 1) * 3;
@@ -2561,13 +2738,16 @@ void sf_sim_free(sf_sim_t *s)
   g_free(s);
 }
 
-double sf_sim_film_dmax(const sf_sim_t *sim, int ch)
+double sf_sim_film_dmax(const sf_sim_t *sim,
+                        int ch)
 {
   return sim->film_dmax[CLAMP(ch, 0, 2)];
 }
 
-sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
-                       const sf_profile_t *print, const sf_sim_params_t *params,
+sf_sim_t *sf_sim_build(const sf_pack_t *pack,
+                       const sf_profile_t *film,
+                       const sf_profile_t *print,
+                       const sf_sim_params_t *params,
                        char **errmsg)
 {
   if(!pack || !film || !params || (!print && !params->scan_film))
@@ -3373,8 +3553,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack, const sf_profile_t *film,
 /* per-pixel stages                                                         */
 /* ------------------------------------------------------------------------ */
 
-void sf_sim_expose(const sf_sim_t *sim, const float *rgb_in, float *raw, size_t npix,
-                   int nch_in, int nch_out)
+void sf_sim_expose(const sf_sim_t *sim,
+                   const float *rgb_in,
+                   float *raw,
+                   size_t npix,
+                   int nch_in,
+                   int nch_out)
 {
 #if defined(__ARM_NEON)
   if(nch_in == 3 && nch_out == 3 && sim->tc_lut_f && npix >= 4)
@@ -3428,7 +3612,9 @@ void sf_sim_expose(const sf_sim_t *sim, const float *rgb_in, float *raw, size_t 
   }
 }
 
-void sf_sim_lograw(float *raw, size_t npix, int nch)
+void sf_sim_lograw(float *raw,
+                   size_t npix,
+                   int nch)
 {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
@@ -3441,8 +3627,11 @@ void sf_sim_lograw(float *raw, size_t npix, int nch)
   }
 }
 
-void sf_sim_develop_corr(const sf_sim_t *sim, const float *lograw, float *corr,
-                         size_t npix, int nch_in)
+void sf_sim_develop_corr(const sf_sim_t *sim,
+                         const float *lograw,
+                         float *corr,
+                         size_t npix,
+                         int nch_in)
 {
   if(!sim->couplers_active)
   {
@@ -3475,8 +3664,13 @@ void sf_sim_develop_corr(const sf_sim_t *sim, const float *lograw, float *corr,
   }
 }
 
-void sf_sim_develop(const sf_sim_t *sim, const float *lograw, const float *corr,
-                    float *cmy, size_t npix, int nch_in, int nch_out)
+void sf_sim_develop(const sf_sim_t *sim,
+                    const float *lograw,
+                    const float *corr,
+                    float *cmy,
+                    size_t npix,
+                    int nch_in,
+                    int nch_out)
 {
   const int use_corr = sim->couplers_active && corr != NULL;
   const float(*curves)[3] = use_corr ? sim->curves_before_f : sim->curves_norm_f;
@@ -3503,8 +3697,12 @@ void sf_sim_develop(const sf_sim_t *sim, const float *lograw, const float *corr,
   }
 }
 
-void sf_sim_print_expose(const sf_sim_t *sim, const float *cmy, float *lograw,
-                         size_t npix, int nch_in, int nch_out)
+void sf_sim_print_expose(const sf_sim_t *sim,
+                         const float *cmy,
+                         float *lograw,
+                         size_t npix,
+                         int nch_in,
+                         int nch_out)
 {
   const int steps = sim->lut_steps;
 #ifdef _OPENMP
@@ -3551,8 +3749,12 @@ void sf_sim_print_expose(const sf_sim_t *sim, const float *cmy, float *lograw,
   }
 }
 
-void sf_sim_print_develop(const sf_sim_t *sim, const float *lograw, float *cmy,
-                          size_t npix, int nch_in, int nch_out)
+void sf_sim_print_develop(const sf_sim_t *sim,
+                          const float *lograw,
+                          float *cmy,
+                          size_t npix,
+                          int nch_in,
+                          int nch_out)
 {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
@@ -3567,8 +3769,12 @@ void sf_sim_print_develop(const sf_sim_t *sim, const float *lograw, float *cmy,
   }
 }
 
-void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t npix,
-                 int nch_in, int nch_out)
+void sf_sim_scan(const sf_sim_t *sim,
+                 const float *cmy,
+                 float *rgb_out,
+                 size_t npix,
+                 int nch_in,
+                 int nch_out)
 {
   const int steps = sim->lut_steps;
 #ifdef _OPENMP
@@ -3631,7 +3837,8 @@ void sf_sim_scan(const sf_sim_t *sim, const float *cmy, float *rgb_out, size_t n
 /* GPU export: float copies of the per-pixel tables                         */
 /* ------------------------------------------------------------------------ */
 
-static float *dup_f(const double *src, size_t n)
+static float *dup_f(const double *src,
+                    size_t n)
 {
   float *dst = malloc(n * sizeof(float));
   if(dst)
@@ -3639,20 +3846,23 @@ static float *dup_f(const double *src, size_t n)
   return dst;
 }
 
-static void cp9f(float dst[9], const double src[9])
+static void cp9f(float dst[9],
+                 const double src[9])
 {
   for(int i = 0; i < 9; i++) dst[i] = (float)src[i];
 }
 
 /* variants that keep the 2D array type so the compiler sees the full extent
    (a plain &a[0][0] decay trips -Werror=stringop-overread on gcc) */
-static void cp33f(float dst[9], const double src[3][3])
+static void cp33f(float dst[9],
+                  const double src[3][3])
 {
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 3; j++) dst[i * 3 + j] = (float)src[i][j];
 }
 
-static float *dup_f3(const double (*src)[3], size_t rows)
+static float *dup_f3(const double (*src)[3],
+                     size_t rows)
 {
   float *dst = malloc(rows * 3 * sizeof(float));
   if(dst)
@@ -3794,7 +4004,9 @@ void sf_sim_gpu_free(sf_sim_gpu_t *g)
 
 int sf_sim_film_bw(const sf_sim_t *sim) { return sim ? sim->film_bw : 0; }
 
-void sf_sim_coupler_diffusion(const sf_sim_t *sim, double *size_um, double *tail_um,
+void sf_sim_coupler_diffusion(const sf_sim_t *sim,
+                              double *size_um,
+                              double *tail_um,
                               double *tail_w)
 {
   *size_um = sim ? sim->coupler_diff_um : SF_COUPLER_BLUR_UM;
@@ -3802,7 +4014,9 @@ void sf_sim_coupler_diffusion(const sf_sim_t *sim, double *size_um, double *tail
   *tail_w = sim ? sim->coupler_tail_w : 0.0;
 }
 
-void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *first_sigma_um)
+void sf_sim_halation_params(const sf_sim_t *sim,
+                            double strength[3],
+                            double *first_sigma_um)
 {
   const double dflt[3] = { SF_HALATION_STRENGTH_DEFAULT_R, SF_HALATION_STRENGTH_DEFAULT_G,
                            SF_HALATION_STRENGTH_DEFAULT_B };
@@ -3813,7 +4027,9 @@ void sf_sim_halation_params(const sf_sim_t *sim, double strength[3], double *fir
   if(first_sigma_um) *first_sigma_um = sim ? sim->halation_sigma_um : SF_HALATION_SIGMA_DEFAULT_UM;
 }
 
-void sf_sim_scatter_params(const sf_sim_t *sim, double core_um[3], double tail_um[3],
+void sf_sim_scatter_params(const sf_sim_t *sim,
+                           double core_um[3],
+                           double tail_um[3],
                            double tail_weight[3])
 {
   static const double core_d[3] = { SF_SCATTER_CORE_DEFAULT_R, SF_SCATTER_CORE_DEFAULT_G,
@@ -3830,7 +4046,8 @@ void sf_sim_scatter_params(const sf_sim_t *sim, double core_um[3], double tail_u
   }
 }
 
-void sf_sim_grain_dmin_total(const sf_sim_t *sim, float dmin_total[3])
+void sf_sim_grain_dmin_total(const sf_sim_t *sim,
+                             float dmin_total[3])
 {
   for(int c = 0; c < 3; c++) dmin_total[c] = 0.0f;
   if(!sim) return;
@@ -3843,7 +4060,10 @@ void sf_sim_grain_dmin_total(const sf_sim_t *sim, float dmin_total[3])
   }
 }
 
-void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], float dmin[3])
+void sf_sim_film_grain3(const sf_sim_t *sim,
+                        float rms[3],
+                        float uniformity[3],
+                        float dmin[3])
 {
   /* spektrafilm's original single fixed profile, for a sim-less caller */
   static const float legacy_rms[3] = { 6.0f, 8.0f, 10.0f };
@@ -3863,7 +4083,8 @@ void sf_sim_film_grain3(const sf_sim_t *sim, float rms[3], float uniformity[3], 
   }
 }
 
-void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out)
+void sf_sim_grain_layers(const sf_sim_t *sim,
+                         sf_grain_layers_t *out)
 {
   if(!sim)
   {
@@ -3902,7 +4123,10 @@ void sf_sim_grain_layers(const sf_sim_t *sim, sf_grain_layers_t *out)
  * spektrafilm's own interp_density_cmy_layers_channel performs (there, via
  * a table built ad hoc each call; here, against grain_layer_curve_total,
  * built once at sim-build time). */
-static float _sf_grain_curve_inverse(const float *arr, int n, int stride, float target)
+static float _sf_grain_curve_inverse(const float *arr,
+                                     int n,
+                                     int stride,
+                                     float target)
 {
   const int increasing = arr[(n - 1) * stride] >= arr[0];
   int lo = 0, hi = n - 1;
@@ -3923,7 +4147,10 @@ static float _sf_grain_curve_inverse(const float *arr, int n, int stride, float 
 
 /* Linearly interpolate a (possibly strided) per-index array at the
  * continuous index `pos` produced by _sf_grain_curve_inverse above. */
-static float _sf_grain_curve_sample(const float *arr, int n, int stride, float pos)
+static float _sf_grain_curve_sample(const float *arr,
+                                    int n,
+                                    int stride,
+                                    float pos)
 {
   int i0 = (int)pos;
   if(i0 < 0) i0 = 0;
@@ -3946,9 +4173,16 @@ static float _sf_grain_curve_sample(const float *arr, int n, int stride, float p
  * (smaller, for finer sub-layers) share of the total variance, so summing
  * them reproduces the combined multilayer noise the catalogue RMS was
  * calibrated against, rather than diluting it the way an average would. */
-void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], float amount,
-                       float out_delta[3], uint32_t xi, uint32_t yi, int mono,
-                       const float dmin_c[3], const float unif_c[3], float npart_scale)
+void sf_grain_delta_ml(const sf_grain_layers_t *layers,
+                       const float dens[3],
+                       float amount,
+                       float out_delta[3],
+                       uint32_t xi,
+                       uint32_t yi,
+                       int mono,
+                       const float dmin_c[3],
+                       const float unif_c[3],
+                       float npart_scale)
 {
   const int nsub = layers->n;
   const int nle = SF_NLE;
@@ -4005,9 +4239,15 @@ void sf_grain_delta_ml(const sf_grain_layers_t *layers, const float dens[3], flo
  * real channel index for color) -- kept as a separate parameter rather
  * than reusing channel_idx so the mono case still seeds like sl*10, not
  * (1 + sl*10), matching sf_grain_delta_ml exactly. */
-void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers, float density, int channel_idx,
-                             int seed_ch, uint32_t xi, uint32_t yi, float unif_c,
-                             float npart_scale, float *raw_out)
+void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
+                             float density,
+                             int channel_idx,
+                             int seed_ch,
+                             uint32_t xi,
+                             uint32_t yi,
+                             float unif_c,
+                             float npart_scale,
+                             float *raw_out)
 {
   const int nsub = layers->n;
   const int nle = SF_NLE;

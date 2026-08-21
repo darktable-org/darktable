@@ -362,7 +362,8 @@ static int _format_mm_to_preset(float mm)
   return FORMAT_PRESET_CUSTOM;
 }
 
-static void _format_changed(GtkWidget *combo, gpointer user_data)
+static void _format_changed(GtkWidget *combo,
+                            gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -384,7 +385,8 @@ static void _format_changed(GtkWidget *combo, gpointer user_data)
   gtk_widget_set_visible(g->film_format_mm_slider, pi < 0 || pi >= FORMAT_PRESETS_N);
 }
 
-static void _format_slider_changed(GtkWidget *slider, gpointer user_data)
+static void _format_slider_changed(GtkWidget *slider,
+                                   gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -618,7 +620,8 @@ int flags(void)
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_ALLOW_TILING;
 }
 
-dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *p,
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *p,
                                             dt_dev_pixelpipe_iop_t *pi)
 {
   return IOP_CS_RGB;
@@ -641,7 +644,8 @@ static uint32_t _name_hash(const char *s)
 /* Where a hand-installed pack lives. Still the preferred location, and the one
    named in the "no data pack" message, but no longer the only one: downloaded
    packs live under the cache directory, one per spectral table. */
-static void _pack_dir(char *dst, size_t dstsz)
+static void _pack_dir(char *dst,
+                      size_t dstsz)
 {
   char cfg[SF_PATH_LEN];
   dt_loc_get_user_config_dir(cfg, sizeof cfg);
@@ -651,7 +655,9 @@ static void _pack_dir(char *dst, size_t dstsz)
 /* Pick the pack directory for an edit that recorded wanted_lut_hash (0 = no
    preference). Local lookup only -- no network, safe on the pixelpipe. Falls
    back to the config directory so error text still names somewhere real. */
-static void _resolve_pack_dir(uint32_t wanted_lut_hash, char *dst, size_t dstsz)
+static void _resolve_pack_dir(uint32_t wanted_lut_hash,
+                              char *dst,
+                              size_t dstsz)
 {
   gboolean exact = FALSE;
   const gboolean found = sf_fetch_resolve_pack_dir(wanted_lut_hash, dst, dstsz, &exact);
@@ -669,7 +675,8 @@ static void _resolve_pack_dir(uint32_t wanted_lut_hash, char *dst, size_t dstsz)
 
 /* natural (human) string compare: embedded numbers compared numerically
    so "Vision3 50D" < "Vision3 200T" < "Vision3 500T" */
-static int _nat_cmp(const char *a, const char *b)
+static int _nat_cmp(const char *a,
+                    const char *b)
 {
   for(;;)
   {
@@ -705,7 +712,8 @@ static int _nat_cmp(const char *a, const char *b)
    "Negative Film" / "Reversal Film" duplicate the section heading the entry is
    already filed under. Everything that identifies the stock stays, including
    "Print Film 2302", where it is part of the name people know. */
-static void _shorten_name(char *s, const size_t sz)
+static void _shorten_name(char *s,
+                          const size_t sz)
 {
   static const char *const filler[] = { " Professional", " Negative Film", " Reversal Film" };
   for(size_t f = 0; f < sizeof(filler) / sizeof(*filler); f++)
@@ -718,7 +726,8 @@ static void _shorten_name(char *s, const size_t sz)
   (void)sz;
 }
 
-static gint _entry_name_cmp(gconstpointer a, gconstpointer b)
+static gint _entry_name_cmp(gconstpointer a,
+                            gconstpointer b)
 {
   return _nat_cmp(((const sf_prof_entry_t *)a)->name, ((const sf_prof_entry_t *)b)->name);
 }
@@ -795,8 +804,12 @@ static GList *_scan_profiles(const char *packdir)
 /* resolve a profile hash to its stock name. hash 0 -> default:
    for films the first filming stock, for papers prefer the film's
    target_print. Returns false when nothing matches. */
-static gboolean _resolve_stock(GList *entries, uint32_t hash, gboolean want_printing,
-                               const char *prefer_stock, char *dst, size_t dstsz)
+static gboolean _resolve_stock(GList *entries,
+                               uint32_t hash,
+                               gboolean want_printing,
+                               const char *prefer_stock,
+                               char *dst,
+                               size_t dstsz)
 {
   if(hash)
     for(GList *l = entries; l; l = l->next)
@@ -834,14 +847,18 @@ static gboolean _resolve_stock(GList *entries, uint32_t hash, gboolean want_prin
 /* pipeline plumbing                                                      */
 /* ---------------------------------------------------------------------- */
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = calloc(1, sizeof(dt_iop_spektrafilm_data_t));
   dt_pthread_mutex_init(&d->lock, NULL);
   piece->data = d;
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = (dt_iop_spektrafilm_data_t *)piece->data;
   if(d)
@@ -859,7 +876,9 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_spektrafilm_data_t *d = (dt_iop_spektrafilm_data_t *)piece->data;
@@ -873,7 +892,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if(d->p.quality == DT_SPEKTRAFILM_Q_EXACT) piece->process_cl_ready = FALSE;
 }
 
-static uint64_t _mix64(uint64_t h, const void *data, size_t len)
+static uint64_t _mix64(uint64_t h,
+                       const void *data,
+                       size_t len)
 {
   const unsigned char *p = data;
   for(size_t i = 0; i < len; i++)
@@ -1264,8 +1285,11 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
    dispatch, or 0 when the stage is off / a no-op. Built from the same
    sf_diffusion_build_plan() the CPU and GPU paths run, so the ROI padding can
    never drift from the bank that is actually convolved. */
-static float _diffusion_pad_sigma_um(const gboolean on, const int family, const float strength,
-                                     const float warmth, const float scale)
+static float _diffusion_pad_sigma_um(const gboolean on,
+                                     const int family,
+                                     const float strength,
+                                     const float warmth,
+                                     const float scale)
 {
   if(!on) return 0.0f;
   sf_diffusion_plan_t plan;
@@ -1275,7 +1299,8 @@ static float _diffusion_pad_sigma_um(const gboolean on, const int family, const 
   return smax * fmaxf(scale, 1e-3f);
 }
 
-static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_um)
+static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
+                             float pixel_um)
 {
   const float inv_um = 1.0f / fmaxf(pixel_um, 1e-3f);
   /* halation stage: first-bounce radius, scaled by the user's halation_scale
@@ -1330,8 +1355,10 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p, float pixel_u
   return fmaxf(fmaxf(fmaxf(hal, scat), fmaxf(diff, scan)), fmaxf(grain, coupler));
 }
 
-void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *roi_out,
+                   dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
   const dt_iop_spektrafilm_data_t *const d = (const dt_iop_spektrafilm_data_t *)piece->data;
@@ -1359,8 +1386,10 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   roi_in->height = y1 - y0;
 }
 
-void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
   const dt_iop_spektrafilm_data_t *const d = (const dt_iop_spektrafilm_data_t *)piece->data;
@@ -1381,7 +1410,13 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 /* process                                                                */
 /* ---------------------------------------------------------------------- */
 
-static void _passthrough(const float *in, float *out, int w, int oh, int ow, int ox, int oy)
+static void _passthrough(const float *in,
+                         float *out,
+                         int w,
+                         int oh,
+                         int ow,
+                         int ox,
+                         int oy)
 {
   for(int y = 0; y < oh; y++)
     for(int x = 0; x < ow; x++)
@@ -1395,8 +1430,12 @@ static void _passthrough(const float *in, float *out, int w, int oh, int ow, int
     }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_spektrafilm_data_t *const d = (dt_iop_spektrafilm_data_t *)piece->data;
   /* process the FULL input ROI (expanded by modify_roi_in), then crop roi_out */
@@ -1764,9 +1803,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
    sigma * SF_GAUSS_SIGMA_CORRECTION -- a factor measured for the CPU's old
    Deriche recursion and meaningless for darktable's iterated-box blur, so the
    two paths were producing different halo widths for the same sigma. */
-static cl_int _sf_yvv_blur_cl(const int devid, dt_iop_spektrafilm_global_data_t *gd,
-                              cl_mem buf, cl_mem tmp, const int w, const int h,
-                              const float sigma, const int ch)
+static cl_int _sf_yvv_blur_cl(const int devid,
+                              dt_iop_spektrafilm_global_data_t *gd,
+                              cl_mem buf,
+                              cl_mem tmp,
+                              const int w,
+                              const int h,
+                              const float sigma,
+                              const int ch)
 {
   float b[4];
   sf_gauss_yvv_coeffs(sigma, b);
@@ -1788,8 +1832,11 @@ static cl_int _sf_yvv_blur_cl(const int devid, dt_iop_spektrafilm_global_data_t 
    separable convolution (spektrafilm_gauss_row/col_*c, weights built
    host-side by sf_gauss_kernel_1d -- see spektra_core.c/.h), exactly as the
    CPU path uses sf_blur_plane3. */
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-               cl_mem dev_out, const dt_iop_roi_t *const roi_in,
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_spektrafilm_data_t *const d = (dt_iop_spektrafilm_data_t *)piece->data;
@@ -2512,7 +2559,8 @@ static void _rescan(dt_iop_module_t *self)
 
 /* Entry at a list position, or NULL. The comboboxes carry the position as their
    data, so this is how a user selection resolves back to a profile. */
-static const sf_prof_entry_t *_entry_at(const dt_iop_spektrafilm_gui_data_t *g, const int pos)
+static const sf_prof_entry_t *_entry_at(const dt_iop_spektrafilm_gui_data_t *g,
+                                        const int pos)
 {
   return (pos >= 0) ? g_list_nth_data(g->entries, pos) : NULL;
 }
@@ -2528,7 +2576,8 @@ static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
    stock lookups */
 static void _update_paper_auto_entry(dt_iop_module_t *self);
 
-static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
+static void _film_changed(GtkWidget *w,
+                          dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -2580,7 +2629,8 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
+static void _paper_changed(GtkWidget *w,
+                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
@@ -2610,7 +2660,8 @@ static void _paper_changed(GtkWidget *w, dt_iop_module_t *self)
 /* Entry for a stock hash, or NULL. `printing` disambiguates, since the same
    stock name can exist as both a film and a paper. */
 static const sf_prof_entry_t *_entry_by_hash(const dt_iop_spektrafilm_gui_data_t *g,
-                                             const uint32_t hash, const gboolean printing)
+                                             const uint32_t hash,
+                                             const gboolean printing)
 {
   for(const GList *l = g->entries; l; l = l->next)
   {
@@ -2722,8 +2773,10 @@ static float _development_default(const sf_prof_entry_t *e)
    instead of the -1 sentinel the params carry for "ask the pack". Falls back to
    the reference's own DirCouplersParams defaults when the pack has no entry for
    the stock, which is also what sf_sim_build() lands on. */
-static void _coupler_diffusion_default(const sf_prof_entry_t *e, float *size_um,
-                                       float *tail_um, float *tail_w)
+static void _coupler_diffusion_default(const sf_prof_entry_t *e,
+                                       float *size_um,
+                                       float *tail_um,
+                                       float *tail_w)
 {
   double d = SF_COUPLER_BLUR_UM, t = 0.0, w = 0.0;
   dt_pthread_mutex_lock(&_pack_lock);
@@ -2757,7 +2810,8 @@ static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
    characterised at more than one development time, spanning exactly the times it
    offers, and naming them -- they differ per stock and the value snaps to them,
    so a bare 0-15 range would be guesswork. */
-static void _development_widget_update(GtkWidget *w, const sf_prof_entry_t *e)
+static void _development_widget_update(GtkWidget *w,
+                                       const sf_prof_entry_t *e)
 {
   if(!w) return;
   const gboolean have = (e && e->n_dev > 1);
@@ -2869,7 +2923,7 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
    diffusion sliders stayed clickable-but-inert when their own toggle was
    unchecked, which reads as "these still do something" when they don't. */
 static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
-                                 dt_iop_spektrafilm_params_t *p)
+                                dt_iop_spektrafilm_params_t *p)
 {
   const gboolean hal = p->halation_on;
   gtk_widget_set_sensitive(g->scatter_amount, hal);
@@ -2914,7 +2968,9 @@ void gui_reset(dt_iop_module_t *self)
 }
 
 /* called by the core whenever a params-linked widget changed */
-void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
 {
   /* Stamp the spectral table this edit is being made against. Done here because
      gui_changed() runs after the widget has written the param and before the
@@ -3083,7 +3139,8 @@ static gboolean _data_poll_cb(gpointer user_data)
   return g->data_poll ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 }
 
-static void _data_button_clicked(GtkButton *button, dt_iop_module_t *self)
+static void _data_button_clicked(GtkButton *button,
+                                 dt_iop_module_t *self)
 {
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   if(!g) return;
@@ -3282,7 +3339,8 @@ void gui_update(dt_iop_module_t *self)
  * geometric bisection over the slider's own range is both exact and free:
  * 20 steps pin the answer to ~2e-6 of the range. The result no longer depends
  * on the current slider value at all, so picking twice gives the same number. */
-static float _solve_boost_for_lightness(const sf_sim_t *sim, const float rgb[3],
+static float _solve_boost_for_lightness(const sf_sim_t *sim,
+                                        const float rgb[3],
                                         const float target_L)
 {
   float lo = 0.5f, hi = 4.0f; /* the slider's own $MIN / $MAX */
@@ -3297,7 +3355,9 @@ static float _solve_boost_for_lightness(const sf_sim_t *sim, const float rgb[3],
   return sqrtf(lo * hi);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
+void color_picker_apply(dt_iop_module_t *self,
+                        GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
   if(picker != g->output_boost) return;
@@ -3371,7 +3431,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
    No bookkeeping: the widgets are packed into the page box in order, so the
    callback walks that box from its own header to the following one. A heading
    is marked with the "sf_section" data key rather than recognised by type. */
-static void _section_reset_clicked(GtkButton *button, dt_iop_module_t *self)
+static void _section_reset_clicked(GtkButton *button,
+                                   dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   GtkWidget *hdr = gtk_widget_get_parent(GTK_WIDGET(button));
@@ -3422,7 +3483,8 @@ static GtkWidget *_section_exempt(GtkWidget *w)
 }
 
 /* Pack a section heading carrying a reset button, and return it. */
-static GtkWidget *_section_add(dt_iop_module_t *self, const char *label)
+static GtkWidget *_section_add(dt_iop_module_t *self,
+                               const char *label)
 {
   GtkWidget *hdr = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g_object_set_data(G_OBJECT(hdr), "sf_section", GINT_TO_POINTER(1));

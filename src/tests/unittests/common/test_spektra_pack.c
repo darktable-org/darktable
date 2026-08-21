@@ -109,7 +109,8 @@ typedef struct fixture_t
    that does. Written this way so the tests need not know which spektrafilm
    release is currently shipped, and so they keep working if the layout is
    flattened later. Returns false when there is no pack to be had. */
-static gboolean _resolve_pack_dir(char *dst, size_t dstsz)
+static gboolean _resolve_pack_dir(char *dst,
+                                  size_t dstsz)
 {
   const char *root = SPEKTRA_PACK_DIR;
   if(!root || !root[0]) return FALSE;
@@ -147,7 +148,9 @@ static gboolean _resolve_pack_dir(char *dst, size_t dstsz)
 /* Load the profile for `stock` from the pack, or -- when the pack has no such
    stock -- the first profile of the right kind, so the suite follows the pack
    it is given instead of a stock list baked in here. */
-static sf_profile_t *_load_stock(const char *dir, const char *stock, const gboolean printing)
+static sf_profile_t *_load_stock(const char *dir,
+                                 const char *stock,
+                                 const gboolean printing)
 {
   char *profdir = g_build_filename(dir, "profiles", NULL);
   GDir *gd = g_dir_open(profdir, 0, NULL);
@@ -241,7 +244,8 @@ static int group_teardown(void **state)
  */
 
 /* Build a sim over the fixture's stocks. `configure` may be NULL. */
-static sf_sim_t *_build(const fixture_t *f, void (*configure)(sf_sim_params_t *))
+static sf_sim_t *_build(const fixture_t *f,
+                        void (*configure)(sf_sim_params_t *))
 {
   sf_sim_params_t p;
   sf_sim_params_defaults(&p);
@@ -257,7 +261,10 @@ static sf_sim_t *_build(const fixture_t *f, void (*configure)(sf_sim_params_t *)
 /* The whole per-pixel chain, the way spektrafilm.c runs it minus the spatial
    effects (which are the caller's, not the engine's). In-place throughout,
    which the API allows and which keeps this readable. */
-static void _render(const sf_sim_t *sim, const float *rgb_in, float *rgb_out, const size_t npix)
+static void _render(const sf_sim_t *sim,
+                    const float *rgb_in,
+                    float *rgb_out,
+                    const size_t npix)
 {
   float *work = malloc(npix * 3 * sizeof(float));
   float *corr = malloc(npix * 3 * sizeof(float));
@@ -279,7 +286,9 @@ static void _render(const sf_sim_t *sim, const float *rgb_in, float *rgb_out, co
   free(corr);
 }
 
-static void _fill_grey(float *rgb, const size_t npix, const float level)
+static void _fill_grey(float *rgb,
+                       const size_t npix,
+                       const float level)
 {
   for(size_t i = 0; i < npix; i++)
   {
@@ -289,7 +298,8 @@ static void _fill_grey(float *rgb, const size_t npix, const float level)
   }
 }
 
-static double _mean(const float *rgb, const size_t npix)
+static double _mean(const float *rgb,
+                    const size_t npix)
 {
   double acc = 0.0;
   for(size_t i = 0; i < npix * 3; i++) acc += rgb[i];
@@ -297,7 +307,9 @@ static double _mean(const float *rgb, const size_t npix)
 }
 
 /* upstream tests/test_pipeline_smoke.py::_assert_valid_output */
-static void _assert_valid_output(const float *rgb, const size_t npix, const gboolean bounded)
+static void _assert_valid_output(const float *rgb,
+                                 const size_t npix,
+                                 const gboolean bounded)
 {
   for(size_t i = 0; i < npix * 3; i++)
   {
@@ -740,7 +752,8 @@ static void test_lut_path_tracks_exact_spectral(void **state)
  * MAIN
  */
 
-int main(int argc, char *argv[])
+int main(int argc,
+         char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_pack_loads_and_identifies_itself),

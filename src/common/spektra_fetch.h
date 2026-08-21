@@ -119,7 +119,9 @@ void sf_fetch_cancel(void);
 
 /* Current state, plus a short human-readable message and 0..1 progress.
  * msg and progress may be NULL. Safe to call from any thread. */
-sf_fetch_state_t sf_fetch_status(char *msg, size_t msgsz, double *progress);
+sf_fetch_state_t sf_fetch_status(char *msg,
+                                 size_t msgsz,
+                                 double *progress);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
