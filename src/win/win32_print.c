@@ -1315,7 +1315,7 @@ DBG_MARK("page dims: requested width_mm=%.2f height_mm=%.2f -> diu width=%.6f he
             XPS_SIZE page_size = { page_width, page_height };
 DBG_MARK("page_size: width=%.6f height=%.6f", page_size.width, page_size.height);
             IOpcPartUri *page_uri = NULL;
-            hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc/Pages/1.fpage", &page_uri);
+            hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
 DBG_MARK("CreatePartUri: hr=0x%08lx page_uri=%p", hr, (void *)page_uri);
             
             if(SUCCEEDED(hr) && page_uri)
@@ -1567,6 +1567,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
   DBG_MARK("DEBUG XPS FILE TEST: job_title=%s width_mm=%.2f height_mm=%.2f "
            "page_width_diu=%.3f page_height_diu=%.3f",
            job_title ? job_title : "(null)", width, height, page_width, page_height);
+
+  DBG_MARK("print_ticket_data=%p print_ticket_size=%zu",
+         print_ticket_data, print_ticket_size);
 
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
   bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
@@ -1962,7 +1965,13 @@ bool dt_win_print_file(const dt_images_box *imgs,
               break;
             }
           }
-
+        if(print_ticket_data && print_ticket_size > 0)
+        {
+        ULONG written = 0;
+        hr = ticketStream->lpVtbl->Write(ticketStream, print_ticket_data,
+                                   (ULONG)print_ticket_size, &written);
+  DBG_MARK("ticketStream write: hr=0x%08lx written=%lu", hr, (unsigned long)written);
+        }
           if(docStream)
             docStream->lpVtbl->Close(docStream);
 
