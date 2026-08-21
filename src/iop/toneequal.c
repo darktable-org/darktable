@@ -1354,7 +1354,7 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->lut_valid = FALSE;            // TRUE if the gui_lut is ready
   g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
   g->user_param_valid = FALSE;     // TRUE if users params set in interactive view are in bounds
-  g->factors_valid = FALSE;        // TRUE once radial-basis coeffs have been successfully solved
+  g->factors_valid = TRUE;         // TRUE if radial-basis coeffs are ready
 
   g->valid_nodes_x = FALSE;        // TRUE if x coordinates of graph nodes have been inited
   g->valid_nodes_y = FALSE;        // TRUE if y coordinates of graph nodes have been inited
@@ -1500,13 +1500,6 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
   if(g == NULL) return;
 
   float *const restrict LUT = g->gui_lut;
-
-  if(!g->factors_valid)
-  {
-    for(size_t i = 0; i < UI_SAMPLES; i++) LUT[i] = offset;
-    return;
-  }
-
   const float *const restrict factors = g->factors;
   const float sigma = g->sigma;
 
@@ -1520,15 +1513,7 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
   }
 }
 
-// Mark g->interpolation_matrix as invalid to force a recompute, and update g->sigma
-// which the matrix computation in update_curve_lut uses.
-// Important: the caller must hold the GUI critical section.
-static inline void _invalidate_interpolation_matrix_on_sigma_change(dt_iop_toneequalizer_gui_data_t *g,
-                                                                    const float smoothing)
-{
-  if(g->sigma != smoothing) g->interpolation_valid = FALSE;
-  g->sigma = smoothing;
-}
+
 
 static inline gboolean update_curve_lut(dt_iop_module_t *self)
 {
@@ -1625,17 +1610,16 @@ void commit_params(dt_iop_module_t *self,
   /*
    * Perform a radial-based interpolation using a series gaussian functions
    */
-
-  gboolean curve_valid;
-
   if(self->dev->gui_attached && g)
   {
     dt_iop_gui_enter_critical_section(self);
-    _invalidate_interpolation_matrix_on_sigma_change(g, p->smoothing);
+    if(g->sigma != p->smoothing)
+      g->interpolation_valid = FALSE;
+    g->sigma = p->smoothing;
     g->user_param_valid = FALSE; // force updating channels factors
     dt_iop_gui_leave_critical_section(self);
 
-    curve_valid = update_curve_lut(self);
+    update_curve_lut(self);
 
     dt_iop_gui_enter_critical_section(self);
     dt_simd_memcpy(g->factors, d->factors, PIXEL_CHAN);
@@ -1649,23 +1633,14 @@ void commit_params(dt_iop_module_t *self,
 
     float A[CHANNELS * PIXEL_CHAN] DT_ALIGNED_ARRAY;
     build_interpolation_matrix(A, p->smoothing);
-    curve_valid = pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, TRUE);
+    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, TRUE);
 
     dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
   }
 
   // compute the correction LUT here to spare some time in process
   // when computing several times toneequalizer with same parameters
-  if(curve_valid)
-  {
-    compute_correction_lut(d->correction_lut, d->smoothing, d->factors);
-  }
-  else
-  {
-    // solver failed; make sure the operation is a no-op with/without darkroom GUI
-    for(size_t i = 0; i < LUT_RESOLUTION * PIXEL_CHAN + 1; i++)
-      d->correction_lut[i] = 1.0f;
-  }
+  compute_correction_lut(d->correction_lut, d->smoothing, d->factors);
 }
 
 
@@ -1787,14 +1762,12 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
   dt_iop_toneequalizer_params_t *p = self->params;
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   p->smoothing= powf(M_SQRT2_F, 1.0f +  dt_bauhaus_slider_get(slider));
 
-  // avoid stale matrix; commit_params(), which also performs the invalidation, has not run yet
-  dt_iop_gui_enter_critical_section(self);
-  _invalidate_interpolation_matrix_on_sigma_change(g, p->smoothing);
-  dt_iop_gui_leave_critical_section(self);
+  float factors[CHANNELS] DT_ALIGNED_ARRAY;
+  get_channels_factors(factors, p);
 
   // Solve the interpolation by least-squares to check the validity of the smoothing param
   if(!update_curve_lut(self))
@@ -1998,12 +1971,17 @@ static void switch_cursors(dt_iop_module_t *self)
   if(!g || !self->dev->gui_attached)
     return;
 
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+
   // if we are editing masks or using colour-pickers, do not display controls
   if(in_mask_editing(self)
      || dt_iop_canvas_not_sensitive(self->dev))
   {
     // display default cursor
-    dt_control_change_cursor("default");
+    GdkCursor *const cursor =
+      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    g_object_unref(cursor);
 
     return;
   }
@@ -2019,21 +1997,11 @@ static void switch_cursors(dt_iop_module_t *self)
     // do nothing and let the app decide
     return;
   }
-  else if((dt_pipe_processing(self->dev->full.pipe)
-           || self->dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
-           || self->dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY)
-          && g->cursor_valid)
+  else if(g->cursor_valid)
   {
-    // if pipe is busy or dirty but cursor is on preview,
-    // display waiting cursor while pipe reprocesses
-    dt_control_change_cursor("wait");
-
-    dt_control_queue_redraw_center();
-  }
-  else if(g->cursor_valid && !dt_pipe_processing(self->dev->full.pipe))
-  {
-    // if pipe is clean and idle and cursor is on preview,
-    // hide GTK cursor because we display our custom one
+    // if cursor is on the preview, hide GTK cursor because we display
+    // our custom one.  We do this whether or not the pipe is still
+    // (re)computing, so no busy animation appears while hovering.
     dt_control_change_cursor("none");
     dt_control_hinter_message(_("scroll over image to change tone exposure\n"
                                 "shift+scroll for large steps; "
@@ -2045,7 +2013,10 @@ static void switch_cursors(dt_iop_module_t *self)
   {
     // if module is active and opened but cursor is out of the preview,
     // display default cursor
-    dt_control_change_cursor("default");
+    GdkCursor *const cursor =
+      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    g_object_unref(cursor);
 
     dt_control_queue_redraw_center();
   }
@@ -2053,7 +2024,10 @@ static void switch_cursors(dt_iop_module_t *self)
   {
     // in any other situation where module has focus,
     // reset the cursor but don't launch a redraw
-    dt_control_change_cursor("default");
+    GdkCursor *const cursor =
+      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    g_object_unref(cursor);
   }
 }
 
@@ -2117,7 +2091,10 @@ int mouse_leave(dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 
   // display default cursor
-  dt_control_change_cursor("default");
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+  g_object_unref(cursor);
   dt_control_queue_redraw_center();
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
@@ -2310,7 +2287,6 @@ void gui_post_expose(dt_iop_module_t *self,
 
   const gboolean fail = !g->cursor_valid
                      || !g->interpolation_valid
-                     || dt_pipe_processing(dev->full.pipe)
                      || !g->has_focus;
 
   dt_iop_gui_leave_critical_section(self);
@@ -2321,8 +2297,10 @@ void gui_post_expose(dt_iop_module_t *self,
     if(!_init_drawing(self, self->widget, g))
       return;
 
-  // re-read the exposure in case it has changed
-  if(g->luminance_valid && self->enabled)
+  // Re-read the exposure in case it has changed.  While the pipe is busy
+  // the module buffer may be mid-recompute, so keep the last value and
+  // stay drawing the indicator (no blinking cursor during reprocess).
+  if(g->luminance_valid && self->enabled && !dt_pipe_processing(dev->full.pipe))
     g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
 
   dt_iop_gui_enter_critical_section(self);
@@ -2342,15 +2320,8 @@ void gui_post_expose(dt_iop_module_t *self,
     exposure_in = g->cursor_exposure;
     luminance_in = exp2f(exposure_in);
 
-    // avoid stale g->factors: only set correction if factors were successfully solved;
-    // otherwise, leave correction = 0 EV, which is what the pixels get — commit_params() fills
-    // correction_lut with 1.0 when there is no valid solution.
-    if(g->factors_valid)
-    {
-      // Get the corresponding correction and compute resulting exposure
-      correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
-    }
-
+    // Get the corresponding correction and compute resulting exposure
+    correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
     exposure_out = exposure_in + correction;
     luminance_out = exp2f(exposure_out);
   }
@@ -2372,7 +2343,10 @@ void gui_post_expose(dt_iop_module_t *self,
   const float outer_color[3] = { outer_shade, outer_shade, outer_shade };
   const float inner_color[3] = { inner_shade, inner_shade, inner_shade };
 
-  dt_draw_correction_cursor(cr, x_pointer, y_pointer, zoom_scale, correction,
+  // The wedge normalizes the correction to ±1 (full ±90°); tone equalizer
+  // corrections are expressed in EV and regularly exceed ±1 EV, so halve
+  // the value here: the wedge then reaches its full ±90° at ±2 EV.
+  dt_draw_correction_cursor(cr, x_pointer, y_pointer, zoom_scale, 0.5f * correction,
                             frame_color,
                             outer_color, log2f(luminance_in) > 0.0f,
                             inner_color, log2f(luminance_out) > 0.0f,
