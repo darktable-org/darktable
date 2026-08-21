@@ -2252,20 +2252,6 @@ static float _shade_from_luminance(const float luminance)
   return powf(luminance, gamma);
 }
 
-static void _match_color_to_background(float rgb[3], const float exposure)
-{
-  float shade = 0.0f;
-  // TODO: put that as a preference in darktablerc
-  const float contrast = 1.0f;
-
-  if(exposure > -2.5f)
-    shade = (fminf(exposure * contrast, 0.0f) - 2.5f);
-  else
-    shade = (fmaxf(exposure / contrast, -5.0f) + 2.5f);
-
-  rgb[0] = rgb[1] = rgb[2] = _shade_from_luminance(exp2f(shade));
-}
-
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
@@ -2336,8 +2322,29 @@ void gui_post_expose(dt_iop_module_t *self,
   else
     snprintf(text, sizeof(text), "? EV");
 
-  float frame_color[3];
-  _match_color_to_background(frame_color, exposure_out);
+  // Sample the pixel under the cursor from the preview pipe backbuf:
+  // white frame lines over dark content, black over bright content,
+  // like the color equalizer's cursor.  The circles keep the
+  // exposure-specific shades below to convey the before/after luminance.
+  uint8_t *backbuf = dev->preview_pipe->backbuf;
+  const int buf_w = dev->preview_pipe->backbuf_width;
+  const int buf_h = dev->preview_pipe->backbuf_height;
+  float cr_f = 0.5f, cg_f = 0.5f, cb_f = 0.5f; // fallback mid-grey
+  if(backbuf && buf_w > 0 && buf_h > 0)
+  {
+    const int px = CLAMP((int)x_pointer, 0, buf_w - 1);
+    const int py = CLAMP((int)y_pointer, 0, buf_h - 1);
+    dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
+    const size_t idx = (size_t)py * buf_w * 4 + px * 4;
+    // backbuf is CAIRO_FORMAT_ARGB32: B, G, R, A byte order on little-endian
+    cb_f = backbuf[idx + 0] / 255.0f;
+    cg_f = backbuf[idx + 1] / 255.0f;
+    cr_f = backbuf[idx + 2] / 255.0f;
+    dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
+  }
+  const float bg_luma = 0.3f * cr_f + 0.59f * cg_f + 0.11f * cb_f;
+  const float frame_shade = (bg_luma > 0.5f) ? 0.0f : 1.0f;
+  const float frame_color[3] = { frame_shade, frame_shade, frame_shade };
   const float outer_shade = _shade_from_luminance(luminance_in);
   const float inner_shade = _shade_from_luminance(luminance_out);
   const float outer_color[3] = { outer_shade, outer_shade, outer_shade };
