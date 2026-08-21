@@ -1818,6 +1818,7 @@ void init_presets(dt_lib_module_t *self)
     AM("sigmoid");
   if(wf_agx || wf_none)
     AM("agx");
+  AM("spektrafilm");
   AM("toneequal");
   AM("crop");
   AM("ashift");
