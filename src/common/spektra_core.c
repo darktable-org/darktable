@@ -651,7 +651,15 @@ static double sf_diff_strength_to_ps(double strength, const sf_diff_family_t *fa
   if(strength <= 0.0) return 0.0;
   const double ls = log2(fmax(strength, 1e-6));
   double base;
-  if(ls <= log2(SF_DIFF_BREAKS[0])) base = SF_DIFF_FRAC[0];
+  /* Below the first tabulated stop there is nothing to interpolate towards, so
+     ramp linearly in strength down to zero instead of holding the table's first
+     value. Holding it makes every strength under 1/8 deflect the same tenth of
+     the light, and makes the filter jump from off to that tenth the moment the
+     value leaves zero -- most visible at large spatial scales, where the tenth
+     is spread widest. The ramp meets the table exactly at 1/8, so every
+     tabulated stop is unchanged. */
+  if(ls <= log2(SF_DIFF_BREAKS[0]))
+    base = SF_DIFF_FRAC[0] * strength / SF_DIFF_BREAKS[0];
   else if(ls >= log2(SF_DIFF_BREAKS[4])) base = SF_DIFF_FRAC[4];
   else
   {
