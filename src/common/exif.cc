@@ -644,6 +644,14 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
       dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
+    // neural restore stamps its output; this is the only durable record
+    // that the file has already been denoised (issue #21391)
+    if(FIND_XMP_TAG("Xmp.darktable.neural_restore"))
+    {
+      if(pos->toString() == "raw-denoise")
+        img->flags |= DT_IMAGE_AI_DENOISED;
+    }
+
     // If XMP file(s) are found, read the rating from here.
     if(FIND_XMP_TAG("Xmp.darktable.xmp_version")
        || !dt_conf_get_bool("ui_last/ignore_exif_rating"))
@@ -2711,6 +2719,29 @@ gboolean dt_exif_read(dt_image_t *img,
              path,
              e.what());
     return TRUE;
+  }
+}
+
+// must run AFTER dt_exif_write_blob(), which merges the source image's
+// metadata into the output and would otherwise overwrite this
+gboolean dt_exif_xmp_write_neural_restore(const char *path, const char *task)
+{
+  if(!path || !task) return FALSE;
+  try
+  {
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    if(!image.get()) return FALSE;
+    read_metadata_threadsafe(image);
+    image->xmpData()["Xmp.darktable.neural_restore"] = task;
+    write_metadata_threadsafe(image);
+    return TRUE;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    dt_print(DT_DEBUG_ALWAYS,
+             "[exif] dt_exif_xmp_write_neural_restore: %s", s.c_str());
+    return FALSE;
   }
 }
 
