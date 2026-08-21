@@ -26,8 +26,16 @@
 
 /* Spatial effects implemented in spektra_core.c (they need dt_alloc_align_float
    and OpenMP linkage; everything else in this header is inline). */
-void sf_blur_plane3(float *buf, int w, int h, float sigma, float *plane);
-void sf_blur_plane3_fast(float *buf, int w, int h, float sigma, float *plane);
+void sf_blur_plane3(float *buf,
+                    int w,
+                    int h,
+                    float sigma,
+                    float *plane);
+void sf_blur_plane3_fast(float *buf,
+                         int w,
+                         int h,
+                         float sigma,
+                         float *plane);
 /* Same exact-kernel blur as sf_blur_plane3, but operating directly on a
    single flat w*h buffer (no 3-channel interleave) -- used for the
    per-sublayer dye-cloud blur inside grain generation, where each
@@ -36,21 +44,44 @@ void sf_blur_plane3_fast(float *buf, int w, int h, float sigma, float *plane);
    (unlike sf_blur_plane3's 0.3px guard for the visible clump blur): the
    dye-cloud sigma is often well under a pixel and still meaningfully
    softens the raw particle draw, matching upstream's plain `> 0` check. */
-void sf_blur_plane1(float *buf, int w, int h, float sigma, float *plane, float *trans);
+void sf_blur_plane1(float *buf,
+                    int w,
+                    int h,
+                    float sigma,
+                    float *plane,
+                    float *trans);
 /* Additive unsharp mask on the scanned RGB ([df] apply_unsharp_mask):
    out = D + amount * (D - blur(D)). `orig` and `work` are w*h*3 and w*h
    scratch buffers supplied by the caller. */
-void sf_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
-                      float *orig, float *work);
+void sf_unsharp_mask3(float *buf,
+                      int w,
+                      int h,
+                      float sigma,
+                      float amount,
+                      float *orig,
+                      float *work);
 /* Viewing-glare veil ([gl] add_glare): adds a blurred lognormal field of mean
    percent/100 (relative std `roughness`) to all three channels. `field` is a
    w*h scratch buffer; roi_x/roi_y are absolute image coordinates so the veil
    is stable under pan and zoom. */
-void sf_glare(float *rgb, int w, int h, float percent, float roughness, float blur,
-              int roi_x, int roi_y, float *field);
+void sf_glare(float *rgb,
+              int w,
+              int h,
+              float percent,
+              float roughness,
+              float blur,
+              int roi_x,
+              int roi_y,
+              float *field);
 
-void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, float amount,
-                                     const float *floor_d, float *orig, float *work);
+void sf_multiplicative_unsharp_mask3(float *buf,
+                                     int w,
+                                     int h,
+                                     float sigma,
+                                     float amount,
+                                     const float *floor_d,
+                                     float *orig,
+                                     float *work);
 /* Two independently-controllable stages, matching upstream's HalationParams:
  *   scatter_amount / scatter_scale   -- stage 1, in-emulsion core+tail scatter
  *   halation_amount / halation_scale -- stage 2, back-reflection multi-bounce
@@ -64,10 +95,19 @@ void sf_multiplicative_unsharp_mask3(float *buf, int w, int h, float sigma, floa
    micrometres on film, and the core/tail mix weight. Already collapsed to one
    value per channel for a single-emulsion stock, and already clamped by the
    caller to what the ROI padding covers. */
-void sf_halation(float *raw, int w, int h, double pixel_um, const double sc_core[3],
-                 const double sc_tail[3], const double w_s[3], float scatter_amount,
-                 float scatter_scale, float halation_amount, float halation_scale,
-                 const double halation_strength[3], double halation_first_sigma_um);
+void sf_halation(float *raw,
+                 int w,
+                 int h,
+                 double pixel_um,
+                 const double sc_core[3],
+                 const double sc_tail[3],
+                 const double w_s[3],
+                 float scatter_amount,
+                 float scatter_scale,
+                 float halation_amount,
+                 float halation_scale,
+                 const double halation_strength[3],
+                 double halation_first_sigma_um);
 /* Stops of headroom above the protect threshold over which the boost is spread.
    The reference spreads it from the threshold up to the frame's own peak; that
    peak is a whole-image reduction, which a per-ROI/per-tile pixelpipe cannot
@@ -77,10 +117,20 @@ void sf_halation(float *raw, int w, int h, double pixel_um, const double sc_core
    strength. 4 EV matches the reference's typical frame peak for a normally
    exposed scene (midgray + 4-6 EV). */
 #define SF_BOOST_SPAN_EV 4.0f
-void sf_boost_highlights(float *raw, int w, int h, float boost_ev, float boost_range,
+void sf_boost_highlights(float *raw,
+                         int w,
+                         int h,
+                         float boost_ev,
+                         float boost_range,
                          float protect_ev);
-void sf_diffusion_filter(float *raw, int w, int h, double pixel_um, int family, float strength,
-                         float spatial_scale, float halo_warmth);
+void sf_diffusion_filter(float *raw,
+                         int w,
+                         int h,
+                         double pixel_um,
+                         int family,
+                         float strength,
+                         float spatial_scale,
+                         float halo_warmth);
 
 /* Diffusion-filter Gaussian bank, built host-side and consumed by the GPU path
    (the CPU path builds it internally). Each entry is one Gaussian blur of the
@@ -100,10 +150,15 @@ typedef struct sf_diffusion_plan_t
 /* Fill `plan` for the given strength/warmth. Returns 0 and sets plan->p_s=0 when
    the filter is a no-op. spatial_scale/pixel are applied by the caller (sigma_px
    = sigma_um * spatial_scale / pixel_um). */
-int sf_diffusion_build_plan(int family, float strength, float halo_warmth, sf_diffusion_plan_t *plan);
+int sf_diffusion_build_plan(int family,
+                            float strength,
+                            float halo_warmth,
+                            sf_diffusion_plan_t *plan);
 
 
-SPEKTRA_INLINE float sf_clampf(float x, float lo, float hi)
+SPEKTRA_INLINE float sf_clampf(float x,
+                               float lo,
+                               float hi)
 {
   return x < lo ? lo : (x > hi ? hi : x);
 }
@@ -166,7 +221,9 @@ SPEKTRA_INLINE float sf_nrm(uint32_t s)
    spatial-hash constants; XOR-mixing distinct primes per axis keeps neighbouring
    pixels and channels from sharing a seed (which would correlate their grain).
    Uses ABSOLUTE image coordinates so grain is stable while panning. */
-SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
+SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi,
+                                      uint32_t yi,
+                                      uint32_t chan)
 {
   return xi * 73856093u ^ yi * 19349663u ^ chan * 83492791u;
 }
@@ -207,7 +264,8 @@ SPEKTRA_INLINE uint32_t sf_pixel_seed(uint32_t xi, uint32_t yi, uint32_t chan)
    stopgap, not the answer -- a large-sigma blur wants downsample/blur/upsample,
    which is also faster. This just stops it producing garbage in the meantime. */
 #define SF_GAUSS_MAX_IIR_SIGMA 150.0f
-void sf_gauss_yvv_coeffs(float sigma, float out[4]);
+void sf_gauss_yvv_coeffs(float sigma,
+                         float out[4]);
 
 /* Build a normalized, truncated 1D Gaussian kernel. truncate = 3 sigma with
  * radius = int(3*sigma + 0.5), matching the reference's own
@@ -216,7 +274,9 @@ void sf_gauss_yvv_coeffs(float sigma, float out[4]);
  * 2*max_radius+1 taps; returns the radius actually used. Exported so both
  * the CPU convolution (spektra_core.c) and the GPU host-side weight upload
  * (spektrafilm.c's process_cl) build the identical kernel for a given sigma. */
-int sf_gauss_kernel_1d(float sigma, float *kernel, int max_radius);
+int sf_gauss_kernel_1d(float sigma,
+                       float *kernel,
+                       int max_radius);
 
 /* sf_poisson: one Poisson(lam) draw from a stateless seed.
 
@@ -230,7 +290,8 @@ int sf_gauss_kernel_1d(float sigma, float *kernel, int max_radius);
    lam+1 hashes (<= 13), the fast branch 4 -- against 8 for the two sf_nrm draws
    this replaces. */
 #define SF_POISSON_EXACT_MAX 12.0f
-SPEKTRA_INLINE float sf_poisson(float lam, uint32_t seed)
+SPEKTRA_INLINE float sf_poisson(float lam,
+                                uint32_t seed)
 {
   if(lam <= 0.0f) return 0.0f;
   if(lam < SF_POISSON_EXACT_MAX)
@@ -259,7 +320,10 @@ SPEKTRA_INLINE float sf_poisson(float lam, uint32_t seed)
 
    The mean is then exactly lam*p * od * sat = density, and the variance exactly
    p * dmax^2 * sat / npart = D (Dmax - u D) / N, the target grain.py derives. */
-SPEKTRA_INLINE float sf_layer_particle(float density, float dmax, float npart, float unif,
+SPEKTRA_INLINE float sf_layer_particle(float density,
+                                       float dmax,
+                                       float npart,
+                                       float unif,
                                        uint32_t seed)
 {
   const float p = sf_clampf(density / dmax, 1e-6f, 1 - 1e-6f);

@@ -53,7 +53,9 @@
 /* Direct kernel for the small-sigma path, matching the reference's own
    _gaussian_kernel_1d: truncate = 3, radius = int(3*sigma + 0.5). `kernel` must
    have room for 2*max_radius+1 taps; returns the radius actually used. */
-int sf_gauss_kernel_1d(const float sigma, float *const kernel, const int max_radius)
+int sf_gauss_kernel_1d(const float sigma,
+                       float *const kernel,
+                       const int max_radius)
 {
   int radius = (int)(3.0f * sigma + 0.5f);
   if(radius < 1) radius = 1;
@@ -87,7 +89,8 @@ int sf_gauss_kernel_1d(const float sigma, float *const kernel, const int max_rad
  * scatter core and tail, the diffusion bank -- was chosen by eye against renders
  * made THROUGH that filter, so matching it is what reproduces the intended look;
  * being independently correct just makes every halo about 10% too tight. */
-void sf_gauss_yvv_coeffs(const float sigma_req, float out[4])
+void sf_gauss_yvv_coeffs(const float sigma_req,
+                         float out[4])
 {
   /* clamped for both callers at once -- the CPU dispatch in _blur_flat_inplace
      and _sf_yvv_blur_cl on the GPU both come through here, so they cannot drift
@@ -109,8 +112,13 @@ void sf_gauss_yvv_coeffs(const float sigma_req, float out[4])
 
 /* Forward then backward sweep over `len` stride-1 elements. Both sweeps seed
  * their state by replicating the edge sample, as the reference does. */
-static void _sf_gauss_iir_1d(const float *const in, float *const out, const int len,
-                             const float B, const float B1, const float B2, const float B3)
+static void _sf_gauss_iir_1d(const float *const in,
+                             float *const out,
+                             const int len,
+                             const float B,
+                             const float B1,
+                             const float B2,
+                             const float B3)
 {
   float w1 = in[0], w2 = in[0], w3 = in[0];
   for(int i = 0; i < len; i++)
@@ -136,8 +144,11 @@ static void _sf_gauss_iir_1d(const float *const in, float *const out, const int 
    plain "hold the edge value" extension -- the exact boundary rule matters
    far less than the kernel itself once the kernel is exact). `in` and
    `out` must NOT alias. */
-static void _sf_gauss_convolve_1d(const float *const in, float *const out, const int len,
-                                  const float *const kernel, const int radius)
+static void _sf_gauss_convolve_1d(const float *const in,
+                                  float *const out,
+                                  const int len,
+                                  const float *const kernel,
+                                  const int radius)
 {
   for(int x = 0; x < len; x++)
   {
@@ -155,8 +166,10 @@ static void _sf_gauss_convolve_1d(const float *const in, float *const out, const
 /* Cache-blocked transpose of a width×height float buffer to height×width.
    Using BLOCK=64 keeps read/write working sets in L1/L2 during the pass. */
 #define SF_TRANSPOSE_BLOCK 64
-static void _sf_transpose(const float *const src, float *const dst,
-                          const int w, const int h)
+static void _sf_transpose(const float *const src,
+                          float *const dst,
+                          const int w,
+                          const int h)
 {
   DT_OMP_FOR()
   for(int j0 = 0; j0 < h; j0 += SF_TRANSPOSE_BLOCK)
@@ -176,8 +189,12 @@ static void _sf_transpose(const float *const src, float *const dst,
    is a w*h intermediate buffer for the transpose (may be NULL: the row/col
    passes then operate directly without the transpose, which is fine for
    small buffers where cache locality matters less). */
-static void _blur_flat_inplace(float *const plane, const int w, const int h,
-                               const float sigma, float *const trans, const int exact_only)
+static void _blur_flat_inplace(float *const plane,
+                               const int w,
+                               const int h,
+                               const float sigma,
+                               float *const trans,
+                               const int exact_only)
 {
   const int use_iir = !exact_only && sigma >= SF_GAUSS_EXACT_MAX_SIGMA;
   float kernel[2 * SF_GAUSS_MAX_RADIUS + 1];
@@ -243,8 +260,13 @@ static void _blur_flat_inplace(float *const plane, const int w, const int h,
   }
 }
 
-static void _blur_channel(float *const buf, const int w, const int h, const int c,
-                          const float sigma, float *const plane, float *const trans,
+static void _blur_channel(float *const buf,
+                          const int w,
+                          const int h,
+                          const int c,
+                          const float sigma,
+                          float *const plane,
+                          float *const trans,
                           const int exact_only)
 {
   if(sigma < 1e-6f) return;
@@ -259,7 +281,11 @@ static void _blur_channel(float *const buf, const int w, const int h, const int 
    ~18% effective-width error at the small sigmas grain's clump blur
    typically uses, which would make grain visibly the wrong size relative
    to upstream's own (exact-shape) Gaussian blur. Allocates trans buffer. */
-void sf_blur_plane3(float *const buf, const int w, const int h, const float sigma, float *const plane)
+void sf_blur_plane3(float *const buf,
+                    const int w,
+                    const int h,
+                    const float sigma,
+                    float *const plane)
 {
   if(sigma < 0.3f) return;
   float *const trans = dt_alloc_align_float((size_t)w * h);
@@ -274,8 +300,12 @@ void sf_blur_plane3(float *const buf, const int w, const int h, const float sigm
    is often well under a pixel and still meaningfully softens the raw
    particle draw, matching upstream's plain `> 0` check. Caller-provided
    plane IS buf (in place); trans may be NULL for small buffers. */
-void sf_blur_plane1(float *const buf, const int w, const int h, const float sigma,
-                    float *const plane, float *const trans)
+void sf_blur_plane1(float *const buf,
+                    const int w,
+                    const int h,
+                    const float sigma,
+                    float *const plane,
+                    float *const trans)
 {
   if(sigma < 1e-6f) return;
   (void)plane; /* kept in the signature for API symmetry with sf_blur_plane3; unused: this
@@ -289,7 +319,11 @@ void sf_blur_plane1(float *const buf, const int w, const int h, const float sigm
    coupler correction-field diffusion, unlike grain, isn't renormalizing
    against it -- it's just smoothing a density correction, not restoring a
    noise buffer's variance). */
-void sf_blur_plane3_fast(float *const buf, const int w, const int h, const float sigma, float *const plane)
+void sf_blur_plane3_fast(float *const buf,
+                         const int w,
+                         const int h,
+                         const float sigma,
+                         float *const plane)
 {
   if(sigma < 0.3f) return;
   float *const trans = dt_alloc_align_float((size_t)w * h);
@@ -309,10 +343,14 @@ void sf_blur_plane3_fast(float *const buf, const int w, const int h, const float
    fields with grain from sigma_D = 0.01 to 0.08, the factor stays inside
    [0.9945, 1.0], i.e. under 0.03 dB. Dropping it also makes this path agree with
    spektrafilm_grain_usm in the .cl, which never had the renormalisation. */
-void sf_multiplicative_unsharp_mask3(float *const buf, const int w, const int h,
-                                      const float sigma, const float amount,
-                                      const float *const floor_d,
-                                      float *const orig, float *const work)
+void sf_multiplicative_unsharp_mask3(float *const buf,
+                                     const int w,
+                                     const int h,
+                                     const float sigma,
+                                     const float amount,
+                                     const float *const floor_d,
+                                     float *const orig,
+                                     float *const work)
 {
   if(sigma <= 0.0f || amount <= 0.0f) return;
   const size_t nn = (size_t)w * h * 3;
@@ -335,8 +373,13 @@ void sf_multiplicative_unsharp_mask3(float *const buf, const int w, const int h,
    above, which is the grain-recovery pass in the density domain -- this runs on
    the scanned RGB, can legitimately overshoot below zero at an edge, and is
    left unclamped exactly as the reference leaves it. */
-void sf_unsharp_mask3(float *const buf, const int w, const int h, const float sigma,
-                      const float amount, float *const orig, float *const work)
+void sf_unsharp_mask3(float *const buf,
+                      const int w,
+                      const int h,
+                      const float sigma,
+                      const float amount,
+                      float *const orig,
+                      float *const work)
 {
   if(sigma <= 0.0f || amount <= 0.0f) return;
   const size_t nn = (size_t)w * h * 3;
@@ -360,8 +403,14 @@ void sf_unsharp_mask3(float *const buf, const int w, const int h, const float si
    Lognormal with linear-space mean m and std s: sigma2 = ln(1 + (s/m)^2),
    mu = ln(m) - sigma2/2, so with s/m = roughness the shape parameter does not
    depend on the amount at all. */
-void sf_glare(float *const rgb, const int w, const int h, const float percent,
-              const float roughness, const float blur, const int roi_x, const int roi_y,
+void sf_glare(float *const rgb,
+              const int w,
+              const int h,
+              const float percent,
+              const float roughness,
+              const float blur,
+              const int roi_x,
+              const int roi_y,
               float *const field)
 {
   const float mean = percent * 0.01f;
@@ -392,8 +441,12 @@ void sf_glare(float *const rgb, const int w, const int h, const float percent,
 }
 
 /* Blur packed buffer with per-channel sigma. `trans` is a w*h intermediate. */
-static void _blur_per_channel(float *const buf, const int w, const int h, const float sigma[3],
-                               float *const plane, float *const trans)
+static void _blur_per_channel(float *const buf,
+                              const int w,
+                              const int h,
+                              const float sigma[3],
+                              float *const plane,
+                              float *const trans)
 {
   for(int c = 0; c < 3; c++) _blur_channel(buf, w, h, c, sigma[c], plane, trans, /*exact_only=*/0);
 }
@@ -418,8 +471,12 @@ static void _blur_per_channel(float *const buf, const int w, const int h, const 
      k      = (2^boost_ev - 1) / (e^(a(1-x0)) - a(1-x0) - 1)   (normaliser)
      above x0:  y = x + k*max * (e^(a*dx) - a*dx - 1),  dx=(x-x0)/max
    Operates in place on a linear w*h*3 plane; max is the plane's peak value. */
-void sf_boost_highlights(float *const raw, const int w, const int h, const float boost_ev,
-                         const float boost_range, const float protect_ev)
+void sf_boost_highlights(float *const raw,
+                         const int w,
+                         const int h,
+                         const float boost_ev,
+                         const float boost_range,
+                         const float protect_ev)
 {
   if(boost_ev <= 0.0f) return;
   const size_t nn = (size_t)w * h * 3;
@@ -462,11 +519,19 @@ void sf_boost_highlights(float *const raw, const int w, const int h, const float
   }
 }
 
-void sf_halation(float *const raw, const int w, const int h, const double pixel_um,
-                 const double sc_core[3], const double sc_tail[3], const double w_s[3],
-                 const float scatter_amount, const float scatter_scale,
-                 const float halation_amount, const float halation_scale,
-                 const double halation_strength[3], const double halation_first_sigma_um)
+void sf_halation(float *const raw,
+                 const int w,
+                 const int h,
+                 const double pixel_um,
+                 const double sc_core[3],
+                 const double sc_tail[3],
+                 const double w_s[3],
+                 const float scatter_amount,
+                 const float scatter_scale,
+                 const float halation_amount,
+                 const float halation_scale,
+                 const double halation_strength[3],
+                 const double halation_first_sigma_um)
 {
   if(scatter_amount <= 0.0f && halation_amount <= 0.0f) return;
 
@@ -646,7 +711,8 @@ static const double SF_DIFF_FRAC[5] = { 0.10, 0.20, 0.35, 0.55, 0.75 };
 static const double SF_HALO_WARMTH_AXIS[3] = { 1.30, 0.15, -1.45 };
 
 /* strength -> deflected fraction p_s (log2-interpolated table * family gain) */
-static double sf_diff_strength_to_ps(double strength, const sf_diff_family_t *fam)
+static double sf_diff_strength_to_ps(double strength,
+                                     const sf_diff_family_t *fam)
 {
   if(strength <= 0.0) return 0.0;
   const double ls = log2(fmax(strength, 1e-6));
@@ -679,7 +745,9 @@ static double sf_diff_strength_to_ps(double strength, const sf_diff_family_t *fa
 }
 
 /* expand a group into (lambda_um[], weight[]) summing to 1; returns count */
-static int sf_diff_expand(const sf_diff_group_t *g, const char is_bloom, double lam[SF_DIFFUSION_MAX_COMP],
+static int sf_diff_expand(const sf_diff_group_t *g,
+                          const char is_bloom,
+                          double lam[SF_DIFFUSION_MAX_COMP],
                           double wgt[SF_DIFFUSION_MAX_COMP])
 {
   int n = g->n < 1 ? 1 : (g->n > SF_DIFFUSION_MAX_COMP ? SF_DIFFUSION_MAX_COMP : g->n);
@@ -702,7 +770,10 @@ static int sf_diff_expand(const sf_diff_group_t *g, const char is_bloom, double 
 }
 
 /* per-channel halo weights after energy-conserving warmth redistribution */
-static void sf_diff_halo_warmth(const double *wgt, int n, double warmth, double out[3][SF_DIFFUSION_MAX_COMP])
+static void sf_diff_halo_warmth(const double *wgt,
+                                int n,
+                                double warmth,
+                                double out[3][SF_DIFFUSION_MAX_COMP])
 {
   if(n < 2)
   {
@@ -734,7 +805,10 @@ static void sf_diff_halo_warmth(const double *wgt, int n, double warmth, double 
 }
 
 /* Build the shared Gaussian bank (used by both CPU and GPU). */
-int sf_diffusion_build_plan(int family, float strength, float halo_warmth, sf_diffusion_plan_t *plan)
+int sf_diffusion_build_plan(int family,
+                            float strength,
+                            float halo_warmth,
+                            sf_diffusion_plan_t *plan)
 {
   plan->n = 0;
   plan->p_s = 0.0f;
@@ -787,8 +861,13 @@ int sf_diffusion_build_plan(int family, float strength, float halo_warmth, sf_di
 }
 
 /* Apply the diffusion filter in place on a linear w*h*3 plane. */
-void sf_diffusion_filter(float *const raw, const int w, const int h, const double pixel_um,
-                         const int family, const float strength, const float spatial_scale,
+void sf_diffusion_filter(float *const raw,
+                         const int w,
+                         const int h,
+                         const double pixel_um,
+                         const int family,
+                         const float strength,
+                         const float spatial_scale,
                          const float halo_warmth)
 {
   if(strength <= 0.0f || spatial_scale <= 0.0f) return;

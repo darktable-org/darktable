@@ -153,7 +153,8 @@ static sf_sim_t *_sim_linear_ramp(const double dmax[3])
 
 /* The density the ramp above holds at log-exposure x, stated independently of
    the interpolator under test. */
-static double _ramp_density(double x, double dmax)
+static double _ramp_density(double x,
+                            double dmax)
 {
   const double t = (x - LE0) / LE_SPAN;
   return dmax * (t < 0.0 ? 0.0 : (t > 1.0 ? 1.0 : t));
@@ -542,7 +543,8 @@ static void test_couplers_correction_scales_with_density(void **state)
  * MAIN
  */
 
-int main(int argc, char *argv[])
+int main(int argc,
+         char *argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_knee_below_threshold_is_identity),
