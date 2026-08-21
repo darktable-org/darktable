@@ -214,7 +214,7 @@ static int group_setup(void **state)
   TR_NOTE("data pack: %s", f->pack_dir);
 
   char *err = NULL;
-  f->pack = sf_pack_load(f->pack_dir, &err);
+  f->pack = sf_pack_load(f->pack_dir, &err, NULL);
   if(!f->pack)
   {
     TR_NOTE("pack failed to load: %s", err ? err : "(no message)");

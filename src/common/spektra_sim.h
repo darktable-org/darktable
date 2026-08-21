@@ -103,8 +103,23 @@ typedef struct sf_sim_t sf_sim_t;
 
 /* Load a data pack directory (pack.json + spectra_lut.f32 + profiles/).
  * On failure returns NULL and sets *errmsg (caller frees with free()). */
+/* Why a pack would not load, for a caller that wants to say something useful
+ * about it. Only the format cases are distinguished: they are the ones where
+ * the answer differs, and everything else -- missing, truncated, malformed,
+ * out of memory -- comes down to fetching the pack again. errmsg carries the
+ * detail for a log in every case. */
+typedef enum sf_pack_status_t
+{
+  SF_PACK_OK = 0,
+  SF_PACK_ERR_UNREADABLE, /* missing, truncated, malformed, out of memory */
+  SF_PACK_ERR_TOO_OLD,    /* written by an exporter this build no longer reads */
+  SF_PACK_ERR_TOO_NEW,    /* written by an exporter newer than this build */
+} sf_pack_status_t;
+
+/* `status` may be NULL. */
 sf_pack_t *sf_pack_load(const char *dir,
-                        char **errmsg);
+                        char **errmsg,
+                        sf_pack_status_t *status);
 /* Identity of the spectral upsampling table this pack carries. The hash is what
  * params record; the string is for the message shown when they disagree. */
 uint32_t sf_pack_lut_hash(const sf_pack_t *pack);

@@ -1053,7 +1053,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(!_pack && !_pack_error[0])
   {
     char *err = NULL;
-    _pack = sf_pack_load(want_dir, &err);
+    sf_pack_status_t status = SF_PACK_ERR_UNREADABLE;
+    _pack = sf_pack_load(want_dir, &err, &status);
     /* Record the attempt on failure too: _pack_path is what the staleness
        check above compares against, and leaving it empty after a failed load
        would make every later call look stale and retry the same doomed load
@@ -1062,8 +1063,21 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     _pack_gen = gen;
     if(!_pack)
     {
-      g_strlcpy(_pack_error, err ? err : "unknown", sizeof _pack_error);
-      dt_print(DT_DEBUG_DEV, "[spektrafilm] %s\n", _pack_error);
+      /* The engine's own text names files and internal functions, which helps
+         in a log and not at all in the module header. Say what happened and
+         what to do about it there, and keep the detail for -d dev. */
+      const char *msg =
+          status == SF_PACK_ERR_TOO_NEW
+              ? _("this data pack was made for a newer version of darktable\n"
+                  "update darktable to use it")
+          : status == SF_PACK_ERR_TOO_OLD
+              ? _("this data pack is too old for this version of darktable\n"
+                  "use the download button to fetch a current one")
+              : _("the data pack could not be read\n"
+                  "it may have downloaded incompletely -- use the download button"
+                  " to fetch it again");
+      g_strlcpy(_pack_error, msg, sizeof _pack_error);
+      dt_print(DT_DEBUG_DEV, "[spektrafilm] %s\n", err ? err : "unknown");
       free(err);
     }
     else
