@@ -577,8 +577,10 @@ void sf_pack_free(sf_pack_t *pack)
 }
 
 sf_pack_t *sf_pack_load(const char *dir,
-                        char **errmsg)
+                        char **errmsg,
+                        sf_pack_status_t *status)
 {
+  if(status) *status = SF_PACK_ERR_UNREADABLE;
   sf_pack_t *pack = g_new0(sf_pack_t, 1);
   char *json_path = g_build_filename(dir, "pack.json", NULL);
   char *lut_path = g_build_filename(dir, "spectra_lut.f32", NULL);
@@ -606,20 +608,23 @@ sf_pack_t *sf_pack_load(const char *dir,
      silently assuming a format for a file that never declared one is precisely
      the guess this check exists to avoid. */
   {
+    /* A format mismatch is the one failure the caller can describe usefully to
+       a user, and the only one where the advice differs -- fetch a newer pack,
+       or update darktable. Report it as a status so the wording stays in the
+       UI layer; errmsg keeps the numbers, for the log. */
     if(!json_object_has_member(root, "pack_format"))
     {
+      if(status) *status = SF_PACK_ERR_TOO_OLD;
       set_error(errmsg, "spektra_sim: %s declares no pack_format", json_path);
       goto fail;
     }
     const int fmt = (int)json_object_get_int_member(root, "pack_format");
     if(fmt < SF_PACK_FORMAT_MIN || fmt > SF_PACK_FORMAT_MAX)
     {
-      set_error(errmsg,
-                "spektra_sim: %s is pack format %d, this build reads %d..%d -- "
-                "%s",
-                json_path, fmt, SF_PACK_FORMAT_MIN, SF_PACK_FORMAT_MAX,
-                fmt > SF_PACK_FORMAT_MAX ? "update darktable"
-                                         : "re-export the pack");
+      if(status)
+        *status = fmt > SF_PACK_FORMAT_MAX ? SF_PACK_ERR_TOO_NEW : SF_PACK_ERR_TOO_OLD;
+      set_error(errmsg, "spektra_sim: %s is pack format %d, this build reads %d..%d",
+                json_path, fmt, SF_PACK_FORMAT_MIN, SF_PACK_FORMAT_MAX);
       goto fail;
     }
   }
@@ -765,6 +770,7 @@ sf_pack_t *sf_pack_load(const char *dir,
 
   g_free(json_path);
   g_free(lut_path);
+  if(status) *status = SF_PACK_OK;
   return pack;
 
 fail:
