@@ -43,24 +43,24 @@ See the [Podman installation guide](https://podman.io/docs/installation).
 No IDE, no extra tooling — just build and run the container directly.
 
 ```bash
-# Build the image once (from the repository root)
-docker build -t darktable-dev -f .devcontainer/Dockerfile .
+# Pull the pre-built CI image
+docker pull ghcr.io/darktable-org/darktable-build:latest
 
-# Verify the build compiles (same environment as CI)
+# Verify the build compiles cleanly (same environment as CI)
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD":/workspace -w /workspace \
-    darktable-dev \
+    ghcr.io/darktable-org/darktable-build:latest \
     bash -lc './build.sh --prefix /tmp/dt --build-type Release'
 
 # Build an AppImage for GUI testing on the host
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD":/workspace -w /workspace \
     -e APPIMAGE_EXTRACT_AND_RUN=1 \
-    darktable-dev \
+    ghcr.io/darktable-org/darktable-build:latest \
     bash -lc './tools/appimage-build-script.sh'
 ```
 
-The AppImage appears in `build/Darktable-*.AppImage` and can be run on the host.
+The AppImage appears in `build/Darktable-*.AppImage` and can be run directly on the host.
 
 > Replace `docker` with `podman` if you use Podman.
 
@@ -95,9 +95,11 @@ Then:
 # Start the container
 devcontainer up --workspace-folder .
 
-# Open a shell
+# Open a shell inside it
 devcontainer exec --workspace-folder . bash
 ```
+
+Then build as usual (see [Building](#building)).
 
 > **VS Code and JetBrains bundle their own devcontainer implementation** — you
 > only need to install the CLI separately when using other editors or working
@@ -150,31 +152,30 @@ Using `--configdir` avoids touching your production darktable configuration.
 cd build && ctest
 ```
 
-## CI environment and pre-built images
+## CI environment
 
 The [Dockerfile](Dockerfile) is the single source of truth for the build
-environment. Inspect it for the exact base image, compiler versions, and
-package list.
+environment. Linux CI jobs build from it on every run, using the published
+GHCR image as a BuildKit layer cache — when nothing in the Dockerfile has
+changed, all layers are served from cache and the build step completes in
+seconds. This means a PR that modifies the Dockerfile is automatically tested
+against the updated environment before merge.
 
 ### Pre-built images on GHCR
 
-`.github/workflows/build-docker.yml` automatically builds the image and
-publishes it to the GitHub Container Registry (GHCR) whenever the `Dockerfile`
-changes on the `master` branch. The pre-built image is available at:
+The `:latest` tag on `ghcr.io/darktable-org/darktable-build` is updated on
+every successful merge to `master`. Each release is also tagged
+`YYYY-MM-DD-SHORTSHA` for pinned auditing.
 
-```
-ghcr.io/darktable-org/darktable-build:latest
-```
+`.github/workflows/build-docker.yml` provides a manual `workflow_dispatch`
+trigger to force a full rebuild — useful when the upstream `ubuntu:26.04`
+base image updates without a Dockerfile change.
 
-Using the pre-built image skips the local build step:
+### Customising the build environment
 
-```bash
-docker pull ghcr.io/darktable-org/darktable-build:latest
-docker run --rm --user "$(id -u):$(id -g)" \
-    -v "$PWD":/workspace -w /workspace \
-    ghcr.io/darktable-org/darktable-build:latest \
-    bash -lc './build.sh --prefix /tmp/dt --build-type Release'
-```
+To add or remove packages, edit `.devcontainer/Dockerfile` and submit it as a
+normal PR. CI will build from the updated Dockerfile automatically, so you can
+verify the environment works before the change is merged.
 
 ## Troubleshooting
 
@@ -200,7 +201,7 @@ Always set `APPIMAGE_EXTRACT_AND_RUN=1` — FUSE is not available inside contain
 git submodule update --init --recursive
 ```
 
-### Git says the repository has dubious ownership inside the container
+### Git says the mounted repository has dubious ownership inside the container
 
 Pass `--user "$(id -u):$(id -g)"` to `docker run` (as shown in the examples
 above), or mark the path as safe inside the container:
@@ -228,5 +229,6 @@ CLI: `devcontainer up --workspace-folder . --remove-existing-container`
 ├── devcontainer.json    # IDE/tooling configuration
 └── README.md            # This file
 .github/workflows/
-└── build-docker.yml     # Publishes the image to GHCR on Dockerfile changes
+├── ci.yml               # Linux jobs build from Dockerfile (with GHCR cache)
+└── build-docker.yml     # Manual workflow_dispatch to force a :latest rebuild
 ```
