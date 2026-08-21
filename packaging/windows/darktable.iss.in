@@ -32,6 +32,12 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
 
+; If left unset, this defaults to "auto", which makes Setup silently skip
+; the destination-directory page whenever it detects a previous install
+; with a matching AppId (e.g. when upgrading in place). Always show the
+; page instead, so the install location is confirmable.
+DisableDirPage=no
+
 UninstallDisplayIcon={app}\bin\{#MyAppExeName}
 
 WizardSmallImageFile=${CMAKE_SOURCE_DIR}\data\pixmaps\256x256\darktable.png
