@@ -50,6 +50,13 @@ if(libavif_FOUND)
   set_target_properties(avif_format PROPERTIES OUTPUT_NAME avif)
 endif()
 
+if(UltraHDR_FOUND)
+  list(APPEND MODULES "ultrahdr_format")
+  add_library(ultrahdr_format MODULE "ultrahdr.c")
+  target_link_libraries(ultrahdr_format PRIVATE PkgConfig::UltraHDR)
+  set_target_properties(ultrahdr_format PROPERTIES OUTPUT_NAME ultrahdr)
+endif()
+
 if(TARGET xcf)
   list(APPEND MODULES "gimp_xcf")
   add_library(gimp_xcf MODULE "xcf.c")
