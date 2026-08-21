@@ -27,14 +27,14 @@
  * subdirectory of per-stock JSON, which is what sf_pack_load() consumes. Two
  * places can hold one:
  *
- *   <config>/spektrafilm/                  hand-installed, user-managed
- *   <config>/spektrafilm/packs/<lut_hash>/ downloaded, one per spectral table
+ *   <user data>/darktable/spektrafilm/                  hand-installed, user-managed
+ *   <user data>/darktable/spektrafilm/packs/<lut_hash>/ downloaded, one per spectral table
  *
  * The top level always wins when it can satisfy the request, so a user who
  * exports a pack themselves with tools/spektrafilm_export_data.py never has a
  * download silently override it. Downloads only ever write inside packs/,
- * which is what keeps the two apart while leaving both under the directory
- * that gets backed up with the rest of a darktable configuration.
+ * which is what keeps the two apart while leaving both under one directory
+ * shared by every darktable instance on the machine.
  *
  * Packs are identified by the 32-bit hash of the spectral upsampling table they
  * carry (sf_pack_lut_hash / the lut_hash recorded in every edit's params).

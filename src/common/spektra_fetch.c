@@ -177,37 +177,45 @@ void sf_fetch_cancel(void)
 /* local pack discovery                                                   */
 /* ---------------------------------------------------------------------- */
 
-static void _config_pack_dir(char *dst,
-                             size_t dstsz)
+/* <user data>/darktable/spektrafilm -- the folder a user can put a pack in by
+   hand, and where nothing will overwrite it: downloads go one level deeper, in
+   `packs`, so installing a pack here pins it and takes it out of the fetcher's
+   hands entirely. That is what makes it the right place for a pack built from a
+   spektrafilm checkout, or edited, or kept for an old release.
+
+   The shared data directory rather than the configuration one, because every
+   darktable instance on the machine reads the same place: a configuration
+   directory can be given per instance, and a pack duplicated per instance is a
+   12 MB spectral table stored and fetched twice for nothing. It sits beside the
+   AI models in <user data>/darktable/models for the same reason. */
+static void _data_pack_dir(char *dst,
+                           size_t dstsz)
 {
-  char cfg[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(cfg, sizeof(cfg));
-  g_snprintf(dst, dstsz, "%s%sspektrafilm", cfg, G_DIR_SEPARATOR_S);
+  char *dir = g_build_filename(g_get_user_data_dir(), "darktable", "spektrafilm", NULL);
+  g_strlcpy(dst, dir, dstsz);
+  g_free(dir);
 }
 
-/* Downloaded packs live under the config directory, not the cache directory.
-   Three reasons, in order of how much they bite:
+/* <user data>/darktable/spektrafilm/packs -- everything the fetcher installs,
+   one subdirectory per spectral table, named for its hash. Kept a level below
+   the hand-install folder so the two can never collide: the fetcher owns this
+   directory and nothing else writes to it, which is what lets a user drop a
+   pack in the folder above and know it will be left alone.
 
-   - A pack is not reconstructible from anything local. Clearing the cache is
-     something users and packagers do freely, and doing it here would silently
-     make every edit developed against a non-current spectral table
-     unreproducible until it was fetched again.
-   - The temp directory and the final directory end up on the same filesystem,
-     so the install rename is atomic. Config and cache can sit on different
-     mounts, where rename() fails with EXDEV.
-   - It backs up with the rest of the darktable configuration, which is where
-     someone would expect to find data an edit depends on.
-
-   The `packs` subdirectory keeps them apart from a hand-installed pack, which
-   lives directly in <config>/spektrafilm/. That separation is what lets the
-   resolver promise that a download never overwrites what the user put there. */
+   Not the cache directory, even though these are downloads. A pack cannot be
+   rebuilt from anything on the machine, and clearing the cache -- which users
+   and packagers do freely -- would quietly leave every edit made against an
+   older spectral table unreproducible until it was fetched again. Sharing a
+   root with the hand-install folder also keeps the download temp directory on
+   the filesystem it is renamed into, so installing stays atomic; across two
+   roots that can be two mounts, where rename() fails with EXDEV. */
 static void _packs_dir(char *dst,
                        size_t dstsz)
 {
-  char cfg[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(cfg, sizeof(cfg));
-  g_snprintf(dst, dstsz, "%s%sspektrafilm%spacks", cfg, G_DIR_SEPARATOR_S,
-             G_DIR_SEPARATOR_S);
+  char *dir = g_build_filename(g_get_user_data_dir(), "darktable", "spektrafilm",
+                               "packs", NULL);
+  g_strlcpy(dst, dir, dstsz);
+  g_free(dir);
 }
 
 /* Read the identity out of a pack's spectra_lut.f32 without loading it.
@@ -276,13 +284,13 @@ gboolean sf_fetch_have_lut_hash(const uint32_t lut_hash)
 {
   if(!lut_hash) return FALSE;
 
-  char cfgdir[PATH_MAX] = { 0 };
-  _config_pack_dir(cfgdir, sizeof(cfgdir));
+  char handdir[PATH_MAX] = { 0 };
+  _data_pack_dir(handdir, sizeof(handdir));
   uint32_t got = 0;
-  if(_peek_lut_hash(cfgdir, &got) && got == lut_hash) return TRUE;
+  if(_peek_lut_hash(handdir, &got) && got == lut_hash) return TRUE;
 
-  char cachedir[PATH_MAX] = { 0 };
-  return _downloaded_dir_for_hash(lut_hash, cachedir, sizeof(cachedir));
+  char dldir[PATH_MAX] = { 0 };
+  return _downloaded_dir_for_hash(lut_hash, dldir, sizeof(dldir));
 }
 
 gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
@@ -292,31 +300,31 @@ gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
 {
   if(out_exact) *out_exact = FALSE;
 
-  char cfgdir[PATH_MAX] = { 0 };
-  _config_pack_dir(cfgdir, sizeof(cfgdir));
-  uint32_t cfg_hash = 0;
-  const gboolean cfg_ok = _peek_lut_hash(cfgdir, &cfg_hash);
+  char handdir[PATH_MAX] = { 0 };
+  _data_pack_dir(handdir, sizeof(handdir));
+  uint32_t hand_hash = 0;
+  const gboolean hand_ok = _peek_lut_hash(handdir, &hand_hash);
 
   /* No recorded preference: whatever is installed by hand is the answer. This
      is the common path -- a fresh edit on a machine with a pack in place must
      not consult the network or the downloaded packs at all. */
   if(!wanted_lut_hash)
   {
-    if(cfg_ok)
+    if(hand_ok)
     {
-      g_strlcpy(dst, cfgdir, dstsz);
+      g_strlcpy(dst, handdir, dstsz);
       if(out_exact) *out_exact = TRUE;
       return TRUE;
     }
   }
-  else if(cfg_ok && cfg_hash == wanted_lut_hash)
+  else if(hand_ok && hand_hash == wanted_lut_hash)
   {
-    g_strlcpy(dst, cfgdir, dstsz);
+    g_strlcpy(dst, handdir, dstsz);
     if(out_exact) *out_exact = TRUE;
     return TRUE;
   }
 
-  /* A specific table was asked for and the config directory cannot supply it.
+  /* A specific table was asked for and the hand-installed pack cannot supply it.
      Look for a downloaded one. */
   if(wanted_lut_hash)
   {
@@ -332,9 +340,9 @@ gboolean sf_fetch_resolve_pack_dir(const uint32_t wanted_lut_hash,
   /* Nothing matches. Fall back to the config pack if there is one: rendering
      with the wrong spectral table and a visible warning beats refusing to
      render, and the module already words that warning precisely. */
-  if(cfg_ok)
+  if(hand_ok)
   {
-    g_strlcpy(dst, cfgdir, dstsz);
+    g_strlcpy(dst, handdir, dstsz);
     return TRUE;
   }
 
