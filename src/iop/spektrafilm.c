@@ -926,6 +926,26 @@ static int _quality_steps(dt_iop_spektrafilm_quality_t q)
 static gboolean _trouble_idle_cb(gpointer user_data);
 static void _update_trouble_message(dt_iop_module_t *self);
 
+/* Hand this run's verdict to the GUI. Called at every exit from _ensure_sim(),
+   because a failure exits early and its message is exactly the one worth
+   showing; publishing only on the way out of a successful build left every
+   pack and profile failure recorded and never displayed.
+
+   Only the preview pipe carries d->self, so only one pipe writes. The banner is
+   redrawn from gui_update(), which a pipe run does not call, so a change posts a
+   refresh through the main loop -- and only on a change, leaving a steady error
+   free. Call with d->lock held. */
+static void _publish_status(const dt_iop_spektrafilm_data_t *d)
+{
+  dt_iop_spektrafilm_gui_data_t *g = d->self ? d->self->gui_data : NULL;
+  if(!g) return;
+  if(!strcmp(g->status_error, d->sim_error) && !strcmp(g->status_warning, d->sim_warning))
+    return;
+  g_strlcpy(g->status_error, d->sim_error, sizeof g->status_error);
+  g_strlcpy(g->status_warning, d->sim_warning, sizeof g->status_warning);
+  g_idle_add(_trouble_idle_cb, d->self);
+}
+
 static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
                              const dt_iop_order_iccprofile_info_t *work_profile)
 {
@@ -995,6 +1015,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   if(d->sim && d->sim_key == key)
   {
     sf_sim_t *s = d->sim;
+    _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return s;
   }
@@ -1099,6 +1120,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
                             : _("no data pack installed\n"
                                 "use the download button in the module to fetch one"),
               sizeof d->sim_error);
+    _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
@@ -1116,6 +1138,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     dt_print(DT_DEBUG_DEV, "[spektrafilm] no filming profiles under %s/profiles\n",
              pack_dir);
     g_list_free_full(entries, g_free);
+    _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
@@ -1136,6 +1159,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     dt_print(DT_DEBUG_DEV, "[spektrafilm] no printing profiles under %s/profiles\n",
              pack_dir);
     g_list_free_full(entries, g_free);
+    _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
   }
@@ -1275,20 +1299,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
      only ever written here -- so copying them out at the one point they settle
      is both the cheapest and the only reliable moment. Guarded on the module
      having a GUI at all, since export pipes run with none. */
-  dt_iop_spektrafilm_gui_data_t *g = d->self ? d->self->gui_data : NULL;
-  if(g
-     && (strcmp(g->status_error, d->sim_error)
-         || strcmp(g->status_warning, d->sim_warning)))
-  {
-    g_strlcpy(g->status_error, d->sim_error, sizeof g->status_error);
-    g_strlcpy(g->status_warning, d->sim_warning, sizeof g->status_warning);
-    /* The banner is only redrawn from gui_update(), which a pipe run does not
-       trigger -- without this it would show the previous run's verdict until
-       something else happened to refresh the module. Only on an actual change,
-       so an unchanging error costs nothing, and through the main loop because
-       this runs on a pipe thread. */
-    g_idle_add(_trouble_idle_cb, d->self);
-  }
+  _publish_status(d);
   dt_pthread_mutex_unlock(&d->lock);
   return s;
 }
