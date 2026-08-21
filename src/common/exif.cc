@@ -195,6 +195,23 @@ static void _get_xmp_tags(const char *prefix,
   }
 }
 
+static void _get_xmp_structs(GList **taglist)
+{
+  // CreatorContactInfo struct
+  const char *creator_contact_info_fields[] =
+    {
+      "CiAdrExtadr", "CiAdrCity", "CiAdrCtry", "CiEmailWork",
+      "CiTelWork", "CiAdrPcode", "CiAdrRegion", "CiUrlWork"
+    };
+
+  for (unsigned i = 0; i < sizeof(creator_contact_info_fields) / sizeof(creator_contact_info_fields[0]); i++)
+  {
+    char *tag = g_strdup_printf("Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:%s,XmpText",
+                                creator_contact_info_fields[i]);
+    *taglist = g_list_prepend(*taglist, tag);
+  }
+}
+
 /*
   The correction matrices are taken from http://www.brucelindbloom.com - chromatic Adaption.
   using Bradford method: found Illuminant -> D65
@@ -346,6 +363,8 @@ void dt_exif_set_exiv2_taglist()
     _get_xmp_tags("mediapro", &exiv2_taglist);
     _get_xmp_tags("expressionmedia", &exiv2_taglist);
     _get_xmp_tags("MicrosoftPhoto", &exiv2_taglist);
+
+    _get_xmp_structs(&exiv2_taglist);
   }
   catch(const Exiv2::AnyError& e)
   {
