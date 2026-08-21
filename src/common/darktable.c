@@ -246,8 +246,8 @@ static int usage(const char *argv0)
          "--disable-opencl\n"
          "    Prevent darktable from initializing the OpenCL subsystem.\n"
          "\n"
-         "--opencl-tiling\n"
-         "    Enforce fast opencl tiling even if not required.\n"
+         "--opencl-tiling --opencl-no-tiling\n"
+         "    Enforce or disable fast opencl tiling even if not required.\n"
          "    Use for performance/debugging sessions only.\n"
          "\n"
          "--opencl-migrate\n"
@@ -272,9 +272,9 @@ static int usage(const char *argv0)
          "    Enable debug output to the terminal (or to the log file if on Windows).\n"
          "    Valid channels are:\n\n"
          "    act_on, ai, cache, camctl, camsupport, control, dev, expose,\n"
-         "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
-         "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
-         "    sql, tiling, picker, undo\n"
+         "    hdr_merge, imageio, input, ioporder, lighttable, lua, masks,\n"
+         "    memory, nan, opencl, params, perf, pipe, print, pwstorage,\n"
+         "    signal, sql, tiling, picker, undo\n"
          "\n"
          "    It is also possible to specify names that activate all channels\n"
          "    or a certain subset, as well as increase verbosity:\n"
@@ -867,6 +867,12 @@ char *version = g_strdup_printf(
                "  OpenCL                 -> DISABLED - GPU acceleration is NOT available\n"
 #endif
 
+#ifdef HAVE_OPENCV
+               "  OpenCV                 -> ENABLED  - HDR bracket auto-alignment is available\n"
+#else
+               "  OpenCV                 -> DISABLED - HDR bracket auto-alignment is NOT available\n"
+#endif
+
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
@@ -1180,6 +1186,7 @@ int dt_init(int argc,
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
+          !strcmp(darg, "hdr_merge") ? DT_DEBUG_HDR_MERGE : // HDR bracket merge + auto-alignment
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1347,6 +1354,13 @@ int dt_init(int argc,
       {
 #ifdef HAVE_OPENCL
         options |= DT_OPENCL_OPTION_FAST_TILE;
+#endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--opencl-no-tiling"))
+      {
+#ifdef HAVE_OPENCL
+        options |= DT_OPENCL_OPTION_NOFAST_TILE;
 #endif
         argv[k] = NULL;
       }
@@ -2125,6 +2139,12 @@ int dt_init(int argc,
   dt_capabilities_add("nonapple");
 #endif
 
+#ifdef HAVE_OPENCV
+  // gates the HDR alignment preferences: without OpenCV the whole merge
+  // auto-alignment path is compiled out, so those prefs are shown greyed out
+  dt_capabilities_add("opencv");
+#endif
+
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);
 
@@ -2253,6 +2273,7 @@ void dt_cleanup()
     dt_control_cleanup(TRUE);
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
+    dt_gui_gtk_cleanup(darktable.gui);
     free(darktable.gui);
     darktable.gui = NULL;
   }

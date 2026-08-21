@@ -1,102 +1,114 @@
 # Darktable Container Build Environment
 
-A Docker/Podman image that **exactly mirrors the CI compile check** (ubuntu:26.04,
-GCC 16 / Clang 22) with all build dependencies pre-installed.
-
-This is an **optional** complement to building natively. Every contributor can
-continue building in their own environment as before. It exists for those who find
-it useful — see [Use cases](#use-cases) below.
+A Docker/Podman image that **exactly mirrors the CI compile check**, with all
+build dependencies pre-installed. It is an **optional** complement to building
+natively — every contributor can continue using their own environment as before.
 
 ## Use cases
 
 - **Immutable/atomic Linux** (Fedora Silverblue, NixOS, SteamOS, etc.): avoids
-  installing and layering 50+ packages on the host system that break on weekly OS rebuilds.
-- **Infrequent contributors**: get a working build environment without permanent setup.
-- **Reproducing CI failures**: your local environment matches the CI container exactly,
-  so a build that passes here passes CI.
-- **Sandboxing AI coding agents**: tools running inside the container can only access
-  the mounted workspace — host SSH keys, credentials, private documents, and other
-  projects are not visible to them.
+  installing and layering 50+ build packages that break on weekly OS rebuilds.
+- **Infrequent contributors**: get a working build environment without a
+  permanent setup.
+- **Reproducing CI failures**: your local environment matches the CI container
+  exactly, so a build that passes here passes CI.
+- **Sandboxing AI coding agents**: tools running inside the container can only
+  access the mounted workspace — host SSH keys, credentials, private documents,
+  and other projects remain invisible to them.
 
-## Installing Docker or Podman
+## Prerequisites: Docker or Podman
 
-Any OCI-compatible runtime works. Install one for your platform:
+Docker (or Podman) is required for all usage options below. Install one:
 
-| Platform | Command |
-| -------- | ------- |
-| Debian / Ubuntu | `sudo apt install docker.io` or [Docker Engine docs](https://docs.docker.com/engine/install/ubuntu/) |
-| Fedora / RHEL | `sudo dnf install docker` or [Docker Engine docs](https://docs.docker.com/engine/install/fedora/) |
+| Platform | Command / link |
+| -------- | -------------- |
+| Debian / Ubuntu | `sudo apt install docker.io` or [Docker CE](https://docs.docker.com/engine/install/ubuntu/) (recommended — includes BuildKit) |
+| Fedora / RHEL | `sudo dnf install docker` or [Docker CE](https://docs.docker.com/engine/install/fedora/) |
 | Arch | `sudo pacman -S docker` |
 | openSUSE | `sudo zypper install docker` |
-| macOS | `brew install --cask docker` (Docker Desktop) or `brew install podman` |
+| macOS | `brew install --cask docker` or `brew install podman` |
 | Windows | [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) |
 
-On Linux, **Podman** is a rootless drop-in replacement (`alias docker=podman`).
-See the [Podman installation guide](https://podman.io/docs/installation) for all distros.
-
-After installing, make sure your user is in the `docker` group (Linux) or that
-Docker Desktop is running (macOS/Windows) before running the commands below.
-
-## Usage tiers
-
-| Tier | Requirements | Good for |
-| ---- | ------------ | -------- |
-| [Docker/Podman CLI](#tier-1-dockerpodman-cli-only) | Docker or Podman | Verify build, create AppImage — no IDE needed |
-| [devcontainer CLI](#tier-2-devcontainer-cli-terminal) | Docker + `devcontainer` CLI | Full development from a terminal |
-| [IDE integration](#tier-3-ide-integration) | Docker + any Dev Container-capable IDE | Full development with editor |
-
-## Tier 1: Docker/Podman CLI only
-
-The most lightweight option. No IDE, no extra tooling — just pull the same
-image that CI uses.
+On Linux, add your user to the `docker` group and log out/in before using it:
 
 ```bash
-# Pull the pre-built CI image
-docker pull ghcr.io/darktable-org/darktable-build:latest
+sudo usermod -aG docker "$USER"
+```
 
-# Verify the build compiles cleanly (same environment as CI)
+**Podman** is a rootless drop-in replacement on Linux (`alias docker=podman`).
+See the [Podman installation guide](https://podman.io/docs/installation).
+
+## Option 1: Docker/Podman CLI (most lightweight)
+
+No IDE, no extra tooling — just build and run the container directly.
+
+```bash
+# Build the image once (from the repository root)
+docker build -t darktable-dev -f .devcontainer/Dockerfile .
+
+# Verify the build compiles (same environment as CI)
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD":/workspace -w /workspace \
-    ghcr.io/darktable-org/darktable-build:latest \
+    darktable-dev \
     bash -lc './build.sh --prefix /tmp/dt --build-type Release'
 
 # Build an AppImage for GUI testing on the host
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD":/workspace -w /workspace \
     -e APPIMAGE_EXTRACT_AND_RUN=1 \
-    ghcr.io/darktable-org/darktable-build:latest \
+    darktable-dev \
     bash -lc './tools/appimage-build-script.sh'
 ```
 
-The AppImage appears in `build/Darktable-*.AppImage` and can be run directly on the host.
+The AppImage appears in `build/Darktable-*.AppImage` and can be run on the host.
 
 > Replace `docker` with `podman` if you use Podman.
 
-## Tier 2: devcontainer CLI (terminal)
+## Option 2: Dev Container (richest experience)
+
+A [Dev Container](https://containers.dev/) adds IDE integration on top of the
+same Docker image: editor extensions, CMake integration, debugger support, etc.
+
+### VS Code
+
+Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers),
+then open this repository and click **"Reopen in Container"** when prompted
+(or F1 → *Dev Containers: Reopen in Container*). Git submodules are initialized
+automatically.
+
+### JetBrains IDEs (CLion, etc.)
+
+Install the Dev Containers plugin and follow the
+[JetBrains Dev Containers guide](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html).
+
+### Other editors and terminal
+
+Install the [`devcontainer` CLI](https://github.com/devcontainers/cli):
+
+```bash
+npm install -g @devcontainers/cli
+```
+
+Then:
 
 ```bash
 # Start the container
 devcontainer up --workspace-folder .
 
-# Open a shell inside it
+# Open a shell
 devcontainer exec --workspace-folder . bash
 ```
 
-Then build as usual (see [Building](#building)).
+> **VS Code and JetBrains bundle their own devcontainer implementation** — you
+> only need to install the CLI separately when using other editors or working
+> purely in a terminal.
 
-## Tier 3: IDE integration
+The VS Code extensions listed in [`devcontainer.json`](devcontainer.json) are
+all from Microsoft (`ms-vscode.*`) or well-established publishers.
 
-The container follows the open [Dev Container specification](https://containers.dev/)
-and works with any supporting tool:
+## Building darktable
 
-- **VS Code** — Dev Containers extension → "Reopen in Container"
-- **JetBrains IDEs** (CLion, etc.) — Dev Containers plugin
-- **Neovim / other editors** — via `devcontainer` CLI above
-
-The [VS Code extensions listed in `devcontainer.json`](devcontainer.json) are all
-from Microsoft (`ms-vscode.*`) or well-established publishers.
-
-## Building
+Inside the container (any option):
 
 ```bash
 # Standard development build
@@ -105,31 +117,29 @@ from Microsoft (`ms-vscode.*`) or well-established publishers.
 # Debug build
 ./build.sh --prefix /tmp/dt --build-type Debug
 
-# Use Clang 22 instead of GCC 16 (matches CI LLVM22 path)
+# Switch to Clang 22 (matches CI LLVM22 path)
 export CC=clang-22 CXX=clang++-22
 ./build.sh --prefix /tmp/dt --build-type RelWithDebInfo
 ```
 
 ## Testing with AppImage
 
-The container has no display, so GUI testing uses an AppImage run on the host.
+The container has no display. GUI testing uses an AppImage built inside the
+container and run on the host.
 
 ```bash
-# Build the AppImage
-# APPIMAGE_EXTRACT_AND_RUN=1 is required inside any Docker/devcontainer (no FUSE)
+# APPIMAGE_EXTRACT_AND_RUN=1 is required — FUSE is not available in containers
 APPIMAGE_EXTRACT_AND_RUN=1 ./tools/appimage-build-script.sh
 ```
 
-The AppImage is created in `build/Darktable-*.AppImage`.
-
-**Run on the host** (outside the container):
+The AppImage is created in `build/Darktable-*.AppImage`. Run it on the host:
 
 ```bash
 chmod +x build/Darktable-*.AppImage
-
-# Use a separate config dir to avoid affecting your production darktable
 ./build/Darktable-*.AppImage --configdir ~/.config/darktable-test
 ```
+
+Using `--configdir` avoids touching your production darktable configuration.
 
 ## Running unit tests
 
@@ -140,16 +150,47 @@ chmod +x build/Darktable-*.AppImage
 cd build && ctest
 ```
 
-## CI environment
+## CI environment and pre-built images
 
 The [Dockerfile](Dockerfile) is the single source of truth for the build
-environment. It mirrors the "Install Base Dependencies" step in
-`.github/workflows/ci.yml` exactly. Check the Dockerfile for the current base
-image, compiler versions, and package list.
+environment. Inspect it for the exact base image, compiler versions, and
+package list.
+
+### Pre-built images on GHCR
+
+`.github/workflows/build-docker.yml` automatically builds the image and
+publishes it to the GitHub Container Registry (GHCR) whenever the `Dockerfile`
+changes on the `master` branch. The pre-built image is available at:
+
+```
+ghcr.io/darktable-org/darktable-build:latest
+```
+
+Using the pre-built image skips the local build step:
+
+```bash
+docker pull ghcr.io/darktable-org/darktable-build:latest
+docker run --rm --user "$(id -u):$(id -g)" \
+    -v "$PWD":/workspace -w /workspace \
+    ghcr.io/darktable-org/darktable-build:latest \
+    bash -lc './build.sh --prefix /tmp/dt --build-type Release'
+```
 
 ## Troubleshooting
 
-### AppImage fails with FUSE error
+### `docker build` prints a deprecation warning about the legacy builder
+
+This happens with older Docker installations (e.g. Ubuntu's `docker.io` package)
+that don't use BuildKit by default. Fix by installing Docker CE via the
+[official Docker Engine docs](https://docs.docker.com/engine/install/ubuntu/)
+(which includes `docker-buildx-plugin`), or just add the plugin to an existing
+installation:
+
+```bash
+sudo apt install docker-buildx-plugin
+```
+
+### AppImage build fails with FUSE error
 
 Always set `APPIMAGE_EXTRACT_AND_RUN=1` — FUSE is not available inside containers.
 
@@ -159,16 +200,12 @@ Always set `APPIMAGE_EXTRACT_AND_RUN=1` — FUSE is not available inside contain
 git submodule update --init --recursive
 ```
 
-### Git says the mounted repository has dubious ownership inside the container
+### Git says the repository has dubious ownership inside the container
 
-Use the same UID/GID as the host when starting Docker, or configure the mounted repo as safe inside the container:
+Pass `--user "$(id -u):$(id -g)"` to `docker run` (as shown in the examples
+above), or mark the path as safe inside the container:
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" \
-    -v "$PWD":/workspace -w /workspace \
-    darktable-dev bash -lc './build.sh --prefix /tmp/dt --build-type Release'
-
-# or, if you keep the default root user inside the container:
 git config --global --add safe.directory /workspace
 ```
 
@@ -180,14 +217,16 @@ sudo apt-get update && sudo apt-get install <package>
 
 ### Rebuild the container after Dockerfile changes
 
-VS Code: F1 → "Dev Containers: Rebuild Container"
+VS Code: F1 → *Dev Containers: Rebuild Container*
 CLI: `devcontainer up --workspace-folder . --remove-existing-container`
 
 ## File structure
 
 ```text
 .devcontainer/
-├── Dockerfile           # Build environment (mirrors CI ubuntu:26.04)
+├── Dockerfile           # Build environment (mirrors CI)
 ├── devcontainer.json    # IDE/tooling configuration
 └── README.md            # This file
+.github/workflows/
+└── build-docker.yml     # Publishes the image to GHCR on Dockerfile changes
 ```

@@ -44,6 +44,8 @@ typedef struct dt_ai_model_t
   char *description;     // Short description
   char *task;            // Task type: "denoise", "upscale", etc.
   char *github_asset;    // Asset filename in GitHub release
+  char *repository;      // "owner/repo" this model comes from; NULL for
+                         // the repository configured globally
   char *checksum;        // checksum string, format "<algo>:<hex>"
                          // (today only "sha256:..." is produced by the
                          // GitHub asset digest API; parser tolerates
@@ -53,6 +55,11 @@ typedef struct dt_ai_model_t
   char *spatial_dim_h;   // symbolic name of height dimension (default "height")
   char *spatial_dim_w;   // symbolic name of width dimension (default "width")
   gboolean is_default;   // TRUE if model is a default model for its task
+  gboolean from_catalog;  // TRUE when parsed from the bundled
+                            // ai_models.json; FALSE when found on disk or
+                            // registered from a repository listing
+  gboolean from_file;    // TRUE when installed from a local .dtmodel; there
+                         // is no repository to go back to for updates
   gboolean enabled;      // User preference (stored in darktablerc)
   dt_ai_model_status_t status;
   double download_progress;  // 0.0 to 1.0 during download
@@ -199,6 +206,28 @@ dt_ai_model_t *dt_ai_models_get_by_id(const char *model_id);
  */
 char *dt_ai_models_install_local(const char *filepath);
 
+// --- Provenance ---
+// a model keeps its recorded publisher whether or not this build can
+// download, so these stay outside HAVE_AI_DOWNLOAD
+
+/**
+ * @brief The official repository, for display
+ *
+ * plugins/ai/repository, which darktableconfig.xml defaults to
+ * darktable-org/darktable-ai. An installation pointed at a mirror is
+ * still being served official models, so that mirror is what "official"
+ * means for it.
+ *
+ * @return Borrowed "owner/repo", valid for the registry's lifetime, or
+ *         NULL before the registry exists
+ */
+const char *dt_ai_models_official_repository(void);
+
+/**
+ * @brief TRUE if `repository` is this installation's official repository
+ */
+gboolean dt_ai_models_is_official_repository(const char *repository);
+
 #ifdef HAVE_AI_DOWNLOAD
 // --- Download Operations ---
 
@@ -243,6 +272,130 @@ gboolean dt_ai_models_download_default(dt_ai_progress_callback callback,
  */
 gboolean dt_ai_models_download_all(dt_ai_progress_callback callback,
                                    gpointer user_data);
+
+/**
+ * @brief One model offered by the repository's compatible release
+ *
+ * versions.json lists everything in a release, a superset of the bundled
+ * catalog: a model released after this build appears there but not in
+ * ai_models.json.
+ */
+typedef struct dt_ai_repo_model_t
+{
+  char *id;               // model id, also the .dtmodel asset stem
+  char *repository;       // "owner/repo" that published it
+  char *version;          // version published in the release
+  char *checksum;         // "sha256:...", never NULL; entries without one
+                          // are dropped as unverifiable
+  char *name;             // display name, may be NULL
+  char *description;      // one-line summary, may be NULL
+  char *task;             // task the model serves, may be NULL
+  char *license;          // license of the weights, may be NULL
+  gint64 size;            // download size in bytes, 0 when unpublished
+  gboolean in_catalog;  // listed in darktable's bundled ai_models.json
+  dt_ai_model_status_t status;  // UPDATE_AVAILABLE when the release is
+                                // newer than what is on disk
+} dt_ai_repo_model_t;
+
+/**
+ * @brief List the models the repository offers beyond the bundled
+ *        catalog, which the main model list already manages
+ *
+ * Blocking network I/O — call from a worker thread.
+ *
+ * @param repository "owner/repo" to query; NULL uses the configured one
+ * @param error_msg Set to an error message on failure (caller must free);
+ *                  may be NULL
+ * @return List of dt_ai_repo_model_t*, sorted by id, or NULL on failure or
+ *         when nothing is offered. Free with dt_ai_repo_model_list_free().
+ */
+GList *dt_ai_models_fetch_repository_list(const char *repository,
+                                          char **error_msg);
+
+/**
+ * @brief The repositories models may be installed from
+ *
+ * plugins/ai/repository first, then any listed in
+ * plugins/ai/third_party_repositories. Malformed entries are dropped.
+ *
+ * @return List of newly allocated "owner/repo" strings; free with
+ *         g_list_free_full(list, g_free)
+ */
+GList *dt_ai_models_get_repositories(void);
+
+/**
+ * @brief Just the additional repositories, without the official one
+ * @return List of newly allocated "owner/repo" strings; free with
+ *         g_list_free_full(list, g_free)
+ */
+GList *dt_ai_models_get_third_party_repositories(void);
+
+/**
+ * @brief Replace the list of additional repositories
+ *
+ * Writes plugins/ai/third_party_repositories. Entries are not validated here —
+ * dt_ai_models_get_repositories() drops malformed ones when reading.
+ *
+ * @param repositories List of "owner/repo" strings (may be NULL to clear)
+ */
+void dt_ai_models_set_third_party_repositories(GList *repositories);
+
+/**
+ * @brief Free a list returned by dt_ai_models_fetch_repository_list()
+ */
+void dt_ai_repo_model_list_free(GList *list);
+
+/**
+ * @brief Make a repository-listed model downloadable
+ *
+ * The download path only operates on registry members, so this adds a
+ * transient entry carrying the release's digest. It lasts for the session;
+ * an installed model is rediscovered from its config.json on the next start.
+ *
+ * @param entry Entry from dt_ai_models_fetch_repository_list()
+ * @return TRUE if the model is now known to the registry
+ */
+gboolean dt_ai_models_register_repository_model(const dt_ai_repo_model_t *entry);
+
+/**
+ * @brief Record where an install actually came from
+ *
+ * Call only once the download has landed. dt_ai_models_refresh_status()
+ * reads this back to restore a model's publisher across sessions.
+ *
+ * @param model_id The model that was installed
+ * @param repository "owner/repo" it came from, or NULL to clear
+ */
+void dt_ai_models_record_origin(const char *model_id, const char *repository);
+
+/**
+ * @brief Undo a registration when the download did not happen
+ *
+ * Removes an entry the registration created, and restores the publisher
+ * and checksum of one it merely redirected, so it is safe to call without
+ * tracking whether the model was known beforehand.
+ *
+ * @param model_id The model to unregister
+ */
+void dt_ai_models_unregister_repository_model(const char *model_id);
+
+/**
+ * @brief Register and download a model listed by the repository
+ *
+ * Wrapper over dt_ai_models_register_repository_model() and
+ * dt_ai_models_download_sync() for callers without their own progress
+ * dialog. Blocking; unregisters again if the download fails.
+ *
+ * @param entry Entry from dt_ai_models_fetch_repository_list()
+ * @param callback Progress callback (may be NULL)
+ * @param user_data Data for callback
+ * @param cancel_flag Pointer to boolean checked for cancellation (may be NULL)
+ * @return Error message (caller must free) or NULL on success
+ */
+char *dt_ai_models_install_from_repository(const dt_ai_repo_model_t *entry,
+                                           dt_ai_progress_callback callback,
+                                           gpointer user_data,
+                                           const gboolean *cancel_flag);
 #endif /* HAVE_AI_DOWNLOAD */
 
 /**
@@ -279,6 +432,15 @@ void dt_ai_models_set_enabled(const char *model_id, gboolean enabled);
  * @return Newly allocated model ID string (caller must free), or NULL if none active
  */
 char *dt_ai_models_get_active_for_task(const char *task);
+
+/**
+ * @brief A task identifier as it should be shown to the user
+ *
+ * @param task The task type (e.g. "mask", "denoise"), may be NULL
+ * @return Translated label, or `task` unchanged when it is not one of the
+ *         tasks darktable dispatches on; never NULL. Do not free.
+ */
+const char *dt_ai_task_label(const char *task);
 
 /**
  * @brief Get the version string of a model by ID.

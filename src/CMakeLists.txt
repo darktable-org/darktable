@@ -54,6 +54,7 @@ FILE(GLOB SOURCE_FILES
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"
+  "common/hdr_alignment.cc"
   "common/heal.c"
   "common/histogram.c"
   "common/history.c"
@@ -314,6 +315,20 @@ add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
 #add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
+
+# When GTK3 carries the Wayland backend, gui/gtk.c calls into libwayland-client
+# directly (registry roundtrip for server-side decoration support), so we have to
+# link it ourselves. gtk+-3.0.pc does not list it, and relying on libgdk-3 to drag
+# it in breaks with linkers using --no-undefined (e.g. openSUSE's default LDFLAGS).
+if(NOT WIN32 AND NOT APPLE)
+  pkg_check_modules(GTK3_WAYLAND QUIET gtk+-wayland-3.0)
+  if(GTK3_WAYLAND_FOUND)
+    pkg_check_modules(WAYLAND_CLIENT REQUIRED wayland-client)
+    include_directories(SYSTEM ${WAYLAND_CLIENT_INCLUDE_DIRS})
+    link_directories(${WAYLAND_CLIENT_LIBRARY_DIRS})
+    list(APPEND LIBS ${WAYLAND_CLIENT_LIBRARIES})
+  endif()
+endif()
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -672,6 +687,71 @@ if(USE_GMIC)
     message(FATAL_ERROR "No suitable GMIC development files found, please install them or disable GMIC support")
   endif(GMIC_FOUND)
 endif(USE_GMIC)
+
+if(USE_OPENCV)
+  # Only these OpenCV modules are needed (the "bare minimum"):
+  #   core/imgproc        - image ops;
+  #   features2d/features - SIFT + FLANN matcher;
+  #   flann               - KD-tree index params;
+  #   calib3d/geometry    - findHomography / estimateAffine2D.
+  # OpenCV 5 reorganized the modules: features2d was renamed to features and
+  # calib3d was split into calib/geometry/stereo (the homography estimators we
+  # use landed in geometry). Both layouts are supported, hdr_alignment.cc picks
+  # its headers via CV_VERSION_MAJOR.
+  set(DT_OPENCV5_MODULES core imgproc features flann geometry)
+  set(DT_OPENCV4_MODULES core imgproc features2d flann calib3d)
+  # First try the standard config (custom builds, or distros shipping the
+  # unified OpenCVConfig.cmake).  QUIET: absence is fine, the HDR auto-alignment
+  # then compiles to a no-op (hdr_alignment.cc degrades to stubs without
+  # HAVE_OPENCV).
+  # OpenCVConfig-version.cmake only accepts requests whose major version matches
+  # the installed one, so 5 and 4 have to be probed separately.
+  find_package(OpenCV 5 COMPONENTS ${DT_OPENCV5_MODULES} QUIET)
+  if(OpenCV_FOUND)
+    set(DT_OPENCV_MODULES ${DT_OPENCV5_MODULES})
+  else()
+    find_package(OpenCV 4 COMPONENTS ${DT_OPENCV4_MODULES} QUIET)
+    set(DT_OPENCV_MODULES ${DT_OPENCV4_MODULES})
+  endif()
+  if(NOT OpenCV_FOUND)
+    # Fallback for distros (e.g. Debian/Ubuntu) that fragment OpenCV into
+    # per-module libopencv-<mod>-dev packages but keep OpenCVConfig.cmake only in
+    # the heavyweight libopencv-dev metapackage.  Discover the modules directly so
+    # users can install just the handful above instead of the whole library.
+    find_path(OpenCV_INCLUDE_DIRS NAMES opencv2/core.hpp PATH_SUFFIXES opencv4 opencv5)
+    if(OpenCV_INCLUDE_DIRS AND EXISTS "${OpenCV_INCLUDE_DIRS}/opencv2/core/version.hpp")
+      file(STRINGS "${OpenCV_INCLUDE_DIRS}/opencv2/core/version.hpp" _dt_cv_major
+           REGEX "CV_VERSION_MAJOR[ \t]+[0-9]+")
+      string(REGEX MATCH "[0-9]+" _dt_cv_major "${_dt_cv_major}")
+      if(_dt_cv_major GREATER_EQUAL 5)
+        set(DT_OPENCV_MODULES ${DT_OPENCV5_MODULES})
+      endif()
+      set(OpenCV_LIBS "")
+      set(_dt_opencv_ok TRUE)
+      foreach(_mod ${DT_OPENCV_MODULES})
+        find_library(DT_OPENCV_${_mod}_LIBRARY NAMES opencv_${_mod})
+        if(DT_OPENCV_${_mod}_LIBRARY)
+          list(APPEND OpenCV_LIBS ${DT_OPENCV_${_mod}_LIBRARY})
+        else()
+          set(_dt_opencv_ok FALSE)
+        endif()
+      endforeach()
+      if(_dt_opencv_ok AND _dt_cv_major GREATER_EQUAL 4)
+        set(OpenCV_FOUND TRUE)
+        set(OpenCV_VERSION "${_dt_cv_major}.x")
+        message(STATUS "OpenCV ${_dt_cv_major}.x found via per-module libraries")
+      endif()
+    endif()
+  endif()
+  if(OpenCV_FOUND)
+    add_definitions(-DHAVE_OPENCV)
+    include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+    list(APPEND LIBS ${OpenCV_LIBS})
+    message(STATUS "OpenCV ${OpenCV_VERSION}: HDR exposure-bracket auto-alignment enabled")
+  else()
+    message(STATUS "OpenCV not found: HDR exposure-bracket auto-alignment disabled")
+  endif(OpenCV_FOUND)
+endif(USE_OPENCV)
 
 if(USE_ICU)
   find_package(ICU COMPONENTS i18n data uc)

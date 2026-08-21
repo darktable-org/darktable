@@ -948,7 +948,9 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
       // during the previous GDK_BUTTON_PRESS event
       const dt_imgid_t old_selection = table->selection;
       table->selection = id;
-      dt_view_manager_switch(darktable.view_manager, "darkroom");
+      // Leave GTK to finish propagating the double-click before the view
+      // switch tears down this widget hierarchy.
+      dt_ctl_switch_mode_to("darkroom");
       if(id != old_selection)
       {
         _update_selected_thumbnail(table, old_selection);

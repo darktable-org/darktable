@@ -356,9 +356,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *lb = gtk_label_new(chl);
     gtk_widget_set_hexpand(lb, TRUE);
 
-    // duplicate this image with its history stack; only useful once the image
-    // has actually been developed - otherwise it is equivalent to "original"
-    const gboolean altered = dt_image_altered(imgid);
+    // duplicate this image with its history stack
     GtkWidget *bt_dup = dtgtk_button_new_full(dtgtk_cairo_paint_multiinstance, 0, NULL,
       &(dtgtk_button_config_t){
         .tooltip = _("create a duplicate of this image with same history stack"),
@@ -398,7 +396,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_show(hb);
     gtk_widget_show(lb);
     gtk_widget_show(tb);
-    gtk_widget_set_visible(bt_dup, altered);
+    gtk_widget_show(bt_dup);
     gtk_widget_show(bt_orig);
     gtk_widget_show(bt);
 

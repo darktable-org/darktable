@@ -54,7 +54,7 @@ void testimg_free(Testimg *const ti);
  */
 
 // access pixel (x -> width, y -> height):
-inline float* get_pixel(const Testimg *const ti, const int x, const int y)
+static inline float* get_pixel(const Testimg *const ti, const int x, const int y)
 {
   // y * width + x, so pixel at index 2 is top row, 2nd from left:
   return ti->pixels + (y * ti->width + x) * 4;

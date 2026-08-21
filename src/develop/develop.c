@@ -608,6 +608,41 @@ static void _dev_average_delay_update(const dt_times_t *start,
                      - *average_delay / DT_DEV_AVERAGE_DELAY_COUNT);
 }
 
+void dt_dev_pixelpipe_stop_and_lock_all(dt_develop_t *dev)
+  ACQUIRE(&dev->preview_pipe->mutex, &dev->preview2.pipe->mutex, &dev->full.pipe->mutex)
+{
+  assert(dev && dev->preview_pipe && dev->preview2.pipe && dev->full.pipe);
+
+  dt_dev_pixelpipe_set_shutdown(dev->preview_pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+  dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_NODES);
+
+  // Canonical all-screen-pipe lock order. Workers hold at most one pipe mutex,
+  // then may take history_mutex while synchronizing nodes.
+  dt_pthread_mutex_lock(&dev->preview_pipe->mutex);
+  dt_pthread_mutex_lock(&dev->preview2.pipe->mutex);
+  dt_pthread_mutex_lock(&dev->full.pipe->mutex);
+}
+
+void dt_dev_pixelpipe_unlock_all(dt_develop_t *dev)
+  RELEASE(&dev->preview_pipe->mutex, &dev->preview2.pipe->mutex, &dev->full.pipe->mutex)
+{
+  assert(dev && dev->preview_pipe && dev->preview2.pipe && dev->full.pipe);
+
+  dt_pthread_mutex_unlock(&dev->full.pipe->mutex);
+  dt_pthread_mutex_unlock(&dev->preview2.pipe->mutex);
+  dt_pthread_mutex_unlock(&dev->preview_pipe->mutex);
+}
+
+static void _dev_zoom_move(dt_dev_viewport_t *port,
+                           dt_dev_zoom_t zoom,
+                           float scale,
+                           int closeup,
+                           const float x,
+                           const float y,
+                           const gboolean constrain,
+                           const gboolean use_mask_overlay);
+
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               dt_dev_pixelpipe_t *pipe,
@@ -783,14 +818,16 @@ restart:
                     "restore centre %.4f/%.4f",
                     rx,
                     ry);
-      dt_dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, rx, ry, TRUE);
+      // Worker validation must not traverse GUI-owned mask overlay arrays.
+      _dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, rx, ry, TRUE, FALSE);
     }
     else if(port_loading || require_zoom_test)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "dt_dev_zoom_move", pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s",
         port_loading ? "port_loading " : "",
         require_zoom_test ? "required_test" : "");
-      dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+      // Clamp to image geometry only; mask overlays are mutable GUI state.
+      _dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE, FALSE);
     }
 
     // determine scale according to current dimensions
@@ -3176,10 +3213,18 @@ _dev_mask_overlay_bounds(const dt_develop_t *dev, float *x0, float *y0, float *x
 //   - by any overlay point already outside the image (e.g. a node dragged past
 //     the edge), plus MASK_HANDLE_MARGIN so it isn't flush to the border.
 // boxw/boxh are the viewport extents in image units along each axis.
-static void _clamp_zoom_to_mask(
-  const dt_develop_t *dev, const float boxw, const float boxh, float *zoom_x, float *zoom_y)
+static void _clamp_zoom_to_mask(const dt_develop_t *dev,
+                                const float boxw,
+                                const float boxh,
+                                float *zoom_x,
+                                float *zoom_y,
+                                const gboolean use_mask_overlay)
 {
-  const gboolean creating = dev->form_gui && dev->form_gui->creation;
+  // Pixelpipe workers use the image-only branch. form_gui and its point arrays
+  // are mutable presentation data owned by the GUI thread.
+  const gboolean creating = use_mask_overlay
+                            && dev->form_gui
+                            && dev->form_gui->creation;
 
   float lox = -0.5f, hix = 0.5f, loy = -0.5f, hiy = 0.5f;
   if(creating)
@@ -3190,7 +3235,8 @@ static void _clamp_zoom_to_mask(
     hiy += MASK_CREATION_MARGIN;
   }
   float mx0, my0, mx1, my1;
-  if(_dev_mask_overlay_bounds(dev, &mx0, &my0, &mx1, &my1))
+  if(use_mask_overlay
+     && _dev_mask_overlay_bounds(dev, &mx0, &my0, &mx1, &my1))
   {
     if(mx0 < -0.5f)
       lox = fminf(lox, mx0 - MASK_HANDLE_MARGIN);
@@ -3229,13 +3275,14 @@ static void _clamp_zoom_to_mask(
   *zoom_y = CLAMP(*zoom_y, cminy, cmaxy);
 }
 
-void dt_dev_zoom_move(dt_dev_viewport_t *port,
-                      dt_dev_zoom_t zoom,
-                      float scale,
-                      int closeup,
-                      const float x,
-                      const float y,
-                      const gboolean constrain)
+static void _dev_zoom_move(dt_dev_viewport_t *port,
+                           dt_dev_zoom_t zoom,
+                           float scale,
+                           int closeup,
+                           const float x,
+                           const float y,
+                           const gboolean constrain,
+                           const gboolean use_mask_overlay)
 {
   // Use the viewport's own develop, or fall back to global
   dt_develop_t *dev = port->dev ? port->dev : darktable.develop;
@@ -3396,7 +3443,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 
     // While editing a mask, allow panning beyond the canvas to reach
     // handles that lie outside the image (see helper for the details).
-    _clamp_zoom_to_mask(dev, boxw, boxh, &zoom_x, &zoom_y);
+    _clamp_zoom_to_mask(dev, boxw, boxh, &zoom_x, &zoom_y, use_mask_overlay);
   }
 
   pts[0] = (zoom_x + 0.5f) * procw;
@@ -3441,6 +3488,20 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   }
   if(port == &dev->full)
     dt_control_navigation_redraw();
+}
+
+void dt_dev_zoom_move(dt_dev_viewport_t *port,
+                      dt_dev_zoom_t zoom,
+                      float scale,
+                      int closeup,
+                      const float x,
+                      const float y,
+                      const gboolean constrain)
+{
+  // Public callers are GUI/input paths and retain off-image mask-handle
+  // panning. Worker-side viewport validation calls _dev_zoom_move() directly
+  // with use_mask_overlay=FALSE.
+  _dev_zoom_move(port, zoom, scale, closeup, x, y, constrain, TRUE);
 }
 
 void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
