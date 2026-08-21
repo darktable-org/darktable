@@ -1987,20 +1987,18 @@ static void _on_tree_motion_cb(GtkEventControllerMotion *controller,
 {
   GtkWidget *widget = dt_gui_get_widget(controller);
   GtkTreeView *tv = GTK_TREE_VIEW(widget);
-  GdkWindow *bin = gtk_tree_view_get_bin_window(tv);
-  if(!bin) return;
   gint bx, by;
   gtk_tree_view_convert_widget_to_bin_window_coords(tv, (gint)x, (gint)y, &bx, &by);
-  if(_info_active_at_bin(user_data, tv, bx, by))
-  {
-    GdkCursor *cursor = gdk_cursor_new_from_name(gdk_window_get_display(bin), "pointer");
-    gdk_window_set_cursor(bin, cursor);
-    g_object_unref(cursor);
-  }
-  else
-  {
-    gdk_window_set_cursor(bin, NULL);
-  }
+  dt_gui_cursor_set(widget,
+                    _info_active_at_bin(user_data, tv, bx, by) ? "pointer" : NULL,
+                    "preferences-ai/info");
+}
+
+static void _on_tree_leave_cb(GtkEventControllerMotion *controller,
+                              gpointer user_data)
+{
+  (void)user_data;
+  dt_gui_cursor_set(dt_gui_get_widget(controller), NULL, "preferences-ai/info");
 }
 
 // click on the ⓘ info column opens the model card
@@ -2583,7 +2581,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_widget_set_has_tooltip(data->model_list, TRUE);
   g_signal_connect(data->model_list, "query-tooltip",
                    G_CALLBACK(_on_query_tooltip), data);
-  dt_gui_connect_motion(data->model_list, _on_tree_motion_cb, NULL, NULL, data);
+  dt_gui_connect_motion(data->model_list, _on_tree_motion_cb, NULL, _on_tree_leave_cb, data);
   dt_gui_connect_click(data->model_list, _on_info_button_press_cb, NULL, data);
 
   // scrolled window for the list

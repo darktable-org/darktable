@@ -2273,6 +2273,7 @@ void dt_cleanup()
     dt_control_cleanup(TRUE);
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
+    dt_gui_gtk_cleanup(darktable.gui);
     free(darktable.gui);
     darktable.gui = NULL;
   }

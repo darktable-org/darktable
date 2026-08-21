@@ -1574,8 +1574,9 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   // dt_iop_gui_update() loop in dt_dev_pop_history_items(), which holds
   // dev->history_mutex, whereas dt_dev_zoom_move() takes global_mutex and then
   // history_mutex -- the reverse of the order a pixelpipe worker uses, so the
-  // two deadlock.  Nothing is lost: after a history reload the pipe is dirty,
-  // so dt_dev_process_image_job() runs the very same clamp itself.
+  // two deadlock. Nothing is lost when hiding the overlay: after a history
+  // reload the dirty pipe runs the image-only clamp itself. Worker validation
+  // deliberately does not inspect mutable GUI overlay points.
   // Also avoid if we didn't change edit mode
   if(!darktable.develop->history_updating && old_shown != value)
     dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
