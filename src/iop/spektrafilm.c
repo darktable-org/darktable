@@ -3948,10 +3948,20 @@ void gui_init(dt_iop_module_t *self)
         " veil)"));
 
   g->diffusion_strength = dt_bauhaus_slider_from_params(self, "diffusion_strength");
+  /* Diffusion filters are sold in stops, and the deflected-light table this
+     drives is calibrated at those stops -- 1/8, 1/4, 1/2, 1 and 2 -- with log2
+     interpolation between them. The step moves scrolling and the arrow keys by
+     an eighth at a time, so they walk the stops from a value already on one;
+     it is a delta rather than a grid, and dragging stays continuous. */
+  dt_bauhaus_slider_set_step(g->diffusion_strength, 0.125f);
+  dt_bauhaus_slider_set_digits(g->diffusion_strength, 3);
   gtk_widget_set_tooltip_text(
       g->diffusion_strength,
-      _("sets how much light is diverted into the diffusion halo (0 = off). "
-        "the halo is added on top of the unfiltered image, so raising this "
+      _("how much light is diverted into the diffusion halo (0 = off).\n\n"
+        "these filters are sold in stops -- 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
+        "then 1 and 2. scrolling and the arrow keys move an eighth at a time,\n"
+        "so from 0 they walk the stops; dragging is free.\n\n"
+        "the halo is added on top of the unfiltered image, so raising this\n"
         "lifts shadows and lowers contrast as well as glowing the highlights"));
 
   g->diffusion_scale = dt_bauhaus_slider_from_params(self, "diffusion_scale");
@@ -3978,11 +3988,16 @@ void gui_init(dt_iop_module_t *self)
       _("print diffusion filter type (same presets as the film-stage filter)"));
 
   g->print_diffusion_strength = dt_bauhaus_slider_from_params(self, "print_diffusion_strength");
+  dt_bauhaus_slider_set_step(g->print_diffusion_strength, 0.125f);
+  dt_bauhaus_slider_set_digits(g->print_diffusion_strength, 3);
   gtk_widget_set_tooltip_text(
       g->print_diffusion_strength,
-      _("sets how much light is diverted into the print diffusion halo "
-        "(0 = off). acts at the enlarger rather than the camera, so it blooms "
-        "the printed image instead of the scene"));
+      _("how much light is diverted into the print diffusion halo (0 = off).\n\n"
+        "these filters are sold in stops -- 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5,\n"
+        "then 1 and 2. scrolling and the arrow keys move an eighth at a time,\n"
+        "so from 0 they walk the stops; dragging is free.\n\n"
+        "acts at the enlarger rather than the camera, so it blooms the printed\n"
+        "image instead of the scene"));
 
   g->print_diffusion_scale = dt_bauhaus_slider_from_params(self, "print_diffusion_scale");
   gtk_widget_set_tooltip_text(
