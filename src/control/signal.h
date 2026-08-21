@@ -287,6 +287,14 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_AI_MODELS_CHANGED,
 
+  /** \brief This signal is raised when every repository queried by
+    dt_ai_models_check_updates() has reported back, successfully or not.
+    Model statuses are settled by the time it fires, so a listener can
+    count what was found.
+    no param, no returned value
+    */
+  DT_SIGNAL_AI_UPDATE_CHECK_DONE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
