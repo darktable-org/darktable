@@ -42,8 +42,8 @@
  * spektra_core.h/.c, both shared with the OpenCL-side ports.
  *
  * Data: drop a data pack exported by tools/spektrafilm_export_data.py into
- *   <config>/spektrafilm/            (pack.json + spectra_lut.f32)
- *   <config>/spektrafilm/profiles/   (*.json film + paper profiles)
+ *   <user data>/darktable/spektrafilm/            (pack.json + spectra_lut.f32)
+ *   <user data>/darktable/spektrafilm/profiles/   (*.json film + paper profiles)
  * Upgrading to a new spektrafilm release = re-running the exporter.
  *
  * This is a scene-to-display view transform: enable it INSTEAD of
@@ -474,7 +474,7 @@ static sf_pack_t *_pack = NULL;
    pack than one developed against the current one. Keeping the path lets
    _ensure_sim() notice the resolved directory has changed and reload, and lets
    _scan_profiles() read profiles out of the SAME pack rather than always out of
-   the config directory -- profiles and spectral table have to come from one
+   the pack directory -- profiles and spectral table have to come from one
    place or the film list will not match the data behind it. */
 static char _pack_path[SF_PATH_LEN] = { 0 };
 /* Value of sf_fetch_generation() when _pack / _pack_error were last decided.
@@ -641,20 +641,22 @@ static uint32_t _name_hash(const char *s)
   return h32 ? h32 : 1; /* 0 is reserved for "first available" */
 }
 
-/* Where a hand-installed pack lives. Still the preferred location, and the one
-   named in the "no data pack" message, but no longer the only one: downloaded
-   packs live under the cache directory, one per spectral table. */
+/* <user data>/darktable/spektrafilm -- the folder a user can put a pack in by
+   hand, safe from the fetcher, which only ever writes to the `packs`
+   subdirectory below it (see spektra_fetch.c). A pack here wins over every
+   downloaded one, so it is also the answer to "how do I pin a specific
+   version", and it is the folder named when no pack can be found at all. */
 static void _pack_dir(char *dst,
                       size_t dstsz)
 {
-  char cfg[SF_PATH_LEN];
-  dt_loc_get_user_config_dir(cfg, sizeof cfg);
-  snprintf(dst, dstsz, "%s/spektrafilm", cfg);
+  char *dir = g_build_filename(g_get_user_data_dir(), "darktable", "spektrafilm", NULL);
+  g_strlcpy(dst, dir, dstsz);
+  g_free(dir);
 }
 
 /* Pick the pack directory for an edit that recorded wanted_lut_hash (0 = no
    preference). Local lookup only -- no network, safe on the pixelpipe. Falls
-   back to the config directory so error text still names somewhere real. */
+   back to the hand-install directory so error text still names somewhere real. */
 static void _resolve_pack_dir(uint32_t wanted_lut_hash,
                               char *dst,
                               size_t dstsz)
