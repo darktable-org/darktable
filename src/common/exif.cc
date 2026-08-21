@@ -195,6 +195,66 @@ static void _get_xmp_tags(const char *prefix,
   }
 }
 
+static void _remove_xmp_tags_with_prefix(GList **taglist,
+                                         const gchar* prefix)
+{
+  for(GList *item = *taglist; item; item = g_list_next(item))
+  {
+    gchar* tag = (gchar *)item->data;
+
+    if(g_str_has_prefix(tag, prefix))
+    {
+      GList *prev = g_list_previous(item);
+      *taglist = g_list_delete_link(*taglist, item);
+      item = prev;
+    }
+  }
+}
+
+static void _add_xmp_struct_fields(GList **taglist,
+                                   const char **fields,
+                                   size_t num_fields,
+                                   const char *format_str)
+{
+  for (size_t i = 0; i < num_fields; i++)
+  {
+    char *tag = g_strdup_printf(format_str, fields[i]);
+    *taglist = g_list_prepend(*taglist, tag);
+  }
+}
+
+static void _get_xmp_structs(GList **taglist)
+{
+  // CreatorContactInfo struct
+  const char *creator_contact_info_fields[] =
+    {
+      "AdrExtadr", "AdrCity", "AdrCtry", "EmailWork",
+      "TelWork", "AdrPcode", "AdrRegion", "UrlWork"
+    };
+
+  _add_xmp_struct_fields(taglist,
+                         creator_contact_info_fields,
+                         sizeof(creator_contact_info_fields) / sizeof(creator_contact_info_fields[0]),
+                         "Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:Ci%s,XmpText");
+
+  // Licensor struct
+  // first remove all `Xmp.plus.Licensor...` fields from the taglist
+  _remove_xmp_tags_with_prefix(taglist, "Xmp.plus.Licensor");
+
+  const char *licensor_fields[] =
+    {
+      "ID", "Name", "StreetAddress", "ExtendedAddress",
+      "City", "Region", "PostalCode", "Country",
+      "TelephoneType1", "Telephone1", "TelephoneType2", "Telephone2",
+      "Email", "URL"
+    };
+
+  _add_xmp_struct_fields(taglist,
+                         licensor_fields,
+                         sizeof(licensor_fields) / sizeof(licensor_fields[0]),
+                         "Xmp.plus.Licensor/plus:Licensor%s,XmpText");
+}
+
 /*
   The correction matrices are taken from http://www.brucelindbloom.com - chromatic Adaption.
   using Bradford method: found Illuminant -> D65
@@ -346,6 +406,8 @@ void dt_exif_set_exiv2_taglist()
     _get_xmp_tags("mediapro", &exiv2_taglist);
     _get_xmp_tags("expressionmedia", &exiv2_taglist);
     _get_xmp_tags("MicrosoftPhoto", &exiv2_taglist);
+
+    _get_xmp_structs(&exiv2_taglist);
   }
   catch(const Exiv2::AnyError& e)
   {
