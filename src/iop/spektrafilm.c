@@ -177,13 +177,12 @@ typedef struct dt_iop_spektrafilm_params_t
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
-  /* Inhibitor spread, in micrometres on the film. Absolute values rather than
-     scales, re-seeded from the stock's own numbers on every film change by
-     _sync_coupler_diffusion(), which writes the params and not only the widgets
-     so that dt_iop_gui_update() cannot drive them back. Ranges follow the
-     reference's GUI manifest (minimum 0 throughout, tail weight up to 1); the
-     compiled defaults are its DirCouplersParams and apply until a film is
-     chosen. */
+  /* Inhibitor spread, in micrometres on the film. Absolute rather than a scale
+     on the stock's value, so the number means the same thing whatever film is
+     loaded and survives a film change. Ranges follow the reference's GUI
+     manifest (minimum 0 throughout, tail weight up to 1), and the defaults are
+     its DirCouplersParams; _sync_coupler_diffusion() moves the sliders' reset
+     targets onto whatever the loaded stock ships. */
   float couplers_diffusion_um; // $MIN: 0.0 $MAX: 60.0 $DEFAULT: 20.0 $DESCRIPTION: "inhibitor spread"
   float couplers_tail_um;      // $MIN: 0.0 $MAX: 400.0 $DEFAULT: 200.0 $DESCRIPTION: "spread tail"
   float couplers_tail_weight;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.03 $DESCRIPTION: "tail weight"
@@ -2523,7 +2522,6 @@ static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t 
                                             const dt_iop_spektrafilm_params_t *p);
 static float _development_default(const sf_prof_entry_t *e);
 static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
-                                    dt_iop_spektrafilm_params_t *p,
                                     const sf_prof_entry_t *e);
 
 /* forward: needs _entry_by_hash(), which is defined below with the rest of the
@@ -2572,10 +2570,9 @@ static void _film_changed(GtkWidget *w, dt_iop_module_t *self)
      selected, so the entry is already correct if the paper is set back to auto
      later. The pipeline resolves it identically either way (_resolve_stock). */
   _update_paper_auto_entry(self);
-  /* The pack carries the inhibitor spread per stock, so it follows the film the
-     way the development time does: the numbers describe an emulsion, and
-     carrying one stock's across to another would describe neither. */
-  _sync_coupler_diffusion(g, p, e);
+  /* moves the coupler spread sliders' reset targets onto this stock, without
+     touching the values the user set */
+  _sync_coupler_diffusion(g, e);
   /* last, once scan_film and the auto-followed paper have settled: both
      development sliders are gated on their own stock, and the print one also on
      there being a print stage at all */
@@ -2738,27 +2735,21 @@ static void _coupler_diffusion_default(const sf_prof_entry_t *e, float *size_um,
   *tail_w = (float)w;
 }
 
-/* Move the three diffusion sliders onto this stock's own numbers. Writes the
-   params as well as the widgets, because dt_iop_gui_update() drives a
-   params-bound widget straight from its param and would otherwise undo a
-   widget-only change at the next history entry. The reset targets move too, so
-   a reset gesture lands on what this film ships. */
+/* Point the three diffusion sliders' reset targets at this stock's own numbers,
+   leaving the values alone. The pack fits the spread per stock, so a reset
+   should land on what the loaded film ships -- but the values are the user's,
+   and a film change is not a reason to discard them. The development time above
+   is overwritten instead because a time from another stock may not exist on
+   this one; a spread in micrometres is meaningful on any emulsion. */
 static void _sync_coupler_diffusion(dt_iop_spektrafilm_gui_data_t *g,
-                                    dt_iop_spektrafilm_params_t *p,
                                     const sf_prof_entry_t *e)
 {
   float d, t, w;
   _coupler_diffusion_default(e, &d, &t, &w);
-  p->couplers_diffusion_um = d;
-  p->couplers_tail_um = t;
-  p->couplers_tail_weight = w;
   DT_ENTER_GUI_UPDATE();
   dt_bauhaus_slider_set_default(g->couplers_diffusion_um, d);
   dt_bauhaus_slider_set_default(g->couplers_tail_um, t);
   dt_bauhaus_slider_set_default(g->couplers_tail_weight, w);
-  dt_bauhaus_slider_set(g->couplers_diffusion_um, d);
-  dt_bauhaus_slider_set(g->couplers_tail_um, t);
-  dt_bauhaus_slider_set(g->couplers_tail_weight, w);
   DT_LEAVE_GUI_UPDATE();
 }
 
