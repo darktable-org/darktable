@@ -155,11 +155,14 @@ cd build && ctest
 ## CI environment
 
 The [Dockerfile](Dockerfile) is the single source of truth for the build
-environment. Linux CI jobs build from it on every run, using the published
-GHCR image as a BuildKit layer cache — when nothing in the Dockerfile has
-changed, all layers are served from cache and the build step completes in
-seconds. This means a PR that modifies the Dockerfile is automatically tested
-against the updated environment before merge.
+environment. Linux CI jobs always run against the published `:latest` image.
+On every successful merge to `master` the `publish-image` CI job rebuilds
+from the Dockerfile (using the published image as a BuildKit layer cache, so
+only changed layers are rebuilt) and pushes the new image to GHCR.
+
+If your PR adds a new package to the Dockerfile alongside code that needs it,
+split the work: land the Dockerfile-only change first so `:latest` is updated,
+then open the code change PR on top of it.
 
 ### Pre-built images on GHCR
 
