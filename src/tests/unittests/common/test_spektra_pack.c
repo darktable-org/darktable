@@ -94,11 +94,25 @@ typedef struct fixture_t
   char pack_dir[PATH_MAX];
 } fixture_t;
 
-/* Every test starts with this: no pack on disk, no verdict to give. */
+/* No pack on disk, no verdict to give -- so every test starts with this. It
+   tests the pack and nothing else: a test that asserts the pack CONTAINS
+   something has to be able to fail when it does not, and folding that check in
+   here would turn every such failure into a skip. */
 #define REQUIRE_PACK(f)                                                                            \
   do                                                                                               \
   {                                                                                                \
-    if(!(f) || !(f)->pack || !(f)->film) skip();                                                                 \
+    if(!(f) || !(f)->pack) skip();                                                                 \
+  } while(0)
+
+/* For tests that need a film to work with rather than to check. A pack with no
+   filming profile is a real fault, but test_pack_ships_both_a_film_and_a_paper
+   is the one that reports it; everything else has nothing to say without one
+   and skips. */
+#define REQUIRE_FILM(f)                                                                            \
+  do                                                                                               \
+  {                                                                                                \
+    REQUIRE_PACK(f);                                                                               \
+    if(!(f)->film) skip();                                                                          \
   } while(0)
 
 /*
@@ -362,7 +376,7 @@ static void test_pack_ships_both_a_film_and_a_paper(void **state)
 static void test_profile_arrays_are_populated_and_finite(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   TR_STEP("profile spectra and curves are fully populated and finite");
   const sf_profile_t *profiles[2] = { f->film, f->print };
   for(int i = 0; i < 2; i++)
@@ -423,7 +437,7 @@ static void test_print_profile_carries_no_adaptation_surface(void **state)
 static void test_film_target_print_resolves_to_a_paper(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->film) skip();
   TR_STEP("a film's target print names a paper the pack actually ships");
   const char *target = sf_profile_target_print(f->film);
@@ -523,7 +537,7 @@ static void test_dichroic_filters_attenuate_their_own_band(void **state)
 static void test_neutral_filters_are_calibrated_for_the_shipped_pair(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->film || !f->print) skip();
   TR_STEP("the pack knows the neutral filtration for its own film/paper pair");
   double cmy[3] = { -1.0, -1.0, -1.0 };
@@ -547,7 +561,7 @@ static void test_neutral_filters_are_calibrated_for_the_shipped_pair(void **stat
 static void test_pipeline_renders_valid_output(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->print) skip();
   TR_STEP("the full chain returns finite, bounded output for ordinary input");
   sf_sim_t *sim = _build(f, NULL);
@@ -571,7 +585,7 @@ static void test_pipeline_renders_valid_output(void **state)
 static void test_pipeline_survives_extreme_input(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->print) skip();
   TR_STEP("black and blown-out input stay finite and in range");
   sf_sim_t *sim = _build(f, NULL);
@@ -593,7 +607,7 @@ static void test_pipeline_survives_extreme_input(void **state)
 static void test_uniform_patch_renders_uniform_and_repeatably(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->print) skip();
   TR_STEP("a flat patch renders flat, and twice over renders identically");
   sf_sim_t *sim = _build(f, NULL);
@@ -618,7 +632,7 @@ static void test_uniform_patch_renders_uniform_and_repeatably(void **state)
 static void test_brighter_input_renders_brighter(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->print) skip();
   TR_STEP("output brightness follows input brightness, monotonically");
   sf_sim_t *sim = _build(f, NULL);
@@ -659,7 +673,7 @@ static void _cfg_no_print_comp(sf_sim_params_t *p)
 static void test_exposure_compensation_moves_the_render(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->print) skip();
   TR_STEP("exposure compensation brightens and darkens as its sign says");
   enum { N = 4 };
@@ -690,7 +704,7 @@ static void _cfg_scan_film(sf_sim_params_t *p)
 static void test_scan_film_builds_without_a_paper(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   TR_STEP("scanning the negative directly needs no print stock at all");
   sf_sim_t *sim = _build(f, _cfg_scan_film);
   assert_non_null(sim);
@@ -718,7 +732,7 @@ static void _cfg_lut_quality(sf_sim_params_t *p)
 static void test_lut_path_tracks_exact_spectral(void **state)
 {
   fixture_t *f = *state;
-  REQUIRE_PACK(f);
+  REQUIRE_FILM(f);
   if(!f->print) skip();
   TR_STEP("the quality LUT stays close to the exact spectral path");
   enum { N = 8 };
