@@ -24,12 +24,13 @@
 
 G_BEGIN_DECLS
 
-typedef struct dt_win32_printer_ctx_t {
+typedef struct dt_win32_print_ctx_t {
     dt_print_info_t *base;   // cross-platform pinfo
     HANDLE           hPrinter;
     DEVMODEW        *cached_dm;
     BOOL             settings_opened;
     HWND             hwnd_owner; // optional, for property sheet
+    BOOL             is_color_device; // TRUE if printer is color-capable
     // room for future Windows-only fields
 } dt_win32_print_ctx_t;
 
@@ -71,6 +72,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                         const void *print_ticket_data,
                         size_t print_ticket_size, 
                         void *icc_data, size_t icc_size,
+                        gboolean is_color_device,
                         float width, float height);
 
 RECT compute_box_rect(const dt_image_box *box, HDC hdc, int dpiX, int dpiY, int paper_width, int paper_height);                                           

@@ -1230,6 +1230,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                        const void *print_ticket_data,
                        size_t print_ticket_size,
                        void *icc_data, size_t icc_size,
+                       gboolean is_color_device,
                        float width, float height)
 {
 DBG_MARK("starting XPS package build: printer=%s job=%s imgs=%d page=(%.3f, %.3f)",
@@ -1363,7 +1364,7 @@ DBG_MARK("CreatePage: hr=0x%08lx page=%p size=(%.6f, %.6f)", hr, (void *)page,
 
             /* Create and add the color profile resource after the page part is available */
             profile_resource = NULL;
-            if(icc_data && icc_size > 0)
+            if(icc_data && icc_size > 0 && is_color_device)
             {
               profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/ColorProfiles/OutputProfile.icc");
               DBG_MARK("profile_resource(after CreatePage)=%p", (void *)profile_resource);
@@ -1748,6 +1749,7 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
   settings_ctx->settings_opened = FALSE;
   settings_ctx->cached_dm = NULL;
   settings_ctx->hPrinter = NULL;
+  settings_ctx->is_color_device = TRUE; // default to color, will be updated later if needed
 
   if(!pinfo || !pinfo->printer.name[0]) 
   {
@@ -1763,6 +1765,8 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
     return settings_ctx; // leave cached_dm NULL, caller can detect
   }
   DBG_MARK("dt_win32_print_ctx_new: opened printer %s", wprinter);
+  settings_ctx->is_color_device = DeviceCapabilitiesW(wprinter, NULL, DC_COLORDEVICE, NULL, NULL) != 0;
+  DBG_MARK("dt_win32_print_ctx_new: is_color_device=%d", settings_ctx->is_color_device);
   // query required DEVMODE size
   LONG needed = DocumentPropertiesW(NULL, settings_ctx->hPrinter,
                                     wprinter,

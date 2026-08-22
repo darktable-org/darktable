@@ -144,7 +144,6 @@ typedef struct dt_lib_print_settings_t
   GtkWidget *quality_combo;
   GList *quality_list;                     // list of quality settings (windows only)
   GtkButton *print_settings_button; // button to open printer settings (windows only)
-
   struct dt_win32_printer_ctx_t *settings_ctx;
 #endif
 } dt_lib_print_settings_t;
@@ -165,6 +164,7 @@ typedef struct dt_lib_print_job_t
 #ifdef _WIN32
   void *print_ticket_data; // Windows only: print ticket data for the job
   size_t print_ticket_size; // Windows only: size of the print ticket data
+  gboolean is_color_device; // Windows only: TRUE if the printer is color-capable
 #endif
 } dt_lib_print_job_t;
 
@@ -650,7 +650,7 @@ static int _print_job_run(dt_job_t *job)
   // send the print job to win32_print.c
   if(!dt_win_print_file(&params->imgs, params->job_title, &params->prt,
                      params->print_ticket_data, params->print_ticket_size,
-                     icc_data, icc_size, width, height))
+                     icc_data, icc_size, params->is_color_device, width, height))
   {
     dt_control_log(_("Windows printing failed"));
   }
@@ -946,11 +946,12 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
 
     gboolean updated = dt_win_open_printer_settings(ps->settings_ctx, hwnd_owner);
-    if(!updated)
-    {
-      dt_control_log(_("print cancelled (printer settings not confirmed)"));
-    }
-    else 
+//    if(!updated)
+//    {
+//      dt_control_log(_("print cancelled (printer settings not confirmed)"));
+//    }
+//    else 
+    if(updated)
     {
       dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx); 
       dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
@@ -1026,6 +1027,10 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   params->p_icc_profile = g_strdup(ps->v_piccprofile);
   params->p_icc_intent = ps->v_pintent;
   params->black_point_compensation = ps->v_black_point_compensation;
+
+#ifdef _WIN32
+  params->is_color_device = ps->settings_ctx ? ps->settings_ctx->is_color_device : TRUE;
+#endif
 
   // Propagate the printer profile selection so dt_print_file() can
   // tell CUPS to skip color management when dt already did the
@@ -1109,12 +1114,17 @@ static void _set_printer(const dt_lib_module_t *self,
   if(ps->settings_ctx)
     dt_win32_print_ctx_free(ps->settings_ctx);
   // populate for this printer to settings_ctx for windows print dialog caching
-    ps->settings_ctx = dt_win32_print_ctx_new(&ps->prt);
-#endif
+  ps->settings_ctx = dt_win32_print_ctx_new(&ps->prt);
+  if(ps->settings_ctx)
+  {
+    // sync the cached DEVMODE to the printer info to align state
+    dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx);
+    dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+  }
 
 }
 //Callback when printer details are ready (Windows only)
-#ifdef _WIN32
+
 static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -1660,7 +1670,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 or printer color management to prevent misinterpretation of color data within
 the printer driver which likely expects sRGB or AdobeRGB only. Still allow
 anything wider (ProPhoto, Rec2020, "image settings") when darktable is managing
-color through internal color management controls */
+color through internal color management controls. */
 static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
                                          gboolean driver_managed)
 {
@@ -1691,20 +1701,64 @@ static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
     }
   }
 
+  int target = 0; // "image settings" fallback for the !driver_managed case
+
   if(driver_managed)
   {
     // preserve AdobeRGB if that's already the selection; otherwise sRGB
-    const int target = (ps->v_icctype == DT_COLORSPACE_ADOBERGB && adobergb_pos >= 0)
-                          ? adobergb_pos : srgb_pos;
-    dt_bauhaus_combobox_set(ps->profile, target);
-    // fires _profile_changed, which updates ps->v_icctype/v_iccprofile
-    // and persists to conf — no separate assignment needed here
+    target = (ps->v_icctype == DT_COLORSPACE_ADOBERGB && adobergb_pos >= 0)
+                ? adobergb_pos : srgb_pos;
+
+    // set state first, matching gui_init's own convention — never rely
+    // on dt_bauhaus_combobox_set to trigger _profile_changed as a side
+    // effect; it does not reliably do so
+    dt_lib_export_profile_t *chosen = NULL;
+    for(GList *l = ps->profiles; l; l = g_list_next(l))
+    {
+      dt_lib_export_profile_t *prof = l->data;
+      if(prof->pos == target) { chosen = prof; break; }
+    }
+    if(chosen)
+    {
+      dt_conf_set_int(PRINT_CONFIG_PREFIX "icctype", chosen->type);
+      dt_conf_set_string(PRINT_CONFIG_PREFIX "iccprofile", chosen->filename);
+      g_free(ps->v_iccprofile);
+      ps->v_icctype = chosen->type;
+      ps->v_iccprofile = g_strdup(chosen->filename);
+    }
   }
   else
   {
-    // per your decision: stateless reset, not a restore of prior selection
-    dt_bauhaus_combobox_set(ps->profile, 0); // "image settings"
+    // returning to the full list: ps->v_icctype/v_iccprofile are already
+    // correct (unchanged by this direction) — just find where that same
+    // selection landed in the newly-expanded list
+    gboolean found = FALSE;
+    for(GList *l = ps->profiles; l; l = g_list_next(l))
+    {
+      dt_lib_export_profile_t *prof = l->data;
+      if(prof->type == ps->v_icctype
+         && (prof->type != DT_COLORSPACE_FILE
+             || g_strcmp0(prof->filename, ps->v_iccprofile) == 0))
+      {
+        target = prof->pos;
+        found = TRUE;
+        break;
+      }
+    }
+    if(!found)
+    {
+      // safety net only — sRGB/AdobeRGB should always be present, so
+      // this shouldn't normally trigger. If it does, mirror gui_init's
+      // own combo_idx==-1 fallback and reset state to match pos 0.
+      dt_conf_set_int(PRINT_CONFIG_PREFIX "icctype", DT_COLORSPACE_NONE);
+      dt_conf_set_string(PRINT_CONFIG_PREFIX "iccprofile", "");
+      g_free(ps->v_iccprofile);
+      ps->v_icctype = DT_COLORSPACE_NONE;
+      ps->v_iccprofile = g_strdup("");
+    }
   }
+
+  dt_bauhaus_combobox_set(ps->profile, target);
 }
 #endif
 
@@ -1925,6 +1979,12 @@ void view_enter(struct dt_lib_module_t *self,
     {
       // no default printer or default printer not found
       dt_bauhaus_combobox_set(d->printers, 0);
+      // no default printer or default printer not found — fall back to
+      // the first currently-installed printer, and explicitly run setup
+      // rather than relying on the combobox's "value-changed" signal to
+      // fire on a programmatic set
+      if(d->printer_list)
+        _set_printer(self, (const char *)d->printer_list->data);
     }
 
     g_free(default_printer);
