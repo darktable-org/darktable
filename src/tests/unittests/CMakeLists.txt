@@ -1,3 +1,4 @@
+add_subdirectory(common)
 add_subdirectory(iop)
 
 if(USE_AI)
