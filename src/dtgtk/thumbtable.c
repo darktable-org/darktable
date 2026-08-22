@@ -2945,13 +2945,22 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       // (i.e. we don't get empty spaces in the very first row)
       offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
 
+      // A preview/culling transition can restore an offset from a previous
+      // collection.  If that collection was shorter, querying from the stale
+      // row leaves the filemanager blank even though the collection is
+      // populated.  Clamp to the last row before rebuilding the list.
+      const uint32_t nb = dt_collection_get_collected_count();
+      if(nb == 0)
+        offset = 1;
+      else if(offset > nb)
+        offset = (nb - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
+
       // ensure that we don't go up too far (we only want a space
       // <thumb_size at the bottom).
       if(table->offset != offset
          && offset > 1
          && table->thumbs_per_row > 1)
       {
-        const uint32_t nb = dt_collection_get_collected_count();
         // get how many full blank line we have at the bottom
 
         const int move =
