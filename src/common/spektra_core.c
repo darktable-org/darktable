@@ -409,8 +409,8 @@ void sf_unsharp_mask3(float *const buf,
    The reference adds `glare_amount * illuminant_xyz` in XYZ before the output
    matrix. That illuminant is normalized to Y = 1 and the matrix adapts it to the
    output white, so it lands on RGB (1, 1, 1) exactly and can be added as one
-   scalar to all three channels after the matrix. It lands after the output gamut compression: at
-   the default 0.03% the difference is far
+   scalar to all three channels after the matrix. It lands after the output gamut 
+   compression: at the default 0.03% the difference is far
    below a code value, and this keeps the whole spatial stage on one side of
    sf_sim_scan.
 

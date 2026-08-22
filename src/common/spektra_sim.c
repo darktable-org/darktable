@@ -615,10 +615,9 @@ sf_pack_t *sf_pack_load(const char *dir,
      would not notice, and the result would be a pack that loads and renders wrongly.
 
      The field is required, with no "assume 1 when absent" fallback. Every pack
-     the exporter has ever produced carries it, so an absent one is a hand-edited or truncated
-     pack.json -- and
-     silently assuming a format for a file that never declared one is precisely
-     the guess this check exists to avoid. */
+     the exporter has ever produced carries it, so an absent one is a hand-edited or 
+     truncated pack.json -- and silently assuming a format for a file that never declared 
+     one is precisely the guess this check exists to avoid. */
   {
     /* A format mismatch is the one failure the caller can describe usefully to
        a user, and the only one where the advice differs -- fetch a newer pack,
@@ -2959,10 +2958,10 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        surface parameters, as upstream skips it on an empty array.
 
        Off unless the caller asks for it (params->adaptation_surface, default
-       false), the second of the two adaptation switches. The profiles ship this enabled, but the reference runtime's
-       SettingsParams.apply_hanatos2025_adaptation_surface is false and takes
-       precedence there, so applying it whenever a profile carries the
-       coefficients diverges from a reference render by as much as the
+       false), the second of the two adaptation switches. The profiles ship this 
+       enabled, but the reference runtime's SettingsParams.apply_hanatos2025_adaptation_surface
+       is false and takes precedence there, so applying it whenever a profile 
+       carries the coefficients diverges from a reference render by as much as the
        sigmoid's +-2 stop bound wherever the chromaticity is far from the film's
        reference white. Runtime-selectable: the correction is
        the model's own and applies whenever the reference enables it. */
@@ -3091,8 +3090,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     /* particle_scale_sublayers defaults to spektrafilm's own GrainParams
        default [1.0, 0.5, 0.25] (coarsest == 1) when the pack has none for
        this stock, so a film whose curve fit IS multilayer still gets a
-       physically reasonable sub-layer split, and does not silently collapse to one layer for lack
-       of catalogue data. */
+       physically reasonable sub-layer split, and does not silently collapse 
+       to one layer for lack of catalogue data. */
     double particle_scale[SF_GRAIN_MAX_SUBLAYERS] = { 1.0, 0.5, 0.25, 0, 0, 0, 0, 0 };
     int n_scale = 3;
     sf_pack_film_grain(pack, film->stock, s->grain_rms, s->grain_uniformity,
@@ -3201,8 +3200,6 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     if(p->coupler_diffusion_um >= 0.0) s->coupler_diff_um = p->coupler_diffusion_um;
     if(p->coupler_tail_um >= 0.0) s->coupler_tail_um = p->coupler_tail_um;
     if(p->coupler_tail_weight >= 0.0) s->coupler_tail_w = p->coupler_tail_weight;
-    /* a tail needs both a length and a weight to mean anything; drop it whole; half of it live is
-       worse */
     if(s->coupler_tail_w <= 0.0 || s->coupler_tail_um <= 0.0)
     {
       s->coupler_tail_um = 0.0;

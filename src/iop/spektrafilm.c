@@ -3475,8 +3475,8 @@ void color_picker_apply(dt_iop_module_t *self,
    button resets exactly the widgets between this heading and the next one.
 
    No bookkeeping: the widgets are packed into the page box in order, so the
-   callback walks that box from its own header to the following one. A heading is marked with the
-   "sf_section" data key. */
+   callback walks that box from its own header to the following one. A heading is 
+   marked with the "sf_section" data key. */
 static void _section_reset_clicked(GtkButton *button,
                                    dt_iop_module_t *self)
 {

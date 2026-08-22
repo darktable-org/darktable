@@ -238,8 +238,8 @@ static gboolean _peek_lut_hash(const char *packdir,
      them is not a usable pack -- it is a spectral table with no film to apply
      it to, which is what a download looks like partway through and what a
      half-deleted directory looks like afterwards. Accepting it would mean
-     resolving to a directory that then fails at profile load, which reads as the module being
-     broken. */
+     resolving to a directory that then fails at profile load, which reads as 
+     the module being broken. */
   if(!g_file_test(meta, G_FILE_TEST_IS_REGULAR)) goto out;
   if(!g_file_test(profiles, G_FILE_TEST_IS_DIR)) goto out;
 
