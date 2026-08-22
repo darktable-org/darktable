@@ -1815,6 +1815,12 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
   }
 
   g->mask_display = gtk_toggle_button_get_active(button);
+  if (g->mask_display && !self->enabled)
+  {
+    self->enabled = TRUE;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+
   dt_iop_refresh_center(self);
   dt_iop_color_picker_reset(self, TRUE);
 }
