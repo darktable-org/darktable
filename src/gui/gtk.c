@@ -870,11 +870,17 @@ gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
   if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH) return FALSE;
   if(dt_gdk_event_is_scroll_stop(event)) return FALSE;
 #ifdef GDK_WINDOWING_QUARTZ
-  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
-  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to pan so that
-  // two-finger panning works in views like darkroom (both standalone and
-  // interleaved with a pinch-zoom gesture whose translational component macOS
-  // delivers as a separate scroll stream).
+  /* Quartz exposes both the built-in trackpad and ordinary pointing devices
+   * as the Core Pointer (GDK_SOURCE_MOUSE).  In the tested setup, trackpad
+   * gestures arrive as smooth events while a standard mouse produces
+   * discrete events, but that is an observed device/backend convention, not
+   * a portable GDK contract.  Keep this fallback scoped to Quartz: a global
+   * "smooth means touchpad" rule would reintroduce the mouse-wheel regression
+   * fixed by #21765. */
+  // Route every non-ctrl smooth scroll to pan so that two-finger panning works
+  // in views like darkroom (both standalone and interleaved with a pinch-zoom
+  // gesture whose translational component macOS delivers as a separate scroll
+  // stream).
   return TRUE;
 #else
   GdkDevice *const device = dt_gdk_event_get_source_device(event);
