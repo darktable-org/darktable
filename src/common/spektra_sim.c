@@ -2981,9 +2981,11 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
         }
       free(old);
     }
-    /* float copies for the fast per-pixel expose path */
+    /* float copies for the fast per-pixel expose path. ev_scale is NOT copied
+       here: the scan-film exposure correction below still divides it, and a
+       copy taken now would be the value from before that. It is taken once at
+       the end of the build instead, where nothing can change it again. */
     for(int c = 0; c < 9; c++) s->m_in_f[c] = (float)s->m_in[c];
-    s->ev_scale_f = (float)s->ev_scale;
     s->tc_lut_f = malloc((size_t)n * n * 3 * sizeof(float));
     if(s->tc_lut_f)
       for(size_t i = 0; i < (size_t)n * n * 3; i++)
@@ -3522,6 +3524,14 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
       s->ev_scale /= exposure_correction; /* raw *= 1/correction */
     }
   }
+
+  /* Every write to ev_scale has happened by here -- the base exposure
+     compensation, and for a scan-film positive the midgray correction above.
+     The per-pixel expose path reads this float copy, so taking it any earlier
+     applies the correction on one path and not the other: sf_sim_gpu_export()
+     converts from the double, so the GPU applied it while the CPU used a stale
+     copy, and the same edit came out brighter without OpenCL. */
+  s->ev_scale_f = (float)s->ev_scale;
 
   /* ----- runtime 3D tables ------------------------------------------------ */
   if(s->lut_steps >= 2)
