@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -252,6 +252,9 @@ dt_image_t *dt_image_cache_get(const dt_imgid_t imgid,
     return NULL;
 
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
+  if(!entry)
+    return NULL;
+
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
