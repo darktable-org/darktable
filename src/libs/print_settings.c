@@ -1042,6 +1042,11 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   dt_control_add_job(DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
+/* forward declarations to avoid implicit function warnings when calling
+   _paper_changed/_media_changed before their definitions */
+static void _paper_changed(GtkWidget *combo, const dt_lib_module_t *self);
+static void _media_changed(GtkWidget *combo, const dt_lib_module_t *self);
+
 static void _set_printer(const dt_lib_module_t *self,
                          const char *printer_name)
 {
@@ -1115,6 +1120,7 @@ static void _set_printer(const dt_lib_module_t *self,
 #endif
 
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
+
 #ifdef _WIN32
   // free old context
   if(ps->settings_ctx)
@@ -1126,8 +1132,48 @@ static void _set_printer(const dt_lib_module_t *self,
     // sync the cached DEVMODE to the printer info to align state
     dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx);
     dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
-  }
 
+    /* Some printers may alter the selected paper in the cached DEVMODE after 
+    the GUI combobox is updated. Ensure the papers combobox selection and internal
+    state/preview reflect the possibly-updated ps->prt.paper. */
+    if(ps->paper_list)
+    {
+      int match = -1;
+      int idx = 0;
+      double best_delta = 1e6;
+      for(const GList *l = ps->paper_list; l; l = g_list_next(l), idx++)
+      {
+        const dt_paper_info_t pp = l->data;
+        if(pp && ps->prt.paper.common_name
+          && g_strcmp0(pp->common_name, ps->prt.paper.common_name) == 0)
+        {
+          match = idx;
+          best_delta = 0.0;
+          break;
+        }
+        if(pp)
+        {
+          double delta = fabs(pp->width - ps->prt.paper.width) + fabs(pp->height - ps->prt.paper.height);
+          if(delta < best_delta)
+          {
+            best_delta = delta;
+            match = idx;
+          }
+        }
+      }
+      /* Accept best match only if within a small tolerance (2 mm) */
+      if(match >= 0 && best_delta <= 2.0)
+      {
+        dt_bauhaus_combobox_set(ps->papers, match);
+        _paper_changed(ps->papers, self);
+      }
+      else
+      {
+        / No close match: at least refresh the preview to reflect the new pinfo */
+        dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
+      }
+    }
+  }
 }
 //Callback when printer details are ready (Windows only)
 
