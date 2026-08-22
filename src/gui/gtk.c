@@ -1269,6 +1269,191 @@ static void _gui_switch_view_key_accel_callback(dt_action_t *action)
   dt_ctl_switch_mode_to(action->id);
 }
 
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+/* GTK3's Quartz backend reports Command as MOD2, while GTK4 uses META.
+ * Keep the platform mapping here instead of teaching every editable widget
+ * about the backend-specific modifier. */
+static gboolean _osx_command_modifier(GdkModifierType state)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  const GdkModifierType command = GDK_META_MASK;
+#else
+  const GdkModifierType command = GDK_MOD2_MASK;
+#endif
+
+  return (state & command)
+      && !(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
+}
+
+static gboolean _osx_edit_action(GtkWidget *focus,
+                                 const guint keyval,
+                                 const GdkModifierType state)
+{
+  if(!_osx_command_modifier(state))
+    return FALSE;
+
+  const guint key = gdk_keyval_to_lower(keyval);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  const char *action = NULL;
+  switch(key)
+  {
+    case GDK_KEY_c: action = "clipboard.copy"; break;
+    case GDK_KEY_x: action = "clipboard.cut"; break;
+    case GDK_KEY_v: action = "clipboard.paste"; break;
+    case GDK_KEY_a: action = "selection.select-all"; break;
+    default: return FALSE;
+  }
+
+  /* GTK4's GtkText actions are the semantic edit operations.  Activating
+   * them on the focused widget keeps IME, selection and clipboard ownership
+   * inside GTK instead of synthesizing a Ctrl key event. */
+  return gtk_widget_activate_action(focus, action, NULL);
+#else
+  if(GTK_IS_EDITABLE(focus))
+  {
+    GtkEditable *editable = GTK_EDITABLE(focus);
+    switch(key)
+    {
+      case GDK_KEY_c: gtk_editable_copy_clipboard(editable); return TRUE;
+      case GDK_KEY_x: gtk_editable_cut_clipboard(editable); return TRUE;
+      case GDK_KEY_v: gtk_editable_paste_clipboard(editable); return TRUE;
+      case GDK_KEY_a: gtk_editable_select_region(editable, 0, -1); return TRUE;
+      default: return FALSE;
+    }
+  }
+  else if(GTK_IS_TEXT_VIEW(focus))
+  {
+    GtkTextView *text_view = GTK_TEXT_VIEW(focus);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
+    GtkClipboard *clipboard = gtk_widget_get_clipboard(focus, GDK_SELECTION_CLIPBOARD);
+    switch(key)
+    {
+      case GDK_KEY_c:
+        gtk_text_buffer_copy_clipboard(buffer, clipboard);
+        return TRUE;
+      case GDK_KEY_x:
+        gtk_text_buffer_cut_clipboard(buffer, clipboard,
+                                      gtk_text_view_get_editable(text_view));
+        return TRUE;
+      case GDK_KEY_v:
+        gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL,
+                                        gtk_text_view_get_editable(text_view));
+        return TRUE;
+      case GDK_KEY_a:
+      {
+        GtkTextIter start, end;
+        gtk_text_buffer_get_bounds(buffer, &start, &end);
+        gtk_text_buffer_select_range(buffer, &end, &start);
+        return TRUE;
+      }
+      default: return FALSE;
+    }
+  }
+#endif
+
+  return FALSE;
+}
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _osx_edit_key_pressed(GtkEventControllerKey *controller,
+                                      guint keyval,
+                                      guint keycode,
+                                      GdkModifierType state,
+                                      gpointer user_data)
+{
+  GtkWidget *window = dt_gui_get_widget(controller);
+  GtkWidget *focus = gtk_root_get_focus(GTK_ROOT(window));
+  return focus ? _osx_edit_action(focus, keyval, state) : GDK_EVENT_PROPAGATE;
+}
+#else
+static gboolean _osx_edit_key_pressed(GtkWidget *window,
+                                      GdkEventKey *event,
+                                      gpointer user_data)
+{
+  GtkWidget *focus = gtk_window_get_focus(GTK_WINDOW(window));
+  guint keyval;
+  GdkModifierType state;
+  gdk_event_get_keyval((GdkEvent *)event, &keyval);
+  gdk_event_get_state((GdkEvent *)event, &state);
+  return focus ? _osx_edit_action(focus, keyval, state) : FALSE;
+}
+#endif
+
+static void _osx_connect_edit_commands(GtkWindow *window)
+{
+  if(g_object_get_data(G_OBJECT(window), "dt-osx-edit-commands"))
+    return;
+  g_object_set_data(G_OBJECT(window), "dt-osx-edit-commands", window);
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GtkEventController *controller = gtk_event_controller_key_new();
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_CAPTURE);
+  dt_gui_add_controller(GTK_WIDGET(window), controller);
+  g_signal_connect(controller, "key-pressed",
+                   G_CALLBACK(_osx_edit_key_pressed), NULL);
+#else
+  g_signal_connect(window, "key-press-event",
+                   G_CALLBACK(_osx_edit_key_pressed), NULL);
+#endif
+}
+
+static gboolean _osx_realize_hook(GSignalInvocationHint *ihint,
+                                  guint n_param_values,
+                                  const GValue *param_values,
+                                  gpointer data)
+{
+  if(n_param_values > 0)
+  {
+    GObject *object = g_value_get_object(&param_values[0]);
+    if(object && GTK_IS_WINDOW(object))
+      _osx_connect_edit_commands(GTK_WINDOW(object));
+  }
+  return TRUE;
+}
+
+static gulong _osx_realize_hook_id;
+static guint _osx_realize_signal_id;
+
+static void _osx_init_edit_commands(void)
+{
+  _osx_realize_signal_id = g_signal_lookup("realize", GTK_TYPE_WIDGET);
+  _osx_realize_hook_id = g_signal_add_emission_hook(_osx_realize_signal_id, 0,
+                                                     _osx_realize_hook, NULL, NULL);
+
+  GList *windows = gtk_window_list_toplevels();
+  for(GList *iter = windows; iter; iter = g_list_next(iter))
+    _osx_connect_edit_commands(GTK_WINDOW(iter->data));
+  g_list_free(windows);
+}
+
+#endif
+
+/* The window-level "key-press-event" bridge above only sees keys in windows
+ * that nothing else intercepts first -- dialogs, essentially.  darktable
+ * connects dt_shortcut_dispatcher() to the *generic* "event" signal of the
+ * main window (and of the darkroom and bauhaus popups), and GTK3 emits
+ * "event" before the type-specific signal: a TRUE return there suppresses
+ * "key-press-event" entirely.  The dispatcher also forwards the event to the
+ * focus widget itself, so an editable in the main window resolves the key
+ * long before this file gets a chance at it.  Give the dispatcher an explicit
+ * hook so the platform mapping still lives here, and the ordering is
+ * deterministic instead of dependent on signal connection order. */
+gboolean dt_gui_osx_edit_command(GtkWidget *focus,
+                                 GdkEvent *event)
+{
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+  if(!focus || dt_gdk_event_get_type(event) != GDK_KEY_PRESS)
+    return FALSE;
+
+  return _osx_edit_action(focus, dt_gdk_event_get_keyval(event),
+                          dt_gdk_event_get_state(event));
+#else
+  (void)focus;
+  (void)event;
+  return FALSE;
+#endif
+}
+
 #ifdef MAC_INTEGRATION
 static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
                                    gpointer user_data)
@@ -1633,6 +1818,13 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget)
 
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+  if(_osx_realize_hook_id)
+  {
+    g_signal_remove_emission_hook(_osx_realize_signal_id, _osx_realize_hook_id);
+    _osx_realize_hook_id = 0;
+  }
+#endif
   if(gui->tooltip_css_provider)
   {
 #if GTK_CHECK_VERSION(4, 0, 0)
@@ -1733,6 +1925,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   //init overlay colors
   dt_guides_set_overlay_colors();
+
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+  /* Install this before constructing the rest of the UI so dialogs and
+   * auxiliary windows created later receive the same semantic edit bridge. */
+  _osx_init_edit_commands();
+#endif
 
   // Initializing widgets
   _init_widgets(gui);
