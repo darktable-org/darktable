@@ -29,6 +29,20 @@
  * handling is clamp-to-edge.
  */
 
+/* -fno-math-errno, as a source pragma rather than a CMake compile option: the
+   option is GCC and Clang spelling and would have to be guarded by compiler id
+   in CMakeLists, and a guard there silently drops the optimisation for any
+   compiler the condition does not name. __GNUC__ answers the same question at
+   the point where it matters, and matches how the rest of the tree does it
+   (see common/box_filters.cc).
+
+   The gain is around the powf/exp2f/log10f calls in the per-pixel paths: told
+   that they never set errno, the compiler is free to inline and vectorise them
+   instead of treating each as a call with side effects. */
+#ifdef __GNUC__
+#pragma GCC optimize("no-math-errno")
+#endif
+
 #include "common/darktable.h"
 #include "common/imagebuf.h"
 
