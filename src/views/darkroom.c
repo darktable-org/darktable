@@ -1822,10 +1822,16 @@ static void skip_b_key_accel_callback(dt_action_t *action)
   _dev_jump_image(dt_action_view(action)->data, -1, TRUE);
 }
 
-static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
-                                                     gpointer data)
+static void _darkroom_ui_redraw_callback(gpointer instance,
+                                          gpointer data)
 {
   dt_control_queue_redraw_center();
+
+  /* The darkroom image repaint does not invalidate the custom-drawn buttons
+   * in the bottom toolboxes.  Hovering a button does, which made the controls
+   * appear to recover only when the pointer passed over them. */
+  gtk_widget_queue_draw(darktable.view_manager->view_toolbox);
+  gtk_widget_queue_draw(darktable.view_manager->module_toolbox);
 }
 
 // Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
@@ -3913,8 +3919,10 @@ void enter(dt_view_t *self)
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   /* connect to ui pipe finished signal for redraw */
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                           _darkroom_ui_redraw_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                           _darkroom_ui_pipe_finish_signal_callback);
+                           _darkroom_ui_redraw_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
                            _darkroom_ui_preview2_pipe_finish_signal_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TROUBLE_MESSAGE,
