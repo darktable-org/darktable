@@ -31,7 +31,12 @@ Current status as implemented by Jandren:
 - Local contrast in log space based on the eigf surface blur filter.
 */
 
-
+/* Work around a compiler bug, see
+   https://github.com/darktable-org/darktable/issues/21801
+*/
+#if __GNUC__ == 16
+#pragma GCC optimize ("no-ipa-cp")
+#endif
 
 #include "common/extra_optimizations.h"
 
