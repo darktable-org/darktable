@@ -1521,29 +1521,53 @@ static void bilinear_2d_clamped(double out[3],
   }
 }
 
-/* Fast bilinear 2D on a float LUT — replaces Mitchell 4×4 cubic for the hot
-   TC upsampling path. The 192² grid is fine enough that the cubic-vs-linear
-   difference between grid points is invisible. ~48 ops vs ~12 ops per pixel. */
-static void bilinear_interp_2d_f(float out[3],
-                                 const float *lut,
-                                 int L,
-                                 float x,
-                                 float y)
+/* [fi] Mitchell-Netravali 2D cubic on a float LUT with reflected bounds -- the
+   float twin of cubic_interp_2d() above, sharing its weights and its
+   safe_index() reflection.
+
+   The reflection is the part that matters. tri2quad maps the spectral locus to
+   the edge of the tc table, so every saturated or out-of-locus chromaticity
+   samples outside it, and reflecting continues the gradient there where
+   clamping flattens it -- which is exactly where the film response is steepest.
+   The OpenCL kernel (sf_cubic2d) and the reference (apply_lut_cubic_2d in
+   spectral_upsampling.py) both use this kernel, so anything else here renders
+   differently depending on which device ran. */
+static void cubic_interp_2d_f(float out[3],
+                              const float *lut,
+                              int L,
+                              float x,
+                              float y)
 {
-  x = CLAMP(x, 0.0f, (float)(L - 1));
-  y = CLAMP(y, 0.0f, (float)(L - 1));
-  const int x0 = (int)x, y0 = (int)y;
-  const int x1 = x0 < L - 1 ? x0 + 1 : x0;
-  const int y1 = y0 < L - 1 ? y0 + 1 : y0;
-  const float tx = x - x0, ty = y - y0;
-  for(int c = 0; c < 3; c++)
+  int xb, yb;
+  double xf, yf;
+  cubic_base_fraction((double)x, L, &xb, &xf);
+  cubic_base_fraction((double)y, L, &yb, &yf);
+  double wx[4], wy[4];
+  for(int i = 0; i < 4; i++)
   {
-    const float v00 = lut[((size_t)x0 * L + y0) * 3 + c];
-    const float v01 = lut[((size_t)x0 * L + y1) * 3 + c];
-    const float v10 = lut[((size_t)x1 * L + y0) * 3 + c];
-    const float v11 = lut[((size_t)x1 * L + y1) * 3 + c];
-    out[c] = (v00 * (1.0f - ty) + v01 * ty) * (1.0f - tx) + (v10 * (1.0f - ty) + v11 * ty) * tx;
+    wx[i] = mitchell_weight(xf + 1.0 - i);
+    wy[i] = mitchell_weight(yf + 1.0 - i);
   }
+  double acc[3] = { 0, 0, 0 }, wsum = 0.0;
+  for(int i = 0; i < 4; i++)
+  {
+    const int xi = safe_index(xb - 1 + i, L);
+    for(int j = 0; j < 4; j++)
+    {
+      const int yj = safe_index(yb - 1 + j, L);
+      const double w = wx[i] * wy[j];
+      wsum += w;
+      const float *px = lut + ((size_t)xi * L + yj) * 3;
+      acc[0] += w * px[0];
+      acc[1] += w * px[1];
+      acc[2] += w * px[2];
+    }
+  }
+  if(wsum != 0.0)
+    for(int c = 0; c < 3; c++) acc[c] /= wsum;
+  out[0] = (float)acc[0];
+  out[1] = (float)acc[1];
+  out[2] = (float)acc[2];
 }
 
 /* Trilinear 3D on a float LUT — replaces PCHIP 3D cubic for the hot scan/print
@@ -2639,7 +2663,7 @@ static void expose_pixel_f(const float m_in[9],
   float tc[2];
   tri2quad_f(tc, xy);
   const float scale = (float)(tc_n - 1);
-  bilinear_interp_2d_f(raw, tc_lut, tc_n, tc[0] * scale, tc[1] * scale);
+  cubic_interp_2d_f(raw, tc_lut, tc_n, tc[0] * scale, tc[1] * scale);
   const float bb = isfinite(b) ? b : 0.0f;
   for(int c = 0; c < 3; c++) raw[c] *= bb;
 }
@@ -3598,7 +3622,7 @@ void sf_sim_expose(const sf_sim_t *sim,
         float tc[2];
         tri2quad_f(tc, xy);
         const float scale = (float)(sim->tc_n - 1);
-        bilinear_interp_2d_f(r, sim->tc_lut_f, sim->tc_n, tc[0] * scale, tc[1] * scale);
+        cubic_interp_2d_f(r, sim->tc_lut_f, sim->tc_n, tc[0] * scale, tc[1] * scale);
         const float bb = isfinite(b) ? b : 0.0f;
         for(int c = 0; c < 3; c++) out[k * 3 + c] = r[c] * bb * sim->ev_scale_f;
       }
