@@ -3081,8 +3081,17 @@ static void _update_data_row(dt_iop_module_t *self)
   if(state == SF_FETCH_RUNNING)
   {
     g->data_last_state = state;
+    /* Percentage first. The message that follows it is a filename and a file
+       count, which grows and shrinks as the download moves between files, so a
+       trailing percentage sits at a different place on every refresh and has to
+       be hunted for. Leading, it is always in the same column. Progress is -1
+       while a step has no measurable fraction, in which case there is nothing
+       to put in front and the message stands alone. */
     char line[320];
-    snprintf(line, sizeof line, "%s  %d%%", msg, (int)(progress * 100.0 + 0.5));
+    if(progress >= 0.0)
+      snprintf(line, sizeof line, "%3d%%  %s", (int)(progress * 100.0 + 0.5), msg);
+    else
+      g_strlcpy(line, msg, sizeof line);
     gtk_label_set_text(GTK_LABEL(g->data_status), line);
     gtk_button_set_label(GTK_BUTTON(g->data_button), _("cancel"));
     gtk_widget_set_sensitive(g->data_button, TRUE);
