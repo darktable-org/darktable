@@ -1858,18 +1858,49 @@ static void _darkroom_queue_redraw_tree(GtkWidget *widget)
 #endif
 }
 
+static guint _darkroom_footer_redraw_source = 0;
+
+static void _darkroom_queue_footer_redraw(void)
+{
+  GtkWidget *const widgets[] = {
+    darktable.view_manager->view_toolbox,
+    darktable.view_manager->module_toolbox,
+    GTK_WIDGET(dt_ui_get_container(darktable.gui->ui,
+                                    DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER))
+  };
+
+  for(guint i = 0; i < G_N_ELEMENTS(widgets); i++)
+    _darkroom_queue_redraw_tree(widgets[i]);
+}
+
+static gboolean _darkroom_footer_redraw_idle(gpointer user_data)
+{
+  _darkroom_footer_redraw_source = 0;
+
+  /* The image-changed signal has several handlers which can resize or
+   * invalidate the footer after this callback runs.  Do not redraw against
+   * those intermediate allocations. */
+  if(dt_view_get_current() != DT_VIEW_DARKROOM) return G_SOURCE_REMOVE;
+
+  _darkroom_queue_footer_redraw();
+  return G_SOURCE_REMOVE;
+}
+
+static void _darkroom_schedule_footer_redraw(void)
+{
+  /* Coalesce image-change and pipe-finished requests.  A low-priority idle
+   * runs after the high-priority signal callbacks and lets GTK settle any
+   * footer layout changes before invalidating the custom-drawn children. */
+  if(!_darkroom_footer_redraw_source)
+    _darkroom_footer_redraw_source =
+      g_idle_add_full(G_PRIORITY_LOW, _darkroom_footer_redraw_idle, NULL, NULL);
+}
+
 static void _darkroom_ui_redraw_callback(gpointer instance,
                                           gpointer data)
 {
   dt_control_queue_redraw_center();
-
-  /* Image changes can invalidate the footer before the asynchronous pipe
-   * completion arrives.  Redraw the actual controls as well as their boxes so
-   * they remain visible while the new image is loading. */
-  _darkroom_queue_redraw_tree(darktable.view_manager->view_toolbox);
-  _darkroom_queue_redraw_tree(darktable.view_manager->module_toolbox);
-  _darkroom_queue_redraw_tree(GTK_WIDGET(dt_ui_get_container(
-    darktable.gui->ui, DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER)));
+  _darkroom_schedule_footer_redraw();
 }
 
 // Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
