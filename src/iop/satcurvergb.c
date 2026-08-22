@@ -660,7 +660,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     }
     else
     {
-      dt_control_log(_("satcurve: guided filter failed to allocate memory, disabling it for this run"));
+      dt_control_log(_("saturation curve: guided filter failed to allocate memory, disabling it for this run"));
     }
   }
 
@@ -730,7 +730,8 @@ static cl_int _satcurve_guided_filter_cl(const dt_iop_satcurve_global_data_t *gd
   const int ds_height = (int)((float)height / scaling);
 
   if (ds_width < 1 || ds_height < 1)
-    return DT_OPENCL_DEFAULT_ERROR;
+    return dt_opencl_enqueue_copy_image(devid, mask_in, mask_out,
+                                        (size_t[]){0, 0, 0}, (size_t[]){0, 0, 0}, (size_t[]){width, height, 1});
 
   cl_mem ds_image = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
   cl_mem ds_blend_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
@@ -982,7 +983,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
       {
         // fallback: show the unfiltered mask instead of aborting the preview
-        dt_control_log(_("satcurve: guided filter failed to allocate memory, "
+        dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
                          "disabling it for this preview"));
         dt_opencl_release_mem_object(mask_scalar_cl);
         dt_opencl_release_mem_object(mask_filtered_cl);
@@ -1065,7 +1066,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     {
       // fallback: proceed without guided filter instead of aborting the
       // whole correction, mirroring process() on the CPU
-      dt_control_log(_("satcurve: guided filter failed to allocate memory, "
+      dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
                        "disabling it for this run"));
       dt_opencl_release_mem_object(mask_scalar_cl);
       dt_opencl_release_mem_object(mask_filtered_cl);
@@ -1124,7 +1125,7 @@ error:
 void init_global(dt_iop_module_so_t *self)
 {
   const int program = 42;     // satcurve.cl in programs.conf
-  const int program_fgf = 43; // fast_guided_filter_scalar.cl in programs.conf
+  const int program_fgf = 43; // fast_guided_filter.cl in programs.conf
 
   dt_iop_satcurve_global_data_t *gd = malloc(sizeof(dt_iop_satcurve_global_data_t));
   self->data = gd;
