@@ -95,6 +95,11 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
 /** write blob to file exif. merges with existing exif information.*/
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
+/** stamp the file as neural restore output. call AFTER
+ * dt_exif_write_blob(), which would otherwise overwrite it with the
+ * source image's metadata. */
+gboolean dt_exif_xmp_write_neural_restore(const char *path, const char *task);
+
 /** write xmp sidecar file. */
 /** if force_write is FALSE, the current contents of the sidecar file are compared against what
     would be written, and the write is skipped if they are the same.  This preserves the sidecar
