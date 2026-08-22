@@ -872,10 +872,13 @@ static gboolean _event_image_draw(GtkWidget *widget,
         _thumb_resize_overlays(thumb);
     }
 
-    // if we don't have the right size of the image now, we reload it again
+    // A smaller mipmap is a usable fallback while the requested level is
+    // loading.  Keep retrying so it can be replaced, but do not cover the
+    // displayed image with a permanent "working..." message when a surface
+    // is already available (notably when zooming a full preview to 100%).
     if(res != DT_VIEW_SURFACE_OK)
     {
-      thumb->busy = TRUE;
+      thumb->busy = (res != DT_VIEW_SURFACE_SMALLER || !thumb->img_surf);
       if(!thumb->expose_again_timeout_id)
         thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
     }
