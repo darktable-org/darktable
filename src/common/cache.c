@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -136,6 +136,14 @@ dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache,
                                            const char *file,
                                            const int line)
 {
+  if(!cache)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_cache_get] called with NULL cache, this should not happen; "
+             "caller: %s, %d", file, line);
+    return NULL;
+  }
+
   gpointer orig_key, value;
   const double start = dt_get_debug_wtime();
 restart:
