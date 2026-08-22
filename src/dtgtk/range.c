@@ -1509,6 +1509,7 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
 
 static void _event_band_motion_cb(GtkEventControllerMotion *controller, double x, double y, GtkDarktableRangeSelect *range)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   range->current_x_px = x - range->alloc_padding.x;
 
   // if we are outside the graph, don't go further
@@ -1516,7 +1517,7 @@ static void _event_band_motion_cb(GtkEventControllerMotion *controller, double x
   if(!inside)
   {
     range->mouse_inside = HOVER_OUTSIDE;
-    dt_control_change_cursor("default");
+    dt_gui_cursor_set(widget, NULL, "range-select");
     _current_hide_popup(range);
     return;
   }
@@ -1538,19 +1539,19 @@ static void _event_band_motion_cb(GtkEventControllerMotion *controller, double x
      && fabs(range->current_x_px - smin_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MIN;
-    dt_control_change_cursor("w-resize");
+    dt_gui_cursor_set(widget, "w-resize", "range-select");
   }
   else if(range->allow_resize
           && !range->set_selection
           && fabs(range->current_x_px - smax_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MAX;
-    dt_control_change_cursor("e-resize");
+    dt_gui_cursor_set(widget, "e-resize", "range-select");
   }
   else
   {
     range->mouse_inside = HOVER_INSIDE;
-    dt_control_change_cursor("default");
+    dt_gui_cursor_set(widget, NULL, "range-select");
   }
   gtk_widget_queue_draw(range->band);
 }
@@ -1558,7 +1559,7 @@ static void _event_band_motion_cb(GtkEventControllerMotion *controller, double x
 static void _event_band_leave_cb(GtkEventControllerMotion *controller, GtkDarktableRangeSelect *range)
 {
   range->mouse_inside = HOVER_OUTSIDE;
-  dt_control_change_cursor("default");
+  dt_gui_cursor_set(dt_gui_get_widget(controller), NULL, "range-select");
   _current_hide_popup(range);
 
   gtk_widget_queue_draw(range->band);

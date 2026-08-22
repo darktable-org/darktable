@@ -1268,6 +1268,7 @@ static void _lib_timeline_motion_notify_cb(GtkEventControllerMotion *controller,
                                               gdouble y,
                                               dt_lib_module_t *self)
 {
+  GtkWidget *widget = dt_gui_get_widget(controller);
   dt_lib_timeline_t *strip = self->data;
 
   strip->in = TRUE;
@@ -1289,22 +1290,22 @@ static void _lib_timeline_motion_notify_cb(GtkEventControllerMotion *controller,
   {
     strip->stop_x = x;
     strip->stop_t = _time_get_from_pos(x, strip);
-    dt_control_change_cursor("default");
+    dt_gui_cursor_set(widget, NULL, "timeline");
   }
   else
   {
     // we change the cursor if we are close enough of a selection limit
     if(x - strip->start_x < 2 && x - strip->start_x > -2)
     {
-      dt_control_change_cursor("w-resize");
+      dt_gui_cursor_set(widget, "w-resize", "timeline");
     }
     else if(x - strip->stop_x < 2 && x - strip->stop_x > -2)
     {
-      dt_control_change_cursor("e-resize");
+      dt_gui_cursor_set(widget, "e-resize", "timeline");
     }
     else
     {
-      dt_control_change_cursor("default");
+      dt_gui_cursor_set(widget, NULL, "timeline");
     }
   }
   gtk_widget_queue_draw(strip->timeline);
@@ -1374,6 +1375,7 @@ static void _lib_timeline_mouse_leave_cb(GtkEventControllerMotion *controller,
   dt_lib_timeline_t *strip = self->data;
 
   strip->in = FALSE;
+  dt_gui_cursor_set(dt_gui_get_widget(controller), NULL, "timeline");
 
   gtk_widget_queue_draw(strip->timeline);
 }
