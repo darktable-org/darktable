@@ -3432,17 +3432,16 @@ void color_picker_apply(dt_iop_module_t *self,
      above in gui_init). */
   const float rgb_max[3] = { self->picked_color_max[0], self->picked_color_max[1],
                             self->picked_color_max[2] };
-  /* Target: land well past the compressor's knee threshold (SF_OUT_LIGHT_T
-     = 0.7 in spektra_sim.c), close to but not at its asymptotic limit
-     (1.0). 0.80 (only 0.10 above the threshold) turned out too
-     conservative in practice -- left visible unused headroom in the
-     histogram and read as noticeably dark, since the knee's own
-     compression only really starts doing useful work well above its
-     threshold. 0.90 still left some headroom on further testing; 0.95
-     (only 0.05 short of the limit) uses close to the full available
-     range. The knee handles any input gracefully by design, so there's no
-     hard-clipping risk in pushing this close to it. */
-  const float target_L = 0.95f;
+  /* Where the picked highlight lands, in the probe's lightness. Above the
+     compressor's knee threshold (SF_OUT_LIGHT_T = 0.7) and short of its
+     asymptotic limit of 1.0: the knee only starts doing useful work well above
+     its threshold, so aiming just past it leaves visible unused headroom and
+     reads dark. Successive values each left some, 0.95 included. 0.97 is close
+     enough to the limit to use nearly all of the range while still landing on
+     the curve rather than at its asymptote, where the solver's bisection would
+     have little gradient to work with. Nothing hard-clips at any target -- the
+     knee is asymptotic by construction. */
+  const float target_L = 0.97f;
   const float new_boost = _solve_boost_for_lightness(sim, rgb_max, target_L);
 
   if(d_tmp.gpu) sf_sim_gpu_free(d_tmp.gpu);
