@@ -35,9 +35,11 @@ typedef struct dt_lib_log_history_t
 
 static void _populate_list_box(dt_lib_module_t *self);
 static void _log_redraw_callback(gpointer instance, dt_lib_module_t *self);
-static void _button_press_cb(GtkGestureSingle *gesture, int n_press,
-                               double x, double y,
-                               dt_lib_module_t *self);
+static void _toggle_popover(dt_lib_module_t *self);
+static void _button_clicked_cb(GtkButton *button, dt_lib_module_t *self);
+static void _button_secondary_press_cb(GtkGestureSingle *gesture, int n_press,
+                                        double x, double y,
+                                        dt_lib_module_t *self);
 static gboolean _suppress_popup(GtkWidget *widget,
                                 gpointer user_data);
 static void _label_button_press_cb(GtkGestureSingle *gesture, int n_press,
@@ -142,24 +144,31 @@ static void _label_button_press_cb(GtkGestureSingle *gesture, int n_press,
     dt_gui_claim(gesture);
 }
 
-static void _button_press_cb(GtkGestureSingle *gesture, int n_press,
-                               double x, double y,
-                               dt_lib_module_t *self)
+static void _toggle_popover(dt_lib_module_t *self)
 {
-  const guint button = gtk_gesture_single_get_current_button(gesture);
-  if(button == GDK_BUTTON_PRIMARY || button == GDK_BUTTON_SECONDARY)
+  dt_lib_log_history_t *d = self->data;
+  if(gtk_widget_is_visible(d->popover))
+    gtk_popover_popdown(GTK_POPOVER(d->popover));
+  else
   {
-    dt_lib_log_history_t *d = self->data;
-    if(gtk_widget_is_visible(d->popover))
-      gtk_popover_popdown(GTK_POPOVER(d->popover));
-    else
-    {
-      _populate_list_box(self);
-      gtk_popover_popup(GTK_POPOVER(d->popover));
-      // hide unread indicator now that the user sees the log
-      gtk_widget_hide(d->badge);
-    }
+    _populate_list_box(self);
+    gtk_popover_popup(GTK_POPOVER(d->popover));
+    // hide unread indicator now that the user sees the log
+    gtk_widget_hide(d->badge);
   }
+}
+
+static void _button_clicked_cb(GtkButton *button, dt_lib_module_t *self)
+{
+  _toggle_popover(self);
+}
+
+static void _button_secondary_press_cb(GtkGestureSingle *gesture, int n_press,
+                                        double x, double y,
+                                        dt_lib_module_t *self)
+{
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY)
+    _toggle_popover(self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -170,6 +179,8 @@ void gui_init(dt_lib_module_t *self)
   d->button = dtgtk_button_new_full(dtgtk_cairo_paint_messages, CPF_NONE, NULL,
       &(dtgtk_button_config_t){
         .tooltip = _("view log history"),
+        .clicked_cb = G_CALLBACK(_button_clicked_cb),
+        .clicked_data = self,
       });
   dt_gui_add_help_link(d->button, "message_log");
 
@@ -207,7 +218,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->scrolled), d->list_box);
   gtk_container_add(GTK_CONTAINER(d->popover), d->scrolled);
 
-  dt_gui_connect_click_all(d->button, _button_press_cb, NULL, self);
+  /* GtkButton owns the primary activation gesture.  Keep the external
+   * controller restricted to secondary clicks so it cannot race the native
+   * GtkButton::clicked signal. */
+  dt_gui_connect_click_secondary(d->button, _button_secondary_press_cb, NULL, self);
 
   self->widget = dt_gui_hbox(overlay);
 
