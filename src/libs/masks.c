@@ -119,6 +119,29 @@ int position(const dt_lib_module_t *self)
   return 10;
 }
 
+// rows hold module pointers, so a store whose modules are gone must be rebuilt
+// rather than served from the structure hash
+static void _invalidate_tree_cache(dt_lib_module_t *self)
+{
+  dt_lib_masks_t *lm = self->data;
+  if(lm) lm->tree_hash_valid = FALSE;
+}
+
+static void _image_changed_callback(gpointer instance G_GNUC_UNUSED,
+                                    dt_lib_module_t *self)
+{
+  // image change frees all non-base instances
+  _invalidate_tree_cache(self);
+}
+
+void view_enter(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view G_GNUC_UNUSED,
+                struct dt_view_t *new_view G_GNUC_UNUSED)
+{
+  // leaving darkroom freed every module
+  _invalidate_tree_cache(self);
+}
+
 static gboolean _selected_masks_are_used(GtkTreeModel *model,
                                          GList *selected,
                                          dt_iop_module_t *module)
@@ -611,6 +634,21 @@ static void _update_all_properties(dt_lib_masks_t *self)
   _resize_update(self);
 }
 
+// TREE_MODULE holds raw dt_iop_module_t pointers, which die on image change and
+// on darkroom leave while the store lives on; dereferencing one (module->flags(),
+// module->blend_data) is then a use-after-free.
+static gboolean _module_is_live(const dt_iop_module_t *module)
+{
+  if(!module) return FALSE;
+
+  for(const GList *mods = darktable.develop->iop; mods; mods = g_list_next(mods))
+  {
+    if(mods->data == module)
+      return TRUE;
+  }
+  return FALSE;
+}
+
 static void _lib_masks_get_values(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   dt_iop_module_t **module,
@@ -618,7 +656,12 @@ static void _lib_masks_get_values(GtkTreeModel *model,
                                   dt_mask_id_t *formid)
 {
   // returns module & groupid & formid if requested
-  if(module ) gtk_tree_model_get(model, iter, TREE_MODULE, module, -1);
+  if(module)
+  {
+    gtk_tree_model_get(model, iter, TREE_MODULE, module, -1);
+    if(!_module_is_live(*module))
+      *module = NULL;
+  }
   if(groupid) gtk_tree_model_get(model, iter, TREE_GROUPID, groupid, -1);
   if(formid ) gtk_tree_model_get(model, iter, TREE_FORMID, formid, -1);
 }
@@ -1847,6 +1890,8 @@ GList *_lib_masks_get_selected(dt_lib_module_t *self)
 // opacity, state, size, feather, rotation - so editing them (e.g. dragging a
 // slider) leaves the hash unchanged and gui_update can refresh the rows in place
 // instead of recreating the store, which would reset the panel scroll.
+// Blind to module lifetime though: the same image re-entered, or a duplicate,
+// hashes identical while every module was freed - see _invalidate_tree_cache.
 static guint _forms_structure_hash(void)
 {
   dt_develop_t *dev = darktable.develop;
@@ -1987,6 +2032,8 @@ void gui_update(dt_lib_module_t *self)
     if(gtk_tree_model_get_iter_first(model, &iter))
     {
       gtk_tree_view_expand_all(GTK_TREE_VIEW(lm->treeview));
+      // queued before this deferred update: the module may be gone by now
+      if(!_module_is_live(lm->pending_selmodule)) lm->pending_selmodule = NULL;
       if(_lib_masks_selection_change_r(
            model, selection, &iter, lm->pending_selmodule, lm->pending_selectid, 1))
       {
@@ -2488,6 +2535,8 @@ void gui_init(dt_lib_module_t *self)
       gtk_box_reorder_child(d->cs.container, d->resize_amount, size_pos + 1);
     g_list_free(kids);
   }
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_changed_callback);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
