@@ -33,8 +33,33 @@ DT_MODULE(1)
 
 typedef struct dt_lib_backgroundjob_element_t
 {
-  GtkWidget *widget, *label, *progressbar, *hbox;
+  /* GTK objects are created and accessed only from the GTK thread. */
+  GtkWidget *widget, *label, *progressbar, *hbox, *parent, *cancel_button;
+
+  dt_pthread_mutex_t mutex;
+  gint references;
+  gboolean destroyed;
+  gboolean has_progress_bar;
+  gboolean cancellable;
+  dt_progress_t *progress;
+  double value;
+  gchar *message;
 } dt_lib_backgroundjob_element_t;
+
+static void _backgroundjob_ref(dt_lib_backgroundjob_element_t *instance)
+{
+  g_atomic_int_inc(&instance->references);
+}
+
+static void _backgroundjob_unref(dt_lib_backgroundjob_element_t *instance)
+{
+  if(g_atomic_int_dec_and_test(&instance->references))
+  {
+    g_free(instance->message);
+    dt_pthread_mutex_destroy(&instance->mutex);
+    free(instance);
+  }
+}
 
 /* proxy functions */
 static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message);
@@ -45,6 +70,7 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_background
                                         double value);
 static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
                                                 const gchar *message);
+static void _add_cancel_button(dt_lib_backgroundjob_element_t *instance, dt_progress_t *progress);
 
 
 const char *name(dt_lib_module_t *self)
@@ -93,8 +119,8 @@ void gui_init(dt_lib_module_t *self)
   for(const GList *iter = darktable.control->progress_system.list; iter; iter = g_list_next(iter))
   {
     dt_progress_t *progress = iter->data;
-    void *gui_data = dt_control_progress_get_gui_data(progress);
-    free(gui_data);
+    dt_lib_backgroundjob_element_t *gui_data = dt_control_progress_get_gui_data(progress);
+    if(gui_data) _backgroundjob_unref(gui_data);
     gui_data = _lib_backgroundjobs_added(self, dt_control_progress_has_progress_bar(progress),
                                          dt_control_progress_get_message(progress));
     dt_control_progress_set_gui_data(progress, gui_data);
@@ -107,13 +133,27 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  /* lets kill proxy */
   dt_pthread_mutex_lock(&darktable.control->progress_system.mutex);
+
+  /* Drain GUI instances before dropping the proxy. This also invalidates queued
+   * callbacks when the module is rebuilt while jobs are still running. */
+  for(GList *iter = darktable.control->progress_system.list; iter; iter = g_list_next(iter))
+  {
+    dt_progress_t *progress = iter->data;
+    dt_lib_backgroundjob_element_t *instance = dt_control_progress_get_gui_data(progress);
+    if(instance)
+    {
+      _lib_backgroundjobs_destroyed(self, instance);
+      dt_control_progress_set_gui_data(progress, NULL);
+    }
+  }
+
   darktable.control->progress_system.proxy.module = NULL;
   darktable.control->progress_system.proxy.added = NULL;
   darktable.control->progress_system.proxy.destroyed = NULL;
   darktable.control->progress_system.proxy.cancellable = NULL;
   darktable.control->progress_system.proxy.updated = NULL;
+  darktable.control->progress_system.proxy.message_updated = NULL;
   dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
 }
 
@@ -121,104 +161,136 @@ void gui_cleanup(dt_lib_module_t *self)
 
 typedef struct _added_gui_thread_t
 {
-  GtkWidget *self_widget, *instance_widget;
+  dt_lib_module_t *self;
+  dt_lib_backgroundjob_element_t *instance;
 } _added_gui_thread_t;
 
 static gboolean _added_gui_thread(gpointer user_data)
 {
   _added_gui_thread_t *params = (_added_gui_thread_t *)user_data;
+  dt_lib_backgroundjob_element_t *instance = params->instance;
 
-  /* lets show jobbox if its hidden */
-  gtk_box_pack_start(GTK_BOX(params->self_widget), params->instance_widget, TRUE, FALSE, 0);
-  gtk_box_reorder_child(GTK_BOX(params->self_widget), params->instance_widget, 1);
-  gtk_widget_show_all(params->instance_widget);
-  gtk_widget_show(params->self_widget);
+  dt_pthread_mutex_lock(&instance->mutex);
+  if(instance->destroyed || !params->self || !GTK_IS_WIDGET(params->self->widget))
+  {
+    dt_pthread_mutex_unlock(&instance->mutex);
+    _backgroundjob_unref(instance);
+    free(params);
+    return G_SOURCE_REMOVE;
+  }
+
+  instance->parent = params->self->widget;
+  instance->widget = gtk_event_box_new();
+
+  /* initialize the UI elements for the job on the GTK thread */
+  gtk_widget_set_name(instance->widget, "background-job-eventbox");
+  dt_gui_add_class(instance->widget, "dt_big_btn_canvas");
+  GtkBox *vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  instance->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));
+
+  instance->label = gtk_label_new(instance->message);
+  gtk_widget_set_halign(instance->label, GTK_ALIGN_START);
+  gtk_label_set_ellipsize(GTK_LABEL(instance->label), PANGO_ELLIPSIZE_END);
+  gtk_box_pack_start(GTK_BOX(instance->hbox), instance->label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), instance->hbox, TRUE, TRUE, 0);
+
+  if(instance->has_progress_bar)
+  {
+    instance->progressbar = gtk_progress_bar_new();
+    gtk_box_pack_start(GTK_BOX(vbox), instance->progressbar, TRUE, FALSE, 0);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(instance->progressbar), instance->value);
+  }
+
+  if(instance->cancellable && instance->progress)
+    _add_cancel_button(instance, instance->progress);
+
+  gtk_box_pack_start(GTK_BOX(instance->parent), instance->widget, TRUE, FALSE, 0);
+  gtk_box_reorder_child(GTK_BOX(instance->parent), instance->widget, 1);
+  gtk_widget_show_all(instance->widget);
+  gtk_widget_show(instance->parent);
 
   // instance cursor to tell user that, if this is a blocking job with
   // a global busy cursor, the cancel box in this widget can stop it
-  dt_gui_cursor_set(params->instance_widget, "default", "background-job/instance");
+  dt_gui_cursor_set(instance->widget, "default", "background-job/instance");
 
+  dt_pthread_mutex_unlock(&instance->mutex);
+  _backgroundjob_unref(instance);
   free(params);
   return G_SOURCE_REMOVE;
 }
 
 static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message)
 {
-  // add a new gui thingy
+  /* Keep this callback GTK-free: it can be called by a worker thread. */
   dt_lib_backgroundjob_element_t *instance = calloc(1, sizeof(dt_lib_backgroundjob_element_t));
   if(!instance) return NULL;
+
+  dt_pthread_mutex_init(&instance->mutex, NULL);
+  instance->references = 1; // ownership held by dt_progress_t::gui_data
+  instance->has_progress_bar = has_progress_bar;
+  instance->message = g_strdup(message);
+
   _added_gui_thread_t *params = malloc(sizeof(_added_gui_thread_t));
   if(!params)
   {
-    free(instance);
+    _backgroundjob_unref(instance);
     return NULL;
   }
 
-  instance->widget = gtk_event_box_new();
-
-  /* initialize the ui elements for job */
-  gtk_widget_set_name(GTK_WIDGET(instance->widget), "background-job-eventbox");
-  dt_gui_add_class(GTK_WIDGET(instance->widget), "dt_big_btn_canvas");
-  GtkBox *vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  instance->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));
-
-  /* add job label */
-  instance->label = gtk_label_new(message);
-  gtk_widget_set_halign(instance->label, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(instance->label), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(instance->hbox), GTK_WIDGET(instance->label), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(instance->hbox), TRUE, TRUE, 0);
-
-  /* use progressbar ? */
-  if(has_progress_bar)
-  {
-    instance->progressbar = gtk_progress_bar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), instance->progressbar, TRUE, FALSE, 0);
-  }
-
-  /* lets show jobbox if its hidden */
-  params->self_widget = self->widget;
-  params->instance_widget = instance->widget;
+  params->self = self;
+  params->instance = instance;
+  _backgroundjob_ref(instance);
   g_main_context_invoke(NULL, _added_gui_thread, params);
 
-  // return the gui thingy container
   return instance;
 }
 
 typedef struct _destroyed_gui_thread_t
 {
-  dt_lib_module_t *self;
   dt_lib_backgroundjob_element_t *instance;
 } _destroyed_gui_thread_t;
 
 static gboolean _destroyed_gui_thread(gpointer user_data)
 {
   _destroyed_gui_thread_t *params = (_destroyed_gui_thread_t *)user_data;
+  dt_lib_backgroundjob_element_t *instance = params->instance;
 
-  /* remove job widget from jobbox */
-  if(params->instance->widget && GTK_IS_WIDGET(params->instance->widget))
-    gtk_container_remove(GTK_CONTAINER(params->self->widget), params->instance->widget);
-  params->instance->widget = NULL;
+  dt_pthread_mutex_lock(&instance->mutex);
+  /* remove the job widget from its parent */
+  if(instance->widget && instance->parent && GTK_IS_WIDGET(instance->widget))
+    gtk_container_remove(GTK_CONTAINER(instance->parent), instance->widget);
+  instance->widget = NULL;
+  instance->label = NULL;
+  instance->progressbar = NULL;
+  instance->hbox = NULL;
 
-  /* if jobbox is empty let's hide */
-  if(!dt_gui_container_has_children(GTK_CONTAINER(params->self->widget)))
-    gtk_widget_hide(params->self->widget);
+  if(instance->parent && GTK_IS_WIDGET(instance->parent)
+     && !dt_gui_container_has_children(GTK_CONTAINER(instance->parent)))
+    gtk_widget_hide(instance->parent);
+  dt_pthread_mutex_unlock(&instance->mutex);
 
-  // free data
-  free(params->instance);
+  _backgroundjob_unref(instance);
   free(params);
   return G_SOURCE_REMOVE;
 }
 
-// remove the gui that is pointed to in instance
+// remove the GUI that is pointed to in instance
 static void _lib_backgroundjobs_destroyed(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance)
 {
+  if(!instance) return;
+
+  dt_pthread_mutex_lock(&instance->mutex);
+  instance->destroyed = TRUE;
+  instance->progress = NULL;
+  dt_pthread_mutex_unlock(&instance->mutex);
+
   _destroyed_gui_thread_t *params = malloc(sizeof(_destroyed_gui_thread_t));
   if(!params) return;
-  params->self = self;
   params->instance = instance;
+  _backgroundjob_ref(instance);
   g_main_context_invoke(NULL, _destroyed_gui_thread, params);
+  _backgroundjob_unref(instance);
 }
 
 static void _lib_backgroundjobs_cancel_callback_new(GtkWidget *w, gpointer user_data)
@@ -227,25 +299,35 @@ static void _lib_backgroundjobs_cancel_callback_new(GtkWidget *w, gpointer user_
   dt_control_progress_cancel(progress);
 }
 
+static void _add_cancel_button(dt_lib_backgroundjob_element_t *instance, dt_progress_t *progress)
+{
+  if(!instance->hbox || instance->cancel_button || !progress) return;
+
+  instance->cancel_button = dtgtk_button_new_full(dtgtk_cairo_paint_cancel, 0, NULL,
+      &(dtgtk_button_config_t){
+        .clicked_cb = G_CALLBACK(_lib_backgroundjobs_cancel_callback_new),
+        .clicked_data = progress,
+      });
+  gtk_box_pack_start(GTK_BOX(instance->hbox), instance->cancel_button, FALSE, FALSE, 0);
+  gtk_widget_show_all(instance->cancel_button);
+}
+
 typedef struct _cancellable_gui_thread_t
 {
   dt_lib_backgroundjob_element_t *instance;
-  dt_progress_t *progress;
 } _cancellable_gui_thread_t;
 
 static gboolean _cancellable_gui_thread(gpointer user_data)
 {
   _cancellable_gui_thread_t *params = (_cancellable_gui_thread_t *)user_data;
+  dt_lib_backgroundjob_element_t *instance = params->instance;
 
-  GtkBox *hbox = GTK_BOX(params->instance->hbox);
-  GtkWidget *button = dtgtk_button_new_full(dtgtk_cairo_paint_cancel, 0, NULL,
-      &(dtgtk_button_config_t){
-        .clicked_cb = G_CALLBACK(_lib_backgroundjobs_cancel_callback_new),
-        .clicked_data = params->progress,
-      });
-  gtk_box_pack_start(hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
-  gtk_widget_show_all(button);
+  dt_pthread_mutex_lock(&instance->mutex);
+  if(!instance->destroyed && instance->cancellable)
+    _add_cancel_button(instance, instance->progress);
+  dt_pthread_mutex_unlock(&instance->mutex);
 
+  _backgroundjob_unref(instance);
   free(params);
   return G_SOURCE_REMOVE;
 }
@@ -253,29 +335,38 @@ static gboolean _cancellable_gui_thread(gpointer user_data)
 static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
                                             dt_progress_t *progress)
 {
-  // add a cancel button to the gui. when clicked we want dt_control_progress_cancel(darktable.control,
+  // add a cancel button to the GUI. when clicked we want dt_control_progress_cancel(darktable.control,
   // progress); to be called
-  if(!dt_control_running()) return;
+  if(!dt_control_running() || !instance) return;
+
+  dt_pthread_mutex_lock(&instance->mutex);
+  instance->cancellable = TRUE;
+  instance->progress = progress;
+  dt_pthread_mutex_unlock(&instance->mutex);
 
   _cancellable_gui_thread_t *params = malloc(sizeof(_cancellable_gui_thread_t));
   if(!params) return;
   params->instance = instance;
-  params->progress = progress;
+  _backgroundjob_ref(instance);
   g_main_context_invoke(NULL, _cancellable_gui_thread, params);
 }
 
 typedef struct _update_gui_thread_t
 {
   dt_lib_backgroundjob_element_t *instance;
-  double value;
 } _update_gui_thread_t;
 
 static gboolean _update_gui_thread(gpointer user_data)
 {
   _update_gui_thread_t *params = (_update_gui_thread_t *)user_data;
+  dt_lib_backgroundjob_element_t *instance = params->instance;
 
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(params->instance->progressbar), CLAMP(params->value, 0, 1.0));
+  dt_pthread_mutex_lock(&instance->mutex);
+  if(!instance->destroyed && instance->progressbar)
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(instance->progressbar), CLAMP(instance->value, 0, 1.0));
+  dt_pthread_mutex_unlock(&instance->mutex);
 
+  _backgroundjob_unref(instance);
   free(params);
   return G_SOURCE_REMOVE;
 }
@@ -284,28 +375,35 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_background
                                         double value)
 {
   // update the progress bar
-  if(!dt_control_running()) return;
+  if(!dt_control_running() || !instance) return;
+
+  dt_pthread_mutex_lock(&instance->mutex);
+  instance->value = CLAMP(value, 0, 1.0);
+  dt_pthread_mutex_unlock(&instance->mutex);
 
   _update_gui_thread_t *params = malloc(sizeof(_update_gui_thread_t));
   if(!params) return;
   params->instance = instance;
-  params->value = value;
+  _backgroundjob_ref(instance);
   g_main_context_invoke(NULL, _update_gui_thread, params);
 }
 
 typedef struct _update_label_gui_thread_t
 {
   dt_lib_backgroundjob_element_t *instance;
-  char *message;
 } _update_label_gui_thread_t;
 
 static gboolean _update_message_gui_thread(gpointer user_data)
 {
   _update_label_gui_thread_t *params = (_update_label_gui_thread_t *)user_data;
+  dt_lib_backgroundjob_element_t *instance = params->instance;
 
-  gtk_label_set_text(GTK_LABEL(params->instance->label), params->message);
+  dt_pthread_mutex_lock(&instance->mutex);
+  if(!instance->destroyed && instance->label)
+    gtk_label_set_text(GTK_LABEL(instance->label), instance->message);
+  dt_pthread_mutex_unlock(&instance->mutex);
 
-  g_free(params->message);
+  _backgroundjob_unref(instance);
   free(params);
   return G_SOURCE_REMOVE;
 }
@@ -313,13 +411,17 @@ static gboolean _update_message_gui_thread(gpointer user_data)
 static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
                                                 const char *message)
 {
-  // update the progress bar
-  if(!dt_control_running()) return;
+  if(!dt_control_running() || !instance) return;
+
+  dt_pthread_mutex_lock(&instance->mutex);
+  g_free(instance->message);
+  instance->message = g_strdup(message);
+  dt_pthread_mutex_unlock(&instance->mutex);
 
   _update_label_gui_thread_t *params = malloc(sizeof(_update_label_gui_thread_t));
   if(!params) return;
   params->instance = instance;
-  params->message = g_strdup(message);
+  _backgroundjob_ref(instance);
   g_main_context_invoke(NULL, _update_message_gui_thread, params);
 }
 
