@@ -1261,7 +1261,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       if(pdx != 0 || pdy != 0)
         _move(table, pdx, pdy, TRUE);
     }
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
     return;
   }
 
@@ -1752,10 +1754,10 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
    * re-selected the hovered image).  Only a real GDK button release may
    * select/toggle, exactly like the pre-gesture button-release-event
    * handler. */
-  GdkEvent *release_event = gtk_get_current_event();
-  const gboolean cancel = !release_event || release_event->type != GDK_BUTTON_RELEASE;
-  gdk_event_free(release_event);
-  if(cancel) return;
+  const GdkEvent *release_event =
+    gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(!release_event || dt_gdk_event_get_type(release_event) != GDK_BUTTON_RELEASE)
+    return;
 
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();

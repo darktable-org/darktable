@@ -834,6 +834,8 @@ static gboolean _draw(GtkWidget *da,
 }
 
 static GdkDevice *_touchpad = NULL;
+static gint64 _touchpad_last_gesture = 0;
+#define DT_TOUCHPAD_ASSOCIATION_USEC (500 * G_TIME_SPAN_MILLISECOND)
 
 static void _touchpad_gestures_pref_changed(gpointer instance,
                                             gpointer user_data)
@@ -848,7 +850,17 @@ static void _touchpad_gestures_pref_changed(gpointer instance,
  * dt_gui_scroll_should_pan).  Replaces the old _input_event switch. */
 static void _record_touchpad_device(const GdkEvent *event)
 {
-  _touchpad = dt_gdk_event_get_source_device(event);
+  GdkDevice *const device = dt_gdk_event_get_source_device(event);
+  if(device != _touchpad)
+  {
+    if(_touchpad)
+      g_object_remove_weak_pointer(G_OBJECT(_touchpad), (gpointer *)&_touchpad);
+    _touchpad = device;
+    if(_touchpad)
+      g_object_add_weak_pointer(G_OBJECT(_touchpad), (gpointer *)&_touchpad);
+  }
+  _touchpad_last_gesture = g_get_monotonic_time();
+
   if(_touchpad)
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] gesture event type=%d source='%s' source_type=%d",
@@ -887,15 +899,6 @@ static void _pinch_event(GtkGesture *gesture,
              "[touchpad] pinch ignored by current view");
 }
 
-/* touchpad swipe: only used to record the source device for the follow-up
- * scroll-stream pan routing (GtkGestureSwipe handles GDK_TOUCHPAD_SWIPE in
- * both GTK3 3.24 and GTK4) */
-static void _swipe_begin_cb(GtkGestureSwipe *gesture, gpointer user_data)
-{
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(event) _record_touchpad_device(event);
-}
-
 gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
 {
   if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
@@ -903,18 +906,29 @@ gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
   if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH) return FALSE;
   if(dt_gdk_event_is_scroll_stop(event)) return FALSE;
 #ifdef GDK_WINDOWING_QUARTZ
-  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
-  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to pan so that
-  // two-finger panning works in views like darkroom (both standalone and
-  // interleaved with a pinch-zoom gesture whose translational component macOS
-  // delivers as a separate scroll stream).
+  /* Quartz exposes both the built-in trackpad and ordinary pointing devices
+   * as the Core Pointer (GDK_SOURCE_MOUSE).  In the tested setup, trackpad
+   * gestures arrive as smooth events while a standard mouse produces
+   * discrete events, but that is an observed device/backend convention, not
+   * a portable GDK contract.  Keep this fallback scoped to Quartz: a global
+   * "smooth means touchpad" rule would reintroduce the mouse-wheel regression
+   * fixed by #21765. */
+  // Route every non-ctrl smooth scroll to pan so that two-finger panning works
+  // in views like darkroom (both standalone and interleaved with a pinch-zoom
+  // gesture whose translational component macOS delivers as a separate scroll
+  // stream).
   return TRUE;
 #else
   GdkDevice *const device = dt_gdk_event_get_source_device(event);
-  // Also accept the device that last produced a touchpad pinch/swipe gesture:
-  // some touchpads report the follow-up scroll stream from a different device.
+  // Also accept a mouse-classified device briefly after it produced a real
+  // touchpad pinch. The weak pointer prevents device-removal aliasing, and the
+  // timeout prevents one gesture from changing scroll routing for the session.
+  const gint64 elapsed = g_get_monotonic_time() - _touchpad_last_gesture;
+  const gboolean recent_touchpad_gesture =
+    device && device == _touchpad && elapsed >= 0
+    && elapsed <= DT_TOUCHPAD_ASSOCIATION_USEC;
   return device && (gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
-                    || device == _touchpad);
+                    || recent_touchpad_gesture);
 #endif
 }
 
@@ -1837,10 +1851,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           _scrolled, NULL);
 
     dt_gui_connect_pinch(widget, _pinch_event, NULL);
-
-    GtkGesture *swipe = gtk_gesture_swipe_new(widget);
-    dt_gui_add_controller(widget, swipe);
-    g_signal_connect(swipe, "begin", G_CALLBACK(_swipe_begin_cb), NULL);
   }
 
   // TODO: left, right, top, bottom:
