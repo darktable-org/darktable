@@ -1896,8 +1896,17 @@ static void _darkroom_schedule_footer_redraw(void)
       g_idle_add_full(G_PRIORITY_LOW, _darkroom_footer_redraw_idle, NULL, NULL);
 }
 
-static void _darkroom_ui_redraw_callback(gpointer instance,
-                                          gpointer data)
+static void _darkroom_ui_image_changed_callback(gpointer instance,
+                                                  gpointer data)
+{
+  /* The new pipes are not ready yet.  Redrawing the center here recalculates
+   * viewport bounds and scrollbars against intermediate dimensions, which can
+   * resize the side panels during an image switch. */
+  _darkroom_schedule_footer_redraw();
+}
+
+static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
+                                                      gpointer data)
 {
   dt_control_queue_redraw_center();
   _darkroom_schedule_footer_redraw();
@@ -3989,9 +3998,9 @@ void enter(dt_view_t *self)
 
   /* connect to ui pipe finished signal for redraw */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                           _darkroom_ui_redraw_callback);
+                           _darkroom_ui_image_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                           _darkroom_ui_redraw_callback);
+                           _darkroom_ui_pipe_finish_signal_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
                            _darkroom_ui_preview2_pipe_finish_signal_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TROUBLE_MESSAGE,
