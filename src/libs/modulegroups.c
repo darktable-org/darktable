@@ -1667,6 +1667,7 @@ void init_presets(dt_lib_module_t *self)
   AM("monochrome");
   AM("profile");
   AM("primaries");
+  AM("satcurvergb");
   AM("gamma");
   AM("velvia");
 
@@ -1829,6 +1830,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorequal");
   AM("colorharmonizer");
   AM("primaries");
+  AM("satcurvergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("cacorrect");
