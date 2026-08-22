@@ -1822,16 +1822,54 @@ static void skip_b_key_accel_callback(dt_action_t *action)
   _dev_jump_image(dt_action_view(action)->data, -1, TRUE);
 }
 
+static void _darkroom_queue_redraw_tree(GtkWidget *widget);
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+static void _darkroom_queue_redraw_children(GtkWidget *widget)
+{
+  for(GtkWidget *child = gtk_widget_get_first_child(widget);
+      child;
+      child = gtk_widget_get_next_sibling(child))
+    _darkroom_queue_redraw_tree(child);
+}
+#else
+static void _darkroom_queue_redraw_child(GtkWidget *widget, gpointer data)
+{
+  (void)data;
+  _darkroom_queue_redraw_tree(widget);
+}
+#endif
+
+/* Queue every widget in a toolbar, not only its GtkBox.  The darktable
+ * buttons draw their icons from their own draw handler; invalidating just the
+ * parent does not reliably invalidate those child windows on GTK3.  This is
+ * also the GTK4-compatible equivalent of walking a container's children. */
+static void _darkroom_queue_redraw_tree(GtkWidget *widget)
+{
+  if(!widget) return;
+
+  gtk_widget_queue_draw(widget);
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  _darkroom_queue_redraw_children(widget);
+#else
+  if(GTK_IS_CONTAINER(widget))
+    gtk_container_foreach(GTK_CONTAINER(widget), _darkroom_queue_redraw_child, NULL);
+#endif
+}
+
 static void _darkroom_ui_redraw_callback(gpointer instance,
                                           gpointer data)
 {
   dt_control_queue_redraw_center();
 
-  /* The darkroom image repaint does not invalidate the custom-drawn buttons
-   * in the bottom toolboxes.  Hovering a button does, which made the controls
-   * appear to recover only when the pointer passed over them. */
-  gtk_widget_queue_draw(darktable.view_manager->view_toolbox);
-  gtk_widget_queue_draw(darktable.view_manager->module_toolbox);
+  /* Image changes can invalidate the footer before the asynchronous pipe
+   * completion arrives.  Redraw the actual controls as well as their boxes so
+   * they remain visible while the new image is loading. */
+  _darkroom_queue_redraw_tree(darktable.view_manager->view_toolbox);
+  _darkroom_queue_redraw_tree(darktable.view_manager->module_toolbox);
+  _darkroom_queue_redraw_tree(GTK_WIDGET(dt_ui_get_container(
+    darktable.gui->ui, DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER)));
 }
 
 // Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
