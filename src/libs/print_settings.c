@@ -144,7 +144,7 @@ typedef struct dt_lib_print_settings_t
   GtkWidget *quality_combo;
   GList *quality_list;                     // list of quality settings (windows only)
   GtkButton *print_settings_button; // button to open printer settings (windows only)
-  struct dt_win32_printer_ctx_t *settings_ctx;
+  struct dt_win32_print_ctx_t *settings_ctx;
 #endif
 } dt_lib_print_settings_t;
 
@@ -1068,6 +1068,10 @@ static void _set_printer(const dt_lib_module_t *self,
   const char *default_paper = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "paper");
   if(!dt_bauhaus_combobox_set_from_text(ps->papers, default_paper))
     dt_bauhaus_combobox_set(ps->papers, 0);
+  /* Ensure the ps->prt.paper and preview reflect the selected/fallback paper
+     as dt_bauhaus_combobox_set/_set_from_text may not emit the value-changed
+     signal. Call the handler to synchronize internal state and GUI. */
+  _paper_changed(ps->papers, self);
 
   // add corresponding supported media
   dt_bauhaus_combobox_clear(ps->media);
@@ -1081,6 +1085,8 @@ static void _set_printer(const dt_lib_module_t *self,
   const char *default_medium = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "medium");
   if(!dt_bauhaus_combobox_set_from_text(ps->media, default_medium))
     dt_bauhaus_combobox_set(ps->media, 0);
+  /* Same as papers: ensure internal medium selection and preview are updated. */
+  _media_changed(ps->media, self);
 
 #ifdef _WIN32
   // add corresponding supported resolutions (quality)
@@ -3065,6 +3071,14 @@ void gui_init(dt_lib_module_t *self)
     combo_idx = 0;
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
+
+#ifdef _WIN32
+  /* Ensure image profile combo reflects printer-managed color state on initial load.
+     dt_bauhaus_combobox_set() does not reliably emit "value-changed", so rebuild
+     the image profile list explicitly here when the saved printer profile index
+     indicates printer-side color management (combo_idx == 0). */
+  _rebuild_image_profile_combo(d, combo_idx == 0);
+#endif
 
   char *tooltip = dt_ioppr_get_location_tooltip("out", _("printer ICC profiles"));
   gtk_widget_set_tooltip_markup(d->pprofile, tooltip);
