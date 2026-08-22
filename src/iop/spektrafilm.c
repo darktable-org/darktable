@@ -249,6 +249,14 @@ typedef struct dt_iop_spektrafilm_params_t
      as the preset contradicting the slider. */
   float film_format_mm;     // $MIN: 8.0 $MAX: 130.0 $DEFAULT: 36.0 $DESCRIPTION: "frame long edge"
   float output_luminance_boost; // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "pre-compression boost"
+  /* Gain on the finished colour, after the gamut compressor -- what a tone
+     curve moving its white point does, and the other half of the pair with the
+     boost above. The boost drives more into the compressor, which lifts the
+     picture and desaturates whatever was near the gamut edge; this only changes
+     the level and leaves the channel ratios alone. Nothing bounds the result,
+     so it can send values past 1.0 for the rest of the pipe to deal with, which
+     is why it is the second tool and not the first. */
+  float output_scale;           // $MIN: 0.5 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "post-compression scale"
   float grain_usm_sigma;        // $MIN: 0.0 $MAX: 3.0 $DEFAULT: 0.7 $DESCRIPTION: "recovery radius"
   float grain_usm_amount;       // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.5 $DESCRIPTION: "recovery strength"
   float film_gamma_factor;      // $MIN: 0.25 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "development gamma"
@@ -300,7 +308,7 @@ typedef struct sf_prof_entry_t
 typedef struct dt_iop_spektrafilm_gui_data_t
 {
   GtkWidget *film, *paper;
-  GtkWidget *output_boost;
+  GtkWidget *output_boost, *output_scale;
   GtkWidget *film_format_combo, *film_format_mm_slider;
   GtkWidget *exposure_ev, *scan_film;
   GtkWidget *push_pull_stops, *film_gamma_factor;
@@ -996,6 +1004,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   key = _mix64(key, &p->adaptation_bandwidth, sizeof p->adaptation_bandwidth);
   key = _mix64(key, &p->adaptation_surface, sizeof p->adaptation_surface);
   key = _mix64(key, &p->output_luminance_boost, sizeof p->output_luminance_boost);
+  key = _mix64(key, &p->output_scale, sizeof p->output_scale);
   key = _mix64(key, &p->film_gamma_factor, sizeof p->film_gamma_factor);
   key = _mix64(key, &p->film_gamma_factor_fast, sizeof p->film_gamma_factor_fast);
   key = _mix64(key, &p->film_gamma_factor_slow, sizeof p->film_gamma_factor_slow);
@@ -1229,6 +1238,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     sp.adaptation_surface = p->adaptation_surface;
     sp.lut_steps = _quality_steps(p->quality);
     sp.out_luminance_boost = p->output_luminance_boost;
+    sp.out_scale = p->output_scale;
     if(p->print_contrast != 1.0f)
     {
       sp.morph_active = true;
@@ -2501,7 +2511,8 @@ int process_cl(dt_iop_module_t *self,
       CLARG(sz_cl), CLARG(sn_cl), CLARG(sm_cl), CLARG(steps), CLARG(g->scan_lo[0]),
       CLARG(g->scan_lo[1]), CLARG(g->scan_lo[2]), CLARG(g->scan_hi[0]), CLARG(g->scan_hi[1]),
       CLARG(g->scan_hi[2]), CLARG(mats_cl), CLARG(cm_cl), CLARG(g->cmax_nl), CLARG(g->cmax_nh),
-      CLARG(g->out_compress), CLARG(g->out_luminance_boost), CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
+      CLARG(g->out_compress), CLARG(g->out_luminance_boost), CLARG(g->out_scale),
+      CLARG(g->scan_bw_on), CLARG(g->scan_bw_m),
       CLARG(g->scan_bw_q));
   SF_CL_STEP("scan");
 
@@ -3396,7 +3407,8 @@ void color_picker_apply(dt_iop_module_t *self,
                         dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_spektrafilm_gui_data_t *g = self->gui_data;
-  if(picker != g->output_boost) return;
+  const gboolean is_scale = (picker == g->output_scale);
+  if(picker != g->output_boost && !is_scale) return;
 
   /* picked_color_min/max start at sentinel values (+FLT_MAX / -FLT_MAX)
      until a real area pick has actually landed; if this callback fires
@@ -3441,17 +3453,26 @@ void color_picker_apply(dt_iop_module_t *self,
      the curve rather than at its asymptote, where the solver's bisection would
      have little gradient to work with. Nothing hard-clips at any target -- the
      knee is asymptotic by construction. */
-  const float target_L = 0.97f;
-  const float new_boost = _solve_boost_for_lightness(sim, rgb_max, target_L);
+  /* The scale aims higher than the boost. The boost hands its result to the
+     compressor, whose knee bends anything approaching 1.0 back down, so a
+     target near the limit still lands short of it. The scale multiplies the
+     finished colour with nothing behind it, so what it aims for is what it
+     gets, and a highlight can sit closer to white before anything is lost. */
+  const float target_L = is_scale ? 0.995f : 0.97f;
+  const float solved = _solve_boost_for_lightness(sim, rgb_max, target_L);
 
   if(d_tmp.gpu) sf_sim_gpu_free(d_tmp.gpu);
   if(d_tmp.sim) sf_sim_free(d_tmp.sim);
   dt_pthread_mutex_destroy(&d_tmp.lock);
 
   dt_iop_spektrafilm_params_t *p = self->params;
-  p->output_luminance_boost = new_boost;
+  GtkWidget *w = is_scale ? g->output_scale : g->output_boost;
+  if(is_scale)
+    p->output_scale = solved;
+  else
+    p->output_luminance_boost = solved;
   DT_ENTER_GUI_UPDATE();
-  dt_bauhaus_slider_set(g->output_boost, new_boost);
+  dt_bauhaus_slider_set(w, solved);
   DT_LEAVE_GUI_UPDATE();
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -4120,6 +4141,22 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_tooltip(g->output_boost,
                                      _("pick brightest tone in the selected area and set the"
                                        " boost so it lands just past the compressor's knee"));
+
+  g->output_scale = dt_bauhaus_slider_from_params(self, "output_scale");
+  gtk_widget_set_tooltip_text(
+      g->output_scale,
+      _("scales the finished picture, after the gamut compressor.\n\n"
+        "the boost above pushes more light into the compressor, which lifts the\n"
+        "image and desaturates colours that were already near the edge of the\n"
+        "gamut. this only changes the level, leaving the relationship between\n"
+        "the channels alone -- the same thing a tone curve does by moving its\n"
+        "white point.\n\n"
+        "nothing rolls off behind the compressor, so this can push values past\n"
+        "white for the rest of the pipeline to handle"));
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->output_scale);
+  dt_bauhaus_widget_set_quad_tooltip(g->output_scale,
+                                     _("pick brightest tone in the selected area and scale it"
+                                       " to just below white"));
 
   _section_add(self, C_("section", "sharpness"));
 

@@ -658,6 +658,7 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
                                __global const float *cmax_table, const int cmax_nl,
                                const int cmax_nh, const int compress_mode,
                                const float out_luminance_boost,
+                               const float out_scale,
                                const int bw_on, const float bw_m, const float bw_q)
 {
   const int x = get_global_id(0), y = get_global_id(1);
@@ -705,6 +706,9 @@ __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_
       rgb = (float3)(v[0], v[1], v[2]);
     }
   }
+
+  /* after the compressor, mirroring sf_sim_scan() */
+  if(out_scale != 1.0f) rgb *= out_scale;
 
   rgb_out[k] = (float4)(rgb.x, rgb.y, rgb.z, 0.0f);
 }
