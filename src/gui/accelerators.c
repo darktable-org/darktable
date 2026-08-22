@@ -24,6 +24,7 @@
 #include "common/file_location.h"
 #include "common/utility.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/expander.h"
 #include "bauhaus/bauhaus.h"
@@ -4994,6 +4995,13 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
       GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(w));
       if(focused_widget)
       {
+        // macOS: Command+C/X/V/A on an editable must not reach the widget's
+        // own handlers -- GTK's IM filtering does not skip Mod2 the way it
+        // skips Control, so the modifier is dropped and a bare character is
+        // committed into the buffer instead
+        if(dt_gui_osx_edit_command(focused_widget, event))
+          return TRUE;
+
         if(gtk_widget_event(focused_widget, event))
           return TRUE;
 
