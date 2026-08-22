@@ -1214,16 +1214,16 @@ static void _update_module_active_class(dt_iop_module_t *module)
 static void _gui_off_callback(GtkToggleButton *togglebutton,
                               dt_iop_module_t *module)
 {
-  /* Always-on modules have no user-toggleable switch.  A toggled signal
-   * during an internal state synchronisation must not create history. */
-  if(module->hide_enable_button) return;
+  /* Always-on modules can still emit toggled during synchronization; only
+   * user-toggleable modules may change processing state or history. */
+  const gboolean user_toggleable = !module->hide_enable_button;
 
-  const gboolean basics =
-    (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
-  const gboolean special = module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
-
-  if(!DT_IN_GUI_UPDATE())
+  if(user_toggleable && !DT_IN_GUI_UPDATE())
   {
+    const gboolean basics =
+      (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
+    const gboolean special = module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
+
     /* modules with IOP_FLAGS_GUIDES_SPECIAL_DRAW flag like crop & ashift need special care.
         If in expanded state we request focus to let it's gui_focus() callback
         handle this gracefully.
@@ -1472,8 +1472,9 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   if(darktable.gui)
     DT_LEAVE_GUI_UPDATE();
 
-  if(module->header)
-    dt_iop_gui_update_header(module);
+  /* This helper owns its GUI-update scope because it is also called
+   * independently from other header synchronization paths. */
+  dt_iop_gui_update_header(module);
 }
 
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
@@ -3328,6 +3329,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
           .toggled_cb = G_CALLBACK(_gui_off_callback),
           .toggled_data = module,
         });
+    gtk_widget_set_sensitive(button, !module->hide_enable_button);
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -3463,8 +3465,9 @@ static gboolean _on_drag_drop(GtkWidget *widget,
 
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
-  /* Header construction synchronises the enable button state.  Suppress
-   * those signals while the widget hierarchy is being built. */
+  /* Build and synchronise the module UI under a GUI-update guard. Widget
+   * construction can emit state-change signals after callbacks are connected;
+   * none of those signals represent user actions. */
   DT_ENTER_GUI_UPDATE();
 
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -3578,7 +3581,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                                          header);
   dt_gui_add_class(module->off, "dt_transparent_background");
   dt_iop_gui_set_enable_button_icon(module->off, module);
-  gtk_widget_set_sensitive(module->off, !module->hide_enable_button);
 
   gtk_box_pack_start(GTK_BOX(header), icon, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(header), lab, FALSE, FALSE, 0);
