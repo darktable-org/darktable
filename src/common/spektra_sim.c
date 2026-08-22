@@ -448,6 +448,7 @@ struct sf_sim_t
   /* output gamut compression */
   sf_output_compress_t out_compress;
   double out_luminance_boost;
+  double out_scale;
   double out_rgb2xyz[9], out_xyz2rgb[9];
   double oklab_m1inv[9], oklab_m2inv[9];
   float *cmax; /* SF_CMAX_NL × SF_CMAX_NH */
@@ -1273,6 +1274,7 @@ void sf_sim_params_defaults(sf_sim_params_t *p)
   p->input_gamut_compress = true;
   p->output_compress = SF_OUTPUT_COMPRESS_OKLCH;
   p->out_luminance_boost = 1.0;
+  p->out_scale = 1.0;
   sf_sim_params_set_input_prophoto(p); /* reference IOParams default */
   sf_sim_params_set_output_srgb(p);
 }
@@ -2808,6 +2810,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   s->has_print = !p->scan_film;
   s->out_compress = p->output_compress;
   s->out_luminance_boost = p->out_luminance_boost;
+  s->out_scale = p->out_scale;
   s->print_exposure = p->print_exposure;
   s->lut_steps = p->lut_steps;
   if(s->lut_steps == 1) s->lut_steps = 0;
@@ -3883,6 +3886,10 @@ void sf_sim_scan(const sf_sim_t *sim,
       compress_rgb_oklch(sim, rgb);
     else if(sim->out_compress == SF_OUTPUT_COMPRESS_ACES_RGC)
       compress_rgb_aces(rgb);
+    /* after the compressor, so it scales the finished colour rather than
+       driving more of it into the compressor -- see out_scale in the header */
+    if(sim->out_scale != 1.0)
+      for(int m = 0; m < 3; m++) rgb[m] *= sim->out_scale;
     for(int c = 0; c < 3; c++) out[c] = (float)rgb[c];
   }
 }
@@ -4030,6 +4037,7 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
 
   g->out_compress = s->out_compress;
   g->out_luminance_boost = (float)s->out_luminance_boost;
+  g->out_scale = (float)s->out_scale;
   cp9f(g->out_rgb2xyz, s->out_rgb2xyz);
   cp9f(g->out_xyz2rgb, s->out_xyz2rgb);
   cp9f(g->oklab_m1, SF_OKLAB_M1);
