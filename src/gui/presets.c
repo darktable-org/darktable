@@ -1114,6 +1114,11 @@ void dt_gui_presets_apply_preset(const gchar* name,
 
   sqlite3_finalize(stmt);
   dt_iop_gui_update(module);
+  // dt_iop_gui_update() runs inside the GUI-update guard, so module GUI
+  // callbacks cannot refresh the pixelpipes there.  Apply the preset's
+  // parameter changes after leaving that guard; tone equalizer needs this
+  // synchronization to rebuild its luminance cache and histogram.
+  dt_iop_refresh_all(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
 
