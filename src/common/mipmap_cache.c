@@ -496,8 +496,9 @@ static void _mipmap_cache_allocate_dynamic(void *data,
     // dt_print(DT_DEBUG_ALWAYS, "[mipmap cache] alloc dynamic for key %u %p", key, *buf);
     if(!(entry->data))
     {
+      entry->data = (void *)_mipmap_cache_static_dead_image;
       dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] memory allocation failed!");
-      exit(1);
+      return;
     }
 
     dsc = entry->data;
