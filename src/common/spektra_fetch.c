@@ -141,7 +141,7 @@ void sf_fetch_cleanup(void)
 {
   if(!_sf.inited) return;
   sf_fetch_cancel();
-  /* Join rather than detach: the worker writes into _sf and into the pack
+  /* Join, do not detach: the worker writes into _sf and into the pack
      directory, and darktable is on its way down. Letting it run past the mutex
      being cleared is a use-after-free waiting for a slow link to time out. */
   GThread *t = NULL;
@@ -183,7 +183,7 @@ void sf_fetch_cancel(void)
    hands entirely. That is what makes it the right place for a pack built from a
    spektrafilm checkout, or edited, or kept for an old release.
 
-   The shared data directory rather than the configuration one, because every
+   The shared data directory, not the configuration one, because every
    darktable instance on the machine reads the same place: a configuration
    directory can be given per instance, and a pack duplicated per instance is a
    12 MB spectral table stored and fetched twice for nothing. It sits beside the
@@ -238,8 +238,8 @@ static gboolean _peek_lut_hash(const char *packdir,
      them is not a usable pack -- it is a spectral table with no film to apply
      it to, which is what a download looks like partway through and what a
      half-deleted directory looks like afterwards. Accepting it would mean
-     resolving to a directory that then fails at profile load, which reads as
-     the module being broken rather than the data being absent. */
+     resolving to a directory that then fails at profile load, which reads as the module being
+     broken. */
   if(!g_file_test(meta, G_FILE_TEST_IS_REGULAR)) goto out;
   if(!g_file_test(profiles, G_FILE_TEST_IS_DIR)) goto out;
 
@@ -418,7 +418,7 @@ static size_t _write_to_buf(void *ptr,
 {
   sf_buf_t *b = (sf_buf_t *)userdata;
   const size_t n = size * nmemb;
-  if(b->len + n > b->cap) return 0; /* refuse rather than grow without bound */
+  if(b->len + n > b->cap) return 0; /* refuse; do not grow without bound */
   memcpy(b->data + b->len, ptr, n);
   b->len += n;
   return n;
@@ -601,7 +601,7 @@ static gboolean _valid_ref(const char *ref)
 
 /* Every path in the manifest becomes a file we create. The manifest is remote
    input, so a path that escapes the destination directory is a write-anywhere
-   primitive -- reject rather than sanitise, so a manifest that tries it fails
+   primitive -- reject, do not sanitise, so a manifest that tries it fails
    loudly instead of being quietly rewritten into something that works. */
 static gboolean _valid_relpath(const char *p)
 {
@@ -701,10 +701,10 @@ static GPtrArray *_parse_manifest(const char *json,
     const uint32_t h = (uint32_t)g_ascii_strtoull(hs, NULL, 16);
     if(!h) continue;
 
-    /* Skip anything this build could not load anyway. Checking here rather
-       than after the download is the difference between a clear message and
-       several MB spent on a pack that sf_pack_load() will reject. The field is
-       required rather than defaulted: an entry without it would fail the same
+    /* Skip anything this build could not load anyway. Checking here is the difference between a
+       clear message and
+       several MB spent on a pack that sf_pack_load() will reject. The field is required, not
+       defaulted: an entry without it would fail the same
        check in the loader after being downloaded, so accepting it here only
        moves the error later. */
     const int fmt = json_object_has_member(p, "pack_format")
@@ -803,7 +803,7 @@ static GPtrArray *_parse_manifest(const char *json,
 
     /* Every file must carry a checksum. Installing an unverified file is worse
        than not installing it: the pack drives colour rendering, and a corrupt
-       LUT renders plausibly wrong rather than failing. */
+       LUT renders plausibly wrong instead of failing. */
     if(!_valid_relpath(path) || !_valid_sha256(sha)) goto bad;
     if(!size || size > SF_MAX_FILE_BYTES) goto bad;
 
@@ -1035,8 +1035,7 @@ static gpointer _fetch_worker(gpointer data)
   dt_print(DT_DEBUG_DEV, "[spektrafilm] installed data pack %08x into %s",
            got_hash, destdir);
   /* Publish the new state before the status flips to DONE, so anything woken
-     by the completion sees a generation that already accounts for this
-     install rather than racing it. */
+     by the completion sees a generation that already accounts for this install. */
   g_mutex_lock(&_sf.lock);
   _sf.generation++;
   g_mutex_unlock(&_sf.lock);

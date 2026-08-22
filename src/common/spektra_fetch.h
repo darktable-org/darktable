@@ -70,7 +70,7 @@ void sf_fetch_cleanup(void);
  *
  * out_exact, when non-NULL, reports whether the returned directory actually
  * carries wanted_lut_hash. FALSE there means a pack was found but it is the
- * wrong one -- render with it anyway rather than showing the user a black
+ * wrong one -- render with it anyway instead of showing the user a black
  * frame, and let the existing mismatch warning explain the difference. */
 gboolean sf_fetch_resolve_pack_dir(uint32_t wanted_lut_hash,
                                    char *dst,

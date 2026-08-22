@@ -24,12 +24,12 @@
  * for a proper direct Gaussian convolution (see _sf_gauss_kernel_1d below): a
  * truncated, normalized kernel applied separably (row pass, transpose, row
  * pass, transpose back), matching what the reference spektrafilm's own
- * Gaussian blur actually does, rather than a recursive IIR approximation whose
+ * Gaussian blur actually does, not a recursive IIR approximation whose
  * effective blur radius measurably departs from the requested sigma. Boundary
  * handling is clamp-to-edge.
  */
 
-/* -fno-math-errno, as a source pragma rather than a CMake compile option: the
+/* -fno-math-errno, as a source pragma, not a CMake compile option: the
    option is GCC and Clang spelling and would have to be guarded by compiler id
    in CMakeLists, and a guard there silently drops the optimisation for any
    compiler the condition does not name. __GNUC__ answers the same question at
@@ -408,11 +408,11 @@ void sf_unsharp_mask3(float *const buf,
 
    The reference adds `glare_amount * illuminant_xyz` in XYZ before the output
    matrix. That illuminant is normalized to Y = 1 and the matrix adapts it to the
-   output white, so it lands on RGB (1, 1, 1) exactly -- which is why this can be
-   a scalar added to all three channels after the matrix instead. It also lands
-   after the output gamut compression rather than before it; at the default
-   0.03% the difference is far below a code value, and doing it here keeps the
-   whole spatial stage on one side of sf_sim_scan.
+   output white, so it lands on RGB (1, 1, 1) exactly and can be added as one
+   scalar to all three channels after the matrix. It lands after the output gamut compression: at
+   the default 0.03% the difference is far
+   below a code value, and this keeps the whole spatial stage on one side of
+   sf_sim_scan.
 
    Lognormal with linear-space mean m and std s: sigma2 = ln(1 + (s/m)^2),
    mu = ln(m) - sigma2/2, so with s/m = roughness the shape parameter does not

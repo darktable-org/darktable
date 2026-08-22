@@ -32,7 +32,7 @@
  *   [st]  runtime stage modules (stages dir)             stage orchestration & constants
  */
 
-/* -fno-math-errno, as a source pragma rather than a CMake compile option: the
+/* -fno-math-errno, as a source pragma, not a CMake compile option: the
    option is GCC and Clang spelling and would have to be guarded by compiler id
    in CMakeLists, and a guard there silently drops the optimisation for any
    compiler the condition does not name. __GNUC__ answers the same question at
@@ -113,19 +113,17 @@ static inline void neon_mat3_mulv_batch(const float m[9],
 #define SF_MIDGRAY 0.184
 /* [su] hanatos2025 sensitivity adaptation, surface half.
    _HANATOS2025_MAX_CORRECTION_STOPS in spectral_upsampling.py -- the bound the
-   surface fit was produced under, so it is part of the model rather than a
-   safety clamp bolted on afterwards. */
+   surface fit was produced under, so it is part of the model. */
 #define SF_HANATOS_MAX_CORRECTION_STOPS 2.0
 /* poly2d_deg4 takes 15 coefficients per channel. The warped variant of the
    surface (eval_poly4_warp_log_exposure_surface) takes 16 -- 15 plus a Mobius
    alpha -- and reading one as the other silently evaluates a different
-   surface, so the count is checked rather than assumed. */
+   surface, so the count is checked. */
 #define SF_SURFACE_NCOEF 15
 
-/* Generic (still film, strong-antihalation) halation baseline — the values
- * spektra_core.c's sf_halation() used to hardcode unconditionally. Now the
- * fallback used when a pack/stock has no film_render_defaults[stock].halation
- * entry (see sf_sim_build() and sf_sim_halation_params() below). Mirrors
+/* Generic (still film, strong-antihalation) halation baseline. Used when a
+ * pack/stock has no film_render_defaults[stock].halation entry
+ * (see sf_sim_build() and sf_sim_halation_params() below). Mirrors
  * upstream's ('still', 'strong') entry in params_builder.py's
  * _HALATION_PRESETS. */
 #define SF_HALATION_STRENGTH_DEFAULT_R 0.05
@@ -352,8 +350,8 @@ struct sf_sim_t
   double film_dmax[3]; /* max of normalized film curves */
   double film_dmin[3]; /* the SAME curves' own floor (mn); grain's D_ref = 1+dmin
                            must use this, not an independently-sourced value, or
-                           dmax_c+dmin_c no longer reconstructs the real absolute
-                           D-max and the particle count silently drifts */
+                           dmax_c+dmin_c does not reconstruct the real absolute
+                           D-max and the particle count drifts */
   /* per-film grain catalogue data (film_render_defaults[stock].grain); the
      density floor lives in p.grain_density_min (shared with the enlarger/scan
      table-range code below). Defaults to the legacy fixed constants when the
@@ -614,12 +612,11 @@ sf_pack_t *sf_pack_load(const char *dir,
 
   /* Container format check, before anything is read out of the object. A pack
      from a newer exporter may have moved or redefined fields; JSON parsing
-     would not notice, and the result would be a pack that loads and renders
-     wrongly rather than one that fails.
+     would not notice, and the result would be a pack that loads and renders wrongly.
 
      The field is required, with no "assume 1 when absent" fallback. Every pack
-     the exporter has ever produced carries it, so an absent one is a
-     hand-edited or truncated pack.json rather than an older revision -- and
+     the exporter has ever produced carries it, so an absent one is a hand-edited or truncated
+     pack.json -- and
      silently assuming a format for a file that never declared one is precisely
      the guess this check exists to avoid. */
   {
@@ -715,8 +712,7 @@ sf_pack_t *sf_pack_load(const char *dir,
      through beta04 so far, with the older ones deleted as each lands -- and
      every revision changes every render. So the header carries the table's
      identity as well as its shape, and that identity is recorded in params:
-     an edit made against one revision and reopened against another is reported
-     rather than silently rendering differently.
+     an edit made against one revision and reopened against another is reported.
 
      Stored as float16, which is what upstream computes and ships; widened here
      on load. Reading it as float32 doubled the file for precision that was
@@ -1099,7 +1095,7 @@ sf_profile_t *sf_profile_load(const char *path,
     else if(ncoef)
       /* Not silently ignored: an unrecognised width is most likely the warped
          variant (16), and evaluating it here as if it were the plain one would
-         apply a wrong correction of up to two stops rather than none. */
+         apply a wrong correction of up to two stops, not none. */
       g_warning("spektra_sim: profile %s has %d surface coefficients per channel, "
                 "expected %d; skipping the hanatos2025 surface adaptation",
                 path, ncoef, SF_SURFACE_NCOEF);
@@ -1112,8 +1108,7 @@ sf_profile_t *sf_profile_load(const char *path,
     JsonNode *cnode = (m && json_object_has_member(m, "centers"))
                           ? json_object_get_member(m, "centers") : NULL;
     JsonArray *centers = (cnode && JSON_NODE_HOLDS_ARRAY(cnode)) ? json_node_get_array(cnode) : NULL;
-    /* Layout of centers/amplitudes/sigmas, resolved from declared metadata
-       rather than guessed from the array shape.
+    /* Layout of centers/amplitudes/sigmas, resolved from declared metadata.
 
        For a colour stock the outer axis is the channel: (3, n_layers), which is
        what the reference's DensityCurvesModel documents and what
@@ -1124,15 +1119,12 @@ sf_profile_t *sf_profile_load(const char *path,
        collapses it in select_development_time() (density_curves.py) before the
        model is ever evaluated, defaulting to the middle member.
 
-       So the axis follows from channel_model and nothing else. It used to be
-       guessed from the row count as well, because the exporter widened a mono
-       stock's single model row to three copies while leaving a development
-       family at its natural row count -- one field, two layouts, in one pack.
-       pack_format 2 stops that widening, so the rule is now what the data
-       declares rather than what its shape suggests. The guess is worth
-       remembering: an earlier pack fed Double-X's model as channel-major and
-       rendered it from a curve off by 1.34 density, and the last version of it
-       survived only because the one replicated stock had identical rows.
+       So the axis follows from channel_model and nothing else. The row count
+       does not determine it: pack_format 2 stops the exporter widening a mono
+       stock's single model row to three copies, but a development family and a
+       colour stock can still present the same shape for different reasons.
+       Reading the axis from the shape puts Double-X's model in channel-major
+       order and renders it from a curve off by 1.34 density.
        tools/check_profiles.py in the data repository proves the axis by
        reconstruction and fails a pack that gets it wrong. */
     const int outer_len = centers ? MIN((int)json_array_get_length(centers), SF_MAX_DEV_TIMES) : 0;
@@ -1145,8 +1137,7 @@ sf_profile_t *sf_profile_load(const char *path,
       const int nl = inner_len;
       p->curves_model.n_layers = nl;
       /* [dc] model_type selects the per-layer sigmoid. Anything other than the
-         two known families would be silently rendered as a Gaussian fit, so say
-         so rather than shipping wrong curves quietly. */
+         two known families would be silently rendered as a Gaussian fit, so say so. */
       char *model_type = json_dup_string(m, "model_type");
       if(model_type && strcmp(model_type, "sept_norm_cdfs") == 0)
         p->curves_model.sept = 1;
@@ -2856,7 +2847,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
                           sigma3, s->scatter_core_um, s->scatter_tail_um,
                           s->scatter_tail_weight);
     /* all known presets use one sigma for R/G/B (see _HALATION_PRESETS
-       upstream); take the first channel rather than plumb a 3-wide sigma
+       upstream); take the first channel; a 3-wide sigma is not plumbed
        through sf_halation() for a split that doesn't currently exist. */
     s->halation_sigma_um = sigma3[0];
   }
@@ -2955,9 +2946,9 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        same tc grid as the LUT and centred on the film's reference illuminant, so
        it is exactly zero at that white and grows away from it -- the second half
        of the hanatos2025 sensitivity adaptation, the first being the spectral
-       bandpass window folded into sens_w above. Both preserve white balance,
-       which is why the window's per-channel renormalisation and this surface's
-       missing constant term matter as much as the shapes themselves.
+       bandpass window folded into sens_w above. Both preserve white balance:
+       that is the function of the window's per-channel renormalisation and of
+       this surface's missing constant term.
 
        Runs after the sensitivity product and before the gamut-compression
        remap below, matching upstream's order: the remap resamples this LUT, so
@@ -2973,9 +2964,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        precedence there, so applying it whenever a profile carries the
        coefficients diverges from a reference render by as much as the
        sigmoid's +-2 stop bound wherever the chromaticity is far from the film's
-       reference white. Runtime-selectable rather than compiled out, because the
-       correction is the model's own and becomes right the day the reference
-       turns it on. */
+       reference white. Runtime-selectable: the correction is
+       the model's own and applies whenever the reference enables it. */
     if(p->adaptation_surface && film->surface_n == SF_SURFACE_NCOEF)
     {
       double center_tc[2];
@@ -3087,7 +3077,7 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
      falls back to spektrafilm's original single fixed profile when the pack
      predates per-film grain or the stock has no entry. density_min shares
      p->grain_density_min with the enlarger/scan table-range code below, so
-     it is overwritten in place rather than kept as a separate sim field. */
+     it is overwritten in place. */
   {
     /* matches SF_GRAIN_LEGACY_RMS / SF_GRAIN_LEGACY_UNIFORMITY in
        spektra_core.h — spektrafilm's original single fixed grain profile */
@@ -3101,8 +3091,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     /* particle_scale_sublayers defaults to spektrafilm's own GrainParams
        default [1.0, 0.5, 0.25] (coarsest == 1) when the pack has none for
        this stock, so a film whose curve fit IS multilayer still gets a
-       physically reasonable sub-layer split rather than silently
-       collapsing to one layer for lack of catalogue data. */
+       physically reasonable sub-layer split, and does not silently collapse to one layer for lack
+       of catalogue data. */
     double particle_scale[SF_GRAIN_MAX_SUBLAYERS] = { 1.0, 0.5, 0.25, 0, 0, 0, 0, 0 };
     int n_scale = 3;
     sf_pack_film_grain(pack, film->stock, s->grain_rms, s->grain_uniformity,
@@ -3211,8 +3201,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
     if(p->coupler_diffusion_um >= 0.0) s->coupler_diff_um = p->coupler_diffusion_um;
     if(p->coupler_tail_um >= 0.0) s->coupler_tail_um = p->coupler_tail_um;
     if(p->coupler_tail_weight >= 0.0) s->coupler_tail_w = p->coupler_tail_weight;
-    /* a tail needs both a length and a weight to mean anything; drop it whole
-       rather than leaving half of it live */
+    /* a tail needs both a length and a weight to mean anything; drop it whole; half of it live is
+       worse */
     if(s->coupler_tail_w <= 0.0 || s->coupler_tail_um <= 0.0)
     {
       s->coupler_tail_um = 0.0;
@@ -3254,12 +3244,11 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
        Portra 400, ~1.66 for Double-X, ~2.09 for Vision3 250D and ~1.00 for
        Velvia 100. Beyond it both this code and the reference feed unsorted x to
        an interpolator -- np.interp there, binary search here -- and each returns
-       a different arbitrary bracket, which is why high amounts diverge between
-       the two while low ones agree.
+       a different arbitrary bracket, so high amounts diverge between the two
+       while low ones agree.
 
-       So find the largest amount that stays invertible and use that, rather than
-       emitting curves nobody can reproduce. Bisection on a monotone predicate,
-       32 iterations, once per sim build. */
+       Find the largest amount that stays invertible and use that. Bisection on
+       a monotone predicate, 32 iterations, once per sim build. */
     {
       double lo = 0.0, hi = 1.0;
       for(int it = 0; it < 32; it++)
@@ -3298,9 +3287,8 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
            correction, GPU export -- on one matrix. */
         for(int i = 0; i < 3; i++)
           for(int j = 0; j < 3; j++) s->couplers_M[i][j] *= lo;
-        /* Only when the reduction is real: this used to fire at the default
-           amount on ordinary stocks and print identical before/after values,
-           because a sub-0.1% trim rounds away at three decimals. */
+        /* Only when the reduction is large enough to show at three decimals.
+           A sub-0.1% trim prints identical before/after values. */
         dt_print(DT_DEBUG_PIPE,
                  "[spektrafilm] DIR couplers: %s is invertible only to %.1f%% of the"
                  " requested amount; using %.3f instead of %.3f",
@@ -3886,8 +3874,8 @@ void sf_sim_scan(const sf_sim_t *sim,
       compress_rgb_oklch(sim, rgb);
     else if(sim->out_compress == SF_OUTPUT_COMPRESS_ACES_RGC)
       compress_rgb_aces(rgb);
-    /* after the compressor, so it scales the finished colour rather than
-       driving more of it into the compressor -- see out_scale in the header */
+    /* after the compressor, so it scales the finished colour instead of driving more of it into the
+       compressor -- see out_scale in the header */
     if(sim->out_scale != 1.0)
       for(int m = 0; m < 3; m++) rgb[m] *= sim->out_scale;
     for(int c = 0; c < 3; c++) out[c] = (float)rgb[c];
@@ -3966,10 +3954,10 @@ sf_sim_gpu_t *sf_sim_gpu_export(const sf_sim_t *s)
   g->couplers_active = s->couplers_active;
 
   g->grain_n_sublayers = s->grain_n_sublayers;
-  /* What the sampler adds: the sum of the per-sub-layer floors. The GPU combine
-     subtracts this exactly as the CPU one now does, so the two agree. This used
-     to be film_dmin here and grain_density_min on the CPU -- two different wrong
-     values, which is why the paths brightened by different amounts. */
+  /* What the sampler adds: the sum of the per-sub-layer floors. Both the GPU
+     and the CPU combine subtract exactly this. Any other value (film_dmin,
+     grain_density_min) leaves a brightness offset, and a different one per
+     path. */
   sf_sim_grain_dmin_total(s, g->grain_dmin);
   for(int l = 0; l < SF_GRAIN_MAX_SUBLAYERS; l++)
   {
@@ -4234,7 +4222,7 @@ static float _sf_grain_curve_sample(const float *arr,
  * upstream's _channel_sublayer_grain -- each draw already carries its own
  * (smaller, for finer sub-layers) share of the total variance, so summing
  * them reproduces the combined multilayer noise the catalogue RMS was
- * calibrated against, rather than diluting it the way an average would. */
+ * calibrated against; an average would dilute it. */
 void sf_grain_delta_ml(const sf_grain_layers_t *layers,
                        const float dens[3],
                        float amount,

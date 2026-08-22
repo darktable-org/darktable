@@ -27,7 +27,7 @@
  * What they cover is the pure math, plus the per-pixel entry points fed from a
  * hand-built sf_sim_t. Not covered is anything that needs a loaded profile --
  * the spectral upsampling tables, the enlarger's neutral filters, the grain
- * sublayer build. That is a matter of scope rather than availability: the
+ * sublayer build. That is a matter of scope, not availability: the
  * current pack ships with darktable under data/spektrafilm/, and only edits
  * pinned to an older one fetch anything at runtime, so a fixture is there for
  * the taking. But a test built on it reads real profile data off disk, which
@@ -35,7 +35,7 @@
  * Those live next door, in test_spektra_pack.c, which CMake points at the
  * shipped pack and which skips itself when there is none on disk.
  *
- * Including the .c rather than the .h is what the module tests already do (see
+ * Including the .c, not the .h is what the module tests already do (see
  * ../iop/test_filmicrgb.c): most of the algorithms are file-static helpers, and
  * they are the interesting part.
  *
@@ -125,8 +125,8 @@ static double _dist_from_white(const double xy[2])
 /* A sim carrying nothing but what the film-develop entry points read: a linear
    density ramp from 0 at log-exposure LE0 to dmax at LE0 + LE_SPAN, negative
    film, linear (non-Langmuir) couplers. Linear so that the expected
-   density at any exposure is a closed form the test can state on its own rather
-   than borrowing the interpolator it is checking. Caller frees. */
+   density at any exposure is a closed form the test can state on its own, without borrowing the
+   interpolator it is checking. Caller frees. */
 static sf_sim_t *_sim_linear_ramp(const double dmax[3])
 {
   sf_sim_t *sim = calloc(1, sizeof(sf_sim_t));
@@ -413,8 +413,8 @@ static void test_zero_exhaustion_leaves_the_curve_alone(void **state)
 static void test_morph_gamma_scales_centers_and_sigmas(void **state)
 {
   /* The coupled-gamma morph divides each sublayer's centre and width by its
-     own gamma, which is what makes a higher-contrast development steepen the
-     curve rather than merely shift it. */
+     own gamma, which is what makes a higher-contrast development steepen the curve, not merely
+     shift it. */
   TR_STEP("the chemistry gamma divides centres and widths alike");
   const double gamma = 1.25;
   double centers[3], sigmas[3], gmix[3];

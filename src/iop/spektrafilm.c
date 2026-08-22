@@ -116,8 +116,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_spektrafilm_params_t)
  * sqrt(od_particle), where od_particle = dmax/npart is that sub-layer's
  * own per-particle optical density. Passed through verbatim (no
  * pixel_um conversion anywhere in the reference's own call chain,
- * despite the "_um" name) -- ported as literally as upstream computes it
- * rather than second-guessing the naming. No variance-restoration
+ * despite the "_um" name) -- ported as literally as upstream computes it; the * naming is not
+ * second-guessed. No variance-restoration
  * afterward either, same as the main clump blur. */
 #define SF_GRAIN_DYE_BLUR_UM 2.0f
 /* Push/pull processing is really two things happening together: shooting
@@ -161,15 +161,15 @@ typedef struct dt_iop_spektrafilm_params_t
   uint32_t film_hash;       // $DEFAULT: 0  (0 = first available filming stock)
   /* Identity of the spectral upsampling table this edit was developed against.
      Upstream revises it often and every revision changes the render, so an edit
-     reopened against a different one is reported rather than silently rendering
-     differently. 0 means "not recorded" (an edit older than this field, or one
+     reopened against a different one is reported. 0 means
+     "not recorded" (an edit older than this field, or one
      made while no pack was loaded) and never warns. Diagnostic only -- nothing
      downstream reads it. */
   uint32_t lut_hash;        // $DEFAULT: 0
   uint32_t paper_hash;      // $DEFAULT: 0  (0 = the film's target print stock)
   float exposure_ev;        // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "film exposure"
   /* "compensation" because it is an offset either way: with auto print
-     exposure on it shifts the automatic result rather than being ignored, which
+     exposure on it shifts the automatic result, which
      the bare name implied. */
   float print_exposure_ev;  // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "print exposure compensation"
   gboolean print_auto_exposure; // $DEFAULT: FALSE $DESCRIPTION: "auto print exposure"
@@ -177,7 +177,7 @@ typedef struct dt_iop_spektrafilm_params_t
   float filter_m;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration M"
   float filter_y;           // $MIN: -60.0 $MAX: 60.0 $DEFAULT: 0.0 $DESCRIPTION: "filtration Y"
   float couplers_amount;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "DIR couplers"
-  /* Inhibitor spread, in micrometres on the film. Absolute rather than a scale
+  /* Inhibitor spread, in micrometres on the film. Absolute, not a scale
      on the stock's value, so the number means the same thing whatever film is
      loaded and survives a film change. Ranges follow the reference's GUI
      manifest (minimum 0 throughout, tail weight up to 1), and the defaults are
@@ -215,20 +215,20 @@ typedef struct dt_iop_spektrafilm_params_t
   float grain_amount;       // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "grain strength"
   /* Blur applied to the sampled grain, in pixels (reference: GrainParams.blur).
      Softens grain without touching the particle population, so it makes grain
-     less distinct rather than coarser; grain_granularity below is what changes
-     the crystals. Measured on the output rather than on the film, so the right
+     less distinct, not coarser; grain_granularity below is what changes
+     the crystals. Measured on the output, not on the film, so the right
      value depends on magnification. */
   float grain_blur;         // $MIN: 0.2 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "grain blur"
   /* The reference's GrainParams.rms_granularity, as a scale on the stock's own
-     datasheet figure rather than an absolute: it is per-channel there (6/8/10
+     datasheet figure, not an absolute: it is per-channel there (6/8/10
      for the default profile), and a single multiplier keeps a film's measured
      colour balance while moving all three together. Particle area goes as the
      square of it, so this is the control that actually makes grain coarser --
      bigger particles, fewer of them, more fluctuation at every density. */
   float grain_granularity;  // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "granularity"
   /* GrainParams.uniformity, again as a scale. Lower bends the noise toward the
-     Selwyn bell -- grain that grows and then falls away again with density
-     rather than rising forever. */
+     Selwyn bell -- grain that grows and then falls away again with density.
+     */
   float grain_uniformity;   // $MIN: 0.5 $MAX: 1.03 $DEFAULT: 1.0 $DESCRIPTION: "uniformity"
   /* GrainParams.particle_scale_sublayers, as a scale on the whole array. Real
      emulsions layer coarse crystals over fine ones; this moves the finer
@@ -237,10 +237,10 @@ typedef struct dt_iop_spektrafilm_params_t
   /* GrainParams.density_min, absolute as the reference has it. The floor each
      grain particle sits at, and the reason grain does not vanish entirely in
      clear film. Shared with the enlarger and scan table ranges, so it is a
-     property of the emulsion rather than of the drawing. */
+     property of the emulsion, not of the drawing. */
   float grain_density_min;  // $MIN: 0.0 $MAX: 0.2 $DEFAULT: 0.03 $DESCRIPTION: "density floor"
   /* GrainParams.blur_dye_clouds_um, as a scale on the reference's own 2 um.
-     Each developed crystal produces a small cloud of dye rather than a hard
+     Each developed crystal produces a small cloud of dye, not a hard
      dot; this is how far that cloud spreads, in real emulsion units, so it only
      becomes visible when a micrometre covers more than a pixel. */
   float grain_dye_cloud;    // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "dye cloud size"
@@ -452,8 +452,9 @@ typedef struct dt_iop_spektrafilm_data_t
      device pool is for -- so on a machine with more than one OpenCL device a
      pipe can upload these on one device and, next run, hand them to a kernel
      on another. The handles are still valid, just foreign, and clSetKernelArg
-     dereferences them inside the driver: it segfaults there rather than
-     returning an error, so there is nothing to check afterwards. */
+     dereferences them inside the driver: it segfaults there instead of returning an error, so there
+     is
+     nothing to check afterwards. */
   const sf_sim_gpu_t *grain_cl_built_for;
   int grain_cl_devid;
   cl_mem grain_cl_dmax, grain_cl_npart, grain_cl_dmin, grain_cl_total, grain_cl_curve;
@@ -474,14 +475,13 @@ typedef struct dt_iop_spektrafilm_global_data_t
 
 /* the data pack is large (spectra LUT ~12 MB) and shared by all pieces;
    load it once per process (lazily, under _pack_lock), freed in
-   cleanup_global(). Kept in module-static storage rather than global_data so
-   every pipe sees the same pack. */
+   cleanup_global(). Kept in module-static storage so every pipe sees the same pack. */
 static sf_pack_t *_pack = NULL;
 /* Directory _pack was loaded from. Which directory that is depends on the edit:
    an image developed against an older spectral table resolves to a different
    pack than one developed against the current one. Keeping the path lets
    _ensure_sim() notice the resolved directory has changed and reload, and lets
-   _scan_profiles() read profiles out of the SAME pack rather than always out of
+   _scan_profiles() read profiles out of the SAME pack, not always out of
    the pack directory -- profiles and spectral table have to come from one
    place or the film list will not match the data behind it. */
 static char _pack_path[SF_PATH_LEN] = { 0 };
@@ -1055,8 +1055,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
 
   /* Global pack, loaded once per resolved directory.
      Which directory that is depends on the spectral table this edit recorded,
-     so switching to an image developed against a different table reloads rather
-     than silently rendering it with the wrong data. One pack is held at a time:
+     so switching to an image developed against a different table reloads. One pack is held at a
+     time:
      the LUT is ~12 MB, and having two images from different table generations
      open in the same session is rare enough that the reload costs less than
      permanently carrying every pack the user has on disk. */
@@ -1340,9 +1340,8 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
                              float pixel_um)
 {
   const float inv_um = 1.0f / fmaxf(pixel_um, 1e-3f);
-  /* halation stage: first-bounce radius, scaled by the user's halation_scale
-     (previously this padding ignored halation_scale entirely, silently
-     under-padding for anyone above the 1.0 default -- fixed here). */
+  /* halation stage: first-bounce radius, scaled by halation_scale. The scale
+     has to be in the padding or a value above 1.0 under-pads. */
   const float hal_scale = fmaxf(p->halation_scale, 1e-3f);
   const float hal = (p->halation_on && p->halation_amount > 0.0f)
                         ? SF_HALATION_FIRST_SIGMA_UM * SF_HALATION_PSF_SIGMAS * hal_scale * inv_um
@@ -1361,8 +1360,8 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
                          : 0.0f;
   /* The widest of film-stage and print-stage diffusion determines the ROI
      padding — both must fit in the expanded tile. Take the widest component of
-     the actual Gaussian bank each stage will dispatch rather than a single
-     constant: the bloom scale differs by 2.6x across the four families (BPM
+     the actual Gaussian bank each stage will dispatch: the bloom scale differs by 2.6x across the
+     four families (BPM
      380*2.5 um vs cinebloom 1000*2.5 um), so one constant either under-pads the
      wide families or over-pads the narrow ones. */
   const float diff = fmaxf(_diffusion_pad_sigma_um(p->diffusion_on,
@@ -1434,7 +1433,7 @@ void tiling_callback(dt_iop_module_t *self,
   const float full_long_edge
     = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
-  tiling->factor = 2.5f; /* 4 float4 buffers, but they alias in practice */
+  tiling->factor = 2.5f; /* 4 float4 buffers; they alias */
   tiling->factor_cl = 4.0f; /* + gtmp4 (1 float4) + plane1 and gtmp1 (1ch each, 1/4 float4) */
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
@@ -1632,8 +1631,7 @@ void process(dt_iop_module_t *self,
     float gdmin_unused[3];
     sf_sim_film_grain3(sim, grms, gunif, gdmin_unused); /* per-film catalogue grain
                                       (rms-granularity, uniformity, density
-                                      floor) — Portra 400 no longer shares
-                                      Tri-X's grain signature */
+                                      floor), read per stock */
     sf_grain_layers_t layers;
     sf_sim_grain_layers(sim, &layers); /* n==1 for a single-layer curve fit
                                       is already valid data (see the
@@ -1646,8 +1644,7 @@ void process(dt_iop_module_t *self,
        sub-layer's raw draw independently, before the main clump blur
        below ever sees it. Its sigma depends only on that sub-layer's own
        per-particle optical density (dmax/npart) -- constant across the
-       whole image for a given (channel, sub-layer), so compute it once
-       here rather than per pixel. */
+       whole image for a given (channel, sub-layer), so compute it once here. */
     float dye_sigma[3][SF_GRAIN_MAX_SUBLAYERS];
     for(int c = 0; c < 3; c++)
       for(int sl = 0; sl < nsub; sl++)
@@ -1724,9 +1721,9 @@ void process(dt_iop_module_t *self,
     /* No DC-centring pass. The delta is zero-mean by construction now: the
        sampler draws an unbiased Poisson (spektra_core.h) and the combine above
        takes back exactly the floors the sampler added -- see
-       sf_sim_grain_dmin_total(). Subtracting grain_density_min there instead
-       left a constant +(sum - density_min) per unit strength, which a per-ROI
-       mean was previously hiding. */
+       sf_sim_grain_dmin_total(). The subtracted term must be that sum:
+       grain_density_min in its place leaves a constant +(sum - density_min)
+       per unit strength. */
     /* Add the still-UNBLURRED delta onto the clean density first, so the clump
        blur below runs on the grained ABSOLUTE density -- image detail and grain
        together -- which is what upstream blurs (_finalize_grain in grain.py
@@ -1802,7 +1799,7 @@ void process(dt_iop_module_t *self,
   /* 6b) scanner optics + viewing glare, on the scanned RGB over the full padded
          ROI so the crop below never sees an edge artifact ([sc] ScannerParams
          lens_blur / unsharp_mask, [gl] add_glare -- the reference skips glare
-         when the film itself is scanned rather than printed). */
+         when the film itself is scanned, not printed). */
   if(d->p.scan_blur > 0.0f)
     sf_blur_plane3(plane, w, h, d->p.scan_blur * preview_scale, scratch);
   if(d->p.scan_usm_sigma > 0.0f && d->p.scan_usm_amount > 0.0f)
@@ -2116,9 +2113,9 @@ int process_cl(dt_iop_module_t *self,
   /* ---- 2) pre-film spatial effects on linear exposure -------------------- */
   if(d->p.boost_ev > 0.0f)
   {
-    /* The frame-maximum reduction that used to run here is gone: the curve is
-       anchored to the exposure scale now, which is what makes the boost agree
-       between the preview pipe, the export pipe and every tile. */
+    /* The curve is anchored to the exposure scale, not to a frame maximum, so
+       the boost agrees between the preview pipe, the export pipe and every
+       tile. A frame maximum would differ per ROI. */
     const float b_ev = d->p.boost_ev, b_rng = d->p.boost_range, b_prot = d->p.protect_ev;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_boost, w, h, CLARG(plane),
                                            CLARG(w), CLARG(h), CLARG(b_ev), CLARG(b_rng),
@@ -2321,12 +2318,12 @@ int process_cl(dt_iop_module_t *self,
        in past 100% doesn't grow radii beyond what was validated. Does
        NOT apply to npart_scale below, which is correctly resolution-
        dependent via pixel_um already. */
-    /* Unified through the multi-sublayer table for every stock (nsub can be
-       1) rather than branching to a separate single-layer kernel -- see the
+    /* Unified through the multi-sublayer table for every stock (nsub can be 1); no separate single-
+       layer kernel -- see the
        matching comment in process()'s CPU path for why that's valid: the
        build-time layer table already has correct n==1 data for single-layer
-       stocks. Built once per d->gpu (see d->grain_cl_built_for above)
-       rather than re-uploaded on every process_cl() call: tiled processing
+       stocks. Built once per d->gpu (see d->grain_cl_built_for above), not on every process_cl()
+       call: tiled processing
        calls this once per tile, and this data never changes between tiles
        of the same image, so re-uploading it per tile was pure overhead. */
     const int nsub = g->grain_n_sublayers, nle = SF_NLE, maxsub = SF_GRAIN_MAX_SUBLAYERS;
@@ -2362,8 +2359,8 @@ int process_cl(dt_iop_module_t *self,
       /* Upstream's per-sub-layer dye-cloud blur (layer_particle_model's
          blur_particle, grain.py): sigma depends only on that sub-layer's
          own per-particle optical density (dmax/npart), which is constant
-         across the whole image -- computed host-side once here, same as
-         the CPU path, rather than per-pixel on the device. */
+         across the whole image -- computed host-side once here, same as the CPU path, not per-pixel
+         on the device. */
       float dye_sigma[3][SF_GRAIN_MAX_SUBLAYERS];
       for(int c = 0; c < 3; c++)
         for(int sl = 0; sl < nsub; sl++)
@@ -2431,7 +2428,7 @@ int process_cl(dt_iop_module_t *self,
        retires the full device->host readback it needed, which stalled the queue
        once per grain stage. */
     /* Add the still-UNBLURRED delta, so the blur below sees the grained
-       absolute density rather than an isolated grain layer -- same ordering as
+       absolute density, not an isolated grain layer -- same ordering as
        process(), see the long comment there for why the blur and the unsharp
        mask that follows it only make sense as a pair. */
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_grain_add, w, h, CLARG(plane2),
@@ -2634,7 +2631,7 @@ static void _film_changed(GtkWidget *w,
   DT_LEAVE_GUI_UPDATE();
   /* A positive/reversal stock has no print stage, so its natural mode is
      scan_film. Point the widget's reset target at that, so a reset gesture on
-     the checkbox lands on what THIS film wants rather than the compiled
+     the checkbox lands on what THIS film wants, not the compiled
      default. */
   dt_bauhaus_toggle_set_default(g->scan_film, e->positive);
   /* scan-film follows the film's natural mode on a film switch: slides and
@@ -2650,11 +2647,11 @@ static void _film_changed(GtkWidget *w,
     _update_print_sensitivity(self);
   }
   /* On "auto" (hash 0) the paper follows the film's target print, and the
-     combobox keeps reading "auto" rather than jumping to the resolved stock:
+     combobox keeps reading "auto":
      the state is the link, not the destination, and selecting a specific paper
      while the hash says auto made the two disagree. The entry names the stock
-     it resolves to instead. Done on every film change, not only while auto is
-     selected, so the entry is already correct if the paper is set back to auto
+     it resolves to instead. Done on every film change, so the entry is already correct if the paper
+     is set back to auto
      later. The pipeline resolves it identically either way (_resolve_stock). */
   _update_paper_auto_entry(self);
   /* moves the coupler spread sliders' reset targets onto this stock, without
@@ -2730,11 +2727,10 @@ static const sf_prof_entry_t *_current_film_entry(const dt_iop_spektrafilm_gui_d
 
 /* The paper the pipeline actually prints on while "auto" is selected: the film's
    own target print when the pack ships it as a paper, otherwise the first print
-   stock in the list. That second half mirrors _resolve_stock()'s own last
-   resort, and is what makes the label honest -- stopping at target_print left
-   two cases reading "follow film stock" while the pipeline was quietly printing
-   on a specific paper anyway: a film that names no target print, and Double-X,
-   whose target 2302 the pack exports as a film rather than as a paper. */
+   stock in the list. The second half mirrors _resolve_stock()'s own last
+   resort, so the label names the paper in the two cases target_print alone does
+   not cover: a film that names no target print, and Double-X, whose target 2302
+   the pack exports as a film and not as a paper. */
 static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_data_t *g,
                                                 const sf_prof_entry_t *film)
 {
@@ -2749,7 +2745,7 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
   return first;
 }
 
-/* Name the resolved paper in the "auto" entry itself rather than only in the
+/* Name the resolved paper in the "auto" entry itself, not only in the
    tooltip. The combobox deliberately keeps reading "auto" while it follows a
    film (the state is the link, not the destination), but that left the paper
    actually being printed on invisible unless you hovered. Renaming the entry
@@ -2757,7 +2753,7 @@ static const sf_prof_entry_t *_auto_paper_entry(const dt_iop_spektrafilm_gui_dat
    only its text changes, so paper_hash stays 0.
 
    With scan_film there is no print stage at all, and the widget is insensitive:
-   the entry goes blank rather than naming a paper nothing will be printed on.
+   the entry goes blank; naming a paper nothing will be printed on would mislead.
    Called from _update_print_sensitivity() as well as on a film change, so it
    follows that toggle. */
 static void _update_paper_auto_entry(dt_iop_module_t *self)
@@ -2869,8 +2865,7 @@ static void _development_widget_update(GtkWidget *w,
      which introspection set to the compiled 0. That renders correctly -- 0 means
      "this stock's default" -- but leaves the slider reading 0 instead of the time
      it resolved to, on the one discontinuity in the range. Point it at the real
-     number for the stock in hand, so a reset shows 6.5 min on Double-X and 5 min
-     on 2302 rather than 0. */
+     number for the stock in hand, so a reset shows 6.5 min on Double-X and 5 min on 2302, not 0. */
   dt_bauhaus_slider_set_default(w, _development_default(e));
 
   if(have)
@@ -2898,8 +2893,8 @@ static void _development_widget_update(GtkWidget *w,
 }
 
 /* Film and print are separate chemistries developed for separate times, so they
-   get a slider each, pointed at their own stock. Lives here rather than in
-   gui_update() because this is the one function every film / paper / scan_film
+   get a slider each, pointed at their own stock. Lives here because this is the one function every
+   film / paper / scan_film
    change already routes through; in gui_update() alone it went stale the moment a
    stock was switched. */
 static void _update_development_sensitivity(const dt_iop_spektrafilm_gui_data_t *g,
@@ -2955,11 +2950,10 @@ static void _update_print_sensitivity(dt_iop_module_t *self)
   _update_development_sensitivity(g, p);
 }
 
-/* Grays out each effect's own sub-controls when its master "enable" toggle
-   is off -- previously only the print-related controls (scan_film ->
-   _update_print_sensitivity above) got this treatment; halation/grain/
-   diffusion sliders stayed clickable-but-inert when their own toggle was
-   unchecked, which reads as "these still do something" when they don't. */
+/* Grays out each effect's sub-controls when its master "enable" toggle is
+   off. A clickable slider under an unchecked toggle reads as if it still does
+   something. Covers halation, grain and both diffusion filters;
+   _update_print_sensitivity above does the same for the print controls. */
 static void _toggle_sensitivity(dt_iop_spektrafilm_gui_data_t *g,
                                 dt_iop_spektrafilm_params_t *p)
 {
@@ -3047,7 +3041,7 @@ void gui_changed(dt_iop_module_t *self,
     /* print_exposure_ev (manual) and print_auto_exposure (automatic) are
        independent, always-additive factors -- matching the reference app's
        own architecture (raw *= exposure_factor; raw *= enlarger.print_exposure,
-       two separate multiplications) rather than a mutually-exclusive pair.
+       two separate multiplications), not a mutually-exclusive pair.
        Left alone, re-enabling auto stacks on top of whatever manual EV was
        dialed in while it was off, which reads as "auto exposure is now
        offset by the old manual value". Reset the manual slider on OFF->ON
@@ -3137,8 +3131,7 @@ static void _update_data_row(dt_iop_module_t *self)
        matches and gets reused. The symptom is a module that stays inert after
        a successful download, starts working the moment any slider moves, and
        goes inert again the instant that slider returns to its original value,
-       because that value hashes back onto the stale line. A restart looked
-       like a fix only because it started with an empty cache. */
+       because that value hashes back onto the stale line. */
     dt_develop_t *dev = darktable.develop;
     if(dev)
     {
@@ -3181,8 +3174,8 @@ static gboolean _data_poll_cb(gpointer user_data)
   dt_iop_spektrafilm_gui_data_t *g = (dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   if(!g || !g->data_box) return G_SOURCE_REMOVE;
   _update_data_row(self);
-  /* _update_data_row clears data_poll when the fetch is no longer running, and
-     that is also the signal to stop this timeout. */
+  /* _update_data_row clears data_poll once the fetch stops running, which is
+     also the signal to stop this timeout. */
   return g->data_poll ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 }
 
@@ -3271,8 +3264,8 @@ void gui_update(dt_iop_module_t *self)
      edit starts in, and the one _film_changed() keeps updating. Picking a paper
      replaced it with an explicit choice and the link was then unreachable, which
      is what people have asked to get back. Give that state a name at the top of
-     the list so it is both visible and selectable, rather than adding a separate
-     reset button for something the combobox can already express. Data -1 keeps
+     the list so it is both visible and selectable, with no separate reset button for something the
+     combobox can already express. Data -1 keeps
      it clear of the list positions used below. */
   dt_bauhaus_combobox_add_full(g->paper, _("auto (follow film stock)"),
                                DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(-1), NULL, TRUE);
@@ -3370,22 +3363,19 @@ void gui_update(dt_iop_module_t *self)
 
 /* Boost that puts the probe lightness of `rgb` at `target_L`.
  *
- * This used to be a closed form: L was taken to scale as boost^(1/3), so one
- * probe plus new = current * (target/measured)^3 was supposedly exact. That
- * identity holds only while the scan stage is a pure scale on XYZ. It is not:
- * sf_sim_scan applies the scanner black/white-point correction AFTER the boost,
- * and that correction is affine and clipped -- the delivered luminance is
- * clamp(m * boost * Y + q, 0, 1). So L goes as boost^a with a < 1/3, the update
- * degenerates to new = current^(1 - 3a) * const, and repeated picks crept
- * toward the right value instead of landing on it. (Negatives are unaffected,
- * scan_bw_on is only set for scan-film mode with positive stock -- which is
- * exactly where this control gets used.)
+ * Solved numerically, because L does not scale as boost^(1/3). That identity
+ * would hold only if the scan stage were a pure scale on XYZ; sf_sim_scan
+ * applies the scanner black/white-point correction after the boost, and that
+ * correction is affine and clipped -- the delivered luminance is
+ * clamp(m * boost * Y + q, 0, 1), so L goes as boost^a with a < 1/3. A
+ * closed-form update from one probe converges on the answer over repeated
+ * picks without reaching it. (scan_bw_on is set only for scan-film with a
+ * positive stock, which is where this control is used.)
  *
- * Solve against the real transfer instead. boost -> L is monotone
- * non-decreasing and one probe is a single pixel through the sim, so a
- * geometric bisection over the slider's own range is both exact and free:
- * 20 steps pin the answer to ~2e-6 of the range. The result no longer depends
- * on the current slider value at all, so picking twice gives the same number. */
+ * boost -> L is monotone non-decreasing and one probe is a single pixel through
+ * the sim, so geometric bisection over the slider's range is exact and cheap:
+ * 20 steps pin the answer to ~2e-6 of the range. The result does not depend on
+ * the current slider value, so picking twice gives the same number. */
 static float _solve_boost_for_lightness(const sf_sim_t *sim,
                                         const float rgb[3],
                                         const float target_L)
@@ -3450,7 +3440,7 @@ void color_picker_apply(dt_iop_module_t *self,
      its threshold, so aiming just past it leaves visible unused headroom and
      reads dark. Successive values each left some, 0.95 included. 0.97 is close
      enough to the limit to use nearly all of the range while still landing on
-     the curve rather than at its asymptote, where the solver's bisection would
+     the curve, not at its asymptote, where the solver's bisection would
      have little gradient to work with. Nothing hard-clips at any target -- the
      knee is asymptotic by construction. */
   /* The scale aims higher than the boost. The boost hands its result to the
@@ -3485,8 +3475,8 @@ void color_picker_apply(dt_iop_module_t *self,
    button resets exactly the widgets between this heading and the next one.
 
    No bookkeeping: the widgets are packed into the page box in order, so the
-   callback walks that box from its own header to the following one. A heading
-   is marked with the "sf_section" data key rather than recognised by type. */
+   callback walks that box from its own header to the following one. A heading is marked with the
+   "sf_section" data key. */
 static void _section_reset_clicked(GtkButton *button,
                                    dt_iop_module_t *self)
 {
@@ -3498,7 +3488,7 @@ static void _section_reset_clicked(GtkButton *button,
   /* Deliberately NOT wrapped in darktable.gui->reset: each widget's own
      value-changed handler is what writes the param, so suppressing it would
      move the sliders without changing the render. The cost is one history entry
-     per widget rather than one per click -- correct, undoable, just chattier
+     per widget, not one per click -- correct, undoable, just chattier
      than ideal. */
   GList *kids = gtk_container_get_children(GTK_CONTAINER(box));
   /* Toggles go last, as dt_ui_notebook_page()'s own double-click page reset
@@ -3604,14 +3594,10 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_box_add(g->main_box, header_box);
 
-  /* Inline labels, like every other control in the module. These were section
-     headings for a while, to buy the value more width: the paper names used to
-     truncate to a shared prefix, so "Kodak Professional Portra Endura" and three
-     others all read alike. _shorten_name() has since stripped the filler words
-     they shared, and they now diverge at the seventh character ("Kodak Endura
-     Premier" / "Kodak Portra Endura" / "Kodak Supra Endura" / "Kodak Ultra
-     Endura"), so a label beside them no longer costs anything worth having.
-     A heading per single control also read as clutter once there were three. */
+  /* Inline labels, like every other control in the module. _shorten_name()
+     strips the filler words the paper names share, so they diverge at the
+     seventh character ("Kodak Endura Premier" / "Kodak Portra Endura" /
+     "Kodak Supra Endura" / "Kodak Ultra Endura") and fit beside a label. */
   g->film = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->film, NULL, N_("film stock"));
   gtk_widget_set_tooltip_text(g->film, _("film emulsion (spektrafilm filming profile)"));
@@ -3723,8 +3709,8 @@ void gui_init(dt_iop_module_t *self)
       _("local developer depletion in dense (highly-exposed) areas: blends the highlight"
         " shoulder toward a self-limiting rolloff without shifting midgray (0 = off)"));
 
-  /* One mechanism, six controls, and the two spread values read as sharpening
-     rather than as colour -- enough of a group, and enough of a surprise, to
+  /* One mechanism, six controls, and the two spread values read as sharpening, not as colour --
+     enough of a group, and enough of a surprise, to
      want a heading naming it. */
   _section_add(self, C_("section", "DIR couplers"));
 
@@ -3770,7 +3756,7 @@ void gui_init(dt_iop_module_t *self)
                                 " than the main spread. 0 removes the tail"));
 
   /* The knobs to reach for last: the adaptation switches change how faithful
-     the model is rather than what the look is, and quality trades accuracy for
+     the model is, not what the look is, and quality trades accuracy for
      speed. */
   _section_add(self, C_("section", "advanced"));
 
@@ -4061,7 +4047,7 @@ void gui_init(dt_iop_module_t *self)
      drives is calibrated at those stops -- 1/8, 1/4, 1/2, 1 and 2 -- with log2
      interpolation between them. The step moves scrolling and the arrow keys by
      an eighth at a time, so they walk the stops from a value already on one;
-     it is a delta rather than a grid, and dragging stays continuous. */
+     it is a delta, not a grid, and dragging stays continuous. */
   dt_bauhaus_slider_set_step(g->diffusion_strength, 0.125f);
   dt_bauhaus_slider_set_digits(g->diffusion_strength, 3);
   gtk_widget_set_tooltip_text(
@@ -4125,9 +4111,8 @@ void gui_init(dt_iop_module_t *self)
 
   /* Pre-compression boost lives here, not in the header. It acts in the scan
      stage, immediately before the OkLCh gamut compressor -- the last thing the
-     module does, not the first. Its old position at the top implied an input
-     control, which is why the picker "reading the processed look" was reported
-     as a bug: the picker is right, the placement was misleading. */
+     module does. A position at the top would imply an input control, and its
+     picker reads the processed image. */
   _section_add(self, C_("section", "output"));
 
   g->output_boost = dt_bauhaus_slider_from_params(self, "output_luminance_boost");

@@ -80,10 +80,10 @@ extern "C" {
  * happens to say), while this is a number the exporter controls and bumps only
  * when the layout changes in a way an older reader would get wrong.
  *
- * MIN exists so a build can drop support for a layout it can no longer read,
- * rather than parsing an old pack into plausible-looking nonsense. MAX exists
- * so a pack written by a newer exporter is refused with an explanation instead
- * of being silently misread -- pack.json is a permissive JSON object, so a
+ * MIN exists so a build can drop support for a layout it cannot read; without
+ * it an old pack parses into plausible-looking nonsense. MAX exists so a pack
+ * written by a newer exporter is refused with an explanation instead of being
+ * silently misread -- pack.json is a permissive JSON object, so a
  * future revision that moves or reinterprets a field would otherwise parse
  * without complaint. Widen MAX only once this reader actually handles the new
  * layout.
@@ -112,7 +112,7 @@ typedef enum sf_pack_status_t
 {
   SF_PACK_OK = 0,
   SF_PACK_ERR_UNREADABLE, /* missing, truncated, malformed, out of memory */
-  SF_PACK_ERR_TOO_OLD,    /* written by an exporter this build no longer reads */
+  SF_PACK_ERR_TOO_OLD,    /* written by an exporter this build does not read */
   SF_PACK_ERR_TOO_NEW,    /* written by an exporter newer than this build */
 } sf_pack_status_t;
 
@@ -400,7 +400,7 @@ typedef struct sf_sim_params_t
    * surface is the per-chromaticity exposure correction applied to the tc LUT
    * afterwards. The profiles set it true, but the reference runtime's own
    * setting is false and wins, so a reference render does NOT include it --
-   * hence false here as well, and a caller-facing switch rather than a
+   * hence false here as well, and a caller-facing switch, not a
    * profile-driven one. It is worth up to +-2 stops per channel away from the
    * reference white, so the two states are visibly different renders. */
   bool adaptation_bandwidth;    /* true */
@@ -420,8 +420,8 @@ typedef struct sf_sim_params_t
    * already there. The reference exposes these as DirCouplersParams
    * diffusion_size_um / diffusion_tail_um / diffusion_tail_weight, and its own
    * defaults of 20 um and a 200 um tail at 0.06 are wide enough to read as
-   * added clarity on fine detail -- which is why being able to shorten them
-   * matters more than the numbers themselves. */
+   * added clarity on fine detail, so the useful range runs downwards from
+   * them. */
   double coupler_diffusion_um;  /* -1 = from pack */
   double coupler_tail_um;       /* -1 = from pack */
   double coupler_tail_weight;   /* -1 = from pack */
@@ -432,7 +432,7 @@ typedef struct sf_sim_params_t
   /* [dt] Overrides for the per-stock grain statistics the pack supplies, which
    * are what actually decide how coarse the grain is: rms_granularity sets the
    * particle area through particle_area_from_rms_granularity(), so scaling it
-   * changes the particle population rather than post-multiplying the result.
+   * changes the particle population, not the finished result.
    * Negative means "keep the pack's", which is what a caller that does not care
    * should pass. The reference exposes all three directly as GrainParams
    * rms_granularity / uniformity / particle_scale_sublayers; these are scale

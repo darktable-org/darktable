@@ -39,8 +39,8 @@ void sf_blur_plane3_fast(float *buf,
 /* Same exact-kernel blur as sf_blur_plane3, but operating directly on a
    single flat w*h buffer (no 3-channel interleave) -- used for the
    per-sublayer dye-cloud blur inside grain generation, where each
-   (channel, sub-layer) has its own sigma and needs its own buffer rather
-   than sharing one interleaved 3-channel pass. No lower sigma cutoff
+   (channel, sub-layer) has its own sigma and needs its own buffer; one interleaved 3-channel pass
+   will not do. No lower sigma cutoff
    (unlike sf_blur_plane3's 0.3px guard for the visible clump blur): the
    dye-cloud sigma is often well under a pixel and still meaningfully
    softens the raw particle draw, matching upstream's plain `> 0` check. */
@@ -269,7 +269,7 @@ void sf_gauss_yvv_coeffs(float sigma,
 
 /* Build a normalized, truncated 1D Gaussian kernel. truncate = 3 sigma with
  * radius = int(3*sigma + 0.5), matching the reference's own
- * _gaussian_kernel_1d default rather than scipy's truncate = 4 -- the
+ * _gaussian_kernel_1d default, not scipy's truncate = 4 -- the
  * reference never calls scipy for this. `kernel` must have room for
  * 2*max_radius+1 taps; returns the radius actually used. Exported so both
  * the CPU convolution (spektra_core.c) and the GPU host-side weight upload

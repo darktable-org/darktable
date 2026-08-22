@@ -644,8 +644,8 @@ __kernel void spektrafilm_print_develop(__global const float4 *loge, __global fl
    OkLCh (mode 1) / ACES RGC (mode 2) gamut compression. Runs on the OUTPUT
    grid, cropping (ox, oy) from the full-ROI plane and taking alpha from the
    input image (spektra_sim: sf_sim_scan). */
-/* Scans the full padded ROI into a buffer rather than straight into the output
-   image: the scanner optics and the glare veil run after this on the scanned
+/* Scans the full padded ROI into a buffer: the scanner optics
+   and the glare veil run after this on the scanned
    RGB, and they need the padding. spektrafilm_crop_out does the crop. */
 __kernel void spektrafilm_scan(__global const float4 *cmy, __global float4 *rgb_out,
                                const int w, const int h,
@@ -779,7 +779,7 @@ __kernel void spektrafilm_passthrough(__read_only image2d_t in, __write_only ima
  * columns. `weights` holds 2*radius+1 normalized taps built host-side by
  * sf_gauss_kernel_1d() (spektra_core.c/.h) -- the same kernel the CPU path
  * convolves with, so GPU and CPU renders match. Clamp-to-edge boundary.
- * Separate _row/_col entry points (rather than a stride parameter) keep the
+  * Separate _row/_col entry points keep the
  * inner loop's memory access pattern explicit at the call site. Separate
  * _1c/_4c variants avoid packing a lone scatter-stage channel into an
  * otherwise-wasted float4. */

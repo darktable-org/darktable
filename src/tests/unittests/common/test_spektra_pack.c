@@ -30,7 +30,7 @@
  * directly or as one holding a single versioned subdirectory that does. Only
  * edits pinned to an older pack fetch anything at runtime, so the current pack
  * being on disk is the normal case -- but when it is not there, every test
- * here skips rather than fails. A missing pack means this build cannot answer
+ * here skips. A missing pack means this build cannot answer
  * the question, which is not the same as the engine being wrong, and a build
  * that goes red for the wrong reason is a build people learn to ignore.
  *
@@ -78,13 +78,13 @@
 
 /* The stocks upstream's own fixtures use (conftest.py). Absent from a pack,
    the first film and the first paper stand in, so a pack that renames or drops
-   them still gets exercised rather than skipped. */
+   them still gets exercised, not skipped. */
 #define FILM_STOCK "kodak_portra_400"
 #define PRINT_STOCK "kodak_portra_endura"
 
 /* Output slack. The scanner's gamut compressor is what bounds the render, and
-   it approaches its limit asymptotically rather than clamping, so the bound is
-   checked with room for the last ulps rather than as a hard [0, 1]. */
+   it approaches its limit asymptotically, without clamping, so the bound is
+   checked with room for the last ulps, not as a hard [0, 1]. */
 #define OUT_SLACK 1e-3
 
 typedef struct fixture_t
@@ -104,7 +104,7 @@ typedef struct fixture_t
     if(!(f) || !(f)->pack) skip();                                                                 \
   } while(0)
 
-/* For tests that need a film to work with rather than to check. A pack with no
+/* For tests that need a film to work with, not to check. A pack with no
    filming profile is a real fault, but test_pack_ships_both_a_film_and_a_paper
    is the one that reports it; everything else has nothing to say without one
    and skips. */
@@ -347,7 +347,7 @@ static void test_pack_loads_and_identifies_itself(void **state)
   if(!f || !f->pack_dir[0]) skip();
   TR_STEP("the shipped pack loads and names its version and spectral table");
   /* deliberately not REQUIRE_PACK: a pack that is present but will not load is
-     the one failure this suite must report rather than skip past */
+     the one failure this suite must report, not skip past */
   assert_non_null(f->pack);
   assert_non_null(sf_pack_version(f->pack));
   assert_non_null(sf_pack_lut_id(f->pack));
@@ -387,7 +387,7 @@ static void test_profile_arrays_are_populated_and_finite(void **state)
        wherever a stock was never measured -- Portra 400's base density is
        undefined at both ends of the visible range, and its channel densities
        likewise. So the check is not that every sample is finite but that none
-       is infinite, which would be a parse or arithmetic fault rather than a
+       is infinite, which would be a parse or arithmetic fault, not a
        gap, and that real data is present at all. */
     int sens_nonzero = 0, dens_finite = 0, base_finite = 0;
     for(int l = 0; l < SF_NWL; l++)
