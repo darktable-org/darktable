@@ -84,6 +84,9 @@ typedef struct dtgtk_button_config_t
   GCallback toggled_cb;
   /** user data passed to toggled_cb */
   gpointer toggled_data;
+  /** initial active state for dtgtk_togglebutton_new_full(); applied before
+   * clicked/toggled callbacks are connected, so initialization is silent */
+  gboolean active;
 } dtgtk_button_config_t;
 
 GtkWidget *dtgtk_button_new_full(DTGTKCairoPaintIconFunc paint,

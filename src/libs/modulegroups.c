@@ -485,6 +485,9 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
       gtk_widget_set_name(lb, "basics-iop_name");
       gtk_container_add(GTK_CONTAINER(evb), lb);
+      /* Keep the label proxy in sync with the enable button.  In particular,
+       * an insensitive button can still be toggled by set_active(). */
+      gtk_widget_set_sensitive(evb, gtk_widget_get_sensitive(btn));
       dt_gui_connect_click(evb, _basics_on_off_label_callback, NULL, btn);
       gtk_box_pack_start(GTK_BOX(item->box), evb, FALSE, TRUE, 0);
 
