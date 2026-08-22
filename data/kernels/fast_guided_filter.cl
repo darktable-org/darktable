@@ -38,10 +38,9 @@
  * orchestration that must call them once per buffer, per direction).
  *
  * NOTE: this file only provides the per-pixel kernels. The host-side C code
- * that allocates the intermediate buffers and launches these kernels (plus
- * the existing guided_filter_box_mean_x/_y from guided_filter.cl) in the
- * right order, once per iteration, still needs to be written -- mirroring
- * what common/guided_filter.c does for the RGB-guided variant.
+ * must allocate the intermediate buffers and launch these kernels (plus the
+ * existing guided_filter_box_mean_x/_y from guided_filter.cl) in the right
+ * order, once per iteration (see src/iop/satcurvergb.c for an implementation).
  */
 
 #define FGF_MIN_FLOAT 0x1p-16f  // exp2(-16.0f), matches MIN_FLOAT in fast_guided_filter.h
