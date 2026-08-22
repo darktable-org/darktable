@@ -1214,6 +1214,10 @@ static void _update_module_active_class(dt_iop_module_t *module)
 static void _gui_off_callback(GtkToggleButton *togglebutton,
                               dt_iop_module_t *module)
 {
+  /* Always-on modules have no user-toggleable switch.  A toggled signal
+   * during an internal state synchronisation must not create history. */
+  if(module->hide_enable_button) return;
+
   const gboolean basics =
     (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
   const gboolean special = module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
@@ -1358,9 +1362,15 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   if(!module->header) /* some modules such as overexposed don't actually have a header */
     return;
 
+  /* Updating the toggle state is an internal synchronisation, not a user
+   * action.  Keep it from generating a history item. */
+  DT_ENTER_GUI_UPDATE();
+
   // set panel name to display correct multi-instance
   _iop_panel_name(module);
   dt_iop_gui_set_enable_button(module);
+
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
@@ -3314,10 +3324,10 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
     button = dtgtk_togglebutton_new_full(paint, 0, module,
         &(dtgtk_button_config_t){
           .tooltip = tooltip,
+          .active = module->enabled,
           .toggled_cb = G_CALLBACK(_gui_off_callback),
           .toggled_data = module,
         });
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -3453,6 +3463,10 @@ static gboolean _on_drag_drop(GtkWidget *widget,
 
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
+  /* Header construction synchronises the enable button state.  Suppress
+   * those signals while the widget hierarchy is being built. */
+  DT_ENTER_GUI_UPDATE();
+
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(GTK_WIDGET(header), "module-header");
 
@@ -3606,6 +3620,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_ui_container_add_widget(darktable.gui->ui,
                              DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
+
+  DT_LEAVE_GUI_UPDATE();
 }
 
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)

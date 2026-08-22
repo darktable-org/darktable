@@ -161,6 +161,10 @@ GtkWidget *dtgtk_togglebutton_new_full(DTGTKCairoPaintIconFunc paint,
   if(config->action)
     dt_action_define(config->action, config->action_section,
                      config->action_label, button, config->action_def);
+  /* Set the state before connecting callbacks so initialisation does not
+   * look like a user action. */
+  if(config->active)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
   /* g_signal_connect() is a type-checking macro that token-pastes the
    * handler name, so the generic factory has to go through
    * g_signal_connect_data() directly. */
