@@ -159,6 +159,57 @@ static inline void _dt_draw_cursor_circle(cairo_t *cr,
 }
 
 /**
+ * dt_draw_backbuf_contrast — sample the display pixel under the cursor
+ * from the preview pipe backbuf at normalized image position (x, y)
+ * into rgb[], and derive frame_color[] used for the overlay lines
+ * (crosshair, wedge outline, circle outlines): white over dark content,
+ * black over bright content, so they stay legible on any background.
+ * Falls back to mid-grey / white when no backbuf is available.  Shared
+ * by all modules drawing the correction cursor so they use identical
+ * colors.
+ */
+static inline void dt_draw_backbuf_contrast(const dt_develop_t *dev,
+                                            const float x_norm,
+                                            const float y_norm,
+                                            float rgb[3],
+                                            float frame_color[3])
+{
+  float r = 0.5f, g = 0.5f, b = 0.5f; // fallback mid-grey
+
+  if(dev && dev->preview_pipe)
+  {
+    uint8_t *backbuf = dev->preview_pipe->backbuf;
+    const int buf_w = dev->preview_pipe->backbuf_width;
+    const int buf_h = dev->preview_pipe->backbuf_height;
+
+    if(backbuf && buf_w > 0 && buf_h > 0)
+    {
+      const int px = CLAMP((int)(x_norm * buf_w), 0, buf_w - 1);
+      const int py = CLAMP((int)(y_norm * buf_h), 0, buf_h - 1);
+
+      dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
+      const size_t idx = (size_t)py * buf_w * 4 + px * 4;
+      // backbuf is CAIRO_FORMAT_ARGB32: B, G, R, A byte order on little-endian
+      b = backbuf[idx + 0] / 255.0f;
+      g = backbuf[idx + 1] / 255.0f;
+      r = backbuf[idx + 2] / 255.0f;
+      dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
+    }
+  }
+
+  rgb[0] = r;
+  rgb[1] = g;
+  rgb[2] = b;
+
+  // Rec.601 luma of the sampled background: pick the contrasting shade
+  const float bg_luma = 0.3f * r + 0.59f * g + 0.11f * b;
+  const float shade = (bg_luma > 0.5f) ? 0.0f : 1.0f; // black over bright, white over dark
+  frame_color[0] = shade;
+  frame_color[1] = shade;
+  frame_color[2] = shade;
+}
+
+/**
  * dt_draw_correction_cursor — the on-canvas cursor shown by iop modules
  * that let the user adjust a per-pixel correction by hovering/scrolling
  * over the image (tone equalizer, color equalizer, ...): a crosshair
