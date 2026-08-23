@@ -442,9 +442,15 @@ Called by the framework whenever parameters are synced to the pixelpipe. Its job
 
 **Caching note:** After this function returns, the framework hashes the module's *inputs*, never its output: operation name, instance, `module->params`, and the blend parameters and mask group if blending is on (`dt_iop_commit_params()`, `src/develop/imageop.c`). `piece->data` is not read for the hash. If that `piece->hash` changes, the cache for this module and all subsequent ones is invalidated.
 
-`piece->hash` is only part of the cache key. A lookup also folds in the image id, the pipe type, the detail-mask flag, the four profiles the pipe is working with, the hash of every enabled piece before this one, and the ROI (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`). So pipe type, scale and colour profiles do not need to be in `params` — they are already in the key, deliberately.
+`piece->hash` is only part of the cache key. A lookup also folds in the image id, the pipe type, the detail-mask flag, the four profiles the pipe is working with, the hash of every enabled piece before this one, and — for a lookup with a ROI, which is the normal case — the ROI itself, the Scharr state and the colour picker's sample (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`). So pipe type, scale and colour profiles do not need to be in `params`: they are in the key already, deliberately.
 
-What the key does not cover is state outside the pipe and the parameters: a preference, or anything else global to the process. Read one of those in `commit_params()` and a result cached under the old value stays valid as far as the cache is concerned. `colorout` shows both halves — it reads `plugins/lighttable/export/force_lcms2` from the config, and it publishes its export profile into the pipe with `dt_ioppr_set_pipe_export_profile_info()` precisely so that part *is* hashed. Keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path.
+What the key does *not* do is hash the pipe or the image record wholesale. It hashes selected fields, so "I can reach it through `piece->pipe` or `self->dev`" is not a reason to assume an input is covered. Three cases worth knowing:
+
+- **Image metadata other than the id.** The id identifies the image; it does not version it. `exposure` derives its correction from `exif_exposure_bias` and `exif_highlight_preservation` (`src/iop/exposure.c`), and nothing in the key moves when those change.
+- **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at.
+- **Preferences and other process-global state.** `colorout` reads `plugins/lighttable/export/force_lcms2` from the config (`src/iop/colorout.c`).
+
+`colorout` also shows the remedy: it publishes its export profile into the pipe with `dt_ioppr_set_pipe_export_profile_info()` precisely so that part *is* hashed. Keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path.
 
 **Simple case** — no transformation needed, default `memcpy` suffices. Don't implement this function.
 
@@ -574,3 +580,7 @@ Darkroom Exit:
 Module Unload:
   cleanup_global()
 ```
+
+Optional callbacks are shown where a module that implements one is called: `gui_changed()`
+and `change_image()` are skipped for a module that does not have them, and the GUI steps
+are skipped entirely for a hidden module. See [GUI.md](GUI.md) for the full event flow.

@@ -61,9 +61,12 @@ The hash is computed cumulatively. For a given module at position $N$, the hash 
 1.  The image ID.
 2.  The pipe type (preview, full, export, etc.).
 3.  The detail mask state.
-4.  The colour profiles: input, working, and output ICC profile info (`pipe->input_profile_info`, `pipe->work_profile_info`, `pipe->output_profile_info`). Because colour profile changes are committed globally rather than per-module, they cannot be tracked in individual `piece->hash` values and are instead included in the base hash for every cache lookup.
+4.  The colour profiles: input, working, output and export ICC profile info (`pipe->input_profile_info` and friends). Because colour profile changes are committed globally rather than per-module, they cannot be tracked in individual `piece->hash` values and are instead included in the base hash for every cache lookup. Note that it is the profile-info *pointers* that are hashed, not their contents.
 5.  The hashes of all preceding enabled/non-skipped modules (0 to $N-1$).
 6.  The parameters of the current module (via `piece->hash`, which covers operation name, instance, params, and blending).
+7.  For a lookup that supplies a ROI — the normal processing case — the ROI itself, `pipe->scharr.hash`, and the colour picker's sample when an included module is picking.
+
+This list is the key as `dt_dev_pixelpipe_cache_hash()` builds it, not a hash of the whole pipe. See [IOP_Module_API.md](IOP_Module_API.md) for what that means when writing `commit_params()`.
 
 When `dt_iop_commit_params` is called (usually after a param change), the `piece->hash` is updated. This hash change propagates down the pipeline.
 
