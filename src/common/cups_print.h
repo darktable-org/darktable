@@ -60,6 +60,7 @@ typedef struct dt_printer_info_t
   dt_iop_color_intent_t intent;
   char profile[256];
   gboolean is_turboprint;
+  gboolean is_standard_media_type;
 } dt_printer_info_t;
 
 typedef struct dt_print_info_t

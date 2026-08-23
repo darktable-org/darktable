@@ -69,6 +69,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   memset(&pinfo->paper, 0, sizeof(dt_paper_info_t));
   pinfo->printer.intent = DT_INTENT_PERCEPTUAL;
   pinfo->printer.is_turboprint = FALSE;
+  pinfo->printer.is_standard_media_type = TRUE;
   *pinfo->printer.profile = '\0';
   pinfo->num_printers = 0;
 }
@@ -76,6 +77,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
 void dt_get_printer_info(const char *printer_name,
                          dt_printer_info_t *pinfo)
 {
+  pinfo->is_standard_media_type = TRUE;
   cups_dest_t *dests;
   const int num_dests = cupsGetDests(&dests);
   cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
@@ -90,6 +92,10 @@ void dt_get_printer_info(const char *printer_name,
     {
       ppdMarkDefaults(ppd);
       cupsMarkOptions(ppd, dest->num_options, dest->options);
+      if(!ppdFindOption(ppd, "MediaType") && ppdFindOption(ppd, "CNIJMediaType"))
+      {
+        pinfo->is_standard_media_type = FALSE;
+      }
 
       // first check if this is turboprint drived printer, two solutions:
       // 1. ModelName contains TurboPrint
@@ -381,10 +387,11 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
 
   if(ppd)
   {
-      ppd_option_t *opt = ppdFindOption(ppd, "MediaType");
+      const char *media_option = printer->is_standard_media_type
+                                  ? "MediaType"
+                                  : "CNIJMediaType";
 
-      if(!opt)
-        opt = ppdFindOption(ppd, "CNIJMediaType");
+      ppd_option_t *opt = ppdFindOption(ppd, media_option);
 
       if(opt)
       {
@@ -585,20 +592,11 @@ void dt_print_file(const dt_imgid_t imgid,
     num_options = cupsAddOption("media", pinfo->paper.name, num_options, &options);
 
     // the media type to print on
-    const char *PPDFile = cupsGetPPD(pinfo->printer.name);
-    ppd_file_t *ppd = ppdOpenFile(PPDFile);
+
     const char *media_option = "MediaType";
 
-    if(ppd)
-    {
-      if(!ppdFindOption(ppd, "MediaType") &&
-         ppdFindOption(ppd, "CNIJMediaType"))
-      {
-        media_option = "CNIJMediaType";
-      }
-      ppdClose(ppd);
-      g_unlink(PPDFile);
-    }
+    if(!pinfo->printer.is_standard_media_type)
+      media_option = "CNIJMediaType";
 
     num_options = cupsAddOption(media_option, pinfo->medium.name, num_options, &options);
 
