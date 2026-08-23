@@ -44,6 +44,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
 
@@ -53,6 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/darktable-org/darktable-build:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
       options: --tmpfs /tmp:exec --tmpfs /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}:exec
     strategy:
       fail-fast: true
