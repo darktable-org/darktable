@@ -2499,10 +2499,15 @@ static inline void oklab_to_xyz(const sf_sim_t *s,
 #define SF_CMAX_L_LO 0.02 /* [gc] _get_output_c_max_table oklch L_grid */
 #define SF_CMAX_L_HI 1.0
 
-/* bisect the max in-cube OkLch chroma per (L, h) ([gc] _build_polar_..._table) */
-static void build_cmax_table(sf_sim_t *s)
+/* bisect the max in-cube OkLch chroma per (L, h) ([gc] _build_polar_..._table).
+   Returns false if the table could not be allocated; the compressor's lookup
+   dereferences it unconditionally, so an unbuilt table cannot be rendered
+   with. A NULL cmax is meaningful only when compression is not oklch, where
+   nothing reads it. */
+static bool build_cmax_table(sf_sim_t *s)
 {
   s->cmax = malloc(sizeof(float) * SF_CMAX_NL * SF_CMAX_NH);
+  if(!s->cmax) return false;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -2532,6 +2537,7 @@ static void build_cmax_table(sf_sim_t *s)
       s->cmax[(size_t)i * SF_CMAX_NH + j] = (float)lo;
     }
   }
+  return true;
 }
 
 /* [gc] _c_max_lookup — bilinear, L clamped, hue wrapped */
@@ -2747,10 +2753,14 @@ static double exposure_factor(const sf_sim_t *s,
   return 1.0 / exp(log_sum / 3.0);
 }
 
-/* fill a steps^3 table by sampling fn over [lo, hi]^3 and prepare PCHIP */
+/* fill a steps^3 table by sampling fn over [lo, hi]^3 and prepare PCHIP.
+   Returns false when any of the six tables could not be allocated, having
+   released whatever it did get; at the highest quality one call asks for about
+   16 MB and a printing simulation makes two such calls, so the request is large
+   enough to fail on a loaded machine. */
 typedef void (*sf_cell_fn)(const sf_sim_t *, const double[3], double[3]);
 
-static void build_lut3d(const sf_sim_t *s,
+static bool build_lut3d(const sf_sim_t *s,
                         sf_cell_fn fn,
                         const double lo[3],
                         const double hi[3],
@@ -2770,6 +2780,12 @@ static void build_lut3d(const sf_sim_t *s,
   *sz = malloc(n3 * sizeof(double));
   *cmin = malloc(m3 * sizeof(double));
   *cmax_ = malloc(m3 * sizeof(double));
+  if(!*lut || !*sx || !*sy || !*sz || !*cmin || !*cmax_)
+  {
+    free(*lut); free(*sx); free(*sy); free(*sz); free(*cmin); free(*cmax_);
+    *lut = *sx = *sy = *sz = *cmin = *cmax_ = NULL;
+    return false;
+  }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -2783,6 +2799,7 @@ static void build_lut3d(const sf_sim_t *s,
         fn(s, cmy, *lut + ((((size_t)i) * steps + j) * steps + k) * 3);
       }
   pchip3d_prepare(*lut, steps, *sx, *sy, *sz, *cmin, *cmax_);
+  return true;
 }
 
 void sf_sim_free(sf_sim_t *s)
@@ -2910,6 +2927,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   const int n = pack->tc_n;
   s->tc_n = n;
   s->tc_lut = malloc((size_t)n * n * 3 * sizeof(double));
+  if(!s->tc_lut)
+  {
+    set_error(errmsg, "spektra_sim: out of memory for the spectral exposure table");
+    sf_sim_free(s);
+    return NULL;
+  }
   {
     double sens_w[SF_NWL][3];
     for(int l = 0; l < SF_NWL; l++)
@@ -3599,15 +3622,25 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   {
     if(s->has_print)
     {
-      build_lut3d(s, cmy_to_print_lograw, s->enl_lo, s->enl_hi, s->lut_steps, &s->enl_lut,
-                  &s->enl_sx, &s->enl_sy, &s->enl_sz, &s->enl_cmin, &s->enl_cmax);
+      if(!build_lut3d(s, cmy_to_print_lograw, s->enl_lo, s->enl_hi, s->lut_steps, &s->enl_lut,
+                      &s->enl_sx, &s->enl_sy, &s->enl_sz, &s->enl_cmin, &s->enl_cmax))
+      {
+        set_error(errmsg, "spektra_sim: out of memory for the enlarger table");
+        sf_sim_free(s);
+        return NULL;
+      }
       const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
       s->enl_lut_f = malloc(n3 * sizeof(float));
       if(s->enl_lut_f)
         for(size_t i = 0; i < n3; i++) s->enl_lut_f[i] = (float)s->enl_lut[i];
     }
-    build_lut3d(s, cmy_to_log_xyz, s->scan_lo, s->scan_hi, s->lut_steps, &s->scan_lut,
-                &s->scan_sx, &s->scan_sy, &s->scan_sz, &s->scan_cmin, &s->scan_cmax);
+    if(!build_lut3d(s, cmy_to_log_xyz, s->scan_lo, s->scan_hi, s->lut_steps, &s->scan_lut,
+                    &s->scan_sx, &s->scan_sy, &s->scan_sz, &s->scan_cmin, &s->scan_cmax))
+    {
+      set_error(errmsg, "spektra_sim: out of memory for the scan table");
+      sf_sim_free(s);
+      return NULL;
+    }
     {
       const size_t n3 = (size_t)s->lut_steps * s->lut_steps * s->lut_steps * 3;
       s->scan_lut_f = malloc(n3 * sizeof(float));
@@ -3621,7 +3654,12 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
   memcpy(s->out_xyz2rgb, p->output_xyz_to_rgb, sizeof(s->out_xyz2rgb));
   mat3_inv(s->oklab_m1inv, SF_OKLAB_M1);
   mat3_inv(s->oklab_m2inv, SF_OKLAB_M2);
-  if(s->out_compress == SF_OUTPUT_COMPRESS_OKLCH) build_cmax_table(s);
+  if(s->out_compress == SF_OUTPUT_COMPRESS_OKLCH && !build_cmax_table(s))
+  {
+    set_error(errmsg, "spektra_sim: out of memory for the gamut compression table");
+    sf_sim_free(s);
+    return NULL;
+  }
 
   return s;
 }
