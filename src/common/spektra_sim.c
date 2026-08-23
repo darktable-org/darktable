@@ -1451,7 +1451,23 @@ static inline void cubic_base_fraction(double coord,
                                        int *base,
                                        double *frac)
 {
-  coord = CLAMP(coord, 0.0, (double)(L - 1));
+  /* Ordered so that a non-finite coordinate lands on the low branch. A NaN
+     fails every comparison, so an ordinary clamp returns it unchanged, and
+     (int)floor(NaN) is undefined and in practice yields INT_MIN, which
+     safe_index() negates into a large positive index and the caller turns into
+     an offset far outside the table.
+
+     NaN reaches here from an ordinary pixel: a non-finite input channel makes
+     the chromaticity divide evaluate to NaN, and the triangle-to-square map
+     clamps with a form that passes NaN through. Sampling index 0 for such a
+     pixel matches what the OpenCL twin already does, where fmin/fmax map NaN
+     to the low bound. */
+  if(!(coord > 0.0))
+  {
+    *base = 0;
+    *frac = 0.0;
+    return;
+  }
   if(coord >= (double)(L - 1))
   {
     *base = L - 2;
