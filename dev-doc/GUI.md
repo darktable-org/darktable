@@ -116,13 +116,14 @@ commit_params() → process()
 
 **Path C — External change (image switch, undo, preset):**
 ```
-Framework loads new params into self->params
-    ↓
 Framework call DT_ENTER_GUI_UPDATE()
     ↓
-On an image switch only: framework calls your change_image()
-(the base instance is kept, so stale gui_data must be reset there —
- see IOP_Module_API.md and GUI_Threading.md)
+On an image switch only: framework calls reload_defaults(),
+then your change_image() — the visible base instance is kept, so
+gui_data describing the old image must be reset there
+(see IOP_Module_API.md and GUI_Threading.md)
+    ↓
+Framework loads the selected params into self->params
     ↓
 Framework calls your gui_update()
     ↓
