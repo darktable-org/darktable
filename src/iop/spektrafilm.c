@@ -1488,11 +1488,38 @@ void tiling_callback(dt_iop_module_t *self,
   const float full_long_edge
     = fmaxf(fmaxf((float)piece->buf_in.width, (float)piece->buf_in.height) * roi_in->scale, 1.0f);
   const float pixel_um = d->p.film_format_mm * 1000.0f / full_long_edge;
-  tiling->factor = 2.5f; /* 4 float4 buffers; they alias */
-  tiling->factor_cl = 4.0f; /* + gtmp4 (1 float4) + plane1 and gtmp1 (1ch each, 1/4 float4) */
+  /* Peak simultaneous buffers, in multiples of one RGBA tile.
+     CPU: input + output (2.0) plus the three always-live temporaries -- plane
+     and corr at 3 channels each, the 1-channel blur scratch (1.75) -- for a
+     3.75 baseline. The widest stage on top of that is halation, which holds
+     two 1-channel and three 3-channel buffers at once (2.75). The coupler
+     tail adds 1.5 and grain up to 2.0 at the maximum sub-layer count, and the
+     stages run one after another, so halation sets the peak at 6.5.
+     OpenCL: input + output plus five float4 buffers (plane, plane2, tmpa, acc,
+     gtmp4) and two single-channel ones (plane1, gtmp1), a 7.5 baseline; the
+     grain stage adds an accumulator and one buffer per sub-layer, up to 2.25.
+     Understating these lets the tiler pick tiles that then fail to allocate,
+     and the CPU path answers an allocation failure with a passthrough of that
+     tile -- unprocessed rectangles inside an otherwise processed frame, not a
+     clean skip -- so the estimate has to be an upper bound. */
+  tiling->factor = 6.5f;
+  tiling->factor_cl = 9.75f;
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
-  tiling->overhead = 0;
+  /* Constant tables uploaded once per run and independent of tile size: the
+     two PCHIP table sets dominate, and they scale with the quality steps --
+     roughly 1.3 MB at draft against 17 MB at high. Exact-spectral quality
+     builds no tables at all and reports zero steps. */
+  const int steps = _quality_steps(d->p.quality);
+  size_t overhead = (size_t)192 * 192 * 3 * sizeof(float); /* spectral upsampling table */
+  if(steps >= 2)
+  {
+    const size_t n3 = (size_t)steps * steps * steps * 3;
+    const size_t m3 = (size_t)(steps - 1) * (steps - 1) * (steps - 1) * 3;
+    const size_t set = (4 * n3 + 2 * m3) * sizeof(float);
+    overhead += d->p.scan_film ? set : 2 * set;
+  }
+  tiling->overhead = overhead;
   tiling->overlap = (unsigned)ceilf(SF_HALO_SIGMAS * _max_halo_sigma(&d->p, pixel_um));
   tiling->align = 1;
 }
