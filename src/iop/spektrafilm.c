@@ -1403,9 +1403,30 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
                                                    p->print_diffusion_warmth,
                                                    p->print_diffusion_scale))
                      * inv_um;
+  /* grain stage: the clump blur and the acutance recovery are dispatched in
+     pixels rather than micrometres, so neither goes through inv_um.
+
+     The clump blur is a fixed pixel radius by design (see its dispatch in
+     process()), scaled down by preview_scale, which never exceeds 1, so the
+     unscaled radius is the bound. It must not be converted through pixel_um:
+     that would scale the pad by SF_GRAIN_REF_UM/pixel_um, a factor below 1
+     whenever the full-resolution long edge is under
+     film_format_mm*1000/SF_GRAIN_REF_UM pixels -- 3600 px at the 36 mm
+     default. The acutance recovery that follows it is bounded the same way.
+
+     The per-sub-layer dye-cloud blur inside the sampler stays uncovered. Its
+     sigma comes from a sub-layer's per-particle optical density, which only
+     exists once the simulation is built, and the simulation is not available
+     at ROI time. Bounding it with a constant would mean either capping a blur
+     the reference does not cap -- changing rendered grain on every stock -- or
+     inventing a ceiling with no data behind it. Leaving it unpadded preserves
+     current output and is no worse than before this calculation was corrected;
+     covering it properly needs the sigma plumbed out of the simulation, which
+     is a larger change than this one. */
   const float grain = (p->grain_on && p->grain_amount > 0.0f)
-                          ? SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
-                                * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN) * inv_um
+                          ? fmaxf(SF_GRAIN_BLUR_FACTOR
+                                      * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN),
+                                  (p->grain_usm_amount > 0.0f) ? p->grain_usm_sigma : 0.0f)
                           : 0.0f;
   /* coupler halo: gaussian core plus the widest exponential-tail component.
      Both are persisted absolutes and are handed to the simulation unchanged,
