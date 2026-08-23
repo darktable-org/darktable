@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-19 13:54+0200\n"
-"PO-Revision-Date: 2026-08-23 14:34+0900\n"
+"PO-Revision-Date: 2026-08-23 18:51+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1752,14 +1752,12 @@ msgstr ""
 "とをおすすめします。このオプションは警告を常に非表示にします"
 
 #: ../build/bin/preferences_gen.h:3939
-#, fuzzy
-#| msgid "alignment"
 msgid "HDR alignment"
-msgstr "配置"
+msgstr "HDR位置合わせ"
 
 #: ../build/bin/preferences_gen.h:3949
 msgid "auto-align frames when merging HDR brackets"
-msgstr ""
+msgstr "HDRブラケット合成時にフレームを自動位置合わせする"
 
 #: ../build/bin/preferences_gen.h:3957
 msgid ""
@@ -1767,10 +1765,13 @@ msgid ""
 "removing ghosting caused by a shaky tripod or handheld shots.\n"
 "only effective when darktable is built with OpenCV."
 msgstr ""
+"合成前に露出ブラケットを基準フレームに位置合わせ・変形し、三脚のぶれや手持ち撮"
+"影によって生じたゴーストを除去します\n"
+"darktableがOpenCV対応でビルドされている場合のみ有効です"
 
 #: ../build/bin/preferences_gen.h:3970
 msgid "pick the HDR alignment reference automatically"
-msgstr ""
+msgstr "HDR位置合わせの基準を自動選択する"
 
 #: ../build/bin/preferences_gen.h:3978
 msgid ""
@@ -1780,17 +1781,21 @@ msgid ""
 "one extra decode pass over the frames.\n"
 "requires auto-align and an OpenCV build."
 msgstr ""
+"合成前に全てのブラケットを検証し、最初のフレームではなく最もディテールが豊富な"
+"フレームを基準に位置合わせします\n"
+"最初の露出が基準として不適切な場合に位置合わせ精度が向上しますが、フレームのデ"
+"コードが1回余分に必要になります\n"
+"自動位置合わせとOpenCV対応ビルドが必要です"
 
 #: ../build/bin/preferences_gen.h:3991
 msgid "alignment detail (proxy scale)"
-msgstr ""
+msgstr "位置合わせのディテール（プロキシスケール）"
 
 #: ../build/bin/preferences_gen.h:4004 ../build/bin/preferences_gen.h:4032
 #: ../build/bin/preferences_gen.h:4060
-#, fuzzy, c-format
-#| msgid "double click to reset to `%f'"
+#, c-format
 msgid "double click to reset to `%.03f'"
-msgstr "ダブルクリックすると、`%f'にリセット"
+msgstr "ダブルクリックすると、`%.03f'にリセット"
 
 #: ../build/bin/preferences_gen.h:4006
 msgid ""
@@ -1800,10 +1805,15 @@ msgid ""
 "low-contrast scenes) but cost roughly (scale / 0.5)^2 more time and memory.\n"
 "0.5 restores the legacy speed."
 msgstr ""
+"特徴検出と位置合わせを計算する際の、センサー解像度全体に対する割合です\n"
+"値を大きくすると、より多くの、より特徴的な点を検出します（繰り返しパターンやコ"
+"ントラストの低いシーンで有利）が、処理時間とメモリ消費がおよそ（スケール / "
+"0.5)^2倍になります\n"
+"0.5にすると旧来の速度に戻ります"
 
 #: ../build/bin/preferences_gen.h:4019
 msgid "shadow lift for feature detection (gamma)"
-msgstr ""
+msgstr "特徴検出のためのシャドウ持ち上げ（ガンマ）"
 
 #: ../build/bin/preferences_gen.h:4034
 msgid ""
@@ -1813,10 +1823,15 @@ msgid ""
 "shadow noise; the percentile stretch already does part of this, so the effect "
 "is scene-dependent."
 msgstr ""
+"特徴検出の前にリニアRAWにディスプレイガンマを適用し、シャドウのディテールを検"
+"出の範囲まで持ち上げます\n"
+"1.0で無効になります。値を大きくすると、露出不足のフレームに有用ですが、シャド"
+"ウノイズが増幅されることがあります。パーセンタイルストレッチがすでにこの効果の"
+"一部を担っているため、効果はシーンによって異なります"
 
 #: ../build/bin/preferences_gen.h:4047
 msgid "local contrast for feature detection (CLAHE clip)"
-msgstr ""
+msgstr "特徴検出のための局所的なコントラスト（CLAHEクリップ）"
 
 #: ../build/bin/preferences_gen.h:4062
 msgid ""
@@ -1827,10 +1842,15 @@ msgid ""
 "descriptor signatures between exposures and cause mis-alignment, so it is off "
 "by default."
 msgstr ""
+"特徴検出の前に適用される局所的コントラスト強調（CLAHE）のクリップ制限です。0で"
+"無効になります\n"
+"有効にする（例: 2.0）と極端に露出不足のフレームでの特徴検出に役立ちますが、繰"
+"り返しのあるテクスチャ（外壁、手すり、葉など）では露出間で記述子のシグネチャが"
+"変化し、位置合わせのミスを招くことがあるため、既定では無効です。"
 
 #: ../build/bin/preferences_gen.h:4075
 msgid "feature budget per frame (keypoints)"
-msgstr ""
+msgstr "フレームごとの特徴点数の上限（キーポイント）"
 
 #: ../build/bin/preferences_gen.h:4094
 msgid ""
@@ -1839,12 +1859,14 @@ msgid ""
 "balancing both frames to a common budget keeps a feature-dense frame from "
 "flooding the matcher with ambiguous candidates."
 msgstr ""
+"空間的バランス調整後、マッチング前にフレームごとに保持されるSIFTキーポイントの"
+"最大数\n"
+"両方のフレームを共通の上限に揃えることで、特徴点の多いフレームが曖昧な候補で"
+"マッチャーを圧倒するのを防ぎます"
 
 #: ../build/bin/preferences_gen.h:4107
-#, fuzzy
-#| msgid "set date/time of %d images"
 msgid "save alignment debug images"
-msgstr "%d枚の画像の日時を設定しました"
+msgstr "位置合わせのデバッグ画像を保存する"
 
 #: ../build/bin/preferences_gen.h:4115
 msgid ""
@@ -1855,6 +1877,11 @@ msgid ""
 "system temp directory (or the folder named by the DT_HDR_DEBUG_IMAGE_DIR "
 "environment variable). for diagnosing alignment problems; off by default."
 msgstr ""
+"合成中にフレームごとの診断用画像（特徴検出への入力画像、検出されたキーポイン"
+"ト、すべての特徴合致〈緑 = インライア、赤 = アウトライア〉）を書き出します\n"
+"システムの一時ディレクトリ内のdarktable_hdr_align_debugフォルダ（または"
+"DT_HDR_DEBUG_IMAGE_DIR環境変数で指定したフォルダ）にNetpbm形式（.pgm／.ppm）で"
+"保存されます。位置合わせの問題を診断するためのものです。既定では無効です"
 
 #: ../build/bin/preferences_gen.h:4125
 msgid "CPU / memory"
@@ -3734,7 +3761,7 @@ msgstr "色ずれ回避"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
 #: ../build/lib/darktable/plugins/introspection_highlights.c:252
 msgid "iterations"
-msgstr "繰り返し"
+msgstr "反復"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:109
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:301
@@ -4491,17 +4518,13 @@ msgstr "ディテールレベル"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:69
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:132
-#, fuzzy
-#| msgid "adjust the exposure correction"
 msgid "adjust edge protection"
-msgstr "露出補正を調整します"
+msgstr "エッジ保護を調整する"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:75
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:136
-#, fuzzy
-#| msgid "iterations"
 msgid "filter iterations"
-msgstr "繰り返し"
+msgstr "フィルターの反復回数"
 
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:81
 #: ../build/lib/darktable/plugins/introspection_contrastntexture.c:140
@@ -5100,7 +5123,7 @@ msgstr "カスタム設定のミドルグレー値を使用"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:345
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:512
 msgid "iterations of high-quality reconstruction"
-msgstr "高クオリティな再構成の繰り返し適用"
+msgstr "高クオリティな再構成の反復適用"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:351
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:516
@@ -6498,6 +6521,8 @@ msgstr "入力ファイルあるいはディレクトリ'%s'は存在しませ�
 #, c-format
 msgid "empty in-memory library is useless for darktable cli export\n"
 msgstr ""
+"空のメモリ内ライブラリはdarktable cliエクスポートには使用することが出来ませ"
+"ん\n"
 
 #: ../src/cli/main.c:404
 #, c-format
@@ -6756,7 +6781,7 @@ msgstr ""
 #: ../src/common/ai_models.c:1876
 #, c-format
 msgid "malformed checksum for %s"
-msgstr ""
+msgstr "%sのチェックサムが不正です"
 
 #: ../src/common/ai_models.c:1889
 msgid "failed to build download url"
@@ -6807,15 +6832,14 @@ msgid "failed to extract archive"
 msgstr "アーカイブの展開に失敗しました"
 
 #: ../src/common/ai_models.c:2306
-#, fuzzy
-#| msgid "image `%s' is not available!"
 msgid "ai subsystem is not available"
-msgstr "画像`%s'は使用することが出来ません！"
+msgstr "AIサブシステムは利用することが出来ません"
 
 #: ../src/common/ai_models.c:2360
 #, c-format
 msgid "could not read the model list published by %s (release %s)"
 msgstr ""
+"%s（リリース%s）が公開しているモデル一覧を読み込むことが出来ませんでした"
 
 #: ../src/common/camera_control.c:205
 #, c-format
@@ -6960,10 +6984,8 @@ msgid "duplicates"
 msgstr "複製"
 
 #: ../src/common/collection.c:660 ../src/libs/filters/misc.c:475
-#, fuzzy
-#| msgid "image infos"
 msgid "image dimensions"
-msgstr "画像情報"
+msgstr "画像サイズ"
 
 #: ../src/common/collection.c:662 ../src/dtgtk/thumbnail.c:1629
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:140
@@ -9218,11 +9240,13 @@ msgid ""
 "HDR merge aborted: `%s' is not a raw exposure (already merged HDR, monochrome "
 "or non-raw image)"
 msgstr ""
+"HDR合成を中止しました：`%s'はRAW露出ではありません（すでに合成済みのHDR、モノ"
+"クロ、またはRAW以外の画像）"
 
 #: ../src/control/jobs/control_jobs.c:747
 #, c-format
 msgid "HDR merge aborted: `%s' has a different size or orientation"
-msgstr ""
+msgstr "HDR合成を中止しました：`%s'はサイズまたは向きが異なります"
 
 #: ../src/control/jobs/control_jobs.c:767 ../src/control/jobs/control_jobs.c:842
 #, c-format
@@ -9233,11 +9257,11 @@ msgstr[1] "%d枚の画像を結合します"
 
 #: ../src/control/jobs/control_jobs.c:788
 msgid "merging HDR: auto-aligning exposure brackets"
-msgstr ""
+msgstr "HDR合成中：露出ブラケットを自動位置合わせしています"
 
 #: ../src/control/jobs/control_jobs.c:810
 msgid "examining frames for HDR auto-reference"
-msgstr ""
+msgstr "HDR自動基準のためにフレームを検証しています"
 
 #: ../src/control/jobs/control_jobs.c:913
 #, c-format
@@ -9746,10 +9770,9 @@ msgstr[0] "%d枚の画像をインポートしています"
 msgstr[1] "%d枚の画像をインポートしています"
 
 #: ../src/control/jobs/control_jobs.c:3264
-#, fuzzy, c-format
-#| msgid "importing image %s"
+#, c-format
 msgid "importing image %d/%d"
-msgstr "画像%s をインポートしています"
+msgstr "画像%d/%dをインポートしています"
 
 #: ../src/control/jobs/control_jobs.c:3272
 #, c-format
@@ -17311,10 +17334,8 @@ msgid "not downloaded"
 msgstr "未ダウンロード"
 
 #: ../src/gui/preferences_ai.c:251
-#, fuzzy
-#| msgid "import from file…"
 msgid "imported from file"
-msgstr "ファイルからインポート..."
+msgstr "ファイルからインポート済み"
 
 #: ../src/gui/preferences_ai.c:253
 msgid "local"
@@ -17347,7 +17368,7 @@ msgstr "モデルのダウンロードが出来ませんでした"
 
 #: ../src/gui/preferences_ai.c:1140
 msgid "retrieving the list of models…"
-msgstr ""
+msgstr "モデル一覧を取得しています…"
 
 #: ../src/gui/preferences_ai.c:1162
 msgid "nothing to install from here"
@@ -17370,10 +17391,8 @@ msgid "a local install"
 msgstr "ローカルインストール"
 
 #: ../src/gui/preferences_ai.c:1262
-#, fuzzy
-#| msgid "install model"
 msgid "replace installed model?"
-msgstr "モデルをインストール"
+msgstr "インストール済みのモデルを置き換えますか？"
 
 #: ../src/gui/preferences_ai.c:1264
 #, c-format
@@ -17382,14 +17401,17 @@ msgid ""
 "\n"
 "installing it from %s replaces those files"
 msgstr ""
+"\"%s\"はすでに%sからインストールされています\n"
+"\n"
+"%sからインストールするとそれらのファイルが置き換えられます"
 
 #: ../src/gui/preferences_ai.c:1295
 msgid "this repository offers no models for this version of darktable"
-msgstr ""
+msgstr "このリポジトリには、このバージョンのdarktable向けのモデルがありません"
 
 #: ../src/gui/preferences_ai.c:1297
 msgid "repository not usable"
-msgstr ""
+msgstr "リポジトリを使用することが出来ません"
 
 #: ../src/gui/preferences_ai.c:1308
 msgid "add this repository?"
@@ -17403,12 +17425,14 @@ msgid ""
 "it is not maintained or reviewed by the darktable project, and a model "
 "installed from it replaces any installed model of the same name"
 msgstr ""
+"%sはこのバージョンのdarktable向けに%d個のモデルを提供しています\n"
+"\n"
+"これはdarktableプロジェクトによって保守・レビューされているものではなく、ここ"
+"からインストールしたモデルは同名のインストール済みモデルを置き換えます"
 
 #: ../src/gui/preferences_ai.c:1386
-#, fuzzy
-#| msgid "a preset with this name already exists!"
 msgid "that repository is already listed"
-msgstr "この名前のプリセットは既に存在しています！"
+msgstr "このリポジトリはすでに登録されています"
 
 #: ../src/gui/preferences_ai.c:1437
 msgid "repositories"
@@ -17424,22 +17448,16 @@ msgid "remove"
 msgstr "除去"
 
 #: ../src/gui/preferences_ai.c:1548
-#, fuzzy
-#| msgid "invalid repository format"
 msgid "no repository configured"
-msgstr "無効なリポジトリ形式"
+msgstr "リポジトリが設定されていません"
 
 #: ../src/gui/preferences_ai.c:1549
-#, fuzzy
-#| msgid "invalid repository format"
 msgid "set plugins/ai/repository first"
-msgstr "無効なリポジトリ形式"
+msgstr "先にplugins/ai/repositoryを設定してください"
 
 #: ../src/gui/preferences_ai.c:1554
-#, fuzzy
-#| msgid "install a model from a local .dtmodel file"
 msgid "install models from repository"
-msgstr "ローカルの .dtmodelファイルからモデルをインストールします"
+msgstr "リポジトリからモデルをインストールする"
 
 #: ../src/gui/preferences_ai.c:1558
 msgid "_install"
@@ -17463,14 +17481,12 @@ msgid "status"
 msgstr "状態"
 
 #: ../src/gui/preferences_ai.c:1647
-#, fuzzy
-#| msgid "manage presets..."
 msgid "manage repositories…"
-msgstr "プリセットの管理..."
+msgstr "リポジトリを管理…"
 
 #: ../src/gui/preferences_ai.c:1649
 msgid "add or remove the repositories models can be installed from"
-msgstr ""
+msgstr "モデルのインストール元となるリポジトリを追加または削除する"
 
 #: ../src/gui/preferences_ai.c:1732
 msgid "install AI models"
@@ -17674,13 +17690,15 @@ msgstr "ローカルの .dtmodelファイルからモデルをインストール
 
 #: ../src/gui/preferences_ai.c:2645
 msgid "install from repository…"
-msgstr ""
+msgstr "リポジトリからインストール…"
 
 #: ../src/gui/preferences_ai.c:2647
 msgid ""
 "browse every model the configured repository offers for this version of "
 "darktable, including any not listed above"
 msgstr ""
+"設定済みのリポジトリがこのバージョンのdarktable向けに提供する、上記に記載のな"
+"いものも含めた全てののモデルを閲覧する"
 
 #. delete selected button
 #: ../src/gui/preferences_ai.c:2658
@@ -23476,27 +23494,25 @@ msgstr "コントラスト＆テクスチャ"
 
 #: ../src/iop/contrastntexture.c:118
 msgid "local contrast|texture|clarity|detail enhancement"
-msgstr ""
+msgstr "ローカルコントラスト|テクスチャ|明瞭化|ディテール強調"
 
 #: ../src/iop/contrastntexture.c:124
 msgid "enhance local contrast by boosting details while preserving edges"
-msgstr ""
+msgstr "エッジを保持しながらディテールを強調して局所的なコントラストを高めます"
 
 #: ../src/iop/contrastntexture.c:296
-#, fuzzy
-#| msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgid "local contrast failed to allocate memory, check your RAM settings"
 msgstr ""
-"トーンイコライザーがメモリの割り当てに失敗しました。RAMの設定を確認してくださ"
+"局所的コントラストがメモリの割り当てに失敗しました。RAMの設定を確認してくださ"
 "い"
 
 #: ../src/iop/contrastntexture.c:400
 msgid "amount of local contrast enhancement"
-msgstr ""
+msgstr "局所的なコントラストの強調の量"
 
 #: ../src/iop/contrastntexture.c:402
 msgid "visualize details adjusted by the local constrast"
-msgstr ""
+msgstr "局所的なコントラストによって調整されたディテールを可視化する"
 
 #. Filter settings section
 #: ../src/iop/contrastntexture.c:405
@@ -23510,6 +23526,9 @@ msgid ""
 "higher = more contrast boost in finer details\n"
 "lower = more contrast boost in coarser details"
 msgstr ""
+"局所的なコントラストによって調整されるディテールのレベル\n"
+"値を大きくすると、より細かいディテールのコントラストが強調されます\n"
+"値を小さくすると、より粗いディテールのコントラストが強調されます"
 
 #: ../src/iop/contrastntexture.c:420
 msgid ""
@@ -23517,24 +23536,26 @@ msgid ""
 "higher = more edge preservation\n"
 "lower = smoother transitions, but may lead to halos around edges"
 msgstr ""
+"フィルターのエッジ感度を調整します\n"
+"値を大きくすると、エッジがより保持されます\n"
+"値を小さくすると、遷移がより滑らかになりますが、エッジ周辺にハロが生じることが"
+"あります"
 
 #: ../src/iop/contrastntexture.c:426
-#, fuzzy
-#| msgid ""
-#| "number of passes of guided filter to apply\n"
-#| "helps diffusing the edges of the filter at the expense of speed"
 msgid ""
 "number of passes of the guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"適用するガイデットフィルタのパスの数\n"
-"速度を犠牲にして、フィルタのエッジを拡散するのに役立ちます"
+"適用するガイデットフィルタのパス回数\n"
+"速度を犠牲にして、フィルタのエッジをより滑らかに拡散します"
 
 #: ../src/iop/contrastntexture.c:433
 msgid ""
 "add bias to reduce shadow noise amplification.\n"
 "only affects dark parts of the image."
 msgstr ""
+"バイアスを加えてシャドウノイズの増幅を抑えます\n"
+"画像の暗部にのみ影響します"
 
 #: ../src/iop/crop.c:121
 msgid "crop"
@@ -23741,7 +23762,7 @@ msgstr "キャプチャシャープ化コントロール"
 
 #: ../src/iop/demosaic.c:1786
 msgid "set effect strength by iterations"
-msgstr "繰り返しによってエフェクトの強さを設定します"
+msgstr "反復によってエフェクトの強さを設定します"
 
 #: ../src/iop/demosaic.c:1791
 msgid ""
@@ -23757,8 +23778,8 @@ msgstr ""
 "グフィルターおよびレンズの全体的なガウス型ぼかしを反映するように設定してくださ"
 "い\n"
 "\n"
-"値を大きくしすぎると、特に '繰り返し' を大きくした場合に、ハロやリンギングなど"
-"のアーティファクトが容易に発生してしまいます\n"
+"値を大きくしすぎると、特に '反復' を大きくした場合に、ハロやリンギングなどの"
+"アーティファクトが容易に発生してしまいます\n"
 "\n"
 "注意：範囲を0に設定すると、次回実行時に自動で再計算されます。プリセット用に利"
 "用してください"
@@ -24190,10 +24211,10 @@ msgid ""
 "if you plan on sharpening or inpainting, \n"
 "more iterations help reconstruction."
 msgstr ""
-"繰り返し回数を増やすと、効果が強まりますが、モジュールの動作は遅くなります\n"
+"反復回数を増やすと、効果が強まりますが、モジュールの動作は遅くなります\n"
 "これは拡散の反応により多くの時間を与えるのに似たことです\n"
-"もしシャープ化や修復を行うつもりであれば、繰り返し回数を増やすと再構成の質が向"
-"上します"
+"もしシャープ化や修復を行うつもりであれば、反復回数を増やすと再構成の質が向上し"
+"ます"
 
 #: ../src/iop/diffuse.c:1777
 msgid ""
@@ -25250,7 +25271,7 @@ msgid ""
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
 "色度の再構成の追加パスを実行します\n"
-"繰り返し回数を増やすと、周囲からの色の流用が増加します\n"
+"反復回数を増やすと、周囲からの色の流用が増加します\n"
 "これにより処理が遅くなりますが、よりニュートラルなハイライトが生成されます\n"
 "また、マゼンタのハイライトがある難しいケースにおいても有用です"
 
@@ -29320,10 +29341,8 @@ msgid "create a duplicate of this image with same history stack"
 msgstr "同じ履歴スタックでこの画像の複製を作成します"
 
 #: ../src/libs/duplicate.c:372
-#, fuzzy
-#| msgid "create a duplicate of this image with same history stack"
 msgid "create a 'virgin' duplicate, discarding the source history stack"
-msgstr "同じ履歴スタックでこの画像の複製を作成します"
+msgstr "元の履歴スタックを破棄した「まっさらな」複製を作成する"
 
 #: ../src/libs/duplicate.c:381
 msgid "delete this duplicate"
@@ -30119,10 +30138,8 @@ msgid "no metering mode defined"
 msgstr "測光モードが定義されていません"
 
 #: ../src/libs/filters/misc.c:119
-#, fuzzy
-#| msgid "no lens defined"
 msgid "no image dimensions defined"
-msgstr "レンズが定義されていません"
+msgstr "画像サイズが指定されていません"
 
 #: ../src/libs/filters/misc.c:427
 msgid ""
@@ -30223,6 +30240,12 @@ msgid ""
 "\n"
 "right-click to get existing image dimensions"
 msgstr ""
+"検索する画像サイズを入力します\n"
+"「幅x高さ」の形式で指定します\n"
+"例：完全一致は「6000x4000」、幅のみ一致は「6000x」、高さのみ一致は「x4000」\n"
+"複数の値は「,」区切りで指定できます\n"
+"\n"
+"右クリックで既存の画像サイズを取得します"
 
 #: ../src/libs/filters/misc.c:515
 msgid ""
@@ -31880,45 +31903,32 @@ msgid "remove widget"
 msgstr "ウィジェットを削除"
 
 #: ../src/libs/modulegroups.c:2907
-#, fuzzy
-#| msgid "show module"
 msgid "show all modules"
-msgstr "モジュールを表示"
+msgstr "全てのモジュールを表示"
 
 #: ../src/libs/modulegroups.c:2908
-#, fuzzy
-#| msgid "show all history modules in active group"
 msgid "show all modules, regardless of the selected group"
-msgstr "アクティブなグループの履歴中の全てのモジュールを表示"
+msgstr "選択中のグループに関わらず、全てのモジュールを表示する"
 
 #: ../src/libs/modulegroups.c:2911
-#, fuzzy
-#| msgid "show all history modules"
 msgid "show active and history modules"
-msgstr "履歴内の全てのモジュールを表示"
+msgstr "アクティブなモジュールと履歴内のモジュールを表示"
 
 #: ../src/libs/modulegroups.c:2912
-#, fuzzy
-#| msgid ""
-#| "show modules that are present in the history stack, regardless of whether "
-#| "or not they are currently enabled"
 msgid ""
 "show the active modules and the modules present in the history stack, whether "
 "enabled or not"
 msgstr ""
-"履歴スタック内にあるモジュールを、現在有効であるかに関わらず、表示します"
+"有効・無効を問わず、アクティブなモジュールと履歴スタック内にあるモジュールを表"
+"示します"
 
 #: ../src/libs/modulegroups.c:2916
-#, fuzzy
-#| msgid "show only active modules"
 msgid "show active modules only"
-msgstr "アクティブなモジュールのみ表示"
+msgstr "アクティブなモジュールのみを表示"
 
 #: ../src/libs/modulegroups.c:2917
-#, fuzzy
-#| msgid "show and edit shapes on the current scale"
 msgid "show only the modules that are currently enabled"
-msgstr "選択中のスケール上にあるシェイプの表示・編集"
+msgstr "現在有効になっているモジュールのみを表示します"
 
 #: ../src/libs/modulegroups.c:2993 ../src/libs/modulegroups.c:3204
 msgid ""
