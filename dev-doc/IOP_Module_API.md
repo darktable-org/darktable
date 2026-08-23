@@ -384,9 +384,10 @@ Common checks: `dt_image_is_raw()`, `dt_image_is_hdr()`, `dt_image_is_ldr()`, `d
 
 ### `change_image()` - Reset GUI State for the New Image
 
-Called on an image switch, after `reload_defaults()` and before `gui_update()`. Switching image does not tear down
-every module: each module's base instance is kept, GUI and all, and reused for the new
-image (`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image —
+Called on an image switch, after `reload_defaults()` and before the new image's params
+reach `gui_update()`. Switching image does not tear down every module: each module's
+visible base instance is kept, GUI and all, and reused for the new image
+(`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image —
 a cached curve, a selected region, a pending readout — therefore survives unless you
 clear it here:
 
@@ -401,11 +402,12 @@ void change_image(dt_iop_module_t *self)
 }
 ```
 
-`gui_cleanup()` does **not** run on this transition, so it is also where a module that
-schedules GUI updates from the pipe has to cancel them — see
+`gui_cleanup()` does **not** run for that retained instance — only the module's extra
+instances are torn down and rebuilt — so `change_image()` is also where a module that
+schedules GUI updates from the pipe has to cancel them; see
 [GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image).
-`basicadj` and `retouch` are the in-tree examples; both also call it from `gui_init()`
-to set the same initial state.
+`basicadj`, `retouch`, `rgblevels` and `rgbcurve` implement it, and each also calls it
+from `gui_init()` to set the same initial state.
 
 ### Pipe Lifecycle Functions
 
