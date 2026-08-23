@@ -403,9 +403,12 @@ model for that one detail.
 **Why the loop is not a detail.** Every teardown path stops the pipes before it touches
 a module GUI, so nothing can queue a fresh source once `gui_cleanup()` has started.
 Draining there is therefore sufficient — as long as it actually drains. A source that a
-single `g_idle_remove_by_data()` failed to remove no longer scribbles over freed
-memory, because `gui_data` is NULL by the time it fires; it dereferences NULL instead
-and takes the process down.
+single `g_idle_remove_by_data()` failed to remove fires against a torn-down module, and
+how it fails depends on the path. After an instance delete, `gui_data` has been set to
+NULL and the callback dereferences NULL, which stops the process there. After a
+darkroom exit or an image switch the module struct itself is gone, so even reading
+`self->gui_data` is a use-after-free: it may segfault, or it may hand back a stale
+pointer that still looks valid and let the callback write through it.
 
 If the source data is a heap message (Pattern B), `g_idle_remove_by_data()` cannot find
 it — the source is keyed on the message, not on the module. You then have to track the
