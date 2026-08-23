@@ -942,16 +942,27 @@ static void _update_trouble_message(dt_iop_module_t *self);
    Only the preview pipe carries d->self, so only one pipe writes. The banner is
    redrawn from gui_update(), which a pipe run does not call, so a change posts a
    refresh through the main loop -- and only on a change, leaving a steady error
-   free. Call with d->lock held. */
+   free. Call with d->lock held.
+
+   The status strings live in gui_data and are read on the GTK thread, so
+   d->lock -- which is per piece -- does not order those accesses against each
+   other. Take the module's GUI critical section for the compare-and-copy; the
+   readers take the same one. */
 static void _publish_status(const dt_iop_spektrafilm_data_t *d)
 {
-  dt_iop_spektrafilm_gui_data_t *g = d->self ? d->self->gui_data : NULL;
+  dt_iop_module_t *self = d->self;
+  dt_iop_spektrafilm_gui_data_t *g = self ? self->gui_data : NULL;
   if(!g) return;
-  if(!strcmp(g->status_error, d->sim_error) && !strcmp(g->status_warning, d->sim_warning))
-    return;
-  g_strlcpy(g->status_error, d->sim_error, sizeof g->status_error);
-  g_strlcpy(g->status_warning, d->sim_warning, sizeof g->status_warning);
-  g_idle_add(_trouble_idle_cb, d->self);
+  dt_iop_gui_enter_critical_section(self);
+  const gboolean changed = strcmp(g->status_error, d->sim_error) != 0
+                           || strcmp(g->status_warning, d->sim_warning) != 0;
+  if(changed)
+  {
+    g_strlcpy(g->status_error, d->sim_error, sizeof g->status_error);
+    g_strlcpy(g->status_warning, d->sim_warning, sizeof g->status_warning);
+  }
+  dt_iop_gui_leave_critical_section(self);
+  if(changed) g_idle_add(_trouble_idle_cb, self);
 }
 
 static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
@@ -3225,10 +3236,18 @@ static void _update_trouble_message(dt_iop_module_t *self)
       (const dt_iop_spektrafilm_gui_data_t *)self->gui_data;
   _update_data_row(self);
   if(!g) return;
-  if(g->status_error[0])
-    dt_iop_set_module_trouble_message(self, _("cannot render"), g->status_error, NULL);
-  else if(g->status_warning[0])
-    dt_iop_set_module_trouble_message(self, _("data mismatch"), g->status_warning, NULL);
+  /* Snapshot under the same section _publish_status() writes in: the writer is
+     a pixelpipe thread and this runs on GTK, so reading the arrays directly
+     races the copy. */
+  char err[sizeof g->status_error], warn[sizeof g->status_warning];
+  dt_iop_gui_enter_critical_section(self);
+  g_strlcpy(err, g->status_error, sizeof err);
+  g_strlcpy(warn, g->status_warning, sizeof warn);
+  dt_iop_gui_leave_critical_section(self);
+  if(err[0])
+    dt_iop_set_module_trouble_message(self, _("cannot render"), err, NULL);
+  else if(warn[0])
+    dt_iop_set_module_trouble_message(self, _("data mismatch"), warn, NULL);
   else
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
