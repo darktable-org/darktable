@@ -28,7 +28,7 @@ run_config() {
     docker run --rm \
         -v "${SRC_DIR}:${SRC_DIR}" \
         "${IMAGE}" \
-        bash -c "rm -rf '${build_dir}' '${install_dir}'"
+        bash -c 'rm -rf -- "$1" "$2"' _ "${build_dir}" "${install_dir}"
 }
 
 # Mirror all Linux matrix configurations from .github/workflows/ci.yml

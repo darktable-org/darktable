@@ -51,23 +51,12 @@ jobs:
       - name: Run CI matrix checks with candidate image
         run: .github/scripts/test-image.sh darktable-build:candidate "$GITHUB_WORKSPACE"
 
-      - name: Compute image tags
-        id: tags
+      - name: Tag and push tested image to GHCR
+        # Retag the already-tested local image — no rebuild, so what CI uses is exactly what was tested.
         run: |
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-8)
-          {
-            echo 'tags<<EOF'
-            echo "ghcr.io/darktable-org/darktable-build:latest"
-            echo "ghcr.io/darktable-org/darktable-build:$(date -u +%Y-%m-%d)-${SHORT_SHA}"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Push tested image to GHCR
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: .devcontainer/Dockerfile
-          push: true
-          tags: ${{ steps.tags.outputs.tags }}
-          cache-from: type=registry,ref=ghcr.io/darktable-org/darktable-build:latest
-          cache-to: type=inline
+          DATE_TAG="$(date -u +%Y-%m-%d)-${SHORT_SHA}"
+          docker tag darktable-build:candidate "ghcr.io/darktable-org/darktable-build:latest"
+          docker tag darktable-build:candidate "ghcr.io/darktable-org/darktable-build:${DATE_TAG}"
+          docker push "ghcr.io/darktable-org/darktable-build:latest"
+          docker push "ghcr.io/darktable-org/darktable-build:${DATE_TAG}"
