@@ -65,7 +65,11 @@ changes (where available).
 
 ## Other Changes
 
--
+- AI model downloads now resume after an interruption and retry on
+  transient network errors instead of starting over.
+
+- AI raw denoise now refuses legacy Fujifilm Super CCD sensors, whose
+  sensor layout the models were not trained for.
 
 ## Documentation updates
 
@@ -185,6 +189,16 @@ changes (where available).
 
 - Fixed distortion of one out of every four pixels in JPEG 2000 images
   with YCbCr 4:2:0 subsampling.
+
+- Fixed a bug where drawn path masks with many nodes rendered a
+  chaotic feather line instead of following the mask outline.
+
+- Fixed a crash when switching the lens correction method from
+  embedded metadata to Lensfun and back.
+
+- Fixed the AI raw denoise preview showing a different area than the
+  one selected on cropped images, and the area picker remaining
+  unavailable until darktable was restarted.
 
 ## Lua
 
