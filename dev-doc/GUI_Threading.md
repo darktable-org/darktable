@@ -385,8 +385,9 @@ yourself by handing work to the main loop.
 `g_idle_add()` hands the main loop a raw `dt_iop_module_t *`. What teardown does to
 that pointer depends on the path, and there are three shapes:
 
-- **Leaving the darkroom** — for every module: `gui_cleanup()` runs, `gui_lock` is
-  destroyed, `gui_data` is freed, and then the module itself is freed.
+- **Leaving the darkroom** — for every module that has a GUI: `gui_cleanup()` runs,
+  `gui_lock` is destroyed, `gui_data` is freed, and then the module itself is freed.
+  (Hidden modules never get a GUI, so all three teardown shapes skip them.)
 - **Deleting an instance, or undo/redo of an add or delete** — the same GUI teardown
   runs, but the module struct survives: it is parked in `dev->alliop` for pipes that
   may still reference it, and freed when the darkroom is left or the image is switched.
@@ -430,8 +431,9 @@ void gui_cleanup(dt_iop_module_t *self)
 transition that invalidates your payload. A base instance survives an image switch, so
 a source queued while the old image was loaded fires against the new one. Drain in
 `change_image()` too — that is the callback the framework gives a retained instance for
-exactly this kind of reset, and it runs while the pipe mutexes are still held, so
-nothing can re-queue behind it (`basicadj` and `retouch` use it to clear GUI state):
+exactly this kind of reset, and it runs while the three pipe mutexes are still held,
+so no pipe thread can queue a source behind the drain (`basicadj` and `retouch` use it
+to clear GUI state):
 
 ```c
 void change_image(dt_iop_module_t *self)
@@ -506,8 +508,10 @@ static gboolean callback(gpointer data) {
                            // the notify also runs after a normal dispatch
 
 // WRONG — Queued callback with no cancellation
-g_idle_add(_update_gui, self);  // Fires after gui_cleanup() freed the GUI state,
-                                // unless gui_cleanup() drains the queued sources
+g_idle_add(_update_gui, self);  // Fires after gui_cleanup() freed the GUI state, or —
+                                // on an image switch, which keeps the base instance —
+                                // against the new image. Drain in gui_cleanup() and
+                                // in change_image()
 
 // WRONG — Sending updates for preview/preview2 pipes
 if(g != NULL) {  // Missing pipe type check — floods with updates

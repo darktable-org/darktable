@@ -382,6 +382,31 @@ void reload_defaults(dt_iop_module_t *self)
 
 Common checks: `dt_image_is_raw()`, `dt_image_is_hdr()`, `dt_image_is_ldr()`, `dt_image_is_monochrome()`, `dt_image_is_bayerRGB()`.
 
+### `change_image()` - Reset GUI State for the New Image
+
+Called on an image switch, after `reload_defaults()` and before `gui_update()`. Switching image does not tear down
+every module: each module's base instance is kept, GUI and all, and reused for the new
+image (`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image —
+a cached curve, a selected region, a pending readout — therefore survives unless you
+clear it here:
+
+```c
+void change_image(dt_iop_module_t *self)
+{
+  dt_iop_mymodule_gui_data_t *g = self->gui_data;
+  if(!g) return;
+
+  g->cache_valid = FALSE;
+  g->selected_node = -1;
+}
+```
+
+`gui_cleanup()` does **not** run on this transition, so it is also where a module that
+schedules GUI updates from the pipe has to cancel them — see
+[GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image).
+`basicadj` and `retouch` are the in-tree examples; both also call it from `gui_init()`
+to set the same initial state.
+
 ### Pipe Lifecycle Functions
 
 Each pixelpipe has its own copy of every module's data via `dt_dev_pixelpipe_iop_t` ("piece").
@@ -534,8 +559,8 @@ User Edits Widget:
        → commit_params()  [transforms self->params → piece->data]
        → process()        [reads piece->data]
 
-Image Switch:
-  reload_defaults() → gui_update() → gui_changed()
+Image Switch:  [base instance is kept; extra instances are destroyed and rebuilt]
+  reload_defaults() → change_image() → gui_update() → gui_changed()
 
 Darkroom Exit:
   gui_cleanup() → cleanup_pipe() [per pipe] → cleanup()
