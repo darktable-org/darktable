@@ -4009,6 +4009,13 @@
     <longdescription>this folder (and sub-folders) contains PFM/PNG files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
 <dtconfig>
+    <name>plugins/lighttable/neural_restore/mark_output</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>mark AI raw denoise output as denoised</shortdescription>
+    <longdescription>record in the generated DNG that it has already been denoised, so darktable skips auto-applied denoise presets on it. without this an auto-applied denoise preset matches the output as it matched the original, since the file keeps the source ISO, and denoises it a second time</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/neural_restore/preview_export_size</name>
     <type min="0">int</type>
     <default>0</default>

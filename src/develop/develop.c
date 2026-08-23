@@ -2046,6 +2046,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
 
+  // operations that must not auto-apply on this particular image
+  GString *skip_ops = g_string_new("");
+  if(!is_display_referred)
+    g_string_append(skip_ops, ", 'basecurve'");
+  // already denoised: the output keeps the source ISO, so an ISO-ranged
+  // denoise preset still matches it (issue #21391)
+  if(dt_image_is_ai_denoised(image))
+    g_string_append(skip_ops, ", 'denoiseprofile', 'rawdenoise'");
+
   snprintf(query, sizeof(query),
            "INSERT OR REPLACE INTO memory.history"
            " SELECT ?1, 0, op_version, operation AS op, op_params,"
@@ -2065,7 +2074,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            // skip non iop modules:
            "   AND operation NOT IN"
            "       ('ioporder', 'metadata', 'modulegroups', 'export',"
-           "        'tagging', 'collect', '%s')"
+           "        'tagging', 'collect'%s)"
            // select all user's auto presets or the hard-coded presets (for the workflow)
            // if non auto-presets for the same operation and matching
            // camera/lens/focal/format/exposure found.
@@ -2094,7 +2103,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                "  THEN multi_name"
                "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
                " END",
-           is_display_referred ? "" : "basecurve");
+           skip_ops->str);
+  g_string_free(skip_ops, TRUE);
   // clang-format on
 
   // query for all modules at once:
