@@ -71,6 +71,10 @@ changes (where available).
 - AI raw denoise now refuses legacy Fujifilm Super CCD sensors, whose
   sensor layout the models were not trained for.
 
+- Color labels, ratings and manually applied geotags are now copied to
+  images created by AI denoise and upscale, in addition to EXIF data
+  and tags.
+
 ## Documentation updates
 
 - The manual has seen a lot of attention this cycle: the [documentation](https://docs.darktable.org/usermanual/development/en/) is up to date again, and translations are flowing once more via  [Weblate](https://hosted.weblate.org/projects/darktable-documentation/).
