@@ -1971,17 +1971,12 @@ static void switch_cursors(dt_iop_module_t *self)
   if(!g || !self->dev->gui_attached)
     return;
 
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-
   // if we are editing masks or using colour-pickers, do not display controls
   if(in_mask_editing(self)
      || dt_iop_canvas_not_sensitive(self->dev))
   {
     // display default cursor
-    GdkCursor *const cursor =
-      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
 
     return;
   }
@@ -2013,10 +2008,7 @@ static void switch_cursors(dt_iop_module_t *self)
   {
     // if module is active and opened but cursor is out of the preview,
     // display default cursor
-    GdkCursor *const cursor =
-      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
 
     dt_control_queue_redraw_center();
   }
@@ -2024,10 +2016,7 @@ static void switch_cursors(dt_iop_module_t *self)
   {
     // in any other situation where module has focus,
     // reset the cursor but don't launch a redraw
-    GdkCursor *const cursor =
-      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
   }
 }
 
@@ -2091,10 +2080,7 @@ int mouse_leave(dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 
   // display default cursor
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  g_object_unref(cursor);
+  dt_control_change_cursor("default");
   dt_control_queue_redraw_center();
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
