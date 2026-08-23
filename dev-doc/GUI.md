@@ -120,6 +120,10 @@ Framework loads new params into self->params
     ↓
 Framework call DT_ENTER_GUI_UPDATE()
     ↓
+On an image switch only: framework calls your change_image()
+(the base instance is kept, so stale gui_data must be reset there —
+ see IOP_Module_API.md and GUI_Threading.md)
+    ↓
 Framework calls your gui_update()
     ↓
 You sync widgets, call gui_changed(self, NULL, NULL)
@@ -402,4 +406,3 @@ When a user adds a module's widget to the Quick Access Panel, the framework (`li
 - Must work in isolation (clear label, good tooltip)
 - Complex custom widgets with parent dependencies won't reparent cleanly
 - Multi-instance modules disable QAP activation button
-
