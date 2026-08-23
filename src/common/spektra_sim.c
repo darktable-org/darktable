@@ -4455,4 +4455,3 @@ void sf_grain_raw_samples_ml(const sf_grain_layers_t *layers,
                                     unif_c, sf_pixel_seed(xi, yi, (uint32_t)(seed_ch + sl * 10)));
   }
 }
-
