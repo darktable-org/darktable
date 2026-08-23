@@ -348,6 +348,11 @@ typedef struct dt_iop_spektrafilm_gui_data_t
   GtkWidget *main_box;
   GtkWidget *data_box, *data_button, *data_status;
   guint data_poll;      /* g_timeout id while a download runs, 0 otherwise */
+  /* g_idle id of a posted banner refresh, 0 when none is pending. The source
+     closes over the module, so it has to be removable at teardown. Written by
+     the pixelpipe thread that posts it and by the GTK thread that runs or
+     cancels it, so it lives under the module's GUI critical section. */
+  guint trouble_idle;
   uint32_t data_wanted; /* spectral table the button will ask for */
   sf_fetch_state_t data_last_state; /* to spot the moment a fetch finishes */
 } dt_iop_spektrafilm_gui_data_t;
@@ -961,8 +966,9 @@ static void _publish_status(const dt_iop_spektrafilm_data_t *d)
     g_strlcpy(g->status_error, d->sim_error, sizeof g->status_error);
     g_strlcpy(g->status_warning, d->sim_warning, sizeof g->status_warning);
   }
+  if(changed && !g->trouble_idle)
+    g->trouble_idle = g_idle_add(_trouble_idle_cb, self);
   dt_iop_gui_leave_critical_section(self);
-  if(changed) g_idle_add(_trouble_idle_cb, self);
 }
 
 static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
@@ -3226,7 +3232,14 @@ static void _data_button_clicked(GtkButton *button,
 static gboolean _trouble_idle_cb(gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self && self->gui_data) _update_trouble_message(self);
+  dt_iop_spektrafilm_gui_data_t *g = self ? self->gui_data : NULL;
+  if(!g) return G_SOURCE_REMOVE;
+  /* Clear the id first: gui_cleanup() removes the source by it, and once this
+     callback is running there is nothing left to remove. */
+  dt_iop_gui_enter_critical_section(self);
+  g->trouble_idle = 0;
+  dt_iop_gui_leave_critical_section(self);
+  _update_trouble_message(self);
   return G_SOURCE_REMOVE;
 }
 
@@ -4215,6 +4228,15 @@ void gui_cleanup(dt_iop_module_t *self)
       g_source_remove(g->data_poll);
       g->data_poll = 0;
     }
+    /* The banner refresh is posted from the pixelpipe thread and closes over
+       the module, which the caller frees right after this returns. A preview
+       run whose status changed during teardown posts it after the last main
+       loop dispatch, so it would fire against freed memory. */
+    dt_iop_gui_enter_critical_section(self);
+    const guint trouble = g->trouble_idle;
+    g->trouble_idle = 0;
+    dt_iop_gui_leave_critical_section(self);
+    if(trouble) g_source_remove(trouble);
     g_list_free_full(g->entries, g_free);
     g->entries = NULL;
   }
