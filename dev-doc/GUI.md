@@ -144,11 +144,18 @@ Preset applied directly (`dt_gui_presets_apply_preset()`): the params are copied
 `self->params` **before** the guard, which `dt_iop_gui_update()` then opens around your
 `gui_update()`.
 
-Routes that can change the module list — undo or redo of a module *add or delete*
-(`src/libs/history.c`), and pasting history or applying a style
-(`dt_dev_reload_history_items()`) — are not just a params load. They can create and
-destroy instances, so a module may be torn down with `gui_cleanup()` or built with a
-fresh `gui_init()` and `reload_defaults()` rather than merely updated. See
+Routes that can change the module list are not just a params load, and a module may be
+built with a fresh `gui_init()` and `reload_defaults()`, or torn down with
+`gui_cleanup()`, rather than merely updated:
+
+- **Undo or redo of a module *add or delete*** (`src/libs/history.c`) does both — it
+  re-creates the instance an undone delete removed, and removes the one an undone add
+  created.
+- **Pasting history, or applying a style** (`dt_dev_reload_history_items()`) adds the
+  instances the incoming history needs and re-synchronises the rest; it does not run the
+  instance teardown that undo/redo does.
+
+See
 [GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image)
 for what that means for work you have queued.
 
