@@ -795,6 +795,11 @@ _redraw_later(gpointer user_data)
   return G_SOURCE_REMOVE; // run once, then remove
 }
 
+static void _sync_print_widgets_from_pinfo(dt_lib_print_settings_t *ps)
+{
+  dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+  dt_bauhaus_combobox_set_from_text(ps->papers, ps->prt.paper.name);
+}
 
 static void
 _print_settings_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
@@ -815,7 +820,7 @@ _print_settings_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     dt_win_open_printer_settings(ps->settings_ctx, hwnd_owner);
     dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx);
-    dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+    _sync_print_widgets_from_pinfo(ps);
   }
   else {
     dt_control_log(_("no settings context"));}
@@ -954,7 +959,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     if(updated)
     {
       dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx); 
-      dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
+      _sync_print_widgets_from_pinfo(ps);
     }
     ps->settings_ctx->settings_opened = TRUE;
 
@@ -1042,15 +1047,12 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   dt_control_add_job(DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
-/* forward declarations to avoid implicit function warnings when calling
-   _paper_changed/_media_changed before their definitions */
-static void _paper_changed(GtkWidget *combo, const dt_lib_module_t *self);
-static void _media_changed(GtkWidget *combo, const dt_lib_module_t *self);
-
 static void _set_printer(const dt_lib_module_t *self,
                          const char *printer_name)
 {
   dt_lib_print_settings_t *ps = self->data;
+
+  const gboolean orient_state = ps->prt.page.landscape; // save orientation state to restore to DEVMODE after printer change (Windows)
 
   dt_get_printer_info(printer_name, &ps->prt.printer);
 
@@ -1071,12 +1073,17 @@ static void _set_printer(const dt_lib_module_t *self,
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
   }
   const char *default_paper = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "paper");
-  if(!dt_bauhaus_combobox_set_from_text(ps->papers, default_paper))
-    dt_bauhaus_combobox_set(ps->papers, 0);
-  /* Ensure the ps->prt.paper and preview reflect the selected/fallback paper
-     as dt_bauhaus_combobox_set/_set_from_text may not emit the value-changed
-     signal. Call the handler to synchronize internal state and GUI. */
-  _paper_changed(ps->papers, self);
+  //Paper reset to first entry if the default paper is not available for the selected printer and write to ps not relying on value-changed
+  const dt_paper_info_t *chosen_paper = dt_get_paper(ps->paper_list, default_paper);
+  if(!chosen_paper && ps->paper_list)
+    chosen_paper = ps->paper_list->data;   // fall back to the first real entry
+
+  if(chosen_paper)
+  {
+    //make sure the paper change is actually reflected in the printer info, not just the combobox
+    memcpy(&ps->prt.paper, chosen_paper, sizeof(dt_paper_info_t));
+    dt_bauhaus_combobox_set_from_text(ps->papers, chosen_paper->common_name);
+  }
 
   // add corresponding supported media
   dt_bauhaus_combobox_clear(ps->media);
@@ -1088,10 +1095,16 @@ static void _set_printer(const dt_lib_module_t *self,
     dt_bauhaus_combobox_add(ps->media, m->common_name);
   }
   const char *default_medium = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "medium");
-  if(!dt_bauhaus_combobox_set_from_text(ps->media, default_medium))
-    dt_bauhaus_combobox_set(ps->media, 0);
-  /* Same as papers: ensure internal medium selection and preview are updated. */
-  _media_changed(ps->media, self);
+  //Medium reset to first entry if the default medium is not available for the selected printer and write to ps not relying on value-changed
+  const dt_medium_info_t *chosen_medium = dt_get_medium(ps->media_list, default_medium);
+  if(!chosen_medium && ps->media_list)
+    chosen_medium = ps->media_list->data;   // fall back to the first real entry
+  if(chosen_medium)
+  {
+    //make sure the medium change is actually reflected in the printer info, not just the combobox
+    memcpy(&ps->prt.medium, chosen_medium, sizeof(dt_medium_info_t));
+    dt_bauhaus_combobox_set_from_text(ps->media, chosen_medium->common_name);
+  }
 
 #ifdef _WIN32
   // add corresponding supported resolutions (quality)
@@ -1131,49 +1144,11 @@ static void _set_printer(const dt_lib_module_t *self,
   {
     // sync the cached DEVMODE to the printer info to align state
     dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx);
-    dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
-
-    /* Some printers may alter the selected paper in the cached DEVMODE after 
-    the GUI combobox is updated. Ensure the papers combobox selection and internal
-    state/preview reflect the possibly-updated ps->prt.paper. */
-    if(ps->paper_list)
-    {
-      int match = -1;
-      int idx = 0;
-      double best_delta = 1e6;
-      for(const GList *l = ps->paper_list; l; l = g_list_next(l), idx++)
-      {
-        const dt_paper_info_t pp = l->data;
-        if(pp && ps->prt.paper.common_name
-          && g_strcmp0(pp->common_name, ps->prt.paper.common_name) == 0)
-        {
-          match = idx;
-          best_delta = 0.0;
-          break;
-        }
-        if(pp)
-        {
-          double delta = fabs(pp->width - ps->prt.paper.width) + fabs(pp->height - ps->prt.paper.height);
-          if(delta < best_delta)
-          {
-            best_delta = delta;
-            match = idx;
-          }
-        }
-      }
-      /* Accept best match only if within a small tolerance (2 mm) */
-      if(match >= 0 && best_delta <= 2.0)
-      {
-        dt_bauhaus_combobox_set(ps->papers, match);
-        _paper_changed(ps->papers, self);
-      }
-      else
-      {
-        / No close match: at least refresh the preview to reflect the new pinfo */
-        dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
-      }
-    }
+    ps->prt.page.landscape = orient_state; // restore orientation state after printer change
+    if(ps->settings_ctx->cached_dm) dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
+    _sync_print_widgets_from_pinfo(ps);
   }
+
 }
 //Callback when printer details are ready (Windows only)
 
@@ -1259,6 +1234,13 @@ _paper_changed(GtkWidget *combo, const dt_lib_module_t *self)
   dt_conf_set_string(PRINT_CONFIG_PREFIX "paper", paper_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 
+#ifdef _WIN32
+//  Change in paper size should get pushed to the cached DEVMODE so that the print dialog reflects the new size. 
+//  This is important for Windows printing, as the DEVMODE is used to communicate settings to the printer driver.
+  if(ps->settings_ctx && ps->settings_ctx->cached_dm)
+    dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
+#endif
+
   _update_slider(ps);
 }
 
@@ -1279,6 +1261,13 @@ _media_changed(GtkWidget *combo, const dt_lib_module_t *self)
 
   dt_conf_set_string(PRINT_CONFIG_PREFIX "medium", medium_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
+
+  //  Print media selection is currently hidden on Windows, but if it were to be exposed, we would want to sync the DEVMODE with the new media selection.
+#ifdef _WIN32
+  if(ps->settings_ctx && ps->settings_ctx->cached_dm)
+    dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
+#endif
+
     _update_slider(ps);
   }
   else
@@ -1510,6 +1499,11 @@ _orientation_changed(GtkWidget *combo, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
 
   ps->prt.page.landscape = dt_bauhaus_combobox_get(combo);
+
+#ifdef _WIN32
+  if(ps->settings_ctx && ps->settings_ctx->cached_dm)
+    dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
+#endif
 
   _update_slider(ps);
 }
@@ -1891,7 +1885,13 @@ static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
     ps->prt.page.landscape = (buf.width > buf.height);
     dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
     dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
-  }
+
+    // Make sure the Windows DEVMODE is updated to match the new orientation
+#ifdef _WIN32
+    if(ps->settings_ctx && ps->settings_ctx->cached_dm)
+      dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
+    #endif
+    
 
   dt_mipmap_cache_release(&buf);
   dt_control_queue_redraw_center();
@@ -3117,14 +3117,6 @@ void gui_init(dt_lib_module_t *self)
     combo_idx = 0;
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
-
-#ifdef _WIN32
-  /* Ensure image profile combo reflects printer-managed color state on initial load.
-     dt_bauhaus_combobox_set() does not reliably emit "value-changed", so rebuild
-     the image profile list explicitly here when the saved printer profile index
-     indicates printer-side color management (combo_idx == 0). */
-  _rebuild_image_profile_combo(d, combo_idx == 0);
-#endif
 
   char *tooltip = dt_ioppr_get_location_tooltip("out", _("printer ICC profiles"));
   gtk_widget_set_tooltip_markup(d->pprofile, tooltip);

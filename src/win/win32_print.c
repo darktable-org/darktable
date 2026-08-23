@@ -189,10 +189,12 @@ static void _log_hresult(HRESULT hr, const char *prefix)
   }
 }
 
-static void dt_sync_orientation(DEVMODEW *dm, const dt_page_setup_t *page)
+static void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
 {
-  dm->dmFields |= DM_ORIENTATION;
-  dm->dmOrientation = page->landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+  dm->dmFields |= DM_ORIENTATION | DM_PAPERWIDTH | DM_PAPERLENGTH;
+  dm->dmOrientation = pinfo->page.landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+  dm->dmPaperWidth  = (short)(pinfo->paper.width  * 10.0f);
+  dm->dmPaperLength = (short)(pinfo->paper.height * 10.0f);
 }
 
 void free_dib(dt_win_dib_t *dib)
@@ -280,7 +282,7 @@ gboolean dt_win_sync_cached_dm_to_pinfo(dt_win32_print_ctx_t *ctx)
    Printer discovery 
 ---------------------------------------------------------------------------- */
 
-// Initialize print info (same as your Linux version)
+// Initialize print info (same as Linux)
 void dt_init_print_info(dt_print_info_t *pinfo)
 {
   memset(&pinfo->printer, 0, sizeof(dt_printer_info_t));
@@ -802,6 +804,10 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
     int sizes_count = DeviceCapabilitiesW(wprinter, NULL, DC_PAPERSIZE, (LPWSTR)szList, NULL);
     if(sizes_count > 0)
     {
+      #ifdef DC_PAPERNAMES
+        wchar_t *names = (wchar_t *)calloc((size_t)papers_count, 64 * sizeof(wchar_t));
+        int got = names ? DeviceCapabilitiesW(wprinter, NULL, DC_PAPERNAMES, names, NULL) : 0;
+      #endif
       for(int i = 0; i < sizes_count; i++)
       {
         dt_paper_info_t *p = calloc(1, sizeof(dt_paper_info_t));
@@ -810,24 +816,18 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
 
         // Try to get names if available
         #ifdef DC_PAPERNAMES
-        wchar_t *names = (wchar_t *)calloc((size_t)papers_count, 64 * sizeof(wchar_t));
-        if(names)
+        if(names && got > 0)
         {
-          int got = DeviceCapabilitiesW(wprinter, NULL, DC_PAPERNAMES, names, NULL);
-          if(got > i)
+          gchar *utf8 = g_utf16_to_utf8(&names[i * 64], -1, NULL, NULL, NULL);
+          if(utf8 && *utf8)
           {
-            gchar *utf8 = g_utf16_to_utf8(&names[i * 64], -1, NULL, NULL, NULL);
-            if(utf8 && *utf8)
-            {
-              g_strlcpy(p->name, utf8, MAX_NAME);
-              g_strlcpy(p->common_name, utf8, MAX_NAME);
-              g_free(utf8);
-            }
+            g_strlcpy(p->name, utf8, MAX_NAME);
+            g_strlcpy(p->common_name, utf8, MAX_NAME);
+            g_free(utf8);
           }
-          free(names);
         }
         #endif
-
+    
         if(p->name[0] == '\0')
         {
           snprintf(p->name, MAX_NAME, "Paper %d", i+1);
@@ -839,6 +839,9 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
         else
           free(p);
       }
+      #ifdef DC_PAPERNAMES
+      free(names);   // once, after the loop — not inside it
+      #endif  
     }
     free(szList);
   }
@@ -1785,7 +1788,7 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
                 settings_ctx->cached_dm->dmFields,
                 settings_ctx->cached_dm->dmPrintQuality,
                 settings_ctx->cached_dm->dmYResolution);                               
-      if(ret != IDOK) 
+      if(ret <= 0) 
       {
         free(settings_ctx->cached_dm);
         settings_ctx->cached_dm = NULL;
@@ -1793,7 +1796,6 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
       else 
       {
         // after successful DocumentPropertiesW
-        dt_sync_orientation(settings_ctx->cached_dm, &pinfo->page);
         DBG_MARK("ctx_new: post popup dmSize=%d fields=0x%x dpi=%d/%d",
                 settings_ctx->cached_dm->dmSize,
                 settings_ctx->cached_dm->dmFields,
@@ -1864,7 +1866,7 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
   }
 
 
-    dt_sync_orientation(settings_ctx->cached_dm, &settings_ctx->base->page);
+    dt_sync_print_settings_to_dm(settings_ctx->cached_dm, settings_ctx->base);
 
     // Show the driver’s property sheet
     LONG ret = DocumentPropertiesW(hwnd_owner,
@@ -1884,15 +1886,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
 
     if(settings_ctx->cached_dm)
     {
-      // Sync orientation from DEVMODE back to Darktable
-      if(settings_ctx->cached_dm->dmFields & DM_ORIENTATION) 
-      {
-          settings_ctx->base->page.landscape =
-              (settings_ctx->cached_dm->dmOrientation == DMORIENT_LANDSCAPE)
-                  ? TRUE
-                  : FALSE;
-      }
-      
       // One‑stop sync: DEVMODE → pinfo (orientation, paper, resolution, hw margins)
       dt_win_sync_cached_dm_to_pinfo(settings_ctx);
 
