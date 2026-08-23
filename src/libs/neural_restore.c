@@ -233,6 +233,7 @@ DT_MODULE(1)
 #define CONF_BIT_DEPTH "plugins/lighttable/neural_restore/bit_depth"
 #define CONF_COMPRESSION "plugins/lighttable/neural_restore/compression"
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
+#define CONF_MARK_OUTPUT "plugins/lighttable/neural_restore/mark_output"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
 #define CONF_ICC_FILE "plugins/lighttable/neural_restore/icc_filename"
@@ -545,6 +546,18 @@ static inline float _linear_to_srgb(const float v)
   if(v <= 0.0f) return 0.0f;
   if(v >= 1.0f) return 1.0f;
   return (v <= 0.0031308f) ? 12.92f * v : 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
+}
+
+// stamp the finished DNG as already denoised. after the writer, which
+// merges the source exif blob in and would overwrite an earlier stamp
+static void _mark_neural_restore_output(const char *path)
+{
+  if(!dt_conf_get_bool(CONF_MARK_OUTPUT)) return;
+
+  if(!dt_exif_xmp_write_neural_restore(path, "raw-denoise"))
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] could not mark %s as denoised; an "
+             "auto-applied denoise preset may run on it", path);
 }
 
 // pull the camera's embedded JPEG preview from the source raw, to embed
@@ -1335,6 +1348,7 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
   g_free(exif_blob);
   g_free(cfa_out);
   if(res != 0) g_unlink(out_filename);
+  if(res == 0) _mark_neural_restore_output(out_filename);
   return res;
 }
 
@@ -1387,6 +1401,7 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
   g_free(exif_blob);
   dt_free_align(rgb);
   if(res != 0) g_unlink(out_filename);
+  if(res == 0) _mark_neural_restore_output(out_filename);
   return res;
 }
 
