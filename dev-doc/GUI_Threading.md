@@ -29,7 +29,7 @@ The rules, in short:
   not just for the load.
 - Never call GTK from a pipe thread. Hand the update to the main loop
   ([Pattern A](#pattern-a-critical-section--g_idle_add)), and
-  [cancel it in `gui_cleanup()`](#the-callback-must-not-outlive-the-module).
+  [cancel it before the module or the image goes away](#the-callback-must-not-outlive-the-module-or-the-image).
 
 ## Which Thread Am I On?
 
@@ -49,23 +49,32 @@ callbacks such as `flags()` and `operation_tags()`, but their signatures give th
 module instance, so they cannot touch `gui_data`. (`input_format()` is declared but has
 no caller in the tree, so it is not listed.)
 
-Three entries in the column are also called directly from GTK-thread code, so they run
+Four entries in the column are also called directly from GTK-thread code, so they run
 on either thread and need the same care for a different reason:
 `distort_transform()` and `distort_backtransform()` (mask handling and darkroom zoom
-both call them), and `blend_colorspace()` (the blend GUI calls it). `distort_mask()`
-does *not* have that property despite the similar name — it is invoked only from
-pipeline code.
+both call them), `blend_colorspace()` (the blend GUI calls it) and
+`default_colorspace()` (the color picker calls it while building a picker button,
+`src/gui/color_picker_proxy.c`). `distort_mask()` does *not* have that property despite
+the similar name — it is invoked only from pipeline code.
 
-If you override `blend_colorspace()`, note that the GTK-side callers pass `NULL` for
-both `pipe` and `piece`. Inheriting the default is not automatically safe either:
-`default_blend_colorspace()` forwards both arguments straight to your
-`default_colorspace()`, so that one has to tolerate `NULL` too.
+Those two colorspace callbacks are called with `NULL` for both `pipe` and `piece` from
+the GTK side, so each has to tolerate that. `default_colorspace()` is also reached
+indirectly: if you leave `blend_colorspace()` at its default,
+`default_blend_colorspace()` forwards its two arguments straight through.
 
 Each column covers the static helpers called from it too. A `process()` that hands
 `gui_data` to a helper does not make the access GTK-thread-safe, and that is where
 in-tree mistakes hide: `denoiseprofile` writes its variance readout from
 `process_variance()`, not from `process()` itself. When you audit a field, follow the
 call chain, not just the callback name.
+
+`overlay` is the sharper example, and a live violation of the no-GTK-from-a-pipe-thread
+rule rather than a pattern to copy: `process()` calls `_get_overlay_rgba_f()` / `_get_overlay_argb()`,
+which call `_setup_overlay()` whenever the overlay buffer has to be built, and that
+helper calls `gtk_widget_set_tooltip_text()` — and on a re-imported overlay image
+`gtk_widget_queue_draw()` — on the drawing area held in `gui_data`
+(`src/iop/overlay.c`). Its `overlay_threadsafe` mutex covers the overlay cache, not the
+widgets, so nothing serialises those calls against the GTK main loop.
 
 The right column has no fixed thread, but for the instance that owns your `gui_data`
 the picture is narrower:
@@ -189,6 +198,14 @@ static float _mymodule_proxy_get_value(dt_iop_module_t *self)
 }
 ```
 
+`exposure` itself does not do this. `commit_params()` writes `effective_exposure` from
+a pipe thread and `_exposure_proxy_get_effective_exposure()` reads it from the GTK
+thread, neither under `gui_lock`, and the accessor dereferences `gui_data` without
+checking it (`src/iop/exposure.c`). The read is guarded by "darkroom view, enabled
+instance", which is why the missing NULL check has not bitten, but the unlocked
+float is a plain data race: `agx` can compute its relative-exposure range from a value
+the pipe is writing at that moment. Take it as the case that motivates the rule.
+
 The producing side — usually `commit_params()` or `process()` — must take the same
 lock. Publishing a raw pointer into `gui_data` through a proxy is worse still: the
 reader then has no lock to take at all, and no way to know the GUI is being torn down.
@@ -241,7 +258,7 @@ to pick one of:
 - **Hold the lock through the last use.** The simplest thing that works — but only if
   *every* path that frees or replaces the object takes the same lock. `gui_cleanup()`
   does not, and does not have to — see
-  [The Callback Must Not Outlive the Module](#the-callback-must-not-outlive-the-module).
+  [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image).
   Every *other* path that frees or replaces the object — a widget callback, a reset, a
   reload — still has to take it. It also needs that use to be short: holding the mutex
   across an allocation, a device transfer or a full-buffer copy blocks the other thread
@@ -273,7 +290,7 @@ Reading `g` once is enough for the length of the run: the framework holds the pi
 mutexes across module GUI teardown, so a non-NULL `g` cannot be freed while your
 `process()` or `commit_params()` is executing. What the guard does not cover is work
 you hand to the main loop — see
-[The Callback Must Not Outlive the Module](#the-callback-must-not-outlive-the-module).
+[The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image).
 
 ## Pattern A: Critical Section + `g_idle_add`
 
@@ -291,7 +308,7 @@ static gboolean _show_computed(gpointer user_data)
 {
   dt_iop_module_t *self = user_data;
   dt_iop_mymodule_gui_data_t *g = self->gui_data;
-  // second net only — see "The Callback Must Not Outlive the Module"
+  // second net only — see "The Callback Must Not Outlive the Module or the Image"
   if(!g) return G_SOURCE_REMOVE;
 
   dt_iop_gui_enter_critical_section(self);
@@ -307,6 +324,8 @@ static gboolean _show_computed(gpointer user_data)
 
 // In gui_cleanup(): drop callbacks still queued for this module
 while(g_idle_remove_by_data(self)) ;
+// And in change_image(): an image switch keeps the base instance and its gui_data,
+// so a source queued for the old image would otherwise run against the new one
 ```
 
 ## Pattern B: Message Passing
@@ -347,40 +366,54 @@ if(g != NULL && self->dev->gui_attached
 }
 ```
 
-## The Callback Must Not Outlive the Module
+## The Callback Must Not Outlive the Module or the Image
 
 The framework guarantees one thing here: **no module GUI is torn down while a pipe is
 running.** All four teardown sites — leaving the darkroom, switching image, deleting an
-instance, and undoing or redoing a module add or delete — stop the three screen pipes
-and hold their mutexes across `dt_iop_gui_cleanup_module()`.
-`dt_dev_pixelpipe_stop_and_lock_all()` and `dt_dev_pixelpipe_unlock_all()`
-(`src/develop/develop.c`) are the pair that does it. One consequence for module
-authors: `gui_cleanup()` runs with all three pipe mutexes held, so it must not call
-anything that waits on a pipe.
+instance, and undoing or redoing a module add or delete — hold all three screen-pipe
+mutexes across `dt_iop_gui_cleanup_module()`. Deleting an instance and undo/redo take
+them through the `dt_dev_pixelpipe_stop_and_lock_all()` /
+`dt_dev_pixelpipe_unlock_all()` pair (`src/develop/develop.c`), which also flags the
+pipes for shutdown; darkroom exit and the image switch lock the same three mutexes
+directly (`src/views/darkroom.c`), the image switch with `trylock` and a re-queue for
+as long as a pipe is busy. One consequence for module authors: `gui_cleanup()` runs
+with all three pipe mutexes held, so it must not call anything that waits on a pipe.
 
 That closes the window against pipe threads. It does not close the one you open
 yourself by handing work to the main loop.
 
-`g_idle_add()` hands the main loop a raw `dt_iop_module_t *`. Teardown comes in two
-shapes, and both pull the GUI out from under it:
+`g_idle_add()` hands the main loop a raw `dt_iop_module_t *`. What teardown does to
+that pointer depends on the path, and there are three shapes:
 
-- **Leaving the darkroom, or switching image** — `gui_cleanup()` runs, `gui_lock` is
+- **Leaving the darkroom** — for every module: `gui_cleanup()` runs, `gui_lock` is
   destroyed, `gui_data` is freed, and then the module itself is freed.
 - **Deleting an instance, or undo/redo of an add or delete** — the same GUI teardown
   runs, but the module struct survives: it is parked in `dev->alliop` for pipes that
-  may still reference it, and freed only when the darkroom is left.
+  may still reference it, and freed when the darkroom is left or the image is switched.
+- **Switching image** — this one splits (`src/views/darkroom.c`). Each module's *base*
+  instance — the one with the lowest `multi_priority` — is **kept**: no `gui_cleanup()`,
+  `gui_lock` and `gui_data` stay alive, and the instance is re-used for the new image
+  after `dt_iop_reload_defaults()` and, if it implements one, `change_image()`. Its
+  extra instances are torn down like a darkroom exit — `gui_cleanup()`, then the struct
+  is freed — and the ones the new image's history needs are rebuilt with a fresh
+  `gui_init()`.
 
-Either way your source is still sitting in the main loop and fires afterwards, against
-freed GUI state.
+In the first two shapes your source is still sitting in the main loop and fires against
+freed GUI state. In the third, for a base instance, nothing is freed and nothing
+cancels the source: it fires on a live module and writes a value computed from the
+*previous* image into the new image's widgets.
 
 `dt_iop_gui_cleanup_module()` sets `module->gui_data` to NULL after freeing it, and
 teardown and idle dispatch both run on the GTK main thread, so they cannot interleave.
 For a **deleted instance** that makes `if(!self->gui_data) return G_SOURCE_REMOVE;` at
 the very top of the callback a real guard: the module struct is still there, parked in
-`dev->alliop`. On **darkroom exit or an image switch** it is not — the struct itself is
-freed right after its GUI, so the test reads freed memory. Where the check does work it
-has to come first, ahead of `dt_iop_gui_enter_critical_section()`, which would otherwise
-lock a destroyed mutex. Treat it as a second net, never as a substitute for cancelling.
+`dev->alliop`. On **darkroom exit**, and for an **extra instance on an image switch**,
+it is not — the struct itself is freed right after its GUI, so the test reads freed
+memory. For a **base instance on an image switch** the check is blind rather than late:
+`gui_data` is still allocated, so the test passes and the stale update goes through.
+Where the check does work it has to come first, ahead of
+`dt_iop_gui_enter_critical_section()`, which would otherwise lock a destroyed mutex.
+Treat it as a second net, never as a substitute for cancelling.
 
 Cancel in `gui_cleanup()` instead. If the source data is `self`, that is one line:
 
@@ -393,6 +426,24 @@ void gui_cleanup(dt_iop_module_t *self)
 }
 ```
 
+`gui_cleanup()` is not the only cancellation point, because it does not run on every
+transition that invalidates your payload. A base instance survives an image switch, so
+a source queued while the old image was loaded fires against the new one. Drain in
+`change_image()` too — that is the callback the framework gives a retained instance for
+exactly this kind of reset, and it runs while the pipe mutexes are still held, so
+nothing can re-queue behind it (`basicadj` and `retouch` use it to clear GUI state):
+
+```c
+void change_image(dt_iop_module_t *self)
+{
+  while(g_idle_remove_by_data(self)) ;
+  ...   // reset the rest of gui_data for the new image
+}
+```
+
+If the queued value can simply be recomputed, cancelling is the whole fix: the new
+image's first pipe run queues a fresh update.
+
 `exposure` is the in-tree example of Pattern A, and it does cancel — but note that its
 `gui_cleanup()` calls `g_idle_remove_by_data(self)` once rather than draining in a
 loop. `process()` can queue a source on every qualifying preview run, so one call is
@@ -400,17 +451,20 @@ not guaranteed to remove them all. Follow the loop shown above, not `exposure`'s
 version of the last line. `src/bauhaus/bauhaus.c` drains in a loop and is the better
 model for that one detail.
 
-**Why the loop is not a detail.** Every teardown path stops the pipes before it touches
-a module GUI, so nothing can queue a fresh source once `gui_cleanup()` has started.
-Draining there is therefore sufficient — as long as it actually drains. What a survivor
-does depends on the path, and that is what makes the NULL check a second net rather
-than a guard. After an instance delete the struct is still allocated and `gui_data` has
-been cleared, so the check sees NULL and returns; without it the callback dereferences
-NULL and the process stops there. After a darkroom exit or an image switch the struct
-itself has been freed, so reading `self->gui_data` *is* the use-after-free — the check
-comes too late whatever it returns, and what it returns is undefined: the freed bytes
-may still hold the NULL that cleanup wrote, or anything the allocator has since put
-there. Only the drain covers both paths.
+**Why the loop is not a detail.** Every one of these transitions holds the pipe mutexes
+before it touches a module GUI, so nothing can queue a fresh source once
+`gui_cleanup()` — or `change_image()` — has started. Draining there is therefore
+sufficient, as long as it actually drains. What a survivor does depends on the path,
+and that is what makes the NULL check a second net rather than a guard. After an
+instance delete the struct is still allocated and `gui_data` has been cleared, so the
+check sees NULL and returns; without it the callback dereferences NULL and the process
+stops there. After a darkroom exit, or for an extra instance on an image switch, the
+struct itself has been freed, so reading `self->gui_data` *is* the use-after-free — the
+check comes too late whatever it returns, and what it returns is undefined: the freed
+bytes may still hold the NULL that cleanup wrote, or anything the allocator has since
+put there. For a base instance on an image switch nothing is freed, the check passes,
+and the callback runs to completion against the wrong image. Only the drain covers all
+three.
 
 If the source data is a heap message (Pattern B), `g_idle_remove_by_data()` cannot find
 it — the source is keyed on the message, not on the module. You then have to track the
