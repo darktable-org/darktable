@@ -1,3 +1,5 @@
+# This is a meaningless comment to trigger a rebuild of the Docker image on pull request. It is not used in the build process.
+
 # Use Ubuntu 26.04 LTS to match the CI environment
 # CI uses ubuntu:26.04 container in .github/workflows/ci.yml
 FROM ubuntu:26.04
