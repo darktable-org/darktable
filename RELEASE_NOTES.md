@@ -183,6 +183,9 @@ changes (where available).
   been reviewed to ensure the performance is back to usable on small
   systems.
 
+- Fixed distortion of one out of every four pixels in JPEG 2000 images
+  with YCbCr 4:2:0 subsampling.
+
 ## Lua
 
 ### API Version
