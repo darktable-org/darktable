@@ -179,6 +179,10 @@ changes (where available).
 - Ignore possible OpenCL null events (uninitialized) due to hard
   memory pressure.
 
+- Fixed performance drop due to larger mipmaps being used. This has
+  been reviewed to ensure the performance is back to usable on small
+  systems.
+
 ## Lua
 
 ### API Version
