@@ -96,6 +96,8 @@ changes (where available).
 - Fixed an out-of-bounds read in the code responsible for raster
   mask caching.
 
+- Fixed a possible crash when applying `.cube`, `.3dl`, or compressed GMIC 3D LUTs.
+
 - Enforce darktable loading screen on windows systems to avoid
   darkroom refreshing issues.
 
