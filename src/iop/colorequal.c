@@ -2321,16 +2321,12 @@ static void _switch_cursors(dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g || !self->dev->gui_attached) return;
 
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-
   // Editing a mask (brush/path/etc.) or canvas otherwise not interactive:
   // leave the default cursor alone.
   if((self->dev->form_gui && self->dev->form_gui->creation)
      || dt_iop_canvas_not_sensitive(self->dev))
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
     return;
   }
 
@@ -2346,9 +2342,7 @@ static void _switch_cursors(dt_iop_module_t *self)
   }
   else
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
   }
 }
 
