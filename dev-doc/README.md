@@ -17,7 +17,8 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 ### GUI Development
 | File | Description |
 |------|-------------|
-| **[GUI.md](GUI.md)** | GUI architecture: UI construction, events/callbacks, thread safety, reparenting |
+| **[GUI.md](GUI.md)** | GUI architecture: UI construction, events/callbacks, reparenting |
+| **[GUI_Threading.md](GUI_Threading.md)** | Sharing `gui_data` between the GTK and pixelpipe threads: locking, GUI updates, callback lifetime |
 | **[imageop_gui.md](imageop_gui.md)** | Widget creation functions (`dt_bauhaus_*_from_params`, buttons, sections) |
 | **[sliders.md](sliders.md)** | Slider configuration (ranges, formatting, color stops, recipes) |
 | **[Notebook_UI.md](Notebook_UI.md)** | Creating tabbed interfaces with `GtkNotebook` |
@@ -150,7 +151,7 @@ dt_dev_add_history_item() → commit_params() → process()
     to history stack       into piece->data     (data_t or params_t)
 ```
 
-See [GUI.md](GUI.md) for the full event flow, callback patterns, and thread safety.
+See [GUI.md](GUI.md) for the full event flow and callback patterns, and [GUI_Threading.md](GUI_Threading.md) for thread safety.
 
 ---
 
