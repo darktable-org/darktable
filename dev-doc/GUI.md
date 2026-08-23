@@ -92,7 +92,7 @@ User drags slider
     ↓
 Framework sets value in self->params
     ↓
-Framework calls gui_changed(self, widget, previous)
+Framework calls your gui_changed(self, widget, previous), if you have one
     ↓
 Framework calls dt_dev_add_history_item() internally
     ↓
@@ -136,7 +136,7 @@ Framework call DT_LEAVE_GUI_UPDATE()
 
 Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework increments atomically gui state `DT_ENTER_GUI_UPDATE()` before calling it, so widget callbacks won't fire.
 
-Sliders and comboboxes created with `_from_params` auto-sync. You only need to manually sync toggle buttons and custom widgets. Always end with `gui_changed(self, NULL, NULL)`:
+Sliders and comboboxes created with `_from_params` auto-sync. You only need to manually sync toggle buttons and custom widgets. If your module implements `gui_changed()`, end with `gui_changed(self, NULL, NULL)` so the dependent UI state it maintains — visibility, sensitivity, labels — is recomputed; the framework does not call it for you here:
 
 ```c
 void gui_update(dt_iop_module_t *self)

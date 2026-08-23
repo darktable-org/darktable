@@ -438,9 +438,13 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 
 ### `commit_params()` - Transform UI Parameters into Processing Data
 
-Called by the framework whenever parameters are synced to the pixelpipe. Its job is to translate `self->params` into processing-ready `piece->data`.
+Called by the framework whenever parameters are synced to the pixelpipe. Its job is to translate the incoming parameters into processing-ready `piece->data`. Work from the `params` argument, not from `self->params`: they are the same in the normal case, but the pipe's defaults sync passes `default_params` instead (`src/develop/pixelpipe_hb.c`).
 
-**Caching note:** The framework hashes `piece->data` after this function returns. If the hash changes, the cache for this module and all subsequent ones is invalidated. Ensure deterministic output for identical inputs.
+**Caching note:** After this function returns, the framework hashes the module's *inputs*, never its output: operation name, instance, `module->params`, and the blend parameters and mask group if blending is on (`dt_iop_commit_params()`, `src/develop/imageop.c`). `piece->data` is not read for the hash. If that `piece->hash` changes, the cache for this module and all subsequent ones is invalidated.
+
+`piece->hash` is only part of the cache key. A lookup also folds in the image id, the pipe type, the detail-mask flag, the four profiles the pipe is working with, the hash of every enabled piece before this one, and the ROI (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`). So pipe type, scale and colour profiles do not need to be in `params` — they are already in the key, deliberately.
+
+What the key does not cover is state outside the pipe and the parameters: a preference, or anything else global to the process. Read one of those in `commit_params()` and a result cached under the old value stays valid as far as the cache is concerned. `colorout` shows both halves — it reads `plugins/lighttable/export/force_lcms2` from the config, and it publishes its export profile into the pipe with `dt_ioppr_set_pipe_export_profile_info()` precisely so that part *is* hashed. Keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path.
 
 **Simple case** — no transformation needed, default `memcpy` suffices. Don't implement this function.
 
@@ -547,8 +551,8 @@ For modules that change image geometry (crop, rotate, lens correction), implemen
 Module Load:
   init_global() → [once per module type]
 
-Image Open:
-  init() → reload_defaults() → gui_init()
+Image Open:  [simplified]
+  init() → reload_defaults() → gui_init() → reload_defaults()
 
 Pixelpipe Creation (per pipe):
   init_pipe()  [allocates piece->data]
@@ -565,7 +569,7 @@ Image Switch:  [base instance is kept; extra instances are destroyed and rebuilt
   reload_defaults() → change_image() → gui_update() → gui_changed()
 
 Darkroom Exit:
-  gui_cleanup() → cleanup_pipe() [per pipe] → cleanup()
+  cleanup_pipe() [per pipe] → gui_cleanup() → cleanup()
 
 Module Unload:
   cleanup_global()
