@@ -3216,7 +3216,17 @@ sf_sim_t *sf_sim_build(const sf_pack_t *pack,
           double cref = 0.0;
           for(int k = 0; k < 3; k++) cref += s->couplers_donor_Dref[k] * M[k][m];
           s->couplers_recv_cref[m] = cref;
-          s->couplers_recv_Kr[m] = lm_recv[m] * 2.0 * cref;
+          const double Kr = lm_recv[m] * 2.0 * cref;
+          /* Kr is derived from the coupler matrix, so a layer that receives no
+             inhibitor at all -- an all-zero matrix column -- gets Kr == 0 and
+             c_ref == 0. The saturation term c*(Kr + c_ref)/(Kr + c) is then
+             0*0/0 for every pixel, and the NaN propagates through the curve
+             inversion into the whole density table. A pack that ships
+             langmuir_receiver_k_rgb == 0 lands on the same denominator.
+             Nothing arrives, so there is nothing to saturate: fall back to the
+             linear sentinel, which passes the inhibitor through unchanged and
+             leaves a zero column contributing exactly zero. */
+          s->couplers_recv_Kr[m] = Kr > 0.0 ? Kr : 1.0e30;
         }
       }
       else
