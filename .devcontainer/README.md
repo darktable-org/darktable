@@ -155,30 +155,29 @@ cd build && ctest
 ## CI environment
 
 The [Dockerfile](Dockerfile) is the single source of truth for the build
-environment. Linux CI jobs always run against the published `:latest` image.
-On every successful merge to `master` the `publish-image` CI job rebuilds
-from the Dockerfile (using the published image as a BuildKit layer cache, so
-only changed layers are rebuilt) and pushes the new image to GHCR.
-
-If your PR adds a new package to the Dockerfile alongside code that needs it,
-split the work: land the Dockerfile-only change first so `:latest` is updated,
-then open the code change PR on top of it.
+environment. The `.github/workflows/build-docker.yml` workflow implements a
+**build → test → push** sequence: it builds a candidate image from the
+Dockerfile, runs a smoke-test build of darktable inside it, and only pushes
+to GHCR if the build succeeds. Linux CI jobs always pull the last tested
+`:latest` image.
 
 ### Pre-built images on GHCR
 
-The `:latest` tag on `ghcr.io/darktable-org/darktable-build` is updated on
-every successful merge to `master`. Each release is also tagged
+The `:latest` tag on `ghcr.io/darktable-org/darktable-build` is updated
+whenever `.devcontainer/Dockerfile` changes on `master`, after the candidate
+image passes a smoke-test build of darktable. Each release is also tagged
 `YYYY-MM-DD-SHORTSHA` for pinned auditing.
 
-`.github/workflows/build-docker.yml` provides a manual `workflow_dispatch`
-trigger to force a full rebuild — useful when the upstream `ubuntu:26.04`
-base image updates without a Dockerfile change.
+`workflow_dispatch` on `build-docker.yml` lets maintainers trigger a manual
+rebuild — useful when the upstream `ubuntu:26.04` base image gains security
+patches without any change to the Dockerfile.
 
 ### Customising the build environment
 
 To add or remove packages, edit `.devcontainer/Dockerfile` and submit it as a
-normal PR. CI will build from the updated Dockerfile automatically, so you can
-verify the environment works before the change is merged.
+normal PR. When the change merges to `master`, `build-docker.yml` runs
+automatically, builds and smoke-tests the new image, and pushes it to GHCR
+only if the build succeeds.
 
 ## Troubleshooting
 
@@ -232,6 +231,6 @@ CLI: `devcontainer up --workspace-folder . --remove-existing-container`
 ├── devcontainer.json    # IDE/tooling configuration
 └── README.md            # This file
 .github/workflows/
-├── ci.yml               # Linux jobs build from Dockerfile (with GHCR cache)
-└── build-docker.yml     # Manual workflow_dispatch to force a :latest rebuild
+├── ci.yml               # Linux jobs run against the published :latest image
+└── build-docker.yml     # Build → test → push :latest (on Dockerfile changes or workflow_dispatch)
 ```

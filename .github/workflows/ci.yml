@@ -44,7 +44,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
 
@@ -125,41 +124,6 @@ jobs:
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
-
-  publish-image:
-    name: Publish CI Docker image
-    needs: Linux
-    if: (github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Compute image tags
-        id: tags
-        run: |
-          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-8)
-          {
-            echo 'tags<<EOF'
-            echo "ghcr.io/darktable-org/darktable-build:latest"
-            echo "ghcr.io/darktable-org/darktable-build:$(date -u +%Y-%m-%d)-${SHORT_SHA}"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: .devcontainer/Dockerfile
-          push: true
-          tags: ${{ steps.tags.outputs.tags }}
-          cache-from: type=registry,ref=ghcr.io/darktable-org/darktable-build:latest
-          cache-to: type=inline
 
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
