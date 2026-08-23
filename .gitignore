@@ -28,3 +28,4 @@ workspace/
 cmake-build-debug/
 .idea/
 AppDir/
+install/

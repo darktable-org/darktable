@@ -8,31 +8,66 @@ on:
       - '.devcontainer/Dockerfile'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
-  build-and-push:
+  build-test-push:
+    name: Build, test and push CI Docker image
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Build and push darktable-build Docker image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: false
+          fetch-depth: 1
 
-      - name: Log in to GitHub Container Registry
+      - name: Get build submodules
+        run: |
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build candidate image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .devcontainer/Dockerfile
+          load: true
+          push: false
+          tags: darktable-build:candidate
+          cache-from: type=registry,ref=ghcr.io/darktable-org/darktable-build:latest
+
+      - name: Run CI matrix checks with candidate image
+        run: .github/scripts/test-image.sh darktable-build:candidate "$GITHUB_WORKSPACE"
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-8)
+          {
+            echo 'tags<<EOF'
+            echo "ghcr.io/darktable-org/darktable-build:latest"
+            echo "ghcr.io/darktable-org/darktable-build:$(date -u +%Y-%m-%d)-${SHORT_SHA}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Push tested image to GHCR
         uses: docker/build-push-action@v6
         with:
           context: .
           file: .devcontainer/Dockerfile
           push: true
-          tags: |
-            ghcr.io/darktable-org/darktable-build:latest
-            ghcr.io/darktable-org/darktable-build:${{ github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=registry,ref=ghcr.io/darktable-org/darktable-build:latest
+          cache-to: type=inline
