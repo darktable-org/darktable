@@ -66,7 +66,7 @@ In `gui_init()`:
 -   Use `dt_bauhaus_slider_from_params(self, "param_name")` to create sliders linked to your params.
 -   These will automatically handle history updates, undo/redo, and shortcuts.
 
-For the full GUI architecture (layout API, event flow, thread safety, widget reparenting), see [GUI.md](GUI.md).
+For the full GUI architecture (layout API, event flow, widget reparenting), see [GUI.md](GUI.md); for sharing `gui_data` with the pixelpipe threads, see [GUI_Threading.md](GUI_Threading.md).
 
 ## 5. Integration
 
