@@ -6,6 +6,11 @@ on:
       - master
     paths:
       - '.devcontainer/Dockerfile'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.devcontainer/Dockerfile'
   workflow_dispatch:
 
 jobs:
@@ -52,6 +57,7 @@ jobs:
         run: .github/scripts/test-image.sh darktable-build:candidate "$GITHUB_WORKSPACE"
 
       - name: Tag and push tested image to GHCR
+        if: github.event_name != 'pull_request'
         # Retag the already-tested local image — no rebuild, so what CI uses is exactly what was tested.
         run: |
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-8)
