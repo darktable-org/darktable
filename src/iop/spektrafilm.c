@@ -3498,6 +3498,29 @@ static float _solve_boost_for_lightness(const sf_sim_t *sim,
   return sqrtf(lo * hi);
 }
 
+/* The post-compression output scale, solved in its own slot.
+ *
+ * out_scale multiplies the finished RGB uniformly and RGB->XYZ is linear, so
+ * L(scale) = scale^(1/3) * L(1) exactly -- one probe at 1.0 gives the answer in
+ * closed form. Probing at 1.0 rather than at the current value is what makes
+ * the result independent of where the slider already sits, so picking the same
+ * area twice returns the same number.
+ *
+ * The compressor stays enabled and the boost keeps its real value here, unlike
+ * the boost probe: this factor is applied after both, so a measurement taken
+ * without them describes a different transfer. */
+static float _solve_scale_for_lightness(const sf_sim_t *sim,
+                                        const float rgb[3],
+                                        const float target_L)
+{
+  const float L1 = sf_sim_probe_lightness_scale(sim, rgb, 1.0f);
+  if(!(L1 > 1e-6f)) return 4.0f; /* black sample: nothing to scale toward the target */
+  const float ratio = target_L / L1;
+  /* fminf/fmaxf rather than a clamp macro: a non-finite ratio settles on the
+     minimum here instead of passing through. */
+  return fminf(fmaxf(ratio * ratio * ratio, 0.5f), 4.0f); /* the slider's own $MIN / $MAX */
+}
+
 void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
@@ -3555,7 +3578,8 @@ void color_picker_apply(dt_iop_module_t *self,
      finished colour with nothing behind it, so what it aims for is what it
      gets, and a highlight can sit closer to white before anything is lost. */
   const float target_L = is_scale ? 0.995f : 0.97f;
-  const float solved = _solve_boost_for_lightness(sim, rgb_max, target_L);
+  const float solved = is_scale ? _solve_scale_for_lightness(sim, rgb_max, target_L)
+                                : _solve_boost_for_lightness(sim, rgb_max, target_L);
 
   if(d_tmp.gpu) sf_sim_gpu_free(d_tmp.gpu);
   if(d_tmp.sim) sf_sim_free(d_tmp.sim);

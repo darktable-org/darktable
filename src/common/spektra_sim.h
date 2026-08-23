@@ -600,6 +600,11 @@ void sf_sim_scan(const sf_sim_t *sim,
 float sf_sim_probe_lightness(const sf_sim_t *sim,
                              const float rgb_in[3],
                              float boost_override);
+/* Same measurement for the post-compression output scale: leaves the boost and
+ * the compressor as the render has them and overrides only out_scale. */
+float sf_sim_probe_lightness_scale(const sf_sim_t *sim,
+                                   const float rgb_in[3],
+                                   float scale_override);
 
 #ifdef __cplusplus
 }

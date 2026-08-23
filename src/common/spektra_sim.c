@@ -2646,6 +2646,55 @@ static void compress_rgb_aces(double rgb[3])
   }
 }
 
+/* One RGB triple through the whole simulation, returning the OkLab lightness
+   of the result. Both pickers measure through this; each sets up its own
+   modified copy of the simulation first. */
+static float _probe_lightness_run(const sf_sim_t *tmp_sim,
+                                  const float rgb_in[3])
+{
+  float raw[3];
+  sf_sim_expose(tmp_sim, rgb_in, raw, 1, 3, 3);
+  sf_sim_lograw(raw, 1, 3);
+  float corr[3] = { 0.0f, 0.0f, 0.0f };
+  if(tmp_sim->couplers_active) sf_sim_develop_corr(tmp_sim, raw, corr, 1, 3);
+  float cmy[3];
+  sf_sim_develop(tmp_sim, raw, corr, cmy, 1, 3, 3);
+  if(tmp_sim->has_print)
+  {
+    sf_sim_print_expose(tmp_sim, cmy, cmy, 1, 3, 3);
+    sf_sim_print_develop(tmp_sim, cmy, cmy, 1, 3, 3);
+  }
+  float rgb_out[3];
+  sf_sim_scan(tmp_sim, cmy, rgb_out, 1, 3, 3);
+
+  const double rgb_d[3] = { rgb_out[0], rgb_out[1], rgb_out[2] };
+  double xyz[3], lab[3];
+  mat3_mulv(xyz, tmp_sim->out_rgb2xyz, rgb_d);
+  xyz_to_oklab(xyz, lab);
+  return (float)lab[0];
+}
+
+/* Companion to sf_sim_probe_lightness() for the post-compression output scale.
+ *
+ * The two knobs sit on opposite sides of the gamut compressor: the boost
+ * multiplies XYZ before it, this scale multiplies the finished RGB after it.
+ * Measuring one in the other's slot answers a different question, so the scale
+ * needs its own probe -- one that leaves the boost and the compressor exactly
+ * as the render has them and overrides only out_scale.
+ *
+ * Like the boost, no iteration is needed: out_scale multiplies RGB uniformly
+ * and RGB->XYZ is linear, so L(scale) = scale^(1/3) * L(1) exactly. Probing at
+ * 1.0 gives the caller everything it needs to solve in closed form, and makes
+ * the answer independent of whatever the scale currently is. */
+float sf_sim_probe_lightness_scale(const sf_sim_t *sim,
+                                   const float rgb_in[3],
+                                   float scale_override)
+{
+  sf_sim_t tmp_sim = *sim;
+  tmp_sim.out_scale = (double)scale_override;
+  return _probe_lightness_run(&tmp_sim, rgb_in);
+}
+
 /* Runs one RGB triple through the full simulation up to (but not including)
  * the highlight/gamut compressor (compress_rgb_oklch/aces), using
  * `boost_override` in place of sim->out_luminance_boost, and returns the
@@ -2668,27 +2717,7 @@ float sf_sim_probe_lightness(const sf_sim_t *sim,
   sf_sim_t tmp_sim = *sim;
   tmp_sim.out_luminance_boost = (double)boost_override;
   tmp_sim.out_compress = SF_OUTPUT_COMPRESS_OFF;
-
-  float raw[3];
-  sf_sim_expose(&tmp_sim, rgb_in, raw, 1, 3, 3);
-  sf_sim_lograw(raw, 1, 3);
-  float corr[3] = { 0.0f, 0.0f, 0.0f };
-  if(tmp_sim.couplers_active) sf_sim_develop_corr(&tmp_sim, raw, corr, 1, 3);
-  float cmy[3];
-  sf_sim_develop(&tmp_sim, raw, corr, cmy, 1, 3, 3);
-  if(tmp_sim.has_print)
-  {
-    sf_sim_print_expose(&tmp_sim, cmy, cmy, 1, 3, 3);
-    sf_sim_print_develop(&tmp_sim, cmy, cmy, 1, 3, 3);
-  }
-  float rgb_out[3];
-  sf_sim_scan(&tmp_sim, cmy, rgb_out, 1, 3, 3);
-
-  const double rgb_d[3] = { rgb_out[0], rgb_out[1], rgb_out[2] };
-  double xyz[3], lab[3];
-  mat3_mulv(xyz, tmp_sim.out_rgb2xyz, rgb_d);
-  xyz_to_oklab(xyz, lab);
-  return (float)lab[0];
+  return _probe_lightness_run(&tmp_sim, rgb_in);
 }
 
 /* ------------------------------------------------------------------------ */
