@@ -290,6 +290,6 @@ Creates a standard combobox pre-populated with interpolation methods (bilinear, 
 
 6. **Don't set widget values in gui_init()** - Only create and configure widgets. Setting values belongs in `gui_update()`, which is called when params are available.
 
-7. **Always call gui_changed() from gui_update()** - End `gui_update()` with `gui_changed(self, NULL, NULL)` to ensure all UI state adjustments (visibility, sensitivity) are applied consistently. See [GUI.md](GUI.md) for the full event flow.
+7. **Call gui_changed() from gui_update()** - If your module implements `gui_changed()` — it is optional, and the framework calls it only when it exists — end `gui_update()` with `gui_changed(self, NULL, NULL)` so all UI state adjustments (visibility, sensitivity) are applied consistently. See [GUI.md](GUI.md) for the full event flow.
 
 8. **Use dt_ui_label_new() for labels** - Never use `gtk_label_new()` directly. The wrapper ensures long text is ellipsized and doesn't stretch the panel width.

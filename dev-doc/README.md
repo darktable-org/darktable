@@ -136,14 +136,15 @@ gui_init()    →  Create widgets, configure ranges/formats
                       ↓
 gui_update()  ←  Called when params change (image switch, history)
                       ↓
-gui_changed() ←  Always call gui_changed(self, NULL, NULL) at end of gui_update
-                 to apply any UI adjustments (show/hide, sensitivity, etc.)
+gui_changed() ←  If your module implements it, call gui_changed(self, NULL, NULL)
+                 at the end of gui_update() to apply any UI adjustments
+                 (show/hide, sensitivity, etc.)
                       ↓
 User interacts with widget
                       ↓
 Auto-callback (from_params) or manual callback
                       ↓
-self->params updated → gui_changed() called automatically
+self->params updated → your gui_changed() called, if implemented
                       ↓
 dt_dev_add_history_item() → commit_params() → process()
          │                        │                │
