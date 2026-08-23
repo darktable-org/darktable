@@ -2054,7 +2054,29 @@ static void _sf_build_grain_layers(sf_sim_t *s,
   for(int c = 0; c < 3; c++)
   {
     double tot = 0.0;
-    for(int l = 0; l < nl; l++) tot += layer_max_raw[l][c];
+    for(int l = 0; l < nl; l++)
+    {
+      /* layer_max_raw is a running maximum seeded with a large negative
+         sentinel, so a sub-layer whose samples never exceed it keeps the
+         sentinel. That happens when every sample is NaN, which the profile
+         loader permits: it validates array shape only, and a JSON null becomes
+         NaN by design because the exporter writes null for non-finite values.
+         The sentinel then divides into the total below and gives an infinite
+         fraction, which propagates straight into this layer's dmin, dmax and
+         particle count, and from there into the grain sampler and the density
+         buffer. The floors further down act after the fractions are formed,
+         so they cannot contain it.
+
+         A sub-layer can also legitimately reach zero: a zero fitted amplitude,
+         or a CDF that clamps to zero across the whole exposure grid. Both mean
+         the same thing as the degenerate case for our purposes -- the layer
+         carries no density -- so map anything that is not positive and finite
+         to exactly zero and let the floors below keep the arithmetic bounded.
+         The inverted test also catches NaN. */
+      if(!(layer_max_raw[l][c] > 0.0) || !isfinite(layer_max_raw[l][c]))
+        layer_max_raw[l][c] = 0.0;
+      tot += layer_max_raw[l][c];
+    }
     density_max_total_raw[c] = fmax(tot, 1e-9);
     for(int l = 0; l < nl; l++)
     {
@@ -2075,7 +2097,14 @@ static void _sf_build_grain_layers(sf_sim_t *s,
       for(int l = 0; l < nl; l++)
       {
         const double d_abs = layer_curve[i][l][c] + layer_dmin[l][c];
-        const double weight = particle_scale[l] / density_max_fractions[l][c];
+        /* A sub-layer carrying no density has a zero share, and dividing by it
+           gives an infinity that the multiply turns into a NaN -- which then
+           loses the peak comparison below, so the calibration settles on the
+           1e-9 floor and grain vanishes for the whole channel. Floor the
+           denominator: the layer's own zero d_abs keeps its contribution at
+           zero, which is the answer this loop wants. */
+        const double frac = fmax(density_max_fractions[l][c], 1e-9);
+        const double weight = particle_scale[l] / frac;
         sum_sl += weight * d_abs * (layer_dmax[l][c] - uniformity[c] * d_abs);
       }
       if(sum_sl > peak[c]) peak[c] = sum_sl;

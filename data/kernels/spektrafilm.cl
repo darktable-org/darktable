@@ -312,7 +312,10 @@ static float sf_poisson(float lam, uint seed)
 static float sf_layer_particle(float density, float dmax, float npart, float unif, uint seed)
 {
   const float p = sf_clampf(density / dmax, 1e-6f, 1.f - 1e-6f);
-  const float od = dmax / npart;
+  /* keep in step with spektra_core.h: a sub-layer carrying no density has
+     dmax and npart both zero, and the resulting NaN would reach the density
+     buffer */
+  const float od = dmax / fmax(npart, 1e-9f);
   const float sat = 1.f - p * unif * (1.f - 1e-6f);
   return sf_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
 }

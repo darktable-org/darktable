@@ -327,7 +327,11 @@ SPEKTRA_INLINE float sf_layer_particle(float density,
                                        uint32_t seed)
 {
   const float p = sf_clampf(density / dmax, 1e-6f, 1 - 1e-6f);
-  const float od = dmax / npart;
+  /* A sub-layer that carries no density has dmax and npart both zero, making
+     this 0/0. The clamp above already absorbs a non-finite ratio (fmaxf
+     returns the non-NaN operand), but this divide has no such guard and its
+     NaN would reach the returned sample and from there the density buffer. */
+  const float od = dmax / fmaxf(npart, 1e-9f);
   const float sat = 1.f - p * unif * (1 - 1e-6f);
   return sf_poisson(npart * p / sat, seed * 0x9e3779b9u + 1u) * od * sat;
 }
