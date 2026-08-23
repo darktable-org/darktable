@@ -612,10 +612,24 @@ dialog .sidebar row:selected:hover label,
   margin: 0;
 }
 
-/* space the delete button apart from the duplicate buttons */
+/* Keep a fixed action area so its buttons do not move when the delete action
+ * is unavailable for a single image.  See
+ * https://github.com/darktable-org/darktable/pull/21955 for the discussion
+ * of reserving this space to avoid sidebar width changes. */
+.dt_duplicate_ui .dt_duplicate_actions
+{
+  min-width: 4.5em;
+}
+
+.dt_duplicate_ui .dt_duplicate_delete_slot
+{
+  min-width: 1.5em;
+  margin-right: 0.5em;
+}
+
 .dt_duplicate_ui .dt_duplicate_delete
 {
-  margin-left: 0.5em;
+  margin: 0;
 }
 
 /* Set modules name header */
