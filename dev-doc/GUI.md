@@ -116,31 +116,41 @@ commit_params() → process()
 
 **Path C — External change (image switch, undo, preset):**
 
-All three load params you did not ask for and then re-sync your widgets from them, with
-`DT_ENTER_GUI_UPDATE()` held across the sync so your widget callbacks do not fire. Where
-the guard opens differs, so the three are shown separately.
+Params arrive from outside your widget callbacks, and your widgets are then re-synced
+from them with `DT_ENTER_GUI_UPDATE()` held across the sync so those callbacks do not
+fire. Where the guard opens differs by route, so they are shown separately.
 
 Image switch (`src/views/darkroom.c`):
 ```
 DT_ENTER_GUI_UPDATE()
     ↓
-Framework calls reload_defaults(), then your change_image()
+Framework calls reload_defaults(), then your change_image() [if implemented]
 (the visible base instance is kept, so gui_data describing the old
  image must be reset there — see IOP_Module_API.md, GUI_Threading.md)
     ↓
 Framework loads the image's history params into self->params
     ↓
-Framework calls your gui_update()  →  you sync widgets, gui_changed(self, NULL, NULL)
+Framework calls your gui_update()  →  you sync widgets,
+                                      gui_changed(self, NULL, NULL) [if implemented]
     ↓
 DT_LEAVE_GUI_UPDATE()
 ```
 
-Undo, redo, history navigation (`dt_dev_pop_history_items()`): the same, without
-`reload_defaults()` and `change_image()`.
+Params-only history navigation — undo or redo of a parameter change, or moving in the
+history stack (`dt_dev_pop_history_items()`): the same, without `reload_defaults()` and
+`change_image()`.
 
 Preset applied directly (`dt_gui_presets_apply_preset()`): the params are copied into
 `self->params` **before** the guard, which `dt_iop_gui_update()` then opens around your
 `gui_update()`.
+
+Routes that can change the module list — undo or redo of a module *add or delete*
+(`src/libs/history.c`), and pasting history or applying a style
+(`dt_dev_reload_history_items()`) — are not just a params load. They can create and
+destroy instances, so a module may be torn down with `gui_cleanup()` or built with a
+fresh `gui_init()` and `reload_defaults()` rather than merely updated. See
+[GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image)
+for what that means for work you have queued.
 
 ### `gui_update()` — Sync Widgets from Params
 
