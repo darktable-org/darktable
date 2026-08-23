@@ -565,8 +565,8 @@ User Edits Widget:
        → commit_params()  [transforms self->params → piece->data]
        → process()        [reads piece->data]
 
-Image Switch:  [base instance is kept; extra instances are destroyed and rebuilt]
-  reload_defaults() → change_image() → gui_update() → gui_changed()
+Image Switch:  [visible base instance is kept; extra instances are destroyed and rebuilt]
+  reload_defaults() → change_image() → [history params loaded] → gui_update() → gui_changed()
 
 Darkroom Exit:
   cleanup_pipe() [per pipe] → gui_cleanup() → cleanup()

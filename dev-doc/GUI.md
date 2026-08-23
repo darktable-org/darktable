@@ -115,22 +115,32 @@ commit_params() → process()
 ```
 
 **Path C — External change (image switch, undo, preset):**
+
+All three load params you did not ask for and then re-sync your widgets from them, with
+`DT_ENTER_GUI_UPDATE()` held across the sync so your widget callbacks do not fire. Where
+the guard opens differs, so the three are shown separately.
+
+Image switch (`src/views/darkroom.c`):
 ```
-Framework call DT_ENTER_GUI_UPDATE()
+DT_ENTER_GUI_UPDATE()
     ↓
-On an image switch only: framework calls reload_defaults(),
-then your change_image() — the visible base instance is kept, so
-gui_data describing the old image must be reset there
-(see IOP_Module_API.md and GUI_Threading.md)
+Framework calls reload_defaults(), then your change_image()
+(the visible base instance is kept, so gui_data describing the old
+ image must be reset there — see IOP_Module_API.md, GUI_Threading.md)
     ↓
-Framework loads the selected params into self->params
+Framework loads the image's history params into self->params
     ↓
-Framework calls your gui_update()
+Framework calls your gui_update()  →  you sync widgets, gui_changed(self, NULL, NULL)
     ↓
-You sync widgets, call gui_changed(self, NULL, NULL)
-    ↓
-Framework call DT_LEAVE_GUI_UPDATE()
+DT_LEAVE_GUI_UPDATE()
 ```
+
+Undo, redo, history navigation (`dt_dev_pop_history_items()`): the same, without
+`reload_defaults()` and `change_image()`.
+
+Preset applied directly (`dt_gui_presets_apply_preset()`): the params are copied into
+`self->params` **before** the guard, which `dt_iop_gui_update()` then opens around your
+`gui_update()`.
 
 ### `gui_update()` — Sync Widgets from Params
 
