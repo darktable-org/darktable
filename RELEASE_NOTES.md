@@ -176,6 +176,9 @@ changes (where available).
 
 - Fixed masks being altered by modules blending.
 
+- Ignore possible OpenCL null events (uninitialized) due to hard
+  memory pressure.
+
 ## Lua
 
 ### API Version
