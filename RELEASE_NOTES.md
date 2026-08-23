@@ -65,7 +65,7 @@ changes (where available).
 
 ## Other Changes
 
-- 
+-
 
 ## Documentation updates
 
@@ -171,7 +171,10 @@ changes (where available).
   equalizer no longer read from and write to the same image buffer on the
   GPU, which the OpenCL specification leaves undefined.
 
-- Fixed the AppImage defaulting to x11/Xwayland in native Wayland sessions. 
+- Fixed the AppImage defaulting to x11/Xwayland in native Wayland
+  sessions.
+
+- Fixed masks being altered by modules blending.
 
 ## Lua
 
