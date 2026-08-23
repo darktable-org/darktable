@@ -1407,12 +1407,17 @@ static float _max_halo_sigma(const dt_iop_spektrafilm_params_t *p,
                           ? SF_GRAIN_BLUR_FACTOR * SF_GRAIN_REF_UM
                                 * fmaxf(p->grain_blur, SF_GRAIN_BLUR_MIN) * inv_um
                           : 0.0f;
-  /* coupler halo: gaussian core plus the widest exponential-tail component;
-     the per-film tail size is unknown before the sim exists, so assume the
-     stock value all current profiles use (200 um) whenever couplers are on */
+  /* coupler halo: gaussian core plus the widest exponential-tail component.
+     Both are persisted absolutes and are handed to the simulation unchanged,
+     so they are read here rather than assumed: the core reaches 60 um and the
+     tail 400 um, and any fixed pair under-pads the upper half of both ranges.
+     The tail term is gated on its weight, the same condition process() applies
+     before dispatching it. */
+  const float ctail = (p->couplers_tail_weight > 0.0f)
+                          ? (float)SF_EXPTAIL_R2 * p->couplers_tail_um
+                          : 0.0f;
   const float coupler = (p->couplers_amount > 0.0f)
-                            ? fmaxf((float)SF_COUPLER_BLUR_UM,
-                                    (float)(SF_EXPTAIL_R2 * 200.0)) * inv_um
+                            ? fmaxf(p->couplers_diffusion_um, ctail) * inv_um
                             : 0.0f;
   /* scanner stage: already in pixels, so it does not go through inv_um */
   const float scan = fmaxf(p->scan_blur,
