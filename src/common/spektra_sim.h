@@ -121,14 +121,18 @@ typedef enum sf_pack_status_t
   SF_PACK_ERR_TOO_NEW,    /* written by an exporter newer than this build */
 } sf_pack_status_t;
 
-/* `status` may be NULL. */
+/* `status` may be NULL. Returns a pack owning one reference. */
 sf_pack_t *sf_pack_load(const char *dir,
                         char **errmsg,
                         sf_pack_status_t *status);
+/* Take another reference, so the pack stays alive after whatever lock guarded
+ * the pointer is released. Returns its argument, NULL included. */
+sf_pack_t *sf_pack_ref(sf_pack_t *pack);
 /* Identity of the spectral upsampling table this pack carries. The hash is what
  * params record; the string is for the message shown when they disagree. */
 uint32_t sf_pack_lut_hash(const sf_pack_t *pack);
 const char *sf_pack_lut_id(const sf_pack_t *pack);
+/* Drop one reference; frees once the last one goes. */
 void sf_pack_free(sf_pack_t *pack);
 const char *sf_pack_version(const sf_pack_t *pack);
 

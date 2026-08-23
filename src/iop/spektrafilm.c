@@ -1114,7 +1114,15 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
       dt_print(DT_DEBUG_DEV, "[spektrafilm] loaded data pack %s (spektrafilm %s)\n",
                want_dir, sf_pack_version(_pack));
   }
-  sf_pack_t *pack = _pack;
+  /* Take a reference for the rest of this call. _pack is process-global and
+     another thread entering here -- a second pixelpipe, or the colour picker
+     from the GUI thread -- frees it whenever it resolves a different pack
+     directory or sees a newer fetch generation, both of which are ordinary
+     configurations rather than corner cases. The lock excludes only threads
+     inside the critical section, not one that has already left holding the
+     pointer, and the build below reads the spectra, the film defaults and the
+     illuminants for its whole multi-hundred-millisecond duration. */
+  sf_pack_t *pack = sf_pack_ref(_pack);
   char pack_dir[SF_PATH_LEN];
   char pack_error[sizeof _pack_error];
   g_strlcpy(pack_dir, _pack_path, sizeof pack_dir);
@@ -1147,6 +1155,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     dt_print(DT_DEBUG_DEV, "[spektrafilm] no filming profiles under %s/profiles\n",
              pack_dir);
     g_list_free_full(entries, g_free);
+    sf_pack_free(pack);
     _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
@@ -1168,6 +1177,7 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
     dt_print(DT_DEBUG_DEV, "[spektrafilm] no printing profiles under %s/profiles\n",
              pack_dir);
     g_list_free_full(entries, g_free);
+    sf_pack_free(pack);
     _publish_status(d);
     dt_pthread_mutex_unlock(&d->lock);
     return NULL;
@@ -1302,6 +1312,8 @@ static sf_sim_t *_ensure_sim(dt_iop_spektrafilm_data_t *d,
   free(err);
   if(film) sf_profile_free(film);
   if(paper) sf_profile_free(paper);
+
+  sf_pack_free(pack); /* the reference taken above; the sim keeps no pointer into it */
 
   sf_sim_t *s = d->sim;
   /* Hand the outcome to the GUI while it is fresh. The banner is set from

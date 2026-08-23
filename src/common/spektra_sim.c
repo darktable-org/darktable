@@ -246,6 +246,11 @@ static const double SF_OKLAB_M2[9]
 
 struct sf_pack_t
 {
+  /* Callers may keep a pack alive across the release of whatever lock guarded
+     the pointer they got it from -- a simulation build reads the spectra, the
+     film defaults and the illuminants for its whole duration. Atomic so the
+     count itself needs no lock. */
+  gint refcount;
   char *version;
   double wavelengths[SF_NWL];
   double log_exposure[SF_NLE];
@@ -577,9 +582,16 @@ static void set_error(char **errmsg,
 uint32_t sf_pack_lut_hash(const sf_pack_t *pack) { return pack ? pack->lut_hash : 0u; }
 const char *sf_pack_lut_id(const sf_pack_t *pack) { return pack ? pack->lut_id : ""; }
 
+sf_pack_t *sf_pack_ref(sf_pack_t *pack)
+{
+  if(pack) g_atomic_int_inc(&pack->refcount);
+  return pack;
+}
+
 void sf_pack_free(sf_pack_t *pack)
 {
   if(!pack) return;
+  if(!g_atomic_int_dec_and_test(&pack->refcount)) return;
   g_free(pack->version);
   g_free(pack->locus);
   if(pack->illuminants) g_hash_table_destroy(pack->illuminants);
@@ -595,6 +607,7 @@ sf_pack_t *sf_pack_load(const char *dir,
 {
   if(status) *status = SF_PACK_ERR_UNREADABLE;
   sf_pack_t *pack = g_new0(sf_pack_t, 1);
+  pack->refcount = 1;
   char *json_path = g_build_filename(dir, "pack.json", NULL);
   char *lut_path = g_build_filename(dir, "spectra_lut.f32", NULL);
 
