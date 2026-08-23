@@ -931,7 +931,18 @@ static gpointer _fetch_worker(gpointer data)
     _set_status(SF_FETCH_FAILED, -1.0, _("could not reach the data repository"));
     goto out;
   }
-  if(_cancelled()) goto out;
+  if(_cancelled())
+  {
+    /* The out: block clears the cancel flag but does not touch the state, so
+       returning from here without a terminal status left the fetch reading
+       RUNNING for the rest of the session: sf_fetch_start() refuses to start
+       while that holds, the module's only download control turns into a
+       cancel, and the status row keeps re-arming its poll timer. This is the
+       ordinary landing place for an early cancel, because the manifest GET
+       installs no progress callback and so cannot be aborted mid-transfer. */
+    _set_status(SF_FETCH_FAILED, -1.0, _("cancelled"));
+    goto out;
+  }
 
   uint32_t got_hash = 0;
   guint64 total = 0;
