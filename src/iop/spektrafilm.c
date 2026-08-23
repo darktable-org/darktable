@@ -2426,8 +2426,17 @@ int process_cl(dt_iop_module_t *self,
           devid, (size_t)nle * 3 * f, (void *)g->grain_layer_curve_total);
       d->grain_cl_curve = dt_opencl_copy_host_to_device_constant(
           devid, (size_t)nle * maxsub * 3 * f, (void *)g->grain_layer_curve);
-      d->grain_cl_built_for = g;
-      d->grain_cl_devid = devid;
+      /* Claim the cache only once every upload landed. If the key were
+         recorded before this test, a partial failure would be permanent for
+         this simulation and device: the guard above would skip the rebuild, the
+         check below would fail on the same NULL, and the OpenCL path would stay
+         unavailable until the simulation itself was rebuilt. */
+      if(d->grain_cl_dmax && d->grain_cl_npart && d->grain_cl_dmin && d->grain_cl_total
+         && d->grain_cl_curve)
+      {
+        d->grain_cl_built_for = g;
+        d->grain_cl_devid = devid;
+      }
     }
     if(!d->grain_cl_dmax || !d->grain_cl_npart || !d->grain_cl_dmin || !d->grain_cl_total
        || !d->grain_cl_curve)
