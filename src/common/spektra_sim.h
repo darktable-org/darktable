@@ -67,6 +67,11 @@ extern "C" {
 
 #define SF_NWL 81  /* 380..780 nm in 5 nm steps — spektrafilm SPECTRAL_SHAPE */
 #define SF_NLE 256 /* log-exposure grid — spektrafilm LOG_EXPOSURE */
+/* Upper bound on the spectral upsampling table's side length, enforced when a
+   pack's header is read. The shipped table is 192 a side; this ceiling is well
+   clear of any plausible revision while keeping the element count far from
+   overflowing a size_t. */
+#define SF_TC_N_MAX 4096
 /* max emulsion sub-layers a film's fitted density-curve model can have
    (matches sf_curves_model_t's centers/amplitudes/sigmas[3][8] in
    spektra_sim.c) and the max particle_scale_sublayers entries read below. */

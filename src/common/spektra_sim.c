@@ -726,9 +726,18 @@ sf_pack_t *sf_pack_load(const char *dir,
     char magic[4];
     int32_t hdr_version = 0, dims[3], dtype = 0, id_len = 0;
     uint32_t lut_hash = 0;
+    /* dims[0] bounds matter as much as the fields beside them. It becomes
+       pack->tc_n and thence the side length every cubic gather indexes with:
+       a negative value still produces a positive element count (it is squared)
+       and so allocates and reads back a plausible buffer, while the stored
+       side length reflects the sign and turns each gather into an offset far
+       outside that buffer. A value below 2 leaves the cubic base index at -1.
+       SF_TC_N_MAX is far above the 192 the shipped table uses and also keeps
+       the element count clear of overflow. */
     if(fread(magic, 1, 4, fh) != 4 || memcmp(magic, "SFS2", 4) != 0
        || fread(&hdr_version, 4, 1, fh) != 1 || hdr_version != 2
        || fread(dims, 4, 3, fh) != 3 || dims[0] != dims[1] || dims[2] != SF_NWL
+       || dims[0] < 2 || dims[0] > SF_TC_N_MAX
        || fread(&dtype, 4, 1, fh) != 1 || (dtype != 0 && dtype != 1)
        || fread(&lut_hash, 4, 1, fh) != 1 || fread(&id_len, 4, 1, fh) != 1
        || id_len < 0 || id_len > 255)
