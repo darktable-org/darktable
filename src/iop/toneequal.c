@@ -2317,7 +2317,8 @@ void gui_post_expose(dt_iop_module_t *self,
   // to convey the before/after luminance.
   float bg_rgb[3];
   float frame_color[3];
-  dt_draw_backbuf_contrast(dev, pointerx, pointery, bg_rgb, frame_color);
+  dt_draw_backbuf_contrast(dev, pointerx, pointery, bg_rgb, frame_color,
+                           16.0f / (zoom_scale * width));
   const float outer_shade = _shade_from_luminance(luminance_in);
   const float inner_shade = _shade_from_luminance(luminance_out);
   const float outer_color[3] = { outer_shade, outer_shade, outer_shade };
