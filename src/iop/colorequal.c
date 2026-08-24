@@ -2843,7 +2843,7 @@ void gui_post_expose(dt_iop_module_t *self,
   float bg_rgb[3];
   float frame_color[3];
   dt_draw_backbuf_contrast(self->dev, g->cursor_pos_x, g->cursor_pos_y,
-                           bg_rgb, frame_color);
+                           bg_rgb, frame_color, 16.0f / (zoom_scale * width));
 
   // Position in full image coordinates
   const float cx = g->cursor_pos_x * width;
