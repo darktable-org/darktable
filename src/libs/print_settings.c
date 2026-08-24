@@ -1887,11 +1887,11 @@ static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
     dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
 
     // Make sure the Windows DEVMODE is updated to match the new orientation
-#ifdef _WIN32
+  #ifdef _WIN32
     if(ps->settings_ctx && ps->settings_ctx->cached_dm)
       dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
-    #endif
-    
+  #endif
+  }  
 
   dt_mipmap_cache_release(&buf);
   dt_control_queue_redraw_center();

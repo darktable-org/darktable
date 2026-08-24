@@ -39,6 +39,7 @@ typedef struct dt_paper_info_t
 {
   char name[MAX_NAME], common_name[MAX_NAME];
   double width, height;
+  WORD dm_paper_id; // specfic to Windows, added here for a common structure to hold paper information across platforms
 } dt_paper_info_t;
 
 typedef struct dt_medium_info_t

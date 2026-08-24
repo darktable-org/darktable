@@ -189,12 +189,31 @@ static void _log_hresult(HRESULT hr, const char *prefix)
   }
 }
 
-static void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
+void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
 {
-  dm->dmFields |= DM_ORIENTATION | DM_PAPERWIDTH | DM_PAPERLENGTH;
+  dm->dmFields |= DM_ORIENTATION | DM_PAPERSIZE |DM_PAPERWIDTH | DM_PAPERLENGTH;
   dm->dmOrientation = pinfo->page.landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+
+  // Set paper size and dimensions. If the paper has a known DEVMODE ID, use that; otherwise, use custom dimensions.
+  dm->dmFields |= DM_PAPERSIZE;
+  dm->dmPaperSize = (pinfo->paper.dm_paper_id != 0) ? pinfo->paper.dm_paper_id : DMPAPER_USER;
+  // Set custom paper dimensions in tenths of a millimeter, these should match those queried when the DEVMODE was first obtained.
+  dm->dmFields |= DM_PAPERWIDTH | DM_PAPERLENGTH;
   dm->dmPaperWidth  = (short)(pinfo->paper.width  * 10.0f);
   dm->dmPaperLength = (short)(pinfo->paper.height * 10.0f);
+
+  // Primarily for drivers that key primarily off paper name rather than ID or dimensions
+  if(pinfo->paper.common_name[0])
+  {
+    dm->dmFields |= DM_FORMNAME;
+    wchar_t *wname = g_utf8_to_utf16(pinfo->paper.common_name, -1, NULL, NULL, NULL);
+    if(wname)
+    {
+      wcsncpy(dm->dmFormName, wname, CCHFORMNAME - 1);
+      dm->dmFormName[CCHFORMNAME - 1] = L'\0';
+      g_free(wname);
+    }
+  }
 }
 
 void free_dib(dt_win_dib_t *dib)
@@ -804,6 +823,11 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
     int sizes_count = DeviceCapabilitiesW(wprinter, NULL, DC_PAPERSIZE, (LPWSTR)szList, NULL);
     if(sizes_count > 0)
     {
+      #ifdef DC_PAPERS
+        WORD *paper_ids = (WORD *)calloc((size_t)papers_count, sizeof(WORD));
+        int got_ids = paper_ids ? DeviceCapabilitiesW(wprinter, NULL, DC_PAPERS, (LPWSTR)paper_ids, NULL) : 0;
+      #endif
+      
       #ifdef DC_PAPERNAMES
         wchar_t *names = (wchar_t *)calloc((size_t)papers_count, 64 * sizeof(wchar_t));
         int got = names ? DeviceCapabilitiesW(wprinter, NULL, DC_PAPERNAMES, names, NULL) : 0;
@@ -813,6 +837,11 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
         dt_paper_info_t *p = calloc(1, sizeof(dt_paper_info_t));
         p->width  = szList[i].cx / 10.0;
         p->height = szList[i].cy / 10.0;
+
+        // Try to get DEVMODE paper ID if available
+        #ifdef DC_PAPERS
+        p->dm_paper_id = (paper_ids && got_ids > i) ? paper_ids[i] : 0;
+        #endif
 
         // Try to get names if available
         #ifdef DC_PAPERNAMES

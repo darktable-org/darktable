@@ -104,4 +104,6 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo);
 
 gboolean dt_win_sync_cached_dm_to_pinfo(dt_win32_print_ctx_t *ctx);
 
+void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo);
+
 G_END_DECLS
