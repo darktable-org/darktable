@@ -420,10 +420,19 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
+  // The default value for bits per sample in the TIFF Revision 6.0 Spec is 1
+  TIFFGetFieldDefaulted(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
+
+  // The default value for samples per pixel in the TIFF Revision 6.0 Spec is 1
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
+
+  // The default value for sample format in the TIFF Revision 6.0 Spec is 1,
+  // which represents unsigned integer data
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
-  TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
+
+  // The default value for planar config in the TIFF Revision 6.0 Spec is 1,
+  // which represents chunky or contiguous format
+  TIFFGetFieldDefaulted(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
 
   // Citing the TIFF 6.0 specification for SampleFormat:
