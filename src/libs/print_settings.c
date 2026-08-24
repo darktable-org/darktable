@@ -209,8 +209,9 @@ static void _get_page_dimension(dt_print_info_t *prt,
   }
 }
 
+#ifdef _WIN32
 /* ----------------------------------------------------------------------------
-   Debug logging
+   Windows Debug logging
 ---------------------------------------------------------------------------- */
 
 #define DBG_MARK(...) \
@@ -223,7 +224,7 @@ static void _get_page_dimension(dt_print_info_t *prt,
       fclose(f); \
     } \
   } while(0)
-
+#endif
 
 
 static void _precision_by_unit(const _unit_t unit,
@@ -1769,9 +1770,11 @@ static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
   int n = 0;
   int srgb_pos = -1, adobergb_pos = -1;
 
-  if(!driver_managed)
+  if(!driver_managed) 
+  {
     dt_bauhaus_combobox_add(ps->profile, _("image settings"));
     n = 1;
+  }
   // pos 0 reserved for "image settings" in unrestricted mode;
   // in driver-managed mode there is no pos 0 placeholder — first
   // real entry starts the list.
@@ -1851,8 +1854,6 @@ static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
   }
 
   dt_bauhaus_combobox_set(ps->profile, target);
-  DBG_MARK("rebuild: driver_managed=%d target=%d readback=%d v_icctype=%d",
-         driver_managed, target, dt_bauhaus_combobox_get(ps->profile), ps->v_icctype);
 }
 #endif
 

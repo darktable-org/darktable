@@ -53,11 +53,6 @@ typedef struct dt_win_dib_t
  */
 gboolean dt_printer_details_valid(const char *name);
 
-bool win_render_box_to_dib(const dt_image_box *box, dt_win_dib_t *out);
-/**
- * Free all discovered printers and reset state.
- * Call this during module teardown/abort to avoid leaks.
- */
 void free_discovered_printers(void);
 
 void dt_win_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data),
@@ -74,8 +69,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
                         void *icc_data, size_t icc_size,
                         gboolean is_color_device,
                         float width, float height);
-
-RECT compute_box_rect(const dt_image_box *box, HDC hdc, int dpiX, int dpiY, int paper_width, int paper_height);                                           
 
 typedef enum {
   QUALITY_SRC_CAPS,
