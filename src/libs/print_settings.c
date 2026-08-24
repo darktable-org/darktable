@@ -786,8 +786,7 @@ static void _print_job_cleanup(void *p)
 
 #ifdef _WIN32
 // idle callback to force a redraw once GTK is back in control
-static gboolean
-_redraw_later(gpointer user_data)
+static gboolean _redraw_later(gpointer user_data)
 {
   GtkWidget *widget = GTK_WIDGET(user_data);
   if(GTK_IS_WIDGET(widget))
@@ -795,10 +794,38 @@ _redraw_later(gpointer user_data)
   return G_SOURCE_REMOVE; // run once, then remove
 }
 
+static const dt_paper_info_t *_find_paper_by_dm(GList *paper_list, const dt_paper_info_t *from_dm)
+{
+  // prefer matching by driver ID — unambiguous, resolves same-dimension
+  // variants (e.g. bordered/borderless) correctly
+  if(from_dm->dm_paper_id != 0)
+  {
+    for(GList *l = paper_list; l; l = g_list_next(l))
+    {
+      const dt_paper_info_t *p = l->data;
+      if(p->dm_paper_id == from_dm->dm_paper_id) return p;
+    }
+  }
+  // fall back to dimension matching if no ID, or ID didn't match anything
+  for(GList *l = paper_list; l; l = g_list_next(l))
+  {
+    const dt_paper_info_t *p = l->data;
+    if(fabs(p->width - from_dm->width) < 0.5 && fabs(p->height - from_dm->height) < 0.5)
+      return p;
+  }
+  return NULL;
+}
+
 static void _sync_print_widgets_from_pinfo(dt_lib_print_settings_t *ps)
 {
   dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
-  dt_bauhaus_combobox_set_from_text(ps->papers, ps->prt.paper.name);
+
+  const dt_paper_info_t *matched = _find_paper_by_dm(ps->paper_list, &ps->prt.paper);
+  if(matched)
+  {
+    memcpy(&ps->prt.paper, matched, sizeof(dt_paper_info_t));   // pulls in the correct name/common_name/id
+    dt_bauhaus_combobox_set_from_text(ps->papers, matched->common_name);
+  }
 }
 
 static void
@@ -1326,14 +1353,14 @@ _update_slider(dt_lib_print_settings_t *ps)
 
   // if widget are created, let's display the current image size
 
-  // FIXME: why doesn't this update when units are changed?
+  // Use the last selected image box if none is currently selected to allow for updating the size/DPI/scale information
   int sel = (ps->selected != -1) ? ps->selected : ps->last_selected;
-  if(ps->sel != -1
-     && dt_is_valid_imgid(ps->imgs.box[ps->sel].imgid)
+  if(sel != -1
+     && dt_is_valid_imgid(ps->imgs.box[sel].imgid)
      && ps->width && ps->height
      && ps->info)
   {
-    const dt_image_box *box = &ps->imgs.box[ps->sel];
+    const dt_image_box *box = &ps->imgs.box[sel];
 
     dt_image_pos box_size_mm, box_size;
     dt_printing_get_image_pos_mm(&ps->imgs, box, &box_size_mm);

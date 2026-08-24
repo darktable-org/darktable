@@ -256,6 +256,8 @@ gboolean dt_win_sync_cached_dm_to_pinfo(dt_win32_print_ctx_t *ctx)
     pinfo->paper.width = dm->dmPaperWidth / 10.0;
   if(dm->dmFields & DM_PAPERLENGTH)
     pinfo->paper.height = dm->dmPaperLength / 10.0;
+  if(dm->dmFields & DM_PAPERSIZE)
+    pinfo->paper.dm_paper_id = dm->dmPaperSize;
 
   // Create DC to query resolution and hardware margins
   wchar_t *wprinter = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
@@ -1121,10 +1123,10 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
                                                     part_uri,
                                                     &resource);
           part_uri->lpVtbl->Release(part_uri);
-if(FAILED(hr))
-{
-  DBG_MARK("CreateImageResource failed: hr=0x%08lx", hr);
-}
+          if(FAILED(hr))
+          {
+            DBG_MARK("CreateImageResource failed: hr=0x%08lx", hr);
+          }
         }
       }
       img_stream->lpVtbl->Release(img_stream);
@@ -1187,8 +1189,8 @@ static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
   hr = factory->lpVtbl->CreateGeometry(factory, &geom);
   if(FAILED(hr)) goto cleanup;
 
-XPS_POINT start = { x, adj_y };
-XPS_SEGMENT_TYPE seg_types[4] = {
+  XPS_POINT start = { x, adj_y };
+  XPS_SEGMENT_TYPE seg_types[4] = {
   XPS_SEGMENT_TYPE_LINE,
   XPS_SEGMENT_TYPE_LINE,
   XPS_SEGMENT_TYPE_LINE,
@@ -1207,16 +1209,16 @@ WINBOOL seg_strokes[4] = { TRUE, TRUE, TRUE, TRUE };
 hr = factory->lpVtbl->CreateGeometryFigure(factory, &start, &figure);
 if(FAILED(hr)) goto cleanup;
 
-  hr = figure->lpVtbl->SetSegments(figure,
-                                 4,
-                                 8,
-                                 seg_types,
-                                 seg_data,
-                                 seg_strokes);
-  if(SUCCEEDED(hr))
-    hr = figure->lpVtbl->SetIsClosed(figure, TRUE);
-  if(SUCCEEDED(hr))
-    hr = figure->lpVtbl->SetIsFilled(figure, TRUE);
+hr = figure->lpVtbl->SetSegments(figure,
+                                4,
+                                8,
+                                seg_types,
+                                seg_data,
+                                seg_strokes);
+if(SUCCEEDED(hr))
+  hr = figure->lpVtbl->SetIsClosed(figure, TRUE);
+if(SUCCEEDED(hr))
+  hr = figure->lpVtbl->SetIsFilled(figure, TRUE);
 
   if(SUCCEEDED(hr))
   {
@@ -1639,135 +1641,9 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   *awidth  = br - bx;
   *aheight = bb - by;
 
-/*     DBG_MARK("hw_mm: L=%.2f T=%.2f R=%.2f B=%.2f | user_mm: L=%.2f T=%.2f R=%.2f B=%.2f",
-         np_left, np_top, np_right, np_bottom,
-         prt->page.margin_left, prt->page.margin_top,
-         prt->page.margin_right, prt->page.margin_bottom);
-
-DBG_MARK("layout: px=%.2f py=%.2f pwidth=%.2f pheight=%.2f ax=%.2f ay=%.2f aw=%.2f ah=%.2f",
-         *px, *py, *pwidth, *pheight,
-         *ax, *ay, *awidth, *aheight); */
 }
 
 
-
-
-
-
-
-// // Compute the destination rectangle in device units (pixels on printer DC)
-// RECT compute_target_rect(const dt_print_info_t *pinfo,
-//                          const dt_win_dib_t *dib,
-//                          HDC hdc)   // pass in the printer DC so we can query caps
-// {
-//   RECT r = {0};
-
-//   // Query actual device caps
-//   const int dpi_x   = GetDeviceCaps(hdc, LOGPIXELSX);
-//   const int dpi_y   = GetDeviceCaps(hdc, LOGPIXELSY);
-//   const int horzRes = GetDeviceCaps(hdc, HORZRES);
-//   const int vertRes = GetDeviceCaps(hdc, VERTRES);
-//   const int physW   = GetDeviceCaps(hdc, PHYSICALWIDTH);
-//   const int physH   = GetDeviceCaps(hdc, PHYSICALHEIGHT);
-//   const int offX    = GetDeviceCaps(hdc, PHYSICALOFFSETX);
-//   const int offY    = GetDeviceCaps(hdc, PHYSICALOFFSETY);
-
-//   DBG_MARK("caps: dpi=(%d,%d) horzRes=%d vertRes=%d physW=%d physH=%d offX=%d offY=%d",
-//             dpi_x, dpi_y, horzRes, vertRes, physW, physH, offX, offY);
-
-//   // Borderless detection: full phys area, no offsets
-//   const BOOL borderless = (offX == 0 && offY == 0 &&
-//                             horzRes == physW && vertRes == physH);
-
-//   // Hardware margins in px (from pinfo, but scaled with actual dpi)
-//   const int hw_left_px   = (int)(pinfo->printer.hw_margin_left   / 25.4 * dpi_x + 0.5);
-//   const int hw_top_px    = (int)(pinfo->printer.hw_margin_top    / 25.4 * dpi_y + 0.5);
-//   const int hw_right_px  = (int)(pinfo->printer.hw_margin_right  / 25.4 * dpi_x + 0.5);
-//   const int hw_bottom_px = (int)(pinfo->printer.hw_margin_bottom / 25.4 * dpi_y + 0.5);
-
-//   DBG_MARK("hw_px from mm: L=%d T=%d R=%d B=%d",
-//             hw_left_px, hw_top_px, hw_right_px, hw_bottom_px);
-
-//   // User margins in px
-//   const int user_left_px   = (int)(pinfo->page.margin_left   / 25.4 * dpi_x + 0.5);
-//   const int user_top_px    = (int)(pinfo->page.margin_top    / 25.4 * dpi_y + 0.5);
-//   const int user_right_px  = (int)(pinfo->page.margin_right  / 25.4 * dpi_x + 0.5);
-//   const int user_bottom_px = (int)(pinfo->page.margin_bottom / 25.4 * dpi_y + 0.5);
-
-//   // Effective margins = user − hw (clamped at 0)
-//   const int eff_left   = (user_left_px   > hw_left_px)   ? (user_left_px   - hw_left_px)   : 0;
-//   const int eff_top    = (user_top_px    > hw_top_px)    ? (user_top_px    - hw_top_px)    : 0;
-//   const int eff_right  = (user_right_px  > hw_right_px)  ? (user_right_px  - hw_right_px)  : 0;
-//   const int eff_bottom = (user_bottom_px > hw_bottom_px) ? (user_bottom_px - hw_bottom_px) : 0;
-
-//   // Available area in device units
-//   const int page_w = borderless ? physW : horzRes;
-//   const int page_h = borderless ? physH : vertRes;
-
-//   const int avail_w_px = page_w - eff_left - eff_right;
-//   const int avail_h_px = page_h - eff_top  - eff_bottom;
-
-// // Compute image native DPI
-// double image_dpi_x = (double)dib->width  / pinfo->paper.width;   // pixels per mm
-// double image_dpi_y = (double)dib->height / pinfo->paper.height;
-// image_dpi_x *= 25.4; // convert to pixels per inch
-// image_dpi_y *= 25.4;
-
-// // Clamp to avoid upscaling
-// double effective_dpi_x = MIN(image_dpi_x, dpi_x);
-// double effective_dpi_y = MIN(image_dpi_y, dpi_y);
-
-// // Compute target raster size in pixels
-// int dst_w = (int)(pinfo->paper.width  * effective_dpi_x / 25.4);
-// int dst_h = (int)(pinfo->paper.height * effective_dpi_y / 25.4);
-
-// // Optional: oversize for borderless printing
-// double oversize_factor_x = (double)physW / (double)(physW - eff_left - eff_right);
-// double oversize_factor_y = (double)physH / (double)(physH - eff_top - eff_bottom);
-// oversize_factor_x = MAX(1.0, oversize_factor_x);
-// oversize_factor_y = MAX(1.0, oversize_factor_y);
-
-// dst_w = (int)(dst_w * oversize_factor_x);
-// dst_h = (int)(dst_h * oversize_factor_y);
-
-
-//   // Center within available area
-//   int dst_x = eff_left + (avail_w_px - dst_w) / 2;
-//   int dst_y = eff_top  + (avail_h_px - dst_h) / 2;
-
-//   r.left   = dst_x;
-//   r.top    = dst_y;
-//   r.right  = dst_x + dst_w;
-//   r.bottom = dst_y + dst_h;
-
-//       // --- Paper mismatch check ---
-//   double physW_mm = (double)physW / dpi_x * 25.4;
-//   double physH_mm = (double)physH / dpi_y * 25.4;
-
-//   double reqW_mm = pinfo->paper.width;
-//   double reqH_mm = pinfo->paper.height;
-
-//   // Allow a small tolerance (drivers often round sizes)
-//   const double tol = 1.0; // mm
-
-//   if(fabs(physW_mm - reqW_mm) > tol || fabs(physH_mm - reqH_mm) > tol) {
-//       dt_control_log(_("Paper mismatch: job requests %.1fx%.1f mm, "
-//                         "printer reports %.1fx%.1f mm. "
-//                         "Image will be centered and may be cropped."),
-//                       reqW_mm, reqH_mm, physW_mm, physH_mm);
-
-//   }
-  
-//   DBG_MARK("compute_target_rect: borderless=%d | hw_px L=%d T=%d R=%d B=%d | "
-//             "user_px L=%d T=%d R=%d B=%d | eff_px L=%d T=%d R=%d B=%d | rect=(%d,%d %dx%d)",
-//             borderless,
-//             hw_left_px, hw_top_px, hw_right_px, hw_bottom_px,
-//             user_left_px, user_top_px, user_right_px, user_bottom_px,
-//             eff_left, eff_top, eff_right, eff_bottom,
-//             r.left, r.top, r.right - r.left, r.bottom - r.top);
-
-//   return r;
-// }
 
 
 //constructor for the print settings context
@@ -1918,217 +1794,16 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
       // One‑stop sync: DEVMODE → pinfo (orientation, paper, resolution, hw margins)
       dt_win_sync_cached_dm_to_pinfo(settings_ctx);
 
-      // Optional debug dump of DEVMODE
-      // DEVMODEW *dm = settings_ctx->cached_dm;
-      // DBG_MARK("DEVMODE: fields=0x%x size=%d orientation=%d paper=%d (%dx%d tenths mm) "
-      //          "quality=%d xres=%d yres=%d copies=%d color=%d",
-      //          dm->dmFields,
-      //          dm->dmSize,
-      //          dm->dmOrientation,
-      //          dm->dmPaperSize,
-      //          dm->dmPaperWidth, dm->dmPaperLength,
-      //          dm->dmPrintQuality,
-      //          dm->dmPrintQuality, dm->dmYResolution,
-      //          dm->dmCopies,
-      //          dm->dmColor);
     }
 
     return TRUE;
   }
   else
   {
-  //   // DBG_MARK("Printer settings dialog cancelled");
-
-  //   // if(settings_ctx->cached_dm)
-  //   // {
-  //   //   // DEVMODEW *dm = settings_ctx->cached_dm;
-
-  //     // Optional debug dump of DEVMODE
-  //     // DBG_MARK("DEVMODE: fields=0x%x size=%d orientation=%d paper=%d (%dx%d tenths mm) "
-  //     //          "quality=%d xres=%d yres=%d copies=%d color=%d",
-  //     //          dm->dmFields,
-  //     //          dm->dmSize,
-  //     //          dm->dmOrientation,
-  //     //          dm->dmPaperSize,
-  //     //          dm->dmPaperWidth, dm->dmPaperLength,
-  //     //          dm->dmPrintQuality,
-  //     //          dm->dmPrintQuality, dm->dmYResolution,
-  //     //          dm->dmCopies,
-  //     //          dm->dmColor);
-  //   }
-
     return FALSE;
   }
 
 }
-
-//-----------------------------REFACTOR WORK
-// uint8_t *convert_16bit_rgb_to_24bit(const uint16_t *src, int width, int height)
-// {
-//   int total_pixels = width * height;
-//   uint8_t *dst = g_malloc(3 * total_pixels);
-
-//   for(int i = 0; i < total_pixels; i++)
-//   {
-//     dst[3*i + 0] = src[3*i + 0] >> 8; // R
-//     dst[3*i + 1] = src[3*i + 1] >> 8; // G
-//     dst[3*i + 2] = src[3*i + 2] >> 8; // B
-//   }
-
-//   return dst;
-// }
-
-
-bool win_render_box_to_dib(const dt_image_box *box, dt_win_dib_t *out)
-{
-
-  if(!box || !box->buf || box->exp_width <= 0 || box->exp_height <= 0)
-  {
-    DBG_MARK("invalid box or buffer: imgid=%d exp=%dx%d buf=%p",
-             box ? box->imgid : -1,
-             box ? box->exp_width : -1,
-             box ? box->exp_height : -1,
-             box ? box->buf : NULL);
-    return false;
-  }
-
-DBG_MARK("rendering box check 2: imgid=%d exp=%dx%d print=%.2fx%.2f px at (%.2f, %.2f) - stopping to avoid crash",
-         box->imgid,
-         box->exp_width, box->exp_height,
-         box->print.width, box->print.height,
-         box->print.x, box->print.y);
-
-const int width  = box->exp_width;
-const int height = box->exp_height;
-
-int stride = ((width * 3 + 3) & ~3); // pad to 4-byte boundary
-int bufsize = stride * height;
-
-uint8_t *pixels = (uint8_t *)g_malloc(bufsize); // safe and aligned
-  // Fill background white
-  memset(pixels, 0xFF, bufsize);
-
-  BITMAPINFO *bi = (BITMAPINFO *)g_malloc0(sizeof(BITMAPINFO));
-  
-  bi->bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-  bi->bmiHeader.biWidth       = width;
-  bi->bmiHeader.biHeight      = -height; // top-down
-  bi->bmiHeader.biPlanes      = 1;
-  bi->bmiHeader.biBitCount    = 24;
-  bi->bmiHeader.biCompression = BI_RGB;
-  bi->bmiHeader.biSizeImage   = (DWORD)bufsize;
-
-  const int src_w = box->exp_width;
-  const int src_h = box->exp_height;
-  const uint8_t *src = (const uint8_t *)box->buf;
-
-  const int dst_x = 0; //box->print.x;
-  const int dst_y = 0; //box->print.y;
-  const int dst_w = box->print.width;
-  const int dst_h = box->print.height;
-
-if (src_w == dst_w && src_h == dst_h)
-{
-  for (int y = 0; y < dst_h; y++)
-  {
-    const uint8_t *srcrow = src + y * src_w * 3;
-    uint8_t *dstrow = pixels + (dst_y + y) * stride + dst_x * 3; // 3 bytes per pixel
-
-  if ((dst_y + y) >= height) {
-    DBG_MARK("Y overflow: dst_y=%d y=%d height=%d", dst_y, y, height);
-    continue; // or break, or return false
-  }
-
-  // 🛡️ Debug check: row width bounds
-  if ((dst_x + dst_w) * 3 > stride) {
-    DBG_MARK("X overflow: dst_x=%d dst_w=%d stride=%d", dst_x, dst_w, stride);
-    continue; // or break, or return false
-  }
-
-
-    for (int x = 0; x < dst_w; x++)
-    {
-      const uint8_t *s = srcrow + x * 3;
-      uint8_t *d = dstrow + x * 3;
-
-      d[0] = s[2]; // B
-      d[1] = s[1]; // G
-      d[2] = s[0]; // R
-      // no alpha
-    }
-
-    // // Optional: zero out padding bytes at end of row
-    // int row_bytes = dst_w * 3;
-    // int pad_bytes = stride - row_bytes;
-    // if (pad_bytes > 0)
-    //   memset(dstrow + row_bytes, 0, pad_bytes);
-  }
-}
-else
-{
-  DBG_MARK("dimension mismatch: src=%dx%d dst=%dx%d", src_w, src_h, dst_w, dst_h);
-}
-
-  out->width  = box->exp_width;
-  out->height = box->exp_height;
-// buffer is guaranteed to be 24-bit RGB from export_image
-  out->pixels = pixels;
-  out->stride = stride;
-  out->bi     = bi;
-// DBG_MARK("DPI calc input: exp_width=%d print.width=%.2f", box->exp_width, box->print.width);
-//   // Compute effective DPI from layout
-//   double dpi_x = box->exp_width  / (box->print.width  / 25.4);
-//   DBG_MARK("computed DPI: %.2f", dpi_x);
-//   double dpi_y = box->exp_height / (box->print.height / 25.4);
-//   out->dpi_x = dpi_x;
-//   out->dpi_y = dpi_y;
-
-
-  return true;
-}
-
-RECT compute_box_rect(const dt_image_box *box, HDC hdc, int dpi_x, int dpi_y, int paper_width, int paper_height)
-{
-RECT r;
-
-int hw_margin_left = GetDeviceCaps(hdc, PHYSICALOFFSETX);
-int hw_margin_top  = GetDeviceCaps(hdc, PHYSICALOFFSETY);
-int printable_width  = GetDeviceCaps(hdc, HORZRES);
-int printable_height = GetDeviceCaps(hdc, VERTRES);
-  int physW   = GetDeviceCaps(hdc, PHYSICALWIDTH);
-  int physH   = GetDeviceCaps(hdc, PHYSICALHEIGHT);
-
-// Compute centering offset between Darktable paper and actual printable area
-int offset_x = (physW  - (int)paper_width*dpi_x/25.4) / 2;
-int offset_y = (physH - (int)paper_height*dpi_y/25.4) / 2;
-
-// Apply offset and hardware margin correction
-r.left   = box->print.x + offset_x - hw_margin_left;
-r.right  = r.left + box->print.width;
-
-r.bottom = printable_height - (box->print.y + offset_y - hw_margin_top);
-r.top    = r.bottom - box->print.height;
-DBG_MARK ("printable: %d %d; physical: %d %d; paper: %d %d; offset: %d %d", printable_width, printable_height, physW, physH, paper_width, paper_height, offset_x, offset_y);
-return r;
-}
-
-// windows settings destructor
-void dt_win32_print_ctx_free(dt_win32_print_ctx_t *ctx)
-{
-    if(!ctx) return;
-
-    if(ctx->cached_dm)
-        {free(ctx->cached_dm);
-        ctx->cached_dm = NULL;}
-
-
-    if(ctx->hPrinter)
-        {ClosePrinter(ctx->hPrinter);
-        ctx->hPrinter = NULL;}
-
-    free(ctx);
-}
-
 
 
 /* modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
