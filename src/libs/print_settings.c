@@ -1771,6 +1771,7 @@ static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
 
   if(!driver_managed)
     dt_bauhaus_combobox_add(ps->profile, _("image settings"));
+    n = 1;
   // pos 0 reserved for "image settings" in unrestricted mode;
   // in driver-managed mode there is no pos 0 placeholder — first
   // real entry starts the list.
