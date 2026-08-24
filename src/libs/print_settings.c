@@ -1833,6 +1833,8 @@ static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
   }
 
   dt_bauhaus_combobox_set(ps->profile, target);
+  DBG_MARK("rebuild: driver_managed=%d target=%d readback=%d v_icctype=%d",
+         driver_managed, target, dt_bauhaus_combobox_get(ps->profile), ps->v_icctype);
 }
 #endif
 
@@ -3454,12 +3456,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, "print_settings");
 
-  //  Add export profile combo
-
   d->profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->profile, NULL, N_("profile"));
-
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
+  //  Add export profile combo
+#ifdef _WIN32
+  _rebuild_image_profile_combo(d, combo_idx == 0);   // combo_idx here refers to d->pprofile's just-established initial position
+#else
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
   const int icctype = dt_conf_get_int(PRINT_CONFIG_PREFIX "icctype");
@@ -3493,6 +3496,7 @@ void gui_init(dt_lib_module_t *self)
   }
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
+#endif
 
   tooltip = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
   gtk_widget_set_tooltip_markup(d->profile, tooltip);
