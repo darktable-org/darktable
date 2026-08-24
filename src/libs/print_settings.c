@@ -209,6 +209,23 @@ static void _get_page_dimension(dt_print_info_t *prt,
   }
 }
 
+/* ----------------------------------------------------------------------------
+   Debug logging
+---------------------------------------------------------------------------- */
+
+#define DBG_MARK(...) \
+  do { \
+    FILE *f = fopen("C:/temp/winprint_debug.log", "a"); \
+    if(f) { \
+      fprintf(f, "%s:%d: ", __FILE__, __LINE__); \
+      fprintf(f, __VA_ARGS__); \
+      fprintf(f, "\n"); \
+      fclose(f); \
+    } \
+  } while(0)
+
+
+
 static void _precision_by_unit(const _unit_t unit,
                                int *n_digits,
                                float *incr,
