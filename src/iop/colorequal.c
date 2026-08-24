@@ -2309,6 +2309,16 @@ void init_presets(dt_iop_module_so_t *self)
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
+/* in_mask_editing — returns TRUE when the mask editor UI is visible
+ * (form_gui exists and form_visible is set), so that the correction
+ * cursor can be hidden consistently with tone equalizer behavior.
+ */
+static gboolean in_mask_editing(const dt_iop_module_t *self)
+{
+  const dt_develop_t *dev = self->dev;
+  return dev->form_gui && dev->form_visible;
+}
+
 /* _switch_cursors — mirrors the tone equalizer's on-canvas cursor
  * handling: hide the native GTK cursor so only our own indicator
  * (gui_post_expose) is visible while a valid reading is available,
@@ -2323,8 +2333,7 @@ static void _switch_cursors(dt_iop_module_t *self)
 
   // Editing a mask (brush/path/etc.) or canvas otherwise not interactive:
   // leave the default cursor alone.
-  if((self->dev->form_gui && self->dev->form_gui->creation)
-     || dt_iop_canvas_not_sensitive(self->dev))
+  if(in_mask_editing(self) || dt_iop_canvas_not_sensitive(self->dev))
   {
     dt_control_change_cursor("default");
     return;
@@ -2712,8 +2721,8 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g) return 0;
 
-  // Disable cursor tracking when drawing a mask (brush/path/etc.)
-  if(self->dev->form_gui && self->dev->form_gui->creation)
+  // Disable cursor tracking when mask editor is visible
+  if(in_mask_editing(self))
   {
     g->cursor_valid = FALSE;
     _switch_cursors(self);
@@ -2835,8 +2844,8 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g || !g->cursor_valid) return;
 
-  // Hide cursor indicator when drawing a mask (brush/path/etc.)
-  if(self->dev->form_gui && self->dev->form_gui->creation) return;
+  // Hide cursor indicator when mask editor is visible
+  if(in_mask_editing(self)) return;
 
   // Sampled display color under the cursor + contrasting line color,
   // shared with the tone equalizer's cursor via gui/draw.h.
