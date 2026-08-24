@@ -1215,31 +1215,35 @@ hr = figure->lpVtbl->SetSegments(figure,
                                 seg_types,
                                 seg_data,
                                 seg_strokes);
-if(SUCCEEDED(hr))
+if(SUCCEEDED(hr)) 
+{
   hr = figure->lpVtbl->SetIsClosed(figure, TRUE);
+}
 if(SUCCEEDED(hr))
+{
   hr = figure->lpVtbl->SetIsFilled(figure, TRUE);
+}
 
+if(SUCCEEDED(hr))
+{
+  hr = geom->lpVtbl->GetFigures(geom, &figures);
+  if(SUCCEEDED(hr) && figures)
+    hr = figures->lpVtbl->Append(figures, figure);
+}
+
+if(SUCCEEDED(hr))
+{
+  hr = path->lpVtbl->SetGeometryLocal(path, geom);
+  if(SUCCEEDED(hr))
+    hr = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
   if(SUCCEEDED(hr))
   {
-    hr = geom->lpVtbl->GetFigures(geom, &figures);
-    if(SUCCEEDED(hr) && figures)
-      hr = figures->lpVtbl->Append(figures, figure);
+    hr = page->lpVtbl->GetVisuals(page, &visuals);
+    if(SUCCEEDED(hr) && visuals)
+      hr = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
+    DBG_MARK("placed image on page: hr=0x%08lx", hr);
   }
-
-  if(SUCCEEDED(hr))
-  {
-    hr = path->lpVtbl->SetGeometryLocal(path, geom);
-    if(SUCCEEDED(hr))
-      hr = path->lpVtbl->SetFillBrushLocal(path, (IXpsOMBrush *)brush);
-    if(SUCCEEDED(hr))
-    {
-      hr = page->lpVtbl->GetVisuals(page, &visuals);
-      if(SUCCEEDED(hr) && visuals)
-        hr = visuals->lpVtbl->Append(visuals, (IXpsOMVisual *)path);
-      DBG_MARK("placed image on page: hr=0x%08lx", hr);
-    }
-  }
+}
 
 cleanup:
   if(figures) figures->lpVtbl->Release(figures);
@@ -1805,6 +1809,22 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
 
 }
 
+// windows settings destructor
+void dt_win32_print_ctx_free(dt_win32_print_ctx_t *ctx)
+{
+    if(!ctx) return;
+
+    if(ctx->cached_dm)
+        {free(ctx->cached_dm);
+        ctx->cached_dm = NULL;}
+
+
+    if(ctx->hPrinter)
+        {ClosePrinter(ctx->hPrinter);
+        ctx->hPrinter = NULL;}
+
+    free(ctx);
+}
 
 /* modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
    vim: shiftwidth=2 expandtab tabstop=2 cindent
