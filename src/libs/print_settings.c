@@ -1327,12 +1327,13 @@ _update_slider(dt_lib_print_settings_t *ps)
   // if widget are created, let's display the current image size
 
   // FIXME: why doesn't this update when units are changed?
-  if(ps->selected != -1
-     && dt_is_valid_imgid(ps->imgs.box[ps->selected].imgid)
+  int sel = (ps->selected != -1) ? ps->selected : ps->last_selected;
+  if(ps->sel != -1
+     && dt_is_valid_imgid(ps->imgs.box[ps->sel].imgid)
      && ps->width && ps->height
      && ps->info)
   {
-    const dt_image_box *box = &ps->imgs.box[ps->selected];
+    const dt_image_box *box = &ps->imgs.box[ps->sel];
 
     dt_image_pos box_size_mm, box_size;
     dt_printing_get_image_pos_mm(&ps->imgs, box, &box_size_mm);
