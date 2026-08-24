@@ -3587,30 +3587,20 @@ static int _path_events_button_released(dt_iop_module_t *module,
 
   if(gui->form_dragging)
   {
-    // we end the form dragging
+    // the move was already applied incrementally, tick by tick, in
+    // mouse_moved (each tick recomputes its own delta from the *current*
+    // corner, so the shape is already at the correct final position by the
+    // time the button comes up) -- just finalise. Do NOT recompute pts from
+    // this release event's own pzx/pzy and re-apply a second, independent
+    // delta here: that used the constant press-time anchor (gui->dx/dy)
+    // against whatever position this one event happens to carry, so any
+    // discrepancy between it and the last mouse_moved tick's position -- a
+    // slightly stale/short release event is enough -- silently re-moved the
+    // already-correctly-placed shape a second time, observed live as the
+    // shape snapping to a wrong position (typically the image's top-left
+    // corner) right on mouse-up.
     gui->form_dragging = FALSE;
 
-    // we get point0 new values
-    dt_masks_point_path_t *point = form->points->data;
-    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
-    dt_masks_clamp_move_pts(pts, wd, ht);
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    const float dx = pts[0] / iwidth - point->corner[0];
-    const float dy = pts[1] / iheight - point->corner[1];
-
-    // we move all points
-    for(GList *points = form->points; points; points = g_list_next(points))
-    {
-      point = (dt_masks_point_path_t *)points->data;
-      point->corner[0] += dx;
-      point->corner[1] += dy;
-      point->ctrl1[0] += dx;
-      point->ctrl1[1] += dy;
-      point->ctrl2[0] += dx;
-      point->ctrl2[1] += dy;
-    }
-
-    _resize_state_invalidate(form->formid);
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -3642,15 +3632,13 @@ static int _path_events_button_released(dt_iop_module_t *module,
   }
   else if(gui->source_dragging)
   {
-    // we end the form dragging
+    // same reasoning as gui->form_dragging just above: mouse_moved already
+    // set form->source fresh on every tick, so recomputing it again here
+    // from this release event's own pzx/pzy is redundant and risks
+    // re-moving the already-correctly-placed source a second time if this
+    // event's position ever diverges from the last tick's.
     gui->source_dragging = FALSE;
 
-    // we change the source value
-    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
-    dt_masks_clamp_move_pts(pts, wd, ht);
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    form->source[0] = pts[0] / iwidth;
-    form->source[1] = pts[1] / iheight;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -3668,8 +3656,16 @@ static int _path_events_button_released(dt_iop_module_t *module,
   }
   else if(gui->point_dragging >= 0)
   {
-    dt_masks_point_path_t *point
-        = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_dragging);
+    // the move was already applied, tick by tick, in mouse_moved (each tick
+    // sets point->corner/ctrl1/ctrl2 to their fresh absolute position) -- the
+    // node is already at the correct final position by the time the button
+    // comes up. Do NOT recompute pts from this release event's own pzx/pzy
+    // and re-apply a second, independent delta on top here: same anti-pattern
+    // as gui->form_dragging above, just at node granularity -- an event whose
+    // position happens to differ from the last mouse_moved tick (e.g. a
+    // spurious/stale release carrying a leftover (0,0)) silently re-moved the
+    // already-correctly-placed node a second time, observed live as the node
+    // snapping to the image's top-left corner right on mouse-up.
     gui->point_dragging = -1;
     if(gui->scrollx != 0.0f || gui->scrolly != 0.0f)
     {
@@ -3677,19 +3673,6 @@ static int _path_events_button_released(dt_iop_module_t *module,
       return 1;
     }
     gui->scrollx = gui->scrolly = 0;
-    float pts[2] = { pzx * wd, pzy * ht };
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    const float dx = pts[0] / iwidth - point->corner[0];
-    const float dy = pts[1] / iheight - point->corner[1];
-
-    point->corner[0] += dx;
-    point->corner[1] += dy;
-    point->ctrl1[0] += dx;
-    point->ctrl1[1] += dy;
-    point->ctrl2[0] += dx;
-    point->ctrl2[1] += dy;
-
-    _path_init_ctrl_points(form);
 
     _resize_state_invalidate(form->formid);
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
