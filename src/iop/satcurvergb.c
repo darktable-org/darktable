@@ -393,9 +393,9 @@ static inline dt_iop_satcurve_factors_t eval_curve_factors(const dt_iop_satcurve
       .bri_factor = curve_to_factor(bri_c)};
 }
 
-// applies log1p compression and publishes bin counts to the GUI histogram;
-// shared tail for both the CPU path (_update_sat_histogram) and the GPU path
-// (process_cl), which only differ in how they arrive at per-bin pixel counts
+// Apply log1p compression to the histogram bins to compress the dynamic 
+// range for better visual representation in the GUI. Shared tail for both 
+// the CPU path (_update_sat_histogram) and the GPU path (process_cl).
 static void _commit_sat_histogram(dt_iop_module_t *self, const int *const bins)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
@@ -672,7 +672,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     dt_vector_clipneg(rgb);
     dt_apply_transposed_color_matrix(rgb, inputmatrix_trans, xyz);
 
-    // Determine input saturation: either from the filtered mask or directly from the pixel
+    // Determine input saturation: use the spatially modulated mask if available, 
+	// otherwise calculate the raw saturation based on the selected formula (UCS or JzAzBz).
     const float s_in_norm = gf_mask ? CLAMP(gf_mask[k], 0.f, 1.f)
                                     : pixel_s_in_norm(d->formula, in + 4 * k, inputmatrix_trans, d->gamut_lut, L_white, NULL);
 
@@ -1064,8 +1065,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
     if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
     {
-      // fallback: proceed without guided filter instead of aborting the
-      // whole correction, mirroring process() on the CPU
+      // fallback: show the unfiltered mask instead of aborting the 
+      // preview. This mirrors the fallback logic in the main process() 
+      // path but specifically for the GUI display.
       dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
                        "disabling it for this run"));
       dt_opencl_release_mem_object(mask_scalar_cl);
@@ -1822,7 +1824,7 @@ static void show_saturation_mask_callback(GtkToggleButton *button, dt_iop_module
   }
 
   dt_iop_refresh_center(self);
-  dt_iop_color_picker_reset(self, TRUE);
+  // dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
