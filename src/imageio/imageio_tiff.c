@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <strings.h>
 #include <tiffio.h>
+
 #ifdef HAVE_IMATH
 #include "Imath/half.h"
 #endif
@@ -410,8 +411,15 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
-  TIFFGetField(t.tiff, TIFFTAG_IMAGEWIDTH, &t.width);
-  TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
+  if(!TIFFGetField(t.tiff, TIFFTAG_IMAGEWIDTH, &t.width)
+     || !TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] missing image dimensions in '%s'",
+             filename);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
   TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
