@@ -148,8 +148,10 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
   for(int i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
+
     for_three_channels(c)
-      pix[c] = *(int_RGBA_buffer + i * 4 + c) / 255.f;
+      pix[c] = int_RGBA_buffer[i * 4 + c] / 255.f;
+
     copy_pixel_nontemporal(&mipbuf[i * 4], pix);
   }
 
