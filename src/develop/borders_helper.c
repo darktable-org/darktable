@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ static inline void set_pixels(float *buf,
                               const dt_aligned_pixel_t color,
                               const int npixels)
 {
-  for(int i = 0; i < npixels; i++)
+  for(size_t i = 0; i < npixels; i++)
   {
     copy_pixel_nontemporal(buf + 4*i,  color);
   }
@@ -37,7 +37,7 @@ static inline void copy_pixels(float *out,
                                const float *const in,
                                const int npixels)
 {
-  for(int i = 0; i < npixels; i++)
+  for(size_t i = 0; i < npixels; i++)
   {
     copy_pixel_nontemporal(out + 4*i, in + 4*i);
   }
@@ -260,3 +260,4 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+
