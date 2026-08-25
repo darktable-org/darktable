@@ -209,24 +209,6 @@ static void _get_page_dimension(dt_print_info_t *prt,
   }
 }
 
-#ifdef _WIN32
-/* ----------------------------------------------------------------------------
-   Windows Debug logging
----------------------------------------------------------------------------- */
-
-#define DBG_MARK(...) \
-  do { \
-    FILE *f = fopen("C:/temp/winprint_debug.log", "a"); \
-    if(f) { \
-      fprintf(f, "%s:%d: ", __FILE__, __LINE__); \
-      fprintf(f, __VA_ARGS__); \
-      fprintf(f, "\n"); \
-      fclose(f); \
-    } \
-  } while(0)
-#endif
-
-
 static void _precision_by_unit(const _unit_t unit,
                                int *n_digits,
                                float *incr,
@@ -1151,7 +1133,7 @@ static void _set_printer(const dt_lib_module_t *self,
     dt_bauhaus_combobox_set_from_text(ps->media, chosen_medium->common_name);
   }
 
-#ifdef _WIN32
+#ifdef _WIN32  //TODO:  this may not actually get implemented, seeing if Device Capabilities has a standard way to reference quality settings, for now use the Print Settings Dialog
   // add corresponding supported resolutions (quality)
   dt_bauhaus_combobox_clear(ps->quality);
   if(ps->quality_list)
@@ -3103,11 +3085,11 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->media), "value-changed",
                    G_CALLBACK(_media_changed), self);
-#ifndef _WIN32
+#ifndef _WIN32  //TODO:  Wire up media selection for windows, for now hide and let media be set in printer settings dialog
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
 #endif
-//
-// quality (windows only)
+
+// quality (windows only) - placehlder for now, unclear if windows drivers actually expose this in a common way
 #ifdef _WIN32
   d->quality = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   d->quality_combo = d->quality;
@@ -3116,8 +3098,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_quality_changed), self);
   //gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->quality), TRUE, TRUE, 0); //Hidden for now, inclear if any windows drivers actually expose this
 #endif
-
-
 
   //  Add printer profile combo
 
