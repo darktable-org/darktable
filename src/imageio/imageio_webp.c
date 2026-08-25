@@ -145,7 +145,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
   }
 
   DT_OMP_FOR()
-  for(int i = 0; i < npixels; i++)
+  for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
 

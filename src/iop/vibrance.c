@@ -112,7 +112,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int npixels = roi_out->height * roi_out->width;
 
   DT_OMP_FOR()
-  for(int k = 0; k < 4 * npixels; k += 4)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     /* saturation weight 0 - 1 */
     const float sw = sqrtf((in[k + 1] * in[k + 1]) + (in[k + 2] * in[k + 2])) / 256.0f;
