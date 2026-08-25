@@ -30,6 +30,7 @@
 #include "develop/pixelpipe_hb.h"
 #include "imageio/imageio_common.h"
 
+#include <float.h>
 #include <math.h>
 #include <string.h>
 
@@ -626,6 +627,197 @@ gboolean dt_restore_reload_session_cpu(dt_restore_context_t *ctx)
   }
   ctx->ai_ctx = new_ctx;
   return TRUE;
+}
+
+// snap a patch centred on (px, py) to an aligned origin inside the
+// sensor buffer
+static void _sensor_place(const float px,
+                          const float py,
+                          const int roi_w,
+                          const int roi_h,
+                          const int iw,
+                          const int ih,
+                          const int align,
+                          int *out_x,
+                          int *out_y)
+{
+  int x = (int)px - roi_w / 2;
+  int y = (int)py - roi_h / 2;
+  x = CLAMP(x, 0, iw - roi_w);
+  y = CLAMP(y, 0, ih - roi_h);
+  *out_x = (x / align) * align;
+  *out_y = (y / align) * align;
+}
+
+// does this sensor rect still render? mirrors the ROI mapping in
+// dt_restore_run_user_pipe_roi exactly — forward-transform the corners,
+// inscribed AABB, clamp to the processed extent — so a rect that passes
+// here is one the pipe can actually deliver
+static gboolean _sensor_roi_renders(dt_develop_t *dev,
+                                    dt_dev_pixelpipe_t *pipe,
+                                    const int pw,
+                                    const int ph,
+                                    const int x,
+                                    const int y,
+                                    const int w,
+                                    const int h)
+{
+  float c[8] = {
+    (float)x,       (float)y,
+    (float)(x + w), (float)y,
+    (float)x,       (float)(y + h),
+    (float)(x + w), (float)(y + h),
+  };
+  if(!dt_dev_distort_transform_plus(dev, pipe, 0.0,
+                                    DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, c, 4))
+    return FALSE;
+
+  float xs[4] = { c[0], c[2], c[4], c[6] };
+  float ys[4] = { c[1], c[3], c[5], c[7] };
+  for(int i = 0; i < 3; i++)
+    for(int j = i + 1; j < 4; j++)
+    {
+      if(xs[i] > xs[j]) { const float t = xs[i]; xs[i] = xs[j]; xs[j] = t; }
+      if(ys[i] > ys[j]) { const float t = ys[i]; ys[i] = ys[j]; ys[j] = t; }
+    }
+
+  int rx = (int)ceilf(xs[1]);
+  int ry = (int)ceilf(ys[1]);
+  int rw = (int)floorf(xs[2]) - rx;
+  int rh = (int)floorf(ys[2]) - ry;
+  if(rx < 0) { rw += rx; rx = 0; }
+  if(ry < 0) { rh += ry; ry = 0; }
+  if(rx + rw > pw) rw = pw - rx;
+  if(ry + rh > ph) rh = ph - ry;
+  return rw > 0 && rh > 0;
+}
+
+// inverse of the ROI bridge below: display-normalised click -> a sensor
+// rect the pipe can render. the worker used to invert only the flip
+// iop, so any crop shifted the sampled patch by
+// u * (sensor_w - crop_w) - crop_origin and border picks back-projected
+// into discarded pixels (issue #21879). contract documented in restore.h
+int dt_restore_display_to_sensor(dt_imgid_t imgid,
+                                 int iw,
+                                 int ih,
+                                 float u,
+                                 float v,
+                                 int roi_w,
+                                 int roi_h,
+                                 int align,
+                                 int *out_roi_x,
+                                 int *out_roi_y)
+{
+  if(iw <= 0 || ih <= 0 || roi_w <= 0 || roi_h <= 0) return 1;
+  if(roi_w > iw || roi_h > ih) return 1;
+  const int a = MAX(1, align);
+
+  dt_develop_t dev;
+  dt_dev_init(&dev, FALSE);
+  dt_dev_load_image(&dev, imgid);
+
+  // init_dummy, not init_export: it skips the pixel cache entirely
+  // ("all but the pixel caches, so you can't actually process an
+  // image — just get dimensions and distortions"), which is exactly
+  // this pipe. init_export would preallocate DT_PIPECACHE_MIN
+  // full-frame cachelines — hundreds of MB on a big raw — for a pipe
+  // that never processes a pixel. the type is then restored to EXPORT
+  // so the geometry chain sees the same pipe kind as the render path
+  dt_dev_pixelpipe_t pipe;
+  if(!dt_dev_pixelpipe_init_dummy(&pipe, iw, ih))
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    return 1;
+  }
+  pipe.type = DT_DEV_PIXELPIPE_EXPORT;
+
+  dt_ioppr_resync_modules_order(&dev);
+  // geometry only: nothing is processed, so the pipe needs no input
+  // buffer — get_dimensions fills the per-piece buf_in / buf_out that
+  // the transforms walk
+  dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, iw, ih, 1.0f);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_synch_all(&pipe, &dev);
+
+  int pw = 0, ph = 0;
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, iw, ih, &pw, &ph);
+  if(pw <= 0 || ph <= 0)
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    return 1;
+  }
+  pipe.processed_width = pw;
+  pipe.processed_height = ph;
+
+  // point 0 is the click, point 1 the image centre — the retreat
+  // target when the click sits too close to a geometry-trimmed border
+  float pts[4] = {
+    CLAMP(u, 0.0f, 1.0f) * pw, CLAMP(v, 0.0f, 1.0f) * ph,
+    0.5f * pw,                 0.5f * ph,
+  };
+  if(!dt_dev_distort_backtransform_plus(&dev, &pipe, 0.0,
+                                        DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
+                                        pts, 2))
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    return 1;
+  }
+
+  // validate by round trip rather than by reasoning about the visible
+  // sensor region: the chain may swap or mirror axes (flip) and bow
+  // edges (lens, ashift), so there is no side-labelling of the
+  // back-projected boundary that holds in general. walking the rect
+  // back toward the image centre until it renders needs no such
+  // assumption — it asks the forward transform the same question the
+  // pipe will ask
+  int rx = 0, ry = 0;
+  _sensor_place(pts[0], pts[1], roi_w, roi_h, iw, ih, a, &rx, &ry);
+  if(!_sensor_roi_renders(&dev, &pipe, pw, ph, rx, ry, roi_w, roi_h))
+  {
+    int cx = 0, cy = 0;
+    _sensor_place(pts[2], pts[3], roi_w, roi_h, iw, ih, a, &cx, &cy);
+    if(_sensor_roi_renders(&dev, &pipe, pw, ph, cx, cy, roi_w, roi_h))
+    {
+      // bisect for the smallest retreat that renders, so the patch
+      // stays as close to the click as the geometry allows
+      float lo = 0.0f, hi = 1.0f;
+      rx = cx;
+      ry = cy;
+      for(int i = 0; i < 8; i++)
+      {
+        const float t = 0.5f * (lo + hi);
+        int tx = 0, ty = 0;
+        _sensor_place(pts[0] + t * (pts[2] - pts[0]),
+                      pts[1] + t * (pts[3] - pts[1]),
+                      roi_w, roi_h, iw, ih, a, &tx, &ty);
+        if(_sensor_roi_renders(&dev, &pipe, pw, ph, tx, ty, roi_w, roi_h))
+        {
+          hi = t;
+          rx = tx;
+          ry = ty;
+        }
+        else
+          lo = t;
+      }
+    }
+    else
+    {
+      // nothing renders (degenerate history): hand back the centred
+      // rect and let the caller's error path report it
+      rx = cx;
+      ry = cy;
+    }
+  }
+
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_dev_cleanup(&dev);
+
+  if(out_roi_x) *out_roi_x = rx;
+  if(out_roi_y) *out_roi_y = ry;
+  return 0;
 }
 
 // shared bridge: run the user's darktable pixelpipe on an arbitrary sensor

@@ -1160,20 +1160,26 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
 
   g_free(tile_out);
 
-  // run pipe twice on raw-sensor-sized buffers
-  // ROI is in sensor coords (matching the patched region we built
-  // above); dt_restore_run_user_pipe_roi forward-transforms it
-  // through the user's geometry chain before handing to the pipe
+  // run pipe twice on raw-sensor-sized buffers. the ROI must be in
+  // sensor coords, matching the region patched above, so that
+  // dt_restore_run_user_pipe_roi's forward transform lands on it —
+  // but crop_x / crop_y arrive in prepared-buffer coords (the
+  // post-rawprepare visible area returned by
+  // dt_restore_raw_linear_prepare). shift by the same raw_off_* the
+  // patch loop uses, or the render drifts by the rawprepare border
+  const int roi_x = crop_x + raw_off_x;
+  const int roi_y = crop_y + raw_off_y;
+
   int dw = 0, dh = 0, bw = 0, bh = 0;
   int err = dt_restore_run_user_pipe_roi(imgid, patched, raw_w, raw_h,
-                                 crop_x, crop_y, crop_w, crop_h,
+                                 roi_x, roi_y, crop_w, crop_h,
                                  &dw, &dh, out_denoised_rgb);
   g_free(patched);
 
   if(err == 0)
   {
     err = dt_restore_run_user_pipe_roi(imgid, (void *)mbuf.buf, raw_w, raw_h,
-                               crop_x, crop_y, crop_w, crop_h,
+                               roi_x, roi_y, crop_w, crop_h,
                                &bw, &bh, out_before_rgb);
   }
   dt_mipmap_cache_release(&mbuf);

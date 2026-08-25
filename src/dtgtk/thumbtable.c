@@ -1261,7 +1261,9 @@ static void _event_scroll(GtkEventControllerScroll *controller,
       if(pdx != 0 || pdy != 0)
         _move(table, pdx, pdy, TRUE);
     }
+#if !GTK_CHECK_VERSION(4, 0, 0)
     gdk_event_free(event);
+#endif
     return;
   }
 
@@ -1588,7 +1590,9 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
       {
         case DT_THUMBTABLE_MODE_FILEMANAGER:
         case DT_THUMBTABLE_MODE_ZOOM:
-          dt_view_manager_switch(darktable.view_manager, "darkroom");
+          // Leave GTK to finish propagating the double-click before the view
+          // switch tears down this widget hierarchy.
+          dt_ctl_switch_mode_to("darkroom");
           return;
 
         case DT_THUMBTABLE_MODE_FILMSTRIP:
@@ -1750,10 +1754,10 @@ static void _event_button_release_cb(GtkGestureSingle *gesture,
    * re-selected the hovered image).  Only a real GDK button release may
    * select/toggle, exactly like the pre-gesture button-release-event
    * handler. */
-  GdkEvent *release_event = gtk_get_current_event();
-  const gboolean cancel = !release_event || release_event->type != GDK_BUTTON_RELEASE;
-  gdk_event_free(release_event);
-  if(cancel) return;
+  const GdkEvent *release_event =
+    gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+  if(!release_event || dt_gdk_event_get_type(release_event) != GDK_BUTTON_RELEASE)
+    return;
 
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
@@ -2517,29 +2521,27 @@ static void _event_dnd_get(GtkWidget *widget,
         GList *l = table->drag_list;
 
         int idx = 0;
-        // make sure that imgs[0] is the last selected imgid, that is the
-        // one clicked when starting the d&d.
-        if(dt_is_valid_imgid(darktable.control->last_clicked_filmstrip_id))
-        {
-          imgs[idx] = darktable.control->last_clicked_filmstrip_id;
-          idx++;
-        }
+        // Put the drag origin first only if it belongs to the stable drag set.
+        // A pointer grab can change the transient hover before drag-begin; it
+        // must never inject that unrelated image and displace a selected one.
+        const dt_imgid_t origin = darktable.control->last_clicked_filmstrip_id;
+        const gboolean have_origin =
+          dt_is_valid_imgid(origin)
+          && g_list_find(table->drag_list, GINT_TO_POINTER(origin));
+        if(have_origin)
+          imgs[idx++] = origin;
 
         while(l)
         {
           const dt_imgid_t id = GPOINTER_TO_INT(l->data);
-          if(id != imgs[0])
-          {
-            imgs[idx] = id;
-            idx++;
-            if(idx >= imgs_nb)
-              break;
-          }
+          if(!have_origin || id != origin)
+            imgs[idx++] = id;
           l = g_list_next(l);
         }
         gtk_selection_data_set(selection_data,
                                gtk_selection_data_get_target(selection_data),
-                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(dt_imgid_t));
+                               _DWORD, (guchar *)imgs, idx * sizeof(dt_imgid_t));
+        free(imgs);
       }
       break;
     }
@@ -2593,9 +2595,23 @@ static void _event_dnd_begin(GtkWidget *widget,
 {
   const int ts = DT_PIXEL_APPLY_DPI(128);
 
-  darktable.control->last_clicked_filmstrip_id =
-    dt_control_get_mouse_over_id();
+  const dt_imgid_t hover = dt_control_get_mouse_over_id();
+  darktable.control->last_clicked_filmstrip_id = hover;
   table->drag_list = dt_act_on_get_images(FALSE, TRUE, TRUE);
+
+  GList *selection = dt_selection_get_list(darktable.selection, FALSE, TRUE);
+  // DnD owns a stable snapshot keyed by the actual drag origin. Dragging a
+  // selected image moves the selection; dragging an unselected image moves
+  // only that image. Do not let the generic act-on fallback substitute an
+  // unrelated selection if hover/grab state changes during GTK3 drag setup.
+  if(dt_is_valid_imgid(hover))
+  {
+    g_list_free(table->drag_list);
+    table->drag_list = g_list_find(selection, GINT_TO_POINTER(hover))
+                       ? g_list_copy(selection)
+                       : g_list_append(NULL, GINT_TO_POINTER(hover));
+  }
+  g_list_free(selection);
 
 #ifdef HAVE_MAP
   dt_view_manager_t *vm = darktable.view_manager;
@@ -2603,9 +2619,14 @@ static void _event_dnd_begin(GtkWidget *widget,
   if(!strcmp(view->module_name, "map"))
   {
     if(table->drag_list)
-      dt_view_map_drag_set_icon(darktable.view_manager, context,
-                                GPOINTER_TO_INT(table->drag_list->data),
+    {
+      const dt_imgid_t icon_id =
+        dt_is_valid_imgid(hover)
+        && g_list_find(table->drag_list, GINT_TO_POINTER(hover))
+        ? hover : GPOINTER_TO_INT(table->drag_list->data);
+      dt_view_map_drag_set_icon(darktable.view_manager, context, icon_id,
                                 g_list_length(table->drag_list));
+    }
   }
   else
 #endif
@@ -2926,13 +2947,22 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       // (i.e. we don't get empty spaces in the very first row)
       offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
 
+      // A preview/culling transition can restore an offset from a previous
+      // collection.  If that collection was shorter, querying from the stale
+      // row leaves the filemanager blank even though the collection is
+      // populated.  Clamp to the last row before rebuilding the list.
+      const uint32_t nb = dt_collection_get_collected_count();
+      if(nb == 0)
+        offset = 1;
+      else if(offset > nb)
+        offset = (nb - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
+
       // ensure that we don't go up too far (we only want a space
       // <thumb_size at the bottom).
       if(table->offset != offset
          && offset > 1
          && table->thumbs_per_row > 1)
       {
-        const uint32_t nb = dt_collection_get_collected_count();
         // get how many full blank line we have at the bottom
 
         const int move =

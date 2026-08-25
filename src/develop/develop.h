@@ -386,6 +386,13 @@ void dt_dev_process_image_job(dt_develop_t *dev,
                               struct dt_dev_pixelpipe_t *pipe,
                               const dt_signal_t signal,
                               const int devid);
+
+/** Stop and lock all three screen pixelpipes before changing module lifetime
+ * or topology. Locks are acquired preview -> preview2 -> full and must be
+ * released with dt_dev_pixelpipe_unlock_all(). */
+void dt_dev_pixelpipe_stop_and_lock_all(dt_develop_t *dev);
+void dt_dev_pixelpipe_unlock_all(dt_develop_t *dev);
+
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);

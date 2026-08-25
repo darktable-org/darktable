@@ -52,7 +52,9 @@ The following is a summary of the main features added to darktable
 5.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- N/A
+- Automatic alignment of exposure brackets in "merge HDR" function, removing ghosting and softness
+  caused by handheld or shaky-tripod brackets. Enabled by default in builds with OpenCV,
+  and tunable under preferences > processing > HDR alignment.
 
 ## UI/UX Improvements
 
@@ -125,6 +127,9 @@ changes (where available).
 - ONNX Runtime 1.18+ for AI features
 
 - libarchive for AI model extraction
+
+- OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the core,
+  imgproc and flann modules plus features2d/calib3d on OpenCV 4, or features/geometry on OpenCV 5)
 
 ## Camera support, compared to 5.6
 

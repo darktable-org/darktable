@@ -101,6 +101,9 @@ typedef enum
   DT_IMAGE_MONOCHROME_BAYER = 1 << 19,
   // image has a flag set to use the monochrome workflow in the modules supporting it
   DT_IMAGE_MONOCHROME_WORKFLOW = 1 << 20,
+  // produced by neural restore raw denoise; derived at import from
+  // Xmp.darktable.neural_restore in the file
+  DT_IMAGE_AI_DENOISED = 1 << 21,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -401,6 +404,10 @@ gboolean dt_image_is_bayerRGB(const dt_image_t *img);
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img);
 /** returns TRUE if the image supports the rawprepare module */
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
+/** returns TRUE if the image is the output of AI raw denoise, so
+ * denoising it again would be a second pass over denoised data */
+gboolean dt_image_is_ai_denoised(const dt_image_t *img);
+
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
 /** returns TRUE if the image has been tested to be monochrome and the

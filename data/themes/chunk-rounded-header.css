@@ -1,0 +1,28 @@
+
+@define-color header_color shade(@plugin_bg_color, 0.8);
+@define-color header_color_bg shade(@plugin_bg_color, 1.1);
+
+#left #module-header,
+#right #module-header,
+#right #basics-header-box
+{
+  background-color: @header_color;
+  border-radius: 0px;
+}
+
+#left #module-header
+{
+  border-top-right-radius: 15px;
+}
+
+#right #module-header,
+#right #basics-header-box
+{
+  border-top-left-radius: 15px;
+}
+
+#iop-expander,
+.dt_module_expanded
+{
+   background-color: @header_color_bg;
+}

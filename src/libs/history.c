@@ -244,8 +244,13 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
-  /* set callback when clicked */
-  dt_gui_connect_click(widget, _lib_history_button_clicked_callback, NULL, self);
+  /* Handle the press before GtkToggleButton's TARGET-phase default gesture.
+   * This lets an active-row re-click claim the sequence before the widget can
+   * toggle itself off, while unclaimed presses still reach normal handling. */
+  GtkGestureSingle *history_gesture =
+    dt_gui_connect_click(widget, _lib_history_button_clicked_callback, NULL, self);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(history_gesture),
+                                             GTK_PHASE_CAPTURE);
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
@@ -574,6 +579,11 @@ static void _pop_undo(gpointer user_data,
 
     GList *iop_temp = g_list_copy(dev->iop);
 
+    // Undo/redo can destroy module GUI data and alter the module topology.
+    // Keep all screen pipes quiescent until the replacement develop state is
+    // complete, so no old node can resume with a cleaned-up module GUI.
+    dt_dev_pixelpipe_stop_and_lock_all(dev);
+
     // topology has changed?
     gboolean pipe_remove = FALSE;
 
@@ -627,6 +637,8 @@ static void _pop_undo(gpointer user_data,
     dt_pthread_mutex_unlock(&dev->history_mutex);
 
     dt_ioppr_resync_modules_order(dev);
+
+    dt_dev_pixelpipe_unlock_all(dev);
 
     dt_dev_modulegroups_set(darktable.develop,
                             dt_dev_modulegroups_get(darktable.develop));
@@ -1281,7 +1293,13 @@ static void _lib_history_button_clicked_callback(GtkGestureSingle *gesture,
 
   if(reset) return;
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    // Exactly one history row must stay selected. Claiming the press prevents
+    // GtkToggleButton's default gesture from toggling the active row off.
+    dt_gui_claim(gesture);
+    return;
+  }
 
   // shift-click just show the corresponding module in modulegroups
   if(dt_key_modifier_state() & GDK_SHIFT_MASK)
