@@ -1079,7 +1079,9 @@ static void _set_printer(const dt_lib_module_t *self,
 {
   dt_lib_print_settings_t *ps = self->data;
 
-  const gboolean orient_state = ps->prt.page.landscape; // save orientation state to restore to DEVMODE after printer change (Windows)
+#ifdef _WIN32
+  const gboolean orient_state = ps->prt.page.landscape;
+#endif
 
   dt_get_printer_info(printer_name, &ps->prt.printer);
 
