@@ -1108,8 +1108,11 @@ static HRESULT _win_place_image_on_page(IXpsOMObjectFactory *factory,
   if(profile_resource)
   {
     HRESULT profile_hr = brush->lpVtbl->SetColorProfileResource(brush, profile_resource);
+    if(FAILED(profile_hr))
+    {
     // deliberately not fatal — worth seeing whether output looks right
     // even if this call fails, rather than aborting the whole page
+    }
   }
 
   hr = factory->lpVtbl->CreatePath(factory, &path);
@@ -1345,12 +1348,12 @@ bool dt_win_print_file(const dt_images_box *imgs,
             writer->lpVtbl->Release(writer);
             writer = NULL;
 
-            /* Always attempt to dump the package_stream to disk for debugging regardless of Close(writer) result. */
+            if(SUCCEEDED(hr))
             {
               LARGE_INTEGER zero = {0};
               HRESULT seek_hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
-              DBG_MARK("seek package stream: hr=0x%08lx (Close writer hr=0x%08lx)", seek_hr, hr);
 
+              if(SUCCEEDED(seek_hr))
               {
                 BYTE buffer[4096];
                 ULONG total_written = 0;
@@ -1359,10 +1362,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
                 {
                   ULONG read = 0;
                   HRESULT read_hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
-                  DBG_MARK("read package stream: hr=0x%08lx", read_hr);
+
                   if(FAILED(read_hr))
                   {
-                    DBG_MARK("package_stream Read failed: hr=0x%08lx", read_hr);
                     break;
                   }
 
@@ -1376,12 +1378,15 @@ bool dt_win_print_file(const dt_images_box *imgs,
                     ULONG written = 0;
                     HRESULT whr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
                     total_written += written;
+                    if(FAILED(whr) || written != read)
+                    {
+                      break; 
+                    }
                   }
                 }
               }
             }
           }
-
           package_stream->lpVtbl->Release(package_stream);
         }
 
