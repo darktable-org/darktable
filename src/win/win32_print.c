@@ -1356,7 +1356,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
               if(SUCCEEDED(seek_hr))
               {
                 BYTE buffer[4096];
-                ULONG total_written = 0;
 
                 for(;;)
                 {
@@ -1377,7 +1376,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   {
                     ULONG written = 0;
                     HRESULT whr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
-                    total_written += written;
                     if(FAILED(whr) || written != read)
                     {
                       break; 
