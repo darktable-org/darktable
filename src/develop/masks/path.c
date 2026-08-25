@@ -140,7 +140,7 @@ static void _path_get_XY(const float p0x,
  * @param seg_start segment start data, 7 floats:
  *                  [0..1] corner XY, [2..3] outgoing ctrl XY,
  *                  [4] signed border radius,
- *                  [5..6] smoothed unit tangent (0,0 if unset)
+ *                  [5..6] smoothed unit tangent (0,0 if unset or rejected)
  * @param seg_end   segment end data, same layout (with incoming ctrl at [2..3])
  * @param t         position on the segment, between 0 and 1
  * @param rad       border radius at t (interpolated from the two endpoint radii)
@@ -1557,7 +1557,23 @@ static int _path_get_pts_border(dt_develop_t *dev,
           const float tx = corner_xy[kn * 2]     - corner_xy[kp * 2];
           const float ty = corner_xy[kn * 2 + 1] - corner_xy[kp * 2 + 1];
           const float len = sqrtf(tx * tx + ty * ty);
-          if(len > 0.0f)
+
+          // the wide chord is only a valid tangent while it still points the
+          // way the path locally runs. Across a spike or notch narrower than
+          // 2N corners it spans the whole feature instead, and its normal
+          // then falls on the inside of one flank, dragging the border into
+          // the shape. Compare it with the immediate chord and drop it there;
+          // the segment falls back to the exact derivative in
+          // _path_border_get_XY, which is what happened before smoothing.
+          const int kp1 = (k - 1 + (int)nb) % (int)nb;
+          const int kn1 = (k + 1) % (int)nb;
+          const float lx = corner_xy[kn1 * 2]     - corner_xy[kp1 * 2];
+          const float ly = corner_xy[kn1 * 2 + 1] - corner_xy[kp1 * 2 + 1];
+          const float llen = sqrtf(lx * lx + ly * ly);
+          const gboolean agrees = len > 0.0f && llen > 0.0f
+            && (tx * lx + ty * ly) / (len * llen) >= 0.5f;  // within ~60 degrees
+
+          if(agrees)
           {
             smoothed_tangents[k * 2]     = tx / len;
             smoothed_tangents[k * 2 + 1] = ty / len;
