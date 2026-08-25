@@ -668,7 +668,7 @@ static void _event_scroll(GtkEventControllerScroll *controller,
 
   GdkDevice *device = dt_gdk_event_get_source_device(event);
   const GdkScrollDirection direction = dt_gdk_event_get_scroll_direction(event);
-  const gboolean is_stop = gdk_event_is_scroll_stop_event(event);
+  const gboolean is_stop = dt_gdk_event_is_scroll_stop(event);
   const GdkModifierType state = dt_gdk_event_get_state(event);
   const gdouble x_root = dt_gdk_event_get_root_x(event);
   const gdouble y_root = dt_gdk_event_get_root_y(event);
@@ -948,7 +948,9 @@ static void _event_button_press_cb(GtkGestureSingle *gesture,
       // during the previous GDK_BUTTON_PRESS event
       const dt_imgid_t old_selection = table->selection;
       table->selection = id;
-      dt_view_manager_switch(darktable.view_manager, "darkroom");
+      // Leave GTK to finish propagating the double-click before the view
+      // switch tears down this widget hierarchy.
+      dt_ctl_switch_mode_to("darkroom");
       if(id != old_selection)
       {
         _update_selected_thumbnail(table, old_selection);

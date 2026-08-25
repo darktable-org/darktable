@@ -272,9 +272,9 @@ static int usage(const char *argv0)
          "    Enable debug output to the terminal (or to the log file if on Windows).\n"
          "    Valid channels are:\n\n"
          "    act_on, ai, cache, camctl, camsupport, control, dev, expose,\n"
-         "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
-         "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
-         "    sql, tiling, picker, undo\n"
+         "    hdr_merge, imageio, input, ioporder, lighttable, lua, masks,\n"
+         "    memory, nan, opencl, params, perf, pipe, print, pwstorage,\n"
+         "    signal, sql, tiling, picker, undo\n"
          "\n"
          "    It is also possible to specify names that activate all channels\n"
          "    or a certain subset, as well as increase verbosity:\n"
@@ -867,6 +867,12 @@ char *version = g_strdup_printf(
                "  OpenCL                 -> DISABLED - GPU acceleration is NOT available\n"
 #endif
 
+#ifdef HAVE_OPENCV
+               "  OpenCV                 -> ENABLED  - HDR bracket auto-alignment is available\n"
+#else
+               "  OpenCV                 -> DISABLED - HDR bracket auto-alignment is NOT available\n"
+#endif
+
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
@@ -1180,6 +1186,7 @@ int dt_init(int argc,
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
+          !strcmp(darg, "hdr_merge") ? DT_DEBUG_HDR_MERGE : // HDR bracket merge + auto-alignment
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1817,7 +1824,11 @@ int dt_init(int argc,
   GList *changed_xmp_files = NULL;
   if(init_gui)
   {
-    if(dt_conf_get_bool("run_crawler_on_start") && !dt_gimpmode())
+    // when crawling in the background the scan is started once the gui is
+    // up, so nothing happens here and startup is not delayed by it
+    if(dt_conf_get_bool("run_crawler_on_start")
+       && !dt_conf_get_bool("run_crawler_in_background")
+       && !dt_gimpmode())
     {
       dt_splash_screen_allow_create(TRUE); // allow splash screen if a message is to be displayed
       // scan for cases where the database and xmp files have different timestamps
@@ -2104,6 +2115,11 @@ int dt_init(int argc,
         // files are newer than the db entry
         dt_control_crawler_show_image_list(changed_xmp_files);
       }
+
+      // the gui is up, so the crawl can now proceed out of the user's way,
+      // starting with the most recently opened film rolls
+      if(dt_conf_get_bool("run_crawler_in_background"))
+        dt_control_crawler_start_background();
     }
 
     // show the main window and restore its geometry to that saved in the config file
@@ -2130,6 +2146,12 @@ int dt_init(int argc,
 #else
   dt_capabilities_add("linux");
   dt_capabilities_add("nonapple");
+#endif
+
+#ifdef HAVE_OPENCV
+  // gates the HDR alignment preferences: without OpenCV the whole merge
+  // auto-alignment path is compiled out, so those prefs are shown greyed out
+  dt_capabilities_add("opencv");
 #endif
 
   dt_print(DT_DEBUG_CONTROL,
@@ -2186,6 +2208,8 @@ void dt_cleanup()
   const gboolean init_gui = (darktable.gui != NULL);
 
   dt_stop_backthumbs_crawler(TRUE);
+  // must finish before the database is closed underneath it
+  dt_control_crawler_stop(TRUE);
 
   // last chance to ask user for any input...
 
@@ -2260,6 +2284,7 @@ void dt_cleanup()
     dt_control_cleanup(TRUE);
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
+    dt_gui_gtk_cleanup(darktable.gui);
     free(darktable.gui);
     darktable.gui = NULL;
   }

@@ -24,6 +24,7 @@
 #include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "control/crawler.h"
 #include "control/jobs.h"
 #include "views/view.h"
 
@@ -164,6 +165,13 @@ gboolean dt_film_open(const dt_filmid_t id)
     sqlite3_step(stmt);
   }
   sqlite3_finalize(stmt);
+
+  // the user is about to look at this film roll, so make sure its sidecar
+  // files have been checked before its images can be edited.  this waits,
+  // but only for this one film roll rather than for the whole library,
+  // and only until the background crawl has reached it.
+  dt_control_crawler_ensure_filmroll(id);
+
   // TODO: prefetch to cache using image_open
   dt_film_set_query(id);
   dt_control_queue_redraw_center();

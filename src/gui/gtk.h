@@ -126,6 +126,7 @@ typedef struct dt_gui_gtk_t
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t hide_tooltips;
+  GtkCssProvider *tooltip_css_provider;
 
   gboolean grouping;
   dt_imgid_t expanded_group_id;
@@ -762,6 +763,20 @@ GtkEventController *(dt_gui_connect_key)(GtkWidget *widget,
 
 #define dt_gui_get_widget(controller) \
       gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller))
+
+/* macOS: resolve a Command+C/X/V/A key press against the focused editable,
+ * for windows whose key events are claimed before "key-press-event" is
+ * emitted (i.e. anything carrying dt_shortcut_dispatcher on "event").
+ * Returns FALSE on every other platform and for every other event. */
+gboolean dt_gui_osx_edit_command(GtkWidget *focus, GdkEvent *event);
+
+/* Cursor compatibility boundary. GTK3 applies cursors to the widget's
+ * backing window (using a TreeView's bin window when needed); GTK4 applies
+ * them to the widget itself. The owner string is used by -d input tracing. */
+GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_name);
+GdkCursor *dt_gui_cursor_get(GtkWidget *widget);
+void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor);
+void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner);
 
 /* object-data key on the gesture carrying a shortcut-activated press'
  * button+state, encoded as (state << 8) | button (see

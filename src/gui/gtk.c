@@ -229,11 +229,47 @@ static void _fullscreen_key_accel_callback(dt_action_t *action)
 #endif
 }
 
+static void _set_tooltip_css(const gboolean hidden)
+{
+  if(!darktable.gui->tooltip_css_provider)
+  {
+    darktable.gui->tooltip_css_provider = gtk_css_provider_new();
+#if GTK_CHECK_VERSION(4, 0, 0)
+    gtk_style_context_add_provider_for_display
+      (gdk_display_get_default(),
+       GTK_STYLE_PROVIDER(darktable.gui->tooltip_css_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+#else
+    gtk_style_context_add_provider_for_screen
+      (gdk_screen_get_default(),
+       GTK_STYLE_PROVIDER(darktable.gui->tooltip_css_provider),
+       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+#endif
+  }
+
+  const char *css = hidden
+    ? "tooltip { opacity: 0; background: transparent; }"
+    : "";
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider, css, -1);
+#else
+  GError *error = NULL;
+  if(!gtk_css_provider_load_from_data(darktable.gui->tooltip_css_provider,
+                                      css, -1, &error))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "%s: error parsing tooltip CSS: %s",
+             G_STRFUNC, error->message);
+    g_clear_error(&error);
+  }
+#endif
+}
+
 static void _toggle_tooltip_visibility(dt_action_t *action)
 {
   const gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
   dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
   darktable.gui->hide_tooltips += tooltip_hidden ? 1 : -1;
+  _set_tooltip_css(tooltip_hidden);
   dt_toast_log(tooltip_hidden ? _("tooltips off") : _("tooltips on"));
 }
 
@@ -798,6 +834,8 @@ static gboolean _draw(GtkWidget *da,
 }
 
 static GdkDevice *_touchpad = NULL;
+static gint64 _touchpad_last_gesture = 0;
+#define DT_TOUCHPAD_ASSOCIATION_USEC (500 * G_TIME_SPAN_MILLISECOND)
 
 static void _touchpad_gestures_pref_changed(gpointer instance,
                                             gpointer user_data)
@@ -812,7 +850,17 @@ static void _touchpad_gestures_pref_changed(gpointer instance,
  * dt_gui_scroll_should_pan).  Replaces the old _input_event switch. */
 static void _record_touchpad_device(const GdkEvent *event)
 {
-  _touchpad = dt_gdk_event_get_source_device(event);
+  GdkDevice *const device = dt_gdk_event_get_source_device(event);
+  if(device != _touchpad)
+  {
+    if(_touchpad)
+      g_object_remove_weak_pointer(G_OBJECT(_touchpad), (gpointer *)&_touchpad);
+    _touchpad = device;
+    if(_touchpad)
+      g_object_add_weak_pointer(G_OBJECT(_touchpad), (gpointer *)&_touchpad);
+  }
+  _touchpad_last_gesture = g_get_monotonic_time();
+
   if(_touchpad)
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] gesture event type=%d source='%s' source_type=%d",
@@ -851,15 +899,6 @@ static void _pinch_event(GtkGesture *gesture,
              "[touchpad] pinch ignored by current view");
 }
 
-/* touchpad swipe: only used to record the source device for the follow-up
- * scroll-stream pan routing (GtkGestureSwipe handles GDK_TOUCHPAD_SWIPE in
- * both GTK3 3.24 and GTK4) */
-static void _swipe_begin_cb(GtkGestureSwipe *gesture, gpointer user_data)
-{
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(event) _record_touchpad_device(event);
-}
-
 gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
 {
   if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
@@ -867,18 +906,29 @@ gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
   if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH) return FALSE;
   if(dt_gdk_event_is_scroll_stop(event)) return FALSE;
 #ifdef GDK_WINDOWING_QUARTZ
-  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
-  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to pan so that
-  // two-finger panning works in views like darkroom (both standalone and
-  // interleaved with a pinch-zoom gesture whose translational component macOS
-  // delivers as a separate scroll stream).
+  /* Quartz exposes both the built-in trackpad and ordinary pointing devices
+   * as the Core Pointer (GDK_SOURCE_MOUSE).  In the tested setup, trackpad
+   * gestures arrive as smooth events while a standard mouse produces
+   * discrete events, but that is an observed device/backend convention, not
+   * a portable GDK contract.  Keep this fallback scoped to Quartz: a global
+   * "smooth means touchpad" rule would reintroduce the mouse-wheel regression
+   * fixed by #21765. */
+  // Route every non-ctrl smooth scroll to pan so that two-finger panning works
+  // in views like darkroom (both standalone and interleaved with a pinch-zoom
+  // gesture whose translational component macOS delivers as a separate scroll
+  // stream).
   return TRUE;
 #else
   GdkDevice *const device = dt_gdk_event_get_source_device(event);
-  // Also accept the device that last produced a touchpad pinch/swipe gesture:
-  // some touchpads report the follow-up scroll stream from a different device.
+  // Also accept a mouse-classified device briefly after it produced a real
+  // touchpad pinch. The weak pointer prevents device-removal aliasing, and the
+  // timeout prevents one gesture from changing scroll routing for the session.
+  const gint64 elapsed = g_get_monotonic_time() - _touchpad_last_gesture;
+  const gboolean recent_touchpad_gesture =
+    device && device == _touchpad && elapsed >= 0
+    && elapsed <= DT_TOUCHPAD_ASSOCIATION_USEC;
   return device && (gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
-                    || device == _touchpad);
+                    || recent_touchpad_gesture);
 #endif
 }
 
@@ -1217,6 +1267,191 @@ void dt_gui_store_last_preset(const char *name)
 static void _gui_switch_view_key_accel_callback(dt_action_t *action)
 {
   dt_ctl_switch_mode_to(action->id);
+}
+
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+/* GTK3's Quartz backend reports Command as MOD2, while GTK4 uses META.
+ * Keep the platform mapping here instead of teaching every editable widget
+ * about the backend-specific modifier. */
+static gboolean _osx_command_modifier(GdkModifierType state)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  const GdkModifierType command = GDK_META_MASK;
+#else
+  const GdkModifierType command = GDK_MOD2_MASK;
+#endif
+
+  return (state & command)
+      && !(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
+}
+
+static gboolean _osx_edit_action(GtkWidget *focus,
+                                 const guint keyval,
+                                 const GdkModifierType state)
+{
+  if(!_osx_command_modifier(state))
+    return FALSE;
+
+  const guint key = gdk_keyval_to_lower(keyval);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  const char *action = NULL;
+  switch(key)
+  {
+    case GDK_KEY_c: action = "clipboard.copy"; break;
+    case GDK_KEY_x: action = "clipboard.cut"; break;
+    case GDK_KEY_v: action = "clipboard.paste"; break;
+    case GDK_KEY_a: action = "selection.select-all"; break;
+    default: return FALSE;
+  }
+
+  /* GTK4's GtkText actions are the semantic edit operations.  Activating
+   * them on the focused widget keeps IME, selection and clipboard ownership
+   * inside GTK instead of synthesizing a Ctrl key event. */
+  return gtk_widget_activate_action(focus, action, NULL);
+#else
+  if(GTK_IS_EDITABLE(focus))
+  {
+    GtkEditable *editable = GTK_EDITABLE(focus);
+    switch(key)
+    {
+      case GDK_KEY_c: gtk_editable_copy_clipboard(editable); return TRUE;
+      case GDK_KEY_x: gtk_editable_cut_clipboard(editable); return TRUE;
+      case GDK_KEY_v: gtk_editable_paste_clipboard(editable); return TRUE;
+      case GDK_KEY_a: gtk_editable_select_region(editable, 0, -1); return TRUE;
+      default: return FALSE;
+    }
+  }
+  else if(GTK_IS_TEXT_VIEW(focus))
+  {
+    GtkTextView *text_view = GTK_TEXT_VIEW(focus);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
+    GtkClipboard *clipboard = gtk_widget_get_clipboard(focus, GDK_SELECTION_CLIPBOARD);
+    switch(key)
+    {
+      case GDK_KEY_c:
+        gtk_text_buffer_copy_clipboard(buffer, clipboard);
+        return TRUE;
+      case GDK_KEY_x:
+        gtk_text_buffer_cut_clipboard(buffer, clipboard,
+                                      gtk_text_view_get_editable(text_view));
+        return TRUE;
+      case GDK_KEY_v:
+        gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL,
+                                        gtk_text_view_get_editable(text_view));
+        return TRUE;
+      case GDK_KEY_a:
+      {
+        GtkTextIter start, end;
+        gtk_text_buffer_get_bounds(buffer, &start, &end);
+        gtk_text_buffer_select_range(buffer, &end, &start);
+        return TRUE;
+      }
+      default: return FALSE;
+    }
+  }
+#endif
+
+  return FALSE;
+}
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+static gboolean _osx_edit_key_pressed(GtkEventControllerKey *controller,
+                                      guint keyval,
+                                      guint keycode,
+                                      GdkModifierType state,
+                                      gpointer user_data)
+{
+  GtkWidget *window = dt_gui_get_widget(controller);
+  GtkWidget *focus = gtk_root_get_focus(GTK_ROOT(window));
+  return focus ? _osx_edit_action(focus, keyval, state) : GDK_EVENT_PROPAGATE;
+}
+#else
+static gboolean _osx_edit_key_pressed(GtkWidget *window,
+                                      GdkEventKey *event,
+                                      gpointer user_data)
+{
+  GtkWidget *focus = gtk_window_get_focus(GTK_WINDOW(window));
+  guint keyval;
+  GdkModifierType state;
+  gdk_event_get_keyval((GdkEvent *)event, &keyval);
+  gdk_event_get_state((GdkEvent *)event, &state);
+  return focus ? _osx_edit_action(focus, keyval, state) : FALSE;
+}
+#endif
+
+static void _osx_connect_edit_commands(GtkWindow *window)
+{
+  if(g_object_get_data(G_OBJECT(window), "dt-osx-edit-commands"))
+    return;
+  g_object_set_data(G_OBJECT(window), "dt-osx-edit-commands", window);
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GtkEventController *controller = gtk_event_controller_key_new();
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_CAPTURE);
+  dt_gui_add_controller(GTK_WIDGET(window), controller);
+  g_signal_connect(controller, "key-pressed",
+                   G_CALLBACK(_osx_edit_key_pressed), NULL);
+#else
+  g_signal_connect(window, "key-press-event",
+                   G_CALLBACK(_osx_edit_key_pressed), NULL);
+#endif
+}
+
+static gboolean _osx_realize_hook(GSignalInvocationHint *ihint,
+                                  guint n_param_values,
+                                  const GValue *param_values,
+                                  gpointer data)
+{
+  if(n_param_values > 0)
+  {
+    GObject *object = g_value_get_object(&param_values[0]);
+    if(object && GTK_IS_WINDOW(object))
+      _osx_connect_edit_commands(GTK_WINDOW(object));
+  }
+  return TRUE;
+}
+
+static gulong _osx_realize_hook_id;
+static guint _osx_realize_signal_id;
+
+static void _osx_init_edit_commands(void)
+{
+  _osx_realize_signal_id = g_signal_lookup("realize", GTK_TYPE_WIDGET);
+  _osx_realize_hook_id = g_signal_add_emission_hook(_osx_realize_signal_id, 0,
+                                                     _osx_realize_hook, NULL, NULL);
+
+  GList *windows = gtk_window_list_toplevels();
+  for(GList *iter = windows; iter; iter = g_list_next(iter))
+    _osx_connect_edit_commands(GTK_WINDOW(iter->data));
+  g_list_free(windows);
+}
+
+#endif
+
+/* The window-level "key-press-event" bridge above only sees keys in windows
+ * that nothing else intercepts first -- dialogs, essentially.  darktable
+ * connects dt_shortcut_dispatcher() to the *generic* "event" signal of the
+ * main window (and of the darkroom and bauhaus popups), and GTK3 emits
+ * "event" before the type-specific signal: a TRUE return there suppresses
+ * "key-press-event" entirely.  The dispatcher also forwards the event to the
+ * focus widget itself, so an editable in the main window resolves the key
+ * long before this file gets a chance at it.  Give the dispatcher an explicit
+ * hook so the platform mapping still lives here, and the ordering is
+ * deterministic instead of dependent on signal connection order. */
+gboolean dt_gui_osx_edit_command(GtkWidget *focus,
+                                 GdkEvent *event)
+{
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+  if(!focus || dt_gdk_event_get_type(event) != GDK_KEY_PRESS)
+    return FALSE;
+
+  return _osx_edit_action(focus, dt_gdk_event_get_keyval(event),
+                          dt_gdk_event_get_state(event));
+#else
+  (void)focus;
+  (void)event;
+  return FALSE;
+#endif
 }
 
 #ifdef MAC_INTEGRATION
@@ -1581,6 +1816,29 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget)
 }
 #endif
 
+void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
+{
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+  if(_osx_realize_hook_id)
+  {
+    g_signal_remove_emission_hook(_osx_realize_signal_id, _osx_realize_hook_id);
+    _osx_realize_hook_id = 0;
+  }
+#endif
+  if(gui->tooltip_css_provider)
+  {
+#if GTK_CHECK_VERSION(4, 0, 0)
+    gtk_style_context_remove_provider_for_display
+      (gdk_display_get_default(), GTK_STYLE_PROVIDER(gui->tooltip_css_provider));
+#else
+    gtk_style_context_remove_provider_for_screen
+      (gdk_screen_get_default(), GTK_STYLE_PROVIDER(gui->tooltip_css_provider));
+#endif
+    g_clear_object(&gui->tooltip_css_provider);
+  }
+  g_clear_pointer(&gui->last_preset, g_free);
+}
+
 int dt_gui_theme_init(dt_gui_gtk_t *gui)
 {
   if(gui->gtkrc[0] != '\0')
@@ -1667,6 +1925,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   //init overlay colors
   dt_guides_set_overlay_colors();
+
+#if defined(GDK_WINDOWING_QUARTZ) || defined(GDK_WINDOWING_MACOS)
+  /* Install this before constructing the rest of the UI so dialogs and
+   * auxiliary windows created later receive the same semantic edit bridge. */
+  _osx_init_edit_commands();
+#endif
 
   // Initializing widgets
   _init_widgets(gui);
@@ -1785,10 +2049,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           _scrolled, NULL);
 
     dt_gui_connect_pinch(widget, _pinch_event, NULL);
-
-    GtkGesture *swipe = gtk_gesture_swipe_new(widget);
-    dt_gui_add_controller(widget, swipe);
-    g_signal_connect(swipe, "begin", G_CALLBACK(_swipe_begin_cb), NULL);
   }
 
   // TODO: left, right, top, bottom:
@@ -2803,14 +3063,14 @@ static void _restore_default_modules(GtkMenuItem *menuitem,
   gchar *prefix = g_strdup_printf("plugins/%s/", cv->module_name);
   g_hash_table_foreach_remove(darktable.conf->table, _remove_modules_visibility, prefix);
   g_free(prefix);
-  dt_view_manager_switch_by_view(darktable.view_manager, cv);
+  dt_ctl_reload_view(cv);
 }
 
 static void _toggle_module_visibility(GtkMenuItem *menuitem,
                                       dt_lib_module_t *module)
 {
   dt_lib_set_visible(module, !dt_lib_is_visible(module));
-  dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
+  dt_ctl_reload_view(dt_view_manager_get_current_view(darktable.view_manager));
 }
 
 static void _add_remove_modules(dt_action_t *action)
@@ -3164,7 +3424,7 @@ static void _ui_init_panel_left(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 1, 1, 1);
@@ -3204,7 +3464,7 @@ static void _ui_init_panel_right(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 3, 1, 1, 1);
@@ -3280,7 +3540,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui,
 
   dt_gui_connect_click(handle, _panel_handle_button_pressed, _panel_handle_button_released, widget);
   dt_gui_connect_motion(handle, _panel_handle_motion_callback,
-                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, NULL);
+                        _panel_handle_cursor_enter, _panel_handle_cursor_leave, widget);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 2, 3, 1);
@@ -3908,6 +4168,67 @@ void dt_gui_load_theme(const char *theme)
     _add_theme_import(&themecss, datadir, "themes", "chunk-condensed.css");
   }
 
+  // chunk-rounded-header
+
+  if(dt_conf_get_bool("themes/rounded-header"))
+  {
+    _add_theme_import(&themecss, datadir, "themes", "chunk-rounded-header.css");
+  }
+
+  // chunk-colored-accent
+
+  int index = dt_conf_get_int("themes/accent-color");
+
+  if(index > 0)
+  {
+    const char *colors[] =
+        {
+            "none",
+            "green",
+            "blue",
+            "yellow",
+            "orange"
+        };
+
+    char *chunk = g_strdup_printf
+      ("chunk-%s-accent-color.css",
+       colors[index]);
+    _add_theme_import(&themecss, datadir, "themes", chunk);
+    g_free(chunk);
+  }
+
+  // focused module border
+
+  const char *border_colors[] =
+      {
+          "none",
+          "light",
+          "dark",
+          "green",
+          "blue",
+          "yellow",
+          "orange"};
+
+  index = dt_conf_get_int("themes/focused-module-border");
+
+  if (index > 0)
+  {
+    char *chunk = g_strdup_printf("chunk-%s-focused-module-border.css",
+                                  border_colors[index]);
+    _add_theme_import(&themecss, datadir, "themes", chunk);
+    g_free(chunk);
+  }
+
+  index = dt_conf_get_int("themes/expanded-module-border");
+
+  if (index > 0)
+  {
+    char *chunk = g_strdup_printf("chunk-%s-expanded-module-border.css",
+                                  border_colors[index]);
+    _add_theme_import(&themecss, datadir, "themes", chunk);
+    g_free(chunk);
+  }
+
   // load any OS specific themes tweak file to fix some platform specific issues
 
 #ifdef __APPLE__
@@ -3928,14 +4249,6 @@ void dt_gui_load_theme(const char *theme)
   g_free(path_uri);
   g_free(path);
 
-  if(dt_conf_get_bool("ui/hide_tooltips"))
-  {
-    gchar *newcss = g_strjoin(NULL, themecss,
-                              " tooltip {opacity: 0; background: transparent;}", NULL);
-    g_free(themecss);
-    themecss = newcss;
-  }
-
   if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider),
                                       themecss, -1, &error))
   {
@@ -3948,6 +4261,7 @@ void dt_gui_load_theme(const char *theme)
   g_free(themecss);
 
   g_object_unref(themes_style_provider);
+  _set_tooltip_css(dt_conf_get_bool("ui/hide_tooltips"));
 }
 
 void dt_gui_apply_theme()
@@ -5288,6 +5602,90 @@ GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
   g_signal_connect(gesture, "end", G_CALLBACK(_pinch_end), NULL);
 
   return gesture;
+}
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+static GdkWindow *_dt_gui_cursor_window(GtkWidget *widget)
+{
+  if(!widget) return NULL;
+
+  GdkWindow *window = gtk_widget_get_window(widget);
+  if(GTK_IS_TREE_VIEW(widget))
+  {
+    GdkWindow *bin = gtk_tree_view_get_bin_window(GTK_TREE_VIEW(widget));
+    if(bin) window = bin;
+  }
+  return window;
+}
+#endif
+
+GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_name)
+{
+  if(!display || !cursor_name) return NULL;
+
+  GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  // GTK3 fallback: some CSS cursor names are not supported by all
+  // backends (for example "wait", "help", and "none"). GTK4 supports
+  // the CSS cursor name API on all backends, so this branch disappears
+  // when the application moves to GTK4.
+  if(!cursor)
+  {
+    GdkCursorType type = GDK_LEFT_PTR;
+    if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
+    else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
+    else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
+    else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
+    else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
+    cursor = gdk_cursor_new_for_display(display, type);
+  }
+#endif
+
+  return cursor;
+}
+
+GdkCursor *dt_gui_cursor_get(GtkWidget *widget)
+{
+  if(!widget) return NULL;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  return gtk_widget_get_cursor(widget);
+#else
+  GdkWindow *window = _dt_gui_cursor_window(widget);
+  return window ? gdk_window_get_cursor(window) : NULL;
+#endif
+}
+
+void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor)
+{
+  if(!widget) return;
+#if GTK_CHECK_VERSION(4, 0, 0)
+  gtk_widget_set_cursor(widget, cursor);
+#else
+  GdkWindow *window = _dt_gui_cursor_window(widget);
+  if(window) gdk_window_set_cursor(window, cursor);
+#endif
+}
+
+void dt_gui_cursor_set(GtkWidget *widget, const char *cursor_name, const char *owner)
+{
+  if(!widget) return;
+
+  dt_control_cursor_debug(owner,
+                          cursor_name ? "set" : "clear",
+                          widget,
+                          cursor_name);
+#if GTK_CHECK_VERSION(4, 0, 0)
+  if(cursor_name)
+    gtk_widget_set_cursor_from_name(widget, cursor_name);
+  else
+    gtk_widget_set_cursor(widget, NULL);
+#else
+  GdkCursor *cursor = dt_gui_cursor_new_for_name(gtk_widget_get_display(widget), cursor_name);
+  dt_gui_cursor_apply(widget, cursor);
+  if(cursor) g_object_unref(cursor);
+#endif
 }
 
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,

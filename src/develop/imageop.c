@@ -565,6 +565,11 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 
   DT_ENTER_GUI_UPDATE();
 
+  // GUI teardown destroys data and a mutex that commit_params()/process()
+  // may use. Stop every screen pipe and keep them locked until the module is
+  // removed from develop state and all pipe topologies are marked for rebuild.
+  dt_dev_pixelpipe_stop_and_lock_all(dev);
+
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
@@ -620,6 +625,8 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   dev->alliop = g_list_append(dev->alliop, module);
 
   dt_dev_pixelpipe_rebuild(dev);
+
+  dt_dev_pixelpipe_unlock_all(dev);
 
   /* redraw */
   dt_control_queue_redraw_center();
@@ -1207,12 +1214,16 @@ static void _update_module_active_class(dt_iop_module_t *module)
 static void _gui_off_callback(GtkToggleButton *togglebutton,
                               dt_iop_module_t *module)
 {
-  const gboolean basics =
-    (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
-  const gboolean special = module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
+  /* Always-on modules can still emit toggled during synchronization; only
+   * user-toggleable modules may change processing state or history. */
+  const gboolean user_toggleable = !module->hide_enable_button;
 
-  if(!DT_IN_GUI_UPDATE())
+  if(user_toggleable && !DT_IN_GUI_UPDATE())
   {
+    const gboolean basics =
+      (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
+    const gboolean special = module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
+
     /* modules with IOP_FLAGS_GUIDES_SPECIAL_DRAW flag like crop & ashift need special care.
         If in expanded state we request focus to let it's gui_focus() callback
         handle this gracefully.
@@ -1254,6 +1265,9 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
     // set mask indicator sensitive according to module activation and raster mask
     if(module->mask_indicator)
       gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
+
+    if(!gtk_widget_is_visible(module->header))
+      dt_dev_modulegroups_update_visibility(darktable.develop);
   }
 
   char tooltip[512];
@@ -1269,9 +1283,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-
-  if(!gtk_widget_is_visible(module->header))
-    dt_dev_modulegroups_update_visibility(darktable.develop);
 }
 
 gboolean dt_iop_so_is_hidden(const dt_iop_module_so_t *module)
@@ -1351,9 +1362,15 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   if(!module->header) /* some modules such as overexposed don't actually have a header */
     return;
 
+  /* Updating the toggle state is an internal synchronisation, not a user
+   * action.  Keep it from generating a history item. */
+  DT_ENTER_GUI_UPDATE();
+
   // set panel name to display correct multi-instance
   _iop_panel_name(module);
   dt_iop_gui_set_enable_button(module);
+
+  DT_LEAVE_GUI_UPDATE();
 }
 
 void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
@@ -1455,8 +1472,9 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   if(darktable.gui)
     DT_LEAVE_GUI_UPDATE();
 
-  if(module->header)
-    dt_iop_gui_update_header(module);
+  /* This helper owns its GUI-update scope because it is also called
+   * independently from other header synchronization paths. */
+  dt_iop_gui_update_header(module);
 }
 
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
@@ -2409,9 +2427,14 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
   gtk_widget_destroy(module->expander ? module->expander : module->widget);
+  // Do not leave borrowed GTK pointers behind while asynchronous signals can
+  // still carry this module until the GUI thread drains their queue.
+  module->expander = NULL;
+  module->widget = NULL;
   dt_iop_gui_cleanup_blending(module);
   dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
+  module->gui_data = NULL;
 }
 
 void dt_iop_gui_update(dt_iop_module_t *module)
@@ -3302,10 +3325,11 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
     button = dtgtk_togglebutton_new_full(paint, 0, module,
         &(dtgtk_button_config_t){
           .tooltip = tooltip,
+          .active = module->enabled,
           .toggled_cb = G_CALLBACK(_gui_off_callback),
           .toggled_data = module,
         });
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
+    gtk_widget_set_sensitive(button, !module->hide_enable_button);
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -3441,6 +3465,11 @@ static gboolean _on_drag_drop(GtkWidget *widget,
 
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
+  /* Build and synchronise the module UI under a GUI-update guard. Widget
+   * construction can emit state-change signals after callbacks are connected;
+   * none of those signals represent user actions. */
+  DT_ENTER_GUI_UPDATE();
+
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(GTK_WIDGET(header), "module-header");
 
@@ -3552,7 +3581,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                                          header);
   dt_gui_add_class(module->off, "dt_transparent_background");
   dt_iop_gui_set_enable_button_icon(module->off, module);
-  gtk_widget_set_sensitive(module->off, !module->hide_enable_button);
 
   gtk_box_pack_start(GTK_BOX(header), icon, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(header), lab, FALSE, FALSE, 0);
@@ -3594,6 +3622,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_ui_container_add_widget(darktable.gui->ui,
                              DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
+
+  DT_LEAVE_GUI_UPDATE();
 }
 
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)

@@ -136,13 +136,7 @@ static gboolean _added_gui_thread(gpointer user_data)
 
   // instance cursor to tell user that, if this is a blocking job with
   // a global busy cursor, the cancel box in this widget can stop it
-  GdkWindow *window = gtk_widget_get_window(params->instance_widget);
-  if(window)
-  {
-    GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(window, cursor);
-    g_object_unref(cursor);
-  }
+  dt_gui_cursor_set(params->instance_widget, "default", "background-job/instance");
 
   free(params);
   return G_SOURCE_REMOVE;
