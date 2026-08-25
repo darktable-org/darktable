@@ -170,7 +170,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float balance = data->balance;
 
   DT_OMP_FOR()
-  for(int k = 0; k < 4 * npixels; k += 4)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     float h, s, l;
     rgb2hsl(in+k, &h, &s, &l);
