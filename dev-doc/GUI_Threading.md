@@ -79,8 +79,14 @@ widgets, so nothing serialises those calls against the GTK main loop.
 The right column has no fixed thread, but for the instance that owns your `gui_data`
 the picture is narrower:
 
-- **Your darkroom instance** — `commit_params()` and `process()` run on one of the
-  three darkroom pipe threads (full, preview, preview2), never on the GTK main thread.
+- **Your darkroom instance** — `process()` runs on one of the three darkroom pipe
+  threads (full, preview, preview2), never on the GTK main thread. `commit_params()`
+  usually does too, as part of synchronising a pipe, but it has a route onto the GTK
+  thread as well: rebuilding a pipe's nodes calls every module's `init_pipe()`, and
+  `basecurve`'s calls `commit_params()` straight back (`src/iop/basecurve.c`) — while
+  the image switch rebuilds the screen pipes from an idle callback
+  (`src/views/darkroom.c`). So not even this instance gives `commit_params()` an
+  affinity you can rely on.
 - **Every other instance** — export, thumbnail generation, snapshots, the duplicate
   manager, the tethering histogram and the `overlay` module rendering its second image,
   among others — builds a throw-away `dt_develop_t` with its own module instances and

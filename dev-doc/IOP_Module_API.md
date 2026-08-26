@@ -203,8 +203,9 @@ void process(dt_iop_module_t *self,
 
 **Important:**
 - **Never use GTK+ API directly in `process()`** — see [GUI_Threading.md](GUI_Threading.md) for the correct approach
-- **`commit_params()` is not a GTK-thread callback** — for your darkroom instance it
-  runs on a pixelpipe thread, so `gui_data` it shares with widget callbacks needs the
+- **`commit_params()` has no thread affinity** — for your darkroom instance it usually
+  runs on a pixelpipe thread, and it runs on the GTK thread when a pipe's nodes are
+  rebuilt, so `gui_data` it shares with widget callbacks needs the
   GUI critical section. Enter that section only when `gui_data` is non-NULL: `gui_data`
   is `NULL` on export and `gui_lock` is only initialised when a GUI exists, so the
   non-GUI branch must compute what processing needs on its own. The in-tree idiom writes
