@@ -144,7 +144,9 @@ User interacts with widget
                       ↓
 Auto-callback (from_params) or manual callback
                       ↓
-self->params updated → your gui_changed() called, if implemented
+self->params updated → on the from_params route the framework calls your
+                       gui_changed() (if implemented) and adds the history item;
+                       a manual callback does both itself
                       ↓
 dt_dev_add_history_item() → commit_params() → process()
          │                        │                │
