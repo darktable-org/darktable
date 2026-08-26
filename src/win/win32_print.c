@@ -1218,7 +1218,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
     return false;
 
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-  bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
+  bool co_initialized = SUCCEEDED(hr);
   if(!co_initialized)
   {
     dt_control_log(_("could not initialize COM for printing"));
@@ -1272,12 +1272,12 @@ bool dt_win_print_file(const dt_images_box *imgs,
           IStream *package_stream = NULL;
           hr = CreateStreamOnHGlobal(NULL, TRUE, &package_stream);
 
-          if(SUCCEEDED(hr))
+          if(SUCCEEDED(hr) && package_stream)
           {
             IOpcPartUri *doc_seq_uri = NULL;
             hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
           
-            if(SUCCEEDED(hr) && package_stream && doc_seq_uri)
+            if(SUCCEEDED(hr) && doc_seq_uri)
             {
               IXpsOMPackageWriter *writer = NULL;
 
@@ -1293,19 +1293,21 @@ bool dt_win_print_file(const dt_images_box *imgs,
                       NULL,
                       &writer);
 
+              doc_seq_uri->lpVtbl->Release(doc_seq_uri);
+
               if(SUCCEEDED(hr) && writer)
               {
                 IXpsOMColorProfileResource *profile_resource = NULL;
                 IOpcPartUri *doc_uri = NULL;
                 hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_uri);
 
-                writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
-
-                doc_seq_uri->lpVtbl->Release(doc_seq_uri);
-                doc_uri->lpVtbl->Release(doc_uri);
+                if(SUCCEEDED(hr))
+                {
+                  writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
+                  doc_uri->lpVtbl->Release(doc_uri);
+                }
 
                 IXpsOMPage *page = NULL;
-
                 XPS_SIZE page_size = { page_width, page_height };
 
                 if(SUCCEEDED(hr))
@@ -1321,7 +1323,6 @@ bool dt_win_print_file(const dt_images_box *imgs,
                 }
     // Create and add the color profile (.icc) resource after the page part is available
 
-                profile_resource = NULL;
                 if(icc_data && icc_size > 0) //&& is_color_device) - we might not want to embed a color profile if the printer is monochrome, but for now embed it anyway
                 {
                   profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/ColorProfiles/OutputProfile.icc");
@@ -1347,7 +1348,14 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   page = NULL;
                 }
 
-                writer->lpVtbl->Close(writer);
+                if(SUCCEEDED(hr))
+                {
+                  hr = writer->lpVtbl->Close(writer);
+                }
+                else
+                {
+                  writer->lpVtbl->Close(writer);
+                }
 
                 if(profile_resource)
                 {
@@ -1362,7 +1370,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   LARGE_INTEGER zero = {0};
                   hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
 
-                  if(SUCCEEDED(hr))
+                  if(SUCCEEDED(hr) && docStream)
                   {
                     BYTE buffer[4096];
 
@@ -1371,22 +1379,26 @@ bool dt_win_print_file(const dt_images_box *imgs,
                       ULONG read = 0;
                       hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
 
-                      if(SUCCEEDED(hr) && docStream && read > 0)
+                      if(FAILED(hr) || read == 0)
                       {
-                        ULONG written = 0;
-                        hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
-                        if(written != read)
-                        {
-                          dt_control_log(_("failed to write print job data for `%s'"), pinfo->printer.name);
-                          break; 
-                        }
+                        dt_control_log(_("failed to read print job data for `%s'"), pinfo->printer.name);
+                        break;
+                      }
+
+                      ULONG written = 0;
+                      hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
+
+                      if(FAILED(hr) || written != read)
+                      {
+                        dt_control_log(_("failed to write print job data for `%s'"), pinfo->printer.name);
+                        break; 
                       }
                     }
                   }
                 }
               }
-              package_stream->lpVtbl->Release(package_stream);
             }
+            package_stream->lpVtbl->Release(package_stream);
           }
           factory->lpVtbl->Release(factory);
         }
@@ -1395,9 +1407,11 @@ bool dt_win_print_file(const dt_images_box *imgs,
       if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
 
       WaitForSingleObject(completionEvent, INFINITE);
+      
       if(SUCCEEDED(hr))
       {
       ok = true;
+      dt_control_log(_("print job completed for `%s'"), pinfo->printer.name);
       }
       else
       {
