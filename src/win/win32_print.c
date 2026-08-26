@@ -814,6 +814,9 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
       }
       #ifdef DC_PAPERNAMES
       free(names);   // once, after the loop — not inside it
+      #endif
+      #ifdef DC_PAPERS
+      free(paper_ids);
       #endif  
     }
     free(szList);
@@ -1543,6 +1546,7 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
   // open printer handle
   if(!OpenPrinterW(wprinter, &settings_ctx->hPrinter, NULL)) 
   {
+    g_free(wprinter);
     return settings_ctx; // leave cached_dm NULL, caller can detect
   }
   settings_ctx->is_color_device = DeviceCapabilitiesW(wprinter, NULL, DC_COLORDEVICE, NULL, NULL) != 0;

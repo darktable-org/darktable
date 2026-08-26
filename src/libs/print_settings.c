@@ -138,8 +138,6 @@ typedef struct dt_lib_print_settings_t
   // for windows side printing support
 #ifdef _WIN32  
   char *waiting_for_printer;
-  GtkWidget *printer_combo;
-  GtkWidget *papers_combo;
   GtkWidget *quality;
   GtkWidget *quality_combo;
   GList *quality_list;                     // list of quality settings (windows only)
@@ -902,22 +900,29 @@ static gboolean _win_build_print_ticket(dt_win32_print_ctx_t *ctx,
       // deliberately not handing the job an IStream/COM object, since
       // the job runs on a different thread and shouldn't inherit any
       // COM apartment or lifetime concerns from this one.
-      HGLOBAL hGlobal = NULL;
-      if(SUCCEEDED(GetHGlobalFromStream(pStream, &hGlobal)) && hGlobal)
+      STATSTG statstg = { 0 };
+      hr = pStream->lpVtbl->Stat(pStream, &statstg, STATFLAG_NONAME);
+
+      if(SUCCEEDED(hr))
       {
-        SIZE_T size = GlobalSize(hGlobal);
-        void *src = GlobalLock(hGlobal);
-        if(src && size > 0)
+        const size_t actual_size = (size_t)statstg.cbSize.QuadPart;
+        HGLOBAL hGlobal = NULL;
+
+        if(actual_size >0 && SUCCEEDED(GetHGlobalFromStream(pStream, &hGlobal)) && hGlobal)
         {
-          void *buf = malloc(size);
-          if(buf)
+          void *src = GlobalLock(hGlobal);
+          if(src)
           {
-            memcpy(buf, src, size);
-            *out_data = buf;
-            *out_size = (size_t)size;
-            ok = TRUE;
+            void *buf = malloc(actual_size);
+            if(buf)
+            {
+              memcpy(buf, src, actual_size);
+              *out_data = buf;
+              *out_size = actual_size;
+              ok = TRUE;
+            }
+            GlobalUnlock(hGlobal);
           }
-          GlobalUnlock(hGlobal);
         }
       }
     }
@@ -1177,10 +1182,10 @@ static void _set_printer(const dt_lib_module_t *self,
     if(ps->settings_ctx->cached_dm) dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
     _sync_print_widgets_from_pinfo(ps);
   }
-
+#endif
 }
 //Callback when printer details are ready (Windows only)
-
+#ifdef _WIN32
 static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -1199,8 +1204,8 @@ static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
     g_clear_pointer(&ps->waiting_for_printer, g_free);
 
     // Re‑enable the combo box now that details are ready
-    gtk_widget_set_sensitive(ps->printer_combo, TRUE);
-    gtk_widget_set_sensitive(ps->papers_combo, TRUE);
+    gtk_widget_set_sensitive(ps->printers, TRUE);
+    gtk_widget_set_sensitive(ps->papers, TRUE);
 
 // Now force a GUI refresh of the module
     if(self->gui_update)
@@ -1214,11 +1219,11 @@ static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
 
 static void _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
 {
-  dt_lib_print_settings_t *ps = self->data;
   const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
   if(!printer_name) return;
 
 #ifdef _WIN32
+  dt_lib_print_settings_t *ps = self->data;
   // Ask backend if details are ready
   if(!dt_printer_details_valid(printer_name))
   {
@@ -1226,9 +1231,9 @@ static void _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
     ps->waiting_for_printer = g_strdup(printer_name);
 
     // Disable combo box to prevent multiple overlapping jobs
-    gtk_widget_set_sensitive(ps->printer_combo, FALSE);
-    gtk_widget_set_sensitive(ps->papers_combo, FALSE);
-        // gtk_widget_set_sensitive(ps->papers_combo, FALSE);
+    gtk_widget_set_sensitive(ps->printers, FALSE);
+    gtk_widget_set_sensitive(ps->papers, FALSE);
+        // gtk_widget_set_sensitive(ps->papers, FALSE);
     dt_control_log(_("loading printer details for %s…"), printer_name);
 
     return;
@@ -2999,9 +3004,10 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgs.motion_over = -1;
 
-  // Initialize the new async tracking field
+  // Initialize the new async tracking field (Windows only)
+#ifdef _WIN32
   d->waiting_for_printer = NULL;
-
+#endif
 
   const char *str = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "unit");
   const char **names = _unit_names;

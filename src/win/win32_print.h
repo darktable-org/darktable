@@ -41,7 +41,7 @@ typedef struct dt_win_dib_t
   int         stride; // bytes per row
   int         width;  // in pixels
   int         height; // in pixels
-  bool        top_down;
+  gboolean    top_down;
   int         dpi_x;
   int         dpi_y;
 } dt_win_dib_t;
