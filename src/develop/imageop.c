@@ -1470,7 +1470,12 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   dt_iop_load_default_params(module);
 
   if(darktable.gui)
+  {
+    /* the widgets were built from whatever default_params held at the time;
+       reload_defaults() above may have moved them since */
+    dt_bauhaus_update_defaults(module);
     DT_LEAVE_GUI_UPDATE();
+  }
 
   /* This helper owns its GUI-update scope because it is also called
    * independently from other header synchronization paths. */

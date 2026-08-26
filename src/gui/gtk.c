@@ -4347,25 +4347,44 @@ GdkModifierType dt_key_modifier_state()
 */
 }
 
+/* Gather the bauhaus widgets of a page in widget order, descending into the
+   boxes and collapsible sections a page is built from. Subtrees flagged with
+   dt_gui_tab_state_exclude() are left alone: they hold controls that steer a
+   workflow rather than the module parameters and must survive a reset. */
+static void _collect_page_bauhaus(GtkWidget *w,
+                                  gpointer user_data)
+{
+  GList **widgets = user_data;
+  if(dt_gui_tab_state_excluded(w)) return;
+
+  if(DT_IS_BAUHAUS_WIDGET(w))
+    *widgets = g_list_prepend(*widgets, w);
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _collect_page_bauhaus, user_data);
+}
+
 static void _reset_all_bauhaus(GtkNotebook *notebook,
                                GtkWidget *box)
 {
+  GList *widgets = NULL;
+  _collect_page_bauhaus(box, &widgets);
+  widgets = g_list_reverse(widgets);
+
   // toggles go last rather than in widget order: a module may switch one of
   // its own checkboxes on in reaction to one of its sliders changing, so a
   // checkbox reset while sliders are still to come could be undone again by
   // a slider that is reset after it
   for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
   {
-    for(GList *c = gtk_container_get_children(GTK_CONTAINER(box));
-        c;
-        c = g_list_delete_link(c, c))
+    for(GList *c = widgets; c; c = g_list_next(c))
     {
-      if(DT_IS_BAUHAUS_WIDGET(c->data)
-         && (dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
-            == (toggles_pass == 1))
+      if((dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
+         == (toggles_pass == 1))
         dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
     }
   }
+
+  g_list_free(widgets);
 
   dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
 }
@@ -5392,6 +5411,29 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                    G_CALLBACK(_collapse_button_changed), cs);
 
   dt_gui_connect_click(header_evb, _collapse_expander_click, NULL, cs);
+}
+
+// widget data key holding the "not part of the page's parameter set" flag
+#define DT_TAB_STATE_EXCLUDE_KEY "dt-tab-state-exclude"
+
+void dt_gui_tab_state_exclude(GtkWidget *widget)
+{
+  if(widget)
+    g_object_set_data(G_OBJECT(widget), DT_TAB_STATE_EXCLUDE_KEY,
+                      GINT_TO_POINTER(TRUE));
+}
+
+gboolean dt_gui_tab_state_excluded(GtkWidget *widget)
+{
+  return widget
+    && g_object_get_data(G_OBJECT(widget), DT_TAB_STATE_EXCLUDE_KEY) != NULL;
+}
+
+void dt_gui_collapsible_section_exclude_tab_state(dt_gui_collapsible_section_t *cs)
+{
+  // the expander holds both the header and the content box, so flagging it
+  // covers the whole section
+  if(cs) dt_gui_tab_state_exclude(cs->expander);
 }
 
 void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
