@@ -113,19 +113,15 @@ static void _log_redraw_callback(gpointer instance, dt_lib_module_t *self)
   if(d->popover && gtk_widget_is_visible(d->popover))
   {
     _populate_list_box(self);
-    // popover is visible → clear unread indicator
+    dt_control_log_history_clear_unread_messages();
     gtk_widget_hide(d->badge);
   }
   else
   {
-    GList *entries = dt_control_log_history_get_entries();
-
-    if(entries && g_list_length(entries) > 0)
+    if(dt_control_log_history_has_unread_messages())
       gtk_widget_show(d->badge);
     else
       gtk_widget_hide(d->badge);
-
-    g_list_free_full(entries, g_free);
   }
 }
 
@@ -156,6 +152,7 @@ static void _toggle_popover(dt_lib_module_t *self)
     // hide unread indicator now that the user sees the log
     gtk_widget_hide(d->badge);
   }
+  dt_control_log_history_clear_unread_messages();
 }
 
 static void _button_clicked_cb(GtkButton *button, dt_lib_module_t *self)
