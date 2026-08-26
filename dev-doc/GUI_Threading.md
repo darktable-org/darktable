@@ -290,17 +290,21 @@ static float _mymodule_proxy_get_value(dt_iop_module_t *self)
 }
 ```
 
-The example tests `g` and nothing else, and where a module writes both, the order
-matters: `if(!g || !self->dev->gui_attached)`, as `colorequal` and `toneequal` do, never
-`self->dev->gui_attached && g`. The reason is that `self->dev` is not guaranteed. One
-instance in the tree has `gui_data` without a `dev`: at startup, `_init_module_so()`
-builds a throw-away instance with `dev == NULL` and runs `dt_iop_gui_init()` on it so
-that its widgets can register their accelerators (`src/develop/imageop.c`). Written the
-other way round, the guard would dereference NULL in its first operand, before the `g`
-test that decides the question. Inside `process()` and `commit_params()` that cannot
-happen — a module only reaches a pipe through `dev->iop`, so it always has a `dev` there
-— but a proxy accessor takes whatever instance its caller hands it, so put `g` first and
-the case never arises.
+The example tests `g` and nothing else. Where a module writes both, put `g` first —
+`if(!g || !self->dev->gui_attached)`, the order `colorequal` and `toneequal` use in
+their cursor helpers. The tree more often writes them the other way round, including
+in the `commit_params()` quote earlier in this document, and there that is safe: a
+module only reaches a pipe through `dev->iop`, so inside `process()` and
+`commit_params()` it always has a `dev`.
+
+A proxy accessor has no such backing — it takes whatever instance its caller hands it —
+and `self->dev` is not guaranteed. One instance in the tree has `gui_data` without a
+`dev`: at startup, `_init_module_so()` builds a throw-away instance with `dev == NULL`
+and runs `dt_iop_gui_init()` on it so that its widgets can register their accelerators
+(`src/develop/imageop.c`). Written `self->dev->gui_attached && g`, a guard would
+dereference NULL in its first operand, before the `g` test that decides the question.
+Written `g` first, the case cannot arise — which is why that order is worth preferring
+everywhere, even where both are safe.
 
 That startup instance is also why the `dev->proxy` function pointers outlive every live
 instance. It is torn down again straight away, and `exposure`'s `gui_cleanup()` clears
