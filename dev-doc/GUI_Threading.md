@@ -463,8 +463,14 @@ them through the `dt_dev_pixelpipe_stop_and_lock_all()` /
 `dt_dev_pixelpipe_unlock_all()` pair (`src/develop/develop.c`), which also flags the
 pipes for shutdown; darkroom exit and the image switch lock the same three mutexes
 directly (`src/views/darkroom.c`), the image switch with `trylock` and a re-queue for
-as long as a pipe is busy. One consequence for module authors: `gui_cleanup()` runs
-with all three pipe mutexes held, so it must not call anything that waits on a pipe.
+as long as a pipe is busy. One consequence for module authors: on those four paths
+`gui_cleanup()` runs with all three pipe mutexes held, so it must not call anything that
+waits on a pipe. They are not the only callers, though — the startup accelerator probe
+tears its throw-away instance down with no pipe lock held at all
+(`src/develop/imageop.c`; see
+[Publishing `gui_data` Through a Proxy](#publishing-gui_data-through-a-proxy)). So take
+the mutexes as a constraint on what `gui_cleanup()` may do, never as a guarantee it can
+lean on.
 
 That closes the window against pipe threads. It does not close the one you open
 yourself by handing work to the main loop.
