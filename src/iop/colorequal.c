@@ -2309,6 +2309,16 @@ void init_presets(dt_iop_module_so_t *self)
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
+/* in_mask_editing — returns TRUE when the mask editor UI is visible
+ * (form_gui exists and form_visible is set), so that the correction
+ * cursor can be hidden consistently with tone equalizer behavior.
+ */
+static gboolean in_mask_editing(const dt_iop_module_t *self)
+{
+  const dt_develop_t *dev = self->dev;
+  return dev->form_gui && dev->form_visible;
+}
+
 /* _switch_cursors — mirrors the tone equalizer's on-canvas cursor
  * handling: hide the native GTK cursor so only our own indicator
  * (gui_post_expose) is visible while a valid reading is available,
@@ -2321,16 +2331,11 @@ static void _switch_cursors(dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g || !self->dev->gui_attached) return;
 
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-
   // Editing a mask (brush/path/etc.) or canvas otherwise not interactive:
   // leave the default cursor alone.
-  if((self->dev->form_gui && self->dev->form_gui->creation)
-     || dt_iop_canvas_not_sensitive(self->dev))
+  if(in_mask_editing(self) || dt_iop_canvas_not_sensitive(self->dev))
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
     return;
   }
 
@@ -2346,9 +2351,7 @@ static void _switch_cursors(dt_iop_module_t *self)
   }
   else
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
   }
 }
 
@@ -2718,8 +2721,8 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g) return 0;
 
-  // Disable cursor tracking when drawing a mask (brush/path/etc.)
-  if(self->dev->form_gui && self->dev->form_gui->creation)
+  // Disable cursor tracking when mask editor is visible
+  if(in_mask_editing(self))
   {
     g->cursor_valid = FALSE;
     _switch_cursors(self);
@@ -2841,31 +2844,15 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g || !g->cursor_valid) return;
 
-  // Hide cursor indicator when drawing a mask (brush/path/etc.)
-  if(self->dev->form_gui && self->dev->form_gui->creation) return;
+  // Hide cursor indicator when mask editor is visible
+  if(in_mask_editing(self)) return;
 
-  // Read the color from the preview pipe backbuf
-  dt_develop_t *dev = self->dev;
-  dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-  uint8_t *backbuf = dev->preview_pipe->backbuf;
-  const int buf_w = dev->preview_pipe->backbuf_width;
-  const int buf_h = dev->preview_pipe->backbuf_height;
-
-  float cr_f = 0.5f, cg_f = 0.5f, cb_f = 0.5f; // fallback grey
-
-  if(backbuf && buf_w > 0 && buf_h > 0)
-  {
-    const int px = CLAMP((int)(g->cursor_pos_x * buf_w), 0, buf_w - 1);
-    const int py = CLAMP((int)(g->cursor_pos_y * buf_h), 0, buf_h - 1);
-
-    dt_pthread_mutex_lock(mutex);
-    const size_t idx = (size_t)py * buf_w * 4 + px * 4;
-    // backbuf is CAIRO_FORMAT_ARGB32: B, G, R, A byte order on little-endian
-    cb_f = backbuf[idx + 0] / 255.0f;
-    cg_f = backbuf[idx + 1] / 255.0f;
-    cr_f = backbuf[idx + 2] / 255.0f;
-    dt_pthread_mutex_unlock(mutex);
-  }
+  // Sampled display color under the cursor + contrasting line color,
+  // shared with the tone equalizer's cursor via gui/draw.h.
+  float bg_rgb[3];
+  float frame_color[3];
+  dt_draw_backbuf_contrast(self->dev, g->cursor_pos_x, g->cursor_pos_y,
+                           bg_rgb, frame_color, 16.0f / (zoom_scale * width));
 
   // Position in full image coordinates
   const float cx = g->cursor_pos_x * width;
@@ -2897,8 +2884,8 @@ void gui_post_expose(dt_iop_module_t *self,
   // and scrolled use, stored by process() from the pre-correction values).
   // The "out" color replays the exact process() correction math — the three
   // RBF LUTs from the current params combined as in STEP 4/5 of process().
-  float in_color[3]  = { cr_f, cg_f, cb_f };
-  float out_color[3] = { cr_f, cg_f, cb_f };
+  float in_color[3]  = { bg_rgb[0], bg_rgb[1], bg_rgb[2] };
+  float out_color[3] = { bg_rgb[0], bg_rgb[1], bg_rgb[2] };
 
   if(g->pd.buf && g->pd.width > 0 && g->pd.height > 0 && g->gamut_LUT)
   {
@@ -2966,13 +2953,6 @@ void gui_post_expose(dt_iop_module_t *self,
       out_color[2] = RGB[2];
     }
   }
-
-  // Crosshair/wedge/outline color adapts to the sampled background, same
-  // spirit as the tone equalizer's cursor: white over dark content, black
-  // over light content, so it stays legible everywhere.
-  const float bg_luma = 0.3f * cr_f + 0.59f * cg_f + 0.11f * cb_f;
-  const float frame_shade = (bg_luma > 0.5f) ? 0.0f : 1.0f;
-  const float frame_color[3] = { frame_shade, frame_shade, frame_shade };
 
   dt_draw_correction_cursor(cr, cx, cy, zoom_scale, correction_norm,
                             frame_color,
