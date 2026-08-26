@@ -936,7 +936,7 @@ _resolve_ort_optimization(const dt_ai_model_info_t *info,
   }
 
   // per-provider override first
-  if(info->ort_optimization_provider && provider >= 0 && provider < DT_AI_PROVIDER_COUNT)
+  if(info->ort_optimization_provider && provider < DT_AI_PROVIDER_COUNT)
   {
     JsonParser *parser = json_parser_new();
     if(json_parser_load_from_data(parser, info->ort_optimization_provider, -1, NULL))
