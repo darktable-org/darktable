@@ -243,6 +243,10 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  dt_introspection_type_t field_type);
 gpointer dt_bauhaus_widget_get_field(GtkWidget *widget);
 // update one bauhaus widget or all widgets in a module from the provided (blend)params
+// bring every parameter widget's default in line with the module's
+// current default_params, after reload_defaults() may have changed them
+void dt_bauhaus_update_defaults(dt_iop_module_t *module);
+
 void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   GtkWidget *widget,
                                   gpointer params,
