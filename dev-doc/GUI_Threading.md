@@ -244,13 +244,14 @@ a heap buffer in `gui_data` that one thread can free while the other is walking 
 Publishing a value safely does not make the state it was computed from safe; each shared
 field needs its own answer.
 
-> **The manual-mode half of that describes `exposure` after pull request #21974**, not
+> **The manual-mode bullet above describes `exposure` after pull request #21974**, not
 > master as it stands. #21974 removes the cached `effective_exposure` field and makes
 > the accessor derive its result. Until it lands, `src/iop/exposure.c` still caches:
 > `commit_params()` writes `effective_exposure` from a pipe thread and
 > `_exposure_proxy_get_effective_exposure()` reads it from the GTK thread, neither under
 > `gui_lock` and the reader without a NULL check — the exact race this section tells you
-> to design away. Both statements about deflicker mode describe the tree as it stands.
+> to design away. The deflicker bullet and the histogram paragraph describe the tree
+> as it stands.
 
 <!-- TODO @kofa : check again after 21974 has been merged -->
 
