@@ -59,14 +59,14 @@ Darktable employs a sophisticated caching mechanism to avoid redundant processin
 Each module instance in the pipeline (`dt_dev_pixelpipe_iop_t`) maintains a `hash` that represents its state.
 The hash is computed cumulatively. For a given module at position $N$, the hash depends on:
 1.  The image ID.
-2.  The pipe type (preview, full, export, etc.).
-3.  The detail mask state.
+2.  The pipe type (preview, full, export, etc.) — only when the lookup supplies a ROI.
+3.  The detail mask state — likewise, only when the lookup supplies a ROI.
 4.  The colour profiles: input, working, output and export ICC profile info (`pipe->input_profile_info` and friends). Because colour profile changes are committed globally rather than per-module, they cannot be tracked in individual `piece->hash` values and are instead included in the base hash for every cache lookup. Note that it is the profile-info *pointers* that are hashed, not their contents.
 5.  The hashes of all preceding enabled/non-skipped modules (0 to $N-1$).
 6.  The parameters of the current module (via `piece->hash`, which covers operation name, instance, params, and blending).
 7.  For a lookup that supplies a ROI — the normal processing case — the ROI itself, `pipe->scharr.hash`, and the colour picker's sample when an included module is picking.
 
-This list is the key as `dt_dev_pixelpipe_cache_hash()` builds it, not a hash of the whole pipe. See [IOP_Module_API.md](IOP_Module_API.md) for what that means when writing `commit_params()`.
+This list is the key as `dt_dev_pixelpipe_cache_hash()` builds it, not a hash of the whole pipe. The ROI splits it in two: without one, items 2, 3 and 7 all drop out and what remains — image, profiles, preceding pieces — is a hash of the parameter state of the pipe up to that position, independent of any particular region. That reduced form is what `dt_dev_pixelpipe_piece_hash()` produces when it is passed a NULL ROI, as `hlreconstruct`'s `opposed` code does for its own cache; it is not a cache-line lookup. See [IOP_Module_API.md](IOP_Module_API.md) for what all this means when writing `commit_params()`.
 
 When `dt_iop_commit_params` is called (usually after a param change), the `piece->hash` is updated. This hash change propagates down the pipeline.
 
