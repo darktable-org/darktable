@@ -1773,6 +1773,8 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   dat.head.style_append = TRUE;
   dat.bpp = 8;
   dat.buf = (uint8_t *)dt_alloc_aligned(sizeof(uint32_t) * width * height);
+  if(!dat.buf)
+    return NULL;
 
   g_strlcpy(dat.head.style, style_name, sizeof(dat.head.style));
 
