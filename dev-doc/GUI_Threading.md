@@ -244,6 +244,27 @@ static float _mymodule_proxy_get_value(dt_iop_module_t *self)
 }
 ```
 
+The example tests `g` and nothing else, and where a module writes both, the order
+matters: `if(!g || !self->dev->gui_attached)`, as `colorequal` and `toneequal` do, never
+`self->dev->gui_attached && g`. The reason is that `self->dev` is not guaranteed. One
+instance in the tree has `gui_data` without a `dev`: at startup, `_init_module_so()`
+builds a throw-away instance with `dev == NULL` and runs `dt_iop_gui_init()` on it so
+that its widgets can register their accelerators (`src/develop/imageop.c`). Written the
+other way round, the guard would dereference NULL in its first operand, before the `g`
+test that decides the question. Inside `process()` and `commit_params()` that cannot
+happen — a module only reaches a pipe through `dev->iop`, so it always has a `dev` there
+— but a proxy accessor takes whatever instance its caller hands it, so put `g` first and
+the case never arises.
+
+That startup instance is also why the `dev->proxy` function pointers outlive every live
+instance. It is torn down again straight away, and `exposure`'s `gui_cleanup()` clears
+`proxy.exposure.module`, but nothing clears the function pointers it registered
+(`src/iop/exposure.c`) — so a non-NULL accessor pointer does not mean there is an
+instance behind it. In tree the callers carry that check:
+`dt_dev_exposure_get_effective_exposure()` resolves a live, enabled instance itself and
+passes that one, and the other two getters go through a helper that requires both
+`proxy.exposure.module` and the darkroom view (`src/develop/develop.c`).
+
 The producing side — usually `commit_params()` or `process()` — must take the same lock.
 Publishing a raw pointer into `gui_data` through a proxy is worse still: the reader then
 has no lock to take at all, and no way to know the GUI is being torn down.
