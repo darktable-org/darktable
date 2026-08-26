@@ -231,6 +231,7 @@ void dt_control_init(const gboolean withgui)
 
   // persistent log history initialization
   s->log_history = NULL;
+  s->unread_messages = FALSE;
   dt_pthread_mutex_init(&s->log_history_mutex, NULL);
 
   pthread_cond_init(&s->cond, NULL);
@@ -873,6 +874,7 @@ void dt_control_log(const char *msg, ...)
   g_free(timestamp);
 
   dc->log_history = g_list_append(dc->log_history, entry);
+  dc->unread_messages = TRUE;
 
   // remove oldest entry if over limit
   if(g_list_length(dc->log_history) > DT_CTL_LOG_HISTORY_SIZE)
@@ -906,6 +908,28 @@ GList *dt_control_log_history_get_entries(void)
 
   dt_pthread_mutex_unlock(&dc->log_history_mutex);
   return result;
+}
+
+gboolean dt_control_log_history_has_unread_messages(void)
+{
+  dt_control_t *dc = darktable.control;
+  if(!dc) return FALSE;
+
+  dt_pthread_mutex_lock(&dc->log_history_mutex);
+  const gboolean has_unread = dc->unread_messages;
+  dt_pthread_mutex_unlock(&dc->log_history_mutex);
+
+  return has_unread;
+}
+
+void dt_control_log_history_clear_unread_messages(void)
+{
+  dt_control_t *dc = darktable.control;
+  if(!dc) return;
+
+  dt_pthread_mutex_lock(&dc->log_history_mutex);
+  dc->unread_messages = FALSE;
+  dt_pthread_mutex_unlock(&dc->log_history_mutex);
 }
 
 static void _toast_log(const gboolean markup, const char *msg, va_list ap)
