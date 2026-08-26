@@ -1822,10 +1822,94 @@ static void skip_b_key_accel_callback(dt_action_t *action)
   _dev_jump_image(dt_action_view(action)->data, -1, TRUE);
 }
 
+static void _darkroom_queue_redraw_tree(GtkWidget *widget);
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+static void _darkroom_queue_redraw_children(GtkWidget *widget)
+{
+  for(GtkWidget *child = gtk_widget_get_first_child(widget);
+      child;
+      child = gtk_widget_get_next_sibling(child))
+    _darkroom_queue_redraw_tree(child);
+}
+#else
+static void _darkroom_queue_redraw_child(GtkWidget *widget, gpointer data)
+{
+  (void)data;
+  _darkroom_queue_redraw_tree(widget);
+}
+#endif
+
+/* Queue every widget in a toolbar, not only its GtkBox.  The darktable
+ * buttons draw their icons from their own draw handler; invalidating just the
+ * parent does not reliably invalidate those child windows on GTK3.  This is
+ * also the GTK4-compatible equivalent of walking a container's children. */
+static void _darkroom_queue_redraw_tree(GtkWidget *widget)
+{
+  if(!widget) return;
+
+  gtk_widget_queue_draw(widget);
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  _darkroom_queue_redraw_children(widget);
+#else
+  if(GTK_IS_CONTAINER(widget))
+    gtk_container_foreach(GTK_CONTAINER(widget), _darkroom_queue_redraw_child, NULL);
+#endif
+}
+
+static guint _darkroom_footer_redraw_source = 0;
+
+static void _darkroom_queue_footer_redraw(void)
+{
+  GtkWidget *const widgets[] = {
+    darktable.view_manager->view_toolbox,
+    darktable.view_manager->module_toolbox,
+    GTK_WIDGET(dt_ui_get_container(darktable.gui->ui,
+                                    DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER))
+  };
+
+  for(guint i = 0; i < G_N_ELEMENTS(widgets); i++)
+    _darkroom_queue_redraw_tree(widgets[i]);
+}
+
+static gboolean _darkroom_footer_redraw_idle(gpointer user_data)
+{
+  _darkroom_footer_redraw_source = 0;
+
+  /* The image-changed signal has several handlers which can resize or
+   * invalidate the footer after this callback runs.  Do not redraw against
+   * those intermediate allocations. */
+  if(dt_view_get_current() != DT_VIEW_DARKROOM) return G_SOURCE_REMOVE;
+
+  _darkroom_queue_footer_redraw();
+  return G_SOURCE_REMOVE;
+}
+
+static void _darkroom_schedule_footer_redraw(void)
+{
+  /* Coalesce image-change and pipe-finished requests.  A low-priority idle
+   * runs after the high-priority signal callbacks and lets GTK settle any
+   * footer layout changes before invalidating the custom-drawn children. */
+  if(!_darkroom_footer_redraw_source)
+    _darkroom_footer_redraw_source =
+      g_idle_add_full(G_PRIORITY_LOW, _darkroom_footer_redraw_idle, NULL, NULL);
+}
+
+static void _darkroom_ui_image_changed_callback(gpointer instance,
+                                                  gpointer data)
+{
+  /* The new pipes are not ready yet.  Redrawing the center here recalculates
+   * viewport bounds and scrollbars against intermediate dimensions, which can
+   * resize the side panels during an image switch. */
+  _darkroom_schedule_footer_redraw();
+}
+
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
-                                                     gpointer data)
+                                                      gpointer data)
 {
   dt_control_queue_redraw_center();
+  _darkroom_schedule_footer_redraw();
 }
 
 // Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
@@ -3913,6 +3997,8 @@ void enter(dt_view_t *self)
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   /* connect to ui pipe finished signal for redraw */
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                           _darkroom_ui_image_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                            _darkroom_ui_pipe_finish_signal_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,

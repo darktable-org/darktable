@@ -383,17 +383,35 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
         .clicked_data = self,
       });
     dt_gui_add_class(bt, "dt_duplicate_delete");
-    //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
 
+    /* Keep the number and actions in a single top row.  The delete slot is
+     * retained when its button is unavailable, so the two active buttons do
+     * not move when switching between images with and without duplicates.
+     * See https://github.com/darktable-org/darktable/pull/21955 for the
+     * discussion of reserving this space to avoid sidebar width changes. */
+    GtkWidget *delete_slot = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    dt_gui_add_class(delete_slot, "dt_duplicate_delete_slot");
+    gtk_box_pack_start(GTK_BOX(delete_slot), bt, FALSE, FALSE, 0);
+
+    GtkWidget *buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    dt_gui_add_class(buttons, "dt_duplicate_actions");
+    gtk_box_pack_start(GTK_BOX(buttons), delete_slot, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(buttons), bt_dup, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(buttons), bt_orig, FALSE, FALSE, 0);
+
+    GtkWidget *top = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(top), lb, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(top), buttons, FALSE, FALSE, 0);
+
     gtk_grid_attach(GTK_GRID(hb), thumb->w_main, 0, 0, 1, 2);
-    gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(hb), bt_dup, 2, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(hb), bt_orig, 3, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(hb), bt, 4, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(hb), top, 1, 0, 4, 1);
     gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 4, 1);
 
     gtk_widget_show(hb);
+    gtk_widget_show(top);
+    gtk_widget_show(buttons);
+    gtk_widget_show(delete_slot);
     gtk_widget_show(lb);
     gtk_widget_show(tb);
     gtk_widget_show(bt_dup);
@@ -408,11 +426,13 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   gtk_widget_show(d->duplicate_box);
 
-  // we have a single image, do not allow it to be removed so hide last bt
-  if(count==1)
+  // We have a single image, so the delete action is not available.  Keep its
+  // slot allocated so adding/removing duplicate versions does not move the
+  // other actions in the row.
+  if(count == 1)
   {
     gtk_widget_set_sensitive(bt, FALSE);
-    gtk_widget_set_visible(bt, FALSE);
+    gtk_widget_hide(bt);
   }
 
   //unblock signals
