@@ -290,21 +290,28 @@ static float _mymodule_proxy_get_value(dt_iop_module_t *self)
 }
 ```
 
-The example tests `g` and nothing else. Where a module writes both, put `g` first —
-`if(!g || !self->dev->gui_attached)`, the order `colorequal` and `toneequal` use in
-their cursor helpers. The tree more often writes them the other way round, including
-in the `commit_params()` quote earlier in this document, and there that is safe: a
-module only reaches a pipe through `dev->iop`, so inside `process()` and
-`commit_params()` it always has a `dev`.
+The example tests `g` and stops there, and stopping there is the point. A proxy accessor
+takes whatever instance its caller hands it, and `self->dev` is not guaranteed: one
+instance in the tree has `gui_data` without a `dev`. At startup, `_init_module_so()`
+builds a throw-away instance with `dev == NULL` and runs `dt_iop_gui_init()` on it so
+that its widgets can register their accelerators (`src/develop/imageop.c`).
 
-A proxy accessor has no such backing — it takes whatever instance its caller hands it —
-and `self->dev` is not guaranteed. One instance in the tree has `gui_data` without a
-`dev`: at startup, `_init_module_so()` builds a throw-away instance with `dev == NULL`
-and runs `dt_iop_gui_init()` on it so that its widgets can register their accelerators
-(`src/develop/imageop.c`). Written `self->dev->gui_attached && g`, a guard would
-dereference NULL in its first operand, before the `g` test that decides the question.
-Written `g` first, the case cannot arise — which is why that order is worth preferring
-everywhere, even where both are safe.
+Reordering the guard does **not** help, and it is worth being explicit about why,
+because the opposite is easy to assume. On that instance `gui_data` is allocated, so `g`
+is non-NULL: `if(!g || !self->dev->gui_attached)` gets straight past `!g` and
+dereferences the NULL `dev`, exactly as `if(self->dev->gui_attached && g)` would.
+Short-circuit evaluation only protects the operand it skips, and here it skips neither.
+What protects you is not reaching for `self->dev` at all — as the example above does —
+or testing it on its own if you need something from it:
+
+```c
+  if(!g || !self->dev) return 0.0f;
+```
+
+Inside `process()` and `commit_params()` none of this arises: a module only reaches a
+pipe through `dev->iop`, so it always has a `dev` there, and either order is safe. That
+is why the `toneequal` quote earlier in this document can write
+`self->dev->gui_attached && g` without qualification.
 
 That startup instance is also why the `dev->proxy` function pointers outlive every live
 instance. It is torn down again straight away, and `exposure`'s `gui_cleanup()` clears
