@@ -377,11 +377,19 @@ dt_iop_mymodule_gui_data_t *g = self->gui_data;
 
 if(g != NULL                          // GUI exists (not export) — the test that holds
    && self->dev->gui_attached         // conventional; adds nothing
-   && dt_pipe_is_full(piece->pipe))   // not preview/preview2
+   && dt_pipe_is_full(piece->pipe))   // the pipe this value belongs to
 {
   // Schedule GUI update...
 }
 ```
+
+The pipe test is the one to think about rather than copy. `dt_pipe_is_full()` is right
+when the value only means something for the full-resolution render, and it keeps the two
+preview pipes from queueing an update apiece. When the value is produced elsewhere, test
+for that pipe instead: `exposure` computes its deflicker readout on the preview pipe and
+publishes it from there (`dt_pipe_is_preview()`, `src/iop/exposure.c`). What is never
+right is no pipe test at all — then every pipe running your module queues its own
+update.
 
 The middle test is the prevailing idiom rather than a working guard — see
 [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params)
@@ -620,10 +628,10 @@ g_idle_add(_update_gui, self);  // Fires after gui_cleanup() freed the GUI state
                                 // against the new image. Drain in gui_cleanup() and
                                 // in change_image()
 
-// WRONG — Sending updates for preview/preview2 pipes
-if(g != NULL) {  // Missing pipe type check — floods with updates
-  g_idle_add(...);
-}
+// WRONG — No pipe type check at all
+if(g != NULL) {  // every pipe that runs the module queues its own update.
+  g_idle_add(...);  // Test for the pipe the value belongs to — often, but
+}                   // not always, dt_pipe_is_full()
 
 // WRONG — No mutex in a widget callback either, if the pipe reads the field
 static void _callback(GtkWidget *w, dt_iop_module_t *self) {
