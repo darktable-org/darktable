@@ -160,10 +160,14 @@ otherwise do (`src/develop/develop.c`). Nothing in a module can detect this, and
 you write in `commit_params()` fixes it; it is noted so that the implication is not read
 as a guarantee.
 
-`self->dev->gui_attached` adds nothing to that in current code. It is set once, when the
-`dt_develop_t` is created, and `darktable.develop` is given TRUE before darktable
-decides whether to start a GUI at all (`src/common/darktable.c`) — so it is TRUE under
-`darktable-cli` too, and on its own it is not even a test for "a GUI exists". Write it
+`self->dev->gui_attached` adds nothing to that in current code. It is fixed while the
+`dt_develop_t` is being built and never toggled afterwards: `dt_dev_init()` takes it as
+an argument, and the one context that wants it FALSE — the throw-away dev
+`dt_dev_image()` renders into — clears it immediately after that call, before it loads
+a single module (`src/develop/develop.c`). `darktable.develop` is given TRUE before
+darktable decides whether to start a GUI at all (`src/common/darktable.c`) — so it is
+TRUE under `darktable-cli` too, and on its own it is not even a test for "a GUI
+exists". Write it
 anyway: it is what the tree writes, at about forty places under `src/iop`, and it
 records the intent. Just do not read it as a test that anything holds.
 
