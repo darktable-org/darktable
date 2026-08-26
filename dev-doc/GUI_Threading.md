@@ -137,8 +137,22 @@ void commit_params(dt_iop_module_t *self, ...)
 }
 ```
 
-`g != NULL` is the load-bearing half of the guard; `self->dev->gui_attached` adds that
-the darkroom is live.
+`g != NULL` is the whole guard. `dt_iop_gui_init()` initialises `gui_lock` immediately
+before it calls `gui_init()`, so a non-NULL `gui_data` already implies a usable lock,
+and a dev whose modules were loaded without a GUI leaves `gui_data` NULL anyway.
+
+`self->dev->gui_attached` adds nothing to that in current code. It is set once, when the
+`dt_develop_t` is created, and `darktable.develop` is given TRUE before darktable
+decides whether to start a GUI at all (`src/common/darktable.c`) — so it is TRUE under
+`darktable-cli` too, and on its own it is not even a test for "a GUI exists". Write it
+anyway: it is what the tree writes, at about forty places under `src/iop`, and it
+records the intent. Just do not read it as a test that anything holds.
+
+Dereferencing `self->dev` to reach it is safe here, because a module only ever reaches
+a pipe through `dev->iop` and so always has a `dev` by the time `commit_params()` or
+`process()` runs. That is not true everywhere — one instance in the tree has
+`gui_data` without a `dev`; see
+[Publishing `gui_data` Through a Proxy](#publishing-gui_data-through-a-proxy).
 
 ## Writing `gui_data` from a Widget Callback
 
@@ -337,8 +351,8 @@ Always check these conditions before scheduling a GUI update from `process()`:
 ```c
 dt_iop_mymodule_gui_data_t *g = self->gui_data;
 
-if(g != NULL                          // GUI exists (not export)
-   && self->dev->gui_attached         // darkroom active
+if(g != NULL                          // GUI exists (not export) — the test that holds
+   && self->dev->gui_attached         // conventional; adds nothing, see above
    && dt_pipe_is_full(piece->pipe))   // not preview/preview2
 {
   // Schedule GUI update...
