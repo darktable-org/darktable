@@ -199,13 +199,23 @@ different:
   optional compensations, and both compensations come from the image's EXIF data. All of
   that is available to the accessor, so the accessor derives the value and does not read
   `gui_data` at all. Nothing is shared, so nothing needs locking.
-- **Deflicker mode** — the correction depends on a histogram of the source image that
-  only the pipe computes, so the GTK thread cannot derive it. That value stays in
-  `gui_data` and both sides lock: `_process_common_setup()` writes
-  `g->deflicker_computed_exposure` inside a critical section on the pipe thread, and the
-  `_show_computed()` idle callback reads it inside one on the GTK thread
-  (`src/iop/exposure.c`). That is [Pattern A](#pattern-a-critical-section--g_idle_add)
-  done correctly.
+- **Deflicker mode** — the correction is computed from a histogram of the raw file,
+  which is nowhere in `params`, so there is nothing to derive from and the value has to
+  be published. The scalar that carries it is
+  [Pattern A](#pattern-a-critical-section--g_idle_add) done correctly:
+  `_process_common_setup()` writes `g->deflicker_computed_exposure` inside a critical
+  section on the pipe thread, and the `_show_computed()` idle callback reads it inside
+  one on the GTK thread (`src/iop/exposure.c`).
+
+The histogram *behind* that scalar is a second piece of shared state, and it is not
+covered. `gui_update()` and `gui_changed()` free `g->deflicker_histogram` and rebuild it
+on the GTK thread, while `_process_common_setup()` reads that pointer and its statistics
+on a pipe thread — neither side takes `gui_lock`, and in `gui_update()` the free sits
+between two critical sections that guard other fields. That is the trap from
+[Short Is Not The Same As Correct](#short-is-not-the-same-as-correct), live in the tree:
+a heap buffer in `gui_data` that one thread can free while the other is walking it.
+Publishing a value safely does not make the state it was computed from safe; each shared
+field needs its own answer.
 
 > **The manual-mode half of that describes `exposure` after pull request #21974**, not
 > master as it stands. #21974 removes the cached `effective_exposure` field and makes
@@ -213,7 +223,7 @@ different:
 > `commit_params()` writes `effective_exposure` from a pipe thread and
 > `_exposure_proxy_get_effective_exposure()` reads it from the GTK thread, neither under
 > `gui_lock` and the reader without a NULL check — the exact race this section tells you
-> to design away. The deflicker half is already true today.
+> to design away. Both statements about deflicker mode describe the tree as it stands.
 
 <!-- TODO @kofa : check again after 21974 has been merged -->
 
