@@ -137,9 +137,19 @@ void commit_params(dt_iop_module_t *self, ...)
 }
 ```
 
-`g != NULL` is the whole guard. `dt_iop_gui_init()` initialises `gui_lock` immediately
-before it calls `gui_init()`, so a non-NULL `gui_data` already implies a usable lock,
-and a dev whose modules were loaded without a GUI leaves `gui_data` NULL anyway.
+`g != NULL` is the whole guard, because a dev whose modules were loaded without a GUI
+leaves `gui_data` NULL, and on the normal lifecycle the lock is ready by then:
+`dt_iop_gui_init()` initialises `gui_lock` immediately before it calls `gui_init()`.
+
+Treat that as the lifecycle, not as an invariant you can lean on. It has one exception
+in tree: when undo/redo has to recreate a deleted instance, `_create_deleted_modules()`
+(`src/libs/history.c`) calls `module->gui_init()` *directly* on a freshly zeroed module
+rather than going through the wrapper, so that instance ends up with `gui_data`
+allocated and `gui_lock` never initialised — and because the same path installs an
+expander, `dt_dev_reload_history_items()` skips the `dt_iop_gui_init()` it would
+otherwise do (`src/develop/develop.c`). Nothing in a module can detect this, and nothing
+you write in `commit_params()` fixes it; it is noted so that the implication is not read
+as a guarantee.
 
 `self->dev->gui_attached` adds nothing to that in current code. It is set once, when the
 `dt_develop_t` is created, and `darktable.develop` is given TRUE before darktable
