@@ -180,10 +180,46 @@ compiler re-loads the field.
 
 ## Publishing `gui_data` Through a Proxy
 
-Some modules expose a `gui_data` field to the rest of darktable through
-`dev->proxy` — `exposure` publishes its computed exposure that way, and `agx` reads it
-from a GTK-thread helper. The caller is in another module and has no way to take your
-`gui_lock`, so the accessor has to do it:
+Some modules publish a value to the rest of darktable through `dev->proxy` — `exposure`
+publishes its effective exposure that way, and `agx` reads it from a GTK-thread helper
+(`src/iop/agx.c`). The caller sits in another module and has no way to take your
+`gui_lock`, so the accessor has to make its own access safe.
+
+**Derive, don't cache.** Before asking how to lock the field, ask whether it has to be a
+field at all. A value that is a function of `params` and of the image can be recomputed
+inside the accessor, on the caller's thread, from data that thread already owns. Then
+there is no shared field, no lock, and no window in which the pipe and the GUI disagree.
+Having a pipe thread compute the same value into `gui_data` so that the GUI can read it
+back buys nothing and costs a data race.
+
+`exposure` shows both halves of the answer, because its two modes are genuinely
+different:
+
+- **Manual mode** — the effective exposure is the exposure parameter plus the two
+  optional compensations, and both compensations come from the image's EXIF data. All of
+  that is available to the accessor, so the accessor derives the value and does not read
+  `gui_data` at all. Nothing is shared, so nothing needs locking.
+- **Deflicker mode** — the correction depends on a histogram of the source image that
+  only the pipe computes, so the GTK thread cannot derive it. That value stays in
+  `gui_data` and both sides lock: `_process_common_setup()` writes
+  `g->deflicker_computed_exposure` inside a critical section on the pipe thread, and the
+  `_show_computed()` idle callback reads it inside one on the GTK thread
+  (`src/iop/exposure.c`). That is [Pattern A](#pattern-a-critical-section--g_idle_add)
+  done correctly.
+
+> **The manual-mode half of that describes `exposure` after pull request #21974**, not
+> master as it stands. #21974 removes the cached `effective_exposure` field and makes
+> the accessor derive its result. Until it lands, `src/iop/exposure.c` still caches:
+> `commit_params()` writes `effective_exposure` from a pipe thread and
+> `_exposure_proxy_get_effective_exposure()` reads it from the GTK thread, neither under
+> `gui_lock` and the reader without a NULL check — the exact race this section tells you
+> to design away. The deflicker half is already true today.
+
+<!-- TODO @kofa : check again after 21974 has been merged -->
+
+So which shape a proxy accessor needs depends on which of the two cases it is. A
+derived value makes the accessor a plain function of `params`. A value that genuinely
+has to come from the pipe makes it this:
 
 ```c
 static float _mymodule_proxy_get_value(dt_iop_module_t *self)
@@ -198,17 +234,9 @@ static float _mymodule_proxy_get_value(dt_iop_module_t *self)
 }
 ```
 
-`exposure` itself does not do this. `commit_params()` writes `effective_exposure` from
-a pipe thread and `_exposure_proxy_get_effective_exposure()` reads it from the GTK
-thread, neither under `gui_lock`, and the accessor dereferences `gui_data` without
-checking it (`src/iop/exposure.c`). The read is guarded by "darkroom view, enabled
-instance", which is why the missing NULL check has not bitten, but the unlocked
-float is a plain data race: `agx` can compute its relative-exposure range from a value
-the pipe is writing at that moment. Take it as the case that motivates the rule.
-
-The producing side — usually `commit_params()` or `process()` — must take the same
-lock. Publishing a raw pointer into `gui_data` through a proxy is worse still: the
-reader then has no lock to take at all, and no way to know the GUI is being torn down.
+The producing side — usually `commit_params()` or `process()` — must take the same lock.
+Publishing a raw pointer into `gui_data` through a proxy is worse still: the reader then
+has no lock to take at all, and no way to know the GUI is being torn down.
 
 ## The Lock Is Not Recursive
 
