@@ -87,8 +87,11 @@ the picture is narrower:
   no GUI (`gui_data == NULL`). Several of those run the pipe synchronously from a GTK
   draw handler, so there the very same callbacks *do* run on the GTK main thread.
 
-Hence the two-sided rule: `commit_params()` must never touch GTK, and must never block
-waiting for the GTK thread either.
+Hence the two-sided rule: `commit_params()` must never touch GTK, and must never wait
+for the GTK main loop to run anything. Contending for `gui_lock` is not that — it is a
+short mutex both sides release quickly, and taking it is the whole point of the next
+section. A *synchronous round-trip* through the main loop is the thing that deadlocks,
+because the GTK thread may itself be waiting on a pipe.
 
 ## Using `gui_data` from `commit_params()`
 
