@@ -168,10 +168,11 @@ you write in `commit_params()` fixes it; it is noted so that the implication is 
 as a guarantee.
 
 `self->dev->gui_attached` adds nothing to that in current code. It is fixed while the
-`dt_develop_t` is being built and never toggled afterwards: `dt_dev_init()` takes it as
-an argument, and the one context that wants it FALSE — the throw-away dev
-`dt_dev_image()` renders into — clears it immediately after that call, before it loads
-a single module (`src/develop/develop.c`). `darktable.develop` is given TRUE before
+`dt_develop_t` is being built and never toggled afterwards. Most non-GUI contexts pass
+FALSE straight to `dt_dev_init()` — export, thumbnailing, style application, mask
+objects. Exactly one passes TRUE and overwrites it: the throw-away dev `dt_dev_image()`
+renders into, which clears the field before it loads a single module
+(`src/develop/develop.c`). `darktable.develop` is given TRUE before
 darktable decides whether to start a GUI at all (`src/common/darktable.c`) — so it is
 TRUE under `darktable-cli` too, and on its own it is not even a test for "a GUI
 exists". Write it
