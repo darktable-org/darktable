@@ -55,6 +55,8 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_ack_all(void);
 GList *dt_control_log_history_get_entries(void);
+gboolean dt_control_log_history_has_unread_messages(void);
+void dt_control_log_history_clear_unread_messages(void);
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_busy_enter();
@@ -176,6 +178,7 @@ typedef struct dt_control_t
 
   // persistent log history
   GList *log_history;                     // GList of log history entries (newest last)
+  gboolean unread_messages;               // true when some unread messages are present
   dt_pthread_mutex_t log_history_mutex;   // mutex for history access
 
   // gui settings
