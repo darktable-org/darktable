@@ -1233,7 +1233,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
   IXpsPrintJobStream *docStream = NULL;
   IXpsPrintJobStream *ticketStream = NULL;
   HANDLE completionEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
-
+// Print job creation structure based upon Microsoft examples at learn.microsoft.com
   if(wprinter && wtitle && completionEvent && pStartXpsPrintJob)
   {
     hr = pStartXpsPrintJob(wprinter,
@@ -1258,22 +1258,26 @@ bool dt_win_print_file(const dt_images_box *imgs,
                                         &bytes_written);
       }
 
-      IXpsOMObjectFactory *factory = NULL;
-      hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
-                            NULL,
-                            CLSCTX_INPROC_SERVER,
-                            &IID_IXpsOMObjectFactory,
-                            (void **)&factory);
-
+      if(SUCCEEDED(hr))
+      {
+        IXpsOMObjectFactory *factory = NULL;
+        hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
+                              NULL,
+                              CLSCTX_INPROC_SERVER,
+                              &IID_IXpsOMObjectFactory,
+                              (void **)&factory);
+      }  
       if(SUCCEEDED(hr) && factory)
       {
         IStream *package_stream = NULL;
         hr = CreateStreamOnHGlobal(NULL, TRUE, &package_stream);
 
-        IOpcPartUri *doc_seq_uri = NULL;
-        hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
-
-        if(SUCCEEDED(hr) && package_stream)
+        if(SUCCEEDED(hr))
+        {
+          IOpcPartUri *doc_seq_uri = NULL;
+          hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
+        }
+        if(SUCCEEDED(hr) && package_stream && doc_seq_uri)
         {
           IXpsOMPackageWriter *writer = NULL;
 
@@ -1304,9 +1308,11 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
             XPS_SIZE page_size = { page_width, page_height };
 
-            IOpcPartUri *page_uri = NULL;
-            hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
-            
+            if(SUCCEEDED(hr))
+            {
+              IOpcPartUri *page_uri = NULL;
+              hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
+            }
             if(SUCCEEDED(hr) && page_uri)
             {
             hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", page_uri, &page);
@@ -1314,9 +1320,10 @@ bool dt_win_print_file(const dt_images_box *imgs,
             page_uri->lpVtbl->Release(page_uri);
             }
 
-            /* Create and add the color profile resource after the page part is available */
+// Create and add the color profile (.icc) resource after the page part is available
+
             profile_resource = NULL;
-            if(icc_data && icc_size > 0 && is_color_device)
+            if(icc_data && icc_size > 0) //&& is_color_device) - we might not want to embed a color profile if the printer is monochrome, but for now embed it anyway
             {
               profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/ColorProfiles/OutputProfile.icc");
             }
@@ -1341,7 +1348,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
               page = NULL;
             }
 
-            hr = writer->lpVtbl->Close(writer);
+            writer->lpVtbl->Close(writer);
 
             if(profile_resource)
             {
@@ -1354,33 +1361,24 @@ bool dt_win_print_file(const dt_images_box *imgs,
             if(SUCCEEDED(hr))
             {
               LARGE_INTEGER zero = {0};
-              HRESULT seek_hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
+              hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
 
-              if(SUCCEEDED(seek_hr))
+              if(SUCCEEDED(hr))
               {
                 BYTE buffer[4096];
 
                 for(;;)
                 {
                   ULONG read = 0;
-                  HRESULT read_hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+                  hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
 
-                  if(FAILED(read_hr))
-                  {
-                    break;
-                  }
-
-                  if(read == 0)
-                  {
-                    break;
-                  }
-
-                  if(docStream)
+                  if(SUCCEEDED(hr) && docStream && read > 0)
                   {
                     ULONG written = 0;
-                    HRESULT whr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
-                    if(FAILED(whr) || written != read)
+                    hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
+                    if(written != read)
                     {
+                      dt_control_log(_("failed to write print job data for `%s'"), pinfo->printer.name);
                       break; 
                     }
                   }
@@ -1398,7 +1396,14 @@ bool dt_win_print_file(const dt_images_box *imgs,
       if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
 
       WaitForSingleObject(completionEvent, INFINITE);
+      if(SUCCEEDED(hr))
+      {
       ok = true;
+      }
+      else
+      {
+        dt_control_log(_("failed to complete print job for `%s'"), pinfo->printer.name);
+      }
     }
     else
     {
