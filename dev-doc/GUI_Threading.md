@@ -146,6 +146,13 @@ void commit_params(dt_iop_module_t *self, ...)
 }
 ```
 
+One detail in that quote is not a pattern to copy: `update_curve_lut()` takes only
+`self` and reads `self->params`, not the `p` this commit was handed. Those are the same
+object in the normal case but not on the pipe's defaults sync, which passes
+`default_params` — so a helper of your own should take `p` as an argument. See
+[IOP_Module_API.md](IOP_Module_API.md) for that rule. What the quote is here for is the
+locking and the GUI/non-GUI split.
+
 `g != NULL` is the whole guard, because a dev whose modules were loaded without a GUI
 leaves `gui_data` NULL, and on the normal lifecycle the lock is ready by then:
 `dt_iop_gui_init()` initialises `gui_lock` immediately before it calls `gui_init()`.
