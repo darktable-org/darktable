@@ -7,44 +7,51 @@ Ralf Brown
 Andrii Ryzhkov
 Dan Torop
 Jeronimo Pellegrini
-Philipp Lutz
-Robert Mongold
 Daniele Pighin
+Robert Mongold
+Philipp Lutz
 Bill Ferguson
 Kofa
 Martin Straeten
 Miloš Komarčević
-Diederik ter Rahe
 EdgarLux
+Diederik ter Rahe
+Stéphane Gourichon
 Ryo Shinozaki
-Matjaž Jeran
 deekayhd
+Benjamin Grimm-Lebsanft
+Matjaž Jeran
 esq4
 David Smith
 Hpbirkeland
 Marko Vertainen
+Yannic Meyer
 
 * Translators:
 Victor Forsiuk
 Pascal Obry
 Jeronimo Pellegrini
 Martin Straeten
-Ryo Shinozaki
 EdgarLux
+Stéphane Gourichon
+Ryo Shinozaki
 Matjaž Jeran
 esq4
 Hpbirkeland
 Marko Vertainen
+Báthory Péter
 RIM
 Andrii Ryzhkov
 Besmir Godolja
-Báthory Péter
 Johan Schiff
 Kang-Wei Hsu
 Tianhao Chai
-Elia Devito
+94tiger
+BoneNI
+Florian Tham
 GameMaster0x
 Jan Šmucr
+Yannic Meyer
 zxs-un
 
 * Sub-module rawspeed contributors (at least 1 commit):
@@ -66,6 +73,9 @@ Ilya Palopezhentsev
 Martin Straeten
 Björn Lindström
 Dan Zwell
+fblampe
+Aaron Patterson
 dterrahe
+masterpiga
 
 And all those of you that made previous releases possible

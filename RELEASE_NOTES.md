@@ -37,9 +37,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.6.0:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
+- 150 commits to darktable+rawspeed
+- 100 pull requests handled
+-   8 issues closed
 
 _Please note that the darktable documentation is not currently
 complete for release 5.6 and contributions are greatly
@@ -77,9 +77,20 @@ changes (where available).
 
 ## Documentation updates
 
-- The manual has seen a lot of attention this cycle: the [documentation](https://docs.darktable.org/usermanual/development/en/) is up to date again, and translations are flowing once more via  [Weblate](https://hosted.weblate.org/projects/darktable-documentation/).
-- We've also expanded the docs on how dtdocs itself is set up and [maintained](https://docs.darktable.org/usermanual/development/en/contributing/development-deployment/), making it easier for new contributors to [get involved](https://docs.darktable.org/usermanual/development/en/contributing/workflow/).
-- If you find room for improvement, you are welcome to open an [issue](https://github.com/darktable-org/dtdocs/issues), post to [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
+- The manual has seen a lot of attention this cycle: the
+  [documentation](https://docs.darktable.org/usermanual/development/en/)
+  is up to date again, and translations are flowing once more via
+  [Weblate](https://hosted.weblate.org/projects/darktable-documentation/).
+
+- We've also expanded the docs on how dtdocs itself is set up and
+- [maintained](https://docs.darktable.org/usermanual/development/en/contributing/development-deployment/),
+- making it easier for new contributors to [get
+- involved](https://docs.darktable.org/usermanual/development/en/contributing/workflow/).
+- If you find room for improvement, you are welcome to open an
+- [issue](https://github.com/darktable-org/dtdocs/issues), post to
+- [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or
+- submit a [PR](https://github.com/darktable-org/dtdocs/pulls)
+- yourself.
 
 ## Bug Fixes
 
@@ -104,7 +115,8 @@ changes (where available).
 - Fixed an out-of-bounds read in the code responsible for raster
   mask caching.
 
-- Fixed a possible crash when applying `.cube`, `.3dl`, or compressed GMIC 3D LUTs.
+- Fixed a possible crash when applying `.cube`, `.3dl`, or compressed
+  GMIC 3D LUTs.
 
 - Enforce darktable loading screen on windows systems to avoid
   darkroom refreshing issues.
@@ -295,21 +307,23 @@ Support for the following cameras is suspended because no samples are available 
 
 ## Translations
 
+- Albanian
+- Brazilian Portuguese
+- Chinese (Simplified)
+- Chinese (Traditional)
 - Czech
-- German
+- Dutch
 - European Spanish
 - Finnish
 - French
+- German
 - Hungarian
 - Japanese
+- Korean
+- Lao
 - Norwegian Bokmål
-- Dutch
 - Polish
-- Brazilian Portuguese
 - Russian
 - Slovenian
-- Albanian
 - Swedish
 - Ukrainian
-- Chinese (Simplified)
-- Chinese (Traditional)
