@@ -290,8 +290,8 @@ instance. It is torn down again straight away, and `exposure`'s `gui_cleanup()` 
 (`src/iop/exposure.c`) — so a non-NULL accessor pointer does not mean there is an
 instance behind it. In tree the callers carry that check:
 `dt_dev_exposure_get_effective_exposure()` resolves a live, enabled instance itself and
-passes that one, and the other two getters go through a helper that requires both
-`proxy.exposure.module` and the darkroom view (`src/develop/develop.c`).
+passes that one, and the other two getters go through a helper that requires
+`proxy.exposure.module` to be set (`src/develop/develop.c`).
 
 The producing side — usually `commit_params()` or `process()` — must take the same lock.
 Publishing a raw pointer into `gui_data` through a proxy is worse still: the reader then
@@ -366,12 +366,16 @@ Always check these conditions before scheduling a GUI update from `process()`:
 dt_iop_mymodule_gui_data_t *g = self->gui_data;
 
 if(g != NULL                          // GUI exists (not export) — the test that holds
-   && self->dev->gui_attached         // conventional; adds nothing, see above
+   && self->dev->gui_attached         // conventional; adds nothing
    && dt_pipe_is_full(piece->pipe))   // not preview/preview2
 {
   // Schedule GUI update...
 }
 ```
+
+The middle test is the prevailing idiom rather than a working guard — see
+[Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params)
+for what it does and does not establish.
 
 Reading `g` once is enough for the length of the run: the framework holds the pipe
 mutexes across module GUI teardown, so a non-NULL `g` cannot be freed while your
