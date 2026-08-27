@@ -101,6 +101,11 @@ changes (where available).
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.
 
+- When installing development versions of darktable (snapshots, self
+  compiled etc.)  the Windows installer now allows to setup a custom
+  configuration-directory and custom shortcut-name, useful for
+  multiple parallel darktable installations.
+
 ## Bug Fixes
 
 - Clarified multi-image rating toasts for un-reject and for mixed
