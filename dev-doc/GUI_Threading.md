@@ -516,24 +516,33 @@ says what it is for, and names the modules that used to duplicate it.
 The service owns the buffer, the hash and the locking:
 
 - `dt_preview_data_alloc()` in `gui_init()` and `dt_preview_data_free()` in
-  `gui_cleanup()` are the bookends, and the only two entry points that do not take the
-  lock — `_free()` leans on the same teardown guarantee `gui_cleanup()` does;
-- `dt_preview_data_store()` sizes the buffer, fills it through a callback of yours and
-  commits the hash, from the pipe thread. `dt_preview_data_resize()` plus
-  `dt_preview_data_set_hash()` are the two-step form for a fill too expensive to run
-  under the lock;
-- `dt_preview_data_get()` reads one component of one pixel, from the GTK thread;
-- `dt_preview_data_is_fresh()`, `_get_hash()` and `_invalidate()` answer whether what is
-  stored still matches the current pipe state.
+  `gui_cleanup()` are the bookends. They are the only two entry points that do not take
+  the lock — `_free()` leans on the same teardown guarantee `gui_cleanup()` does.
+- `dt_preview_data_store()` is the write side: it sizes the buffer, fills it through a
+  callback of yours and commits the hash.
+- `dt_preview_data_resize()` and `dt_preview_data_set_hash()` are the two-step form of
+  that, for a fill too expensive to hold the lock across.
+- `dt_preview_data_get()` reads one component of one pixel. `colorequal` calls it from
+  `mouse_moved()` and `scrolled()`, on the GTK thread, while the pipe writes.
+- `dt_preview_data_is_fresh()` and `dt_preview_data_get_hash()` report whether what is
+  stored still matches the current pipe state; `dt_preview_data_invalidate()` marks it
+  stale without dropping the buffer.
 
-All seven of those take your module's `gui_lock` internally, so you neither take it nor
-have to know it is there. What the service gives you that is awkward to build by hand is
-the guarantee its header states: resize, fill and hash commit happen inside a single
-critical section, so the GUI can never observe a resized but not-yet-filled buffer.
+Every one of those seven takes your module's `gui_lock` internally, so you neither take
+it nor have to know it is there. What is awkward to build by hand is the guarantee the
+header attaches to `dt_preview_data_store()`: resize, fill and hash commit happen inside
+a *single* critical section, so the GUI can never observe a resized but not-yet-filled
+buffer.
 
-`toneequal` and `colorequal` use it. What stays yours is what the header says is
-module-specific: computing the value, drawing it, and mapping the cursor position to a
-buffer pixel — that last one depends on which geometry modules sit after yours in the
+The two-step form gives that up, and hands you the piece you need to replace it: if
+`dt_preview_data_resize()` has to resize, it calls a callback of yours while still
+holding the lock, so you can drop your own validity flag atomically with the resize —
+the same discipline as the paragraph above, with the framework opening the critical
+section for you.
+
+`toneequal` and `colorequal` use the service. What stays yours is what the header says
+is module-specific: computing the value, drawing it, and mapping the cursor position to
+a buffer pixel — that last one depends on which geometry modules sit after yours in the
 pipe, so the service cannot do it for you.
 
 This replaces the buffer, hash and lock bookkeeping for that one case. It does not
