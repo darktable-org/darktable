@@ -14,6 +14,14 @@ if(WIN32)
     _copy_required_library(test_sample lib_darktable)
 endif(WIN32)
 
+# Exit-code / shell behavior of dt_exec_command_sync() (issue #17193).
+add_cmocka_test(test_process
+                SOURCES test_process.c
+                LINK_LIBRARIES lib_darktable cmocka)
+if(WIN32)
+    _copy_required_library(test_process lib_darktable)
+endif(WIN32)
+
 # HDR exposure-bracket auto-alignment. Calls the public dt_hdr_alignment_* API
 # exported from lib_darktable (which carries the OpenCV-linked objects); the test
 # itself adapts at runtime to OpenCV-present / -absent builds.

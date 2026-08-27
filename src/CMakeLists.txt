@@ -83,6 +83,7 @@ FILE(GLOB SOURCE_FILES
   "common/pdf.c"
   "common/pfm.c"
   "common/presets.c"
+  "common/process.c"
   "common/pwstorage/backend_kwallet.c"
   "common/pwstorage/pwstorage.c"
   "common/ras2vect.c"

@@ -18,6 +18,7 @@
 #include "lua/call.h"
 #include "control/control.h"
 #include "lua/lua.h"
+#include "common/process.h"
 #ifndef _WIN32
 #include <glib-unix.h>
 #endif
@@ -594,7 +595,7 @@ static int execute_cb(lua_State*L)
 {
   const char *cmd = luaL_optstring(L, 1, NULL);
   dt_lua_unlock();
-  int stat = system(cmd);
+  const int stat = dt_exec_command_sync(cmd);
   dt_lua_lock();
   lua_pushinteger(L,stat);
   return 1;
