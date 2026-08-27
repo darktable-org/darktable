@@ -369,10 +369,17 @@ into `gui_data`, and lets the full pipe pick it up.
 
 The framework primitive for the handover is `dt_dev_sync_pixelpipe_hash()`
 (`src/develop/develop.c`). The publisher stores the value together with the cumulative
-hash of its own upstream pipe state. The consumer hands the primitive that hash cell
-and its `gui_lock`, and the primitive waits until the stored hash matches what the
-consumer's own upstream state hashes to — which is what makes the value the right one
-for this render rather than a leftover from the previous history state.
+hash of its own upstream pipe state. The consumer hands the primitive that hash cell and
+its `gui_lock`, and the primitive waits until the stored hash matches what the
+consumer's own upstream state hashes to.
+
+Read that as evidence, not as proof. The primitive compares a hash it snapshotted
+against one it computes afterwards, and returns as soon as the two agree; it does not
+snapshot the payload, and it does not stop the publisher running again and replacing
+payload and hash before the consumer gets round to reading them. The hash it compares is
+also a hash of selected upstream `piece` values, not a full render identity — the cache
+key is a different and larger thing. So a match makes a leftover from the previous
+history state unlikely; it does not make it impossible.
 
 A handful of modules use it, each passing `&self->gui_lock` as the lock argument so
 that the primitive can read the publisher's hash safely while it waits.
@@ -560,8 +567,9 @@ valid" and stays away:
 
 Without the first section there is a window in which a valid-flagged buffer holds half
 of one image and half of another — a different failure from the size mismatch above, and
-one that no amount of locking around the *read* will catch. `src/iop/toneequal.c` does
-this on the branch that fills the buffer its GUI reads.
+one that no amount of locking around the *read* will catch. `src/iop/toneequal.c` is
+worth reading for the producer half of this — it clears the flag, fills outside the
+lock, then commits hash and flag together.
 
 The flag only pays off if the reader honours it for as long as it uses the buffer.
 Testing it under the lock, releasing, and *then* reading puts you back in the first
@@ -586,15 +594,24 @@ The service owns the buffer, the hash and the locking:
   that, for a fill too expensive to hold the lock across.
 - `dt_preview_data_get()` reads one component of one pixel, from the GTK thread, while
   the pipe may be writing.
-- `dt_preview_data_is_fresh()` and `dt_preview_data_get_hash()` report whether what is
-  stored still matches the current pipe state; `dt_preview_data_invalidate()` marks it
-  stale without dropping the buffer.
+- `dt_preview_data_is_fresh()` compares the stored hash against the module's piece in
+  the current preview pipe and answers yes or no. `dt_preview_data_get_hash()` does not
+  compare anything — it hands back the stored hash so you can do the comparison
+  yourself. `dt_preview_data_invalidate()` marks the data stale without dropping the
+  buffer.
 
-Every one of those seven takes your module's `gui_lock` internally, so you neither take
-it nor have to know it is there. What is awkward to build by hand is the guarantee the
-header attaches to `dt_preview_data_store()`: resize, fill and hash commit happen inside
-a *single* critical section, so the GUI can never observe a resized but not-yet-filled
-buffer.
+Every one of those seven takes your module's `gui_lock` internally, so for the service's
+own buffer and hash you neither take it nor have to know it is there. What is awkward to
+build by hand is the guarantee the header attaches to `dt_preview_data_store()`: resize,
+fill and hash commit happen inside a *single* critical section, so the GUI can never
+observe a resized but not-yet-filled buffer.
+
+Note the limit of that. `gui_lock` serialises the service's fields against your module's
+other users of the same lock. It does not stabilise anything outside them — and
+`dt_preview_data_is_fresh()` does reach outside them, walking the live preview pipe's
+node list to find your piece. Pipe topology is rebuilt under the pipe and history
+mutexes, not under `gui_lock`, so that walk needs the caller to be somewhere the
+topology is stable. The service's own locking does not supply that.
 
 The two-step form gives that up, and hands you the piece you need to replace it: if
 `dt_preview_data_resize()` has to resize, it calls a callback of yours while still
