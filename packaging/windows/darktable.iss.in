@@ -196,19 +196,19 @@ Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
   Flags: uninsdeletevalue
 
-;
-; Shortcuts will be created with appended --configdir if selected on the respective page
-; Note: This will not affect the entries generated for the right-click-menus
-; And calling darktable from other applications like gimp will also use the default
-; config-dir instead of the custom set one.
-;
-
 [Icons]
-Name: "{group}\{#MyAppName}{code:SuffixIfNotRelease}"; \
+Name: "{group}\{code:GetShortcutName}"; \
   Filename: "{app}\bin\{#MyAppExeName}"; \
   Parameters: "{code:GetConfigDirParam}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}{code:SuffixIfNotRelease}"; \
+; EXPERIMENTAL: Filename is placed on its own continuation line, matching
+; the one known-working precedent in this file (Quick Launch entry below).
+; A previous attempt with Name+Filename together on the first line and
+; Parameters on the continuation produced a shortcut whose target was the
+; config path instead of the executable. This variant is UNTESTED --
+; verify with a real install; if it fails again, go back to creating both
+; shortcuts via CreateShellLink in CurStepChanged instead.
+Name: "{autodesktop}\{code:GetShortcutName}"; \
   Filename: "{app}\bin\{#MyAppExeName}"; \
   Parameters: "{code:GetConfigDirParam}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
@@ -228,6 +228,15 @@ Filename: "{app}\bin\{#MyAppExeName}"; \
 var
   ConfigChoicePage: TInputOptionWizardPage;
   ConfigDirPage: TInputDirWizardPage;
+  ShortcutNamePage: TWizardPage;
+  UseDefaultNameCheckBox: TNewCheckBox;
+  ShortcutNameEdit: TNewEdit;
+
+// Toggles visibility of the custom name field based on the checkbox.
+procedure UseDefaultNameCheckBoxOnClick(Sender: TObject);
+begin
+  ShortcutNameEdit.Visible := not UseDefaultNameCheckBox.Checked;
+end;
 
 procedure InitializeWizard();
 begin
@@ -253,6 +262,60 @@ begin
     False, '');
   ConfigDirPage.Add('');
   ConfigDirPage.Values[0] := ExpandConstant('{localappdata}\darktable');
+
+  // New page: custom shortcut name, right after the directory picker.
+  ShortcutNamePage := CreateCustomPage(ConfigDirPage.ID,
+    'Shortcut Name',
+    'Choose the name shown for the Start menu and desktop shortcuts.');
+
+  UseDefaultNameCheckBox := TNewCheckBox.Create(ShortcutNamePage);
+  UseDefaultNameCheckBox.Parent := ShortcutNamePage.Surface;
+  UseDefaultNameCheckBox.Left := 0;
+  UseDefaultNameCheckBox.Top := 0;
+  UseDefaultNameCheckBox.Width := ShortcutNamePage.SurfaceWidth;
+  UseDefaultNameCheckBox.Caption := 'Use default shortcut name';
+  UseDefaultNameCheckBox.Checked := True;
+  UseDefaultNameCheckBox.OnClick := @UseDefaultNameCheckBoxOnClick;
+
+  ShortcutNameEdit := TNewEdit.Create(ShortcutNamePage);
+  ShortcutNameEdit.Parent := ShortcutNamePage.Surface;
+  ShortcutNameEdit.Left := 0;
+  ShortcutNameEdit.Top := UseDefaultNameCheckBox.Top + UseDefaultNameCheckBox.Height + 8;
+  ShortcutNameEdit.Width := ShortcutNamePage.SurfaceWidth;
+  ShortcutNameEdit.Text := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}');
+  ShortcutNameEdit.Visible := False;
+end;
+
+// Toggles visibility of the custom name field based on the checkbox.
+// Strips characters that aren't valid in Windows file/shortcut names.
+function SanitizeShortcutName(const S: String): String;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 1 to Length(S) do
+    if Pos(S[I], '\/:*?"<>|') = 0 then
+      Result := Result + S[I];
+  Result := Trim(Result);
+end;
+
+// Returns the (sanitized) custom shortcut name, or the existing default
+// name if the checkbox is checked or the custom field was left empty/
+// only contained invalid characters.
+function GetShortcutName(Param: String): String;
+var
+  CustomName: String;
+begin
+  if UseDefaultNameCheckBox.Checked then
+    Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}')
+  else
+  begin
+    CustomName := SanitizeShortcutName(ShortcutNameEdit.Text);
+    if CustomName = '' then
+      Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}')
+    else
+      Result := CustomName;
+  end;
 end;
 
 // Skip page 2 of the directory picker  if the user chose "default" page 1.
