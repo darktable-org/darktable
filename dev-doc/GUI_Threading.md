@@ -420,8 +420,8 @@ if(g && dt_pipe_is_preview(piece->pipe))
   const dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order,
                                           DT_DEV_TRANSFORM_DIR_BACK_INCL);
   dt_iop_gui_enter_critical_section(self);
-  g->published_value = d->value;   // payload and hash go in together, so a consumer
-  g->hash = hash;                  // can never see a hash its payload does not match
+  g->published_value = d->value;   // both go in under one lock, so no reader can
+  g->hash = hash;                  // catch the pair half-updated
   dt_iop_gui_leave_critical_section(self);
 }
 ```
@@ -439,8 +439,8 @@ The in-tree consumers each recompute from scratch when they are on the producing
 or when the published value is still at its uninitialised sentinel. Note what that
 fallback does *not* cover: it triggers on a value that was never published, not on one
 that arrived late. After a timed-out wait the consumer uses whatever is in `gui_data`.
-The handshake is best-effort, and the module has to be able to live with a stale value
-as well as with none.
+Between that and the limits above, a module here has to be able to live with a stale
+value as well as with none.
 
 **`process()` may block here, and that is the supported idiom.** The wait is bounded by
 the `pixelpipe_synchronization_timeout` preference — or by
