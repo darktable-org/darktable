@@ -89,9 +89,13 @@ the picture is narrower:
   affinity you can rely on.
 - **Every other instance** — export, thumbnail generation, snapshots, the duplicate
   manager, the tethering histogram and the `overlay` module rendering its second image,
-  among others — builds a throw-away `dt_develop_t` with its own module instances and
-  no GUI (`gui_data == NULL`). Several of those run the pipe synchronously from a GTK
-  draw handler, so there the very same callbacks *do* run on the GTK main thread.
+  among others — belongs to a separate `dt_develop_t` with its own module instances and
+  no GUI (`gui_data == NULL`). Most of those devs are built for one render and thrown
+  away, but not all: the pinned second-window preview keeps its own dev, history,
+  modules and pipes until it is unpinned (`src/develop/develop.c`). What they have in
+  common is the absent `gui_data`, not a short life. Several of them run the pipe
+  synchronously from a GTK draw handler, so there the very same callbacks *do* run on
+  the GTK main thread.
 
 Hence the two-sided rule: `commit_params()` must never touch GTK, and must never wait
 for the GTK main loop to run anything. Contending for `gui_lock` is not that — it is a
