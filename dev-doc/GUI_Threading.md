@@ -343,7 +343,7 @@ or testing it on its own if you need something from it:
 
 Inside `process()` and `commit_params()` none of this arises: a module only reaches a
 pipe through `dev->iop`, so it always has a `dev` there, and either order is safe. That
-is why the `toneequal` quote earlier in this document can write
+is why the `commit_params()` example earlier in this document can write
 `self->dev->gui_attached && g` without qualification.
 
 That startup instance is also why the `dev->proxy` function pointers outlive every live
@@ -451,7 +451,7 @@ primitive for it.
 **Do not hold `gui_lock` across the call.** The primitive takes the lock you hand it on
 every polling iteration, so calling it from inside a critical section self-deadlocks on
 the [non-recursive mutex](#the-lock-is-not-recursive). Snapshot what you need, release,
-then call — as the quote above does. Underneath, the probe also takes
+then call — as the consuming snippet above does. Underneath, the probe also takes
 `dev->history_mutex`, because hashing the upstream state walks the pipe. The primitive
 releases your `gui_lock` before it does that, so the two are never nested; keep it that
 way on your side.
