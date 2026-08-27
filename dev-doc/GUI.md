@@ -15,7 +15,7 @@ See also:
 
 ### `gui_init()` Overview
 
-`gui_init()` is called once per module instance when entering the darkroom. Its job is to create and configure all widgets — but **not** to set their values (that happens in `gui_update()`).
+`gui_init()` is called once per module instance when entering the darkroom — and once more per module at startup, on a throw-away instance that exists only so its widgets can register their accelerators (see [GUI_Threading.md](GUI_Threading.md#publishing-gui_data-through-a-proxy)). Its job is to create and configure all widgets — but **not** to set their values (that happens in `gui_update()`).
 
 ```c
 void gui_init(dt_iop_module_t *self)
@@ -163,7 +163,7 @@ for what that means for work you have queued.
 
 Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework increments atomically gui state `DT_ENTER_GUI_UPDATE()` before calling it, so widget callbacks won't fire.
 
-Sliders and comboboxes created with `_from_params` auto-sync. You only need to manually sync toggle buttons and custom widgets. If your module implements `gui_changed()`, end with `gui_changed(self, NULL, NULL)` so the dependent UI state it maintains — visibility, sensitivity, labels — is recomputed; the framework does not call it for you here:
+Widgets created with the `_from_params` helpers — sliders, comboboxes and toggles alike — are bound to a parameter field, and the framework syncs all of them for you: `dt_iop_gui_update()` runs `dt_bauhaus_update_from_field()` before it calls you (`src/develop/imageop.c`, `src/bauhaus/bauhaus.c`). You only need to sync widgets that carry no field — a plain `dt_iop_togglebutton_new()` button, or a custom widget of your own. If your module implements `gui_changed()`, end with `gui_changed(self, NULL, NULL)` so the dependent UI state it maintains — visibility, sensitivity, labels — is recomputed; the framework does not call it for you here:
 
 ```c
 void gui_update(dt_iop_module_t *self)
@@ -171,8 +171,10 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_mymodule_gui_data_t *g = self->gui_data;
   dt_iop_mymodule_params_t *p = self->params;
 
-  // Toggle buttons need manual sync
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->my_toggle), p->my_bool);
+  // Only unbound widgets need this. dt_iop_togglebutton_new() gives you a real
+  // GtkToggleButton, so the GTK setter is right here; a _from_params toggle is
+  // synced for you, and is a Bauhaus widget that would take dt_bauhaus_toggle_set()
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->my_plain_button), p->my_bool);
 
   // Apply all UI state adjustments
   gui_changed(self, NULL, NULL);

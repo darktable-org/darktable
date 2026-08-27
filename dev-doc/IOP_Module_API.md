@@ -15,7 +15,7 @@ See also:
 Every IOP module needs:
 1. **Parameter struct** (`dt_iop_modulename_params_t`) - the user-facing parameters, serialized to the database, controlled via UI widgets in `self->params`
 2. **Processing data struct** (`dt_iop_modulename_data_t`) - optional but common; a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`. When not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below).
-3. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, only present in darkroom mode
+3. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, present only where the module has a GUI: the darkroom, plus a throw-away instance built at startup
 4. **Required functions** - `name()`, `default_colorspace()`, `process()`
 5. **Optional functions** - GUI, lifecycle, geometry, etc.
 
@@ -213,8 +213,9 @@ void process(dt_iop_module_t *self,
   GUI critical section. Enter that section only when `gui_data` is non-NULL: `gui_data`
   is `NULL` on export and `gui_lock` is only initialised when a GUI exists, so the
   non-GUI branch must compute what processing needs on its own. The in-tree idiom writes
-  `self->dev->gui_attached && g`, which is safe here — a module always has a `dev` by the
-  time a pipe commits it — but `g` is the half that does the work; see
+  `self->dev->gui_attached && g`; the `dev` dereference is safe there, since a module
+  always has a `dev` by the time a pipe commits it, but `g` is the half that does the
+  work — and even `g` is not quite proof that `gui_lock` was initialised; see
   [GUI_Threading.md](GUI_Threading.md#using-gui_data-from-commit_params)
 - Use `piece->data` for parameters, not `self->params`
 - Use `DT_OMP_FOR()` for parallelization
