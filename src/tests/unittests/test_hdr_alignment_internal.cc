@@ -191,8 +191,10 @@ static void test_xtrans_sampler_same_color_only(void **state)
 }
 #endif // HAVE_OPENCV
 
-int main(void)
+int main(int argc, char *argv[])
 {
+  (void)argc;
+  (void)argv;
 #ifdef HAVE_OPENCV
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_percentile_bounds_accuracy),
