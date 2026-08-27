@@ -1527,6 +1527,18 @@ static void _highlight_changed_notebook_tab(GtkWidget *w,
     dt_gui_remove_class(label, "changed");
 }
 
+static void _refresh_notebooks(GtkWidget *w,
+                               gpointer user_data)
+{
+  if(GTK_IS_NOTEBOOK(w))
+    gtk_container_foreach(GTK_CONTAINER(w),
+                          _highlight_changed_notebook_tab, NULL);
+
+  // carry on past a notebook: a page may hold one of its own
+  if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _refresh_notebooks, user_data);
+}
+
 /* Re-read the changed state of every tab of a notebook.
 
    Parameter widgets do this for themselves when their value moves. A module
@@ -1651,7 +1663,6 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
                                   gpointer params,
                                   gpointer blend_params)
 {
-  GtkWidget *notebook = NULL;
   for(GSList *w = widget ? &(GSList){} : module->widget_list_bh; w; w = w->next)
   {
     dt_action_target_t *at = w->data;
@@ -1725,19 +1736,16 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
           (DT_DEBUG_ALWAYS,
            "[dt_bauhaus_update_from_field] invalid bauhaus widget type encountered");
     }
-
-    // if DT_IN_GUI_UPDATE() then notebook tab highlights were not yet changed
-    if(!notebook && DT_IN_GUI_UPDATE())
-    {
-      GtkNotebook *nb = NULL;
-      if(_notebook_page_of(widget, &nb))
-        notebook = GTK_WIDGET(nb);
-    }
   }
 
-  if(notebook)
-    gtk_container_foreach(GTK_CONTAINER(notebook),
-                          _highlight_changed_notebook_tab, NULL);
+  /* While the gui is being brought in line with the params -- a preset applied,
+     a history item selected, another image loaded -- the setters above stay
+     quiet, so the tabs are read here instead. Every notebook the module holds
+     is refreshed, not just one reached from a widget: a page may have no
+     parameter widget of its own to be found through, and a module may hold
+     more than one notebook. */
+  if(DT_IN_GUI_UPDATE() && module && module->widget)
+    _refresh_notebooks(module->widget, NULL);
 }
 
 // make this quad a toggle button:
