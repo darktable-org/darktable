@@ -71,17 +71,35 @@ indirectly: if you leave `blend_colorspace()` at its default,
 
 Each column covers the static helpers called from it too. A `process()` that hands
 `gui_data` to a helper does not make the access GTK-thread-safe, and that is where
-in-tree mistakes hide: `denoiseprofile` writes its variance readout from
-`process_variance()`, not from `process()` itself. When you audit a field, follow the
-call chain, not just the callback name.
+mistakes hide: the offending line is two or three frames down, in a function whose name
+says nothing about which thread reaches it. When you audit a field, follow the call
+chain, not just the callback name.
 
-`overlay` is the sharper example, and a live violation of the no-GTK-from-a-pipe-thread
-rule rather than a pattern to copy: `process()` calls `_get_overlay_rgba_f()` / `_get_overlay_argb()`,
-which call `_setup_overlay()` whenever the overlay buffer has to be built, and that
-helper calls `gtk_widget_set_tooltip_text()` — and on a re-imported overlay image
-`gtk_widget_queue_draw()` — on the drawing area held in `gui_data`
-(`src/iop/overlay.c`). Its `overlay_threadsafe` mutex covers the overlay cache, not the
-widgets, so nothing serialises those calls against the GTK main loop.
+This would be wrong:
+
+```c
+static void _rebuild_cache(dt_iop_module_t *self, ...)
+{
+  dt_iop_mymodule_gui_data_t *g = self->gui_data;
+  ...
+  g->readout = value;                            // no critical section
+  gtk_widget_set_tooltip_text(g->area, text);    // GTK, on whatever thread got here
+  gtk_widget_queue_draw(g->area);
+}
+
+void process(...)
+{
+  if(_cache_is_stale(...)) _rebuild_cache(self, ...);   // a pipe thread
+  ...
+}
+```
+
+A mutex of your own does not rescue that. Holding one across `_rebuild_cache()`
+serialises your pipe threads against each other, which is worth doing for the cache; the
+GTK main loop never takes that mutex and is not ordered by it, so the two widget calls
+are exactly as unsynchronised as they were. Only getting them onto the main loop fixes
+them — [Pattern A](#pattern-a-critical-section--g_idle_add), or one of the
+[thread-safe redraw helpers](#thread-safe-redraw-helpers).
 
 The right column has no fixed thread, but for the instance that owns your `gui_data`
 the picture is narrower:
@@ -168,15 +186,14 @@ locking and the GUI/non-GUI split.
 leaves `gui_data` NULL, and on the normal lifecycle the lock is ready by then:
 `dt_iop_gui_init()` initialises `gui_lock` immediately before it calls `gui_init()`.
 
-Treat that as the lifecycle, not as an invariant you can lean on. It has one exception
-in tree: when undo/redo has to recreate a deleted instance, `_create_deleted_modules()`
-(`src/libs/history.c`) calls `module->gui_init()` *directly* on a freshly zeroed module
-rather than going through the wrapper, so that instance ends up with `gui_data`
-allocated and `gui_lock` never initialised — and because the same path installs an
-expander, `dt_dev_reload_history_items()` skips the `dt_iop_gui_init()` it would
-otherwise do (`src/develop/develop.c`). Nothing in a module can detect this, and nothing
-you write in `commit_params()` fixes it; it is noted so that the implication is not read
-as a guarantee.
+Treat that as the lifecycle, not as an invariant you can lean on. `dt_iop_gui_init()` is
+the wrapper that creates the lock, and it is the wrapper that guarantees the pairing.
+A framework path that calls a module's `gui_init()` directly instead leaves `gui_data`
+allocated and `gui_lock` as it found it — and at least one history route in tree does
+exactly that today. Nothing in a module can detect it, and nothing you write in
+`commit_params()` fixes it. It is noted here only so that "`gui_data != NULL` means the
+lock is ready" is read as what normally happens rather than as something the framework
+promises.
 
 `self->dev->gui_attached` adds nothing to that in current code. It is fixed while the
 `dt_develop_t` is being built and never toggled afterwards. Most non-GUI contexts pass
@@ -430,16 +447,27 @@ then call — as the quote above does. Underneath, the probe also takes
 releases your `gui_lock` before it does that, so the two are never nested; keep it that
 way on your side.
 
-**A scalar hands over cleanly; a heap object does not.** `levels`, `globaltonemap` and
-`hazeremoval` publish plain numbers, so the span in which the value must stay valid ends
-at the load, and the short critical section is exactly right.
-`colorreconstruction` publishes a frozen bilateral grid, copies the *pointer* out under
-the lock and thaws it after releasing — while the preview pipe's next run, and
-`gui_update()`, can free that object under the same lock
-(`src/iop/colorreconstruction.c`). That is the trap of
-[Short Is Not The Same As Correct](#short-is-not-the-same-as-correct), live in the tree,
-and it is what this idiom turns into when it is copied without asking who owns the
-thing being handed over.
+**A scalar hands over cleanly; an allocation does not.** When the payload is a plain
+number, the span in which it must stay valid ends at the load and the short critical
+section above is exactly right. When it is a heap object, copying the pointer out under
+the lock buys nothing. This would be wrong:
+
+```c
+  dt_iop_gui_enter_critical_section(self);
+  my_grid_t *grid = g->published_grid;    // only the pointer load is protected
+  dt_iop_gui_leave_critical_section(self);
+
+  use_grid(grid);      // the publisher's next run may have freed it by now
+```
+
+The hash handshake does not close that window. It establishes that the publisher has
+*finished* a run matching your upstream state; it does not stop the next slider move
+from starting another one that frees and replaces the object while you are still reading
+it. A widget callback that resets the published state can free it too. This is
+[Short Is Not The Same As Correct](#short-is-not-the-same-as-correct) wearing an
+inter-pipe costume, so pick one of the answers given there — hold the lock through the
+last use, copy the data rather than the pointer, or hand ownership over explicitly —
+before you publish an allocation.
 
 ## The Lock Is Not Recursive
 
@@ -776,12 +804,20 @@ void change_image(dt_iop_module_t *self)
 If the queued value can simply be recomputed, cancelling is the whole fix: the new
 image's first pipe run queues a fresh update.
 
-`exposure` is the in-tree example of Pattern A, and it does cancel — but note that its
-`gui_cleanup()` calls `g_idle_remove_by_data(self)` once rather than draining in a
-loop. `process()` can queue a source on every qualifying preview run, so one call is
-not guaranteed to remove them all. Follow the loop shown above, not `exposure`'s
-version of the last line. `src/bauhaus/bauhaus.c` drains in a loop and is the better
-model for that one detail.
+The loop is easy to drop, because a single call looks like it cancels. This would be
+wrong:
+
+```c
+void gui_cleanup(dt_iop_module_t *self)
+{
+  ...
+  g_idle_remove_by_data(self);   // removes ONE source, and returns whether it did
+}
+```
+
+`process()` can queue a source on every qualifying run, so several can be outstanding
+when the GUI is torn down, and one call is not guaranteed to remove them all.
+`src/bauhaus/bauhaus.c` drains in a `while` loop and is the model for that line.
 
 **Why the loop is not a detail.** Every one of these transitions holds the pipe mutexes
 before it touches a module GUI, so nothing can queue a fresh source once
