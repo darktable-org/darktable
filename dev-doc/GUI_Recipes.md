@@ -147,7 +147,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 }
 ```
 
-If your module implements `gui_changed()`, end `gui_update()` with `gui_changed(self, NULL, NULL)` — the framework does not call it for you here. The callback is optional, so a module that has none has nothing to add:
+If your module implements `gui_changed()`, end `gui_update()` with `gui_changed(self, NULL, NULL)` so the dependent UI state it maintains is recomputed — the framework does not call it for you here:
 ```c
 void gui_update(dt_iop_module_t *self)
 {
