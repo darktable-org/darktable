@@ -448,6 +448,25 @@ static gboolean _notify_ui_printer_cb(gpointer user_data)
   return FALSE;
 }
 
+static gboolean _notify_ui_printer_ready(gpointer user_data)
+{
+  notify_ctx_t *ready_ctx = (notify_ctx_t *)user_data;
+  if(!ready_ctx) return FALSE;
+
+  dt_prtctl_t *prtctl = ready_ctx->pctl;
+  dt_printer_info_t *pinfo = ready_ctx->wrap ? ready_ctx->wrap->pinfo : NULL;
+
+  if(prtctl && prtctl->ready_cb && pinfo && pinfo->name[0] != '\0')
+    prtctl->ready_cb(pinfo, prtctl->user_data);
+
+  if(prtctl && g_atomic_int_dec_and_test(&prtctl->refs))
+    free(prtctl);
+
+  dt_printer_wrapper_unref(ready_ctx->wrap);
+  g_free(ready_ctx);
+  return FALSE;
+}
+
 // Background job: enumerate installed printers and invoke callback
 static int _detect_printers_callback(dt_job_t *job)
 {
