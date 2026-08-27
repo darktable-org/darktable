@@ -877,10 +877,12 @@ any thread:
 ## Common Mistakes
 
 ```c
-// WRONG — GTK+ call directly in process()
+// WRONG — GTK+ call from process(), directly or through a helper
 void process(...) {
   gtk_label_set_text(g->label, "value");  // Crash or undefined behavior
-}
+  _rebuild_cache(self, ...);              // and the same if the GTK call is in here:
+}                                         // a mutex of your own does not order it
+                                          // against the GTK main loop
 
 // WRONG — No mutex when writing gui_data
 void process(...) {
@@ -933,6 +935,15 @@ void commit_params(...) {
 
 // WRONG — Calling a locking helper from inside a critical section
 dt_iop_gui_enter_critical_section(self);
-_update_cache(self);   // Deadlock: the mutex is not recursive
+_update_cache(self);   // Deadlock: the mutex is not recursive. Framework helpers
+                       // count — dt_dev_sync_pixelpipe_hash() takes the lock you
+dt_iop_gui_leave_critical_section(self);   // hand it, on every polling iteration
+
+// WRONG — Locking the pointer load and not the pointee
+dt_iop_gui_enter_critical_section(self);
+my_cache_t *c = g->cache;   // only this load is protected
 dt_iop_gui_leave_critical_section(self);
+use_cache(c);               // another thread may have freed g->cache by now. Hold
+                            // the lock through the last use, copy the data rather
+                            // than the pointer, or hand ownership over explicitly
 ```
