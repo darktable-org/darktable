@@ -1,8 +1,9 @@
 # Thread Safety — Sharing `gui_data` Between Threads
 
 How an IOP module shares `gui_data` between the GTK main thread and the pixelpipe
-threads: which callback runs where, when the GUI critical section is required, and how
-to send an update to the GUI without outliving the module.
+threads, and between two pipe threads: which callback runs where, when the GUI critical
+section is required, how to send an update to the GUI without outliving the module, and
+which parts of this the framework already does for you.
 
 See also:
 - [GUI.md](GUI.md) — GUI architecture: UI construction, events and callbacks, reparenting
@@ -28,7 +29,7 @@ The rules, in short:
 - [Know which thread you are on](#which-thread-am-i-on). `commit_params()` and
   `process()` are pipe callbacks, not GUI ones.
 - [Take the GUI critical section](#using-gui_data-from-commit_params) for every field
-  both sides touch — and only when a GUI exists.
+  more than one thread touches — and only when a GUI exists.
 - [Hold it as long as the value must stay valid](#short-is-not-the-same-as-correct) —
   not just for the load.
 - Never call GTK from a pipe thread. Hand the update to the main loop
