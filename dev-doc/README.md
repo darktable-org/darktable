@@ -111,7 +111,7 @@ For widget creation, slider configuration, and notebook patterns, see [GUI.md](G
 | `gui_changed()` | Adjust UI based on current state (show/hide widgets, update labels) |
 | `gui_cleanup()` | Free any manually allocated resources |
 | `init_pipe()` | Allocate `piece->data` — required if using a custom `data_t` larger than `params_t` |
-| `commit_params()` | Transform `self->params` (from database/UI) into processing-ready `piece->data` for `process()` |
+| `commit_params()` | Transform the `params` argument it is handed — normally `self->params`, but not on the pipe's defaults sync — into processing-ready `piece->data` for `process()` |
 | `cleanup_pipe()` | Free `piece->data` and any sub-allocations |
 | `color_picker_apply()` | Handle color picker results (if using pickers) |
 | `reload_defaults()` | Update defaults for different image types |

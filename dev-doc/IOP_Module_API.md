@@ -571,7 +571,7 @@ Params Change:
 
 User Edits Widget:
   [auto-callback] → gui_changed()
-       → commit_params()  [transforms self->params → piece->data]
+       → commit_params(p)  [transforms its p argument → piece->data]
        → process()        [reads piece->data]
 
 Image Switch:  [visible base instance is kept; extra instances are destroyed and rebuilt]
