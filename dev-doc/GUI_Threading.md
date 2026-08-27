@@ -430,10 +430,14 @@ Store computed values in `gui_data` under mutex, then schedule a GTK-thread call
 
 ```c
 // In process():
-dt_iop_gui_enter_critical_section(self);
-g->computed_exposure = exposure;
-dt_iop_gui_leave_critical_section(self);
-g_idle_add(_show_computed, self);
+if(g != NULL && self->dev->gui_attached      // see "Guards Before Sending GUI Updates"
+   && dt_pipe_is_full(piece->pipe))          // — and pick the pipe test to match
+{                                            //   where your value is produced
+  dt_iop_gui_enter_critical_section(self);
+  g->computed_exposure = exposure;
+  dt_iop_gui_leave_critical_section(self);
+  g_idle_add(_show_computed, self);
+}
 
 // Callback (GTK main thread):
 static gboolean _show_computed(gpointer user_data)
@@ -478,9 +482,15 @@ static gboolean _update_gui(gpointer data)
 {
   mymodule_gui_msg_t *msg = data;
   dt_iop_mymodule_gui_data_t *g = msg->self->gui_data;
+  // second net only — see "The Callback Must Not Outlive the Module or the Image"
+  if(!g)
+  {
+    g_free(msg);
+    return G_SOURCE_REMOVE;
+  }
 
   memcpy(g->display_values, msg->values, sizeof(g->display_values));
-  gtk_widget_queue_draw(msg->self->widget);
+  gtk_widget_queue_draw(g->area);   // reach the widget through g, not through msg->self
 
   g_free(msg);  // Callback owns the message
   return G_SOURCE_REMOVE;
@@ -497,6 +507,18 @@ if(g != NULL && self->dev->gui_attached
   g_idle_add(_update_gui, msg);
 }
 ```
+
+Two details in that callback are not decoration. The NULL check earns more here than it
+does in Pattern A: a source keyed on the message cannot be cancelled with
+`g_idle_remove_by_data()`, so until you add the source-id bookkeeping described in the
+next section it is the only thing standing between a deleted instance and a NULL
+dereference. And every field the callback touches is reached through `g`, so that one
+check covers the whole body — including the widget. Taking the widget from
+`msg->self->widget` instead would leave a dereference the check does not guard:
+`dt_iop_gui_cleanup_module()` destroys that widget and sets the field to NULL, right
+beside where it frees `gui_data`, with the in-source note that it does so because
+asynchronous work can still be carrying the module (`src/develop/imageop.c`). Keep your
+widget pointers in `gui_data` and the guard stays honest.
 
 ## The Callback Must Not Outlive the Module or the Image
 
