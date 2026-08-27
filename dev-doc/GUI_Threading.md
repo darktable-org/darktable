@@ -567,9 +567,14 @@ valid" and stays away:
 
 Without the first section there is a window in which a valid-flagged buffer holds half
 of one image and half of another — a different failure from the size mismatch above, and
-one that no amount of locking around the *read* will catch. `src/iop/toneequal.c` is
-worth reading for the producer half of this — it clears the flag, fills outside the
-lock, then commits hash and flag together.
+one that no amount of locking around the *read* will catch.
+
+`src/iop/toneequal.c` is worth reading for the producer half of this, with one
+difference. It clears the flag and fills outside the lock as above, but it commits the
+hash and raises the flag in two separate critical sections rather than one. That is
+still safe, and only because of the order: a reader that lands in the gap sees a fresh
+hash with the flag still down and waits, never the reverse. Committing both in one
+section, as shown here, is the version that does not need that argument made for it.
 
 The flag only pays off if the reader honours it for as long as it uses the buffer.
 Testing it under the lock, releasing, and *then* reading puts you back in the first
