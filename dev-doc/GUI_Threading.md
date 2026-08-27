@@ -677,10 +677,14 @@ if(g != NULL && self->dev->gui_attached
 Two details in that callback are not decoration. The NULL check earns more here than it
 does in Pattern A: a source keyed on the message cannot be cancelled with
 `g_idle_remove_by_data()`, so until you add the source-id bookkeeping described in the
-next section it is the only thing standing between a deleted instance and a NULL
-dereference. And every field the callback touches is reached through `g`, so that one
-check covers the whole body — including the widget. Taking the widget from
-`msg->self->widget` instead would leave a dereference the check does not guard:
+next section it is the only thing standing between a deleted instance — the one teardown
+shape that keeps the module struct and frees only its GUI — and a NULL dereference. On
+the shapes that free the struct as well it is already too late, which is the whole of
+why it is a second net and not a guard.
+
+And every field the callback touches is reached through `g`, so that one check covers
+the whole body — including the widget. Taking the widget from `msg->self->widget`
+instead would leave a dereference the check does not guard:
 `dt_iop_gui_cleanup_module()` destroys that widget and sets the field to NULL, right
 beside where it frees `gui_data`, with the in-source note that it does so because
 asynchronous work can still be carrying the module (`src/develop/imageop.c`). Keep your
