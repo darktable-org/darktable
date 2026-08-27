@@ -197,20 +197,17 @@ Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   Flags: uninsdeletevalue
 
 [Icons]
+// start menu entry
 Name: "{group}\{code:GetShortcutName}"; \
   Filename: "{app}\bin\{#MyAppExeName}"; \
   Parameters: "{code:GetConfigDirParam}"
+// uninstaller
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-; EXPERIMENTAL: Filename is placed on its own continuation line, matching
-; the one known-working precedent in this file (Quick Launch entry below).
-; A previous attempt with Name+Filename together on the first line and
-; Parameters on the continuation produced a shortcut whose target was the
-; config path instead of the executable. This variant is UNTESTED --
-; verify with a real install; if it fails again, go back to creating both
-; shortcuts via CreateShellLink in CurStepChanged instead.
+// desktop shortcut
 Name: "{autodesktop}\{code:GetShortcutName}"; \
   Filename: "{app}\bin\{#MyAppExeName}"; \
   Parameters: "{code:GetConfigDirParam}"; Tasks: desktopicon
+// quicklaunch
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
   Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
@@ -231,17 +228,18 @@ var
   UseDefaultNameCheckBox: TNewCheckBox;
   ShortcutNameEdit: TNewEdit;
 
-// Toggles visibility of the custom name field based on the checkbox.
+// Toggles visibility of the custom-shortcut-name field based on the checkbox.
 procedure UseDefaultNameCheckBoxOnClick(Sender: TObject);
 begin
   ShortcutNameEdit.Visible := not UseDefaultNameCheckBox.Checked;
 end;
 
+// create combined installer page for shortcut name and config-dir-toggle
 procedure InitializeWizard();
 var
   ShortcutNameLabel: TNewStaticText;
   Divider: TBevel;
-  Y: Integer;
+  Y: Integer; 
 begin
   // One combined page: shortcut name on top, then a divider, then the
   // existing default-vs-custom configuration directory choice below.
@@ -250,17 +248,18 @@ begin
     'Customize the shortcut name and where darktable stores its settings.',
     '', // SubCaptionLabel text is set and repositioned further down.
     True, False);
-
+  // Y-Variable serves to place the items of this page below each other
   Y := 0;
 
-  // --- Shortcut name (top section) ---
+  // top section - Custom shortcut name 
   ShortcutNameLabel := TNewStaticText.Create(ConfigChoicePage);
   ShortcutNameLabel.Parent := ConfigChoicePage.Surface;
   ShortcutNameLabel.Left := 0;
   ShortcutNameLabel.Top := Y;
   ShortcutNameLabel.Caption := 'Shortcut name:';
   Y := Y + ShortcutNameLabel.Height + 4;
-
+    
+  // checkbox for shortcut name
   UseDefaultNameCheckBox := TNewCheckBox.Create(ConfigChoicePage);
   UseDefaultNameCheckBox.Parent := ConfigChoicePage.Surface;
   UseDefaultNameCheckBox.Left := 0;
@@ -270,7 +269,8 @@ begin
   UseDefaultNameCheckBox.Checked := True;
   UseDefaultNameCheckBox.OnClick := @UseDefaultNameCheckBoxOnClick;
   Y := Y + UseDefaultNameCheckBox.Height + 8;
-
+  
+  // text-field for custom shortcut; invisible when above checkbox is unchecked
   ShortcutNameEdit := TNewEdit.Create(ConfigChoicePage);
   ShortcutNameEdit.Parent := ConfigChoicePage.Surface;
   ShortcutNameEdit.Left := 0;
@@ -280,7 +280,7 @@ begin
   ShortcutNameEdit.Visible := False;
   Y := Y + ShortcutNameEdit.Height + 16;
 
-  // --- Thin divider between the two settings ---
+  // divider between the two settings
   Divider := TBevel.Create(ConfigChoicePage);
   Divider.Parent := ConfigChoicePage.Surface;
   Divider.Left := 0;
@@ -290,7 +290,7 @@ begin
   Divider.Shape := bsTopLine;
   Y := Y + Divider.Height + 16;
 
-  // --- Configuration directory (bottom section) ---
+  // bottom section - custom configuration-directory toggle
   // The page was created with an empty SubCaption above; set and
   // reposition it here so it (and the option list below it) start right
   // after the divider instead of at the top of the page.
@@ -315,10 +315,11 @@ begin
   ConfigChoicePage.CheckListBox.Top := Y;
   ConfigChoicePage.CheckListBox.Width := ConfigChoicePage.SurfaceWidth;
 
-  // Page 2 of the directory picker: only reached if "custom" was picked above
+  // custom configuration-directory - set location 
+  // (only visible if "custom" was picked above)
   ConfigDirPage := CreateInputDirPage(ConfigChoicePage.ID,
     'Custom Configuration Directory',
-    'Where should darktable store its settings?',
+    'Where should darktable store its configuration?',
     'Select a directory, then click Next.',
     False, '');
   ConfigDirPage.Add('');
@@ -361,10 +362,9 @@ begin
             (ConfigChoicePage.SelectedValueIndex = 0);
 end;
 
-// "--configdir ..." for the desktop/Start menu shortcuts ([Icons]) and the
-// post-install "Launch darktable" entry ([Run]), or '' for the default
-// folder. EXPERIMENTAL for [Icons]: see the comment on the [Icons] section
-// above regarding the continuation-line pattern this relies on.
+// Returns the "--configdir ..." argument for the Start menu/desktop
+// shortcuts and the post-install "Launch darktable" entry, or an empty
+// string when the default configuration directory is used.
 function GetConfigDirParam(Param: String): String;
 begin
   if ConfigChoicePage.SelectedValueIndex = 0 then
