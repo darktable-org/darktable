@@ -34,6 +34,8 @@ The rules, in short:
 - Never call GTK from a pipe thread. Hand the update to the main loop
   ([Pattern A](#pattern-a-critical-section--g_idle_add)), and
   [cancel it before the module or the image goes away](#the-callback-must-not-outlive-the-module-or-the-image).
+- [Check whether the framework has already done it](#the-framework-service-for-per-pixel-readouts)
+  before hand-rolling buffer, hash and lock plumbing for a cursor readout.
 
 ## Which Thread Am I On?
 
@@ -487,6 +489,50 @@ to pick one of:
 The same trap catches tuples. If a buffer and its dimensions are written together under
 the lock, read them together under the lock too. Reading the dimensions again after
 releasing can pair a new size with an old allocation.
+
+That rule covers a buffer being *replaced*. It does not cover one being **refilled in
+place** while the flag beside it still says the old contents are good. Clear the flag
+inside a critical section before the fill starts, and commit the new contents' hash and
+the flag inside another one once the data is there; between the two the reader sees "not
+valid" and stays away. `toneequal` does exactly that around `compute_luminance_mask()`,
+and says why in a comment (`src/iop/toneequal.c`). Without the first section there is a
+window in which a valid-flagged buffer holds half of one image and half of another — a
+different failure from the size mismatch above, and one that no amount of locking around
+the *read* will catch.
+
+## The Framework Service for Per-Pixel Readouts
+
+Everything above is the hand-rolled version. For the most common instance of it — a
+per-pixel value produced on the preview pipe and read on the GTK thread under the mouse
+cursor — the framework already has it: `src/develop/preview_data.h`. Its file comment
+says what it is for, and names the modules that used to duplicate it.
+
+The service owns the buffer, the hash and the locking:
+
+- `dt_preview_data_alloc()` in `gui_init()` and `dt_preview_data_free()` in
+  `gui_cleanup()` are the bookends, and the only two entry points that do not take the
+  lock — `_free()` leans on the same teardown guarantee `gui_cleanup()` does;
+- `dt_preview_data_store()` sizes the buffer, fills it through a callback of yours and
+  commits the hash, from the pipe thread. `dt_preview_data_resize()` plus
+  `dt_preview_data_set_hash()` are the two-step form for a fill too expensive to run
+  under the lock;
+- `dt_preview_data_get()` reads one component of one pixel, from the GTK thread;
+- `dt_preview_data_is_fresh()`, `_get_hash()` and `_invalidate()` answer whether what is
+  stored still matches the current pipe state.
+
+All seven of those take your module's `gui_lock` internally, so you neither take it nor
+have to know it is there. What the service gives you that is awkward to build by hand is
+the guarantee its header states: resize, fill and hash commit happen inside a single
+critical section, so the GUI can never observe a resized but not-yet-filled buffer.
+
+`toneequal` and `colorequal` use it. What stays yours is what the header says is
+module-specific: computing the value, drawing it, and mapping the cursor position to a
+buffer pixel — that last one depends on which geometry modules sit after yours in the
+pipe, so the service cannot do it for you.
+
+This replaces the buffer, hash and lock bookkeeping for that one case. It does not
+replace `gui_lock` for your module's other shared fields, and it is not a general
+`gui_data` mutex — everything else in this document still applies to them.
 
 ## Guards Before Sending GUI Updates
 
