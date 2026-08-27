@@ -196,10 +196,21 @@ Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
   Flags: uninsdeletevalue
 
+;
+; Shortcuts will be created with appended --configdir if selected on the respective page
+; Note: This will not affect the entries generated for the right-click-menus
+; And calling darktable from other applications like gimp will also use the default
+; config-dir instead of the custom set one.
+;
+
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}{code:SuffixIfNotRelease}"; \
+  Filename: "{app}\bin\{#MyAppExeName}"; \
+  Parameters: "{code:GetConfigDirParam}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}{code:SuffixIfNotRelease}"; \
+  Filename: "{app}\bin\{#MyAppExeName}"; \
+  Parameters: "{code:GetConfigDirParam}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
   Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
@@ -210,9 +221,59 @@ Filename: "https://docs.darktable.org/usermanual/development/"; \
 
 Filename: "{app}\bin\{#MyAppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
+  Parameters: "{code:GetConfigDirParam}"; \
   Flags: nowait postinstall skipifsilent
 
 [Code]
+var
+  ConfigChoicePage: TInputOptionWizardPage;
+  ConfigDirPage: TInputDirWizardPage;
+
+procedure InitializeWizard();
+begin
+  // Page 1 of config-directory-picker: Choosing between custom and default
+  ConfigChoicePage := CreateInputOptionPage(wpSelectDir,
+    'Configuration Directory',
+    'Choose where darktable stores its settings.',
+    'Useful for e.g. running parallel darktable installations for testing.' +
+    'Note: This setting applies to both the desktop and Start menu ' +
+    'shortcuts created by this installer. Other ways of starting ' +
+    'darktable (e.g. launching from another application) may ' +
+    'keep using the default directory.',
+    True, False);
+  ConfigChoicePage.Add('Use default configuration directory');
+  ConfigChoicePage.Add('Use a custom configuration directory');
+  ConfigChoicePage.SelectedValueIndex := 0;
+
+  // Page 2 of config-directory-picker: only reached if "custom" was picked above
+  ConfigDirPage := CreateInputDirPage(ConfigChoicePage.ID,
+    'Custom Configuration Directory',
+    'Where should darktable store its settings?',
+    'Select a directory, then click Next.',
+    False, '');
+  ConfigDirPage.Add('');
+  ConfigDirPage.Values[0] := ExpandConstant('{localappdata}\darktable');
+end;
+
+// Skip page 2 of the directory picker  if the user chose "default" page 1.
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := (PageID = ConfigDirPage.ID) and
+            (ConfigChoicePage.SelectedValueIndex = 0);
+end;
+
+// "--configdir ..." for the desktop/Start menu shortcuts ([Icons]) and the
+// post-install "Launch darktable" entry ([Run]), or '' for the default
+// folder. EXPERIMENTAL for [Icons]: see the comment on the [Icons] section
+// above regarding the continuation-line pattern this relies on.
+function GetConfigDirParam(Param: String): String;
+begin
+  if ConfigChoicePage.SelectedValueIndex = 0 then
+    Result := ''
+  else
+    Result := '--configdir "' + ConfigDirPage.Values[0] + '"';
+end;
+
 function EnvironmentKey(Param: String): String;
 begin
   if IsAdminInstallMode then
