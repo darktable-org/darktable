@@ -147,40 +147,45 @@ Two preconditions, both mandatory:
   during export, where there is nothing to read. Whatever the cache saves for the
   darkroom, the non-GUI branch has to compute independently.
 
-`toneequal` is the reference for the shape:
+The shape:
 
 ```c
-void commit_params(dt_iop_module_t *self, ...)
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, ...)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  dt_iop_mymodule_params_t *p = (dt_iop_mymodule_params_t *)params;
+  dt_iop_mymodule_gui_data_t *g = self->gui_data;
   ...
   if(self->dev->gui_attached && g)
   {
     // darkroom: refresh and reuse the GUI-side cache
     dt_iop_gui_enter_critical_section(self);
-    if(g->sigma != p->smoothing) g->interpolation_valid = FALSE;
-    g->sigma = p->smoothing;
+    if(g->smoothing != p->smoothing) g->interpolation_valid = FALSE;
+    g->smoothing = p->smoothing;
     dt_iop_gui_leave_critical_section(self);
 
-    update_curve_lut(self);   // takes the lock itself — see below
+    _rebuild_lut(self, p);   // takes the lock itself, so call it outside the section
     ...
   }
   else
   {
-    // export / headless: solve from scratch, no cache
-    build_interpolation_matrix(A, p->smoothing);
-    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, TRUE);
+    // export or headless: solve from scratch, with no cache to lean on
+    _solve_from_scratch(p, ...);
     ...
   }
 }
 ```
 
-One detail in that quote is not a pattern to copy: `update_curve_lut()` takes only
-`self` and reads `self->params`, not the `p` this commit was handed. Those are the same
-object in the normal case but not on the pipe's defaults sync, which passes
-`default_params` — so a helper of your own should take `p` as an argument. See
-[IOP_Module_API.md](IOP_Module_API.md) for that rule. What the quote is here for is the
-locking and the GUI/non-GUI split.
+Two things to copy and one to watch. Copy the guard and the critical section around the
+fields both sides touch. Copy the `else` branch too — the export path has to reach the
+same processing result without the cache, and a module that quietly depends on the cache
+exports differently from how it previewed. What to watch is the helper: pass it `p`, the
+argument this commit was handed, and not `self->params`. Those are the same object in
+the normal case and different on the pipe's defaults sync, which passes `default_params`
+(see [IOP_Module_API.md](IOP_Module_API.md)). And keep it outside the critical section
+if it takes the lock itself — see
+[The Lock Is Not Recursive](#the-lock-is-not-recursive).
+
+`src/iop/toneequal.c`'s `commit_params()` is the in-tree instance of this split.
 
 `g != NULL` is the whole guard, because a dev whose modules were loaded without a GUI
 leaves `gui_data` NULL, and on the normal lifecycle the lock is ready by then:
@@ -369,22 +374,22 @@ and its `gui_lock`, and the primitive waits until the stored hash matches what t
 consumer's own upstream state hashes to — which is what makes the value the right one
 for this render rather than a leftover from the previous history state.
 
-Four modules use it, each passing `&self->gui_lock`: `levels`, `globaltonemap`,
-`hazeremoval` and `colorreconstruction`.
+A handful of modules use it, each passing `&self->gui_lock` as the lock argument so
+that the primitive can read the publisher's hash safely while it waits.
 
-`toneequal` is worth naming as the module that looks like it does this and does not: it
-also keeps a hash in `gui_data` beside the data that hash describes, but its full pipe
-only compares that hash against its own to decide whether to recompute its luminance
-mask, and nothing ever waits for another pipe (`src/iop/toneequal.c`). A hash in
-`gui_data` is a freshness marker; it is only a handover when something waits on it.
+Not every hash in `gui_data` means this is happening. A module may keep one purely to
+memoise its own work, comparing it only against a hash it wrote itself on the same pipe,
+and never waiting for anybody. A hash beside a payload is a freshness marker; it is a
+handover only when one pipe waits on a hash another pipe wrote.
 
-The consuming side, from `levels` (`src/iop/levels.c`):
+The consuming side:
 
 ```c
+// on the consuming pipe
 if(g && dt_pipe_is_full(piece->pipe))
 {
   dt_iop_gui_enter_critical_section(self);
-  const dt_hash_t hash = g->hash;      // snapshot: has anything been published yet?
+  const dt_hash_t hash = g->hash;      // has anything been published yet?
   dt_iop_gui_leave_critical_section(self);
 
   if(hash != DT_INVALID_HASH
@@ -394,24 +399,28 @@ if(g && dt_pipe_is_full(piece->pipe))
     dt_control_log(_("inconsistent output"));
 
   dt_iop_gui_enter_critical_section(self);
-  d->levels[0] = g->auto_levels[0];    // ... and the rest of the payload
+  d->value = g->published_value;       // the payload, whatever it is
   dt_iop_gui_leave_critical_section(self);
 }
 ```
 
-and the publishing side, in the same function, on the preview pipe:
+and the publishing side, usually in the same function:
 
 ```c
+// on the producing pipe
 if(g && dt_pipe_is_preview(piece->pipe))
 {
   const dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order,
                                           DT_DEV_TRANSFORM_DIR_BACK_INCL);
   dt_iop_gui_enter_critical_section(self);
-  g->auto_levels[0] = d->levels[0];    // ... payload and hash in one section, so a
-  g->hash = hash;                      // consumer cannot see a hash its payload
-  dt_iop_gui_leave_critical_section(self);   // does not match
+  g->published_value = d->value;   // payload and hash go in together, so a consumer
+  g->hash = hash;                  // can never see a hash its payload does not match
+  dt_iop_gui_leave_critical_section(self);
 }
 ```
+
+`src/iop/levels.c` carries both halves in one helper, `commit_params_late()`, called
+from `process()` and `process_cl()`.
 
 Four things about that shape do not follow from the rest of this document.
 
@@ -419,12 +428,12 @@ Four things about that shape do not follow from the rest of this document.
 there because the channel itself lives in `gui_data` and so exists only when a GUI does.
 The rule from [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params)
 applies unchanged — processing must not depend on the cache — and these modules obey it.
-`levels` computes the levels from scratch whenever it is on the preview pipe or the
-published value is still uninitialised, and the other three fall back the same way. Note
-what that fallback does *not* cover: it triggers on a value that was never published,
-not on one that arrived late. After a timed-out wait the consumer uses whatever is in
-`gui_data`. The handshake is best-effort, and the module has to be able to live with a
-stale value as well as with none.
+The in-tree consumers each recompute from scratch when they are on the producing pipe,
+or when the published value is still at its uninitialised sentinel. Note what that
+fallback does *not* cover: it triggers on a value that was never published, not on one
+that arrived late. After a timed-out wait the consumer uses whatever is in `gui_data`.
+The handshake is best-effort, and the module has to be able to live with a stale value
+as well as with none.
 
 **`process()` may block here, and that is the supported idiom.** The wait is bounded by
 the `pixelpipe_synchronization_timeout` preference — or by
@@ -433,7 +442,7 @@ once the pipe is flagged for shutdown. Setting that preference to zero or less s
 the wait off, and the primitive then reports success without checking anything. After a
 real timeout it still reports success if the history stack has changed underneath, since
 a reprocess is already on its way; it fails only when neither holds, and that failure is
-the `inconsistent output` the modules above log. This is not the wait ruled out in
+the `inconsistent output` in the snippet above. This is not the wait ruled out in
 [Which Thread Am I On?](#which-thread-am-i-on). What deadlocks is a synchronous
 round-trip through the GTK main loop, because the GTK thread may itself be waiting on a
 pipe. Waiting on another pipe is a different thing, and the framework supplies the
@@ -534,12 +543,25 @@ That rule covers a buffer being *replaced*. It does not cover one being **refill
 place** while the flag beside it still says the old contents are good. Clear the flag
 inside a critical section before the fill starts, and commit the new contents' hash and
 the flag inside another one once the data is there; between the two the reader sees "not
-valid" and stays away. `toneequal` does exactly that around `compute_luminance_mask()`
-on its preview branch — the one whose buffer the GUI reads — and says why in a comment
-(`src/iop/toneequal.c`). Without the first section there is a
-window in which a valid-flagged buffer holds half of one image and half of another — a
-different failure from the size mismatch above, and one that no amount of locking around
-the *read* will catch.
+valid" and stays away:
+
+```c
+  dt_iop_gui_enter_critical_section(self);
+  g->buffer_valid = FALSE;              // reader now knows to stay away
+  dt_iop_gui_leave_critical_section(self);
+
+  _fill_buffer(g->buffer, ...);         // long, and deliberately outside the lock
+
+  dt_iop_gui_enter_critical_section(self);
+  g->hash = new_hash;                   // hash and flag committed together
+  g->buffer_valid = TRUE;
+  dt_iop_gui_leave_critical_section(self);
+```
+
+Without the first section there is a window in which a valid-flagged buffer holds half
+of one image and half of another — a different failure from the size mismatch above, and
+one that no amount of locking around the *read* will catch. `src/iop/toneequal.c` does
+this on the branch that fills the buffer its GUI reads.
 
 ## The Framework Service for Per-Pixel Readouts
 
@@ -557,8 +579,8 @@ The service owns the buffer, the hash and the locking:
   callback of yours and commits the hash.
 - `dt_preview_data_resize()` and `dt_preview_data_set_hash()` are the two-step form of
   that, for a fill too expensive to hold the lock across.
-- `dt_preview_data_get()` reads one component of one pixel. `colorequal` calls it from
-  its `scrolled()` handler, on the GTK thread, while the pipe writes.
+- `dt_preview_data_get()` reads one component of one pixel, from the GTK thread, while
+  the pipe may be writing.
 - `dt_preview_data_is_fresh()` and `dt_preview_data_get_hash()` report whether what is
   stored still matches the current pipe state; `dt_preview_data_invalidate()` marks it
   stale without dropping the buffer.
@@ -573,8 +595,8 @@ The two-step form gives that up, and hands you the piece you need to replace it:
 `dt_preview_data_resize()` has to resize, it calls a callback of yours while still
 holding the lock, so you can drop your own validity flag atomically with the resize —
 the same discipline as the paragraph above, with the framework opening the critical
-section for you. `toneequal`'s callback is four lines and does exactly that
-(`src/iop/toneequal.c`).
+section for you. In `src/iop/toneequal.c` that callback is four lines long and clears
+one flag.
 
 `toneequal` and `colorequal` use the service. What stays yours is what the header says
 is module-specific: computing the value, drawing it, and mapping the cursor position to
