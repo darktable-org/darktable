@@ -110,6 +110,7 @@ For widget creation, slider configuration, and notebook patterns, see [GUI.md](G
 | `gui_update()` | Sync widget values from `self->params` (called when params change) |
 | `gui_changed()` | Adjust UI based on current state (show/hide widgets, update labels) |
 | `gui_cleanup()` | Free any manually allocated resources |
+| `change_image()` | Clear GUI state that describes the old image — an image switch keeps each module's base instance, GUI and all, so `gui_cleanup()` does not run for it. Also where a pipe-scheduled GUI update has to be cancelled |
 | `init_pipe()` | Allocate `piece->data` — required if using a custom `data_t` larger than `params_t` |
 | `commit_params()` | Transform the `params` argument it is handed — normally `self->params`, but not on the pipe's defaults sync — into processing-ready `piece->data` for `process()` |
 | `cleanup_pipe()` | Free `piece->data` and any sub-allocations |
