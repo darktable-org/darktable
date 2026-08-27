@@ -254,6 +254,90 @@ void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
   dib->height   = 0;
   dib->top_down = false;
 }*/
+// Get printer resolutions helper for both syncing of cached dm and during initial printer info query
+int dt_win_resolve_dpi_from_dm(DEVMODEW *dmW, const wchar_t *wprinter)
+{
+    if(!dmW || !wprinter) return 300;
+
+    // Expand DEVMODE
+    DEVMODEW *dmW_expanded = NULL;
+    LONG dmSize = DocumentPropertiesW(NULL, NULL, wprinter,
+                                      NULL, NULL, 0);
+
+    if(dmSize > 0)
+    {
+        dmW_expanded = (DEVMODEW *)malloc(dmSize);
+        if(dmW_expanded)
+        {
+            if(DocumentPropertiesW(NULL, NULL, wprinter,
+                                   dmW_expanded, dmW,
+                                   DM_OUT_BUFFER) != IDOK)
+            {
+                free(dmW_expanded);
+                dmW_expanded = NULL;
+            }
+        }
+    }
+
+    DEVMODEW *dm = dmW_expanded ? dmW_expanded : dmW;
+
+    int xdpi = 0, ydpi = 0;
+
+    // Explicit DPI
+    if((dm->dmFields & DM_PRINTQUALITY) && dm->dmPrintQuality > 0)
+        xdpi = dm->dmPrintQuality;
+
+    if((dm->dmFields & DM_YRESOLUTION) && dm->dmYResolution > 0)
+        ydpi = dm->dmYResolution;
+
+    if(xdpi > 0 && ydpi == 0)
+        ydpi = xdpi;
+
+    // DC_ENUMRESOLUTIONS fallback
+    if(xdpi == 0 || ydpi == 0)
+    {
+        int n = DeviceCapabilitiesW(wprinter, NULL,
+                                    DC_ENUMRESOLUTIONS,
+                                    NULL, dm);
+
+        if(n > 0)
+        {
+            POINT *res = malloc(sizeof(POINT) * n);
+            DeviceCapabilitiesW(wprinter, NULL,
+                                DC_ENUMRESOLUTIONS,
+                                (LPWSTR)res, dm);
+
+            int best_x = 0;
+            int best_y = 0;
+
+            for(int i=0; i<n; i++)
+            {
+              int rx = res[i].x;
+              int ry = res[i].y;
+
+              int usable = (rx < ry) ? rx : ry;
+              int best_usable = (best_x < best_y) ? best_x : best_y;
+
+              if(usable > best_usable)
+              {
+                best_x = rx;
+                best_y = ry;
+              }
+            }
+            xdpi = best_x;
+            ydpi = best_y;
+
+            free(res);
+        }
+    }
+
+    if(dmW_expanded) free(dmW_expanded);
+
+    if(xdpi == 0 || ydpi == 0)
+        return 300; //darktable default
+
+    return (xdpi < ydpi) ? xdpi : ydpi;
+}
 
 // Helper to sync cached DM to print settings
 // win32_print.c
@@ -280,14 +364,13 @@ gboolean dt_win_sync_cached_dm_to_pinfo(dt_win32_print_ctx_t *ctx)
   wchar_t *wprinter = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
   if(wprinter)
   {
+    //resolution
+    pinfo->printer.resolution = dt_win_resolve_dpi_from_dm(dm, wprinter); // assume square pixels
+    
     HDC hdc = CreateDCW(L"WINSPOOL", wprinter, NULL, dm);
     if(hdc)
     {
-      // resolution + hw margins
-      int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-      int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-      pinfo->printer.resolution = dpiX; // assume square pixels
-
+      // hw margins
       int offX   = GetDeviceCaps(hdc, PHYSICALOFFSETX);
       int offY   = GetDeviceCaps(hdc, PHYSICALOFFSETY);
       int physW  = GetDeviceCaps(hdc, PHYSICALWIDTH);
@@ -366,22 +449,8 @@ void dt_get_printer_info(const char *printer_name_utf8, dt_printer_info_t *pinfo
       if(pi2w && GetPrinterW(hPrinter, 2, (LPBYTE)pi2w, needed, &returned))
       {
         dmW = (DEVMODEW *)pi2w->pDevMode;
-        if(dmW && dmW->dmPrintQuality > 0)
-          pinfo->resolution = dmW->dmPrintQuality;
+        if(dmW) pinfo->resolution = dt_win_resolve_dpi_from_dm(dmW, wprinter);
       }
-    }
-
-    // --- NEW: reconcile with DeviceCapabilities ---
-    int n = DeviceCapabilitiesW(wprinter, NULL, DC_ENUMRESOLUTIONS, NULL, dmW);
-    if(n > 0)
-    {
-      POINT *resolutions = g_malloc0(sizeof(POINT) * n);
-      DeviceCapabilitiesW(wprinter, NULL, DC_ENUMRESOLUTIONS,
-                          (LPWSTR)resolutions, dmW);
-
-      // Pick the first as default, or match DEVMODE if possible
-      pinfo->resolution = resolutions[0].x;
-      g_free(resolutions);
     }
 
     // Hardware margins via DC
@@ -498,6 +567,8 @@ static int _detect_printers_callback(dt_job_t *job)
 
     for(DWORD i = 0; i < returned; i++)
     {
+      if(_cancel) break; //stop discovery loop if cancel set
+      
       gchar *utf8 = g_utf16_to_utf8(pi2[i].pPrinterName, -1, NULL, NULL, NULL);
       if(!utf8 || utf8[0] == '\0') { g_free(utf8); continue; }
 
@@ -744,7 +815,8 @@ void dt_win_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data
                             void (*ready_cb)(dt_printer_info_t *pr, void *user_data),
                            void *user_data)
 {
-  // Reset cancel flag at the start of each discovery
+  // Reset cancel flag and printer list at the start of each discovery 
+  dt_printers_abort_discovery(); 
   _cancel = 0;
 
   dt_job_t *job = dt_control_job_create(_detect_printers_callback,
@@ -1369,6 +1441,9 @@ bool dt_win_print_file(const dt_images_box *imgs,
 
                   IXpsOMPage *page = NULL;
                   XPS_SIZE page_size = { page_width, page_height };
+
+                  if(SUCCEEDED(hr) && (page_size.width <= 0.0f || page_size.height <= 0.0f))
+                    hr = E_FAIL;   // invalid page dimensions — don't silently report success
 
                   if(SUCCEEDED(hr) && page_size.width > 0.0f && page_size.height > 0.0f)
                   {
