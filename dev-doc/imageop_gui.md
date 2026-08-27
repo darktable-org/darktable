@@ -87,25 +87,23 @@ g->preserve_color = dt_bauhaus_combobox_from_params(self, "preserve_color");
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param);
 ```
 
-Creates a toggle button (checkbox) linked to a boolean parameter.
+Creates a Bauhaus toggle (checkbox) bound to a boolean parameter.
 
 **Parameters:**
 - `self`: The module instance
 - `param`: Name of the `gboolean` field in `params_t`
 
-**Returns:** A `GtkToggleButton` widget.
+**Returns:** A Bauhaus widget. It is a `GtkWidget *`, but it is **not** a
+`GtkToggleButton`: Bauhaus widgets derive from `GtkDrawingArea`
+(`src/bauhaus/bauhaus.c`), so casting one with `GTK_TOGGLE_BUTTON()` is a type error.
+Read and write it with `dt_bauhaus_toggle_get()` and `dt_bauhaus_toggle_set()`.
 
-**Important:** Unlike sliders/comboboxes, toggle buttons require manual update in `gui_update()`:
-```c
-void gui_update(dt_iop_module_t *self)
-{
-  dt_iop_mymodule_gui_data_t *g = self->gui_data;
-  dt_iop_mymodule_params_t *p = self->params;
-
-  // Sliders/comboboxes update automatically, but toggles need this:
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->my_toggle), p->my_bool);
-}
-```
+**Syncing:** nothing to do, the same as sliders and comboboxes. Binding the parameter
+also registers the widget for the automatic update, and `dt_iop_gui_update()` runs
+`dt_bauhaus_update_from_field()` — which handles bound toggles alongside sliders and
+comboboxes — before it calls your `gui_update()` (`src/develop/imageop.c`,
+`src/bauhaus/bauhaus.c`). Manual syncing is only needed for plain toggle buttons made
+with `dt_iop_togglebutton_new()`, which carry no parameter field; see below.
 
 **Example (from vignette.c):**
 ```c
