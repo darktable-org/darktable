@@ -339,10 +339,10 @@ has no lock to take at all, and no way to know the GUI is being torn down.
 ## Passing Values Between Pipes Through `gui_data`
 
 `gui_data` is also the channel one pipe uses to hand a value to another. A module that
-needs a property of the *whole* image cannot get it on the full pipe, which sees only
-the region of interest at the current zoom. The preview pipe does see the whole image,
-at reduced size, so the module computes the value there, publishes it into `gui_data`,
-and lets the full pipe pick it up.
+needs a property of the *whole* image usually cannot get it on the full pipe, which
+normally sees only the region of interest at the current zoom. The preview pipe does see
+the whole image, at reduced size, so the module computes the value there, publishes it
+into `gui_data`, and lets the full pipe pick it up.
 
 The framework primitive for the handover is `dt_dev_sync_pixelpipe_hash()`
 (`src/develop/develop.c`). The publisher stores the value together with the cumulative
@@ -397,14 +397,20 @@ there because the channel itself lives in `gui_data` and so exists only when a G
 The rule from [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params)
 applies unchanged — processing must not depend on the cache — and these modules obey it.
 `levels` computes the levels from scratch whenever it is on the preview pipe or the
-published value is still uninitialised; the other three each have the same fallback, and
-say so in a comment.
+published value is still uninitialised, and the other three fall back the same way. Note
+what that fallback does *not* cover: it triggers on a value that was never published,
+not on one that arrived late. After a timed-out wait the consumer uses whatever is in
+`gui_data`. The handshake is best-effort, and the module has to be able to live with a
+stale value as well as with none.
 
 **`process()` may block here, and that is the supported idiom.** The wait is bounded by
-the `pixelpipe_synchronization_timeout` preference, or by
-`darktable.opencl->opencl_synchronization_timeout` on a GPU pipe, and it gives up early
-once the pipe is flagged for shutdown; on timeout the module computes the value itself
-and logs `inconsistent output`. This is not the wait ruled out in
+the `pixelpipe_synchronization_timeout` preference — or by
+`darktable.opencl->opencl_synchronization_timeout` on a GPU pipe — and it gives up early
+once the pipe is flagged for shutdown. Setting that preference to zero or less switches
+the wait off, and the primitive then reports success without checking anything. After a
+real timeout it still reports success if the history stack has changed underneath, since
+a reprocess is already on its way; it fails only when neither holds, and that failure is
+the `inconsistent output` the modules above log. This is not the wait ruled out in
 [Which Thread Am I On?](#which-thread-am-i-on). What deadlocks is a synchronous
 round-trip through the GTK main loop, because the GTK thread may itself be waiting on a
 pipe. Waiting on another pipe is a different thing, and the framework supplies the
