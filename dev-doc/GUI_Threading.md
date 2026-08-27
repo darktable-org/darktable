@@ -15,9 +15,13 @@ See also:
 
 `process()` is not a GTK callback and has no guaranteed thread affinity. GTK+ is not thread-safe. You **cannot** call GTK functions directly from `process()`.
 
-The same split applies to data: `gui_data` is not owned by the GTK thread alone. Both
-directions need care — the pipe writing values for the GUI to display, and the GUI
-writing values the pipe will read.
+The same split applies to data: `gui_data` is not owned by the GTK thread alone. Three
+directions need care:
+
+- the pipe writing values for the GUI to display,
+- the GUI writing values the pipe will read,
+- and [one pipe writing values another pipe reads](#passing-values-between-pipes-through-gui_data),
+  because `gui_data` is where that channel lives too.
 
 The rules, in short:
 
@@ -329,6 +333,99 @@ passes that one, and the other two getters go through a helper that requires
 The producing side — usually `commit_params()` or `process()` — must take the same lock.
 Publishing a raw pointer into `gui_data` through a proxy is worse still: the reader then
 has no lock to take at all, and no way to know the GUI is being torn down.
+
+## Passing Values Between Pipes Through `gui_data`
+
+`gui_data` is also the channel one pipe uses to hand a value to another. A module that
+needs a property of the *whole* image cannot get it on the full pipe, which sees only
+the region of interest at the current zoom. The preview pipe does see the whole image,
+at reduced size, so the module computes the value there, publishes it into `gui_data`,
+and lets the full pipe pick it up.
+
+The framework primitive for the handover is `dt_dev_sync_pixelpipe_hash()`
+(`src/develop/develop.c`). The publisher stores the value together with the cumulative
+hash of its own upstream pipe state. The consumer hands the primitive that hash cell
+and its `gui_lock`, and the primitive waits until the stored hash matches what the
+consumer's own upstream state hashes to — which is what makes the value the right one
+for this render rather than a leftover from the previous history state.
+
+Four modules use it, each passing `&self->gui_lock`: `levels`, `globaltonemap`,
+`hazeremoval` and `colorreconstruction`. `toneequal` does the same thing with a helper
+of its own.
+
+The consuming side, from `levels` (`src/iop/levels.c`):
+
+```c
+if(g && dt_pipe_is_full(piece->pipe))
+{
+  dt_iop_gui_enter_critical_section(self);
+  const dt_hash_t hash = g->hash;      // snapshot: has anything been published yet?
+  dt_iop_gui_leave_critical_section(self);
+
+  if(hash != DT_INVALID_HASH
+     && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order,
+                                    DT_DEV_TRANSFORM_DIR_BACK_INCL,
+                                    &self->gui_lock, &g->hash))
+    dt_control_log(_("inconsistent output"));
+
+  dt_iop_gui_enter_critical_section(self);
+  d->levels[0] = g->auto_levels[0];    // ... and the rest of the payload
+  dt_iop_gui_leave_critical_section(self);
+}
+```
+
+and the publishing side, in the same function, on the preview pipe:
+
+```c
+if(g && dt_pipe_is_preview(piece->pipe))
+{
+  const dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order,
+                                          DT_DEV_TRANSFORM_DIR_BACK_INCL);
+  dt_iop_gui_enter_critical_section(self);
+  g->auto_levels[0] = d->levels[0];    // ... payload and hash in one section, so a
+  g->hash = hash;                      // consumer cannot see a hash its payload
+  dt_iop_gui_leave_critical_section(self);   // does not match
+}
+```
+
+Four things about that shape do not follow from the rest of this document.
+
+**`g != NULL` is not testing for a GUI here.** Nothing is being displayed; the test is
+there because the channel itself lives in `gui_data` and so exists only when a GUI does.
+The rule from [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params)
+applies unchanged — processing must not depend on the cache — and these modules obey it.
+`levels` computes the levels from scratch whenever it is on the preview pipe or the
+published value is still uninitialised; the other three each have the same fallback, and
+say so in a comment.
+
+**`process()` may block here, and that is the supported idiom.** The wait is bounded by
+the `pixelpipe_synchronization_timeout` preference, or by
+`darktable.opencl->opencl_synchronization_timeout` on a GPU pipe, and it gives up early
+once the pipe is flagged for shutdown; on timeout the module computes the value itself
+and logs `inconsistent output`. This is not the wait ruled out in
+[Which Thread Am I On?](#which-thread-am-i-on). What deadlocks is a synchronous
+round-trip through the GTK main loop, because the GTK thread may itself be waiting on a
+pipe. Waiting on another pipe is a different thing, and the framework supplies the
+primitive for it.
+
+**Do not hold `gui_lock` across the call.** The primitive takes the lock you hand it on
+every polling iteration, so calling it from inside a critical section self-deadlocks on
+the [non-recursive mutex](#the-lock-is-not-recursive). Snapshot what you need, release,
+then call — as the quote above does. Underneath, the probe also takes
+`dev->history_mutex`, because hashing the upstream state walks the pipe. The primitive
+releases your `gui_lock` before it does that, so the two are never nested; keep it that
+way on your side.
+
+**A scalar hands over cleanly; a heap object does not.** `levels`, `globaltonemap` and
+`hazeremoval` publish plain numbers, so the span in which the value must stay valid ends
+at the load, and the short critical section is exactly right.
+`colorreconstruction` publishes a frozen bilateral grid, copies the *pointer* out under
+the lock and thaws it after releasing — while the preview pipe's next run, and
+`gui_update()`, can free that object under the same lock
+(`src/iop/colorreconstruction.c`). That is the trap of
+[Short Is Not The Same As Correct](#short-is-not-the-same-as-correct), live in the tree,
+and it is what this idiom turns into when it is copied without asking who owns the
+thing being handed over.
 
 ## The Lock Is Not Recursive
 
