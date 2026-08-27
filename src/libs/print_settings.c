@@ -458,6 +458,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   }
 
   img->buf = params->buf;
+  img->img_bpp = dat.bpp; // Store the image bitdepth with the image being sent to print job
   params->buf = NULL;
 
   return 0;
