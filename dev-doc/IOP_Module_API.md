@@ -138,7 +138,10 @@ typedef struct dt_iop_filmicrgb_data_t
 ```
 Database ──load──→ self->params ──UI widgets──→ self->params
                                                     │
-                                             commit_params()
+                                                    │   the pipe's defaults sync
+                                                    │   passes default_params
+                                                    ▼   here instead
+                                            commit_params(p)
                                                     │
                                                     ▼
                                               piece->data  ──→ process()
@@ -204,8 +207,9 @@ void process(dt_iop_module_t *self,
 **Important:**
 - **Never use GTK+ API directly in `process()`** — see [GUI_Threading.md](GUI_Threading.md) for the correct approach
 - **`commit_params()` has no thread affinity** — for your darkroom instance it usually
-  runs on a pixelpipe thread, and it runs on the GTK thread when a pipe's nodes are
-  rebuilt, so `gui_data` it shares with widget callbacks needs the
+  runs on a pixelpipe thread, and it runs on the GTK thread when an image switch
+  rebuilds the screen pipes' nodes, so `gui_data` it shares with widget callbacks needs
+  the
   GUI critical section. Enter that section only when `gui_data` is non-NULL: `gui_data`
   is `NULL` on export and `gui_lock` is only initialised when a GUI exists, so the
   non-GUI branch must compute what processing needs on its own. The in-tree idiom writes
@@ -388,9 +392,9 @@ Common checks: `dt_image_is_raw()`, `dt_image_is_hdr()`, `dt_image_is_ldr()`, `d
 ### `change_image()` - Reset GUI State for the New Image
 
 Called on an image switch, after `reload_defaults()` and before the new image's params
-reach `gui_update()`. Switching image does not tear down every module: each module's
-visible base instance is kept, GUI and all, and reused for the new image
-(`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image —
+reach `gui_update()`. Switching image does not tear down every module: each module's base
+instance — the one with the lowest `multi_priority` — is kept, GUI and all, and reused
+for the new image (`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image —
 a cached curve, a selected region, a pending readout — therefore survives unless you
 clear it here:
 
@@ -406,7 +410,8 @@ void change_image(dt_iop_module_t *self)
 ```
 
 `gui_cleanup()` does **not** run for that retained instance — only the module's extra
-instances are torn down and rebuilt — so `change_image()` is also where a module that
+instances are torn down, and what replaces them is whatever the new image's history
+needs — so `change_image()` is also where a module that
 schedules GUI updates from the pipe has to cancel them; see
 [GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image).
 `basicadj`, `retouch`, `rgblevels` and `rgbcurve` implement it, and each also calls it
@@ -445,7 +450,7 @@ Called by the framework whenever parameters are synced to the pixelpipe. Its job
 
 **Caching note:** After this function returns, `dt_iop_commit_params()` hashes the operation name, the instance, `module->params`, and the blend parameters and mask group if blending is on (`src/develop/imageop.c`). Read that list literally in both directions: it is `module->params`, *not* the `params` argument your callback was just handed — on the defaults sync those are different objects — and it never includes `piece->data`, the output you just produced. The hash is also the wrapper's work, not the callback's, so a `commit_params()` reached another way does not update it; `basecurve` calls its own directly from `init_pipe()`. If that `piece->hash` changes, the cache for this module and all subsequent ones is invalidated.
 
-`piece->hash` is only part of the cache key. A lookup also folds in the image id, the four profiles the pipe is working with, the hash of every enabled piece before this one, and — for a lookup with a ROI, which is the normal case — the pipe type, the detail-mask flag, the ROI itself, the Scharr state and the colour picker's sample (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`). So pipe type, scale and colour profiles do not need to be in `params`: a normal lookup has them in the key already, deliberately.
+`piece->hash` is only part of the cache key. A lookup also folds in the image id, the four profiles the pipe is working with, the hash of every enabled, non-skipped piece before this one, and — for a lookup with a ROI, which is the normal case — the pipe type, the detail-mask flag, the ROI itself, the Scharr state and the colour picker's sample (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`). So pipe type, scale and colour profiles do not need to be in `params`: a normal lookup has them in the key already, deliberately.
 
 What the key does *not* do is hash the pipe or the image record wholesale. It hashes selected fields, so "I can reach it through `piece->pipe` or `self->dev`" is not a reason to assume an input is covered. Three cases worth knowing:
 
@@ -574,7 +579,8 @@ User Edits Widget:
        → commit_params(p)  [transforms its p argument → piece->data]
        → process()        [reads piece->data]
 
-Image Switch:  [visible base instance is kept; extra instances are destroyed and rebuilt]
+Image Switch:  [base instance is kept; extra instances are destroyed, then the new
+                image's own extras are built]
   reload_defaults() → change_image() → [history params loaded] → gui_update() → gui_changed()
 
 Darkroom Exit:

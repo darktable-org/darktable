@@ -125,7 +125,7 @@ Image switch (`src/views/darkroom.c`):
 DT_ENTER_GUI_UPDATE()
     ↓
 Framework calls reload_defaults(), then your change_image() [if implemented]
-(the visible base instance is kept, so gui_data describing the old
+(the base instance is kept, so gui_data describing the old
  image must be reset there — see IOP_Module_API.md, GUI_Threading.md)
     ↓
 Framework loads the image's history params into self->params
