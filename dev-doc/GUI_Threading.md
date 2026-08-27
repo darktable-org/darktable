@@ -353,8 +353,13 @@ consumer's own upstream state hashes to — which is what makes the value the ri
 for this render rather than a leftover from the previous history state.
 
 Four modules use it, each passing `&self->gui_lock`: `levels`, `globaltonemap`,
-`hazeremoval` and `colorreconstruction`. `toneequal` does the same thing with a helper
-of its own.
+`hazeremoval` and `colorreconstruction`.
+
+`toneequal` is worth naming as the module that looks like it does this and does not: it
+also keeps a hash in `gui_data` beside the data that hash describes, but its full pipe
+only compares that hash against its own to decide whether to recompute its luminance
+mask, and nothing ever waits for another pipe (`src/iop/toneequal.c`). A hash in
+`gui_data` is a freshness marker; it is only a handover when something waits on it.
 
 The consuming side, from `levels` (`src/iop/levels.c`):
 
