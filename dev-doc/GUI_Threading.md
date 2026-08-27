@@ -563,6 +563,11 @@ of one image and half of another — a different failure from the size mismatch 
 one that no amount of locking around the *read* will catch. `src/iop/toneequal.c` does
 this on the branch that fills the buffer its GUI reads.
 
+The flag only pays off if the reader honours it for as long as it uses the buffer.
+Testing it under the lock, releasing, and *then* reading puts you back in the first
+trap in this section: the writer can clear the flag and start refilling in between. Test
+and use inside one critical section, or copy out what you need while you hold it.
+
 ## The Framework Service for Per-Pixel Readouts
 
 Everything above is the hand-rolled version. For the most common instance of it — a
