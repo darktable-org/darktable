@@ -506,8 +506,9 @@ That rule covers a buffer being *replaced*. It does not cover one being **refill
 place** while the flag beside it still says the old contents are good. Clear the flag
 inside a critical section before the fill starts, and commit the new contents' hash and
 the flag inside another one once the data is there; between the two the reader sees "not
-valid" and stays away. `toneequal` does exactly that around `compute_luminance_mask()`,
-and says why in a comment (`src/iop/toneequal.c`). Without the first section there is a
+valid" and stays away. `toneequal` does exactly that around `compute_luminance_mask()`
+on its preview branch — the one whose buffer the GUI reads — and says why in a comment
+(`src/iop/toneequal.c`). Without the first section there is a
 window in which a valid-flagged buffer holds half of one image and half of another — a
 different failure from the size mismatch above, and one that no amount of locking around
 the *read* will catch.
@@ -544,7 +545,8 @@ The two-step form gives that up, and hands you the piece you need to replace it:
 `dt_preview_data_resize()` has to resize, it calls a callback of yours while still
 holding the lock, so you can drop your own validity flag atomically with the resize —
 the same discipline as the paragraph above, with the framework opening the critical
-section for you.
+section for you. `toneequal`'s callback is four lines and does exactly that
+(`src/iop/toneequal.c`).
 
 `toneequal` and `colorequal` use the service. What stays yours is what the header says
 is module-specific: computing the value, drawing it, and mapping the cursor position to
