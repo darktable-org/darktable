@@ -577,7 +577,8 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self,
     const PangoStyle font_style = pango_font_description_get_style(font);
     const int font_weight = (int)pango_font_description_get_weight(font);
 
-    g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
+    const gchar *family = pango_font_description_get_family(font);
+    g_strlcpy(buffer, family ? family : "", sizeof(buffer));
     svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
 
     switch(font_style)
