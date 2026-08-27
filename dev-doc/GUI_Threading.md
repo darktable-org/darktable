@@ -606,7 +606,7 @@ The service owns the buffer, the hash and the locking:
   buffer.
 
 Every one of those seven takes your module's `gui_lock` internally, so for the service's
-own buffer and hash you neither take it nor have to know it is there. What is awkward to
+own buffer and hash you do not have to take it yourself. What is awkward to
 build by hand is the guarantee the header attaches to `dt_preview_data_store()`: resize,
 fill and hash commit happen inside a *single* critical section, so the GUI can never
 observe a resized but not-yet-filled buffer.
@@ -616,7 +616,9 @@ other users of the same lock. It does not stabilise anything outside them — an
 `dt_preview_data_is_fresh()` does reach outside them, walking the live preview pipe's
 node list to find your piece. Pipe topology is rebuilt under the pipe and history
 mutexes, not under `gui_lock`, so that walk needs the caller to be somewhere the
-topology is stable. The service's own locking does not supply that.
+topology is stable. The service's own locking does not supply that. The same function
+also tests the buffer pointer in an early return, before it takes the lock at all —
+against a field the two write entry points free and replace while holding it.
 
 The two-step form gives that up, and hands you the piece you need to replace it: if
 `dt_preview_data_resize()` has to resize, it calls a callback of yours while still
