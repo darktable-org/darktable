@@ -400,7 +400,7 @@ void dt_get_printer_info(const char *printer_name_utf8, dt_printer_info_t *pinfo
   g_free(wprinter);
 
   // Debug output of what we filled in
-  {
+ /*  {
     char buf[512];
     snprintf(buf, sizeof(buf),
              "dt_get_printer_info: name='%s' resolution=%d "
@@ -409,7 +409,7 @@ void dt_get_printer_info(const char *printer_name_utf8, dt_printer_info_t *pinfo
              pinfo->hw_margin_left, pinfo->hw_margin_right,
              pinfo->hw_margin_top, pinfo->hw_margin_bottom,
              pinfo->is_turboprint);
-  }
+  } */
 }
 
 // Enumerate printers (replacement for cupsEnumDests / cupsGetDests)
@@ -430,37 +430,31 @@ is_unwanted_printer(const char *name)
 
   return FALSE;
 }
-static gboolean _notify_ui_printer_ready(gpointer user_data)
+
+typedef struct init_cb_ctx_t {
+  dt_prtctl_t *pctl;
+  dt_printer_wrapper_t *wrap;
+} init_cb_ctx_t;
+
+static gboolean _notify_ui_printer_cb(gpointer user_data)
 {
-  notify_ctx_t *ready_ctx = (notify_ctx_t *)user_data;
-  if(!ready_ctx) return FALSE;
+  init_cb_ctx_t *ctx = (init_cb_ctx_t *)user_data;
+  if(ctx->pctl && ctx->pctl->cb && ctx->wrap && ctx->wrap->pinfo)
+    ctx->pctl->cb(ctx->wrap->pinfo, ctx->pctl->user_data);
 
-  dt_prtctl_t *prtctl = ready_ctx->pctl;
-  dt_printer_info_t *pinfo = ready_ctx->wrap ? ready_ctx->wrap->pinfo : NULL;
-
-  const char *name = (pinfo && pinfo->name[0] != '\0') ? pinfo->name : "(null)";
-
-  if(prtctl && prtctl->ready_cb && pinfo && pinfo->name[0] != '\0') 
-   {prtctl->ready_cb(pinfo, prtctl->user_data);}
-
-  // Release this notify’s ref; free prtctl if last holder
-  if(prtctl && g_atomic_int_dec_and_test(&prtctl->refs)) 
-  {
-    free(prtctl);
-  }
-
-  dt_printer_wrapper_unref(ready_ctx->wrap);
-  g_free(ready_ctx); // free the context (does not own pinfo)
-  return FALSE; // one-shot idle
+  if(ctx->pctl && g_atomic_int_dec_and_test(&ctx->pctl->refs)) free(ctx->pctl);
+  dt_printer_wrapper_unref(ctx->wrap);
+  g_free(ctx);
+  return FALSE;
 }
 
 // Background job: enumerate installed printers and invoke callback
 static int _detect_printers_callback(dt_job_t *job)
 {
-  dt_printer_wrapper_t *wrap = calloc(1, sizeof(*wrap));
+  /*dt_printer_wrapper_t *wrap = calloc(1, sizeof(*wrap));
   wrap->pinfo = pinfo;
   wrap->details_valid = FALSE;
-  wrap->refs = 1;   // held by discovered_printers itself
+  wrap->refs = 1;   // held by discovered_printers itself*/
   
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
   gboolean queued_any_default = FALSE;
@@ -500,12 +494,21 @@ static int _detect_printers_callback(dt_job_t *job)
         dt_printer_wrapper_t *wrap = calloc(1, sizeof(*wrap));
         wrap->pinfo = pinfo;
         wrap->details_valid = FALSE;
+        wrap->refs = 1;
 
         discovered_printers = g_list_append(discovered_printers, wrap);
-        if(pctl && pctl->cb) pctl->cb(pinfo, pctl->user_data);
 
-        char buf[256];
-        snprintf(buf, sizeof(buf), "discovered printer '%s'", pinfo->name);
+        if(pctl && pctl->cb)
+        {
+          init_cb_ctx_t *ctx = g_new0(init_cb_ctx_t, 1);
+          ctx->pctl = pctl;
+          ctx->wrap = wrap;
+          g_atomic_int_inc(&pctl->refs);
+          dt_printer_wrapper_ref(wrap);
+          g_idle_add(_notify_ui_printer_cb, ctx);
+        }
+        //char buf[256];
+        //snprintf(buf, sizeof(buf), "discovered printer '%s'", pinfo->name);
 
         if(!darktable.control->cups_started)
         {
@@ -615,6 +618,7 @@ static int _populate_remaining_printers_job(dt_job_t *job)
                                                  "fill printer details");
     if(detail_job)
     {
+      g_atomic_int_inc(&pctl->refs);
       dt_printer_wrapper_ref(wrap);
       dt_control_job_set_params(detail_job, params, free_printer_job_params);
       dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, detail_job);
@@ -839,11 +843,11 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
         }
         #endif
     
-        if(p->name[0] == '\0')
+/*         if(p->name[0] == '\0')
         {
           snprintf(p->name, MAX_NAME, "Paper %d", i+1);
           snprintf(p->common_name, MAX_NAME, "Paper %d", i+1);
-        }
+        } */
 
         if(!paper_exists(list, p->common_name))
           list = g_list_append(list, p);
@@ -1347,7 +1351,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
                   IXpsOMPage *page = NULL;
                   XPS_SIZE page_size = { page_width, page_height };
 
-                  if(SUCCEEDED(hr) && page_size)
+                  if(SUCCEEDED(hr) && page_size.width > 0.0f && page_size.height > 0.0f)
                   {
                     IOpcPartUri *page_uri = NULL;
                     hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
