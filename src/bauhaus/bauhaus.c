@@ -1400,23 +1400,32 @@ gpointer dt_bauhaus_widget_get_field(GtkWidget *widget)
   return w->field;
 }
 
-/* Find the notebook page a widget sits on, walking the full ancestor chain so
-   that widgets nested in boxes or collapsible sections are located too, not
-   only direct children of the page. Returns the page and sets *notebook, or
-   returns NULL when the widget is not inside a notebook at all. Passing a page
-   itself works as well, which is what the container_foreach callers rely on. */
+/* Find the notebook page a widget sits on.
+
+   The walk climbs the whole ancestor chain, so widgets nested in boxes or
+   collapsible sections are located too, and hops across a content link when it
+   meets one, so widgets parked outside the notebook find their page as well.
+   Passing a page itself works, which is what the container_foreach callers
+   rely on. Returns NULL when there is no notebook above the widget.
+
+   The hop limit only guards against a link pointing back into its own subtree;
+   a real widget tree is nowhere near this deep. */
 static GtkWidget *_notebook_page_of(GtkWidget *w,
                                     GtkNotebook **notebook)
 {
-  for(GtkWidget *p = gtk_widget_get_parent(w);
-      p;
-      w = p, p = gtk_widget_get_parent(p))
+  GtkWidget *parent = gtk_widget_get_parent(w);
+
+  for(int hops = 0; parent && hops < 64; hops++)
   {
-    if(GTK_IS_NOTEBOOK(p))
+    if(GTK_IS_NOTEBOOK(parent))
     {
-      *notebook = GTK_NOTEBOOK(p);
+      *notebook = GTK_NOTEBOOK(parent);
       return w;
     }
+
+    GtkWidget *page = dt_gui_tab_state_page_of_content(parent);
+    w = page ? page : parent;
+    parent = gtk_widget_get_parent(w);
   }
   return NULL;
 }
@@ -1445,58 +1454,70 @@ static gboolean _bauhaus_differs_from_default(GtkWidget *widget)
   }
 }
 
-/* Depth first search for a widget that is off default, descending through the
-   containers a page is built from. Sections and collapsible sections keep
-   their content visible (they are collapsed by not revealing it), so widgets
-   hidden inside a collapsed section are still found, while widgets a module
-   has explicitly hidden because they do not apply are skipped. */
-static void _scan_page_for_changes(GtkWidget *w,
+typedef struct _page_walk_t
+{
+  dt_bauhaus_page_visit_t visit;
+  gpointer user_data;
+  gboolean visible_only;
+  gboolean stopped;
+} _page_walk_t;
+
+static void _page_walk(GtkWidget *w,
+                       gpointer user_data)
+{
+  _page_walk_t *walk = user_data;
+  if(walk->stopped || dt_gui_tab_state_excluded(w)) return;
+
+  /* Sections and collapsible sections keep their content visible and collapse
+     by not revealing it, so a widget folded away is still walked; only what a
+     module has hidden because it does not apply is skipped. */
+  if(walk->visible_only && !gtk_widget_get_visible(w)) return;
+
+  // a page may keep its controls outside the notebook
+  GtkWidget *content = dt_gui_tab_state_content(w);
+  if(content && content != w) _page_walk(content, walk);
+  if(walk->stopped) return;
+
+  if(DT_IS_BAUHAUS_WIDGET(w))
+    walk->stopped = !walk->visit(w, walk->user_data);
+  else if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _page_walk, walk);
+}
+
+void dt_bauhaus_page_foreach(GtkWidget *page,
+                             const gboolean visible_only,
+                             dt_bauhaus_page_visit_t visit,
+                             gpointer user_data)
+{
+  if(!page || !visit) return;
+
+  _page_walk_t walk = { .visit = visit,
+                        .user_data = user_data,
+                        .visible_only = visible_only };
+  _page_walk(page, &walk);
+}
+
+static gboolean _first_off_default(GtkWidget *widget,
                                    gpointer user_data)
 {
   gboolean *is_changed = user_data;
-  if(*is_changed
-     || !gtk_widget_get_visible(w)
-     || dt_gui_tab_state_excluded(w))
-    return;
-
-  if(DT_IS_BAUHAUS_WIDGET(w))
-    *is_changed = _bauhaus_differs_from_default(w);
-  else if(GTK_IS_CONTAINER(w))
-    gtk_container_foreach(GTK_CONTAINER(w), _scan_page_for_changes, user_data);
+  *is_changed = _bauhaus_differs_from_default(widget);
+  return !*is_changed; // stop at the first one found
 }
 
-/* TRUE when the widget, or any container between it and its page, is kept out
-   of the page's parameter set. The flag is usually put on a whole section, so
-   asking the widget alone is not enough. */
-static gboolean _excluded_from_page(GtkWidget *w,
-                                    GtkWidget *page)
-{
-  for(; w && w != page; w = gtk_widget_get_parent(w))
-    if(dt_gui_tab_state_excluded(w)) return TRUE;
-  return FALSE;
-}
-
-static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
+static void _highlight_changed_notebook_tab(GtkWidget *w,
+                                            gpointer user_data)
 {
   GtkNotebook *notebook = NULL;
   GtkWidget *page = _notebook_page_of(w, &notebook);
   if(!page) return;
 
-  /* A caller that has just moved a widget off default says so and saves us the
-     search, but the hint only stands for a widget that counts towards the page
-     at all: the toggle and combobox setters send it for any widget they touch,
-     including the field-less ones that drive a workflow and the ones sitting in
-     a section that was flagged out. Held to the same test the scan applies, a
-     hint that does not stand simply falls through to the scan, which still
-     reports whatever else on the page is off default. */
-  gboolean is_changed = GPOINTER_TO_INT(user_data) != 0
-    && DT_IS_BAUHAUS_WIDGET(w)
-    && gtk_widget_get_visible(w)
-    && !_excluded_from_page(w, page)
-    && _bauhaus_differs_from_default(w);
-
+  /* The page decides, always: the widget the change came from is already
+     committed by the time we get here, so asking the page is both simpler and
+     the only way to notice that something else on it is still off default. */
+  gboolean is_changed = dt_gui_tab_state_changed(page);
   if(!is_changed)
-    _scan_page_for_changes(page, &is_changed);
+    dt_bauhaus_page_foreach(page, TRUE, _first_off_default, &is_changed);
 
   GtkWidget *label = gtk_notebook_get_tab_label(notebook, page);
 
@@ -1504,6 +1525,18 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
     dt_gui_add_class(label, "changed");
   else
     dt_gui_remove_class(label, "changed");
+}
+
+/* Re-read the changed state of every tab of a notebook.
+
+   Parameter widgets do this for themselves when their value moves. A module
+   that edits its parameters through something else -- a graph, a curve -- has
+   nothing that would trigger it, so it calls this once it has committed. */
+void dt_bauhaus_refresh_tab_state(GtkNotebook *notebook)
+{
+  if(GTK_IS_NOTEBOOK(notebook))
+    gtk_container_foreach(GTK_CONTAINER(notebook),
+                          _highlight_changed_notebook_tab, NULL);
 }
 
 static void _toggle_set(dt_bauhaus_widget_t *w,
@@ -1533,8 +1566,7 @@ static void _toggle_set(dt_bauhaus_widget_t *w,
       dt_print(DT_DEBUG_ALWAYS, "[_toggle_set] unsupported toggle data type");
   }
 
-  _highlight_changed_notebook_tab(GTK_WIDGET(w),
-                                  GINT_TO_POINTER(d->active != d->defpos));
+  _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
   g_signal_emit(G_OBJECT(w),
                 darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
 }
@@ -2256,8 +2288,7 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
           dt_print(DT_DEBUG_ALWAYS, "[_combobox_set] unsupported combo data type");
       }
     }
-    _highlight_changed_notebook_tab(GTK_WIDGET(w),
-                                    GINT_TO_POINTER(d->active != d->defpos));
+    _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
     g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
   }
 }

@@ -632,6 +632,47 @@ gboolean dt_gui_tab_state_excluded(GtkWidget *widget);
 // same for a whole collapsible section, header and content
 void dt_gui_collapsible_section_exclude_tab_state(dt_gui_collapsible_section_t *cs);
 
+/* Tie a notebook page to content that lives outside the notebook.
+
+   Some modules keep their tabs empty and park the controls elsewhere: the
+   colour equalizer holds one stack beside its notebook and shows the page of
+   it that matches the current tab. The link is followed both ways, so such a
+   tab is read and reset through its content, and an ordinary parameter widget
+   in that content still finds the tab it belongs to. */
+void dt_gui_tab_state_set_content(GtkWidget *page, GtkWidget *content);
+GtkWidget *dt_gui_tab_state_content(GtkWidget *page);
+GtkWidget *dt_gui_tab_state_page_of_content(GtkWidget *content);
+
+/* Let a module answer for a page whose content is not made of widgets.
+
+   A tab is read and reset through the parameter widgets on its page, which
+   leaves a page that has none with nothing to say and nothing to do. The
+   equalizer modules are like that: their tabs are empty and select a channel
+   of one shared graph, and a curve is not a widget. Such a page carries a
+   handler and the module answers for it.
+
+   Both entries are optional, but a page that reports itself changed and cannot
+   be reset is a dead end for the user, so fill in both unless the tab is meant
+   to be read-only. They run alongside the ordinary widget walk, so a page can
+   hold parameter widgets as well. */
+typedef struct dt_gui_tab_state_t
+{
+  // TRUE when the page holds something that is away from its default
+  gboolean (*changed)(GtkWidget *page, gpointer user_data);
+  // put the page back to its defaults, committing history as the module sees fit
+  void (*reset)(GtkWidget *page, gpointer user_data);
+} dt_gui_tab_state_t;
+
+/* Set on a notebook page, never on a widget inside one: the walk over a page
+   reads parameter widgets and the handler answers for everything else on it.
+   The handler is kept by reference and is expected to outlive the page, which
+   a file-scope constant in the module does. */
+void dt_gui_tab_state_set_handler(GtkWidget *page,
+                                  const dt_gui_tab_state_t *handler,
+                                  gpointer user_data);
+gboolean dt_gui_tab_state_changed(GtkWidget *page);
+gboolean dt_gui_tab_state_reset(GtkWidget *page);
+
 // is delay between first and second click/press longer than double-click time?
 gboolean dt_gui_long_click(const guint second,
                            const guint first);

@@ -4347,27 +4347,26 @@ GdkModifierType dt_key_modifier_state()
 */
 }
 
-/* Gather the bauhaus widgets of a page in widget order, descending into the
-   boxes and collapsible sections a page is built from. Subtrees flagged with
-   dt_gui_tab_state_exclude() are left alone: they hold controls that steer a
-   workflow rather than the module parameters and must survive a reset. */
-static void _collect_page_bauhaus(GtkWidget *w,
-                                  gpointer user_data)
+static gboolean _collect_bauhaus(GtkWidget *widget,
+                                 gpointer user_data)
 {
   GList **widgets = user_data;
-  if(dt_gui_tab_state_excluded(w)) return;
-
-  if(DT_IS_BAUHAUS_WIDGET(w))
-    *widgets = g_list_prepend(*widgets, w);
-  else if(GTK_IS_CONTAINER(w))
-    gtk_container_foreach(GTK_CONTAINER(w), _collect_page_bauhaus, user_data);
+  *widgets = g_list_prepend(*widgets, widget);
+  return TRUE;
 }
 
 static void _reset_all_bauhaus(GtkNotebook *notebook,
                                GtkWidget *box)
 {
+  // a page whose content is not made of widgets is reset by its module
+  dt_gui_tab_state_reset(box);
+
+  /* Everything the page holds, including controls parked outside the notebook
+     and excluding the sections flagged out of it. Hidden widgets are reset as
+     well: a tab reset is meant to leave nothing behind, even in a mode that is
+     not on screen right now. */
   GList *widgets = NULL;
-  _collect_page_bauhaus(box, &widgets);
+  dt_bauhaus_page_foreach(box, FALSE, _collect_bauhaus, &widgets);
   widgets = g_list_reverse(widgets);
 
   // toggles go last rather than in widget order: a module may switch one of
@@ -5427,6 +5426,62 @@ gboolean dt_gui_tab_state_excluded(GtkWidget *widget)
 {
   return widget
     && g_object_get_data(G_OBJECT(widget), DT_TAB_STATE_EXCLUDE_KEY) != NULL;
+}
+
+#define DT_TAB_STATE_CONTENT_KEY "dt-tab-state-content"
+#define DT_TAB_STATE_PAGE_KEY "dt-tab-state-page"
+#define DT_TAB_STATE_HANDLER_KEY "dt-tab-state-handler"
+#define DT_TAB_STATE_HANDLER_DATA_KEY "dt-tab-state-handler-data"
+
+void dt_gui_tab_state_set_content(GtkWidget *page, GtkWidget *content)
+{
+  if(!page || !content) return;
+  g_object_set_data(G_OBJECT(page), DT_TAB_STATE_CONTENT_KEY, content);
+  g_object_set_data(G_OBJECT(content), DT_TAB_STATE_PAGE_KEY, page);
+}
+
+GtkWidget *dt_gui_tab_state_content(GtkWidget *page)
+{
+  return page ? g_object_get_data(G_OBJECT(page), DT_TAB_STATE_CONTENT_KEY) : NULL;
+}
+
+GtkWidget *dt_gui_tab_state_page_of_content(GtkWidget *content)
+{
+  return content ? g_object_get_data(G_OBJECT(content), DT_TAB_STATE_PAGE_KEY) : NULL;
+}
+
+void dt_gui_tab_state_set_handler(GtkWidget *page,
+                                  const dt_gui_tab_state_t *handler,
+                                  gpointer user_data)
+{
+  if(!page) return;
+  g_object_set_data(G_OBJECT(page), DT_TAB_STATE_HANDLER_KEY, (gpointer)handler);
+  g_object_set_data(G_OBJECT(page), DT_TAB_STATE_HANDLER_DATA_KEY, user_data);
+}
+
+static const dt_gui_tab_state_t *_tab_state_handler(GtkWidget *page,
+                                                    gpointer *user_data)
+{
+  if(!page) return NULL;
+  *user_data = g_object_get_data(G_OBJECT(page), DT_TAB_STATE_HANDLER_DATA_KEY);
+  return g_object_get_data(G_OBJECT(page), DT_TAB_STATE_HANDLER_KEY);
+}
+
+gboolean dt_gui_tab_state_changed(GtkWidget *page)
+{
+  gpointer user_data = NULL;
+  const dt_gui_tab_state_t *handler = _tab_state_handler(page, &user_data);
+  return handler && handler->changed && handler->changed(page, user_data);
+}
+
+gboolean dt_gui_tab_state_reset(GtkWidget *page)
+{
+  gpointer user_data = NULL;
+  const dt_gui_tab_state_t *handler = _tab_state_handler(page, &user_data);
+  if(!handler || !handler->reset) return FALSE;
+
+  handler->reset(page, user_data);
+  return TRUE;
 }
 
 void dt_gui_collapsible_section_exclude_tab_state(dt_gui_collapsible_section_t *cs)

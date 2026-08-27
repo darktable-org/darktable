@@ -1431,6 +1431,7 @@ static void area_motion_notify(GtkEventControllerMotion *controller,
     }
     gtk_widget_queue_draw(widget);
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel);
+    dt_bauhaus_refresh_tab_state(g->channel_tabs);
   }
   else if(y > height)
   {
@@ -1497,6 +1498,7 @@ static void area_button_press(GtkGestureSingle *gesture,
       p->y[g->channel2][k] = d->y[g->channel2][k];
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
+    dt_bauhaus_refresh_tab_state(g->channel_tabs);
   }
   else
   {
@@ -1683,6 +1685,7 @@ static float _action_process_equalizer(gpointer target,
       }
 
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, target + ch1);
+      dt_bauhaus_refresh_tab_state(g->channel_tabs);
     }
     else // radius
     {
@@ -1751,6 +1754,84 @@ void gui_focus(dt_iop_module_t *self, const gboolean in)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+/* The channel tabs of this module hold no widgets: one graph below them is
+   pointed at whichever channel the current tab selects. So the tab marker has
+   nothing to read on the page and the module answers for it, for the band
+   curve of the channel a tab stands for. The luma and chroma tabs move their
+   threshold channel along with the visible one, so both count towards the same
+   tab. */
+static int _channels_of_page(GtkWidget *page,
+                             atrous_channel_t channels[2])
+{
+  GtkWidget *parent = gtk_widget_get_parent(page);
+  if(!GTK_IS_NOTEBOOK(parent)) return 0;
+
+  const int page_num = gtk_notebook_page_num(GTK_NOTEBOOK(parent), page);
+  if(page_num < 0 || page_num > atrous_s) return 0;
+
+  static const atrous_channel_t threshold_of[] =
+    { atrous_Lt, atrous_ct, atrous_none };
+
+  channels[0] = (atrous_channel_t)page_num;
+  channels[1] = threshold_of[page_num];
+
+  return channels[1] == atrous_none ? 1 : 2;
+}
+
+static gboolean _tab_curve_changed(GtkWidget *page,
+                                   gpointer user_data)
+{
+  const dt_iop_module_t *self = user_data;
+  if(!self || !self->params || !self->default_params) return FALSE;
+
+  atrous_channel_t channels[2];
+  const int n = _channels_of_page(page, channels);
+
+  const dt_iop_atrous_params_t *p = self->params;
+  const dt_iop_atrous_params_t *d = self->default_params;
+
+  for(int c = 0; c < n; c++)
+    for(int k = 0; k < BANDS; k++)
+    {
+      if(fabsf(p->x[channels[c]][k] - d->x[channels[c]][k]) > 1e-6f
+         || fabsf(p->y[channels[c]][k] - d->y[channels[c]][k]) > 1e-6f)
+        return TRUE;
+    }
+
+  return FALSE;
+}
+
+static void _tab_curve_reset(GtkWidget *page,
+                             gpointer user_data)
+{
+  dt_iop_module_t *self = user_data;
+  if(!self || !self->params || !self->default_params) return;
+
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  atrous_channel_t channels[2];
+  const int n = _channels_of_page(page, channels);
+  if(!g || !n) return;
+
+  dt_iop_atrous_params_t *p = self->params;
+  const dt_iop_atrous_params_t *const d = self->default_params;
+
+  for(int c = 0; c < n; c++)
+    for(int k = 0; k < BANDS; k++)
+    {
+      p->x[channels[c]][k] = d->x[channels[c]][k];
+      p->y[channels[c]][k] = d->y[channels[c]][k];
+    }
+
+  /* the graph plus the channel is the same target id the drag handlers use, so
+     repeated resets of one tab coalesce into a single history item */
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE,
+                                 GTK_WIDGET(g->area) + channels[0]);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+static const dt_gui_tab_state_t _curve_tab_state =
+  { .changed = _tab_curve_changed, .reset = _tab_curve_reset };
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
@@ -1773,14 +1854,20 @@ void gui_init(dt_iop_module_t *self)
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
                        GTK_WIDGET(g->channel_tabs), &notebook_def);
-  dt_ui_notebook_page(g->channel_tabs, N_("luma"),
-                      _("change lightness at each feature size"));
-  dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
-                      _("change color saturation at each feature size"));
-  dt_ui_notebook_page
-    (g->channel_tabs, N_("edges"),
-     _("change edge halos at each feature size\nonly changes results of luma"
-       " and chroma tabs"));
+  dt_gui_tab_state_set_handler
+    (dt_ui_notebook_page(g->channel_tabs, N_("luma"),
+                         _("change lightness at each feature size")),
+     &_curve_tab_state, self);
+  dt_gui_tab_state_set_handler
+    (dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
+                         _("change color saturation at each feature size")),
+     &_curve_tab_state, self);
+  dt_gui_tab_state_set_handler
+    (dt_ui_notebook_page
+     (g->channel_tabs, N_("edges"),
+      _("change edge halos at each feature size\nonly changes results of luma"
+        " and chroma tabs")),
+     &_curve_tab_state, self);
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);

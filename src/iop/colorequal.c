@@ -3673,7 +3673,13 @@ void gui_update(dt_iop_module_t *self)
   if((nbpage == 4) ^ show_sliders)
   {
     if(show_sliders)
-      gtk_widget_show(dt_ui_notebook_page(g->notebook, N_("options"), _("options")));
+    {
+      GtkWidget *options_tab =
+        dt_ui_notebook_page(g->notebook, N_("options"), _("options"));
+      dt_gui_tab_state_set_content(options_tab,
+                                   gtk_stack_get_child_by_name(g->stack, "3"));
+      gtk_widget_show(options_tab);
+    }
     else
       gtk_notebook_remove_page(g->notebook, 3);
 
@@ -3816,10 +3822,15 @@ void gui_init(dt_iop_module_t *self)
   // not a requirement here
 
   dt_iop_module_t *sect = NULL;
+  GtkWidget *tab = NULL;
+  /* the tabs stay empty and the sliders go into the stack beside them, so tie
+     each tab to the stack page that belongs to it -- that is what lets a tab
+     read and reset its own sliders */
 #define GROUP_SLIDERS(num, page, tooltip)                      \
-  dt_ui_notebook_page(g->notebook, page, tooltip);             \
+  tab = dt_ui_notebook_page(g->notebook, page, tooltip);       \
   sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
-  gtk_stack_add_named(g->stack, sect->widget, num);
+  gtk_stack_add_named(g->stack, sect->widget, num);            \
+  dt_gui_tab_state_set_content(tab, sect->widget);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =
