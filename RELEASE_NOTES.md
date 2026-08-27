@@ -41,12 +41,6 @@ Since darktable 5.6.0:
 - 100 pull requests handled
 -   8 issues closed
 
-_Please note that the darktable documentation is not currently
-complete for release 5.6 and contributions are greatly
-appreciated. Please see the [project
-documentation](https://github.com/darktable-org/dtdocs#contributing)
-for more information on how to contribute._
-
 ## The Big Ones
 
 The following is a summary of the main features added to darktable
@@ -77,20 +71,15 @@ changes (where available).
 
 ## Documentation updates
 
-- The manual has seen a lot of attention this cycle: the
-  [documentation](https://docs.darktable.org/usermanual/development/en/)
-  is up to date again, and translations are flowing once more via
-  [Weblate](https://hosted.weblate.org/projects/darktable-documentation/).
+- The manual has seen a lot of attention this cycle: the [documentation](https://docs.darktable.org/usermanual/development/en/) is up to date
+  again, and translations are flowing once more via [Weblate](https://hosted.weblate.org/projects/darktable-documentation/).
 
 - We've also expanded the docs on how dtdocs itself is set up and
-- [maintained](https://docs.darktable.org/usermanual/development/en/contributing/development-deployment/),
-- making it easier for new contributors to [get
-- involved](https://docs.darktable.org/usermanual/development/en/contributing/workflow/).
+  [maintained](https://docs.darktable.org/usermanual/development/en/contributing/development-deployment/),
+  making it easier for new contributors to [get involved](https://docs.darktable.org/usermanual/development/en/contributing/workflow/).
 - If you find room for improvement, you are welcome to open an
-- [issue](https://github.com/darktable-org/dtdocs/issues), post to
-- [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or
-- submit a [PR](https://github.com/darktable-org/dtdocs/pulls)
-- yourself.
+  [issue](https://github.com/darktable-org/dtdocs/issues), post to
+  [pixls.us](https://discuss.pixls.us/c/software/darktable/19), or submit a [PR](https://github.com/darktable-org/dtdocs/pulls) yourself.
 
 ## Bug Fixes
 
