@@ -455,7 +455,7 @@ Called by the framework whenever parameters are synced to the pixelpipe. Its job
 
 What the key does *not* do is hash the pipe or the image record wholesale. It hashes selected fields, so "I can reach it through `piece->pipe` or `self->dev`" is not a reason to assume an input is covered. Three cases worth knowing:
 
-- **Image metadata other than the id.** The id identifies the image; it does not version it. `exposure` derives its correction from `exif_exposure_bias` and `exif_highlight_preservation` (`src/iop/exposure.c`), and nothing in the key moves when those change.
+- **Image metadata other than the id.** The id identifies the image; it does not version it, so a module that derives its result from EXIF fields — exposure bias, highlight preservation and the like — gets no invalidation when one of them changes. Modules do read them: `src/iop/exposure.c` reads both of those. Fold whatever you depend on into `params`, or give it an explicit invalidation path.
 - **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at.
 - **Preferences and other process-global state.** `colorout` reads `plugins/lighttable/export/force_lcms2` from the config (`src/iop/colorout.c`).
 
