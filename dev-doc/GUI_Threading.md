@@ -524,7 +524,7 @@ The service owns the buffer, the hash and the locking:
 - `dt_preview_data_resize()` and `dt_preview_data_set_hash()` are the two-step form of
   that, for a fill too expensive to hold the lock across.
 - `dt_preview_data_get()` reads one component of one pixel. `colorequal` calls it from
-  `mouse_moved()` and `scrolled()`, on the GTK thread, while the pipe writes.
+  its `scrolled()` handler, on the GTK thread, while the pipe writes.
 - `dt_preview_data_is_fresh()` and `dt_preview_data_get_hash()` report whether what is
   stored still matches the current pipe state; `dt_preview_data_invalidate()` marks it
   stale without dropping the buffer.
