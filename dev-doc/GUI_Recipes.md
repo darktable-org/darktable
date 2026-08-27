@@ -147,15 +147,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 }
 ```
 
-**Always** call `gui_changed()` at the end of `gui_update()`:
+If your module implements `gui_changed()`, end `gui_update()` with `gui_changed(self, NULL, NULL)` — the framework does not call it for you here. The callback is optional, so a module that has none has nothing to add:
 ```c
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_mymodule_gui_data_t *g = self->gui_data;
   dt_iop_mymodule_params_t *p = self->params;
 
-  // Update toggle buttons (sliders/comboboxes auto-sync)
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->my_toggle), p->my_bool);
+  // Only unbound widgets need this. dt_iop_togglebutton_new() gives you a real
+  // GtkToggleButton, so the GTK setter is right here; a _from_params toggle is
+  // synced for you, and is a Bauhaus widget that would take dt_bauhaus_toggle_set()
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->my_plain_button), p->my_bool);
 
   // Apply all UI state adjustments
   gui_changed(self, NULL, NULL);
