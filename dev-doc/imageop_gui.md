@@ -278,7 +278,7 @@ Creates a standard combobox pre-populated with interpolation methods (bilinear, 
 
 1. **`_from_params` functions auto-pack** widgets into `self->widget`. Set `self->widget` to the correct container before calling them.
 
-2. **Toggles need manual gui_update()** - unlike sliders/comboboxes which auto-sync.
+2. **Only unbound widgets need manual gui_update()** - every `_from_params` widget, toggles included, is bound to a parameter field and synced by `dt_bauhaus_update_from_field()` before your `gui_update()` runs. Plain toggle buttons from `dt_iop_togglebutton_new()` carry no field, so those you set yourself.
 
 3. **Slider format order matters** - Set `factor` before `format` before `digits` to avoid rounding issues. See [sliders.md](sliders.md) for all configuration options and recipes.
 
