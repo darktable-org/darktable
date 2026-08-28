@@ -310,7 +310,7 @@ begin
   Y := Y + ConfigChoicePage.SubCaptionLabel.Height + 8;
 
   ConfigChoicePage.Add('Use default configuration directory');
-  ConfigChoicePage.Add('Use a custom configuration directory');
+  ConfigChoicePage.Add('Use a custom configuration directory (can be set on the next page)');
   ConfigChoicePage.SelectedValueIndex := 0;
   ConfigChoicePage.CheckListBox.Left := 0;
   ConfigChoicePage.CheckListBox.Top := Y;
