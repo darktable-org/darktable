@@ -1172,17 +1172,55 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   const gboolean is_16bit = (box->img_bpp == 16);
   const UINT bytes_per_pixel = is_16bit ? 6 : 3;
   const UINT stride = (UINT)box->exp_width * bytes_per_pixel;
-  const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;    
+  const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;   
+  
+  if(is_16bit)
+  {
+    size_t pixels = (size_t)box->exp_width * box->exp_height;
+    uint16_t *src = (uint16_t *)box->buf;
 
-  hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
-                                           box->exp_width,
-                                           box->exp_height,
-                                           pixel_format,
-                                           stride,
-                                           stride * box->exp_height,
-                                           (BYTE *)box->buf,
-                                           &bitmap);
+    BYTE *tmp = malloc(pixels * 6); // R16 G16 B16 packed
+    BYTE *dst = tmp;
 
+    for (size_t i = 0; i < pixels; i++)
+    {
+        uint16_t r = src[i*3 + 0];
+        uint16_t g = src[i*3 + 1];
+        uint16_t b = src[i*3 + 2];
+
+        // WIC requires little-endian
+        *dst++ = r & 0xFF;
+        *dst++ = r >> 8;
+        *dst++ = g & 0xFF;
+        *dst++ = g >> 8;
+        *dst++ = b & 0xFF;
+        *dst++ = b >> 8;
+    }
+
+    // Now use tmp instead of box->buf
+    hr = wic->lpVtbl->CreateBitmapFromMemory(
+            wic,
+            box->exp_width,
+            box->exp_height,
+            pixel_format,
+            stride,
+            stride * box->exp_height,
+            tmp,
+            &bitmap);
+
+    free(tmp);
+  }
+  else 
+  {
+    hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
+                                            box->exp_width,
+                                            box->exp_height,
+                                            pixel_format,
+                                            stride,
+                                            stride * box->exp_height,
+                                            (BYTE *)box->buf,
+                                            &bitmap);
+  }
   if(SUCCEEDED(hr) && bitmap)
   {
     hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, pixel_format, &img_stream);
