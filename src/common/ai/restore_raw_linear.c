@@ -631,10 +631,12 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
         }
       }
 
-      const int ext_y0 = has_top  ? sensor_py_base - sensor_O : sensor_py_base;
-      const int ext_y1 = has_bot  ? sensor_py_end + sensor_O  : sensor_py_end;
-      const int ext_x0 = has_left ? sensor_px_base - sensor_O : sensor_px_base;
-      const int ext_x1 = has_right? sensor_px_end + sensor_O  : sensor_px_end;
+      // the seam reaches sensor_O past the tile edge, outside the buffer at
+      // the image border
+      const int ext_y0 = MAX(0, has_top  ? sensor_py_base - sensor_O : sensor_py_base);
+      const int ext_y1 = MIN(h, has_bot  ? sensor_py_end + sensor_O  : sensor_py_end);
+      const int ext_x0 = MAX(0, has_left ? sensor_px_base - sensor_O : sensor_px_base);
+      const int ext_x1 = MIN(w, has_right? sensor_px_end + sensor_O  : sensor_px_end);
 
       for(int sr = ext_y0; sr < ext_y1; sr++)
       {
@@ -733,11 +735,12 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
       if(v_strip_left)
       {
         const size_t vchan = (size_t)(2 * sensor_O) * v_strip_left_h;
-        for(int sr = v_strip_left_sy0;
-            sr < v_strip_left_sy0 + v_strip_left_h; sr++)
+        const int v_sr_end = MIN(v_strip_left_sy0 + v_strip_left_h, h);
+        const int v_dxs_end = MIN(2 * sensor_O, w - v_strip_left_sx0);
+        for(int sr = v_strip_left_sy0; sr < v_sr_end; sr++)
         {
           const size_t vrow = (size_t)(sr - v_strip_left_sy0) * (2 * sensor_O);
-          for(int dxs = 0; dxs < 2 * sensor_O; dxs++)
+          for(int dxs = 0; dxs < v_dxs_end; dxs++)
           {
             const int sc = v_strip_left_sx0 + dxs;
             const size_t dst = (size_t)sr * w + sc;
@@ -762,10 +765,12 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
     g_free(v_strip_left);
     v_strip_left = NULL;
 
-    // ramps sum to 1, flush. no column clamp needed (no working-region offset)
+    // ramps sum to 1, flush. columns need no clamp (the loop runs to w); the
+    // last strip's rows reach past the image
     if(h_strip_top)
     {
-      for(int sr = h_strip_top_sy0; sr < h_strip_top_sy0 + hstrip_h; sr++)
+      const int h_sr_end = MIN(h_strip_top_sy0 + hstrip_h, h);
+      for(int sr = h_strip_top_sy0; sr < h_sr_end; sr++)
       {
         const size_t hrow = (size_t)(sr - h_strip_top_sy0) * w;
         for(int sc = 0; sc < w; sc++)
