@@ -1174,7 +1174,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   const UINT stride = (UINT)box->exp_width * bytes_per_pixel;
   const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;   
   
-  DBG_MARK("Start create bitmap")
+  DBG_MARK("Start create bitmap");
   hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
                                           box->exp_width,
                                           box->exp_height,
@@ -1183,7 +1183,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
                                           stride * box->exp_height,
                                           (BYTE *)box->buf,
                                           &bitmap);
-  DBG_MARK("finished create bitmap from memory, create png")
+  DBG_MARK("finished create bitmap from memory, create png");
   if(SUCCEEDED(hr) && bitmap)
   {
     hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, pixel_format, &img_stream);
