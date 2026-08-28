@@ -25,6 +25,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <cmocka.h>
 
@@ -32,6 +33,59 @@
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
+#include <glib/gstdio.h>
+#include <windows.h>
+
+typedef struct _decoy_interpreter
+{
+  gchar *directory;
+  gchar *path;
+} _decoy_interpreter_t;
+
+static _decoy_interpreter_t _create_decoy_interpreter(void)
+{
+  _decoy_interpreter_t decoy = { 0 };
+  GError *error = NULL;
+  decoy.directory = g_dir_make_tmp("darktable-process-test-XXXXXX", &error);
+  assert_non_null(decoy.directory);
+  assert_null(error);
+  decoy.path = g_build_filename(decoy.directory, "cmd.exe", NULL);
+
+  wchar_t module_path[32768];
+  const DWORD length = GetModuleFileNameW(NULL, module_path, G_N_ELEMENTS(module_path));
+  assert_true(length > 0 && length < G_N_ELEMENTS(module_path));
+  gunichar2 *wide_decoy = g_utf8_to_utf16(decoy.path, -1, NULL, NULL, NULL);
+  assert_non_null(wide_decoy);
+  assert_true(CopyFileW(module_path, (const wchar_t *)wide_decoy, FALSE));
+  g_free(wide_decoy);
+  return decoy;
+}
+
+static void _remove_decoy_interpreter(_decoy_interpreter_t *decoy)
+{
+  if(decoy->path)
+  {
+    g_remove(decoy->path);
+    g_free(decoy->path);
+  }
+  if(decoy->directory)
+  {
+    g_rmdir(decoy->directory);
+    g_free(decoy->directory);
+  }
+}
+
+static gchar *_save_comspec(void)
+{
+  return g_strdup(g_getenv("COMSPEC"));
+}
+
+static void _restore_comspec(gchar *saved)
+{
+  if(saved) g_setenv("COMSPEC", saved, TRUE);
+  else g_unsetenv("COMSPEC");
+  g_free(saved);
+}
 #endif
 
 static void test_exec_success(void **state)
@@ -57,13 +111,50 @@ static void test_exec_null(void **state)
   assert_int_equal(dt_exec_command_sync(NULL), -1);
 }
 
+#ifdef _WIN32
+static void test_exec_ignores_current_directory_decoy(void **state)
+{
+  _decoy_interpreter_t decoy = _create_decoy_interpreter();
+  gchar *original_directory = g_get_current_dir();
+  assert_int_equal(g_chdir(decoy.directory), 0);
+  const int status = dt_exec_command_sync("exit 0");
+  const int restore_status = g_chdir(original_directory);
+  g_free(original_directory);
+  _remove_decoy_interpreter(&decoy);
+
+  assert_int_equal(restore_status, 0);
+  assert_int_equal(status, 0);
+}
+
+static void test_exec_honors_comspec(void **state)
+{
+  _decoy_interpreter_t decoy = _create_decoy_interpreter();
+  gchar *saved_comspec = _save_comspec();
+  assert_true(g_setenv("COMSPEC", decoy.path, TRUE));
+  const int status = dt_exec_command_sync("exit 0");
+  _restore_comspec(saved_comspec);
+  _remove_decoy_interpreter(&decoy);
+
+  assert_int_equal(status, 91);
+}
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifdef _WIN32
+  // the test executable doubles as a controlled COMSPEC target
+  if(argc > 1 && strcmp(argv[1], "/d") == 0) return 91;
+#endif
+
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_exec_success),
     cmocka_unit_test(test_exec_shell_builtin),
     cmocka_unit_test(test_exec_nonzero_exit),
     cmocka_unit_test(test_exec_null),
+#ifdef _WIN32
+    cmocka_unit_test(test_exec_ignores_current_directory_decoy),
+    cmocka_unit_test(test_exec_honors_comspec),
+#endif
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

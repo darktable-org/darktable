@@ -22,17 +22,15 @@
 
 G_BEGIN_DECLS
 
-/* Run a shell command synchronously and return its exit-code integer.
+/* run a shell command synchronously and return its exit-code integer
 
    On Linux/macOS this is a thin wrapper around system(). On Windows it runs the
-   command through cmd.exe (so cmd builtins, batch files and redirection keep
-   working exactly as they did with system()) but uses the CREATE_NO_WINDOW
-   creation flag, so spawning a console child from a console-less GUI parent
-   (darktable.exe frees its console on startup) no longer flashes a console
-   window (issue #17193).
+   command through the interpreter configured by COMSPEC, with a system-directory
+   cmd.exe fallback, but uses CREATE_NO_WINDOW so a console child spawned from a
+   console-less GUI parent no longer flashes a console window (issue #17193)
 
-   Returns the exit-code integer (like system()), or -1 if the command could not
-   be spawned, or if cmd is NULL. */
+   Returns the exit-code integer, or -1 if the command could not be spawned or
+   cmd is NULL */
 int dt_exec_command_sync(const char *cmd);
 
 G_END_DECLS
