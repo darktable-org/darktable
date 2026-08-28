@@ -691,11 +691,14 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
       // tx-1 + tx ramps now sum to 1; strip = final value, flush + free
       if(v_strip_left)
       {
-        for(int sr = v_strip_left_sy0;
-            sr < v_strip_left_sy0 + v_strip_left_h; sr++)
+        // the strip reaches sensor_O past the tile edge, which on the last
+        // interior row/column is past the working area itself
+        const int v_sr_end = MIN(v_strip_left_sy0 + v_strip_left_h, y0 + 2 * Hh);
+        const int v_dxs_end = MIN(2 * sensor_O, x0 + 2 * Wh - v_strip_left_sx0);
+        for(int sr = v_strip_left_sy0; sr < v_sr_end; sr++)
         {
           const size_t vrow = (size_t)(sr - v_strip_left_sy0) * (2 * sensor_O);
-          for(int dxs = 0; dxs < 2 * sensor_O; dxs++)
+          for(int dxs = 0; dxs < v_dxs_end; dxs++)
           {
             const int sc = v_strip_left_sx0 + dxs;
             const float v = v_strip_left[vrow + dxs];
@@ -725,7 +728,8 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
     // were never written and would overwrite the cfa_in margin copy
     if(h_strip_top)
     {
-      for(int sr = h_strip_top_sy0; sr < h_strip_top_sy0 + hstrip_h; sr++)
+      const int h_sr_end = MIN(h_strip_top_sy0 + hstrip_h, y0 + 2 * Hh);
+      for(int sr = h_strip_top_sy0; sr < h_sr_end; sr++)
       {
         const size_t hrow = (size_t)(sr - h_strip_top_sy0) * width;
         for(int sc = x0; sc < x0 + 2 * Wh; sc++)
