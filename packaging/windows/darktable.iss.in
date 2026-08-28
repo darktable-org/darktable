@@ -381,6 +381,8 @@ begin
   else
   begin
     Dir := Trim(ConfigDirPage.Values[0]);
+    if (Dir <> '') and (Dir[Length(Dir)] = '\') then
+      Dir := Copy(Dir, 1, Length(Dir) - 1);
     if Dir = '' then
       Result := ''
     else
