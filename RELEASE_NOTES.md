@@ -82,6 +82,8 @@ changes (where available).
 - Do not override library edit history from XMP sidecar file when
   using darktable-cli with a library file.
 
+- Fixed collection module not updated properly on preset load.
+
 ## Lua
 
 ### API Version
