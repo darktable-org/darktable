@@ -328,12 +328,19 @@ end;
 function SanitizeShortcutName(const S: String): String;
 var
   I: Integer;
+  C: Char;
 begin
   Result := '';
   for I := 1 to Length(S) do
-    if Pos(S[I], '\/:*?"<>|') = 0 then
-      Result := Result + S[I];
+  begin
+    C := S[I];
+    if (Ord(C) >= 32) and (Pos(C, '\\/:*?"<>|') = 0) then
+      Result := Result + C;
+  end;
+
   Result := Trim(Result);
+  while (Length(Result) > 0) and ((Result[Length(Result)] = '.') or (Result[Length(Result)] = ' ')) do
+    Delete(Result, Length(Result), 1);
 end;
 
 // Returns the (sanitized) custom shortcut name, or the existing default
