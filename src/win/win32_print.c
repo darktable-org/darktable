@@ -1175,6 +1175,8 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;   
   
   DBG_MARK("Start create bitmap");
+  DBG_MARK("WIC bitmap: exp_width=%d exp_height=%d img_bpp=%d stride=%u cbBufferSize=%u",
+         box->exp_width, box->exp_height, box->img_bpp, stride, stride * box->exp_height);
   hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
                                           box->exp_width,
                                           box->exp_height,

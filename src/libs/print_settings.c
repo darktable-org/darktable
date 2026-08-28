@@ -336,9 +336,14 @@ static int write_image(dt_imageio_module_data_t *data,
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
-  d->params->buf =
+const size_t buf_bytes = (size_t)3 * (d->bpp == 8 ? 1 : 2) * d->head.width * d->head.height;
+DBG_MARK("write_image malloc: width=%d height=%d bpp=%d buf_bytes=%zu",
+         d->head.width, d->head.height, d->bpp, buf_bytes);
+params->buf = (uint16_t *)malloc(buf_bytes);
+
+/*   d->params->buf =
     (uint16_t *)malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
-  if(!d->params->buf)
+ */  if(!d->params->buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[print] unable to allocate memory for image %s", filename);
     return 1;
