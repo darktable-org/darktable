@@ -202,6 +202,11 @@ void dt_splash_screen_create(const gboolean force)
     gtk_box_pack_start(GTK_BOX(image_box), branding, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(image_box), image, FALSE, FALSE, 0);
     dt_gui_box_add(content, image_box);
+
+    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_widget_set_name(sep, "splashscreen-separator");
+    gtk_widget_set_hexpand(sep, TRUE);
+    dt_gui_box_add(content, sep);
     dt_gui_box_add(content, darktable.splash.progress_text);
   }
   else
