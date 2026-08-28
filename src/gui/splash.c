@@ -34,6 +34,9 @@
 
 #define ICON_SIZE 150
 
+// margin between the branding and the featured image
+#define BRANDING_MARGIN 30
+
 #ifdef USE_FEATURED_IMAGE
 #define PROGNAME_SIZE 300
 #else
@@ -137,7 +140,8 @@ void dt_splash_screen_create(const gboolean force)
 
   // if the user has placed a custom splash.jpg in the config dir, use
   // it in preference to the default featured image
-  GtkWidget *custom_image = NULL;
+  GtkWidget *image = NULL;
+  int img_h = 0;
   gchar *custom_image_file = g_strdup_printf("%s/splash.jpg", darktable.configdir);
   if(g_file_test(custom_image_file, G_FILE_TEST_EXISTS))
   {
@@ -152,31 +156,28 @@ void dt_splash_screen_create(const gboolean force)
       const double ppd = dt_get_system_gui_ppd(darktable.splash.start_screen);
       const double max_w = 400.0 * ppd;
       const double max_h = 225.0 * ppd;
-      // if the image is larger than 400x225 (at device scale), scale it
-      // down to fit within that rectangle, preserving the aspect ratio
-      if(width > max_w || height > max_h)
-      {
-        const double scale = MIN(max_w / width, max_h / height);
-        GdkPixbuf *scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                                    (int)(width * scale),
-                                                    (int)(height * scale),
-                                                    GDK_INTERP_BILINEAR);
-        g_object_unref(pixbuf);
-        pixbuf = scaled;
-      }
-      custom_image = gtk_image_new_from_pixbuf(pixbuf);
+      // scale the image to fit within the container, preserving the
+      // aspect ratio, so that the container dimensions are always used
+      const double scale = MIN(max_w / width, max_h / height);
+      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                                  (int)(width * scale),
+                                                  (int)(height * scale),
+                                                  GDK_INTERP_BILINEAR);
       g_object_unref(pixbuf);
-      gtk_widget_set_name(GTK_WIDGET(custom_image), "splashscreen-image");
-      gtk_widget_set_halign(GTK_WIDGET(custom_image), GTK_ALIGN_CENTER);
-      gtk_widget_set_valign(GTK_WIDGET(custom_image), GTK_ALIGN_CENTER);
+      pixbuf = scaled;
+      image = gtk_image_new_from_pixbuf(pixbuf);
+      img_h = gdk_pixbuf_get_height(pixbuf);
+      g_object_unref(pixbuf);
+      gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
+      gtk_widget_set_halign(GTK_WIDGET(image), GTK_ALIGN_CENTER);
+      gtk_widget_set_valign(GTK_WIDGET(image), GTK_ALIGN_CENTER);
     }
   }
   g_free(custom_image_file);
 
 #ifdef USE_FEATURED_IMAGE
-  // make a random selection of featured image based on the current
-  // time
-  GtkWidget *image = custom_image;
+  // if the user has not supplied a custom image, make a random
+  // selection of featured image based on the current time
   if(!image)
   {
     const int imgnum = (int)(1 + (clock()%MAX_IMAGES));
@@ -187,53 +188,63 @@ void dt_splash_screen_create(const gboolean force)
     g_free(image_file);
     gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
   }
-  gtk_image_set_pixel_size(GTK_IMAGE(logo), 180);
-  GtkWidget *program_desc =
-    GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
-  gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
-  gtk_widget_set_name(program_desc, "splashscreen-description");
+#endif
 
-  dt_gui_box_add(content,
-                 dt_gui_hbox(dt_gui_vbox(logo, version, program_name, program_desc),
-                             image));
-#else
-  gtk_image_set_pixel_size(GTK_IMAGE(logo), ICON_SIZE);
-  gtk_label_set_justify(GTK_LABEL(version), GTK_JUSTIFY_LEFT);
+  if(image)
+  {
+    // layout with an image beside the branding
+    gtk_image_set_pixel_size(GTK_IMAGE(logo), 180);
+    GtkWidget *program_desc =
+      GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
+    gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
+    gtk_widget_set_name(program_desc, "splashscreen-description");
 
-  GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
-  gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_LEFT);
-  gtk_widget_set_halign(program_desc, GTK_ALIGN_START);
-  gtk_widget_set_name(program_desc, "splashscreen-description");
-
-  GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_widget_set_name(sep, "splashscreen-separator");
-  gtk_widget_set_hexpand(sep, TRUE);
-
-  GtkWidget *title_col = dt_gui_vbox(program_name);
-  gtk_box_set_spacing(GTK_BOX(title_col), 4);
-  dt_gui_box_add(GTK_BOX(title_col), version);
-  gtk_widget_set_halign(program_name, GTK_ALIGN_START);
-  gtk_widget_set_halign(version, GTK_ALIGN_START);
-  gtk_label_set_xalign(GTK_LABEL(version), 0.0);
-  gtk_widget_set_halign(title_col, GTK_ALIGN_START);
-  gtk_widget_set_valign(title_col, GTK_ALIGN_CENTER);
-  gtk_widget_set_valign(logo, GTK_ALIGN_CENTER);
-
-  GtkWidget *logo_col = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-  gtk_box_pack_start(GTK_BOX(logo_col), logo, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(logo_col), copyright, FALSE, FALSE, 0);
-  gtk_widget_set_halign(logo_col, GTK_ALIGN_START);
-  gtk_widget_set_valign(logo_col, GTK_ALIGN_CENTER);
-
-  if(custom_image)
-    dt_gui_box_add(content,
-                   dt_gui_hbox(logo_col, title_col, custom_image));
+    GtkWidget *branding = dt_gui_vbox(logo, version, program_name, program_desc);
+    gtk_widget_set_margin_end(GTK_WIDGET(branding), BRANDING_MARGIN);
+    if(img_h > 0)
+    {
+      gtk_widget_set_size_request(GTK_WIDGET(branding), -1, img_h);
+      gtk_widget_set_valign(GTK_WIDGET(branding), GTK_ALIGN_CENTER);
+    }
+    dt_gui_box_add(content, dt_gui_hbox(branding, image));
+    dt_gui_box_add(content, darktable.splash.progress_text);
+  }
   else
+  {
+    // no image: original layout
+    gtk_image_set_pixel_size(GTK_IMAGE(logo), ICON_SIZE);
+    gtk_label_set_justify(GTK_LABEL(version), GTK_JUSTIFY_LEFT);
+
+    GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
+    gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_LEFT);
+    gtk_widget_set_halign(program_desc, GTK_ALIGN_START);
+    gtk_widget_set_name(program_desc, "splashscreen-description");
+
+    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_widget_set_name(sep, "splashscreen-separator");
+    gtk_widget_set_hexpand(sep, TRUE);
+
+    GtkWidget *title_col = dt_gui_vbox(program_name);
+    gtk_box_set_spacing(GTK_BOX(title_col), 4);
+    dt_gui_box_add(GTK_BOX(title_col), version);
+    gtk_widget_set_halign(program_name, GTK_ALIGN_START);
+    gtk_widget_set_halign(version, GTK_ALIGN_START);
+    gtk_label_set_xalign(GTK_LABEL(version), 0.0);
+    gtk_widget_set_halign(title_col, GTK_ALIGN_START);
+    gtk_widget_set_valign(title_col, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(logo, GTK_ALIGN_CENTER);
+
+    GtkWidget *logo_col = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+    gtk_box_pack_start(GTK_BOX(logo_col), logo, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(logo_col), copyright, FALSE, FALSE, 0);
+    gtk_widget_set_halign(logo_col, GTK_ALIGN_START);
+    gtk_widget_set_valign(logo_col, GTK_ALIGN_CENTER);
+
     dt_gui_box_add(content,
                    dt_gui_hbox(logo_col, title_col));
-  dt_gui_box_add(content,
-                 dt_gui_vbox(program_desc, sep, darktable.splash.progress_text));
-#endif
+    dt_gui_box_add(content,
+                   dt_gui_vbox(program_desc, sep, darktable.splash.progress_text));
+  }
 
   gtk_widget_set_halign(darktable.splash.progress_text, GTK_ALIGN_START);
 
