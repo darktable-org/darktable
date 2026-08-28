@@ -1430,27 +1430,66 @@ static GtkWidget *_notebook_page_of(GtkWidget *w,
   return NULL;
 }
 
+/* The default the widget's field holds in a fresh instance of its module.
+
+   A widget knows where its parameter lives; the same offset into
+   default_params, or into default_blendop_params for a blending widget, is
+   what that parameter would be without any edit. Reading the default from
+   there rather than from the copy the widget cached when it was built means
+   the answer follows a module that computes its defaults in reload_defaults(),
+   and cannot go stale. Returns NULL when the widget has no parameter behind
+   it, or when its field belongs to neither block. */
+static const void *_default_for_field(dt_bauhaus_widget_t *b)
+{
+  if(!b->field || !b->module || b->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
+    return NULL;
+
+  const dt_iop_module_t *module = (dt_iop_module_t *)b->module;
+
+  if(module->params && module->default_params)
+  {
+    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->params;
+    if(offset >= 0 && (size_t)offset < module->params_size)
+      return (uint8_t *)module->default_params + offset;
+  }
+
+  if(module->blend_params && module->default_blendop_params)
+  {
+    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->blend_params;
+    if(offset >= 0 && (size_t)offset < sizeof(dt_develop_blend_params_t))
+      return (uint8_t *)module->default_blendop_params + offset;
+  }
+
+  return NULL;
+}
+
 // TRUE when the widget carries a parameter that is away from its default
 static gboolean _bauhaus_differs_from_default(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(widget);
-  // no field behind it means it drives the gui only and has no parameter
-  // that could be off default
-  if(!b->field) return FALSE;
 
-  switch(b->type)
+  /* No field behind it means it drives the gui only and has no parameter that
+     could be off default. A field the module does not own is left alone as
+     well, rather than guessed at. */
+  const void *def = _default_for_field(b);
+  if(!def) return FALSE;
+
+  switch(b->field_type)
   {
-    case DT_BAUHAUS_SLIDER:
-    {
-      dt_bauhaus_slider_data_t *d = &b->slider;
-      return fabsf(d->pos - d->curve((d->defpos - d->min) / (d->max - d->min),
-                                     DT_BAUHAUS_SET)) > 0.001f;
-    }
-    case DT_BAUHAUS_TOGGLE:
-      return b->toggle.active != b->toggle.defpos;
+    case DT_INTROSPECTION_TYPE_FLOAT:
+      return fabsf(*(float *)b->field - *(const float *)def) > 1e-6f;
+    case DT_INTROSPECTION_TYPE_INT:
+      return *(int *)b->field != *(const int *)def;
+    case DT_INTROSPECTION_TYPE_UINT:
+      return *(unsigned int *)b->field != *(const unsigned int *)def;
+    case DT_INTROSPECTION_TYPE_USHORT:
+      return *(unsigned short *)b->field != *(const unsigned short *)def;
+    case DT_INTROSPECTION_TYPE_BOOL:
+      return *(gboolean *)b->field != *(const gboolean *)def;
+    case DT_INTROSPECTION_TYPE_ENUM:
+      return *(int *)b->field != *(const int *)def;
     default:
-      return b->combobox.entries->len
-        && b->combobox.active != b->combobox.defpos;
+      return FALSE;
   }
 }
 
