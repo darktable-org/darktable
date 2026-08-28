@@ -293,19 +293,20 @@ begin
   // bottom section - custom configuration-directory toggle
   // The page was created with an empty SubCaption above; set and
   // reposition it here so it (and the option list below it) start right
-  // after the divider instead of at the top of the page.
+  // after the divider instead of at the top of the page. Width and
+  // WordWrap are set before Caption/AutoSize so that Inno computes the
+  // wrapped height for the actual rendered width.
+  ConfigChoicePage.SubCaptionLabel.Left := 0;
+  ConfigChoicePage.SubCaptionLabel.Top := Y;
+  ConfigChoicePage.SubCaptionLabel.Width := ConfigChoicePage.SurfaceWidth;
+  ConfigChoicePage.SubCaptionLabel.WordWrap := True;
+  ConfigChoicePage.SubCaptionLabel.AutoSize := True;
   ConfigChoicePage.SubCaptionLabel.Caption :=
     'Useful for e.g. running parallel darktable installations for ' +
     'testing. Note: This setting applies to both the desktop and Start ' +
     'menu shortcuts created by this installer. Other ways of starting ' +
     'darktable (e.g. launching from another application) may keep ' +
     'using the default directory.';
-  ConfigChoicePage.SubCaptionLabel.AutoSize := False;
-  ConfigChoicePage.SubCaptionLabel.WordWrap := True;
-  ConfigChoicePage.SubCaptionLabel.Left := 0;
-  ConfigChoicePage.SubCaptionLabel.Top := Y;
-  ConfigChoicePage.SubCaptionLabel.Width := ConfigChoicePage.SurfaceWidth;
-  ConfigChoicePage.SubCaptionLabel.Height := 60;
   Y := Y + ConfigChoicePage.SubCaptionLabel.Height + 8;
 
   ConfigChoicePage.Add('Use default configuration directory');
