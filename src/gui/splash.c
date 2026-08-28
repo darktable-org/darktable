@@ -34,9 +34,6 @@
 
 #define ICON_SIZE 150
 
-// margin between the branding and the featured image
-#define BRANDING_MARGIN 30
-
 #ifdef USE_FEATURED_IMAGE
 #define PROGNAME_SIZE 300
 #else
@@ -141,7 +138,6 @@ void dt_splash_screen_create(const gboolean force)
   // if the user has placed a custom splash.jpg in the config dir, use
   // it in preference to the default featured image
   GtkWidget *image = NULL;
-  int img_h = 0;
   gchar *custom_image_file = g_strdup_printf("%s/splash.jpg", darktable.configdir);
   if(g_file_test(custom_image_file, G_FILE_TEST_EXISTS))
   {
@@ -166,10 +162,9 @@ void dt_splash_screen_create(const gboolean force)
       g_object_unref(pixbuf);
       pixbuf = scaled;
       image = gtk_image_new_from_pixbuf(pixbuf);
-      img_h = gdk_pixbuf_get_height(pixbuf);
       g_object_unref(pixbuf);
       gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
-      gtk_widget_set_halign(GTK_WIDGET(image), GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(GTK_WIDGET(image), GTK_ALIGN_END);
       gtk_widget_set_valign(GTK_WIDGET(image), GTK_ALIGN_CENTER);
     }
   }
@@ -200,13 +195,13 @@ void dt_splash_screen_create(const gboolean force)
     gtk_widget_set_name(program_desc, "splashscreen-description");
 
     GtkWidget *branding = dt_gui_vbox(logo, version, program_name, program_desc);
-    gtk_widget_set_margin_end(GTK_WIDGET(branding), BRANDING_MARGIN);
-    if(img_h > 0)
-    {
-      gtk_widget_set_size_request(GTK_WIDGET(branding), -1, img_h);
-      gtk_widget_set_valign(GTK_WIDGET(branding), GTK_ALIGN_CENTER);
-    }
-    dt_gui_box_add(content, dt_gui_hbox(branding, image));
+    gtk_widget_set_valign(GTK_WIDGET(branding), GTK_ALIGN_START);
+    GtkWidget *image_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_hexpand(image_box, TRUE);
+    gtk_widget_set_halign(GTK_WIDGET(branding), GTK_ALIGN_CENTER);
+    gtk_box_pack_start(GTK_BOX(image_box), branding, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(image_box), image, FALSE, FALSE, 0);
+    dt_gui_box_add(content, image_box);
     dt_gui_box_add(content, darktable.splash.progress_text);
   }
   else
