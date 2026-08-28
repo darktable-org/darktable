@@ -1173,13 +1173,31 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   const UINT bytes_per_pixel = is_16bit ? 6 : 3;
   const UINT stride = (UINT)box->exp_width * bytes_per_pixel;
   const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;   
-  
-  if(is_16bit)
+  BYTE *tmp = NULL;
+//DEBUG  
+printf("is_16bit=%d\n", is_16bit);
+printf("exp_width=%u exp_height=%u\n", box->exp_width, box->exp_height);
+printf("bytes_per_pixel=%u stride=%u\n", bytes_per_pixel, stride);
+printf("pixel_format=%s\n", is_16bit ? "48bppRGB" : "24bppRGB");
+
+if(is_16bit)
+{
+    printf("first pixel raw: %04x %04x %04x\n",
+           ((uint16_t*)box->buf)[0],
+           ((uint16_t*)box->buf)[1],
+           ((uint16_t*)box->buf)[2]);
+
+    printf("first pixel packed: %02x %02x %02x %02x %02x %02x\n",
+           tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5]);
+}
+// END DEBUG
+
+  if(is_16bit) // swap endians for WIC compatibility
   {
     size_t pixels = (size_t)box->exp_width * box->exp_height;
     uint16_t *src = (uint16_t *)box->buf;
 
-    BYTE *tmp = malloc(pixels * 6); // R16 G16 B16 packed
+    tmp = malloc(pixels * 6); // R16 G16 B16 packed
     BYTE *dst = tmp;
 
     for (size_t i = 0; i < pixels; i++)
@@ -1208,7 +1226,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
             tmp,
             &bitmap);
 
-    free(tmp);
+
   }
   else 
   {
@@ -1246,6 +1264,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   }
 
   if(bitmap) bitmap->lpVtbl->Release(bitmap);
+  if(tmp) free(tmp);
   if(wic) wic->lpVtbl->Release(wic);
 
   return resource;
