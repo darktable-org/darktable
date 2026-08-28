@@ -377,6 +377,7 @@ int set_params(dt_lib_module_t *self,
                const int size)
 {
   /* update conf settings from params */
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200] = { 0 };
 
@@ -411,6 +412,7 @@ int set_params(dt_lib_module_t *self,
   /* set number of rules */
   g_strlcpy(confname, "plugins/lighttable/collect/num_rules", sizeof(confname));
   dt_conf_set_int(confname, p->rules);
+  d->view_rule = -1;
 
   /* update internal params */
   _lib_collect_update_params(self->data);
