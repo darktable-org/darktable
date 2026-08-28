@@ -1089,6 +1089,7 @@ static IXpsOMColorProfileResource *_win_build_color_profile_resource(IXpsOMObjec
 } 
 static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
                                                 IWICBitmapSource *bitmap,
+                                                const WICPixelFormatGUID *pixel_format,
                                                 IStream **stream_out)
 {
   if(!wic || !bitmap || !stream_out) return E_POINTER;
@@ -1116,7 +1117,7 @@ static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
           UINT w = 0, h = 0;
           bitmap->lpVtbl->GetSize(bitmap, &w, &h);
 
-          WICPixelFormatGUID format = GUID_WICPixelFormat24bppRGB;
+          WICPixelFormatGUID format = *pixel_format;
           hr = frame->lpVtbl->SetSize(frame, w, h);
           if(SUCCEEDED(hr))
             hr = frame->lpVtbl->SetPixelFormat(frame, &format);
@@ -1168,7 +1169,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   if(FAILED(hr) || !wic)
     return NULL;
   
-  const gboolean is_16bit = (box->bpp == 16);
+  const gboolean is_16bit = (box->img_bpp == 16);
   const UINT bytes_per_pixel = is_16bit ? 6 : 3;
   const UINT stride = (UINT)box->exp_width * bytes_per_pixel;
   const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;    
@@ -1184,7 +1185,7 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
 
   if(SUCCEEDED(hr) && bitmap)
   {
-    hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, &img_stream);
+    hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, pixel_format, &img_stream);
     if(SUCCEEDED(hr) && img_stream)
     {
       wchar_t uri[64];
