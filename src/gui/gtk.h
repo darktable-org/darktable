@@ -639,6 +639,7 @@ void dt_gui_collapsible_section_exclude_tab_state(dt_gui_collapsible_section_t *
    it that matches the current tab. The link is followed both ways, so such a
    tab is read and reset through its content, and an ordinary parameter widget
    in that content still finds the tab it belongs to. */
+// pass a NULL content to unlink a page again
 void dt_gui_tab_state_set_content(GtkWidget *page, GtkWidget *content);
 GtkWidget *dt_gui_tab_state_content(GtkWidget *page);
 GtkWidget *dt_gui_tab_state_page_of_content(GtkWidget *content);

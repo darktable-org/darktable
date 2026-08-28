@@ -5433,21 +5433,88 @@ gboolean dt_gui_tab_state_excluded(GtkWidget *widget)
 #define DT_TAB_STATE_HANDLER_KEY "dt-tab-state-handler"
 #define DT_TAB_STATE_HANDLER_DATA_KEY "dt-tab-state-handler-data"
 
+/* One end of a page/content link.
+
+   The two widgets are linked but neither owns the other, and either may go
+   first: the colour equalizer drops its options tab with
+   gtk_notebook_remove_page() when the sliders preference is turned off, while
+   the stack page that tab pointed at stays. A plain pointer would be left
+   dangling and the next walk up from a slider would follow it. The link is
+   held in a slot with a weak pointer on the far end instead, so the slot nulls
+   itself the moment that widget goes, and freeing the slot -- when its holder
+   dies, or when the same key is linked again -- takes the weak pointer with
+   it. */
+typedef struct _tab_state_link_t
+{
+  GtkWidget *target;
+} _tab_state_link_t;
+
+static void _tab_state_link_free(gpointer data)
+{
+  _tab_state_link_t *link = data;
+
+  if(link->target)
+    g_object_remove_weak_pointer(G_OBJECT(link->target), (gpointer *)&link->target);
+
+  g_free(link);
+}
+
+static void _tab_state_link(GtkWidget *holder,
+                            const char *key,
+                            GtkWidget *target)
+{
+  _tab_state_link_t *link = g_malloc0(sizeof(_tab_state_link_t));
+
+  link->target = target;
+  g_object_add_weak_pointer(G_OBJECT(target), (gpointer *)&link->target);
+  g_object_set_data_full(G_OBJECT(holder), key, link, _tab_state_link_free);
+}
+
+static GtkWidget *_tab_state_linked(GtkWidget *holder,
+                                    const char *key)
+{
+  const _tab_state_link_t *link =
+    holder ? g_object_get_data(G_OBJECT(holder), key) : NULL;
+
+  return link ? link->target : NULL;
+}
+
+/* Drop a link and the one pointing back at it, so that relinking either end
+   cannot leave a page and a content naming different partners. Setting the key
+   to NULL runs the slot's destroy notify, which takes the weak pointer with
+   it. */
+static void _tab_state_unlink(GtkWidget *holder,
+                              const char *key,
+                              const char *far_key)
+{
+  GtkWidget *far = _tab_state_linked(holder, key);
+  if(far) g_object_set_data(G_OBJECT(far), far_key, NULL);
+
+  g_object_set_data(G_OBJECT(holder), key, NULL);
+}
+
 void dt_gui_tab_state_set_content(GtkWidget *page, GtkWidget *content)
 {
-  if(!page || !content) return;
-  g_object_set_data(G_OBJECT(page), DT_TAB_STATE_CONTENT_KEY, content);
-  g_object_set_data(G_OBJECT(content), DT_TAB_STATE_PAGE_KEY, page);
+  if(!page) return;
+
+  _tab_state_unlink(page, DT_TAB_STATE_CONTENT_KEY, DT_TAB_STATE_PAGE_KEY);
+  if(content)
+    _tab_state_unlink(content, DT_TAB_STATE_PAGE_KEY, DT_TAB_STATE_CONTENT_KEY);
+  else
+    return; // a NULL content just unlinks the page
+
+  _tab_state_link(page, DT_TAB_STATE_CONTENT_KEY, content);
+  _tab_state_link(content, DT_TAB_STATE_PAGE_KEY, page);
 }
 
 GtkWidget *dt_gui_tab_state_content(GtkWidget *page)
 {
-  return page ? g_object_get_data(G_OBJECT(page), DT_TAB_STATE_CONTENT_KEY) : NULL;
+  return _tab_state_linked(page, DT_TAB_STATE_CONTENT_KEY);
 }
 
 GtkWidget *dt_gui_tab_state_page_of_content(GtkWidget *content)
 {
-  return content ? g_object_get_data(G_OBJECT(content), DT_TAB_STATE_PAGE_KEY) : NULL;
+  return _tab_state_linked(content, DT_TAB_STATE_PAGE_KEY);
 }
 
 void dt_gui_tab_state_set_handler(GtkWidget *page,
