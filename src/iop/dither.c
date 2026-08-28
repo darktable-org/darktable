@@ -419,7 +419,7 @@ static void _process_floyd_steinberg(
   const int graymode = _get_dither_parameters(data,piece,scale,&levels);
   if(graymode < 0)
   {
-    for(size_t j = 0; j < height * width; j++)
+    for(size_t j = 0; j < (size_t)height * width; j++)
       _clipnan_pixel(out + 4*j, in + 4*j);
     return;
   }
@@ -431,7 +431,7 @@ static void _process_floyd_steinberg(
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
   {
-    for(size_t j = 0; j < height * width; j++)
+    for(size_t j = 0; j < (size_t)height * width; j++)
     {
       _clipnan_pixel(out + 4 * j, in + 4 * j);
       _nearest_color(out + 4 * j, err, graymode, f, rf);
