@@ -135,16 +135,58 @@ void dt_splash_screen_create(const gboolean force)
   GtkWidget *program_name = _get_program_name();
   GtkBox *content = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
+  // if the user has placed a custom splash.jpg in the config dir, use
+  // it in preference to the default featured image
+  GtkWidget *custom_image = NULL;
+  gchar *custom_image_file = g_strdup_printf("%s/splash.jpg", darktable.configdir);
+  if(g_file_test(custom_image_file, G_FILE_TEST_EXISTS))
+  {
+    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(custom_image_file, NULL);
+    if(pixbuf)
+    {
+      const int width = gdk_pixbuf_get_width(pixbuf);
+      const int height = gdk_pixbuf_get_height(pixbuf);
+      // take the display DPI into account: scale the container size by
+      // the device pixel ratio so the image is rendered at the display
+      // resolution rather than the logical size
+      const double ppd = dt_get_system_gui_ppd(darktable.splash.start_screen);
+      const double max_w = 400.0 * ppd;
+      const double max_h = 225.0 * ppd;
+      // if the image is larger than 400x225 (at device scale), scale it
+      // down to fit within that rectangle, preserving the aspect ratio
+      if(width > max_w || height > max_h)
+      {
+        const double scale = MIN(max_w / width, max_h / height);
+        GdkPixbuf *scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                                    (int)(width * scale),
+                                                    (int)(height * scale),
+                                                    GDK_INTERP_BILINEAR);
+        g_object_unref(pixbuf);
+        pixbuf = scaled;
+      }
+      custom_image = gtk_image_new_from_pixbuf(pixbuf);
+      g_object_unref(pixbuf);
+      gtk_widget_set_name(GTK_WIDGET(custom_image), "splashscreen-image");
+      gtk_widget_set_halign(GTK_WIDGET(custom_image), GTK_ALIGN_CENTER);
+      gtk_widget_set_valign(GTK_WIDGET(custom_image), GTK_ALIGN_CENTER);
+    }
+  }
+  g_free(custom_image_file);
+
 #ifdef USE_FEATURED_IMAGE
   // make a random selection of featured image based on the current
   // time
-  const int imgnum = (int)(1 + (clock()%MAX_IMAGES));
-  //FIXME: if user overrides --datadir, we won't find the image...
-  gchar *image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg",
-                                      darktable.datadir, imgnum);
-  GtkWidget *image = gtk_image_new_from_file(image_file);
-  g_free(image_file);
-  gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
+  GtkWidget *image = custom_image;
+  if(!image)
+  {
+    const int imgnum = (int)(1 + (clock()%MAX_IMAGES));
+    //FIXME: if user overrides --datadir, we won't find the image...
+    gchar *image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg",
+                                        darktable.datadir, imgnum);
+    image = gtk_image_new_from_file(image_file);
+    g_free(image_file);
+    gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
+  }
   gtk_image_set_pixel_size(GTK_IMAGE(logo), 180);
   GtkWidget *program_desc =
     GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
@@ -183,9 +225,14 @@ void dt_splash_screen_create(const gboolean force)
   gtk_widget_set_halign(logo_col, GTK_ALIGN_START);
   gtk_widget_set_valign(logo_col, GTK_ALIGN_CENTER);
 
+  if(custom_image)
+    dt_gui_box_add(content,
+                   dt_gui_hbox(logo_col, title_col, custom_image));
+  else
+    dt_gui_box_add(content,
+                   dt_gui_hbox(logo_col, title_col));
   dt_gui_box_add(content,
-                 dt_gui_vbox(dt_gui_hbox(logo_col, title_col),
-                             program_desc, sep, darktable.splash.progress_text));
+                 dt_gui_vbox(program_desc, sep, darktable.splash.progress_text));
 #endif
 
   gtk_widget_set_halign(darktable.splash.progress_text, GTK_ALIGN_START);
