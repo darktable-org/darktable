@@ -483,7 +483,8 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
   // tile setup
   const int O = OVERLAP_LINEAR;
   const int T = dt_restore_get_tile_size(ctx);
-  if(T <= 2 * O)
+  // see restore_raw_bayer.c
+  if(T < 4 * O)
   {
     dt_free_align(rgb_src);
     dt_free_align(rgb_out);
