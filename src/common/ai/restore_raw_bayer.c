@@ -377,9 +377,10 @@ int dt_restore_raw_bayer(dt_restore_context_t *ctx,
   // tile setup in packed (half-res) space
   const int O = OVERLAP_PACKED;
   const int T = dt_restore_get_tile_size(ctx);
-  if(T <= 2 * O) return 1;
+  // below 4 * O two adjacent tiles' seam ramps stop summing to 1: refuse the
+  // tile size rather than seam the output
+  if(T < 4 * O) return 1;
   const int step = T - 2 * O;
-  if(step <= 0) return 1;
   gboolean cpu_fallback_done = FALSE;
   const size_t tile_in_plane = (size_t)T * T;
   const size_t tile_out_w = 2 * (size_t)T;
