@@ -104,6 +104,10 @@ changes (where available).
 - Fixed a crash when importing a style whose module order is empty. The
   malformed order is now ignored and the style keeps the default one.
 
+- Fixed a crash at the end of neural restore's raw denoise on certain
+  sensor sizes, where blending the tile seams wrote past the edge of
+  the image.
+
 ## Lua
 
 ### API Version
