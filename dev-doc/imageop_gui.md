@@ -94,7 +94,7 @@ Creates a Bauhaus toggle (checkbox) bound to a boolean parameter.
 
 **Returns:** A Bauhaus widget. It is a `GtkWidget *`, but it is **not** a `GtkToggleButton`: Bauhaus widgets derive from `GtkDrawingArea` (`src/bauhaus/bauhaus.c`), so casting one with `GTK_TOGGLE_BUTTON()` is a type error. Read and write it with `dt_bauhaus_toggle_get()` and `dt_bauhaus_toggle_set()`.
 
-**Syncing:** nothing to do, the same as sliders and comboboxes. Binding the parameter also registers the widget for the automatic update, and `dt_iop_gui_update()` runs `dt_bauhaus_update_from_field()` — which handles bound toggles alongside sliders and comboboxes — before it calls your `gui_update()` (`src/develop/imageop.c`, `src/bauhaus/bauhaus.c`). Manual syncing is only needed for plain toggle buttons made with `dt_iop_togglebutton_new()`, which carry no parameter field; see below.
+**Syncing:** nothing to do — bound toggles are synced with sliders and comboboxes before your `gui_update()` runs ([GUI.md](GUI.md#gui_update--sync-widgets-from-params)). Manual syncing is only needed for plain toggle buttons made with `dt_iop_togglebutton_new()`, which carry no parameter field; see below.
 
 **Example (from vignette.c):**
 ```c
@@ -256,18 +256,19 @@ Creates a standard combobox pre-populated with interpolation methods (bilinear, 
 
 ---
 
-## Key Points to Remember
+## Traps and Pointers
 
 Two traps belong to these helpers in particular:
 
-1. **A bound toggle is not a `GtkToggleButton`** - `dt_bauhaus_toggle_from_params()` returns a Bauhaus widget, so `GTK_TOGGLE_BUTTON()` on it is a type error; use `dt_bauhaus_toggle_get()` / `dt_bauhaus_toggle_set()`. It is also synced for you, unlike the plain button `dt_iop_togglebutton_new()` gives you.
+1. **A bound toggle is not a `GtkToggleButton`** — `dt_bauhaus_toggle_from_params()` returns a Bauhaus widget, so `GTK_TOGGLE_BUTTON()` on it is a type error; use `dt_bauhaus_toggle_get()` / `dt_bauhaus_toggle_set()`. It is also synced for you, unlike the plain button `dt_iop_togglebutton_new()` gives you.
 
-2. **Slider format order matters** - Set `factor` before `format` before `digits` to avoid rounding issues. See [sliders.md](sliders.md) for all configuration options and recipes.
+2. **Slider format order matters** — set `factor` before `format` before `digits` to avoid rounding issues. See [sliders.md](sliders.md) for all configuration options and recipes.
 
-The rest of what applies here is owned elsewhere:
+The remaining guidance is covered in these documents:
 
 - **Packing** — `_from_params` functions pack into whatever `self->widget` points at, so set it to the right container first: [GUI.md — Widget Packing Order](GUI.md#widget-packing-order).
 - **Sections are for shortcuts**, not visual organization — see [`DT_IOP_SECTION_FOR_PARAMS`](#dt_iop_section_for_params-macro) above, and use `dt_ui_section_label_new()` for visual headers.
 - **Color pickers wrap sliders**, so the picker is the widget to store and pack: [sliders.md](sliders.md#33-integration-with-color-pickers).
-- **Setting widget values** belongs in `gui_update()`, not `gui_init()`, and a module that implements `gui_changed()` ends `gui_update()` with `gui_changed(self, NULL, NULL)`: [GUI.md — GUI Events and Callbacks](GUI.md#2-gui-events-and-callbacks).
+- **Setting widget values** belongs in `gui_update()`, not `gui_init()`: [GUI.md — `gui_update()`](GUI.md#gui_update--sync-widgets-from-params).
+- **A module that implements `gui_changed()`** ends `gui_update()` with `gui_changed(self, NULL, NULL)`: [GUI.md — `gui_changed()`](GUI.md#gui_changed--ui-state-adjustments).
 - **Labels** go through `dt_ui_label_new()`, never `gtk_label_new()`: [GUI_Recipes.md — Recipe 7](GUI_Recipes.md#recipe-7-creating-labels).

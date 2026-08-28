@@ -58,7 +58,7 @@ Each module instance in the pipeline (`dt_dev_pixelpipe_iop_t`) maintains a `has
 
 **Always:**
 1.  The image ID.
-2.  The color profiles: input, working, output and export ICC profile info (`pipe->input_profile_info` and friends). Because color profile changes are committed globally rather than per-module, they cannot be tracked in individual `piece->hash` values and are instead included in the base hash for every cache lookup. Note that it is the profile-info *pointers* that are hashed, not their contents.
+2.  The color profiles: input, working, output and export ICC profile info (`pipe->input_profile_info` and friends), by pointer identity — see [What the Cache Key Does Not Cover](#what-the-cache-key-does-not-cover).
 3.  The hashes of all preceding enabled/non-skipped modules (0 to $N-1$).
 4.  The parameters of the current module (via `piece->hash`, which covers operation name, instance, params, and blending).
 
@@ -66,9 +66,9 @@ Each module instance in the pipeline (`dt_dev_pixelpipe_iop_t`) maintains a `has
 
 5.  The pipe type (preview, full, export, etc.).
 6.  The detail mask state.
-7.  The ROI itself, `pipe->scharr.hash`, and the color picker's sample when an included module is picking.
+7.  The ROI itself — including its `scale` (`dt_iop_roi_t`, `src/develop/pixelpipe.h`) — plus `pipe->scharr.hash` and the color picker's sample when an included module is picking.
 
-This list is the key as `dt_dev_pixelpipe_cache_hash()` builds it, not a hash of the whole pipe. The split exists because the reduced form is useful on its own: without a ROI, what remains — image, profiles, preceding pieces, this piece — is a hash of the parameter state of the pipe up to that position, independent of any particular region. That reduced form is what `dt_dev_pixelpipe_piece_hash()` produces when it is passed a NULL ROI, as `hlreconstruct`'s `opposed` code does for its own cache; it is not a cache-line lookup.
+Together these are the key as `dt_dev_pixelpipe_cache_hash()` builds it, not a hash of the whole pipe. The split matters because the reduced form is useful on its own: without a ROI, what remains — image, profiles, preceding pieces, this piece — is a hash of the parameter state of the pipe up to that position, independent of any particular region. That reduced form is what `dt_dev_pixelpipe_piece_hash()` produces when it is passed a NULL ROI, as `hlreconstruct`'s `opposed` code does for its own cache; it is not a cache-line lookup.
 
 Because a normal lookup already carries the pipe type, the scale and the color profiles, those do not need to be in a module's `params` — deliberately so. See [IOP_Module_API.md](IOP_Module_API.md#commit_params---transform-parameters-into-processing-data) for the rule this puts on `commit_params()`.
 
@@ -79,7 +79,7 @@ When `dt_iop_commit_params` is called (usually after a param change), the `piece
 The key does not hash the pipe or the image record wholesale. It hashes selected fields, so "I can reach it through `piece->pipe` or `self->dev`" is not a reason to assume an input is covered. Three cases worth knowing:
 
 - **Image metadata other than the id.** The id identifies the image; it does not version it. Most of `dt_image_t` is capture data fixed at import, and the darkroom works from a copy of the record taken when the image was loaded (`dev->image_storage`, `src/develop/develop.c`), so that part cannot move under a running pipe. The database-backed part can, and none of it is read from that copy: on every call, `dt_variables_expand()` takes the rating from the live image-cache record and the color labels, tags and user metadata from their own tables (`src/common/variables.c`). Where each can be edited differs — the rating and the color labels from within the darkroom, the tagging panel there too when `plugins/darkroom/tagging/visible` is set, the user-metadata editor in lighttable and tethering only (`src/libs/metadata.c`).
-- **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at.
+- **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at. They are in the base hash of every lookup, rather than in a `piece->hash`, because profile changes are committed globally rather than per-module and so cannot be tracked per piece.
 - **Preferences and other process-global state.** `colorout` reads `plugins/lighttable/export/force_lcms2` from the config (`src/iop/colorout.c`).
 
 A module cannot add to the key: `dt_iop_commit_params()` builds `piece->hash` *after* the module's `commit_params()` has returned and assigns it unconditionally (`src/develop/imageop.c`), and `src/iop/iop_api.h` declares nothing else for the purpose. Three routes remain:
@@ -109,7 +109,11 @@ Darktable processes images in chunks (tiles) or just the visible area to save me
 -   **`roi_out`**: The region the module *must* produce.
 -   **`roi_in`**: The region the module *needs* from the previous module.
 
-For simple point operations (exposure, curves), `roi_in == roi_out`. For geometric operations (lens correction, rotate), `roi_in` is a transformed version of `roi_out`. For neighborhood operations (blur, sharpen), `roi_in` is slightly larger than `roi_out` (padding).
+How the two relate depends on what the module does:
+
+-   **Point operations** (exposure, curves): `roi_in == roi_out`.
+-   **Geometric operations** (lens correction, rotate): `roi_in` is a transformed version of `roi_out`.
+-   **Neighborhood operations** (blur, sharpen): `roi_in` is slightly larger than `roi_out` (padding).
 
 ## Threading and OpenCL
 

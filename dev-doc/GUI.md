@@ -3,7 +3,7 @@
 This document covers building module UIs, handling events and callbacks, and widget reparenting patterns.
 
 See also:
-- [GUI_Threading.md](GUI_Threading.md) — Sharing `gui_data` between the GTK and pixelpipe threads
+- [GUI_Threading.md](GUI_Threading.md) — Sharing `gui_data` between the GTK and pipe worker threads
 - [imageop_gui.md](imageop_gui.md) — Widget creation function reference (`_from_params`, buttons, sections)
 - [sliders.md](sliders.md) — Slider configuration (ranges, formatting, color stops)
 - [Notebook_UI.md](Notebook_UI.md) — Tabbed interfaces with `GtkNotebook`
@@ -111,8 +111,8 @@ Check: DT_GUARD_GUI_UPDATE()   (suppresses callbacks during a programmatic sync)
     ↓
 Modify self->params directly
     ↓
-Call gui_changed(self, NULL, NULL) yourself, if the change
-affects dependent UI state (the framework does not, on this route)
+Call gui_changed(self, NULL, NULL) yourself
+    (the framework does not, on this route)
     ↓
 Call dt_dev_add_history_item(darktable.develop, self, TRUE)
     ↓
@@ -152,7 +152,7 @@ See [GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module
 
 ### `gui_update()` — Sync Widgets from Params
 
-Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework raises the GUI-update guard (`DT_ENTER_GUI_UPDATE()`) before calling it, so widget callbacks will not fire.
+Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework atomically raises the GUI-update guard (`DT_ENTER_GUI_UPDATE()`) before calling it, so widget callbacks will not fire.
 
 Widgets created with the `_from_params` helpers — sliders, comboboxes and toggles alike — are bound to a parameter field, and the framework syncs all of them for you: `dt_iop_gui_update()` runs `dt_bauhaus_update_from_field()` before it calls you (`src/develop/imageop.c`, `src/bauhaus/bauhaus.c`). You only need to sync widgets that carry no field — a plain `dt_iop_togglebutton_new()` button, or a custom widget of your own. If your module implements `gui_changed()`, end with `gui_changed(self, NULL, NULL)` so the dependent UI state it maintains — visibility, sensitivity, labels — is recomputed; the framework does not call it for you here:
 
@@ -196,7 +196,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 ### The GUI-Update Guard (`DT_GUARD_GUI_UPDATE`)
 
-A counter (not a boolean) that suppresses callback processing when non-zero. The framework uses it during `gui_update()`.
+A single process-wide atomic counter (not a boolean) that suppresses callback processing when non-zero. `DT_ENTER_GUI_UPDATE()` and `DT_LEAVE_GUI_UPDATE()` increment and decrement it atomically (`darktable.gui->reset`, `src/common/darktable.h`), so nesting is safe. The framework raises it during `gui_update()`.
 
 **Pattern 1: Check at the start of every manual callback:**
 ```c
@@ -319,7 +319,7 @@ In general, darktable widgets do not set their GDK window cursors. If a widget n
 
 ---
 
-## 3. Thread Safety — Where It Is Covered
+## 3. Thread Safety
 
 `process()` is not a GTK callback and has no guaranteed thread affinity. GTK is not thread-safe. You **cannot** call GTK functions directly from `process()`.
 
@@ -408,10 +408,6 @@ self->widget = main_box;  // restore
 
 ### QAP Reparenting (Framework-Managed)
 
-When a user adds a module's widget to the Quick Access Panel, the framework (`src/libs/modulegroups.c`) reparents it out of your module UI and back again. That is its business, not yours; what it asks of a module author is that the widget survives the trip:
+When a user adds a module's widget to the Quick Access Panel, the framework (`src/libs/modulegroups.c`) reparents it out of your module UI and back again. The framework handles the reparenting; what it asks of a module author is that the widget survives the trip — it must sit in a `GtkBox` or `GtkGrid` parent, and it must make sense in isolation. Multi-instance modules are restricted further.
 
-- It must sit in a `GtkBox` or `GtkGrid` parent — that is what the framework knows how to remove from and restore into.
-- It must work in isolation: clear label, good tooltip.
-- A complex custom widget that depends on its siblings or its parent will not reparent cleanly.
-
-For the steps the framework takes, and the restrictions that follow from them, see [Quick_Access_Panel.md](Quick_Access_Panel.md).
+For the steps the framework takes, and the full set of restrictions that follow from them, see [Quick_Access_Panel.md — Developer Considerations](Quick_Access_Panel.md#developer-considerations).
