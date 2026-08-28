@@ -270,7 +270,7 @@ begin
   UseDefaultNameCheckBox.OnClick := @UseDefaultNameCheckBoxOnClick;
   Y := Y + UseDefaultNameCheckBox.Height + 8;
   
-  // text-field for custom shortcut; invisible when above checkbox is unchecked
+  // text-field for custom shortcut; invisible when above checkbox is checked
   ShortcutNameEdit := TNewEdit.Create(ConfigChoicePage);
   ShortcutNameEdit.Parent := ConfigChoicePage.Surface;
   ShortcutNameEdit.Left := 0;
