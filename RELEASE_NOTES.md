@@ -84,6 +84,10 @@ changes (where available).
 
 - Fixed collection module not updated properly on preset load.
 
+- Fixed a crash at the end of neural restore's raw denoise on certain
+  sensor sizes, where blending the tile seams wrote past the edge of
+  the image.
+
 ## Lua
 
 ### API Version
