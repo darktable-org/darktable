@@ -42,6 +42,7 @@ The sections, in order:
 
 **Where your code runs**
 - [Which Thread Am I On?](#which-thread-am-i-on)
+  - [Thread-Safe Redraw Helpers](#thread-safe-redraw-helpers)
 
 **Locking rules**
 - [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params)
@@ -60,7 +61,7 @@ The sections, in order:
 - [Pattern B: Message Passing](#pattern-b-message-passing)
 - [The Callback Must Not Outlive the Module or the Image](#the-callback-must-not-outlive-the-module-or-the-image)
 
-**Then**
+**Reference**
 - [Common Mistakes](#common-mistakes)
 
 ## Which Thread Am I On?
@@ -153,18 +154,18 @@ because the GTK thread may itself be waiting on a pipe.
 
 ### Exceptions: Pipeline Callbacks That GTK-Thread Code Also Calls
 
-> Four entries in the right column are also called directly from GTK-thread code, so they
-> run on either thread and need the same care for a different reason:
-> `distort_transform()` and `distort_backtransform()` (mask handling and darkroom zoom
-> both call them), `blend_colorspace()` (the blend GUI calls it) and
-> `default_colorspace()` (the color picker calls it while building a picker button,
-> `src/gui/color_picker_proxy.c`). `distort_mask()` does *not* have that property despite
-> the similar name — it is invoked only from pipeline code.
->
-> Those two colorspace callbacks are called with `NULL` for both `pipe` and `piece` from
-> the GTK side, so each has to tolerate that. `default_colorspace()` is also reached
-> indirectly: if you leave `blend_colorspace()` at its default,
-> `default_blend_colorspace()` forwards its two arguments straight through.
+Four entries in the right column are also called directly from GTK-thread code, so they
+run on either thread and need the same care for a different reason:
+`distort_transform()` and `distort_backtransform()` (mask handling and darkroom zoom
+both call them), `blend_colorspace()` (the blend GUI calls it) and
+`default_colorspace()` (the color picker calls it while building a picker button,
+`src/gui/color_picker_proxy.c`). `distort_mask()` does *not* have that property despite
+the similar name — it is invoked only from pipeline code.
+
+Those two colorspace callbacks are called with `NULL` for both `pipe` and `piece` from
+the GTK side, so each has to tolerate that. `default_colorspace()` is also reached
+indirectly: if you leave `blend_colorspace()` at its default,
+`default_blend_colorspace()` forwards its two arguments straight through.
 
 ## Using `gui_data` from `commit_params()`
 
@@ -521,8 +522,9 @@ The hash handshake does not close that window. It establishes that the publisher
 from starting another one that frees and replaces the object while you are still reading
 it. A widget callback that resets the published state can free it too. This is
 [Hold the Lock as Long as the Value Must Stay Valid](#hold-the-lock-as-long-as-the-value-must-stay-valid)
-wearing an inter-pipe costume, so pick one of the three answers given there before you
-publish an allocation.
+wearing an inter-pipe costume: hold the lock through the last use, copy the data rather
+than the pointer, or transfer ownership so the publisher cannot free it. Pick one of the
+three before you publish an allocation.
 
 ## The Lock Is Not Recursive
 
@@ -684,8 +686,8 @@ replace `gui_lock` for your module's other shared fields, and it is not a genera
 
 ## Guards Before Sending GUI Updates
 
-Three tests belong here before you schedule a GUI update from `process()`; only the first
-is unconditional.
+The guard block below belongs before you schedule a GUI update from `process()`. It has
+three lines, but only two of them are tests, and only the first is unconditional.
 
 ```c
 dt_iop_mymodule_gui_data_t *g = self->gui_data;
@@ -706,7 +708,7 @@ publishes it from there (`dt_pipe_is_preview()`, `src/iop/exposure.c`). What is 
 right is no pipe test at all — then every pipe running your module queues its own
 update.
 
-The middle test is the in-tree idiom, not a working guard — see
+The middle line is the in-tree idiom, not a working guard — see
 [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params).
 
 Reading `g` once is enough for the length of the run: on the four darkroom teardown
@@ -892,8 +894,8 @@ transition that invalidates your payload. A base instance survives an image swit
 a source queued while the old image was loaded fires against the new one. Drain in
 `change_image()` too — that is the callback the framework gives a retained instance for
 exactly this kind of reset, and it runs while the three screen-pipe mutexes are still
-held, so no pipe worker thread can queue a source behind the drain. Clearing GUI state is what
-the modules implementing it use it for; they are listed in
+held, so no pipe worker thread can queue a source behind the drain. The modules that
+implement `change_image()` use it to clear GUI state; they are listed in
 [IOP_Module_API.md](IOP_Module_API.md#change_image---reset-gui-state-for-the-new-image):
 
 ```c
@@ -933,9 +935,8 @@ source ids yourself: keep the id in `gui_data`, and queue with `g_idle_add_full(
 passing `g_free` as the `GDestroyNotify`. Drop the `g_free(msg)` from the callback if
 you do — the notification runs after a normal dispatch as well as on cancellation, so
 keeping both frees the message twice. A second update also has to supersede the first
-rather than overwrite its id unremoved. That is more bookkeeping than the critical
-section Pattern B set out to avoid, so prefer Pattern A unless the payload genuinely
-cannot live in `gui_data`.
+rather than overwrite its id unremoved. That bookkeeping is why Pattern B's opening
+preference for Pattern A applies.
 
 ### What the `gui_data` Check Actually Does
 
@@ -969,7 +970,7 @@ Each row is one WRONG line and the section that explains it.
 | --- | --- | --- |
 | GTK call from `process()`, directly or through a helper | `gtk_label_set_text(g->label, "value");` | [Which Thread Am I On?](#which-thread-am-i-on) |
 | Assuming `commit_params()` runs on the GTK thread | `void commit_params(...) { gtk_widget_queue_draw(g->area); }` | [Which Thread Am I On?](#which-thread-am-i-on) |
-| No critical section when the pipe writes `gui_data` | `g->computed_value = result;` in `process()` | [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params) |
+| No critical section when the pipe writes `gui_data` — queueing the GUI read for later does not synchronize the write | `g->computed_value = result;` in `process()`, then `g_idle_add(_update_gui, self);` | [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params) |
 | Entering the critical section without checking that the GUI exists | `dt_iop_gui_enter_critical_section(self);` in `commit_params()`, unguarded | [Using `gui_data` from `commit_params()`](#using-gui_data-from-commit_params) |
 | No critical section in a widget callback either, when the pipe reads the field | `g->cache_valid = FALSE;` in a slider callback | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |
 | Treating a reprocess request as a barrier | `dt_dev_reprocess_center(self->dev, self->iop_order);` after writing a shared field | [Writing `gui_data` from a Widget Callback](#writing-gui_data-from-a-widget-callback) |

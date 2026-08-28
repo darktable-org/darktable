@@ -6,7 +6,7 @@ See also:
 - [Pixelpipe Architecture](pixelpipe_architecture.md) for pipeline data flow and caching.
 - [Introspection System](introspection.md) for parameter management.
 - [GUI Architecture](GUI.md) for GUI events, callbacks, and widget reparenting.
-- [GUI Threading](GUI_Threading.md) for sharing `gui_data` between the GTK and pixelpipe threads.
+- [GUI Threading](GUI_Threading.md) for sharing `gui_data` between the GTK and pipe worker threads.
 
 ---
 
@@ -14,20 +14,20 @@ See also:
 
 **Required — every IOP module has these:**
 1. **Parameter struct** (`dt_iop_modulename_params_t`) - the user-facing parameters, serialized to the database, controlled via UI widgets in `self->params`
-2. **Required functions** - `name()`, `default_colorspace()`, `process()`
+2. **Core functions** - `name()`, `default_colorspace()`, `process()`
 
 **Conditional — present when the module's shape calls for them:**
 
-3. **Processing data struct** (`dt_iop_modulename_data_t`) - a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`. Optional but common; when not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below). A module that defines one must also implement `init_pipe()` and `cleanup_pipe()`.
+3. **Processing data struct** (`dt_iop_modulename_data_t`) - a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`; when not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below). A module that defines one usually implements [`init_pipe()` and `cleanup_pipe()`](#init_pipe--cleanup_pipe) too.
 4. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, present only where the module has a GUI: the darkroom, plus a throw-away instance built at startup. A hidden module never gets one.
 
 **Optional:**
 
-5. **Optional functions** - GUI, lifecycle, geometry, metadata, etc.
+5. **Other callbacks** - GUI, lifecycle, geometry, metadata, etc.
 
 ---
 
-## Required Structures
+## Data Structures
 
 ### Parameter Struct (`params_t`)
 
@@ -154,7 +154,7 @@ Database ──load──→ self->params ──UI widgets──→ self->params
                                           (params_t or data_t)
 ```
 
-When a `data_t` is used, you must also implement `init_pipe()` and `cleanup_pipe()` to allocate/free it. See [Pipe Lifecycle Functions](#pipe-lifecycle-functions) below.
+When a `data_t` is used, allocating and freeing it is usually yours to do in `init_pipe()` and `cleanup_pipe()`. See [Pipe Lifecycle Functions](#pipe-lifecycle-functions) below for when the defaults are enough.
 
 ---
 
@@ -212,7 +212,7 @@ void process(dt_iop_module_t *self,
 
 **Important:**
 - **Never use GTK API directly in `process()`** — see [GUI_Threading.md](GUI_Threading.md) for the correct approach
-- **`commit_params()` has no thread affinity either** — see [below](#commit_params---transform-parameters-into-processing-data)
+- **`commit_params()` has no thread affinity either** — `gui_data` it shares with widget callbacks needs the GUI critical section, and only when a GUI exists; see [`commit_params()`](#commit_params---transform-parameters-into-processing-data)
 - Use `piece->data` for parameters, not `self->params`
 - Use `DT_OMP_FOR()` for parallelization
 - Use `for_each_channel()` for vectorization
@@ -411,9 +411,9 @@ Each pixelpipe has its own copy of every module's data via `dt_dev_pixelpipe_iop
 
 #### `init_pipe()` / `cleanup_pipe()`
 
-**Default behavior** (if not implemented): allocates/frees `self->params_size` bytes.
+**Default behavior** (if not implemented): `calloc()`s `self->params_size` bytes and `free()`s them (`src/develop/imageop.c`). That is enough for a `data_t` no larger than `params_t` that owns no sub-allocations — `rasterfile` defines its own `data_t` and relies on the defaults.
 
-**Custom implementation** (required when using a separate `data_t`):
+**Custom implementation**, needed when the `data_t` is larger than the `params_t`, or owns memory that has to be released with it:
 
 ```c
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -444,7 +444,7 @@ Enter that section only when `gui_data` is non-NULL: `gui_data` is `NULL` on exp
 
 `piece->hash` is only part of the cache key: a lookup also folds in the image id, the color profiles, the hashes of the preceding pieces and — when it supplies a ROI, which is the normal case — the pipe type, the detail-mask flag, the ROI, the Scharr state and the color picker's sample (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`; the full list is in [pixelpipe_architecture.md](pixelpipe_architecture.md#hash-based-caching)). So pipe type, scale and color profiles do not need to be in `params` — a normal lookup has them already.
 
-There is no hook for adding to that key. The wrapper builds `piece->hash` after your callback returns and assigns it unconditionally, and `src/iop/iop_api.h` declares nothing else for the purpose. So keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path. Which inputs the key leaves out, and the three routes available for them, are set out in [pixelpipe_architecture.md — What the Cache Key Does Not Cover](pixelpipe_architecture.md#what-the-cache-key-does-not-cover).
+There is no hook for adding to that key. The wrapper builds `piece->hash` after your callback returns and assigns it unconditionally, and `src/iop/iop_api.h` declares nothing else for the purpose. So keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path. The three routes are to put a serializable value in `module->params`, to use a pipe field the framework already hashes, or to invalidate explicitly; which inputs the key leaves out, and which route suits which, are set out in [pixelpipe_architecture.md — What the Cache Key Does Not Cover](pixelpipe_architecture.md#what-the-cache-key-does-not-cover).
 
 **Simple case** — no transformation needed, default `memcpy` suffices. Don't implement this function.
 
@@ -507,7 +507,7 @@ If `IOP_FLAGS_ALLOW_TILING` is set, the pixelpipe is allowed to process a piece 
 
 Memory requirements and tile alignment are reported by `tiling_callback()`. A module that does not provide one gets the defaults computed by `default_tiling_callback()`.
 
-Provide a specific `tiling_callback()` whenever the module may exceed the requirements assumed by `default_tiling_callback()`, or needs special alignment. There are three reasons to do so:
+Provide a specific `tiling_callback()` whenever the module may exceed the requirements assumed by `default_tiling_callback()`, or needs special alignment, so that:
 
 - the tiling process will not allocate more memory than it was granted;
 - the OpenCL code path will not be tried when the requirements are too high, which avoids costly late fallbacks to the CPU path;
@@ -568,7 +568,8 @@ User Edits Widget:
        → commit_params(p)  [transforms its p argument → piece->data]
        → process()         [reads piece->data]
 
-Image Switch:  [the base instance is kept, its extra instances rebuilt]
+Image Switch:  [the base instance is kept; extra instances are destroyed,
+                then rebuilt from the new image's history]
   reload_defaults() → change_image() [if implemented] → [history params loaded]
        → gui_update() → gui_changed() [if implemented]
 

@@ -18,7 +18,7 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 | File | Description |
 |------|-------------|
 | **[GUI.md](GUI.md)** | GUI architecture: UI construction, events/callbacks, reparenting |
-| **[GUI_Threading.md](GUI_Threading.md)** | Sharing `gui_data` between the GTK and pixelpipe threads: locking, GUI updates, callback lifetime |
+| **[GUI_Threading.md](GUI_Threading.md)** | Sharing `gui_data` between the GTK and pipe worker threads: locking, GUI updates, callback lifetime |
 | **[imageop_gui.md](imageop_gui.md)** | Widget creation functions (`dt_bauhaus_*_from_params`, buttons, sections) |
 | **[sliders.md](sliders.md)** | Slider configuration (ranges, formatting, color stops, recipes) |
 | **[Notebook_UI.md](Notebook_UI.md)** | Creating tabbed interfaces with `GtkNotebook` |
@@ -112,9 +112,9 @@ Before hand-rolling buffer, hash and lock plumbing to show a per-pixel value und
 | `gui_update()` | Sync widget values from `self->params` (called when params change) |
 | `gui_changed()` | Adjust UI based on current state (show/hide widgets, update labels) |
 | `gui_cleanup()` | Free any manually allocated resources |
-| `change_image()` | Clear GUI state describing the old image; also where pipe-scheduled GUI updates are cancelled ([why](IOP_Module_API.md#change_image---reset-gui-state-for-the-new-image)) |
-| `init_pipe()` | Allocate `piece->data` — required if using a custom `data_t` larger than `params_t` |
-| `commit_params()` | Transform the `params` argument it is handed into processing-ready `piece->data` for `process()` ([which argument](IOP_Module_API.md#commit_params---transform-parameters-into-processing-data)) |
+| `change_image()` | Clear GUI state describing the old image — an image switch keeps the base instance, so `gui_cleanup()` never runs for it; also where pipe-scheduled GUI updates are cancelled ([details](IOP_Module_API.md#change_image---reset-gui-state-for-the-new-image)) |
+| `init_pipe()` | Allocate `piece->data` — needed for a `data_t` larger than `params_t`, or one with sub-allocations ([when the defaults suffice](IOP_Module_API.md#init_pipe--cleanup_pipe)) |
+| `commit_params()` | Transform the `params` argument it is handed — `self->params` normally, `default_params` on the pipe's defaults sync ([details](IOP_Module_API.md#commit_params---transform-parameters-into-processing-data)) — into processing-ready `piece->data` for `process()` |
 | `cleanup_pipe()` | Free `piece->data` and any sub-allocations |
 | `color_picker_apply()` | Handle color picker results (if using pickers) |
 | `reload_defaults()` | Update defaults for different image types |

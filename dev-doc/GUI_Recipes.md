@@ -154,7 +154,9 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_mymodule_gui_data_t *g = self->gui_data;
   dt_iop_mymodule_params_t *p = self->params;
 
-  // Only unbound widgets need this — see GUI.md, "gui_update() — Sync Widgets from Params"
+  // Only unbound widgets need this. The GTK setter is right here because
+  // dt_iop_togglebutton_new() gives a real GtkToggleButton; a _from_params toggle is a
+  // Bauhaus widget and is synced for you. See GUI.md, "gui_update()".
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->my_plain_button), p->my_bool);
 
   // Apply all UI state adjustments
@@ -162,7 +164,7 @@ void gui_update(dt_iop_module_t *self)
 }
 ```
 
-That keeps the two routes into `gui_changed()` in step: the framework calls it after a bound `_from_params` widget changes, and `gui_update()` calls it here, so an externally loaded set of params ends up with the same visibility and sensitivity as a user edit would produce. A manual widget callback is the third route, and has to call it itself — see [GUI.md](GUI.md#gui_changed--ui-state-adjustments).
+That keeps the two automatic routes into `gui_changed()` in step, so an externally loaded set of params ends up with the same visibility and sensitivity as a user edit would produce. A manual widget callback is the third route, and has to call it itself — see [GUI.md](GUI.md#gui_changed--ui-state-adjustments).
 
 ---
 
@@ -171,10 +173,10 @@ That keeps the two routes into `gui_changed()` in step: the framework calls it a
 **Always** use `dt_ui_label_new()` instead of `gtk_label_new()`: the wrapper ellipsizes long text instead of letting it stretch the panel width.
 
 ```c
-// WRONG - long text may stretch the panel width
+// WRONG
 GtkWidget *label = gtk_label_new(_("Description that might be very long"));
 
-// CORRECT - text will be ellipsized if too long
+// CORRECT
 GtkWidget *label = dt_ui_label_new(_("Description that might be very long"));
 dt_gui_box_add(self->widget, label);
 ```
