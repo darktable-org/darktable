@@ -366,11 +366,19 @@ end;
 // shortcuts and the post-install "Launch darktable" entry, or an empty
 // string when the default configuration directory is used.
 function GetConfigDirParam(Param: String): String;
+var
+  Dir: String;
 begin
   if ConfigChoicePage.SelectedValueIndex = 0 then
     Result := ''
   else
-    Result := '--configdir "' + ConfigDirPage.Values[0] + '"';
+  begin
+    Dir := Trim(ConfigDirPage.Values[0]);
+    if Dir = '' then
+      Result := ''
+    else
+      Result := '--configdir ' + AddQuotes(Dir);
+  end;
 end;
 
 function EnvironmentKey(Param: String): String;
