@@ -10,14 +10,20 @@ See also:
 
 ---
 
-## Module Structure Overview
+## What a Module Is Made Of
 
-Every IOP module needs:
+**Required — every IOP module has these:**
 1. **Parameter struct** (`dt_iop_modulename_params_t`) - the user-facing parameters, serialized to the database, controlled via UI widgets in `self->params`
-2. **Processing data struct** (`dt_iop_modulename_data_t`) - optional but common; a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`. When not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below).
-3. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, present only where the module has a GUI: the darkroom, plus a throw-away instance built at startup
-4. **Required functions** - `name()`, `default_colorspace()`, `process()`
-5. **Optional functions** - GUI, lifecycle, geometry, etc.
+2. **Required functions** - `name()`, `default_colorspace()`, `process()`
+
+**Conditional — present when the module's shape calls for them:**
+
+3. **Processing data struct** (`dt_iop_modulename_data_t`) - a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`. Optional but common; when not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below). A module that defines one must also implement `init_pipe()` and `cleanup_pipe()`.
+4. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, present only where the module has a GUI: the darkroom, plus a throw-away instance built at startup. A hidden module never gets one.
+
+**Optional:**
+
+5. **Optional functions** - GUI, lifecycle, geometry, metadata, etc.
 
 ---
 
@@ -205,18 +211,8 @@ void process(dt_iop_module_t *self,
 ```
 
 **Important:**
-- **Never use GTK+ API directly in `process()`** — see [GUI_Threading.md](GUI_Threading.md) for the correct approach
-- **`commit_params()` has no thread affinity** — for your darkroom instance it usually
-  runs on a pixelpipe thread, and it runs on the GTK thread when an image switch
-  rebuilds the screen pipes' nodes, so `gui_data` it shares with widget callbacks needs
-  the
-  GUI critical section. Enter that section only when `gui_data` is non-NULL: `gui_data`
-  is `NULL` on export and `gui_lock` is only initialised when a GUI exists, so the
-  non-GUI branch must compute what processing needs on its own. The in-tree idiom writes
-  `self->dev->gui_attached && g`; the `dev` dereference is safe there, since a module
-  always has a `dev` by the time a pipe commits it, but `g` is the half that does the
-  work — and even `g` is not quite proof that `gui_lock` was initialised; see
-  [GUI_Threading.md](GUI_Threading.md#using-gui_data-from-commit_params)
+- **Never use GTK API directly in `process()`** — see [GUI_Threading.md](GUI_Threading.md) for the correct approach
+- **`commit_params()` has no thread affinity either** — see [below](#commit_params---transform-parameters-into-processing-data)
 - Use `piece->data` for parameters, not `self->params`
 - Use `DT_OMP_FOR()` for parallelization
 - Use `for_each_channel()` for vectorization
@@ -311,7 +307,9 @@ Common flags: `IOP_FLAGS_INCLUDE_IN_STYLES`, `IOP_FLAGS_SUPPORTS_BLENDING`, `IOP
 
 ### GUI Functions
 
-For `gui_init()`, `gui_update()`, `gui_changed()`, `gui_cleanup()`, `gui_focus()`, `color_picker_apply()`, and mouse/drawing events, see [GUI.md](GUI.md).
+For `gui_init()`, `gui_update()`, `gui_changed()`, `gui_cleanup()`, `color_picker_apply()`, and mouse/drawing events, see [GUI.md](GUI.md).
+
+`gui_focus(self, in)` is not covered there: the framework calls it when the module gains or loses focus in the darkroom (`src/iop/iop_api.h`). `rasterfile` uses it to re-read a file that may have changed while the module was not in focus (`src/iop/rasterfile.c`).
 
 ### `init_presets()` - Built-in Presets
 
@@ -392,12 +390,7 @@ Common checks: `dt_image_is_raw()`, `dt_image_is_hdr()`, `dt_image_is_ldr()`, `d
 
 ### `change_image()` - Reset GUI State for the New Image
 
-Called on an image switch, after `reload_defaults()` and before the new image's params
-reach `gui_update()`. Switching image does not tear down every module: each module's base
-instance — the one with the lowest `multi_priority` — is kept, GUI and all, and reused
-for the new image (`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image —
-a cached curve, a selected region, a pending readout — therefore survives unless you
-clear it here:
+Called on an image switch, after `reload_defaults()` and before the new image's params reach `gui_update()`. Switching image does not tear down every module: each module's base instance — the one with the lowest `multi_priority` — is kept, GUI and all, and reused for the new image (`src/views/darkroom.c`). Anything in `gui_data` that describes the *old* image — a cached curve, a selected region, a pending readout — therefore survives unless you clear it here:
 
 ```c
 void change_image(dt_iop_module_t *self)
@@ -410,13 +403,7 @@ void change_image(dt_iop_module_t *self)
 }
 ```
 
-`gui_cleanup()` does **not** run for that retained instance — only the module's extra
-instances are torn down, and what replaces them is whatever the new image's history
-needs — so `change_image()` is also where a module that
-schedules GUI updates from the pipe has to cancel them; see
-[GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image).
-`basicadj`, `retouch`, `rgblevels` and `rgbcurve` implement it, and each also calls it
-from `gui_init()` to set the same initial state.
+`gui_cleanup()` does **not** run for that retained instance — only the module's extra instances are torn down, and what replaces them is whatever the new image's history needs — so `change_image()` is also where a module that schedules GUI updates from the pipe has to cancel them; see [GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image). `basicadj`, `retouch`, `rgblevels` and `rgbcurve` implement it, and each also calls it from `gui_init()` to set the same initial state.
 
 ### Pipe Lifecycle Functions
 
@@ -445,27 +432,19 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 }
 ```
 
-### `commit_params()` - Transform UI Parameters into Processing Data
+### `commit_params()` - Transform Parameters into Processing Data
 
 Called by the framework whenever parameters are synced to the pixelpipe. Its job is to translate the incoming parameters into processing-ready `piece->data`. Work from the `params` argument, not from `self->params`: they are the same in the normal case, but the pipe's defaults sync passes `default_params` instead (`src/develop/pixelpipe_hb.c`).
 
+**Threading note:** `commit_params()` has no thread affinity. For your darkroom instance it usually runs on a pixelpipe worker thread, but it also runs on the GTK main thread when an image switch rebuilds the screen pipes' nodes. Any `gui_data` it shares with widget callbacks therefore needs the GUI critical section, i.e. the module's `gui_lock`.
+
+Enter that section only when `gui_data` is non-NULL: `gui_data` is `NULL` on export and `gui_lock` is only initialized when a GUI exists, so the non-GUI branch must compute what processing needs on its own. The in-tree idiom writes `self->dev->gui_attached && g`. The `dev` dereference is safe here, since a module always has a `dev` by the time a pipe commits it, but `g` is the half that does the work — and even `g` is not quite proof that `gui_lock` was initialized; see [GUI_Threading.md](GUI_Threading.md#using-gui_data-from-commit_params).
+
 **Caching note:** After this function returns, `dt_iop_commit_params()` hashes the operation name, the instance, `module->params`, and the blend parameters and mask group if blending is on (`src/develop/imageop.c`). Read that list literally in both directions: it is `module->params`, *not* the `params` argument your callback was just handed — on the defaults sync those are different objects — and it never includes `piece->data`, the output you just produced. The hash is also the wrapper's work, not the callback's, so a `commit_params()` reached another way does not update it; `basecurve` calls its own directly from `init_pipe()`. If that `piece->hash` changes, the cache for this module and all subsequent ones is invalidated.
 
-`piece->hash` is only part of the cache key. A lookup also folds in the image id, the four profiles the pipe is working with, the hash of every enabled, non-skipped piece before this one, and — for a lookup with a ROI, which is the normal case — the pipe type, the detail-mask flag, the ROI itself, the Scharr state and the colour picker's sample (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`). So pipe type, scale and colour profiles do not need to be in `params`: a normal lookup has them in the key already, deliberately.
+`piece->hash` is only part of the cache key: a lookup also folds in the image id, the color profiles, the hashes of the preceding pieces and — when it supplies a ROI, which is the normal case — the pipe type, the detail-mask flag, the ROI, the Scharr state and the color picker's sample (`dt_dev_pixelpipe_cache_hash()`, `src/develop/pixelpipe_cache.c`; the full list is in [pixelpipe_architecture.md](pixelpipe_architecture.md#hash-based-caching)). So pipe type, scale and color profiles do not need to be in `params` — a normal lookup has them already.
 
-What the key does *not* do is hash the pipe or the image record wholesale. It hashes selected fields, so "I can reach it through `piece->pipe` or `self->dev`" is not a reason to assume an input is covered. Three cases worth knowing:
-
-- **Image metadata other than the id.** The id identifies the image; it does not version it. Most of `dt_image_t` is capture data fixed at import, and the darkroom works from a copy of the record taken when the image was loaded (`dev->image_storage`, `src/develop/develop.c`), so that part cannot move under a running pipe. The database-backed part can, and none of it is read from that copy: on every call, `dt_variables_expand()` takes the rating from the live image-cache record and the colour labels, tags and user metadata from their own tables (`src/common/variables.c`). Where each can be edited differs — the rating and the colour labels from within the darkroom, the tagging panel there too when `plugins/darkroom/tagging/visible` is set, the user-metadata editor in lighttable and tethering only (`src/libs/metadata.c`).
-- **Profile contents.** The four profiles are in the key by identity — the pipe's profile-info *pointers* are hashed, not what they point at.
-- **Preferences and other process-global state.** `colorout` reads `plugins/lighttable/export/force_lcms2` from the config (`src/iop/colorout.c`).
-
-There is no callback for contributing to that key. `dt_iop_commit_params()` builds `piece->hash` *after* your `commit_params()` has returned and assigns it unconditionally (`src/develop/imageop.c`), so a module cannot add to it, and `src/iop/iop_api.h` declares nothing else for the purpose. Three routes remain:
-
-- **Put the value in `module->params`.** That is the buffer the wrapper hashes — not the `params` argument your callback was handed, which on the defaults sync is a different object. Getting it there means the normal UI-and-history path, so the value persists to history and XMP as well: this suits small, stable, serializable values only. `overlay` keeps the overlay image's path in its params for exactly this reason, and zero-fills the buffer before writing so that trailing bytes of a previous path cannot bleed into the hash (`src/iop/overlay.c`).
-- **Use a pipe field the framework already hashes.** `colorout` publishes its export profile with `dt_ioppr_set_pipe_export_profile_info()` precisely so that part *is* hashed. This is not a general escape hatch — the four profile-info pointers, the pipe type and the detail-mask flag are fixed slots, not somewhere to hang arbitrary state.
-- **Invalidate explicitly.** For anything that cannot reach the key at all — an external file's contents, the image's tags — drop the stale cache lines yourself. `dt_iop_refresh_center()` and its siblings (see [Pipeline Refresh Functions](#pipeline-refresh-functions)) invalidate every cache line from a given `iop_order` onwards immediately; `dt_dev_reprocess_center()` records the same boundary and the next pipe run applies it. The call is the easy half — the hard half is knowing when to make it, and neither example in the tree has a precise trigger. `rasterfile` hashes its own params and image id to decide when to re-read its file (`src/iop/rasterfile.c`), which catches a change of *which* file but not an edit to the file at that path, so it also reprocesses unconditionally from `gui_focus()`. Database metadata is the same shape: `DT_SIGNAL_METADATA_CHANGED` and `DT_SIGNAL_TAG_CHANGED` announce that something changed, but neither carries an image id, and `DT_SIGNAL_TAG_CHANGED` also fires for tag-dictionary edits that touch no image at all (`src/common/tags.c`). Either invalidate on every event, or re-read the value you depend on and compare it with the one you last used.
-
-Keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path.
+There is no hook for adding to that key. The wrapper builds `piece->hash` after your callback returns and assigns it unconditionally, and `src/iop/iop_api.h` declares nothing else for the purpose. So keep the output a deterministic function of what the key represents, and give any other input either a place in the key or an explicit invalidation path. Which inputs the key leaves out, and the three routes available for them, are set out in [pixelpipe_architecture.md — What the Cache Key Does Not Cover](pixelpipe_architecture.md#what-the-cache-key-does-not-cover).
 
 **Simple case** — no transformation needed, default `memcpy` suffices. Don't implement this function.
 
@@ -524,14 +503,15 @@ If the module can use the GPU, implement `process_cl()` wrapped in `#ifdef HAVE_
 
 ## Tiling Support
 
-If `IOP_FLAGS_ALLOW_TILING` is set, the pixelpipe is allowed to process a piece in tiling mode, if some parameters don't allow tiling override this in `commit_params()`.
+If `IOP_FLAGS_ALLOW_TILING` is set, the pixelpipe is allowed to process a piece in tiling mode. If some parameter combinations do not allow tiling, clear that permission for the piece in `commit_params()`.
 
-For calculation of memory requirements and tile aligning we have `tiling_callback()`, if not provided defaults are used as in `default_tiling_callback()`
+Memory requirements and tile alignment are reported by `tiling_callback()`. A module that does not provide one gets the defaults computed by `default_tiling_callback()`.
 
-Whenever a module possibly exceeds requirements as defined in `default_tiling_callback()` or requires special aligning a specific `tiling_callback()` should be provided for three reasons:
-a) the tiling process will not allocate more memory than granted
-b) the OpenCL code path will not be tried if requirements are too high thus avoiding costly late fallbacks to CPU path.
-c) tile stitching will be correct for alignment
+Provide a specific `tiling_callback()` whenever the module may exceed the requirements assumed by `default_tiling_callback()`, or needs special alignment. There are three reasons to do so:
+
+- the tiling process will not allocate more memory than it was granted;
+- the OpenCL code path will not be tried when the requirements are too high, which avoids costly late fallbacks to the CPU path;
+- tile stitching will be correct for the alignment the module needs.
 
 | Field | Purpose |
 |-------|---------|
@@ -570,25 +550,27 @@ For modules that change image geometry (crop, rotate, lens correction), implemen
 
 ```
 Module Load:
-  init_global() → [once per module type]
+  init_global()  [once per module type]
 
 Image Open:  [simplified]
   init() → reload_defaults() → gui_init() → reload_defaults()
+                                            [defaults are recomputed
+                                             once the widgets exist]
 
 Pixelpipe Creation (per pipe):
   init_pipe()  [allocates piece->data]
 
 Params Change:
-  gui_update() → gui_changed()
+  gui_update() → gui_changed() [if implemented]
 
 User Edits Widget:
-  [auto-callback] → gui_changed()
+  [auto-callback] → gui_changed() [if implemented]
        → commit_params(p)  [transforms its p argument → piece->data]
-       → process()        [reads piece->data]
+       → process()         [reads piece->data]
 
-Image Switch:  [base instance is kept; extra instances are destroyed, then the new
-                image's own extras are built]
-  reload_defaults() → change_image() → [history params loaded] → gui_update() → gui_changed()
+Image Switch:  [the base instance is kept, its extra instances rebuilt]
+  reload_defaults() → change_image() [if implemented] → [history params loaded]
+       → gui_update() → gui_changed() [if implemented]
 
 Darkroom Exit:
   cleanup_pipe() [per pipe] → gui_cleanup() → cleanup()
@@ -597,6 +579,4 @@ Module Unload:
   cleanup_global()
 ```
 
-Optional callbacks are shown where a module that implements one is called: `gui_changed()`
-and `change_image()` are skipped for a module that does not have them, and the GUI steps
-are skipped entirely for a hidden module. See [GUI.md](GUI.md) for the full event flow.
+`[if implemented]` marks the optional callbacks: the framework skips them for a module that does not have them. The GUI steps are skipped entirely for a hidden module. See [GUI.md](GUI.md) for the full event flow.

@@ -15,7 +15,9 @@ See also:
 
 ### `gui_init()` Overview
 
-`gui_init()` is called once per module instance when entering the darkroom — and once more per module at startup, on a throw-away instance that exists only so its widgets can register their accelerators (see [GUI_Threading.md](GUI_Threading.md#publishing-gui_data-through-a-proxy)). Its job is to create and configure all widgets — but **not** to set their values (that happens in `gui_update()`).
+`gui_init()` is called once per module instance when entering the darkroom — and once more per module at startup: `_init_module_so()` builds a throw-away instance and runs `dt_iop_gui_init()` on it so that its widgets can register their accelerators, then tears it down again (`src/develop/imageop.c`). That startup instance is built with `dev == NULL`, which matters to any code that takes an arbitrary instance and reaches for `self->dev` — see [GUI_Threading.md](GUI_Threading.md#publishing-gui_data-through-a-proxy).
+
+`gui_init()`'s job is to create and configure all widgets — but **not** to set their values (that happens in `gui_update()`).
 
 ```c
 void gui_init(dt_iop_module_t *self)
@@ -105,20 +107,21 @@ User clicks custom button
     ↓
 your_callback() fires
     ↓
-Check: DT_GUARD_GUI_UPDATE()
+Check: DT_GUARD_GUI_UPDATE()   (suppresses callbacks during a programmatic sync)
     ↓
 Modify self->params directly
+    ↓
+Call gui_changed(self, NULL, NULL) yourself, if the change
+affects dependent UI state (the framework does not, on this route)
     ↓
 Call dt_dev_add_history_item(darktable.develop, self, TRUE)
     ↓
 commit_params() → process()
 ```
 
-**Path C — External change (image switch, undo, preset):**
+**Path C — External change (image switch, history, presets, styles):**
 
-Params arrive from outside your widget callbacks, and your widgets are then re-synced
-from them with `DT_ENTER_GUI_UPDATE()` held across the sync so those callbacks do not
-fire. Where the guard opens differs by route, so they are shown separately.
+Params arrive from outside your widget callbacks, and your widgets are then re-synced from them with `DT_ENTER_GUI_UPDATE()` held across the sync so those callbacks do not fire. Where the guard opens differs by route, so they are shown separately.
 
 Image switch (`src/views/darkroom.c`):
 ```
@@ -136,32 +139,20 @@ Framework calls your gui_update()  →  you sync widgets,
 DT_LEAVE_GUI_UPDATE()
 ```
 
-Params-only history navigation — undo or redo of a parameter change, or moving in the
-history stack (`dt_dev_pop_history_items()`): the same, without `reload_defaults()` and
-`change_image()`.
+Params-only history navigation — undo or redo of a parameter change, or moving in the history stack (`dt_dev_pop_history_items()`): the same, without `reload_defaults()` and `change_image()`.
 
-Preset applied directly (`dt_gui_presets_apply_preset()`): the params are copied into
-`self->params` **before** the guard, which `dt_iop_gui_update()` then opens around your
-`gui_update()`.
+Preset applied directly (`dt_gui_presets_apply_preset()`): the params are copied into `self->params` **before** the guard, which `dt_iop_gui_update()` then opens around your `gui_update()`.
 
-Routes that can change the module list are not just a params load, and a module may be
-built with a fresh `gui_init()` and `reload_defaults()`, or torn down with
-`gui_cleanup()`, rather than merely updated:
+Routes that can change the module list are not just a params load, and a module may be built with a fresh `gui_init()` and `reload_defaults()`, or torn down with `gui_cleanup()`, rather than merely updated:
 
-- **Undo or redo of a module *add or delete*** (`src/libs/history.c`) does both — it
-  re-creates the instance an undone delete removed, and removes the one an undone add
-  created.
-- **Pasting history, or applying a style** (`dt_dev_reload_history_items()`) adds the
-  instances the incoming history needs and re-synchronises the rest; it does not run the
-  instance teardown that undo/redo does.
+- **Undo or redo of a module *add or delete*** (`src/libs/history.c`) does both — it re-creates the instance an undone delete removed, and removes the one an undone add created.
+- **Pasting history, or applying a style** (`dt_dev_reload_history_items()`) adds the instances the incoming history needs and re-synchronizes the rest; it does not run the instance teardown that undo/redo does.
 
-See
-[GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image)
-for what that means for work you have queued.
+See [GUI_Threading.md](GUI_Threading.md#the-callback-must-not-outlive-the-module-or-the-image) for what that means for work you have queued.
 
 ### `gui_update()` — Sync Widgets from Params
 
-Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework increments atomically gui state `DT_ENTER_GUI_UPDATE()` before calling it, so widget callbacks won't fire.
+Called by the framework when params change externally (image switch, history navigation, preset load, copy/paste). The framework raises the GUI-update guard (`DT_ENTER_GUI_UPDATE()`) before calling it, so widget callbacks will not fire.
 
 Widgets created with the `_from_params` helpers — sliders, comboboxes and toggles alike — are bound to a parameter field, and the framework syncs all of them for you: `dt_iop_gui_update()` runs `dt_bauhaus_update_from_field()` before it calls you (`src/develop/imageop.c`, `src/bauhaus/bauhaus.c`). You only need to sync widgets that carry no field — a plain `dt_iop_togglebutton_new()` button, or a custom widget of your own. If your module implements `gui_changed()`, end with `gui_changed(self, NULL, NULL)` so the dependent UI state it maintains — visibility, sensitivity, labels — is recomputed; the framework does not call it for you here:
 
@@ -184,8 +175,9 @@ void gui_update(dt_iop_module_t *self)
 ### `gui_changed()` — UI State Adjustments
 
 The single place for all conditional visibility, sensitivity, and dynamic label logic. Called:
-- By the framework after a `_from_params` auto-callback (with `widget` = the changed widget, `previous` = old value)
+- By the framework after a `_from_params` auto-callback (with `widget` = the changed widget, `previous` = old value) — the same route on which the framework also records the history item
 - By you at the end of `gui_update()` (with `widget` = NULL)
+- By you from a manual widget callback (with `widget` = NULL), when the change affects dependent UI state — a manual callback gets neither of the two things the framework does on the bound-widget route, so it records the history item itself as well
 
 ```c
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -202,7 +194,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 }
 ```
 
-### The Reset Flag (`DT_GUARD_GUI_UPDATE`)
+### The GUI-Update Guard (`DT_GUARD_GUI_UPDATE`)
 
 A counter (not a boolean) that suppresses callback processing when non-zero. The framework uses it during `gui_update()`.
 
@@ -278,7 +270,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 }
 ```
 
-For picker flags and `dt_color_picker_new_with_cst()`, see [imageop_gui.md](imageop_gui.md).
+For how a picker attaches to a slider — it wraps the slider, and the wrapper is the widget you store and pack — see [sliders.md](sliders.md#33-integration-with-color-pickers). The picker flags (`DT_COLOR_PICKER_POINT`, `DT_COLOR_PICKER_AREA`, `DT_COLOR_PICKER_DENOISE`, `DT_COLOR_PICKER_IO`) and `dt_color_picker_new_with_cst()`, which picks in a color space of your choosing, are declared in `src/gui/color_picker_proxy.h`.
 
 ### Mouse/Drawing Callbacks
 
@@ -327,17 +319,11 @@ In general, darktable widgets do not set their GDK window cursors. If a widget n
 
 ---
 
-## 3. Thread Safety — Sharing `gui_data` Between Threads
+## 3. Thread Safety — Where It Is Covered
 
-`process()` is not a GTK callback and has no guaranteed thread affinity. GTK+ is not thread-safe. You **cannot** call GTK functions directly from `process()`.
+`process()` is not a GTK callback and has no guaranteed thread affinity. GTK is not thread-safe. You **cannot** call GTK functions directly from `process()`.
 
-The same split applies to data: `gui_data` is not owned by the GTK thread alone. Both
-directions need care — the pipe writing values for the GUI to display, and the GUI
-writing values the pipe will read.
-
-Which callback runs on which thread, when the GUI critical section is required, how to
-hand an update to the main loop and how to make sure it does not outlive the module are
-covered in **[GUI_Threading.md](GUI_Threading.md)**.
+Which callback runs on which thread, when the GUI critical section is required, how to hand an update to the main loop and how to keep it from outliving the module are covered in **[GUI_Threading.md](GUI_Threading.md)**, which also sets out the three directions in which `gui_data` crosses threads.
 
 ---
 
@@ -403,7 +389,7 @@ See [Notebook_UI.md](Notebook_UI.md) for the complete pattern with shortcut regi
 
 ### Collapsible Section Pattern
 
-Same technique — temporarily redirect `self->widget` to the collapsible container:
+Same invariant, same technique: `_from_params()` helpers pack into whatever `self->widget` points at, so redirect it to the collapsible container while you build the section's contents, then restore it. For the function's signature, its config key and the helpers that go with it, see [imageop_gui.md](imageop_gui.md#dt_gui_new_collapsible_section).
 
 ```c
 GtkWidget *main_box = self->widget = dt_gui_vbox();
@@ -422,17 +408,10 @@ self->widget = main_box;  // restore
 
 ### QAP Reparenting (Framework-Managed)
 
-When a user adds a module's widget to the Quick Access Panel, the framework (`libs/modulegroups.c`) automatically:
+When a user adds a module's widget to the Quick Access Panel, the framework (`src/libs/modulegroups.c`) reparents it out of your module UI and back again. That is its business, not yours; what it asks of a module author is that the widget survives the trip:
 
-1. `g_object_ref()` the widget to prevent destruction on removal
-2. Removes it from its original parent
-3. Inserts a placeholder at the original position to preserve layout
-4. Packs the widget into the QAP container
-5. Connects `notify::visible` signals to keep visibility in sync
-6. On QAP hide: reverses the process, restoring the widget at its original position
+- It must sit in a `GtkBox` or `GtkGrid` parent — that is what the framework knows how to remove from and restore into.
+- It must work in isolation: clear label, good tooltip.
+- A complex custom widget that depends on its siblings or its parent will not reparent cleanly.
 
-**Constraints for QAP-compatible widgets:**
-- Must be in a `GtkBox` or `GtkGrid` parent
-- Must work in isolation (clear label, good tooltip)
-- Complex custom widgets with parent dependencies won't reparent cleanly
-- Multi-instance modules disable QAP activation button
+For the steps the framework takes, and the restrictions that follow from them, see [Quick_Access_Panel.md](Quick_Access_Panel.md).
