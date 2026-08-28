@@ -96,7 +96,9 @@ dt_iop_set_module_trouble_message(self, _("warning text"), _("tooltip"), NULL);
 if(dt_pipe_is_full(piece->pipe)) { /* full view only */ }
 ```
 
-For widget creation, slider configuration, and notebook patterns, see [GUI.md](GUI.md), [sliders.md](sliders.md), and [GUI_Recipes.md](GUI_Recipes.md).
+For widget creation, slider configuration, and notebook patterns, see [imageop_gui.md](imageop_gui.md), [GUI.md](GUI.md), [sliders.md](sliders.md), and [GUI_Recipes.md](GUI_Recipes.md).
+
+Before hand-rolling buffer, hash and lock plumbing to show a per-pixel value under the mouse cursor, check `src/develop/preview_data.h` — the framework already owns that case; see [GUI_Threading.md](GUI_Threading.md#the-framework-service-for-per-pixel-readouts).
 
 ---
 
@@ -110,9 +112,9 @@ For widget creation, slider configuration, and notebook patterns, see [GUI.md](G
 | `gui_update()` | Sync widget values from `self->params` (called when params change) |
 | `gui_changed()` | Adjust UI based on current state (show/hide widgets, update labels) |
 | `gui_cleanup()` | Free any manually allocated resources |
-| `change_image()` | Clear GUI state that describes the old image — an image switch keeps each module's base instance, GUI and all, so `gui_cleanup()` does not run for it. Also where a pipe-scheduled GUI update has to be cancelled |
+| `change_image()` | Clear GUI state describing the old image; also where pipe-scheduled GUI updates are cancelled ([why](IOP_Module_API.md#change_image---reset-gui-state-for-the-new-image)) |
 | `init_pipe()` | Allocate `piece->data` — required if using a custom `data_t` larger than `params_t` |
-| `commit_params()` | Transform the `params` argument it is handed — normally `self->params`, but not on the pipe's defaults sync — into processing-ready `piece->data` for `process()` |
+| `commit_params()` | Transform the `params` argument it is handed into processing-ready `piece->data` for `process()` ([which argument](IOP_Module_API.md#commit_params---transform-parameters-into-processing-data)) |
 | `cleanup_pipe()` | Free `piece->data` and any sub-allocations |
 | `color_picker_apply()` | Handle color picker results (if using pickers) |
 | `reload_defaults()` | Update defaults for different image types |
@@ -132,28 +134,27 @@ For widget creation, slider configuration, and notebook patterns, see [GUI.md](G
 ### Data Flow
 
 ```
-gui_init()    →  Create widgets, configure ranges/formats
-                 (do NOT call gui_update here - params may not be ready)
+gui_init()    →  Create widgets, configure ranges/formats           [1]
                       ↓
 gui_update()  ←  Called when params change (image switch, history)
                       ↓
-gui_changed() ←  If your module implements it, call gui_changed(self, NULL, NULL)
-                 at the end of gui_update() to apply any UI adjustments
-                 (show/hide, sensitivity, etc.)
+gui_changed() ←  Apply UI adjustments (show/hide, sensitivity)      [2]
                       ↓
 User interacts with widget
                       ↓
-Auto-callback (from_params) or manual callback
+Auto-callback (from_params) or manual callback                      [3]
                       ↓
-self->params updated → on the from_params route the framework calls your
-                       gui_changed() (if implemented) and adds the history item;
-                       a manual callback does both itself
+self->params updated
                       ↓
 dt_dev_add_history_item() → commit_params() → process()
          │                        │                │
     records params         transforms params    reads piece->data
     to history stack       into piece->data     (data_t or params_t)
 ```
+
+1. Do **not** call `gui_update()` from `gui_init()` — params may not be ready yet.
+2. If your module implements `gui_changed()`, call `gui_changed(self, NULL, NULL)` at the end of `gui_update()`; the framework does not call it for you there.
+3. On the `_from_params` route the framework calls your `gui_changed()` (if implemented) and records the history item. A manual callback does both itself.
 
 See [GUI.md](GUI.md) for the full event flow and callback patterns, and [GUI_Threading.md](GUI_Threading.md) for thread safety.
 
