@@ -1,0 +1,32 @@
+# dt-lockcheck rules, as Datalog for lemmalog.  Kept in step with the Python in
+# dt-lockcheck.py: both produce the same findings.
+
+rule setup_fn("gui_init").
+rule setup_fn("gui_cleanup").
+rule setup_fn("gui_reset").
+
+rule touch(M,F,T) :- access(M,F,Fn,_,_), runs_on(M,Fn,T), !setup_fn(Fn).
+
+# "either" is a callback the pipe drives that GTK-thread code also reaches, so
+# it counts on both sides: two invocations can land on different threads.
+rule may_pipe(M,F) :- touch(M,F,"pipe").
+rule may_pipe(M,F) :- touch(M,F,"either").
+rule may_gtk(M,F) :- touch(M,F,"gtk").
+rule may_gtk(M,F) :- touch(M,F,"either").
+rule shared(M,F) :- may_pipe(M,F), may_gtk(M,F).
+
+rule written_late(M,F,T) :- access(M,F,Fn,_,"w"), runs_on(M,Fn,T), !setup_fn(Fn).
+
+# A locked site is evidence of a per-field convention -- unless it is bulk
+# initialisation, which the extractor marks as "bulk_init".
+rule has_discipline(M,F) :- access(M,F,_,"gui_lock",_).
+rule has_discipline(M,F) :- access(M,F,_,L,_), L \= "gui_lock", L \= "none", L \= "bulk_init".
+
+rule violation(M,F,Fn) :- has_discipline(M,F), shared(M,F), access(M,F,Fn,"none",_), !setup_fn(Fn).
+rule no_lock_share(M,F) :- shared(M,F), written_late(M,F,_), !has_discipline(M,F).
+
+rule is_widget(M,F) :- ftype(M,F,T), gtk_type(T).
+rule widget_from_pipe(M,F,Fn) :- is_widget(M,F), access(M,F,Fn,_,_), runs_on(M,Fn,"pipe").
+rule widget_from_pipe(M,F,Fn) :- is_widget(M,F), access(M,F,Fn,_,_), runs_on(M,Fn,"either").
+
+rule discipline_gap(M,F,Fn) :- has_discipline(M,F), access(M,F,Fn,"none",_), !setup_fn(Fn), !violation(M,F,Fn).
