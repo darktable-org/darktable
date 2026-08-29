@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-09 10:55+0200\n"
-"PO-Revision-Date: 2026-08-27 14:13+0200\n"
+"PO-Revision-Date: 2026-08-29 17:41+0200\n"
 "Last-Translator: Hans Petter Birkeland <hpbirkeland@gmail.com>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.2\n"
-"X-Poedit-Bookmarks: 173,-1,-1,-1,-1,-1,-1,2362,1305,-1\n"
+"X-Poedit-Bookmarks: 4437,-1,-1,-1,-1,-1,-1,2362,1305,-1\n"
 
 #: ../build/bin/conf_gen.h:111
 msgctxt "preferences"
@@ -584,7 +584,7 @@ msgstr "apple_keychain"
 #: ../build/bin/conf_gen.h:3893
 msgctxt "preferences"
 msgid "windows_credentials"
-msgstr "windows_credentials"
+msgstr "windows_legitimasjon"
 
 #: ../build/bin/conf_gen.h:4191
 msgctxt "preferences"
@@ -599,7 +599,7 @@ msgstr "bølgeform"
 #: ../build/bin/conf_gen.h:4193
 msgctxt "preferences"
 msgid "split"
-msgstr "splitt-bilde"
+msgstr "splittbilde"
 
 #: ../build/bin/conf_gen.h:4194
 msgctxt "preferences"
@@ -912,7 +912,7 @@ msgstr "importer"
 
 #: ../build/bin/preferences_gen.h:2694
 msgid "session options"
-msgstr "økt-innstillinger"
+msgstr "innstillinger for økt"
 
 #: ../build/bin/preferences_gen.h:2704
 msgid "base filmroll's directory"
@@ -1071,7 +1071,7 @@ msgid ""
 "module. this will allow you to do range selections for date-time and numeric "
 "values."
 msgstr ""
-"slår på enkelt-klikk for valg av elementer i samlingsmodulen. du kan da sette "
+"slår på enkeltklikk for valg av elementer i samlingsmodulen. du kan da sette "
 "sammen utvalg basert på tidsangivelser og numeriske verdier."
 
 #: ../build/bin/preferences_gen.h:2837
@@ -1119,7 +1119,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:2854
 msgid "expand a single utility module at a time"
-msgstr "utvid en enkelt verktøy-modul av gangen"
+msgstr "utvid en enkelt verktøymodul av gangen"
 
 #: ../build/bin/preferences_gen.h:2862
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
@@ -1127,7 +1127,7 @@ msgstr "avgjør hvilken effekt skift+-klikk har i lysbordmodus"
 
 #: ../build/bin/preferences_gen.h:2871
 msgid "scroll utility modules to the top when expanded"
-msgstr "rull verktøy-moduler til toppen når utvidet"
+msgstr "rull verktøymoduler til toppen når utvidet"
 
 #: ../build/bin/preferences_gen.h:2879 ../build/bin/preferences_gen.h:3392
 msgid ""
@@ -1141,7 +1141,9 @@ msgstr "å gi et bilde en stjerne to ganger vil ikke resultere i null stjerner"
 
 #: ../build/bin/preferences_gen.h:2896
 msgid "defines whether rating an image one star twice will zero out star rating"
-msgstr "å gi et bilde en stjerne to ganger vil ikke resultere i null stjerner"
+msgstr ""
+"definerer om å gi et bilde en stjerne to ganger vil resultere i null stjerner "
+"eller ikke"
 
 #: ../build/bin/preferences_gen.h:2905 ../build/bin/preferences_gen.h:3240
 msgid "show scrollbars for central view"
@@ -1416,7 +1418,7 @@ msgstr "vis guide-widgeten i modulgrensesnittet"
 
 #: ../build/bin/preferences_gen.h:3333
 msgid "expand a single processing module at a time"
-msgstr "utvid en enkelt mørkeroms-modul av gangen"
+msgstr "utvid en enkelt prosesseringsmodul av gangen"
 
 #: ../build/bin/preferences_gen.h:3341
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -1959,7 +1961,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4114
 msgid "ask before moving images from film roll folder"
-msgstr "spør før bilder flyttes fra filmrull-mappen"
+msgstr "spør før bilder flyttes fra filmrullmappen"
 
 #: ../build/bin/preferences_gen.h:4122
 msgid "always ask the user before any image file is moved."
@@ -1967,7 +1969,7 @@ msgstr "spør alltid brukeren før bilder flyttes."
 
 #: ../build/bin/preferences_gen.h:4131
 msgid "ask before copying images to new film roll folder"
-msgstr "spør før bilder kopieres til ny filmrull-mappe"
+msgstr "spør før bilder kopieres til ny filmrullmappe"
 
 #: ../build/bin/preferences_gen.h:4139
 msgid "always ask the user before any image file is copied."
@@ -3786,7 +3788,7 @@ msgstr "egendefinert"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "as shot in camera"
-msgstr "som skutt i  kamera"
+msgstr "som skutt i kamera"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:522
 msgid "F1 (Daylight 6430 K) – medium CRI"
@@ -4591,7 +4593,7 @@ msgstr "bevar skygger"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:154
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:327
 msgid "bias correction"
-msgstr "skjevhets-korreksjon"
+msgstr "skjevhetskorreksjon"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:160
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:331
@@ -5475,7 +5477,7 @@ msgstr "Thoby fiskeøye"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
 msgid "invalidated"
-msgstr "ugyldig"
+msgstr "ugyldiggjort"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
@@ -5791,7 +5793,7 @@ msgstr "grønn og blå"
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:43
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:122
 msgid "noise threshold"
-msgstr "støy grenseverdi"
+msgstr "grenseverdi for støy"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:70
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:155
@@ -6094,7 +6096,7 @@ msgstr "overgang radius"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:116
 #: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
-msgstr "vannrett senter"
+msgstr "vannrett sentrum"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:122
 #: ../build/lib/darktable/plugins/introspection_vignette.c:221
@@ -6251,7 +6253,7 @@ msgstr "knapp"
 
 #: ../src/bauhaus/bauhaus.c:4437
 msgid "force"
-msgstr "styrke"
+msgstr "kraft"
 
 #: ../src/bauhaus/bauhaus.c:4438 ../src/libs/navigation.c:259
 #: ../src/libs/navigation.c:276
@@ -7028,7 +7030,7 @@ msgstr "brun"
 
 #: ../src/common/color_vocabulary.c:250
 msgid "chocolate"
-msgstr "sjokoladebrun"
+msgstr "sjokolade"
 
 #: ../src/common/color_vocabulary.c:251
 msgid "dark gold"
@@ -7508,7 +7510,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:2578
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
-msgstr "se innstillinger/mørkerom/mosaikkfjerning for zoomet ut mørkeromsmodus"
+msgstr "se innstillinger/mørkerom/mosaikkfjerning for utzoomet mørkeromsmodus"
 
 #: ../src/common/darktable.c:2584
 msgid ""
@@ -8242,7 +8244,7 @@ msgstr ""
 
 #: ../src/common/import_session.c:389
 msgid "requested session path not available. device not mounted?"
-msgstr "økt-banen er ikke tilgjengelig. enhet ikke montert?"
+msgstr "øktbanen er ikke tilgjengelig. enhet ikke montert?"
 
 #: ../src/common/iop_order.c:57 ../src/libs/ioporder.c:190
 msgid "legacy"
@@ -8250,7 +8252,7 @@ msgstr "gammel"
 
 #: ../src/common/iop_order.c:58
 msgid "v3.0 RAW"
-msgstr "v3-0 RAW"
+msgstr "v3.0 RAW"
 
 #: ../src/common/iop_order.c:59
 msgid "v3.0 JPEG"
@@ -8507,7 +8509,7 @@ msgstr "avvis"
 #: ../src/common/styles.c:257
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "stil med navn '%s' finnes fra før"
+msgstr "stil med navnet '%s' finnes fra før"
 
 #: ../src/common/styles.c:284 ../src/common/styles.c:1726
 #: ../src/libs/styles.c:53
@@ -8536,12 +8538,12 @@ msgstr "benyttet stilen `%s' på valgt bilde"
 #: ../src/common/styles.c:1302
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "stil-filen for %s ble ikke overskrevet"
+msgstr "stilfilen for %s ble ikke overskrevet"
 
 #: ../src/common/styles.c:1308
 #, c-format
 msgid "style file for %s exists"
-msgstr "stil-filen for %s finnes fra før"
+msgstr "stilfilen for %s finnes fra før"
 
 #: ../src/common/styles.c:1483 ../src/common/styles.c:1807
 msgid "imported-style"
@@ -8693,7 +8695,7 @@ msgstr "undervannslys"
 
 #: ../src/common/wb_presets.c:88 ../src/views/darkroom.c:3335
 msgid "black & white"
-msgstr "svart-hvitt"
+msgstr "svart/hvitt"
 
 #: ../src/common/wb_presets.c:90
 msgid "spot WB"
@@ -9053,8 +9055,8 @@ msgstr[1] "setter %d fargebilder"
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
-msgstr[0] "sett %d svart.hvitt bilde"
-msgstr[1] "setter %d svart.hvitt bilder"
+msgstr[0] "sett %d svart/hvitt bilde"
+msgstr[1] "setter %d svart/hvitt-bilder"
 
 #: ../src/control/jobs/control_jobs.c:928
 #, c-format
@@ -9283,7 +9285,7 @@ msgstr "speilvend bilder"
 
 #: ../src/control/jobs/control_jobs.c:2084
 msgid "set monochrome images"
-msgstr "sett svart-hvitt bilder"
+msgstr "sett svart/hvitt-bilder"
 
 #: ../src/control/jobs/control_jobs.c:2092
 msgid "remove images"
@@ -9479,7 +9481,7 @@ msgstr "legger til tidsforskyvning på %d bilder"
 #: ../src/control/jobs/control_jobs.c:2674
 #, c-format
 msgid "setting date/time of %d images"
-msgstr "stilte dato/tid på %d bilder"
+msgstr "stiller dato/tid på %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:2720
 #, c-format
@@ -9499,7 +9501,7 @@ msgstr "la til tidsforskyvning på %d bilde"
 #: ../src/control/jobs/control_jobs.c:2724
 #, c-format
 msgid "set date/time of %d images"
-msgstr "stilte dato/tid på %d bilde"
+msgstr "stilte dato/tid på %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:2767
 msgid "time offset"
@@ -10041,7 +10043,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "velg farge fra bilde\n"
-"ctrl-klikk for å velge et område"
+"ctrl+klikk for å velge et område"
 
 #: ../src/develop/blend_gui.c:2611 ../src/iop/colorzones.c:2633
 #: ../src/iop/rgbcurve.c:1496
@@ -10146,7 +10148,7 @@ msgstr "vis og rediger maskeelementer"
 #: ../src/develop/blend_gui.c:2809
 msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
-"vis og rediger i begrenset modus (ingen flytting/størrelsesendring av former)"
+"vis og rediger i begrenset modus (ingen flytting/størrelsesendring av figurer)"
 
 #: ../src/develop/blend_gui.c:2817 ../src/libs/masks.c:2326
 msgid "add AI object"
@@ -10267,8 +10269,8 @@ msgid ""
 "hover over parametric mask slider to select channel for display"
 msgstr ""
 "vis maske og/eller fargekanal\n"
-" ctrl-klikk for å vise maske,\n"
-"shift-klikk for å vise kanal.\n"
+" ctrl+klikk for å vise maske,\n"
+"shift+klikk for å vise kanal.\n"
 "hold musepekeren over den parametriske maskens glider for å velge kanalen som "
 "skal vises"
 
@@ -10286,7 +10288,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3559
 msgid "choose blending mode"
-msgstr "velg bllandingsmodus"
+msgstr "velg blandingsmodus"
 
 #: ../src/develop/blend_gui.c:3568
 msgid "toggle blend order"
@@ -10359,7 +10361,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3629 ../src/libs/history.c:956
 msgid "feathering radius"
-msgstr "uttonings-radius"
+msgstr "uttoningsradius"
 
 #: ../src/develop/blend_gui.c:3630 ../src/develop/blend_gui.c:3639
 #: ../src/iop/colorbalancergb.c:2042 ../src/iop/colorequal.c:3103
@@ -10770,7 +10772,7 @@ msgstr "[CIRCLE] endre tetthet"
 #: ../src/develop/masks/circle.c:1413
 #, c-format
 msgid "circle #%d"
-msgstr "sirkel #%d"
+msgstr "sirkel nr%d"
 
 #: ../src/develop/masks/circle.c:1424
 #, c-format
@@ -10945,7 +10947,7 @@ msgstr "masker kan ikke inneholde seg selv"
 
 #: ../src/develop/masks/object.c:852
 msgid "set raster mask root folder in preferences"
-msgstr "sett rotmappe for rastermasker i instillingene"
+msgstr "sett rotmappe for rastermasker i innstillingene"
 
 #: ../src/develop/masks/object.c:860
 msgid "cannot create raster mask folder"
@@ -15257,7 +15259,7 @@ msgstr "oppdater lua-skriptene fra depotet"
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr ""
-"skriv inn URL-en til git-depotet som inneholderr skriptene du vil legge til"
+"skriv inn URL-en til git-depotet som inneholder skriptene du vil legge til"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1455
 msgid "name of new folder"
@@ -15661,7 +15663,7 @@ msgstr "dobbelttrykk"
 
 #: ../src/gui/accelerators.c:827
 msgid "triple-press"
-msgstr "trippel-trykk"
+msgstr "trippeltrykk"
 
 #: ../src/gui/accelerators.c:828
 msgid "press"
@@ -15695,7 +15697,7 @@ msgstr "dobbeltklikk"
 #: ../src/gui/accelerators.c:837
 msgctxt "accel"
 msgid "triple-click"
-msgstr "trippelkllikk"
+msgstr "trippelklikk"
 
 #: ../src/gui/accelerators.c:838
 msgid "click"
@@ -17073,7 +17075,7 @@ msgstr "ikke lastet ned"
 
 #: ../src/gui/preferences_ai.c:394
 msgid "select hardware acceleration for AI inference:"
-msgstr "velg hardware-aksellerasjon for KI-grensesnitt:"
+msgstr "velg hardware-akselerasjon for KI-grensesnitt:"
 
 #: ../src/gui/preferences_ai.c:584
 msgid "<i>restart to apply</i>"
@@ -17446,7 +17448,7 @@ msgstr "bruk denne forhåndsinnstillingen automatisk på bilder som matcher"
 
 #: ../src/gui/presets.c:614
 msgid "only show this preset for matching images"
-msgstr "vis denne forhåndsinnstillgen kun for bilder som matcher"
+msgstr "vis denne forhåndsinnstillingen kun for bilder som matcher"
 
 #: ../src/gui/presets.c:616
 msgid ""
@@ -17464,7 +17466,7 @@ msgstr "tekststreng som skal matche modellen (bruk % som jokertegn)"
 #: ../src/gui/presets.c:663
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
-msgstr "tesktstreng som skal matche produsent (bruk % som jokertegn)"
+msgstr "tekststreng som skal matche produsent (bruk % som jokertegn)"
 
 #: ../src/gui/presets.c:671
 #, no-c-format
@@ -18342,7 +18344,7 @@ msgstr ""
 "tips om bildets karakteristikk for den underliggende enkoderen.\n"
 "bilde: digitalt bilde, typisk portrett eller innendørs bilde\n"
 "foto: utendørs foto, med naturlig lys\n"
-"grafikk: bilde med diskrete farger (graf, kart-flis, etc)"
+"grafikk: bilde med diskrete farger (graf, kartflis, etc)"
 
 #: ../src/imageio/format/webp.c:435
 msgid "picture"
@@ -18566,9 +18568,9 @@ msgid ""
 "default protocol is https\n"
 "specify insecure protocol http:// explicitly if that protocol is required"
 msgstr ""
-"standard-protokoll for \n"
-"tjener-navn er https\n"
-"skriv inn http:// før tjener-navnet\n"
+"standardprotokoll for \n"
+"tjenernavn er https\n"
+"skriv inn http:// før tjenernavnet\n"
 "hvis ikke forbindelsen er kryptert"
 
 #: ../src/imageio/storage/piwigo.c:1083 ../src/imageio/storage/piwigo.c:1184
@@ -19457,7 +19459,7 @@ msgstr "grov"
 
 #: ../src/iop/atrous.c:757
 msgid "denoise & sharpen"
-msgstr "støyfjerning & skarphetsbedring"
+msgstr "støyreduksjon og skarphetsbedring"
 
 #. add the preset.
 #: ../src/iop/atrous.c:773 ../src/iop/sharpen.c:103
@@ -19471,7 +19473,7 @@ msgstr "fjern fargestøy"
 #: ../src/iop/atrous.c:805 ../src/libs/neural_restore.c:1466
 #: ../src/libs/neural_restore.c:4305
 msgid "denoise"
-msgstr "støyfjerning"
+msgstr "støyreduksjon"
 
 #: ../src/iop/atrous.c:822 ../src/iop/bloom.c:75
 msgid "bloom"
@@ -19540,7 +19542,7 @@ msgstr "mer støy"
 #. case atrous_s:
 #: ../src/iop/atrous.c:1367
 msgid "bold"
-msgstr "sterk"
+msgstr "fet"
 
 #: ../src/iop/atrous.c:1368
 msgid "dull"
@@ -19928,7 +19930,7 @@ msgstr "overflateutjevning"
 
 #: ../src/iop/bilateral.cc:77
 msgid "denoise (bilateral filter)"
-msgstr "støyfjerning (bilateralt filter)"
+msgstr "støyreduksjon (bilateralt filter)"
 
 #: ../src/iop/bilateral.cc:101
 msgid ""
@@ -20001,7 +20003,7 @@ msgstr "styrke på stråling"
 
 #: ../src/iop/blurs.c:82
 msgid "blurs"
-msgstr "uskarphet"
+msgstr "uskarpheter"
 
 #: ../src/iop/blurs.c:87
 msgid "blur|lens|motion"
@@ -20097,7 +20099,7 @@ msgid ""
 "select the aspect ratio\n"
 "(right-click on slider below to type your own w:h)"
 msgstr ""
-"velg bredde/høyde-forhold\n"
+"velg bredde/høydeforhold\n"
 "(høyreklikk på glideren under for å angi ditt eget b:h)"
 
 #: ../src/iop/borders.c:936
@@ -20177,8 +20179,8 @@ msgid ""
 "set the custom aspect ratio\n"
 "(right-click to enter number or w:h)"
 msgstr ""
-"velg bredde/høyde-forhold\n"
-"(høyre-klikk og angi ditt eget b:h)"
+"velg bredde/høydeforhold\n"
+"(høyreklikk og angi ditt eget b:h)"
 
 #: ../src/iop/borders.c:964
 msgid "aspect ratio orientation of the image with border"
@@ -20335,7 +20337,7 @@ msgstr ""
 
 #: ../src/iop/cacorrectrgb.c:725
 msgid "increase for stronger correction"
-msgstr "øk for sterkere korrigering"
+msgstr "øk for sterkere korreksjon"
 
 #: ../src/iop/cacorrectrgb.c:727
 msgid ""
@@ -20440,7 +20442,7 @@ msgid ""
 msgstr ""
 "utfør fargeromskorreksjoner\n"
 "som hvitbalanse, kanalmiksing\n"
-"og omgjøring til svarthvitt for å emulere film"
+"og omgjøring til svart/hvitt for å emulere film"
 
 #: ../src/iop/channelmixer.c:606
 msgid "destination"
@@ -20485,7 +20487,7 @@ msgstr "forsterk fargeelementer"
 
 #: ../src/iop/channelmixer.c:672
 msgid "B/W luminance-based"
-msgstr "S/H luminans-basert"
+msgstr "S/H luminansbasert"
 
 #: ../src/iop/channelmixer.c:678
 msgid "B/W artifacts boost"
@@ -21104,7 +21106,7 @@ msgstr ""
 "delta E\n"
 "mettede farger gis den laveste maksimale delta E men en høy gjennomsnittlig "
 "delta E\n"
-"ingen er en avveiing mellom begge\n"
+"ingen er en avveining mellom begge\n"
 "de andre er spesielle oppførsler for å beskytte enkelte fargetoner"
 
 #: ../src/iop/channelmixerrgb.c:4697
@@ -21189,11 +21191,11 @@ msgstr "denne modulen er utdatert. bruk heller den nye lokal kontrast-modulen."
 
 #: ../src/iop/clahe.c:325 ../src/iop/sharpen.c:421
 msgid "amount"
-msgstr "styrke"
+msgstr "mengde"
 
 #: ../src/iop/clahe.c:326
 msgid "size of features to preserve"
-msgstr "størrelse detaljer som skal bevares"
+msgstr "størrelse på detaljer som skal bevares"
 
 #: ../src/iop/clahe.c:327 ../src/iop/nlmeans.c:442
 msgid "strength of the effect"
@@ -21264,7 +21266,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2112
 msgid "keystone"
-msgstr "trapes-korrigering"
+msgstr "trapeskorrigering"
 
 #: ../src/iop/clipping.c:2117
 msgid "set perspective correction for your image"
@@ -21461,11 +21463,11 @@ msgstr "ikkelineær, Lab, scenereferert"
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:301
 msgid "split-toning teal-orange (2nd instance)"
-msgstr "splitt-toning blågrønn-oransje (andre kjøring)"
+msgstr "splittoning blågrønn-oransje (andre kjøring)"
 
 #: ../src/iop/colorbalance.c:304
 msgid "split-toning teal-orange (1st instance)"
-msgstr "spitt-toning blågrønn-oransje (første kjøring)"
+msgstr "splittoning blågrønn-oransje (første kjøring)"
 
 #: ../src/iop/colorbalance.c:308
 msgid "generic film"
@@ -21802,7 +21804,7 @@ msgid ""
 "ctrl+click to pick selected color"
 msgstr ""
 "velg motsatt farge fra bilde\n"
-"ctrl-klikk for å plukke valgt farge"
+"ctrl+klikk for å plukke valgt farge"
 
 #: ../src/iop/colorbalancergb.c:1876
 msgctxt "section"
@@ -21900,7 +21902,7 @@ msgstr "luminansområder"
 
 #: ../src/iop/colorbalancergb.c:1980
 msgid "weight of the shadows over the whole tonal range"
-msgstr "vekt av skyggene over hele toneområdet"
+msgstr "vekting av skyggene over hele toneområdet"
 
 #: ../src/iop/colorbalancergb.c:1986
 msgid ""
@@ -21928,7 +21930,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:2006
 msgid "weights of highlights over the whole tonal range"
-msgstr "vekt av høylysene over hele toneområdet"
+msgstr "vekting av høylysene over hele toneområdet"
 
 #: ../src/iop/colorbalancergb.c:2012
 msgid ""
@@ -22252,7 +22254,7 @@ msgid ""
 "ctrl+click to select an area"
 msgstr ""
 "velg fargetone fra bildet og visualiser den\n"
-"ctrl-klikk for å velge et område"
+"ctrl+klikk for å velge et område"
 
 #: ../src/iop/colorequal.c:3021
 msgid "change hue hue-wise"
@@ -22299,7 +22301,7 @@ msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
-"visualiser vektfunksjon på endret resultat og vis vektingskurve.\n"
+"visualiser vektingsfunksjon på endret resultat og vis vektingskurve.\n"
 "rødt viser mulig endrede data, blåaktige deler vil ikke endres."
 
 #: ../src/iop/colorequal.c:3116
@@ -22431,7 +22433,7 @@ msgid ""
 "ctrl+click to select an area"
 msgstr ""
 "velg farge fra bilde.\n"
-"ctrl-klikk for å velge et område"
+"ctrl+klikk for å velge et område"
 
 #: ../src/iop/colorharmonizer.c:1449
 msgid ""
@@ -22982,7 +22984,7 @@ msgstr "Svart/hvitt: med rød"
 
 #: ../src/iop/colorzones.c:692
 msgid "B&W: with skin tones"
-msgstr "Svart/hvitt: med hud-toner"
+msgstr "Svart/hvitt: med hudtoner"
 
 #: ../src/iop/colorzones.c:717
 msgid "polarizing filter"
@@ -23599,7 +23601,7 @@ msgid ""
 msgstr ""
 "øk vektingen av sentrale piksler\n"
 "i lappen i sammenligningen av lappene.\n"
-"nyttig for å hente tilbake detaljer når lapp-størrelsen\n"
+"nyttig for å hente tilbake detaljer når lappstørrelsen\n"
 "er ganske stor."
 
 #: ../src/iop/denoiseprofile.c:3754
@@ -23952,7 +23954,7 @@ msgid ""
 "for standalone sharpening set speed to negative values."
 msgstr ""
 "øk eller reduser skarpheten til de høyeste frekvensene.\n"
-"kan brukes til å beholde detaljer etter gløding,\n"
+"kan brukes til å beholde detaljer etter stråling,\n"
 "for skjerping alene, sett hastighet til negative verdier."
 
 #: ../src/iop/diffuse.c:1888
@@ -24017,7 +24019,7 @@ msgstr "korrigerende, kunstnerisk"
 #. add the preset.
 #: ../src/iop/dither.c:174
 msgid "dither"
-msgstr "utjevning"
+msgstr "jevn ut"
 
 #: ../src/iop/dither.c:738
 msgid "damping level of random dither"
@@ -24324,7 +24326,7 @@ msgid ""
 "affects mostly the mid-tones"
 msgstr ""
 "stigning for lineær del av kurve\n"
-"størst virkning i midt-tone-området"
+"størst virkning i midttoneområdet"
 
 #: ../src/iop/filmic.c:1539
 msgid ""
@@ -24715,7 +24717,7 @@ msgid ""
 "decrease to mute highlights."
 msgstr ""
 "tilsvarende papirgradering i analog.\n"
-"øk for å gjøre høylyslysere og mindre komprimert.\n"
+"øk for å gjøre høylys lysere og mindre komprimert.\n"
 "reduser for å dempe høylys."
 
 #: ../src/iop/filmicrgb.c:4491
@@ -25865,7 +25867,7 @@ msgstr "LUT 3D"
 
 #: ../src/iop/lut3d.c:139
 msgid "perform color space corrections and apply look"
-msgstr "utfør fargeromskorrigeringer og gi utseende"
+msgstr "utfør fargeromskorreksjoner og gi utseende"
 
 #: ../src/iop/lut3d.c:142
 msgid "defined by profile, RGB"
@@ -25996,7 +25998,7 @@ msgstr "hald CLUT (png) eller 3D LUT (cube eller 3dl)"
 
 #: ../src/iop/lut3d.c:1632
 msgid "select file outside LUT root folder is not allowed"
-msgstr "valg av fil utenfor grunnmappen for LUT er ikke tillatt"
+msgstr "valg av fil utenfor rotmappen for LUT er ikke tillatt"
 
 #: ../src/iop/lut3d.c:1700
 msgid ""
@@ -26304,7 +26306,7 @@ msgstr "astrofoto støyreduksjon"
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
-msgstr "støyreduksjon (ikke-lokal gjennomsnittsberegning)"
+msgstr "støyreduksjon (ikkelokal gjennomsnittsberegning)"
 
 #: ../src/iop/nlmeans.c:86
 msgid ""
@@ -26407,7 +26409,7 @@ msgid ""
 "• advanced options: choose overlay and image dimensions independently"
 msgstr ""
 "velg hvordan overlegget skal skaleres\n"
-"• bilde: skaler overlegget relativt tilhele bildet\n"
+"• bilde: skaler overlegget relativt til hele bildet\n"
 "• lengste side: skaler overleggets lengste side relativt til bildets lengste "
 "side\n"
 "• korteste side: skaler overleggets korteste side relativt til bildets "
@@ -26756,8 +26758,8 @@ msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
 msgstr ""
-"velg senter for fyll-lys\n"
-"ctrl-click for å velge et område"
+"velg senter for fyllys\n"
+"ctrl+klikk for å velge et område"
 
 #: ../src/iop/relight.c:261
 msgid "toggle tool for picking median lightness in image"
@@ -26827,11 +26829,11 @@ msgstr "redigering"
 
 #: ../src/iop/retouch.c:2439
 msgid "show and edit shapes on the current scale"
-msgstr "vis og rediger former på nåværende skala"
+msgstr "vis og rediger figurer på nåværende skala"
 
 #: ../src/iop/retouch.c:2440
 msgid "show and edit shapes in restricted mode"
-msgstr "vis og rediger former i begrenset modus"
+msgstr "vis og rediger figurer i begrenset modus"
 
 #. algorithm toolbar
 #: ../src/iop/retouch.c:2466
@@ -26886,7 +26888,7 @@ msgstr ""
 "nederste glider angir antall skalaer\n"
 "prikk angir skala i bruk\n"
 "øverste linje angir at skalaen er synlig på nåværende zoom-nivå\n"
-"nederste linje angir at skalaen har former på seg"
+"nederste linje angir at skalaen har figurer på seg"
 
 #: ../src/iop/retouch.c:2547
 msgid "display masks"
@@ -26906,7 +26908,7 @@ msgstr "klipp ut figurer fra skala i bruk"
 
 #: ../src/iop/retouch.c:2573
 msgid "display wavelet scale"
-msgstr "vis småbølge-skala"
+msgstr "vis småbølgeskala"
 
 #: ../src/iop/retouch.c:2587
 msgid "adjust preview levels"
@@ -26924,7 +26926,7 @@ msgstr "vis enkeltskala"
 #. shapes selected (label)
 #: ../src/iop/retouch.c:2612
 msgid "shape selected:"
-msgstr "valgt form:"
+msgstr "valgt figur:"
 
 #: ../src/iop/retouch.c:2618
 msgid ""
@@ -26940,15 +26942,15 @@ msgstr "visker ut detalj eller fyller med valgt farge"
 
 #: ../src/iop/retouch.c:2636 ../src/iop/retouch.c:2637
 msgid "select fill color"
-msgstr "velg fyll-farge"
+msgstr "velg fyllfarge"
 
 #: ../src/iop/retouch.c:2645
 msgid "pick fill color from image"
-msgstr "velg fyll-farge fra bilde"
+msgstr "velg fyllfarge fra bilde"
 
 #: ../src/iop/retouch.c:2646
 msgid "pick fill color"
-msgstr "velg fyll-farge"
+msgstr "velg fyllfarge"
 
 #: ../src/iop/retouch.c:2649
 msgid "fill color: "
@@ -26988,7 +26990,7 @@ msgstr "figurer"
 #: ../src/iop/retouch.c:3971 ../src/iop/retouch.c:4802
 #, c-format
 msgid "max scale is %i for this image size"
-msgstr "største skala er %i for denne billedstørrelsen"
+msgstr "største skala er %i for denne bildestørrelsen"
 
 #: ../src/iop/rgbcurve.c:119
 msgid "rgb curve"
@@ -27334,7 +27336,7 @@ msgstr "blanding av effekt"
 
 #: ../src/iop/splittoning.c:78
 msgid "split-toning"
-msgstr "splitt-toning"
+msgstr "splittoning"
 
 #: ../src/iop/splittoning.c:100
 msgid ""
@@ -27508,7 +27510,7 @@ msgstr "koeffisient for blåkanal"
 
 #: ../src/iop/temperature.c:1988
 msgid "emerald"
-msgstr "smaragdrød"
+msgstr "smaragdgrønn"
 
 #: ../src/iop/temperature.c:1989
 msgid "emerald channel coefficient"
@@ -27561,7 +27563,7 @@ msgstr ""
 
 #: ../src/iop/temperature.c:2119
 msgid "choose white balance setting"
-msgstr "velg hvitbalanse-innstilling"
+msgstr "velg hvitbalanseinnstilling"
 
 #: ../src/iop/temperature.c:2123
 msgid "finetune"
@@ -28052,7 +28054,7 @@ msgstr "effekt på fargemetning"
 
 #: ../src/iop/vignette.c:1072
 msgid "horizontal offset of center of the effect"
-msgstr "vannrett forskyvning for senter av effekten"
+msgstr "vannrett forskyvning for sentrum av effekten"
 
 #: ../src/iop/vignette.c:1073
 msgid "vertical offset of center of the effect"
@@ -28204,7 +28206,7 @@ msgstr "vannmerkets rotasjon"
 
 #: ../src/iop/zonesystem.c:94
 msgid "zone system"
-msgstr "sone-system"
+msgstr "sonesystem"
 
 #: ../src/iop/zonesystem.c:442
 msgid ""
@@ -29188,7 +29190,7 @@ msgid ""
 "calculated metadata instead"
 msgstr ""
 "som standard vil noen metadata sendes sammen med bildet til fjernlagring.\n"
-"for å hindre detteog bare tillate innebygde darktable XMP metadata, kryss av "
+"for å hindre dette og bare tillate innebygde darktable XMP metadata, kryss av "
 "her.\n"
 "hvis fjernlageret ikke forstår darktable sine XMP metadata kan du bruke "
 "beregnede metadata i stedet"
@@ -29291,7 +29293,7 @@ msgstr "legg til et nøkkelord for metadata"
 
 #: ../src/libs/export_metadata.c:285 ../src/libs/metadata.c:945
 msgid "delete metadata tag"
-msgstr "slett metadata nøkkelord"
+msgstr "slett metadatanøkkelord"
 
 #: ../src/libs/export_metadata.c:296
 msgid "general settings"
@@ -30334,15 +30336,15 @@ msgstr "velg fargemetadata"
 
 #: ../src/libs/image.c:622
 msgid "select tags metadata"
-msgstr "velg nøkkelord-metadata"
+msgstr "velg metadata for nøkkelord"
 
 #: ../src/libs/image.c:623
 msgid "select geo tags metadata"
-msgstr "slett geolokasjons-metadata"
+msgstr "slett metadata for geolokasjon"
 
 #: ../src/libs/image.c:624
 msgid "select darktable metadata (from metadata editor module)"
-msgstr "velg darktable-metadata (fra metadata redigeringsmodul)"
+msgstr "velg darktable-metadata (fra modulen metadataredigering)"
 
 #: ../src/libs/image.c:629
 msgid "set the selected image as source of metadata"
@@ -30604,7 +30606,7 @@ msgstr "verktøymodul"
 
 #: ../src/libs/live_view.c:122
 msgid "live view"
-msgstr "sanntids visning"
+msgstr "sanntidsvisning"
 
 #: ../src/libs/live_view.c:325 ../src/libs/live_view.c:327
 msgid "toggle live view"
@@ -30612,11 +30614,11 @@ msgstr "sanntidsvisning av/på"
 
 #: ../src/libs/live_view.c:330 ../src/libs/live_view.c:332
 msgid "zoom live view"
-msgstr "zoom sanntids visning"
+msgstr "zoom sanntidsvisning"
 
 #: ../src/libs/live_view.c:338
 msgid "flip live view horizontally"
-msgstr "speilvend sanntids visning vannrett"
+msgstr "speilvend sanntidsvisning vannrett"
 
 #: ../src/libs/live_view.c:347
 msgid "move focus point in (big steps)"
@@ -30724,7 +30726,7 @@ msgstr "modus for overlegget"
 
 #: ../src/libs/live_view.c:423
 msgid "split line"
-msgstr "splitt-linje"
+msgstr "splittlinje"
 
 #: ../src/libs/live_view.c:426
 msgid "only draw part of the overlay"
@@ -30750,7 +30752,7 @@ msgstr "nytt sted"
 #: ../src/libs/map_locations.c:586
 #, c-format
 msgid "location name '%s' already exists"
-msgstr "sted med navn '%s' finnes fra før"
+msgstr "sted med navnet '%s' finnes fra før"
 
 #: ../src/libs/map_locations.c:777
 msgid "edit location"
@@ -30907,7 +30909,7 @@ msgstr "modus: unntatt"
 
 #: ../src/libs/masks.c:1513
 msgid "delete unused shapes"
-msgstr "slett ubrukte former"
+msgstr "slett ubrukte figurer"
 
 #: ../src/libs/masks.c:2321
 msgid "add object"
@@ -31922,7 +31924,7 @@ msgstr "behandle valgte bilder"
 
 #: ../src/libs/neural_restore.c:4406
 msgid "output parameters"
-msgstr "utgangs-parametre"
+msgstr "utgangsparametre"
 
 #: ../src/libs/neural_restore.c:4417
 msgid "output TIFF bit depth"
@@ -32283,7 +32285,7 @@ msgstr "sett visning til u*v*"
 
 #: ../src/libs/scopes/vectorscope.c:1159
 msgid "scroll to coarse-rotate"
-msgstr "rull for å grov-rotere"
+msgstr "rull for å grovrotere"
 
 #: ../src/libs/scopes/vectorscope.c:1160
 msgid "ctrl+scroll to fine rotate"
@@ -32504,7 +32506,7 @@ msgid ""
 "double-click to apply"
 msgstr ""
 "tilgjengelige stiler,\n"
-"dobbetlklikk for å bruke"
+"dobbeltklikk for å bruke"
 
 #: ../src/libs/styles.c:884 ../src/libs/styles.c:885
 msgid "filter style names"
@@ -32774,7 +32776,7 @@ msgstr "(privat)"
 
 #: ../src/libs/tagging.c:2859
 msgid "select a keyword file"
-msgstr "velg en nøkkelords-fil"
+msgstr "velg en nøkkelordsfil"
 
 #: ../src/libs/tagging.c:2874
 msgid "error importing tags"
@@ -32867,7 +32869,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:3622 ../src/libs/tagging.c:3629
 msgid "clear entry"
-msgstr "tøm"
+msgstr "fjern oppføring"
 
 #: ../src/libs/tagging.c:3688
 msgid ""
@@ -32903,7 +32905,7 @@ msgstr "eksporter alle nøkkelord til en Lightroom nøkkelordsfil"
 
 #: ../src/libs/tagging.c:3751
 msgid "toggle list / tree view"
-msgstr "tre- eller liste-visning"
+msgstr "tre- eller listevisning"
 
 #: ../src/libs/tagging.c:3751
 msgid "tree"
@@ -32924,7 +32926,7 @@ msgstr "bruk siste nøkkelord på nytt"
 #: ../src/libs/tagging.c:3865
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
-msgstr "snarvei virker ikke i tre-visning. bytt til liste-visning"
+msgstr "snarvei virker ikke i trevisning. bytt til listevisning"
 
 #: ../src/libs/tagging.c:4003
 msgid "tagging settings"
@@ -32984,7 +32986,7 @@ msgstr "auto-rull til valgt bilde"
 
 #: ../src/libs/tools/filmstrip.c:154
 msgid "center on selected image"
-msgstr "sentret på valgt bilde"
+msgstr "sentrer på valgt bilde"
 
 #: ../src/libs/tools/filter.c:42
 msgid "filter"
@@ -33024,7 +33026,7 @@ msgstr "guide for knapper"
 
 #: ../src/libs/tools/gamepad.c:61
 msgid "button start"
-msgstr "start-knapp"
+msgstr "startknapp"
 
 #: ../src/libs/tools/gamepad.c:62
 msgid "left stick"
@@ -33092,7 +33094,7 @@ msgstr "høyre utløser"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "invalid gamepad button"
-msgstr "ugyldig spillkonsoll-knapp"
+msgstr "ugyldig spillkonsollknapp"
 
 #: ../src/libs/tools/gamepad.c:89
 msgid "left x"
@@ -33129,7 +33131,7 @@ msgstr "høyre forskyvning"
 #. diagonals
 #: ../src/libs/tools/gamepad.c:96
 msgid "invalid gamepad axis"
-msgstr "ugyldig spillkontroll-akse"
+msgstr "ugyldig spillkontrollakse"
 
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:214
@@ -33142,7 +33144,7 @@ msgid ""
 "image\n"
 "set -1 to never hide the overlay"
 msgstr ""
-"varighet før blokkoverlegget skjules etter hver musbevegelse på bildet\n"
+"varighet før blokkoverlegget skjules etter hver musebevegelse på bildet\n"
 "angi -1 for aldri å skjule overlegget"
 
 #: ../src/libs/tools/global_toolbox.c:253 ../src/libs/tools/global_toolbox.c:317
@@ -33376,7 +33378,7 @@ msgstr "logghistorikk"
 
 #: ../src/libs/tools/log_history.c:171
 msgid "view log history"
-msgstr "vis logg-historikk"
+msgstr "vis logghistorikk"
 
 #: ../src/libs/tools/midi.c:41
 msgid "midi"
@@ -33562,7 +33564,7 @@ msgstr "gamutsjekk"
 
 #: ../src/views/darkroom.c:1121
 msgid "soft proof"
-msgstr "utskrift-sjekk"
+msgstr "utskriftssjekk"
 
 #: ../src/views/darkroom.c:1151
 msgid "drop XMP sidecar files here to apply edits"
@@ -33940,7 +33942,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:3377
 msgid "softproof"
-msgstr "utskrifts-prøve"
+msgstr "utskriftsprøve"
 
 #: ../src/views/darkroom.c:3381
 msgid ""
@@ -33948,7 +33950,7 @@ msgid ""
 "right-click for profile options"
 msgstr ""
 "utskriftsprøve av/på\n"
-"høyreklikk for profil-alternativer"
+"høyreklikk for profilalternativer"
 
 #: ../src/views/darkroom.c:3394
 msgid ""
@@ -33971,7 +33973,7 @@ msgstr "visningshensikt"
 
 #: ../src/views/darkroom.c:3448 ../src/views/lighttable.c:1512
 msgid "display profile"
-msgstr "skjerm-profil"
+msgstr "skjermprofil"
 
 #: ../src/views/darkroom.c:3450 ../src/views/lighttable.c:1515
 msgid "preview display profile"
@@ -34070,7 +34072,7 @@ msgstr "reduser penselstørrelse"
 #. brush hardness +/-
 #: ../src/views/darkroom.c:3638
 msgid "increase brush hardness"
-msgstr "øk pensel hardhet"
+msgstr "øk penselhardhet"
 
 #: ../src/views/darkroom.c:3640
 msgid "decrease brush hardness"
@@ -34079,7 +34081,7 @@ msgstr "reduser penselens hardhet"
 #. brush opacity +/-
 #: ../src/views/darkroom.c:3644
 msgid "increase brush opacity"
-msgstr "øk pensel tetthet"
+msgstr "øk penseltetthet"
 
 #: ../src/views/darkroom.c:3646
 msgid "decrease brush opacity"
@@ -34194,7 +34196,7 @@ msgstr "ubegrenset zoom på bildet"
 
 #: ../src/views/darkroom.c:4909
 msgid "zoom to 100% 200% and back"
-msgstr "zoom til 100% 200% og tilbake"
+msgstr "zoom til 100%, 200% og tilbake"
 
 #: ../src/views/darkroom.c:4911 ../src/views/lighttable.c:1171
 msgid "pan a zoomed image"
@@ -34272,7 +34274,7 @@ msgstr "pan inni alle bildene"
 
 #: ../src/views/lighttable.c:1204
 msgid "zoom current image"
-msgstr "zoom valgt bilde"
+msgstr "zoom gjeldende bilde"
 
 #: ../src/views/lighttable.c:1206
 msgid "pan inside current image"
@@ -34281,7 +34283,7 @@ msgstr "pan inni valgt bilde"
 #: ../src/views/lighttable.c:1212
 #, no-c-format
 msgid "zoom current image to 100% and back"
-msgstr "zoom til 100% og tilbake"
+msgstr "zoom gjeldende bilde til 100% og tilbake"
 
 #: ../src/views/lighttable.c:1217
 msgid "zoom the main view"
