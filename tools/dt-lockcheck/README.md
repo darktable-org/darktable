@@ -86,10 +86,11 @@ inferred to run on — if you would rather write your own rules over them.
 | 0 | ran to completion, whatever it found |
 | 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` with a `--format` that cannot carry a tree, or a `--lemmalog` path that does not exist |
 
-There is deliberately no "exit non-zero when there are findings" mode. Around
-one finding in three is a false positive (see
-[Before you file anything](#before-you-file-anything)), so a clean run does not
-exist on any real tree and such a gate could only ever be red. A useful gate
+There is deliberately no "exit non-zero when there are findings" mode. A run
+that finds nothing does not exist on any real tree, and a run always carries
+some false positives (see
+[Before you file anything](#before-you-file-anything)), so such a gate could
+only ever be red. A useful gate
 would have to compare against a checked-in baseline and fail on findings that
 are *new* — that does not exist here yet.
 
@@ -145,9 +146,25 @@ Reported most-worth-reading first. The first three run by default; add
 | `no_lock_share` | the field is written and shared across both threads, and the module never locks it at all |
 | `discipline_gap` | locked somewhere, accessed unlocked, but no cross-thread share was proven. Mostly noise — read it last |
 
-`widget_from_pipe` is the sharpest of the four: on the tree this was written
-against it returns exactly one field across every module, and that one is a real
-defect ([#21915](https://github.com/darktable-org/darktable/issues/21915)).
+`widget_from_pipe` is the narrowest of the four: on the tree this was written
+against it returns two fields across every module. One is a real defect
+([#21915](https://github.com/darktable-org/darktable/issues/21915)); the other,
+`colorharmonizer`'s `auto_detect`, is a false positive — see
+[the widget hand-off](#before-you-file-anything) below. Two hits say nothing
+about how often the rule is right, only that it asks for little.
+
+Rule by rule, over all of `src/iop` on that tree. The second column counts
+findings that name a field an already-confirmed defect report also names; the
+rest are unreviewed candidates, not refutations:
+
+| rule | findings | names a confirmed defect's field |
+| --- | --- | --- |
+| `widget_from_pipe` | 2 | 1 |
+| `violation` | 34 | 16 |
+| `no_lock_share` | 36 | 25 |
+| `discipline_gap` | 59 | 1 |
+
+That last row is why `discipline_gap` is off by default.
 
 
 ## Reading the output
@@ -180,9 +197,12 @@ unlocked sites — not to add a new lock.
 
 ## Before you file anything
 
-Findings are **candidates**. Roughly two in three `violation` / `no_lock_share`
-candidates held up under review on the tree this was developed against; the
-`discipline_gap` tier did considerably worse. Please confirm one by reading the
+Findings are **candidates**. On the tree this was developed against, 42 of the
+72 default-settings findings name a field from a defect report that already
+existed; the other 30 have not been ruled on either way, and a spot-check of a
+dozen of them found a clear majority to be real defects of the same shape. No
+one has measured a false-positive rate, and the `discipline_gap` tier is
+markedly worse than the other three. Please confirm a finding by reading the
 code before opening an issue.
 
 Five false-positive causes are worth knowing, because you will meet them:
