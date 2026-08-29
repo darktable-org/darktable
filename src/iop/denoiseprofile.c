@@ -3465,8 +3465,6 @@ static void denoiseprofile_motion_notify(GtkEventControllerMotion *controller,
                                        g->mouse_radius);
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_bauhaus_refresh_tab_state(g->channel_tabs);
-    dt_bauhaus_refresh_tab_state(g->channel_tabs_Y0U0V0);
   }
   else
   {
@@ -3500,8 +3498,6 @@ static void denoiseprofile_button_press(GtkGestureSingle *gesture,
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_bauhaus_refresh_tab_state(g->channel_tabs);
-    dt_bauhaus_refresh_tab_state(g->channel_tabs_Y0U0V0);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
   else

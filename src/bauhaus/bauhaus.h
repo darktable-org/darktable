@@ -243,23 +243,12 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  dt_introspection_type_t field_type);
 gpointer dt_bauhaus_widget_get_field(GtkWidget *widget);
 // update one bauhaus widget or all widgets in a module from the provided (blend)params
-/* Walk the parameter widgets of a notebook page, in widget order.
+// put a notebook page back to the module's defaults
+void dt_bauhaus_reset_page(GtkNotebook *notebook, GtkWidget *page);
 
-   One traversal behind both the tab marker and the tab reset, so the two can
-   never disagree about what a page holds. It descends through the containers a
-   page is built from and visits only the widgets that carry a parameter.
-   Return FALSE from the visit to stop the walk. Pass visible_only to skip what
-   a module has hidden. */
-typedef gboolean (*dt_bauhaus_page_visit_t)(GtkWidget *widget,
-                                            gpointer user_data);
-void dt_bauhaus_page_foreach(GtkWidget *page,
-                             const gboolean visible_only,
-                             dt_bauhaus_page_visit_t visit,
-                             gpointer user_data);
-
-// re-read the changed state of every tab, for modules that edit their
-// parameters through something other than a parameter widget
-void dt_bauhaus_refresh_tab_state(GtkNotebook *notebook);
+// re-read the changed state of every tab a module holds; called when a
+// history item is committed for it
+void dt_bauhaus_refresh_module_tabs(dt_iop_module_t *module);
 
 // bring every parameter widget's default in line with the module's
 // current default_params, after reload_defaults() may have changed them

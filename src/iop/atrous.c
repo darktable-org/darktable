@@ -1431,7 +1431,6 @@ static void area_motion_notify(GtkEventControllerMotion *controller,
     }
     gtk_widget_queue_draw(widget);
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel);
-    dt_bauhaus_refresh_tab_state(g->channel_tabs);
   }
   else if(y > height)
   {
@@ -1498,7 +1497,6 @@ static void area_button_press(GtkGestureSingle *gesture,
       p->y[g->channel2][k] = d->y[g->channel2][k];
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
-    dt_bauhaus_refresh_tab_state(g->channel_tabs);
   }
   else
   {
@@ -1685,7 +1683,6 @@ static float _action_process_equalizer(gpointer target,
       }
 
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, target + ch1);
-      dt_bauhaus_refresh_tab_state(g->channel_tabs);
     }
     else // radius
     {

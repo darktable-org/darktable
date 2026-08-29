@@ -4348,46 +4348,6 @@ GdkModifierType dt_key_modifier_state()
 */
 }
 
-static gboolean _collect_bauhaus(GtkWidget *widget,
-                                 gpointer user_data)
-{
-  GList **widgets = user_data;
-  *widgets = g_list_prepend(*widgets, widget);
-  return TRUE;
-}
-
-static void _reset_all_bauhaus(GtkNotebook *notebook,
-                               GtkWidget *box)
-{
-  // a page that names its parameters is reset through them
-  dt_iop_page_params_reset(box);
-
-  /* Everything the page holds, including controls parked outside the notebook
-     and excluding the sections flagged out of it. Hidden widgets are reset as
-     well: a tab reset is meant to leave nothing behind, even in a mode that is
-     not on screen right now. */
-  GList *widgets = NULL;
-  dt_bauhaus_page_foreach(box, FALSE, _collect_bauhaus, &widgets);
-  widgets = g_list_reverse(widgets);
-
-  // toggles go last rather than in widget order: a module may switch one of
-  // its own checkboxes on in reaction to one of its sliders changing, so a
-  // checkbox reset while sliders are still to come could be undone again by
-  // a slider that is reset after it
-  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
-  {
-    for(GList *c = widgets; c; c = g_list_next(c))
-    {
-      if((dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
-         == (toggles_pass == 1))
-        dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
-    }
-  }
-
-  g_list_free(widgets);
-
-  dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
-}
 
 static void _notebook_size_callback(GtkNotebook *notebook,
                                     GdkRectangle *allocation,
@@ -4482,7 +4442,7 @@ static float _action_process_tabs(const gpointer target,
       gtk_notebook_prev_page(notebook);
       break;
     case DT_ACTION_EFFECT_RESET:;
-      _reset_all_bauhaus(notebook, reset_page);
+      dt_bauhaus_reset_page(notebook, reset_page);
       dt_action_widget_toast(NULL, GTK_WIDGET(notebook), "%s %s",
                              gtk_notebook_get_tab_label_text(notebook, reset_page),
                              _("reset"));
@@ -4589,7 +4549,9 @@ static void _notebook_button_press_callback(GtkGestureSingle *gesture,
   if(n_press != 2) return;
 
   GtkNotebook *notebook = GTK_NOTEBOOK(dt_gui_get_widget(gesture));
-  _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
+  dt_bauhaus_reset_page(notebook,
+                        gtk_notebook_get_nth_page
+                        (notebook, gtk_notebook_get_current_page(notebook)));
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,

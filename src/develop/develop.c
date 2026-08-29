@@ -39,6 +39,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "bauhaus/bauhaus.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
 #include "libs/modulegroups.h"
@@ -1499,6 +1500,11 @@ static void _dev_add_history_item(dt_develop_t *dev,
 
   if(dev->gui_attached)
   {
+    /* the parameters just moved, so the tabs of the module may read
+       differently now -- a parameter widget notices for itself, but a module
+       that edits through a graph or a curve has nothing that would */
+    dt_bauhaus_refresh_module_tabs(module);
+
     /* signal that history has changed */
     if(tag_change)
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);

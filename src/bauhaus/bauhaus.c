@@ -1490,9 +1490,11 @@ static gboolean _bauhaus_differs_from_default(GtkWidget *widget)
   }
 }
 
+typedef gboolean (*_page_visit_t)(GtkWidget *widget, gpointer user_data);
+
 typedef struct _page_walk_t
 {
-  dt_bauhaus_page_visit_t visit;
+  _page_visit_t visit;
   gpointer user_data;
   gboolean visible_only;
   gboolean stopped;
@@ -1521,10 +1523,10 @@ static void _page_walk(GtkWidget *w,
     gtk_container_foreach(GTK_CONTAINER(w), _page_walk, walk);
 }
 
-void dt_bauhaus_page_foreach(GtkWidget *page,
-                             const gboolean visible_only,
-                             dt_bauhaus_page_visit_t visit,
-                             gpointer user_data)
+static void _page_foreach(GtkWidget *page,
+                          const gboolean visible_only,
+                          _page_visit_t visit,
+                          gpointer user_data)
 {
   if(!page || !visit) return;
 
@@ -1532,6 +1534,52 @@ void dt_bauhaus_page_foreach(GtkWidget *page,
                         .user_data = user_data,
                         .visible_only = visible_only };
   _page_walk(page, &walk);
+}
+
+static gboolean _collect_widget(GtkWidget *widget,
+                                gpointer user_data)
+{
+  GList **widgets = user_data;
+  *widgets = g_list_prepend(*widgets, widget);
+  return TRUE;
+}
+
+/* Put a notebook page back to the module's defaults.
+
+   The parameters a page names are copied back in one go; the parameter
+   widgets on it, wherever they are nested, are reset one by one. A page can
+   have both. */
+void dt_bauhaus_reset_page(GtkNotebook *notebook,
+                           GtkWidget *page)
+{
+  if(!GTK_IS_NOTEBOOK(notebook) || !page) return;
+
+  // a page that names its parameters is reset through them
+  dt_iop_page_params_reset(page);
+
+  GList *widgets = NULL;
+  // hidden widgets are reset too: a reset should leave nothing behind, even
+  // in a mode that is not on screen right now
+  _page_foreach(page, FALSE, _collect_widget, &widgets);
+  widgets = g_list_reverse(widgets);
+
+  /* toggles go last rather than in widget order: a module may switch one of
+     its own checkboxes on in reaction to one of its sliders changing, so a
+     checkbox reset while sliders are still to come could be undone again by a
+     slider that is reset after it */
+  for(int toggles_pass = 0; toggles_pass < 2; toggles_pass++)
+  {
+    for(GList *c = widgets; c; c = g_list_next(c))
+    {
+      if((dt_bauhaus_widget_get_type(c->data) == DT_BAUHAUS_TOGGLE)
+         == (toggles_pass == 1))
+        dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
+    }
+  }
+
+  g_list_free(widgets);
+
+  dt_gui_remove_class(gtk_notebook_get_tab_label(notebook, page), "changed");
 }
 
 static gboolean _first_off_default(GtkWidget *widget,
@@ -1551,7 +1599,7 @@ static void _highlight_changed_notebook_tab(GtkWidget *w,
 
   gboolean is_changed = dt_iop_page_params_changed(page);
   if(!is_changed)
-    dt_bauhaus_page_foreach(page, TRUE, _first_off_default, &is_changed);
+    _page_foreach(page, TRUE, _first_off_default, &is_changed);
 
   GtkWidget *label = gtk_notebook_get_tab_label(notebook, page);
 
@@ -1573,16 +1621,16 @@ static void _refresh_notebooks(GtkWidget *w,
     gtk_container_foreach(GTK_CONTAINER(w), _refresh_notebooks, user_data);
 }
 
-/* Re-read the changed state of every tab of a notebook.
+/* Re-read the changed state of every tab a module holds.
 
-   Parameter widgets do this for themselves when their value moves. A module
-   that edits its parameters through something else -- a graph, a curve -- has
-   nothing that would trigger it, so it calls this once it has committed. */
-void dt_bauhaus_refresh_tab_state(GtkNotebook *notebook)
+   Called for the module a history item was just committed for, which covers
+   everything that moves parameters without going through a parameter widget:
+   a graph, a curve, a colour picker. Every notebook of the module is read
+   rather than one reached from a widget, because a page may have no parameter
+   widget of its own to be found through. */
+void dt_bauhaus_refresh_module_tabs(dt_iop_module_t *module)
 {
-  if(GTK_IS_NOTEBOOK(notebook))
-    gtk_container_foreach(GTK_CONTAINER(notebook),
-                          _highlight_changed_notebook_tab, NULL);
+  if(module && module->widget) _refresh_notebooks(module->widget, NULL);
 }
 
 static void _toggle_set(dt_bauhaus_widget_t *w,
