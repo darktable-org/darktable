@@ -52,17 +52,21 @@ The following is a summary of the main features added to darktable
 5.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- Automatic alignment of exposure brackets in "merge HDR" function, removing ghosting and softness
-  caused by handheld or shaky-tripod brackets. Enabled by default in builds with OpenCV,
-  and tunable under preferences > processing > HDR alignment.
+- Automatic alignment of exposure brackets in "merge HDR" function,
+  removing ghosting and softness caused by handheld or shaky-tripod
+  brackets. Enabled by default in builds with OpenCV, and tunable
+  under preferences > processing > HDR alignment.
 
-- An MCP server for darktable. The new darktable-mcp binary, a headless sibling to darktable-cli,
-  lets an AI agent drive the raw pipeline over the Model Context Protocol: list modules and inspect
-  their parameter schemas, develop an image through a given module stack and get back a preview or
-  per-channel statistics, and read history, styles and metadata from the library. Parameters are
-  addressed by name through darktable's own introspection rather than by fixed offsets, so a stack
-  stays valid across module versions, and renders run on a throwaway duplicate so the source image
-  is never modified.
+- An MCP server for darktable. The new darktable-mcp binary, a
+  headless sibling to darktable-cli, lets an AI agent drive the raw
+  pipeline over the Model Context Protocol: list modules and inspect
+  their parameter schemas, develop an image through a given module
+  stack and get back a preview or per-channel statistics, and read
+  history, styles and metadata from the library. Parameters are
+  addressed by name through darktable's own introspection rather than
+  by fixed offsets, so a stack stays valid across module versions, and
+  renders run on a throwaway duplicate so the source image is never
+  modified.
 
 ## UI/UX Improvements
 
