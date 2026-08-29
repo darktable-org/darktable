@@ -75,15 +75,18 @@ void dt_iop_page_bind_params(GtkWidget *page,
   bound->n_ranges = n_ranges;
   memcpy(bound->ranges, ranges, n_ranges * sizeof(dt_iop_param_range_t));
 
+  // params_size is signed, so compare in the same type the offsets are in
+  const size_t params_size = MAX(self->params_size, 0);
+
   for(int r = 0; r < n_ranges; r++)
   {
     // a range that runs past the parameters would read whatever follows them
-    if(ranges[r].offset + ranges[r].size > self->params_size)
+    if(ranges[r].offset + ranges[r].size > params_size)
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_iop_page_bind_params] %s: range %d (%zu+%zu) is outside"
                " its %zu byte parameters",
-               self->op, r, ranges[r].offset, ranges[r].size, self->params_size);
+               self->op, r, ranges[r].offset, ranges[r].size, params_size);
       g_free(bound);
       return;
     }
