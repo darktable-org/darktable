@@ -1429,6 +1429,37 @@ static dt_iop_module_t *_iop_of(dt_bauhaus_widget_t *b)
     : NULL;
 }
 
+/* The default the widget's field holds in a fresh instance of its module.
+
+   A widget knows where its parameter lives; the same offset into
+   default_params, or into default_blendop_params for a blending widget, is
+   what that parameter would be without any edit. Reading the default from
+   there rather than from the copy the widget cached when it was built means
+   the answer follows a module that computes its defaults in reload_defaults(),
+   and cannot go stale. Returns NULL when the widget has no parameter behind
+   it, or when its field belongs to neither block. */
+static const void *_default_for_field(dt_bauhaus_widget_t *b)
+{
+  const dt_iop_module_t *module = b->field ? _iop_of(b) : NULL;
+  if(!module) return NULL;
+
+  if(module->params && module->default_params)
+  {
+    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->params;
+    if(offset >= 0 && (size_t)offset < module->params_size)
+      return (uint8_t *)module->default_params + offset;
+  }
+
+  if(module->blend_params && module->default_blendop_params)
+  {
+    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->blend_params;
+    if(offset >= 0 && (size_t)offset < sizeof(dt_develop_blend_params_t))
+      return (uint8_t *)module->default_blendop_params + offset;
+  }
+
+  return NULL;
+}
+
 // TRUE when the widget carries a parameter that is away from its default
 static gboolean _bauhaus_differs_from_default(GtkWidget *widget)
 {
