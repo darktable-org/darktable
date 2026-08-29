@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/bilinear.h"
 #include "common/box_filters.h"
 #include "common/bspline.h"
 #include "common/opencl.h"
@@ -161,7 +162,6 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_filmic_bspline_horizontal;
   int kernel_filmic_wavelets_detail;
 
-  int kernel_interpolate_bilinear;
 } dt_iop_highlights_global_data_t;
 
 
@@ -1066,7 +1066,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
   gd->kernel_highlights_chroma = dt_opencl_create_kernel(program, "highlights_chroma");
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
-  gd->kernel_interpolate_bilinear = dt_opencl_create_kernel(program, "interpolate_bilinear");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
   gd->kernel_filmic_bspline_horizontal = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
@@ -1091,7 +1090,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
   dt_opencl_free_kernel(gd->kernel_highlights_chroma);
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
-  dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
