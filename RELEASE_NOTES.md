@@ -88,6 +88,10 @@ changes (where available).
   sensor sizes, where blending the tile seams wrote past the edge of
   the image.
 
+- Fixed an empty Media Type dropdown in the Print module for Canon
+  printers whose drivers use the `CNIJMediaType` option instead of the
+  standard `MediaType` option.
+
 ## Lua
 
 ### API Version
