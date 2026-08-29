@@ -75,7 +75,6 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "develop/preview_data.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
-#include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
@@ -261,6 +260,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkDrawingArea *area;
   GtkStack *stack;
   dt_gui_collapsible_section_t cs;
+  dt_gui_collapsible_section_t cs_sliders;
   float *LUT;
   dt_iop_colorequal_channel_t channel;
 
@@ -3265,13 +3265,9 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   DT_GUARD_GUI_UPDATE();
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  // The 4th tab is options, in which case we do nothing
-  // For the first 3 tabs, update color channel and redraw the graph
-  if(page_num < NUM_CHANNELS)
-  {
-    g->channel = (dt_iop_colorequal_channel_t)page_num;
-  }
-
+  // the tabs are only the color channels, so map the page straight to
+  // the active channel and redraw the graph
+  g->channel = (dt_iop_colorequal_channel_t)page_num;
   g->page_num = page_num;
 
   const int old_mask_mode = g->mask_mode;
@@ -3524,9 +3520,8 @@ static void _area_button_press_callback(GtkGestureSingle *gesture,
      || (button == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
          && dt_modifier_is(dt_key_modifier_state(), GDK_CONTROL_MASK)))
   {
-    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
-                     gtk_notebook_get_n_pages(g->notebook) != 4);
-    gui_update(self);
+    GtkToggleButton *toggle = GTK_TOGGLE_BUTTON(g->cs_sliders.toggle);
+    gtk_toggle_button_set_active(toggle, !gtk_toggle_button_get_active(toggle));
   }
   else if(button == GDK_BUTTON_PRIMARY)
   {
@@ -3654,32 +3649,13 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_toggle_set(g->use_filter, p->use_filter);
   gui_changed(self, NULL, NULL);
 
-  const gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
-
   // reset masking
   g->mask_mode = 0;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
 
-  const int nbpage = gtk_notebook_get_n_pages(g->notebook);
-  if((nbpage == 4) ^ show_sliders)
-  {
-    if(show_sliders)
-      gtk_widget_show(dt_ui_notebook_page(g->notebook, N_("options"), _("options")));
-    else
-      gtk_notebook_remove_page(g->notebook, 3);
-
-    GtkDarktableExpander *exp = DTGTK_EXPANDER(g->cs.expander);
-    gtk_widget_set_visible(dtgtk_expander_get_header(exp), !show_sliders);
-    gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
-    gtk_revealer_set_reveal_child(GTK_REVEALER(exp->frame), show_sliders || exp->expanded);
-  }
-
-  // display widgets depending on the selected notebook page
-  gtk_widget_set_visible(GTK_WIDGET(g->area), g->page_num < 3);
-  gtk_widget_set_visible(GTK_WIDGET(g->hue_shift), g->page_num < 3);
-
-  const char numstr[] = {'0' + (show_sliders ? g->page_num : 3), 0};
+  // show the slider page matching the selected channel tab
+  const char numstr[] = {'0' + g->page_num, 0};
   gtk_stack_set_visible_child_name(g->stack, numstr);
 }
 
@@ -3770,7 +3746,7 @@ void gui_init(dt_iop_module_t *self)
 
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle sliders visibility\nalt+scroll to change page"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle the control sliders\nalt+scroll to change page"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
   gtk_widget_add_events(GTK_WIDGET(g->area),
@@ -3797,15 +3773,19 @@ void gui_init(dt_iop_module_t *self)
     _("pick hue from image and visualize it\nctrl+click to select an area"));
   gtk_widget_set_name(g->hue_shift, "keep-active");
 
+  // the numeric sliders live in their own collapsible section, collapsed by
+  // default, so the graph stays the primary interface
+  dt_gui_new_collapsible_section
+    (&g->cs_sliders,
+     "plugins/darkroom/colorequal/expand_control_sliders",
+     _("control sliders"),
+     GTK_BOX(box),
+     DT_ACTION(self));
+
   g->stack = GTK_STACK(gtk_stack_new());
-  dt_gui_box_add(box, g->stack);
+  dt_gui_box_add(g->cs_sliders.container, g->stack);
   dt_action_define_iop(self, NULL, N_("sliders"), GTK_WIDGET(g->stack), NULL);
   gtk_stack_set_homogeneous(g->stack, FALSE);
-  // this should really be set in gui_update depending on whether sliders are
-  // shown to prevent the module size changing when changing tabs
-  // (as is the custom elsewhere and less confusing)
-  // but since graph is hidden anyway under the options tab this is apparently
-  // not a requirement here
 
   dt_iop_module_t *sect = NULL;
 #define GROUP_SLIDERS(num, page, tooltip)                      \
@@ -3867,13 +3847,11 @@ void gui_init(dt_iop_module_t *self)
   g->bright_sliders[7] = g->bright_magenta =
     dt_bauhaus_slider_from_params(sect, "bright_magenta");
 
-  GtkWidget *options = dt_gui_vbox();
-  gtk_stack_add_named(g->stack, options, "3");
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/colorequal/expand_options",
      _("options"),
-     GTK_BOX(options),
+     GTK_BOX(box),
      DT_ACTION(self));
   self->widget = GTK_WIDGET(g->cs.container);
 
@@ -3931,14 +3909,13 @@ void gui_init(dt_iop_module_t *self)
 
   _init_sliders(self);
 
-  // restore the previously saved active tab
-  const guint active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
-  if(active_page < 3)
-  {
-    gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
-    gtk_notebook_set_current_page(g->notebook, active_page);
-  }
-  g->channel = (active_page >= NUM_CHANNELS) ? SATURATION : active_page;
+  // restore the previously saved active tab. Clamp in case the stored value
+  // points to the old "options" tab, which no longer exists.
+  int active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
+  active_page = CLAMP(active_page, 0, NUM_CHANNELS - 1);
+  gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
+  gtk_notebook_set_current_page(g->notebook, active_page);
+  g->channel = (dt_iop_colorequal_channel_t)active_page;
   g->page_num = active_page;
 
   self->widget = GTK_WIDGET(box);
