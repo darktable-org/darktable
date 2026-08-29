@@ -270,7 +270,9 @@ static float *_process_opposed(dt_iop_module_t *self,
       {
         for(int mcol = 0; mcol < mwidth-1; mcol++)
         {
-          char mbuff[3] = { 0, 0, 0 };
+          // fcol() returns 0-3, the fourth index is only written for
+          // CYGM/RGBE sensors and never read back below.
+          char mbuff[4] = { 0, 0, 0, 0 };
           for(int y = 0; y < 3; y++)
           {
             for(int x = 0; x < 3; x++)
