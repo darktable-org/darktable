@@ -86,7 +86,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   GtkWidget *compensate_hilite_preserv;
-  float effective_exposure; // used to cache the final computed exposure
   float deflicker_computed_exposure;
 
   GtkWidget *spot_mode;
@@ -609,6 +608,26 @@ static float _get_highlight_bias(const dt_iop_module_t *self)
     return 0.0f;
 }
 
+// The exposure the pipe applies in manual mode: the user parameter plus the
+// compensations. commit_params() and the proxy accessor both go through this, so the
+// value other modules read cannot drift away from the one that is processed.
+static float _effective_manual_exposure(const dt_iop_module_t *const self,
+                                        const dt_iop_exposure_params_t *const p)
+{
+  float exposure = p->exposure;
+
+  // If exposure bias compensation has been required, add it on top of
+  // user exposure correction
+  if(p->compensate_exposure_bias)
+    exposure -= _get_exposure_bias(self);
+
+  // If highlight preservation compensation has been required, add it on top of
+  // the previous compensation values
+  if(p->compensate_hilite_pres)
+    exposure += _get_highlight_bias(self);
+
+  return exposure;
+}
 
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
@@ -619,27 +638,11 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_exposure_data_t *d = piece->data;
 
   d->params.black = p->black;
-  d->params.exposure = p->exposure;
+  d->params.exposure = _effective_manual_exposure(self, p);
   d->params.deflicker_percentile = p->deflicker_percentile;
   d->params.deflicker_target_level = p->deflicker_target_level;
 
-  // If exposure bias compensation has been required, add it on top of
-  // user exposure correction
-  if(p->compensate_exposure_bias)
-    d->params.exposure -= _get_exposure_bias(self);
-
-  // If highlight preservation compensation has been required, add it on top of
-  // the previous compensation values
-//  d->params.compensate_hilite_pres = p->compensate_hilite_pres;
-  if(p->compensate_hilite_pres)
-    d->params.exposure += _get_highlight_bias(self);
-
   d->deflicker = 0;
-
-  if (self->gui_data)
-  {
-    ((dt_iop_exposure_gui_data_t *)self->gui_data)->effective_exposure = d->params.exposure;
-  }
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER
      && dt_image_is_raw(&self->dev->image_storage)
@@ -821,10 +824,32 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
   return p->black;
 }
 
+// The exposure that is actually applied, for other modules to read through
+// dev->proxy.exposure. Derived from the parameters on the caller's thread, like
+// _exposure_proxy_get_exposure() and _exposure_proxy_get_black() above: a value cached
+// by the pipe would be one commit behind whenever the caller asks right after a change.
+// Reading params this way is only safe on the GTK thread, which owns them - see the
+// thread contract on dt_dev_proxy_exposure_t in develop.h.
 static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
 {
-  const dt_iop_exposure_gui_data_t* const g = self->gui_data;
-  return g->effective_exposure;
+  const dt_iop_exposure_params_t *const p = self->params;
+
+  if(p->mode == EXPOSURE_MODE_DEFLICKER)
+  {
+    // deflicker computes its correction from the raw histogram inside the pipe, so the
+    // value it caches is the only source; it stays undefined until the preview pipe has
+    // run once, and there is no GUI to cache it in outside the darkroom
+    const dt_iop_exposure_gui_data_t *const g = self->gui_data;
+    if(!g) return 0.f;
+
+    dt_iop_gui_enter_critical_section(self);
+    const float computed = g->deflicker_computed_exposure;
+    dt_iop_gui_leave_critical_section(self);
+
+    return computed == EXPOSURE_CORRECTION_UNDEFINED ? 0.f : computed;
+  }
+
+  return _effective_manual_exposure(self, p);
 }
 
 static void _exposure_proxy_handle_event(int n_press,
@@ -905,16 +930,8 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 
   if(mode == DT_SPOT_MODE_MEASURE)
   {
-    // get the exposure setting
-    float expo = p->exposure;
-
-    // If the exposure bias compensation is on, we need to add it to the user param
-    if(p->compensate_exposure_bias)
-      expo -= _get_exposure_bias(self);
-
-    // If the highlight preservation mode is on, we need to add it to the user param
-    if(p->compensate_hilite_pres)
-      expo += _get_highlight_bias(self);
+    // the exposure the pipe applies, i.e. the user setting plus the compensations
+    const float expo = _effective_manual_exposure(self, p);
 
     const float white = exposure2white(-expo);
 
