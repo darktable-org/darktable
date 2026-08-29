@@ -1328,15 +1328,15 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   // TODO: should we skip raster masks?
   if(dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID))
   {
-    // get back final mask from the device as the raster mask
-    if(!raster)
+    // Get back the final mask from the device as the raster mask.
+    //
+    // This must be done unconditionally to avoid presenting downstream a different
+    // mask than the CPU one in the presence of refinements.
+    err = dt_opencl_copy_image_to_host(devid, mask, dev_mask, owidth, oheight, sizeof(float));
+    if(err != CL_SUCCESS)
     {
-      err = dt_opencl_copy_image_to_host(devid, mask, dev_mask, owidth, oheight, sizeof(float));
-      if(err != CL_SUCCESS)
-      {
-        dt_iop_piece_clear_raster(piece, _mask);
-        goto error;
-      }
+      dt_iop_piece_clear_raster(piece, _mask);
+      goto error;
     }
     dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
   }
