@@ -81,6 +81,10 @@ KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
     field.  Partly handled: a function that writes >= 8 distinct fields under the
     lock and never reads them back is treated as bulk initialisation and
     establishes no per-field discipline.
+  * A widget touched from the pipe only to hand it to the main loop.
+    colorharmonizer's `_update_histogram()` does `g_object_ref(g->auto_detect)`
+    and `gdk_threads_add_idle()`; the ref is atomic and the GTK call happens on
+    the main thread, so this is the correct idiom, not a defect.
   * A finding resting only on an `either` site -- see WHICH THREAD above.
 
 KNOWN LIMITS
@@ -94,8 +98,16 @@ KNOWN LIMITS
   * `g` is matched by convention, not by type.  A function that binds `g` to
     something other than the module's GUI data is skipped whole, so a real
     gui_data access in it is missed too.
+  * A nested anonymous struct in the gui_data is one field, not several:
+    globaltonemap's `struct { GtkWidget *bias; ... } drago;` is the field
+    `drago` of type "struct", so `g->drago.bias` does not reach
+    widget_from_pipe.
+  * Function boundaries are found by brace counting from an opening `{` in
+    column zero, which is darktable's style throughout but not C in general.
   * Only `src/iop/*.c` and `*.cc`.  Shared code under `src/develop/` is not
-    covered, and neither is `src/libs/`.
+    covered, and neither is `src/libs/`.  A source with no
+    `dt_iop_<module>_gui_data_t` has nothing to share and is skipped; the
+    stderr banner says how many that was.
 
 USAGE
   Run it from anywhere inside a darktable checkout, or with the script on $PATH:
@@ -166,23 +178,126 @@ FUNC_HEAD = re.compile(r"^[A-Za-z_][A-Za-z0-9_ \*\t]*?([A-Za-z_][A-Za-z0-9_]*)\s
 FIELD_RE  = re.compile(r"\bg\s*->\s*([A-Za-z_][A-Za-z0-9_]*)")
 CALL_RE   = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 
-WRITE_RE = None  # built per field below
+# What may follow `g->field` and still be the same object being written: array
+# subscripts and member selections.  `g->box.x = 1` and `g->lines[l].p1[0] = v`
+# are writes to `box` and to `lines`, and used to be recorded as reads because
+# the operator had to sit immediately after the field name.
+PATH = r"(?:\s*(?:\[[^\]]*\]|\.\s*[A-Za-z_]\w*|->\s*[A-Za-z_]\w*))*"
+# an explicit cast in front of an argument does not make it any less likely
+# that the callee writes through the pointer: gtk_x((GtkTreeView *)g->w)
+CAST = r"(?:\(\s*[A-Za-z_][A-Za-z0-9_\s*]*\)\s*)?"
+_write_cache = {}
+
+
+def _write_res(f):
+    """The write patterns for one field, built once and reused."""
+    r = _write_cache.get(f)
+    if r is None:
+        g = r"\bg\s*->\s*" + re.escape(f) + PATH
+        r = _write_cache[f] = (
+            # postfix and prefix increment/decrement
+            re.compile(g + r"\s*(?:\+\+|--)"),
+            re.compile(r"(?:\+\+|--)\s*" + g + r"\b"),
+            # address taken
+            re.compile(r"&\s*" + g[2:] + r"\b"),
+            # assignment and every compound assignment, including <<= >>= %=
+            re.compile(g + r"\s*(?:[-+*/|&^%]|<<|>>)?=(?!=)"),
+            # passed as an argument, with or without a cast: the callee may
+            # write through the pointer or array.  The trailing separator is
+            # matched by lookahead so two such arguments in a row both match.
+            re.compile(r"[(,]\s*" + CAST + g[2:] + r"\s*(?=[,)])"),
+        )
+    return r
+
+
 def is_write(src, f):
-    """A write to g->f: assignment, compound assignment, ++/--, or address-taken."""
-    if re.search(r"\bg\s*->\s*%s\s*(\+\+|--)" % f, src): return True
-    if re.search(r"&\s*g\s*->\s*%s\b" % f, src):
+    """A write to g->f: assignment, compound assignment, ++/--, or address-taken.
+
+    Deliberately over-inclusive on the last two shapes -- an address or a bare
+    pointer handed to a callee is only a *possible* write -- because the mode
+    only ever gates no_lock_share, where a missed write is a missed finding and
+    a spurious one is a candidate a human then rejects.
+    """
+    post, pre, addr, assign, arg = _write_res(f)
+    if post.search(src) or pre.search(src): return True
+    if addr.search(src):
         # ... unless the same call also hands the callee the lock, in which
         # case the callee locks and this is not an unsynchronised write
         if not re.search(r"&\s*\w+\s*->\s*gui_lock", src): return True
-    if re.search(r"\bg\s*->\s*%s\s*(\[[^\]]*\])?\s*(\+|-|\*|/|\||&|\^)?=(?!=)" % f, src): return True
-    # passed as a bare argument: the callee may write through the pointer/array
-    if re.search(r"[(,]\s*g\s*->\s*%s\s*[,)]" % f, src): return True
+    if assign.search(src): return True
+    if arg.search(src): return True
     return False
 
 ENTER = "dt_iop_gui_enter_critical_section"
 LEAVE = "dt_iop_gui_leave_critical_section"
 MUTEX_LOCK   = re.compile(r"\b(?:g_mutex_lock|pthread_mutex_lock|dt_pthread_mutex_lock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
 MUTEX_UNLOCK = re.compile(r"\b(?:g_mutex_unlock|pthread_mutex_unlock|dt_pthread_mutex_unlock)\s*\(\s*&?\s*g\s*->\s*(\w+)")
+
+# Comments and literals, in the order they win at a given position: `//` before
+# `/*` so a `/*` inside a line comment is not read as an opening, and both
+# before the quotes so a quote inside a comment is not read as a literal.
+MASK_RE = re.compile(r'//[^\n]*'
+                     r'|/\*.*?(?:\*/|\Z)'
+                     r'|"(?:\\.|[^"\\\n])*"?'
+                     r"|'(?:\\.|[^'\\\n])*'?", re.S)
+
+
+def _blank(m):
+    """One comment or literal, replaced by spaces of the same width."""
+    t = m.group(0)
+    q = t[0] if t[0] in "\"'" else ""
+    if q and len(t) > 1 and t[-1] == q:
+        # keep the quotes: they are what makes the next scan see an empty
+        # literal rather than two unrelated tokens run together
+        return q + re.sub(r"[^\n]", " ", t[1:-1]) + q
+    return re.sub(r"[^\n]", " ", t)
+
+
+def mask_text(text):
+    """Blank out comments and the bodies of string/char literals, in place.
+
+    Every scan below works on lines and reports 1-based line numbers, so the
+    mask has to preserve both the line count and the column of every surviving
+    character: `/* ... */` becomes spaces, not nothing.  Stripping only `//`
+    used to let disabled code enter the fact base as real accesses, and a
+    commented-out enter/leave_critical_section() would silently shift the lock
+    depth of a whole function.  Literal bodies go too, so a brace or a `g->x`
+    inside a message cannot be read as code.
+    """
+    return MASK_RE.sub(_blank, text)
+
+
+# A macro invocation ahead of the declarator -- DT_OMP_DECLARE_SIMD(...),
+# __attribute__((...)) -- would otherwise be taken for the function name, since
+# the name scan keeps the first identifier followed by '('.  Only all-caps
+# macros and __attribute__ are dropped: a lower-case name before '(' is the
+# declarator itself.
+MACRO_HEAD = re.compile(r"\s*(?:__attribute__|[A-Z_][A-Z0-9_]*)\s*\(")
+
+
+def strip_leading_macros(head):
+    """A reconstructed signature with any leading macro invocations removed."""
+    while True:
+        m = MACRO_HEAD.match(head)
+        if not m:
+            return head
+        depth, j = 0, m.end() - 1
+        while j < len(head):
+            if head[j] == "(":
+                depth += 1
+            elif head[j] == ")":
+                depth -= 1
+                if depth == 0: break
+            j += 1
+        if j >= len(head):
+            return head                       # unbalanced: leave it alone
+        rest = head[j + 1:]
+        # keep what we had if nothing declarator-shaped follows: the "macro" was
+        # the definition itself (a function generated by e.g. HSL_CALLBACK(gain))
+        if not re.search(r"[A-Za-z_][A-Za-z0-9_]*\s*\(", rest):
+            return head
+        head = rest
+
 
 def split_functions(lines):
     """Yield (name, start_line, end_line) for top-level function bodies."""
@@ -197,16 +312,22 @@ def split_functions(lines):
                    and not lines[j].lstrip().startswith(("//", "/*", "*", "#"))):
                 sig.insert(0, lines[j]); j -= 1
                 if len(sig) > 20: break
-            head = " ".join(s.strip() for s in sig)
+            head = strip_leading_macros(" ".join(s.strip() for s in sig))
             m = None
             for m2 in re.finditer(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", head):
                 m = m2
                 break
             name = m.group(1) if m else None
-            # brace-match to the closing '}' at column 0
-            k = i + 1
-            while k < n and not lines[k].startswith("}"):
+            # brace-match to the end of the body.  Counting braces rather than
+            # looking for a '}' in column zero: a closing brace indented by one
+            # space (splittoning, vibrance) used to swallow the next function
+            # whole, merging two bodies under the first one's name.
+            k, depth = i, 0
+            while k < n:
+                depth += lines[k].count("{") - lines[k].count("}")
+                if depth <= 0: break
                 k += 1
+            k = min(k, n - 1)
             if name and not name in ("if", "for", "while", "switch", "typedef", "struct"):
                 out.append((name, i + 1, k))
             i = k + 1
@@ -214,28 +335,66 @@ def split_functions(lines):
             i += 1
     return out
 
-def gui_fields(text, module):
-    m = re.search(r"typedef struct dt_iop_%s_gui_data_t\s*\{(.*?)\}\s*dt_iop_%s_gui_data_t" % (module, module),
-                  text, re.S)
-    if not m:
-        m = re.search(r"typedef struct dt_iop_\w+_gui_data_t\s*\{(.*?)\}\s*dt_iop_\w+_gui_data_t", text, re.S)
-    if not m:
-        return set()
-    body = m.group(1)
-    fields = {}
-    for line in body.splitlines():
-        line = line.split("//")[0].strip().rstrip(";")
-        if not line or line.startswith(("/*", "*", "#")):
+def struct_body(text, name_re):
+    """The body of a `typedef struct [tag] { ... } NAME;` whose NAME matches.
+
+    Found from the closing `} NAME;` backwards by brace matching, rather than
+    forwards from `typedef struct {`: the struct tag is optional (liquify has
+    none) and a forward non-greedy match without a tag to anchor on would
+    latch onto whatever earlier anonymous typedef the file happens to contain.
+    """
+    for m in re.finditer(r"\}\s*(%s)\s*;" % name_re, text):
+        depth, j = 0, m.start()
+        while j >= 0:
+            if text[j] == "}":
+                depth += 1
+            elif text[j] == "{":
+                depth -= 1
+                if depth == 0: break
+            j -= 1
+        if j < 0:
             continue
-        # strip the type, keep the declarator list
-        for decl in line.split(","):
+        if re.search(r"typedef\s+struct\s*(?:[A-Za-z_]\w*\s*)?$", text[:j]):
+            return text[j + 1:m.start()]
+    return None
+
+
+def gui_fields(text, module):
+    body = struct_body(text, r"dt_iop_%s_gui_data_t" % re.escape(module))
+    if body is None:
+        body = struct_body(text, r"dt_iop_\w+_gui_data_t")
+    if body is None:
+        return {}
+    # a nested anonymous struct/union keeps only its own member name: the type
+    # of `struct { ... } drago;` is recorded as "struct" and g->drago.bias is
+    # an access to `drago`, not to `bias` (see KNOWN LIMITS)
+    while True:
+        stripped = re.sub(r"\{[^{}]*\}", " ", body)
+        if stripped == body: break
+        body = stripped
+    fields = {}
+    # split on ';', not on newlines: a declarator list may continue on the next
+    # line (clipping's `float a, b,\n c;`), and only the first line carries the type
+    for stmt in body.split(";"):
+        stmt = " ".join(l for l in stmt.splitlines() if not l.lstrip().startswith("#"))
+        stmt = stmt.strip()
+        if not stmt:
+            continue
+        # one type, then a declarator list: the type is written once and the
+        # comma-separated declarators after it share it.  Parsing each
+        # declarator on its own lost the type for every field but the first,
+        # which put most Gtk widget fields out of reach of widget_from_pipe.
+        ty = None
+        for decl in stmt.split(","):
             d = decl.strip().rstrip(";")
             d = re.sub(r"\[[^\]]*\]", "", d)          # array bounds
             d = re.sub(r"\(.*", "", d)                 # function pointers
             names = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", d)
-            if names:
-                ty = names[0] if len(names) > 1 else "unknown"
-                fields[names[-1]] = ty
+            if not names:
+                continue
+            if ty is None:
+                ty = " ".join(names[:-1]) if len(names) > 1 else "unknown"
+            fields[names[-1]] = ty
     return fields
 
 def classify(fnname):
@@ -246,7 +405,9 @@ def classify(fnname):
 
 def analyse(path):
     module = re.sub(r"\.cc?$", "", os.path.basename(path))
-    text = open(path, encoding="utf-8", errors="replace").read()
+    # every scan below runs on the masked text: comments and literal bodies are
+    # blanked out, so disabled code cannot enter the fact base
+    text = mask_text(open(path, encoding="utf-8", errors="replace").read())
     lines = text.splitlines()
     fields = gui_fields(text, module)
     if not fields:
@@ -266,19 +427,22 @@ def analyse(path):
         decls = other_g.findall(body)
         if decls and not any(d.endswith("_gui_data_t") for d in decls):
             continue
-        depth = 0
         held = []
         for ln in range(s, e):
-            src = lines[ln].split("//")[0]
+            src = lines[ln]
             for c in CALL_RE.findall(src):
                 if c in fnames and c != fn:
                     callgraph[fn].add(c)
-            for ref in re.findall(r"[(,]\s*([A-Za-z_][A-Za-z0-9_]*)\s*[,)]", src):
+            # the separator after the name is matched by lookahead, not
+            # consumed: re.findall does not overlap, so consuming it made a bare
+            # identifier that directly follows another one unmatchable -- which
+            # is exactly the shape of DT_CONTROL_SIGNAL_HANDLE(SIGNAL, handler)
+            for ref in re.findall(r"[(,]\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,)])", src):
                 if ref in fnames and re.search(r"SIGNAL_CONNECT|SIGNAL_HANDLE|g_signal_connect|g_idle_add|"
                                                r"gtk_.*_set_.*_func|_draw_callback", src):
                     handler_refs.add(ref)
             if ENTER in src:
-                depth += 1; held.append("gui_lock")
+                held.append("gui_lock")
             for mm in MUTEX_LOCK.finditer(src):
                 held.append(mm.group(1))
             # sorted, not bare set order: CPython randomises string hashing per
@@ -293,14 +457,12 @@ def analyse(path):
                     accesses.append((fn, f, lock, ln + 1, mode))
             if LEAVE in src:
                 if held and held[-1] == "gui_lock": held.pop()
-                depth = max(0, depth - 1)
             for mm in MUTEX_UNLOCK.finditer(src):
                 if mm.group(1) in held: held.remove(mm.group(1))
     # A function that initialises many fields inside one critical section
     # establishes no per-field discipline: the lock is there for the batch,
     # not because any one of these fields needs it.  Mark those sites so the
     # rules do not read them as evidence of a convention.
-    from collections import Counter
     bulk = defaultdict(set)
     reads = defaultdict(set)
     for (fn, f, lock, ln, mode) in accesses:
@@ -334,7 +496,10 @@ def analyse(path):
                         thread[c] = thread[caller]; changed = True
                     elif thread[c] != thread.get(caller) and thread[c] in ("pipe", "gtk"):
                         thread[c] = "either"; changed = True
-    return dict(module=module, fields=fields, accesses=accesses, thread=thread)
+    # the basename, not just the module: three IOPs are .cc, and the report
+    # used to name them <module>.c, a path that does not exist
+    return dict(module=module, src=os.path.basename(path), fields=fields,
+                accesses=accesses, thread=thread)
 
 
 
@@ -383,7 +548,8 @@ def findings(res, wanted):
             elif locked and unlocked:
                 rule = "discipline_gap"
             if rule and rule in wanted:
-                out.append(dict(module=module, field=field, rule=rule,
+                out.append(dict(module=module, src=r.get("src", module + ".c"),
+                                field=field, rule=rule,
                                 ctype=fields.get(field, "?"),
                                 locked=locked, unlocked=unlocked, thread=th))
     order = {"widget_from_pipe": 0, "violation": 1, "no_lock_share": 2, "discipline_gap": 3}
@@ -414,7 +580,7 @@ def lemmalog_facts(res):
             if ty.startswith(("Gtk", "Dtgtk"))}
     for ty in sorted(seen):
         out.append(f'+ gtk_type("{ty}")')
-    for m, r in res.items():
+    for m, r in sorted(res.items()):
         for f, ty in sorted(r["fields"].items()):
             out.append(f'+ ftype("{m}", "{f}", "{ty}")')
         for fn, t in sorted(r["thread"].items()):
@@ -432,6 +598,19 @@ def site_str(a, th):
     return f"{a[0]}:{a[3]}[{th.get(a[0]) or '?'}]"
 
 
+def _sites(sites, th, cap, extra=None):
+    """A capped, pipe-first site list, with the number of sites it left out.
+
+    The cut is named rather than silent: a finding can carry forty sites, and a
+    report that printed eight of them without saying so understated its own
+    evidence against --format csv, which emits every one.
+    """
+    shown = _pipe_first(sites, th)[:cap]
+    line = ", ".join(site_str(a, th) + (extra(a) if extra else "") for a in shown)
+    rest = len(sites) - len(shown)
+    return line + (f", ... (+{rest} more)" if rest else "")
+
+
 def print_report(fs, trees=None):
     by_rule = defaultdict(list)
     for f in fs:
@@ -443,12 +622,11 @@ def print_report(fs, trees=None):
         print(f"\n=== {rule}  ({len(group)}) " + "=" * (52 - len(rule)))
         for f in group:
             th = f["thread"]
-            print(f"\n{f['module']}.c  g->{f['field']}   ({f['ctype']})")
+            print(f"\n{f['src']}  g->{f['field']}   ({f['ctype']})")
             if f["locked"]:
-                print("   locked  : " + ", ".join(site_str(a, th) + f"({a[2]})"
-                                                  for a in _pipe_first(f["locked"], th)[:6]))
-            print("   unlocked: " + ", ".join(site_str(a, th)
-                                              for a in _pipe_first(f["unlocked"], th)[:8]))
+                print("   locked  : " + _sites(f["locked"], th, 6,
+                                               lambda a: f"({a[2]})"))
+            print("   unlocked: " + _sites(f["unlocked"], th, 8))
             if trees:
                 key = why_goal(f)[1]
                 tree = trees.get(key)
@@ -684,6 +862,18 @@ def main():
                          "$DT_LOCKCHECK_LEMMALOG.  Implies --why")
     args = ap.parse_args()
 
+    # Everything that can only be wrong about the invocation is checked here,
+    # before any output is produced.  These used to sit after the json/lemmalog
+    # early returns, so `--rules bogus --format json` and `--why --format json`
+    # printed their output and exited 0 instead of failing.
+    wanted = set(args.rules.split(","))
+    unknown = wanted - {"widget_from_pipe", "violation", "no_lock_share", "discipline_gap"}
+    if unknown:
+        die(f"unknown rule(s): {', '.join(sorted(unknown))}")
+    if (args.why or args.lemmalog) and args.format != "report":
+        die("--why adds proof trees to the report; --format %s cannot carry them"
+            % args.format)
+
     src, how = find_src(args.src)
     if src is None:
         sys.stderr.write("dt-lockcheck: cannot find darktable's src/iop.  Tried:\n")
@@ -694,21 +884,40 @@ def main():
         sys.exit(2)
 
     paths = iop_sources(src)
-    if not args.quiet:
-        # stderr: stdout carries the csv/json/lemmalog output.  Naming the route
-        # is what makes analysing the wrong checkout obvious.
-        sys.stderr.write("dt-lockcheck: %d sources in %s (%s)\n" % (len(paths), src, how))
+    sources = {re.sub(r"\.cc?$", "", os.path.basename(p)): p for p in paths}
 
-    res = {}
+    analysed = {}
     for p in paths:
         r = analyse(p)
-        if r and (not args.module or r["module"] in args.module):
-            res[r["module"]] = r
-    if not res:
-        if args.module:
+        if r:
+            analysed[r["module"]] = r
+
+    if args.module:
+        # a name that is not a source at all, and a source with no gui_data
+        # struct, are different mistakes and neither may pass silently: asking
+        # for one good and one bad name used to analyse the good one and exit 0
+        missing = [m for m in args.module if m not in sources]
+        if missing:
             die("no module named %s among the %d sources in %s"
-                % (", ".join(args.module), len(paths), src))
+                % (", ".join(sorted(missing)), len(paths), src))
+        empty = [m for m in args.module if m not in analysed]
+        if empty:
+            die("no gui_data struct in %s" % ", ".join(
+                sorted(os.path.basename(sources[m]) for m in empty)))
+        res = {m: analysed[m] for m in sorted(set(args.module))}
+    else:
+        res = analysed
+    if not res:
         die("no modules with a gui_data struct under %s" % src)
+
+    if not args.quiet:
+        # stderr: stdout carries the csv/json/lemmalog output.  Naming the route
+        # is what makes analysing the wrong checkout obvious, and naming the
+        # skipped count is what makes a silently dropped module visible.
+        skipped = len(paths) - len(analysed)
+        sys.stderr.write("dt-lockcheck: %d sources in %s (%s); %d with a gui_data "
+                         "struct, %d skipped\n"
+                         % (len(paths), src, how, len(analysed), skipped))
 
     if args.format == "json":
         json.dump(res, sys.stdout, indent=1)
@@ -717,17 +926,10 @@ def main():
         print("\n".join(lemmalog_facts(res)))
         return
 
-    wanted = set(args.rules.split(","))
-    unknown = wanted - {"widget_from_pipe", "violation", "no_lock_share", "discipline_gap"}
-    if unknown:
-        die(f"unknown rule(s): {', '.join(sorted(unknown))}")
     fs = findings(res, wanted)
 
     trees = None
     if args.why or args.lemmalog:      # --lemmalog is only ever given to get trees
-        if args.format != "report":
-            die("--why adds proof trees to the report; --format %s cannot carry them"
-                % args.format)
         exe, how = find_lemmalog(args.lemmalog)
         if not exe:
             die(how)

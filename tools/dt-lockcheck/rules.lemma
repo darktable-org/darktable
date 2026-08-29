@@ -22,11 +22,18 @@ rule written_late(M,F,T) :- access(M,F,Fn,_,"w"), runs_on(M,Fn,T), !setup_fn(Fn)
 rule has_discipline(M,F) :- access(M,F,_,"gui_lock",_).
 rule has_discipline(M,F) :- access(M,F,_,L,_), L \= "gui_lock", L \= "none", L \= "bulk_init".
 
-rule violation(M,F,Fn) :- has_discipline(M,F), shared(M,F), access(M,F,Fn,"none",_), !setup_fn(Fn).
-rule no_lock_share(M,F) :- shared(M,F), written_late(M,F,_), !has_discipline(M,F).
-
 rule is_widget(M,F) :- ftype(M,F,T), gtk_type(T).
 rule widget_from_pipe(M,F,Fn) :- is_widget(M,F), access(M,F,Fn,_,_), runs_on(M,Fn,"pipe").
 rule widget_from_pipe(M,F,Fn) :- is_widget(M,F), access(M,F,Fn,_,_), runs_on(M,Fn,"either").
 
-rule discipline_gap(M,F,Fn) :- has_discipline(M,F), access(M,F,Fn,"none",_), !setup_fn(Fn), !violation(M,F,Fn).
+# The four rules are reported one per field, in this order of interest, so each
+# one excludes the ones above it -- the Python side does the same with an
+# if/elif cascade.  Only widget_from_pipe needs an explicit guard: violation
+# and no_lock_share disagree on has_discipline, and discipline_gap requires it
+# and so cannot coincide with no_lock_share either.
+rule reported_widget(M,F) :- widget_from_pipe(M,F,_).
+
+rule violation(M,F,Fn) :- has_discipline(M,F), shared(M,F), access(M,F,Fn,"none",_), !setup_fn(Fn), !reported_widget(M,F).
+rule no_lock_share(M,F) :- shared(M,F), written_late(M,F,_), !has_discipline(M,F), !reported_widget(M,F).
+
+rule discipline_gap(M,F,Fn) :- has_discipline(M,F), access(M,F,Fn,"none",_), !setup_fn(Fn), !violation(M,F,Fn), !reported_widget(M,F).
