@@ -1597,9 +1597,8 @@ int process_cl(dt_iop_module_t *self,
     return DT_OPENCL_PROCESS_CL; // input should be at least as large as output
   if(piece->colors != 4) return DT_OPENCL_PROCESS_CL;  // we need RGB signal
 
-  // The GUI reads the luminance mask from host memory, so we mirror the
-  // caching logic of toneeq_process() and copy the mask back whenever the
-  // upstream pipe state has changed.
+  // Only the preview pipe publishes its luminance mask to the GUI, so only
+  // that one is copied back to host memory; see below.
   gboolean cached = FALSE;
   float *luminance = NULL;
 
@@ -1619,17 +1618,19 @@ int process_cl(dt_iop_module_t *self,
 
     if(dt_pipe_is_full(piece->pipe))
     {
-      // Re-allocate a new buffer if the full preview size has changed
-      if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
-      {
-        dt_free_align(g->full_preview_buf);
-        g->full_preview_buf = dt_alloc_align_float(num_elem);
-        g->full_preview_buf_width = width;
-        g->full_preview_buf_height = height;
-      }
-
-      luminance = g->full_preview_buf;
-      cached = TRUE;
+      // The mask stays on the device : the correction is applied there and
+      // no GUI code reads g->full_preview_buf.  Both GUI consumers, the
+      // histogram and the exposure under the cursor, are fed by the preview
+      // pipe buffer instead.  Copying the full pipe mask back would be a
+      // blocking multi-megabyte transfer into a buffer nobody reads, and it
+      // would happen on every roi or upstream change.
+      //
+      // toneeq_process() skips compute_luminance_mask() while
+      // g->ui_preview_hash still matches, so invalidate it here: should the
+      // pipe fall back to the CPU, it has to recompute the mask rather than
+      // reuse a host buffer this path never filled.
+      const dt_hash_t invalid = DT_INVALID_HASH;
+      hash_set_get(&invalid, &g->ui_preview_hash, &self->gui_lock);
     }
     else if(dt_pipe_is_preview(piece->pipe))
     {
@@ -1662,55 +1663,32 @@ int process_cl(dt_iop_module_t *self,
   // and read the luminance under the cursor
   if(cached)
   {
-    const size_t bsize = num_elem * sizeof(float);
+    const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
 
-    if(dt_pipe_is_full(piece->pipe))
+    dt_iop_gui_enter_critical_section(self);
+    const gboolean luminance_valid = g->luminance_valid;
+    dt_iop_gui_leave_critical_section(self);
+
+    if(saved_hash != hash || !luminance_valid)
     {
-      dt_hash_t saved_hash;
-      hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
-
+      /* copy back only if upstream pipe state has changed */
+      // Flag the cache as being recomputed so the GUI threads never
+      // read a partially filled buffer, then commit hash + validity
+      // once the data is ready.
       dt_iop_gui_enter_critical_section(self);
-      const gboolean luminance_valid = g->luminance_valid;
+      g->histogram_valid = FALSE;
+      g->luminance_valid = FALSE;
       dt_iop_gui_leave_critical_section(self);
 
-      if(hash != saved_hash || !luminance_valid)
-      {
-        /* copy back only if upstream pipe state has changed */
-        err = dt_opencl_read_buffer_from_device(devid, luminance, dev_luminance,
-                                                0, bsize, TRUE);
-        if(err != CL_SUCCESS) goto error;
-        hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
-      }
-    }
-    else if(dt_pipe_is_preview(piece->pipe))
-    {
-      const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
+      err = dt_opencl_read_buffer_from_device(devid, luminance, dev_luminance,
+                                              0, num_elem * sizeof(float), TRUE);
+      if(err != CL_SUCCESS) goto error;
+      dt_preview_data_set_hash(&g->pd, piece);
 
       dt_iop_gui_enter_critical_section(self);
-      const gboolean luminance_valid = g->luminance_valid;
+      g->luminance_valid = TRUE;
       dt_iop_gui_leave_critical_section(self);
-
-      if(saved_hash != hash || !luminance_valid)
-      {
-        /* copy back only if upstream pipe state has changed */
-        // Flag the cache as being recomputed so the GUI threads never
-        // read a partially filled buffer, then commit hash + validity
-        // once the data is ready.
-        dt_iop_gui_enter_critical_section(self);
-        g->histogram_valid = FALSE;
-        g->luminance_valid = FALSE;
-        dt_iop_gui_leave_critical_section(self);
-
-        err = dt_opencl_read_buffer_from_device(devid, luminance, dev_luminance,
-                                                0, bsize, TRUE);
-        if(err != CL_SUCCESS) goto error;
-        dt_preview_data_set_hash(&g->pd, piece);
-
-        dt_iop_gui_enter_critical_section(self);
-        g->luminance_valid = TRUE;
-        dt_iop_gui_leave_critical_section(self);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
-      }
+      dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
     }
   }
 
