@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "common/bilinear.h"
 
 #ifdef HAVE_OPENCL
+
+#include <stdlib.h>
 
 dt_bilinear_cl_global_t *dt_bilinear_init_cl_global(void)
 {
