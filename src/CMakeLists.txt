@@ -235,7 +235,12 @@ if(WIN32)
   configure_file("${CMAKE_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico" "${CMAKE_BINARY_DIR}/data/pixmaps/dt_logo_128x128.ico" COPYONLY)
   SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
   set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.exe.manifest"
+                 "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.exe.manifest"
+                 COPYONLY)
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+  set_property(SOURCE "${RESOURCE_OBJECT}" APPEND PROPERTY OBJECT_DEPENDS
+               "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.exe.manifest")
 endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
