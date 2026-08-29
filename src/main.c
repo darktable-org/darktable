@@ -31,6 +31,35 @@
 #ifdef _WIN32
 #include "win/main_wrapper.h"
 #include "common/datetime.h"
+
+typedef struct dt_alloc_console_options_t
+{
+  int mode;
+  BOOL use_show_window;
+  WORD show_window;
+} dt_alloc_console_options_t;
+
+typedef HRESULT(WINAPI *dt_alloc_console_with_options_t)(
+  dt_alloc_console_options_t *options,
+  int *result);
+
+static gboolean _allocate_console(void)
+{
+  const HMODULE kernel = GetModuleHandleW(L"kernel32.dll");
+  const FARPROC allocation_proc = GetProcAddress(kernel, "AllocConsoleWithOptions");
+  dt_alloc_console_with_options_t alloc_with_options = NULL;
+  memcpy(&alloc_with_options, &allocation_proc, sizeof(alloc_with_options));
+
+  if(alloc_with_options)
+  {
+    // mode 2 requests ALLOC_CONSOLE_MODE_NO_WINDOW, available since Windows 11 24H2
+    dt_alloc_console_options_t options = { 2, FALSE, SW_HIDE };
+    if(SUCCEEDED(alloc_with_options(&options, NULL)) && GetConsoleCP() != 0)
+      return TRUE;
+  }
+
+  return AllocConsole();
+}
 #endif
 
 #ifdef __APPLE__
@@ -54,6 +83,40 @@ int main(int argc, char *argv[])
 
   // Make sure to not redirect output when the output is already
   // being redirected, either to a file or a pipe.
+  if(GetConsoleCP() == 0)
+  {
+    const HANDLE initial_input_handle = GetStdHandle(STD_INPUT_HANDLE);
+    const HANDLE initial_output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    const HANDLE initial_error_handle = GetStdHandle(STD_ERROR_HANDLE);
+    const DWORD initial_in_type = GetFileType(initial_input_handle);
+    const DWORD initial_out_type = GetFileType(initial_output_handle);
+    const DWORD initial_err_type = GetFileType(initial_error_handle);
+    const gboolean input_redirected =
+      initial_in_type == FILE_TYPE_DISK || initial_in_type == FILE_TYPE_PIPE;
+    const gboolean output_redirected =
+      initial_out_type == FILE_TYPE_DISK || initial_out_type == FILE_TYPE_PIPE;
+    const gboolean error_redirected =
+      initial_err_type == FILE_TYPE_DISK || initial_err_type == FILE_TYPE_PIPE;
+
+    if(_allocate_console())
+    {
+      if(input_redirected)
+        SetStdHandle(STD_INPUT_HANDLE, initial_input_handle);
+      else
+        g_freopen("CONIN$", "r", stdin);
+
+      if(output_redirected)
+        SetStdHandle(STD_OUTPUT_HANDLE, initial_output_handle);
+      else
+        g_freopen("CONOUT$", "w", stdout);
+
+      if(error_redirected)
+        SetStdHandle(STD_ERROR_HANDLE, initial_error_handle);
+      else
+        g_freopen("CONOUT$", "w", stderr);
+    }
+  }
+
   int out_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
   int err_type = GetFileType(GetStdHandle(STD_ERROR_HANDLE));
   gboolean redirect_output = ((out_type != FILE_TYPE_DISK && out_type != FILE_TYPE_PIPE) &&
@@ -83,11 +146,12 @@ int main(int argc, char *argv[])
     g_mkdir_with_parents(logdir, 0700);
 
     g_freopen(logfile, "a", stdout);
+    dup2(fileno(stdout), STDOUT_FILENO);
+    dup2(fileno(stdout), STDERR_FILENO);
     dup2(fileno(stdout), fileno(stderr));
-
-    // We don't need the console window anymore, free it.
-    // This ensures that only darktable's main window will be visible.
-    FreeConsole();
+    const HANDLE output_handle = (HANDLE)_get_osfhandle(fileno(stdout));
+    SetStdHandle(STD_OUTPUT_HANDLE, output_handle);
+    SetStdHandle(STD_ERROR_HANDLE, output_handle);
 
     g_free(logdir);
     g_free(logfile);
