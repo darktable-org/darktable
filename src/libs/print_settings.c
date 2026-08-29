@@ -91,7 +91,6 @@ typedef enum _unit_t
   UNIT_N // needs to be the last one
 } _unit_t;
 
-
 static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
 static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
 
@@ -235,7 +234,6 @@ static void _precision_by_unit(const _unit_t unit,
 }
 
 // unit conversion
-
 static float _to_mm(dt_lib_print_settings_t *ps,
                     const double value)
 {
@@ -297,7 +295,6 @@ static inline float _percent_unit_of(dt_lib_print_settings_t *ps,
 }
 
 // callbacks for in-memory export
-
 typedef struct dt_print_format_t
 {
   dt_imageio_module_data_t head;
@@ -336,14 +333,9 @@ static int write_image(dt_imageio_module_data_t *data,
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
-const size_t buf_bytes = (size_t)3 * (d->bpp == 8 ? 1 : 2) * d->head.width * d->head.height;
-DBG_MARK("write_image malloc: width=%d height=%d bpp=%d buf_bytes=%zu",
-         d->head.width, d->head.height, d->bpp, buf_bytes);
-params->buf = (uint16_t *)malloc(buf_bytes);
-
-/*   d->params->buf =
-    (uint16_t *)malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
- */  if(!d->params->buf)
+  d->params->buf =
+    (uint16_t *)g_malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
+  if(!d->params->buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[print] unable to allocate memory for image %s", filename);
     return 1;
@@ -369,7 +361,6 @@ params->buf = (uint16_t *)malloc(buf_bytes);
         memcpy(out_ptr, in_ptr, 6);
     }
   }
-
   return 0;
 }
 
@@ -461,7 +452,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
       }
     }
   }
-
+// In _export_image(): Print actual buffer address and size right before assigning to img->buf
   img->buf = params->buf;
   img->img_bpp = dat.bpp; // Store the image bitdepth with the image being sent to print job
   params->buf = NULL;
@@ -470,7 +461,6 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
 }
 
 #ifndef _WIN32
-
 static void _create_pdf(dt_job_t *job,
                         dt_images_box imgs,
                         const float width,
@@ -989,11 +979,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
 
     gboolean updated = dt_win_open_printer_settings(ps->settings_ctx, hwnd_owner);
-//    if(!updated)
-//    {
-//      dt_control_log(_("print cancelled (printer settings not confirmed)"));
-//    }
-//    else 
+
     if(updated)
     {
       dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx); 
@@ -1218,7 +1204,6 @@ static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
     {
       self->gui_update(self);
     }
-
   }
 }
 #endif
@@ -1357,8 +1342,6 @@ _quality_changed(GtkWidget *combo, const dt_lib_module_t *self)
 }
 #endif
 
-
-
 static void
 _update_slider(dt_lib_print_settings_t *ps)
 {
@@ -1438,7 +1421,6 @@ _top_border_callback(GtkWidget *spin, dt_lib_module_t *self)
     dt_conf_set_float(PRINT_CONFIG_PREFIX "left_margin", value);
     dt_conf_set_float(PRINT_CONFIG_PREFIX "right_margin", value);
   }
-
   _update_slider(ps);
 }
 
@@ -1530,7 +1512,6 @@ _alignment_callback(GtkWidget *tb, dt_lib_module_t *self)
     dt_printing_setup_image(&ps->imgs, ps->last_selected,
                             ps->imgs.box[ps->last_selected].imgid, 100, 100, index);
   }
-
   _update_slider(ps);
 }
 
@@ -3579,8 +3560,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), settings_button, TRUE, TRUE, 0);
   // dt_gui_add_help_link(settings_button, "print_settings_button");
 #endif
-
-
 
   // Print button
 

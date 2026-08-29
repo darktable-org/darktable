@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ typedef struct _image_box
   dt_image_pos pos;              // relative pos from screen.page
   dt_image_pos screen;           // current screen pos (in pixels)
   dt_image_pos print;            // current print pos (in pixels) depending on paper size + DPI
-  int img_bpp;                       // added for Windows printing (but could be used for PDF export as well)
+  int img_bpp;                   // added for Windows printing (but could be used for PDF export as well)
   uint16_t *buf;
 } dt_image_box;
 

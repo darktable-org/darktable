@@ -102,13 +102,6 @@ typedef struct {
   dt_prtctl_t *pctl;
 } printer_job_params_t;
 
-/*typedef struct
-{
-  dt_printer_info_t *pinfo;                // UI-owned printer struct
-  void (*cb)(dt_printer_info_t *, void *); // UI callback
-  void *user_data;                         // UI callback user data
-} printer_ui_notify_t;*/
-
 // Function pointer type matching StartXpsPrintJob's real signature from
 // xpsprint.h. Resolved at runtime via LoadLibrary/GetProcAddress rather
 // than linked, since MinGW-w64 doesn't ship an import library for
@@ -155,7 +148,7 @@ static gboolean _win_xpsprint_ensure_loaded(void)
    Debug logging
 ---------------------------------------------------------------------------- */
 
-#define DBG_MARK(...) \
+/* #define DBG_MARK(...) \
   do { \
     FILE *f = fopen("C:/temp/winprint_debug.log", "a"); \
     if(f) { \
@@ -164,7 +157,7 @@ static gboolean _win_xpsprint_ensure_loaded(void)
       fprintf(f, "\n"); \
       fclose(f); \
     } \
-  } while(0)
+  } while(0) */
 
 ////HELPERS//////
 
@@ -233,27 +226,6 @@ void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
   }
 }
 
-/*void free_dib(dt_win_dib_t *dib)
-{
-  if(!dib) return;
-
-  if(dib->pixels)
-  {
-    g_free(dib->pixels);
-    dib->pixels = NULL;
-  }
-
-  if(dib->bi)
-  {
-    g_free(dib->bi);
-    dib->bi = NULL;
-  }
-
-  dib->stride   = 0;
-  dib->width    = 0;
-  dib->height   = 0;
-  dib->top_down = false;
-}*/
 // Get printer resolutions helper for both syncing of cached dm and during initial printer info query
 int dt_win_resolve_dpi_from_dm(DEVMODEW *dmW, const wchar_t *wprinter)
 {
@@ -406,7 +378,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   pinfo->printer.is_turboprint = FALSE;
   *pinfo->printer.profile = '\0';
   pinfo->num_printers = 0;
-      // Additional initialization specific to the Windows context
+  // Additional initialization specific to the Windows context
   // For example, you can set default margins or resolution here
   pinfo->printer.hw_margin_left = 0;
   pinfo->printer.hw_margin_top = 0;
@@ -469,18 +441,6 @@ void dt_get_printer_info(const char *printer_name_utf8, dt_printer_info_t *pinfo
   }
 
   g_free(wprinter);
-
-  // Debug output of what we filled in
- /*  {
-    char buf[512];
-    snprintf(buf, sizeof(buf),
-             "dt_get_printer_info: name='%s' resolution=%d "
-             "margins L=%.2f R=%.2f T=%.2f B=%.2f turboprint=%d",
-             pinfo->name, pinfo->resolution,
-             pinfo->hw_margin_left, pinfo->hw_margin_right,
-             pinfo->hw_margin_top, pinfo->hw_margin_bottom,
-             pinfo->is_turboprint);
-  } */
 }
 
 // Enumerate printers (replacement for cupsEnumDests / cupsGetDests)
@@ -497,7 +457,7 @@ is_unwanted_printer(const char *name)
   if(g_strrstr(name, "Fax")) return TRUE;
   if(g_strrstr(name, "OneNote")) return TRUE;
   if(g_strrstr(name, "XPS")) return TRUE;
-  //if(g_strrstr(name, "PDF")) return TRUE;
+  //if(g_strrstr(name, "PDF")) return TRUE;  // Left here if it becomes desirable to disable PDF "printers"
 
   return FALSE;
 }
@@ -541,25 +501,30 @@ static gboolean _notify_ui_printer_ready(gpointer user_data)
 // Background job: enumerate installed printers and invoke callback
 static int _detect_printers_callback(dt_job_t *job)
 {
-  /*dt_printer_wrapper_t *wrap = calloc(1, sizeof(*wrap));
-  wrap->pinfo = pinfo;
-  wrap->details_valid = FALSE;
-  wrap->refs = 1;   // held by discovered_printers itself*/
-  
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
   gboolean queued_any_default = FALSE;
 
   // Load saved default; NULL means not set.
-  char *dt_default = dt_conf_get_string("plugins/lighttable/print/printer");
+  char *dt_default = dt_conf_get_string(PRINT_CONFIG_PREFIX "printer");
   const char *sync_target = (dt_default && dt_default[0] != '\0') ? dt_default : NULL;
 
   DWORD needed = 0, returned = 0;
   (void)EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 2, NULL, 0, &needed, &returned);
 
-  if(needed == 0) { g_free(dt_default); return 0; }
+  if(needed == 0) 
+  { 
+    darktable.control->cups_started = TRUE;
+    g_free(dt_default); 
+    return 0; 
+  }
 
   BYTE *buffer = (BYTE *)malloc(needed);
-  if(!buffer) { g_free(dt_default); return 0; }
+  if(!buffer) 
+  { 
+    darktable.control->cups_started = TRUE;
+    g_free(dt_default); 
+    return 0; 
+  }
 
   int success = 0;
   if(EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
@@ -599,8 +564,6 @@ static int _detect_printers_callback(dt_job_t *job)
           dt_printer_wrapper_ref(wrap);
           g_idle_add(_notify_ui_printer_cb, ctx);
         }
-        //char buf[256];
-        //snprintf(buf, sizeof(buf), "discovered printer '%s'", pinfo->name);
 
         if(!darktable.control->cups_started)
         {
@@ -612,7 +575,7 @@ static int _detect_printers_callback(dt_job_t *job)
         {
           if(!sync_target && is_win_default)
           {
-            dt_conf_set_string("plugins/lighttable/print/printer", pinfo->name);
+            dt_conf_set_string(PRINT_CONFIG_PREFIX "printer", pinfo->name);
           }
 
           printer_job_params_t *params = g_new0(printer_job_params_t, 1);
@@ -639,14 +602,19 @@ static int _detect_printers_callback(dt_job_t *job)
           }
         }
       }
+      if(_cancel)
+      {
+          darktable.control->cups_started = TRUE;
+          free(buffer);
+          g_free(dt_default);
+          return 0;
+      }
 
       g_free(utf8);
     }
 
     success = 1;
   }
-
-  free(buffer);
 
   // Fallback if nothing matched DT config or Windows default
   if(!queued_any_default && discovered_printers)
@@ -681,6 +649,8 @@ static int _detect_printers_callback(dt_job_t *job)
     free(pctl);
   }
 
+  darktable.control->cups_started = TRUE;
+  free(buffer);
   g_free(dt_default);
   return success;
 }
@@ -690,7 +660,7 @@ static int _populate_remaining_printers_job(dt_job_t *job)
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
   if(!pctl || _cancel) return 0;
 
-  char *dt_default = dt_conf_get_string("plugins/lighttable/print/printer");
+  char *dt_default = dt_conf_get_string(PRINT_CONFIG_PREFIX "printer");
 
   for(GList *l = discovered_printers; l; l = l->next)
   {
@@ -741,7 +711,7 @@ static int _fill_printer_details_job(dt_job_t *job)
   // Persist default as soon as first ready details arrive (default or fallback)
   if(params->is_default)
   {
-    dt_conf_set_string("plugins/lighttable/print/printer", pinfo->name);
+    dt_conf_set_string(PRINT_CONFIG_PREFIX "printer", pinfo->name);
   }
 
   // Notify UI in main loop; each notify holds a ref
@@ -840,7 +810,7 @@ void dt_win_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data
 }
 
 
-/* Papers via DeviceCapabilitiesA: sizes are in tenths of a millimeter */
+// Papers via DeviceCapabilitiesA: sizes are in tenths of a millimeter
 // helper: check if paper already exists in list
 static gboolean paper_exists(GList *papers, const char *name)
 {
@@ -935,12 +905,6 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
           }
         }
         #endif
-    
-/*         if(p->name[0] == '\0')
-        {
-          snprintf(p->name, MAX_NAME, "Paper %d", i+1);
-          snprintf(p->common_name, MAX_NAME, "Paper %d", i+1);
-        } */
 
         if(!paper_exists(list, p->common_name))
           list = g_list_append(list, p);
@@ -984,7 +948,6 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
   return NULL;
 }
 
-
 GList *dt_get_quality_list(const char *printer_name_utf8)
 {
   GList *list = NULL;
@@ -1024,8 +987,6 @@ GList *dt_get_quality_list(const char *printer_name_utf8)
   g_free(wprinter);
   return list;
 }
-
-
 
 dt_medium_info_t *dt_get_medium(GList *media, const char *name)
 {
@@ -1171,21 +1132,56 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
   
   const gboolean is_16bit = (box->img_bpp == 16);
   const UINT bytes_per_pixel = is_16bit ? 6 : 3;
-  const UINT stride = (UINT)box->exp_width * bytes_per_pixel;
+  const UINT tight_stride = (UINT)box->exp_width * bytes_per_pixel;
+  const UINT padded_stride = (tight_stride + 3) & ~3;
   const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;   
+
+  BYTE *source_buf = (BYTE *)box->buf;
+  BYTE *padded_buf = NULL;
+
+  if(!source_buf) 
+  {
+    return NULL;
+  }
+
+  if(padded_stride != tight_stride) // Windows expects stride to be a multiple of 4 for 48bpp
+  {
+    const size_t total_padded_bytes = (size_t)padded_stride * box->exp_height;
   
-  DBG_MARK("Start create bitmap");
-  DBG_MARK("WIC bitmap: exp_width=%d exp_height=%d img_bpp=%d stride=%u cbBufferSize=%u",
-         box->exp_width, box->exp_height, box->img_bpp, stride, stride * box->exp_height);
+    padded_buf = (BYTE *)g_try_malloc0(total_padded_bytes);
+
+    if(!padded_buf) 
+    {
+      return NULL;
+    }
+    const BYTE *src = source_buf;
+    BYTE *dst = padded_buf;
+    for(int i = 0; i < box->exp_height; i++)
+    {
+      memcpy(dst, src, tight_stride);
+      src += tight_stride;
+      dst += padded_stride;
+    }
+    source_buf = padded_buf;
+  }
+
+  const UINT cbBufferSize = padded_stride * (UINT)box->exp_height;
+
   hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
-                                          box->exp_width,
-                                          box->exp_height,
-                                          pixel_format,
-                                          stride,
-                                          stride * box->exp_height,
-                                          (BYTE *)box->buf,
-                                          &bitmap);
-  DBG_MARK("finished create bitmap from memory, create png");
+                                box->exp_width,
+                                box->exp_height,
+                                pixel_format,
+                                padded_stride,
+                                cbBufferSize,
+                                source_buf,
+                                &bitmap);
+
+  if(padded_buf) 
+  {
+    g_free(padded_buf);
+    padded_buf = NULL;
+  }
+
   if(SUCCEEDED(hr) && bitmap)
   {
     hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, pixel_format, &img_stream);
@@ -1209,7 +1205,6 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
       img_stream->lpVtbl->Release(img_stream);
     }
   }
-
   if(bitmap) bitmap->lpVtbl->Release(bitmap);
   if(wic) wic->lpVtbl->Release(wic);
 
@@ -1698,9 +1693,6 @@ void dt_get_print_layout(const dt_print_info_t *prt,
 
 }
 
-
-
-
 //constructor for the print settings context
 dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
 {
@@ -1802,7 +1794,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
     ZeroMemory(settings_ctx->cached_dm, dm_size);
   }
 
-
     dt_sync_print_settings_to_dm(settings_ctx->cached_dm, settings_ctx->base);
 
     // Show the driver’s property sheet
@@ -1824,7 +1815,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
     {
       // One‑stop sync: DEVMODE → pinfo (orientation, paper, resolution, hw margins)
       dt_win_sync_cached_dm_to_pinfo(settings_ctx);
-
     }
     return TRUE;
   }
@@ -1832,7 +1822,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
   {
     return FALSE;
   }
-
 }
 
 // windows settings destructor

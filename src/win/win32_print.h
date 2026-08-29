@@ -24,6 +24,7 @@
 
 G_BEGIN_DECLS
 
+#define PRINT_CONFIG_PREFIX "plugins/print/print/"
 typedef struct dt_win32_print_ctx_t {
     dt_print_info_t *base;   // cross-platform pinfo
     HANDLE           hPrinter;
