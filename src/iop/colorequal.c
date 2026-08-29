@@ -75,6 +75,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
@@ -249,6 +250,7 @@ typedef struct dt_iop_colorequal_gui_data_t
 
   GtkWidget *smoothing_hue, *threshold, *contrast;
   GtkWidget *chroma_size, *param_size, *use_filter;
+  GtkWidget *show_sliders;
 
   GtkWidget *hue_shift;
 
@@ -3265,6 +3267,34 @@ static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
+static void _show_sliders_callback(GtkToggleButton *button,
+                                   dt_iop_module_t *self)
+{
+  DT_GUARD_GUI_UPDATE();
+  const gboolean active = gtk_toggle_button_get_active(button);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                               dtgtk_cairo_paint_solid_arrow,
+                               (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+  if(active != dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders"))
+  {
+    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders", active);
+    gui_update(self);
+  }
+}
+
+static void _show_sliders_header_click(GtkGestureSingle *gesture,
+                                       const gint n_press,
+                                       const gdouble x,
+                                       const gdouble y,
+                                       dt_iop_module_t *self)
+{
+  if(gtk_gesture_single_get_current_button(gesture) != GDK_BUTTON_PRIMARY) return;
+
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->show_sliders));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_sliders), !active);
+}
+
 static void _channel_tabs_switch_callback(GtkNotebook *notebook,
                                           GtkWidget *page,
                                           const guint page_num,
@@ -3663,6 +3693,7 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 
   const gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_sliders), show_sliders);
 
   // reset masking
   g->mask_mode = 0;
@@ -3804,6 +3835,29 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_tooltip(g->hue_shift,
     _("pick hue from image and visualize it\nctrl+click to select an area"));
   gtk_widget_set_name(g->hue_shift, "keep-active");
+
+  const gboolean show_sliders_state = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
+  GtkWidget *sliders_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *sliders_header_evb = gtk_event_box_new();
+  GtkWidget *sliders_label = dt_ui_section_label_new(_("show color sliders"));
+  dt_gui_add_class(sliders_head, "dt_section_expander");
+  gtk_container_add(GTK_CONTAINER(sliders_header_evb), sliders_label);
+
+  g->show_sliders = dtgtk_togglebutton_new
+    (dtgtk_cairo_paint_solid_arrow,
+     (show_sliders_state ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_sliders), show_sliders_state);
+  dt_gui_add_class(g->show_sliders, "dt_ignore_fg_state");
+  dt_gui_add_class(g->show_sliders, "dt_transparent_background");
+
+  gtk_box_pack_start(GTK_BOX(sliders_head), sliders_header_evb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sliders_head), g->show_sliders, FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(g->show_sliders), "toggled",
+                   G_CALLBACK(_show_sliders_callback), self);
+  dt_gui_connect_click(sliders_header_evb, _show_sliders_header_click, NULL, self);
+
+  dt_gui_box_add(box, sliders_head);
 
   g->stack = GTK_STACK(gtk_stack_new());
   dt_gui_box_add(box, g->stack);
