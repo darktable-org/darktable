@@ -4533,11 +4533,6 @@ void gui_init(dt_iop_module_t *self)
      GTK_BOX(self->widget),
      DT_ACTION(self));
 
-  // the spot mapping controls have no parameter behind them, they drive the
-  // mapping workflow and are kept in conf; a reset of the CAT tab must not
-  // clear the target the user has set up
-  dt_gui_collapsible_section_exclude_tab_state(&g->csspot);
-
   gtk_widget_set_tooltip_text
     (g->csspot.expander,
      _("define a target chromaticity (hue and chroma) for a particular region"

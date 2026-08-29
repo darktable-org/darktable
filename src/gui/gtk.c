@@ -5413,34 +5413,6 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   dt_gui_connect_click(header_evb, _collapse_expander_click, NULL, cs);
 }
 
-// widget data key holding the "not part of the page's parameter set" flag
-#define DT_TAB_STATE_EXCLUDE_KEY "dt-tab-state-exclude"
-
-void dt_gui_tab_state_exclude(GtkWidget *widget)
-{
-  if(widget)
-    g_object_set_data(G_OBJECT(widget), DT_TAB_STATE_EXCLUDE_KEY,
-                      GINT_TO_POINTER(TRUE));
-}
-
-gboolean dt_gui_tab_state_excluded(GtkWidget *widget)
-{
-  return widget
-    && g_object_get_data(G_OBJECT(widget), DT_TAB_STATE_EXCLUDE_KEY) != NULL;
-}
-
-#define DT_TAB_STATE_CONTENT_KEY "dt-tab-state-content"
-#define DT_TAB_STATE_PAGE_KEY "dt-tab-state-page"
-#define DT_TAB_STATE_HANDLER_KEY "dt-tab-state-handler"
-#define DT_TAB_STATE_HANDLER_DATA_KEY "dt-tab-state-handler-data"
-
-void dt_gui_collapsible_section_exclude_tab_state(dt_gui_collapsible_section_t *cs)
-{
-  // the expander holds both the header and the content box, so flagging it
-  // covers the whole section
-  if(cs) dt_gui_tab_state_exclude(cs->expander);
-}
-
 void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
                                           const char *label)
 {

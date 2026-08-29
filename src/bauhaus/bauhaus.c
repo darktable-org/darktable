@@ -1502,7 +1502,7 @@ static void _page_walk(GtkWidget *w,
                        gpointer user_data)
 {
   _page_walk_t *walk = user_data;
-  if(walk->stopped || dt_gui_tab_state_excluded(w)) return;
+  if(walk->stopped) return;
 
   /* Sections and collapsible sections keep their content visible and collapse
      by not revealing it, so a widget folded away is still walked; only what a
@@ -1510,7 +1510,13 @@ static void _page_walk(GtkWidget *w,
   if(walk->visible_only && !gtk_widget_get_visible(w)) return;
 
   if(DT_IS_BAUHAUS_WIDGET(w))
-    walk->stopped = !walk->visit(w, walk->user_data);
+  {
+    /* Only controls that carry a parameter are part of a page. The rest drive
+       the gui -- the spot mapping of color calibration keeps its whole
+       workflow in such widgets -- and are neither read nor reset with it. */
+    if(DT_BAUHAUS_WIDGET(w)->field)
+      walk->stopped = !walk->visit(w, walk->user_data);
+  }
   else if(GTK_IS_CONTAINER(w))
     gtk_container_foreach(GTK_CONTAINER(w), _page_walk, walk);
 }
@@ -1536,31 +1542,13 @@ static gboolean _first_off_default(GtkWidget *widget,
   return !*is_changed; // stop at the first one found
 }
 
-static void _refresh_notebooks(GtkWidget *w, gpointer user_data);
-
 static void _highlight_changed_notebook_tab(GtkWidget *w,
                                             gpointer user_data)
 {
   GtkNotebook *notebook = NULL;
   GtkWidget *page = _notebook_page_of(w, &notebook);
+  if(!page) return;
 
-  if(!page)
-  {
-    /* A widget can sit outside the notebook whose tabs it belongs to: the
-       colour equalizer parks its sliders in a stack beside its own. There is
-       no telling from here which tab that is, so every tab of the module is
-       read again -- the pages that name their parameters will work it out. */
-    if(DT_IS_BAUHAUS_WIDGET(w))
-    {
-      const dt_iop_module_t *module = _iop_of(DT_BAUHAUS_WIDGET(w));
-      if(module && module->widget) _refresh_notebooks(module->widget, NULL);
-    }
-    return;
-  }
-
-  /* The page decides, always: the widget the change came from is already
-     committed by the time we get here, so asking the page is both simpler and
-     the only way to notice that something else on it is still off default. */
   gboolean is_changed = dt_iop_page_params_changed(page);
   if(!is_changed)
     dt_bauhaus_page_foreach(page, TRUE, _first_off_default, &is_changed);

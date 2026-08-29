@@ -3582,6 +3582,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const dt_iop_colorequal_params_t *p = self->params;
 
+  /* the sliders live in the stack beside the notebook, so moving one does not
+     reach the tab it belongs to by itself */
+  dt_bauhaus_refresh_tab_state(g->notebook);
+
   // Get the current display profile
   struct dt_iop_order_iccprofile_info_t *work_profile =
     dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
