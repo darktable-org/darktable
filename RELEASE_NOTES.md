@@ -56,6 +56,14 @@ changes (where available).
   caused by handheld or shaky-tripod brackets. Enabled by default in builds with OpenCV,
   and tunable under preferences > processing > HDR alignment.
 
+- An MCP server for darktable. The new darktable-mcp binary, a headless sibling to darktable-cli,
+  lets an AI agent drive the raw pipeline over the Model Context Protocol: list modules and inspect
+  their parameter schemas, develop an image through a given module stack and get back a preview or
+  per-channel statistics, and read history, styles and metadata from the library. Parameters are
+  addressed by name through darktable's own introspection rather than by fixed offsets, so a stack
+  stays valid across module versions, and renders run on a throwaway duplicate so the source image
+  is never modified.
+
 ## UI/UX Improvements
 
 - Checkboxes are now Bauhaus widgets and are reset to default values
@@ -70,6 +78,24 @@ changes (where available).
 - Added a new collection filter for the original image dimensions.
 
 - Support for Canon's Highlight Tone Priority.
+
+- AI models can now be installed from additional repositories. Models
+  installed this way remember where they came from and are included
+  in the update check.
+
+- Added a preference to disable automatic AI model update checks,
+  with a manual check button for when it is off.
+
+- Added a compression option for the TIFF files written by neural
+  restore denoise and upscale, matching the TIFF export module.
+
+- Model packages can now declare their ONNX Runtime graph
+  optimization level, so models that misbehave under aggressive
+  optimization no longer need workarounds in feature code.
+
+- Panasonic RW2 files now offer embedded lens distortion correction,
+  covering built-in and Lumix-branded lenses that lensfun has no
+  profile for.
 
 ## Bug Fixes
 
@@ -91,6 +117,21 @@ changes (where available).
 - Fixed an empty Media Type dropdown in the Print module for Canon
   printers whose drivers use the `CNIJMediaType` option instead of the
   standard `MediaType` option.
+
+- Fixed the feather on dense drawn path masks rendering stripes,
+  phantom arcs and crossing lines.
+
+- Fixed the feather dipping inside the shape on paths with narrow
+  spikes.
+
+- Fixed AI segmentation masks being offset by up to several pixels
+  from the object they were generated for.
+
+- Fixed the AI raw denoise preview showing identical before and after
+  images on 4BAYER (CYGM/RGBE) raws, which now shows a warning.
+
+- Fixed auto-applied denoise presets running a second time on images
+  produced by AI raw denoise.
 
 ## Lua
 
