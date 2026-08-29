@@ -40,10 +40,11 @@ locates `src/iop` by itself:
 and says what it found before it starts:
 
 ```
-dt-lockcheck: 94 sources in /home/you/darktable/src/iop (darktable root above $PWD)
+dt-lockcheck: 97 sources in /home/you/darktable/src/iop (darktable root above $PWD); 87 with a gui_data struct, 10 skipped
 ```
 
-That line goes to stderr, so it does not disturb `--format csv`/`json` output;
+The tail names how many sources carry a `dt_iop_*_gui_data_t` at all: the rest
+have no GUI state to share and are not analysed. That line goes to stderr, so it does not disturb `--format csv`/`json` output;
 `-q` suppresses it. It is worth reading when you keep more than one checkout,
 since it is what makes analysing the wrong one obvious.
 
@@ -68,7 +69,12 @@ before the script location on purpose: if you symlink the script onto `$PATH`
 out of one checkout, running it inside another still analyses the one you are
 standing in. An explicit `--src` never falls back, so a typo fails loudly.
 
-`--module` is repeatable. `--format json` dumps the raw extracted facts — every
+`--module` is repeatable, and **every** name given has to resolve: one bad name
+in a list fails the whole run rather than quietly analysing the rest, so a CI
+job pinned to a module list notices when a module is renamed. Options that can
+only be wrong about the invocation — an unknown `--rules` name, `--why` with a
+non-report `--format` — are checked before anything is read, so they fail the
+same way whatever `--format` asked for. `--format json` dumps the raw extracted facts — every
 field, every access site with its lock state, and the thread each function was
 inferred to run on — if you would rather write your own rules over them.
 
@@ -78,7 +84,7 @@ inferred to run on — if you would rather write your own rules over them.
 | code | meaning |
 | --- | --- |
 | 0 | ran to completion, whatever it found |
-| 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that matched nothing, or a `--lemmalog` path that does not exist |
+| 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` with a `--format` that cannot carry a tree, or a `--lemmalog` path that does not exist |
 
 There is deliberately no "exit non-zero when there are findings" mode. Around
 one finding in three is a false positive (see
@@ -147,11 +153,12 @@ defect ([#21915](https://github.com/darktable-org/darktable/issues/21915)).
 ## Reading the output
 
 ```
-=== violation  (33) ===========================================
+=== violation  (34) ===========================================
 
 basicadj.c  g->call_auto_exposure   (int)
-   locked  : process_cl:1302[pipe](gui_lock), process:1420[pipe](gui_lock),
-             _auto_levels_callback:233[gtk](gui_lock)
+   locked  : process_cl:1302[pipe](gui_lock), process_cl:1304[pipe](gui_lock),
+             process_cl:1335[pipe](gui_lock), process:1420[pipe](gui_lock),
+             process:1422[pipe](gui_lock), process:1434[pipe](gui_lock), ... (+5 more)
    unlocked: button_released:384[gtk], change_image:600[gtk]
 ```
 
@@ -161,6 +168,10 @@ suspected defect. Sites are `function:line[thread]`, where the thread is one of
 [`pipe`, `gtk` or `either`](#which-thread-is-this-on); `pipe` and `either` come
 first, since the off-the-main-thread half is usually the interesting one. A `?`
 means the tool could not work out where the function runs.
+
+The report prints at most six locked and eight unlocked sites per finding and
+says how many it left out. `--format csv` writes every one, so that is what to
+use when the count matters.
 
 Open both sets and decide whether the two can really run at the same time. If
 they can, the fix is normally to extend the existing critical section to the
@@ -174,7 +185,7 @@ candidates held up under review on the tree this was developed against; the
 `discipline_gap` tier did considerably worse. Please confirm one by reading the
 code before opening an issue.
 
-Four false-positive causes are worth knowing, because you will meet them:
+Five false-positive causes are worth knowing, because you will meet them:
 
 - **Exclusion by protocol rather than by lock.** `rgblevels` hands work to the
   pipe through a state machine (`0` idle, `1` requested, `-1` running, `2`
@@ -187,6 +198,12 @@ Four false-positive causes are worth knowing, because you will meet them:
   field.** Partly handled: a function that writes eight or more distinct fields
   under the lock, and never reads them back, is treated as bulk initialisation
   and no longer counts as evidence of a per-field convention.
+- **A widget touched from the pipe only to hand it to the main loop.**
+  colorharmonizer's `_update_histogram()` runs on a pipe thread and does
+  `g_object_ref(g->auto_detect)` followed by `gdk_threads_add_idle()`. The ref
+  is atomic and the GTK call itself happens on the main thread, so this is the
+  correct idiom — but `widget_from_pipe` sees a widget field touched from the
+  pipe and reports it.
 - **A finding that rests entirely on an `either` site.** `either` counts on both
   sides of the cross-thread test because it *can* run on either thread — but on
   the path that matters it may always run on one. Check the proof tree, or the
@@ -223,7 +240,7 @@ it:
 ```
 basicadj.c  g->box_cood   (dt_boundingbox_t)
    locked  : _auto_levels_callback:235[gtk](gui_lock)
-   unlocked: _get_selected_area:1223[pipe], button_released:373[gtk], ...
+   unlocked: _get_selected_area:1223[pipe], button_released:373[gtk], ... (+9 more)
    why     : violation(basicadj, box_cood, _get_selected_area)
      ↳ via rule/violation
        has_discipline(basicadj, box_cood)
