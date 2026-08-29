@@ -4413,27 +4413,6 @@ void color_picker_apply(dt_iop_module_t *self,
 }
 
 
-/* The hue and chroma sliders of the CAT page show the illuminant chromaticity
-   in Lch and write it back as xy, so they carry no parameter of their own and
-   the walk over the page cannot read them. Answer for the page from the xy
-   parameters they stand for. There is no reset entry: the illuminant combobox
-   on the same page is an ordinary parameter widget, and resetting it puts xy
-   back with it. */
-static gboolean _illuminant_xy_changed(GtkWidget *widget,
-                                       gpointer user_data)
-{
-  const dt_iop_module_t *self = user_data;
-  if(!self || !self->params || !self->default_params) return FALSE;
-
-  const dt_iop_channelmixer_rgb_params_t *p = self->params;
-  const dt_iop_channelmixer_rgb_params_t *d = self->default_params;
-
-  return fabsf(p->x - d->x) > 1e-6f || fabsf(p->y - d->y) > 1e-6f;
-}
-
-static const dt_gui_tab_state_t _illuminant_tab_state =
-  { .changed = _illuminant_xy_changed };
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
@@ -4469,7 +4448,14 @@ void gui_init(dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, N_("CAT"),
                                      _("chromatic adaptation transform"));
-  dt_gui_tab_state_set_handler(self->widget, &_illuminant_tab_state, self);
+
+  /* The hue and chroma sliders on this page show the illuminant chromaticity
+     in Lch and write it back as xy, so they carry no parameter of their own
+     and the walk over the page cannot read them. Name the xy parameters they
+     stand for; they are declared together. */
+  static const dt_iop_param_range_t illuminant_xy[] =
+    { { offsetof(dt_iop_channelmixer_rgb_params_t, x), 2 * sizeof(float) } };
+  dt_iop_page_bind_params(self->widget, self, illuminant_xy, 1);
 
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text

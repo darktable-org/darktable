@@ -40,6 +40,97 @@ static gchar *_iop_section_for_params(dt_iop_module_t *self)
   return self->actions == DT_ACTION_TYPE_IOP_SECTION && self->data ? self->data : NULL;
 }
 
+#define DT_IOP_PAGE_PARAMS_KEY "dt-iop-page-params"
+
+typedef struct _page_params_t
+{
+  dt_iop_module_t *module;
+  int n_ranges;
+  dt_iop_param_range_t ranges[];
+} _page_params_t;
+
+static const _page_params_t *_page_params(GtkWidget *page)
+{
+  const _page_params_t *bound =
+    page ? g_object_get_data(G_OBJECT(page), DT_IOP_PAGE_PARAMS_KEY) : NULL;
+
+  // the module has to be able to say what its defaults are
+  if(!bound || !bound->module->params || !bound->module->default_params)
+    return NULL;
+
+  return bound;
+}
+
+void dt_iop_page_bind_params(GtkWidget *page,
+                             dt_iop_module_t *self,
+                             const dt_iop_param_range_t *ranges,
+                             const int n_ranges)
+{
+  if(!page || !self || !ranges || n_ranges < 1) return;
+
+  _page_params_t *bound = g_malloc0(sizeof(_page_params_t)
+                                    + n_ranges * sizeof(dt_iop_param_range_t));
+  bound->module = self;
+  bound->n_ranges = n_ranges;
+  memcpy(bound->ranges, ranges, n_ranges * sizeof(dt_iop_param_range_t));
+
+  for(int r = 0; r < n_ranges; r++)
+  {
+    // a range that runs past the parameters would read whatever follows them
+    if(ranges[r].offset + ranges[r].size > self->params_size)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_iop_page_bind_params] %s: range %d (%zu+%zu) is outside"
+               " its %zu byte parameters",
+               self->op, r, ranges[r].offset, ranges[r].size, self->params_size);
+      g_free(bound);
+      return;
+    }
+  }
+
+  g_object_set_data_full(G_OBJECT(page), DT_IOP_PAGE_PARAMS_KEY, bound, g_free);
+}
+
+gboolean dt_iop_page_params_changed(GtkWidget *page)
+{
+  const _page_params_t *bound = _page_params(page);
+  if(!bound) return FALSE;
+
+  const uint8_t *params = bound->module->params;
+  const uint8_t *defaults = bound->module->default_params;
+
+  for(int r = 0; r < bound->n_ranges; r++)
+  {
+    if(memcmp(params + bound->ranges[r].offset,
+              defaults + bound->ranges[r].offset,
+              bound->ranges[r].size))
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+gboolean dt_iop_page_params_reset(GtkWidget *page)
+{
+  const _page_params_t *bound = _page_params(page);
+  if(!bound) return FALSE;
+
+  dt_iop_module_t *self = bound->module;
+
+  for(int r = 0; r < bound->n_ranges; r++)
+    memcpy((uint8_t *)self->params + bound->ranges[r].offset,
+           (uint8_t *)self->default_params + bound->ranges[r].offset,
+           bound->ranges[r].size);
+
+  /* Nothing was moved through a widget, so the gui has to be told, and the
+     graph modules redraw from gui_update(). */
+  dt_iop_gui_update(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  return TRUE;
+}
+
+
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
   gchar *section = _iop_section_for_params(self);

@@ -3674,10 +3674,18 @@ void gui_update(dt_iop_module_t *self)
   {
     if(show_sliders)
     {
+      /* the options tab comes and goes with the sliders preference; its
+         controls sit in the stack as well, from threshold to the guided
+         filter toggle */
+      static const dt_iop_param_range_t options_range[] =
+      {
+        { offsetof(dt_iop_colorequal_params_t, threshold),
+          offsetof(dt_iop_colorequal_params_t, sat_red)
+          - offsetof(dt_iop_colorequal_params_t, threshold) },
+      };
       GtkWidget *options_tab =
         dt_ui_notebook_page(g->notebook, N_("options"), _("options"));
-      dt_gui_tab_state_set_content(options_tab,
-                                   gtk_stack_get_child_by_name(g->stack, "3"));
+      dt_iop_page_bind_params(options_tab, self, options_range, 1);
       gtk_widget_show(options_tab);
     }
     else
@@ -3823,14 +3831,22 @@ void gui_init(dt_iop_module_t *self)
 
   dt_iop_module_t *sect = NULL;
   GtkWidget *tab = NULL;
-  /* the tabs stay empty and the sliders go into the stack beside them, so tie
-     each tab to the stack page that belongs to it -- that is what lets a tab
-     read and reset its own sliders */
+  /* The tabs stay empty and the sliders go into the stack beside them, so name
+     the parameters each tab governs. The eight nodes of a channel are declared
+     together in the parameter struct, so one range covers a tab. */
+  static const dt_iop_param_range_t node_bands[] =
+  {
+    { offsetof(dt_iop_colorequal_params_t, hue_red), sizeof(float) * NODES },
+    { offsetof(dt_iop_colorequal_params_t, sat_red), sizeof(float) * NODES },
+    { offsetof(dt_iop_colorequal_params_t, bright_red), sizeof(float) * NODES },
+  };
+  int group = 0;
+
 #define GROUP_SLIDERS(num, page, tooltip)                      \
   tab = dt_ui_notebook_page(g->notebook, page, tooltip);       \
   sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
   gtk_stack_add_named(g->stack, sect->widget, num);            \
-  dt_gui_tab_state_set_content(tab, sect->widget);
+  dt_iop_page_bind_params(tab, self, &node_bands[group++], 1);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =

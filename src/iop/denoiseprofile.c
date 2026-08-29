@@ -3580,76 +3580,6 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-/* The channel tabs of this module hold no widgets: one graph below them is
-   pointed at whichever channel the current tab selects, across two notebooks
-   -- RGB and Y0U0V0 -- of which only one is shown at a time. So the tab marker
-   has nothing to read on the page and the module answers for it, for the band
-   curve of the channel a tab stands for. */
-static int _channel_of_page(GtkWidget *page,
-                            const dt_iop_denoiseprofile_gui_data_t *g)
-{
-  GtkWidget *parent = gtk_widget_get_parent(page);
-  if(!g || !GTK_IS_NOTEBOOK(parent)) return -1;
-
-  const int page_num = gtk_notebook_page_num(GTK_NOTEBOOK(parent), page);
-  if(page_num < 0) return -1;
-
-  // the Y0U0V0 notebook continues the same channel enum after the rgb one
-  const int ch = (parent == GTK_WIDGET(g->channel_tabs_Y0U0V0))
-    ? DT_DENOISE_PROFILE_Y0 + page_num
-    : page_num;
-
-  return ch < DT_DENOISE_PROFILE_NONE ? ch : -1;
-}
-
-static gboolean _tab_curve_changed(GtkWidget *page,
-                                   gpointer user_data)
-{
-  const dt_iop_module_t *self = user_data;
-  if(!self || !self->params || !self->default_params) return FALSE;
-
-  const int ch = _channel_of_page(page, self->gui_data);
-  if(ch < 0) return FALSE;
-
-  const dt_iop_denoiseprofile_params_t *p = self->params;
-  const dt_iop_denoiseprofile_params_t *d = self->default_params;
-
-  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
-  {
-    if(fabsf(p->x[ch][k] - d->x[ch][k]) > 1e-6f
-       || fabsf(p->y[ch][k] - d->y[ch][k]) > 1e-6f)
-      return TRUE;
-  }
-
-  return FALSE;
-}
-
-static void _tab_curve_reset(GtkWidget *page,
-                             gpointer user_data)
-{
-  dt_iop_module_t *self = user_data;
-  if(!self || !self->params || !self->default_params) return;
-
-  const dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
-  const int ch = _channel_of_page(page, g);
-  if(ch < 0) return;
-
-  dt_iop_denoiseprofile_params_t *p = self->params;
-  const dt_iop_denoiseprofile_params_t *const d = self->default_params;
-
-  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
-  {
-    p->x[ch][k] = d->x[ch][k];
-    p->y[ch][k] = d->y[ch][k];
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
-static const dt_gui_tab_state_t _curve_tab_state =
-  { .changed = _tab_curve_changed, .reset = _tab_curve_reset };
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
@@ -3679,22 +3609,42 @@ void gui_init(dt_iop_module_t *self)
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
   dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(g->channel_tabs),
                        &dt_action_def_tabs_rgb);
-  dt_gui_tab_state_set_handler
-    (dt_ui_notebook_page(g->channel_tabs, N_("all"), NULL), &_curve_tab_state, self);
-  dt_gui_tab_state_set_handler
-    (dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL), &_curve_tab_state, self);
-  dt_gui_tab_state_set_handler
-    (dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL), &_curve_tab_state, self);
-  dt_gui_tab_state_set_handler
-    (dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL), &_curve_tab_state, self);
+  /* The tabs hold no widgets: one graph below them is pointed at whichever
+     channel the current tab selects, across two notebooks of which only one is
+     shown at a time. Name the bands each tab governs instead. */
+#define DENOISE_BANDS_OF(ch)                                            \
+  { offsetof(dt_iop_denoiseprofile_params_t, x[ch]),                    \
+    sizeof(float) * DT_IOP_DENOISE_PROFILE_BANDS },                     \
+  { offsetof(dt_iop_denoiseprofile_params_t, y[ch]),                    \
+    sizeof(float) * DT_IOP_DENOISE_PROFILE_BANDS }
+
+  static const dt_iop_param_range_t bands[DT_DENOISE_PROFILE_NONE][2] =
+  {
+    { DENOISE_BANDS_OF(DT_DENOISE_PROFILE_ALL) },
+    { DENOISE_BANDS_OF(DT_DENOISE_PROFILE_R) },
+    { DENOISE_BANDS_OF(DT_DENOISE_PROFILE_G) },
+    { DENOISE_BANDS_OF(DT_DENOISE_PROFILE_B) },
+    { DENOISE_BANDS_OF(DT_DENOISE_PROFILE_Y0) },
+    { DENOISE_BANDS_OF(DT_DENOISE_PROFILE_U0V0) },
+  };
+#undef DENOISE_BANDS_OF
+
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs, N_("all"), NULL), self, bands[DT_DENOISE_PROFILE_ALL], 2);
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL), self, bands[DT_DENOISE_PROFILE_R], 2);
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL), self, bands[DT_DENOISE_PROFILE_G], 2);
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL), self, bands[DT_DENOISE_PROFILE_B], 2);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_gui_tab_state_set_handler
-    (dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL), &_curve_tab_state, self);
-  dt_gui_tab_state_set_handler
-    (dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL), &_curve_tab_state, self);
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL), self, bands[DT_DENOISE_PROFILE_Y0], 2);
+  dt_iop_page_bind_params
+    (dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL), self, bands[DT_DENOISE_PROFILE_U0V0], 2);
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
