@@ -622,15 +622,6 @@ void dt_gui_update_collapsible_section(const dt_gui_collapsible_section_t *cs);
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 
-/* Keep a widget out of the parameter set of the notebook page it sits on: it
-   neither marks the page's tab as changed nor is it reset when the tab is
-   reset. Meant for controls that steer a workflow and live in conf rather
-   than in the module parameters, like the spot mapping section of color
-   calibration. Flagging a container covers everything below it. */
-void dt_gui_tab_state_exclude(GtkWidget *widget);
-gboolean dt_gui_tab_state_excluded(GtkWidget *widget);
-// same for a whole collapsible section, header and content
-void dt_gui_collapsible_section_exclude_tab_state(dt_gui_collapsible_section_t *cs);
 
 
 // is delay between first and second click/press longer than double-click time?

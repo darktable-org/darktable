@@ -247,9 +247,9 @@ gpointer dt_bauhaus_widget_get_field(GtkWidget *widget);
 
    One traversal behind both the tab marker and the tab reset, so the two can
    never disagree about what a page holds. It descends through the containers a
-   page is built from and steps over anything flagged with
-   dt_gui_tab_state_exclude(). Return FALSE from the visit to stop the walk.
-   Pass visible_only to skip what a module has hidden. */
+   page is built from and visits only the widgets that carry a parameter.
+   Return FALSE from the visit to stop the walk. Pass visible_only to skip what
+   a module has hidden. */
 typedef gboolean (*dt_bauhaus_page_visit_t)(GtkWidget *widget,
                                             gpointer user_data);
 void dt_bauhaus_page_foreach(GtkWidget *page,
