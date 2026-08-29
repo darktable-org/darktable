@@ -6,6 +6,7 @@
 
 
 IDI_ICON1               ICON    DISCARDABLE     "../../data/pixmaps/dt_logo_128x128.ico"
+1                       24      "@CMAKE_CURRENT_BINARY_DIR@/win/darktable.exe.manifest"
 
 VS_VERSION_INFO VERSIONINFO
   FILEVERSION DT_VERSION
