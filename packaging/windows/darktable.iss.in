@@ -223,101 +223,73 @@ Filename: "{app}\bin\{#MyAppExeName}"; \
 
 [Code]
 var
+  ShortcutChoicePage: TInputOptionWizardPage;
+  ShortcutNameQueryPage: TInputQueryWizardPage;
   ConfigChoicePage: TInputOptionWizardPage;
   ConfigDirPage: TInputDirWizardPage;
-  UseDefaultNameCheckBox: TNewCheckBox;
-  ShortcutNameEdit: TNewEdit;
 
-// Toggles visibility of the custom-shortcut-name field based on the checkbox.
-procedure UseDefaultNameCheckBoxOnClick(Sender: TObject);
+// Rejects a custom configuration directory that contains characters not
+// allowed in a Windows path (TInputDirWizardPage only checks for "empty",
+// not for validity, so unlike the shortcut name there's no silent-fallback
+// option here -- an unusable path would otherwise reach darktable as-is).
+function ValidateConfigDir(Sender: TWizardPage): Boolean;
+var
+  Dir: String;
+  I: Integer;
 begin
-  ShortcutNameEdit.Visible := not UseDefaultNameCheckBox.Checked;
+  Result := True;
+  Dir := Trim(ConfigDirPage.Values[0]);
+  for I := 1 to Length(Dir) do
+  begin
+    if (Ord(Dir[I]) < 32) or (Pos(Dir[I], '<>"|?*') > 0) then
+    begin
+      MsgBox('The configuration directory contains characters that are ' +
+        'not allowed in a Windows path.', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
+  end;
 end;
 
-// create combined installer page for shortcut name and config-dir-toggle
+// create the four installer pages: shortcut-name choice + query,
+// configuration-directory choice + directory picker
 procedure InitializeWizard();
-var
-  ShortcutNameLabel: TNewStaticText;
-  Divider: TBevel;
-  Y: Integer; 
 begin
-  // One combined page: shortcut name on top, then a divider, then the
-  // existing default-vs-custom configuration directory choice below.
-  ConfigChoicePage := CreateInputOptionPage(wpSelectDir,
-    'Shortcut and Configuration Directory',
-    'Customize the shortcut name and where darktable stores its settings.',
-    '', // SubCaptionLabel text is set and repositioned further down.
+  // Page 1: default vs. custom shortcut name
+  ShortcutChoicePage := CreateInputOptionPage(wpSelectDir,
+    'Shortcut Name',
+    'Choose the name for the desktop and Start menu shortcuts.',
+    '',
     True, False);
-  // Y-Variable serves to place the items of this page below each other
-  Y := 0;
+  ShortcutChoicePage.Add('Use default shortcut name');
+  ShortcutChoicePage.Add('Use a custom shortcut name');
+  ShortcutChoicePage.SelectedValueIndex := 0;
 
-  // top section - Custom shortcut name 
-  ShortcutNameLabel := TNewStaticText.Create(ConfigChoicePage);
-  ShortcutNameLabel.Parent := ConfigChoicePage.Surface;
-  ShortcutNameLabel.Left := 0;
-  ShortcutNameLabel.Top := Y;
-  ShortcutNameLabel.Caption := 'Shortcut name:';
-  Y := Y + ShortcutNameLabel.Height + 4;
-    
-  // checkbox for shortcut name
-  UseDefaultNameCheckBox := TNewCheckBox.Create(ConfigChoicePage);
-  UseDefaultNameCheckBox.Parent := ConfigChoicePage.Surface;
-  UseDefaultNameCheckBox.Left := 0;
-  UseDefaultNameCheckBox.Top := Y;
-  UseDefaultNameCheckBox.Width := ConfigChoicePage.SurfaceWidth;
-  UseDefaultNameCheckBox.Caption := 'Use default shortcut name';
-  UseDefaultNameCheckBox.Checked := True;
-  UseDefaultNameCheckBox.OnClick := @UseDefaultNameCheckBoxOnClick;
-  Y := Y + UseDefaultNameCheckBox.Height + 8;
-  
-  // text-field for custom shortcut; invisible when above checkbox is checked
-  ShortcutNameEdit := TNewEdit.Create(ConfigChoicePage);
-  ShortcutNameEdit.Parent := ConfigChoicePage.Surface;
-  ShortcutNameEdit.Left := 0;
-  ShortcutNameEdit.Top := Y;
-  ShortcutNameEdit.Width := ConfigChoicePage.SurfaceWidth;
-  ShortcutNameEdit.Text := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}');
-  ShortcutNameEdit.Visible := False;
-  Y := Y + ShortcutNameEdit.Height + 16;
+  // Page 2: the custom name itself; skipped if "default" was chosen above
+  ShortcutNameQueryPage := CreateInputQueryPage(ShortcutChoicePage.ID,
+    'Custom Shortcut Name',
+    'What should the shortcuts be called?',
+    'Enter a name, then click Next.');
+  ShortcutNameQueryPage.Add('Shortcut name:', False);
+  ShortcutNameQueryPage.Values[0] :=
+    ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}');
+  ShortcutNameQueryPage.Edits[0].MaxLength := 100;
 
-  // divider between the two settings
-  Divider := TBevel.Create(ConfigChoicePage);
-  Divider.Parent := ConfigChoicePage.Surface;
-  Divider.Left := 0;
-  Divider.Top := Y;
-  Divider.Width := ConfigChoicePage.SurfaceWidth;
-  Divider.Height := 2;
-  Divider.Shape := bsTopLine;
-  Y := Y + Divider.Height + 16;
-
-  // bottom section - custom configuration-directory toggle
-  // The page was created with an empty SubCaption above; set and
-  // reposition it here so it (and the option list below it) start right
-  // after the divider instead of at the top of the page. Width and
-  // WordWrap are set before Caption/AutoSize so that Inno computes the
-  // wrapped height for the actual rendered width.
-  ConfigChoicePage.SubCaptionLabel.Left := 0;
-  ConfigChoicePage.SubCaptionLabel.Top := Y;
-  ConfigChoicePage.SubCaptionLabel.Width := ConfigChoicePage.SurfaceWidth;
-  ConfigChoicePage.SubCaptionLabel.WordWrap := True;
-  ConfigChoicePage.SubCaptionLabel.AutoSize := True;
-  ConfigChoicePage.SubCaptionLabel.Caption :=
+  // Page 3: default vs. custom configuration directory
+  ConfigChoicePage := CreateInputOptionPage(ShortcutNameQueryPage.ID,
+    'Configuration Directory',
+    'Choose where darktable stores its settings.',
     'Useful for e.g. running parallel darktable installations for ' +
     'testing. Note: This setting applies to both the desktop and Start ' +
     'menu shortcuts created by this installer. Other ways of starting ' +
     'darktable (e.g. launching from another application) may keep ' +
-    'using the default directory.';
-  Y := Y + ConfigChoicePage.SubCaptionLabel.Height + 8;
-
+    'using the default directory.',
+    True, False);
   ConfigChoicePage.Add('Use default configuration directory');
   ConfigChoicePage.Add('Use a custom configuration directory (can be set on the next page)');
   ConfigChoicePage.SelectedValueIndex := 0;
-  ConfigChoicePage.CheckListBox.Left := 0;
-  ConfigChoicePage.CheckListBox.Top := Y;
-  ConfigChoicePage.CheckListBox.Width := ConfigChoicePage.SurfaceWidth;
 
-  // custom configuration-directory - set location 
-  // (only visible if "custom" was picked above)
+  // Page 4: the custom directory itself; skipped if "default" was chosen above
   ConfigDirPage := CreateInputDirPage(ConfigChoicePage.ID,
     'Custom Configuration Directory',
     'Where should darktable store its configuration?',
@@ -325,8 +297,13 @@ begin
     False, '');
   ConfigDirPage.Add('');
   ConfigDirPage.Values[0] := ExpandConstant('{localappdata}\darktable');
+  ConfigDirPage.OnNextButtonClick := @ValidateConfigDir;
 end;
+
 function SanitizeShortcutName(const S: String): String;
+const
+  Reserved = 'CON,PRN,AUX,NUL,COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9,' +
+             'LPT1,LPT2,LPT3,LPT4,LPT5,LPT6,LPT7,LPT8,LPT9,';
 var
   I: Integer;
   C: Char;
@@ -335,13 +312,18 @@ begin
   for I := 1 to Length(S) do
   begin
     C := S[I];
-    if (Ord(C) >= 32) and (Pos(C, '\\/:*?"<>|') = 0) then
+    if (Ord(C) >= 32) and (Pos(C, '\/:*?"<>|') = 0) then
       Result := Result + C;
   end;
 
   Result := Trim(Result);
   while (Length(Result) > 0) and ((Result[Length(Result)] = '.') or (Result[Length(Result)] = ' ')) do
     Delete(Result, Length(Result), 1);
+
+  // Windows reserves these basenames regardless of extension (e.g. "CON.lnk"
+  // is blocked just like "CON"); fall back to the default name for them.
+  if Pos(Uppercase(Result) + ',', Reserved) > 0 then
+    Result := '';
 end;
 
 // Returns the (sanitized) custom shortcut name, or the existing default
@@ -351,11 +333,11 @@ function GetShortcutName(Param: String): String;
 var
   CustomName: String;
 begin
-  if UseDefaultNameCheckBox.Checked then
+  if ShortcutChoicePage.SelectedValueIndex = 0 then
     Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}')
   else
   begin
-    CustomName := SanitizeShortcutName(ShortcutNameEdit.Text);
+    CustomName := SanitizeShortcutName(ShortcutNameQueryPage.Values[0]);
     if CustomName = '' then
       Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}')
     else
@@ -363,11 +345,15 @@ begin
   end;
 end;
 
-// Skip page 2 of the directory picker  if the user chose "default" page 1.
+// Skip the query/directory page of each pair when "default" was chosen
+// on its preceding choice page.
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := (PageID = ConfigDirPage.ID) and
-            (ConfigChoicePage.SelectedValueIndex = 0);
+  Result := False;
+  if PageID = ShortcutNameQueryPage.ID then
+    Result := ShortcutChoicePage.SelectedValueIndex = 0
+  else if PageID = ConfigDirPage.ID then
+    Result := ConfigChoicePage.SelectedValueIndex = 0;
 end;
 
 // Returns the "--configdir ..." argument for the Start menu/desktop
