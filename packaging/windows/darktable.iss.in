@@ -301,13 +301,13 @@ begin
 end;
 
 function SanitizeShortcutName(const S: String): String;
-const
-  Reserved = 'CON,PRN,AUX,NUL,COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9,' +
-             'LPT1,LPT2,LPT3,LPT4,LPT5,LPT6,LPT7,LPT8,LPT9,';
 var
   I: Integer;
   C: Char;
+  Reserved: String;
 begin
+  Reserved := 'CON,PRN,AUX,NUL,COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9,' +
+              'LPT1,LPT2,LPT3,LPT4,LPT5,LPT6,LPT7,LPT8,LPT9,';
   Result := '';
   for I := 1 to Length(S) do
   begin
