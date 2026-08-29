@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
@@ -1400,67 +1401,32 @@ gpointer dt_bauhaus_widget_get_field(GtkWidget *widget)
   return w->field;
 }
 
-/* Find the notebook page a widget sits on.
-
-   The walk climbs the whole ancestor chain, so widgets nested in boxes or
-   collapsible sections are located too, and hops across a content link when it
-   meets one, so widgets parked outside the notebook find their page as well.
+/* Find the notebook page a widget sits on, walking the whole ancestor chain so
+   that widgets nested in boxes or collapsible sections are located too.
    Passing a page itself works, which is what the container_foreach callers
-   rely on. Returns NULL when there is no notebook above the widget.
-
-   The hop limit only guards against a link pointing back into its own subtree;
-   a real widget tree is nowhere near this deep. */
+   rely on. Returns NULL when there is no notebook above the widget. */
 static GtkWidget *_notebook_page_of(GtkWidget *w,
                                     GtkNotebook **notebook)
 {
-  GtkWidget *parent = gtk_widget_get_parent(w);
-
-  for(int hops = 0; parent && hops < 64; hops++)
+  for(GtkWidget *parent = gtk_widget_get_parent(w);
+      parent;
+      w = parent, parent = gtk_widget_get_parent(parent))
   {
     if(GTK_IS_NOTEBOOK(parent))
     {
       *notebook = GTK_NOTEBOOK(parent);
       return w;
     }
-
-    GtkWidget *page = dt_gui_tab_state_page_of_content(parent);
-    w = page ? page : parent;
-    parent = gtk_widget_get_parent(w);
   }
   return NULL;
 }
 
-/* The default the widget's field holds in a fresh instance of its module.
-
-   A widget knows where its parameter lives; the same offset into
-   default_params, or into default_blendop_params for a blending widget, is
-   what that parameter would be without any edit. Reading the default from
-   there rather than from the copy the widget cached when it was built means
-   the answer follows a module that computes its defaults in reload_defaults(),
-   and cannot go stale. Returns NULL when the widget has no parameter behind
-   it, or when its field belongs to neither block. */
-static const void *_default_for_field(dt_bauhaus_widget_t *b)
+// the iop module a widget belongs to, or NULL for anything else
+static dt_iop_module_t *_iop_of(dt_bauhaus_widget_t *b)
 {
-  if(!b->field || !b->module || b->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
-    return NULL;
-
-  const dt_iop_module_t *module = (dt_iop_module_t *)b->module;
-
-  if(module->params && module->default_params)
-  {
-    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->params;
-    if(offset >= 0 && (size_t)offset < module->params_size)
-      return (uint8_t *)module->default_params + offset;
-  }
-
-  if(module->blend_params && module->default_blendop_params)
-  {
-    const ptrdiff_t offset = (uint8_t *)b->field - (uint8_t *)module->blend_params;
-    if(offset >= 0 && (size_t)offset < sizeof(dt_develop_blend_params_t))
-      return (uint8_t *)module->default_blendop_params + offset;
-  }
-
-  return NULL;
+  return b->module && b->module->type == DT_ACTION_TYPE_IOP_INSTANCE
+    ? (dt_iop_module_t *)b->module
+    : NULL;
 }
 
 // TRUE when the widget carries a parameter that is away from its default
@@ -1512,11 +1478,6 @@ static void _page_walk(GtkWidget *w,
      module has hidden because it does not apply is skipped. */
   if(walk->visible_only && !gtk_widget_get_visible(w)) return;
 
-  // a page may keep its controls outside the notebook
-  GtkWidget *content = dt_gui_tab_state_content(w);
-  if(content && content != w) _page_walk(content, walk);
-  if(walk->stopped) return;
-
   if(DT_IS_BAUHAUS_WIDGET(w))
     walk->stopped = !walk->visit(w, walk->user_data);
   else if(GTK_IS_CONTAINER(w))
@@ -1544,17 +1505,32 @@ static gboolean _first_off_default(GtkWidget *widget,
   return !*is_changed; // stop at the first one found
 }
 
+static void _refresh_notebooks(GtkWidget *w, gpointer user_data);
+
 static void _highlight_changed_notebook_tab(GtkWidget *w,
                                             gpointer user_data)
 {
   GtkNotebook *notebook = NULL;
   GtkWidget *page = _notebook_page_of(w, &notebook);
-  if(!page) return;
+
+  if(!page)
+  {
+    /* A widget can sit outside the notebook whose tabs it belongs to: the
+       colour equalizer parks its sliders in a stack beside its own. There is
+       no telling from here which tab that is, so every tab of the module is
+       read again -- the pages that name their parameters will work it out. */
+    if(DT_IS_BAUHAUS_WIDGET(w))
+    {
+      const dt_iop_module_t *module = _iop_of(DT_BAUHAUS_WIDGET(w));
+      if(module && module->widget) _refresh_notebooks(module->widget, NULL);
+    }
+    return;
+  }
 
   /* The page decides, always: the widget the change came from is already
      committed by the time we get here, so asking the page is both simpler and
      the only way to notice that something else on it is still off default. */
-  gboolean is_changed = dt_gui_tab_state_changed(page);
+  gboolean is_changed = dt_iop_page_params_changed(page);
   if(!is_changed)
     dt_bauhaus_page_foreach(page, TRUE, _first_off_default, &is_changed);
 
