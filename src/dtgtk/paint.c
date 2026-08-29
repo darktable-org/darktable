@@ -421,6 +421,29 @@ void dtgtk_cairo_paint_plus_simple(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
+void dtgtk_cairo_paint_drag_handle(cairo_t *cr, const gint x, const gint y,
+                                   const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  const double r = 0.12;
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  // six-dot grip (⠿)
+  for(int row = 0; row < 3; row++)
+  {
+    for(int col = 0; col < 2; col++)
+    {
+      const double cx = 0.25 + col * 0.5;
+      const double cy = 0.2 + row * 0.3;
+      cairo_move_to(cr, cx + r, cy);
+      cairo_arc(cr, cx, cy, r, 0, 2.0 * M_PI);
+    }
+  }
+  cairo_fill(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_minus_simple(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)

@@ -40,7 +40,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/gradientslider.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/drag_and_drop.h"
@@ -3076,9 +3075,17 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
       button && GTK_IS_BUTTON(button->data);
       button = g_list_previous(button))
   {
-    gtk_widget_set_no_show_all(GTK_WIDGET(button->data), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(button->data), show_buttons && !always_hide && !disabled);
-    gtk_widget_set_opacity(GTK_WIDGET(button->data), opacity);
+    GtkWidget *w = GTK_WIDGET(button->data);
+    // the drag handle must stay exposed so users can reorder modules
+    if(!g_strcmp0(gtk_widget_get_name(w), "iop-panel-drag-handle"))
+    {
+      gtk_widget_set_visible(w, TRUE);
+      gtk_widget_set_opacity(w, 1.0);
+      continue;
+    }
+    gtk_widget_set_no_show_all(w, TRUE);
+    gtk_widget_set_visible(w, show_buttons && !always_hide && !disabled);
+    gtk_widget_set_opacity(w, opacity);
   }
   if(GTK_IS_DRAWING_AREA(button->data))
   {
@@ -3378,6 +3385,42 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   return button;
 }
 
+static void _handle_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+  dt_iop_module_t *module = user_data;
+  GtkWidget *header = module ? module->header : widget;
+  GtkAllocation allocation = { 0 };
+  gtk_widget_get_allocation(header, &allocation);
+  cairo_surface_t *surface
+      = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, allocation.width, allocation.height);
+  cairo_t *cr = cairo_create(surface);
+
+  // render the header as the drag icon (mirrors the whole-header drag preview)
+  dt_gui_add_class(header, "module_drag_icon");
+  gtk_widget_size_allocate(header, &allocation);
+  gtk_widget_draw(header, cr);
+  dt_gui_remove_class(header, "module_drag_icon");
+
+  int pointerx, pointery;
+  gdk_window_get_device_position(gtk_widget_get_window(header),
+      gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(header))),
+      &pointerx, &pointery, NULL);
+  cairo_surface_set_device_offset(surface, -pointerx, -CLAMP(pointery, 0, allocation.height));
+  gtk_drag_set_icon_surface(context, surface);
+
+  cairo_destroy(cr);
+  cairo_surface_destroy(surface);
+
+  gtk_widget_set_opacity(header, 0.5);
+}
+
+static void _handle_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+  dt_iop_module_t *module = user_data;
+  GtkWidget *header = module ? module->header : widget;
+  gtk_widget_set_opacity(header, 1.0);
+}
+
 static gboolean _on_drag_motion(GtkWidget *widget,
                                 GdkDragContext *dc,
                                 const gint x,
@@ -3581,6 +3624,19 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                                          header);
   dt_gui_add_class(module->off, "dt_transparent_background");
   dt_iop_gui_set_enable_button_icon(module->off, module);
+
+  /* add drag handle for module reordering (fence modules cannot be moved) */
+  if(!(module->flags() & IOP_FLAGS_FENCE))
+  {
+    GtkWidget *handle = dtgtk_button_new(dtgtk_cairo_paint_drag_handle, 0, NULL);
+    gtk_widget_set_name(handle, "iop-panel-drag-handle");
+    gtk_widget_set_tooltip_text(handle, _("drag to reorder"));
+    gtk_drag_source_set(handle, GDK_BUTTON1_MASK, target_list, 1, GDK_ACTION_COPY);
+    g_signal_connect(handle, "drag-begin", G_CALLBACK(_handle_drag_begin), module);
+    g_signal_connect(handle, "drag-end", G_CALLBACK(_handle_drag_end), module);
+    gtk_box_pack_start(GTK_BOX(header), handle, FALSE, FALSE, 0);
+    gtk_widget_show(handle);
+  }
 
   gtk_box_pack_start(GTK_BOX(header), icon, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(header), lab, FALSE, FALSE, 0);

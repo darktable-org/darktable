@@ -639,6 +639,20 @@ dialog .sidebar row:selected:hover label,
   padding: 0.5em;
 }
 
+/* drag handle for module reordering */
+#iop-panel-drag-handle
+{
+  min-width: 1.2em;
+  min-height: 1.1em;
+  padding: 0.1em;
+  margin-right: 0.35em;
+  color: alpha(@plugin_label_color, 0.6);
+}
+#iop-panel-drag-handle:hover
+{
+  color: @plugin_label_color;
+}
+
 #iop-expander.dt_module_active #module-header
 {
   /* ACTIVE */

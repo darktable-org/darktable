@@ -175,6 +175,8 @@ void dtgtk_cairo_paint_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 void dtgtk_cairo_paint_andnot(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint dropdown arrow */
 void dtgtk_cairo_paint_dropdown(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a drag/reorder handle */
+void dtgtk_cairo_paint_drag_handle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint bracket capture */
 void dtgtk_cairo_paint_bracket(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint lock icon */
