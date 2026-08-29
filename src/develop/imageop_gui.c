@@ -18,6 +18,7 @@
 
 #include "develop/imageop_gui.h"
 #include "develop/imageop.h"
+#include "develop/develop.h"
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
