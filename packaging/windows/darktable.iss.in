@@ -259,10 +259,10 @@ begin
   ShortcutChoicePage := CreateInputOptionPage(wpSelectDir,
     'Shortcut Name',
     'Choose the name for the desktop and Start menu shortcuts.',
-    '',
+    'Useful for running multiple parallel darktable installations.',
     True, False);
   ShortcutChoicePage.Add('Use default shortcut name');
-  ShortcutChoicePage.Add('Use a custom shortcut name');
+  ShortcutChoicePage.Add('Use a custom shortcut name (can be set on the next page)');
   ShortcutChoicePage.SelectedValueIndex := 0;
 
   // Page 2: the custom name itself; skipped if "default" was chosen above
