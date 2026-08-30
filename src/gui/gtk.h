@@ -136,6 +136,7 @@ typedef struct dt_gui_gtk_t
   gboolean touchpad_gestures_enabled;
   double overlay_red, overlay_blue, overlay_green, overlay_contrast;
   GtkWidget *focus_peaking_button;
+  GtkWidget *preset_popover_menu;
 
   double dpi, dpi_factor, ppd, ppd_thb;
   gboolean have_pen_pressure;
