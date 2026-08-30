@@ -220,8 +220,6 @@ static void _lib_ratings_button_press_callback(GtkGestureSingle *gesture, int n_
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING_RANGE, imgs);
 
   dt_control_queue_redraw_center();
-  
-  return TRUE;
 }
 
 static void _lib_ratings_button_release_callback(GtkGestureSingle *gesture, int n_press,
