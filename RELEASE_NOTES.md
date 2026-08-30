@@ -95,6 +95,8 @@ changes (where available).
 
 - Fixed highlights laplacian OpenCL code.
 
+- Fixed OpenCL input gamma corrected scaling for some devices.
+
 ## Lua
 
 ### API Version
