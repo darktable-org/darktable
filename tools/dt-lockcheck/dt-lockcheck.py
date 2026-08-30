@@ -33,6 +33,17 @@ WHICH THREAD
   call graph within one file -- which is where the mistakes hide, two or three
   frames below a callback whose name says nothing about its thread.
 
+  A function is also labelled from how its address is taken, which is what
+  reaches the handlers no naming convention describes:
+    * handed to a callee as an argument -- it runs on the registrar's thread,
+      because the callee calls it synchronously;
+    * handed to g_idle_add/g_signal_connect and friends -- always `gtk`,
+      whatever thread registered it;
+    * stored into a struct member or a file-scope table -- it escapes this
+      file, so it gets `either`: the call site is somewhere unknown.
+  Labels that come from the PIPE/EITHER/GTK sets are ground truth from the
+  module API and propagation never overwrites them.
+
   Four rules, in descending order of how much they are worth reading:
 
     widget_from_pipe  a Gtk*-typed field touched from a `pipe` or `either`
@@ -98,9 +109,15 @@ KNOWN LIMITS
     branch makes later code in other branches look unlocked.
   * Bug shapes needing dataflow inside a function are out of reach -- notably
     "pointer copied under the lock, dereferenced after releasing it".
-  * Thread inference is name-based plus intra-file call-graph propagation.  A
-    function reached only through a function pointer stored elsewhere, or from
-    another translation unit, may come out as thread `None` and be skipped.
+  * Thread inference is name-based, plus intra-file call-graph propagation and
+    the address-taken rules above.  A function it still cannot label comes out
+    as thread `None`, counts on neither side of the cross-thread test, and so
+    can never be what makes a field shared.
+  * Sharing means pipe-vs-GTK only.  gui_data is also the channel one pipe uses
+    to hand a value to another -- the preview pipe computes a whole-image
+    property, the full pipe reads it (dev-doc/GUI_Threading.md, "Passing Values
+    Between Pipes Through gui_data").  That needs the same lock, and no rule
+    here looks for it: a field both pipes touch and GTK never does is invisible.
   * `g` is matched by convention, not by type.  A function that binds `g` to
     something other than the module's GUI data is skipped whole, so a real
     gui_data access in it is missed too.
@@ -182,8 +199,22 @@ GTK = {
     "mouse_moved", "button_pressed", "button_released", "scrolled",
     "reload_defaults", "color_picker_apply", "init_presets",
 }
+# Name-based labelling, applied before any propagation.  (^|_)action_process is
+# darktable's shortcut dispatch (dt_action_def_t.process): those handlers are
+# registered in a file-scope table and run from the GTK main loop.
 GTK_RE = re.compile(r"(_callback$|_clicked$|(^|_)draw$|(^|_)expose$|^_?gui_|_changed$|_toggled$|"
-                    r"_press(ed)?$|_release(d)?$|_motion|_leave$|_enter$|_scroll|_activate$|draw)")
+                    r"_press(ed)?$|_release(d)?$|_motion|_leave$|_enter$|_scroll|_activate$|draw|"
+                    r"(^|_)action_process)")
+
+# Handover forms that always end on the GTK main loop, whatever thread
+# registered the callback.  Everything else hands the function to a callee that
+# will call it synchronously, so the callback runs on the registrar's thread.
+DEFER_RE = re.compile(r"g_idle_add|gdk_threads_add_idle|g_timeout_add|"
+                      r"g_signal_connect|SIGNAL_CONNECT|SIGNAL_HANDLE")
+# A function pointer stored into a struct member or a global escapes the file:
+# `instance->get_effective_exposure = _exposure_proxy_get_effective_exposure;`
+# is called from somewhere this analysis cannot see.
+ESCAPE_RE = re.compile(r"(?:->|\.)\s*[A-Za-z_]\w*\s*=\s*([A-Za-z_]\w*)\s*[;,]")
 
 FUNC_HEAD = re.compile(r"^[A-Za-z_][A-Za-z0-9_ \*\t]*?([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 FIELD_RE  = re.compile(r"\bg\s*->\s*([A-Za-z_][A-Za-z0-9_]*)")
@@ -426,7 +457,8 @@ def analyse(path):
     funcs = split_functions(lines)
     accesses = []          # (fn, field, lockname|"none", line)
     callgraph = defaultdict(set)
-    handler_refs = set()
+    callback_refs = defaultdict(set)   # callee -> {(kind, registrar)}
+    escaped = set()                    # callees whose address leaves the file
     fnames = {f[0] for f in funcs}
     # `g` is only the module's GUI data by convention.  A handful of functions
     # bind it to something else (a gain map, a gaussian handle); their `g->x`
@@ -448,10 +480,18 @@ def analyse(path):
             # consumed: re.findall does not overlap, so consuming it made a bare
             # identifier that directly follows another one unmatchable -- which
             # is exactly the shape of DT_CONTROL_SIGNAL_HANDLE(SIGNAL, handler)
-            for ref in re.findall(r"[(,]\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,)])", src):
-                if ref in fnames and re.search(r"SIGNAL_CONNECT|SIGNAL_HANDLE|g_signal_connect|g_idle_add|"
-                                               r"gtk_.*_set_.*_func|_draw_callback", src):
-                    handler_refs.add(ref)
+            # A bare identifier that names a file-local function and sits in
+            # an argument list is a callback: C decays a function designator to
+            # a pointer, so there is nothing else it can be.  This used to be
+            # gated on a list of registration spellings, which missed
+            # darktable's own helpers -- dt_gui_connect_motion(), the bauhaus
+            # quad setters -- and with them every handler they register.
+            for ref in re.findall(r"[(,]\s*" + CAST + r"([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,)])", src):
+                if ref in fnames and ref != fn:
+                    callback_refs[ref].add(("defer" if DEFER_RE.search(src) else "direct", fn))
+            for ref in ESCAPE_RE.findall(src):
+                if ref in fnames and ref != fn:
+                    escaped.add(ref)
             if ENTER in src:
                 held.append("gui_lock")
             for mm in MUTEX_LOCK.finditer(src):
@@ -487,14 +527,43 @@ def analyse(path):
     accesses = [(fn, f, ("bulk_init" if fn in bulk_fns and lk == "gui_lock" else lk), ln, md)
                 for (fn, f, lk, ln, md) in accesses]
 
+    # A name mentioned outside every function body, and not called there, has
+    # had its address taken in a static initialiser -- the dt_action_def_t
+    # tables register their shortcut handlers positionally, which no
+    # argument-list or assignment pattern above can see.
+    covered = set()
+    for (_fn, _s, _e) in funcs:
+        covered.update(range(_s, _e))
+    for ln, src in enumerate(lines):
+        if ln in covered:
+            continue
+        for ref in re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*(?=[,}])", src):
+            if ref in fnames:
+                escaped.add(ref)
+
     # propagate thread labels along the intra-file call graph
     thread = {fn: classify(fn) for (fn, _, _) in funcs}
-    for fn in sorted(handler_refs):
-        if thread.get(fn) is None:
-            thread[fn] = "gtk"
+    # Labels taken from the PIPE/EITHER/GTK sets come from the module API
+    # itself (dev-doc/GUI_Threading.md tabulates which callback runs where), so
+    # they are ground truth and propagation must not overwrite them.  Without
+    # this an imprecise call-graph edge into process() -- a token that merely
+    # looks like a call -- silently demoted a pipe root to "either", which
+    # counts on both sides and manufactures sharing.
+    pinned = {fn for fn in thread if thread[fn] is not None}
     for fn in list(thread):
         if thread[fn] is None and GTK_RE.search(fn):
             thread[fn] = "gtk"
+    # a deferred handover lands on the main loop whoever registered it
+    for fn, refs in sorted(callback_refs.items()):
+        if thread.get(fn) is None and any(k == "defer" for k, _ in refs):
+            thread[fn] = "gtk"
+    # an escaped function pointer is called from outside this file, so neither
+    # thread can be ruled out.  This is the honest label and not a free one:
+    # "either" counts on both sides of the cross-thread test, so it can make a
+    # field look shared on its own -- see BEFORE YOU FILE ANYTHING in README.md
+    for fn in sorted(escaped):
+        if thread.get(fn) is None:
+            thread[fn] = "either"
     changed = True
     rounds = 0
     while changed and rounds < 20:
@@ -503,10 +572,24 @@ def analyse(path):
             callees = callgraph[caller]
             if thread.get(caller):
                 for c in sorted(callees):
+                    if c in pinned:
+                        continue
                     if thread.get(c) is None:
                         thread[c] = thread[caller]; changed = True
                     elif thread[c] != thread.get(caller) and thread[c] in ("pipe", "gtk"):
                         thread[c] = "either"; changed = True
+        # a synchronously-invoked callback runs on its registrar's thread
+        for callee, refs in sorted(callback_refs.items()):
+            if callee in pinned:
+                continue
+            for kind, registrar in sorted(refs):
+                t = thread.get(registrar)
+                if kind != "direct" or not t:
+                    continue
+                if thread.get(callee) is None:
+                    thread[callee] = t; changed = True
+                elif thread[callee] != t and thread[callee] in ("pipe", "gtk"):
+                    thread[callee] = "either"; changed = True
     # the basename, not just the module: three IOPs are .cc, and the report
     # used to name them <module>.c, a path that does not exist
     return dict(module=module, src=os.path.basename(path), fields=fields,
