@@ -108,14 +108,16 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
   printed with it.  An entry that matches no finding at all is an orphan and is
   named in the banner, so the list gets garbage-collected rather than growing.
 
-    --recheck                  report only the findings whose entry went stale
-    --ignore-false-positives   the full check, list ignored
-    --confirm-false-positive M:F --reason TEXT     add or re-key one entry
-    --confirm-false-positive M                     re-key every stale entry in M
+    --include-false-positives  report the suppressed findings too
+    --confirm-false-positive MODULE:FIELD --false-positive-reason TEXT
+                               add one entry, or re-key it
+    --confirm-false-positive MODULE
+                               re-key every stale entry in that module
     --fail-on-findings         exit 1 if anything is reported (off by default)
+    --fail-on-stale-false-positives-only   exit 1 only on a stale entry
 
-  A new entry needs --reason, because that sentence is what gets printed back
-  when it goes stale.  A bare module re-confirms but never adds: silencing a
+  A new entry needs --false-positive-reason: that sentence is what is printed
+  back when it goes stale.  A bare module re-confirms but never adds: silencing a
   whole module has to be spelled out field by field.  See THE FALSE-POSITIVE
   LIST in README.md for what the key covers and what was measured.
 
@@ -201,7 +203,6 @@ USAGE
   ./dt-lockcheck.py --rules ALL                     # including discipline_gap
   ./dt-lockcheck.py --format csv > findings.csv
   ./dt-lockcheck.py --format json > facts.json
-  ./dt-lockcheck.py --recheck                       # stale false positives only
 
   To analyse a tree other than the one you are standing in:
 
@@ -805,7 +806,7 @@ def _sites(sites, th, cap, extra=None):
     return line + (f", ... (+{rest} more)" if rest else "")
 
 
-def print_report(fs, trees=None, suppressed=0, recheck=False):
+def print_report(fs, trees=None, suppressed=0):
     by_rule = defaultdict(list)
     for f in fs:
         by_rule[f["rule"]].append(f)
@@ -835,10 +836,9 @@ def print_report(fs, trees=None, suppressed=0, recheck=False):
                 e = f["fp"]
                 print("   was a known false positive, confirmed %s:" % e["confirmed"])
                 print("     %s" % e["reason"])
-                print("   re-check: ./dt-lockcheck.py --module %s --recheck"
-                      % f["module"])
-                print("   if still not a defect: ./dt-lockcheck.py "
-                      "--confirm-false-positive %s:%s" % (f["module"], f["field"]))
+                print("   re-read the source; if it is still not a defect:")
+                print("     ./dt-lockcheck.py --confirm-false-positive %s:%s"
+                      % (f["module"], f["field"]))
             if trees:
                 key = why_goal(f)[1]
                 tree = trees.get(key)
@@ -848,15 +848,9 @@ def print_report(fs, trees=None, suppressed=0, recheck=False):
                     print("   why     : " + key)
                     for line in tree:
                         print(ascii_safe("   " + line.rstrip()))
-    if recheck:
-        # "0 findings" under --recheck means every recorded judgement still
-        # stands, which is the opposite of what it reads like elsewhere
-        print("\n%d stale false-positive entr%s."
-              % (len(fs), "y" if len(fs) == 1 else "ies"))
-    else:
-        print("\n%d findings%s." % (len(fs),
-              ", %d suppressed as known false positives" % suppressed
-              if suppressed else ""))
+    print("\n%d findings%s." % (len(fs),
+          ", %d suppressed as known false positives" % suppressed
+          if suppressed else ""))
 
 
 # --- the checked-in false-positive list -------------------------------------
@@ -1026,8 +1020,13 @@ def fp_banner(suppressed, stale, orphans, path):
     if not (suppressed or stale or orphans):
         return
     parts = ["%d suppressed" % len(suppressed)]
+    # stale and orphaned entries are named, not just counted: they are what a
+    # --fail-on-stale-false-positives-only job fails on, and a CI log that says
+    # only "1 stale" sends the reader back to the tool to find out which
     if stale:
-        parts.append("%d stale" % len(stale))
+        parts.append("%d stale (%s)"
+                     % (len(stale), ", ".join(sorted(
+                         "%s:%s" % (f["module"], f["field"]) for f in stale))))
     if orphans:
         parts.append("%d orphaned (%s)"
                      % (len(orphans), ", ".join(sorted(
@@ -1092,7 +1091,8 @@ def confirm_fps(specs, reason, fs, entries, res, wanted, path):
                 touched += 1
         elif fnd:
             if not reason:
-                die("a new entry needs --reason: say why %s:%s is not a defect, "
+                die("a new entry needs --false-positive-reason: say why %s:%s "
+                    "is not a defect, "
                     "because that sentence is what gets printed back when the "
                     "entry goes stale" % (module, field))
             f = fnd[0]
@@ -1118,13 +1118,16 @@ def _rekey(e, f, res, reason, today):
     e["key"] = f["key"]
     e["sites"] = finding_sites(f, res)
     e["confirmed"] = today
+    # a sweep that replaces a recorded reason says so: the key cannot detect a
+    # judgement being overwritten by one that was not about this field
+    replaced = bool(reason) and reason != e["reason"]
     if reason:
         e["reason"] = reason
-    print("%s:%s: %s under %s"
+    print("%s:%s: %s under %s%s"
           % (e["module"], e["field"],
              "re-confirmed, key %s -> %s" % (was, e["key"]) if was != e["key"]
              else "reason updated, key %s unchanged" % e["key"],
-             e["rule"]))
+             e["rule"], " (previous reason replaced)" if replaced else ""))
 
 
 # --- optional proof trees via lemmalog --------------------------------------
@@ -1351,32 +1354,38 @@ def main():
                          "trees are added to report only; the other three are "
                          "unaffected by lemmalog.  See README.md for what each format "
                          "contains")
-    ap.add_argument("--ignore-false-positives", action="store_true",
-                    help="report every finding, including the ones "
-                         "false-positives.json records as judged.  The full "
-                         "check, for when you do not trust the list")
-    ap.add_argument("--recheck", action="store_true",
-                    help="report only the findings whose false-positive entry "
-                         "has gone stale -- the code behind a recorded "
-                         "judgement changed and it has to be re-read.  Composes "
-                         "with --module and --format")
-    ap.add_argument("--confirm-false-positive", action="append", metavar="M[:F]",
-                    dest="confirm",
+    ap.add_argument("--include-false-positives", action="store_true",
+                    dest="include_fp",
+                    help="report the findings false-positives.json suppresses, "
+                         "alongside the rest.  The full check, for when the "
+                         "module rather than the tree is the subject and you "
+                         "want to re-read the judgements too")
+    ap.add_argument("--confirm-false-positive", action="append",
+                    metavar="MODULE[:FIELD]", dest="confirm",
                     help="record that a finding is not a defect, or that a stale "
                          "entry still holds (repeatable).  MODULE:FIELD names "
                          "one finding; a bare MODULE re-confirms every stale "
                          "entry in it, but cannot add new ones.  Rewrites "
                          "false-positives.json and exits without reporting")
-    ap.add_argument("--reason", metavar="TEXT",
+    ap.add_argument("--false-positive-reason", metavar="TEXT", dest="reason",
                     help="why the finding is not a defect.  Required to add a "
                          "new entry, since this is what gets printed back when "
                          "the entry goes stale; optional when re-confirming, "
-                         "where it replaces the recorded reason")
+                         "where it replaces the recorded reason.  One judgement "
+                         "is about one module, so every --confirm-false-positive "
+                         "in the run has to name the same one")
     ap.add_argument("--fail-on-findings", action="store_true",
                     help="exit 1 when anything is reported, for CI.  Off by "
                          "default and red on this tree today: it passes only "
                          "once every finding is either fixed or recorded in "
                          "false-positives.json")
+    ap.add_argument("--fail-on-stale-false-positives-only", action="store_true",
+                    dest="fail_on_stale",
+                    help="exit 1 only when a false-positive entry has gone "
+                         "stale -- somebody judged that finding harmless and "
+                         "the code has changed since.  The weaker gate, and the "
+                         "one that passes on this tree today, so it is the one "
+                         "a CI job can use before the findings are worked off")
     ap.add_argument("--why", action="store_true",
                     help="append the lemmalog proof tree behind each finding; needs "
                          "the lemmalog engine, and is an error if it cannot be found")
@@ -1404,17 +1413,46 @@ def main():
             % args.format)
     # the false-positive flags contradict each other in three ways, and each
     # would otherwise fail silently: a suppression that was asked to be ignored
-    # and consulted at once, a re-check with nothing to check against, or a
+    # and consulted at once, a re-read with nothing to check against, or a
     # reason recorded nowhere
-    if args.ignore_false_positives and (args.recheck or args.confirm):
-        die("--ignore-false-positives turns the list off; --recheck and "
-            "--confirm-false-positive both need it on")
-    if args.recheck and args.confirm:
-        die("--recheck reports stale entries; --confirm-false-positive rewrites "
-            "them.  Run the first, read the findings, then the second")
+    if args.include_fp and (args.fail_on_stale or args.confirm):
+        die("--include-false-positives reports what the list suppresses and "
+            "consults it for nothing else; "
+            "--fail-on-stale-false-positives-only and --confirm-false-positive "
+            "both need the list applied")
+    # the list is applied to findings, and these two formats carry the facts the
+    # rules run on rather than findings, so the flag could only be a silent
+    # no-op there -- the same reason --why is an error with them
+    if args.include_fp and args.format not in ("report", "csv"):
+        die("--include-false-positives changes which findings are reported; "
+            "--format %s carries the facts the rules run on, which the list "
+            "never touches" % args.format)
+    # the two gates answer different questions and one run cannot report both
+    # answers in its exit status, so asking for both is a mistake rather than a
+    # conjunction: --fail-on-findings already fails on everything the other does
+    if args.fail_on_findings and args.fail_on_stale:
+        die("--fail-on-findings and --fail-on-stale-false-positives-only are "
+            "two gates; pick one.  The first fails on any finding and is red on "
+            "this tree today; the second fails only on a judgement the source "
+            "has moved past")
+    if args.confirm and (args.fail_on_findings or args.fail_on_stale):
+        die("--confirm-false-positive rewrites the list and reports nothing, so "
+            "there is no finding for a --fail-on-* gate to act on")
     if args.reason and not args.confirm:
-        die("--reason records why a finding is not a defect, so it needs "
-            "--confirm-false-positive to record it on")
+        die("--false-positive-reason records why a finding is not a defect, "
+            "so it needs a --confirm-false-positive to record it on")
+    # One reason is one judgement, and a judgement is about one module: several
+    # fields of the same module often share one -- rgblevels' state machine
+    # covers more than one field -- but a sentence about one module cannot be
+    # true of another.  Without a reason there is no such limit: each entry then
+    # keeps the reason it already has.
+    if args.reason:
+        mods = {c.partition(":")[0] for c in args.confirm}
+        if len(mods) > 1:
+            die("--false-positive-reason is one judgement, so every "
+                "--confirm-false-positive in the run has to name the same "
+                "module; got %s.  Confirming across modules without a reason "
+                "keeps each entry's own" % ", ".join(sorted(mods)))
 
     src, how = find_src(args.src)
     if src is None:
@@ -1475,7 +1513,7 @@ def main():
     # lemmalog returned above for the same reason --rules does not touch them --
     # they carry the facts, not the findings.
     entries, suppressed, orphans = [], [], []
-    if not args.ignore_false_positives:
+    if not args.include_fp:
         entries = load_fp_list(FP_FILE)
         if entries or args.confirm:
             cache = {}
@@ -1488,8 +1526,6 @@ def main():
         if entries:
             fs, suppressed, orphans = apply_fp(fs, entries, res, wanted)
     stale = [f for f in fs if f.get("fp")]
-    if args.recheck:
-        fs = stale
     fp_banner(suppressed, stale, orphans, FP_FILE)
 
     trees = None
@@ -1514,11 +1550,13 @@ def main():
                         " ".join(site_str(a, th) for a in f["unlocked"]),
                         "stale" if f.get("fp") else ""])
     else:
-        print_report(fs, trees, len(suppressed), args.recheck)
+        print_report(fs, trees, len(suppressed))
 
-    # 1 only on request: a run that merely found something is a completed run,
-    # and the gate is red on this tree until the findings are worked off.
-    if args.fail_on_findings and fs:
+    # 1 only on request: a run that merely found something is a completed run.
+    # The wide gate is red on this tree until the findings are worked off; the
+    # narrow one asks only whether a recorded judgement still holds, which is a
+    # question a CI job can already answer green.
+    if (args.fail_on_findings and fs) or (args.fail_on_stale and stale):
         sys.exit(1)
 
 

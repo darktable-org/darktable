@@ -33,20 +33,13 @@ the project root, a build directory — or with the script on your `$PATH`. It
 locates `src/iop` by itself:
 
 ```sh
-./dt-lockcheck.py                               # the default rules
-./dt-lockcheck.py --module toneequal
-./dt-lockcheck.py --rules violation
-./dt-lockcheck.py --rules ALL                   # known noisy rules, too
-./dt-lockcheck.py --format csv > findings.csv
-./dt-lockcheck.py --recheck                     # only the stale false positives
+./dt-lockcheck.py
 ```
 
-Findings that somebody has already judged not to be defects are suppressed by
-default, from a list checked in beside the script — see
-[The false-positive list](#the-false-positive-list) for how an entry expires,
-and `--ignore-false-positives` for the full check.
-
-and says what it found before it starts:
+That is the whole ordinary invocation: the default rules over all of `src/iop`,
+with the findings somebody has already read and judged not to be defects
+suppressed from a [list](#the-false-positive-list) checked in beside the script.
+It says what it found before it starts:
 
 ```
 dt-lockcheck: 97 sources in /home/you/darktable/src/iop (darktable root above $PWD); 87 with a gui_data struct, 10 skipped
@@ -57,6 +50,56 @@ have no GUI state to share and are not analysed. That line goes to stderr, so it
 `-q` suppresses it. It is worth reading when you keep more than one checkout,
 since it is what makes analysing the wrong one obvious.
 
+### Options
+
+Every flag it takes, in five groups. The paragraphs after the tables carry the
+detail that does not fit in a row.
+
+**Which tree, and how loud:**
+
+| flag | what it does |
+| --- | --- |
+| `--src PATH` | the tree to analyse: `src/iop`, or a checkout root. Defaults to a search — see below |
+| `-q`, `--quiet` | drop the source-directory line from stderr. The [false-positive](#the-false-positive-list) banner still prints |
+
+**What to report on:**
+
+| flag | what it does |
+| --- | --- |
+| `--module NAME` | restrict to one module. Repeatable, and every name has to resolve |
+| `--rules LIST` | which of [the rules](#the-rules) to report, comma-separated, or `ALL` for every one, including the noisy tier left out by default |
+| `--include-false-positives` | also report the known false positives, which a default run leaves out. `--format report` or `csv` only |
+
+**How to report it:**
+
+| flag | what it does |
+| --- | --- |
+| `--format FMT` | `report`, `csv`, `json` or `lemmalog` — see [Output formats](#output-formats) |
+| `--why` | append the [proof tree](#proof-trees) behind each finding. Needs lemmalog; `--format report` only |
+| `--lemmalog PATH` | the lemmalog binary, when it is not on `$PATH`. Implies `--why` |
+
+**Maintaining the [false-positive list](#the-false-positive-list):**
+
+| flag | what it does |
+| --- | --- |
+| `--confirm-false-positive MODULE[:FIELD]` | record a judgement, or re-key a stale entry. Repeatable; rewrites the list and exits without reporting |
+| `--false-positive-reason TEXT` | the judgement to record. Required for a new entry, optional when re-confirming. Every confirmation in the run has to name the same module |
+
+**For an automated build:**
+
+| flag | what it does |
+| --- | --- |
+| `--fail-on-findings` | exit 1 when anything is reported. The wide gate, and red on this tree today — see [Exit status](#exit-status) |
+| `--fail-on-stale-false-positives-only` | exit 1 only when a recorded false positive has gone stale. The narrow gate, and the one that passes today |
+
+Two environment variables stand in for a flag each, for CI, where a path does
+not belong in the invocation:
+
+| variable | equivalent to |
+| --- | --- |
+| `$DT_LOCKCHECK_SRC` | `--src` |
+| `$DT_LOCKCHECK_LEMMALOG` | `--lemmalog` |
+
 To analyse a tree other than the one you are standing in:
 
 ```sh
@@ -64,19 +107,11 @@ To analyse a tree other than the one you are standing in:
 ./dt-lockcheck.py --src /path/to/darktable          # a checkout root works too
 ```
 
-`--why` adds the proof tree behind each finding — see
-[Proof trees](#proof-trees). It is off by default and needs the
-[lemmalog](https://github.com/JordyZomer/lemmalog) engine; `--lemmalog PATH`
-points at a binary that is not on `$PATH`. **`--format csv`, `json` and
-`lemmalog` never carry a tree and never invoke the engine**, so a script
-consuming them behaves the same whether or not lemmalog is installed.
-
-`$DT_LOCKCHECK_SRC` does the same as `--src`, for CI. The search order is
-`--src`, then `$DT_LOCKCHECK_SRC`, then a walk up from the current directory,
-then a walk up from the script's own location. The current directory comes
-before the script location on purpose: if you symlink the script onto `$PATH`
-out of one checkout, running it inside another still analyses the one you are
-standing in. An explicit `--src` never falls back, so a typo fails loudly.
+`src/iop` is looked for in this order: `--src`, then `$DT_LOCKCHECK_SRC`, then a
+walk up from the current directory, then a walk up from the script's own
+location. The current directory comes before the script location on purpose: if
+you symlink the script onto `$PATH` out of one checkout, running it inside
+another still analyses the one you are standing in. An explicit `--src` never falls back, so a typo fails loudly.
 
 `--module` is repeatable, and **every** name given has to resolve: one bad name
 in a list fails the whole run rather than quietly analysing the rest, so a CI
@@ -85,18 +120,28 @@ only be wrong about the invocation — an unknown `--rules` name, `--why` with a
 non-report `--format` — are checked before anything is read, so they fail the
 same way whatever `--format` asked for.
 
+`--why` adds the proof tree behind each finding — see
+[Proof trees](#proof-trees). It is off by default and needs the
+[lemmalog](https://github.com/JordyZomer/lemmalog) engine; `--lemmalog PATH`
+points at a binary that is not on `$PATH`. **`--format csv`, `json` and
+`lemmalog` never carry a tree and never invoke the engine**, so a script
+consuming them behaves the same whether or not lemmalog is installed.
+
 `--format` chooses between the human-readable report, a csv of the findings,
 and the raw extracted facts as json or as Datalog assertions — see
 [Output formats](#output-formats) for what each one contains.
 
-The [false-positive list](#the-false-positive-list) is consulted after the rules
-have run, so it changes which findings are *reported* and nothing else. `json`
-and `lemmalog` carry the facts the rules run on and are untouched by it, for the
-same reason `--rules` does not touch them.
+[The false-positive list](#the-false-positive-list) is the section behind
+`--include-false-positives` and `--confirm-false-positive`: what
+suppression covers, and what makes an entry expire. The list is consulted after
+the rules have run, so it changes which findings are *reported* and nothing
+else. `json` and `lemmalog` carry the facts the rules run on and are untouched
+by it, for the same reason `--rules` does not touch them.
 
-`--fail-on-findings` makes a run that reported something exit 1, for CI. It is
-off by default; see [Exit status](#exit-status) for why it is red on this tree
-today.
+`--fail-on-findings` and `--fail-on-stale-false-positives-only` are the two CI
+gates, both off by default, and a run may ask for at most one. See
+[Exit status](#exit-status) for what each fails on and why only the second one
+passes on this tree today.
 
 
 ## Exit status
@@ -104,15 +149,34 @@ today.
 | code | meaning |
 | --- | --- |
 | 0 | ran to completion, whatever it found |
-| 1 | `--fail-on-findings` was given and something was reported |
+| 1 | a `--fail-on-*` gate was given and it fired |
 | 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` with a `--format` that cannot carry a tree, or a `--lemmalog` path that does not exist |
 
-"Exit non-zero when there are findings" is `--fail-on-findings`, and it is off
-by default because it is red on this tree today: 74 findings survive the
-[false-positive list](#the-false-positive-list), and most of them are unreviewed
-or filed-and-unfixed rather than wrong. It passes once every finding is either
-fixed or recorded as judged, which is the condition for wiring it into CI. A
-gate that fails only on findings that are *new* is a different thing and would
+There are two gates, and a run may ask for at most one of them:
+
+- **`--fail-on-findings`** — exit 1 when anything is reported. It is red on this
+  tree today: 74 findings survive the
+  [false-positive list](#the-false-positive-list), and most are unreviewed or
+  filed-and-unfixed rather than wrong. It passes once every finding is either
+  fixed or recorded as judged, which is the condition for wiring it into CI.
+- **`--fail-on-stale-false-positives-only`** — exit 1 only when a recorded false
+  positive has gone stale, i.e. somebody's judgement no longer covers the code
+  it was made about. This one **passes today**, so it is the gate a CI job or a
+  pre-commit hook can use now. It says nothing about findings nobody has ruled
+  on, which is exactly why it can be green.
+
+Asking for both is an error rather than a conjunction: one exit status cannot
+carry two answers, and the wide gate already fails on everything the narrow one
+does.
+
+`--fail-on-findings` fails on what the run *reported*, so it honours
+`--include-false-positives` and then counts the suppressed findings too. That is
+the consistent reading of both flags, and it is also a gate that can never pass
+while the list has an entry in it: a false positive is still a finding, which is
+why it is suppressed rather than absent. Combine the two only against an empty
+list.
+
+A gate that fails only on findings that are *new* is a third thing and would
 need a checked-in baseline of all of them; that does not exist here.
 
 A CI job needs 1 and 2 kept apart: 2 means nothing was analysed, which a bare
@@ -330,16 +394,15 @@ they can, the fix is normally to extend the existing critical section to the
 unlocked sites — not to add a new lock.
 
 A finding whose [false-positive entry](#the-false-positive-list) has gone stale
-carries three extra lines — the judgement that was recorded, and the two
-commands that act on it:
+carries the judgement that was recorded, and the command that acts on it:
 
 ```
 colorharmonizer.c  g->auto_detect   (GtkWidget *)
    unlocked: _update_histogram:306[pipe]
    was a known false positive, confirmed 2026-08-30:
      _update_histogram() runs on the pipe but never calls GTK: ...
-   re-check: ./dt-lockcheck.py --module colorharmonizer --recheck
-   if still not a defect: ./dt-lockcheck.py --confirm-false-positive colorharmonizer:auto_detect
+   re-read the source; if it is still not a defect:
+     ./dt-lockcheck.py --confirm-false-positive colorharmonizer:auto_detect
 ```
 
 A trailing `N findings.` line closes the report, counting every rule asked for,
@@ -456,11 +519,11 @@ itself cannot answer:
 ./dt-lockcheck.py --module basicadj --format json  # let me ask the facts myself
 ```
 
-**A round starts with `--recheck`**, which reports only the findings whose
-recorded judgement the source has moved past. It is usually empty, and when it
-is not, those findings are the ones with the most behind them: somebody read
-that exact code and concluded it was safe, and it has since changed. Read them
-before the ones nobody has ever ruled on.
+**Read the stale entries first.** The stderr banner names them, and each is
+marked in the report. They are usually none, and when there are some, they are
+the findings with the most behind them: somebody read that exact code and
+concluded it was safe, and it has since changed. Read those before the ones
+nobody has ever ruled on.
 
 **Read the source first.** For "is this finding real?", the report already
 gives `file:line` for both the locked and the unlocked side. Opening those two
@@ -510,9 +573,10 @@ against the Datalog rules if you would rather add rules than write code.
 Findings are **candidates**. On the tree this was developed against, 52 of the
 76 default-settings findings name a field from a defect report that already
 existed (76 is the count before suppression: two of them are recorded in the
-[false-positive list](#the-false-positive-list), so a default run reports 74), measured against the 23 reports of the `gui_data` audit (#21915-#21919,
-#21974, #22005-#22009, #22057-#22069); the other 24 have not been ruled on
-either way, and a spot-check of a dozen of them found a clear majority to be
+[false-positive list](#the-false-positive-list), so a default run reports 74),
+measured against the 23 reports of the `gui_data` audit (#21915-#21919, #21974,
+#22005-#22009, #22057-#22064, #22066-#22069); the other 24 have not been ruled
+on either way, and a spot-check of a dozen of them found a clear majority to be
 real defects of the same shape. No one has measured a false-positive rate, and
 `discipline_gap` is markedly worse than the four it is left out beside.
 `pointer_share` returns a single field on this tree and that field is a
@@ -657,7 +721,7 @@ safety, and noise is what makes people re-confirm an entry without reading it.
 Nobody edits the file by hand:
 
 ```sh
-./dt-lockcheck.py --confirm-false-positive rgblevels:params --reason "why this is not a defect"
+./dt-lockcheck.py --confirm-false-positive rgblevels:params --false-positive-reason "why this is not a defect"
 ./dt-lockcheck.py --confirm-false-positive rgblevels          # every stale entry in the module
 ```
 
@@ -666,23 +730,50 @@ in that module, which is what a one-sitting audit of one module produces — but
 it deliberately **cannot add** entries: adding one is a judgement about a single
 field and has to name it, or a whole module could be silenced with one word.
 
-A new entry requires `--reason`, because that sentence is what gets printed back
-when the entry goes stale, and an entry without one degenerates into a blanket
-suppression nobody can re-judge. Re-confirming keeps the recorded reason unless
-you pass a new one. Either way the tool rewrites the key, the site list and the
-confirmation date, prints what it touched, and exits without reporting.
+`--confirm-false-positive` is repeatable; `--false-positive-reason` is not. When
+a reason is given, **every confirmation in the run has to name the same module**
+— several fields of one module often do share one argument, as `rgblevels`'
+state machine does, but a sentence about one module cannot be true of another.
+Without a reason there is no such limit: each entry keeps the one it already
+has.
+
+A confirmation that overwrites a recorded reason says so, since that is the one
+thing going wrong that the key cannot catch:
+
+```
+rgblevels:params: reason updated, key a447820dfb82 unchanged under no_lock_share (previous reason replaced)
+```
+
+A new entry requires `--false-positive-reason`, because that sentence is what
+gets printed back when the entry goes stale, and an entry without one
+degenerates into a blanket suppression nobody can re-judge. Re-confirming keeps
+the recorded reason unless you pass a new one. Either way the tool rewrites the
+key, the site list and the confirmation date, prints what it touched, and exits
+without reporting.
 
 ### Reading and overriding it
 
 ```sh
-./dt-lockcheck.py --recheck                     # only the findings whose entry went stale
-./dt-lockcheck.py --ignore-false-positives      # the full check, list ignored
+./dt-lockcheck.py                                       # stale entries are marked in the report
+./dt-lockcheck.py --include-false-positives             # the suppressed findings too
+./dt-lockcheck.py --fail-on-stale-false-positives-only  # exit 1 if any entry went stale
 ```
 
-`--recheck` composes with `--module` and `--format`. It is the "what do I have
-to look at again?" run: on a clean tree it prints nothing, and it is the one to
-pair with `--fail-on-findings` if you want a check that only complains about
-judgements the source has moved past.
+An ordinary run is how you read them: the stderr banner names every stale entry,
+and each one is marked in the report with its recorded reason. There is no flag
+that reports them alone, because there is nothing to save — a full run takes
+about a second and `--module` does not make it faster.
+
+`--include-false-positives` puts the *suppressed* findings back in the report,
+which is the run to make when a module rather than the tree is the subject and
+you want to re-read its judgements as well. It only changes what is reported, so
+it is an error with `--format json` or `lemmalog`, which carry the facts the
+rules run on and never see the list at all.
+
+`--fail-on-stale-false-positives-only` is the gate over the same question, for a
+CI job or a pre-commit hook, and it is the only gate here that passes on this
+tree today. It is mutually exclusive with `--fail-on-findings`; asking for both
+is an error rather than a conjunction.
 
 Each entry also carries its site list as `function:line[thread](lock)`, purely
 so a diff of the file is legible. Those line numbers are informational and are
@@ -690,12 +781,11 @@ so a diff of the file is legible. Those line numbers are informational and are
 
 ### What it is not
 
-It is not a baseline of every finding, and `--fail-on-findings` is not a
-new-findings gate. The flag exits 1 when anything is reported, which on this
-tree is red today: most of the 74 unsuppressed findings are unreviewed or filed
-and unfixed, not false positives. It becomes usable when every finding is
-either fixed or recorded here, which is why it is off by default and not wired
-into CI. A gate that fails only on findings that are *new* would need a
+It is not a baseline of every finding, and neither gate is a new-findings gate.
+`--fail-on-findings` fails on all 74, most of which are unreviewed or filed and
+unfixed rather than wrong; `--fail-on-stale-false-positives-only` fails only on
+the handful of judgements recorded here, and is blind to a defect nobody has
+ever looked at. A gate that fails on findings that are *new* would need a
 checked-in baseline of all of them, a different artifact with different
 invalidation needs; that does not exist here.
 
