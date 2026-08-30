@@ -236,7 +236,18 @@ const dt_dng_gain_map_t *dt_dng_gain_map_opcode3(const dt_image_t *img)
      does -- but Top/Left/Bottom/Right bound the *area modified*, and the spec
      does not say whether MapOrigin and MapSpacing are then relative to that
      rectangle or to the whole image. Requiring the full frame makes the two
-     readings identical, so that ambiguity cannot bite us. */
+     readings identical, so that ambiguity cannot bite us.
+
+     "The whole image" here is the active area, not the raw buffer, which is
+     why this compares against p_width/p_height rather than width/height.
+     OpcodeList3 runs after demosaic, by which point rawprepare has cropped
+     the masked borders away, so the rectangle the file describes is the
+     cropped one. Whether a sensor reads out padding depends on the capture
+     mode rather than the camera: an FC8482 in its default binned mode
+     writes a 4096x2268 buffer around a 4032x2268 active area, while the
+     same drone in 48MP mode writes 8064x6048 with no padding. Comparing
+     against width silently rejected a perfectly good map in the first
+     case and worked by luck in the second. */
   if(g == NULL
      || g->plane != 0
      || g->planes != 3
@@ -260,8 +271,8 @@ const dt_dng_gain_map_t *dt_dng_gain_map_opcode3(const dt_image_t *img)
      || !dt_isfinite((float)g->map_origin_h)
      || g->top != 0
      || g->left != 0
-     || g->bottom != (uint32_t)img->height
-     || g->right != (uint32_t)img->width)
+     || g->bottom != (uint32_t)img->p_height
+     || g->right != (uint32_t)img->p_width)
   {
     dt_print(DT_DEBUG_IMAGEIO,
       "[dng_opcode] GainMap rejected: plane=%u planes=%u map_planes=%u "
@@ -271,7 +282,7 @@ const dt_dng_gain_map_t *dt_dng_gain_map_opcode3(const dt_image_t *img)
       g ? g->row_pitch : 0, g ? g->col_pitch : 0,
       g ? g->map_points_v : 0, g ? g->map_points_h : 0,
       g ? g->top : 0, g ? g->left : 0, g ? g->bottom : 0, g ? g->right : 0,
-      img->width, img->height);
+      img->p_width, img->p_height);
     return NULL;
   }
 
