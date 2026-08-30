@@ -413,7 +413,7 @@ void process(dt_iop_module_t *self,
   float *const restrict out = (float*)o;
 
   DT_OMP_FOR()
-  for(int k = 0; k < 4*npixels; k += 4)
+  for(size_t k = 0; k < 4*npixels; k += 4)
   {
     const float L_in = in[k] / 100.0f;
 

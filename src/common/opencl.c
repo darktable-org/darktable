@@ -20,6 +20,7 @@
 
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
+#include "common/bilinear.h"
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/dwt.h"
@@ -1568,6 +1569,7 @@ finally:
       dt_capabilities_add("multiopencl");
     cl->blendop = dt_develop_blend_init_cl_global();
     cl->bilateral = dt_bilateral_init_cl_global();
+    cl->bilinear = dt_bilinear_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
     cl->local_laplacian = dt_local_laplacian_init_cl_global();
@@ -1624,6 +1626,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   {
     dt_develop_blend_free_cl_global(cl->blendop);
     dt_bilateral_free_cl_global(cl->bilateral);
+    dt_bilinear_free_cl_global(cl->bilinear);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
     dt_dwt_free_cl_global(cl->dwt);

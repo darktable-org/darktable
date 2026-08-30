@@ -59,6 +59,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "common/chromatic_adaptation.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/darktable.h"
+#include "common/bilinear.h"
 #include "common/eigf.h"
 #include "common/interpolation.h"
 #include "common/gaussian.h"
@@ -192,9 +193,6 @@ typedef struct dt_iop_colorequal_global_data_t
   int ce_write_output;
   int ce_write_visual;
   int ce_draw_weight;
-  int ce_bilinear1;
-  int ce_bilinear2;
-  int ce_bilinear4;
 } dt_iop_colorequal_global_data_t;
 
 
@@ -334,9 +332,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->ce_write_output = dt_opencl_create_kernel(program, "write_output");
   gd->ce_write_visual = dt_opencl_create_kernel(program, "write_visual");
   gd->ce_draw_weight = dt_opencl_create_kernel(program, "draw_weight");
-  gd->ce_bilinear1 = dt_opencl_create_kernel(program, "bilinear1");
-  gd->ce_bilinear2 = dt_opencl_create_kernel(program, "bilinear2");
-  gd->ce_bilinear4 = dt_opencl_create_kernel(program, "bilinear4");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -355,9 +350,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->ce_write_output);
   dt_opencl_free_kernel(gd->ce_write_visual);
   dt_opencl_free_kernel(gd->ce_draw_weight);
-  dt_opencl_free_kernel(gd->ce_bilinear1);
-  dt_opencl_free_kernel(gd->ce_bilinear2);
-  dt_opencl_free_kernel(gd->ce_bilinear4);
 
   free(self->data);
   self->data = NULL;
@@ -1309,8 +1301,8 @@ static int _prefilter_chromaticity_cl(const int devid,
     ds_UV = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
     if(ds_UV == NULL) return err;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
-          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, UV, width, height,
+                                     ds_UV, ds_width, ds_height, 2);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1370,12 +1362,12 @@ static int _prefilter_chromaticity_cl(const int devid,
       goto error;
     }
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear4, width, height,
-          CLARG(ds_a), CLARG(ds_width), CLARG(ds_height), CLARG(a), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_a, ds_width, ds_height,
+                                     a, width, height, 4);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, width, height,
-          CLARG(ds_b), CLARG(ds_width), CLARG(ds_height), CLARG(b), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_b, ds_width, ds_height,
+                                     b, width, height, 2);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_release_mem_object(ds_a);
@@ -1443,16 +1435,16 @@ static int _guide_with_chromaticity_cl(const int devid,
     ds_b_corrections = dt_opencl_alloc_device_buffer(devid, ds_bsize);
     if(ds_UV == NULL || ds_corrections == NULL || ds_b_corrections == NULL) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
-          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, UV, width, height,
+                                     ds_UV, ds_width, ds_height, 2);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
-          CLARG(corrections), CLARG(width), CLARG(height), CLARG(ds_corrections), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, corrections, width, height,
+                                     ds_corrections, ds_width, ds_height, 2);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear1, ds_width, ds_height,
-          CLARG(b_corrections), CLARG(width), CLARG(height), CLARG(ds_b_corrections), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, b_corrections, width, height,
+                                     ds_b_corrections, ds_width, ds_height, 1);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1531,12 +1523,12 @@ static int _guide_with_chromaticity_cl(const int devid,
       goto error;
     }
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear4, width, height,
-          CLARG(ds_a), CLARG(ds_width), CLARG(ds_height), CLARG(a), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_a, ds_width, ds_height,
+                                     a, width, height, 4);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, width, height,
-          CLARG(ds_b), CLARG(ds_width), CLARG(ds_height), CLARG(b), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_b, ds_width, ds_height,
+                                     b, width, height, 2);
     if(err != CL_SUCCESS) goto error;
   }
 

@@ -284,7 +284,19 @@ void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
   if(dt_pipe_processing(dev->full.pipe))
-    dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+  {
+    /*  A pipe DT_DEV_PIXELPIPE_STOP_DATA shutdown is the fastest way to get the final
+        processed result presented in the main canvas (or second window as below) but
+        the user won't "see" any results while dragging a mouse slider.
+        Instead of using a timeout we simply use the old behaviour - no forced shutdown -
+        while the left mouse button is pressed (as when dragging a slider) but stay with
+        the faster shutdown system when using clicks as via a mouse scroll wheel.
+    */
+    if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
+      return;
+    else
+      dt_dev_pixelpipe_set_shutdown(dev->full.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+  }
 
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
@@ -301,7 +313,12 @@ void dt_dev_process_preview2(dt_develop_t *dev)
 {
   if(!dev->gui_attached && !dev->preview2.widget) return;
   if(dt_pipe_processing(dev->preview2.pipe))
-    dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+  {
+    if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
+      return;
+    else
+      dt_dev_pixelpipe_set_shutdown(dev->preview2.pipe, DT_DEV_PIXELPIPE_STOP_DATA);
+  }
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
