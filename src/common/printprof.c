@@ -65,7 +65,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
     return 1;
   }
 
-  void *out = malloc((size_t)3 * width * height);
+  void *out = g_malloc((size_t)3 * (bpp == 8 ? 1 : 2) * width * height); //fixed for 16 bit printing: memory allocation was not accounting for bpp for out, was always 8 bit/channel
   if(!out)
   {
     dt_print(DT_DEBUG_ALWAYS, "unable to allocate buffer for printer-proofed image");
@@ -84,7 +84,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
   else
   {
     const uint16_t *ptr_in = (uint16_t *)*in;
-    uint8_t *ptr_out = (uint8_t *)out;
+    uint16_t *ptr_out = (uint16_t *)out;
 
     DT_OMP_FOR(shared(hTransform))
     for(int k=0; k<height; k++)

@@ -402,7 +402,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
                "cannot open printer profile `%s'",
                params->p_icc_profile);
       dt_control_queue_redraw();
-      return 1;
+      return 1;    
     }
     else
     {
@@ -431,7 +431,9 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
     }
   }
 
+// In _export_image(): Print actual buffer address and size right before assigning to img->buf
   img->buf = params->buf;
+  img->img_bpp = dat.bpp; // Store the image bitdepth with the image being sent to print job
   params->buf = NULL;
 
   return 0;
@@ -475,11 +477,27 @@ static void _create_pdf(dt_job_t *job,
     const int resolution = params->prt.printer.resolution;
     const dt_image_box *box = &imgs.box[k];
 
+    //If image is 16bit, it needs to be converted to big endian before sending for PDF creation
+    uint16_t *tmp = NULL;
+
+    if(box->img_bpp == 16)
+    {
+      size_t total_samples = (size_t)3 * box->exp_width * box->exp_height;
+      tmp = g_malloc(total_samples * sizeof(uint16_t));
+      const uint16_t *src = box->buf;
+      for(size_t i = 0; i < total_samples; i++)
+      {
+        tmp[i] = GUINT16_TO_BE(src[i]);
+      }
+    }
+
     if(dt_is_valid_imgid(box->imgid))
     {
       pdf_image[count] =
-        dt_pdf_add_image(pdf, (uint8_t *)box->buf, box->exp_width, box->exp_height,
-                         8, icc_id, 0.0);
+        dt_pdf_add_image(pdf, 
+                         (box->img_bpp == 16) ? tmp : box->buf,  //send the big endian converted buffer if 16 bit, send 8 bit as is
+                         box->exp_width, box->exp_height,
+                         box->img_bpp, icc_id, 0.0);
 
       //  PDF bounding-box has origin on bottom-left
       pdf_image[count]->bb_x      = dt_pdf_pixel_to_point(box->print.x, resolution);
@@ -488,6 +506,7 @@ static void _create_pdf(dt_job_t *job,
       pdf_image[count]->bb_height = dt_pdf_pixel_to_point(box->print.height, resolution);
       count++;
     }
+    if(tmp) g_free(tmp);
   }
 
   params->pdf_page = dt_pdf_add_page(pdf, pdf_image, count);

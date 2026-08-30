@@ -387,13 +387,15 @@ int dt_pdf_add_icc_from_data(dt_pdf_t *pdf,
 // to be in output device space, otherwise the ICC profile object is
 // referenced.  if image == NULL only the outline can be shown later
 dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf,
-                                 const unsigned char *image,
+                                 const void *image,
                                  const int width,
                                  const int height,
                                  const int bpp,
                                  const int icc_id,
                                  const float border)
 {
+  const unsigned char *image = (const unsigned char *)buf; // uint16 can't cast directly to unsigned char, bring in void first then cast
+  
   size_t stream_size = 0;
   size_t bytes_written = 0;
 

@@ -43,6 +43,7 @@ typedef struct _image_box
   dt_image_pos pos;              // relative pos from screen.page
   dt_image_pos screen;           // current screen pos (in pixels)
   dt_image_pos print;            // current print pos (in pixels) depending on paper size + DPI
+  int img_bpp;                   // image bit per pixel metadata
   uint16_t *buf;
 } dt_image_box;
 
