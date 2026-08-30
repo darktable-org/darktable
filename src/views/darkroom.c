@@ -5273,17 +5273,18 @@ static void _second_window_pinch(GtkGesture *gesture,
                                  gpointer user_data)
 {
   dt_develop_t *dev = user_data;
-  // a second finger hands the viewport over to the pinch, so the finger that
-  // is still down must stop panning
+  // a second finger hands the viewport over to the pinch, so the finger that is still down must stop panning
   if(e->touchscreen)
     _second_window_touch_pinching = e->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN
                                     || e->phase == GDK_TOUCHPAD_GESTURE_PHASE_UPDATE;
 
-  if(dev->gui_leaving) return;
+  if(dev->gui_leaving)
+    return;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
-  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+  if(pinned_dev && pinned_dev->gui_leaving)
+    pinned_dev = NULL;
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
@@ -5392,7 +5393,8 @@ static void _second_window_pan(dt_develop_t *dev,
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
-  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+  if(pinned_dev && pinned_dev->gui_leaving)
+    pinned_dev = NULL;
 
   dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
@@ -5425,7 +5427,8 @@ static void _second_window_touch_moved(GtkGesture *gesture,
 {
   (void)gesture;
   dt_develop_t *dev = user_data;
-  if(dev->gui_leaving || _second_window_touch_pinching) return;
+  if(dev->gui_leaving || _second_window_touch_pinching)
+    return;
   _second_window_pan(dev, x, y);
 }
 
