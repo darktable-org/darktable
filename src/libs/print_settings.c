@@ -498,12 +498,26 @@ static void _create_pdf(dt_job_t *job,
   {
     const int resolution = params->prt.printer.resolution;
     const dt_image_box *box = &imgs.box[k];
+    uint16_t *tmp = NULL;
+
+    if(box->img_bpp == 16)
+    {
+      size_t total_samples = (size_t)3 * box->exp_width * box->exp_height;
+      tmp = g_malloc(total_samples * sizeof(uint16_t));
+      const uint16_t *src = box->buf;
+      for(size_t i = 0; i < total_samples; i++)
+      {
+        tmp[i] = GUINT16_TO_BE(src[i]);
+      }
+    }
 
     if(dt_is_valid_imgid(box->imgid))
     {
       pdf_image[count] =
-        dt_pdf_add_image(pdf, (uint8_t *)box->buf, box->exp_width, box->exp_height,
-                         8, icc_id, 0.0);
+        dt_pdf_add_image(pdf, 
+                         (box->img_bpp == 16) ? tmp : box->buf,
+                         box->exp_width, box->exp_height,
+                         box->img_bpp, icc_id, 0.0);
 
       //  PDF bounding-box has origin on bottom-left
       pdf_image[count]->bb_x      = dt_pdf_pixel_to_point(box->print.x, resolution);
@@ -512,6 +526,7 @@ static void _create_pdf(dt_job_t *job,
       pdf_image[count]->bb_height = dt_pdf_pixel_to_point(box->print.height, resolution);
       count++;
     }
+    if(tmp) g_free(tmp);
   }
 
   params->pdf_page = dt_pdf_add_page(pdf, pdf_image, count);
