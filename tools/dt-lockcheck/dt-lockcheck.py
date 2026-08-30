@@ -44,7 +44,7 @@ WHICH THREAD
   Labels that come from the PIPE/EITHER/GTK sets are ground truth from the
   module API and propagation never overwrites them.
 
-  Four rules, in descending order of how much they are worth reading:
+  Five rules, in descending order of how much they are worth reading:
 
     widget_from_pipe  a Gtk*-typed field touched from a `pipe` or `either`
                       function.  GTK must only be called from the main thread.
@@ -56,9 +56,15 @@ WHICH THREAD
     discipline_gap    the module locks the field somewhere and accesses it
                       unlocked, without a proven cross-thread share.  Noisiest;
                       read it last.
+    pointer_share     a pointer-typed field shared across the two threads, with
+                      no unlocked access anywhere.  The lock protects the
+                      pointer load, not the object the other thread may free
+                      under the reader.  It fires on the shape, not on a proven
+                      escape, so read the hit before believing it -- but the
+                      shape is rare and the rule is bounded by it.
 
   --rules picks the set, by name or as the upper-case ALL for every rule there
-  is.  The first three are the default; discipline_gap has to be asked for,
+  is.  All but discipline_gap are on by default; that one has to be asked for,
   because on a whole tree most of what it returns is a field locked for one
   reason and read unlocked for another.  A field is reported under at most one
   rule, the first in the order above that it matches.
@@ -86,6 +92,11 @@ HOW TO READ THE OUTPUT
   analysis, not a verified race detector: every finding needs a human to confirm
   that the two sites can really run concurrently.
 
+  pointer_share is the exception and prints no unlocked line, because it has
+  none to print: its claim is that every access being locked is still not
+  enough.  Read its locked sites for the load and the free, and decide whether
+  the object can be freed while the reader is still using it.
+
 KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
   * Mutual exclusion by protocol rather than by lock.  `rgblevels` hands work to
     the pipe through a state machine (0 idle / 1 requested / -1 running /
@@ -98,6 +109,14 @@ KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
     field.  Partly handled: a function that writes >= 8 distinct fields under the
     lock and never reads them back is treated as bulk initialisation and
     establishes no per-field discipline.
+  * A pointer_share hit on a field that is already handled correctly.  The rule
+    sees a shared pointer, not an escape past the lock, and all three correct
+    idioms -- holding the lock through the last use, copying the data instead of
+    the pointer, transferring ownership so the publisher cannot free it -- leave
+    the field a shared pointer.  None is distinguishable here, so a module that
+    has done one of them still gets flagged.  No such module is in the tree
+    today, which is why the rule returns one finding and that finding is a
+    confirmed defect; that is a fact about the tree, not a property of the rule.
   * A widget touched from the pipe only to hand it to the main loop.
     colorharmonizer's `_update_histogram()` does `g_object_ref(g->auto_detect)`
     and `gdk_threads_add_idle()`; the ref is atomic and the GTK call happens on
@@ -109,6 +128,9 @@ KNOWN LIMITS
     branch makes later code in other branches look unlocked.
   * Bug shapes needing dataflow inside a function are out of reach -- notably
     "pointer copied under the lock, dereferenced after releasing it".
+    pointer_share reaches the shape that permits that, by asking whether the
+    field is a pointer both threads share, but never the escape itself; it
+    cannot see where the value is used relative to the critical section.
   * Thread inference is name-based, plus intra-file call-graph propagation and
     the address-taken rules above.  A function it still cannot label comes out
     as thread `None`, counts on neither side of the cross-thread test, and so
@@ -118,6 +140,15 @@ KNOWN LIMITS
     property, the full pipe reads it (dev-doc/GUI_Threading.md, "Passing Values
     Between Pipes Through gui_data").  That needs the same lock, and no rule
     here looks for it: a field both pipes touch and GTK never does is invisible.
+    Not worth a rule, on the measurements: the whole population is the four
+    modules that call dt_dev_sync_pixelpipe_hash() -- colorreconstruction,
+    hazeremoval, levels, globaltonemap -- which `grep -l` enumerates faster than
+    any rule, and all four already lock every pipe-side access to payload and
+    hash, so nothing distinguishes them in the fact base.  Two of them were
+    hand-audited clean; colorreconstruction is a real defect, but for a reason
+    no lock-presence rule can see, which is what pointer_share is for.  Nor does
+    the complement help: fields touched on `pipe` and never on `gtk` number two
+    on the whole tree, one of them the colorharmonizer false positive above.
   * `g` is matched by convention, not by type.  A function that binds `g` to
     something other than the module's GUI data is skipped whole, so a real
     gui_data access in it is missed too.
@@ -436,7 +467,15 @@ def gui_fields(text, module):
                 continue
             if ty is None:
                 ty = " ".join(names[:-1]) if len(names) > 1 else "unknown"
-            fields[names[-1]] = ty
+            # `*` binds to the declarator, not to the type the list shares: in
+            # `float *buf, count;` only `buf` is a pointer.  Recorded because a
+            # pointer is the field a correctly held lock still fails to protect
+            # -- see pointer_share.  Nothing else in `d` can carry a `*` by now:
+            # mask_text() blanked the comments, and the substitutions above took
+            # out array bounds (`[CHANNELS * PIXEL_CHAN]`) and function
+            # pointers.
+            stars = "*" * d.count("*")
+            fields[names[-1]] = (ty + " " + stars) if stars else ty
     return fields
 
 def classify(fnname):
@@ -602,11 +641,13 @@ def analyse(path):
 # and on either thread.
 SETUP_FNS = {"gui_init", "gui_cleanup", "gui_reset"}
 
-# In report order, most worth reading first.  discipline_gap is out of the
-# default set because it proves no cross-thread share and is mostly noise; see
-# THE RULES in README.md.
-ALL_RULES = ("widget_from_pipe", "violation", "no_lock_share", "discipline_gap")
-DEFAULT_RULES = ("widget_from_pipe", "violation", "no_lock_share")
+# In report order, most worth reading first.  discipline_gap is the one out of
+# the default set: it proves no cross-thread share and is mostly noise.  See THE
+# RULES in README.md.
+ALL_RULES = ("widget_from_pipe", "violation", "no_lock_share", "discipline_gap",
+             "pointer_share")
+DEFAULT_RULES = ("widget_from_pipe", "violation", "no_lock_share",
+                 "pointer_share")
 # --rules ALL means every rule, so a caller that wants the lot does not have to
 # be updated when one is added.  Upper-case to keep it apart from the rule
 # names, which are lower-case throughout, including in the Datalog.
@@ -618,7 +659,7 @@ MAY_GTK = ("gtk", "either")     # can run on the GTK main thread
 
 
 def findings(res, wanted):
-    """Apply the four rules to the extracted facts.
+    """Apply the rules to the extracted facts.
 
     Mirrors rules.lemma one-for-one; kept in Python so the tool has no
     dependency on a Datalog engine.
@@ -642,6 +683,7 @@ def findings(res, wanted):
             locked = [a for a in sites if a[2] not in ("none", "bulk_init")]
             unlocked = [a for a in live if a[2] == "none"]
             widget = fields.get(field, "").startswith(("Gtk", "Dtgtk"))
+            pointer = fields.get(field, "").endswith("*")
 
             rule = None
             if widget and any(th.get(a[0]) in MAY_PIPE for a in sites):
@@ -652,6 +694,18 @@ def findings(res, wanted):
                 rule = "no_lock_share"
             elif locked and unlocked:
                 rule = "discipline_gap"
+            # Last, so it claims only fields no other rule did.  Every access
+            # can be under the lock and the field still be unsafe: the lock
+            # protects the pointer load, not the object, which the other thread
+            # may free before the reader is done with it (dev-doc/
+            # GUI_Threading.md, "A scalar hands over cleanly; an allocation does
+            # not").  Proving the escape needs dataflow inside a function, which
+            # is out of reach, so this fires on the shape alone -- hence not a
+            # default rule.  No widget can reach here: a shared widget is by
+            # definition touched from pipe or either, so widget_from_pipe took
+            # it above.
+            elif pointer and shared:
+                rule = "pointer_share"
             if rule and rule in wanted:
                 out.append(dict(module=module, src=r.get("src", module + ".c"),
                                 field=field, rule=rule,
@@ -685,6 +739,10 @@ def lemmalog_facts(res):
             if ty.startswith(("Gtk", "Dtgtk"))}
     for ty in sorted(seen):
         out.append(f'+ gtk_type("{ty}")')
+    # likewise for `ptr_type(T)`, which is what is_pointer asks
+    for ty in sorted({ty for r in res.values() for ty in r["fields"].values()
+                      if ty.endswith("*")}):
+        out.append(f'+ ptr_type("{ty}")')
     for m, r in sorted(res.items()):
         for f, ty in sorted(r["fields"].items()):
             out.append(f'+ ftype("{m}", "{f}", "{ty}")')
@@ -731,7 +789,12 @@ def print_report(fs, trees=None):
             if f["locked"]:
                 print("   locked  : " + _sites(f["locked"], th, 6,
                                                lambda a: f"({a[2]})"))
-            print("   unlocked: " + _sites(f["unlocked"], th, 8))
+            # pointer_share rests on the field's type and its threads, not on
+            # a missing lock, so it is the one rule that reaches here with no
+            # unlocked site to name.  Its evidence is the locked list above:
+            # every access is under the lock and the field is unsafe anyway.
+            if f["unlocked"]:
+                print("   unlocked: " + _sites(f["unlocked"], th, 8))
             if trees:
                 key = why_goal(f)[1]
                 tree = trees.get(key)
@@ -787,9 +850,10 @@ def why_goal(f):
 
     The two differ because lemmalog echoes a goal back with the quotes stripped,
     and the echo is what the answers have to be looked up by.  Arity follows the
-    rule: no_lock_share is per field, the rest per unlocked site.
+    rule: no_lock_share and pointer_share are per field, the rest per
+    unlocked site.
     """
-    if f["rule"] == "no_lock_share":
+    if f["rule"] in ("no_lock_share", "pointer_share"):
         args = (f["module"], f["field"])
     else:
         # the site the report leads with, so the tree explains the line above it
@@ -953,9 +1017,10 @@ def main():
     ap.add_argument("--rules", default=",".join(DEFAULT_RULES), metavar="LIST",
                     help="comma-separated rules to report, from: "
                          + ", ".join(ALL_RULES) + "; or " + ALL_RULES_TOKEN
-                         + " (upper-case) for every rule there is.  discipline_gap is "
-                         "the noisy tier and is the one left out by default (default: "
-                         "%(default)s).  Affects report and csv only, since json and "
+                         + " (upper-case) for every rule there is.  "
+                         "discipline_gap is the noisy tier and is the one left "
+                         "out by default (default: %(default)s).  "
+                         "Affects report and csv only, since json and "
                          "lemmalog carry the facts the rules run on.  See README.md "
                          "for what each rule checks")
     ap.add_argument("--format", choices=("report", "csv", "json", "lemmalog"),
@@ -986,7 +1051,7 @@ def main():
         wanted = (wanted - {ALL_RULES_TOKEN}) | set(ALL_RULES)
     unknown = wanted - set(ALL_RULES)
     if unknown:
-        die("unknown rule(s): %s.  Pick from %s, or %s for all four"
+        die("unknown rule(s): %s.  Pick from %s, or %s for every one"
             % (", ".join(sorted(unknown)), ", ".join(ALL_RULES), ALL_RULES_TOKEN))
     if (args.why or args.lemmalog) and args.format != "report":
         die("--why adds proof trees to the report; --format %s cannot carry them"

@@ -10,7 +10,9 @@ somewhere else, or sometimes on the main thread too — see
 [Which thread is this on?](#which-thread-is-this-on). A field that both sides
 touch has to be accessed inside `dt_iop_gui_enter/leave_critical_section()`
 (the module's `gui_lock`), or under a private mutex. This script points at the
-places where that is not done, or not done everywhere.
+places where that is not done, or not done everywhere — and, under the
+non-default [`pointer_share`](#the-rules), at shared pointer fields where doing
+it everywhere is still not enough.
 
 It is a lexical analysis, not a race detector — see
 [Before you file anything](#before-you-file-anything).
@@ -31,10 +33,10 @@ the project root, a build directory — or with the script on your `$PATH`. It
 locates `src/iop` by itself:
 
 ```sh
-./dt-lockcheck.py                        # the three default rules
+./dt-lockcheck.py                               # the default rules
 ./dt-lockcheck.py --module toneequal
 ./dt-lockcheck.py --rules violation
-./dt-lockcheck.py --rules ALL                    # all four, discipline_gap too
+./dt-lockcheck.py --rules ALL                   # known noisy rules, too
 ./dt-lockcheck.py --format csv > findings.csv
 ```
 
@@ -158,9 +160,8 @@ API, and propagation never overwrites them.
 
 ## The rules
 
-Reported most-worth-reading first. The first three run by default; add
-`--rules ...,discipline_gap` for the noisy fourth, or `--rules ALL` for
-everything.
+Reported most-worth-reading first. All but `discipline_gap` run by default; add
+`--rules ...,discipline_gap` for that one, or `--rules ALL` for everything.
 
 | rule | default | what it checks |
 | --- | --- | --- |
@@ -168,6 +169,7 @@ everything.
 | `violation` | yes | the module locks the field somewhere *and* accesses it unlocked from the other side, with the field shared across the two threads. The module's own code is the evidence that the lock is needed |
 | `no_lock_share` | yes | the field is written and shared across both threads, and the module never locks it at all |
 | `discipline_gap` | no | locked somewhere, accessed unlocked, but no cross-thread share was proven. Mostly noise — read it last |
+| `pointer_share` | yes | a pointer-typed field shared across the two threads, with no unlocked access anywhere. The lock protects the pointer load, not the object the other thread may free under the reader |
 
 `--rules` takes a comma-separated list of the names above, in any order, or the
 single token `ALL` for every rule there is. `ALL` is upper-case on purpose: the
@@ -176,18 +178,20 @@ upper-case token cannot be mistaken for one of them, and a lower-case `all` is
 an unknown rule rather than a second spelling of the same thing. `ALL` also
 means "whatever the tool knows about", so a script that asks for it picks up a
 rule added later without being edited — which is the reason to use it over
-spelling the four out, and equally the reason not to use it in a CI job that
+spelling them out, and equally the reason not to use it in a CI job that
 wants a fixed set. It may appear alongside names (`--rules ALL,violation`),
 where it simply wins.
 
 A field is reported under at most one rule, the first one in that order it
 matches: a widget reached from the pipe is a `widget_from_pipe` finding and not
-also a `violation`. The lower three ignore accesses in `gui_init`,
-`gui_cleanup` and `gui_reset` — those run once, before or after anything else
-can reach the field. `widget_from_pipe` does not need the exception: it only
-fires on a `pipe` or `either` function, and those three are labelled `gtk`.
+also a `violation`. `violation`, `no_lock_share` and `discipline_gap` ignore
+accesses in `gui_init`, `gui_cleanup` and `gui_reset` — those run once, before
+or after anything else can reach the field. The other two do not need the
+exception: `widget_from_pipe` only fires on a `pipe` or `either` function, and
+those three are labelled `gtk`, while `pointer_share` asks about the field's
+type and threads rather than about any one access.
 
-`widget_from_pipe` is the narrowest of the four: on the tree this was written
+`widget_from_pipe` is the narrowest of the five: on the tree this was written
 against it returns five fields across every module. One is a real defect
 ([#21915](https://github.com/darktable-org/darktable/issues/21915)); three are
 `exposure`'s bauhaus sliders, read by `_exposure_proxy_handle_event()` through
@@ -207,11 +211,12 @@ rest are unreviewed candidates, not refutations:
 | `violation` | 34 | 16 |
 | `no_lock_share` | 36 | 25 |
 | `discipline_gap` | 59 | 1 |
+| `pointer_share` | 1 | 1 |
 
-`discipline_gap` is the only rule outside the default set, and that last row is
-why. It asks the least of the four: a lock somewhere, an unlocked access
-anywhere, and — unlike `violation` — no requirement that the two threads ever
-meet on the field. Most of what comes back is a field locked for one reason and
+`discipline_gap` is the one rule outside the default set, and that last row is
+why. It asks the least of the
+five: a lock somewhere, an unlocked access anywhere, and — unlike `violation` —
+no requirement that the two threads ever meet on the field. Most of what comes back is a field locked for one reason and
 read unlocked for another, which is not a defect. It is worth turning on when
 you are auditing a single module by hand:
 
@@ -220,6 +225,43 @@ you are auditing a single module by hand:
 ```
 
 and not worth reading across the whole tree.
+
+`pointer_share` is the opposite case, and it is in the default set despite
+proving less than the other three. Every one of its inputs is a *correctly
+locked* field. What it says is that the lock cannot be enough on its own — the critical
+section protects the pointer load, not the object, and the other thread may
+free that object while the reader is still using it. `dev-doc/GUI_Threading.md`
+puts it as "a scalar hands over cleanly; an allocation does not". Proving the
+escape needs dataflow inside a function, which is out of reach here (see
+KNOWN LIMITS in the script), so the rule fires on the shape and every hit has
+to be read before it is believed.
+
+It is cheap to read, because the shape is rare. On the tree this was written
+against, `gui_data` holds 11 non-widget pointer fields touched from both
+threads, and the other three default rules already report 10 of them. The
+eleventh is `colorreconstruction`'s `can`, the frozen bilateral grid: copied
+out of `gui_data` under `gui_lock` at `colorreconstruction.c:634`, dereferenced
+at `:641` after the lock is released, and freed by the preview pipe at `:659`.
+Every access is under the lock, so the other four rules cannot see it, and it
+is a confirmed defect
+([#22060](https://github.com/darktable-org/darktable/issues/22060)).
+
+```sh
+./dt-lockcheck.py --rules pointer_share
+```
+
+One finding tree-wide is the whole point, and the rule cannot grow far past it:
+its output is bounded by the shared-pointer population, which is 11 fields on a
+91-module tree. Even in the worst case — every open finding in this tool
+"fixed" by adding locks, which is the wrong fix for a pointer — it returns 10.
+A bounded, readable list is what keeps it in the default set; if it ever stops
+being one, move it out beside `discipline_gap`.
+
+What it is really guarding is that fix path. Lock every access to
+`zonesystem`'s `in_preview_buffer`, `colormapping`'s `buffer`, `ashift`'s `buf`,
+`exposure`'s `deflicker_histogram`, `channelmixerrgb`'s `checker` or
+`toneequal`'s `full_preview_buf`, and every other rule here goes quiet on a
+field that is still use-after-free shaped. This one does not.
 
 
 ## Output formats
@@ -283,7 +325,7 @@ the same order, with nothing capped:
 | `module` | the module name, i.e. the source file without its extension |
 | `field` | the `gui_data` field, without the `g->` |
 | `ctype` | the field's type as declared in the struct, without any `*` |
-| `rule` | which of [the four rules](#the-rules) fired |
+| `rule` | which of [the rules](#the-rules) fired |
 | `locked_sites` | every locked site, space-separated, each `function:line[thread]` |
 | `unlocked_sites` | every unlocked site, same shape |
 
@@ -346,7 +388,8 @@ the Datalog rules in `rules.lemma` — see [Proof trees](#proof-trees) for how t
 run the two together.
 
 ```
-+ gtk_type("GtkWidget")
++ gtk_type("GtkWidget *")
++ ptr_type("GtkWidget *")
 + ftype("basicadj", "call_auto_exposure", "int")
 + runs_on("basicadj", "process", "pipe")
 + access("basicadj", "call_auto_exposure", "process", "gui_lock", "w")
@@ -355,6 +398,7 @@ run the two together.
 | predicate | meaning |
 | --- | --- |
 | `gtk_type(T)` | `T` is a widget type, i.e. one whose name starts `Gtk` or `Dtgtk`. Only the types actually seen in some `gui_data` struct are emitted; this is what `is_widget` asks |
+| `ptr_type(T)` | `T` is a pointer type, i.e. one written with a `*`. Emitted on the same terms, and what `is_pointer` asks |
 | `ftype(M, F, T)` | field `F` of module `M` is declared `T` |
 | `runs_on(M, Fn, T)` | function `Fn` of module `M` runs on thread `T` |
 | `access(M, F, Fn, Lock, Mode)` | `Fn` touches `F` with `Lock` held, reading or writing |
@@ -422,14 +466,16 @@ against the Datalog rules if you would rather add rules than write code.
 
 ## Before you file anything
 
-Findings are **candidates**. On the tree this was developed against, 51 of the
-75 default-settings findings name a field from a defect report that already
+Findings are **candidates**. On the tree this was developed against, 52 of the
+76 default-settings findings name a field from a defect report that already
 existed, measured against the 23 reports of the `gui_data` audit (#21915-#21919,
 #21974, #22005-#22009, #22057-#22069); the other 24 have not been ruled on
 either way, and a spot-check of a dozen of them found a clear majority to be
 real defects of the same shape. No one has measured a false-positive rate, and
-the `discipline_gap` tier is markedly worse than the other three. Please confirm
-a finding by reading the code before opening an issue.
+`discipline_gap` is markedly worse than the four it is left out beside.
+`pointer_share` returns a single field on this tree and that field is a
+confirmed defect, but one hit is not a precision measurement — read it like the
+rest. Please confirm a finding by reading the code before opening an issue.
 
 Five false-positive causes are worth knowing, because you will meet them:
 
