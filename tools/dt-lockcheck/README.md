@@ -31,9 +31,10 @@ the project root, a build directory — or with the script on your `$PATH`. It
 locates `src/iop` by itself:
 
 ```sh
-./dt-lockcheck.py                        # the three main rules
+./dt-lockcheck.py                        # the three default rules
 ./dt-lockcheck.py --module toneequal
 ./dt-lockcheck.py --rules violation
+./dt-lockcheck.py --rules ALL                    # all four, discipline_gap too
 ./dt-lockcheck.py --format csv > findings.csv
 ```
 
@@ -74,9 +75,11 @@ in a list fails the whole run rather than quietly analysing the rest, so a CI
 job pinned to a module list notices when a module is renamed. Options that can
 only be wrong about the invocation — an unknown `--rules` name, `--why` with a
 non-report `--format` — are checked before anything is read, so they fail the
-same way whatever `--format` asked for. `--format json` dumps the raw extracted facts — every
-field, every access site with its lock state, and the thread each function was
-inferred to run on — if you would rather write your own rules over them.
+same way whatever `--format` asked for.
+
+`--format` chooses between the human-readable report, a csv of the findings,
+and the raw extracted facts as json or as Datalog assertions — see
+[Output formats](#output-formats) for what each one contains.
 
 
 ## Exit status
@@ -137,14 +140,33 @@ nothing about which thread got there.
 ## The rules
 
 Reported most-worth-reading first. The first three run by default; add
-`--rules ...,discipline_gap` for the noisy fourth.
+`--rules ...,discipline_gap` for the noisy fourth, or `--rules ALL` for
+everything.
 
-| rule | what it means |
-| --- | --- |
-| `widget_from_pipe` | a `Gtk*`-typed field touched from a `pipe` or `either` function. GTK may only be called from the main thread |
-| `violation` | the module locks the field somewhere *and* accesses it unlocked from the other side. The module's own code is the evidence that the lock is needed |
-| `no_lock_share` | the field is written and shared across both threads, and the module never locks it at all |
-| `discipline_gap` | locked somewhere, accessed unlocked, but no cross-thread share was proven. Mostly noise — read it last |
+| rule | default | what it checks |
+| --- | --- | --- |
+| `widget_from_pipe` | yes | a `Gtk*`- or `Dtgtk*`-typed field touched from a `pipe` or `either` function, locked or not. GTK may only be called from the main thread, so the lock is beside the point |
+| `violation` | yes | the module locks the field somewhere *and* accesses it unlocked from the other side, with the field shared across the two threads. The module's own code is the evidence that the lock is needed |
+| `no_lock_share` | yes | the field is written and shared across both threads, and the module never locks it at all |
+| `discipline_gap` | no | locked somewhere, accessed unlocked, but no cross-thread share was proven. Mostly noise — read it last |
+
+`--rules` takes a comma-separated list of the names above, in any order, or the
+single token `ALL` for every rule there is. `ALL` is upper-case on purpose: the
+rule names are lower-case everywhere, here and in `rules.lemma`, so an
+upper-case token cannot be mistaken for one of them, and a lower-case `all` is
+an unknown rule rather than a second spelling of the same thing. `ALL` also
+means "whatever the tool knows about", so a script that asks for it picks up a
+rule added later without being edited — which is the reason to use it over
+spelling the four out, and equally the reason not to use it in a CI job that
+wants a fixed set. It may appear alongside names (`--rules ALL,violation`),
+where it simply wins.
+
+A field is reported under at most one rule, the first one in that order it
+matches: a widget reached from the pipe is a `widget_from_pipe` finding and not
+also a `violation`. The lower three ignore accesses in `gui_init`,
+`gui_cleanup` and `gui_reset` — those run once, before or after anything else
+can reach the field. `widget_from_pipe` does not need the exception: it only
+fires on a `pipe` or `either` function, and those three are labelled `gtk`.
 
 `widget_from_pipe` is the narrowest of the four: on the tree this was written
 against it returns two fields across every module. One is a real defect
@@ -164,10 +186,43 @@ rest are unreviewed candidates, not refutations:
 | `no_lock_share` | 36 | 25 |
 | `discipline_gap` | 59 | 1 |
 
-That last row is why `discipline_gap` is off by default.
+`discipline_gap` is the only rule outside the default set, and that last row is
+why. It asks the least of the four: a lock somewhere, an unlocked access
+anywhere, and — unlike `violation` — no requirement that the two threads ever
+meet on the field. Most of what comes back is a field locked for one reason and
+read unlocked for another, which is not a defect. It is worth turning on when
+you are auditing a single module by hand:
+
+```sh
+./dt-lockcheck.py --module toneequal --rules discipline_gap
+```
+
+and not worth reading across the whole tree.
 
 
-## Reading the output
+## Output formats
+
+`--format` picks what goes to stdout. All four describe the same run and differ
+in how much of it survives:
+
+| format | what it contains |
+| --- | --- |
+| `report` | the default: findings grouped by rule, human-readable, site lists capped |
+| `csv` | one row per finding, every site, for a spreadsheet or a diff between runs |
+| `json` | the raw extracted facts, before any rule ran |
+| `lemmalog` | the same facts as Datalog assertions, for the engine |
+
+`report` and `csv` carry *findings*, so both honour `--rules`. `json` and
+`lemmalog` sit upstream of the rules and carry the facts the rules run on, so
+`--rules` does not change them — filter or extend on your side instead.
+`--src` and `--module` narrow all four. Only `report` can carry proof trees
+([`--why`](#proof-trees)); asking for them with any other format is an error
+rather than a silent no-op.
+
+The status banner, the lemmalog notices and every warning go to stderr, so
+stdout is safe to redirect whatever the format.
+
+### report
 
 ```
 === violation  (34) ===========================================
@@ -193,6 +248,154 @@ use when the count matters.
 Open both sets and decide whether the two can really run at the same time. If
 they can, the fix is normally to extend the existing critical section to the
 unlocked sites — not to add a new lock.
+
+A trailing `N findings.` line closes the report, counting every rule asked for.
+
+### csv
+
+A header row, then one row per finding — the same findings as the report, in
+the same order, with nothing capped:
+
+| column | contents |
+| --- | --- |
+| `module` | the module name, i.e. the source file without its extension |
+| `field` | the `gui_data` field, without the `g->` |
+| `ctype` | the field's type as declared in the struct, without any `*` |
+| `rule` | which of [the four rules](#the-rules) fired |
+| `locked_sites` | every locked site, space-separated, each `function:line[thread]` |
+| `unlocked_sites` | every unlocked site, same shape |
+
+Two things the report shows and the csv does not: the name of the lock held at
+each locked site (the report's `(gui_lock)` suffix), and the proof trees. Use
+`json` for the first.
+
+### json
+
+The whole extracted fact base, one object per analysed module, before any rule
+ran:
+
+```json
+{
+ "basicadj": {
+  "module": "basicadj",
+  "src": "basicadj.c",
+  "fields": { "call_auto_exposure": "int", "bt_auto_levels": "GtkWidget" },
+  "accesses": [ ["process", "call_auto_exposure", "gui_lock", 1420, "w"] ],
+  "thread": { "process": "pipe", "button_released": "gtk", "flags": null }
+ }
+}
+```
+
+| key | contents |
+| --- | --- |
+| `module` | the module name, the key repeated |
+| `src` | the basename of the analysed source, with its extension — `.cc` for `bilateral`, `lens` and `tonemap`, which are C++ |
+| `fields` | every field of the `gui_data` struct, mapped to its declared type. A nested anonymous struct appears once, under its own member name, with type `struct` |
+| `accesses` | one entry per `g->field` mention, `[function, field, lock, line, mode]` |
+| `thread` | every function in the file, mapped to its inferred thread |
+
+In `accesses`, `lock` is the innermost lock held at that line:
+
+| `lock` | meaning |
+| --- | --- |
+| `none` | nothing held — the sites a finding accuses |
+| `gui_lock` | inside `dt_iop_gui_enter/leave_critical_section()` |
+| `callee_lock` | the lock is not held here, but `&self->gui_lock` is passed to the callee, as in `dt_dev_sync_pixelpipe_hash()` |
+| `bulk_init` | held, but in a function that writes eight or more fields under it and reads none back — bulk initialisation, which establishes no per-field convention. See [Before you file anything](#before-you-file-anything) |
+| anything else | the name of a private mutex field, e.g. `histogram_lock`, taken with `dt_pthread_mutex_lock(&g->histogram_lock)` |
+
+`mode` is `w` for a write and `r` for a read. `line` is 1-based, into the file
+named by `src`.
+
+In `thread` the value is `pipe`, `gtk`, `either` (see
+[Which thread is this on?](#which-thread-is-this-on)) or `null` when inference
+failed. A `null` function counts on neither side of the cross-thread test, so
+it can never be what makes a field shared, but its unlocked accesses are still
+listed as sites — that is where the report's `?` comes from. The map covers
+every function in the file, including ones that never touch `gui_data`.
+
+Modules with no `gui_data` struct are absent, not present and empty. Everything
+is emitted in sorted order, so two runs over the same tree diff cleanly.
+
+### lemmalog
+
+The same facts as `json`, written as lemmalog assertions, one per line, to feed
+the Datalog rules in `rules.lemma` — see [Proof trees](#proof-trees) for how to
+run the two together.
+
+```
++ gtk_type("GtkWidget")
++ ftype("basicadj", "call_auto_exposure", "int")
++ runs_on("basicadj", "process", "pipe")
++ access("basicadj", "call_auto_exposure", "process", "gui_lock", "w")
+```
+
+| predicate | meaning |
+| --- | --- |
+| `gtk_type(T)` | `T` is a widget type, i.e. one whose name starts `Gtk` or `Dtgtk`. Only the types actually seen in some `gui_data` struct are emitted; this is what `is_widget` asks |
+| `ftype(M, F, T)` | field `F` of module `M` is declared `T` |
+| `runs_on(M, Fn, T)` | function `Fn` of module `M` runs on thread `T` |
+| `access(M, F, Fn, Lock, Mode)` | `Fn` touches `F` with `Lock` held, reading or writing |
+
+Two differences from `json`, both because the rules do not use them: a function
+whose thread could not be inferred gets no `runs_on` fact at all rather than a
+`null` one, and `access` carries no line number, which also lets the repeated
+accesses on one line collapse into a single fact.
+
+
+## Recommended workflow
+
+Scan with the defaults, then read the source at the sites the report names, and
+reach for `--why` or `--format json` only when you have a question the report
+itself cannot answer:
+
+```sh
+./dt-lockcheck.py                                  # the scan
+./dt-lockcheck.py --module basicadj --why          # why does it believe this?
+./dt-lockcheck.py --module basicadj --format json  # let me ask the facts myself
+```
+
+**Read the source first.** For "is this finding real?", the report already
+gives `file:line` for both the locked and the unlocked side. Opening those two
+places is usually faster and always more conclusive than another run, because
+the causes that make a finding wrong are the ones the tool cannot see at all:
+mutual exclusion by protocol, a lock passed into a callee, a widget handed to
+the main loop. See [Before you file anything](#before-you-file-anything) for
+the full list. `--why` tells you why the *tool* concluded something; only the
+source tells you whether it is true.
+
+**`--why` answers "why does the tool believe this?"** It prints, per finding,
+the chain from the rule down to the base facts: the locked site that
+established the discipline, and the thread inference that made the field
+cross-thread — including whether that went through an
+[`either`](#which-thread-is-this-on) site. It is worth a run when
+
+- you doubt the thread labels — an `either` site, or a static helper the call
+  graph reached two or three frames below the callback. The tree names the exact
+  `runs_on` fact, which is what you would otherwise reconstruct by hand;
+- you are writing the finding up, and want the evidence chain as the skeleton of
+  a bug report.
+
+Narrow it first — one `--module`, or one `--rules` — since the trees take a full
+report from roughly 250 lines to 1600. It needs the lemmalog engine, attaches to
+`--format report` only, and explains the *first* unlocked site of each finding
+rather than all of them. See [Proof trees](#proof-trees).
+
+**`--format json` answers "let me query the facts myself."** It is the whole
+extracted fact base with no rule applied, so it is the one to use when a rule is
+not the question:
+
+- every access to one field, including the ones no rule fired on — the report
+  only lists sites for fields that triggered a rule;
+- what thread the tool inferred for each function, including the `null` ones it
+  gave up on;
+- a filter or a rule of your own over the facts, or a diff of two runs to see
+  what a patch changed.
+
+Pair it with `--module` to keep it small. For an agent driving this tool, this
+is the format to consume; see [Output formats](#output-formats) for the keys,
+and [Proof trees](#proof-trees) for `--format lemmalog`, which is the same facts
+against the Datalog rules if you would rather add rules than write code.
 
 
 ## Before you file anything
