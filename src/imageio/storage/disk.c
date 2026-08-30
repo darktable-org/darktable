@@ -543,8 +543,13 @@ try_again:
   }
 
   dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
+#ifndef _WIN32
+  /* #21829 / PR #21949: keep the per-image success message on platforms
+   * where it is harmless; on Windows the GTK log overlay causes taskbar
+   * attention while darktable is inactive. */
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
+#endif
   return 0;
 }
 

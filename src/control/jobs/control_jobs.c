@@ -2077,8 +2077,16 @@ static int32_t _control_export_job_run(dt_job_t *job)
 
   const guint total = g_list_length(params->index);
   if(total > 0)
+  {
+#ifndef _WIN32
+    /* #21829 / PR #21949: this transient GTK log overlay causes Windows
+     * taskbar attention during inactive background exports. The sidebar job
+     * progress already reports the export on Windows. */
     dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
+#endif
+  }
   else
+    /* Keep this actionable message on every platform, including Windows. */
     dt_control_log(_("no image to export"));
 
   double fraction = 0;
