@@ -137,6 +137,25 @@ along the call graph within one file. That is where the mistakes hide — the
 offending line is often two or three frames down, in a function whose name says
 nothing about which thread got there.
 
+Callbacks are labelled from **how their address is taken**, not from their name,
+which is what reaches the handlers no naming convention describes:
+
+| how the function is handed over | label |
+| --- | --- |
+| passed to a callee as an argument | the registrar's thread — the callee calls it synchronously |
+| passed to `g_idle_add`, `g_signal_connect` and friends | `gtk`, whatever thread registered it |
+| stored into a struct member or a file-scope table | `either` — it escapes the file, so the call site is unknown |
+
+The first row is what covers darktable's own helpers: `dt_gui_connect_motion()`
+and the bauhaus quad setters register handlers without any of the spellings a
+keyword list would look for. The third is how the `dev->proxy` accessors are
+labelled — another module calls them and cannot take your `gui_lock`, which
+`dev-doc/GUI_Threading.md` covers under *Publishing `gui_data` Through a Proxy*
+(that document arrives with the pending dev-doc PR).
+
+Labels that come from the tables above are ground truth taken from the module
+API, and propagation never overwrites them.
+
 ## The rules
 
 Reported most-worth-reading first. The first three run by default; add
@@ -169,11 +188,14 @@ can reach the field. `widget_from_pipe` does not need the exception: it only
 fires on a `pipe` or `either` function, and those three are labelled `gtk`.
 
 `widget_from_pipe` is the narrowest of the four: on the tree this was written
-against it returns two fields across every module. One is a real defect
-([#21915](https://github.com/darktable-org/darktable/issues/21915)); the other,
-`colorharmonizer`'s `auto_detect`, is a false positive — see
-[the widget hand-off](#before-you-file-anything) below. Two hits say nothing
-about how often the rule is right, only that it asks for little.
+against it returns five fields across every module. One is a real defect
+([#21915](https://github.com/darktable-org/darktable/issues/21915)); three are
+`exposure`'s bauhaus sliders, read by `_exposure_proxy_handle_event()` through
+`dt_bauhaus_slider_get()` from a `dev->proxy` accessor another module calls on a
+thread of its own (two of the three are named by
+[#21974](https://github.com/darktable-org/darktable/issues/21974)); the last, `colorharmonizer`'s `auto_detect`, is a false
+positive — see [the widget hand-off](#before-you-file-anything) below. Five hits
+say nothing about how often the rule is right, only that it asks for little.
 
 Rule by rule, over all of `src/iop` on that tree. The second column counts
 findings that name a field an already-confirmed defect report also names; the
@@ -181,7 +203,7 @@ rest are unreviewed candidates, not refutations:
 
 | rule | findings | names a confirmed defect's field |
 | --- | --- | --- |
-| `widget_from_pipe` | 2 | 1 |
+| `widget_from_pipe` | 5 | 3 |
 | `violation` | 34 | 16 |
 | `no_lock_share` | 36 | 25 |
 | `discipline_gap` | 59 | 1 |
@@ -400,13 +422,14 @@ against the Datalog rules if you would rather add rules than write code.
 
 ## Before you file anything
 
-Findings are **candidates**. On the tree this was developed against, 42 of the
-72 default-settings findings name a field from a defect report that already
-existed; the other 30 have not been ruled on either way, and a spot-check of a
-dozen of them found a clear majority to be real defects of the same shape. No
-one has measured a false-positive rate, and the `discipline_gap` tier is
-markedly worse than the other three. Please confirm a finding by reading the
-code before opening an issue.
+Findings are **candidates**. On the tree this was developed against, 51 of the
+75 default-settings findings name a field from a defect report that already
+existed, measured against the 23 reports of the `gui_data` audit (#21915-#21919,
+#21974, #22005-#22009, #22057-#22069); the other 24 have not been ruled on
+either way, and a spot-check of a dozen of them found a clear majority to be
+real defects of the same shape. No one has measured a false-positive rate, and
+the `discipline_gap` tier is markedly worse than the other three. Please confirm
+a finding by reading the code before opening an issue.
 
 Five false-positive causes are worth knowing, because you will meet them:
 
@@ -436,11 +459,29 @@ And the limits:
 
 - Lock depth is tracked lexically, so an early `leave_critical_section()` on one
   branch makes later code on other branches look unlocked.
-- Thread inference is name-based plus call-graph propagation *within one file*. A
-  callback reached only through a function pointer stored elsewhere comes out as
-  thread `?` and is skipped.
-- Coverage is `src/iop/*.c` and `*.cc` only. Shared code under `src/develop/` and
-  `src/libs/` is not analysed.
+- Thread inference is name-based, plus call-graph propagation *within one file*
+  and the [address-taken rules](#which-thread-is-this-on) above. What it still
+  cannot label comes out as thread `?`; such a site counts on neither side of
+  the cross-thread test, so it can never be what makes a field shared.
+- **Sharing means pipe-versus-GTK only.** `gui_data` is also the channel one
+  pipe uses to hand a value to another — the preview pipe computes a
+  whole-image property and the full pipe reads it. That needs the same lock
+  (see *Passing Values Between Pipes Through `gui_data`* in
+  `dev-doc/GUI_Threading.md`, arriving with the pending dev-doc PR), and no rule here looks
+  for it: a field both pipes touch and the GTK thread never does is invisible
+  to this tool.
+- Coverage is `src/iop/*.c` and `*.cc` only. Shared code under `src/develop/`
+  and `src/libs/` is not analysed. Widening the glob would not help: across all
+  of `src`, a `*_gui_data_t` struct exists in 91 `src/iop` sources and 4 others
+  (`imageio/format/{jxl,jpeg,webp}.c`, `imageio/storage/piwigo.c`), and those
+  four hand their GUI values to the worker through a params snapshot
+  (`write_image()` takes a `dt_imageio_module_data_t *` and never reaches
+  `gui_data`), which is the separation this tool exists to recommend.
+  `src/libs` uses a different convention entirely — `dt_lib_<name>_t *d =
+  self->data` — and has no IOP callbacks for the thread labels to key off.
+  Covering `src/develop/preview_data.c`, the one file outside `src/iop` that
+  takes the same `gui_lock`, would need a different extractor: it has no
+  `gui_data` struct.
 - `g` is matched by convention, not by type. A function that binds `g` to
   something that is not the module's GUI data — a gain map, a gaussian handle —
   is skipped entirely, so any real `gui_data` access in it is missed too.
