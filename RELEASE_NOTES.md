@@ -106,6 +106,9 @@ changes (where available).
   configuration-directory and custom shortcut-name, useful for
   multiple parallel darktable installations.
 
+- Added a control in the bottom panel of the lighttable to reset
+  the star rating of images.
+
 ## Bug Fixes
 
 - Clarified multi-image rating toasts for un-reject and for mixed
