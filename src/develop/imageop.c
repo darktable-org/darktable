@@ -2593,10 +2593,10 @@ static gboolean _presets_popup_callback(GtkButton *button,
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
   if(disabled) return FALSE;
 
-  GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
+  dt_gui_presets_popup_menu_show_for_module(GTK_WIDGET(button), module);
 
-  dt_gui_menu_popup(menu,
-                    GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // dt_gui_menu_popup(menu,
+  //                   GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   return TRUE;
 }
@@ -2611,10 +2611,11 @@ static void _presets_popup_clicked(GtkGestureSingle *gesture,
   if(disabled) return;
 
   GtkWidget *button = dt_gui_get_widget(gesture);
-  GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
+  // GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
+  dt_gui_presets_popup_menu_show_for_module(button, module);
 
-  dt_gui_menu_popup(menu,
-                    button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // dt_gui_menu_popup(menu,
+  //                   button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 /* per-presets-button hysteresis state: a continuous trackpad gesture is a
@@ -3591,9 +3592,15 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
       (module->multimenu_button,
        _("multiple instance actions\nright-click creates new instance"));
 
+  // popover menu for the multimenu_button
   GSimpleActionGroup *instance_action_group = g_simple_action_group_new();
-  g_action_map_add_action_entries(G_ACTION_MAP(instance_action_group), _instance_action_entries, G_N_ELEMENTS(_instance_action_entries), module);
-  gtk_widget_insert_action_group(module->multimenu_button, "instances", G_ACTION_GROUP(instance_action_group));
+  g_action_map_add_action_entries(G_ACTION_MAP(instance_action_group),
+                                  _instance_action_entries,
+                                  G_N_ELEMENTS(_instance_action_entries),
+                                  module);
+  gtk_widget_insert_action_group(module->multimenu_button,
+                                 "instances",
+                                 G_ACTION_GROUP(instance_action_group));
 
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(module->presets_button,
