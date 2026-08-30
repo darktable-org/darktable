@@ -260,6 +260,9 @@ changes (where available).
 - Fixed corrupted output or a crash when an AI model returns more data
   than darktable reserved for it, affecting object masks and Lua models.
 
+- Fixed snapshots being applied onto the original image instead of the
+  current image.
+
 ## Lua
 
 ### API Version
