@@ -3349,13 +3349,15 @@ static void _panel_handle_button_released(GtkGestureSingle *gesture,
 static void _panel_handle_cursor_set(GtkWidget *handle, const gboolean entering)
 {
   // GTK produces a lot of GDK_NOTIFY_ANCESTOR when dragging handle,
-  // but we only care about events when enter/leave the drag region
+  // but we only care about events when enter/leave the drag region.
   if(darktable.gui->widgets.panel_handle_dragging)
     return;
-  if(strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0)
-    dt_control_change_cursor(entering ? "ns-resize" : "default");
-  else
-    dt_control_change_cursor(entering ? "ew-resize" : "default");
+
+  const gboolean bottom =
+    strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0;
+  dt_gui_cursor_set(handle,
+                    entering ? (bottom ? "ns-resize" : "ew-resize") : NULL,
+                    "panel-handle");
 }
 
 static void _panel_handle_cursor_enter(GtkEventControllerMotion *controller,
@@ -4941,21 +4943,43 @@ static gboolean _scroll_wrap_height_controller(GtkEventControllerScroll *control
 }
 #endif
 
-static gboolean _resize_wrap_dragging = FALSE;
-static gboolean _resize_wrap_handle_hover = FALSE;
-static GtkWidget *_resize_wrap_hovered = NULL;
+#define DT_RESIZE_WRAP_STATE_KEY "dt-resize-wrap-state"
+
+typedef struct dt_resize_wrap_state_t
+{
+  gboolean dragging;
+  gboolean handle_hover;
+  gboolean pointer_inside;
+} dt_resize_wrap_state_t;
+
+static dt_resize_wrap_state_t *_resize_wrap_state(GtkWidget *widget)
+{
+  return g_object_get_data(G_OBJECT(widget), DT_RESIZE_WRAP_STATE_KEY);
+}
+
+static void _resize_wrap_set_handle_hover(GtkWidget *widget,
+                                          dt_resize_wrap_state_t *state,
+                                          const gboolean handle_hover)
+{
+  if(state->handle_hover == handle_hover) return;
+  state->handle_hover = handle_hover;
+  dt_gui_cursor_set(widget,
+                    handle_hover ? "ns-resize" : NULL,
+                    "resize-wrap/handle");
+}
 
 static gboolean _resize_wrap_draw_handle(GtkWidget *w,
                                          void *cr,
                                          gpointer user_data)
 {
-  if(w != _resize_wrap_hovered)
+  dt_resize_wrap_state_t *state = _resize_wrap_state(w);
+  if(!state || !state->pointer_inside)
     return FALSE;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(w, &allocation);
 
-  set_color(cr, _resize_wrap_handle_hover
+  set_color(cr, state->handle_hover
                 ? darktable.bauhaus->color_fg_hover
                 : darktable.bauhaus->color_fg_insensitive);
   cairo_move_to(cr, allocation.width / 8 * 3,
@@ -4968,18 +4992,20 @@ static gboolean _resize_wrap_draw_handle(GtkWidget *w,
   return FALSE;
 }
 
-/* controller version: the drag uses the controller-relative y, the hover
- * check keeps the old window comparison via the current event (BUBBLE phase
- * delivers motions over child widgets too, as the old signal did) */
+/* Keep resize state per wrapper. Multiple metadata rows can contain resize
+ * wrappers at once; shared hover/drag state lets one row clear another row's
+ * cursor. */
 static void _resize_wrap_motion_controller(GtkEventControllerMotion *controller,
                                            gdouble x,
                                            gdouble y,
                                            gpointer user_data)
 {
   GtkWidget *widget = dt_gui_get_widget(controller);
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
   const char *config_str = user_data;
+  if(!state) return;
 
-  if(_resize_wrap_dragging)
+  if(state->dragging)
   {
     // keeps resize box from shrinking when user clicks above very
     // bottom of handle
@@ -4999,20 +5025,15 @@ static void _resize_wrap_motion_controller(GtkEventControllerMotion *controller,
     return;
   }
 
-  const gboolean prior = _resize_wrap_handle_hover;
   GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!(dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
      && (!event || dt_gdk_event_get_window(event) == gtk_widget_get_window(widget)))
   {
-    _resize_wrap_handle_hover =
+    const gboolean handle_hover =
       y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE;
-    if(_resize_wrap_handle_hover != prior)
+    if(handle_hover != state->handle_hover)
     {
-      if(_resize_wrap_handle_hover)
-        dt_control_set_temp_cursor("ns-resize");
-      else
-        dt_control_clear_temp_cursor();
-      // draw changed handle hover state
+      _resize_wrap_set_handle_hover(widget, state, handle_hover);
       gtk_widget_queue_draw(widget);
     }
   }
@@ -5028,10 +5049,19 @@ static void _resize_wrap_button_pressed(GtkGestureSingle *gesture,
                                         gpointer user_data)
 {
   GtkWidget *widget = dt_gui_get_widget(gesture);
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
+  if(!state) return;
   if(y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
      && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    _resize_wrap_dragging = TRUE;
+    state->dragging = TRUE;
+    // go through the hover setter rather than setting the cursor directly, so
+    // that handle_hover records the cursor now on the widget. The release path
+    // only clears it when it sees handle_hover change back to FALSE, so a
+    // press that arrives without a preceding hover motion -- the motion
+    // handler ignores events coming from a child window -- would otherwise
+    // leave "ns-resize" on the widget for good.
+    _resize_wrap_set_handle_hover(widget, state, TRUE);
   }
 }
 
@@ -5041,11 +5071,15 @@ static void _resize_wrap_button_released(GtkGestureSingle *gesture,
                                          gdouble y,
                                          gpointer user_data)
 {
-  if(_resize_wrap_dragging)
-  {
-    _resize_wrap_dragging = FALSE;
-    dt_control_clear_temp_cursor();
-  }
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
+  if(!state || !state->dragging) return;
+
+  state->dragging = FALSE;
+  _resize_wrap_set_handle_hover
+    (widget, state,
+     y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE);
+  gtk_widget_queue_draw(widget);
 }
 
 static void _resize_wrap_enter_leave_controller(GtkEventControllerMotion *controller,
@@ -5071,21 +5105,29 @@ static void _resize_wrap_enter_leave_controller(GtkEventControllerMotion *contro
 #endif
   }
 
-  _resize_wrap_hovered =
-    is_enter || detail == GDK_NOTIFY_INFERIOR || _resize_wrap_dragging ? widget : NULL;
-
-  // When leave handle and widget, remove temp resize cursor. When
-  // enter widget, motion event will handle cursor change for handle.
-  if(!is_enter && !_resize_wrap_dragging && _resize_wrap_handle_hover)
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
+  if(!state)
   {
-    dt_control_clear_temp_cursor();
-    _resize_wrap_handle_hover = FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
+    return;
   }
+
+  state->pointer_inside =
+    is_enter || detail == GDK_NOTIFY_INFERIOR || state->dragging;
+
+  if(!is_enter && !state->dragging)
+    _resize_wrap_set_handle_hover(widget, state, FALSE);
 
   gtk_widget_queue_draw(widget);
 
-  if(mode == GDK_CROSSING_GTK_UNGRAB)
-    _resize_wrap_dragging = FALSE;
+  if(mode == GDK_CROSSING_GTK_UNGRAB && state->dragging)
+  {
+    state->dragging = FALSE;
+    state->pointer_inside = FALSE;
+    _resize_wrap_set_handle_hover(widget, state, FALSE);
+  }
 #if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
 #endif
@@ -5153,6 +5195,9 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
     w = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(w), sw);
   }
+
+  g_object_set_data_full(G_OBJECT(w), DT_RESIZE_WRAP_STATE_KEY,
+                         g_new0(dt_resize_wrap_state_t, 1), g_free);
 
   gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK

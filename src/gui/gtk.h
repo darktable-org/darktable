@@ -806,7 +806,15 @@ gboolean dt_gui_osx_edit_command(GtkWidget *focus, GdkEvent *event);
 
 /* Cursor compatibility boundary. GTK3 applies cursors to the widget's
  * backing window (using a TreeView's bin window when needed); GTK4 applies
- * them to the widget itself. The owner string is used by -d input tracing. */
+ * them to the widget itself. The owner string is used by -d input tracing.
+ *
+ * A NULL cursor_name means "inherit whatever the parent shows", in both GTK3
+ * and GTK4, and that is how a widget-local cursor should be undone. Passing
+ * "default" instead pins a real arrow on the widget, which then hides the
+ * cursor the toplevel is showing -- the busy/wait cursor, or shortcut-mapping
+ * and help mode. Pass "default" only where overriding the toplevel is the
+ * point, as src/libs/backgroundjobs.c does so that the busy cursor does not
+ * cover the job's cancel box. */
 GdkCursor *dt_gui_cursor_new_for_name(GdkDisplay *display, const char *cursor_name);
 GdkCursor *dt_gui_cursor_get(GtkWidget *widget);
 void dt_gui_cursor_apply(GtkWidget *widget, GdkCursor *cursor);
