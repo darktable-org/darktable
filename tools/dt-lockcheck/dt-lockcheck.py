@@ -97,11 +97,37 @@ HOW TO READ THE OUTPUT
   enough.  Read its locked sites for the load and the free, and decide whether
   the object can be freed while the reader is still using it.
 
+THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
+  The findings somebody has read and judged not to be defects, so a later round
+  does not read them again.  Suppression is on by default and the stderr banner
+  always says how many entries were applied, `-q` or not.
+
+  Every entry carries a key over the finding's facts *and* over the source text
+  of its access lines.  An edit that could change the judgement rewrites the
+  key: the entry goes stale, the finding comes back, and the recorded reason is
+  printed with it.  An entry that matches no finding at all is an orphan and is
+  named in the banner, so the list gets garbage-collected rather than growing.
+
+    --recheck                  report only the findings whose entry went stale
+    --ignore-false-positives   the full check, list ignored
+    --confirm-false-positive M:F --reason TEXT     add or re-key one entry
+    --confirm-false-positive M                     re-key every stale entry in M
+    --fail-on-findings         exit 1 if anything is reported (off by default)
+
+  A new entry needs --reason, because that sentence is what gets printed back
+  when it goes stale.  A bare module re-confirms but never adds: silencing a
+  whole module has to be spelled out field by field.  See THE FALSE-POSITIVE
+  LIST in README.md for what the key covers and what was measured.
+
 KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
   * Mutual exclusion by protocol rather than by lock.  `rgblevels` hands work to
     the pipe through a state machine (0 idle / 1 requested / -1 running /
-    2 ready); while the state is -1 the GTK side is excluded by the protocol, so
-    the unlocked accesses in between are intentional.  The script cannot see this.
+    2 ready), whose transitions are taken under gui_lock even where the accesses
+    they guard are not.  g->params is genuinely protected that way: only the
+    thread that took the state to -1 touches it.  The script cannot see this.
+    It does not cover the whole module, though: box_cood, channel and
+    call_auto_levels are written from the GTK side without checking the state,
+    so those findings are not excluded by the protocol.
   * A lock passed into a callee.  Handled for the common
     `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` shape, not in
     general.
@@ -120,7 +146,9 @@ KNOWN FALSE-POSITIVE CAUSES (do not report these upstream without checking)
   * A widget touched from the pipe only to hand it to the main loop.
     colorharmonizer's `_update_histogram()` does `g_object_ref(g->auto_detect)`
     and `gdk_threads_add_idle()`; the ref is atomic and the GTK call happens on
-    the main thread, so this is the correct idiom, not a defect.
+    the main thread, so this is the correct idiom, not a defect.  This one and
+    rgblevels' g->params are the two entries false-positives.json ships with, so
+    a default run does not show them.
   * A finding resting only on an `either` site -- see WHICH THREAD above.
 
 KNOWN LIMITS
@@ -173,6 +201,7 @@ USAGE
   ./dt-lockcheck.py --rules ALL                     # including discipline_gap
   ./dt-lockcheck.py --format csv > findings.csv
   ./dt-lockcheck.py --format json > facts.json
+  ./dt-lockcheck.py --recheck                       # stale false positives only
 
   To analyse a tree other than the one you are standing in:
 
@@ -189,13 +218,15 @@ USAGE
   expect.
 
   Python 3.8+, standard library only.  Exit status is 0 for a completed run
-  whatever it found, and 2 for a wrong invocation.  There is deliberately no
-  "exit non-zero on findings" mode: roughly one finding in three is a false
-  positive, so a clean tree does not exist and such a gate could only ever be
-  red.  See BEFORE YOU FILE ANYTHING.
+  whatever it found, 1 when --fail-on-findings was given and something was
+  reported, and 2 for a wrong invocation.  --fail-on-findings is off by default
+  and red on this tree: it passes only once every finding is either fixed or
+  recorded in false-positives.json, which is why nothing wires it into CI yet.
+  See BEFORE YOU FILE ANYTHING.
 """
 import argparse
 import csv
+import datetime, hashlib
 import re, sys, os, glob, json, shutil, subprocess
 from collections import defaultdict
 
@@ -774,7 +805,7 @@ def _sites(sites, th, cap, extra=None):
     return line + (f", ... (+{rest} more)" if rest else "")
 
 
-def print_report(fs, trees=None):
+def print_report(fs, trees=None, suppressed=0, recheck=False):
     by_rule = defaultdict(list)
     for f in fs:
         by_rule[f["rule"]].append(f)
@@ -795,6 +826,19 @@ def print_report(fs, trees=None):
             # every access is under the lock and the field is unsafe anyway.
             if f["unlocked"]:
                 print("   unlocked: " + _sites(f["unlocked"], th, 8))
+            # A stale entry means somebody judged this exact finding harmless
+            # and the code has changed since.  The judgement is printed with it
+            # -- re-reading it is most of the work of re-deciding -- and so is
+            # the command that acts on the decision, because the alternative is
+            # hand-editing the list.
+            if f.get("fp"):
+                e = f["fp"]
+                print("   was a known false positive, confirmed %s:" % e["confirmed"])
+                print("     %s" % e["reason"])
+                print("   re-check: ./dt-lockcheck.py --module %s --recheck"
+                      % f["module"])
+                print("   if still not a defect: ./dt-lockcheck.py "
+                      "--confirm-false-positive %s:%s" % (f["module"], f["field"]))
             if trees:
                 key = why_goal(f)[1]
                 tree = trees.get(key)
@@ -804,7 +848,283 @@ def print_report(fs, trees=None):
                     print("   why     : " + key)
                     for line in tree:
                         print(ascii_safe("   " + line.rstrip()))
-    print(f"\n{len(fs)} findings.")
+    if recheck:
+        # "0 findings" under --recheck means every recorded judgement still
+        # stands, which is the opposite of what it reads like elsewhere
+        print("\n%d stale false-positive entr%s."
+              % (len(fs), "y" if len(fs) == 1 else "ies"))
+    else:
+        print("\n%d findings%s." % (len(fs),
+              ", %d suppressed as known false positives" % suppressed
+              if suppressed else ""))
+
+
+# --- the checked-in false-positive list -------------------------------------
+# Findings a human has read and judged not to be defects, so the next round does
+# not have to read them again.  The risk is the obvious one: a suppression that
+# outlives the code it was true about hides a real defect.  So every entry
+# carries a key over the finding's own facts *and* over the source text of its
+# access lines -- an edit that could change the judgement rewrites the key, the
+# entry goes stale, and the finding comes back with the recorded reason attached.
+# THE FALSE-POSITIVE LIST in README.md has the measurements behind that choice.
+FP_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                       "false-positives.json")
+FP_VERSION = 1
+FP_KEYS = ("module", "field", "rule", "key", "reason", "confirmed", "sites")
+
+
+def _module_lines(srcdir, res, module, cache):
+    """The module's source split into lines, read at most once per run."""
+    if module not in cache:
+        path = os.path.join(srcdir, res[module]["src"])
+        cache[module] = open(path, encoding="utf-8",
+                             errors="replace").read().splitlines()
+    return cache[module]
+
+
+def finding_key(f, res, srcdir, cache):
+    """What a source change has to alter for a suppression to expire.
+
+    Two halves, because neither is safe alone.
+
+    The facts half is exactly the lemmalog view of the field: its type, the
+    thread of every function that touches it, and the (function, lock, mode) of
+    every access -- no line numbers, so moving code around or renaming a local
+    does not fire it.
+
+    The text half is the source line behind every access.  It is what catches
+    the edits that turn a false positive into a defect while leaving the facts
+    identical: colorharmonizer's `gdk_threads_add_idle(...)` replaced by a
+    direct GTK call, or its `g_object_ref` dropped, are both the same function,
+    the same lock and the same mode as before.  The facts half catches the
+    converse -- a critical section removed around an access, which the text of
+    the access line itself does not show.
+    """
+    r = res[f["module"]]
+    th = r["thread"]
+    acc = [a for a in r["accesses"] if a[1] == f["field"]]
+    lines = _module_lines(srcdir, res, f["module"], cache)
+
+    def text(a):
+        # the raw source, not the masked text the rules run on: a comment
+        # appended to an access line is a judgement-relevant edit often enough
+        return lines[a[3] - 1].strip() if 0 < a[3] <= len(lines) else ""
+
+    facts = ["ftype=" + r["fields"].get(f["field"], "?")]
+    facts += ["runs_on(%s,%s)" % (fn, th.get(fn))
+              for fn in sorted({a[0] for a in acc})]
+    facts += ["access(%s,%s,%s)" % t
+              for t in sorted({(a[0], a[2], a[4]) for a in acc})]
+    body = ("\n".join(facts) + "\n"
+            + repr(sorted((a[0], a[2], a[4], text(a)) for a in acc)))
+    return hashlib.sha256(body.encode()).hexdigest()[:12]
+
+
+def finding_sites(f, res):
+    """Every site of the field, as `fn:line[thread](lock)`.
+
+    Redundant with the key and deliberately so: the key is twelve hex digits,
+    and this is what makes a diff of the list readable.  The line numbers here
+    are informational and are not part of the key.
+    """
+    r = res[f["module"]]
+    th = r["thread"]
+    acc = sorted({tuple(a) for a in r["accesses"] if a[1] == f["field"]},
+                 key=lambda a: (a[3], a[0]))
+    return [site_str(a, th) + "(%s)" % a[2] for a in acc]
+
+
+def load_fp_list(path):
+    """The checked-in entries, or [] when there is no list yet.
+
+    Every malformed shape is fatal rather than skipped: a list that silently
+    drops an entry it cannot parse suppresses less than it says it does, and one
+    that keeps a duplicate suppresses under a rule nobody judged.
+    """
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as fh:
+            doc = json.load(fh)
+    except (OSError, ValueError) as e:
+        die("cannot read the false-positive list %s: %s" % (path, e))
+    if not isinstance(doc, dict) or doc.get("version") != FP_VERSION:
+        die("%s: expected a json object with \"version\": %d" % (path, FP_VERSION))
+    entries = doc.get("entries")
+    if not isinstance(entries, list):
+        die("%s: \"entries\" must be a list" % path)
+    seen = set()
+    for e in entries:
+        if not isinstance(e, dict) or any(k not in e for k in FP_KEYS):
+            die("%s: every entry needs %s" % (path, ", ".join(FP_KEYS)))
+        if e["rule"] not in ALL_RULES:
+            die("%s: entry %s:%s names rule %r, which this version does not have"
+                % (path, e["module"], e["field"], e["rule"]))
+        ident = (e["module"], e["field"], e["rule"])
+        if ident in seen:
+            die("%s: two entries for %s:%s under %s"
+                % (path, e["module"], e["field"], e["rule"]))
+        seen.add(ident)
+    return entries
+
+
+def save_fp_list(path, entries):
+    """Rewrite the list, sorted so a change shows up as one entry in a diff."""
+    doc = {"version": FP_VERSION,
+           "_README": "dt-lockcheck findings judged not to be defects.  "
+                      "Maintained with --confirm-false-positive, not by hand; "
+                      "see tools/dt-lockcheck/README.md.",
+           "entries": sorted(entries,
+                             key=lambda e: (e["module"], e["field"], e["rule"]))}
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    os.replace(tmp, path)   # never leave a half-written list behind
+
+
+def fp_scope(entries, res, wanted):
+    """The entries this run could have matched.
+
+    An entry is out of scope when its module was not analysed (`--module`) or
+    its rule was not asked for (`--rules`): such an entry is not an orphan, the
+    run simply never looked for it.
+    """
+    return [e for e in entries if e["module"] in res and e["rule"] in wanted]
+
+
+def apply_fp(fs, entries, res, wanted):
+    """Split the findings against the list.
+
+    Returns (kept, suppressed, orphans).  `kept` is what the run reports: every
+    finding with no entry, plus every finding whose entry has gone stale, the
+    latter carrying `fp` -- the entry -- so the report can print the reason.
+    `orphans` are in-scope entries no finding matched at all: the code has moved
+    past them and they should be deleted.
+    """
+    index = {(e["module"], e["field"], e["rule"]): e for e in entries}
+    kept, suppressed, matched = [], [], set()
+    for f in fs:
+        ident = (f["module"], f["field"], f["rule"])
+        e = index.get(ident)
+        if e is None:
+            kept.append(f)
+            continue
+        matched.add(ident)
+        if e["key"] == f["key"]:
+            suppressed.append(e)
+        else:
+            f["fp"] = e
+            kept.append(f)
+    orphans = [e for e in fp_scope(entries, res, wanted)
+               if (e["module"], e["field"], e["rule"]) not in matched]
+    return kept, suppressed, orphans
+
+
+def fp_banner(suppressed, stale, orphans, path):
+    """Always printed, `-q` or not: the list may never hide its own size."""
+    if not (suppressed or stale or orphans):
+        return
+    parts = ["%d suppressed" % len(suppressed)]
+    if stale:
+        parts.append("%d stale" % len(stale))
+    if orphans:
+        parts.append("%d orphaned (%s)"
+                     % (len(orphans), ", ".join(sorted(
+                         "%s:%s" % (e["module"], e["field"]) for e in orphans))))
+    sys.stderr.write("dt-lockcheck: false positives: %s; from %s\n"
+                     % (", ".join(parts), path))
+
+
+def parse_fp_spec(spec, res):
+    """`module` or `module:field`, checked against what the run analysed."""
+    module, _, field = spec.partition(":")
+    if not module or spec.count(":") > 1:
+        die("--confirm-false-positive takes MODULE or MODULE:FIELD, not %r" % spec)
+    if module not in res:
+        die("--confirm-false-positive %s: %s was not analysed in this run"
+            % (spec, module))
+    return module, (field or None)
+
+
+def confirm_fps(specs, reason, fs, entries, res, wanted, path):
+    """Re-key stale entries, and add new ones, in place.
+
+    A bare module name re-confirms every stale entry in it, which is what a
+    one-sitting audit of a module produces.  It deliberately cannot *create*
+    entries: adding one is a judgement about a single field and has to name it,
+    or a whole module could be silenced by one word.
+    """
+    index = {(e["module"], e["field"], e["rule"]): e for e in entries}
+    found = {(f["module"], f["field"], f["rule"]): f for f in fs}
+    today = datetime.date.today().isoformat()
+    touched = 0
+    for spec in specs:
+        module, field = parse_fp_spec(spec, res)
+        if field is None:
+            stale = [e for e in fp_scope(entries, res, wanted)
+                     if e["module"] == module
+                     and (e["module"], e["field"], e["rule"]) in found
+                     and found[(e["module"], e["field"], e["rule"])]["key"] != e["key"]]
+            if not stale:
+                print("%s: no stale entry to re-confirm" % module)
+            for e in stale:
+                f = found[(e["module"], e["field"], e["rule"])]
+                _rekey(e, f, res, reason, today)
+                touched += 1
+            continue
+        # a field is reported under at most one rule, so module:field names at
+        # most one entry and at most one finding
+        ent = [e for e in entries if e["module"] == module and e["field"] == field]
+        fnd = [f for f in fs if f["module"] == module and f["field"] == field]
+        if ent:
+            e = ent[0]
+            f = found.get((e["module"], e["field"], e["rule"]))
+            if f is None:
+                print("%s:%s: no finding under %s any more -- the entry is an "
+                      "orphan, delete it rather than re-confirming it"
+                      % (module, field, e["rule"]))
+            elif f["key"] == e["key"] and not reason:
+                print("%s:%s: already current (key %s), nothing to do"
+                      % (module, field, e["key"]))
+            else:
+                _rekey(e, f, res, reason, today)
+                touched += 1
+        elif fnd:
+            if not reason:
+                die("a new entry needs --reason: say why %s:%s is not a defect, "
+                    "because that sentence is what gets printed back when the "
+                    "entry goes stale" % (module, field))
+            f = fnd[0]
+            e = dict(module=module, field=field, rule=f["rule"], key=f["key"],
+                     reason=reason, confirmed=today, sites=finding_sites(f, res))
+            entries.append(e)
+            print("%s:%s: added under %s, key %s"
+                  % (module, field, f["rule"], f["key"]))
+            touched += 1
+        else:
+            die("--confirm-false-positive %s: no finding and no entry for that "
+                "field.  Rules in this run: %s"
+                % (spec, ",".join(r for r in ALL_RULES if r in wanted)))
+    if touched:
+        save_fp_list(path, entries)
+        print("%s: %d entr%s written" % (path, touched,
+                                         "y" if touched == 1 else "ies"))
+
+
+def _rekey(e, f, res, reason, today):
+    """Move an entry onto the finding as it stands now."""
+    was = e["key"]
+    e["key"] = f["key"]
+    e["sites"] = finding_sites(f, res)
+    e["confirmed"] = today
+    if reason:
+        e["reason"] = reason
+    print("%s:%s: %s under %s"
+          % (e["module"], e["field"],
+             "re-confirmed, key %s -> %s" % (was, e["key"]) if was != e["key"]
+             else "reason updated, key %s unchanged" % e["key"],
+             e["rule"]))
 
 
 # --- optional proof trees via lemmalog --------------------------------------
@@ -1031,6 +1351,32 @@ def main():
                          "trees are added to report only; the other three are "
                          "unaffected by lemmalog.  See README.md for what each format "
                          "contains")
+    ap.add_argument("--ignore-false-positives", action="store_true",
+                    help="report every finding, including the ones "
+                         "false-positives.json records as judged.  The full "
+                         "check, for when you do not trust the list")
+    ap.add_argument("--recheck", action="store_true",
+                    help="report only the findings whose false-positive entry "
+                         "has gone stale -- the code behind a recorded "
+                         "judgement changed and it has to be re-read.  Composes "
+                         "with --module and --format")
+    ap.add_argument("--confirm-false-positive", action="append", metavar="M[:F]",
+                    dest="confirm",
+                    help="record that a finding is not a defect, or that a stale "
+                         "entry still holds (repeatable).  MODULE:FIELD names "
+                         "one finding; a bare MODULE re-confirms every stale "
+                         "entry in it, but cannot add new ones.  Rewrites "
+                         "false-positives.json and exits without reporting")
+    ap.add_argument("--reason", metavar="TEXT",
+                    help="why the finding is not a defect.  Required to add a "
+                         "new entry, since this is what gets printed back when "
+                         "the entry goes stale; optional when re-confirming, "
+                         "where it replaces the recorded reason")
+    ap.add_argument("--fail-on-findings", action="store_true",
+                    help="exit 1 when anything is reported, for CI.  Off by "
+                         "default and red on this tree today: it passes only "
+                         "once every finding is either fixed or recorded in "
+                         "false-positives.json")
     ap.add_argument("--why", action="store_true",
                     help="append the lemmalog proof tree behind each finding; needs "
                          "the lemmalog engine, and is an error if it cannot be found")
@@ -1056,6 +1402,19 @@ def main():
     if (args.why or args.lemmalog) and args.format != "report":
         die("--why adds proof trees to the report; --format %s cannot carry them"
             % args.format)
+    # the false-positive flags contradict each other in three ways, and each
+    # would otherwise fail silently: a suppression that was asked to be ignored
+    # and consulted at once, a re-check with nothing to check against, or a
+    # reason recorded nowhere
+    if args.ignore_false_positives and (args.recheck or args.confirm):
+        die("--ignore-false-positives turns the list off; --recheck and "
+            "--confirm-false-positive both need it on")
+    if args.recheck and args.confirm:
+        die("--recheck reports stale entries; --confirm-false-positive rewrites "
+            "them.  Run the first, read the findings, then the second")
+    if args.reason and not args.confirm:
+        die("--reason records why a finding is not a defect, so it needs "
+            "--confirm-false-positive to record it on")
 
     src, how = find_src(args.src)
     if src is None:
@@ -1111,6 +1470,28 @@ def main():
 
     fs = findings(res, wanted)
 
+    # The list is consulted after the rules ran, not before: it suppresses
+    # findings, it does not change what the rules derive.  --format json and
+    # lemmalog returned above for the same reason --rules does not touch them --
+    # they carry the facts, not the findings.
+    entries, suppressed, orphans = [], [], []
+    if not args.ignore_false_positives:
+        entries = load_fp_list(FP_FILE)
+        if entries or args.confirm:
+            cache = {}
+            for f in fs:
+                f["key"] = finding_key(f, res, src, cache)
+        if args.confirm:
+            confirm_fps(args.confirm, args.reason, fs, entries, res, wanted,
+                        FP_FILE)
+            return
+        if entries:
+            fs, suppressed, orphans = apply_fp(fs, entries, res, wanted)
+    stale = [f for f in fs if f.get("fp")]
+    if args.recheck:
+        fs = stale
+    fp_banner(suppressed, stale, orphans, FP_FILE)
+
     trees = None
     if args.why or args.lemmalog:      # --lemmalog is only ever given to get trees
         exe, how = find_lemmalog(args.lemmalog)
@@ -1122,14 +1503,23 @@ def main():
 
     if args.format == "csv":
         w = csv.writer(sys.stdout)
-        w.writerow(["module", "field", "ctype", "rule", "locked_sites", "unlocked_sites"])
+        # `fp` is appended rather than inserted so a consumer that reads the
+        # first six columns positionally still works
+        w.writerow(["module", "field", "ctype", "rule", "locked_sites",
+                    "unlocked_sites", "fp"])
         for f in fs:
             th = f["thread"]
             w.writerow([f["module"], f["field"], f["ctype"], f["rule"],
                         " ".join(site_str(a, th) for a in f["locked"]),
-                        " ".join(site_str(a, th) for a in f["unlocked"])])
+                        " ".join(site_str(a, th) for a in f["unlocked"]),
+                        "stale" if f.get("fp") else ""])
     else:
-        print_report(fs, trees)
+        print_report(fs, trees, len(suppressed), args.recheck)
+
+    # 1 only on request: a run that merely found something is a completed run,
+    # and the gate is red on this tree until the findings are worked off.
+    if args.fail_on_findings and fs:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
