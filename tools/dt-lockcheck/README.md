@@ -38,7 +38,13 @@ locates `src/iop` by itself:
 ./dt-lockcheck.py --rules violation
 ./dt-lockcheck.py --rules ALL                   # known noisy rules, too
 ./dt-lockcheck.py --format csv > findings.csv
+./dt-lockcheck.py --recheck                     # only the stale false positives
 ```
+
+Findings that somebody has already judged not to be defects are suppressed by
+default, from a list checked in beside the script — see
+[The false-positive list](#the-false-positive-list) for how an entry expires,
+and `--ignore-false-positives` for the full check.
 
 and says what it found before it starts:
 
@@ -83,21 +89,31 @@ same way whatever `--format` asked for.
 and the raw extracted facts as json or as Datalog assertions — see
 [Output formats](#output-formats) for what each one contains.
 
+The [false-positive list](#the-false-positive-list) is consulted after the rules
+have run, so it changes which findings are *reported* and nothing else. `json`
+and `lemmalog` carry the facts the rules run on and are untouched by it, for the
+same reason `--rules` does not touch them.
+
+`--fail-on-findings` makes a run that reported something exit 1, for CI. It is
+off by default; see [Exit status](#exit-status) for why it is red on this tree
+today.
+
 
 ## Exit status
 
 | code | meaning |
 | --- | --- |
 | 0 | ran to completion, whatever it found |
+| 1 | `--fail-on-findings` was given and something was reported |
 | 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` with a `--format` that cannot carry a tree, or a `--lemmalog` path that does not exist |
 
-There is deliberately no "exit non-zero when there are findings" mode. A run
-that finds nothing does not exist on any real tree, and a run always carries
-some false positives (see
-[Before you file anything](#before-you-file-anything)), so such a gate could
-only ever be red. A useful gate
-would have to compare against a checked-in baseline and fail on findings that
-are *new* — that does not exist here yet.
+"Exit non-zero when there are findings" is `--fail-on-findings`, and it is off
+by default because it is red on this tree today: 74 findings survive the
+[false-positive list](#the-false-positive-list), and most of them are unreviewed
+or filed-and-unfixed rather than wrong. It passes once every finding is either
+fixed or recorded as judged, which is the condition for wiring it into CI. A
+gate that fails only on findings that are *new* is a different thing and would
+need a checked-in baseline of all of them; that does not exist here.
 
 A CI job needs 1 and 2 kept apart: 2 means nothing was analysed, which a bare
 "non-zero" check would otherwise read as a clean run turned bad.
@@ -313,7 +329,21 @@ Open both sets and decide whether the two can really run at the same time. If
 they can, the fix is normally to extend the existing critical section to the
 unlocked sites — not to add a new lock.
 
-A trailing `N findings.` line closes the report, counting every rule asked for.
+A finding whose [false-positive entry](#the-false-positive-list) has gone stale
+carries three extra lines — the judgement that was recorded, and the two
+commands that act on it:
+
+```
+colorharmonizer.c  g->auto_detect   (GtkWidget *)
+   unlocked: _update_histogram:306[pipe]
+   was a known false positive, confirmed 2026-08-30:
+     _update_histogram() runs on the pipe but never calls GTK: ...
+   re-check: ./dt-lockcheck.py --module colorharmonizer --recheck
+   if still not a defect: ./dt-lockcheck.py --confirm-false-positive colorharmonizer:auto_detect
+```
+
+A trailing `N findings.` line closes the report, counting every rule asked for,
+and naming how many findings the false-positive list suppressed.
 
 ### csv
 
@@ -324,10 +354,15 @@ the same order, with nothing capped:
 | --- | --- |
 | `module` | the module name, i.e. the source file without its extension |
 | `field` | the `gui_data` field, without the `g->` |
-| `ctype` | the field's type as declared in the struct, without any `*` |
+| `ctype` | the field's type as declared in the struct, `*` and all |
 | `rule` | which of [the rules](#the-rules) fired |
 | `locked_sites` | every locked site, space-separated, each `function:line[thread]` |
 | `unlocked_sites` | every unlocked site, same shape |
+| `fp` | `stale` when the finding has a [false-positive entry](#the-false-positive-list) the source has moved past, empty otherwise |
+
+`fp` is appended rather than inserted, so a consumer reading the first six
+columns by position is unaffected by its arrival. Suppressed findings are
+absent from the csv exactly as they are from the report.
 
 Two things the report shows and the csv does not: the name of the lock held at
 each locked site (the report's `(gui_lock)` suffix), and the proof trees. Use
@@ -421,6 +456,12 @@ itself cannot answer:
 ./dt-lockcheck.py --module basicadj --format json  # let me ask the facts myself
 ```
 
+**A round starts with `--recheck`**, which reports only the findings whose
+recorded judgement the source has moved past. It is usually empty, and when it
+is not, those findings are the ones with the most behind them: somebody read
+that exact code and concluded it was safe, and it has since changed. Read them
+before the ones nobody has ever ruled on.
+
 **Read the source first.** For "is this finding real?", the report already
 gives `file:line` for both the locked and the unlocked side. Opening those two
 places is usually faster and always more conclusive than another run, because
@@ -468,7 +509,8 @@ against the Datalog rules if you would rather add rules than write code.
 
 Findings are **candidates**. On the tree this was developed against, 52 of the
 76 default-settings findings name a field from a defect report that already
-existed, measured against the 23 reports of the `gui_data` audit (#21915-#21919,
+existed (76 is the count before suppression: two of them are recorded in the
+[false-positive list](#the-false-positive-list), so a default run reports 74), measured against the 23 reports of the `gui_data` audit (#21915-#21919,
 #21974, #22005-#22009, #22057-#22069); the other 24 have not been ruled on
 either way, and a spot-check of a dozen of them found a clear majority to be
 real defects of the same shape. No one has measured a false-positive rate, and
@@ -481,8 +523,13 @@ Five false-positive causes are worth knowing, because you will meet them:
 
 - **Exclusion by protocol rather than by lock.** `rgblevels` hands work to the
   pipe through a state machine (`0` idle, `1` requested, `-1` running, `2`
-  ready). While the state is `-1` the GTK side is excluded by the protocol, so
-  the unlocked accesses in between are deliberate. The script cannot see this.
+  ready), and the transitions are taken under `gui_lock` even where the accesses
+  they guard are not. `g->params` is genuinely protected that way: only the
+  thread that took the state to `-1` touches it. The script cannot see this.
+  It does **not** cover the whole module, though — `box_cood`, `channel` and
+  `call_auto_levels` are all written from the GTK side without checking the
+  state, so their findings are not excluded by the protocol and are not false
+  positives on this ground.
 - **A lock passed into a callee.** Handled for the common
   `dt_dev_sync_pixelpipe_hash(..., &self->gui_lock, &g->hash)` shape, but not in
   general.
@@ -495,7 +542,9 @@ Five false-positive causes are worth knowing, because you will meet them:
   `g_object_ref(g->auto_detect)` followed by `gdk_threads_add_idle()`. The ref
   is atomic and the GTK call itself happens on the main thread, so this is the
   correct idiom — but `widget_from_pipe` sees a widget field touched from the
-  pipe and reports it.
+  pipe and reports it. This one and `rgblevels`' `g->params` are the two
+  entries the [false-positive list](#the-false-positive-list) ships with, so a
+  default run no longer shows them.
 - **A finding that rests entirely on an `either` site.** `either` counts on both
   sides of the cross-thread test because it *can* run on either thread — but on
   the path that matters it may always run on one. Check the proof tree, or the
@@ -534,6 +583,125 @@ And the limits:
 - Defects needing dataflow inside a function are out of reach — notably "pointer
   copied under the lock, then dereferenced after releasing it", which is a real
   and recurring shape here. Do not read a clean run as an all-clear.
+
+
+## The false-positive list
+
+`false-positives.json`, next to the script, records the findings a human has
+read and judged **not** to be defects. Suppression is on by default: a finding
+with a matching entry is not reported, so a later round does not re-read what an
+earlier one already decided.
+
+The risk in any such list is that a suppression outlives the code it was true
+about, and silently hides a defect that grew where a false positive used to be.
+So every entry carries a **key** over the finding, and a source change that
+could alter the judgement invalidates it: the entry goes *stale*, the finding
+comes back, and the reason recorded for it is printed alongside.
+
+Whenever the list touches a run, the stderr banner says how many findings it
+suppressed, how many entries went stale and which are orphaned. `-q` does not
+silence that line — the list may not hide its own size.
+
+### The three states
+
+An entry is identified by `(module, field, rule)`, which is not what the key is
+computed over. Three cases follow:
+
+| state | what it means | what the tool does |
+| --- | --- | --- |
+| **current** | entry matches a finding, keys equal | suppress the finding |
+| **stale** | entry matches a finding, keys differ | report the finding, with the recorded reason and the command to re-confirm it |
+| **orphan** | entry matches no finding at all | name it in the banner; the code moved past it and the entry should be deleted |
+
+The rule is part of the identity on purpose. A field that moves from one rule
+to another is a *new* finding and reads as one, rather than inheriting a
+judgement passed under a rule it no longer matches.
+
+Orphans are counted against the run's own scope: `--module` and `--rules`
+narrow what the tool looked for, and an entry the run never went looking for is
+not an orphan.
+
+### What the key covers
+
+Two halves, because neither is safe alone:
+
+- the **facts** — the field's type, the thread of every function that touches
+  it, and the `(function, lock, mode)` of every access. This is exactly the
+  [`--format lemmalog`](#lemmalog) view, with no line numbers, so moving code
+  around or renaming a local does not fire it;
+- the **text of every access line**, verbatim from the source.
+
+Each catches what the other misses. Replacing colorharmonizer's
+`gdk_threads_add_idle()` with a direct GTK call, or dropping its `g_object_ref`,
+turns that entry's false positive into a real defect while leaving every fact
+identical — same function, same lock, same mode — so a facts-only key would
+carry the suppression silently forward. The converse is a critical section
+removed from around an access: the facts show it, the access line's own text
+does not.
+
+This was measured rather than guessed, over 6105 finding-transitions across 80
+commits touching `src/iop`, plus seven targeted edits against a real entry:
+
+| candidate key | fires | missed a rule change | missed a site change |
+| --- | --- | --- | --- |
+| whole-file hash | 9.6% | 0 | 0 |
+| facts only | 0.16% | 0 | 7 |
+| `function:line` sites | 5.6% | 0 | 2 |
+| **facts + access-line text** | **0.28%** | **0** | **0** |
+
+The file hash is not "overkill but safe": it is 34× noisier for no extra
+safety, and noise is what makes people re-confirm an entry without reading it.
+
+### Confirming an entry
+
+Nobody edits the file by hand:
+
+```sh
+./dt-lockcheck.py --confirm-false-positive rgblevels:params --reason "why this is not a defect"
+./dt-lockcheck.py --confirm-false-positive rgblevels          # every stale entry in the module
+```
+
+`MODULE:FIELD` names one finding. A bare `MODULE` re-confirms every stale entry
+in that module, which is what a one-sitting audit of one module produces — but
+it deliberately **cannot add** entries: adding one is a judgement about a single
+field and has to name it, or a whole module could be silenced with one word.
+
+A new entry requires `--reason`, because that sentence is what gets printed back
+when the entry goes stale, and an entry without one degenerates into a blanket
+suppression nobody can re-judge. Re-confirming keeps the recorded reason unless
+you pass a new one. Either way the tool rewrites the key, the site list and the
+confirmation date, prints what it touched, and exits without reporting.
+
+### Reading and overriding it
+
+```sh
+./dt-lockcheck.py --recheck                     # only the findings whose entry went stale
+./dt-lockcheck.py --ignore-false-positives      # the full check, list ignored
+```
+
+`--recheck` composes with `--module` and `--format`. It is the "what do I have
+to look at again?" run: on a clean tree it prints nothing, and it is the one to
+pair with `--fail-on-findings` if you want a check that only complains about
+judgements the source has moved past.
+
+Each entry also carries its site list as `function:line[thread](lock)`, purely
+so a diff of the file is legible. Those line numbers are informational and are
+**not** part of the key.
+
+### What it is not
+
+It is not a baseline of every finding, and `--fail-on-findings` is not a
+new-findings gate. The flag exits 1 when anything is reported, which on this
+tree is red today: most of the 74 unsuppressed findings are unreviewed or filed
+and unfixed, not false positives. It becomes usable when every finding is
+either fixed or recorded here, which is why it is off by default and not wired
+into CI. A gate that fails only on findings that are *new* would need a
+checked-in baseline of all of them, a different artifact with different
+invalidation needs; that does not exist here.
+
+Nor does an entry mean much on its own. It records that one person read one
+finding at one commit and reached a conclusion. The key is what makes that
+conclusion expire; it cannot make it right.
 
 
 ## Proof trees

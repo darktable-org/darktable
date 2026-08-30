@@ -1,0 +1,36 @@
+{
+  "_README": "dt-lockcheck findings judged not to be defects.  Maintained with --confirm-false-positive, not by hand; see tools/dt-lockcheck/README.md.",
+  "entries": [
+    {
+      "confirmed": "2026-08-30",
+      "field": "auto_detect",
+      "key": "17a4e48fd49a",
+      "module": "colorharmonizer",
+      "reason": "_update_histogram() runs on the pipe but never calls GTK: it takes an atomic g_object_ref() on the widget and hands it to gdk_threads_add_idle(), so the GTK call itself happens on the main thread.  This is the correct idiom for reaching a widget from the pipe, not a defect.",
+      "rule": "widget_from_pipe",
+      "sites": [
+        "_update_histogram:305[pipe](none)",
+        "_update_histogram:306[pipe](none)",
+        "gui_init:1415[gtk](none)",
+        "gui_init:1421[gtk](none)",
+        "gui_init:1422[gtk](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-08-30",
+      "field": "params",
+      "key": "a447820dfb82",
+      "module": "rgblevels",
+      "reason": "Ownership passes through the call_auto_levels state machine rather than through the lock, and the handovers are locked even though the accesses are not: the pipe touches g->params only after taking state 0/1 -> -1 under gui_lock, and _develop_ui_pipe_finished_callback only after taking 2 -> -1 under the same lock.  Exactly one thread owns the field at a time, and the locked transitions carry the memory ordering.",
+      "rule": "no_lock_share",
+      "sites": [
+        "_develop_ui_pipe_finished_callback:161[gtk](none)",
+        "process:1268[pipe](none)",
+        "process:1273[pipe](none)",
+        "process_cl:1440[pipe](none)",
+        "process_cl:1445[pipe](none)"
+      ]
+    }
+  ],
+  "version": 1
+}
