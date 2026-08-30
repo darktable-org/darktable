@@ -702,16 +702,28 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(drag_update, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
   dt_gui_connect_drag(GTK_WIDGET(widget), G_CALLBACK(drag_begin), G_CALLBACK(drag_end), G_CALLBACK(drag_update), (data)))
 
-/* touchpad pinch via GtkGestureZoom: the old GTK3-only "event" signal
+/* pinch to zoom via GtkGestureZoom: the old GTK3-only "event" signal
  * handler forwarded raw GDK_TOUCHPAD_PINCH events; the phase field becomes
  * the begin / scale-changed / end signals (and "end" fires on cancel as
- * well, so the consumer's END/CANCEL reset still runs).  GtkGestureZoom also
- * recognizes touchscreen pinches, which were never handled before -- ignored
- * here for parity, only touchpad pinches reach the handler.  dx/dy, scale,
- * state and the focal point are pulled from the gesture's last event (root
- * coords on GTK3, surface-relative on GTK4 -- see dt_gui_get_event_coords);
- * on END the event is already gone, so the handler gets NULL and the deltas
- * default to zero.  The touchpad_gestures_enabled pref and the per-gesture
+ * well, so the consumer's END/CANCEL reset still runs).  Both pinch sources
+ * GtkGestureZoom recognizes are forwarded:
+ *
+ * - touchpad: scale, dx/dy, state and the focal point come from the
+ *   GdkEventTouchpadPinch the gesture last saw, and touchpad_gestures_enabled
+ *   gates the gesture as a whole.
+ * - touchscreen: there is no such event, so the scale is the gesture's own
+ *   cumulative scale and the focal point is the bounding-box center of the
+ *   touch points.  Not gated by the touchpad preference, which is documented
+ *   as covering two-finger *touchpad* gestures.
+ *
+ * dx/dy are a viewport pan delta in both cases, i.e. the direction the
+ * viewport should move: the touchpad's two-finger translation as GDK reports
+ * it, and the negated focal-point movement on a touchscreen, where the
+ * content is expected to follow the fingers.
+ *
+ * The focal point is in root coords on GTK3 and surface-relative on GTK4 (see
+ * dt_gui_get_event_coords); on END the event is already gone, so the handler
+ * gets NULL, scale 1.0 and zero deltas.  The preference and the per-gesture
  * active tracking live inside the helper; handlers only forward the parsed
  * event (e.g. to dt_view_manager_gesture_pinch). */
 typedef struct dt_gui_pinch_event_t
@@ -722,6 +734,7 @@ typedef struct dt_gui_pinch_event_t
   gdouble dx, dy;                 /* pan deltas */
   gdouble scale;                  /* pinch scale */
   guint state;                    /* modifier state (low 4 bits) */
+  gboolean touchscreen;           /* touchscreen pinch, not a touchpad one */
 } dt_gui_pinch_event_t;
 
 typedef void (*dt_gui_pinch_handler_t)(GtkGesture *gesture,
@@ -734,6 +747,27 @@ GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
 #define dt_gui_connect_pinch(widget, handler, data) ( \
   ASSERT_FUNC_TYPE(handler, void(*)(GtkGesture *, const dt_gui_pinch_event_t *, __typeof__(data))), \
   dt_gui_connect_pinch(GTK_WIDGET(widget), (handler), (data)))
+
+/* touch drags are not pointer motion: as soon as any GtkGesture is attached
+ * to a widget, GTK selects GDK_TOUCH_MASK on it, and GDK then stops rewriting
+ * the pointer-emulating touch sequence into button/motion events (see
+ * proxy_button_event() in gdk/gdkwindow.c), so GtkEventControllerMotion never
+ * sees a finger drag.  Press and release still arrive through
+ * dt_gui_connect_click() -- GtkGestureSingle reports touch as button 1 --
+ * only the motion in between is missing, and a touch-only GtkGestureDrag
+ * supplies it.  The handler gets widget coordinates, like a motion callback,
+ * and is called for the finger that started the drag only. */
+typedef void (*dt_gui_touch_motion_handler_t)(GtkGesture *gesture,
+                                              gdouble x,
+                                              gdouble y,
+                                              gpointer user_data);
+
+GtkGesture *(dt_gui_connect_touch_motion)(GtkWidget *widget,
+                                          dt_gui_touch_motion_handler_t handler,
+                                          gpointer data);
+#define dt_gui_connect_touch_motion(widget, handler, data) ( \
+  ASSERT_FUNC_TYPE(handler, void(*)(GtkGesture *, double, double, __typeof__(data))), \
+  dt_gui_connect_touch_motion(GTK_WIDGET(widget), (handler), (data)))
 
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,
