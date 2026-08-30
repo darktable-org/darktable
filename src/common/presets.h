@@ -57,21 +57,14 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module,
 
 /** helper for creating menu hierarchy, generates submenus as
  * indicated by vertical bars in name */
-GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
-                                              GSList **menu_path,
-                                              GtkWidget *mainmenu,
-                                              GtkWidget **submenu,
-                                              gchar ***prev_split,
-                                              gboolean isdefault,
-                                              gboolean writeprotect);
-
-void dt_insert_preset_in_menu_hierarchy2(const char *name,
-                                         const char *action,
-                                         GSList **menu_path2,
-                                         GMenu *mainmenu2,
-                                         GMenu **submenu2,
-                                         gchar ***prev_split,
-                                         gboolean isdefault);
+void dt_insert_preset_in_menu_hierarchy(const char *name,
+                                        const char *action,
+                                        GSList **menu_path2,
+                                        GMenu *mainmenu2,
+                                        GMenu **submenu2,
+                                        gchar ***prev_split,
+                                        gboolean isdefault,
+                                        gboolean writeprotect);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

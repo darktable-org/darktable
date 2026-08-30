@@ -55,7 +55,7 @@ void dt_guides_update_button_state();
 void dt_guides_button_toggled(gboolean active);
 
 // show the menuitem for modules
-void dt_guides_add_module_menuitem(void *menu, struct dt_iop_module_t *module);
+void dt_guides_add_module_menuitem(GMenu *menu, GActionGroup *action_group, struct dt_iop_module_t *module);
 
 // show the line in UI modules
 void dt_guides_init_module_widget(GtkWidget *box, struct dt_iop_module_t *module);
