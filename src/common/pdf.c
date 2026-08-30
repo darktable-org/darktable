@@ -387,7 +387,7 @@ int dt_pdf_add_icc_from_data(dt_pdf_t *pdf,
 // to be in output device space, otherwise the ICC profile object is
 // referenced.  if image == NULL only the outline can be shown later
 dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf,
-                                 const void *image,
+                                 const void *buf,
                                  const int width,
                                  const int height,
                                  const int bpp,

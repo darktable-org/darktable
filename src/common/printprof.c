@@ -51,7 +51,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
   wInput = ComputeFormatDescriptor (PT_RGB, (bpp==8?1:2));
 
   OutputColorSpace = _cmsLCMScolorSpace(cmsGetColorSpace(hOutProfile));
-  wOutput = ComputeOutputFormatDescriptor(wInput, OutputColorSpace, 1);
+  wOutput = ComputeOutputFormatDescriptor(wInput, OutputColorSpace, (bpp==8?1:2));
 
   hTransform = cmsCreateTransform
     (hInProfile,  wInput,
@@ -93,7 +93,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 
   cmsDeleteTransform(hTransform);
 
-  free(*in);
+  g_free(*in);
   *in = out;
 
   return 0;
