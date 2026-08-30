@@ -137,6 +137,8 @@ changes (where available).
 - Fixed auto-applied denoise presets running a second time on images
   produced by AI raw denoise.
 
+- Fixed OpenCL input gamma corrected scaling for some devices
+
 ## Lua
 
 ### API Version
