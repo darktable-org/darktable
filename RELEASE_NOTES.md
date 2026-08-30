@@ -140,6 +140,8 @@ changes (where available).
 - Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
   is available for those.
 
+- Fixed OpenCL input gamma corrected scaling for some devices.
+
 ## Lua
 
 ### API Version

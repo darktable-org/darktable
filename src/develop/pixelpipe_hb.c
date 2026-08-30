@@ -2099,8 +2099,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
         const gboolean gamma = dev->image_storage.colorspace != DT_IMAGE_COLORSPACE_NONE;
 #ifdef HAVE_OPENCL
-        const size_t in_size = bpp * roi_in.width * roi_in.height;
-        const gboolean cl_scale_possible = ((2 * in_size) < dt_opencl_get_device_available(pipe->devid))
+        const size_t in_size = bpp * roi_in.width * roi_in.height * (gamma ? 3 : 2);
+        const size_t out_size = bpp * roi_out->width * roi_out->height * (gamma ? 2 : 1);
+        const gboolean cl_scale_possible = ((in_size + out_size) < dt_opencl_get_device_available(pipe->devid))
                                             && roi_out->width < roi_in.width
                                             && roi_out->height < roi_in.height;
 #else
@@ -2122,18 +2123,20 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           {
             cl_mem clin = dt_opencl_copy_host_to_image(pipe->devid, pipe->input, roi_in.width, roi_in.height, bpp);
             cl_mem clout = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
-            if(clin && clout)
+            cl_mem cltin = gamma ? dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, bpp) : clin;
+            cl_mem cltout = gamma ? dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp) : clout;
+            if(clin && clout && cltin && cltout)
             {
               cl_int err = CL_SUCCESS;
               if(gamma)
                 err = dt_opencl_enqueue_kernel_2d_args(pipe->devid, darktable.opencl->colorspaces->kernel_colorspaces_gamma, roi_in.width, roi_in.height,
-                        CLARG(clin), CLARG(clin), CLARG(roi_in.width), CLARG(roi_in.height), CLARGFLOAT(2.4f));
+                        CLARG(clin), CLARG(cltin), CLARG(roi_in.width), CLARG(roi_in.height), CLARGFLOAT(2.4f));
               if(err == CL_SUCCESS)
-                err = dt_iop_clip_and_zoom_cl(pipe->devid, clout, clin, roi_out, &roi_in);
+                err = dt_iop_clip_and_zoom_cl(pipe->devid, gamma ? cltout : clout, gamma ? cltin : clin, roi_out, &roi_in);
 
               if(err == CL_SUCCESS && gamma)
                 err = dt_opencl_enqueue_kernel_2d_args(pipe->devid, darktable.opencl->colorspaces->kernel_colorspaces_gamma, roi_out->width, roi_out->height,
-                    CLARG(clout), CLARG(clout), CLARG(roi_out->width), CLARG(roi_out->height), CLARGFLOAT(0.41666666666666666667f));
+                    CLARG(cltout), CLARG(clout), CLARG(roi_out->width), CLARG(roi_out->height), CLARGFLOAT(0.41666666666666666667f));
 
               if(err == CL_SUCCESS)
                 err = _copy_image_to_host_err(pipe->devid, *output, clout, roi_out->width, roi_out->height, bpp, "copy back gamma corrected");
@@ -2142,6 +2145,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               else
                 dt_print(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "OpenCL pipe data: clip&zoom failed");
             }
+            if(clin != cltin) dt_opencl_release_mem_object(cltin);
+            if(clout != cltout) dt_opencl_release_mem_object(cltout);
             dt_opencl_release_mem_object(clin);
             dt_opencl_release_mem_object(clout);
           }
