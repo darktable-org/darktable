@@ -46,6 +46,12 @@ WHICH THREAD
                       unlocked, without a proven cross-thread share.  Noisiest;
                       read it last.
 
+  --rules picks the set, by name or as the upper-case ALL for every rule there
+  is.  The first three are the default; discipline_gap has to be asked for,
+  because on a whole tree most of what it returns is a field locked for one
+  reason and read unlocked for another.  A field is reported under at most one
+  rule, the first in the order above that it matches.
+
 PROOF TREES (--why, off by default)
   The rules are also written as Datalog in rules.lemma, next to this script.
   With --why, each finding in the report is followed by the proof tree behind it:
@@ -116,6 +122,7 @@ USAGE
   ./dt-lockcheck.py
   ./dt-lockcheck.py --module toneequal
   ./dt-lockcheck.py --rules violation,widget_from_pipe
+  ./dt-lockcheck.py --rules ALL                     # including discipline_gap
   ./dt-lockcheck.py --format csv > findings.csv
   ./dt-lockcheck.py --format json > facts.json
 
@@ -128,6 +135,10 @@ USAGE
 
   ./dt-lockcheck.py --module toneequal --why        # with the proof trees
   ./dt-lockcheck.py --why --lemmalog ~/lemmalog/target/release/lemmalog
+
+  README.md, next to this script, has the long form: what each --format
+  contains field by field, what each rule checks, and the false positives to
+  expect.
 
   Python 3.8+, standard library only.  Exit status is 0 for a completed run
   whatever it found, and 2 for a wrong invocation.  There is deliberately no
@@ -508,6 +519,17 @@ def analyse(path):
 # and on either thread.
 SETUP_FNS = {"gui_init", "gui_cleanup", "gui_reset"}
 
+# In report order, most worth reading first.  discipline_gap is out of the
+# default set because it proves no cross-thread share and is mostly noise; see
+# THE RULES in README.md.
+ALL_RULES = ("widget_from_pipe", "violation", "no_lock_share", "discipline_gap")
+DEFAULT_RULES = ("widget_from_pipe", "violation", "no_lock_share")
+# --rules ALL means every rule, so a caller that wants the lot does not have to
+# be updated when one is added.  Upper-case to keep it apart from the rule
+# names, which are lower-case throughout, including in the Datalog.
+ALL_RULES_TOKEN = "ALL"
+
+
 MAY_PIPE = ("pipe", "either")   # can run off the GTK main thread
 MAY_GTK = ("gtk", "either")     # can run on the GTK main thread
 
@@ -552,7 +574,7 @@ def findings(res, wanted):
                                 field=field, rule=rule,
                                 ctype=fields.get(field, "?"),
                                 locked=locked, unlocked=unlocked, thread=th))
-    order = {"widget_from_pipe": 0, "violation": 1, "no_lock_share": 2, "discipline_gap": 3}
+    order = {r: i for i, r in enumerate(ALL_RULES)}
     out.sort(key=lambda f: (order[f["rule"]], f["module"], f["field"]))
     return out
 
@@ -615,7 +637,7 @@ def print_report(fs, trees=None):
     by_rule = defaultdict(list)
     for f in fs:
         by_rule[f["rule"]].append(f)
-    for rule in ("widget_from_pipe", "violation", "no_lock_share", "discipline_gap"):
+    for rule in ALL_RULES:
         group = by_rule.get(rule)
         if not group:
             continue
@@ -845,15 +867,22 @@ def main():
                     help="do not report the located source directory on stderr")
     ap.add_argument("--module", action="append",
                     help="restrict to this module (repeatable), e.g. --module toneequal")
-    ap.add_argument("--rules", default="widget_from_pipe,violation,no_lock_share",
-                    help="comma-separated rules to report; add discipline_gap for the "
-                         "noisy tier (default: %(default)s)")
+    ap.add_argument("--rules", default=",".join(DEFAULT_RULES), metavar="LIST",
+                    help="comma-separated rules to report, from: "
+                         + ", ".join(ALL_RULES) + "; or " + ALL_RULES_TOKEN
+                         + " (upper-case) for every rule there is.  discipline_gap is "
+                         "the noisy tier and is the one left out by default (default: "
+                         "%(default)s).  Affects report and csv only, since json and "
+                         "lemmalog carry the facts the rules run on.  See README.md "
+                         "for what each rule checks")
     ap.add_argument("--format", choices=("report", "csv", "json", "lemmalog"),
                     default="report",
-                    help="report: human-readable; csv: one row per finding; "
-                         "json: the raw extracted facts; lemmalog: base facts for a "
-                         "Datalog engine.  Proof trees are added to report only; the "
-                         "other three are unaffected by lemmalog")
+                    help="report: human-readable findings; csv: one row per finding, "
+                         "with every site; json: the raw extracted facts, before the "
+                         "rules; lemmalog: those facts as Datalog assertions.  Proof "
+                         "trees are added to report only; the other three are "
+                         "unaffected by lemmalog.  See README.md for what each format "
+                         "contains")
     ap.add_argument("--why", action="store_true",
                     help="append the lemmalog proof tree behind each finding; needs "
                          "the lemmalog engine, and is an error if it cannot be found")
@@ -867,9 +896,15 @@ def main():
     # early returns, so `--rules bogus --format json` and `--why --format json`
     # printed their output and exited 0 instead of failing.
     wanted = set(args.rules.split(","))
-    unknown = wanted - {"widget_from_pipe", "violation", "no_lock_share", "discipline_gap"}
+    # ALL is upper-case so it can never collide with a rule name, and so that a
+    # lower-case "all" is an unknown rule rather than a second spelling: the set
+    # of rules a run reported has to be legible from the command line alone.
+    if ALL_RULES_TOKEN in wanted:
+        wanted = (wanted - {ALL_RULES_TOKEN}) | set(ALL_RULES)
+    unknown = wanted - set(ALL_RULES)
     if unknown:
-        die(f"unknown rule(s): {', '.join(sorted(unknown))}")
+        die("unknown rule(s): %s.  Pick from %s, or %s for all four"
+            % (", ".join(sorted(unknown)), ", ".join(ALL_RULES), ALL_RULES_TOKEN))
     if (args.why or args.lemmalog) and args.format != "report":
         die("--why adds proof trees to the report; --format %s cannot carry them"
             % args.format)
