@@ -1022,9 +1022,10 @@ void commit_params(dt_iop_module_t *self,
   const uint32_t filters = img->buf_dsc.filters;
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
   const gboolean linear = (filters == 0);
+  const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
 
   // for non-raws always use clip
-  if(!rawprep)
+  if(!rawprep || is_4bayer)
     d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   /* no OpenCLfor
@@ -1134,12 +1135,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   const uint32_t filters = img->buf_dsc.filters;
   const gboolean bayer = (filters != 0) && (filters != 9u);
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
+  const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
 
   /* Sanitize mode if wrongfully
    - copied as part of the history of another pic or by preset / style or
    - by old edits that allowed opposed for non-raws
   */
-  if(!rawprep)
+  if(!rawprep || is_4bayer)
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
@@ -1205,6 +1207,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   const dt_image_t *img = &self->dev->image_storage;
   const gboolean monochrome = dt_image_is_monochrome(img);
+  const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
   const uint32_t filters = img->buf_dsc.filters;
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
   const gboolean sraw = rawprep && (filters == 0);
@@ -1226,7 +1229,7 @@ void reload_defaults(dt_iop_module_t *self)
 
     dt_introspection_type_enum_tuple_t *values = self->so->get_f("mode")->Enum.values;
 
-    if(!rawprep)
+    if(!rawprep || is_4bayer)
     {
       dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_CLIP,
                                                                    DT_IOP_HIGHLIGHTS_OPPOSED);
@@ -1250,7 +1253,7 @@ void reload_defaults(dt_iop_module_t *self)
     _set_quads(g, NULL);
   }
   d->clip = MIN(d->clip, img->linear_response_limit);
-  d->mode = rawprep ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
+  d->mode = rawprep && !is_4bayer ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
 }
 
 static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)

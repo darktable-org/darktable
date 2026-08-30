@@ -207,6 +207,9 @@ changes (where available).
   one selected on cropped images, and the area picker remaining
   unavailable until darktable was restarted.
 
+- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
+  is available for those.
+
 ## Lua
 
 ### API Version
