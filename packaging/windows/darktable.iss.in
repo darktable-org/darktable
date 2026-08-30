@@ -133,7 +133,7 @@ Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable";
   ValueName: "Icon"; ValueData: """{app}\bin\{#MyAppExeName}"",0"
 Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
 
 ;
 ; Add "Import into darktable" menu item to the right-click context menu on images.
@@ -150,14 +150,18 @@ Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
   ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"
 Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; \
   ValueType: string; Flags: uninsdeletekey; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
 
 ;
-; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
+; To open a file from the "Open with" menu, Windows needs to know the exact command to execute.
+; The {code:GetConfigDirParam} argument here also covers every extension registered further
+; below via the per-extension Open-With registrations, since those entries only list
+; darktable.exe as a candidate by name. Windows always resolves the actual command through
+; this one key.
 ;
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
   ValueType: string; Flags: uninsdeletevalue; \
-  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+  ValueData: """{app}\bin\{#MyAppExeName}"" {code:GetConfigDirParam} ""%1"""
 
 ;
 ; The variable below will be substituted by CMake with a list of those Inno Setup
@@ -197,17 +201,17 @@ Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   Flags: uninsdeletevalue
 
 [Icons]
-// start menu entry
+; start menu entry
 Name: "{group}\{code:GetShortcutName}"; \
   Filename: "{app}\bin\{#MyAppExeName}"; \
   Parameters: "{code:GetConfigDirParam}"
-// uninstaller
+; uninstaller
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-// desktop shortcut
+; desktop shortcut
 Name: "{autodesktop}\{code:GetShortcutName}"; \
   Filename: "{app}\bin\{#MyAppExeName}"; \
   Parameters: "{code:GetConfigDirParam}"; Tasks: desktopicon
-// quicklaunch
+; quicklaunch
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
   Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
@@ -223,15 +227,13 @@ Filename: "{app}\bin\{#MyAppExeName}"; \
 
 [Code]
 var
-  ShortcutChoicePage: TInputOptionWizardPage;
   ShortcutNameQueryPage: TInputQueryWizardPage;
-  ConfigChoicePage: TInputOptionWizardPage;
   ConfigDirPage: TInputDirWizardPage;
 
 // Rejects a custom configuration directory that contains characters not
 // allowed in a Windows path (TInputDirWizardPage only checks for "empty",
 // not for validity, so unlike the shortcut name there's no silent-fallback
-// option here -- an unusable path would otherwise reach darktable as-is).
+// option here. an unusable path would otherwise reach darktable as-is).
 function ValidateConfigDir(Sender: TWizardPage): Boolean;
 var
   Dir: String;
@@ -251,53 +253,37 @@ begin
   end;
 end;
 
-// create the four installer pages: shortcut-name choice + query,
-// configuration-directory choice + directory picker
+// Both pages are only offered for development/nightly snapshots. Release
+// builds keep the fixed default name and directory. Same version-length
+// check that SuffixIfNotRelease and InitializeSetup already use below.
 procedure InitializeWizard();
 begin
-  // Page 1: default vs. custom shortcut name
-  ShortcutChoicePage := CreateInputOptionPage(wpSelectDir,
-    'Shortcut Name',
-    'Choose the name for the desktop and Start menu shortcuts.',
-    'Useful for running multiple parallel darktable installations.',
-    True, False);
-  ShortcutChoicePage.Add('Use default shortcut name');
-  ShortcutChoicePage.Add('Use a custom shortcut name (can be set on the next page)');
-  ShortcutChoicePage.SelectedValueIndex := 0;
+  if {#MyAppVersionLength} > 7 then
+  begin
+    // Page 1: custom shortcut name, pre-filled with the default name
+    ShortcutNameQueryPage := CreateInputQueryPage(wpSelectDir,
+      'Shortcut Name',
+      'Choose the name for the desktop and Start menu shortcuts.',
+      'Useful for running multiple parallel darktable installations.');
+    ShortcutNameQueryPage.Add('Shortcut name:', False);
+    ShortcutNameQueryPage.Values[0] :=
+      ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}');
+    ShortcutNameQueryPage.Edits[0].MaxLength := 100;
 
-  // Page 2: the custom name itself; skipped if "default" was chosen above
-  ShortcutNameQueryPage := CreateInputQueryPage(ShortcutChoicePage.ID,
-    'Custom Shortcut Name',
-    'What should the shortcuts be called?',
-    'Enter a name, then click Next.');
-  ShortcutNameQueryPage.Add('Shortcut name:', False);
-  ShortcutNameQueryPage.Values[0] :=
-    ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}');
-  ShortcutNameQueryPage.Edits[0].MaxLength := 100;
-
-  // Page 3: default vs. custom configuration directory
-  ConfigChoicePage := CreateInputOptionPage(ShortcutNameQueryPage.ID,
-    'Configuration Directory',
-    'Choose where darktable stores its settings.',
-    'Useful for e.g. running parallel darktable installations for ' +
-    'testing. Note: This setting applies to both the desktop and Start ' +
-    'menu shortcuts created by this installer. Other ways of starting ' +
-    'darktable (e.g. launching from another application) may keep ' +
-    'using the default directory.',
-    True, False);
-  ConfigChoicePage.Add('Use default configuration directory');
-  ConfigChoicePage.Add('Use a custom configuration directory (can be set on the next page)');
-  ConfigChoicePage.SelectedValueIndex := 0;
-
-  // Page 4: the custom directory itself; skipped if "default" was chosen above
-  ConfigDirPage := CreateInputDirPage(ConfigChoicePage.ID,
-    'Custom Configuration Directory',
-    'Where should darktable store its configuration?',
-    'Select a directory, then click Next.',
-    False, '');
-  ConfigDirPage.Add('');
-  ConfigDirPage.Values[0] := ExpandConstant('{localappdata}\darktable');
-  ConfigDirPage.OnNextButtonClick := @ValidateConfigDir;
+    // Page 2: custom configuration directory, pre-filled with the default
+    ConfigDirPage := CreateInputDirPage(ShortcutNameQueryPage.ID,
+      'Configuration Directory',
+      'Choose where darktable stores its settings.',
+      'Useful for e.g. running parallel darktable installations for ' +
+      'testing. Note: This setting applies to both the desktop and ' +
+      'Start menu shortcuts created by this installer. Other ways of ' +
+      'starting darktable (e.g. launching from another application) ' +
+      'may keep using the default directory.',
+      False, '');
+    ConfigDirPage.Add('');
+    ConfigDirPage.Values[0] := ExpandConstant('{localappdata}\darktable');
+    ConfigDirPage.OnNextButtonClick := @ValidateConfigDir;
+  end;
 end;
 
 function SanitizeShortcutName(const S: String): String;
@@ -306,7 +292,7 @@ var
   C: Char;
   Reserved: String;
 begin
-  Reserved := 'CON,PRN,AUX,NUL,COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9,' +
+  Reserved := ',CON,PRN,AUX,NUL,COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9,' +
               'LPT1,LPT2,LPT3,LPT4,LPT5,LPT6,LPT7,LPT8,LPT9,';
   Result := '';
   for I := 1 to Length(S) do
@@ -322,57 +308,40 @@ begin
 
   // Windows reserves these basenames regardless of extension (e.g. "CON.lnk"
   // is blocked just like "CON"); fall back to the default name for them.
-  if Pos(Uppercase(Result) + ',', Reserved) > 0 then
+  if Pos(',' + Uppercase(Result) + ',', Reserved) > 0 then
     Result := '';
 end;
 
-// Returns the (sanitized) custom shortcut name, or the existing default
-// name if the checkbox is checked or the custom field was left empty/
-// only contained invalid characters.
+// Returns the (sanitized) custom shortcut name, or the default name if
+// this is a release build (page doesn't exist, see InitializeWizard) or
+// the field was left empty/only contained invalid characters.
 function GetShortcutName(Param: String): String;
 var
   CustomName: String;
 begin
-  if ShortcutChoicePage.SelectedValueIndex = 0 then
-    Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}')
-  else
+  Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}');
+  if Assigned(ShortcutNameQueryPage) then
   begin
     CustomName := SanitizeShortcutName(ShortcutNameQueryPage.Values[0]);
-    if CustomName = '' then
-      Result := ExpandConstant('{#MyAppName}{code:SuffixIfNotRelease}')
-    else
+    if CustomName <> '' then
       Result := CustomName;
   end;
 end;
 
-// Skip the query/directory page of each pair when "default" was chosen
-// on its preceding choice page.
-function ShouldSkipPage(PageID: Integer): Boolean;
-begin
-  Result := False;
-  if PageID = ShortcutNameQueryPage.ID then
-    Result := ShortcutChoicePage.SelectedValueIndex = 0
-  else if PageID = ConfigDirPage.ID then
-    Result := ConfigChoicePage.SelectedValueIndex = 0;
-end;
-
-// Returns the "--configdir ..." argument for the Start menu/desktop
-// shortcuts and the post-install "Launch darktable" entry, or an empty
-// string when the default configuration directory is used.
+// "--configdir ..." for the desktop/Start menu shortcuts ([Icons]) and the
+// post-install "Launch darktable" entry ([Run]), or '' for a release build
+// (page doesn't exist) or an empty custom-directory field.
 function GetConfigDirParam(Param: String): String;
 var
   Dir: String;
 begin
-  if ConfigChoicePage.SelectedValueIndex = 0 then
-    Result := ''
-  else
+  Result := '';
+  if Assigned(ConfigDirPage) then
   begin
     Dir := Trim(ConfigDirPage.Values[0]);
     if (Dir <> '') and (Dir[Length(Dir)] = '\') then
       Dir := Copy(Dir, 1, Length(Dir) - 1);
-    if Dir = '' then
-      Result := ''
-    else
+    if Dir <> '' then
       Result := '--configdir ' + AddQuotes(Dir);
   end;
 end;
