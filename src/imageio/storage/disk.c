@@ -469,8 +469,12 @@ try_again:
         // file exists, skip
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
         dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'", filename);
+#ifndef _WIN32
+        /* #21829 / PR #21949: avoid taskbar attention from per-image export
+         * status overlays on Windows. */
         dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
                        num, total, filename);
+#endif
         return 0;
       }
     }
@@ -517,9 +521,13 @@ try_again:
         {
           dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
           dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'", filename);
+#ifndef _WIN32
+          /* #21829 / PR #21949: avoid taskbar attention from per-image export
+           * status overlays on Windows. */
           dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
                                   "%d/%d skipping (not modified since export) `%s'", num),
                          num, total, filename);
+#endif
           return 0;
         }
       }

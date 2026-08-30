@@ -371,9 +371,13 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
                     icc_intent, self, sdata, num, total, metadata);
 
   dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
+#ifndef _WIN32
+  /* #21829 / PR #21949: avoid taskbar attention from per-image export
+   * status overlays on Windows. */
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'",
                           num),
                  num, total, filename);
+#endif
   return 0;
 }
 

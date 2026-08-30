@@ -1445,6 +1445,9 @@ cleanup:
   g_free(description);
   g_free(author);
 
+#ifndef _WIN32
+  /* #21829 / PR #21949: avoid taskbar attention from per-image export
+   * status overlays on Windows. */
   if(skipped)
   {
     dt_control_log(_("%d/%d skipped (already exists)"), num, total);
@@ -1457,6 +1460,7 @@ cleanup:
                 "%d/%d exported to Piwigo webalbum", num),
        num, total);
   }
+#endif
   return result;
 }
 

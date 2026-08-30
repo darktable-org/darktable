@@ -3277,7 +3277,12 @@ static int32_t _control_import_job_run(dt_job_t *job)
   }
   g_free(prev_output);
 
+#ifndef _WIN32
+  /* #21829 / PR #21949: this completion overlay can trigger Windows taskbar
+   * attention after an import. The background-job progress already reports
+   * the operation there. */
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
+#endif
   dt_set_darktable_tags();
   dt_control_queue_redraw_center();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
