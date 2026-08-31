@@ -1126,8 +1126,8 @@ error:
 
 void init_global(dt_iop_module_so_t *self)
 {
-  const int program = 42;     // satcurve.cl in programs.conf
-  const int program_fgf = 43; // fast_guided_filter.cl in programs.conf
+  const int program = 43;     // satcurve.cl in programs.conf
+  const int program_fgf = 44; // fast_guided_filter.cl in programs.conf
 
   dt_iop_satcurve_global_data_t *gd = malloc(sizeof(dt_iop_satcurve_global_data_t));
   self->data = gd;

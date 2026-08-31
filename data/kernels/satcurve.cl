@@ -341,3 +341,27 @@ satcurve_mask_from_scalar(read_only image2d_t scalar_mask, read_only image2d_t i
 
   write_imagef(out, (int2)(x, y), pixout);
 }
+
+
+// final step specific to satcurvergb: blend the already-corrected RGB pixel
+// back towards the untouched input RGB, using the filtered scalar mask as
+// per-pixel strength. Mirrors the `if(gf_mask)` branch inside the CPU
+// process() loop: pixout[c] = rgb[c] + w * (pixout[c] - rgb[c]).
+kernel void
+satcurve_apply_guided_mask(read_only image2d_t rgb_in, read_only image2d_t corrected,
+                           read_only image2d_t mask, write_only image2d_t out,
+                           const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 rgb = Areadpixel(rgb_in, x, y);
+  const float4 pixout = Areadpixel(corrected, x, y);
+  const float w = clamp(Areadsingle(mask, x, y), 0.f, 1.f);
+
+  float4 result = rgb + w * (pixout - rgb);
+  result.w = pixout.w;
+
+  write_imagef(out, (int2)(x, y), result);
+}
