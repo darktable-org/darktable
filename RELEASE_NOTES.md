@@ -101,6 +101,9 @@ changes (where available).
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.
 
+- Printer (paper) profiled print jobs will remain 16 bit through
+  the full print pipeline
+
 ## Bug Fixes
 
 - Clarified multi-image rating toasts for un-reject and for mixed
