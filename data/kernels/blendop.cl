@@ -434,8 +434,8 @@ blendop_mask_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_
   if(x >= width || y >= height) return;
 
   float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = readpixel(in_b, x, y);
-  float form = readsingle(mask_in, x, y);
+  float4 b = Areadpixel(in_b, x, y);
+  float form = Areadsingle(mask_in, x, y);
 
   float conditional = blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
 
@@ -454,7 +454,7 @@ blendop_mask_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  float form = readsingle(mask_in, x, y);
+  float form = Areadsingle(mask_in, x, y);
 
   float opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form;
 
@@ -472,8 +472,8 @@ blendop_mask_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __r
   if(x >= width || y >= height) return;
 
   float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = readpixel(in_b, x, y);
-  float form = readsingle(mask_in, x, y);
+  float4 b = Areadpixel(in_b, x, y);
+  float form = Areadsingle(mask_in, x, y);
 
   const unsigned int invert_mask = (blendif >> 16) ^ (mask_combine & DEVELOP_COMBINE_INCL ? 0 : DEVELOP_BLENDIF_RGB_MASK);
 
@@ -496,8 +496,8 @@ blendop_mask_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, 
   if(x >= width || y >= height || use_work_profile == 0) return;
 
   float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = readpixel(in_b, x, y);
-  float form = readsingle(mask_in, x, y);
+  float4 b = Areadpixel(in_b, x, y);
+  float form = Areadsingle(mask_in, x, y);
 
   const unsigned int invert_mask = (blendif >> 16) ^ (mask_combine & DEVELOP_COMBINE_INCL ? 0 : DEVELOP_BLENDIF_RGB_MASK);
 
@@ -526,14 +526,14 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
     b = readpixel(in_a, x+offs.x, y+offs.y);
-    a = readpixel(in_b, x, y);
+    a = Areadpixel(in_b, x, y);
   }
   else
   {
     a = readpixel(in_a, x+offs.x, y+offs.y);
-    b = readpixel(in_b, x, y);
+    b = Areadpixel(in_b, x, y);
   }
-  float opacity = readsingle(mask, x, y);
+  float opacity = Areadsingle(mask, x, y);
 
   /* scale L down to [0; 1] and a,b to [-1; 1] */
   const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
@@ -813,14 +813,14 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
     b = readsingle(in_a, x+offs.x, y+offs.y);
-    a = readsingle(in_b, x, y);
+    a = Areadsingle(in_b, x, y);
   }
   else
   {
     a = readsingle(in_a, x+offs.x, y+offs.y);
-    b = readsingle(in_b, x, y);
+    b = Areadsingle(in_b, x, y);
   }
-  float opacity = readsingle(mask, x, y);
+  float opacity = Areadsingle(mask, x, y);
 
   const float min = 0.0f;
   const float max = 1.0f;
@@ -959,15 +959,15 @@ blendop_RAW4(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
     b = readpixel(in_a, x+offs.x, y+offs.y);
-    a = readpixel(in_b, x, y);
+    a = Areadpixel(in_b, x, y);
   }
   else
   {
     a = readpixel(in_a, x+offs.x, y+offs.y);
-    b = readpixel(in_b, x, y);
+    b = Areadpixel(in_b, x, y);
   }
 
-  float4 opacity = readsingle(mask, x, y);
+  float4 opacity = Areadsingle(mask, x, y);
 
   const float4 min = 0.0f;
   const float4 max = 1.0f;
@@ -1109,14 +1109,14 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
     b = readpixel(in_a, x+offs.x, y+offs.y);
-    a = readpixel(in_b, x, y);
+    a = Areadpixel(in_b, x, y);
   }
   else
   {
     a = readpixel(in_a, x+offs.x, y+offs.y);
-    b = readpixel(in_b, x, y);
+    b = Areadpixel(in_b, x, y);
   }
-  float opacity = readsingle(mask, x, y);
+  float opacity = Areadsingle(mask, x, y);
 
   const float4 min = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
   const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1321,14 +1321,14 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
     b = readpixel(in_a, x+offs.x, y+offs.y);
-    a = readpixel(in_b, x, y);
+    a = Areadpixel(in_b, x, y);
   }
   else
   {
     a = readpixel(in_a, x+offs.x, y+offs.y);
-    b = readpixel(in_b, x, y);
+    b = Areadpixel(in_b, x, y);
   }
-  float opacity = readsingle(mask, x, y);
+  float opacity = Areadsingle(mask, x, y);
   float norm_a;
   float norm_b;
 
@@ -1437,7 +1437,7 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in,
 
   if (x >= width || y >= height) return;
 
-  float opacity = readsingle(mask_in, x, y);
+  float opacity = Areadsingle(mask_in, x, y);
   float scaled_opacity = 2.f * opacity / gopacity - 1.f;
   if (1.f - brightness <= 0.f)
     scaled_opacity = opacity <= mask_epsilon ? -1.f : 1.f;
@@ -1486,8 +1486,8 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
   if(x >= width || y >= height) return;
 
   float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = readpixel(in_b, x, y);
-  float opacity = readsingle(mask, x, y);
+  float4 b = Areadpixel(in_b, x, y);
+  float opacity = Areadsingle(mask, x, y);
 
   float c;
   float4 LCH;

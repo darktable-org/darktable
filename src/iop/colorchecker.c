@@ -629,7 +629,7 @@ void process(dt_iop_module_t *self,
       data->coeff_b[num_patches+3], 0.0f };
 
   DT_OMP_FOR()
-  for(int k=0; k < npixels; k++)
+  for(size_t k=0; k < npixels; k++)
   {
     dt_aligned_pixel_t inpx;
     copy_pixel(inpx, ((float *)ivoid) + 4*k);

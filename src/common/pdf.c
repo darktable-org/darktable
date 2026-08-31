@@ -394,7 +394,7 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf,
                                  const int icc_id,
                                  const float border)
 {
-  const unsigned char *image = (const unsigned char *)buf;
+  const unsigned char *image = (const unsigned char *)buf; // uint16 can't cast directly to unsigned char, bring in void first then cast
   
   size_t stream_size = 0;
   size_t bytes_written = 0;

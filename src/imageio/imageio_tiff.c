@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <strings.h>
 #include <tiffio.h>
+
 #ifdef HAVE_IMATH
 #include "Imath/half.h"
 #endif
@@ -410,13 +411,36 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
-  TIFFGetField(t.tiff, TIFFTAG_IMAGEWIDTH, &t.width);
-  TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
-  TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
+  if(!TIFFGetField(t.tiff, TIFFTAG_IMAGEWIDTH, &t.width)
+     || !TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] missing image dimensions in '%s'",
+             filename);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
+  // The default value for bits per sample in the TIFF Revision 6.0 Spec is 1
+  TIFFGetFieldDefaulted(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
+
+  // The default value for samples per pixel in the TIFF Revision 6.0 Spec is 1
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
+
+  // The default value for sample format in the TIFF Revision 6.0 Spec is 1,
+  // which represents unsigned integer data
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
-  TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
-  TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
+
+  // The default value for planar config in the TIFF Revision 6.0 Spec is 1,
+  // which represents chunky or contiguous format
+  TIFFGetFieldDefaulted(t.tiff, TIFFTAG_PLANARCONFIG, &config);
+
+  if(!TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] missing photometric interpretation in '%s'",
+             filename);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   // Citing the TIFF 6.0 specification for SampleFormat:
   // A reader would typically treat an image with “undefined” data as

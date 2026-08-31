@@ -490,8 +490,8 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
     err = dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt);
     if(err != CL_SUCCESS) goto finish;
 
-    size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
-    size_t local[2] = { locopt.sizex, locopt.sizey };
+    const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+    const size_t local[2] = { locopt.sizex, locopt.sizey };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_lin_interpolate, sizes, local,
         CLARG(dev_in), CLARG(tmp_out),
         CLARG(width), CLARG(height), CLARG(border),
@@ -513,8 +513,8 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   err = dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt);
   if(err != CL_SUCCESS) goto finish;
 
-  size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
-  size_t local[2] = { locopt.sizex, locopt.sizey };
+  const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+  const size_t local[2] = { locopt.sizex, locopt.sizey };
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_interpolate, sizes, local,
         CLARG(dev_tmp), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(filters4),

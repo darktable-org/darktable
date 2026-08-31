@@ -412,7 +412,7 @@ void process(dt_iop_module_t *self,
   const float *lut = d->lut;
 
   DT_OMP_FOR()
-  for(int i = 0; i < 4 * npixels; i += 4)
+  for(size_t i = 0; i < 4 * npixels; i += 4)
   {
     const float L_in = in[i] / 100.0f;
     float L_out;

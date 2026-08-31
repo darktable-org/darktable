@@ -9,9 +9,9 @@ int main(int argc, char *argv[]);
 
 int wmain(int argc, wchar_t *argv[])
 {
-  char **_argv = g_malloc0((argc + 1) * sizeof(char *));
+  char **_argv = g_new0(char *, argc + 1);
   for(int i = 0; i < argc; i++)
-    _argv[i] = g_utf16_to_utf8(argv[i], -1, NULL, NULL, NULL);
+    _argv[i] = g_utf16_to_utf8((const gunichar2 *)argv[i], -1, NULL, NULL, NULL);
   int res = main(argc, _argv);
   g_strfreev(_argv);
   return res;

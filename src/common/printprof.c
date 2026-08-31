@@ -65,7 +65,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
     return 1;
   }
 
-  void *out = g_malloc((size_t)3 * (bpp == 8 ? 1 : 2) * width * height); //bug fixed: memory allocation was not accounting for bpp for out, was always 8 bit/channel
+  void *out = g_malloc((size_t)3 * (bpp == 8 ? 1 : 2) * width * height); //fixed for 16 bit printing: memory allocation was not accounting for bpp for out, was always 8 bit/channel
   if(!out)
   {
     dt_print(DT_DEBUG_ALWAYS, "unable to allocate buffer for printer-proofed image");

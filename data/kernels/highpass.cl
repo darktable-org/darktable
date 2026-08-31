@@ -29,7 +29,7 @@ highpass_invert(read_only image2d_t in, write_only image2d_t out, const int widt
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = Areadpixel(in, x, y);
   pixel.x = clamp(100.0f - pixel.x, 0.0f, 100.0f);
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -43,10 +43,9 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
   const int lsz = get_local_size(0);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  float4 pixel = (float4)0.0f;
 
   /* read pixel and fill center part of buffer */
-  pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   buffer[rad + lid] = pixel.x;
 
   /* left wing of buffer */
@@ -95,10 +94,9 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m
   const int lsz = get_local_size(1);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  float4 pixel = (float4)0.0f;
 
   /* read pixel and fill center part of buffer */
-  pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   buffer[rad + lid] = pixel.x;
 
   /* left wing of buffer */
@@ -149,8 +147,8 @@ highpass_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only imag
   if(x >= width || y >= height) return;
 
   float4 o = 0.0f;
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+  float4 a = readpixel(in_a, x, y);
+  float4 b = readpixel(in_b, x, y);
   float4 min = (float4)(0.0f, -128.0f, -128.0f, -INFINITY);
   float4 max = (float4)(100.0f, 128.0f, 128.0f, INFINITY);
 

@@ -496,8 +496,9 @@ static void _mipmap_cache_allocate_dynamic(void *data,
     // dt_print(DT_DEBUG_ALWAYS, "[mipmap cache] alloc dynamic for key %u %p", key, *buf);
     if(!(entry->data))
     {
+      entry->data = (void *)_mipmap_cache_static_dead_image;
       dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] memory allocation failed!");
-      exit(1);
+      return;
     }
 
     dsc = entry->data;
@@ -961,6 +962,8 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
     // simple case: blocking get
     dt_cache_entry_t *entry =
       dt_cache_get_with_caller(&_get_cache(cache, mip)->cache, key, mode, file, line);
+    if(!entry)
+      return;
 
     ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
 
@@ -1069,6 +1072,9 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
       dt_cache_release(&_get_cache(cache, mip)->cache, entry);
       // get a read lock
       buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
+      if(!entry)
+        return;
+
       ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
       entry->_lock_demoting = FALSE;
       dsc = (dt_mipmap_buffer_dsc_t *)buf->cache_entry->data;
