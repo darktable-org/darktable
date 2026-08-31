@@ -101,6 +101,9 @@ changes (where available).
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.
 
+- Added a control in the bottom panel of the lighttable to reset 
+  the star rating of images.
+
 ## Bug Fixes
 
 - Clarified multi-image rating toasts for un-reject and for mixed
