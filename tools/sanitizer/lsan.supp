@@ -1,0 +1,27 @@
+# LeakSanitizer suppressions for darktable.
+#
+# Only used by -DDT_SANITIZE=leak builds (ASan builds run with detect_leaks=0,
+# see sanitizer-env.sh.in).
+#
+# Syntax: leak:<substring of a function name or of a source/library path>
+# Add entries here as runs turn up allocations that are owned by a library and
+# intentionally never released.
+
+# GLib/GObject intern their type system, quark and thread-default-context data
+# for the lifetime of the process and never free it.
+leak:g_type_register_static
+leak:g_type_add_interface_static
+leak:g_quark_init
+leak:g_main_context_new
+leak:g_private_set_alloc0
+
+# The OpenCL ICD loader keeps per-platform state alive until process exit and
+# vendor ICDs commonly leak outright. Not darktable's memory.
+leak:libOpenCL.so
+leak:libamdocl
+leak:libigdrcl
+leak:libnvidia
+
+# GTK/gdk-pixbuf module and icon theme caches are process-lifetime.
+leak:gtk_init
+leak:gdk_pixbuf_io_init
