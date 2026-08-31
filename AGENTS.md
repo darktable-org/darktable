@@ -333,6 +333,38 @@ Keep both in sync, or explain why not.
   `data/darktableconfig.xml.in`
 - Do not add dependencies without asking first
 
+### Release notes
+
+A PR that changes what a user experiences needs an entry in
+`RELEASE_NOTES.md`, in the same PR: maintainers will not merge without one.
+
+The file's own sections are the guide to what qualifies -- *The Big Ones*,
+*UI/UX Improvements*, *Performance Improvements*, *Other Changes*, *Bug
+Fixes*, *Lua*, *Changed Dependencies*. Put the entry under the heading that
+already fits rather than adding one.
+
+Nothing a user cannot observe needs an entry: refactors, test-only changes,
+CI, comments, typos, translation updates. Neither does a regression fixed in
+the same cycle that introduced it, since no release ever carried it. Leave
+the camera-support sections alone -- `Base Support`, `White Balance Presets`
+and `Noise Profiles` are filled in at release time, not per PR.
+
+Keep the entry in its own commit (`RELEASE_NOTES.md: <what changed>`), so a
+fix cherry-picked to a release branch does not drag a note written for a
+different version with it.
+
+Write it to read like its neighbours, and say what the user gets rather than
+how it was done:
+
+```text
+- Fixed a crash at the end of neural restore's raw denoise on certain
+  sensor sizes, where blending the tile seams wrote past the edge of
+  the image.
+```
+
+If you cannot tell whether an entry is needed, open the PR without one and
+ask, rather than inventing one or skipping it quietly.
+
 ## What not to do
 
 - Do not reformat, rename or tidy code you were not asked to touch. It buries
