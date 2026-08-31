@@ -153,6 +153,9 @@ changes (where available).
 
 - Fixed OpenCL input gamma corrected scaling for some devices.
 
+- Compute JzAzBz's Az and Bz without cancellation so that results
+  computed by the CPU and OpenCL paths do not diverge.
+
 ## Lua
 
 ### API Version
