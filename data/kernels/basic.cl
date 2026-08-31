@@ -232,7 +232,7 @@ whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int widt
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[0], pixel.y * coeffs[1], pixel.z * coeffs[2], pixel.w));
 }
 
@@ -244,7 +244,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const int width, con
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   pixel.xyz = ((pixel - black ) * scale).xyz;
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -260,7 +260,7 @@ highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 
   // 4f/pixel means that this has been debayered already.
   // it's thus hopeless to recover highlights here (this code path is just used for preview and non-raw images)
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   // default: // 0, DT_IOP_HIGHLIGHTS_CLIP
   pixel.x = fmin(clip, pixel.x);
   pixel.y = fmin(clip, pixel.y);
@@ -287,7 +287,7 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out,
   if((icol >= 0) && (irow >= 0) && (irow < iheight) && (icol < iwidth))
   {
     const int color = fcol(irow, icol, filters, xtrans);
-    pixel = readsingle(in, icol, irow);
+    pixel = Areadsingle(in, icol, irow);
     pixel = fmin(clips[color], pixel);
   }
   write_imagef(out, (int2)(x, y), pixel);
@@ -317,7 +317,7 @@ kernel void highlights_false_color(read_only image2d_t in,
 
   if((irow >= 0) && (icol >= 0) && (icol < iwidth) && (irow < iheight))
   {
-    const float ival = readsingle(in, icol, irow);
+    const float ival = Areadsingle(in, icol, irow);
     const int c = fcol(irow, icol, filters, xtrans);
     oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
   }
@@ -340,7 +340,7 @@ static float _calc_refavg(read_only image2d_t in,
   {
     for(int dx = max(0, col - 1); dx < min(maxcol - 1, col + 2); dx++)
     {
-      const float val = fmax(0.0f, readsingle(in, dx, dy));
+      const float val = fmax(0.0f, Areadsingle(in, dx, dy));
       const int c = fcol(dy, dx, filters, xtrans);
       mean[c] += val;
       cnt[c] += 1.0f;
@@ -451,7 +451,7 @@ kernel void highlights_chroma(read_only image2d_t in,
   {
     const int idx = mad24(row, width, col);
     const int color = fcol(row, col, filters, xtrans);
-    const float inval = readsingle(in, col, row);
+    const float inval = Areadsingle(in, col, row);
     const int px = color * msize + mad24(row/3, mwidth, col/3);
     if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
     {
@@ -495,7 +495,7 @@ kernel void highlights_opposed(read_only image2d_t in,
 
   if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
   {
-    val = readsingle(in, icol, irow);
+    val = Areadsingle(in, icol, irow);
 
     if(!fastcopymode)
     {
@@ -1992,7 +1992,7 @@ float compute_upsampling_taps(const int itor_mode,
     return maketaps_bilinear(taps, 2*itor_width, (float)itor_width, t, -1.0f);
 }
 
-static inline float get_image_channel(read_only image2d_t in,
+static inline float _get_image_channel(read_only image2d_t in,
                                       const int x,
                                       const int y,
                                       const int c)
@@ -2043,7 +2043,7 @@ float interpolation_compute_single(read_only image2d_t in,
       float h = 0.0f;
       for(int j = 0; j < 2 * itor_width; j++)
       {
-        h += kernelh[j] * get_image_channel(in, clip_mirror(ix+j, width-1), clip_mirror(iy+i, height-1), channel);
+        h += kernelh[j] * _get_image_channel(in, clip_mirror(ix+j, width-1), clip_mirror(iy+i, height-1), channel);
       }
       s += kernelv[i] * h;
     }
@@ -3363,7 +3363,7 @@ rawoverexposed_mark_cfa (read_only image2d_t in,
   const int c = fcol(raw_y, raw_x, filters, xtrans);
   if(raw_pixel < threshold[c]) return;
 
-  float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+  float4 pixel = fmax(0.0f, Areadpixel(in, x, y));
   const float4 color = colors[c & 3];
 
   // cfa color
@@ -3403,7 +3403,7 @@ rawoverexposed_mark_solid (read_only image2d_t in,
   const int c = fcol(raw_y, raw_x, filters, xtrans);
   if(raw_pixel < threshold[c]) return;
 
-  float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+  float4 pixel = fmax(0.0f, Areadpixel(in, x, y));
 
   // solid color
   pixel.xyz = solid_color.xyz;
@@ -3442,7 +3442,7 @@ rawoverexposed_falsecolor (read_only image2d_t in,
   const int c = fcol(raw_y, raw_x, filters, xtrans);
   if(raw_pixel < threshold[c]) return;
 
-  float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+  float4 pixel = fmax(0.0f, Areadpixel(in, x, y));
   if(c == 2)      pixel.z = 0.0f;
   else if(c == 1) pixel.y = 0.0f;
   else if(c == 0) pixel.x = 0.0f;

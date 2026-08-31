@@ -267,7 +267,7 @@ __kernel void sample_input(__read_only image2d_t dev_in,
 
   const int k = mad24(row, width, col);
 
-  const float4 pix_in = read_imagef(dev_in, samplerA, (int2)(col, row));
+  const float4 pix_in = Areadpixel(dev_in, col, row);
   // calc saturation from input data
   const float dmin = fmin(pix_in.x, fmin(pix_in.y, pix_in.z));
   const float dmax = fmax(pix_in.x, fmax(pix_in.y, pix_in.z));

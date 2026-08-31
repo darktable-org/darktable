@@ -29,7 +29,7 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
 
   if(x >= width || y >= height) return;
 
-  const float pc = readsingle(in, x, y);
+  const float pc = Areadsingle(in, x, y);
   write_imagef(out, (int2)(x, y), (float4)pc);
 }
 
@@ -46,7 +46,7 @@ passthrough_color(__read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  const float ival = readsingle(in, x, y);
+  const float ival = Areadsingle(in, x, y);
   const int c = fcol(y, x, filters, xtrans);
 
   float4 oval = (float4)(0.0f, 0.0f, 0.0f, 0.0f);

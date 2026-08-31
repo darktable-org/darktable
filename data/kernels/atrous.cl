@@ -45,7 +45,7 @@ eaw_decompose(__read_only image2d_t in,
 
   const int mult = 1<<scale;
 
-  const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 pixel = readpixel(in, x, y);
   float4 sum = (float4)(0.0f);
   float4 wgt = (float4)(0.0f);
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
@@ -79,8 +79,8 @@ eaw_synthesize(__write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float4 c = read_imagef(coarse, sampleri, (int2)(x, y));
-  const float4 d = read_imagef(detail, sampleri, (int2)(x, y));
+  const float4 c = readpixel(coarse, x, y);
+  const float4 d = readpixel(detail, x, y);
   const float4 amount = copysign(fmax((float4)(0.0f), fabs(d) - threshold), d);
   float4 sum = c + boost*amount;
   sum.w = c.w;
@@ -98,7 +98,7 @@ eaw_addbuffers(__write_only image2d_t out_out,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 cs = read_imagef(diff, sampleri, (int2)(x, y));
-  const float4 o = read_imagef(out_in, sampleri, (int2)(x, y));
+  const float4 cs = readpixel(diff, x, y);
+  const float4 o = readpixel(out_in, x, y);
   write_imagef(out_out, (int2)(x, y), (cs + o));  
 }
