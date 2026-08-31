@@ -5674,8 +5674,11 @@ static void _pinch_dispatch(GtkGesture *gesture,
   ctx->handler(gesture, &e, ctx->user_data);
 }
 
-static void _pinch_begin(GtkGestureZoom *gesture, gpointer user_data)
+static void _pinch_begin(GtkGestureZoom *gesture,
+                         GdkEventSequence *sequence,
+                         gpointer user_data)
 {
+  (void)sequence;
   (void)user_data;
   dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
   if(!ctx)
@@ -5721,8 +5724,11 @@ static void _pinch_scale_changed(GtkGestureZoom *gesture,
   _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE, scale);
 }
 
-static void _pinch_end(GtkGestureZoom *gesture, gpointer user_data)
+static void _pinch_end(GtkGestureZoom *gesture,
+                       GdkEventSequence *sequence,
+                       gpointer user_data)
 {
+  (void)sequence;
   (void)user_data;
   dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
   if(!ctx || !ctx->active)
