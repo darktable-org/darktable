@@ -102,8 +102,8 @@ changes (where available).
   profile for.
 
 - Printer (paper) profiled print jobs will remain 16 bit through
-  the full print pipeline
-  
+  the full print pipeline.
+
 - When installing development versions of darktable (snapshots, self
   compiled etc.)  the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
@@ -148,8 +148,8 @@ changes (where available).
 - Fixed auto-applied denoise presets running a second time on images
   produced by AI raw denoise.
 
-- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
-  is available for those.
+- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping
+  mode is available for those.
 
 - Fixed OpenCL input gamma corrected scaling for some devices.
 
