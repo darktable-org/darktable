@@ -111,18 +111,46 @@ review is the default.
 
 ## Build
 
+Two documented ways, both from the README's Compile section. The script,
+which works on Linux, macOS and Windows:
+
 ```bash
-./build.sh                       # helper script, see --help
-cmake -B build && cmake --build build
+./build.sh --prefix /opt/darktable-test --build-type Release --install --sudo
 ```
 
-Verify with a real build before proposing changes. A change that has only been
-reasoned about is not finished.
+or by hand:
 
-Enable only what you need, because full builds are slow and the optional
-features (`USE_AI`, `USE_OPENCL`, `USE_LUA`, camera support, image formats)
-each pull in dependencies. If you touch code behind an `#ifdef`, build with
-that option both on and off. The disabled path is where broken stubs hide.
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/opt/darktable/ ..
+cmake --build .
+sudo cmake --install .
+```
+
+To check that a change compiles you need neither prefix nor install: drop
+`--install --sudo`, or stop after `cmake --build .`. Remove `build/` first if
+the last build was of a different version -- the README explains why.
+
+On Windows, build inside the MSYS2 UCRT64 shell, not a plain Windows prompt:
+the toolchain and every dependency come from the `mingw-w64-ucrt-x86_64-*`
+packages. The same script is used there, with `--build-generator Ninja` and
+no `--sudo`. See `packaging/windows/README.md`.
+
+`./build.sh --help` lists every option. `--enable-ai` and `-DUSE_AI=ON` are
+the same switch: the script uppercases the feature name and prefixes `USE_`.
+The features are `ai`, `camera`, `colord`, `gmic`, `graphicsmagick`,
+`imagemagick`, `jxl`, `kwallet`, `libsecret`, `lua`, `mac_integration`, `map`,
+`mcp`, `opencl`, `opencv`, `openexr`, `openmp`, `unity` and `webp`.
+
+Left alone, cmake enables whatever it autodetects on the machine, and a flag
+forces one feature on or off regardless. Each pulls in its own dependencies,
+so enable only what your change needs -- full builds are slow.
+
+Verify with a real build before proposing changes. A change that has only been
+reasoned about is not finished. If you touch code behind an `#ifdef`, build
+with that feature both on and off. The disabled path is where broken stubs
+hide.
 
 If `AGENTS.local.md` gives its own build or run commands, use those instead:
 how a checkout is built is a local matter, not a project convention.
