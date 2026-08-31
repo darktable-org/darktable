@@ -362,6 +362,12 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
                         { 3.524000f, -4.066708f, 0.542708f, 0.0f },
                         { 0.199076f, 1.096799f, -1.295875f, 0.0f } };
 
+  const float n = 0.159301758f;
+  const float p = 134.034375f;
+  const float c1 = 0.8359375f;
+  const float c2 = 18.8515625f;
+  const float c3 = 18.6875f;
+
   float4 temp1, temp2;
   // XYZ -> X'Y'Z
   temp1.x = 1.15f * XYZ_D65.x - 0.15f * XYZ_D65.z;
@@ -373,16 +379,64 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   temp2.y = dot(M[1], temp1);
   temp2.z = dot(M[2], temp1);
   temp2.w = 0.f;
-  // LMS -> L'M'S'
-  temp2 = dtcl_pow(fmax(temp2 / 10000.f, 0.0f), 0.159301758f);
-  temp2 = dtcl_pow((0.8359375f + 18.8515625f * temp2) / (1.0f + 18.6875f * temp2), 134.034375f);
-  // L'M'S' -> Izazbz
-  temp1.x = dot(A[0], temp2);
-  temp1.y = dot(A[1], temp2);
-  temp1.z = dot(A[2], temp2);
+
+  const float l = temp2.x / 10000.f;
+  const float m = temp2.y / 10000.f;
+  const float s = temp2.z / 10000.f;
+
+  float4 out;
+  // Az and Bz are differences of near-equal numbers and are computed as such --
+  // see the long comment on dt_XYZ_2_JzAzBz() in
+  // src/common/colorspaces_inline_conversions.h, which this mirrors exactly.
+  if(l > 0.0f && m > 0.0f && s > 0.0f)
+  {
+    // raw differences from the matrix rows, not from the computed LMS
+    const float d_lm = dot(M[0] - M[1], temp1) / 10000.f;
+    const float d_sm = dot(M[2] - M[1], temp1) / 10000.f;
+    const float d_ls = dot(M[0] - M[2], temp1) / 10000.f;
+
+    // ... through x^n. x^k - y^k = y^k * expm1(k * log1p((x-y)/y)), which is
+    // accurate because log1p and expm1 are accurate near zero
+    const float t_l = dtcl_pow(l, n), t_m = dtcl_pow(m, n), t_s = dtcl_pow(s, n);
+    const float dt_lm = dtcl_pow(m, n) * expm1(n * log1p(d_lm / m));
+    const float dt_sm = dtcl_pow(m, n) * expm1(n * log1p(d_sm / m));
+    const float dt_ls = dtcl_pow(s, n) * expm1(n * log1p(d_ls / s));
+
+    // ... through the rational PQ step
+    const float k = c2 - c1 * c3;
+    const float q_l = 1.0f + c3 * t_l, q_m = 1.0f + c3 * t_m, q_s = 1.0f + c3 * t_s;
+    const float y_l = (c1 + c2 * t_l) / q_l;
+    const float y_m = (c1 + c2 * t_m) / q_m;
+    const float y_s = (c1 + c2 * t_s) / q_s;
+    const float dy_lm = k * dt_lm / (q_l * q_m);
+    const float dy_sm = k * dt_sm / (q_s * q_m);
+    const float dy_ls = k * dt_ls / (q_l * q_s);
+
+    // ... and through y^p, giving L'-M', S'-M' and L'-S' directly
+    const float d_LM = dtcl_pow(y_m, p) * expm1(p * log1p(dy_lm / y_m));
+    const float d_SM = dtcl_pow(y_m, p) * expm1(p * log1p(dy_sm / y_m));
+    const float d_LS = dtcl_pow(y_s, p) * expm1(p * log1p(dy_ls / y_s));
+
+    // Iz is a sum, not a difference
+    out.x = 0.5f * dtcl_pow(y_l, p) + 0.5f * dtcl_pow(y_m, p);
+    out.y = 3.524000f * d_LM + 0.542708f * d_SM;
+    out.z = 0.199076f * d_LS - 1.096799f * d_SM;
+    out.w = 0.f;
+  }
+  else
+  {
+    // LMS -> L'M'S'
+    temp2 = dtcl_pow(fmax(temp2 / 10000.f, 0.0f), n);
+    temp2 = dtcl_pow((c1 + c2 * temp2) / (1.0f + c3 * temp2), p);
+    // L'M'S' -> Izazbz
+    out.x = dot(A[0], temp2);
+    out.y = dot(A[1], temp2);
+    out.z = dot(A[2], temp2);
+    out.w = 0.f;
+  }
   // Iz -> Jz
-  temp1.x = fmax(0.44f * temp1.x / (1.0f - 0.56f * temp1.x) - 1.6295499532821566e-11f, 0.f);
-  return temp1;
+  out.x = fmax(0.44f * out.x / (1.0f - 0.56f * out.x) - 1.6295499532821566e-11f, 0.f);
+  return out;
 }
 
 
