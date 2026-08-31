@@ -31,3 +31,12 @@ PR review time.
 See the [Coding Style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style)
 section in the [Developer's Guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 on our GitHub wiki.
+
+### AI coding agents
+
+If you work with an AI coding agent, [AGENTS.md](AGENTS.md) in the repository root carries
+the project's conventions for it: how to build and test, the coding style, and what we expect
+of commits and pull requests. Most agents read it without being asked.
+
+Your own instructions go in `AGENTS.local.md` beside it. That file is untracked, and amends
+`AGENTS.md` rather than replacing it.

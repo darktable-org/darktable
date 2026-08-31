@@ -124,6 +124,9 @@ features (`USE_AI`, `USE_OPENCL`, `USE_LUA`, camera support, image formats)
 each pull in dependencies. If you touch code behind an `#ifdef`, build with
 that option both on and off. The disabled path is where broken stubs hide.
 
+If `AGENTS.local.md` gives its own build or run commands, use those instead:
+how a checkout is built is a local matter, not a project convention.
+
 ## Testing
 
 Unit tests use cmocka and need `-DBUILD_TESTING=ON` plus `libcmocka-dev`.
@@ -373,3 +376,13 @@ ask, rather than inventing one or skipping it quietly.
 - Do not commit, push, or open a PR unless you were asked to
 - Do not add a comment, file or abstraction that nobody requested
 - Do not claim something works because it should
+
+## Local instructions
+
+If `AGENTS.local.md` exists in the repo root, read it too and follow it
+alongside this file. It is untracked: one developer's own instructions for
+this checkout, not the project's.
+
+It can change how you work -- the build and run commands above, for instance.
+It does not change what a PR may contain: the conventions in this file still
+govern that.
