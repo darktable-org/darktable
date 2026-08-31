@@ -59,6 +59,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "common/chromatic_adaptation.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/darktable.h"
+#include "common/bilinear.h"
 #include "common/eigf.h"
 #include "common/interpolation.h"
 #include "common/gaussian.h"
@@ -192,9 +193,6 @@ typedef struct dt_iop_colorequal_global_data_t
   int ce_write_output;
   int ce_write_visual;
   int ce_draw_weight;
-  int ce_bilinear1;
-  int ce_bilinear2;
-  int ce_bilinear4;
 } dt_iop_colorequal_global_data_t;
 
 
@@ -334,9 +332,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->ce_write_output = dt_opencl_create_kernel(program, "write_output");
   gd->ce_write_visual = dt_opencl_create_kernel(program, "write_visual");
   gd->ce_draw_weight = dt_opencl_create_kernel(program, "draw_weight");
-  gd->ce_bilinear1 = dt_opencl_create_kernel(program, "bilinear1");
-  gd->ce_bilinear2 = dt_opencl_create_kernel(program, "bilinear2");
-  gd->ce_bilinear4 = dt_opencl_create_kernel(program, "bilinear4");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -355,9 +350,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->ce_write_output);
   dt_opencl_free_kernel(gd->ce_write_visual);
   dt_opencl_free_kernel(gd->ce_draw_weight);
-  dt_opencl_free_kernel(gd->ce_bilinear1);
-  dt_opencl_free_kernel(gd->ce_bilinear2);
-  dt_opencl_free_kernel(gd->ce_bilinear4);
 
   free(self->data);
   self->data = NULL;
@@ -1309,8 +1301,8 @@ static int _prefilter_chromaticity_cl(const int devid,
     ds_UV = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
     if(ds_UV == NULL) return err;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
-          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, UV, width, height,
+                                     ds_UV, ds_width, ds_height, 2);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1370,12 +1362,12 @@ static int _prefilter_chromaticity_cl(const int devid,
       goto error;
     }
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear4, width, height,
-          CLARG(ds_a), CLARG(ds_width), CLARG(ds_height), CLARG(a), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_a, ds_width, ds_height,
+                                     a, width, height, 4);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, width, height,
-          CLARG(ds_b), CLARG(ds_width), CLARG(ds_height), CLARG(b), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_b, ds_width, ds_height,
+                                     b, width, height, 2);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_release_mem_object(ds_a);
@@ -1443,16 +1435,16 @@ static int _guide_with_chromaticity_cl(const int devid,
     ds_b_corrections = dt_opencl_alloc_device_buffer(devid, ds_bsize);
     if(ds_UV == NULL || ds_corrections == NULL || ds_b_corrections == NULL) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
-          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, UV, width, height,
+                                     ds_UV, ds_width, ds_height, 2);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
-          CLARG(corrections), CLARG(width), CLARG(height), CLARG(ds_corrections), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, corrections, width, height,
+                                     ds_corrections, ds_width, ds_height, 2);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear1, ds_width, ds_height,
-          CLARG(b_corrections), CLARG(width), CLARG(height), CLARG(ds_b_corrections), CLARG(ds_width), CLARG(ds_height));
+    err = dt_interpolate_bilinear_cl(devid, b_corrections, width, height,
+                                     ds_b_corrections, ds_width, ds_height, 1);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1531,12 +1523,12 @@ static int _guide_with_chromaticity_cl(const int devid,
       goto error;
     }
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear4, width, height,
-          CLARG(ds_a), CLARG(ds_width), CLARG(ds_height), CLARG(a), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_a, ds_width, ds_height,
+                                     a, width, height, 4);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, width, height,
-          CLARG(ds_b), CLARG(ds_width), CLARG(ds_height), CLARG(b), CLARG(width), CLARG(height));
+    err = dt_interpolate_bilinear_cl(devid, ds_b, ds_width, ds_height,
+                                     b, width, height, 2);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -2309,6 +2301,16 @@ void init_presets(dt_iop_module_so_t *self)
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
+/* in_mask_editing — returns TRUE when the mask editor UI is visible
+ * (form_gui exists and form_visible is set), so that the correction
+ * cursor can be hidden consistently with tone equalizer behavior.
+ */
+static gboolean in_mask_editing(const dt_iop_module_t *self)
+{
+  const dt_develop_t *dev = self->dev;
+  return dev->form_gui && dev->form_visible;
+}
+
 /* _switch_cursors — mirrors the tone equalizer's on-canvas cursor
  * handling: hide the native GTK cursor so only our own indicator
  * (gui_post_expose) is visible while a valid reading is available,
@@ -2321,16 +2323,11 @@ static void _switch_cursors(dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g || !self->dev->gui_attached) return;
 
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-
   // Editing a mask (brush/path/etc.) or canvas otherwise not interactive:
   // leave the default cursor alone.
-  if((self->dev->form_gui && self->dev->form_gui->creation)
-     || dt_iop_canvas_not_sensitive(self->dev))
+  if(in_mask_editing(self) || dt_iop_canvas_not_sensitive(self->dev))
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
     return;
   }
 
@@ -2346,9 +2343,7 @@ static void _switch_cursors(dt_iop_module_t *self)
   }
   else
   {
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
+    dt_control_change_cursor("default");
   }
 }
 
@@ -2718,8 +2713,8 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g) return 0;
 
-  // Disable cursor tracking when drawing a mask (brush/path/etc.)
-  if(self->dev->form_gui && self->dev->form_gui->creation)
+  // Disable cursor tracking when mask editor is visible
+  if(in_mask_editing(self))
   {
     g->cursor_valid = FALSE;
     _switch_cursors(self);
@@ -2841,31 +2836,15 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!g || !g->cursor_valid) return;
 
-  // Hide cursor indicator when drawing a mask (brush/path/etc.)
-  if(self->dev->form_gui && self->dev->form_gui->creation) return;
+  // Hide cursor indicator when mask editor is visible
+  if(in_mask_editing(self)) return;
 
-  // Read the color from the preview pipe backbuf
-  dt_develop_t *dev = self->dev;
-  dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-  uint8_t *backbuf = dev->preview_pipe->backbuf;
-  const int buf_w = dev->preview_pipe->backbuf_width;
-  const int buf_h = dev->preview_pipe->backbuf_height;
-
-  float cr_f = 0.5f, cg_f = 0.5f, cb_f = 0.5f; // fallback grey
-
-  if(backbuf && buf_w > 0 && buf_h > 0)
-  {
-    const int px = CLAMP((int)(g->cursor_pos_x * buf_w), 0, buf_w - 1);
-    const int py = CLAMP((int)(g->cursor_pos_y * buf_h), 0, buf_h - 1);
-
-    dt_pthread_mutex_lock(mutex);
-    const size_t idx = (size_t)py * buf_w * 4 + px * 4;
-    // backbuf is CAIRO_FORMAT_ARGB32: B, G, R, A byte order on little-endian
-    cb_f = backbuf[idx + 0] / 255.0f;
-    cg_f = backbuf[idx + 1] / 255.0f;
-    cr_f = backbuf[idx + 2] / 255.0f;
-    dt_pthread_mutex_unlock(mutex);
-  }
+  // Sampled display color under the cursor + contrasting line color,
+  // shared with the tone equalizer's cursor via gui/draw.h.
+  float bg_rgb[3];
+  float frame_color[3];
+  dt_draw_backbuf_contrast(self->dev, g->cursor_pos_x, g->cursor_pos_y,
+                           bg_rgb, frame_color, 16.0f / (zoom_scale * width));
 
   // Position in full image coordinates
   const float cx = g->cursor_pos_x * width;
@@ -2897,8 +2876,8 @@ void gui_post_expose(dt_iop_module_t *self,
   // and scrolled use, stored by process() from the pre-correction values).
   // The "out" color replays the exact process() correction math — the three
   // RBF LUTs from the current params combined as in STEP 4/5 of process().
-  float in_color[3]  = { cr_f, cg_f, cb_f };
-  float out_color[3] = { cr_f, cg_f, cb_f };
+  float in_color[3]  = { bg_rgb[0], bg_rgb[1], bg_rgb[2] };
+  float out_color[3] = { bg_rgb[0], bg_rgb[1], bg_rgb[2] };
 
   if(g->pd.buf && g->pd.width > 0 && g->pd.height > 0 && g->gamut_LUT)
   {
@@ -2966,13 +2945,6 @@ void gui_post_expose(dt_iop_module_t *self,
       out_color[2] = RGB[2];
     }
   }
-
-  // Crosshair/wedge/outline color adapts to the sampled background, same
-  // spirit as the tone equalizer's cursor: white over dark content, black
-  // over light content, so it stays legible everywhere.
-  const float bg_luma = 0.3f * cr_f + 0.59f * cg_f + 0.11f * cb_f;
-  const float frame_shade = (bg_luma > 0.5f) ? 0.0f : 1.0f;
-  const float frame_color[3] = { frame_shade, frame_shade, frame_shade };
 
   dt_draw_correction_cursor(cr, cx, cy, zoom_scale, correction_norm,
                             frame_color,

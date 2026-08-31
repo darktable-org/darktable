@@ -32,12 +32,15 @@
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
 #include "imageio/imageio_tiff.h"
+
 #ifdef HAVE_LIBAVIF
 #include "imageio/imageio_avif.h"
 #endif
+
 #ifdef HAVE_LIBHEIF
 #include "imageio/imageio_heif.h"
 #endif
+
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "iop/iop_api.h"
@@ -772,7 +775,7 @@ static void _process_cmatrix_bm(dt_iop_module_t *self,
   // dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath");
   // only color matrix. use our optimized fast path!
   DT_OMP_FOR(shared(cmatrix, nmatrix, lmatrix))
-  for(int j = 0; j < npixels; j++)
+  for(size_t j = 0; j < npixels; j++)
   {
     const float *const restrict in = (const float *)ivoid + 4*j;
     float *const restrict out = (float *)ovoid + 4*j;

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "bauhaus/bauhaus.h"
@@ -33,6 +34,7 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -52,7 +54,7 @@ DT_MODULE(1)
 // list of recommended basics widgets
 #define RECOMMENDED_BASICS                                                                                        \
   "|exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast|colorbalancergb/global "        \
-  "vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation|ashift/roration|denoiseprofile|lens|bilat|"
+  "vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation|ashift/rotation|denoiseprofile|lens|bilat|"
 
 // if a preset cannot be loaded or the current preset deleted, this is the fallback preset
 

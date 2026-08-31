@@ -1731,7 +1731,7 @@ static int _preview_write_image(dt_imageio_module_data_t *data,
   _imageio_preview_t *d = (_imageio_preview_t *)data;
 
   if(!in) return 1;
-  memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
+  memcpy(d->buf, in, sizeof(uint32_t) * (size_t)data->width * data->height);
   d->width = data->width;
   d->height = data->height;
 
@@ -1773,6 +1773,8 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   dat.head.style_append = TRUE;
   dat.bpp = 8;
   dat.buf = (uint8_t *)dt_alloc_aligned(sizeof(uint32_t) * width * height);
+  if(!dat.buf)
+    return NULL;
 
   g_strlcpy(dat.head.style, style_name, sizeof(dat.head.style));
 

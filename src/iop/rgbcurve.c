@@ -1887,7 +1887,7 @@ void process(dt_iop_module_t *self,
   const _coeffs_table_ptr restrict unbounded_coeffs = d->unbounded_coeffs;
 
   DT_OMP_FOR()
-  for(int y = 0; y < 4*npixels; y += 4)
+  for(size_t y = 0; y < 4*npixels; y += 4)
   {
     if(autoscale == DT_S_SCALE_MANUAL_RGB)
     {

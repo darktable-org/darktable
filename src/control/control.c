@@ -231,6 +231,7 @@ void dt_control_init(const gboolean withgui)
 
   // persistent log history initialization
   s->log_history = NULL;
+  s->unread_messages = FALSE;
   dt_pthread_mutex_init(&s->log_history_mutex, NULL);
 
   pthread_cond_init(&s->cond, NULL);
@@ -285,9 +286,9 @@ void dt_control_cursor_debug(const char *owner,
 
 static void _change_cursor_with_fallback(const char *cursor_name,
                                          gboolean is_temp,
-                                         const char *owner)
+                                         const char *owner,
+                                         GtkWidget *widget)
 {
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   if(!widget) return;
   GdkCursor *cursor = dt_gui_cursor_new_for_name(gtk_widget_get_display(widget), cursor_name);
 
@@ -326,7 +327,7 @@ void dt_control_set_temp_cursor(const char *cursor_name)
     if(_prev_cursor)
       g_object_ref(_prev_cursor);
   }
-  _change_cursor_with_fallback(cursor_name, TRUE, "control/temp");
+  _change_cursor_with_fallback(cursor_name, TRUE, "control/temp", widget);
 }
 
 void dt_control_clear_temp_cursor()
@@ -351,9 +352,31 @@ void dt_control_clear_temp_cursor()
   _prev_cursor = NULL;
 }
 
+/* This is the shared, application-wide cursor: it has to stay on the toplevel.
+ *
+ * Its callers are of three kinds, and only the toplevel window is under the
+ * pointer for all three: whole-application states (view switching, startup,
+ * leaving shortcut-mapping mode), on-canvas interaction (crop, ashift,
+ * clipping, the darkroom view itself) and a handful of panel widgets that have
+ * not been migrated yet.
+ *
+ * Aiming it at dt_ui_center() instead splits the target in two, because the
+ * code that sets a cursor and the code that clears it then write different
+ * GdkWindows: _set_mapping_mode_cursor() and dt_control_set_temp_cursor()
+ * apply to the toplevel, so their cursor is never cleared and stays stuck.
+ * There is no rectangle where the retargeted clear is even visible in
+ * lighttable, since the thumbtable is an overlay sibling of the centre canvas
+ * rather than a child of it, so the pointer is never over dt_ui_center().
+ *
+ * A widget that owns its own interaction should call dt_gui_cursor_set() with
+ * its own widget rather than come through here -- that is what the panel
+ * handles, the range selector, the timeline and the resize wrappers now do,
+ * and it is also what stops a child control from claiming the toplevel cursor.
+ */
 void dt_control_change_cursor(const char *cursor_name)
 {
-  _change_cursor_with_fallback(cursor_name, FALSE, "control/change");
+  _change_cursor_with_fallback(cursor_name, FALSE, "control/change",
+                               dt_ui_main_window(darktable.gui->ui));
 }
 
 /* Some implementation and how-to use notes about control->running
@@ -873,6 +896,7 @@ void dt_control_log(const char *msg, ...)
   g_free(timestamp);
 
   dc->log_history = g_list_append(dc->log_history, entry);
+  dc->unread_messages = TRUE;
 
   // remove oldest entry if over limit
   if(g_list_length(dc->log_history) > DT_CTL_LOG_HISTORY_SIZE)
@@ -906,6 +930,28 @@ GList *dt_control_log_history_get_entries(void)
 
   dt_pthread_mutex_unlock(&dc->log_history_mutex);
   return result;
+}
+
+gboolean dt_control_log_history_has_unread_messages(void)
+{
+  dt_control_t *dc = darktable.control;
+  if(!dc) return FALSE;
+
+  dt_pthread_mutex_lock(&dc->log_history_mutex);
+  const gboolean has_unread = dc->unread_messages;
+  dt_pthread_mutex_unlock(&dc->log_history_mutex);
+
+  return has_unread;
+}
+
+void dt_control_log_history_clear_unread_messages(void)
+{
+  dt_control_t *dc = darktable.control;
+  if(!dc) return;
+
+  dt_pthread_mutex_lock(&dc->log_history_mutex);
+  dc->unread_messages = FALSE;
+  dt_pthread_mutex_unlock(&dc->log_history_mutex);
 }
 
 static void _toast_log(const gboolean markup, const char *msg, va_list ap)

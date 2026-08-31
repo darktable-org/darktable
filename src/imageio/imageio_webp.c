@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2024 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -137,7 +137,6 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
-    g_free(read_buffer);
     dt_free_align(int_RGBA_buffer);
     dt_print(DT_DEBUG_ALWAYS,
              "[webp_open] could not alloc full buffer for image: %s",
@@ -146,11 +145,13 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
   }
 
   DT_OMP_FOR()
-  for(int i = 0; i < npixels; i++)
+  for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
+
     for_three_channels(c)
-      pix[c] = *(int_RGBA_buffer + i * 4 + c) / 255.f;
+      pix[c] = int_RGBA_buffer[i * 4 + c] / 255.f;
+
     copy_pixel_nontemporal(&mipbuf[i * 4], pix);
   }
 

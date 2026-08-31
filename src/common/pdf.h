@@ -126,7 +126,7 @@ int dt_pdf_add_icc_from_data(dt_pdf_t *pdf,
                              const unsigned char *data,
                              const size_t size);
 dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf,
-                                 const unsigned char *image,
+                                 const void *image,
                                  const int width,
                                  const int height,
                                  const int bpp,

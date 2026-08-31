@@ -1768,8 +1768,8 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
                            void *cl_in,
                            void *cl_out,
                            const dt_iop_roi_t *roi,
-                           const int in_bpp,
-                           const int bpp,
+                           const int ibpp,
+                           const int obpp,
                            const dt_develop_tiling_t *tiling)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
@@ -1777,13 +1777,13 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
   const int devid = pipe->devid;
   const int width = roi->width;
   const int height = roi->height;
-  const int aligner = MAX(tiling->align, dt_opencl_tiling_align(devid));
-  const int border = _align_up(tiling->overlap, aligner);
+  const int aligner = _align_up(tiling->align, dt_opencl_tiling_align(devid));
+  const int border = tiling->overlap;
   const int64_t overhead = tiling->overhead;
   const int64_t allmem = dt_opencl_get_device_available(devid);
-  const int64_t avail = allmem - (int64_t)(in_bpp + bpp)*width*height - overhead;
+  const int64_t avail = allmem - (int64_t)(ibpp + obpp)*width*height - overhead;
 
-  const int64_t per_line = sizeof(float) * 4 * width * tiling->factor;
+  const int64_t per_line = (ibpp + obpp) * width * tiling->factor;
   const int tile_height = MIN(_align_up((int)(avail / per_line), aligner), height);
   const int valid_rows = tile_height - 2*border;
   if(valid_rows < 1) // should never happen - just make sure, see dt_opencl_image_fits_device()
@@ -1796,8 +1796,8 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
     (int)(avail/DT_MEGA), num_tiles, valid_rows, border, (int)(per_line / 1024));
 
   cl_int err = CL_SUCCESS;
-  cl_mem t_in = dt_opencl_alloc_device(devid, width, tile_height, in_bpp);
-  cl_mem t_out = dt_opencl_alloc_device(devid, width, tile_height, bpp);
+  cl_mem t_in = dt_opencl_alloc_device(devid, width, tile_height, ibpp);
+  cl_mem t_out = dt_opencl_alloc_device(devid, width, tile_height, obpp);
   if(!t_in || !t_out)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -1879,8 +1879,8 @@ int process_tiling_cl_fast(dt_dev_pixelpipe_iop_t *piece,
                         void *cl_in,
                         void *cl_out,
                         const dt_iop_roi_t *roi,
-                        const int in_bpp,
-                        const int bpp,
+                        const int ibpp,
+                        const int obpp,
                         const dt_develop_tiling_t *tiling)
 {
   return DT_OPENCL_DEFAULT_ERROR;

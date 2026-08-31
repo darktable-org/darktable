@@ -33,6 +33,7 @@ DT_MODULE(1)
 typedef struct dt_lib_imageinfo_t
 {
   GtkWidget *tview;
+  dt_imgid_t imgid;
 } dt_lib_imageinfo_t;
 
 const char *name(dt_lib_module_t *self)
@@ -106,8 +107,22 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
 
   // we change the label
   gtk_label_set_markup(GTK_LABEL(d->tview), msg);
+  d->imgid = imgid;
 
   g_free(msg);
+}
+
+/* The image-changed signal is intentionally asynchronous.  A pipe completion
+ * can therefore be the first callback that observes the new image after a
+ * rapid image switch.  Use it as a cheap one-shot consistency check rather
+ * than allowing the line to remain stale until another metadata event. */
+static void _lib_imageinfo_update_message_if_needed(gpointer instance,
+                                                    dt_lib_module_t *self)
+{
+  dt_lib_imageinfo_t *d = self->data;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  if(dt_is_valid_imgid(imgid) && d->imgid != imgid)
+    _lib_imageinfo_update_message(instance, self);
 }
 
 static void _lib_imageinfo_update_message2(gpointer instance, gpointer imgs, dt_lib_module_t *self)
@@ -138,6 +153,8 @@ void gui_init(dt_lib_module_t *self)
 
   /* lets signup for develop image changed signals */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_imageinfo_update_message);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+                           _lib_imageinfo_update_message_if_needed);
 
   /* signup for develop initialize to update info of current
      image in darkroom when enter */

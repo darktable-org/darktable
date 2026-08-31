@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/gdk_event_utils.h"
 
 #include "common/iop_profile.h"
@@ -1297,7 +1298,7 @@ void process(dt_iop_module_t *self,
     const dt_aligned_pixel_t max_levels
       = { d->params.levels[0][2], d->params.levels[1][2], d->params.levels[2][2], 1.0f };
     DT_OMP_FOR()
-    for(int k = 0; k < 4U*npixels; k += 4)
+    for(size_t k = 0; k < 4U*npixels; k += 4)
     {
       for(int c = 0; c < 3; c++)
       {
@@ -1332,7 +1333,7 @@ void process(dt_iop_module_t *self,
     const float max_level = levels[2];
     static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
     DT_OMP_FOR()
-    for(int k = 0; k < 4U*npixels; k += 4)
+    for(size_t k = 0; k < 4U*npixels; k += 4)
     {
       const float lum = dt_rgb_norm(in+k, d->params.preserve_colors, work_profile);
       if(lum > min_level)

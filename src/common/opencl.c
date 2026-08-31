@@ -20,6 +20,7 @@
 
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
+#include "common/bilinear.h"
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/dwt.h"
@@ -1568,6 +1569,7 @@ finally:
       dt_capabilities_add("multiopencl");
     cl->blendop = dt_develop_blend_init_cl_global();
     cl->bilateral = dt_bilateral_init_cl_global();
+    cl->bilinear = dt_bilinear_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
     cl->local_laplacian = dt_local_laplacian_init_cl_global();
@@ -1624,6 +1626,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   {
     dt_develop_blend_free_cl_global(cl->blendop);
     dt_bilateral_free_cl_global(cl->bilateral);
+    dt_bilinear_free_cl_global(cl->bilinear);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
     dt_dwt_free_cl_global(cl->dwt);
@@ -3760,12 +3763,13 @@ dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
 
   // how much is available for each fast tile
   const int64_t tilemem = avail - overhead - iplane - oplane;
-  const int64_t perline = sizeof(float) * 4 * width * factor;
+  const int64_t perline = (ibpp + obpp) * width * factor;
   const int64_t tlines = tilemem / perline;
+  const int64_t vlines = tlines - 2*overlap;
 
   dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
-    "test cl tiling: dim=%dx%d, avail=%dMB overhead=%zuMB factor=%.3f tmem=%dMB perline=%dkB tlines=%d",
-    width, height, (int)(avail/DT_MEGA), overhead, factor, (int)(tilemem/DT_MEGA), (int)(perline/1024), (int)tlines);
+    "test cl tiling: dim=%dx%d, avail=%dMB overhead=%zuMB factor=%.3f tmem=%dMB perline=%dkB tlines=%d vlines=%d",
+    width, height, (int)(avail/DT_MEGA), overhead, factor, (int)(tilemem/DT_MEGA), (int)(perline/1024), (int)tlines, (int)vlines);
 
   // always tile as processed image is larger than what device or dt are providing
   if(miss_minimal || tilemem < DT_MEGA)
@@ -3776,7 +3780,7 @@ dt_opencl_tilemode_t dt_opencl_image_fits_device(const int devid,
     return cl->fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_NO_TILING;
 
   // fast internal OpenCL tiling possible and with a good bet on performance?
-  const gboolean good_bet = (tlines - 2*overlap) > (tlines / 5);
+  const gboolean good_bet = vlines > (tlines / 5);
   return good_bet && !cl->no_fast_tiling ? DT_OPENCL_FAST_TILING : DT_OPENCL_TILING;
 }
 

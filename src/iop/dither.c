@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -419,7 +419,7 @@ static void _process_floyd_steinberg(
   const int graymode = _get_dither_parameters(data,piece,scale,&levels);
   if(graymode < 0)
   {
-    for(int j = 0; j < height * width; j++)
+    for(size_t j = 0; j < (size_t)height * width; j++)
       _clipnan_pixel(out + 4*j, in + 4*j);
     return;
   }
@@ -431,7 +431,7 @@ static void _process_floyd_steinberg(
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
   {
-    for(int j = 0; j < height * width; j++)
+    for(size_t j = 0; j < (size_t)height * width; j++)
     {
       _clipnan_pixel(out + 4 * j, in + 4 * j);
       _nearest_color(out + 4 * j, err, graymode, f, rf);
@@ -638,7 +638,7 @@ static void _process_posterize(
   const float rf = 1.0f / f;
 
   DT_OMP_FOR()
-  for(int k = 0; k < npixels; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t pixel;
     // quantize the pixel into the desired number of levels per color channel

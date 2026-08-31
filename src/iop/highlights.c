@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/bilinear.h"
 #include "common/box_filters.h"
 #include "common/bspline.h"
 #include "common/opencl.h"
@@ -161,7 +162,6 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_filmic_bspline_horizontal;
   int kernel_filmic_wavelets_detail;
 
-  int kernel_interpolate_bilinear;
 } dt_iop_highlights_global_data_t;
 
 
@@ -631,8 +631,8 @@ int process_cl(dt_iop_module_t *self,
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
     if(dev_xtrans == NULL) goto finish;
 
-    size_t sizes[2] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey) };
-    size_t local[2] = { blocksizex, blocksizey };
+    const size_t sizes[2] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey) };
+    const size_t local[2] = { blocksizex, blocksizey };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
@@ -1022,9 +1022,10 @@ void commit_params(dt_iop_module_t *self,
   const uint32_t filters = img->buf_dsc.filters;
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
   const gboolean linear = (filters == 0);
+  const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
 
   // for non-raws always use clip
-  if(!rawprep)
+  if(!rawprep || is_4bayer)
     d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   /* no OpenCLfor
@@ -1065,7 +1066,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
   gd->kernel_highlights_chroma = dt_opencl_create_kernel(program, "highlights_chroma");
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
-  gd->kernel_interpolate_bilinear = dt_opencl_create_kernel(program, "interpolate_bilinear");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
   gd->kernel_filmic_bspline_horizontal = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
@@ -1090,7 +1090,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
   dt_opencl_free_kernel(gd->kernel_highlights_chroma);
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
-  dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
@@ -1134,12 +1133,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   const uint32_t filters = img->buf_dsc.filters;
   const gboolean bayer = (filters != 0) && (filters != 9u);
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
+  const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
 
   /* Sanitize mode if wrongfully
    - copied as part of the history of another pic or by preset / style or
    - by old edits that allowed opposed for non-raws
   */
-  if(!rawprep)
+  if(!rawprep || is_4bayer)
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
@@ -1205,6 +1205,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   const dt_image_t *img = &self->dev->image_storage;
   const gboolean monochrome = dt_image_is_monochrome(img);
+  const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
   const uint32_t filters = img->buf_dsc.filters;
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
   const gboolean sraw = rawprep && (filters == 0);
@@ -1226,7 +1227,7 @@ void reload_defaults(dt_iop_module_t *self)
 
     dt_introspection_type_enum_tuple_t *values = self->so->get_f("mode")->Enum.values;
 
-    if(!rawprep)
+    if(!rawprep || is_4bayer)
     {
       dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_CLIP,
                                                                    DT_IOP_HIGHLIGHTS_OPPOSED);
@@ -1250,7 +1251,7 @@ void reload_defaults(dt_iop_module_t *self)
     _set_quads(g, NULL);
   }
   d->clip = MIN(d->clip, img->linear_response_limit);
-  d->mode = rawprep ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
+  d->mode = rawprep && !is_4bayer ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
 }
 
 static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
