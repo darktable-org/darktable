@@ -380,9 +380,9 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   temp2.z = dot(M[2], temp1);
   temp2.w = 0.f;
 
-  const float l = temp2.x / 10000.f;
-  const float m = temp2.y / 10000.f;
-  const float s = temp2.z / 10000.f;
+  const float l = temp2.x * 1e-4f;
+  const float m = temp2.y * 1e-4f;
+  const float s = temp2.z * 1e-4f;
 
   float4 out;
   // Az and Bz are differences of near-equal numbers and are computed as such --
@@ -391,16 +391,17 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   if(l > 0.0f && m > 0.0f && s > 0.0f)
   {
     // raw differences from the matrix rows, not from the computed LMS
-    const float d_lm = dot(M[0] - M[1], temp1) / 10000.f;
-    const float d_sm = dot(M[2] - M[1], temp1) / 10000.f;
-    const float d_ls = dot(M[0] - M[2], temp1) / 10000.f;
+    const float d_lm = dot(M[0] - M[1], temp1) * 1e-4f;
+    const float d_sm = dot(M[2] - M[1], temp1) * 1e-4f;
+    const float d_ls = dot(M[0] - M[2], temp1) * 1e-4f;
 
     // ... through x^n. x^k - y^k = y^k * expm1(k * log1p((x-y)/y)), which is
-    // accurate because log1p and expm1 are accurate near zero
+    // accurate because log1p and expm1 are accurate near zero. The y^k factors
+    // are t_m and t_s, already computed
     const float t_l = dtcl_pow(l, n), t_m = dtcl_pow(m, n), t_s = dtcl_pow(s, n);
-    const float dt_lm = dtcl_pow(m, n) * expm1(n * log1p(d_lm / m));
-    const float dt_sm = dtcl_pow(m, n) * expm1(n * log1p(d_sm / m));
-    const float dt_ls = dtcl_pow(s, n) * expm1(n * log1p(d_ls / s));
+    const float dt_lm = t_m * expm1(n * log1p(d_lm / m));
+    const float dt_sm = t_m * expm1(n * log1p(d_sm / m));
+    const float dt_ls = t_s * expm1(n * log1p(d_ls / s));
 
     // ... through the rational PQ step
     const float k = c2 - c1 * c3;
@@ -412,13 +413,16 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
     const float dy_sm = k * dt_sm / (q_s * q_m);
     const float dy_ls = k * dt_ls / (q_l * q_s);
 
-    // ... and through y^p, giving L'-M', S'-M' and L'-S' directly
-    const float d_LM = dtcl_pow(y_m, p) * expm1(p * log1p(dy_lm / y_m));
-    const float d_SM = dtcl_pow(y_m, p) * expm1(p * log1p(dy_sm / y_m));
-    const float d_LS = dtcl_pow(y_s, p) * expm1(p * log1p(dy_ls / y_s));
+    // ... and through y^p, giving L'-M', S'-M' and L'-S' directly. M' also
+    // feeds Iz below, so it is computed once
+    const float Mp = dtcl_pow(y_m, p);
+    const float Sp = dtcl_pow(y_s, p);
+    const float d_LM = Mp * expm1(p * log1p(dy_lm / y_m));
+    const float d_SM = Mp * expm1(p * log1p(dy_sm / y_m));
+    const float d_LS = Sp * expm1(p * log1p(dy_ls / y_s));
 
     // Iz is a sum, not a difference
-    out.x = 0.5f * dtcl_pow(y_l, p) + 0.5f * dtcl_pow(y_m, p);
+    out.x = 0.5f * dtcl_pow(y_l, p) + 0.5f * Mp;
     out.y = 3.524000f * d_LM + 0.542708f * d_SM;
     out.z = 0.199076f * d_LS - 1.096799f * d_SM;
     out.w = 0.f;
