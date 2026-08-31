@@ -436,15 +436,13 @@ static double _raw_to_ev(const uint32_t raw,
   return raw_ev;
 }
 
-static void _compute_correction(dt_iop_module_t *self,
-                                dt_iop_exposure_params_t *p,
+static void _compute_correction(dt_iop_exposure_params_t *p,
                                 dt_dev_pixelpipe_t *pipe,
                                 const uint32_t *const histogram,
                                 const dt_dev_histogram_stats_t *const histogram_stats,
                                 float *correction)
 {
-  *correction = EXPOSURE_CORRECTION_UNDEFINED;
-
+  // preserve caller's correction if we cannot compute anything
   if(histogram == NULL) return;
 
   const double thr
@@ -481,14 +479,15 @@ static void _process_common_setup(dt_iop_module_t *self,
   dt_iop_exposure_data_t *d = piece->data;
 
   d->black = d->params.black;
-  float exposure = d->params.exposure;
+  // stays undefined unless deflicker computes a correction below
+  float exposure = EXPOSURE_CORRECTION_UNDEFINED;
 
   if(d->deflicker)
   {
     if(g)
     {
       // histogram is precomputed and cached
-      _compute_correction(self, &d->params, piece->pipe,
+      _compute_correction(&d->params, piece->pipe,
                           g->deflicker_histogram, &g->deflicker_histogram_stats,
                           &exposure);
     }
@@ -497,7 +496,7 @@ static void _process_common_setup(dt_iop_module_t *self,
       uint32_t *histogram = NULL;
       dt_dev_histogram_stats_t histogram_stats;
       _deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      _compute_correction(self, &d->params, piece->pipe, histogram,
+      _compute_correction(&d->params, piece->pipe, histogram,
                           &histogram_stats, &exposure);
       dt_free_align(histogram);
     }
@@ -513,6 +512,8 @@ static void _process_common_setup(dt_iop_module_t *self,
     }
   }
 
+  // no deflicker, or deflicker failed: use the user-set exposure
+  if(exposure == EXPOSURE_CORRECTION_UNDEFINED) exposure = d->params.exposure;
   const float white = exposure2white(exposure);
   d->scale = 1.0 / (white - d->black);
 }
