@@ -94,7 +94,7 @@ kernel void colorharmonizer_map(read_only  image2d_t  in,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 pix_in = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 pix_in = readpixel(in, x, y);
   float4 XYZ_D65 = matrix_product_float4(fmax(0.0f, pix_in), matrix_in);
   float4 xyY = dt_D65_XYZ_to_xyY(XYZ_D65);
   float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);

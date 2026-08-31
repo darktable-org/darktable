@@ -1962,8 +1962,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
     for(int d = 0; d < ndir; d++)
     {
-      size_t sizes[2] = { ROUNDUP(width, locopt_homo_sum.sizex), ROUNDUP(height, locopt_homo_sum.sizey) };
-      size_t local[2] = { locopt_homo_sum.sizex, locopt_homo_sum.sizey };
+      const size_t sizes[2] = { ROUNDUP(width, locopt_homo_sum.sizex), ROUNDUP(height, locopt_homo_sum.sizey) };
+      const size_t local[2] = { locopt_homo_sum.sizex, locopt_homo_sum.sizey };
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_homo_sum, sizes, local,
         CLARG(dev_homo[d]), CLARG(dev_homosum[d]),
         CLARG(width), CLARG(height), CLARG(pad_tile), CLLOCAL(sizeof(char) * (locopt_homo_sum.sizex + 2*2) * (locopt_homo_sum.sizey + 2*2)));

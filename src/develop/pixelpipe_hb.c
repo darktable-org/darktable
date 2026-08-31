@@ -2384,8 +2384,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
        image that replaces the original, so one extra full-size buffer is live while it
        happens. Reserve it in the untiled decision only: if the module has to tile, the
        conversion is done on the host instead and no device buffer is needed. */
-    const gboolean converting_cl =
-      input_cst_cl != module->input_colorspace(module, pipe, piece);
+    const gboolean converting_cl = input_cst_cl != module->input_colorspace(module, pipe, piece);
     const float untiled_factor_cl = tiling.factor_cl + (converting_cl ? 1.0f : 0.0f);
 
     const dt_opencl_tilemode_t fitter =

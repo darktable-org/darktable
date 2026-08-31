@@ -103,6 +103,14 @@ changes (where available).
 
 - Printer (paper) profiled print jobs will remain 16 bit through
   the full print pipeline
+  
+- When installing development versions of darktable (snapshots, self
+  compiled etc.)  the Windows installer now allows to setup a custom
+  configuration-directory and custom shortcut-name, useful for
+  multiple parallel darktable installations.
+
+- Added a control in the bottom panel of the lighttable to reset
+  the star rating of images.
 
 ## Bug Fixes
 

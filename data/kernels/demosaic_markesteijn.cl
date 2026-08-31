@@ -50,7 +50,7 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 
   const int f = FCxtrans(y, x, xtrans);
 
-  const float p = fmax(0.0f, readsingle(in, x, y));
+  const float p = fmax(0.0f, Areadsingle(in, x, y));
 
   for(int c = 0; c < 3; c++)
     pix[c] = (c == f) ? p : 0.0f;
@@ -883,7 +883,7 @@ markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float 
 
   const int glidx = mad24(y, width, x);
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   float4 add = vload4(glidx, rgb);
   add.w = 1.0f;
 
@@ -904,7 +904,7 @@ markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int wi
   // take sufficient border into account
   if(x < border || x >= width-border || y < border || y >= height-border) return;
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
 
   pixel = (pixel.w > 0.0f) ? pixel/pixel.w : (float4)0.0f;
   pixel.w = 0.0f;
