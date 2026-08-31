@@ -402,7 +402,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
                "cannot open printer profile `%s'",
                params->p_icc_profile);
       dt_control_queue_redraw();
-      return 1;
+      return 1;    
     }
     else
     {
@@ -432,6 +432,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   }
 
   img->buf = params->buf;
+  img->img_bpp = dat.bpp; // Store the image bitdepth with the image being sent to print job
   params->buf = NULL;
 
   return 0;
@@ -473,13 +474,31 @@ static void _create_pdf(dt_job_t *job,
   for(int k=0; k<imgs.count; k++)
   {
     const int resolution = params->prt.printer.resolution;
-    const dt_image_box *box = &imgs.box[k];
+    dt_image_box *box = &imgs.box[k];
+
+    //If image is 16bit, it needs to be converted to big endian before sending for PDF creation
+
+    if(box->img_bpp == 16)
+    {
+      const size_t total_samples = (size_t)3 * box->exp_width * box->exp_height;
+      uint16_t *tmp = g_malloc(total_samples * sizeof(uint16_t));
+      const uint16_t *src = box->buf;
+      for(size_t i = 0; i < total_samples; i++)
+      {
+        tmp[i] = GUINT16_TO_BE(src[i]);
+      }
+      
+      g_free(box->buf);
+      box->buf = tmp;
+    }
 
     if(dt_is_valid_imgid(box->imgid))
     {
       pdf_image[count] =
-        dt_pdf_add_image(pdf, (uint8_t *)box->buf, box->exp_width, box->exp_height,
-                         8, icc_id, 0.0);
+        dt_pdf_add_image(pdf, 
+                         box->buf,
+                         box->exp_width, box->exp_height,
+                         box->img_bpp, icc_id, 0.0);
 
       //  PDF bounding-box has origin on bottom-left
       pdf_image[count]->bb_x      = dt_pdf_pixel_to_point(box->print.x, resolution);

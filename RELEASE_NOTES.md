@@ -101,6 +101,9 @@ changes (where available).
   covering built-in and Lumix-branded lenses that lensfun has no
   profile for.
 
+- Printer (paper) profiled print jobs will remain 16 bit through
+  the full print pipeline
+  
 - When installing development versions of darktable (snapshots, self
   compiled etc.)  the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
