@@ -889,6 +889,67 @@ void reload_defaults(dt_iop_module_t *self)
   dp->cw = img->usercrop[3];
   dp->ch = img->usercrop[2];
   dp->ratio_n = dp->ratio_d = -1;
+
+  self->default_enabled = FALSE;
+
+  // A crop coming from the raw only preloads our parameters. An aspect ratio
+  // dialed in on the camera though is a framing decision taken while
+  // shooting, so reproduce it right away: center that ratio on the sensor
+  // area we are handed and switch ourselves on. The intended framing is
+  // applied but stays free to be moved around within the full frame.
+  const gboolean has_usercrop = dp->cx > 0.0f || dp->cy > 0.0f
+                             || dp->cw < 1.0f || dp->ch < 1.0f;
+
+  const float iwd = img->p_width > 0 ? img->p_width : img->width;
+  const float iht = img->p_height > 0 ? img->p_height : img->height;
+
+  if(has_usercrop
+     || img->camera_ratio_d < 1
+     || img->camera_ratio_n < 1
+     || iwd < 1.0f
+     || iht < 1.0f)
+    return;
+
+  // p_width and p_height are still in sensor orientation here
+  const float want = (float)img->camera_ratio_d / (float)img->camera_ratio_n;
+  const float have = iwd / iht;
+
+  float bx = 0.0f, by = 0.0f, bw = 1.0f, bh = 1.0f;
+  if(want < have)       // narrower than the sensor, take off left and right
+  {
+    bw = want / have;
+    bx = (1.0f - bw) * 0.5f;
+  }
+  else if(want > have)  // wider, take off top and bottom
+  {
+    bh = have / want;
+    by = (1.0f - bh) * 0.5f;
+  }
+
+  // The ratio is the one we are handed already, either because the vendor
+  // applied the crop to the raw data after all or because the value was read
+  // as something it is not. Nothing to reproduce, and staying off is the safe
+  // answer rather than adding a crop that does nothing.
+  if(bw > 0.995f && bh > 0.995f)
+    return;
+
+  // flip runs before us, so follow the image into portrait. The box is
+  // centered, which leaves the mirroring bits of the orientation a no-op.
+  if(dt_image_orientation(img) & ORIENTATION_SWAP_XY)
+  {
+    float t;
+    t = bx; bx = by; by = t;
+    t = bw; bw = bh; bh = t;
+  }
+
+  dp->cx = bx;
+  dp->cy = by;
+  dp->cw = bx + bw;
+  dp->ch = by + bh;
+  dp->ratio_d = img->camera_ratio_d;
+  dp->ratio_n = img->camera_ratio_n;
+
+  self->default_enabled = TRUE;
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
