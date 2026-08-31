@@ -5278,7 +5278,7 @@ static void _second_window_pinch(GtkGesture *gesture,
     _second_window_touch_pinching = e->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN
                                     || e->phase == GDK_TOUCHPAD_GESTURE_PHASE_UPDATE;
 
-  if(dev->gui_leaving)
+  if(!dev || dev->gui_leaving)
     return;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
@@ -5341,7 +5341,7 @@ static void _second_window_button_pressed_callback(GtkGestureSingle *gesture,
                                                      gdouble y,
                                                      dt_develop_t *dev)
 {
-  if(dev->gui_leaving) return;
+  if(!dev || dev->gui_leaving) return;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
   dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
@@ -5379,16 +5379,18 @@ static void _second_window_button_released_callback(GtkGestureSingle *gesture,
                                                       gdouble y,
                                                       dt_develop_t *dev)
 {
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
+  if(dev && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
+    _dt_second_window_change_cursor(dev, "default");
 
   GtkWidget *w = dt_gui_get_widget(gesture);
   gtk_widget_queue_draw(w);
 }
 
 static void _second_window_pan(dt_develop_t *dev,
-                               const gdouble x,
-                               const gdouble y)
+                                const gdouble x,
+                                const gdouble y)
 {
+  if(!dev) return;
   dt_control_t *ctl = darktable.control;
 
   // Use pinned viewport if pinned, otherwise main dev's preview2
@@ -5409,7 +5411,7 @@ static void _second_window_mouse_moved_callback(GtkEventControllerMotion *contro
                                                   gdouble y,
                                                   dt_develop_t *dev)
 {
-  if(dev->gui_leaving) return;
+  if(!dev || dev->gui_leaving) return;
 
   const GdkModifierType state =
     dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
@@ -5427,7 +5429,7 @@ static void _second_window_touch_moved(GtkGesture *gesture,
 {
   (void)gesture;
   dt_develop_t *dev = user_data;
-  if(dev->gui_leaving || _second_window_touch_pinching)
+  if(!dev || dev->gui_leaving || _second_window_touch_pinching)
     return;
   _second_window_pan(dev, x, y);
 }
@@ -5435,7 +5437,7 @@ static void _second_window_touch_moved(GtkGesture *gesture,
 static void _second_window_leave_callback(GtkEventControllerMotion *controller,
                                             dt_develop_t *dev)
 {
-  _second_window_leave(dev);
+  if(dev) _second_window_leave(dev);
 }
 
 static gboolean _second_window_configure_callback(GtkWidget *da,
