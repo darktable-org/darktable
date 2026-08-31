@@ -1,0 +1,129 @@
+# Running darktable under runtime sanitizers
+
+## Quick start
+
+```bash
+# build (a dedicated build dir, RelWithDebInfo, OpenCL off)
+./build.sh --build-dir "$PWD/build-sanitize" \
+           --sanitize address,undefined \
+           --build-type RelWithDebInfo \
+           --build-generator Ninja \
+           --disable-opencl
+
+# confirm the binary really is instrumented
+ldd build-sanitize/bin/darktable-cli | grep -E 'libasan|libubsan'
+
+# run the integration test suite against it
+./tools/run-integration-tests.sh --build-dir "$PWD/build-sanitize"
+```
+
+The run ends with a deduplicated summary of every sanitizer finding and writes
+the full reports plus a `summary.txt` under
+`build-sanitize/sanitizer-logs/<timestamp>/`.
+
+## Available sanitizers
+
+`--sanitize` takes a comma separated list. Slowdowns are relative to an
+uninstrumented build of the same build type.
+
+| Value | What it finds | Cost | Notes |
+|---|---|---|---|
+| `address` | heap/stack/global overflows, use-after-free, double free | ~2x CPU, ~3x RSS | includes LeakSanitizer, but leak reporting is off by default (see below) |
+| `undefined` | signed overflow, bad shifts, misaligned access, invalid casts, null deref | ~1.2x CPU | cheapest useful signal, good default for CI |
+| `leak` | memory leaks at exit | ~native | standalone LSan, without ASan's slowdown |
+| `thread` | data races, lock-order inversions | ~5-15x CPU, ~5-10x RSS | see the OpenMP caveat below |
+
+Mutually exclusive: `thread` with either `address` or `leak`. `address` already
+includes `leak`, so asking for both is rejected.
+
+MemorySanitizer is deliberately **not** offered. It only produces usable results
+when every dependency (glib, GTK, lcms2, exiv2, libjpeg, ...) is MSan
+instrumented as well; against stock system libraries it reports nothing but
+false positives.
+
+## Recommended invocations
+
+Baseline for the full 177-test suite is roughly 32-40 minutes with both the CPU
+and the OpenCL pass. `run-integration-tests.sh` skips the OpenCL pass by
+default, which roughly halves the work before the sanitizer overhead applies.
+
+```bash
+# the default: memory errors + undefined behaviour, ~45-60 min for the suite
+./build.sh --build-dir "$PWD/build-asan" --sanitize address,undefined \
+           --build-type RelWithDebInfo --build-generator Ninja --disable-opencl
+./tools/run-integration-tests.sh --build-dir "$PWD/build-asan"
+
+# cheap enough for every commit, ~20-25 min
+./build.sh --build-dir "$PWD/build-ubsan" --sanitize undefined ...
+
+# leak hunting, roughly baseline speed
+./build.sh --build-dir "$PWD/build-lsan" --sanitize leak ...
+
+# races: far too slow for the whole suite, run named tests
+./build.sh --build-dir "$PWD/build-tsan" --sanitize thread ...
+./tools/run-integration-tests.sh --build-dir "$PWD/build-tsan" 0035-multiple-modules
+```
+
+## Things worth knowing
+
+**Use `RelWithDebInfo`.** `Release` adds `-O3 -ffast-math -fno-finite-math-only`,
+which lets the compiler assume no NaN/Inf and makes UBSan's floating point
+checks unreliable. `Debug` defines `_DEBUG`, under which `dt_alloc_aligned()`
+over-allocates by a cacheline and hands out an interior pointer, so ASan's
+redzones no longer sit next to the user buffer and small over/underflows go
+undetected. The build warns about both.
+
+**Judge the run by the report count, not by OK/FAILS.** The suite's
+`expected.png` references came from a `-O3 -ffast-math` Release build.
+RelWithDebInfo is `-O2` without fast-math, so some tests drift against the
+Delta-E threshold for reasons that have nothing to do with sanitizers. Also,
+when ASan aborts a test the suite just prints `FAILS: darktable-cli errored`
+without any detail; the detail is in the log directory.
+
+**Use `run-integration-tests.sh`, not `src/tests/integration/run` directly.**
+The suite invokes darktable-cli as `$* 1> /dev/null 2> /dev/null`, and
+sanitizers report on stderr, so driving it by hand throws every finding away.
+Two mechanisms rescue them, and both are needed: the `log_path=` settings in
+the generated `sanitizer-env.sh` catch everything that reports through
+sanitizer_common (ASan, LSan, TSan), and the driver's darktable-cli shim
+captures stderr per invocation, because GCC's UBSan prints its non-fatal
+`runtime error:` diagnostics directly to stderr no matter what `log_path` says.
+
+**Leak reporting is off under `address`.** darktable-cli exits without tearing
+down its GTK/glib/lua state, so exit-time leak reports would fire on every
+single test. Build with `--sanitize leak` when you actually want to hunt leaks.
+
+**OpenCL is off by default.** Vendor ICDs generate a large volume of ASan and
+LSan noise from code that is not darktable's, and the GPU pass doubles the run
+time. Pass `--with-opencl` to `run-integration-tests.sh` if you want it, and
+expect to extend `lsan.supp`.
+
+**TSan against a GCC build needs the suppressions here.** GCC's libgomp is not
+built with TSan annotations, so TSan cannot see the happens-before edges that
+OpenMP barriers establish and reports a race on essentially every parallel loop.
+`tsan.supp` filters those. Clang with an annotated libomp (or archer) does not
+need them.
+
+**Clang builds need libomp.** CMake's `FindOpenMP` tries `-fopenmp=libomp`
+first, so a clang build needs the matching `libomp-<version>-dev` package
+installed. GCC works out of the box.
+
+**`-Werror` is dropped for sanitizer builds.** Instrumentation perturbs the
+optimizer and reliably produces fresh `-Wmaybe-uninitialized` / `-Wstringop-*`
+diagnostics; with `-Werror -Wfatal-errors` those would abort the build before a
+single sanitizer had a chance to run. The warnings themselves stay on.
+
+## Files
+
+| Path | Purpose |
+|---|---|
+| `cmake/sanitizers.cmake` | flag assembly, validation, link check, env file generation |
+| `DefineOptions.cmake` | the `DT_SANITIZE` / `DT_SANITIZE_EXTRA_CHECKS` cache entries |
+| `tools/sanitizer/sanitizer-env.sh.in` | template for the generated `<build>/bin/sanitizer-env.sh` |
+| `tools/sanitizer/{ubsan,lsan,tsan}.supp` | suppression files |
+| `tools/run-integration-tests.sh` | suite driver, timeout and stderr-capture shim |
+| `tools/sanitizer/aggregate-reports.py` | deduplicates the reports; also usable on its own against an old log dir |
+
+`DT_SANITIZE_EXTRA_CHECKS=ON` adds clang's `-fsanitize=integer,implicit-conversion`.
+It is off by default because darktable's pixel loops rely on wrapping arithmetic
+and implicit narrowing, so it produces thousands of non-bugs.

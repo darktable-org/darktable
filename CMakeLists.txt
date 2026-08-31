@@ -251,6 +251,11 @@ endif()
 include(compiler-warnings)
 include(windows-macros)
 
+# Optional runtime sanitizers, a no-op unless DT_SANITIZE is set.
+# Must come before add_subdirectory(src) so that the compile/link options
+# are inherited by darktable and by everything under src/external.
+include(sanitizers)
+
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
 
