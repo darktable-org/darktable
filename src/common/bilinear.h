@@ -27,6 +27,7 @@ typedef struct dt_bilinear_cl_global_t
   int kernel_bilinear_1c;
   int kernel_bilinear_2c;
   int kernel_bilinear_4c;
+  int kernel_bilinear_image;
 } dt_bilinear_cl_global_t;
 
 dt_bilinear_cl_global_t *dt_bilinear_init_cl_global(void);
@@ -49,6 +50,20 @@ cl_int dt_interpolate_bilinear_cl(const int devid,
                                   const int width_out,
                                   const int height_out,
                                   const int ch);
+
+/** Bilinear resampling of a device image holding 1 to 4 channels per pixel,
+ *  as allocated by dt_opencl_alloc_device().
+ *
+ *  Input and output must be distinct. This is the image2d_t counterpart of
+ *  dt_interpolate_bilinear_cl() above.
+ */
+cl_int dt_interpolate_bilinear_image_cl(const int devid,
+                                        cl_mem dev_in,
+                                        const int width_in,
+                                        const int height_in,
+                                        cl_mem dev_out,
+                                        const int width_out,
+                                        const int height_out);
 #endif
 
 // clang-format off

@@ -30,6 +30,7 @@ dt_bilinear_cl_global_t *dt_bilinear_init_cl_global(void)
   g->kernel_bilinear_1c = dt_opencl_create_kernel(program, "bilinear1");
   g->kernel_bilinear_2c = dt_opencl_create_kernel(program, "bilinear2");
   g->kernel_bilinear_4c = dt_opencl_create_kernel(program, "bilinear4");
+  g->kernel_bilinear_image = dt_opencl_create_kernel(program, "bilinear_image");
   return g;
 }
 
@@ -41,6 +42,7 @@ void dt_bilinear_free_cl_global(dt_bilinear_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_bilinear_1c);
   dt_opencl_free_kernel(g->kernel_bilinear_2c);
   dt_opencl_free_kernel(g->kernel_bilinear_4c);
+  dt_opencl_free_kernel(g->kernel_bilinear_image);
 
   free(g);
 }
@@ -74,6 +76,23 @@ cl_int dt_interpolate_bilinear_cl(const int devid,
   }
 
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width_out, height_out,
+            CLARG(dev_in), CLARG(width_in), CLARG(height_in),
+            CLARG(dev_out), CLARG(width_out), CLARG(height_out));
+}
+
+
+cl_int dt_interpolate_bilinear_image_cl(const int devid,
+                                        cl_mem dev_in,
+                                        const int width_in,
+                                        const int height_in,
+                                        cl_mem dev_out,
+                                        const int width_out,
+                                        const int height_out)
+{
+  const dt_bilinear_cl_global_t *const g = darktable.opencl->bilinear;
+
+  return dt_opencl_enqueue_kernel_2d_args(devid, g->kernel_bilinear_image,
+            width_out, height_out,
             CLARG(dev_in), CLARG(width_in), CLARG(height_in),
             CLARG(dev_out), CLARG(width_out), CLARG(height_out));
 }

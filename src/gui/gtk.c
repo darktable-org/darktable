@@ -873,6 +873,10 @@ static void _record_touchpad_device(const GdkEvent *event)
              dt_gdk_event_get_type(event));
 }
 
+/* set while a touchscreen pinch runs on the center view, so the single-finger
+ * touch pan does not fight the zoom for the viewport */
+static gboolean _center_touch_pinching = FALSE;
+
 /* GtkGestureZoom replaces the old "event" signal handler that forwarded raw
  * GDK_TOUCHPAD_PINCH events: the phase field becomes the begin /
  * scale-changed / end signals (and "end" fires on cancel as well, so the
@@ -886,25 +890,45 @@ static void _pinch_event(GtkGesture *gesture,
 {
   (void)user_data;
   GtkWidget *widget = dt_gui_get_widget(gesture);
-  if(e->event) _record_touchpad_device(e->event);
+  // only a real touchpad may take over the scroll-stream pan routing
+  if(e->event && !e->touchscreen)
+    _record_touchpad_device(e->event);
+
+  // a second finger on the screen hands the viewport over to the pinch, so the
+  // finger that is still dragging must stop panning (see _touch_moved)
+  if(e->touchscreen)
+  {
+    _center_touch_pinching = e->phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN
+                             || e->phase == GDK_TOUCHPAD_GESTURE_PHASE_UPDATE;
+  }
 
   dt_print(DT_DEBUG_INPUT,
-           "[touchpad] pinch x=%.2f y=%.2f phase=%d dx=%.3f dy=%.3f scale=%.6f state=0x%x",
+           "[%s] pinch x=%.2f y=%.2f phase=%d dx=%.3f dy=%.3f scale=%.6f state=0x%x",
+           e->touchscreen ? "touchscreen" : "touchpad",
            e->x, e->y, e->phase, e->dx, e->dy, e->scale, e->state);
   if(dt_view_manager_gesture_pinch(darktable.view_manager, e->x, e->y,
                                    e->dx, e->dy, e->phase, e->scale, e->state))
+  {
     gtk_widget_queue_draw(widget);
+  }
   else
+  {
     dt_print(DT_DEBUG_INPUT,
-             "[touchpad] pinch ignored by current view");
+             "[%s] pinch ignored by current view",
+             e->touchscreen ? "touchscreen" : "touchpad");
+  }
 }
 
 gboolean dt_gui_scroll_should_pan(const GdkEvent *event)
 {
-  if(!darktable.gui->touchpad_gestures_enabled) return FALSE;
-  if(dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK)) return FALSE;
-  if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH) return FALSE;
-  if(dt_gdk_event_is_scroll_stop(event)) return FALSE;
+  if(!darktable.gui->touchpad_gestures_enabled)
+    return FALSE;
+  if(dt_modifiers_include(dt_gdk_event_get_state(event), GDK_CONTROL_MASK))
+    return FALSE;
+  if(dt_gdk_event_get_scroll_direction(event) != GDK_SCROLL_SMOOTH)
+    return FALSE;
+  if(dt_gdk_event_is_scroll_stop(event))
+    return FALSE;
 #ifdef GDK_WINDOWING_QUARTZ
   /* Quartz exposes both the built-in trackpad and ordinary pointing devices
    * as the Core Pointer (GDK_SOURCE_MOUSE).  In the tested setup, trackpad
@@ -1658,6 +1682,24 @@ static void _mouse_moved(GtkEventControllerMotion *controller,
 #endif
 }
 
+/* Feed touch motion to dt_control_mouse_moved() for panning and
+ * press-and-drag interactions. See dt_gui_connect_touch_motion(). */
+static void _touch_moved(GtkGesture *gesture,
+                         gdouble x,
+                         gdouble y,
+                         gpointer user_data)
+{
+  (void)user_data;
+  const GdkModifierType state =
+    dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(gesture)) & 0xf;
+  dt_print(DT_DEBUG_INPUT,
+           "[touchscreen] motion x=%.1f y=%.1f state=0x%x%s",
+           x, y, state, _center_touch_pinching ? " ignored, pinch active" : "");
+  if(_center_touch_pinching)
+    return;
+  dt_control_mouse_moved(x, y, 1.0, (int)state);
+}
+
 static void _center_leave(GtkEventControllerMotion *controller,
                           gpointer user_data)
 {
@@ -2049,6 +2091,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           _scrolled, NULL);
 
     dt_gui_connect_pinch(widget, _pinch_event, NULL);
+    dt_gui_connect_touch_motion(widget, _touch_moved, gui);
   }
 
   // TODO: left, right, top, bottom:
@@ -3306,13 +3349,15 @@ static void _panel_handle_button_released(GtkGestureSingle *gesture,
 static void _panel_handle_cursor_set(GtkWidget *handle, const gboolean entering)
 {
   // GTK produces a lot of GDK_NOTIFY_ANCESTOR when dragging handle,
-  // but we only care about events when enter/leave the drag region
+  // but we only care about events when enter/leave the drag region.
   if(darktable.gui->widgets.panel_handle_dragging)
     return;
-  if(strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0)
-    dt_control_change_cursor(entering ? "ns-resize" : "default");
-  else
-    dt_control_change_cursor(entering ? "ew-resize" : "default");
+
+  const gboolean bottom =
+    strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0;
+  dt_gui_cursor_set(handle,
+                    entering ? (bottom ? "ns-resize" : "ew-resize") : NULL,
+                    "panel-handle");
 }
 
 static void _panel_handle_cursor_enter(GtkEventControllerMotion *controller,
@@ -4898,21 +4943,43 @@ static gboolean _scroll_wrap_height_controller(GtkEventControllerScroll *control
 }
 #endif
 
-static gboolean _resize_wrap_dragging = FALSE;
-static gboolean _resize_wrap_handle_hover = FALSE;
-static GtkWidget *_resize_wrap_hovered = NULL;
+#define DT_RESIZE_WRAP_STATE_KEY "dt-resize-wrap-state"
+
+typedef struct dt_resize_wrap_state_t
+{
+  gboolean dragging;
+  gboolean handle_hover;
+  gboolean pointer_inside;
+} dt_resize_wrap_state_t;
+
+static dt_resize_wrap_state_t *_resize_wrap_state(GtkWidget *widget)
+{
+  return g_object_get_data(G_OBJECT(widget), DT_RESIZE_WRAP_STATE_KEY);
+}
+
+static void _resize_wrap_set_handle_hover(GtkWidget *widget,
+                                          dt_resize_wrap_state_t *state,
+                                          const gboolean handle_hover)
+{
+  if(state->handle_hover == handle_hover) return;
+  state->handle_hover = handle_hover;
+  dt_gui_cursor_set(widget,
+                    handle_hover ? "ns-resize" : NULL,
+                    "resize-wrap/handle");
+}
 
 static gboolean _resize_wrap_draw_handle(GtkWidget *w,
                                          void *cr,
                                          gpointer user_data)
 {
-  if(w != _resize_wrap_hovered)
+  dt_resize_wrap_state_t *state = _resize_wrap_state(w);
+  if(!state || !state->pointer_inside)
     return FALSE;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(w, &allocation);
 
-  set_color(cr, _resize_wrap_handle_hover
+  set_color(cr, state->handle_hover
                 ? darktable.bauhaus->color_fg_hover
                 : darktable.bauhaus->color_fg_insensitive);
   cairo_move_to(cr, allocation.width / 8 * 3,
@@ -4925,18 +4992,20 @@ static gboolean _resize_wrap_draw_handle(GtkWidget *w,
   return FALSE;
 }
 
-/* controller version: the drag uses the controller-relative y, the hover
- * check keeps the old window comparison via the current event (BUBBLE phase
- * delivers motions over child widgets too, as the old signal did) */
+/* Keep resize state per wrapper. Multiple metadata rows can contain resize
+ * wrappers at once; shared hover/drag state lets one row clear another row's
+ * cursor. */
 static void _resize_wrap_motion_controller(GtkEventControllerMotion *controller,
                                            gdouble x,
                                            gdouble y,
                                            gpointer user_data)
 {
   GtkWidget *widget = dt_gui_get_widget(controller);
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
   const char *config_str = user_data;
+  if(!state) return;
 
-  if(_resize_wrap_dragging)
+  if(state->dragging)
   {
     // keeps resize box from shrinking when user clicks above very
     // bottom of handle
@@ -4956,20 +5025,15 @@ static void _resize_wrap_motion_controller(GtkEventControllerMotion *controller,
     return;
   }
 
-  const gboolean prior = _resize_wrap_handle_hover;
   GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
   if(!(dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
      && (!event || dt_gdk_event_get_window(event) == gtk_widget_get_window(widget)))
   {
-    _resize_wrap_handle_hover =
+    const gboolean handle_hover =
       y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE;
-    if(_resize_wrap_handle_hover != prior)
+    if(handle_hover != state->handle_hover)
     {
-      if(_resize_wrap_handle_hover)
-        dt_control_set_temp_cursor("ns-resize");
-      else
-        dt_control_clear_temp_cursor();
-      // draw changed handle hover state
+      _resize_wrap_set_handle_hover(widget, state, handle_hover);
       gtk_widget_queue_draw(widget);
     }
   }
@@ -4985,10 +5049,19 @@ static void _resize_wrap_button_pressed(GtkGestureSingle *gesture,
                                         gpointer user_data)
 {
   GtkWidget *widget = dt_gui_get_widget(gesture);
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
+  if(!state) return;
   if(y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
      && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
-    _resize_wrap_dragging = TRUE;
+    state->dragging = TRUE;
+    // go through the hover setter rather than setting the cursor directly, so
+    // that handle_hover records the cursor now on the widget. The release path
+    // only clears it when it sees handle_hover change back to FALSE, so a
+    // press that arrives without a preceding hover motion -- the motion
+    // handler ignores events coming from a child window -- would otherwise
+    // leave "ns-resize" on the widget for good.
+    _resize_wrap_set_handle_hover(widget, state, TRUE);
   }
 }
 
@@ -4998,11 +5071,15 @@ static void _resize_wrap_button_released(GtkGestureSingle *gesture,
                                          gdouble y,
                                          gpointer user_data)
 {
-  if(_resize_wrap_dragging)
-  {
-    _resize_wrap_dragging = FALSE;
-    dt_control_clear_temp_cursor();
-  }
+  GtkWidget *widget = dt_gui_get_widget(gesture);
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
+  if(!state || !state->dragging) return;
+
+  state->dragging = FALSE;
+  _resize_wrap_set_handle_hover
+    (widget, state,
+     y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE);
+  gtk_widget_queue_draw(widget);
 }
 
 static void _resize_wrap_enter_leave_controller(GtkEventControllerMotion *controller,
@@ -5028,21 +5105,29 @@ static void _resize_wrap_enter_leave_controller(GtkEventControllerMotion *contro
 #endif
   }
 
-  _resize_wrap_hovered =
-    is_enter || detail == GDK_NOTIFY_INFERIOR || _resize_wrap_dragging ? widget : NULL;
-
-  // When leave handle and widget, remove temp resize cursor. When
-  // enter widget, motion event will handle cursor change for handle.
-  if(!is_enter && !_resize_wrap_dragging && _resize_wrap_handle_hover)
+  dt_resize_wrap_state_t *state = _resize_wrap_state(widget);
+  if(!state)
   {
-    dt_control_clear_temp_cursor();
-    _resize_wrap_handle_hover = FALSE;
+#if !GTK_CHECK_VERSION(4, 0, 0)
+    if(event) gdk_event_free(event);
+#endif
+    return;
   }
+
+  state->pointer_inside =
+    is_enter || detail == GDK_NOTIFY_INFERIOR || state->dragging;
+
+  if(!is_enter && !state->dragging)
+    _resize_wrap_set_handle_hover(widget, state, FALSE);
 
   gtk_widget_queue_draw(widget);
 
-  if(mode == GDK_CROSSING_GTK_UNGRAB)
-    _resize_wrap_dragging = FALSE;
+  if(mode == GDK_CROSSING_GTK_UNGRAB && state->dragging)
+  {
+    state->dragging = FALSE;
+    state->pointer_inside = FALSE;
+    _resize_wrap_set_handle_hover(widget, state, FALSE);
+  }
 #if !GTK_CHECK_VERSION(4, 0, 0)
   if(event) gdk_event_free(event);
 #endif
@@ -5110,6 +5195,9 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
     w = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(w), sw);
   }
+
+  g_object_set_data_full(G_OBJECT(w), DT_RESIZE_WRAP_STATE_KEY,
+                         g_new0(dt_resize_wrap_state_t, 1), g_free);
 
   gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
@@ -5508,11 +5596,23 @@ typedef struct dt_gui_pinch_ctx_t
   dt_gui_pinch_handler_t handler;
   gpointer user_data;
   gboolean active;
+  gboolean touchscreen;      /* no GdkEventTouchpadPinch to read the pinch from */
+  gdouble focal_x, focal_y;  /* previous focal point, for the touchscreen deltas */
 } dt_gui_pinch_ctx_t;
+
+/* the gesture's last event.  Touch sequences are keyed by their
+ * GdkEventSequence, touchpad gestures by the NULL sequence, so ask for the
+ * sequence that was updated last rather than for NULL. */
+static const GdkEvent *_pinch_last_event(GtkGesture *gesture)
+{
+  return gtk_gesture_get_last_event(gesture,
+                                    gtk_gesture_get_last_updated_sequence(gesture));
+}
 
 static void _pinch_dispatch(GtkGesture *gesture,
                             const GdkTouchpadGesturePhase phase,
-                            const gboolean have_event)
+                            const gboolean have_event,
+                            const gdouble touch_scale)
 {
   dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
   if(!ctx) return;
@@ -5520,26 +5620,54 @@ static void _pinch_dispatch(GtkGesture *gesture,
   dt_gui_pinch_event_t e = { 0 };
   e.phase = phase;
   e.scale = 1.0;   /* the default when the sequence's last event is gone (END) */
+  e.touchscreen = ctx->touchscreen;
   if(have_event)
   {
-    e.event = gtk_gesture_get_last_event(gesture, NULL);
+    e.event = _pinch_last_event(gesture);
     if(e.event)
     {
-      if(dt_gdk_event_get_type(e.event) != GDK_TOUCHPAD_PINCH)
-      {
-        // touchscreen pinches were never handled before: keep ignoring them
+      const gboolean touchpad_pinch =
+        dt_gdk_event_get_type(e.event) == GDK_TOUCHPAD_PINCH;
+      // the source is decided once, at BEGIN: a sequence that changes kind
+      // mid-gesture would mix two incompatible scale references
+      if(touchpad_pinch == ctx->touchscreen)
         return;
-      }
-      dt_gdk_touchpad_pinch_get_deltas(e.event, &e.dx, &e.dy);
-      e.scale = dt_gdk_touchpad_pinch_get_scale(e.event);
+
       e.state = dt_gdk_event_get_state(e.event) & 0xf;
+      if(!ctx->touchscreen)
+      {
+        dt_gdk_touchpad_pinch_get_deltas(e.event, &e.dx, &e.dy);
+        e.scale = dt_gdk_touchpad_pinch_get_scale(e.event);
 #if GTK_CHECK_VERSION(4, 0, 0)
-      // GTK4 has no root-coords API: surface-relative position (see gtk.c)
-      gdk_event_get_position(e.event, &e.x, &e.y);
+        // GTK4 has no root-coords API: surface-relative position (see gtk.c)
+        gdk_event_get_position(e.event, &e.x, &e.y);
 #else
-      e.x = dt_gdk_event_get_root_x(e.event);
-      e.y = dt_gdk_event_get_root_y(e.event);
+        e.x = dt_gdk_event_get_root_x(e.event);
+        e.y = dt_gdk_event_get_root_y(e.event);
 #endif
+      }
+      else
+      {
+        gdouble cx = 0.0, cy = 0.0;
+        if(!gtk_gesture_get_bounding_box_center(gesture, &cx, &cy))
+          return;
+        e.scale = touch_scale > 0.0 ? touch_scale : 1.0;
+        // the bounding box is in the coordinate space the touch events were
+        // delivered in, and the last event carries the same point in both
+        // spaces: their difference is the window origin the consumers subtract
+        // again (zero on GTK4, where both are surface-relative)
+        e.x = cx + dt_gdk_event_get_root_x(e.event) - dt_gdk_event_get_x(e.event);
+        e.y = cy + dt_gdk_event_get_root_y(e.event) - dt_gdk_event_get_y(e.event);
+        if(phase == GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
+        {
+          // a viewport pan delta like the touchpad's dx/dy, but negated: on a
+          // touchscreen the content is expected to follow the fingers
+          e.dx = ctx->focal_x - e.x;
+          e.dy = ctx->focal_y - e.y;
+        }
+        ctx->focal_x = e.x;
+        ctx->focal_y = e.y;
+      }
     }
   }
 
@@ -5550,37 +5678,60 @@ static void _pinch_begin(GtkGestureZoom *gesture, gpointer user_data)
 {
   (void)user_data;
   dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
-  if(!ctx || !darktable.gui->touchpad_gestures_enabled) return;
-  // GtkGestureZoom also recognizes touchscreen pinches, which were never
-  // handled before: only touchpad pinches set the active flag
-  const GdkEvent *event = gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
-  if(!event || dt_gdk_event_get_type(event) != GDK_TOUCHPAD_PINCH) return;
+  if(!ctx)
+    return;
+
+  const GdkEvent *event = _pinch_last_event(GTK_GESTURE(gesture));
+  if(!event)
+    return;
+
+  const GdkEventType type = dt_gdk_event_get_type(event);
+  if(type == GDK_TOUCHPAD_PINCH)
+  {
+    // the preference covers two-finger touchpad gestures only
+    if(!darktable.gui->touchpad_gestures_enabled)
+      return;
+    ctx->touchscreen = FALSE;
+  }
+  else if(type == GDK_TOUCH_BEGIN || type == GDK_TOUCH_UPDATE || type == GDK_TOUCH_END)
+  {
+    ctx->touchscreen = TRUE;
+  }
+  else
+  {
+    return;
+  }
+
   ctx->active = TRUE;
-  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, TRUE);
+  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_BEGIN, TRUE, 1.0);
 }
 
 static void _pinch_scale_changed(GtkGestureZoom *gesture,
                                  gdouble scale,
                                  gpointer user_data)
 {
-  (void)scale;
   (void)user_data;
   dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
-  if(!ctx || !darktable.gui->touchpad_gestures_enabled || !ctx->active) return;
-  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE);
+  // ctx->active already carries the preference decision taken at BEGIN, so a
+  // preference toggled mid-gesture cannot swallow the matching END
+  if(!ctx || !ctx->active)
+    return;
+  // for a touchscreen the signal argument is the only scale there is: the
+  // distance between the fingers over their distance when the gesture began
+  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_UPDATE, TRUE, scale);
 }
 
 static void _pinch_end(GtkGestureZoom *gesture, gpointer user_data)
 {
   (void)user_data;
   dt_gui_pinch_ctx_t *ctx = g_object_get_data(G_OBJECT(gesture), "dt-gui-pinch-ctx");
-  if(!ctx || !ctx->active) return;
+  if(!ctx || !ctx->active)
+    return;
   ctx->active = FALSE;
-  if(!darktable.gui->touchpad_gestures_enabled) return;
   // also fires after cancel (see gtkgesture.c: the cancel path ends the
   // sequence), so the consumer's END/CANCEL handling always runs; the
   // sequence's last event is already gone here, hence no event data
-  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_END, FALSE);
+  _pinch_dispatch(GTK_GESTURE(gesture), GDK_TOUCHPAD_GESTURE_PHASE_END, FALSE, 1.0);
 }
 
 GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
@@ -5600,6 +5751,58 @@ GtkGesture *(dt_gui_connect_pinch)(GtkWidget *widget,
   g_signal_connect(gesture, "begin", G_CALLBACK(_pinch_begin), NULL);
   g_signal_connect(gesture, "scale-changed", G_CALLBACK(_pinch_scale_changed), NULL);
   g_signal_connect(gesture, "end", G_CALLBACK(_pinch_end), NULL);
+
+  return gesture;
+}
+
+/* per-gesture state for dt_gui_connect_touch_motion, kept on the gesture
+ * object exactly like the pinch context above. */
+typedef struct dt_gui_touch_motion_ctx_t
+{
+  dt_gui_touch_motion_handler_t handler;
+  gpointer user_data;
+} dt_gui_touch_motion_ctx_t;
+
+static void _touch_motion_update(GtkGestureDrag *gesture,
+                                 gdouble offset_x,
+                                 gdouble offset_y,
+                                 gpointer user_data)
+{
+  (void)user_data;
+  dt_gui_touch_motion_ctx_t *ctx =
+    g_object_get_data(G_OBJECT(gesture), "dt-gui-touch-motion-ctx");
+  if(!ctx)
+    return;
+
+  // the drag reports an offset from where the finger landed; motion handlers
+  // want the position itself
+  gdouble x = 0.0, y = 0.0;
+  if(!gtk_gesture_drag_get_start_point(gesture, &x, &y))
+    return;
+  ctx->handler(GTK_GESTURE(gesture), x + offset_x, y + offset_y, ctx->user_data);
+}
+
+GtkGesture *(dt_gui_connect_touch_motion)(GtkWidget *widget,
+                                          dt_gui_touch_motion_handler_t handler,
+                                          gpointer data)
+{
+#if GTK_CHECK_VERSION(4, 0, 0)
+  GtkGesture *gesture = gtk_gesture_drag_new();
+#else
+  GtkGesture *gesture = gtk_gesture_drag_new(widget);
+#endif
+  dt_gui_add_controller(widget, gesture);
+
+  // pointer drags already reach the motion controller, this gesture only fills
+  // in what GDK no longer emulates for touch
+  gtk_gesture_single_set_touch_only(GTK_GESTURE_SINGLE(gesture), TRUE);
+
+  dt_gui_touch_motion_ctx_t *ctx = g_new0(dt_gui_touch_motion_ctx_t, 1);
+  ctx->handler = handler;
+  ctx->user_data = data;
+  g_object_set_data_full(G_OBJECT(gesture), "dt-gui-touch-motion-ctx", ctx, g_free);
+
+  g_signal_connect(gesture, "drag-update", G_CALLBACK(_touch_motion_update), NULL);
 
   return gesture;
 }

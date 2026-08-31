@@ -2825,15 +2825,24 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_connect_pinch(table->widget, _event_pinch, table);
   g_signal_connect(G_OBJECT(table->widget), "draw",
                    G_CALLBACK(_event_draw), table);
-  GtkEventController *motion_controller =
-    dt_gui_connect_motion(table->widget, _event_motion_notify_cb, _event_enter_cb, _event_leave_cb, table);
   /* The padding around a thumbnail's image is covered by an event box with
    * its own window, so motion there targets that event box and never
-   * reaches a TARGET-phase controller on the table.  Run in the BUBBLE
-   * phase so the table sees motion bubbling up from the thumbnails and can
-   * pan even when the drag starts on the letterboxing padding
+   * reaches a TARGET-phase controller on the table.  Run motion in the
+   * BUBBLE phase so the table sees it bubbling up from the thumbnails and
+   * can pan even when the drag starts on the letterboxing padding
    * (see #21826). */
+  GtkEventController *motion_controller =
+    dt_gui_connect_motion(table->widget, _event_motion_notify_cb, NULL, NULL, table);
   gtk_event_controller_set_propagation_phase(motion_controller, GTK_PHASE_BUBBLE);
+  /* Crossings need a controller of their own, in the TARGET phase: GTK3
+   * runs enter/leave in the capture and target phases only, never in the
+   * bubble phase, so on the controller above they would not run at all and
+   * the hovered image (and mouse_inside) would stay stale whenever the
+   * pointer leaves the table from a thumbnail -- the table only ever gets a
+   * virtual crossing then, as the real one goes to the thumbnail.
+   * GTK4 migration: crossing events are delivered in every phase there, so
+   * both controllers can be merged back into a single one. */
+  dt_gui_connect_motion(table->widget, NULL, _event_enter_cb, _event_leave_cb, table);
   GtkGestureSingle *click_gesture =
     dt_gui_connect_click_all(table->widget, _event_button_press_cb, _event_button_release_cb, table);
   /* The thumbnail widgets (in particular the event box covering the area

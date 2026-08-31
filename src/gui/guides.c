@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/math.h"
+#include "control/conf.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
@@ -971,8 +972,7 @@ static void _settings_autoshow_change(GtkWidget *mi,
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
   dt_conf_set_bool(key, !dt_conf_get_bool(key));
   DT_ENTER_GUI_UPDATE();
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->guides_combo),
-                               dt_conf_get_bool(key));
+  dt_bauhaus_toggle_set(module->guides_combo, dt_conf_get_bool(key));
   DT_LEAVE_GUI_UPDATE();
   g_free(key);
   dt_control_queue_redraw_center();

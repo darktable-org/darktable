@@ -1977,7 +1977,6 @@ static void switch_cursors(dt_iop_module_t *self)
   {
     // display default cursor
     dt_control_change_cursor("default");
-
     return;
   }
 
@@ -2009,7 +2008,6 @@ static void switch_cursors(dt_iop_module_t *self)
     // if module is active and opened but cursor is out of the preview,
     // display default cursor
     dt_control_change_cursor("default");
-
     dt_control_queue_redraw_center();
   }
   else
