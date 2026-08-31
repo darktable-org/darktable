@@ -91,7 +91,6 @@ typedef enum _unit_t
   UNIT_N // needs to be the last one
 } _unit_t;
 
-
 static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
 static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
 
@@ -138,8 +137,6 @@ typedef struct dt_lib_print_settings_t
   // for windows side printing support
 #ifdef _WIN32  
   char *waiting_for_printer;
-  GtkWidget *printer_combo;
-  GtkWidget *papers_combo;
   GtkWidget *quality;
   GtkWidget *quality_combo;
   GList *quality_list;                     // list of quality settings (windows only)
@@ -237,7 +234,6 @@ static void _precision_by_unit(const _unit_t unit,
 }
 
 // unit conversion
-
 static float _to_mm(dt_lib_print_settings_t *ps,
                     const double value)
 {
@@ -299,7 +295,6 @@ static inline float _percent_unit_of(dt_lib_print_settings_t *ps,
 }
 
 // callbacks for in-memory export
-
 typedef struct dt_print_format_t
 {
   dt_imageio_module_data_t head;
@@ -339,7 +334,7 @@ static int write_image(dt_imageio_module_data_t *data,
   dt_print_format_t *d = (dt_print_format_t *)data;
 
   d->params->buf =
-    (uint16_t *)malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
+    (uint16_t *)g_malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
   if(!d->params->buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[print] unable to allocate memory for image %s", filename);
@@ -366,7 +361,6 @@ static int write_image(dt_imageio_module_data_t *data,
         memcpy(out_ptr, in_ptr, 6);
     }
   }
-
   return 0;
 }
 
@@ -458,7 +452,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
       }
     }
   }
-
+// In _export_image(): Print actual buffer address and size right before assigning to img->buf
   img->buf = params->buf;
   img->img_bpp = dat.bpp; // Store the image bitdepth with the image being sent to print job
   params->buf = NULL;
@@ -467,7 +461,6 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
 }
 
 #ifndef _WIN32
-
 static void _create_pdf(dt_job_t *job,
                         dt_images_box imgs,
                         const float width,
@@ -537,6 +530,7 @@ static void _create_pdf(dt_job_t *job,
       pdf_image[count]->bb_height = dt_pdf_pixel_to_point(box->print.height, resolution);
       count++;
     }
+    if(tmp) g_free(tmp);
   }
 
   params->pdf_page = dt_pdf_add_page(pdf, pdf_image, count);
@@ -921,22 +915,29 @@ static gboolean _win_build_print_ticket(dt_win32_print_ctx_t *ctx,
       // deliberately not handing the job an IStream/COM object, since
       // the job runs on a different thread and shouldn't inherit any
       // COM apartment or lifetime concerns from this one.
-      HGLOBAL hGlobal = NULL;
-      if(SUCCEEDED(GetHGlobalFromStream(pStream, &hGlobal)) && hGlobal)
+      STATSTG statstg = { 0 };
+      hr = pStream->lpVtbl->Stat(pStream, &statstg, STATFLAG_NONAME);
+
+      if(SUCCEEDED(hr))
       {
-        SIZE_T size = GlobalSize(hGlobal);
-        void *src = GlobalLock(hGlobal);
-        if(src && size > 0)
+        const size_t actual_size = (size_t)statstg.cbSize.QuadPart;
+        HGLOBAL hGlobal = NULL;
+
+        if(actual_size >0 && SUCCEEDED(GetHGlobalFromStream(pStream, &hGlobal)) && hGlobal)
         {
-          void *buf = malloc(size);
-          if(buf)
+          void *src = GlobalLock(hGlobal);
+          if(src)
           {
-            memcpy(buf, src, size);
-            *out_data = buf;
-            *out_size = (size_t)size;
-            ok = TRUE;
+            void *buf = malloc(actual_size);
+            if(buf)
+            {
+              memcpy(buf, src, actual_size);
+              *out_data = buf;
+              *out_size = actual_size;
+              ok = TRUE;
+            }
+            GlobalUnlock(hGlobal);
           }
-          GlobalUnlock(hGlobal);
         }
       }
     }
@@ -997,11 +998,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
 
     gboolean updated = dt_win_open_printer_settings(ps->settings_ctx, hwnd_owner);
-//    if(!updated)
-//    {
-//      dt_control_log(_("print cancelled (printer settings not confirmed)"));
-//    }
-//    else 
+
     if(updated)
     {
       dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx); 
@@ -1196,10 +1193,10 @@ static void _set_printer(const dt_lib_module_t *self,
     if(ps->settings_ctx->cached_dm) dt_sync_print_settings_to_dm(ps->settings_ctx->cached_dm, ps->settings_ctx->base);
     _sync_print_widgets_from_pinfo(ps);
   }
-
+#endif
 }
 //Callback when printer details are ready (Windows only)
-
+#ifdef _WIN32
 static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -1218,26 +1215,25 @@ static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
     g_clear_pointer(&ps->waiting_for_printer, g_free);
 
     // Re‑enable the combo box now that details are ready
-    gtk_widget_set_sensitive(ps->printer_combo, TRUE);
-    gtk_widget_set_sensitive(ps->papers_combo, TRUE);
+    gtk_widget_set_sensitive(ps->printers, TRUE);
+    gtk_widget_set_sensitive(ps->papers, TRUE);
 
 // Now force a GUI refresh of the module
     if(self->gui_update)
     {
       self->gui_update(self);
     }
-
   }
 }
 #endif
 
 static void _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
 {
-  dt_lib_print_settings_t *ps = self->data;
   const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
   if(!printer_name) return;
 
 #ifdef _WIN32
+  dt_lib_print_settings_t *ps = self->data;
   // Ask backend if details are ready
   if(!dt_printer_details_valid(printer_name))
   {
@@ -1245,9 +1241,9 @@ static void _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
     ps->waiting_for_printer = g_strdup(printer_name);
 
     // Disable combo box to prevent multiple overlapping jobs
-    gtk_widget_set_sensitive(ps->printer_combo, FALSE);
-    gtk_widget_set_sensitive(ps->papers_combo, FALSE);
-        // gtk_widget_set_sensitive(ps->papers_combo, FALSE);
+    gtk_widget_set_sensitive(ps->printers, FALSE);
+    gtk_widget_set_sensitive(ps->papers, FALSE);
+        // gtk_widget_set_sensitive(ps->papers, FALSE);
     dt_control_log(_("loading printer details for %s…"), printer_name);
 
     return;
@@ -1365,8 +1361,6 @@ _quality_changed(GtkWidget *combo, const dt_lib_module_t *self)
 }
 #endif
 
-
-
 static void
 _update_slider(dt_lib_print_settings_t *ps)
 {
@@ -1446,7 +1440,6 @@ _top_border_callback(GtkWidget *spin, dt_lib_module_t *self)
     dt_conf_set_float(PRINT_CONFIG_PREFIX "left_margin", value);
     dt_conf_set_float(PRINT_CONFIG_PREFIX "right_margin", value);
   }
-
   _update_slider(ps);
 }
 
@@ -1538,7 +1531,6 @@ _alignment_callback(GtkWidget *tb, dt_lib_module_t *self)
     dt_printing_setup_image(&ps->imgs, ps->last_selected,
                             ps->imgs.box[ps->last_selected].imgid, 100, 100, index);
   }
-
   _update_slider(ps);
 }
 
@@ -3018,9 +3010,10 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgs.motion_over = -1;
 
-  // Initialize the new async tracking field
+  // Initialize the new async tracking field (Windows only)
+#ifdef _WIN32
   d->waiting_for_printer = NULL;
-
+#endif
 
   const char *str = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "unit");
   const char **names = _unit_names;
@@ -3586,8 +3579,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), settings_button, TRUE, TRUE, 0);
   // dt_gui_add_help_link(settings_button, "print_settings_button");
 #endif
-
-
 
   // Print button
 

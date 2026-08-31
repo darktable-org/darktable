@@ -76,22 +76,22 @@ typedef struct dt_win_printer_caps_t {
     int offset_y;   // top hardware margin
 } dt_win_printer_caps_t;
 
+typedef struct dt_printer_wrapper_t {
+  dt_printer_info_t *pinfo;   // actual printer struct (UI-owned)
+  gboolean details_valid;     // TRUE once dt_get_printer_info has run
+  gint refs;                  // Reference counter for async teardown management
+} dt_printer_wrapper_t;
+
 typedef struct notify_ctx_t {
   dt_prtctl_t *pctl;             // refcounted owner (we only dec refs here)
-  dt_printer_info_t *pinfo;      // not owned; lives in wrap
+  dt_printer_wrapper_t *wrap;      
 } notify_ctx_t;
-
 
 static GList *discovered_printers = NULL; // holds dt_printer_info_t*
 
 void dt_populate_hw_margins(HDC hdc, dt_printer_info_t *printer);
 
 static int _fill_printer_details_job(dt_job_t *job);
-
-typedef struct dt_printer_wrapper_t {
-  dt_printer_info_t *pinfo;   // actual printer struct (UI-owned)
-  gboolean details_valid;     // TRUE once dt_get_printer_info has run
-} dt_printer_wrapper_t;
 
 typedef struct {
   dt_printer_wrapper_t *wrap;             // wrapper with pinfo + details_valid
@@ -101,13 +101,6 @@ typedef struct {
   gboolean is_default;
   dt_prtctl_t *pctl;
 } printer_job_params_t;
-
-typedef struct
-{
-  dt_printer_info_t *pinfo;                // UI-owned printer struct
-  void (*cb)(dt_printer_info_t *, void *); // UI callback
-  void *user_data;                         // UI callback user data
-} printer_ui_notify_t;
 
 // Function pointer type matching StartXpsPrintJob's real signature from
 // xpsprint.h. Resolved at runtime via LoadLibrary/GetProcAddress rather
@@ -155,7 +148,7 @@ static gboolean _win_xpsprint_ensure_loaded(void)
    Debug logging
 ---------------------------------------------------------------------------- */
 
-#define DBG_MARK(...) \
+/* #define DBG_MARK(...) \
   do { \
     FILE *f = fopen("C:/temp/winprint_debug.log", "a"); \
     if(f) { \
@@ -164,10 +157,48 @@ static gboolean _win_xpsprint_ensure_loaded(void)
       fprintf(f, "\n"); \
       fclose(f); \
     } \
-  } while(0)
+  } while(0) */
 
 ////HELPERS//////
 
+//helpers to manage memory release for async operations
+static void dt_printer_wrapper_ref(dt_printer_wrapper_t *wrap)
+{
+  if(wrap) g_atomic_int_inc(&wrap->refs);
+}
+
+static void dt_printer_wrapper_unref(dt_printer_wrapper_t *wrap)
+{
+  if(wrap && g_atomic_int_dec_and_test(&wrap->refs))
+  {
+    free(wrap->pinfo);
+    free(wrap);
+  }
+}
+
+static void free_printer_job_params(gpointer data)
+{
+  printer_job_params_t *params = (printer_job_params_t *)data;
+  if(params)
+  {
+    dt_printer_wrapper_unref(params->wrap);
+    if(params->pctl && g_atomic_int_dec_and_test(&params->pctl->refs)) 
+    {
+      free(params->pctl);
+    }
+    g_free(params);
+  }
+}
+
+static void _release_pctl_ref(gpointer data)
+{
+  dt_prtctl_t *pctl = (dt_prtctl_t *)data;
+  if(pctl && g_atomic_int_dec_and_test(&pctl->refs))
+    free(pctl);
+}
+
+
+// helpers to manage sync of darktable print settings to DEVMODE and vice versa
 void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
 {
   dm->dmFields |= DM_ORIENTATION | DM_PAPERSIZE |DM_PAPERWIDTH | DM_PAPERLENGTH;
@@ -195,26 +226,89 @@ void dt_sync_print_settings_to_dm(DEVMODEW *dm, const dt_print_info_t *pinfo)
   }
 }
 
-void free_dib(dt_win_dib_t *dib)
+// Get printer resolutions helper for both syncing of cached dm and during initial printer info query
+int dt_win_resolve_dpi_from_dm(DEVMODEW *dmW, const wchar_t *wprinter)
 {
-  if(!dib) return;
+    if(!dmW || !wprinter) return 300;
 
-  if(dib->pixels)
-  {
-    g_free(dib->pixels);
-    dib->pixels = NULL;
-  }
+    // Expand DEVMODE
+    DEVMODEW *dmW_expanded = NULL;
+    LONG dmSize = DocumentPropertiesW(NULL, NULL, (LPWSTR)wprinter,
+                                      NULL, NULL, 0);
 
-  if(dib->bi)
-  {
-    g_free(dib->bi);
-    dib->bi = NULL;
-  }
+    if(dmSize > 0)
+    {
+        dmW_expanded = (DEVMODEW *)malloc(dmSize);
+        if(dmW_expanded)
+        {
+            if(DocumentPropertiesW(NULL, NULL, (LPWSTR)wprinter,
+                                   dmW_expanded, dmW,
+                                   DM_OUT_BUFFER) != IDOK)
+            {
+                free(dmW_expanded);
+                dmW_expanded = NULL;
+            }
+        }
+    }
 
-  dib->stride   = 0;
-  dib->width    = 0;
-  dib->height   = 0;
-  dib->top_down = false;
+    DEVMODEW *dm = dmW_expanded ? dmW_expanded : dmW;
+
+    int xdpi = 0, ydpi = 0;
+
+    // Explicit DPI
+    if((dm->dmFields & DM_PRINTQUALITY) && dm->dmPrintQuality > 0)
+        xdpi = dm->dmPrintQuality;
+
+    if((dm->dmFields & DM_YRESOLUTION) && dm->dmYResolution > 0)
+        ydpi = dm->dmYResolution;
+
+    if(xdpi > 0 && ydpi == 0)
+        ydpi = xdpi;
+
+    // DC_ENUMRESOLUTIONS fallback
+    if(xdpi == 0 || ydpi == 0)
+    {
+        int n = DeviceCapabilitiesW(wprinter, NULL,
+                                    DC_ENUMRESOLUTIONS,
+                                    NULL, dm);
+
+        if(n > 0)
+        {
+            POINT *res = malloc(sizeof(POINT) * n);
+            DeviceCapabilitiesW(wprinter, NULL,
+                                DC_ENUMRESOLUTIONS,
+                                (LPWSTR)res, dm);
+
+            int best_x = 0;
+            int best_y = 0;
+
+            for(int i=0; i<n; i++)
+            {
+              int rx = res[i].x;
+              int ry = res[i].y;
+
+              int usable = (rx < ry) ? rx : ry;
+              int best_usable = (best_x < best_y) ? best_x : best_y;
+
+              if(usable > best_usable)
+              {
+                best_x = rx;
+                best_y = ry;
+              }
+            }
+            xdpi = best_x;
+            ydpi = best_y;
+
+            free(res);
+        }
+    }
+
+    if(dmW_expanded) free(dmW_expanded);
+
+    if(xdpi == 0 || ydpi == 0)
+        return 300; //darktable default
+
+    return (xdpi < ydpi) ? xdpi : ydpi;
 }
 
 // Helper to sync cached DM to print settings
@@ -242,14 +336,15 @@ gboolean dt_win_sync_cached_dm_to_pinfo(dt_win32_print_ctx_t *ctx)
   wchar_t *wprinter = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
   if(wprinter)
   {
+    //resolution
+    pinfo->printer.resolution = dt_win_resolve_dpi_from_dm(dm, wprinter); // assume square pixels
+    int dpiX = pinfo->printer.resolution;
+    int dpiY = pinfo->printer.resolution;
+    
     HDC hdc = CreateDCW(L"WINSPOOL", wprinter, NULL, dm);
     if(hdc)
     {
-      // resolution + hw margins
-      int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-      int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-      pinfo->printer.resolution = dpiX; // assume square pixels
-
+      // hw margins
       int offX   = GetDeviceCaps(hdc, PHYSICALOFFSETX);
       int offY   = GetDeviceCaps(hdc, PHYSICALOFFSETY);
       int physW  = GetDeviceCaps(hdc, PHYSICALWIDTH);
@@ -283,7 +378,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   pinfo->printer.is_turboprint = FALSE;
   *pinfo->printer.profile = '\0';
   pinfo->num_printers = 0;
-      // Additional initialization specific to the Windows context
+  // Additional initialization specific to the Windows context
   // For example, you can set default margins or resolution here
   pinfo->printer.hw_margin_left = 0;
   pinfo->printer.hw_margin_top = 0;
@@ -328,22 +423,8 @@ void dt_get_printer_info(const char *printer_name_utf8, dt_printer_info_t *pinfo
       if(pi2w && GetPrinterW(hPrinter, 2, (LPBYTE)pi2w, needed, &returned))
       {
         dmW = (DEVMODEW *)pi2w->pDevMode;
-        if(dmW && dmW->dmPrintQuality > 0)
-          pinfo->resolution = dmW->dmPrintQuality;
+        if(dmW) pinfo->resolution = dt_win_resolve_dpi_from_dm(dmW, wprinter);
       }
-    }
-
-    // --- NEW: reconcile with DeviceCapabilities ---
-    int n = DeviceCapabilitiesW(wprinter, NULL, DC_ENUMRESOLUTIONS, NULL, dmW);
-    if(n > 0)
-    {
-      POINT *resolutions = g_malloc0(sizeof(POINT) * n);
-      DeviceCapabilitiesW(wprinter, NULL, DC_ENUMRESOLUTIONS,
-                          (LPWSTR)resolutions, dmW);
-
-      // Pick the first as default, or match DEVMODE if possible
-      pinfo->resolution = resolutions[0].x;
-      g_free(resolutions);
     }
 
     // Hardware margins via DC
@@ -360,18 +441,6 @@ void dt_get_printer_info(const char *printer_name_utf8, dt_printer_info_t *pinfo
   }
 
   g_free(wprinter);
-
-  // Debug output of what we filled in
-  {
-    char buf[512];
-    snprintf(buf, sizeof(buf),
-             "dt_get_printer_info: name='%s' resolution=%d "
-             "margins L=%.2f R=%.2f T=%.2f B=%.2f turboprint=%d",
-             pinfo->name, pinfo->resolution,
-             pinfo->hw_margin_left, pinfo->hw_margin_right,
-             pinfo->hw_margin_top, pinfo->hw_margin_bottom,
-             pinfo->is_turboprint);
-  }
 }
 
 // Enumerate printers (replacement for cupsEnumDests / cupsGetDests)
@@ -388,37 +457,46 @@ is_unwanted_printer(const char *name)
   if(g_strrstr(name, "Fax")) return TRUE;
   if(g_strrstr(name, "OneNote")) return TRUE;
   if(g_strrstr(name, "XPS")) return TRUE;
-  //if(g_strrstr(name, "PDF")) return TRUE;
+  //if(g_strrstr(name, "PDF")) return TRUE;  // Left here if it becomes desirable to disable PDF "printers"
 
   return FALSE;
 }
+
+typedef struct init_cb_ctx_t {
+  dt_prtctl_t *pctl;
+  dt_printer_wrapper_t *wrap;
+} init_cb_ctx_t;
+
+static gboolean _notify_ui_printer_cb(gpointer user_data)
+{
+  init_cb_ctx_t *ctx = (init_cb_ctx_t *)user_data;
+  if(ctx->pctl && ctx->pctl->cb && ctx->wrap && ctx->wrap->pinfo)
+    ctx->pctl->cb(ctx->wrap->pinfo, ctx->pctl->user_data);
+
+  if(ctx->pctl && g_atomic_int_dec_and_test(&ctx->pctl->refs)) free(ctx->pctl);
+  dt_printer_wrapper_unref(ctx->wrap);
+  g_free(ctx);
+  return FALSE;
+}
+
 static gboolean _notify_ui_printer_ready(gpointer user_data)
 {
   notify_ctx_t *ready_ctx = (notify_ctx_t *)user_data;
   if(!ready_ctx) return FALSE;
 
   dt_prtctl_t *prtctl = ready_ctx->pctl;
-  dt_printer_info_t *pinfo = ready_ctx->pinfo;
+  dt_printer_info_t *pinfo = ready_ctx->wrap ? ready_ctx->wrap->pinfo : NULL;
 
-  const char *name = (pinfo && pinfo->name[0] != '\0') ? pinfo->name : "(null)";
+  if(prtctl && prtctl->ready_cb && pinfo && pinfo->name[0] != '\0')
+    prtctl->ready_cb(pinfo, prtctl->user_data);
 
-  char buf[256];
-  snprintf(buf, sizeof(buf), "notify ready for %s", name);
-
-  if(prtctl && prtctl->ready_cb && pinfo && pinfo->name[0] != '\0') 
-   {prtctl->ready_cb(pinfo, prtctl->user_data);}
-
-  // Release this notify’s ref; free prtctl if last holder
-  if(prtctl && g_atomic_int_dec_and_test(&prtctl->refs)) 
-  {
+  if(prtctl && g_atomic_int_dec_and_test(&prtctl->refs))
     free(prtctl);
-  }
 
-  g_free(ready_ctx); // free the context (does not own pinfo)
-  return FALSE; // one-shot idle
+  dt_printer_wrapper_unref(ready_ctx->wrap);
+  g_free(ready_ctx);
+  return FALSE;
 }
-
-
 
 // Background job: enumerate installed printers and invoke callback
 static int _detect_printers_callback(dt_job_t *job)
@@ -427,16 +505,26 @@ static int _detect_printers_callback(dt_job_t *job)
   gboolean queued_any_default = FALSE;
 
   // Load saved default; NULL means not set.
-  char *dt_default = dt_conf_get_string("plugins/lighttable/print/printer");
+  char *dt_default = dt_conf_get_string(PRINT_CONFIG_PREFIX "printer");
   const char *sync_target = (dt_default && dt_default[0] != '\0') ? dt_default : NULL;
 
   DWORD needed = 0, returned = 0;
   (void)EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 2, NULL, 0, &needed, &returned);
 
-  if(needed == 0) { g_free(dt_default); return 0; }
+  if(needed == 0) 
+  { 
+    darktable.control->cups_started = TRUE;
+    g_free(dt_default); 
+    return 0; 
+  }
 
   BYTE *buffer = (BYTE *)malloc(needed);
-  if(!buffer) { g_free(dt_default); return 0; }
+  if(!buffer) 
+  { 
+    darktable.control->cups_started = TRUE;
+    g_free(dt_default); 
+    return 0; 
+  }
 
   int success = 0;
   if(EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
@@ -446,6 +534,8 @@ static int _detect_printers_callback(dt_job_t *job)
 
     for(DWORD i = 0; i < returned; i++)
     {
+      if(_cancel) break; //stop discovery loop if cancel set
+      
       gchar *utf8 = g_utf16_to_utf8(pi2[i].pPrinterName, -1, NULL, NULL, NULL);
       if(!utf8 || utf8[0] == '\0') { g_free(utf8); continue; }
 
@@ -461,12 +551,19 @@ static int _detect_printers_callback(dt_job_t *job)
         dt_printer_wrapper_t *wrap = calloc(1, sizeof(*wrap));
         wrap->pinfo = pinfo;
         wrap->details_valid = FALSE;
+        wrap->refs = 1;
 
         discovered_printers = g_list_append(discovered_printers, wrap);
-        if(pctl && pctl->cb) pctl->cb(pinfo, pctl->user_data);
 
-        char buf[256];
-        snprintf(buf, sizeof(buf), "discovered printer '%s'", pinfo->name);
+        if(pctl && pctl->cb)
+        {
+          init_cb_ctx_t *ctx = g_new0(init_cb_ctx_t, 1);
+          ctx->pctl = pctl;
+          ctx->wrap = wrap;
+          g_atomic_int_inc(&pctl->refs);
+          dt_printer_wrapper_ref(wrap);
+          g_idle_add(_notify_ui_printer_cb, ctx);
+        }
 
         if(!darktable.control->cups_started)
         {
@@ -478,7 +575,7 @@ static int _detect_printers_callback(dt_job_t *job)
         {
           if(!sync_target && is_win_default)
           {
-            dt_conf_set_string("plugins/lighttable/print/printer", pinfo->name);
+            dt_conf_set_string(PRINT_CONFIG_PREFIX "printer", pinfo->name);
           }
 
           printer_job_params_t *params = g_new0(printer_job_params_t, 1);
@@ -493,7 +590,8 @@ static int _detect_printers_callback(dt_job_t *job)
                                                        "fill default printer details");
           if(detail_job) 
           {
-            dt_control_job_set_params(detail_job, params, g_free);
+            dt_printer_wrapper_ref(wrap);
+            dt_control_job_set_params(detail_job, params, free_printer_job_params);
             dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, detail_job);
             queued_any_default = TRUE;
           } 
@@ -504,14 +602,19 @@ static int _detect_printers_callback(dt_job_t *job)
           }
         }
       }
+      if(_cancel)
+      {
+          darktable.control->cups_started = TRUE;
+          free(buffer);
+          g_free(dt_default);
+          return 0;
+      }
 
       g_free(utf8);
     }
 
     success = 1;
   }
-
-  free(buffer);
 
   // Fallback if nothing matched DT config or Windows default
   if(!queued_any_default && discovered_printers)
@@ -530,7 +633,8 @@ static int _detect_printers_callback(dt_job_t *job)
                                                  "fill fallback printer details");
     if(detail_job) 
     {
-      dt_control_job_set_params(detail_job, params, g_free);
+      dt_printer_wrapper_ref(wrap);
+      dt_control_job_set_params(detail_job, params, free_printer_job_params);
       dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, detail_job);
     } 
     else 
@@ -545,6 +649,8 @@ static int _detect_printers_callback(dt_job_t *job)
     free(pctl);
   }
 
+  darktable.control->cups_started = TRUE;
+  free(buffer);
   g_free(dt_default);
   return success;
 }
@@ -552,9 +658,9 @@ static int _detect_printers_callback(dt_job_t *job)
 static int _populate_remaining_printers_job(dt_job_t *job)
 {
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
-  if(!pctl) return 0;
+  if(!pctl || _cancel) return 0;
 
-  char *dt_default = dt_conf_get_string("plugins/lighttable/print/printer");
+  char *dt_default = dt_conf_get_string(PRINT_CONFIG_PREFIX "printer");
 
   for(GList *l = discovered_printers; l; l = l->next)
   {
@@ -574,7 +680,9 @@ static int _populate_remaining_printers_job(dt_job_t *job)
                                                  "fill printer details");
     if(detail_job)
     {
-      dt_control_job_set_params(detail_job, params, g_free);
+      g_atomic_int_inc(&pctl->refs);
+      dt_printer_wrapper_ref(wrap);
+      dt_control_job_set_params(detail_job, params, free_printer_job_params);
       dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, detail_job);
     }
     else 
@@ -592,7 +700,7 @@ static int _populate_remaining_printers_job(dt_job_t *job)
 static int _fill_printer_details_job(dt_job_t *job)
 {
   printer_job_params_t *params = dt_control_job_get_params(job);
-  if(!params || !params->wrap || !params->wrap->pinfo) return 0;
+  if(!params || !params->wrap || !params->wrap->pinfo || _cancel) return 0;
 
   dt_printer_info_t *pinfo = params->wrap->pinfo;
 
@@ -603,7 +711,7 @@ static int _fill_printer_details_job(dt_job_t *job)
   // Persist default as soon as first ready details arrive (default or fallback)
   if(params->is_default)
   {
-    dt_conf_set_string("plugins/lighttable/print/printer", pinfo->name);
+    dt_conf_set_string(PRINT_CONFIG_PREFIX "printer", pinfo->name);
   }
 
   // Notify UI in main loop; each notify holds a ref
@@ -611,7 +719,8 @@ static int _fill_printer_details_job(dt_job_t *job)
   {
     notify_ctx_t *ready_ctx = g_new0(notify_ctx_t, 1);
     ready_ctx->pctl = params->pctl;
-    ready_ctx->pinfo = pinfo;
+    ready_ctx->wrap = params->wrap;
+    dt_printer_wrapper_ref(params->wrap);
 
     // Hold a ref for this notify; released in the idle callback
     g_atomic_int_inc(&params->pctl->refs);
@@ -628,7 +737,7 @@ static int _fill_printer_details_job(dt_job_t *job)
                                                  "populate remaining printers");
     if(others_job)
     {
-      dt_control_job_set_params(others_job, params->pctl, NULL); // pctl owned by refcount
+      dt_control_job_set_params(others_job, params->pctl, _release_pctl_ref); 
       dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, others_job);
     }
     else
@@ -648,12 +757,7 @@ void free_discovered_printers(void)
 {
   for(GList *l = discovered_printers; l; l = l->next)
   {
-    dt_printer_wrapper_t *wrap = (dt_printer_wrapper_t *)l->data;
-    if(wrap)
-    {
-      free(wrap->pinfo);
-      free(wrap);
-    }
+    dt_printer_wrapper_unref((dt_printer_wrapper_t *)l->data);
   }
   g_list_free(discovered_printers);
   discovered_printers = NULL;
@@ -683,7 +787,8 @@ void dt_win_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data
                             void (*ready_cb)(dt_printer_info_t *pr, void *user_data),
                            void *user_data)
 {
-  // Reset cancel flag at the start of each discovery
+  // Reset cancel flag and printer list at the start of each discovery 
+  dt_printers_abort_discovery(); 
   _cancel = 0;
 
   dt_job_t *job = dt_control_job_create(_detect_printers_callback,
@@ -705,7 +810,7 @@ void dt_win_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data
 }
 
 
-/* Papers via DeviceCapabilitiesA: sizes are in tenths of a millimeter */
+// Papers via DeviceCapabilitiesA: sizes are in tenths of a millimeter
 // helper: check if paper already exists in list
 static gboolean paper_exists(GList *papers, const char *name)
 {
@@ -800,12 +905,6 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
           }
         }
         #endif
-    
-        if(p->name[0] == '\0')
-        {
-          snprintf(p->name, MAX_NAME, "Paper %d", i+1);
-          snprintf(p->common_name, MAX_NAME, "Paper %d", i+1);
-        }
 
         if(!paper_exists(list, p->common_name))
           list = g_list_append(list, p);
@@ -814,6 +913,9 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
       }
       #ifdef DC_PAPERNAMES
       free(names);   // once, after the loop — not inside it
+      #endif
+      #ifdef DC_PAPERS
+      free(paper_ids);
       #endif  
     }
     free(szList);
@@ -845,7 +947,6 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
   
   return NULL;
 }
-
 
 GList *dt_get_quality_list(const char *printer_name_utf8)
 {
@@ -886,8 +987,6 @@ GList *dt_get_quality_list(const char *printer_name_utf8)
   g_free(wprinter);
   return list;
 }
-
-
 
 dt_medium_info_t *dt_get_medium(GList *media, const char *name)
 {
@@ -951,6 +1050,7 @@ static IXpsOMColorProfileResource *_win_build_color_profile_resource(IXpsOMObjec
 } 
 static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
                                                 IWICBitmapSource *bitmap,
+                                                const WICPixelFormatGUID *pixel_format,
                                                 IStream **stream_out)
 {
   if(!wic || !bitmap || !stream_out) return E_POINTER;
@@ -978,7 +1078,7 @@ static HRESULT _win_encode_bitmap_to_png_stream(IWICImagingFactory *wic,
           UINT w = 0, h = 0;
           bitmap->lpVtbl->GetSize(bitmap, &w, &h);
 
-          WICPixelFormatGUID format = GUID_WICPixelFormat24bppRGB;
+          WICPixelFormatGUID format = *pixel_format;
           hr = frame->lpVtbl->SetSize(frame, w, h);
           if(SUCCEEDED(hr))
             hr = frame->lpVtbl->SetPixelFormat(frame, &format);
@@ -1029,20 +1129,62 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
                                 (void **)&wic);
   if(FAILED(hr) || !wic)
     return NULL;
+  
+  const gboolean is_16bit = (box->img_bpp == 16);
+  const UINT bytes_per_pixel = is_16bit ? 6 : 3;
+  const UINT tight_stride = (UINT)box->exp_width * bytes_per_pixel;
+  const UINT padded_stride = (tight_stride + 3) & ~3;
+  const GUID *pixel_format = is_16bit ? &GUID_WICPixelFormat48bppRGB : &GUID_WICPixelFormat24bppRGB;   
 
-  const UINT stride = (UINT)box->exp_width * 3;
+  BYTE *source_buf = (BYTE *)box->buf;
+  BYTE *padded_buf = NULL;
+
+  if(!source_buf) 
+  {
+    return NULL;
+  }
+
+  if(padded_stride != tight_stride) // Windows expects stride to be a multiple of 4 for 48bpp
+  {
+    const size_t total_padded_bytes = (size_t)padded_stride * box->exp_height;
+  
+    padded_buf = (BYTE *)g_try_malloc0(total_padded_bytes);
+
+    if(!padded_buf) 
+    {
+      return NULL;
+    }
+    const BYTE *src = source_buf;
+    BYTE *dst = padded_buf;
+    for(int i = 0; i < box->exp_height; i++)
+    {
+      memcpy(dst, src, tight_stride);
+      src += tight_stride;
+      dst += padded_stride;
+    }
+    source_buf = padded_buf;
+  }
+
+  const UINT cbBufferSize = padded_stride * (UINT)box->exp_height;
+
   hr = wic->lpVtbl->CreateBitmapFromMemory(wic,
-                                           box->exp_width,
-                                           box->exp_height,
-                                           &GUID_WICPixelFormat24bppRGB,
-                                           stride,
-                                           stride * box->exp_height,
-                                           (BYTE *)box->buf,
-                                           &bitmap);
+                                box->exp_width,
+                                box->exp_height,
+                                pixel_format,
+                                padded_stride,
+                                cbBufferSize,
+                                source_buf,
+                                &bitmap);
+
+  if(padded_buf) 
+  {
+    g_free(padded_buf);
+    padded_buf = NULL;
+  }
 
   if(SUCCEEDED(hr) && bitmap)
   {
-    hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, &img_stream);
+    hr = _win_encode_bitmap_to_png_stream(wic, (IWICBitmapSource *)bitmap, pixel_format, &img_stream);
     if(SUCCEEDED(hr) && img_stream)
     {
       wchar_t uri[64];
@@ -1063,7 +1205,6 @@ static IXpsOMImageResource *_win_build_image_resource(IXpsOMObjectFactory *facto
       img_stream->lpVtbl->Release(img_stream);
     }
   }
-
   if(bitmap) bitmap->lpVtbl->Release(bitmap);
   if(wic) wic->lpVtbl->Release(wic);
 
@@ -1215,7 +1356,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
     return false;
 
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-  bool co_initialized = SUCCEEDED(hr) || hr == S_FALSE;
+  bool co_initialized = SUCCEEDED(hr);
   if(!co_initialized)
   {
     dt_control_log(_("could not initialize COM for printing"));
@@ -1230,7 +1371,7 @@ bool dt_win_print_file(const dt_images_box *imgs,
   IXpsPrintJobStream *docStream = NULL;
   IXpsPrintJobStream *ticketStream = NULL;
   HANDLE completionEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
-
+// Print job creation structure based upon Microsoft examples at learn.microsoft.com
   if(wprinter && wtitle && completionEvent && pStartXpsPrintJob)
   {
     hr = pStartXpsPrintJob(wprinter,
@@ -1255,165 +1396,199 @@ bool dt_win_print_file(const dt_images_box *imgs,
                                         &bytes_written);
       }
 
-      IXpsOMObjectFactory *factory = NULL;
-      hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
-                            NULL,
-                            CLSCTX_INPROC_SERVER,
-                            &IID_IXpsOMObjectFactory,
-                            (void **)&factory);
-
-      if(SUCCEEDED(hr) && factory)
+      if(SUCCEEDED(hr))
       {
-        IStream *package_stream = NULL;
-        hr = CreateStreamOnHGlobal(NULL, TRUE, &package_stream);
-
-        IOpcPartUri *doc_seq_uri = NULL;
-        hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
-
-        if(SUCCEEDED(hr) && package_stream)
+        IXpsOMObjectFactory *factory = NULL;
+        hr = CoCreateInstance(&CLSID_XpsOMObjectFactory,
+                              NULL,
+                              CLSCTX_INPROC_SERVER,
+                              &IID_IXpsOMObjectFactory,
+                              (void **)&factory);
+       
+        if(SUCCEEDED(hr) && factory)
         {
-          IXpsOMPackageWriter *writer = NULL;
+          IStream *package_stream = NULL;
+          hr = CreateStreamOnHGlobal(NULL, TRUE, &package_stream);
 
-          hr = factory->lpVtbl->CreatePackageWriterOnStream(
-                  factory,
-                  (ISequentialStream *)package_stream,
-                  FALSE,
-                  XPS_INTERLEAVING_OFF,
-                  doc_seq_uri,
-                  NULL,
-                  NULL,
-                  NULL,
-                  NULL,
-                  &writer);
-
-          if(SUCCEEDED(hr) && writer)
+          if(SUCCEEDED(hr) && package_stream)
           {
-            IXpsOMColorProfileResource *profile_resource = NULL;
-            IOpcPartUri *doc_uri = NULL;
-            hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_uri);
-
-            writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
-
-            doc_seq_uri->lpVtbl->Release(doc_seq_uri);
-            doc_uri->lpVtbl->Release(doc_uri);
-
-            IXpsOMPage *page = NULL;
-
-            XPS_SIZE page_size = { page_width, page_height };
-
-            IOpcPartUri *page_uri = NULL;
-            hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
-            
-            if(SUCCEEDED(hr) && page_uri)
+            IOpcPartUri *doc_seq_uri = NULL;
+            hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocumentSequence.fdseq", &doc_seq_uri);
+          
+            if(SUCCEEDED(hr) && doc_seq_uri)
             {
-            hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", page_uri, &page);
+              IXpsOMPackageWriter *writer = NULL;
 
-            page_uri->lpVtbl->Release(page_uri);
-            }
+              hr = factory->lpVtbl->CreatePackageWriterOnStream(
+                      factory,
+                      (ISequentialStream *)package_stream,
+                      FALSE,
+                      XPS_INTERLEAVING_OFF,
+                      doc_seq_uri,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      &writer);
 
-            /* Create and add the color profile resource after the page part is available */
-            profile_resource = NULL;
-            if(icc_data && icc_size > 0 && is_color_device)
-            {
-              profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/ColorProfiles/OutputProfile.icc");
-            }
+              doc_seq_uri->lpVtbl->Release(doc_seq_uri);
 
-            if(SUCCEEDED(hr) && page)
-            {
-//  Iterate to place the images on the page
-              for(int i = 0; i < imgs->count; i++)
+              if(SUCCEEDED(hr) && writer)
               {
-                const dt_image_box *box = &imgs->box[i];
-                IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
-                if(res)
+                IXpsOMColorProfileResource *profile_resource = NULL;
+                IOpcPartUri *doc_uri = NULL;
+                hr = factory->lpVtbl->CreatePartUri(factory, L"/FixedDocument.fdoc", &doc_uri);
+
+                if(SUCCEEDED(hr) && doc_uri)
                 {
-                  _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution, page_size.height);
-                  res->lpVtbl->Release(res);
+                  hr = writer->lpVtbl->StartNewDocument(writer, doc_uri, NULL, NULL, NULL, NULL);
+                  doc_uri->lpVtbl->Release(doc_uri);
+
+                  IXpsOMPage *page = NULL;
+                  XPS_SIZE page_size = { page_width, page_height };
+
+                  if(SUCCEEDED(hr) && (page_size.width <= 0.0f || page_size.height <= 0.0f))
+                    hr = E_FAIL;   // invalid page dimensions — don't silently report success
+
+                  if(SUCCEEDED(hr) && page_size.width > 0.0f && page_size.height > 0.0f)
+                  {
+                    IOpcPartUri *page_uri = NULL;
+                    hr = factory->lpVtbl->CreatePartUri(factory, L"/Pages/1.fpage", &page_uri);
+                  
+                    if(SUCCEEDED(hr) && page_uri)
+                    {
+                    hr = factory->lpVtbl->CreatePage(factory, &page_size, L"en-US", page_uri, &page);
+                    page_uri->lpVtbl->Release(page_uri);
+                    }
+                  }
+
+                  // Create and add the color profile (.icc) resource after the page part is available
+                  if(icc_data && icc_size > 0) //&& is_color_device) - we might not want to embed a color profile if the printer is monochrome, but for now embed it anyway
+                  {
+                    profile_resource = _win_build_color_profile_resource(factory, icc_data, icc_size, L"/Resources/ColorProfiles/OutputProfile.icc");
+                    // it is okay if this remains NULL
+                  }
+
+                  if(SUCCEEDED(hr) && page)
+                  {
+                  //  Iterate to place the images on the page
+                    gboolean place_image_failed = FALSE;
+                    for(int i = 0; i < imgs->count; i++)
+                    {
+                      const dt_image_box *box = &imgs->box[i];
+                      IXpsOMImageResource *res = _win_build_image_resource(factory, box, i);
+                      if(!res)
+                      {
+                        place_image_failed = TRUE;
+                        break;
+                      }
+
+                      HRESULT place_hr = _win_place_image_on_page(factory, page, res, profile_resource, box, pinfo->printer.resolution, page_size.height);
+                      res->lpVtbl->Release(res);
+
+                      if(FAILED(place_hr))
+                      {
+                        place_image_failed = TRUE; 
+                        break;
+                      }
+                    }
+
+                    if(place_image_failed)
+                      hr = E_FAIL;  // kill the print job if the images cannot be placed onto the page before writing to the job
+                    else
+                      hr = writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
+
+                    page->lpVtbl->Release(page);
+                    page = NULL;
+                  }
+
+                  if(SUCCEEDED(hr))
+                  {
+                    hr = writer->lpVtbl->Close(writer);
+                  }
+                  else
+                  {
+                    writer->lpVtbl->Close(writer);
+                  }
+
+                  if(profile_resource)
+                  {
+                    profile_resource->lpVtbl->Release(profile_resource);
+                    profile_resource = NULL;
+                  }
                 }
               }
-
-              hr = writer->lpVtbl->AddPage(writer, page, &page_size, NULL, NULL, NULL, NULL);
-
-              page->lpVtbl->Release(page);
-              page = NULL;
+              if(writer) writer->lpVtbl->Release(writer);
+              writer = NULL;
             }
-
-            hr = writer->lpVtbl->Close(writer);
-
-            if(profile_resource)
-            {
-              profile_resource->lpVtbl->Release(profile_resource);
-              profile_resource = NULL;
-            }
-            writer->lpVtbl->Release(writer);
-            writer = NULL;
-
-            if(SUCCEEDED(hr))
+            // Writing to the docStream directly was resulting in a corrupted XPS file, so we write to a package stream first and then copy the data to the docStream at the end.
+            if(SUCCEEDED(hr) && package_stream != NULL)
             {
               LARGE_INTEGER zero = {0};
-              HRESULT seek_hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
+              hr = package_stream->lpVtbl->Seek(package_stream, zero, STREAM_SEEK_SET, NULL);
 
-              if(SUCCEEDED(seek_hr))
+              if(SUCCEEDED(hr) && docStream)
               {
                 BYTE buffer[4096];
 
                 for(;;)
                 {
                   ULONG read = 0;
-                  HRESULT read_hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
+                  hr = package_stream->lpVtbl->Read(package_stream, buffer, sizeof(buffer), &read);
 
-                  if(FAILED(read_hr))
+                  if(FAILED(hr) || read == 0)
                   {
                     break;
                   }
 
-                  if(read == 0)
-                  {
-                    break;
-                  }
+                  ULONG written = 0;
+                  hr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
 
-                  if(docStream)
+                  if(FAILED(hr) || written != read)
                   {
-                    ULONG written = 0;
-                    HRESULT whr = docStream->lpVtbl->Write(docStream, buffer, read, &written);
-                    if(FAILED(whr) || written != read)
-                    {
-                      break; 
-                    }
+                    dt_control_log(_("failed to write print job data for `%s'"), pinfo->printer.name);
+                    break; 
                   }
                 }
               }
             }
+            else 
+            {
+              hr = E_FAIL;  // fail the print job if package stream is empty
+            }
           }
-          package_stream->lpVtbl->Release(package_stream);
+          if(package_stream) package_stream->lpVtbl->Release(package_stream);
         }
-
-        factory->lpVtbl->Release(factory);
+        if(factory) factory->lpVtbl->Release(factory);
       }
-
       if(docStream) docStream->lpVtbl->Close(docStream);
       if(ticketStream) ticketStream->lpVtbl->Close(ticketStream);
 
       WaitForSingleObject(completionEvent, INFINITE);
+      
+      if(SUCCEEDED(hr))
+      {
       ok = true;
+      dt_control_log(_("print job completed for `%s'"), pinfo->printer.name);
+      }
+      else
+      {
+        dt_control_log(_("failed to complete print job for `%s'"), pinfo->printer.name);
+      }
     }
     else
     {
       dt_control_log(_("could not start print job on `%s'"), pinfo->printer.name);
     }
   }
-
+  if(docStream) docStream->lpVtbl->Release(docStream);
+  if(ticketStream) ticketStream->lpVtbl->Release(ticketStream);
   if(xpsJob) xpsJob->lpVtbl->Release(xpsJob);
   if(completionEvent) CloseHandle(completionEvent);
   g_free(wprinter);
   g_free(wtitle);
 
   if(co_initialized) CoUninitialize();
-
-  if(ok)
-    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
-  else
-    dt_control_log(_("printing failed on `%s'"), pinfo->printer.name);
 
   return ok;
 }
@@ -1518,9 +1693,6 @@ void dt_get_print_layout(const dt_print_info_t *prt,
 
 }
 
-
-
-
 //constructor for the print settings context
 dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
 {
@@ -1543,6 +1715,7 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
   // open printer handle
   if(!OpenPrinterW(wprinter, &settings_ctx->hPrinter, NULL)) 
   {
+    g_free(wprinter);
     return settings_ctx; // leave cached_dm NULL, caller can detect
   }
   settings_ctx->is_color_device = DeviceCapabilitiesW(wprinter, NULL, DC_COLORDEVICE, NULL, NULL) != 0;
@@ -1621,7 +1794,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
     ZeroMemory(settings_ctx->cached_dm, dm_size);
   }
 
-
     dt_sync_print_settings_to_dm(settings_ctx->cached_dm, settings_ctx->base);
 
     // Show the driver’s property sheet
@@ -1643,7 +1815,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
     {
       // One‑stop sync: DEVMODE → pinfo (orientation, paper, resolution, hw margins)
       dt_win_sync_cached_dm_to_pinfo(settings_ctx);
-
     }
     return TRUE;
   }
@@ -1651,7 +1822,6 @@ BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_
   {
     return FALSE;
   }
-
 }
 
 // windows settings destructor

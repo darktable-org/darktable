@@ -24,6 +24,7 @@
 
 G_BEGIN_DECLS
 
+#define PRINT_CONFIG_PREFIX "plugins/print/print/"
 typedef struct dt_win32_print_ctx_t {
     dt_print_info_t *base;   // cross-platform pinfo
     HANDLE           hPrinter;
@@ -34,17 +35,17 @@ typedef struct dt_win32_print_ctx_t {
     // room for future Windows-only fields
 } dt_win32_print_ctx_t;
 
-typedef struct dt_win_dib_t
+/*typedef struct dt_win_dib_t
 {
   BITMAPINFO *bi;     // pointer to BITMAPINFO header
   uint8_t    *pixels; // pixel buffer
   int         stride; // bytes per row
   int         width;  // in pixels
   int         height; // in pixels
-  bool        top_down;
+  gboolean    top_down;
   int         dpi_x;
   int         dpi_y;
-} dt_win_dib_t;
+} dt_win_dib_t;*/
 /**
  * Check if printer details have been populated by the background job.
  *
@@ -85,7 +86,7 @@ typedef struct dt_win_quality_t
   dt_quality_source_t source; // <-- add this
 } dt_win_quality_t;
 
-void free_dib(dt_win_dib_t *dib);
+// void free_dib(dt_win_dib_t *dib);
 
 GList *dt_get_quality_list(const char *printer_name);
 
