@@ -1,0 +1,11 @@
+# UndefinedBehaviorSanitizer suppressions for darktable.
+#
+# Syntax: <check-name>:<substring of a source file path or symbol name>
+# e.g.    alignment:src/external/LibRaw
+#
+# Keep this file small and justified. A suppression here hides a real UBSan
+# check, so prefer fixing the code. Entries belong here when the undefined
+# behaviour lives in third party code we do not control.
+
+# Start empty. Populate from the first full suite run, and record why each
+# entry exists.

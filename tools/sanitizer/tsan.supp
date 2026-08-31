@@ -1,0 +1,20 @@
+# ThreadSanitizer suppressions for darktable.
+#
+# Syntax: race:<substring>, deadlock:<substring>, called_from_lib:<lib>, ...
+#
+# GCC's libgomp is not built with TSan annotations, so TSan cannot see the
+# happens-before edges established by OpenMP barriers and reduction clauses. It
+# therefore reports a race on essentially every parallel loop. These entries
+# make TSan runs against a GCC build usable at all; they are NOT needed with
+# clang + an annotated libomp/archer.
+called_from_lib:libgomp.so
+race:^GOMP_
+race:^gomp_
+
+# Same story for the OpenCL ICD loader and vendor drivers.
+called_from_lib:libOpenCL.so
+
+# GLib's own lock-free/atomic data structures confuse TSan when glib itself is
+# not instrumented.
+called_from_lib:libglib-2.0.so
+called_from_lib:libgobject-2.0.so
