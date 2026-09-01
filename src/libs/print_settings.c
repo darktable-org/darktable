@@ -530,7 +530,6 @@ static void _create_pdf(dt_job_t *job,
       pdf_image[count]->bb_height = dt_pdf_pixel_to_point(box->print.height, resolution);
       count++;
     }
-    if(tmp) g_free(tmp);
   }
 
   params->pdf_page = dt_pdf_add_page(pdf, pdf_image, count);
