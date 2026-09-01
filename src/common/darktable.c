@@ -622,20 +622,18 @@ void dt_dump_pfm_file(
   }
 
   char fname[256]= { 0 };
-  snprintf(fname, sizeof(fname), "%04d_%s_%s_%s%s.%s",
+  snprintf(fname, sizeof(fname), "%04d_%s_%s%s.%s",
      written,
      modname,
-     cpu ? "cpu" : "GPU",
-     (input && output) ? "diff_" : ((!input && !output) ? "" : ((input) ? "in_" : "out_")),
-     (bpp != 16) ? "M" : "C",
-     (bpp==2) ? "ppm" : "pfm");
-
+     (input && output) ? "diff" : cpu ? "cpu" : "gpu",
+     (input && output) ? "" : ((!input && !output) ? "" : ((input) ? "_in" : "_out")),
+     bpp == sizeof(float) || bpp == sizeof(uint16_t) ? "pgm" : "ppm");
 
   if((width < 1) || (height < 1) || !data)
     goto finalize;
 
   fullname = g_build_filename(path, fname, NULL);
-  dt_write_pfm(fullname, width, height, data, bpp);
+  dt_write_ppm(fullname, width, height, data, bpp);
 
   dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fullname, width, height, bpp);
   written += 1;
