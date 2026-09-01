@@ -124,6 +124,7 @@ typedef struct dt_iop_borders_gui_data_t
   GtkWidget *frame_offset;
   GtkWidget *frame_colorpick;
   GtkWidget *frame_picker; // the 2nd button
+  GtkWidget *frame_color_box;
 } dt_iop_borders_gui_data_t;
 
 // ******* Check and update legacy params...(esp. ver 4)
@@ -850,6 +851,43 @@ void gui_changed(dt_iop_module_t *self,
     }
     dt_bauhaus_combobox_set(g->pos_v, k);
   }
+
+  const char *reason = NULL;
+  if(p->size <= 0.0f)
+    reason = _("increase border size to enable the frame line");
+  else if(p->pos_h <= 0.0f)
+    reason = _("increase horizontal offset to enable the frame line");
+  else if(p->pos_h >= 1.0f)
+    reason = _("decrease horizontal offset to enable the frame line");
+  else if(p->pos_v <= 0.0f)
+    reason = _("increase vertical offset to enable the frame line");
+  else if(p->pos_v >= 1.0f)
+    reason = _("decrease vertical offset to enable the frame line");
+
+  const gboolean enable_frameline = (reason == NULL);
+
+  gtk_widget_set_sensitive(g->frame_size, enable_frameline);
+  gtk_widget_set_sensitive(g->frame_offset, enable_frameline);
+  gtk_widget_set_sensitive(g->frame_color_box, enable_frameline);
+
+  if(enable_frameline)
+  {
+    gtk_widget_set_tooltip_text(g->frame_size,
+                                _("size of the frame line in percent of min border width"));
+    gtk_widget_set_tooltip_text(g->frame_offset,
+                                _("offset of the frame line beginning on image side"));
+    gtk_widget_set_tooltip_text(g->frame_colorpick,
+                                _("select frame line color"));
+    gtk_widget_set_tooltip_text(g->frame_picker,
+                                _("pick frame line color from image"));
+  }
+  else
+  {
+    gtk_widget_set_tooltip_text(g->frame_size, reason);
+    gtk_widget_set_tooltip_text(g->frame_offset, reason);
+    gtk_widget_set_tooltip_text(g->frame_colorpick, reason);
+    gtk_widget_set_tooltip_text(g->frame_picker, reason);
+  }
 }
 
 static void _colorpick_color_set(GtkColorButton *widget,
@@ -1032,7 +1070,8 @@ void gui_init(dt_iop_module_t *self)
                               _("pick frame line color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("frame line color"),
                        g->frame_picker, &dt_action_def_color_picker);
-  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(label), g->frame_colorpick, g->frame_picker));
+  g->frame_color_box = dt_gui_hbox(dt_gui_expand(label), g->frame_colorpick, g->frame_picker);
+  dt_gui_box_add(self->widget, g->frame_color_box);
 }
 
 // clang-format off
