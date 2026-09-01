@@ -2,6 +2,99 @@
   "_README": "dt-lockcheck findings judged not to be defects.  Maintained with --confirm-false-positive, not by hand; see tools/dt-lockcheck/README.md.",
   "entries": [
     {
+      "confirmed": "2026-09-01",
+      "field": "buf_hash",
+      "key": "998aa6fae934",
+      "module": "ashift",
+      "reason": "ASHIFT_DEBUG is #undef'd at ashift.c:90, and the only unlocked reads of g->buf_hash are the printf() arguments inside the two compiled-out blocks at :3225-3227 and :3237-3239.  The live hash comparison that would consume it is commented out ('if(g->buf /* && hash != g->buf_hash */)' at :3496 and :3633), so no enabled code reads the field across threads.  #21918 quotes that commented-out line but does not report buf_hash as a defect.  Re-check if ASHIFT_DEBUG is ever enabled by default or the comparison is restored.",
+      "rule": "violation",
+      "sites": [
+        "_do_get_structure_auto:3227[gtk](none)",
+        "_do_get_structure_auto:3239[gtk](none)",
+        "process:3506[pipe](gui_lock)",
+        "process_cl:3644[pipe](gui_lock)",
+        "reload_defaults:5727[gtk](bulk_init)",
+        "gui_init:5936[gtk](bulk_init)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "params",
+      "key": "d19e907cb851",
+      "module": "basicadj",
+      "reason": "Same ownership-token argument as the accepted rgblevels:params entry, and basicadj is a copy of that code.  Exclusive ownership of g->params passes through the call_auto_exposure state machine, and every handover is under gui_lock even though the payload accesses are not: the pipe writes params only after taking 1 -> -1 at basicadj.c:1419-1423 (process) and :1301-1305 (process_cl), publishes 2 at :1433-1435 / :1334-1336, and _develop_ui_pipe_finished_callback reads params only after taking 2 -> -1 at :279-284.  Only one preview pipe runs at a time, so two pipe writers cannot overlap.  The unlocked GTK token write in button_released (:384) can lose a request or a result -- that is the separate box_cood/call_auto_exposure defect -- but it cannot produce a concurrent params writer.  Re-check if the token protocol changes or a second pipe gains this path.",
+      "rule": "no_lock_share",
+      "sites": [
+        "_develop_ui_pipe_finished_callback:285[gtk](none)",
+        "process_cl:1323[pipe](none)",
+        "process_cl:1327[pipe](none)",
+        "process_cl:1328[pipe](none)",
+        "process_cl:1329[pipe](none)",
+        "process:1425[pipe](none)",
+        "process:1429[pipe](none)",
+        "process:1430[pipe](none)",
+        "process:1431[pipe](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "mix",
+      "key": "8695114c1773",
+      "module": "channelmixerrgb",
+      "reason": "Inter-procedural lock the lexical scan cannot see.  Every pipe-side access the rule lists is inside _extract_color_checker() (channelmixerrgb.c:1643), which takes no lock itself; its only caller holds gui_lock across the whole call at :2162-2166.  The GTK sides use the same lock: _commit_profile_callback() reads xy and mix at :2938-2953 inside :2936-2955, and _optimize_changed_callback() writes optimization at :2843 inside :2842-2844.  Unlike safety_margin, checker, delta_E_label_text and the homography pair, these three are not reached through the unlocked _validate_color_checker() route at :2285-2288 -- _extract_patches() does not touch them.  Re-check if _extract_color_checker() gains a second caller or _extract_patches() starts reading them.",
+      "rule": "violation",
+      "sites": [
+        "_extract_color_checker:1858[pipe](none)",
+        "_extract_color_checker:1874[pipe](none)",
+        "_extract_color_checker:1932[pipe](none)",
+        "_extract_color_checker:1933[pipe](none)",
+        "_extract_color_checker:1934[pipe](none)",
+        "_commit_profile_callback:2943[gtk](gui_lock)",
+        "_commit_profile_callback:2944[gtk](gui_lock)",
+        "_commit_profile_callback:2945[gtk](gui_lock)",
+        "_commit_profile_callback:2947[gtk](gui_lock)",
+        "_commit_profile_callback:2948[gtk](gui_lock)",
+        "_commit_profile_callback:2949[gtk](gui_lock)",
+        "_commit_profile_callback:2951[gtk](gui_lock)",
+        "_commit_profile_callback:2952[gtk](gui_lock)",
+        "_commit_profile_callback:2953[gtk](gui_lock)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "optimization",
+      "key": "7b7fee15aefc",
+      "module": "channelmixerrgb",
+      "reason": "Inter-procedural lock the lexical scan cannot see.  Every pipe-side access the rule lists is inside _extract_color_checker() (channelmixerrgb.c:1643), which takes no lock itself; its only caller holds gui_lock across the whole call at :2162-2166.  The GTK sides use the same lock: _commit_profile_callback() reads xy and mix at :2938-2953 inside :2936-2955, and _optimize_changed_callback() writes optimization at :2843 inside :2842-2844.  Unlike safety_margin, checker, delta_E_label_text and the homography pair, these three are not reached through the unlocked _validate_color_checker() route at :2285-2288 -- _extract_patches() does not touch them.  Re-check if _extract_color_checker() gains a second caller or _extract_patches() starts reading them.",
+      "rule": "violation",
+      "sites": [
+        "_extract_color_checker:1789[pipe](none)",
+        "_extract_color_checker:1791[pipe](none)",
+        "_extract_color_checker:1793[pipe](none)",
+        "_extract_color_checker:1795[pipe](none)",
+        "_extract_color_checker:1801[pipe](none)",
+        "_extract_color_checker:1807[pipe](none)",
+        "_extract_color_checker:1813[pipe](none)",
+        "_extract_color_checker:1815[pipe](none)",
+        "_optimize_changed_callback:2843[gtk](gui_lock)",
+        "gui_update:3822[gtk](bulk_init)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "xy",
+      "key": "257a5c47ee23",
+      "module": "channelmixerrgb",
+      "reason": "Inter-procedural lock the lexical scan cannot see.  Every pipe-side access the rule lists is inside _extract_color_checker() (channelmixerrgb.c:1643), which takes no lock itself; its only caller holds gui_lock across the whole call at :2162-2166.  The GTK sides use the same lock: _commit_profile_callback() reads xy and mix at :2938-2953 inside :2936-2955, and _optimize_changed_callback() writes optimization at :2843 inside :2842-2844.  Unlike safety_margin, checker, delta_E_label_text and the homography pair, these three are not reached through the unlocked _validate_color_checker() route at :2285-2288 -- _extract_patches() does not touch them.  Re-check if _extract_color_checker() gains a second caller or _extract_patches() starts reading them.",
+      "rule": "violation",
+      "sites": [
+        "_extract_color_checker:1708[pipe](none)",
+        "_extract_color_checker:1709[pipe](none)",
+        "_commit_profile_callback:2938[gtk](gui_lock)",
+        "_commit_profile_callback:2939[gtk](gui_lock)"
+      ]
+    },
+    {
       "confirmed": "2026-08-30",
       "field": "auto_detect",
       "key": "17a4e48fd49a",
@@ -17,6 +110,100 @@
       ]
     },
     {
+      "confirmed": "2026-09-01",
+      "field": "black",
+      "key": "afbc752a03b5",
+      "module": "exposure",
+      "reason": "The widget accesses the rule flags are in _exposure_proxy_handle_event(), which dt-lockcheck labels 'either' because its address escapes into dev->proxy.exposure.handle_event (exposure.c:1343).  Every in-tree caller of dt_dev_exposure_handle_event() is a GTK event handler in src/libs/histogram.c -- a drag gesture (:353), a double-click gesture (:369) and a scroll controller (:516) -- so the function only ever runs on the GTK main thread and never touches these widgets from a pipe.  Re-check if a pipe-side caller of the proxy is ever added.",
+      "rule": "widget_from_pipe",
+      "sites": [
+        "_exposure_set_black:813[gtk](none)",
+        "_exposure_proxy_handle_event:841[either](none)",
+        "gui_changed:1021[gtk](none)",
+        "gui_init:1261[gtk](none)",
+        "gui_init:1263[gtk](none)",
+        "gui_init:1268[gtk](none)",
+        "gui_init:1269[gtk](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "deflicker_target_level",
+      "key": "12908ceaadf4",
+      "module": "exposure",
+      "reason": "The widget accesses the rule flags are in _exposure_proxy_handle_event(), which dt-lockcheck labels 'either' because its address escapes into dev->proxy.exposure.handle_event (exposure.c:1343).  Every in-tree caller of dt_dev_exposure_handle_event() is a GTK event handler in src/libs/histogram.c -- a drag gesture (:353), a double-click gesture (:369) and a scroll controller (:516) -- so the function only ever runs on the GTK main thread and never touches these widgets from a pipe.  Re-check if a pipe-side caller of the proxy is ever added.",
+      "rule": "widget_from_pipe",
+      "sites": [
+        "_exposure_proxy_handle_event:842[either](none)",
+        "gui_init:1237[gtk](none)",
+        "gui_init:1238[gtk](none)",
+        "gui_init:1240[gtk](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "exposure",
+      "key": "69f191a336aa",
+      "module": "exposure",
+      "reason": "The widget accesses the rule flags are in _exposure_proxy_handle_event(), which dt-lockcheck labels 'either' because its address escapes into dev->proxy.exposure.handle_event (exposure.c:1343).  Every in-tree caller of dt_dev_exposure_handle_event() is a GTK event handler in src/libs/histogram.c -- a drag gesture (:353), a double-click gesture (:369) and a scroll controller (:516) -- so the function only ever runs on the GTK main thread and never touches these widgets from a pipe.  Re-check if a pipe-side caller of the proxy is ever added.",
+      "rule": "widget_from_pipe",
+      "sites": [
+        "_exposure_set_white:779[gtk](none)",
+        "_exposure_proxy_handle_event:842[either](none)",
+        "gui_changed:1015[gtk](none)",
+        "_spot_settings_changed_callback:1178[gtk](none)",
+        "gui_init:1218[gtk](none)",
+        "gui_init:1220[gtk](none)",
+        "gui_init:1221[gtk](none)",
+        "gui_init:1222[gtk](none)",
+        "gui_init:1223[gtk](none)",
+        "gui_init:1224[gtk](none)",
+        "gui_init:1225[gtk](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "preview_auto_levels",
+      "key": "091dd1304474",
+      "module": "retouch",
+      "reason": "Ownership token, already established while filing #22081 -- that report's 'Validated state machine' section walks every transition and states explicitly that this is not a gui_data locking defect.  The pipe owns preview_levels while preview_auto_levels is -1 (claimed at retouch.c:3991 / :4823 under the lock), publishes 2 under the lock at :4003 / :4837, and the GUI reads the array only after taking 2 -> -1 at :1718; the locked transitions carry the ordering the unlocked array copies need.  change_image()'s unlocked reset at :2403-2412 is externally serialised: _dev_load_requested_image() holds the preview, full and preview2 pipe mutexes across the change_image() call (src/views/darkroom.c:1417-1451, :1595, :1641-1644).  The two real retouch defects on this handshake are filed and are not locking: #22081 (an OpenCL error path leaves the token at -1) and #22092 (fast tiling measures one strip).  #22067 covers the module's genuinely unlocked display fields, which are separate.  Re-check if the transitions leave gui_lock or change_image gains a caller outside the pipe-mutex window.",
+      "rule": "violation",
+      "sites": [
+        "rt_curr_scale_update:1201[gtk](gui_lock)",
+        "rt_curr_scale_update:1204[gtk](gui_lock)",
+        "rt_display_wavelet_scale_callback:1694[gtk](gui_lock)",
+        "rt_display_wavelet_scale_callback:1697[gtk](gui_lock)",
+        "rt_develop_ui_pipe_finished_callback:1716[gtk](gui_lock)",
+        "rt_develop_ui_pipe_finished_callback:1718[gtk](gui_lock)",
+        "rt_develop_ui_pipe_finished_callback:1738[gtk](gui_lock)",
+        "rt_auto_levels_callback:1760[gtk](gui_lock)",
+        "rt_auto_levels_callback:1762[gtk](gui_lock)",
+        "change_image:2409[gtk](none)",
+        "process:3989[pipe](gui_lock)",
+        "process:3991[pipe](gui_lock)",
+        "process:4003[pipe](gui_lock)",
+        "process_cl:4821[pipe](gui_lock)",
+        "process_cl:4823[pipe](gui_lock)",
+        "process_cl:4837[pipe](gui_lock)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "preview_levels",
+      "key": "d0dd2484eea8",
+      "module": "retouch",
+      "reason": "Ownership token, already established while filing #22081 -- that report's 'Validated state machine' section walks every transition and states explicitly that this is not a gui_data locking defect.  The pipe owns preview_levels while preview_auto_levels is -1 (claimed at retouch.c:3991 / :4823 under the lock), publishes 2 under the lock at :4003 / :4837, and the GUI reads the array only after taking 2 -> -1 at :1718; the locked transitions carry the ordering the unlocked array copies need.  change_image()'s unlocked reset at :2403-2412 is externally serialised: _dev_load_requested_image() holds the preview, full and preview2 pipe mutexes across the change_image() call (src/views/darkroom.c:1417-1451, :1595, :1641-1644).  The two real retouch defects on this handshake are filed and are not locking: #22081 (an OpenCL error path leaves the token at -1) and #22092 (fast tiling measures one strip).  #22067 covers the module's genuinely unlocked display fields, which are separate.  Re-check if the transitions leave gui_lock or change_image gains a caller outside the pipe-mutex window.",
+      "rule": "no_lock_share",
+      "sites": [
+        "rt_develop_ui_pipe_finished_callback:1723[gtk](none)",
+        "change_image:2410[gtk](none)",
+        "change_image:2411[gtk](none)",
+        "change_image:2412[gtk](none)",
+        "process:4000[pipe](none)",
+        "process_cl:4834[pipe](none)"
+      ]
+    },
+    {
       "confirmed": "2026-08-30",
       "field": "params",
       "key": "a447820dfb82",
@@ -29,6 +216,47 @@
         "process:1273[pipe](none)",
         "process_cl:1440[pipe](none)",
         "process_cl:1445[pipe](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "full_preview_buf",
+      "key": "7654ed5bd70c",
+      "module": "toneequal",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1048-1063, gated on self->dev->gui_attached; the source states the intent at :1050-1052.  Only one full pipe exists per dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer: preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match, and dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4214), which fails the branch guard.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears or a second full-type pipe becomes possible.",
+      "rule": "no_lock_share",
+      "sites": [
+        "toneeq_process:1056[pipe](none)",
+        "toneeq_process:1057[pipe](none)",
+        "toneeq_process:1062[pipe](none)",
+        "gui_cache_init:1366[gtk](bulk_init)",
+        "gui_cleanup:3267[gtk](none)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "full_preview_buf_height",
+      "key": "306e0dd9a0f1",
+      "module": "toneequal",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1048-1063, gated on self->dev->gui_attached; the source states the intent at :1050-1052.  Only one full pipe exists per dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer: preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match, and dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4214), which fails the branch guard.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears or a second full-type pipe becomes possible.",
+      "rule": "no_lock_share",
+      "sites": [
+        "toneeq_process:1054[pipe](none)",
+        "toneeq_process:1059[pipe](none)",
+        "gui_cache_init:1368[gtk](bulk_init)"
+      ]
+    },
+    {
+      "confirmed": "2026-09-01",
+      "field": "full_preview_buf_width",
+      "key": "d24a6aa761c2",
+      "module": "toneequal",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1048-1063, gated on self->dev->gui_attached; the source states the intent at :1050-1052.  Only one full pipe exists per dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer: preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match, and dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4214), which fails the branch guard.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears or a second full-type pipe becomes possible.",
+      "rule": "no_lock_share",
+      "sites": [
+        "toneeq_process:1054[pipe](none)",
+        "toneeq_process:1058[pipe](none)",
+        "gui_cache_init:1367[gtk](bulk_init)"
       ]
     }
   ],
