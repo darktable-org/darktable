@@ -23,9 +23,9 @@
 // need to parallelize further
 static inline void set_pixels(float *buf,
                               const dt_aligned_pixel_t color,
-                              const int npixels)
+                              const int border_width)
 {
-  for(size_t i = 0; i < npixels; i++)
+  for(int i = 0; i < border_width; i++)
   {
     copy_pixel_nontemporal(buf + 4*i,  color);
   }
@@ -35,9 +35,9 @@ static inline void set_pixels(float *buf,
 // need to parallelize further
 static inline void copy_pixels(float *out,
                                const float *const in,
-                               const int npixels)
+                               const int border_width)
 {
-  for(size_t i = 0; i < npixels; i++)
+  for(int i = 0; i < border_width; i++)
   {
     copy_pixel_nontemporal(out + 4*i, in + 4*i);
   }
@@ -152,7 +152,7 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
   if(has_right)
   {
     border_in_x = CLAMP(binfo->border_size_l - roi_out->x, 0, roi_out->width);
-    image_right = border_in_x + image_width;
+    image_right = CLAMP(border_in_x + image_width, border_in_x, roi_out->width);
   }
   else
   {
@@ -163,7 +163,7 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
   if(has_bottom)
   {
     border_in_y  = CLAMP(binfo->border_size_t - roi_out->y, 0, roi_out->height);
-    image_bottom = border_in_y + image_height;
+    image_bottom = CLAMP(border_in_y + image_height, border_in_y, roi_out->height);
   }
   else
   {
