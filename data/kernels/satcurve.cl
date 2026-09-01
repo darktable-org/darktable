@@ -19,6 +19,19 @@
 
 #define DT_IOP_SATCURVE_RES 256
 
+// noise-aware blend: sigmoid weight LUT lookup, mirrors _get_sb_weight() on
+// the CPU and _get_satweight() in colorequal.cl. weights has 2*DT_SATCURVE_SB_SIZE+1
+// entries, uploaded once per process_cl() call from the host-side LUT.
+#define DT_SATCURVE_SB_SIZE 2048.0f
+
+static inline float _get_sb_weight_cl(const float sat, global const float *const weights)
+{
+  const float isat = DT_SATCURVE_SB_SIZE * (1.0f + clamp(sat, -1.0f, 1.0f - (1.0f / DT_SATCURVE_SB_SIZE)));
+  const float base = floor(isat);
+  const int i = (int)base;
+  return weights[i] + (isat - base) * (weights[i + 1] - weights[i]);
+}
+
 // periodic lookup in the hue-indexed gamut LUT; mirrors satcurve_lookup_gamut() on CPU
 static inline float satcurve_lookup_gamut_cl(global const float *const gamut_lut, const float h)
 {
@@ -166,7 +179,7 @@ satcurve_histogram(read_only image2d_t in, const int width, const int height,
 
 kernel void
 satcurvergb(read_only image2d_t in, write_only image2d_t out,
-            read_only image2d_t guided_mask, const int use_gf,
+            read_only image2d_t sat_mask_in, read_only image2d_t bri_mask_in, const int use_mask,
             const int width, const int height,
             constant const float *const matrix_in, constant const float *const matrix_out,
             global const float *const sat_lut, global const float *const bri_lut,
@@ -193,13 +206,16 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
     float4 HSB = {HCB.x, HCB.z > 0.f ? HCB.y / HCB.z : 0.f, HCB.z, 0.f};
 
     const float gamut_s = satcurve_ucs_gamut_saturation_cl(JCH.x, JCH.z, L_white, gamut_lut);
+    const float raw_s_in = HSB.y / gamut_s;
 
-    // Determine input saturation: either from the filtered mask or directly from the pixel
-    const float s_in_norm = use_gf ? clamp(Areadsingle(guided_mask, x, y), 0.f, 1.f)
-                                   : (HSB.y / gamut_s);
+    // Determine input saturation per channel: either from the filtered/blended
+    // masks (guided filter or noise-aware blend, both use the same code path
+    // here) or directly from the pixel for both channels.
+    const float s_in_sat = use_mask ? clamp(Areadsingle(sat_mask_in, x, y), 0.f, 1.f) : raw_s_in;
+    const float s_in_bri = use_mask ? clamp(Areadsingle(bri_mask_in, x, y), 0.f, 1.f) : raw_s_in;
 
-    const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_norm), 0.f, 1.f);
-    const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_norm), 0.f, 1.f);
+    const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_sat), 0.f, 1.f);
+    const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_bri), 0.f, 1.f);
     const float sat_factor = curve_to_factor_cl(sat_c);
     const float bri_factor = curve_to_factor_cl(bri_c);
 
@@ -232,17 +248,20 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
     const float h = atan2(jab.z, jab.y);
     const float ch = dtcl_cos(h), sh = dtcl_sin(h);
     const float gamut = fmax(satcurve_lookup_gamut_cl(gamut_lut, h), FLT_MIN);
+    const float raw_s_in = (Jz > 0.f ? Cz / Jz : 0.f) / gamut;
 
-    // Determine input saturation: either from the filtered mask or directly from the pixel
-    const float s_in_norm = use_gf ? clamp(Areadsingle(guided_mask, x, y), 0.f, 1.f)
-                                   : ((Jz > 0.f ? Cz / Jz : 0.f) / gamut);
+    // Determine input saturation per channel: either from the filtered/blended
+    // masks (guided filter or noise-aware blend, both use the same code path
+    // here) or directly from the pixel for both channels.
+    const float s_in_sat = use_mask ? clamp(Areadsingle(sat_mask_in, x, y), 0.f, 1.f) : raw_s_in;
+    const float s_in_bri = use_mask ? clamp(Areadsingle(bri_mask_in, x, y), 0.f, 1.f) : raw_s_in;
 
-    const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_norm), 0.f, 1.f);
-    const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_norm), 0.f, 1.f);
+    const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_sat), 0.f, 1.f);
+    const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_bri), 0.f, 1.f);
     const float sat_factor = curve_to_factor_cl(sat_c);
     const float bri_factor = curve_to_factor_cl(bri_c);
 
-    const float s_out = satcurve_soft_clip_cl(fmax(s_in_norm * sat_factor, 0.f), 0.8f, 1.f) * gamut;
+    const float s_out = satcurve_soft_clip_cl(fmax(s_in_sat * sat_factor, 0.f), 0.8f, 1.f) * gamut;
 
     const float r = hypot(Jz, Cz);
     const float inv_norm = 1.f / sqrt(1.f + s_out * s_out);
@@ -311,6 +330,73 @@ satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
   const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
 
   write_imagef(out, (int2)(x, y), fmax(s_in_norm, 0.f));
+}
+
+// same as satcurve_scalar_mask above, but writes into a plain linear buffer
+// instead of a single-channel image. Needed as the input format for
+// dt_gaussian_mean_blur_cl() (common/gaussian.h), which operates on cl_mem
+// buffers, not images -- feeds the noise-aware blend path below.
+kernel void
+satcurve_scalar_mask_buffer(read_only image2d_t in, global float *const out,
+                            const int width, const int height,
+                            constant const float *const matrix_in,
+                            global const float *const gamut_lut,
+                            const int formula, const float L_white)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if (x >= width || y >= height)
+    return;
+
+  const float4 pix_in = Areadpixel(in, x, y);
+  const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
+
+  out[mad24(y, width, x)] = fmax(s_in_norm, 0.f);
+}
+
+// Noise-aware alternative to the guided filter (see apply_scharr_blend_to_mask()
+// on the CPU side). sat_raw and sat_blur are linear single-channel buffers:
+// sat_raw is the unfiltered per-pixel saturation, sat_blur is the same signal
+// after a plain (non edge-aware) gaussian blur, already applied in-place by
+// dt_gaussian_mean_blur_cl() before this kernel runs. For each pixel, blends
+// raw and blurred saturation using a sigmoid weight (dampens the blur's
+// influence on low-saturation / noisy areas); the brilliance output gets an
+// additional Scharr-gradient term that further distrusts the blur right at
+// sharp saturation transitions, to avoid halos.
+kernel void
+satcurve_scharr_blend(global const float *const sat_raw,
+                      global const float *const sat_blur,
+                      global const float *const sb_weights,
+                      const float threshold,
+                      const int width, const int height,
+                      write_only image2d_t sat_mask_out,
+                      write_only image2d_t bri_mask_out)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if (x >= width || y >= height)
+    return;
+
+  const int k = mad24(y, width, x);
+  const float raw = sat_raw[k];
+  const float blur = sat_blur[k];
+
+  const float weight = _get_sb_weight_cl(blur - threshold, sb_weights);
+  const float s_sat = clamp(raw + (blur - raw) * weight, 0.f, 1.f);
+
+  // clamp the sampling position so the 3x3 Scharr stencil never reads
+  // outside the buffer, same trick as on the CPU / in colorequal.cl
+  const int vrow = min(height - 2, max(1, y));
+  const int vcol = min(width - 2, max(1, x));
+  const int kk = mad24(vrow, width, vcol);
+
+  float edge = fmax(0.0f, scharr_gradient(sat_blur, kk, width) - 0.02f);
+  edge = edge * edge;
+  const float bri_weight = weight * (1.0f - clamp(4.0f * edge, 0.f, 1.f));
+  const float s_bri = clamp(raw + (blur - raw) * bri_weight, 0.f, 1.f);
+
+  write_imagef(sat_mask_out, (int2)(x, y), s_sat);
+  write_imagef(bri_mask_out, (int2)(x, y), s_bri);
 }
 
 // broadcasts a single-channel (guided-filtered) mask into an RGB visualisation,
