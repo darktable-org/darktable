@@ -3045,6 +3045,9 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
            0.5f);
 
         dt_conf_set_float(DT_MASKS_CONF(form->type, path, border), masks_border);
+        // a resize restores the baseline's borders wholesale, so drop it
+        // here as _path_modify_property does for the same property
+        _resize_state_invalidate(form->formid);
         dt_toast_log(_("feather size: %3.2f%%"),
                      feather_size * 50.0f / g_list_length(form->points));
       }
