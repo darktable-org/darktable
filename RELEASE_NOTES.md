@@ -193,6 +193,9 @@ changes (where available).
 - Fixed broken dragging in sliders' precise-entry mode
   in GTK3.
 
+- Fixed the feather of a drawn path being lost when the shape was resized
+  with the scroll wheel.
+
 ## Lua
 
 ### API Version
