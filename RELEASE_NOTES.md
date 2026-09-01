@@ -85,6 +85,10 @@ changes (where available).
   XMPs can be used to create duplicates or replace the current
   edit. Multiple XMPs create one duplicate per file.
 
+- In the borders (framing) module, disable frame line controls
+  when the border settings would prevent the frame line from
+  being visible.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
@@ -195,6 +199,9 @@ changes (where available).
 
 - Fixed the feather of a drawn path being lost when the shape was resized
   with the scroll wheel.
+
+- Fixed numeric error in the framing module (borders) causing the frame
+  line to be off-center for certain border sizes.
 
 ## Lua
 

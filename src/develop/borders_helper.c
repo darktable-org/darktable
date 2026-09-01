@@ -139,9 +139,9 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
   const int border_tot_height =
     ceilf((piece->buf_out.height - piece->buf_in.height) * roi_in->scale);
 
-  binfo->border_size_t = has_top    ? border_tot_height * pos_v : 0;
+  binfo->border_size_t = has_top    ? roundf(border_tot_height * pos_v) : 0;
   binfo->border_size_b = has_bottom ? border_tot_height - binfo->border_size_t : 0;
-  binfo->border_size_l = has_left   ? border_tot_width * pos_h : 0;
+  binfo->border_size_l = has_left   ? roundf(border_tot_width * pos_h) : 0;
   binfo->border_size_r = has_right  ? border_tot_width - binfo->border_size_l : 0;
 
   int image_right   = 0;
@@ -202,14 +202,14 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
                                       binfo->border_size_b),
                                   MIN(binfo->border_size_l,
                                       binfo->border_size_r));
-  binfo->frame_size = border_min_size * f_size;
+  binfo->frame_size = roundf(border_min_size * f_size);
 
   if(binfo->frame_size > 0)
   {
     const int image_lx = binfo->border_size_l - roi_out->x;
     const int image_ty = binfo->border_size_t - roi_out->y;
     const int frame_space = border_min_size - binfo->frame_size;
-    const int frame_offset = frame_space * f_offset;
+    const int frame_offset = roundf(frame_space * f_offset);
 
     binfo->frame_tl_in_x = MAX(border_in_x - frame_offset, 0);
     binfo->frame_tl_out_x = MAX(binfo->frame_tl_in_x - binfo->frame_size, 0);
@@ -227,27 +227,26 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
     const int frame_out_height = frame_in_height + binfo->frame_size * 2;
 
     binfo->frame_br_in_x
-      = CLAMP(image_lx - frame_offset + frame_in_width - 1,
-              0, roi_out->width - 1);
+      = CLAMP(image_lx - frame_offset + frame_in_width,
+              0, roi_out->width);
     binfo->frame_br_in_y
-      = CLAMP(image_ty - frame_offset + frame_in_height - 1,
-              0, roi_out->height - 1);
+      = CLAMP(image_ty - frame_offset + frame_in_height,
+              0, roi_out->height);
 
     // ... if 100% frame_offset we ensure frame_line "stick" the out border
     binfo->frame_br_out_x
         = (f_offset == 1.0f
            && (MIN(binfo->border_size_l, binfo->border_size_r) - border_min_size < 2))
               ? (roi_out->width)
-              : CLAMP(image_lx - frame_offset - binfo->frame_size + frame_out_width - 1,
-                      0, roi_out->width - 1);
+              : CLAMP(image_lx - frame_offset - binfo->frame_size + frame_out_width,
+                      0, roi_out->width);
     binfo->frame_br_out_y
         = (f_offset == 1.0f
            && (MIN(binfo->border_size_t, binfo->border_size_b) - border_min_size < 2))
               ? (roi_out->height)
-              : CLAMP(image_ty - frame_offset - binfo->frame_size + frame_out_height - 1,
-                      0, roi_out->height - 1);
+              : CLAMP(image_ty - frame_offset - binfo->frame_size + frame_out_height,
+                      0, roi_out->height);
 
-    // need end+1 for these coordinates
     binfo->fl_right     = binfo->frame_br_in_x;
     binfo->border_right = binfo->frame_br_out_x;
     binfo->fl_bot       = binfo->frame_br_in_y;
