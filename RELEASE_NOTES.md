@@ -234,16 +234,13 @@ changes (where available).
 
 ### Mandatory
 
-- potrace 1.16 is a new requirement
+- N/A
 
 ### Optional
 
-- ONNX Runtime 1.18+ for AI features
-
-- libarchive for AI model extraction
-
-- OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the core,
-  imgproc and flann modules plus features2d/calib3d on OpenCV 4, or features/geometry on OpenCV 5)
+- OpenCV 4 or 5 for HDR exposure-bracket auto-alignment (only the
+  core, imgproc and flann modules plus features2d/calib3d on OpenCV 4,
+  or features/geometry on OpenCV 5)
 
 ## Camera support, compared to 5.6
 
