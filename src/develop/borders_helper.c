@@ -25,7 +25,6 @@ static inline void set_pixels(float *buf,
                               const dt_aligned_pixel_t color,
                               const int border_width)
 {
-  if(border_width <= 0) return;                 // guard against negative/zero counts
   for(int i = 0; i < border_width; i++)
   {
     copy_pixel_nontemporal(buf + 4*i,  color);
@@ -39,7 +38,6 @@ static inline void copy_pixels(float *out,
                                const float *const in,
                                const int border_width)
 {
-  if(border_width <= 0) return;                 // guard against negative/zero counts
   for(int i = 0; i < border_width; i++)
   {
     copy_pixel_nontemporal(out + 4*i, in + 4*i);
