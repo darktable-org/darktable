@@ -487,7 +487,7 @@ jobs:
 
             The Windows package `*-win64.exe` requires at least Windows 10. The `*-woa64.exe` package requires at least Windows 11.
 
-            The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma). The `*-x86_64.dmg` package requires at least macOS 15.0 (Sequoia).
+            The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           artifacts: |
