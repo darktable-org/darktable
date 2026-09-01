@@ -23,10 +23,10 @@
 // need to parallelize further
 static inline void set_pixels(float *buf,
                               const dt_aligned_pixel_t color,
-                              const int npixels)
+                              const int border_width)
 {
-  if(npixels <= 0) return;                 // guard against negative/zero counts
-  for(size_t i = 0; i < (size_t)npixels; i++)
+  if(border_width <= 0) return;                 // guard against negative/zero counts
+  for(int i = 0; i < border_width; i++)
   {
     copy_pixel_nontemporal(buf + 4*i,  color);
   }
@@ -37,10 +37,10 @@ static inline void set_pixels(float *buf,
 // need to parallelize further
 static inline void copy_pixels(float *out,
                                const float *const in,
-                               const int npixels)
+                               const int border_width)
 {
-  if(npixels <= 0) return;                 // guard against negative/zero counts
-  for(size_t i = 0; i < (size_t)npixels; i++)
+  if(border_width <= 0) return;                 // guard against negative/zero counts
+  for(int i = 0; i < border_width; i++)
   {
     copy_pixel_nontemporal(out + 4*i, in + 4*i);
   }
@@ -252,17 +252,10 @@ void dt_iop_setup_binfo(const dt_dev_pixelpipe_iop_t *piece,
                       0, roi_out->height - 1);
 
     // need end+1 for these coordinates
-    binfo->fl_right     = binfo->frame_br_in_x + 1;
-    binfo->border_right = binfo->frame_br_out_x + 1;
-    binfo->fl_bot       = binfo->frame_br_in_y + 1;
-    binfo->border_bot   = binfo->frame_br_out_y +1;
-
-    // safety: these ranges must never go negative, or set_pixels()/copy_pixels()
-    // will be handed a negative pixel count that wraps to a huge size_t
-    binfo->fl_right     = MAX(binfo->fl_right, binfo->image_right);
-    binfo->border_right = MAX(binfo->border_right, binfo->fl_right);
-    binfo->fl_bot       = MAX(binfo->fl_bot, binfo->image_bot);
-    binfo->border_bot   = MAX(binfo->border_bot, binfo->fl_bot);
+    binfo->fl_right     = MIN(binfo->frame_br_in_x + 1, roi_out->width);
+    binfo->border_right = MIN(binfo->frame_br_out_x + 1, roi_out->width);
+    binfo->fl_bot       = MIN(binfo->frame_br_in_y + 1, roi_out->height);
+    binfo->border_bot   = MIN(binfo->frame_br_out_y + 1, roi_out->height);
   }
 }
 
