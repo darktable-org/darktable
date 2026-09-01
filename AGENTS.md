@@ -1,27 +1,17 @@
-# AGENTS.md
+# AGENTS.md – darktable
 
-Instructions for AI coding agents working on darktable.
+Instructions for AI coding agents working on darktable. It covers what agents
+specifically get wrong; it is not an overview of the codebase.
 
-**Start with [`dev-doc/`](dev-doc/README.md).** It is darktable's developer
-documentation, in-tree and versioned with the code, covering the IOP module
-API, the pixelpipe, introspection, the GUI and widget helpers, shortcuts and
-the AI subsystem. Because it ships with the checkout, it describes the code you
-actually have. Prefer it over the wiki wherever the two disagree.
+**Read [`dev-doc/`](dev-doc/README.md) before changing a subsystem.** It is
+darktable's in-tree developer documentation -- IOP module API, pixelpipe,
+introspection, GUI helpers, shortcuts, the AI subsystem -- versioned with the
+code, so it describes the checkout you have. Prefer it over the wiki wherever
+the two disagree. Most bad agent patches come from inferring an API instead of
+opening the page that documents it.
 
-The rest is on the wiki: the
-[Developer's portal](https://github.com/darktable-org/darktable/wiki/Developer's-portal)
-is the index, the
-[Developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
-has the coding style,
-[Hacking on darktable](https://github.com/darktable-org/darktable/wiki/Hacking-on-darktable)
-covers getting started, and
-[testing tools](https://github.com/darktable-org/darktable/wiki/Dev-guide---darktable-testing-tools)
-covers the test suites. [CONTRIBUTING.md](CONTRIBUTING.md) covers the social
-side. This file covers what agents specifically get wrong.
-
-None of that is optional reading before changing a subsystem. Most bad agent
-patches are written by inferring an API instead of opening the page that
-documents it.
+The [Developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
+has the coding style, and [CONTRIBUTING.md](CONTRIBUTING.md) the social side.
 
 ## The one rule that matters most
 
@@ -43,28 +33,38 @@ If you cannot or will not do that, squash into a single commit that builds.
 Do not commit a "checkpoint" or "work in progress" state. Do not split a change
 so that the halves only work together.
 
+## Boundaries
+
+Go ahead without asking: read anything, build, run the test suites, run
+`darktable-cli`, and edit the files the task is about.
+
+Ask first: adding a dependency, changing a public API or the database schema,
+touching a subsystem the task did not name, and anything CONTRIBUTING.md calls
+substantial -- discuss those before writing them, not after.
+
+Finish at a staged change, and a drafted commit message if one was asked for.
+Committing, pushing and opening the PR are the human's steps, and they will
+usually not be asked for at all. Stage only the files the task touched -- never
+`git add -A` over a tree you have not looked at -- and keep build output,
+editor files and scratch notes out of it.
+
+Never reformat, rename or tidy code the task did not touch, and never fix an
+unrelated bug you notice in passing: mention it instead. Do not add a comment,
+file or abstraction that nobody requested.
+
 ## Commits
 
-Both a bare subject line and a subject plus explanatory body are normal here;
-roughly half of recent commits carry a body. Which one to write depends on
-whether the diff explains itself.
+Subject on one line, under about 72 characters, no full stop. Prefix with the
+area (`history:`, `exif:`, `bauhaus:`, `cmake:`, `ci:`) when the subject alone
+would not say which part of darktable moved. Common here, not required.
 
-Always write the subject as one line under about 72 characters, with no full
-stop. Prefix it with the area (`history:`, `exif:`, `bauhaus:`, `cmake:`,
-`ci:`) when the subject alone would not tell a reader which part of darktable
-moved. The prefix is common but not required.
-
-**A subject on its own** is enough when the change is mechanical or entirely
-self-evident from the diff: data additions, translation updates, version bumps,
-typo fixes.
-
-```text
-Add Sony ZV-E1 noise profile
-```
-
-**A subject plus a body** is what anything behavioural needs: bug fixes,
-refactors, changes to how the pipeline or UI behaves. Explain what was wrong
-before, then what the change does about it. Wrap the body at about 72 columns.
+Both a bare subject and a subject plus body are normal; roughly half of recent
+commits carry a body. A subject alone is enough when the diff explains itself
+-- data additions, translation updates, version bumps, typos. Anything
+behavioural earns a body saying what was wrong before and what the change does
+about it, wrapped at about 72 columns. If you cannot tell which applies, write
+the body: an unnecessary paragraph costs far less than a behavioural change
+nobody can account for later.
 
 ```text
 cmake: link libwayland-client when GTK3 has the Wayland backend
@@ -77,83 +77,43 @@ which breaks on distros linking with `-Wl,--no-undefined`.
 Fixes #1234
 ```
 
-If you cannot tell which applies, write the body. A reviewer reads it first,
-and the cost of an unnecessary paragraph is far lower than the cost of a
-behavioural change nobody can account for later.
-
-Close issues with `Fixes #1234` or `Closes #1234` on its own line at the end.
-Use `Related: #1234` when the commit is relevant to an issue but does not
-resolve it. In a series, put the closing reference on the commit that completes
-the fix, not on every one of them.
-
-A reference is an addition to the explanation, never a replacement for it. A
-message that says only "fix #1234" is useless to anyone reading the history
-without a browser open, and the git history outlives any particular issue
-tracker.
+Close issues with `Fixes #1234` or `Closes #1234` on its own line at the end,
+or `Related: #1234` when the commit does not resolve the issue. In a series,
+only the commit that completes the fix carries the closing keyword. A
+reference never replaces the explanation: "fix #1234" alone is useless to
+anyone reading `git blame` without a browser, and the history outlives the
+issue tracker.
 
 Describe the change, not the process that produced it. "address review
-comments", "fix as requested" and "second attempt" mean nothing to someone
-reading `git blame` in two years, who cannot see the review thread. Say what
-the code now does.
+comments" and "second attempt" mean nothing to a later reader who cannot see
+the thread.
 
-Each commit is one logical change and, per the rule above, must build alone.
-
-Before committing, check `git status` and `git diff --staged`. Stage the files
-you meant to change; never `git add -A` over a tree you have not looked at.
-Build output, editor files, scratch notes and unrelated reformatting do not
-belong in the commit.
-
-Commit trailers are rare in this project. Disclose AI assistance in the pull
-request description instead of inventing a trailer convention.
-
-And do not commit at all unless you were asked to. Leaving the work staged for
-review is the default.
+Commit trailers are rare here. Disclose AI assistance in the pull request
+description instead of inventing a trailer convention.
 
 ## Build
 
-Two documented ways, both from the README's Compile section. The script,
-which works on Linux, macOS and Windows:
+The README's Compile section has the commands, for the `build.sh` route and
+for driving cmake by hand. What it does not say:
 
-```bash
-./build.sh --prefix /opt/darktable-test --build-type Release --install --sudo
-```
-
-or by hand:
-
-```bash
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=/opt/darktable/ ..
-cmake --build .
-sudo cmake --install .
-```
-
-To check that a change compiles you need neither prefix nor install: drop
-`--install --sudo`, or stop after `cmake --build .`. Remove `build/` first if
-the last build was of a different version -- the README explains why.
-
-On Windows, build inside the MSYS2 UCRT64 shell, not a plain Windows prompt:
-the toolchain and every dependency come from the `mingw-w64-ucrt-x86_64-*`
-packages. The same script is used there, with `--build-generator Ninja` and
-no `--sudo`. See `packaging/windows/README.md`.
-
-`./build.sh --help` lists every option. `--enable-ai` and `-DUSE_AI=ON` are
-the same switch: the script uppercases the feature name and prefixes `USE_`.
-The features are `ai`, `camera`, `colord`, `gmic`, `graphicsmagick`,
-`imagemagick`, `jxl`, `kwallet`, `libsecret`, `lua`, `mac_integration`, `map`,
-`mcp`, `opencl`, `opencv`, `openexr`, `openmp`, `unity` and `webp`.
-
-Left alone, cmake enables whatever it autodetects on the machine, and a flag
-forces one feature on or off regardless. Each pulls in its own dependencies,
-so enable only what your change needs -- full builds are slow.
+- `--enable-ai` and `-DUSE_AI=ON` are the same switch: `build.sh` uppercases
+  the feature name and prefixes `USE_`. The features are `ai`, `camera`,
+  `colord`, `gmic`, `graphicsmagick`, `imagemagick`, `jxl`, `kwallet`,
+  `libsecret`, `lua`, `mac_integration`, `map`, `mcp`, `opencl`, `opencv`,
+  `openexr`, `openmp`, `unity` and `webp`. Left alone, cmake enables what it
+  autodetects; a flag forces one feature either way
+- to check that a change compiles you need neither prefix nor install: drop
+  `--install --sudo`, or stop after `cmake --build`
+- on Windows, build in the MSYS2 UCRT64 shell, not a plain Windows prompt --
+  the toolchain and every dependency come from `mingw-w64-ucrt-x86_64-*`.
+  `build.sh` works there with `--build-generator Ninja` and no `--sudo`
+- if `AGENTS.local.md` gives its own build or run commands, use those instead:
+  how a checkout is built is a local matter, not a project convention
 
 Verify with a real build before proposing changes. A change that has only been
 reasoned about is not finished. If you touch code behind an `#ifdef`, build
 with that feature both on and off. The disabled path is where broken stubs
 hide.
-
-If `AGENTS.local.md` gives its own build or run commands, use those instead:
-how a checkout is built is a local matter, not a project convention.
 
 ## Testing
 
@@ -194,67 +154,30 @@ The most common failure is confident output that was never executed.
   useful; silence is not
 - Do not invent file paths, function names, config keys or CMake options. If
   you are unsure whether something exists, check
+- Do not claim something works because it should
 
 ## Code style
 
 The rules are in the
-[Developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide).
-Summarised, with the conventions the codebase enforces in practice but the
-guide does not state:
+[Developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide),
+and the file you are editing shows most of them. The parts you would not
+infer:
 
-- spaces, never tabs, `shiftwidth=2`
-- no trailing whitespace
-- opening and closing braces on their own lines
-- lines under 90 characters
-- `if(`, `for(`, `while(` with no space before the parenthesis
-- public functions and types take a `dt_` prefix
-- file-local functions are `static` and start with an underscore, as in
-  `_version_compare()`
-- headers use `#pragma once`, not include guards
+- **There is no `.clang-format` for darktable's own code, and no
+  `tools/beautify_style.sh`.** Both were removed deliberately (`46b054cf15`,
+  `b734b014cf`), though the wiki still mentions the script. The
+  `.clang-format` files under `src/external/` belong to vendored projects; do
+  not apply them to darktable code
+- **SQL is formatted by hand.** Do not reflow, re-indent or tidy a query
 - parallel loops use darktable's macros (`DT_OMP_FOR`, `DT_OMP_FOR_SIMD`), not
   bare `#pragma omp`
+- file-local functions are `static` and start with an underscore, as in
+  `_version_compare()`; public ones take a `dt_` prefix
+- the vim/kate modeline footer is maintained by `tools/update_modelines.py`.
+  Keep it when editing and do not hand-write one
 
-Function definitions put each parameter on its own line:
-
-```c
-void commit_params(struct dt_iop_module_t *self,
-                   dt_iop_params_t *p1,
-                   dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece);
-```
-
-Complex conditions put the operator at the start of the line, one per line:
-
-```c
-if(!strcasecmp(cc, ".dt")
-   || !strcasecmp(cc, ".dttags")
-   || !strcasecmp(cc, ".xmp"))
-```
-
-**SQL is formatted by hand, so leave it alone.** Do not reflow, re-indent or
-tidy a query; the layout is deliberate:
-
-```c
-DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                            "INSERT INTO main.color_labels (imgid, color)"
-                            "  SELECT ?1, color"
-                            "  FROM main.color_labels"
-                            "  WHERE imgid = ?2",
-                            -1, &stmt, NULL);
-```
-
-Most files carry a vim/kate modeline footer maintained by
-`tools/update_modelines.py`. Keep it when editing and do not hand-write one.
-`.dir-locals.el` covers Emacs.
-
-**There is no `.clang-format` for darktable's own code, and no
-`tools/beautify_style.sh`.** Both were removed deliberately (`46b054cf15`,
-`b734b014cf`), though the wiki still mentions the script. The `.clang-format`
-files under `src/external/` belong to vendored projects; do not apply them to
-darktable code.
-
-When in doubt, match the file you are editing, and do not reformat lines you
-did not otherwise need to change.
+Match the file you are editing, and do not reformat lines you did not
+otherwise need to change.
 
 ## Comments
 
@@ -355,14 +278,12 @@ Keep both in sync, or explain why not.
 
 ## Pull requests
 
-- Discuss anything substantial before writing it, as CONTRIBUTING.md asks
 - One logical change per PR. A PR that fixes a bug *and* adds a feature *and*
   reformats a file cannot be reviewed or reverted cleanly
 - Say in the description what you ran, and what you did not
 - Disclose that the change was written with AI assistance
 - New user-visible strings need `_()`; new preferences need an entry in
   `data/darktableconfig.xml.in`
-- Do not add dependencies without asking first
 
 ### Release notes
 
@@ -395,15 +316,6 @@ how it was done:
 
 If you cannot tell whether an entry is needed, open the PR without one and
 ask, rather than inventing one or skipping it quietly.
-
-## What not to do
-
-- Do not reformat, rename or tidy code you were not asked to touch. It buries
-  the actual change and makes `git blame` useless
-- Do not fix unrelated bugs you notice in passing. Mention them instead
-- Do not commit, push, or open a PR unless you were asked to
-- Do not add a comment, file or abstraction that nobody requested
-- Do not claim something works because it should
 
 ## Local instructions
 
