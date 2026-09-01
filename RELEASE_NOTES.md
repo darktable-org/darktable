@@ -73,9 +73,24 @@ changes (where available).
 - Checkboxes are now Bauhaus widgets and are reset to default values
   when e.g. a tab or a module is reset.
 
+- Mask nodes close or outside the image boundaries are now editable.
+  When "edit shapes on canvas" is enabled, the node editing area is
+  extended beyond the image borders to allow editing of these nodes.
+
+- In color assessment mode, when the image is zoomed in show a
+  dashed line on the sides of the white border where the image
+  extends beyond the current view (horizontally or vertically).
+
+- Added support for XMP drag&drop directly in the darkroom. Single
+  XMPs can be used to create duplicates or replace the current
+  edit. Multiple XMPs create one duplicate per file.
+
 ## Performance Improvements
 
-- N/A
+- Replaced quadratic XMP history writes with a linear algorithm.
+
+- Don't invalidate the pixelpipe cache on every commit
+  when a raster mask is used.
 
 ## Other Changes
 
@@ -102,8 +117,8 @@ changes (where available).
   profile for.
 
 - Printer (paper) profiled print jobs will remain 16 bit through
-  the full print pipeline
-  
+  the full print pipeline.
+
 - When installing development versions of darktable (snapshots, self
   compiled etc.)  the Windows installer now allows to setup a custom
   configuration-directory and custom shortcut-name, useful for
@@ -111,6 +126,9 @@ changes (where available).
 
 - Added a control in the bottom panel of the lighttable to reset
   the star rating of images.
+
+- pixelpipe dump files requested via cli switches are now written
+  in ppm or pgm format.
 
 ## Bug Fixes
 
@@ -148,10 +166,32 @@ changes (where available).
 - Fixed auto-applied denoise presets running a second time on images
   produced by AI raw denoise.
 
-- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping mode
-  is available for those.
+- Fixed highlights modes for 4BAYER (CYGM/RGBE) raws, only clipping
+  mode is available for those.
 
 - Fixed OpenCL input gamma corrected scaling for some devices.
+
+- Fixed paths and nodes occasionally snapping to the top left
+  corner during move operations.
+
+- Fixed crash when navigating images in the darkroom with an
+  image pinned in the 2nd window.
+
+- Fixed refinements to forwarded raster masks being ignored along
+  the OpenCL path.
+
+- Compute JzAzBz's Az and Bz without cancellation so that results
+  computed by the CPU and OpenCL paths do not diverge.
+
+- Fixed mask-only edits not causing thumbnail refreshes and XMP
+  updates (when enabled).
+
+- Fixed zoom position moving around when switching between images.
+
+- A path that grows past the border of the image is no longer clipped.
+
+- Fixed broken dragging in sliders' precise-entry mode
+  in GTK3.
 
 ## Lua
 

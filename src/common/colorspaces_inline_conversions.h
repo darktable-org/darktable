@@ -845,6 +845,25 @@ static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_ali
  *  https://www.osapublishing.org/oe/fulltext.cfm?uri=oe-25-13-15131&id=368272
  */
 
+/* x^k - y^k, given y^k, y and (x - y), without ever forming the two powers and
+ * subtracting them. y^k is passed in because callers already have it.
+ *
+ * pow() is exact to within an ulp of a *large* value here: the JzAzBz PQ
+ * exponent is 134.034375, so the results are O(1) numbers whose difference,
+ * for two nearby inputs, is many orders of magnitude smaller than either. The
+ * subtraction then keeps almost none of the digits it was given. log1p/expm1
+ * are accurate near zero, which is exactly where this operates, so the
+ * difference comes out with full relative precision.
+ *
+ * Requires y > 0 and x > 0; callers check. */
+static inline float _dt_pow_diff(const float pow_y_k,
+                                 const float k,
+                                 const float y,
+                                 const float x_minus_y)
+{
+  return pow_y_k * expm1f(k * log1pf(x_minus_y / y));
+}
+
 DT_OMP_DECLARE_SIMD(aligned(XYZ_D65, JzAzBz: 16))
 static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t JzAzBz)
 {
@@ -875,18 +894,97 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   XYZ[1] = g * XYZ_D65[1] - (g - 1.0f) * XYZ_D65[0];
   XYZ[2] = XYZ_D65[2];
 
-  // X'Y'Z -> L'M'S'
+  // X'Y'Z -> LMS
   dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
-  DT_OMP_SIMD(aligned(LMS, XYZ:16))
-  for(int i = 0; i < 3; i++)
+
+  // the paper's 1/10000 nit scaling, written as a multiply: 1e-4f is not the
+  // exact reciprocal, but the extra rounding is far below what the difference
+  // machinery below resolves, and multiplies are cheaper on CPU and GPU alike
+  const float l = LMS[0] * 1e-4f;
+  const float m = LMS[1] * 1e-4f;
+  const float s = LMS[2] * 1e-4f;
+
+  /* Az and Bz are differences of near-equal numbers, and are computed as such.
+   *
+   * The A matrix rows for az and bz each sum to zero -- az is
+   * 3.524L' - 4.066708M' + 0.542708S' -- so for a near-neutral colour, where
+   * L', M' and S' are nearly the same O(1) number, the result is what is left
+   * after almost everything cancels. It is also the *only* input to hue, since
+   * hz = atan2(Bz, Az). Meanwhile the PQ exponent 134 multiplies any relative
+   * error in its argument by 134, so a single ulp anywhere upstream arrives
+   * here magnified. Evaluated directly, Az and Bz keep barely any correct
+   * digits for neutral colours, and no two float32 implementations agree --
+   * which is why the CPU and OpenCL paths render such pixels differently.
+   *
+   * Rewriting az and bz over the *differences* L'-M', S'-M' and L'-S' is
+   * algebraically identical (it is the same zero-sum rows, regrouped), and
+   * each difference is carried through the two power laws and the rational PQ
+   * step without ever subtracting two computed values -- so nothing cancels
+   * anywhere and the result has full relative precision.
+   *
+   * The rewrite needs every LMS component strictly positive, which is the
+   * common case; out-of-gamut inputs that clamp to zero take the direct path,
+   * where cancellation is not a concern because the components are no longer
+   * near-equal. */
+  if(l > 0.0f && m > 0.0f && s > 0.0f)
   {
-    LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
-    LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
+    // the raw differences, taken from the matrix rows rather than from the
+    // computed LMS, so they too are exact rather than cancelled
+    const float d_lm = ((M_transposed[0][0] - M_transposed[0][1]) * XYZ[0]
+                      + (M_transposed[1][0] - M_transposed[1][1]) * XYZ[1]
+                      + (M_transposed[2][0] - M_transposed[2][1]) * XYZ[2]) * 1e-4f;
+    const float d_sm = ((M_transposed[0][2] - M_transposed[0][1]) * XYZ[0]
+                      + (M_transposed[1][2] - M_transposed[1][1]) * XYZ[1]
+                      + (M_transposed[2][2] - M_transposed[2][1]) * XYZ[2]) * 1e-4f;
+    const float d_ls = ((M_transposed[0][0] - M_transposed[0][2]) * XYZ[0]
+                      + (M_transposed[1][0] - M_transposed[1][2]) * XYZ[1]
+                      + (M_transposed[2][0] - M_transposed[2][2]) * XYZ[2]) * 1e-4f;
+
+    // ... through x^n
+    const float t_l = powf(l, n), t_m = powf(m, n), t_s = powf(s, n);
+    const float dt_lm = _dt_pow_diff(t_m, n, m, d_lm);
+    const float dt_sm = _dt_pow_diff(t_m, n, m, d_sm);
+    const float dt_ls = _dt_pow_diff(t_s, n, s, d_ls);
+
+    // ... through y = (c1 + c2 t) / (1 + c3 t), whose difference is exact in
+    // this form: y_a - y_b = (c2 - c1 c3)(t_a - t_b) / ((1 + c3 t_a)(1 + c3 t_b))
+    const float k = c2 - c1 * c3;
+    const float q_l = 1.0f + c3 * t_l, q_m = 1.0f + c3 * t_m, q_s = 1.0f + c3 * t_s;
+    const float y_l = (c1 + c2 * t_l) / q_l;
+    const float y_m = (c1 + c2 * t_m) / q_m;
+    const float y_s = (c1 + c2 * t_s) / q_s;
+    const float dy_lm = k * dt_lm / (q_l * q_m);
+    const float dy_sm = k * dt_sm / (q_s * q_m);
+    const float dy_ls = k * dt_ls / (q_l * q_s);
+
+    // ... and through y^p, giving L'-M', S'-M', L'-S' directly. M' feeds Iz
+    // below as well, so each power is computed once
+    const float Lp = powf(y_l, p);
+    const float Mp = powf(y_m, p);
+    const float Sp = powf(y_s, p);
+    const float d_LM = _dt_pow_diff(Mp, p, y_m, dy_lm);
+    const float d_SM = _dt_pow_diff(Mp, p, y_m, dy_sm);
+    const float d_LS = _dt_pow_diff(Sp, p, y_s, dy_ls);
+
+    // Iz is a sum, not a difference, so it is computed the plain way
+    JzAzBz[0] = 0.5f * Lp + 0.5f * Mp;
+    JzAzBz[1] = 3.524000f * d_LM + 0.542708f * d_SM;
+    JzAzBz[2] = 0.199076f * d_LS - 1.096799f * d_SM;
+    JzAzBz[3] = 0.0f;
+  }
+  else
+  {
+    dt_aligned_pixel_t LMSp = { 0.0f, 0.0f, 0.0f, 0.0f };
+    for(int i = 0; i < 3; i++)
+    {
+      LMSp[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
+      LMSp[i] = powf((c1 + c2 * LMSp[i]) / (1.0f + c3 * LMSp[i]), p);
+    }
+    // L'M'S' -> Izazbz
+    dt_apply_transposed_color_matrix(LMSp, A_transposed, JzAzBz);
   }
 
-  // L'M'S' -> Izazbz
-  dt_apply_transposed_color_matrix(LMS, A_transposed, JzAzBz);
   // Iz -> Jz
   JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }

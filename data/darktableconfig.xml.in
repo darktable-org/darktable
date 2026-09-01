@@ -50,18 +50,18 @@
   </dtconfig>
   <dtconfig common="yes">
     <name>themes/focused-module-border</name>
-    <type>bool</type>
-    <default>false</default>
+    <type>int</type>
+    <default>0</default>
     <shortdescription>use small border around module</shortdescription>
   </dtconfig>
   <dtconfig common="yes">
     <name>themes/expanded-module-border</name>
-    <type>bool</type>
-    <default>false</default>
+    <type>int</type>
+    <default>0</default>
     <shortdescription>use small border around module</shortdescription>
   </dtconfig>
   <dtconfig common="yes">
-    <name>themes/colored-accent</name>
+    <name>themes/accent-color</name>
     <type>int</type>
     <default>0</default>
     <shortdescription>use colored accent for some UI elements</shortdescription>

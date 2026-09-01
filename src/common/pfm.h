@@ -31,7 +31,7 @@ float *dt_read_pfm(const char *filename, int *error, int *wd, int *ht, int *ch, 
   bpp=16 4 floats
 */
 void dt_write_pfm(const char *filename, const size_t width, const size_t height, const void *data, const size_t bpp);
-
+void dt_write_ppm(const char *filename, const size_t width, const size_t height, const void *data, const size_t bpp);
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
