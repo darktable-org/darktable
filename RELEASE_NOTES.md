@@ -200,6 +200,9 @@ changes (where available).
 - Fixed the feather of a drawn path being lost when the shape was resized
   with the scroll wheel.
 
+- Fixed numeric error in the framing module (borders) causing the frame
+  line to be off-center for certain border sizes.
+
 ## Lua
 
 ### API Version
