@@ -992,38 +992,36 @@ if(USE_COLORD)
   endif(Colord_FOUND)
 endif(USE_COLORD)
 
-if(WIN32)
+if(BUILD_PRINT)
   FILE(GLOB SOURCE_FILES_PRINT
     "common/printprof.c"
     "common/printing.h"
     "common/printing.c"
     "common/cups_print.h"
-    "win/win32_print.c"
-    "win/win32_print.h"
     )
-  set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
-  # Append Windows‑specific libraries to the common LIBS list
-  # list(APPEND LIBS gdiplus)
-  list(APPEND LIBS winspool)
-  #list(APPEND LIBS xpsprint)
-  list(APPEND LIBS ole32)
-  list(APPEND LIBS uuid)
-  list(APPEND LIBS windowscodecs)
-  list(APPEND LIBS oleaut32)
-  list(APPEND LIBS prntvpt)
-  add_definitions("-DHAVE_PRINT")
-  message(STATUS "Print mode: enabled (Windows)")
-else(WIN32)
-  if(BUILD_PRINT)
+  if(WIN32)
+    list(APPEND SOURCE_FILES_PRINT
+      "win/win32_print.c"
+      "win/win32_print.h"
+      )
+    set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
+    # Append Windows‑specific libraries to the common LIBS list
+    list(APPEND LIBS 
+      winspool
+      ole32
+      uuid
+      windowscodecs
+      oleaut32
+      prntvpt
+      )
+    add_definitions("-DHAVE_PRINT")
+    message(STATUS "Print mode: enabled (Windows)")
+  else(WIN32)
     find_package(Cups)
     if(CUPS_FOUND)
       include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
-      FILE(GLOB SOURCE_FILES_PRINT
-        "common/cups_print.h"
+      list(APPEND SOURCE_FILES_PRINT
         "common/cups_print.c"
-        "common/printprof.c"
-        "common/printing.h"
-        "common/printing.c"
         )
       set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
       list(APPEND LIBS ${CUPS_LIBRARIES})
@@ -1033,10 +1031,11 @@ else(WIN32)
       set(BUILD_PRINT OFF)
       message(STATUS "Print mode: disabled, please install CUPS dev package")
     endif(CUPS_FOUND)
-  else(BUILD_PRINT)
-    message(STATUS "Print mode: disabled")
-  endif(BUILD_PRINT)
-endif(WIN32)
+  endif(WIN32)
+else(BUILD_PRINT)
+  message(STATUS "Print mode: disabled")
+endif(BUILD_PRINT)
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if(HAVE_EXECINFO_H)
     add_definitions("-DDT_HAVE_SIGNAL_TRACE")

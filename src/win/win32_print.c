@@ -56,7 +56,8 @@
 
 
 // Forward declaration
-typedef struct dt_prtctl_t {
+typedef struct dt_prtctl_t 
+{
   void (*cb)(dt_printer_info_t *, void *);
   void (*ready_cb)(dt_printer_info_t *, void *);
   void *user_data;
@@ -67,7 +68,8 @@ typedef struct dt_prtctl_t {
   gint refs;
 } dt_prtctl_t;
 
-typedef struct dt_win_printer_caps_t {
+typedef struct dt_win_printer_caps_t 
+{
     int phys_w;     // full sheet width in device units
     int phys_h;     // full sheet height
     int print_w;    // printable width
@@ -76,13 +78,15 @@ typedef struct dt_win_printer_caps_t {
     int offset_y;   // top hardware margin
 } dt_win_printer_caps_t;
 
-typedef struct dt_printer_wrapper_t {
+typedef struct dt_printer_wrapper_t 
+{
   dt_printer_info_t *pinfo;   // actual printer struct (UI-owned)
   gboolean details_valid;     // TRUE once dt_get_printer_info has run
   gint refs;                  // Reference counter for async teardown management
 } dt_printer_wrapper_t;
 
-typedef struct notify_ctx_t {
+typedef struct notify_ctx_t 
+{
   dt_prtctl_t *pctl;             // refcounted owner (we only dec refs here)
   dt_printer_wrapper_t *wrap;      
 } notify_ctx_t;
@@ -93,7 +97,8 @@ void dt_populate_hw_margins(HDC hdc, dt_printer_info_t *printer);
 
 static int _fill_printer_details_job(dt_job_t *job);
 
-typedef struct {
+typedef struct 
+{
   dt_printer_wrapper_t *wrap;             // wrapper with pinfo + details_valid
   void (*cb)(dt_printer_info_t *, void *); // UI callback
   void (*ready_cb)(dt_printer_info_t *pr, void *user_data);
@@ -262,8 +267,7 @@ int dt_win_resolve_dpi_from_dm(DEVMODEW *dmW, const wchar_t *wprinter)
     if((dm->dmFields & DM_YRESOLUTION) && dm->dmYResolution > 0)
         ydpi = dm->dmYResolution;
 
-    if(xdpi > 0 && ydpi == 0)
-        ydpi = xdpi;
+    if(xdpi > 0 && ydpi == 0) ydpi = xdpi;
 
     // DC_ENUMRESOLUTIONS fallback
     if(xdpi == 0 || ydpi == 0)
@@ -1334,7 +1338,7 @@ cleanup:
 PRINT JOB MANAGEMENT
 
 ______________________________________________________________________________________  */
-bool dt_win_print_file(const dt_images_box *imgs,
+gboolean dt_win_print_file(const dt_images_box *imgs,
                        const char *job_title,
                        const dt_print_info_t *pinfo,
                        const void *print_ticket_data,
@@ -1356,14 +1360,14 @@ bool dt_win_print_file(const dt_images_box *imgs,
     return false;
 
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-  bool co_initialized = SUCCEEDED(hr);
+  gboolean co_initialized = SUCCEEDED(hr);
   if(!co_initialized)
   {
     dt_control_log(_("could not initialize COM for printing"));
     return false;
   }
 
-  bool ok = false;
+  gboolean ok = FALSE;
   wchar_t *wprinter = g_utf8_to_utf16(pinfo->printer.name, -1, NULL, NULL, NULL);
   wchar_t *wtitle   = g_utf8_to_utf16(job_title, -1, NULL, NULL, NULL);
 
@@ -1605,7 +1609,7 @@ void dt_populate_hw_margins(HDC hdc, dt_printer_info_t *printer)
   int offX    = GetDeviceCaps(hdc, PHYSICALOFFSETX);
   int offY    = GetDeviceCaps(hdc, PHYSICALOFFSETY);
 
-  bool borderless = (horzRes == physW && vertRes == physH && offX == 0 && offY == 0);
+  gboolean borderless = (horzRes == physW && vertRes == physH && offX == 0 && offY == 0);
 
   if (borderless) {
     printer->hw_margin_left = printer->hw_margin_top =
@@ -1746,7 +1750,7 @@ dt_win32_print_ctx_t *dt_win32_print_ctx_new(dt_print_info_t *pinfo)
 
 // Opens the printer settings dialog and updates ctx->cached_dm.
 // Returns TRUE if the user clicked OK, FALSE if they cancelled or on error.
-BOOL dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_owner)
+gboolean dt_win_open_printer_settings(dt_win32_print_ctx_t *settings_ctx, HWND hwnd_owner)
 {
   if(!settings_ctx || !settings_ctx->base ) 
   {

@@ -452,7 +452,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
       }
     }
   }
-// In _export_image(): Print actual buffer address and size right before assigning to img->buf
+  // In _export_image(): Print actual buffer address and size right before assigning to img->buf
   img->buf = params->buf;
   img->img_bpp = dat.bpp; // Store the image bitdepth with the image being sent to print job
   params->buf = NULL;
@@ -661,8 +661,8 @@ static int _print_job_run(dt_job_t *job)
 
   // send the print job to win32_print.c
   if(!dt_win_print_file(&params->imgs, params->job_title, &params->prt,
-                     params->print_ticket_data, params->print_ticket_size,
-                     icc_data, icc_size, params->is_color_device, width, height))
+                        params->print_ticket_data, params->print_ticket_size,
+                        icc_data, icc_size, params->is_color_device, width, height))
   {
     dt_control_log(_("Windows printing failed"));
   }
@@ -849,7 +849,8 @@ _print_settings_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   // safer: use the toplevel window as owner
   GtkWidget *toplevel = gtk_widget_get_toplevel(self->widget);
   HWND hwnd_owner = NULL;
-  if(GTK_IS_WINDOW(toplevel)) {
+  if(GTK_IS_WINDOW(toplevel)) 
+  {
     GdkWindow *gdk_win = gtk_widget_get_window(toplevel);
     if(gdk_win)
       hwnd_owner = gdk_win32_window_get_handle(gdk_win);
@@ -861,8 +862,10 @@ _print_settings_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     dt_win_sync_cached_dm_to_pinfo(ps->settings_ctx);
     _sync_print_widgets_from_pinfo(ps);
   }
-  else {
-    dt_control_log(_("no settings context"));}
+  else 
+  {
+    dt_control_log(_("no settings context"));
+  }
 
   // schedule redraw on idle so it runs after dialog closes
   g_idle_add(_redraw_later, self->widget);
@@ -885,7 +888,7 @@ static gboolean _win_build_print_ticket(dt_win32_print_ctx_t *ctx,
     return FALSE;
 
   gunichar2 *wprinter = g_utf8_to_utf16(ctx->base->printer.name,
-                                       -1, NULL, NULL, NULL);
+                                        -1, NULL, NULL, NULL);
   if(!wprinter) return FALSE;
 
   HPTPROVIDER hProvider = NULL;
@@ -1217,7 +1220,7 @@ static void _printer_ready_cb(dt_printer_info_t *pinfo, void *user_data)
     gtk_widget_set_sensitive(ps->printers, TRUE);
     gtk_widget_set_sensitive(ps->papers, TRUE);
 
-// Now force a GUI refresh of the module
+    // Now force a GUI refresh of the module
     if(self->gui_update)
     {
       self->gui_update(self);
@@ -1758,7 +1761,7 @@ the printer driver which likely expects sRGB or AdobeRGB only. Still allow
 anything wider (ProPhoto, Rec2020, "image settings") when darktable is managing
 color through internal color management controls. */
 static void _rebuild_image_profile_combo(dt_lib_print_settings_t *ps,
-                                         gboolean driver_managed)
+                                         const gboolean driver_managed)
 {
   dt_bauhaus_combobox_clear(ps->profile);
   int n = 0;
@@ -3098,19 +3101,12 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->media), "value-changed",
                    G_CALLBACK(_media_changed), self);
-#ifndef _WIN32  //TODO:  Wire up media selection for windows, for now hide and let media be set in printer settings dialog
+#ifdef _WIN32  
+  //TODO:  Wire up media selection for windows, for now hide and let media be set in printer settings dialog
+#else
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
 #endif
 
-// quality (windows only) - placehlder for now, unclear if windows drivers actually expose this in a common way
-#ifdef _WIN32
-  d->quality = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  d->quality_combo = d->quality;
-  dt_bauhaus_widget_set_label(d->quality, N_("printer"), N_("resolution"));
-  g_signal_connect(G_OBJECT(d->quality), "value-changed",
-                   G_CALLBACK(_quality_changed), self);
-  //gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->quality), TRUE, TRUE, 0); //Hidden for now, inclear if any windows drivers actually expose this
-#endif
 
   //  Add printer profile combo
 
