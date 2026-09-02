@@ -180,6 +180,9 @@ gboolean dt_history_hash_is_mipmap_synced(const dt_imgid_t imgid);
 /** update mipmap hash to db (= current_hash) */
 void dt_history_hash_set_mipmap(const dt_imgid_t imgid);
 
+/** clear mipmap hash */
+void dt_history_hash_unset_mipmap(const dt_imgid_t imgid);
+
 /** write hash values to db */
 void dt_history_hash_write(const dt_imgid_t imgid,
                            const dt_history_hash_values_t *const hash);
