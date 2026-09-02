@@ -1509,7 +1509,8 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
   GActionGroup *action_group = gtk_widget_get_action_group(favorite_presets_button, "favorites");
   if(action_group == NULL)
   {
-    GActionEntry action_entries[] = {
+    GActionEntry action_entries[] =
+    {
       { "activate", _menuitem_activate_quick_preset, "(st)", NULL },
       { "manage",   _menuitem_manage_quick_presets,  NULL,   NULL }
     };
@@ -1623,7 +1624,8 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
   GActionGroup *action_group = gtk_widget_get_action_group(button, "presets");
   if(action_group == NULL)
   {
-    GActionEntry action_entries[] = {
+    GActionEntry action_entries[] =
+    {
       { "activate", ops->activate_cb, "s",  "''" },
       { "edit",     ops->edit_cb,     NULL, NULL },
       { "delete",   ops->del_cb,      NULL, NULL },
@@ -1733,13 +1735,8 @@ GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
     cnt = 0;
   }
 
-  // tail: manage / edit+delete / store+update, then the optional prefs section
-  if(ops->manage_cb)
-  {
-    g_menu_append(mainmenu, _("manage presets..."), "presets.manage");
-    cnt++;
-  }
-  else if(active_preset_name && !selected_writeprotect)
+  // tail: edit+delete / store+update, then the optional prefs section
+  if(active_preset_name && !selected_writeprotect)
   {
     g_menu_append(mainmenu, _("edit this preset..."), "presets.edit");
     g_menu_append(mainmenu, _("delete this preset"), "presets.delete");
