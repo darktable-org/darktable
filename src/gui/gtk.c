@@ -5025,21 +5025,26 @@ static void _resize_wrap_motion_controller(GtkEventControllerMotion *controller,
     return;
   }
 
-  GdkEvent *event = dt_gui_get_current_event(GTK_EVENT_CONTROLLER(controller));
-  if(!(dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
-     && (!event || dt_gdk_event_get_window(event) == gtk_widget_get_window(widget)))
+  /* motion-controller coordinates are relative to the controller's widget,
+   * including when the event bubbled from a child window.  The old event
+   * signal only reached this wrapper for events from its own window, so
+   * retaining that window check leaves the resize cursor and indicator stale
+   * over wrapped tree views and scrolled widgets */
+  const gboolean pointer_inside_changed = !state->pointer_inside;
+  state->pointer_inside = TRUE;
+  gboolean redraw = pointer_inside_changed;
+  if(!(dt_gui_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK))
   {
     const gboolean handle_hover =
       y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE;
     if(handle_hover != state->handle_hover)
     {
       _resize_wrap_set_handle_hover(widget, state, handle_hover);
-      gtk_widget_queue_draw(widget);
+      redraw = TRUE;
     }
   }
-#if !GTK_CHECK_VERSION(4, 0, 0)
-  if(event) gdk_event_free(event);
-#endif
+  if(redraw)
+    gtk_widget_queue_draw(widget);
 }
 
 static void _resize_wrap_button_pressed(GtkGestureSingle *gesture,
