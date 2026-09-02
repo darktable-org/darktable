@@ -143,7 +143,17 @@ void gui_init(dt_lib_module_t *self)
     dt_gui_add_class(d->buttons[k], "dt_no_hover");
     dt_gui_add_class(d->buttons[k], "dt_dimmed");
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-    dt_gui_connect_click_all(button, _lib_colorlabels_button_press_callback, NULL, self);
+    {
+      GtkGesture *gesture = gtk_gesture_multi_press_new(button);
+      gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture),
+                                                   GTK_PHASE_CAPTURE);
+      dt_gui_add_controller(button, gesture);
+      g_signal_connect(gesture, "pressed",
+                       G_CALLBACK(_lib_colorlabels_button_press_callback), self);
+      g_signal_connect(gesture, "begin", G_CALLBACK(dt_gui_gesture_claim), NULL);
+      gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);
+      g_object_set_data(G_OBJECT(button), DT_ACTION_GESTURE_KEY, gesture);
+    }
     dt_gui_connect_motion(button, NULL, _lib_colorlabels_enter_notify_callback, NULL, self);
     ac = dt_action_widget(button);
   }

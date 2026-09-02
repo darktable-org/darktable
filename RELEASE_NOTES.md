@@ -85,6 +85,10 @@ changes (where available).
   XMPs can be used to create duplicates or replace the current
   edit. Multiple XMPs create one duplicate per file.
 
+- Lighttable footer star ratings are now individual CSS-targetable
+  buttons (instead of a single drawing area), so spacing and sizing
+  can be themed. The rating filter reuses the same star paoint helper.
+
 - In the borders (framing) module, disable frame line controls
   when the border settings would prevent the frame line from
   being visible.
@@ -158,6 +162,9 @@ changes (where available).
 - Fixed an empty Media Type dropdown in the Print module for Canon
   printers whose drivers use the `CNIJMediaType` option instead of the
   standard `MediaType` option.
+
+- Fixed lighttable bottom-panel star rating and color label toggles
+  not responding on repeated clicks.
 
 - Fixed the feather on dense drawn path masks rendering stripes,
   phantom arcs and crossing lines.

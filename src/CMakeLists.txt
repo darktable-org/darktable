@@ -142,6 +142,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/paint_cell.c"
   "dtgtk/range.c"
+  "dtgtk/rating_stars.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
   "dtgtk/stylemenu.c"
