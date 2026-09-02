@@ -137,9 +137,6 @@ typedef struct dt_lib_print_settings_t
   // for windows side printing support
 #ifdef _WIN32  
   char *waiting_for_printer;
-  GtkWidget *quality;
-  GtkWidget *quality_combo;
-  GList *quality_list;                     // list of quality settings (windows only)
   GtkButton *print_settings_button; // button to open printer settings (windows only)
   struct dt_win32_print_ctx_t *settings_ctx;
 #endif
@@ -1153,32 +1150,6 @@ static void _set_printer(const dt_lib_module_t *self,
     dt_bauhaus_combobox_set_from_text(ps->media, chosen_medium->common_name);
   }
 
-#ifdef _WIN32  //TODO:  this may not actually get implemented, seeing if Device Capabilities has a standard way to reference quality settings, for now use the Print Settings Dialog
-  // add corresponding supported resolutions (quality)
-  dt_bauhaus_combobox_clear(ps->quality);
-  if(ps->quality_list)
-    g_list_free_full(ps->quality_list, g_free);
-
-  ps->quality_list = dt_get_quality_list(ps->prt.printer.name);
-
-  int idx = 0, active = -1;
-  for(GList *l = ps->quality_list; l; l = l->next, idx++)
-  {
-    dt_win_quality_t *q = l->data;
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%d dpi", q->ydpi);
-    dt_bauhaus_combobox_add(ps->quality, buf);
-
-    if(q->ydpi == ps->prt.printer.resolution)
-      active = idx;
-  }
-
-  if(active >= 0)
-    dt_bauhaus_combobox_set(ps->quality, active);
-  else if(ps->quality_list)
-    dt_bauhaus_combobox_set(ps->quality, 0);
-#endif
-
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 
 #ifdef _WIN32
@@ -1324,44 +1295,7 @@ _media_changed(GtkWidget *combo, const dt_lib_module_t *self)
   }
 }
 
-#ifdef _WIN32
-static void
-_quality_changed(GtkWidget *combo, const dt_lib_module_t *self)
-{
-  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  // Get the selected index from the Bauhaus combo
-  int idx = dt_bauhaus_combobox_get(combo);
-  if(idx < 0) return;
-
-  // Look up the corresponding resolution struct in our cached list
-  GList *l = g_list_nth(ps->quality_list, idx);
-  if(l && l->data)
-  {
-    dt_win_quality_t *q = (dt_win_quality_t *)l->data;
-
-    // Update the print settings with the chosen resolution
-    ps->prt.printer.resolution = q->ydpi;
-
-    // Persist the choice so it’s remembered across sessions
-    dt_conf_set_int(PRINT_CONFIG_PREFIX "resolution", q->ydpi);
-
-    // Refresh the preview and any dependent controls
-    dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
-  _update_slider(ps);
-}
-  else
-  {
-    // // Fallback: set to Darktable’s default resolution (300 dpi)
-    // ps->prt.printer.resolution = 300;
-    // dt_conf_set_int(PRINT_CONFIG_PREFIX "resolution", 300);
-
-    // Reset combo to first entry if available
-    if(ps->quality_list)
-      dt_bauhaus_combobox_set(ps->quality, 0);
-  }
-}
-#endif
 
 static void
 _update_slider(dt_lib_print_settings_t *ps)
@@ -2989,7 +2923,6 @@ void gui_init(dt_lib_module_t *self)
   d->paper_list = NULL;
   d->media_list = NULL;
 #ifdef _WIN32
-  d->quality_list = NULL;
   d->settings_ctx = NULL;
 #endif
   d->unit = 0;
@@ -4098,7 +4031,6 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(ps->v_style);
 
 #ifdef _WIN32
-  g_list_free_full(ps->quality_list, free);
   g_free(ps->waiting_for_printer);
 
   if(ps->settings_ctx) 
