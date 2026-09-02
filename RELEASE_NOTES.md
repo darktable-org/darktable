@@ -96,6 +96,10 @@ changes (where available).
 - Don't invalidate the pixelpipe cache on every commit
   when a raster mask is used.
 
+- Add a OpenCL code path to tone equalizer which gives around
+  6-20x faster processing times in comparison to CPU code path,
+  dependening on CPU & GPU.
+
 ## Other Changes
 
 - Added a new collection filter for the original image dimensions.
