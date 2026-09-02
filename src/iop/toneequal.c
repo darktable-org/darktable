@@ -639,6 +639,30 @@ static void hash_set_get(const dt_hash_t *hash_in,
 }
 
 
+static dt_hash_t _luminance_mask_hash(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_iop_roi_t *const roi_out)
+{
+  // Freshness key of the cached luminance mask.
+  //
+  // include = TRUE hashes nodes[0 .. position-1], i.e. our own params too, so
+  // a band slider drag recomputed the whole mask (~60 ms/Mpix) and re-copied
+  // it from the device.  The mask ignores the band factors and `smoothing`:
+  // hash the upstream pipe (include = FALSE, roi folded in) plus the params
+  // compute_luminance_mask() reads, the invalidate list of gui_changed().
+  const dt_iop_toneequalizer_data_t *const d = piece->data;
+
+  const float mask_floats[] = { d->blending, d->feathering, d->contrast_boost,
+                                d->exposure_boost, d->quantization, d->scale };
+  const int mask_ints[] = { d->radius, d->iterations,
+                            (int)d->method, (int)d->details };
+
+  dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, FALSE);
+  hash = dt_hash(hash, mask_floats, sizeof(mask_floats));
+  hash = dt_hash(hash, mask_ints, sizeof(mask_ints));
+  return hash;
+}
+
+
 static void invalidate_luminance_cache(dt_iop_module_t *const self)
 {
   // Invalidate the private luminance cache and histogram when
@@ -1037,8 +1061,8 @@ void toneeq_process(dt_iop_module_t *self,
   const size_t height = roi_in->height;
   const size_t num_elem = width * height;
 
-  // Get the hash of the upstream pipe to track changes
-  const dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, TRUE);
+  // Freshness key of the luminance mask cache
+  const dt_hash_t hash = _luminance_mask_hash(piece, roi_out);
 
   // Sanity checks
   if(width < 1 || height < 1) return;
@@ -1151,7 +1175,7 @@ void toneeq_process(dt_iop_module_t *self,
         dt_iop_gui_leave_critical_section(self);
 
         compute_luminance_mask(in, luminance, width, height, d);
-        dt_preview_data_set_hash(&g->pd, piece);
+        dt_preview_data_set_hash_value(&g->pd, hash);
 
         dt_iop_gui_enter_critical_section(self);
         g->luminance_valid = TRUE;
@@ -1588,8 +1612,8 @@ int process_cl(dt_iop_module_t *self,
   const int height = roi_in->height;
   const size_t num_elem = (size_t)width * height;
 
-  // Get the hash of the upstream pipe to track changes
-  const dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, TRUE);
+  // Freshness key of the luminance mask cache
+  const dt_hash_t hash = _luminance_mask_hash(piece, roi_out);
 
   // Sanity checks
   if(width < 1 || height < 1) return DT_OPENCL_PROCESS_CL;
@@ -1683,7 +1707,7 @@ int process_cl(dt_iop_module_t *self,
       err = dt_opencl_read_buffer_from_device(devid, luminance, dev_luminance,
                                               0, num_elem * sizeof(float), TRUE);
       if(err != CL_SUCCESS) goto error;
-      dt_preview_data_set_hash(&g->pd, piece);
+      dt_preview_data_set_hash_value(&g->pd, hash);
 
       dt_iop_gui_enter_critical_section(self);
       g->luminance_valid = TRUE;
