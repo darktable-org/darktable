@@ -1034,9 +1034,9 @@ static void _lib_snapshots_restore_callback(GtkButton *widget,
 
   dt_lib_snapshot_t *s = &d->snapshot[restore_idx];
 
-  const dt_imgid_t imgid = s->imgid;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
-  dt_history_snapshot_restore(imgid, s->id, s->history_end);
+  dt_history_snapshot_restore(s->imgid, imgid, s->id, s->history_end);
 
   dt_dev_undo_start_record(darktable.develop);
 
