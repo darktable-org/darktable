@@ -89,6 +89,10 @@ changes (where available).
   when the border settings would prevent the frame line from
   being visible.
 
+- Added an interactive editing mode allowing users to correct a color
+  by selecting it directly on the photo with the mouse wheel, just as
+  was already possible with the "tone equalizer" module.
+
 ## Performance Improvements
 
 - Replaced quadratic XMP history writes with a linear algorithm.
