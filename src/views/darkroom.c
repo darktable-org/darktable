@@ -107,6 +107,41 @@ static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
 static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev);
 
+// "plugins/darkroom/<op>/expanded" is per-operation, while focus is restored
+// onto a single instance of that operation. The expansion state was applied to
+// instance 0 regardless, so with several instances one of them came back
+// expanded and a different one focused; with "only one module expanded" that is
+// a state the user cannot produce by hand. Called once focus has been restored,
+// this hands the operation's expansion state to the instance that actually got
+// the focus. Its siblings are only collapsed in "only one module expanded"
+// mode, where two expanded instances would be just as wrong.
+static void _expand_focused_instance(dt_develop_t *dev)
+{
+  dt_iop_module_t *focused = dt_dev_gui_module();
+  if(!focused) return;
+
+  char option[1024];
+  snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", focused->op);
+  const gboolean expanded = dt_conf_get_bool(option);
+  const gboolean single = dt_conf_get_bool("darkroom/ui/single_module");
+
+  for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *module = modules->data;
+    if(!dt_iop_module_is(module, focused->op)) continue;
+
+    const gboolean want = module == focused
+      ? expanded
+      : (single ? FALSE : module->expanded);
+
+    if(module->expanded != want)
+    {
+      module->expanded = want;
+      dt_iop_gui_update_expanded(module);
+    }
+  }
+}
+
 const char *name(const dt_view_t *self)
 {
   return _("darkroom");
@@ -1634,6 +1669,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
       dt_conf_set_string("plugins/darkroom/active", "");
     }
   }
+  _expand_focused_instance(dev);
 
   // Signal develop initialize
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
@@ -4096,6 +4132,7 @@ void enter(dt_view_t *self)
         dt_iop_request_focus(module);
     }
   }
+  _expand_focused_instance(dev);
 
   // image should be there now.
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 1, 0.0f, 0.0f, TRUE);
