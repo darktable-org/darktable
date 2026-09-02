@@ -2616,6 +2616,26 @@ static gboolean area_draw(GtkWidget *widget,
   update_histogram(self);
   update_curve_lut(self);
 
+  // The pipe thread rebuilds the curve cache from commit_params() at
+  // any time, so take one coherent snapshot of everything we are about
+  // to draw while holding the lock, then paint from the local copies.
+  float gui_lut[UI_SAMPLES] DT_ALIGNED_ARRAY;
+  float nodes_x[CHANNELS] DT_ALIGNED_ARRAY;
+  float nodes_y[CHANNELS] DT_ALIGNED_ARRAY;
+
+  dt_iop_gui_enter_critical_section(self);
+  init_nodes_x(g);
+  init_nodes_y(g);
+  const gboolean lut_valid = g->lut_valid;
+  const gboolean factors_valid = g->factors_valid;
+  const gboolean user_param_valid = g->user_param_valid;
+  const gboolean nodes_valid = g->valid_nodes_x && g->valid_nodes_y;
+  const float sigma = g->sigma;
+  dt_simd_memcpy(g->gui_lut, gui_lut, UI_SAMPLES);
+  dt_simd_memcpy(g->nodes_x, nodes_x, CHANNELS);
+  dt_simd_memcpy(g->nodes_y, nodes_y, CHANNELS);
+  dt_iop_gui_leave_critical_section(self);
+
   // Draw graph background
   cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(0.5));
   cairo_rectangle(g->cr, 0, 0, g->graph_width, g->graph_height);
@@ -2678,22 +2698,22 @@ static gboolean area_draw(GtkWidget *widget,
     }
   }
 
-  if(g->lut_valid)
+  if(lut_valid)
   {
     // draw the interpolation curve
-    if(g->factors_valid)
+    if(factors_valid)
       set_color(g->cr,  darktable.bauhaus->graph_fg);
     else
       cairo_set_source_rgb(g->cr, 0.75, .5, 0.);
 
-    cairo_move_to(g->cr, 0, g->gui_lut[0] * g->graph_height);
+    cairo_move_to(g->cr, 0, gui_lut[0] * g->graph_height);
     cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(3));
 
     for(int k = 1; k < UI_SAMPLES; k++)
     {
       // the x range is [-8;+0] EV
       const float x_temp = (8.0f * (((float)k) / ((float)(UI_SAMPLES - 1)))) - 8.0f;
-      const float y_temp = g->gui_lut[k];
+      const float y_temp = gui_lut[k];
 
       cairo_line_to(g->cr, (x_temp + 8.0f) * g->graph_width / 8.0f,
                             y_temp * g->graph_height );
@@ -2701,21 +2721,13 @@ static gboolean area_draw(GtkWidget *widget,
     cairo_stroke(g->cr);
   }
 
-  dt_iop_gui_enter_critical_section(self);
-  init_nodes_x(g);
-  dt_iop_gui_leave_critical_section(self);
-
-  dt_iop_gui_enter_critical_section(self);
-  init_nodes_y(g);
-  dt_iop_gui_leave_critical_section(self);
-
-  if(g->user_param_valid)
+  if(user_param_valid && nodes_valid)
   {
     // draw nodes positions
     for(int k = 0; k < CHANNELS; k++)
     {
-      const float xn = g->nodes_x[k];
-      const float yn = g->nodes_y[k];
+      const float xn = nodes_x[k];
+      const float yn = nodes_y[k];
 
       // fill bars
       cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(6));
@@ -2743,11 +2755,11 @@ static gboolean area_draw(GtkWidget *widget,
   {
     if(g->area_cursor_valid)
     {
-      const float radius = g->sigma * g->graph_width / 8.0f / M_SQRT2_F;
+      const float radius = sigma * g->graph_width / 8.0f / M_SQRT2_F;
       cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
       const float y =
-        g->gui_lut[(int)CLAMP(((UI_SAMPLES - 1) * g->area_x / g->graph_width),
-                              0, UI_SAMPLES - 1)];
+        gui_lut[(int)CLAMP(((UI_SAMPLES - 1) * g->area_x / g->graph_width),
+                           0, UI_SAMPLES - 1)];
       cairo_arc(g->cr, g->area_x, y * g->graph_height, radius, 0, 2. * M_PI);
       set_color(g->cr, darktable.bauhaus->graph_fg);
       cairo_stroke(g->cr);
