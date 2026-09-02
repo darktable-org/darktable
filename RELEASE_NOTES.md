@@ -185,6 +185,8 @@ changes (where available).
 - Fixed crash when navigating images in the darkroom with an
   image pinned in the 2nd window.
 
+- Fixed darkroom watermark issues related to tag & metadata changes.
+
 - Fixed refinements to forwarded raster masks being ignored along
   the OpenCL path.
 

@@ -2027,6 +2027,14 @@ static void _dt_metadata_change_callback(gpointer instance,
                                          const int type,
                                          dt_thumbtable_t *table)
 {
+  dt_develop_t *dev = darktable.develop;
+  if(dev)
+  {
+    dev->full.pipe->cache_obsolete_order = 0;
+    dev->preview_pipe->cache_obsolete_order = 0;
+    dev->preview2.pipe->cache_obsolete_order = 0;
+  }
+
   if(!table)
     return;
 

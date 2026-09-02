@@ -1389,6 +1389,25 @@ void init(dt_iop_module_t *self)
   dt_strlcpy_to_fixed(d->font, "DejaVu Sans 10", sizeof(d->font));
 }
 
+static inline void _invalidate_tag_meta(dt_iop_module_t *self)
+{
+  dt_iop_refresh_all(self);
+  dt_history_hash_unset_mipmap(self->dev->image_storage.id);
+}
+
+static void _metadata_changed(gpointer instance,
+                              const int type,
+                              dt_iop_module_t *self)
+{
+  if(self) _invalidate_tag_meta(self);
+}
+
+static void _tag_changed(gpointer instance,
+                         dt_iop_module_t *self)
+{
+  if(self) _invalidate_tag_meta(self);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
@@ -1546,6 +1565,9 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set",
                    G_CALLBACK(_fontsel_callback), self);
+
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, _metadata_changed, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TAG_CHANGED, _tag_changed, self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
