@@ -114,7 +114,8 @@ THE FALSE-POSITIVE LIST (false-positives.json, next to this script)
     --confirm-false-positive MODULE
                                re-key every stale entry in that module
     --fail-on-findings         exit 1 if anything is reported (off by default)
-    --fail-on-stale-false-positives-only   exit 1 only on a stale entry
+    --fail-on-stale-false-positives-only   exit 1 only on a stale entry,
+                               and report the stale entries alone
 
   A new entry needs --false-positive-reason: that sentence is what is printed
   back when it goes stale.  A bare module re-confirms but never adds: silencing a
@@ -220,7 +221,9 @@ USAGE
 
   Python 3.8+, standard library only.  Exit status is 0 for a completed run
   whatever it found, 1 when --fail-on-findings was given and something was
-  reported, and 2 for a wrong invocation.  --fail-on-findings is off by default
+  reported, and 2 for a wrong invocation -- which includes either --fail-on-*
+  gate with --format json or lemmalog, since those carry the facts the rules run
+  on and leave a gate nothing to fire on.  --fail-on-findings is off by default
   and red on this tree: it passes only once every finding is either fixed or
   recorded in false-positives.json, which is why nothing wires it into CI yet.
   See BEFORE YOU FILE ANYTHING.
@@ -806,7 +809,8 @@ def _sites(sites, th, cap, extra=None):
     return line + (f", ... (+{rest} more)" if rest else "")
 
 
-def print_report(fs, trees=None, suppressed=0):
+def print_report(fs, trees=None, suppressed=0, total=None):
+    """`total`, when given, means fs is a filtered slice of a larger run."""
     by_rule = defaultdict(list)
     for f in fs:
         by_rule[f["rule"]].append(f)
@@ -848,9 +852,13 @@ def print_report(fs, trees=None, suppressed=0):
                     print("   why     : " + key)
                     for line in tree:
                         print(ascii_safe("   " + line.rstrip()))
-    print("\n%d findings%s." % (len(fs),
-          ", %d suppressed as known false positives" % suppressed
-          if suppressed else ""))
+    if total is not None:
+        print("\n%d stale of %d findings; the rest are not what this gate asks "
+              "about." % (len(fs), total))
+    else:
+        print("\n%d findings%s." % (len(fs),
+              ", %d suppressed as known false positives" % suppressed
+              if suppressed else ""))
 
 
 # --- the checked-in false-positive list -------------------------------------
@@ -1385,7 +1393,9 @@ def main():
                          "stale -- somebody judged that finding harmless and "
                          "the code has changed since.  The weaker gate, and the "
                          "one that passes on this tree today, so it is the one "
-                         "a CI job can use before the findings are worked off")
+                         "a CI job can use before the findings are worked off.  "
+                         "Reports the stale entries alone: the other findings "
+                         "are not what this gate asks about")
     ap.add_argument("--why", action="store_true",
                     help="append the lemmalog proof tree behind each finding; needs "
                          "the lemmalog engine, and is an error if it cannot be found")
@@ -1427,6 +1437,15 @@ def main():
         die("--include-false-positives changes which findings are reported; "
             "--format %s carries the facts the rules run on, which the list "
             "never touches" % args.format)
+    # a gate acts on findings, and json/lemmalog return the fact base before the
+    # rules have produced any: the run then exited 0 whatever the gate asked
+    # about, so a CI job wired that way was green because it never checked
+    gate = ("--fail-on-findings" if args.fail_on_findings else
+            "--fail-on-stale-false-positives-only" if args.fail_on_stale
+            else None)
+    if gate and args.format not in ("report", "csv"):
+        die("%s fails on findings; --format %s carries the facts the rules run "
+            "on and produces no finding for a gate to fire on" % (gate, args.format))
     # the two gates answer different questions and one run cannot report both
     # answers in its exit status, so asking for both is a mistake rather than a
     # conjunction: --fail-on-findings already fails on everything the other does
@@ -1528,6 +1547,12 @@ def main():
     stale = [f for f in fs if f.get("fp")]
     fp_banner(suppressed, stale, orphans, FP_FILE)
 
+    # The narrow gate fails on the stale entries alone, so it reports those
+    # alone: every other finding is a question it is not asking, and on this
+    # tree they outnumber the stale ones by two orders of magnitude.  The
+    # banner above still carries the whole picture.
+    reported = stale if args.fail_on_stale else fs
+
     trees = None
     if args.why or args.lemmalog:      # --lemmalog is only ever given to get trees
         exe, how = find_lemmalog(args.lemmalog)
@@ -1535,7 +1560,7 @@ def main():
             die(how)
         if not args.quiet:
             sys.stderr.write("dt-lockcheck: proof trees from %s (%s)\n" % (exe, how))
-        trees = why_trees(exe, res, fs)
+        trees = why_trees(exe, res, reported)
 
     if args.format == "csv":
         w = csv.writer(sys.stdout)
@@ -1543,12 +1568,14 @@ def main():
         # first six columns positionally still works
         w.writerow(["module", "field", "ctype", "rule", "locked_sites",
                     "unlocked_sites", "fp"])
-        for f in fs:
+        for f in reported:
             th = f["thread"]
             w.writerow([f["module"], f["field"], f["ctype"], f["rule"],
                         " ".join(site_str(a, th) for a in f["locked"]),
                         " ".join(site_str(a, th) for a in f["unlocked"]),
                         "stale" if f.get("fp") else ""])
+    elif args.fail_on_stale:
+        print_report(reported, trees, total=len(fs))
     else:
         print_report(fs, trees, len(suppressed))
 

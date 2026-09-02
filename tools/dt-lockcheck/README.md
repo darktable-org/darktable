@@ -90,7 +90,7 @@ detail that does not fit in a row.
 | flag | what it does |
 | --- | --- |
 | `--fail-on-findings` | exit 1 when anything is reported. The wide gate, and red on this tree today — see [Exit status](#exit-status) |
-| `--fail-on-stale-false-positives-only` | exit 1 only when a recorded false positive has gone stale. The narrow gate, and the one that passes today |
+| `--fail-on-stale-false-positives-only` | exit 1 only when a recorded false positive has gone stale, reporting those alone. The narrow gate, and the one that passes today |
 
 Two environment variables stand in for a flag each, for CI, where a path does
 not belong in the invocation:
@@ -116,9 +116,9 @@ another still analyses the one you are standing in. An explicit `--src` never fa
 `--module` is repeatable, and **every** name given has to resolve: one bad name
 in a list fails the whole run rather than quietly analysing the rest, so a CI
 job pinned to a module list notices when a module is renamed. Options that can
-only be wrong about the invocation — an unknown `--rules` name, `--why` with a
-non-report `--format` — are checked before anything is read, so they fail the
-same way whatever `--format` asked for.
+only be wrong about the invocation — an unknown `--rules` name, `--why` or a
+`--fail-on-*` gate with a `--format` that cannot carry one — are checked before
+anything is read, so they fail the same way whatever `--format` asked for.
 
 `--why` adds the proof tree behind each finding — see
 [Proof trees](#proof-trees). It is off by default and needs the
@@ -150,7 +150,7 @@ passes on this tree today.
 | --- | --- |
 | 0 | ran to completion, whatever it found |
 | 1 | a `--fail-on-*` gate was given and it fired |
-| 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` with a `--format` that cannot carry a tree, or a `--lemmalog` path that does not exist |
+| 2 | wrong invocation: `src/iop` could not be located, `--src` does not point at it, an unknown rule name, a `--module` that names no source or a source with no `gui_data` struct, `--why` or a `--fail-on-*` gate with a `--format` that cannot carry one, or a `--lemmalog` path that does not exist |
 
 There are two gates, and a run may ask for at most one of them:
 
@@ -163,11 +163,21 @@ There are two gates, and a run may ask for at most one of them:
   positive has gone stale, i.e. somebody's judgement no longer covers the code
   it was made about. This one **passes today**, so it is the gate a CI job or a
   pre-commit hook can use now. It says nothing about findings nobody has ruled
-  on, which is exactly why it can be green.
+  on, which is exactly why it can be green. It also *reports* the stale entries
+  alone — in `report` and in `csv` — since a gate's output is read to find out
+  why it fired, and the other findings are not what it fired on.
 
 Asking for both is an error rather than a conjunction: one exit status cannot
 carry two answers, and the wide gate already fails on everything the narrow one
 does.
+
+Either gate with `--format json` or `lemmalog` is an error too, for the same
+reason `--why` is: those formats carry the facts the rules run on and return
+before any finding exists, so the gate had nothing to fire on and the run exited
+0 regardless. That is the worst way for a flag to fail — a CI job wired that way
+is green because it never ran the check — so it is rejected up front, like every
+other option that can only be wrong about the invocation. A gate goes with
+`--format report` or `csv`.
 
 `--fail-on-findings` fails on what the run *reported*, so it honours
 `--include-false-positives` and then counts the suppressed findings too. That is
@@ -756,13 +766,15 @@ without reporting.
 ```sh
 ./dt-lockcheck.py                                       # stale entries are marked in the report
 ./dt-lockcheck.py --include-false-positives             # the suppressed findings too
-./dt-lockcheck.py --fail-on-stale-false-positives-only  # exit 1 if any entry went stale
+./dt-lockcheck.py --fail-on-stale-false-positives-only  # exit 1, and report the stale entries alone
 ```
 
-An ordinary run is how you read them: the stderr banner names every stale entry,
-and each one is marked in the report with its recorded reason. There is no flag
-that reports them alone, because there is nothing to save — a full run takes
-about a second and `--module` does not make it faster.
+An ordinary run is how you read them in context: the stderr banner names every
+stale entry, and each one is marked in the report with its recorded reason among
+the other findings. The gate below narrows the report to the stale entries
+themselves, which is what you want when the question is why the gate fired; it
+filters the output only — a full run takes about a second either way and
+`--module` does not make it faster.
 
 `--include-false-positives` puts the *suppressed* findings back in the report,
 which is the run to make when a module rather than the tree is the subject and
@@ -772,7 +784,7 @@ rules run on and never see the list at all.
 
 `--fail-on-stale-false-positives-only` is the gate over the same question, for a
 CI job or a pre-commit hook, and it is the only gate here that passes on this
-tree today. It is mutually exclusive with `--fail-on-findings`; asking for both
+tree today. Its report and its csv carry the stale entries and nothing else. It is mutually exclusive with `--fail-on-findings`; asking for both
 is an error rather than a conjunction.
 
 Each entry also carries its site list as `function:line[thread](lock)`, purely
