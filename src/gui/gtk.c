@@ -5054,6 +5054,10 @@ static void _resize_wrap_button_pressed(GtkGestureSingle *gesture,
   if(y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
      && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
   {
+    // The resize wrapper and some wrapped drawing areas (notably scopes) can
+    // have more than one gesture on the same widget.  Claim the sequence at
+    // the handle so the wrapped widget cannot start its own drag as well.
+    dt_gui_claim(gesture);
     state->dragging = TRUE;
     // go through the hover setter rather than setting the cursor directly, so
     // that handle_hover records the cursor now on the widget. The release path
@@ -5063,6 +5067,8 @@ static void _resize_wrap_button_pressed(GtkGestureSingle *gesture,
     // leave "ns-resize" on the widget for good.
     _resize_wrap_set_handle_hover(widget, state, TRUE);
   }
+  else
+    dt_gui_deny(gesture);
 }
 
 static void _resize_wrap_button_released(GtkGestureSingle *gesture,
@@ -5203,13 +5209,20 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                          | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
 
-  // resize handle interaction: click gesture + motion/enter/leave controller
-  // (BUBBLE phase so motions over the wrapped child keep driving the drag,
-  // like the old signal did)
-  dt_gui_connect_click(w, _resize_wrap_button_pressed, _resize_wrap_button_released, config_str);
+  // resize handle interaction: claim the press before interactive graph
+  // gestures on the same drawing area, and keep resize motion in capture too
+  // so claimed drags still update the size
+  GtkGestureSingle *resize_click =
+    dt_gui_connect_click(w, _resize_wrap_button_pressed,
+                         _resize_wrap_button_released, config_str);
+  gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(resize_click),
+                                             GTK_PHASE_CAPTURE);
   {
     GtkEventController *motion = gtk_event_controller_motion_new(w);
-    gtk_event_controller_set_propagation_phase(motion, GTK_PHASE_BUBBLE);
+    /* keep resize motion in capture too: claiming the press stops later
+     * target/bubble handlers, so a bubble-phase resize controller would not
+     * receive the drag motion */
+    gtk_event_controller_set_propagation_phase(motion, GTK_PHASE_CAPTURE);
     dt_gui_add_controller(w, motion);
     g_signal_connect(motion, "motion", G_CALLBACK(_resize_wrap_motion_controller), config_str);
     g_signal_connect(motion, "enter", G_CALLBACK(_resize_wrap_enter_controller), config_str);
