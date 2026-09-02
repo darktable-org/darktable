@@ -209,7 +209,7 @@ whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int widt
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
-  float pixel = readsingle(in, x, y);
+  float pixel = Areadsingle(in, x, y);
   write_imagef(out, (int2)(x, y), pixel * coeffs[FC(y, x, filters)]);
 }
 
@@ -220,7 +220,7 @@ whitebalance_1f_xtrans(read_only image2d_t in, write_only image2d_t out, const i
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
-  float pixel = readsingle(in, x, y);
+  float pixel = Areadsingle(in, x, y);
   write_imagef(out, (int2)(x, y), pixel * coeffs[FCxtrans(y, x, xtrans)]);
 }
 
@@ -891,10 +891,10 @@ remosaic_and_replace(read_only image2d_t input,
   if(j >= width || i >= height) return;
 
   const int c = FC(i, j, filters);
-  const float4 center = read_imagef(interpolated, sampleri, (int2)(j, i));
+  const float4 center = Areadpixel(interpolated, j, i);
   float *rgb = (float *)&center;
   const float opacity = clipf(read_imagef(clipping_mask, sampleri, (int2)(j, i)).w);
-  const float4 pix_in = read_imagef(input, sampleri, (int2)(j, i));
+  const float4 pix_in = Areadpixel(input, j, i);
   const float4 pix_out = opacity * fmax(rgb[c] * wb[c], 0.f) + (1.f - opacity) * pix_in;
   write_imagef(output, (int2)(j, i), pix_out);
 }
@@ -917,10 +917,10 @@ box_blur_5x5(read_only image2d_t in,
     {
       const int row = clamp(y + ii, 0, height - 1);
       const int col = clamp(x + jj, 0, width - 1);
-      acc += fmax(0.0f, read_imagef(in, samplerA, (int2)(col, row))) / 25.f;
+      acc += fmax(0.0f, Areadpixel(in, col, row));
     }
 
-  write_imagef(out, (int2)(x, y), acc);
+  write_imagef(out, (int2)(x, y), acc / (float4)25.0f);
 }
 
 
@@ -954,7 +954,7 @@ guide_laplacians(read_only image2d_t HF,
   const float alpha = read_imagef(mask, samplerA, (int2)(x, y)).w;
   const float alpha_comp = 1.f - alpha;
 
-  float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
+  float4 high_frequency = Areadpixel(HF, x, y);
 
   float4 out;
 
@@ -1276,7 +1276,7 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * readpixel(in, x, y);
+  float4 pixel = corval * Areadpixel(in, x, y);
 
   float cam[3], XYZ[3];
   cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
@@ -1327,7 +1327,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   if(x >= width || y >= height) return;
 
   const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * readpixel(in, x, y);
+  float4 pixel = corval * Areadpixel(in, x, y);
 
   float cam[3], RGB[3], XYZ[3];
   cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
@@ -1389,7 +1389,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
   const float L = lookup_unbounded(table_L, L_in, coeffs_L);
@@ -1473,7 +1473,7 @@ colorcorrection (read_only image2d_t in, write_only image2d_t out, const int wid
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
   pixel.y = saturation*(pixel.y + pixel.x * a_scale + a_base);
   pixel.z = saturation*(pixel.z + pixel.x * b_scale + b_base);
   write_imagef (out, (int2)(x, y), pixel);
@@ -3259,8 +3259,8 @@ overexposed (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = readpixel(in, x, y);
-  float4 pixel_tmp = readpixel(tmp, x, y);
+  float4 pixel = Areadpixel(in, x, y);
+  float4 pixel_tmp = Areadpixel(tmp, x, y);
 
   if(mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
@@ -3471,7 +3471,7 @@ lowlight (read_only image2d_t in,
   float V;
   float w;
 
-  float4 pixel = readpixel(in, x, y);
+  float4 pixel = Areadpixel(in, x, y);
 
   float4 XYZ = Lab_to_XYZ(pixel);
 
@@ -3518,7 +3518,7 @@ colisa (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 i = readpixel(in, x, y);
+  float4 i = Areadpixel(in, x, y);
   float4 o;
 
   o.x = lookup_unbounded(ctable, i.x/100.0f, ca);
@@ -3545,7 +3545,7 @@ profilegamma (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 i = readpixel(in, x, y);
+  float4 i = Areadpixel(in, x, y);
   float4 o;
 
   o.x = lookup_unbounded(table, i.x, ta);
@@ -3571,7 +3571,7 @@ profilegamma_log (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 i = readpixel(in, x, y);
+  float4 i = Areadpixel(in, x, y);
   const float4 noise = pow((float4)2.0f, (float4)-16.0f);
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;

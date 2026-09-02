@@ -32,7 +32,7 @@ kernel void convolve(read_only image2d_t in,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  float4 pix_in = read_imagef(in, samplerA, (int2)(x, y));
+  float4 pix_in = Areadpixel(in, x, y);
   float4 acc = 0.f;
 
   for(int l = -radius; l <= radius; l++)
@@ -42,7 +42,7 @@ kernel void convolve(read_only image2d_t in,
       const int jj = clamp(x + m, 0, width - 1);
       const int ik = l + radius;
       const int jk = m + radius;
-      acc += kern[ik * kernel_width + jk] * read_imagef(in, samplerA, (int2)(jj, ii));
+      acc += kern[ik * kernel_width + jk] * Areadpixel(in, jj, ii);
     }
 
   acc.w = pix_in.w;
@@ -66,7 +66,7 @@ kernel void convolve_sparse(read_only image2d_t in,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  float4 pix_in = read_imagef(in, samplerA, (int2)(x, y));
+  float4 pix_in = Areadpixel(in, x, y);
   float4 acc = 0.f;
 
   for(int i = 0; i < n_entries; i++)
@@ -92,8 +92,8 @@ kernel void restore_alpha(read_only image2d_t original,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  float4 px_blurred = read_imagef(blurred, samplerA, (int2)(x, y));
-  float4 px_orig    = read_imagef(original, samplerA, (int2)(x, y));
+  float4 px_blurred = Areadpixel(blurred, x, y);
+  float4 px_orig    = Areadpixel(original, x, y);
   px_blurred.w = px_orig.w;
   write_imagef(out, (int2)(x, y), px_blurred);
 }
