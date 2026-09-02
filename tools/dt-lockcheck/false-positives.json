@@ -18,11 +18,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-01",
+      "confirmed": "2026-09-02",
       "field": "params",
       "key": "d19e907cb851",
       "module": "basicadj",
-      "reason": "Same ownership-token argument as the accepted rgblevels:params entry, and basicadj is a copy of that code.  Exclusive ownership of g->params passes through the call_auto_exposure state machine, and every handover is under gui_lock even though the payload accesses are not: the pipe writes params only after taking 1 -> -1 at basicadj.c:1419-1423 (process) and :1301-1305 (process_cl), publishes 2 at :1433-1435 / :1334-1336, and _develop_ui_pipe_finished_callback reads params only after taking 2 -> -1 at :279-284.  Only one preview pipe runs at a time, so two pipe writers cannot overlap.  The unlocked GTK token write in button_released (:384) can lose a request or a result -- that is the separate box_cood/call_auto_exposure defect -- but it cannot produce a concurrent params writer.  Re-check if the token protocol changes or a second pipe gains this path.",
+      "reason": "Same ownership-token argument as the accepted rgblevels:params entry, and basicadj is a copy of that code.  Exclusive ownership of g->params passes through the call_auto_exposure state machine, and every handover is under gui_lock even though the payload accesses are not: the pipe writes params only after taking 1 -> -1 at basicadj.c:1419-1423 (process) and :1301-1305 (process_cl), publishes 2 at :1433-1435 / :1334-1336, and _develop_ui_pipe_finished_callback reads params only after taking 2 -> -1 at :279-285.  Only one preview pipe runs at a time -- dt_pipe_is_preview() matches DT_DEV_PIXELPIPE_PREVIEW only, not the distinct PREVIEW2 bit (pixelpipe.h:44,48) -- so two pipe writers cannot overlap, and the two GTK entry points cannot interleave with each other.  The unlocked GTK token write in button_released (:384) can lose a request or a result -- that is the separate box_cood/call_auto_exposure defect, #22120 -- but it cannot produce a concurrent params writer.  Re-check if the token protocol changes or a second pipe gains this path.",
       "rule": "no_lock_share",
       "sites": [
         "_develop_ui_pipe_finished_callback:285[gtk](none)",
@@ -95,11 +95,11 @@
       ]
     },
     {
-      "confirmed": "2026-08-30",
+      "confirmed": "2026-09-02",
       "field": "auto_detect",
       "key": "17a4e48fd49a",
       "module": "colorharmonizer",
-      "reason": "_update_histogram() runs on the pipe but never calls GTK: it takes an atomic g_object_ref() on the widget and hands it to gdk_threads_add_idle(), so the GTK call itself happens on the main thread.  This is the correct idiom for reaching a widget from the pipe, not a defect.",
+      "reason": "_update_histogram() runs on the pipe but never calls GTK: it takes an atomic g_object_ref() on the widget at colorharmonizer.c:305 and hands it to gdk_threads_add_idle() at :306, so the GTK calls happen on the main thread, in _auto_detect_button_enable_idle() at :1332-1348.  The field itself is written only in gui_init() (:1415), so the pipe-side read is of an immutable pointer.  What makes this safe rather than merely tidy is the ref, because nothing cancels the source: gui_cleanup() (:1663-1672) has no g_idle_remove_by_data() drain and the module implements no change_image(), and the source is keyed on the widget rather than on self, so a drain on self could not find it either.  The idle body touches nothing but the ref'd widget before g_object_unref(), and the ref keeps the GObject alive past the gtk_widget_destroy() in dt_iop_gui_cleanup_module(), where set_sensitive/set_tooltip_text on a destroyed-but-not-finalized widget are legal.  The image-switch shape is harmless too: histogram_valid is set FALSE only in gui_init (:1552) and TRUE at :300, so after the first run was_invalid is FALSE and no further source is queued, and a source left over from the old image only re-enables an already-sensitive button.  The unlocked read of g->histogram_valid at :297, outside the private histogram_lock that guards the write at :300, is a separate defect and is filed as #22059.  Re-check if the idle callback starts reaching the module through self, or if histogram_valid gains a reset that can re-arm the queueing path.",
       "rule": "widget_from_pipe",
       "sites": [
         "_update_histogram:305[pipe](none)",
@@ -162,11 +162,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-01",
+      "confirmed": "2026-09-02",
       "field": "preview_auto_levels",
       "key": "091dd1304474",
       "module": "retouch",
-      "reason": "Ownership token, already established while filing #22081 -- that report's 'Validated state machine' section walks every transition and states explicitly that this is not a gui_data locking defect.  The pipe owns preview_levels while preview_auto_levels is -1 (claimed at retouch.c:3991 / :4823 under the lock), publishes 2 under the lock at :4003 / :4837, and the GUI reads the array only after taking 2 -> -1 at :1718; the locked transitions carry the ordering the unlocked array copies need.  change_image()'s unlocked reset at :2403-2412 is externally serialised: _dev_load_requested_image() holds the preview, full and preview2 pipe mutexes across the change_image() call (src/views/darkroom.c:1417-1451, :1595, :1641-1644).  The two real retouch defects on this handshake are filed and are not locking: #22081 (an OpenCL error path leaves the token at -1) and #22092 (fast tiling measures one strip).  #22067 covers the module's genuinely unlocked display fields, which are separate.  Re-check if the transitions leave gui_lock or change_image gains a caller outside the pipe-mutex window.",
+      "reason": "Ownership token, already established while filing #22081 -- that report's 'Validated state machine' section walks every transition and states explicitly that this is not a gui_data locking defect.  The pipe owns preview_levels while preview_auto_levels is -1 (claimed at retouch.c:3991 / :4823 under the lock), publishes 2 under the lock at :4003 / :4837, and the GUI reads the array only after taking 2 -> -1 at :1718; the locked transitions carry the ordering the unlocked array copies need.  change_image()'s unlocked reset at :2409-2412 is externally serialised: _dev_load_requested_image() holds the preview, full and preview2 pipe mutexes across the change_image() call (src/views/darkroom.c:1417-1451, :1595, :1641-1644).  The two real retouch defects on this handshake are filed and are not locking: #22081 (an OpenCL error path leaves the token at -1) and #22092 (fast tiling measures one strip).  #22067 covers the module's genuinely unlocked display fields, which are separate.  Re-check if the transitions leave gui_lock or change_image gains a caller outside the pipe-mutex window.",
       "rule": "violation",
       "sites": [
         "rt_curr_scale_update:1201[gtk](gui_lock)",
@@ -188,11 +188,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-01",
+      "confirmed": "2026-09-02",
       "field": "preview_levels",
       "key": "d0dd2484eea8",
       "module": "retouch",
-      "reason": "Ownership token, already established while filing #22081 -- that report's 'Validated state machine' section walks every transition and states explicitly that this is not a gui_data locking defect.  The pipe owns preview_levels while preview_auto_levels is -1 (claimed at retouch.c:3991 / :4823 under the lock), publishes 2 under the lock at :4003 / :4837, and the GUI reads the array only after taking 2 -> -1 at :1718; the locked transitions carry the ordering the unlocked array copies need.  change_image()'s unlocked reset at :2403-2412 is externally serialised: _dev_load_requested_image() holds the preview, full and preview2 pipe mutexes across the change_image() call (src/views/darkroom.c:1417-1451, :1595, :1641-1644).  The two real retouch defects on this handshake are filed and are not locking: #22081 (an OpenCL error path leaves the token at -1) and #22092 (fast tiling measures one strip).  #22067 covers the module's genuinely unlocked display fields, which are separate.  Re-check if the transitions leave gui_lock or change_image gains a caller outside the pipe-mutex window.",
+      "reason": "Ownership token, already established while filing #22081 -- that report's 'Validated state machine' section walks every transition and states explicitly that this is not a gui_data locking defect.  The pipe owns preview_levels while preview_auto_levels is -1 (claimed at retouch.c:3991 / :4823 under the lock), publishes 2 under the lock at :4003 / :4837, and the GUI reads the array only after taking 2 -> -1 at :1718; the locked transitions carry the ordering the unlocked array copies need.  change_image()'s unlocked reset at :2409-2412 is externally serialised: _dev_load_requested_image() holds the preview, full and preview2 pipe mutexes across the change_image() call (src/views/darkroom.c:1417-1451, :1595, :1641-1644).  The two real retouch defects on this handshake are filed and are not locking: #22081 (an OpenCL error path leaves the token at -1) and #22092 (fast tiling measures one strip).  #22067 covers the module's genuinely unlocked display fields, which are separate.  Re-check if the transitions leave gui_lock or change_image gains a caller outside the pipe-mutex window.",
       "rule": "no_lock_share",
       "sites": [
         "rt_develop_ui_pipe_finished_callback:1723[gtk](none)",
@@ -219,11 +219,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-01",
+      "confirmed": "2026-09-02",
       "field": "full_preview_buf",
       "key": "7654ed5bd70c",
       "module": "toneequal",
-      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1048-1063, gated on self->dev->gui_attached; the source states the intent at :1050-1052.  Only one full pipe exists per dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer: preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match, and dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4214), which fails the branch guard.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears or a second full-type pipe becomes possible.",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4211).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:428), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :404, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
       "rule": "no_lock_share",
       "sites": [
         "toneeq_process:1056[pipe](none)",
@@ -234,11 +234,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-01",
+      "confirmed": "2026-09-02",
       "field": "full_preview_buf_height",
       "key": "306e0dd9a0f1",
       "module": "toneequal",
-      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1048-1063, gated on self->dev->gui_attached; the source states the intent at :1050-1052.  Only one full pipe exists per dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer: preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match, and dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4214), which fails the branch guard.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears or a second full-type pipe becomes possible.",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4211).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:428), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :404, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
       "rule": "no_lock_share",
       "sites": [
         "toneeq_process:1054[pipe](none)",
@@ -247,11 +247,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-01",
+      "confirmed": "2026-09-02",
       "field": "full_preview_buf_width",
       "key": "d24a6aa761c2",
       "module": "toneequal",
-      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1048-1063, gated on self->dev->gui_attached; the source states the intent at :1050-1052.  Only one full pipe exists per dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer: preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match, and dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4214), which fails the branch guard.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears or a second full-type pipe becomes possible.",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4211).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:428), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :404, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
       "rule": "no_lock_share",
       "sites": [
         "toneeq_process:1054[pipe](none)",
