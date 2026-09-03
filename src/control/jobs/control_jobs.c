@@ -2077,8 +2077,16 @@ static int32_t _control_export_job_run(dt_job_t *job)
 
   const guint total = g_list_length(params->index);
   if(total > 0)
+  {
+#ifndef _WIN32
+    /* #21829 / PR #21949: this transient GTK log overlay causes Windows
+     * taskbar attention during inactive background exports. The sidebar job
+     * progress already reports the export on Windows. */
     dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
+#endif
+  }
   else
+    /* Keep this actionable message on every platform, including Windows. */
     dt_control_log(_("no image to export"));
 
   double fraction = 0;
@@ -3269,7 +3277,12 @@ static int32_t _control_import_job_run(dt_job_t *job)
   }
   g_free(prev_output);
 
+#ifndef _WIN32
+  /* #21829 / PR #21949: this completion overlay can trigger Windows taskbar
+   * attention after an import. The background-job progress already reports
+   * the operation there. */
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
+#endif
   dt_set_darktable_tags();
   dt_control_queue_redraw_center();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);

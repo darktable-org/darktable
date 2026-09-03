@@ -266,9 +266,13 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
   const int num_images = g_list_length(t->images);
+#ifndef _WIN32
+  /* #21829 / PR #21949: avoid taskbar attention from per-image import
+   * status overlays on Windows. */
   dt_control_log(ngettext("%d/%d imported to %s", "%d/%d imported to %s",
                           t->import_count + 1),
                  t->import_count + 1, num_images, basename);
+#endif
   g_free(basename);
 
   t->fraction += 1.0 / num_images;
