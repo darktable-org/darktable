@@ -32,21 +32,15 @@
 #include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "common/utility.h"
-#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
-#include "dtgtk/button.h"
-#include "dtgtk/resetlabel.h"
-#include "gui/accelerators.h"
-#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
 #include <ctype.h>
 #include <gtk/gtk.h>
-#include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -3827,27 +3821,33 @@ static void _camera_set(dt_iop_module_t *self, const lfCamera *cam)
   g_free(fm);
 }
 
-static void _camera_menu_select(GtkMenuItem *menuitem, dt_iop_module_t *self)
+static void _camera_menu_select(GSimpleAction *action,
+                                GVariant *parameter,
+                                gpointer user_data)
 {
-  _camera_set(self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem),
-                                                  "lfCamera"));
-  DT_GUARD_GUI_UPDATE();
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+  
+  const lfCamera *cam = (lfCamera *)g_variant_get_uint64(parameter);
+  _camera_set(self, cam);
+
+  DT_GUARD_GUI_UPDATE();
   p->has_been_set = TRUE;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static GtkMenu *camera_menu_fill(dt_iop_module_t *self,
-                                 const lfCamera *const *camlist)
+static GMenu *camera_menu_fill(dt_iop_module_t *self,
+                               const lfCamera *const *camlist)
 {
-  GtkMenu *camera_menu = GTK_MENU(gtk_menu_new());
+  GMenu *camera_menu = g_menu_new();
 
   /* Count all existing camera makers and create a sorted list */
   GPtrArray *makers = g_ptr_array_new();
   GPtrArray *submenus = g_ptr_array_new();
   for(unsigned i = 0; camlist[i]; i++)
   {
-    GtkWidget *submenu, *item;
+    GMenuItem *item;
+    GMenu *submenu;
     const char *m = lf_mlstr_get(camlist[i]->Maker);
     int idx = _ptr_array_find_sorted(makers, m, (GCompareFunc)g_utf8_collate);
     if(idx < 0)
@@ -3855,36 +3855,38 @@ static GtkMenu *camera_menu_fill(dt_iop_module_t *self,
       /* No such maker yet, insert it into the array */
       idx = _ptr_array_insert_sorted(makers, m, (GCompareFunc)g_utf8_collate);
       /* Create a submenu for cameras by this maker */
-      submenu = gtk_menu_new();
+      submenu = g_menu_new();
       _ptr_array_insert_index(submenus, submenu, idx);
     }
 
-    submenu = (GtkWidget *)g_ptr_array_index(submenus, idx);
+    submenu = (GMenu *)g_ptr_array_index(submenus, idx);
     /* Append current camera name to the submenu */
     m = lf_mlstr_get(camlist[i]->Model);
     if(!camlist[i]->Variant)
-      item = gtk_menu_item_new_with_label(m);
+    {
+      item = g_menu_item_new(m, NULL);
+      g_menu_item_set_action_and_target_value(item,
+                                              "camera.activate",
+                                              g_variant_new("t", (guintptr)camlist[i]));
+    }
     else
     {
       gchar *fm = g_strdup_printf("%s (%s)", m, camlist[i]->Variant);
-      item = gtk_menu_item_new_with_label(fm);
+      item = g_menu_item_new(fm, NULL);
+      g_menu_item_set_action_and_target_value(item,
+                                              "camera.activate",
+                                              g_variant_new("t", (guintptr)camlist[i]));
       g_free(fm);
     }
-    gtk_widget_show(item);
-    g_object_set_data(G_OBJECT(item), "lfCamera", (void *)camlist[i]);
-    g_signal_connect(G_OBJECT(item), "activate",
-                     G_CALLBACK(_camera_menu_select), self);
-    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
+    g_menu_append_item(submenu, item);
   }
 
+  // create the submenus for the makers
   for(unsigned i = 0; i < makers->len; i++)
   {
-    GtkWidget *item = (GtkWidget *)
-      gtk_menu_item_new_with_label((const gchar *)g_ptr_array_index(makers, i));
-    gtk_widget_show(item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(camera_menu), item);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),
-                              (GtkWidget *)g_ptr_array_index(submenus, i));
+    GMenuItem *item = g_menu_item_new_submenu((const gchar *)g_ptr_array_index(makers, i),
+                                              G_MENU_MODEL(g_ptr_array_index(submenus, i)));
+    g_menu_append_item(camera_menu, item);
   }
 
   g_ptr_array_free(submenus, TRUE);
@@ -3904,8 +3906,33 @@ static void _parse_model(const char *txt,
   model[len] = 0;
 }
 
-static void _camera_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
+static void _set_camera_action_group(GtkWidget *button,
+                                     dt_iop_module_t *self)
 {
+  GActionGroup *action_group = gtk_widget_get_action_group(button, "camera");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "activate", _camera_menu_select, "t", NULL }
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    self);
+    gtk_widget_insert_action_group(button,
+                                   "camera",
+                                   G_ACTION_GROUP(action_group));
+  }
+}
+
+static void _camera_menusearch_clicked(GtkWidget *button,
+                                       dt_iop_module_t *self)
+{
+  _set_camera_action_group(button, self);
+
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
 
@@ -3914,21 +3941,24 @@ static void _camera_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
   camlist = dt_iop_lensfun_db->GetCameras();
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(!camlist) return;
-  GtkMenu *menu = camera_menu_fill(self, camlist);
+  GMenu *menu = camera_menu_fill(self, camlist);
 
-  // dt_gui_menu_popup unrefs the menu
-  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
-static void _camera_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
+static void _camera_autosearch_clicked(GtkWidget *button,
+                                       dt_iop_module_t *self)
 {
+  _set_camera_action_group(button, self);
+
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
 
   char make[200], model[200];
   const gchar *txt = (const gchar *)((dt_iop_lens_params_t *)self->default_params)->camera;
 
-  GtkMenu *menu;
+  GMenu *menu;
   if(txt[0] == '\0')
   {
     const lfCamera *const *camlist;
@@ -3949,8 +3979,8 @@ static void _camera_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
     lf_free(camlist);
   }
 
-  // dt_gui_menu_popup unrefs the menu
-  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 /* -- end camera -- */
@@ -4176,12 +4206,16 @@ static void _lens_set(dt_iop_module_t *self,
   }
 }
 
-static void _lens_menu_select(GtkMenuItem *menuitem,
-                              dt_iop_module_t *self)
+static void _lens_menu_select(GSimpleAction *action,
+                              GVariant *parameter,
+                              gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
-  _lens_set(self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
+
+  const lfLens *lens = (lfLens *)g_variant_get_uint64(parameter);
+  _lens_set(self, lens);
   DT_GUARD_GUI_UPDATE();
   p->has_been_set = TRUE;
 
@@ -4190,17 +4224,18 @@ static void _lens_menu_select(GtkMenuItem *menuitem,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static GtkMenu *_lens_menu_fill(dt_iop_module_t *self,
+static GMenu *_lens_menu_fill(dt_iop_module_t *self,
                                 const lfLens *const *lenslist)
 {
-  GtkMenu *lens_menu = GTK_MENU(gtk_menu_new());
+  GMenu *lens_menu = g_menu_new();
 
   /* Count all existing lens makers and create a sorted list */
   GPtrArray *makers = g_ptr_array_new();
   GPtrArray *submenus = g_ptr_array_new();
   for(unsigned i = 0; lenslist[i]; i++)
   {
-    GtkWidget *submenu, *item;
+    GMenuItem *item;
+    GMenu *submenu;
     const char *m = lf_mlstr_get(lenslist[i]->Maker);
     int idx = _ptr_array_find_sorted(makers, m, (GCompareFunc)g_utf8_collate);
     if(idx < 0)
@@ -4208,28 +4243,25 @@ static GtkMenu *_lens_menu_fill(dt_iop_module_t *self,
       /* No such maker yet, insert it into the array */
       idx = _ptr_array_insert_sorted(makers, m, (GCompareFunc)g_utf8_collate);
       /* Create a submenu for lenses by this maker */
-      submenu = gtk_menu_new();
+      submenu = g_menu_new();
       _ptr_array_insert_index(submenus, submenu, idx);
     }
 
-    submenu = (GtkWidget *)g_ptr_array_index(submenus, idx);
+    submenu = (GMenu *)g_ptr_array_index(submenus, idx);
     /* Append current lens name to the submenu */
-    item = gtk_menu_item_new_with_label(lf_mlstr_get(lenslist[i]->Model));
-    gtk_widget_show(item);
-    g_object_set_data(G_OBJECT(item), "lfLens", (void *)lenslist[i]);
-    g_signal_connect(G_OBJECT(item), "activate",
-                     G_CALLBACK(_lens_menu_select), self);
-    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
+    item = g_menu_item_new(lf_mlstr_get(lenslist[i]->Model), NULL);
+    g_menu_item_set_action_and_target_value(item,
+                                            "lens.activate",
+                                            g_variant_new("t", (guintptr)lenslist[i]));
+    g_menu_append_item(submenu, item);    
   }
 
+  // create the submenus for the makers
   for(unsigned i = 0; i < makers->len; i++)
   {
-    GtkWidget *item = gtk_menu_item_new_with_label
-      ((const gchar *)g_ptr_array_index(makers, i));
-    gtk_widget_show(item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(lens_menu), item);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),
-                              (GtkWidget *)g_ptr_array_index(submenus, i));
+    GMenuItem *item = g_menu_item_new_submenu((const gchar *)g_ptr_array_index(makers, i),
+                                              G_MENU_MODEL(g_ptr_array_index(submenus, i)));
+    g_menu_append_item(lens_menu, item);
   }
 
   g_ptr_array_free(submenus, TRUE);
@@ -4237,14 +4269,37 @@ static GtkMenu *_lens_menu_fill(dt_iop_module_t *self,
   return lens_menu;
 }
 
-static void _lens_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
+static void _set_lens_action_group(GtkWidget *button,
+                                   dt_iop_module_t *self)
 {
+  GActionGroup *action_group = gtk_widget_get_action_group(button, "lens");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "activate", _lens_menu_select, "t", NULL }
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    self);
+    gtk_widget_insert_action_group(button,
+                                   "lens",
+                                   G_ACTION_GROUP(action_group));
+  }
+}
+
+static void _lens_menusearch_clicked(GtkWidget *button,
+                                     dt_iop_module_t *self)
+{
+  _set_lens_action_group(button, self);
+
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
-
-  (void)button;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lenslist = dt_iop_lensfun_db->FindLenses(g->camera, NULL, NULL,
@@ -4252,23 +4307,23 @@ static void _lens_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   if(!lenslist) return;
-  GtkMenu *menu = _lens_menu_fill(self, lenslist);
+  GMenu *menu = _lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
-  // dt_gui_menu_popup unrefs the menu
-  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 static void _lens_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
 {
+  _set_lens_action_group(button, self);
+
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
   char model[200];
   const gchar *txt = ((dt_iop_lens_params_t *)self->default_params)->lens;
-
-  (void)button;
 
   _parse_model(txt, model, sizeof(model));
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -4277,11 +4332,11 @@ static void _lens_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
                                            LF_SEARCH_SORT_AND_UNIQUIFY);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(!lenslist) return;
-  GtkMenu *menu = _lens_menu_fill(self, lenslist);
+  GMenu *menu = _lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
-  // dt_gui_menu_popup unrefs the menu
-  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 /* -- end lens -- */
