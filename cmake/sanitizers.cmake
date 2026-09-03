@@ -158,7 +158,15 @@ endif()
 # Generate the runtime environment helper
 # ---------------------------------------------------------------------------
 
-find_program(DT_LLVM_SYMBOLIZER NAMES llvm-symbolizer)
+# Distributions commonly ship only the version-suffixed binary (Debian and
+# Ubuntu put llvm-symbolizer-N in /usr/bin and leave the unsuffixed name to the
+# llvm meta-package), so look for both. Without it the runtimes fall back to
+# addr2line, which is far slower and resolves fewer frames.
+find_program(DT_LLVM_SYMBOLIZER
+  NAMES llvm-symbolizer
+        llvm-symbolizer-21 llvm-symbolizer-20 llvm-symbolizer-19
+        llvm-symbolizer-18 llvm-symbolizer-17 llvm-symbolizer-16
+        llvm-symbolizer-15 llvm-symbolizer-14)
 if(NOT DT_LLVM_SYMBOLIZER)
   set(DT_LLVM_SYMBOLIZER "")
   message(STATUS "llvm-symbolizer not found, sanitizer stack traces will be slower to symbolize")
