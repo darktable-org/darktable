@@ -38,11 +38,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-02",
+      "confirmed": "2026-09-03",
       "field": "params",
       "key": "d19e907cb851",
       "module": "basicadj",
-      "reason": "Same ownership-token argument as the accepted rgblevels:params entry, and basicadj is a copy of that code.  Exclusive ownership of g->params passes through the call_auto_exposure state machine, and every handover is under gui_lock even though the payload accesses are not: the pipe writes params only after taking 1 -> -1 at basicadj.c:1419-1423 (process) and :1301-1305 (process_cl), publishes 2 at :1433-1435 / :1334-1336, and _develop_ui_pipe_finished_callback reads params only after taking 2 -> -1 at :279-285.  Only one preview pipe runs at a time -- dt_pipe_is_preview() matches DT_DEV_PIXELPIPE_PREVIEW only, not the distinct PREVIEW2 bit (pixelpipe.h:44,48) -- so two pipe writers cannot overlap, and the two GTK entry points cannot interleave with each other.  The unlocked GTK token write in button_released (:384) can lose a request or a result -- that is the separate box_cood/call_auto_exposure defect, #22120 -- but it cannot produce a concurrent params writer.  Re-check if the token protocol changes or a second pipe gains this path.",
+      "reason": "Same ownership-token argument as the accepted rgblevels:params entry, and basicadj is a copy of that code.  Exclusive ownership of g->params passes through the call_auto_exposure state machine, and every handover is under gui_lock even though the payload accesses are not: the pipe writes params only after taking 1 -> -1 at basicadj.c:1419-1423 (process) and :1301-1305 (process_cl), publishes 2 at :1433-1435 / :1334-1336, and _develop_ui_pipe_finished_callback reads params only after taking 2 -> -1 at :279-285.  Only one preview pipe runs at a time -- dt_pipe_is_preview() matches DT_DEV_PIXELPIPE_PREVIEW only, not the distinct PREVIEW2 bit (pixelpipe.h:46,48) -- so two pipe writers cannot overlap, and the two GTK entry points cannot interleave with each other.  The unlocked GTK token write in button_released (:384) can lose a request or a result -- that is the separate box_cood/call_auto_exposure defect, #22120 -- but it cannot produce a concurrent params writer.  Re-check if the token protocol changes or a second pipe gains this path.",
       "rule": "no_lock_share",
       "sites": [
         "_develop_ui_pipe_finished_callback:285[gtk](none)",
@@ -201,7 +201,7 @@
       "field": "chroma_spot",
       "key": "1f06b59941be",
       "module": "channelmixerrgb",
-      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:376).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
+      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:390, which makes the call at :426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:378).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
       "rule": "discipline_gap",
       "sites": [
         "_area_mapping_active:607[gtk](none)",
@@ -240,7 +240,7 @@
       "field": "hue_spot",
       "key": "653eae4a9234",
       "module": "channelmixerrgb",
-      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:376).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
+      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:390, which makes the call at :426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:378).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
       "rule": "discipline_gap",
       "sites": [
         "_paint_hue:3368[gtk](none)",
@@ -281,7 +281,7 @@
       "field": "lightness_spot",
       "key": "88dbcf15778b",
       "module": "channelmixerrgb",
-      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:376).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
+      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:390, which makes the call at :426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:378).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
       "rule": "discipline_gap",
       "sites": [
         "_area_mapping_active:606[gtk](none)",
@@ -350,7 +350,7 @@
       "field": "use_mixing",
       "key": "fc955d612dee",
       "module": "channelmixerrgb",
-      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:376).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
+      "reason": "Spot-mapping widget pointers touched only on the GTK main thread.  Sites: _area_mapping_active:606-607 (sole caller _area_mapping_section_text), _paint_hue:3368-3402 (four callers, all GTK), _target_color_draw:3595-3597 (a draw handler), _spot_settings_changed_callback:3949-3952 (a g_signal_connect handler), gui_changed:4069-4071, and _auto_set_illuminant:4187,:4267-4289.  _auto_set_illuminant has exactly two callers: _spot_settings_changed_callback:3969 and color_picker_apply:4412.  color_picker_apply also runs on the GTK main thread -- its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:390, which makes the call at :426), the handler for DT_SIGNAL_CONTROL_PICKERDATA_READY connected at :468, and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (src/control/signal.c:378).  process(), process_cl() and commit_params() mention none of the four fields.  Re-check if color_picker_apply gains a non-GUI caller, or if a spot widget is read from a pipe callback.",
       "rule": "discipline_gap",
       "sites": [
         "gui_update:3781[gtk](bulk_init)",
@@ -477,7 +477,7 @@
       "field": "lightness_spot",
       "key": "5c3a56e2013c",
       "module": "exposure",
-      "reason": "All eight sites are on the GTK main thread: gui_update:718 (framework callback); _auto_set_exposure:933,:944, reached from _spot_settings_changed_callback:1167 (connected at :1325) and from color_picker_apply:976; _target_color_draw:1073, a draw handler connected at :1319; and _paint_hue:1132-1153, called from _auto_set_exposure:934.  color_picker_apply is GTK because its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:426), the handler for the asynchronous DT_SIGNAL_CONTROL_PICKERDATA_READY (connected :468), and asynchronous signals are dispatched through g_main_context_invoke_full (src/control/signal.c:376).  Distinct from the three exposure sliders recorded under widget_from_pipe and reported as #21974: the exposure proxy accessors touch effective_exposure, black, deflicker_target_level and exposure (:827, :841-842), never lightness_spot.  Re-check if the proxy or a pipe callback gains an access to this widget.",
+      "reason": "All eight sites are on the GTK main thread: gui_update:718 (framework callback); _auto_set_exposure:933,:944, reached from _spot_settings_changed_callback:1167 (connected at :1325) and from color_picker_apply:976; _target_color_draw:1073, a draw handler connected at :1319; and _paint_hue:1132-1153, called from _auto_set_exposure:934.  color_picker_apply is GTK because its only caller is _iop_color_picker_pickerdata_ready_callback (src/gui/color_picker_proxy.c:390, which makes the call at :426), the handler for the asynchronous DT_SIGNAL_CONTROL_PICKERDATA_READY (connected :468), and asynchronous signals are dispatched through g_main_context_invoke_full (src/control/signal.c:378).  Distinct from the three exposure sliders recorded under widget_from_pipe and reported as #21974: the exposure proxy accessors touch effective_exposure, black, deflicker_target_level and exposure (:827, :841-842), never lightness_spot.  Re-check if the proxy or a pipe callback gains an access to this widget.",
       "rule": "discipline_gap",
       "sites": [
         "gui_update:718[gtk](gui_lock)",
@@ -831,7 +831,7 @@
       "field": "preview_levels_gslider",
       "key": "eaaf18f75742",
       "module": "retouch",
-      "reason": "Both sites are on the GTK main thread: gui_update:2394 is a framework callback, and the locked site :1735 is inside rt_develop_ui_pipe_finished_callback, connected at :2691 with DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, ...).  That signal is asynchronous (src/control/signal.c:162) and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (:376).  Checked and clear separately: :1735 calls dtgtk_gradient_slider_multivalue_set_values while holding the non-recursive gui_lock, which would deadlock if the resulting value-changed handler took the same lock -- rt_gslider_changed:1560 does not, and it returns at :1567 under DT_IN_GUI_UPDATE() anyway, the call being bracketed at :1734/:1736.  Re-check if the handler moves off the main thread, or if rt_gslider_changed starts taking gui_lock.",
+      "reason": "Both sites are on the GTK main thread: gui_update:2394 is a framework callback, and the locked site :1735 is inside rt_develop_ui_pipe_finished_callback, connected at :2691 with DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, ...).  That signal is asynchronous (src/control/signal.c:162) and asynchronous signals are dispatched through g_main_context_invoke_full on the main context (:378).  Checked and clear separately: :1735 calls dtgtk_gradient_slider_multivalue_set_values while holding the non-recursive gui_lock, which would deadlock if the resulting value-changed handler took the same lock -- rt_gslider_changed:1560 does not, and it returns at :1567 under DT_IN_GUI_UPDATE() anyway, the call being bracketed at :1734/:1736.  Re-check if the handler moves off the main thread, or if rt_gslider_changed starts taking gui_lock.",
       "rule": "discipline_gap",
       "sites": [
         "rt_develop_ui_pipe_finished_callback:1735[gtk](gui_lock)",
@@ -953,16 +953,16 @@
       "field": "area_active_node",
       "key": "4054c3a62f74",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
-        "mouse_leave:2079[gtk](gui_lock)",
-        "gui_post_expose:2340[gtk](none)",
-        "gui_post_expose:2346[gtk](none)",
-        "area_draw:2735[gtk](none)",
-        "area_leave_notify:2812[gtk](gui_lock)",
-        "area_motion_notify:2908[gtk](gui_lock)",
-        "area_motion_notify:2919[gtk](gui_lock)"
+        "mouse_leave:2077[gtk](gui_lock)",
+        "gui_post_expose:2338[gtk](none)",
+        "gui_post_expose:2344[gtk](none)",
+        "area_draw:2733[gtk](none)",
+        "area_leave_notify:2810[gtk](gui_lock)",
+        "area_motion_notify:2906[gtk](gui_lock)",
+        "area_motion_notify:2917[gtk](gui_lock)"
       ]
     },
     {
@@ -970,14 +970,14 @@
       "field": "area_cursor_valid",
       "key": "34a9f340c718",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1361[gtk](bulk_init)",
-        "area_draw:2746[gtk](none)",
-        "area_leave_notify:2813[gtk](gui_lock)",
-        "area_motion_notify:2904[gtk](gui_lock)",
-        "area_motion_notify:2920[gtk](gui_lock)"
+        "area_draw:2744[gtk](none)",
+        "area_leave_notify:2811[gtk](gui_lock)",
+        "area_motion_notify:2902[gtk](gui_lock)",
+        "area_motion_notify:2918[gtk](gui_lock)"
       ]
     },
     {
@@ -985,17 +985,17 @@
       "field": "area_dragging",
       "key": "5973737b37e9",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1362[gtk](bulk_init)",
-        "area_leave_notify:2801[gtk](none)",
-        "area_leave_notify:2811[gtk](gui_lock)",
-        "area_button_press:2866[gtk](none)",
-        "area_motion_notify:2887[gtk](none)",
-        "area_motion_notify:2896[gtk](gui_lock)",
-        "area_button_release:2949[gtk](none)",
-        "area_button_release:2957[gtk](gui_lock)"
+        "area_leave_notify:2799[gtk](none)",
+        "area_leave_notify:2809[gtk](gui_lock)",
+        "area_button_press:2864[gtk](none)",
+        "area_motion_notify:2885[gtk](none)",
+        "area_motion_notify:2894[gtk](gui_lock)",
+        "area_button_release:2947[gtk](none)",
+        "area_button_release:2955[gtk](gui_lock)"
       ]
     },
     {
@@ -1003,17 +1003,17 @@
       "field": "area_x",
       "key": "bcf30fe3a018",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
+        "area_draw:2749[gtk](none)",
         "area_draw:2751[gtk](none)",
-        "area_draw:2753[gtk](none)",
-        "area_leave_notify:2809[gtk](gui_lock)",
-        "area_motion_notify:2893[gtk](gui_lock)",
+        "area_leave_notify:2807[gtk](gui_lock)",
+        "area_motion_notify:2891[gtk](gui_lock)",
+        "area_motion_notify:2900[gtk](gui_lock)",
         "area_motion_notify:2902[gtk](gui_lock)",
-        "area_motion_notify:2904[gtk](gui_lock)",
-        "area_motion_notify:2905[gtk](gui_lock)",
-        "area_motion_notify:2916[gtk](gui_lock)"
+        "area_motion_notify:2903[gtk](gui_lock)",
+        "area_motion_notify:2914[gtk](gui_lock)"
       ]
     },
     {
@@ -1021,16 +1021,16 @@
       "field": "cursor_exposure",
       "key": "ee36ffe358c8",
       "module": "toneequal",
-      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2049-2063, mouse_leave:2078-2079, scrolled:2162-2204, gui_post_expose:2262-2344, gui_focus:2395-2403, area_draw:2758-2761, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1986-2007 (callers :2065, :2397, :3008, :3039, :3049) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2063, scrolled:2185, gui_post_expose:2278).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3255 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:376).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2184-2185 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:3988) in the opposite order to the pipe (pixelpipe_hb.c:825, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
+      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2047-2061, mouse_leave:2076-2077, scrolled:2160-2202, gui_post_expose:2260-2342, gui_focus:2393-2401, area_draw:2756-2759, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1985-2006 (callers :2063, :2395, :3006, :3037, :3047) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2061, scrolled:2183, gui_post_expose:2276).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3253 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:378).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2182-2183 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:4008) in the opposite order to the pipe (pixelpipe_hb.c:826, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
-        "mouse_moved:2063[gtk](none)",
-        "scrolled:2185[gtk](gui_lock)",
-        "scrolled:2204[gtk](gui_lock)",
-        "gui_post_expose:2278[gtk](none)",
-        "gui_post_expose:2294[gtk](gui_lock)",
-        "gui_post_expose:2344[gtk](none)",
-        "area_draw:2761[gtk](none)"
+        "mouse_moved:2061[gtk](none)",
+        "scrolled:2183[gtk](gui_lock)",
+        "scrolled:2202[gtk](gui_lock)",
+        "gui_post_expose:2276[gtk](none)",
+        "gui_post_expose:2292[gtk](gui_lock)",
+        "gui_post_expose:2342[gtk](none)",
+        "area_draw:2759[gtk](none)"
       ]
     },
     {
@@ -1038,13 +1038,13 @@
       "field": "cursor_pos_x",
       "key": "2e36633f2d4e",
       "module": "toneequal",
-      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2049-2063, mouse_leave:2078-2079, scrolled:2162-2204, gui_post_expose:2262-2344, gui_focus:2395-2403, area_draw:2758-2761, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1986-2007 (callers :2065, :2397, :3008, :3039, :3049) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2063, scrolled:2185, gui_post_expose:2278).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3255 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:376).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2184-2185 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:3988) in the opposite order to the pipe (pixelpipe_hb.c:825, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
+      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2047-2061, mouse_leave:2076-2077, scrolled:2160-2202, gui_post_expose:2260-2342, gui_focus:2393-2401, area_draw:2756-2759, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1985-2006 (callers :2063, :2395, :3006, :3037, :3047) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2061, scrolled:2183, gui_post_expose:2276).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3253 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:378).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2182-2183 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:4008) in the opposite order to the pipe (pixelpipe_hb.c:826, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "_luminance_from_module_buffer:734[gtk](none)",
-        "mouse_moved:2050[gtk](gui_lock)",
-        "mouse_moved:2056[gtk](gui_lock)",
-        "gui_post_expose:2283[gtk](gui_lock)"
+        "mouse_moved:2048[gtk](gui_lock)",
+        "mouse_moved:2054[gtk](gui_lock)",
+        "gui_post_expose:2281[gtk](gui_lock)"
       ]
     },
     {
@@ -1052,13 +1052,13 @@
       "field": "cursor_pos_y",
       "key": "4b9c5cf4dbbc",
       "module": "toneequal",
-      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2049-2063, mouse_leave:2078-2079, scrolled:2162-2204, gui_post_expose:2262-2344, gui_focus:2395-2403, area_draw:2758-2761, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1986-2007 (callers :2065, :2397, :3008, :3039, :3049) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2063, scrolled:2185, gui_post_expose:2278).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3255 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:376).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2184-2185 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:3988) in the opposite order to the pipe (pixelpipe_hb.c:825, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
+      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2047-2061, mouse_leave:2076-2077, scrolled:2160-2202, gui_post_expose:2260-2342, gui_focus:2393-2401, area_draw:2756-2759, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1985-2006 (callers :2063, :2395, :3006, :3037, :3047) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2061, scrolled:2183, gui_post_expose:2276).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3253 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:378).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2182-2183 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:4008) in the opposite order to the pipe (pixelpipe_hb.c:826, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "_luminance_from_module_buffer:735[gtk](none)",
-        "mouse_moved:2051[gtk](gui_lock)",
-        "mouse_moved:2057[gtk](gui_lock)",
-        "gui_post_expose:2284[gtk](gui_lock)"
+        "mouse_moved:2049[gtk](gui_lock)",
+        "mouse_moved:2055[gtk](gui_lock)",
+        "gui_post_expose:2282[gtk](gui_lock)"
       ]
     },
     {
@@ -1066,43 +1066,43 @@
       "field": "cursor_valid",
       "key": "797b2e424a00",
       "module": "toneequal",
-      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2049-2063, mouse_leave:2078-2079, scrolled:2162-2204, gui_post_expose:2262-2344, gui_focus:2395-2403, area_draw:2758-2761, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1986-2007 (callers :2065, :2397, :3008, :3039, :3049) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2063, scrolled:2185, gui_post_expose:2278).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3255 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:376).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2184-2185 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:3988) in the opposite order to the pipe (pixelpipe_hb.c:825, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
+      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2047-2061, mouse_leave:2076-2077, scrolled:2160-2202, gui_post_expose:2260-2342, gui_focus:2393-2401, area_draw:2756-2759, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1985-2006 (callers :2063, :2395, :3006, :3037, :3047) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2061, scrolled:2183, gui_post_expose:2276).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3253 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:378).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2182-2183 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:4008) in the opposite order to the pipe (pixelpipe_hb.c:826, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1363[gtk](bulk_init)",
-        "switch_cursors:1995[gtk](none)",
-        "switch_cursors:2007[gtk](none)",
-        "mouse_moved:2049[gtk](gui_lock)",
-        "mouse_moved:2055[gtk](gui_lock)",
-        "mouse_moved:2062[gtk](none)",
-        "mouse_leave:2078[gtk](gui_lock)",
-        "scrolled:2173[gtk](gui_lock)",
-        "gui_post_expose:2262[gtk](gui_lock)",
-        "gui_post_expose:2341[gtk](none)",
-        "area_draw:2758[gtk](none)"
+        "switch_cursors:1994[gtk](none)",
+        "switch_cursors:2006[gtk](none)",
+        "mouse_moved:2047[gtk](gui_lock)",
+        "mouse_moved:2053[gtk](gui_lock)",
+        "mouse_moved:2060[gtk](none)",
+        "mouse_leave:2076[gtk](gui_lock)",
+        "scrolled:2171[gtk](gui_lock)",
+        "gui_post_expose:2260[gtk](gui_lock)",
+        "gui_post_expose:2339[gtk](none)",
+        "area_draw:2756[gtk](none)"
       ]
     },
     {
-      "confirmed": "2026-09-02",
+      "confirmed": "2026-09-03",
       "field": "full_preview_buf",
       "key": "7654ed5bd70c",
       "module": "toneequal",
-      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4211).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:428), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :404, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4214, the assignment at :4231).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:445), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :422, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3068, and the gui_cleanup() free at :3265.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
       "rule": "no_lock_share",
       "sites": [
         "toneeq_process:1056[pipe](none)",
         "toneeq_process:1057[pipe](none)",
         "toneeq_process:1062[pipe](none)",
         "gui_cache_init:1366[gtk](bulk_init)",
-        "gui_cleanup:3267[gtk](none)"
+        "gui_cleanup:3265[gtk](none)"
       ]
     },
     {
-      "confirmed": "2026-09-02",
+      "confirmed": "2026-09-03",
       "field": "full_preview_buf_height",
       "key": "306e0dd9a0f1",
       "module": "toneequal",
-      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4211).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:428), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :404, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4214, the assignment at :4231).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:445), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :422, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3068, and the gui_cleanup() free at :3265.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
       "rule": "no_lock_share",
       "sites": [
         "toneeq_process:1054[pipe](none)",
@@ -1111,11 +1111,11 @@
       ]
     },
     {
-      "confirmed": "2026-09-02",
+      "confirmed": "2026-09-03",
       "field": "full_preview_buf_width",
       "key": "d24a6aa761c2",
       "module": "toneequal",
-      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4209-4211).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:428), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :404, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3070, and the gui_cleanup() free at :3267.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
+      "reason": "Not shared.  The three fields are the full-pipe luminance cache, and toneeq_process() touches them only inside the dt_pipe_is_full(piece->pipe) branch at toneequal.c:1047-1064, itself inside the self->dev->gui_attached guard at :1032; the source states the intent at :1050-1052.  Only one full pipe exists per GUI-attached dev, and its worker is serialised by the pipe mutex, so the free/realloc at :1056-1057 has no concurrent peer.  Every other full-type pipe in the process fails one of the two guards.  preview2 is a distinct type bit (DT_DEV_PIXELPIPE_PREVIEW2, pixelpipe.h:48) that dt_pipe_is_full() does not match.  dt_dev_image() builds a private dt_develop_t with gui_attached = FALSE (develop.c:4214, the assignment at :4231).  The pinned second-window develop context does own a real FULL pipe (dt_dev_pixelpipe_init at develop.c:445), but _alloc_pinned_dev() creates it with dt_dev_init(pinned_dev, FALSE) at :422, and its modules come from _clone_module() (:347-370), which callocs a fresh module and never runs gui_init() -- so that context has neither gui_attached nor gui_data.  The two GTK sites are lifecycle only: gui_cache_init() at :1366-1368, reached solely from gui_init() at :3068, and the gui_cleanup() free at :3265.  That teardown free racing a running pipe is the module-destruction problem tracked as #21891, not a field-sharing defect.  Re-check if a GTK runtime consumer of the buffer appears, or if a second full-type pipe on a gui_attached dev becomes possible.",
       "rule": "no_lock_share",
       "sites": [
         "toneeq_process:1054[pipe](none)",
@@ -1128,31 +1128,31 @@
       "field": "graph_height",
       "key": "a6643a1f0336",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
-        "_init_drawing:2472[gtk](none)",
-        "_init_drawing:2475[gtk](none)",
-        "_init_drawing:2511[gtk](none)",
-        "_init_drawing:2538[gtk](none)",
-        "_init_drawing:2542[gtk](none)",
-        "_init_drawing:2551[gtk](none)",
-        "init_nodes_y:2583[gtk](none)",
-        "init_nodes_y:2587[gtk](none)",
-        "area_draw:2623[gtk](none)",
-        "area_draw:2630[gtk](none)",
-        "area_draw:2635[gtk](none)",
-        "area_draw:2636[gtk](none)",
-        "area_draw:2644[gtk](none)",
+        "_init_drawing:2470[gtk](none)",
+        "_init_drawing:2473[gtk](none)",
+        "_init_drawing:2509[gtk](none)",
+        "_init_drawing:2536[gtk](none)",
+        "_init_drawing:2540[gtk](none)",
+        "_init_drawing:2549[gtk](none)",
+        "init_nodes_y:2581[gtk](none)",
+        "init_nodes_y:2585[gtk](none)",
+        "area_draw:2621[gtk](none)",
+        "area_draw:2628[gtk](none)",
+        "area_draw:2633[gtk](none)",
+        "area_draw:2634[gtk](none)",
+        "area_draw:2642[gtk](none)",
+        "area_draw:2650[gtk](none)",
         "area_draw:2652[gtk](none)",
-        "area_draw:2654[gtk](none)",
-        "area_draw:2691[gtk](none)",
-        "area_draw:2701[gtk](none)",
-        "area_draw:2725[gtk](none)",
-        "area_draw:2753[gtk](none)",
-        "area_draw:2778[gtk](none)",
-        "area_motion_notify:2892[gtk](gui_lock)",
-        "area_motion_notify:2907[gtk](gui_lock)"
+        "area_draw:2689[gtk](none)",
+        "area_draw:2699[gtk](none)",
+        "area_draw:2723[gtk](none)",
+        "area_draw:2751[gtk](none)",
+        "area_draw:2776[gtk](none)",
+        "area_motion_notify:2890[gtk](gui_lock)",
+        "area_motion_notify:2905[gtk](gui_lock)"
       ]
     },
     {
@@ -1160,12 +1160,12 @@
       "field": "graph_valid",
       "key": "e33a0050136c",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1355[gtk](bulk_init)",
-        "gui_post_expose:2270[gtk](none)",
-        "_init_drawing:2557[gtk](gui_lock)"
+        "gui_post_expose:2268[gtk](none)",
+        "_init_drawing:2555[gtk](gui_lock)"
       ]
     },
     {
@@ -1173,30 +1173,30 @@
       "field": "graph_width",
       "key": "dbcd2dcdb8ed",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
-        "_init_drawing:2470[gtk](none)",
-        "_init_drawing:2474[gtk](none)",
-        "_init_drawing:2478[gtk](none)",
-        "_init_drawing:2494[gtk](none)",
-        "_init_drawing:2551[gtk](none)",
-        "init_nodes_x:2569[gtk](none)",
-        "init_nodes_x:2572[gtk](none)",
-        "area_draw:2623[gtk](none)",
-        "area_draw:2630[gtk](none)",
-        "area_draw:2636[gtk](none)",
-        "area_draw:2651[gtk](none)",
-        "area_draw:2654[gtk](none)",
-        "area_draw:2665[gtk](none)",
-        "area_draw:2700[gtk](none)",
-        "area_draw:2748[gtk](none)",
-        "area_draw:2751[gtk](none)",
+        "_init_drawing:2468[gtk](none)",
+        "_init_drawing:2472[gtk](none)",
+        "_init_drawing:2476[gtk](none)",
+        "_init_drawing:2492[gtk](none)",
+        "_init_drawing:2549[gtk](none)",
+        "init_nodes_x:2567[gtk](none)",
+        "init_nodes_x:2570[gtk](none)",
+        "area_draw:2621[gtk](none)",
+        "area_draw:2628[gtk](none)",
+        "area_draw:2634[gtk](none)",
+        "area_draw:2649[gtk](none)",
+        "area_draw:2652[gtk](none)",
+        "area_draw:2663[gtk](none)",
+        "area_draw:2698[gtk](none)",
+        "area_draw:2746[gtk](none)",
+        "area_draw:2749[gtk](none)",
+        "area_draw:2759[gtk](none)",
         "area_draw:2761[gtk](none)",
-        "area_draw:2763[gtk](none)",
-        "area_draw:2769[gtk](none)",
-        "area_motion_notify:2893[gtk](gui_lock)",
-        "area_motion_notify:2905[gtk](gui_lock)"
+        "area_draw:2767[gtk](none)",
+        "area_motion_notify:2891[gtk](gui_lock)",
+        "area_motion_notify:2903[gtk](gui_lock)"
       ]
     },
     {
@@ -1204,16 +1204,16 @@
       "field": "has_focus",
       "key": "d456777329eb",
       "module": "toneequal",
-      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2049-2063, mouse_leave:2078-2079, scrolled:2162-2204, gui_post_expose:2262-2344, gui_focus:2395-2403, area_draw:2758-2761, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1986-2007 (callers :2065, :2397, :3008, :3039, :3049) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2063, scrolled:2185, gui_post_expose:2278).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3255 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:376).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2184-2185 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:3988) in the opposite order to the pipe (pixelpipe_hb.c:825, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
+      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2047-2061, mouse_leave:2076-2077, scrolled:2160-2202, gui_post_expose:2260-2342, gui_focus:2393-2401, area_draw:2756-2759, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1985-2006 (callers :2063, :2395, :3006, :3037, :3047) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2061, scrolled:2183, gui_post_expose:2276).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3253 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:378).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2182-2183 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:4008) in the opposite order to the pipe (pixelpipe_hb.c:826, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1364[gtk](bulk_init)",
-        "switch_cursors:1986[gtk](gui_lock)",
-        "switch_cursors:1989[gtk](none)",
-        "scrolled:2162[gtk](none)",
-        "scrolled:2178[gtk](gui_lock)",
-        "gui_post_expose:2264[gtk](gui_lock)",
-        "gui_focus:2395[gtk](gui_lock)"
+        "switch_cursors:1985[gtk](gui_lock)",
+        "switch_cursors:1988[gtk](none)",
+        "scrolled:2160[gtk](none)",
+        "scrolled:2176[gtk](gui_lock)",
+        "gui_post_expose:2262[gtk](gui_lock)",
+        "gui_focus:2393[gtk](gui_lock)"
       ]
     },
     {
@@ -1221,14 +1221,14 @@
       "field": "histogram_first_decile",
       "key": "1e4bf90e7951",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "update_histogram:1484[gtk](gui_lock)",
         "update_histogram:1485[gtk](gui_lock)",
         "auto_adjust_exposure_boost:1825[gtk](none)",
         "auto_adjust_contrast_boost:1887[gtk](none)",
-        "area_draw:2670[gtk](none)"
+        "area_draw:2668[gtk](none)"
       ]
     },
     {
@@ -1236,14 +1236,14 @@
       "field": "histogram_last_decile",
       "key": "ca18476ee661",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "update_histogram:1484[gtk](gui_lock)",
         "update_histogram:1485[gtk](gui_lock)",
         "auto_adjust_exposure_boost:1826[gtk](none)",
         "auto_adjust_contrast_boost:1888[gtk](none)",
-        "area_draw:2658[gtk](none)"
+        "area_draw:2656[gtk](none)"
       ]
     },
     {
@@ -1251,15 +1251,15 @@
       "field": "inset",
       "key": "bfd2c191b887",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
+        "_init_drawing:2466[gtk](none)",
         "_init_drawing:2468[gtk](none)",
         "_init_drawing:2470[gtk](none)",
-        "_init_drawing:2472[gtk](none)",
-        "area_leave_notify:2809[gtk](gui_lock)",
-        "area_leave_notify:2810[gtk](gui_lock)",
-        "area_motion_notify:2902[gtk](gui_lock)"
+        "area_leave_notify:2807[gtk](gui_lock)",
+        "area_leave_notify:2808[gtk](gui_lock)",
+        "area_motion_notify:2900[gtk](gui_lock)"
       ]
     },
     {
@@ -1267,13 +1267,13 @@
       "field": "max_histogram",
       "key": "50ba94dc07dd",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "invalidate_luminance_cache:631[gtk](gui_lock)",
         "gui_cache_init:1346[gtk](bulk_init)",
         "update_histogram:1483[gtk](gui_lock)",
-        "area_draw:2650[gtk](none)"
+        "area_draw:2648[gtk](none)"
       ]
     },
     {
@@ -1281,19 +1281,19 @@
       "field": "show_luminance_mask",
       "key": "61207f446b7e",
       "module": "toneequal",
-      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2049-2063, mouse_leave:2078-2079, scrolled:2162-2204, gui_post_expose:2262-2344, gui_focus:2395-2403, area_draw:2758-2761, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1986-2007 (callers :2065, :2397, :3008, :3039, :3049) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2063, scrolled:2185, gui_post_expose:2278).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3255 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:376).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2184-2185 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:3988) in the opposite order to the pipe (pixelpipe_hb.c:825, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
+      "reason": "Darkroom-canvas cursor state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields, and every site is in a framework GUI callback or in a static helper reached only from one: mouse_moved:2047-2061, mouse_leave:2076-2077, scrolled:2160-2202, gui_post_expose:2260-2342, gui_focus:2393-2401, area_draw:2756-2759, gui_update:1731, show_luminance_mask_callback:1947-1954, switch_cursors:1985-2006 (callers :2063, :2395, :3006, :3037, :3047) and _luminance_from_module_buffer:734-735 (callers mouse_moved:2061, scrolled:2183, gui_post_expose:2276).  The signal-handler callers are GTK too: _develop_ui_pipe_started_callback is connected to DT_SIGNAL_DEVELOP_HISTORY_CHANGE at :3253 despite its name -- there is no DT_SIGNAL_DEVELOP_UI_PIPE_STARTED -- and that signal is asynchronous (src/control/signal.c:166), hence dispatched on the main context (:378).  Two defects live on this path and are not this finding: the unlocked g->pd tuple read at _luminance_from_module_buffer:743-746 is #22068, and scrolled:2182-2183 calls _luminance_from_module_buffer while holding gui_lock, reaching dev->history_mutex through dt_dev_distort_backtransform_plus (src/develop/develop.c:4008) in the opposite order to the pipe (pixelpipe_hb.c:826, then dt_iop_commit_params into toneequal.c:1615), which can deadlock the darkroom.  Re-check if any of the six fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_update:1731[gtk](none)",
         "show_luminance_mask_callback:1947[gtk](none)",
         "show_luminance_mask_callback:1954[gtk](none)",
-        "gui_focus:2403[gtk](none)",
-        "_develop_ui_pipe_started_callback:3021[gtk](gui_lock)",
-        "gui_init:3240[gtk](none)",
-        "gui_init:3244[gtk](none)",
+        "gui_focus:2401[gtk](none)",
+        "_develop_ui_pipe_started_callback:3019[gtk](gui_lock)",
+        "gui_init:3238[gtk](none)",
+        "gui_init:3242[gtk](none)",
+        "gui_init:3243[gtk](none)",
         "gui_init:3245[gtk](none)",
-        "gui_init:3247[gtk](none)",
-        "gui_init:3250[gtk](none)"
+        "gui_init:3248[gtk](none)"
       ]
     },
     {
@@ -1301,14 +1301,14 @@
       "field": "valid_nodes_x",
       "key": "a395a6e4db4c",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1359[gtk](bulk_init)",
-        "init_nodes_x:2569[gtk](none)",
-        "init_nodes_x:2573[gtk](none)",
-        "area_draw:2613[gtk](gui_lock)",
-        "area_motion_notify:2911[gtk](gui_lock)"
+        "init_nodes_x:2567[gtk](none)",
+        "init_nodes_x:2571[gtk](none)",
+        "area_draw:2611[gtk](gui_lock)",
+        "area_motion_notify:2909[gtk](gui_lock)"
       ]
     },
     {
@@ -1316,12 +1316,12 @@
       "field": "valid_nodes_y",
       "key": "25ece36f69df",
       "module": "toneequal",
-      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2593, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2271, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2271 and area_draw:2606), init_nodes_x:2565 / init_nodes_y:2579 (sole caller area_draw:2707,:2711, which wraps them in the critical section at :2706/:2710 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2618) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2271 passes self->widget to _init_drawing where area_draw:2606 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
+      "reason": "Drawing-area geometry and graph state, GTK-only.  No pipe-side callback -- process, commit_params, modify_roi_in, init_pipe, cleanup_pipe or the dt_preview_data_resize callback -- touches any of these fields.  The sites are in the GtkDrawingArea handlers (area_draw:2591, area_button_press, area_button_release, area_motion_notify, area_leave_notify), in gui_post_expose:2269, and in static helpers reached only from those: _init_drawing (callers gui_post_expose:2269 and area_draw:2604), init_nodes_x:2563 / init_nodes_y:2577 (sole caller area_draw:2705,:2709, which wraps them in the critical section at :2704/:2708 and whose in-source comment says they must be called holding gui_lock -- the scan reports them unlocked only because lock depth is lexical per function), update_histogram:1473 (callers auto_adjust_exposure_boost:1822, auto_adjust_contrast_boost:1884, area_draw:2616) and invalidate_luminance_cache:624 (callers gui_update:1729, gui_changed:1746, the auto_adjust quads and gui_focus).  Two defects sit on the same code and are not this finding: gui_post_expose:2269 passes self->widget to _init_drawing where area_draw:2604 passes the drawing area, so graph_width, graph_height and inset derive from the wrong allocation until the next area redraw; and max_histogram is only ever raised (compute_log_histogram_and_stats:1469), while toneeq_process:1042,:1130 clears histogram_valid from the pipe without resetting it the way invalidate_luminance_cache:631 does, leaving the inset histogram drawn too short after an upstream change.  Re-check if any of these fields gains a pipe-side access.",
       "rule": "discipline_gap",
       "sites": [
         "gui_cache_init:1360[gtk](bulk_init)",
-        "init_nodes_y:2588[gtk](none)",
-        "area_draw:2614[gtk](gui_lock)"
+        "init_nodes_y:2586[gtk](none)",
+        "area_draw:2612[gtk](gui_lock)"
       ]
     },
     {
