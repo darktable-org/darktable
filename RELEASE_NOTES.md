@@ -209,6 +209,9 @@ changes (where available).
 - Fixed numeric error in the framing module (borders) causing the frame
   line to be off-center for certain border sizes.
 
+- Fixed a crash or hang on Windows when checking a faulty custom ONNX
+  Runtime library.
+
 ## Lua
 
 ### API Version
