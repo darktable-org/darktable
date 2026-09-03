@@ -1590,6 +1590,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *favorite_presets_button)
                                                   "favorites.activate",
                                                   g_variant_new("(st)", name, (guintptr)iop));
           g_menu_append_item(menu, mi);
+          g_object_unref(mi);
           g_free(tt);
           g_free(local_name);
         }

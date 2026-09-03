@@ -3879,6 +3879,7 @@ static GMenu *camera_menu_fill(dt_iop_module_t *self,
       g_free(fm);
     }
     g_menu_append_item(submenu, item);
+    g_object_unref(item);
   }
 
   // create the submenus for the makers
@@ -3887,6 +3888,7 @@ static GMenu *camera_menu_fill(dt_iop_module_t *self,
     GMenuItem *item = g_menu_item_new_submenu((const gchar *)g_ptr_array_index(makers, i),
                                               G_MENU_MODEL(g_ptr_array_index(submenus, i)));
     g_menu_append_item(camera_menu, item);
+    g_object_unref(item);
   }
 
   g_ptr_array_free(submenus, TRUE);
@@ -4254,6 +4256,7 @@ static GMenu *_lens_menu_fill(dt_iop_module_t *self,
                                             "lens.activate",
                                             g_variant_new("t", (guintptr)lenslist[i]));
     g_menu_append_item(submenu, item);    
+    g_object_unref(item);
   }
 
   // create the submenus for the makers
@@ -4262,6 +4265,7 @@ static GMenu *_lens_menu_fill(dt_iop_module_t *self,
     GMenuItem *item = g_menu_item_new_submenu((const gchar *)g_ptr_array_index(makers, i),
                                               G_MENU_MODEL(g_ptr_array_index(submenus, i)));
     g_menu_append_item(lens_menu, item);
+    g_object_unref(item);
   }
 
   g_ptr_array_free(submenus, TRUE);
