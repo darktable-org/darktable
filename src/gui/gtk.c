@@ -6338,16 +6338,92 @@ PangoFontDescription *dt_gui_get_font(void)
   return pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
+// the menu a GtkPopoverMenu builds from a model is a GtkStack of GtkBoxes of
+// GtkModelButtons, with no scrolling of its own, so a model with more items
+// than fit on the monitor is simply cut off. wrap each stack page in a
+// scrolled window bounded by the main window's content area to keep it reachable.
+//
+// the stack has to stay the popover's direct child: gtk_popover_menu_open_submenu(),
+// which every submenu button triggers, casts that child to GTK_STACK and would
+// warn on anything else
+static void _popover_menu_make_scrollable(GtkWidget *popover_menu,
+                                          GtkWidget *parent)
+{
+  GtkWidget *stack = gtk_bin_get_child(GTK_BIN(popover_menu));
+  if(!GTK_IS_STACK(stack)) return;
+
+  // the stack sizes itself to the widest page, so a menu with one long submenu
+  // entry pads every short page out to that width. let each page keep its own
+  gtk_stack_set_hhomogeneous(GTK_STACK(stack), FALSE);
+  gtk_stack_set_vhomogeneous(GTK_STACK(stack), FALSE);
+
+  GtkWidget *toplevel = gtk_widget_get_toplevel(parent);
+  if(!gtk_widget_get_window(toplevel)) return;
+
+  // a GTK3 popover is drawn inside its toplevel's window and cannot escape it,
+  // so the content area is the whole budget. taking the monitor or the GdkWindow
+  // height instead would push the top entries under the title bar, out of reach
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(toplevel, &allocation);
+
+  const gint max_height = allocation.height;
+
+  GList *pages = gtk_container_get_children(GTK_CONTAINER(stack));
+  for(GList *p = pages; p; p = g_list_next(p))
+  {
+    GtkWidget *page = GTK_WIDGET(p->data);
+
+    // a page already wrapped on an earlier popup must not be nested again
+    if(GTK_IS_SCROLLED_WINDOW(page)) continue;
+
+    // the stack addresses its pages by name, and the submenu buttons refer to
+    // them by that name, so it has to move to the scrolled window with the page
+    gchar *name = NULL;
+    gint position = 0;
+    gtk_container_child_get(GTK_CONTAINER(stack),
+                            page,
+                            "name", &name,
+                            "position", &position,
+                            NULL);
+
+    g_object_ref(page);
+    gtk_container_remove(GTK_CONTAINER(stack), page);
+
+    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+                                   GTK_POLICY_NEVER,
+                                   GTK_POLICY_AUTOMATIC);
+    // without this the scrolled window claims a minimal height instead of the
+    // page's own, and every menu would come up as a thin scrolling strip
+    gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(sw), TRUE);
+    gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
+    gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), max_height);
+
+    gtk_container_add(GTK_CONTAINER(sw), page);
+    g_object_unref(page);
+
+    gtk_stack_add_named(GTK_STACK(stack), sw, name);
+    gtk_container_child_set(GTK_CONTAINER(stack), sw, "position", position, NULL);
+    gtk_widget_show_all(sw);
+
+    g_free(name);
+  }
+  g_list_free(pages);
+}
+#endif
+
 GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu)
 {
   GtkWidget *popover_menu;
 
-#if GTK_CHECK_VERSION(4, 0, 0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
+  popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
+  _popover_menu_make_scrollable(popover_menu, parent);
+#else
   popover_menu = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(menu),
                                                       GTK_POPOVER_MENU_NESTED);
   gtk_widget_set_parent(popover_menu, parent);
-#else
-  popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
 #endif
 
   return popover_menu;
