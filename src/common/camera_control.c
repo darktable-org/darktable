@@ -1417,6 +1417,8 @@ static GList *_camctl_recursive_get_list(const dt_camctl_t *c,
         dt_camera_files_t *file = g_malloc0(sizeof(dt_camera_files_t));
         if(cfi.file.fields & GP_FILE_INFO_MTIME)
           file->timestamp = cfi.file.mtime;
+        if(cfi.file.fields & GP_FILE_INFO_SIZE)
+          file->size = cfi.file.size;
         file->filename = g_build_filename(path, filename, NULL);
         imgs = g_list_prepend(imgs, file);
       }
