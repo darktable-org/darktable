@@ -1396,6 +1396,45 @@ char *dt_variables_expand(dt_variables_params_t *params,
   return result;
 }
 
+// rewrite '\' to '/', except before a '/': no path has a backslash there,
+// so "\/" can only be escaping a literal '/' in $(VAR/pattern/replacement)
+static gchar *_normalize_separators(const gchar *source)
+{
+  gchar *result = g_malloc(strlen(source) + 1);
+  gchar *out = result;
+
+  for(const gchar *in = source; *in; in++)
+  {
+    if(*in == '\\' && in[1] == '/')
+    {
+      *out++ = *in++;
+      *out++ = *in;
+    }
+    else
+      *out++ = (*in == '\\') ? '/' : *in;
+  }
+  *out = '\0';
+
+  return result;
+}
+
+char *dt_variables_expand_path(dt_variables_params_t *params,
+                               gchar *source,
+                               const gboolean iterate)
+{
+  // G_DIR_SEPARATOR is a compile-time constant, so this costs nothing off
+  // Windows and both branches still get compiled everywhere
+  gchar *normalized = (G_DIR_SEPARATOR == '\\')
+    ? _normalize_separators(source)
+    : NULL;
+
+  char *result = dt_variables_expand(params,
+                                     normalized ? normalized : source,
+                                     iterate);
+  g_free(normalized);
+  return result;
+}
+
 void dt_variables_params_init(dt_variables_params_t **params)
 {
   *params = g_malloc0(sizeof(dt_variables_params_t));
