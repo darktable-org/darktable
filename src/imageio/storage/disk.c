@@ -383,6 +383,7 @@ try_again:
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
+    d->vp->export_extension = format->extension(fdata);
 
     if(variable_expand)
     {
@@ -437,10 +438,17 @@ try_again:
       goto failed;
     }
 
-    const char *ext = format->extension(fdata);
-    char *c = filename + strlen(filename);
+    // if the pattern already produced the correct extension (in any case),
+    // don't append a second, implicit one -- this lets users control the
+    // case of the extension, e.g. via $(FILE_NAME).JPG
+    // "c" always ends up pointing at where ".ext" starts (or would start),
+    // so the unique-filename conflict handling below can overwrite from
+    // there regardless of whether the pattern already had an extension.
+    const char *ext = d->vp->export_extension;
+    char *c = filename + dt_util_str_extension_offset(filename, ext);
     size_t filename_free_space = sizeof(filename) - (c - filename);
-    snprintf(c, filename_free_space, ".%s", ext);
+    if(!dt_util_str_ends_with_extension(filename, ext))
+      snprintf(c, filename_free_space, ".%s", ext);
 
   /* prevent overwrite of files */
   failed:

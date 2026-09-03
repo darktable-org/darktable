@@ -685,6 +685,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "FILE.EXTENSION")
           || _has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
+  else if(_has_prefix(variable, "EXPORT_EXTENSION"))
+    result = g_strdup(params->export_extension);
   else if(_has_prefix(variable, "SEQUENCE"))
   {
     uint8_t nb_digit = 4;
