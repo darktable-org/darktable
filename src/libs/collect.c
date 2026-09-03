@@ -37,6 +37,8 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+#include <glib-2.0/gio/gmenu.h>
+#include <glib-2.0/glib.h>
 #ifndef _WIN32
 #include <gio/gunixmounts.h>
 #endif
@@ -440,10 +442,11 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem,
-                                             gpointer userdata)
+static void _view_popup_menu_onSearchFilmroll(GSimpleAction *action,
+                                              GVariant *parameter,
+                                              gpointer user_data)
 {
-  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+  GtkTreeView *treeview = GTK_TREE_VIEW(user_data);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   GtkTreeSelection *selection;
@@ -553,10 +556,11 @@ error:
   g_free(new_path);
 }
 
-static void view_popup_menu_onRemove(GtkWidget *menuitem,
-                                     gpointer userdata)
+static void _view_popup_menu_onRemove(GSimpleAction *action,
+                                      GVariant *parameter,
+                                      gpointer user_data)
 {
-  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+  GtkTreeView *treeview = GTK_TREE_VIEW(user_data);
 
   GtkTreeSelection *selection;
   GtkTreeIter iter, model_iter;
@@ -613,27 +617,36 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem,
   }
 }
 
-static void view_popup_menu(GtkWidget *treeview,
-                            GdkEventButton *event,
-                            dt_lib_collect_t *d)
+static void _view_popup_menu(GtkWidget *treeview,
+                             GdkEventButton *event,
+                             dt_lib_collect_t *d)
 {
-  GtkWidget *menu, *menuitem;
+  GActionGroup *action_group = gtk_widget_get_action_group(treeview, "collections");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "update", _view_popup_menu_onSearchFilmroll, NULL, NULL },
+      { "remove", _view_popup_menu_onRemove,         NULL, NULL }
+    };
 
-  menu = gtk_menu_new();
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    treeview);
+    gtk_widget_insert_action_group(treeview, 
+                                   "collections",
+                                   G_ACTION_GROUP(action_group));
+  }
 
-  menuitem = gtk_menu_item_new_with_label(_("update path to files..."));
-  g_signal_connect(menuitem, "activate",
-                   G_CALLBACK(view_popup_menu_onSearchFilmroll), treeview);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  GMenu *menu = g_menu_new();
+  g_menu_append(menu, _("update path to files..."), "collections.update");
+  g_menu_append(menu, _("remove..."), "collections.remove");
 
-  menuitem = gtk_menu_item_new_with_label(_("remove..."));
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate",
-                   G_CALLBACK(view_popup_menu_onRemove), treeview);
-
-  gtk_widget_show_all(GTK_WIDGET(menu));
-
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+  // popup the menu
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(treeview), menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 /* Claim the press only when the collections handler fully owns it, so a
@@ -818,7 +831,7 @@ static void view_onButtonPressed_cb(GtkGestureSingle *gesture, int n_press,
           || dt_modifier_is(mod_state, GDK_CONTROL_MASK)))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, (GdkEventButton *)event, d);
-    view_popup_menu(treeview, (GdkEventButton *)event, d);
+    _view_popup_menu(treeview, (GdkEventButton *)event, d);
 
     if(path) gtk_tree_path_free(path);
     return;
@@ -847,7 +860,7 @@ static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
     return FALSE;
   }
 
-  view_popup_menu(treeview, NULL, d);
+  _view_popup_menu(treeview, NULL, d);
 
   return TRUE; /* we handled this */
 }
@@ -3964,11 +3977,12 @@ void _mount_changed(GUnixMountMonitor *monitor,
   }
 }
 
-static void _history_apply(GtkWidget *widget,
-                           dt_lib_module_t *self)
+static void _history_apply(GSimpleAction *action,
+                           GVariant *parameter,
+                           gpointer user_data)
 {
-  const int hid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history"));
-
+  const int hid = g_variant_get_int32(parameter);
+  
   if(hid < 0
      || hid >= dt_conf_get_int("plugins/lighttable/collect/history_max"))
     return;
@@ -4035,7 +4049,7 @@ static void _history_pretty_print(const char *buf,
     {
       if(k > 0)
       {
-        c = g_strlcpy(out, "<i>   ", outsize);
+        c = g_strlcpy(out, "   ", outsize);
         out += c;
         outsize -= c;
         switch(mode)
@@ -4056,7 +4070,7 @@ static void _history_pretty_print(const char *buf,
             outsize -= c;
             break;
         }
-        c = g_strlcpy(out, "   </i>", outsize);
+        c = g_strlcpy(out, "   ", outsize);
         out += c;
         outsize -= c;
       }
@@ -4070,9 +4084,9 @@ static void _history_pretty_print(const char *buf,
       else if(item == DT_COLLECTION_PROP_FILMROLL)
         pretty = g_strdup(dt_image_film_roll_name(str));
       else
-        pretty = g_markup_escape_text(str, -1);
+        pretty = g_strdup(str);
 
-      c = snprintf(out, outsize, "<b>%s</b> %s",
+      c = snprintf(out, outsize, "%s: %s",
                    item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
                    pretty);
       g_free(pretty);
@@ -4087,9 +4101,26 @@ static void _history_pretty_print(const char *buf,
 static void _history_show(GtkWidget *widget,
                           dt_lib_module_t *self)
 {
+  GActionGroup *action_group = gtk_widget_get_action_group(widget, "history");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "activate", _history_apply, "i", NULL }
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    self);
+    gtk_widget_insert_action_group(widget, 
+                                   "history",
+                                   G_ACTION_GROUP(action_group));
+  }
+
   // we show a popup with all the history entries
-  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
+  GMenu *menu = g_menu_new();
 
   const int maxitems = dt_conf_get_int("plugins/lighttable/collect/history_max");
 
@@ -4102,19 +4133,19 @@ static void _history_show(GtkWidget *widget,
     {
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
-      GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_tooltip_markup(smt, str);
-      GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
-      gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
-      g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_history_apply), self);
-      gtk_menu_shell_append(pop, smt);
+      gchar *action = g_strdup_printf("history.activate(%i)", i);
+      gchar *label = dt_str_unmnemonic(str);
+      g_menu_append(menu, label, action);
+      g_free(label);
+      g_free(action);
     }
     else
       break;
   }
 
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  // popup the menu
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(widget), menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 }
 
 static void _history_previous(dt_action_t *action)
