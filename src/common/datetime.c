@@ -149,6 +149,16 @@ gboolean dt_datetime_gdatetime_to_local(char *local,
         g_free(sdt);
         sdt = sdt2;
       }
+      if(sdt)
+      {
+        char *p = sdt;
+        while((p = strstr(p, "\xe2\x88\xb6")) != NULL)
+        {
+          *p = ':';
+          memmove(p + 1, p + 3, strlen(p + 3) + 1);
+          p++;
+        }
+      }
       g_strlcpy(local, sdt, local_size);
       g_free(sdt);
       return TRUE;
