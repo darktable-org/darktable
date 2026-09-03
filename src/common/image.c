@@ -1306,6 +1306,27 @@ gboolean dt_image_set_history_end(const dt_imgid_t imgid,
   return ok;
 }
 
+int dt_image_get_history_end(const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid))
+    return 0;
+
+  int history_end = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT history_end FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+      history_end = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return history_end;
+}
+
 int32_t dt_image_duplicate(const dt_imgid_t imgid)
 {
   return dt_image_duplicate_with_version(imgid, -1);
