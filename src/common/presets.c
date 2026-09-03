@@ -20,13 +20,9 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/file_location.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "libs/lib.h"
-
-#include <glib-2.0/gio/gmenu.h>
-#include <glib-2.0/gio/gmenumodel.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 #include <libxml/parser.h>
@@ -545,6 +541,7 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
     GMenu *sm = g_menu_new();
     GMenuItem *smi = g_menu_item_new_submenu(*s, G_MENU_MODEL(sm));
     _menu_shell_insert_sorted(*submenu, smi, *s);
+    g_object_unref(smi);
     *submenu = sm;
     mpath = g_slist_prepend(mpath, sm); // push
   }
@@ -558,12 +555,14 @@ void dt_insert_preset_in_menu_hierarchy(const char *name,
     gchar *label = g_strdup_printf("%s %s", *s, _("(default)"));
     mi = g_menu_item_new(label, action);
     _menu_shell_insert_sorted(*submenu, mi, label);
+    g_object_unref(mi);
     g_free(label);
   }
   else
   {
     mi = g_menu_item_new(*s, action);
     _menu_shell_insert_sorted(*submenu, mi, *s);
+    g_object_unref(mi);
   }
 }
 
