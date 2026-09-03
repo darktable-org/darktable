@@ -71,9 +71,18 @@ LSAN_OPTIONS="log_path=$DT_SAN_LOGDIR/lsan\
 :print_suppressions=0"
 export LSAN_OPTIONS
 
+# exitcode=0 overrides the sanitizer default of 66. TSan applies that exit code
+# once it has reported anything, and the integration suite treats any non-zero
+# exit as "darktable-cli errored" and skips the image comparison entirely. Since
+# a race does not necessarily corrupt the export -- output.png is written
+# normally -- that would throw away the suite's actual signal on every single
+# test. The findings are not lost by this: they are in the log, and
+# run-integration-tests.sh still exits non-zero when the aggregator sees any.
+# A genuine crash still exits non-zero on its own.
 TSAN_OPTIONS="log_path=$DT_SAN_LOGDIR/tsan\
 :suppressions=$DT_SAN_SUPPRESSION_DIR/tsan.supp\
 :history_size=7\
 :second_deadlock_stack=1\
-:halt_on_error=0"
+:halt_on_error=0\
+:exitcode=0"
 export TSAN_OPTIONS
