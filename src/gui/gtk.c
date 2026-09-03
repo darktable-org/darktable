@@ -6353,6 +6353,11 @@ static void _popover_menu_make_scrollable(GtkWidget *popover_menu,
   GtkWidget *stack = gtk_bin_get_child(GTK_BIN(popover_menu));
   if(!GTK_IS_STACK(stack)) return;
 
+  // the stack sizes itself to the widest page, so a menu with one long submenu
+  // entry pads every short page out to that width. let each page keep its own
+  gtk_stack_set_hhomogeneous(GTK_STACK(stack), FALSE);
+  gtk_stack_set_vhomogeneous(GTK_STACK(stack), FALSE);
+
   GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(parent));
   if(!window) return;
 
