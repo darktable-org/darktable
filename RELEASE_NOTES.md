@@ -114,6 +114,9 @@ changes (where available).
 - Fixed a small memory leak each time a history stack was pasted onto the
   image open in darkroom.
 
+- Fixed a crash or hang on Windows when checking a faulty custom ONNX
+  Runtime library.
+
 ## Lua
 
 ### API Version
