@@ -6358,6 +6358,9 @@ static void _popover_menu_make_scrollable(GtkWidget *popover_menu,
   gtk_stack_set_hhomogeneous(GTK_STACK(stack), FALSE);
   gtk_stack_set_vhomogeneous(GTK_STACK(stack), FALSE);
 
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(parent));
+  if(!window) return;
+
   GtkWidget *toplevel = gtk_widget_get_toplevel(parent);
   if(!gtk_widget_get_window(toplevel)) return;
 
