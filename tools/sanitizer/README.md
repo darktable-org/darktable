@@ -89,6 +89,35 @@ sanitizer_common (ASan, LSan, TSan), and the driver's darktable-cli shim
 captures stderr per invocation, because GCC's UBSan prints its non-fatal
 `runtime error:` diagnostics directly to stderr no matter what `log_path` says.
 
+**A sanitizer that refuses to start is almost always ASLR.** If the runtime
+dies before `main()` with
+
+```
+FATAL: ThreadSanitizer: unexpected memory mapping 0x793e64c72000-0x793e65100000
+```
+
+(ASan words it as `Shadow memory range interleaves with an existing memory
+mapping`), the kernel is handing out mappings with more entropy than the
+runtime's fixed shadow layout can accommodate. Kernels default
+`vm.mmap_rnd_bits` to 32; GCC's runtimes support at most 28. Either lower it
+
+```bash
+sudo sysctl -w vm.mmap_rnd_bits=28    # persist via /etc/sysctl.d/
+```
+
+or run with randomisation off, which needs no root:
+
+```bash
+setarch -R build-tsan/bin/darktable-cli --version
+```
+
+`run-integration-tests.sh` preflights the binary once and falls back to
+`setarch -R` by itself when it sees this, reporting the choice as `ASLR: off
+(auto: ...)` in its banner. Force it either way with `--no-aslr` / `--keep-aslr`.
+Without the preflight the symptom is misleading: every test fails in a fraction
+of a second with `FAILS: darktable-cli errored`, which looks like a darktable
+bug rather than an environment one.
+
 **Leak reporting is off under `address`.** darktable-cli exits without tearing
 down its GTK/glib/lua state, so exit-time leak reports would fire on every
 single test. Build with `--sanitize leak` when you actually want to hunt leaks.
@@ -97,6 +126,17 @@ single test. Build with `--sanitize leak` when you actually want to hunt leaks.
 LSan noise from code that is not darktable's, and the GPU pass doubles the run
 time. Pass `--with-opencl` to `run-integration-tests.sh` if you want it, and
 expect to extend `lsan.supp`.
+
+**TSan exits 0 on findings, on purpose.** Sanitizers default to `exitcode=66`
+once they have reported anything, and the suite treats any non-zero exit as
+`FAILS: darktable-cli errored` and never compares the images. A race does not
+necessarily corrupt the export -- `output.png` is written normally -- so leaving
+the default would discard the suite's own signal on every TSan test. The
+generated `sanitizer-env.sh` therefore sets `exitcode=0` for TSan only. Nothing
+is hidden: the reports still land in the log directory, and
+`run-integration-tests.sh` still exits non-zero whenever the aggregator finds
+anything. A genuine crash still exits non-zero by itself. ASan keeps the default,
+because there `halt_on_error=1` means the run really was cut short.
 
 **TSan against a GCC build needs the suppressions here.** GCC's libgomp is not
 built with TSan annotations, so TSan cannot see the happens-before edges that
@@ -122,7 +162,7 @@ single sanitizer had a chance to run. The warnings themselves stay on.
 | `tools/sanitizer/sanitizer-env.sh.in` | template for the generated `<build>/bin/sanitizer-env.sh` |
 | `tools/sanitizer/{ubsan,lsan,tsan}.supp` | suppression files |
 | `tools/run-integration-tests.sh` | suite driver, timeout and stderr-capture shim |
-| `tools/sanitizer/aggregate-reports.py` | deduplicates the reports; also usable on its own against an old log dir |
+| `tools/sanitizer/aggregate-reports.py` | deduplicates the reports; also usable on its own against an old log dir. Exits 0 clean, 1 with findings, 2 when a runtime failed to start |
 
 `DT_SANITIZE_EXTRA_CHECKS=ON` adds clang's `-fsanitize=integer,implicit-conversion`.
 It is off by default because darktable's pixel loops rely on wrapping arithmetic

@@ -13,8 +13,12 @@ into a ranked list of distinct findings.  Two kinds of file are picked up:
 Two reports are considered the same finding when their (address-normalized)
 headline and their first three non-runtime stack frames match.
 
-Exits 1 when at least one report was found, 0 when the directory is clean, so
-it can be used directly as a check.  Usable standalone on an old log dir:
+Start-up failures are counted and reported separately. A runtime that dies
+before main() instruments nothing, so "no findings" from such a run means "no
+coverage", which is the opposite of a clean result.
+
+Exit status: 0 when the directory is clean, 1 when there are findings, 2 when a
+sanitizer failed to start.  Usable standalone on an old log dir:
 
     tools/sanitizer/aggregate-reports.py <build>/sanitizer-logs/<stamp>
 """
@@ -28,10 +32,25 @@ import sys
 
 LOG_PREFIXES = ("asan", "ubsan", "lsan", "tsan", "stderr")
 
-# One regex per report headline shape.
+# A sanitizer that cannot lay out its shadow memory dies here, before any of
+# the program runs. Nearly always the kernel's ASLR entropy is higher than the
+# runtime can cope with: kernels default vm.mmap_rnd_bits to 32 while GCC's
+# runtimes expect at most 28. Matched before HEADERS, because the ASan spelling
+# also satisfies the generic ERROR pattern below.
+FATAL = re.compile(
+    r"^(?:==\d+==)?(?:FATAL|ERROR): (?P<kind>\w+Sanitizer): "
+    r"(?P<what>(?:unexpected memory mapping"
+    r"|Shadow memory range interleaves"
+    r"|failed to allocate"
+    r"|unable to mmap)[^\n]*)"
+)
+
+# One regex per report headline shape. The "==<pid>==" prefix is an ASan-ism:
+# ThreadSanitizer writes a bare "WARNING: ..." under a "====" separator line and
+# carries the pid in a trailing "(pid=N)" instead, so the prefix is optional.
 HEADERS = (
-    re.compile(r"^==\d+==ERROR: (?P<kind>\w+Sanitizer): (?P<what>[^\n]*)"),
-    re.compile(r"^==\d+==WARNING: (?P<kind>ThreadSanitizer): (?P<what>[^\n]*)"),
+    re.compile(r"^(?:==\d+==)?ERROR: (?P<kind>\w+Sanitizer): (?P<what>[^\n]*)"),
+    re.compile(r"^(?:==\d+==)?WARNING: (?P<kind>ThreadSanitizer): (?P<what>[^\n]*)"),
     # LeakSanitizer emits one of these per distinct allocation site.
     re.compile(r"^(?P<kind>Direct leak|Indirect leak) of (?P<what>[^\n]*)"),
     re.compile(r"^(?P<file>[^\s:]+):(?P<line>\d+):\d+: runtime error: (?P<what>[^\n]*)"),
@@ -41,10 +60,21 @@ HEADERS = (
 # LeakSanitizer banner is followed by the "Direct/Indirect leak of ..." entries
 # that carry the actual stack traces.  Skipping both avoids double counting.
 SKIP = re.compile(
-    r"^(SUMMARY: \w+Sanitizer:|==\d+==ERROR: LeakSanitizer: detected memory leaks)"
+    r"^(SUMMARY: \w+Sanitizer:|(?:==\d+==)?ERROR: LeakSanitizer: detected memory leaks)"
 )
 
-FRAME = re.compile(r"^\s*#(\d+) 0x[0-9a-f]+ in (?P<sym>\S+)(?: (?P<loc>\S+))?")
+# Frame layouts differ between runtimes. clang and ASan print the address and an
+# "in" separator:
+#   #1 0x55f4 in dt_dev_pixelpipe_process src/develop/pixelpipe_hb.c:2094
+# GCC's TSan drops both and appends the module the frame resolved to:
+#   #1 g_socket_send_message <null> (libgio-2.0.so.0+0xa5c13) (BuildId: ...)
+FRAME = re.compile(
+    r"^\s*#\d+ "
+    r"(?:0x[0-9a-f]+ in )?"
+    r"(?P<sym>\S+)"
+    r"(?: (?P<loc>\S+))?"
+    r"(?: \((?P<mod>[^()\s]+\+0x[0-9a-f]+)\))?"
+)
 
 # Frames inside the sanitizer runtime itself say nothing about our bug.
 NOISE = re.compile(
@@ -73,6 +103,21 @@ def headline(match):
     return "%s: %s" % (groups.get("kind", "?"), groups.get("what", "").strip())
 
 
+def frame_text(match):
+    """Render one frame, falling back to the module when symbols are missing.
+
+    GCC prints "<null>" for both symbol and file when a library has no debug
+    info; the module and offset are then the only identifying part left, and
+    they are stable across runs because the offset is module-relative.
+    """
+    parts = [
+        part
+        for part in (match.group("sym"), match.group("loc"))
+        if part and part != "<null>"
+    ]
+    return " ".join(parts) if parts else (match.group("mod") or "")
+
+
 def collect_frames(lines, start):
     """Return the first few meaningful frames after a headline, and where they end."""
     frames = []
@@ -80,19 +125,23 @@ def collect_frames(lines, start):
     while i < len(lines) and len(frames) < FRAMES_PER_SIGNATURE:
         match = FRAME.match(lines[i])
         if match:
-            symbol = match.group("sym")
-            location = match.group("loc") or ""
-            if not NOISE.search(symbol) and not NOISE.search(location):
-                frames.append("%s %s" % (symbol, location))
+            text = frame_text(match)
+            if text and not NOISE.search(text):
+                frames.append(text)
         elif not lines[i].strip() and frames:
             break
         i += 1
     return frames, i
 
 
+def normalize(title):
+    """Strip the parts that differ between occurrences of one finding."""
+    title = re.sub(r"\s*\(pid=\d+\)", "", title)
+    return re.sub(r"0x[0-9a-f]+", "0xADDR", title)
+
+
 def signature(title, frames):
-    """Normalize away the parts that differ between occurrences of one bug."""
-    normalized = re.sub(r"0x[0-9a-f]+", "0xADDR", title)
+    normalized = normalize(title)
     if normalized.startswith(("Direct leak", "Indirect leak")):
         # The byte and object counts vary run to run.
         normalized = re.sub(r"\d+", "N", normalized)
@@ -100,7 +149,7 @@ def signature(title, frames):
 
 
 def parse(path):
-    """Yield (normalized title, frames) for every report in one file."""
+    """Yield ("fatal", title) or ("finding", (title, frames)) for one file."""
     try:
         with open(path, errors="replace") as handle:
             lines = handle.read().splitlines()
@@ -114,13 +163,28 @@ def parse(path):
             i += 1
             continue
 
+        fatal = FATAL.match(line)
+        if fatal:
+            yield "fatal", normalize(headline(fatal))
+            i += 1
+            continue
+
         match = next((m for m in (rx.match(line) for rx in HEADERS) if m), None)
         if not match:
             i += 1
             continue
 
         frames, i = collect_frames(lines, i + 1)
-        yield signature(headline(match), frames)
+        yield "finding", signature(headline(match), frames)
+
+
+STARTUP_HINT = """\
+   A runtime that cannot map its shadow memory almost always means the kernel's
+   ASLR entropy is higher than it supports. Either lower it system-wide:
+       sudo sysctl -w vm.mmap_rnd_bits=28
+   or run the binary with ASLR off:
+       setarch -R <binary>
+   tools/run-integration-tests.sh detects this and applies setarch itself."""
 
 
 def main():
@@ -133,9 +197,13 @@ def main():
     files = report_files(args.log_dir)
 
     counts = collections.Counter()
+    fatals = collections.Counter()
     for path in files:
-        for finding in parse(path):
-            counts[finding] += 1
+        for kind, item in parse(path):
+            if kind == "fatal":
+                fatals[item] += 1
+            else:
+                counts[item] += 1
 
     total = sum(counts.values())
 
@@ -148,6 +216,17 @@ def main():
         "unique       : %d" % len(counts),
         "",
     ]
+
+    if fatals:
+        lines.append(
+            "!! %d sanitizer start-up failure(s) -- this run produced NO coverage"
+            % sum(fatals.values())
+        )
+        for title, count in fatals.most_common():
+            lines.append("   [%4dx] %s" % (count, title))
+        lines.append(STARTUP_HINT)
+        lines.append("")
+
     for (title, frames), count in counts.most_common():
         lines.append("[%4dx] %s" % (count, title))
         lines.extend("         %s" % frame for frame in frames)
@@ -159,6 +238,8 @@ def main():
         with open(args.output, "w") as handle:
             handle.write(text + "\n")
 
+    if fatals:
+        return 2
     return 1 if total else 0
 
 

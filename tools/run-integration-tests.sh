@@ -13,6 +13,8 @@
 #     what rescue the reports from the "2> /dev/null" in the suite's call(),
 #   * it interposes a shim so that a hung darktable-cli hits a timeout -- the
 #     suite has no timeout of its own anywhere,
+#   * it preflights the binary, so that a sanitizer runtime which cannot even
+#     start is reported as such instead of as every test failing,
 #   * and it aggregates and deduplicates the reports afterwards.
 #
 # Usage:
@@ -23,7 +25,12 @@
 #   --log-dir <dir>     where reports land        (default: <build>/sanitizer-logs/<stamp>)
 #   --timeout <secs>    per darktable-cli call    (default: 1800)
 #   --with-opencl       also run the GPU pass     (default: CPU pass only)
+#   --no-aslr           force ASLR off for the CLI (setarch -R)
+#   --keep-aslr         never disable ASLR, even if the runtime needs it
 #   -h, --help          this message
+#
+# ASLR handling defaults to auto: the preflight only falls back to setarch -R
+# when the sanitizer runtime turns out to need it.
 #
 # Everything not recognised is passed straight through to the suite's ./run,
 # so a single test can be selected by name:
@@ -39,6 +46,7 @@ BUILD_DIR="$DT_SRC_DIR/build-sanitize"
 LOG_DIR=""
 CLI_TIMEOUT=1800
 WITH_OPENCL=0
+ASLR_MODE=auto
 RUN_ARGS=()
 
 while [ "$#" -ge 1 ]; do
@@ -50,7 +58,11 @@ while [ "$#" -ge 1 ]; do
         --timeout)     CLI_TIMEOUT="$2"; shift ;;
         --timeout=*)   CLI_TIMEOUT="${1#--timeout=}" ;;
         --with-opencl) WITH_OPENCL=1 ;;
-        -h|--help)     sed -n '3,31p' "$0" | sed -e 's/^# \{0,1\}//'; exit 0 ;;
+        --no-aslr)     ASLR_MODE=off ;;
+        --keep-aslr)   ASLR_MODE=keep ;;
+        # Print the header block, however long it happens to be.
+        -h|--help)     awk 'NR>2 && /^#/ { sub(/^# ?/, ""); print; next }
+                            NR>2         { exit }' "$0"; exit 0 ;;
         *)             RUN_ARGS+=("$1") ;;
     esac
     shift
@@ -91,6 +103,117 @@ export DT_SAN_LOGDIR
 # so start from a clean one.
 rm -rf /tmp/darktable-test
 
+# ---------------------------------------------------------------------------
+# Preflight
+# ---------------------------------------------------------------------------
+#
+# A sanitizer runtime that cannot lay out its shadow memory dies inside its own
+# initialiser, before main(). Every test then fails in a fraction of a second
+# with "darktable-cli errored", which reads like a darktable bug and is not one.
+# Catch that here, up front, with a message that says what actually happened.
+#
+# The usual cause is ASLR entropy: kernels default vm.mmap_rnd_bits to 32 while
+# GCC's runtimes support at most 28. Running the child with randomisation off
+# works around it without root, and costs a test run nothing.
+
+# The preflight output has to come back on stderr, so drop the log_path that
+# would otherwise divert it into a file and pollute the report directory.
+strip_log_path() {
+    printf '%s' "$1" | sed -e 's/log_path=[^:]*://' -e 's/:log_path=[^:]*//'
+}
+
+run_preflight() {
+    # shellcheck disable=SC2086  # $1 is a command prefix and must word-split
+    ASAN_OPTIONS=$(strip_log_path "${ASAN_OPTIONS:-}") \
+    TSAN_OPTIONS=$(strip_log_path "${TSAN_OPTIONS:-}") \
+    UBSAN_OPTIONS=$(strip_log_path "${UBSAN_OPTIONS:-}") \
+    LSAN_OPTIONS=$(strip_log_path "${LSAN_OPTIONS:-}") \
+        $1 "$REAL_CLI" --version 2>&1
+}
+
+startup_failed() {
+    case "$1" in
+        *"unexpected memory mapping"*)      return 0 ;;
+        *"Shadow memory range interleaves"*) return 0 ;;
+        *"FATAL: "*"Sanitizer"*)            return 0 ;;
+    esac
+    return 1
+}
+
+# Whether the runtime survives is probabilistic: it depends on where the kernel
+# happened to place a mapping, so a single probe proves nothing. Measured on
+# this 7.x kernel with the default vm.mmap_rnd_bits=32, TSan started in 1 run
+# out of 40 -- an unlucky single preflight would wave through a configuration in
+# which almost every test then dies.
+PREFLIGHT_PROBES=5
+
+# Succeeds only when every probe started cleanly. The last failing output is
+# left in PREFLIGHT for the diagnostic below.
+probe_startup() {
+    local prefix="$1" i out
+    PREFLIGHT=""
+    for i in $(seq "$PREFLIGHT_PROBES"); do
+        out=$(run_preflight "$prefix")
+        if startup_failed "$out"; then
+            PREFLIGHT="$out"
+            return 1
+        fi
+    done
+    return 0
+}
+
+SETARCH_PREFIX=""
+ASLR_NOTE="on"
+HAVE_SETARCH=0
+command -v setarch >/dev/null 2>&1 && HAVE_SETARCH=1
+
+if [ "$ASLR_MODE" = off ]; then
+    [ "$HAVE_SETARCH" -eq 1 ] || die "--no-aslr needs setarch (util-linux)"
+    SETARCH_PREFIX="setarch -R"
+    ASLR_NOTE="off (forced)"
+fi
+
+if ! probe_startup "$SETARCH_PREFIX"; then
+    if [ "$ASLR_MODE" = auto ] && [ "$HAVE_SETARCH" -eq 1 ] \
+       && probe_startup "setarch -R"; then
+        SETARCH_PREFIX="setarch -R"
+        ASLR_NOTE="off (auto: the runtime needs it)"
+    else
+        case "$ASLR_MODE" in
+            keep) ADVICE="
+--keep-aslr suppressed the 'setarch -R' fallback, which works around this
+without root." ;;
+            off)  ADVICE="
+'setarch -R' was already in use and did not help, so ASLR entropy is not the
+only thing wrong here." ;;
+            *)    if [ "$HAVE_SETARCH" -eq 1 ]; then
+                      ADVICE="
+'setarch -R' did not help either."
+                  else
+                      ADVICE="
+Installing util-linux would let this script fall back to 'setarch -R', which
+works around this without root."
+                  fi ;;
+        esac
+
+        die "the sanitizer runtime does not start reliably ($PREFLIGHT_PROBES probes):
+
+  $PREFLIGHT
+
+This is an environment problem rather than a darktable one: the runtime could
+not lay out its shadow memory, so the tests would have failed without ever
+running. It is probabilistic -- an occasional run that does start does not
+contradict it.
+
+Lower the kernel's ASLR entropy to something the runtime supports:
+
+  sudo sysctl -w vm.mmap_rnd_bits=28
+
+and make it permanent with a line in /etc/sysctl.d/.
+$ADVICE"
+    fi
+fi
+
 # darktable-cli shim. It does two jobs:
 #
 #  * timeout, because the suite has no timeout anywhere and under a sanitizer a
@@ -104,7 +227,7 @@ rm -rf /tmp/darktable-test
 SHIM="$LOG_DIR/darktable-cli"
 cat > "$SHIM" <<EOF
 #!/bin/sh
-exec timeout --signal=TERM --kill-after=30 "$CLI_TIMEOUT" "$REAL_CLI" "\$@" 2>>"$LOG_DIR/stderr.\$\$"
+exec timeout --signal=TERM --kill-after=30 "$CLI_TIMEOUT" $SETARCH_PREFIX "$REAL_CLI" "\$@" 2>>"$LOG_DIR/stderr.\$\$"
 EOF
 chmod +x "$SHIM"
 
@@ -121,6 +244,7 @@ Build dir:    $BUILD_DIR
 Sanitizers:   ${DT_SANITIZERS:-unknown}
 Log dir:      $LOG_DIR
 CLI timeout:  ${CLI_TIMEOUT}s per invocation
+ASLR:         $ASLR_NOTE
 OpenCL pass:  $([ "$WITH_OPENCL" -eq 1 ] && echo yes || echo "no (--with-opencl to enable)")
 Tests:        ${RUN_ARGS[*]:-all}
 
@@ -160,6 +284,14 @@ SUMMARY="$LOG_DIR/summary.txt"
 
 "$DT_SRC_DIR/tools/sanitizer/aggregate-reports.py" "$LOG_DIR" --output "$SUMMARY"
 FINDINGS_RC=$?
+
+# 2 means a runtime died during start-up: the suite ran, but part of it was
+# never instrumented, so the findings below understate the truth.
+if [ "$FINDINGS_RC" -eq 2 ]; then
+    echo
+    echo "warning: a sanitizer failed to start during this run, so the findings"
+    echo "         above cover less than the whole suite."
+fi
 
 echo "full reports: $LOG_DIR"
 echo "summary:      $SUMMARY"
