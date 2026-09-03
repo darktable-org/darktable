@@ -258,15 +258,27 @@ static void _stderr_suppress_end(int saved)
 }
 
 // catch crashes in foreign ORT DLLs so darktable survives probing;
-// main-thread only, so the module-static jmp_buf is safe
+// the VEH is process-wide but runs on the faulting thread, so keeping the
+// jump context per-thread leaves other threads' own handlers in charge
 #ifdef _WIN32
 #include <setjmp.h>
-static jmp_buf g_probe_jmp;
-static gboolean g_probe_active = FALSE;
+
+// longjmp skips the probe frame's cleanup, so whatever it still owns has
+// to be reachable from the recovery path
+typedef struct dt_ort_probe_ctx_t
+{
+  jmp_buf  jmp;
+  gboolean active;
+  int      saved_stderr;  // from _stderr_suppress_begin(), else -1
+  GString *eps;           // EP list being built, else NULL
+} dt_ort_probe_ctx_t;
+
+// __thread, not _Thread_local: darktable builds as C99
+static __thread dt_ort_probe_ctx_t g_probe = { .saved_stderr = -1 };
 
 static LONG WINAPI _probe_veh(EXCEPTION_POINTERS *ep)
 {
-  if(!g_probe_active) return EXCEPTION_CONTINUE_SEARCH;
+  if(!g_probe.active) return EXCEPTION_CONTINUE_SEARCH;
   const DWORD code = ep->ExceptionRecord->ExceptionCode;
   // deliberately not catching STACK_OVERFLOW: the recovery would run
   // with a consumed guard page and no safe way to reset it
@@ -274,12 +286,46 @@ static LONG WINAPI _probe_veh(EXCEPTION_POINTERS *ep)
      || code == EXCEPTION_ILLEGAL_INSTRUCTION
      || code == EXCEPTION_INT_DIVIDE_BY_ZERO)
   {
-    g_probe_active = FALSE;
-    longjmp(g_probe_jmp, 1);
+    g_probe.active = FALSE;
+    longjmp(g_probe.jmp, 1);
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
+
+// run the cleanup the longjmp skipped; no-op if nothing was in flight
+static void _probe_ctx_unwind(void)
+{
+  _stderr_suppress_end(g_probe.saved_stderr);
+  g_probe.saved_stderr = -1;
+  if(g_probe.eps)
+  {
+    g_string_free(g_probe.eps, TRUE);
+    g_probe.eps = NULL;
+  }
+}
 #endif
+
+// hand frame-owned resources to the Windows guard; no-ops elsewhere,
+// where the probe frame always unwinds normally
+static inline void _probe_track_stderr(const int saved)
+{
+#ifdef _WIN32
+  g_probe.saved_stderr = saved;
+#else
+  (void)saved;
+#endif
+}
+
+static inline void _probe_track_eps(GString *eps)
+{
+#ifdef _WIN32
+  g_probe.eps = eps;
+#else
+  (void)eps;
+#endif
+}
+
+typedef const OrtApiBase *(*dt_ort_get_api_base_fn_t)(void);
 
 static char *_do_probe_library(const char *path)
 {
@@ -290,8 +336,7 @@ static char *_do_probe_library(const char *path)
     return NULL;
   }
 
-  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
-  OrtGetApiBaseFn get_base = NULL;
+  dt_ort_get_api_base_fn_t get_base = NULL;
   if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_base) || !get_base)
   {
     dt_print(DT_DEBUG_AI, "[darktable_ai] probe: OrtGetApiBase not found in '%s'", path);
@@ -299,11 +344,54 @@ static char *_do_probe_library(const char *path)
     return NULL;
   }
 
+  gchar * volatile version = NULL;
+#ifdef _WIN32
+  volatile gboolean faulted = FALSE;
+  PVOID veh = AddVectoredExceptionHandler(1, _probe_veh);
+  if(veh)
+  {
+    g_probe.active = TRUE;
+    if(setjmp(g_probe.jmp) == 0)
+    {
+      const OrtApiBase *base = get_base();
+      if(base && base->GetVersionString)
+        version = g_strdup(base->GetVersionString());
+    }
+    else
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[darktable_ai] probe: exception while probing '%s' (leaving loaded)",
+               path);
+      _probe_ctx_unwind();
+      faulted = TRUE;
+    }
+    g_probe.active = FALSE;
+    RemoveVectoredExceptionHandler(veh);
+  }
+  else
+  {
+    const OrtApiBase *base = get_base();  // unprotected fallback
+    if(base && base->GetVersionString)
+      version = g_strdup(base->GetVersionString());
+  }
+  // a library that just faulted is not safe to unload, so leave it loaded
+  if(faulted) return NULL;
+#else
   const OrtApiBase *base = get_base();
-  gchar *version = g_strdup(base->GetVersionString());
+  if(base && base->GetVersionString)
+    version = g_strdup(base->GetVersionString());
+#endif
+
+  if(!version)
+  {
+    dt_print(DT_DEBUG_AI, "[darktable_ai] probe: no usable OrtApiBase in '%s'", path);
+    g_module_close(mod);
+    return NULL;
+  }
+
   dt_print(DT_DEBUG_AI, "[darktable_ai] probe: ONNX Runtime %s in '%s'", version, path);
   g_module_close(mod);
-  return version;
+  return (char *)version;
 }
 
 // probe a shared library for OrtGetApiBase to verify it's a valid ORT build;
@@ -312,28 +400,7 @@ static char *_do_probe_library(const char *path)
 char *dt_ai_ort_probe_library(const char *path)
 {
   if(!path || !path[0]) return NULL;
-
-  char * volatile version = NULL;
-#ifdef _WIN32
-  PVOID veh = AddVectoredExceptionHandler(1, _probe_veh);
-  if(veh)
-  {
-    g_probe_active = TRUE;
-    if(setjmp(g_probe_jmp) == 0)
-      version = _do_probe_library(path);
-    else
-      dt_print(DT_DEBUG_ALWAYS,
-               "[darktable_ai] probe: exception while probing '%s' (leaving loaded)",
-               path);
-    g_probe_active = FALSE;
-    RemoveVectoredExceptionHandler(veh);
-  }
-  else
-    version = _do_probe_library(path);  // unprotected fallback
-#else
-  version = _do_probe_library(path);
-#endif
-  return (char *)version;
+  return _do_probe_library(path);
 }
 
 // snapshot the conf values that determine which library / EP / device
@@ -689,26 +756,28 @@ GList *dt_ai_enum_devices_for_provider(const dt_ai_provider_t provider)
   }
 }
 
-static int _do_probe_library_full(const char *path, char **out_version, char **out_eps)
+// everything that runs code from the probed library. g_module_open() and
+// g_module_close() stay in the caller, outside the guard: a longjmp out of a
+// fault raised while the loader lock is held skips SEH unwinding and leaks
+// the lock, deadlocking every later DLL load or thread creation. this removes
+// the main exposure, not all of it: GetApi() can still delay-load provider
+// DLLs, and g_module_symbol() takes it briefly too, both inside the guard
+static int _probe_foreign_full(dt_ort_get_api_base_fn_t get_base, GModule *mod,
+                               char **out_version, char **out_eps)
 {
-  GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
-  if(!mod) return FALSE;
-
-  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
-  OrtGetApiBaseFn get_base = NULL;
-  if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_base) || !get_base)
-  {
-    g_module_close(mod);
-    return FALSE;
-  }
-
   const OrtApiBase *base = get_base();
+  if(!base) return FALSE;
   if(out_version)
-    *out_version = g_strdup(base->GetVersionString());
+  {
+    const char *v = base->GetVersionString ? base->GetVersionString() : NULL;
+    if(!v) return FALSE;  // not a usable ORT build
+    *out_version = g_strdup(v);
+  }
 
   if(out_eps)
   {
     GString *eps = g_string_new(NULL);
+    _probe_track_eps(eps);
 
     // preferred path: ask the OrtApi for the list of providers compiled into
     // the library; this is the only reliable method for ROCm/MIGraphX, since
@@ -716,6 +785,7 @@ static int _do_probe_library_full(const char *path, char **out_version, char **o
     // (OrtSessionOptionsAppendExecutionProvider_ROCM, _MIGraphX) — ROCm is
     // only reachable through the OrtApi struct
     const int _saved = _stderr_suppress_begin();
+    _probe_track_stderr(_saved);
     const OrtApi *probe_api = base->GetApi(ORT_API_VERSION);
     if(!probe_api)
     {
@@ -723,6 +793,7 @@ static int _do_probe_library_full(const char *path, char **out_version, char **o
           v >= DT_ORT_MIN_API_VERSION && !probe_api; v--)
         probe_api = base->GetApi(v);
     }
+    _probe_track_stderr(-1);
     _stderr_suppress_end(_saved);
     if(probe_api && probe_api->GetAvailableProviders)
     {
@@ -802,11 +873,69 @@ static int _do_probe_library_full(const char *path, char **out_version, char **o
     }
 
     if(eps->len == 0) g_string_append(eps, "CPU");
+    _probe_track_eps(NULL);
     *out_eps = g_string_free(eps, FALSE);
   }
 
-  g_module_close(mod);
   return TRUE;
+}
+
+// *faulted distinguishes "the library faulted" (unsafe to unload) from
+// "the library is not a usable ORT build" (safe, and must be unloaded)
+static int _probe_guarded_full(dt_ort_get_api_base_fn_t get_base, GModule *mod, const char *path,
+                               char **out_version, char **out_eps, gboolean *faulted)
+{
+  *faulted = FALSE;
+#ifdef _WIN32
+  PVOID veh = AddVectoredExceptionHandler(1, _probe_veh);
+  if(!veh)  // unprotected fallback
+    return _probe_foreign_full(get_base, mod, out_version, out_eps);
+
+  volatile int result = FALSE;
+  volatile gboolean hit = FALSE;
+  g_probe.active = TRUE;
+  if(setjmp(g_probe.jmp) == 0)
+    result = _probe_foreign_full(get_base, mod, out_version, out_eps);
+  else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darktable_ai] probe: exception while probing '%s' (leaving loaded)",
+             path);
+    _probe_ctx_unwind();
+    if(out_version) { g_free(*out_version); *out_version = NULL; }
+    if(out_eps) { g_free(*out_eps); *out_eps = NULL; }
+    result = FALSE;
+    hit = TRUE;
+  }
+  g_probe.active = FALSE;
+  RemoveVectoredExceptionHandler(veh);
+  *faulted = hit;
+  return result;
+#else
+  (void)path;
+  return _probe_foreign_full(get_base, mod, out_version, out_eps);
+#endif
+}
+
+static int _do_probe_library_full(const char *path, char **out_version, char **out_eps)
+{
+  GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  if(!mod) return FALSE;
+
+  dt_ort_get_api_base_fn_t get_base = NULL;
+  if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_base) || !get_base)
+  {
+    g_module_close(mod);
+    return FALSE;
+  }
+
+  gboolean faulted = FALSE;
+  const int result
+    = _probe_guarded_full(get_base, mod, path, out_version, out_eps, &faulted);
+
+  // a library that just faulted is not safe to unload, so leave it loaded
+  if(!faulted) g_module_close(mod);
+  return result;
 }
 
 // probe a library and return version + comma-separated list of supported EPs.
@@ -816,33 +945,7 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
   if(!path || !path[0]) return FALSE;
   if(out_version) *out_version = NULL;
   if(out_eps) *out_eps = NULL;
-
-  volatile int result = FALSE;
-#ifdef _WIN32
-  PVOID veh = AddVectoredExceptionHandler(1, _probe_veh);
-  if(veh)
-  {
-    g_probe_active = TRUE;
-    if(setjmp(g_probe_jmp) == 0)
-      result = _do_probe_library_full(path, out_version, out_eps);
-    else
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[darktable_ai] probe: exception while probing '%s' (leaving loaded)",
-               path);
-      if(out_version) { g_free(*out_version); *out_version = NULL; }
-      if(out_eps) { g_free(*out_eps); *out_eps = NULL; }
-      result = FALSE;
-    }
-    g_probe_active = FALSE;
-    RemoveVectoredExceptionHandler(veh);
-  }
-  else
-    result = _do_probe_library_full(path, out_version, out_eps);  // unprotected fallback
-#else
-  result = _do_probe_library_full(path, out_version, out_eps);
-#endif
-  return result;
+  return _do_probe_library_full(path, out_version, out_eps);
 }
 
 // g_ptr_array_sort passes pointer-to-pointer, hence the double-deref
