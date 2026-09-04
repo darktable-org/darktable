@@ -228,6 +228,65 @@ optimizer and reliably produces fresh `-Wmaybe-uninitialized` / `-Wstringop-*`
 diagnostics; with `-Werror -Wfatal-errors` those would abort the build before a
 single sanitizer had a chance to run. The warnings themselves stay on.
 
+## Sanitizer inspired linters - catching bugs without running anything
+
+`tools/check-iop-pipe-data-sizes.py <build-dir>` checks the invariant behind one defect
+ASan found the hard way. A module that does not define `init_pipe()` gets `default_init_pipe()`,
+which allocates `piece->data` as `calloc(1, self->params_size)`, by the size of the *params* struct.
+The module then uses that buffer as its *data* struct, which is only sound while
+
+```
+sizeof(dt_iop_<op>_data_t) <= sizeof(dt_iop_<op>_params_t)
+```
+
+Nothing in the build enforces it, and the two sizes are never both visible to the compiler
+in one place: `params_size` is a runtime field and the data struct is module-local, so it cannot
+be a `static_assert` in shared code.
+Both sizes are in the DWARF of the built plugins, which is what the script reads, via gdb.
+It needs a build with debug info, any `RelWithDebInfo` tree, sanitizer or not.
+
+```bash
+tools/check-iop-pipe-data-sizes.py build-sanitizers/     # exits 1 on a violation
+VERBOSE=1 tools/check-iop-pipe-data-sizes.py build-sanitizers/   # list the skips
+```
+
+Modules that define their own `init_pipe()` are exempt, and those that read
+`piece->data` as their params struct (or not at all) have nothing to compare.
+The script takes the data type from how `piece->data` is actually used rather
+than assuming the `dt_iop_<op>_data_t` convention, because several modules do
+not follow it.
+
+Worth running after adding a field to any module's data struct: growing it past
+the params struct is enough to start writing off the end of the allocation on
+every pixelpipe run, and `src/iop/contrastntexture.c` did exactly that.
+
+`tools/check-iop-legacy-params.py <build-dir> [xmp-dir]` covers the other
+invariant ASan found the hard way. A module's old parameter layouts survive as
+`dt_iop_<op>_params_v<N>_t` structs inside `legacy_params()`, and nothing checks
+that they still match what those darktable versions actually wrote. When one
+drifts, the conversion reads a struct's worth of bytes out of a shorter blob.
+`src/iop/highlights.c` and `src/iop/denoiseprofile.c` both did this.
+
+Ground truth comes from the integration test XMPs, whose history entries span a
+wide range of darktable versions, decoded through the same `gz`/hex encoding
+`dt_exif_xmp_encode()` writes. Those sizes are compared against the struct sizes
+in the plugins' DWARF:
+
+```bash
+tools/check-iop-legacy-params.py build-sanitizers/   # 0 clean, 1 mismatch, 2 no data
+```
+
+A size mismatch is an error: both sides are measured. A version present in the
+corpus with no matching struct in the debug info is only a warning, the
+compiler need not emit a local type it had no use for, but it is worth
+reading. It only sees versions the corpus happens to contain, so it is a
+regression net rather than a proof.
+
+Both tools read DWARF through `tools/dwarf_types.py`. That uses `objdump`
+rather than gdb because gdb resolves types through a lookup scope and cannot
+reach the function-local typedefs the legacy conversions rely on, and rather
+than pyelftools because binutils is already required to build darktable.
+
 ## Files
 
 | Path | Purpose |
@@ -237,6 +296,9 @@ single sanitizer had a chance to run. The warnings themselves stay on.
 | `tools/sanitizer/sanitizer-env.sh.in` | template for the generated `<build>/bin/sanitizer-env.sh` |
 | `tools/sanitizer/{ubsan,lsan,tsan}.supp` | suppression files |
 | `tools/run-integration-tests.sh` | suite driver, timeout and stderr-capture shim |
+| `tools/dwarf_types.py` | reads C type sizes out of a build's DWARF via `objdump`; shared by the two checkers below |
+| `tools/check-iop-pipe-data-sizes.py` | static check that `default_init_pipe()` allocates enough for each module's data struct |
+| `tools/check-iop-legacy-params.py` | static check that versioned legacy param structs match the history darktable actually wrote |
 | `tools/sanitizer/aggregate-reports.py` | deduplicates the reports; also usable on its own against an old log dir. Exits 0 clean, 1 with findings, 2 when a runtime failed to start |
 
 `DT_SANITIZE_EXTRA_CHECKS=ON` adds clang's `-fsanitize=integer,implicit-conversion`.
