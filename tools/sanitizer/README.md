@@ -77,8 +77,8 @@ undetected. The build warns about both.
 `expected.png` references came from a `-O3 -ffast-math` Release build.
 RelWithDebInfo is `-O2` without fast-math, so some tests drift against the
 Delta-E threshold for reasons that have nothing to do with sanitizers. Also,
-when ASan aborts a test the suite just prints `FAILS: darktable-cli errored`
-without any detail; the detail is in the log directory.
+when a sanitizer does end a test the suite just prints `FAILS: darktable-cli
+errored` without any detail; the detail is in the log directory.
 
 **Use `run-integration-tests.sh`, not `src/tests/integration/run` directly.**
 The suite invokes darktable-cli as `$* 1> /dev/null 2> /dev/null`, and
@@ -122,10 +122,65 @@ bug rather than an environment one.
 down its GTK/glib/lua state, so exit-time leak reports would fire on every
 single test. Build with `--sanitize leak` when you actually want to hunt leaks.
 
-**OpenCL is off by default.** Vendor ICDs generate a large volume of ASan and
-LSan noise from code that is not darktable's, and the GPU pass doubles the run
-time. Pass `--with-opencl` to `run-integration-tests.sh` if you want it, and
-expect to extend `lsan.supp`.
+**OpenCL is off by default.** `--with-opencl` makes the suite render every test
+a second time on the GPU, into `output-cl.png` beside the CPU's `output.png`,
+and then diff the two against the per-test `cpugpu.maxpix` threshold where one
+exists. So it doubles the number of instrumented darktable-cli invocations, on
+top of whatever the sanitizer already costs. It also couples the two passes:
+`run` sums both exit codes, so a failure in either one marks the whole test as
+an error and skips the Delta-E comparison for both.
+
+The more important cost is signal quality. The ICD loader and the vendor driver
+behind it are closed, uninstrumented binaries, but ASan still intercepts their
+allocations, so their internal caches, worker pools and JIT buffers surface as
+findings in code you neither own nor can fix.
+
+Which sanitizer actually pays for that depends on the build:
+
+* `address` builds run with `detect_leaks=0` (see above), so leaks are never
+  reported and `lsan.supp` is not consulted at all. What can still reach you is
+  driver-internal noise reported through ASan's interceptors.
+* `leak` builds are where `lsan.supp` earns its keep, and where the GPU pass
+  will turn up allocations you have to add to it.
+
+To extend it, run the suite, find the `Direct leak` / `Indirect leak` entries in
+the log directory, pick a frame that identifies the owning library, and add one
+line per owner:
+
+```
+leak:libMyVendorOpenCL
+```
+
+The syntax is `leak:<substring>`, matched against function names and against
+source and library paths anywhere in the leak's stack. Prefer the library soname
+over a specific symbol: vendor symbols get renamed between driver releases,
+paths generally do not. Keep each entry narrow enough to stay honest --
+`leak:libOpenCL.so` is a fair suppression, `leak:malloc` would bury darktable's
+own leaks along with the driver's.
+
+The usual failure mode is a suppression that silently never matches, because a
+typo just means the substring is not found. LSan can tell you which entries
+fired, but the generated `sanitizer-env.sh` sets `print_suppressions=0`; change
+it in `sanitizer-env.sh.in` and re-run CMake to regenerate, then check that each
+new entry reports a non-zero count.
+
+The entries already in `lsan.supp` cover the ICD loader plus the AMD, Intel and
+NVIDIA runtimes. A Mesa (rusticl) or POCL stack allocates through different
+libraries and will need its own.
+
+Under `thread` the GPU pass is not worth attempting. The driver's own worker
+threads carry no TSan annotations, so their synchronisation is invisible and
+nearly every OpenCL call turns into a reported race.
+
+**ASan does not stop at the first finding.** The build passes
+`-fsanitize-recover=address` and the environment sets `halt_on_error=0`, so a
+recoverable error is reported and execution continues. Both halves are required:
+without the compile flag every ASan finding is a hard abort no matter what
+`halt_on_error` says. This matters because a single over-read during start-up
+would otherwise end every test in the suite at the same place and hide
+everything behind it. Errors ASan cannot recover from -- SIGSEGV, allocator
+failures -- still end the process. A defect inside a loop reports once per
+iteration, which is what the aggregator's deduplication is for.
 
 **TSan exits 0 on findings, on purpose.** Sanitizers default to `exitcode=66`
 once they have reported anything, and the suite treats any non-zero exit as

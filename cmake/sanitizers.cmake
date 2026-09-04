@@ -72,7 +72,15 @@ set(_dt_san_flags -fno-omit-frame-pointer -fno-optimize-sibling-calls)
 if("address" IN_LIST _dt_san_list)
   # -fno-common so that globals get redzones, -U_FORTIFY_SOURCE because the
   # distro default conflicts with ASan's interceptors.
-  list(APPEND _dt_san_flags -fsanitize=address -fno-common -U_FORTIFY_SOURCE)
+  #
+  # -fsanitize-recover=address is what gives ASAN_OPTIONS' halt_on_error=0 any
+  # effect. Without it every ASan finding is a hard abort, so one recoverable
+  # over-read during start-up ends the run and hides everything behind it. It
+  # belongs here rather than only in the 'undefined' branch below, so that a
+  # plain -DDT_SANITIZE=address build recovers as well. Genuinely fatal faults
+  # (SIGSEGV, allocator failures) still terminate the process.
+  list(APPEND _dt_san_flags -fsanitize=address -fno-common -U_FORTIFY_SOURCE
+                            -fsanitize-recover=address)
   if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     list(APPEND _dt_san_flags -fsanitize-address-use-after-scope)
   endif()
