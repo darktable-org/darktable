@@ -111,6 +111,9 @@ changes (where available).
 - Fixed small memory leaks when expanding variables, which grew with
   the number of images exported or imported in one run.
 
+- Fixed a small memory leak each time a history stack was pasted onto the
+  image open in darkroom.
+
 ## Lua
 
 ### API Version
