@@ -46,9 +46,16 @@ export OMP_STACKSIZE
 # detect_leaks=0 on purpose: darktable-cli exits without tearing down its
 # GTK/glib/lua state, so exit-time leak reports would fire on every single run.
 # Build with -DDT_SANITIZE=leak when you actually want to hunt leaks.
+#
+# halt_on_error=0 pairs with -fsanitize-recover=address from
+# cmake/sanitizers.cmake: the process carries on after a recoverable finding, so
+# one run collects everything instead of stopping at whichever error happens to
+# come first. Errors ASan cannot recover from still end the process. Expect
+# repeated reports of the same defect when it sits in a loop -- that is what
+# aggregate-reports.py deduplicates.
 ASAN_OPTIONS="log_path=$DT_SAN_LOGDIR/asan\
 :detect_leaks=0\
-:halt_on_error=1\
+:halt_on_error=0\
 :abort_on_error=0\
 :detect_odr_violation=0\
 :detect_stack_use_after_return=1\
