@@ -216,6 +216,11 @@ changes (where available).
   sliders and comboboxes themselves, instead of only shrinking their
   font.
 
+- Fixed random crashes while starting up, mostly seen while the splash
+  screen was still showing, where a Lua script or a background task
+  could build and rearrange interface elements from its own thread
+  while the main window was still being assembled.
+
 ## Lua
 
 ### API Version

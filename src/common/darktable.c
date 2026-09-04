@@ -1704,6 +1704,15 @@ int dt_init(int argc,
   {
     gtk_init(&argc, &argv);
 
+    /* own the default main context for the life of the gui: glib runs a
+     * g_main_context_invoke() callback in the calling thread when it can
+     * acquire the context, so a job or Lua thread would otherwise touch
+     * widgets while dt_init() builds the main window.  released in dt_cleanup() */
+    if(!g_main_context_acquire(g_main_context_default()))
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_init] could not acquire the default main context,"
+               " gui calls from worker threads will not be serialized");
+
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
 
@@ -2332,6 +2341,11 @@ void dt_cleanup()
 5. After dt_control_shutdown() has finished we are sure there are no background threads running any
      more so we can safely close all mentioned subsystems and continue.
 */
+    /* release before joining the threads: nothing pumps the loop from here on,
+     * so a thread waiting for marshalled gui work could never be joined */
+    if(g_main_context_is_owner(g_main_context_default()))
+      g_main_context_release(g_main_context_default());
+
     dt_control_shutdown();
   }
 #ifdef USE_LUA
