@@ -272,6 +272,10 @@ typedef struct dt_dev_pixelpipe_t
   size_t mask_distort_buf_size[2];
   // sum of all per-piece detail/raster mask caches currently allocated in this pipe
   size_t mask_cache_size;
+
+  // helpers for pixelpipe UI respnsiveness
+  gint64 started_time;        // monotonic timestamp (in microseconds) when the pipe started
+  gint64 started_ui_interval; // a pipe restart only happens if out of interval
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
