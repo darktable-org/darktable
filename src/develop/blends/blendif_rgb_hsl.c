@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -951,7 +951,7 @@ _BLEND_FUNC _blend_RGB_R(const float *const a,
   }
 }
 
-/* blend only R-channel in RGB color space without any clamping */
+/* blend only G-channel in RGB color space without any clamping */
 _BLEND_FUNC _blend_RGB_G(const float *const a,
                          const float *const b,
                          float *const out,
@@ -968,7 +968,7 @@ _BLEND_FUNC _blend_RGB_G(const float *const a,
   }
 }
 
-/* blend only R-channel in RGB color space without any clamping */
+/* blend only B-channel in RGB color space without any clamping */
 _BLEND_FUNC _blend_RGB_B(const float *const a,
                          const float *const b,
                          float *const out,
@@ -1366,4 +1366,3 @@ void dt_develop_blendif_rgb_hsl_blend(dt_dev_pixelpipe_iop_t *piece,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

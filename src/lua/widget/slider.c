@@ -1,7 +1,7 @@
 
 /*
    This file is part of darktable,
-   Copyright (C) 2015-2020 darktable developers.
+   Copyright (C) 2015-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 #include "lua/types.h"
@@ -35,8 +36,9 @@ static void slider_init(lua_State*L)
 {
   lua_slider slider;
   luaA_to(L,lua_slider,&slider,-1);
-  // as the sliders setup calls are asynchronous, we weed to initialize
-  // min to -INF and max to INF, sort of, in order not to cut prematurely soft_min and soft_max
+  // as the sliders setup calls are asynchronous, we need to initialize
+  // min to -INF and max to INF, sort of, in order not to cut prematurely
+  // soft_min and soft_max
   dt_bauhaus_slider_from_widget(DT_BAUHAUS_WIDGET(slider->widget),NULL, -1.0E9, 1.0E9, 1.0, 0.0, 3,0);
 }
 
@@ -193,9 +195,9 @@ int dt_lua_init_widget_slider(lua_State* L)
   dt_lua_type_register(L, lua_slider, "label");
   return 0;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -4098,8 +4098,8 @@
     <name>screen_dpi_overwrite</name>
     <type>float</type>
     <default>-1.0</default>
-    <shortdescription>overwrite the screen's dpi setting</shortdescription>
-    <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
+    <shortdescription>override the screen's dpi setting</shortdescription>
+    <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the GUI</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>
