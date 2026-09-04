@@ -138,6 +138,9 @@ changes (where available).
 - pixelpipe dump files requested via cli switches are now written
   in ppm or pgm format.
 
+- The default-on highlights opposed module will be disabled automatically
+  on non-altered images for performance if there are no clipped photosites.
+
 ## Bug Fixes
 
 - Clarified multi-image rating toasts for un-reject and for mixed

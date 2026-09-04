@@ -103,6 +103,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   const size_t msize = dt_round_size((size_t) mwidth, 8) * dt_round_size(mheight, 8);
 
   const dt_hash_t opphash = _opposed_hash(piece);
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
   if(opphash == img_opphash)
@@ -180,7 +181,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
         for_three_channels(c)
           chrominance[c] = (cnts[c] > 30.0f) ? sums[c] / cnts[c] : 0.0f;
 
-        if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+        if(fullpipe)
         {
           for_three_channels(c)
             img_oppchroma[c] = chrominance[c];
@@ -195,6 +196,11 @@ static void _process_linear_opposed(dt_iop_module_t *self,
             img_oppclipped ? "" : " unclipped");
       }
       dt_free_align(mask);
+      if(fullpipe && !anyclipped)
+      {
+        disable_highlights = TRUE;
+        tested_id = self->dev->image_storage.id;
+      }
     }
   }
 
@@ -248,6 +254,7 @@ static float *_process_opposed(dt_iop_module_t *self,
 
   const dt_hash_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   if(opphash == img_opphash)
   {
@@ -336,12 +343,14 @@ static float *_process_opposed(dt_iop_module_t *self,
           chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
       }
 
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      if(fullpipe)
       {
         for_three_channels(c)
           img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
         img_oppclipped = anyclipped;
+        disable_highlights = !anyclipped;
+        tested_id = self->dev->image_storage.id;
       }
 
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
@@ -451,6 +460,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
   const dt_hash_t opphash = _opposed_hash(piece);
   const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   if(!fastcopymode)
   {
@@ -536,12 +546,14 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     for_three_channels(c)
       chrominance[c] = (cnts[c] > 100.0f) ? sums[c] / cnts[c] : 0.0f;
 
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+    if(fullpipe)
     {
       for_three_channels(c)
         img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
       img_oppclipped = clipped > 0.0f;
+      disable_highlights = clipped == 0.0f;
+      tested_id = self->dev->image_storage.id;
     }
 
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,

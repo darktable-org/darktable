@@ -315,6 +315,8 @@ int legacy_params(dt_iop_module_t *self,
 static dt_aligned_pixel_t img_oppchroma;
 static gboolean img_oppclipped = TRUE;
 static dt_hash_t img_opphash = ULLONG_MAX;
+static gboolean disable_highlights = FALSE;
+static dt_imgid_t tested_id = NO_IMGID;
 
 #include "hlreconstruct/segmentation.c"
 #include "hlreconstruct/segbased.c"
@@ -538,6 +540,13 @@ int process_cl(dt_iop_module_t *self,
   const uint32_t filters = piece->filters;
   const int devid = pipe->devid;
 
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
+  if(fullpipe)
+  {
+    disable_highlights = FALSE;
+    tested_id = NO_IMGID;
+  }
+
   if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
   {
     if(!filters)
@@ -550,7 +559,6 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const dt_iop_highlights_mode_t dmode =  d->mode;
   const float clipper = d->clip * highlights_clip_magics[dmode];
 
@@ -823,6 +831,13 @@ void process(dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
 
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
+  if(fullpipe)
+  {
+    disable_highlights = FALSE;
+    tested_id = NO_IMGID;
+  }
+
   if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
   {
     if(!filters)
@@ -832,7 +847,6 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const gboolean fastmode = dt_pipe_is_fast(pipe);
   const dt_iop_highlights_mode_t dmode = fastmode && (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
                                         ? DT_IOP_HIGHLIGHTS_OPPOSED
@@ -1262,6 +1276,24 @@ static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev, self->iop_order);
 }
 
+static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
+{
+  if(disable_highlights
+      && self && self->enabled
+      && ((const dt_iop_highlights_params_t *)self->params)->mode == DT_IOP_HIGHLIGHTS_OPPOSED
+      && self->dev->image_storage.id == tested_id
+      && !dt_image_altered(tested_id))
+  {
+    self->enabled = FALSE;
+    DT_ENTER_GUI_UPDATE();
+    dt_iop_gui_set_enable_button(self);
+    DT_LEAVE_GUI_UPDATE();
+    dt_print(DT_DEBUG_PIPE, "highlights UI pipe disables module with no clipped photosites");
+    dt_dev_add_history_item(darktable.develop, self, FALSE);
+  }
+  disable_highlights = FALSE;
+}
+
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_highlights_gui_data_t *g = self->gui_data;
@@ -1344,6 +1376,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
   gtk_stack_add_named(GTK_STACK(self->widget), notapplicable, "notapplicable");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "default");
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
 }
 
 // clang-format off
