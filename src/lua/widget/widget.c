@@ -16,12 +16,10 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "control/control.h"
 #include "lua/call.h"
 #include "lua/modules.h"
 #include "lua/types.h"
 #include "lua/widget/common.h"
-#include "stdarg.h"
 
 /**
   TODO
@@ -63,7 +61,7 @@ static void init_widget_sub(lua_State *L, dt_lua_widget_type_t *widget_type) {
 static gboolean on_destroy_wrapper(gpointer user_data)
 {
   gtk_widget_destroy((GtkWidget*) user_data);
-  return false;
+  return FALSE;
 }
 
 static int widget_gc(lua_State *L)
