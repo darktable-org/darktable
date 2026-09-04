@@ -222,6 +222,9 @@ changes (where available).
 - Fixed Windows paths losing their backslashes in export and import
   patterns, which sent files to the wrong location.
 
+- Fixed wrong output or a crash from an export pattern containing an
+  unclosed variable substitution, such as "$(FILE_NAME/foo".
+
 ## Lua
 
 ### API Version
