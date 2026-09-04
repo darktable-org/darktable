@@ -95,6 +95,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/bilinear.h"
 #include "common/fast_guided_filter.h"
 #include "common/eigf.h"
 #include "common/interpolation.h"
@@ -109,6 +110,7 @@
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "develop/preview_data.h"
+#include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
@@ -206,7 +208,23 @@ typedef struct dt_iop_toneequalizer_data_t
 
 typedef struct dt_iop_toneequalizer_global_data_t
 {
-  // TODO: put OpenCL kernels here at some point
+  int kernel_toneequal_luminance_mask;
+  int kernel_toneequal_apply;
+  int kernel_toneequal_display_mask;
+  int kernel_toneequal_quantize;
+  int kernel_toneequal_box_mean_x_2c;
+  int kernel_toneequal_box_mean_y_2c;
+  int kernel_toneequal_box_mean_x_4c;
+  int kernel_toneequal_box_mean_y_4c;
+  int kernel_toneequal_gf_pack;
+  int kernel_toneequal_gf_ab;
+  int kernel_toneequal_gf_blend;
+  int kernel_toneequal_eigf_pack_4c;
+  int kernel_toneequal_eigf_finish_4c;
+  int kernel_toneequal_eigf_pack_2c;
+  int kernel_toneequal_eigf_finish_2c;
+  int kernel_toneequal_eigf_blend;
+  int kernel_toneequal_eigf_blend_no_mask;
 } dt_iop_toneequalizer_global_data_t;
 
 
@@ -621,6 +639,30 @@ static void hash_set_get(const dt_hash_t *hash_in,
 }
 
 
+static dt_hash_t _luminance_mask_hash(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_iop_roi_t *const roi_out)
+{
+  // Freshness key of the cached luminance mask.
+  //
+  // include = TRUE hashes nodes[0 .. position-1], i.e. our own params too, so
+  // a band slider drag recomputed the whole mask (~60 ms/Mpix) and re-copied
+  // it from the device.  The mask ignores the band factors and `smoothing`:
+  // hash the upstream pipe (include = FALSE, roi folded in) plus the params
+  // compute_luminance_mask() reads, the invalidate list of gui_changed().
+  const dt_iop_toneequalizer_data_t *const d = piece->data;
+
+  const float mask_floats[] = { d->blending, d->feathering, d->contrast_boost,
+                                d->exposure_boost, d->quantization, d->scale };
+  const int mask_ints[] = { d->radius, d->iterations,
+                            (int)d->method, (int)d->details };
+
+  dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, FALSE);
+  hash = dt_hash(hash, mask_floats, sizeof(mask_floats));
+  hash = dt_hash(hash, mask_ints, sizeof(mask_ints));
+  return hash;
+}
+
+
 static void invalidate_luminance_cache(dt_iop_module_t *const self)
 {
   // Invalidate the private luminance cache and histogram when
@@ -813,8 +855,9 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
 #else
 
-// we keep this version for further reference (e.g. for implementing
-// a gpu version)
+// we keep this version for further reference; it is the one the OpenCL
+// path implements, as evaluating the gaussians is cheaper on a GPU than
+// uploading the correction lut
 __DT_CLONE_TARGETS__
 static inline void apply_toneequalizer(const float *const restrict in,
                                        const float *const restrict luminance,
@@ -1018,8 +1061,8 @@ void toneeq_process(dt_iop_module_t *self,
   const size_t height = roi_in->height;
   const size_t num_elem = width * height;
 
-  // Get the hash of the upstream pipe to track changes
-  const dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, TRUE);
+  // Freshness key of the luminance mask cache
+  const dt_hash_t hash = _luminance_mask_hash(piece, roi_out);
 
   // Sanity checks
   if(width < 1 || height < 1) return;
@@ -1132,7 +1175,7 @@ void toneeq_process(dt_iop_module_t *self,
         dt_iop_gui_leave_critical_section(self);
 
         compute_luminance_mask(in, luminance, width, height, d);
-        dt_preview_data_set_hash(&g->pd, piece);
+        dt_preview_data_set_hash_value(&g->pd, hash);
 
         dt_iop_gui_enter_critical_section(self);
         g->luminance_valid = TRUE;
@@ -1180,6 +1223,591 @@ void process(dt_iop_module_t *self,
   toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
+
+#ifdef HAVE_OPENCL
+
+/***
+ * OpenCL implementation
+ *
+ * The GPU path mirrors the CPU code above: extract the luminance mask from the
+ * input, optionally refine it with the (exposure independent) guided filter,
+ * then correct each pixel exposure from its masked luminance.
+ *
+ * Every intermediate buffer is a grey image, so we use device buffers rather
+ * than images and keep the packing conventions of the CPU code (arrays of 2 or
+ * 4 channel structs) to average several terms in a single pass.
+ ***/
+
+static cl_int _box_mean_cl(const int devid,
+                           const dt_iop_toneequalizer_global_data_t *const gd,
+                           cl_mem dev_buf,
+                           cl_mem dev_tmp,
+                           const int width,
+                           const int height,
+                           const int ch,
+                           const int radius)
+{
+  // The moving average of the separable box filter reads samples that a
+  // parallel in-place pass would already have overwritten, so we bounce
+  // through dev_tmp and land back in dev_buf.
+  const int kernel_x = (ch == 4)
+    ? gd->kernel_toneequal_box_mean_x_4c
+    : gd->kernel_toneequal_box_mean_x_2c;
+  const int kernel_y = (ch == 4)
+    ? gd->kernel_toneequal_box_mean_y_4c
+    : gd->kernel_toneequal_box_mean_y_2c;
+
+  const cl_int err = dt_opencl_enqueue_kernel_1d_args(devid, kernel_x, height,
+            CLARG(dev_buf), CLARG(dev_tmp),
+            CLARG(width), CLARG(height), CLARG(radius));
+  if(err != CL_SUCCESS) return err;
+
+  return dt_opencl_enqueue_kernel_1d_args(devid, kernel_y, width,
+            CLARG(dev_tmp), CLARG(dev_buf),
+            CLARG(width), CLARG(height), CLARG(radius));
+}
+
+
+static cl_int _quantize_cl(const int devid,
+                           const dt_iop_toneequalizer_global_data_t *const gd,
+                           cl_mem dev_in,
+                           cl_mem dev_out,
+                           const int width,
+                           const int height,
+                           const float sampling,
+                           const float clip_min,
+                           const float clip_max)
+{
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_quantize,
+            width, height,
+            CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+            CLARG(sampling), CLARG(clip_min), CLARG(clip_max));
+}
+
+
+static cl_int _fast_surface_blur_cl(const int devid,
+                                    const dt_iop_toneequalizer_global_data_t *const gd,
+                                    cl_mem dev_image,
+                                    const int width,
+                                    const int height,
+                                    const int radius,
+                                    const float feathering,
+                                    const int iterations,
+                                    const dt_iop_guided_filter_blending_t filter,
+                                    const float quantization,
+                                    const float quantize_min,
+                                    const float quantize_max)
+{
+  // Works in-place on a grey image, see fast_surface_blur()
+  // in common/fast_guided_filter.h
+
+  // A down-scaling of 4 seems empirically safe and consistent no matter the
+  // image zoom level
+  const float scaling = 4.0f;
+  const int ds_radius = (radius < 4) ? 1 : (int)((float)radius / scaling);
+
+  // the downscaled dimensions can round down to zero on thumbnails
+  const int ds_width = MAX(1, (int)((float)width / scaling));
+  const int ds_height = MAX(1, (int)((float)height / scaling));
+
+  const size_t bsize = (size_t)width * height * sizeof(float);
+  const size_t ds_bsize = (size_t)ds_width * ds_height * sizeof(float);
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  cl_mem dev_ab = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+  cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
+  cl_mem dev_ds_mask = dt_opencl_alloc_device_buffer(devid, ds_bsize);
+  cl_mem dev_ds_ab = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
+  // array of struct : { { guide, mask, guide * guide, guide * mask } }
+  cl_mem dev_packed = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
+  // scratch space of the box average, large enough for both channel counts
+  cl_mem dev_tmp = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
+
+  if(!dev_ab || !dev_ds_image || !dev_ds_mask || !dev_ds_ab || !dev_packed || !dev_tmp)
+    goto error;
+
+  // Downsample the image for speed-up
+  err = dt_interpolate_bilinear_cl(devid, dev_image, width, height,
+                                   dev_ds_image, ds_width, ds_height, 1);
+  if(err != CL_SUCCESS) goto error;
+
+  // Iterations of filter models the diffusion, sort of
+  for(int i = 0; i < iterations; ++i)
+  {
+    // (Re)build the mask from the quantized image to help guiding
+    err = _quantize_cl(devid, gd, dev_ds_image, dev_ds_mask, ds_width, ds_height,
+                       quantization, quantize_min, quantize_max);
+    if(err != CL_SUCCESS) goto error;
+
+    // Perform the patch-wise variance analyse to get the a and b parameters
+    // for the linear blending s.t. mask = a * I + b
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_pack,
+            ds_width, ds_height,
+            CLARG(dev_ds_mask), CLARG(dev_ds_image), CLARG(dev_packed),
+            CLARG(ds_width), CLARG(ds_height));
+    if(err != CL_SUCCESS) goto error;
+
+    err = _box_mean_cl(devid, gd, dev_packed, dev_tmp,
+                       ds_width, ds_height, 4, ds_radius);
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_ab,
+            ds_width, ds_height,
+            CLARG(dev_packed), CLARG(dev_ds_ab),
+            CLARG(ds_width), CLARG(ds_height), CLARG(feathering));
+    if(err != CL_SUCCESS) goto error;
+
+    // Compute the patch-wise average of parameters a and b
+    err = _box_mean_cl(devid, gd, dev_ds_ab, dev_tmp,
+                       ds_width, ds_height, 2, ds_radius);
+    if(err != CL_SUCCESS) goto error;
+
+    if(i != iterations - 1)
+    {
+      // Process the intermediate filtered image
+      const int blending = DT_GF_BLENDING_LINEAR;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_blend,
+              ds_width, ds_height,
+              CLARG(dev_ds_image), CLARG(dev_ds_ab),
+              CLARG(ds_width), CLARG(ds_height), CLARG(blending));
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+
+  // Upsample the blending parameters a and b
+  err = dt_interpolate_bilinear_cl(devid, dev_ds_ab, ds_width, ds_height,
+                                   dev_ab, width, height, 2);
+  if(err != CL_SUCCESS) goto error;
+
+  // Finally, blend the guided image
+  {
+    const int blending = filter;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_gf_blend,
+            width, height,
+            CLARG(dev_image), CLARG(dev_ab),
+            CLARG(width), CLARG(height), CLARG(blending));
+  }
+
+error:
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_packed);
+  dt_opencl_release_mem_object(dev_ds_ab);
+  dt_opencl_release_mem_object(dev_ds_mask);
+  dt_opencl_release_mem_object(dev_ds_image);
+  dt_opencl_release_mem_object(dev_ab);
+  return err;
+}
+
+
+static cl_int _fast_eigf_surface_blur_cl(const int devid,
+                                         const dt_iop_toneequalizer_global_data_t *const gd,
+                                         cl_mem dev_image,
+                                         const int width,
+                                         const int height,
+                                         const float sigma,
+                                         const float feathering,
+                                         const int iterations,
+                                         const dt_iop_guided_filter_blending_t filter,
+                                         const float quantization,
+                                         const float quantize_min,
+                                         const float quantize_max)
+{
+  // Works in-place on a grey image, see fast_eigf_surface_blur()
+  // in common/eigf.h
+  const float scaling = fmaxf(fminf(sigma, 4.0f), 1.0f);
+  const float ds_sigma = fmaxf(sigma / scaling, 1.0f);
+
+  // the downscaled dimensions can round down to zero on thumbnails
+  const int ds_width = MAX(1, (int)((float)width / scaling));
+  const int ds_height = MAX(1, (int)((float)height / scaling));
+
+  const size_t bsize = (size_t)width * height * sizeof(float);
+  const size_t ds_bsize = (size_t)ds_width * ds_height * sizeof(float);
+
+  // without quantization the guide is the image itself, which halves the
+  // number of terms to blur
+  const gboolean use_mask = (quantization != 0.0f);
+  const int ch = use_mask ? 4 : 2;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  cl_mem dev_mask = use_mask
+    ? dt_opencl_alloc_device_buffer(devid, bsize)
+    : NULL;
+  cl_mem dev_ds_mask = use_mask
+    ? dt_opencl_alloc_device_buffer(devid, ds_bsize)
+    : NULL;
+  cl_mem dev_ds_image = dt_opencl_alloc_device_buffer(devid, ds_bsize);
+  // average - variance arrays: store the guide and mask averages and variances
+  cl_mem dev_ds_av = dt_opencl_alloc_device_buffer(devid, ch * ds_bsize);
+  cl_mem dev_av = dt_opencl_alloc_device_buffer(devid, ch * bsize);
+
+  if(!dev_ds_image || !dev_ds_av || !dev_av
+     || (use_mask && (!dev_mask || !dev_ds_mask)))
+    goto error;
+
+  // Iterations of filter models the diffusion, sort of
+  for(int i = 0; i < iterations; i++)
+  {
+    // blend linear for all intermediate images, use filter for last iteration
+    const int blending = (i == iterations - 1) ? (int)filter : DT_GF_BLENDING_LINEAR;
+
+    err = dt_interpolate_bilinear_cl(devid, dev_image, width, height,
+                                     dev_ds_image, ds_width, ds_height, 1);
+    if(err != CL_SUCCESS) goto error;
+
+    if(use_mask)
+    {
+      // (Re)build the mask from the quantized image to help guiding
+      err = _quantize_cl(devid, gd, dev_image, dev_mask, width, height,
+                         quantization, quantize_min, quantize_max);
+      if(err != CL_SUCCESS) goto error;
+
+      // Downsample the mask for speed-up
+      err = dt_interpolate_bilinear_cl(devid, dev_mask, width, height,
+                                       dev_ds_mask, ds_width, ds_height, 1);
+      if(err != CL_SUCCESS) goto error;
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_eigf_pack_4c,
+              ds_width, ds_height,
+              CLARG(dev_ds_mask), CLARG(dev_ds_image), CLARG(dev_ds_av),
+              CLARG(ds_width), CLARG(ds_height));
+      if(err != CL_SUCCESS) goto error;
+
+      err = dt_gaussian_mean_blur_cl(devid, dev_ds_av,
+                                     ds_width, ds_height, 4, ds_sigma);
+      if(err != CL_SUCCESS) goto error;
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_eigf_finish_4c,
+              ds_width, ds_height,
+              CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
+      if(err != CL_SUCCESS) goto error;
+
+      // Upsample the variances and averages
+      err = dt_interpolate_bilinear_cl(devid, dev_ds_av, ds_width, ds_height,
+                                       dev_av, width, height, 4);
+      if(err != CL_SUCCESS) goto error;
+
+      // Blend the guided image
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_eigf_blend,
+              width, height,
+              CLARG(dev_image), CLARG(dev_mask), CLARG(dev_av),
+              CLARG(width), CLARG(height), CLARG(blending), CLARG(feathering));
+      if(err != CL_SUCCESS) goto error;
+    }
+    else
+    {
+      // no need to build a mask
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_eigf_pack_2c,
+              ds_width, ds_height,
+              CLARG(dev_ds_image), CLARG(dev_ds_av),
+              CLARG(ds_width), CLARG(ds_height));
+      if(err != CL_SUCCESS) goto error;
+
+      err = dt_gaussian_mean_blur_cl(devid, dev_ds_av,
+                                     ds_width, ds_height, 2, ds_sigma);
+      if(err != CL_SUCCESS) goto error;
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_eigf_finish_2c,
+              ds_width, ds_height,
+              CLARG(dev_ds_av), CLARG(ds_width), CLARG(ds_height));
+      if(err != CL_SUCCESS) goto error;
+
+      // Upsample the variances and averages
+      err = dt_interpolate_bilinear_cl(devid, dev_ds_av, ds_width, ds_height,
+                                       dev_av, width, height, 2);
+      if(err != CL_SUCCESS) goto error;
+
+      // Blend the guided image
+      err = dt_opencl_enqueue_kernel_2d_args
+        (devid, gd->kernel_toneequal_eigf_blend_no_mask, width, height,
+         CLARG(dev_image), CLARG(dev_av),
+         CLARG(width), CLARG(height), CLARG(blending), CLARG(feathering));
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+
+error:
+  dt_opencl_release_mem_object(dev_av);
+  dt_opencl_release_mem_object(dev_ds_av);
+  dt_opencl_release_mem_object(dev_ds_image);
+  dt_opencl_release_mem_object(dev_ds_mask);
+  dt_opencl_release_mem_object(dev_mask);
+  return err;
+}
+
+
+static cl_int _compute_luminance_mask_cl(const int devid,
+                                         const dt_iop_toneequalizer_global_data_t *const gd,
+                                         cl_mem dev_in,
+                                         cl_mem dev_luminance,
+                                         const int width,
+                                         const int height,
+                                         const dt_iop_toneequalizer_data_t *const d)
+{
+  // Contrast boosting is done around the average luminance of the mask for the
+  // plain filters only, see compute_luminance_mask() above
+  const gboolean boost_contrast = (d->details == DT_TONEEQ_GUIDED)
+                               || (d->details == DT_TONEEQ_EIGF);
+  const int method = d->method;
+  const float exposure_boost = d->exposure_boost;
+  const float fulcrum = boost_contrast ? CONTRAST_FULCRUM : 0.0f;
+  const float contrast_boost = boost_contrast ? d->contrast_boost : 1.0f;
+
+  const cl_int err =
+    dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_luminance_mask,
+            width, height,
+            CLARG(dev_in), CLARG(dev_luminance), CLARG(width), CLARG(height),
+            CLARG(method), CLARG(exposure_boost),
+            CLARG(fulcrum), CLARG(contrast_boost));
+  if(err != CL_SUCCESS) return err;
+
+  switch(d->details)
+  {
+    case DT_TONEEQ_AVG_GUIDED:
+      return _fast_surface_blur_cl(devid, gd, dev_luminance, width, height,
+                                   d->radius, d->feathering, d->iterations,
+                                   DT_GF_BLENDING_GEOMEAN, d->quantization,
+                                   exp2f(-14.0f), 4.0f);
+
+    case DT_TONEEQ_GUIDED:
+      return _fast_surface_blur_cl(devid, gd, dev_luminance, width, height,
+                                   d->radius, d->feathering, d->iterations,
+                                   DT_GF_BLENDING_LINEAR, d->quantization,
+                                   exp2f(-14.0f), 4.0f);
+
+    case DT_TONEEQ_AVG_EIGF:
+      return _fast_eigf_surface_blur_cl(devid, gd, dev_luminance, width, height,
+                                        d->radius, d->feathering, d->iterations,
+                                        DT_GF_BLENDING_GEOMEAN, d->quantization,
+                                        exp2f(-14.0f), 4.0f);
+
+    case DT_TONEEQ_EIGF:
+      return _fast_eigf_surface_blur_cl(devid, gd, dev_luminance, width, height,
+                                        d->radius, d->feathering, d->iterations,
+                                        DT_GF_BLENDING_LINEAR, d->quantization,
+                                        exp2f(-14.0f), 4.0f);
+
+    case DT_TONEEQ_NONE:
+    default:
+      return CL_SUCCESS;
+  }
+}
+
+
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_toneequalizer_data_t *const d = piece->data;
+  const dt_iop_toneequalizer_global_data_t *const gd = self->global_data;
+  dt_iop_toneequalizer_gui_data_t *const g = self->gui_data;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const size_t num_elem = (size_t)width * height;
+
+  // Freshness key of the luminance mask cache
+  const dt_hash_t hash = _luminance_mask_hash(piece, roi_out);
+
+  // Sanity checks
+  if(width < 1 || height < 1) return DT_OPENCL_PROCESS_CL;
+  if(roi_in->width < roi_out->width || roi_in->height < roi_out->height)
+    return DT_OPENCL_PROCESS_CL; // input should be at least as large as output
+  if(piece->colors != 4) return DT_OPENCL_PROCESS_CL;  // we need RGB signal
+
+  // Only the preview pipe publishes its luminance mask to the GUI, so only
+  // that one is copied back to host memory; see below.
+  gboolean cached = FALSE;
+  float *luminance = NULL;
+
+  if(self->dev->gui_attached && g)
+  {
+    // If the module instance has changed order in the pipe, invalidate the caches
+    if(g->pipe_order != piece->module->iop_order)
+    {
+      dt_iop_gui_enter_critical_section(self);
+      g->ui_preview_hash = DT_INVALID_HASH;
+      g->pipe_order = piece->module->iop_order;
+      g->luminance_valid = FALSE;
+      g->histogram_valid = FALSE;
+      dt_iop_gui_leave_critical_section(self);
+      dt_preview_data_invalidate(&g->pd);
+    }
+
+    if(dt_pipe_is_full(piece->pipe))
+    {
+      // The mask stays on the device : the correction is applied there and
+      // no GUI code reads g->full_preview_buf.  Both GUI consumers, the
+      // histogram and the exposure under the cursor, are fed by the preview
+      // pipe buffer instead.  Copying the full pipe mask back would be a
+      // blocking multi-megabyte transfer into a buffer nobody reads, and it
+      // would happen on every roi or upstream change.
+      //
+      // toneeq_process() skips compute_luminance_mask() while
+      // g->ui_preview_hash still matches, so invalidate it here: should the
+      // pipe fall back to the CPU, it has to recompute the mask rather than
+      // reuse a host buffer this path never filled.
+      const dt_hash_t invalid = DT_INVALID_HASH;
+      hash_set_get(&invalid, &g->ui_preview_hash, &self->gui_lock);
+    }
+    else if(dt_pipe_is_preview(piece->pipe))
+    {
+      // The shared under-cursor service owns the buffer and its locks.
+      // The resize and the luminance_valid invalidation happen under one
+      // GUI lock so the GUI never reads a resized, not-yet-recomputed buffer.
+      luminance = dt_preview_data_resize(&g->pd, width, height,
+                                         _toneeq_preview_resized, self);
+      cached = TRUE;
+    }
+
+    if(cached && !luminance)
+    {
+      dt_control_log(_("tone equalizer failed to allocate memory, check your RAM settings"));
+      return DT_OPENCL_PROCESS_CL;
+    }
+  }
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  cl_mem dev_luminance = dt_opencl_alloc_device_buffer(devid, num_elem * sizeof(float));
+  if(!dev_luminance) goto error;
+
+  // Compute the luminance mask
+  err = _compute_luminance_mask_cl(devid, gd, dev_in, dev_luminance,
+                                   width, height, d);
+  if(err != CL_SUCCESS) goto error;
+
+  // Keep the host-side cache in sync so that the GUI can compute the histogram
+  // and read the luminance under the cursor
+  if(cached)
+  {
+    const dt_hash_t saved_hash = dt_preview_data_get_hash(&g->pd);
+
+    dt_iop_gui_enter_critical_section(self);
+    const gboolean luminance_valid = g->luminance_valid;
+    dt_iop_gui_leave_critical_section(self);
+
+    if(saved_hash != hash || !luminance_valid)
+    {
+      /* copy back only if upstream pipe state has changed */
+      // Flag the cache as being recomputed so the GUI threads never
+      // read a partially filled buffer, then commit hash + validity
+      // once the data is ready.
+      dt_iop_gui_enter_critical_section(self);
+      g->histogram_valid = FALSE;
+      g->luminance_valid = FALSE;
+      dt_iop_gui_leave_critical_section(self);
+
+      err = dt_opencl_read_buffer_from_device(devid, luminance, dev_luminance,
+                                              0, num_elem * sizeof(float), TRUE);
+      if(err != CL_SUCCESS) goto error;
+      dt_preview_data_set_hash_value(&g->pd, hash);
+
+      dt_iop_gui_enter_critical_section(self);
+      g->luminance_valid = TRUE;
+      dt_iop_gui_leave_critical_section(self);
+      dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
+    }
+  }
+
+  // The output dimensions need to be smaller or equal to the input ones
+  const int out_width = MIN(width, roi_out->width);
+  const int out_height = MIN(height, roi_out->height);
+  const int offset_x = (roi_in->x < roi_out->x) ? roi_out->x - roi_in->x : 0;
+  const int offset_y = (roi_in->y < roi_out->y) ? roi_out->y - roi_in->y : 0;
+
+  // Display output
+  if(self->dev->gui_attached && g && dt_pipe_is_full(piece->pipe) && g->mask_display)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_display_mask,
+            out_width, out_height,
+            CLARG(dev_in), CLARG(dev_luminance), CLARG(dev_out),
+            CLARG(out_width), CLARG(out_height), CLARG(width),
+            CLARG(offset_x), CLARG(offset_y));
+    if(err != CL_SUCCESS) goto error;
+
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+  }
+  else
+  {
+    // the correction is interpolated by a series of gaussians, which is
+    // cheaper on a GPU than uploading the correction LUT used by the CPU code
+    const float gauss_denom = gaussian_denom(d->smoothing);
+
+    // the 8 octave factors are passed as two float4, so keep the halves in
+    // their own pointers : CLFLARRAY() casts before it adds an offset
+    const float *const restrict factors_low = d->factors;
+    const float *const restrict factors_high = d->factors + PIXEL_CHAN / 2;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_toneequal_apply,
+            out_width, out_height,
+            CLARG(dev_in), CLARG(dev_luminance), CLARG(dev_out),
+            CLARG(out_width), CLARG(out_height), CLARG(width),
+            CLARG(offset_x), CLARG(offset_y),
+            CLFLARRAY(4, factors_low), CLFLARRAY(4, factors_high),
+            CLARG(gauss_denom));
+  }
+
+error:
+  dt_opencl_release_mem_object(dev_luminance);
+  return err;
+}
+
+#endif // HAVE_OPENCL
+
+
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
+{
+  const dt_iop_toneequalizer_data_t *const d = piece->data;
+
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->align = 1;
+
+  // in and out buffers plus the full size luminance mask, expressed as a
+  // multiple of a 4 channel image buffer
+  float factor = 2.25f;
+
+  switch(d->details)
+  {
+    case DT_TONEEQ_AVG_GUIDED:
+    case DT_TONEEQ_GUIDED:
+      // full size a and b parameters plus the sixteenth-sized working set
+      factor += 0.5f + 0.25f;
+      break;
+
+    case DT_TONEEQ_AVG_EIGF:
+    case DT_TONEEQ_EIGF:
+    {
+      // the downscaling factor of the EIGF depends on the filter radius
+      const float scaling = fmaxf(fminf((float)d->radius, 4.0f), 1.0f);
+      const float ds = 1.0f / (scaling * scaling);
+      factor += (d->quantization != 0.0f)
+        ? 1.25f + 3.5f * ds  // mask and averages, plus the gaussian buffers
+        : 0.5f + 1.75f * ds;
+      break;
+    }
+
+    case DT_TONEEQ_NONE:
+    default:
+      break;
+  }
+
+  tiling->factor = factor;
+  tiling->factor_cl = factor;
+}
 
 void modify_roi_in(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
@@ -1567,14 +2195,71 @@ static inline gboolean update_curve_lut(dt_iop_module_t *self)
 
 void init_global(dt_iop_module_so_t *self)
 {
+  const int program = 43; // toneequal.cl, from programs.conf
+
   dt_iop_toneequalizer_global_data_t *gd = malloc(sizeof(dt_iop_toneequalizer_global_data_t));
 
   self->data = gd;
+
+  gd->kernel_toneequal_luminance_mask =
+    dt_opencl_create_kernel(program, "toneequal_luminance_mask");
+  gd->kernel_toneequal_apply =
+    dt_opencl_create_kernel(program, "toneequal_apply");
+  gd->kernel_toneequal_display_mask =
+    dt_opencl_create_kernel(program, "toneequal_display_mask");
+  gd->kernel_toneequal_quantize =
+    dt_opencl_create_kernel(program, "toneequal_quantize");
+  gd->kernel_toneequal_box_mean_x_2c =
+    dt_opencl_create_kernel(program, "toneequal_box_mean_x_2c");
+  gd->kernel_toneequal_box_mean_y_2c =
+    dt_opencl_create_kernel(program, "toneequal_box_mean_y_2c");
+  gd->kernel_toneequal_box_mean_x_4c =
+    dt_opencl_create_kernel(program, "toneequal_box_mean_x_4c");
+  gd->kernel_toneequal_box_mean_y_4c =
+    dt_opencl_create_kernel(program, "toneequal_box_mean_y_4c");
+  gd->kernel_toneequal_gf_pack =
+    dt_opencl_create_kernel(program, "toneequal_gf_pack");
+  gd->kernel_toneequal_gf_ab =
+    dt_opencl_create_kernel(program, "toneequal_gf_ab");
+  gd->kernel_toneequal_gf_blend =
+    dt_opencl_create_kernel(program, "toneequal_gf_blend");
+  gd->kernel_toneequal_eigf_pack_4c =
+    dt_opencl_create_kernel(program, "toneequal_eigf_pack_4c");
+  gd->kernel_toneequal_eigf_finish_4c =
+    dt_opencl_create_kernel(program, "toneequal_eigf_finish_4c");
+  gd->kernel_toneequal_eigf_pack_2c =
+    dt_opencl_create_kernel(program, "toneequal_eigf_pack_2c");
+  gd->kernel_toneequal_eigf_finish_2c =
+    dt_opencl_create_kernel(program, "toneequal_eigf_finish_2c");
+  gd->kernel_toneequal_eigf_blend =
+    dt_opencl_create_kernel(program, "toneequal_eigf_blend");
+  gd->kernel_toneequal_eigf_blend_no_mask =
+    dt_opencl_create_kernel(program, "toneequal_eigf_blend_no_mask");
 }
 
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
+  const dt_iop_toneequalizer_global_data_t *gd = self->data;
+
+  dt_opencl_free_kernel(gd->kernel_toneequal_luminance_mask);
+  dt_opencl_free_kernel(gd->kernel_toneequal_apply);
+  dt_opencl_free_kernel(gd->kernel_toneequal_display_mask);
+  dt_opencl_free_kernel(gd->kernel_toneequal_quantize);
+  dt_opencl_free_kernel(gd->kernel_toneequal_box_mean_x_2c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_box_mean_y_2c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_box_mean_x_4c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_box_mean_y_4c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_gf_pack);
+  dt_opencl_free_kernel(gd->kernel_toneequal_gf_ab);
+  dt_opencl_free_kernel(gd->kernel_toneequal_gf_blend);
+  dt_opencl_free_kernel(gd->kernel_toneequal_eigf_pack_4c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_eigf_finish_4c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_eigf_pack_2c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_eigf_finish_2c);
+  dt_opencl_free_kernel(gd->kernel_toneequal_eigf_blend);
+  dt_opencl_free_kernel(gd->kernel_toneequal_eigf_blend_no_mask);
+
   free(self->data);
   self->data = NULL;
 }
