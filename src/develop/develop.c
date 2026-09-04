@@ -254,7 +254,6 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dev->histogram_pre_tonecurve = dev->histogram_pre_levels = NULL;
 
   // Clean up pinned develop
-  // Clean up pinned develop
   if(dev->preview2_pinned_dev)
   {
     _cleanup_pinned_dev(dev->preview2_pinned_dev);
