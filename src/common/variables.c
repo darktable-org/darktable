@@ -1148,7 +1148,8 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
         if(mode == '/' || mode == '#' || mode == '%') (*variable)++;
         char *pattern = _expand_source(params, variable, '/');
         const size_t pattern_length = strlen(pattern);
-        (*variable)++;
+        // a truncated "$(var/pattern" stops at the NUL, not at a delimiter
+        if(**variable == '/') (*variable)++;
         char *replacement = _expand_source(params, variable, ')');
         const size_t replacement_length = strlen(replacement);
 
