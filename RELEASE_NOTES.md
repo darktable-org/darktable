@@ -219,6 +219,12 @@ changes (where available).
 - Fixed a small memory leak each time a history stack was pasted onto the
   image open in darkroom.
 
+- Fixed Windows paths losing their backslashes in export and import
+  patterns, which sent files to the wrong location.
+
+- Fixed wrong output or a crash from an export pattern containing an
+  unclosed variable substitution, such as "$(FILE_NAME/foo".
+
 ## Lua
 
 ### API Version

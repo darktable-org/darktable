@@ -1148,7 +1148,8 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
         if(mode == '/' || mode == '#' || mode == '%') (*variable)++;
         char *pattern = _expand_source(params, variable, '/');
         const size_t pattern_length = strlen(pattern);
-        (*variable)++;
+        // a truncated "$(var/pattern" stops at the NUL, not at a delimiter
+        if(**variable == '/') (*variable)++;
         char *replacement = _expand_source(params, variable, ')');
         const size_t replacement_length = strlen(replacement);
 
@@ -1393,6 +1394,45 @@ char *dt_variables_expand(dt_variables_params_t *params,
   g_free(aliased_source);
 
   _cleanup_expansion(params);
+  return result;
+}
+
+// rewrite '\' to '/', except before a '/': no path has a backslash there,
+// so "\/" can only be escaping a literal '/' in $(VAR/pattern/replacement)
+static gchar *_normalize_separators(const gchar *source)
+{
+  gchar *result = g_malloc(strlen(source) + 1);
+  gchar *out = result;
+
+  for(const gchar *in = source; *in; in++)
+  {
+    if(*in == '\\' && in[1] == '/')
+    {
+      *out++ = *in++;
+      *out++ = *in;
+    }
+    else
+      *out++ = (*in == '\\') ? '/' : *in;
+  }
+  *out = '\0';
+
+  return result;
+}
+
+char *dt_variables_expand_path(dt_variables_params_t *params,
+                               gchar *source,
+                               const gboolean iterate)
+{
+  // G_DIR_SEPARATOR is a compile-time constant, so this costs nothing off
+  // Windows and both branches still get compiled everywhere
+  gchar *normalized = (G_DIR_SEPARATOR == '\\')
+    ? _normalize_separators(source)
+    : NULL;
+
+  char *result = dt_variables_expand(params,
+                                     normalized ? normalized : source,
+                                     iterate);
+  g_free(normalized);
   return result;
 }
 

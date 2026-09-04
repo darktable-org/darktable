@@ -386,7 +386,7 @@ try_again:
 
     if(variable_expand)
     {
-      gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
+      gchar *result_filename = dt_variables_expand_path(d->vp, pattern, TRUE);
       g_strlcpy(filename, result_filename, sizeof(filename));
       g_free(result_filename);
 
