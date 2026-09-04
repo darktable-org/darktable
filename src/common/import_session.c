@@ -337,7 +337,7 @@ static const char *_import_session_path(dt_import_session_t *self, const gboolea
     if(first >= 'A' && first <= 'Z' && new_path[1] == ':') // path format is <drive letter>:/path/to/file
       new_path[0] = first;                                 // drive letter in uppercase looks nicer
   }
-  /* Remove trailing spaces from each element in the the path separated by directory separator.
+  /* Remove trailing spaces from each element in the path separated by directory separator.
      So follow the usage in Windows. */
   if(new_path && (strlen(new_path) >= 1))
   {
