@@ -2564,8 +2564,14 @@ static void _add_history_job_data(const char *title,
                                   dt_job_execute_callback execute,
                                   _images_job_data_t *images_job_data)
 {
+  // nothing below will take ownership of the data
   if(!images_job_data->imgs || !execute)
+  {
+    g_list_free(images_job_data->imgs);
+    g_list_free(images_job_data->styles);
+    g_free(images_job_data);
     return;
+  }
 
   GList *link = darktable.develop
     ? g_list_find(images_job_data->imgs,
@@ -2596,6 +2602,14 @@ static void _add_history_job_data(const char *title,
                        _control_generic_images_job_create(execute, title, 0,
                                                           (gpointer)images_job_data,
                                                           PROGRESS_BLOCKING, FALSE));
+  }
+  else
+  {
+    // nothing left for a job either. the strings behind styles belong to
+    // the job above, which shallow-copied them
+    g_list_free(images_job_data->imgs);
+    g_list_free(images_job_data->styles);
+    g_free(images_job_data);
   }
 }
 
