@@ -25,12 +25,15 @@ sanitizer failed to start.  Usable standalone on an old log dir:
 
 import argparse
 import collections
-import glob
 import os
 import re
 import sys
+import textwrap
 
-LOG_PREFIXES = ("asan", "ubsan", "lsan", "tsan", "stderr")
+# tools/run-integration-tests.sh files every report under a directory named
+# after the test that produced it, and tags the name with the pass it came from,
+# so a whole-suite run stays traceable: <log dir>/0004-masks/ubsan-cpu.12345
+REPORT_FILE = re.compile(r"^(?:asan|ubsan|lsan|tsan|stderr)(?:-[a-z]+)?\.\d+$")
 
 # A sanitizer that cannot lay out its shadow memory dies here, before any of
 # the program runs. Nearly always the kernel's ASLR entropy is higher than the
@@ -86,10 +89,19 @@ FRAMES_PER_SIGNATURE = 3
 
 
 def report_files(log_dir):
+    """Every per-process report below log_dir, including the per-test subdirs."""
     files = []
-    for prefix in LOG_PREFIXES:
-        files.extend(glob.glob(os.path.join(log_dir, prefix + ".*")))
-    return sorted(files)
+    for root, dirs, names in os.walk(log_dir):
+        dirs.sort()
+        files.extend(os.path.join(root, name)
+                     for name in sorted(names) if REPORT_FILE.match(name))
+    return files
+
+
+def origin(log_dir, path):
+    """Which test a report belongs to, from the directory the shim filed it in."""
+    relative = os.path.relpath(os.path.dirname(path), log_dir)
+    return "(run)" if relative == "." else relative
 
 
 def headline(match):
@@ -178,6 +190,24 @@ def parse(path):
         yield "finding", signature(headline(match), frames)
 
 
+WIDTH = 79
+
+
+def describe(where, prefix):
+    """List every test a finding turned up in, wrapped onto continuation lines.
+
+    Deliberately not truncated: which tests are affected, and which are not, is
+    the thing you are reading the summary for. break_on_hyphens stays off so
+    that a name like 0002-local-contrast is never split across two lines.
+    """
+    return textwrap.wrap(", ".join(sorted(where)),
+                         width=WIDTH,
+                         initial_indent=prefix,
+                         subsequent_indent=" " * len(prefix),
+                         break_long_words=False,
+                         break_on_hyphens=False)
+
+
 STARTUP_HINT = """\
    A runtime that cannot map its shadow memory almost always means the kernel's
    ASLR entropy is higher than it supports. Either lower it system-wide:
@@ -198,12 +228,20 @@ def main():
 
     counts = collections.Counter()
     fatals = collections.Counter()
+    # Which tests each finding was seen in. The same defect usually fires in
+    # many tests, and knowing whether it is one test or all of them is most of
+    # the triage.
+    seen_in = collections.defaultdict(set)
+    tests = set()
     for path in files:
+        where = origin(args.log_dir, path)
         for kind, item in parse(path):
             if kind == "fatal":
                 fatals[item] += 1
             else:
                 counts[item] += 1
+                seen_in[item].add(where)
+            tests.add(where)
 
     total = sum(counts.values())
 
@@ -212,6 +250,7 @@ def main():
         "=" * 72,
         "log dir      : %s" % args.log_dir,
         "report files : %d" % len(files),
+        "tests        : %d" % len(tests),
         "raw reports  : %d" % total,
         "unique       : %d" % len(counts),
         "",
@@ -227,9 +266,11 @@ def main():
         lines.append(STARTUP_HINT)
         lines.append("")
 
-    for (title, frames), count in counts.most_common():
+    for finding, count in counts.most_common():
+        title, frames = finding
         lines.append("[%4dx] %s" % (count, title))
         lines.extend("         %s" % frame for frame in frames)
+        lines.extend(describe(seen_in[finding], "         in: "))
         lines.append("")
 
     text = "\n".join(lines)
