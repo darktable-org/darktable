@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2015-2021 darktable developers.
+   Copyright (C) 2015-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -60,10 +60,6 @@ static void init_widget_sub(lua_State *L, dt_lua_widget_type_t *widget_type) {
     widget_type->gui_init(L);
 }
 
-static void on_destroy(GtkWidget *widget, gpointer user_data)
-{
-}
-
 static gboolean on_destroy_wrapper(gpointer user_data)
 {
   gtk_widget_destroy((GtkWidget*) user_data);
@@ -111,7 +107,6 @@ static int get_widget_params(lua_State *L)
     lua_pop(L,1);
   }
   lua_pop(L,1);
-  g_signal_connect(widget->widget, "destroy", G_CALLBACK(on_destroy), widget);
   return 1;
 }
 
@@ -399,9 +394,9 @@ int dt_lua_init_widget(lua_State* L)
   lua_pop(L, 1);
   return 0;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
