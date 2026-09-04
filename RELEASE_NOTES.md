@@ -216,6 +216,9 @@ changes (where available).
   sliders and comboboxes themselves, instead of only shrinking their
   font.
 
+- Fixed a small memory leak each time a history stack was pasted onto the
+  image open in darkroom.
+
 ## Lua
 
 ### API Version
