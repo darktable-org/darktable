@@ -2395,8 +2395,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     const gboolean no_tiling = fitter == DT_OPENCL_NO_TILING;
     const gboolean fast_tiling = fitter == DT_OPENCL_FAST_TILING
         && !memcmp(&roi_in, roi_out, sizeof(roi_in))
-        && !(module->flags() & (IOP_FLAGS_WRITE_RASTER | IOP_FLAGS_WRITE_DETAILS)
-        && may_tile); // fast tiling is not allowed if the piece doesn't support tiling
+        && !(module->flags() & (IOP_FLAGS_WRITE_RASTER | IOP_FLAGS_WRITE_DETAILS))
+        && may_tile; // fast tiling is not allowed if the piece doesn't support tiling
     const gboolean fits_on_device = no_tiling || fast_tiling;
 
     if(possible_cl && !fits_on_device && !may_tile)
