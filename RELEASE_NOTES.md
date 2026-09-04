@@ -1008,6 +1008,11 @@ changes (where available).
 - Fixed scale pixels output shifted by a fraction of a pixel in each
   tile when the image was processed in tiles.
 
+- Fixed random crashes while starting up, mostly seen while the splash
+  screen was still showing, where a Lua script or a background task
+  could build and rearrange interface elements from its own thread
+  while the main window was still being assembled.
+
 ## Lua
 
 ### API Version
