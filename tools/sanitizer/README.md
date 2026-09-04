@@ -21,6 +21,26 @@ The run ends with a deduplicated summary of every sanitizer finding and writes
 the full reports plus a `summary.txt` under
 `build-sanitize/sanitizer-logs/<timestamp>/`.
 
+Reports are filed under the test that produced them, and tagged with the pass
+they came from, so a whole-suite run stays traceable:
+
+```
+sanitizer-logs/20260904-103244/
+├── 0000-nop/
+│   ├── stderr-cpu.147106      captured stderr (GCC's UBSan reports here)
+│   └── ubsan-cpu.147121       whatever the runtime's log_path caught
+├── 0002-local-contrast/
+│   └── ...
+├── darktable-cli              the generated shim, for reproducing by hand
+├── suite-output.txt
+└── summary.txt
+```
+
+Tests that report nothing leave no directory behind, so what remains is exactly
+the set that found something. The summary names the tests each finding turned up
+in, which is most of the triage: one test behaving differently from the other
+180 is a very different problem from a defect every test walks into.
+
 ## Available sanitizers
 
 `--sanitize` takes a comma separated list. Slowdowns are relative to an
