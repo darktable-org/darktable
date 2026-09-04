@@ -1077,6 +1077,9 @@ static void _popup_item_activate(GSimpleAction *action,
   GtkWidget *source = GTK_WIDGET(g_variant_get_uint64(v_source));
   _range_block *blo = (_range_block *)g_variant_get_uint64(v_blo);
 
+  g_variant_unref(v_source);
+  g_variant_unref(v_blo);
+
   // if source is the band, apply the value directly
   if(source == range->band)
   {
