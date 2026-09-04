@@ -973,7 +973,7 @@ void dt_bauhaus_load_theme()
                                                     : DT_BAUHAUS_MARKER_TRIANGLE;
 
   // absolute size in Cairo unit:
-  if(dt_conf_get_bool("bauhaus/condensed"))
+  if(dt_conf_get_bool("themes/condensed"))
   {
     bh->quad_width = bh->line_height * 0.8;
     bh->baseline_size = bh->line_height / 4.5f;
@@ -1033,7 +1033,7 @@ void dt_bauhaus_init()
   dt_bauhaus_popup_t *pop = &bh->popup;
 
   // honor the condensed setting
-  INNER_PADDING = dt_conf_get_bool("bauhaus/condensed") ? 1.0 : 4.0;
+  INNER_PADDING = dt_conf_get_bool("themes/condensed") ? 1.0 : 4.0;
 
   bh->keys_cnt = 0;
   bh->current = NULL;
