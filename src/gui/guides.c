@@ -977,7 +977,7 @@ static void _settings_autoshow_change(GSimpleAction *action,
   dt_conf_set_bool(key, !dt_conf_get_bool(key));
   DT_ENTER_GUI_UPDATE();
   dt_bauhaus_toggle_set(module->guides_combo, dt_conf_get_bool(key));
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->preset_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
   DT_LEAVE_GUI_UPDATE();
   g_free(key);
   dt_control_queue_redraw_center();

@@ -37,6 +37,8 @@
 #include "gui/presets.h"
 
 #include <assert.h>
+#include <glib-2.0/gio/gio.h>
+#include <glib-2.0/gio/gmenu.h>
 #include <gmodule.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1990,32 +1992,46 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module,
   return FALSE;
 }
 
-static void _blendif_select_colorspace(GtkMenuItem *menuitem,
-                                       dt_iop_module_t *module)
+static void _blendif_select_colorspace(GSimpleAction *action,
+                                       GVariant *parameter,
+                                       gpointer user_data)
 {
-  const dt_develop_blend_colorspace_t cst =
-    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menuitem), "dt-blend-cst"));
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+
+  const dt_develop_blend_colorspace_t cst = g_variant_get_int32(parameter);
+
   if(_blendif_change_blend_colorspace(module, cst))
   {
     gtk_widget_queue_draw(module->widget);
   }
+
+  // close the menu
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
-static void _blendif_show_output_channels(GtkMenuItem *menuitem,
-                                          dt_iop_module_t *module)
+static void _blendif_show_output_channels(GSimpleAction *action,
+                                          GVariant *parameter,
+                                          gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
+
   if(!bd || !bd->blendif_support || !bd->blendif_inited) return;
   if(!bd->output_channels_shown)
   {
     bd->output_channels_shown = TRUE;
     dt_iop_gui_update(module);
   }
+
+  // close the menu
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
-static void _blendif_hide_output_channels(GtkMenuItem *menuitem,
-                                          dt_iop_module_t *module)
+static void _blendif_hide_output_channels(GSimpleAction *action,
+                                          GVariant *parameter,
+                                          gpointer user_data)
 {
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
 
   if(!bd || !bd->blendif_support
@@ -2031,11 +2047,33 @@ static void _blendif_hide_output_channels(GtkMenuItem *menuitem,
     }
     dt_iop_gui_update(module);
   }
+
+  // close the menu
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
 static void _blendif_options_callback(GtkButton *button,
                                       dt_iop_module_t *module)
 {
+  GActionGroup *action_group = gtk_widget_get_action_group(GTK_WIDGET(button), "blend");
+  if(action_group == NULL)
+  {
+    GActionEntry action_entries[] =
+    {
+      { "colorspace",         _blendif_select_colorspace,    "i",  "0" },
+      { "hide_outputchannel", _blendif_hide_output_channels, NULL, NULL },
+      { "show_outputchannel", _blendif_show_output_channels, NULL, NULL }
+    };
+
+    action_group = G_ACTION_GROUP(g_simple_action_group_new());
+    g_action_map_add_action_entries(G_ACTION_MAP(action_group),
+                                    action_entries,
+                                    G_N_ELEMENTS(action_entries),
+                                    module);
+    gtk_widget_insert_action_group(GTK_WIDGET(button),
+                                   "blend",
+                                   G_ACTION_GROUP(action_group));
+  }
   const dt_iop_gui_blend_data_t *bd = module->blend_data;
 
   if(!bd
@@ -2043,8 +2081,9 @@ static void _blendif_options_callback(GtkButton *button,
      || !bd->blendif_inited)
     return;
 
-  GtkWidget *mi;
-  GtkMenu *menu = GTK_MENU(gtk_menu_new());
+  GMenu *menu = g_menu_new();
+  GMenu *section = menu;
+  GMenuItem *mi;
 
   // add a section to switch blending color spaces
   const dt_develop_blend_colorspace_t module_cst =
@@ -2056,79 +2095,61 @@ static void _blendif_options_callback(GtkButton *button,
      || module_cst == DEVELOP_BLEND_CS_RGB_DISPLAY
      || module_cst == DEVELOP_BLEND_CS_RGB_SCENE)
   {
-
-    mi = gtk_menu_item_new_with_label(_("reset to default blend colorspace"));
-    g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
-                           GINT_TO_POINTER(DEVELOP_BLEND_CS_NONE), NULL);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(_blendif_select_colorspace), module);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    mi = g_menu_item_new(_("reset to default blend colorspace"), NULL);
+    g_menu_item_set_action_and_target_value(mi,
+                                            "blend.colorspace",
+                                            g_variant_new("i", DEVELOP_BLEND_CS_NONE));
+    g_menu_append_item(section, mi);
+    g_object_unref(mi);
 
     // only show Lab blending when the module is a Lab module to avoid
     // using it at the wrong place (Lab blending should not be
     // activated for RGB modules before colorin and after colorout)
     if(module_cst == DEVELOP_BLEND_CS_LAB)
     {
-      mi = gtk_check_menu_item_new_with_label(_("Lab"));
-      dt_gui_add_class(mi, "dt_transparent_background");
-      if(module_blend_cst == DEVELOP_BLEND_CS_LAB)
-      {
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-        dt_gui_add_class(mi, "active_menu_item");
-      }
-      g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
-                             GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL);
-      g_signal_connect(G_OBJECT(mi), "activate",
-                       G_CALLBACK(_blendif_select_colorspace), module);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      mi = g_menu_item_new(_("Lab"), NULL);
+      g_menu_item_set_action_and_target_value(mi,
+                                              "blend.colorspace",
+                                              g_variant_new("i", DEVELOP_BLEND_CS_LAB));
+      g_menu_append_item(section, mi);
+      g_object_unref(mi);
     }
 
-    mi = gtk_check_menu_item_new_with_label(_("RGB (display)"));
-    dt_gui_add_class(mi, "dt_transparent_background");
-    if(module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY)
-    {
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      dt_gui_add_class(mi, "active_menu_item");
-    }
-    g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
-                           GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(_blendif_select_colorspace), module);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    mi = g_menu_item_new(_("RGB (display)"), NULL);
+    g_menu_item_set_action_and_target_value(mi,
+                                            "blend.colorspace",
+                                            g_variant_new("i", DEVELOP_BLEND_CS_RGB_DISPLAY));
+    g_menu_append_item(section, mi);
+    g_object_unref(mi);
 
-    mi = gtk_check_menu_item_new_with_label(_("RGB (scene)"));
-    dt_gui_add_class(mi, "dt_transparent_background");
-    if(module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE)
-    {
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      dt_gui_add_class(mi, "active_menu_item");
-    }
-    g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
-                           GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(_blendif_select_colorspace), module);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    mi = g_menu_item_new(_("RGB (scene)"), NULL);
+    g_menu_item_set_action_and_target_value(mi,
+                                            "blend.colorspace",
+                                            g_variant_new("i", DEVELOP_BLEND_CS_RGB_SCENE));
+    g_menu_append_item(section, mi);
+    g_object_unref(mi);
 
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    // mark the active item
+    GAction *item_action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "colorspace");
+    g_simple_action_set_state(G_SIMPLE_ACTION(item_action),
+                              g_variant_new("i", module_blend_cst));
+
+    section = g_menu_new();
+    g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
 
     if(bd->output_channels_shown)
     {
-      mi = gtk_menu_item_new_with_label(_("reset and hide output channels"));
-      g_signal_connect(G_OBJECT(mi), "activate",
-                       G_CALLBACK(_blendif_hide_output_channels), module);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      g_menu_append(section, _("reset and hide output channels"), "blend.hide_outputchannel");
     }
     else
     {
-      mi = gtk_menu_item_new_with_label(_("show output channels"));
-      g_signal_connect(G_OBJECT(mi), "activate",
-                       G_CALLBACK(_blendif_show_output_channels), module);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      g_menu_append(section, _("show output channels"), "blend.show_outputchannel");
     }
   }
 
-  dt_gui_menu_popup(menu,
-                    GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // popup the menu
+  darktable.gui->active_popover_menu = dt_gui_popover_menu_from_model(GTK_WIDGET(button), menu);
+  gtk_popover_popup(GTK_POPOVER(darktable.gui->active_popover_menu));
 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
