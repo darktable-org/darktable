@@ -212,6 +212,10 @@ changes (where available).
 - Fixed a crash or hang on Windows when checking a faulty custom ONNX
   Runtime library.
 
+- The "condensed panels' controls" preference now also condenses the
+  sliders and comboboxes themselves, instead of only shrinking their
+  font.
+
 ## Lua
 
 ### API Version
