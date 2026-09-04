@@ -24,6 +24,7 @@
 #include "common/dtpthread.h"
 #include "common/eigf.h"
 #include "common/fast_guided_filter.h"
+#include "common/gdk_event_utils.h"
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/gamut_mapping.h"
@@ -92,16 +93,9 @@ typedef struct dt_iop_satcurve_params_t
   float gf_radius;            // $MIN: 0.5 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "filter radius"
   float gf_feathering;        // $MIN: 0.1 $MAX: 50.0 $DEFAULT: 1.0 $DESCRIPTION: "edge feathering"
   int gf_iterations;          // $MIN: 1 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations"
-
-  // cheap alternative to the guided filter: blends the raw per-pixel saturation
-  // with a plain (non edge-aware) gaussian-blurred version of it. The blend
-  // weight follows a sigmoid over saturation (as in colorequal) to protect
-  // low-saturation / noisy areas, plus a Scharr-gradient term (brilliance only)
-  // to avoid halos at sharp saturation transitions.
-  gboolean use_scharr_blend; // $DEFAULT: FALSE $DESCRIPTION: "use noise-aware blend"
-  float sb_radius;           // $MIN: 0.5 $MAX: 50.0 $DEFAULT: 2.0 $DESCRIPTION: "blur radius"
-  float sb_threshold;        // $MIN: 0.0 $MAX: 0.3 $DEFAULT: 0.05 $DESCRIPTION: "saturation threshold"
-  float sb_contrast;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "blend contrast"
+  float gf_protect_from;      // $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "protect near-neutrals from"
+  float gf_protect_to;        // $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.08 $DESCRIPTION: "protect near-neutrals to"
+  float noise_protection;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "noise protection"
 } dt_iop_satcurve_params_t;
 
 typedef struct dt_iop_satcurve_channel_data_t
@@ -124,11 +118,9 @@ typedef struct dt_iop_satcurve_data_t
   float gf_radius;
   float gf_feathering;
   int gf_iterations;
-
-  gboolean use_scharr_blend;
-  float sb_radius;
-  float sb_threshold;
-  float sb_contrast;
+  float gf_protect_from;
+  float gf_protect_to;
+  float noise_protection;
 } dt_iop_satcurve_data_t;
 
 typedef struct dt_iop_satcurve_gui_channel_t
@@ -151,13 +143,10 @@ typedef struct dt_iop_satcurve_gui_data_t
   GtkWidget *gf_radius;
   GtkWidget *gf_feathering;
   GtkWidget *gf_iterations;
+  GtkWidget *gf_protect_center;
+  GtkWidget *gf_protect_width;
+  GtkWidget *noise_protection;
   dt_gui_collapsible_section_t gf_section;
-
-  GtkWidget *use_scharr_blend;
-  GtkWidget *sb_radius;
-  GtkWidget *sb_threshold;
-  GtkWidget *sb_contrast;
-  dt_gui_collapsible_section_t sb_section;
 
   dt_iop_satcurve_gui_channel_t channel[DT_IOP_SATCURVE_CHANNELS];
   dt_iop_satcurve_channel_t active_channel;
@@ -182,9 +171,10 @@ typedef struct dt_iop_satcurve_global_data_t
   int kernel_satcurve_histogram;
   int kernel_satcurve_mask;
   int kernel_satcurve_scalar_mask;
-  int kernel_satcurve_scalar_mask_buffer;
-  int kernel_satcurve_scharr_blend;
   int kernel_satcurve_mask_from_scalar;
+  int kernel_satcurve_perceptual_guide;
+  int kernel_satcurve_filter_confidence;
+  int kernel_satcurve_mask_from_control;
   int kernel_fgf_resample;
   int kernel_fgf_quantize;
   int kernel_fgf_covar_products;
@@ -242,6 +232,31 @@ static inline void reset_channel_curve(dt_iop_satcurve_channel_params_t *c)
   c->curve[1] = (dt_iop_satcurve_node_t){1.f, .5f};
 }
 
+// Center/width -> from/to. Width is clamped so that from/to stay within
+// [0, 0.5] and from <= to holds (identical to the previous slider bounds).
+static inline void protect_center_width_to_from_to(const float center,
+                                                   const float width,
+                                                   float *from,
+                                                   float *to)
+{
+  const float half = MAX(width, 0.f) * 0.5f;
+  *from = CLAMP(center - half, 0.f, 0.5f);
+  *to = CLAMP(center + half, 0.f, 0.5f);
+  if (*to < *from)
+    *to = *from;
+}
+
+// from/to -> center/width; used when loading existing params (presets,
+// history, old .xmp files) to correctly initialize the new sliders.
+static inline void protect_from_to_to_center_width(const float from,
+                                                   const float to,
+                                                   float *center,
+                                                   float *width)
+{
+  *center = 0.5f * (from + to);
+  *width = MAX(0.f, to - from);
+}
+
 static inline void reset_params(dt_iop_satcurve_params_t *p)
 {
   reset_channel_curve(&p->channel[DT_IOP_SATCURVE_CHANNEL_SATURATION]);
@@ -252,11 +267,9 @@ static inline void reset_params(dt_iop_satcurve_params_t *p)
   p->gf_radius = 10.0f;
   p->gf_feathering = 1.0f;
   p->gf_iterations = 1;
-
-  p->use_scharr_blend = FALSE;
-  p->sb_radius = 2.0f;
-  p->sb_threshold = 0.05f;
-  p->sb_contrast = 0.0f;
+  p->gf_protect_from = 0.03f;
+  p->gf_protect_to = 0.08f;
+  p->noise_protection = 1.0f;
 }
 
 static inline float lookup_lut(const float *lut, const float x)
@@ -426,94 +439,39 @@ static inline dt_iop_satcurve_factors_t eval_curve_factors(const dt_iop_satcurve
       .bri_factor = curve_to_factor(bri_c)};
 }
 
-/* Noise-aware alternative to the guided filter for the saturation mask.
-   Same logistic weighting idea as dt_iop_colorequal (see _init_satweights /
-   _get_satweight there): precalculated for performance and to avoid banding,
-   linearly interpolated at runtime.
-*/
-#define DT_SATCURVE_SB_SIZE 2048
-static float sb_weights[2 * DT_SATCURVE_SB_SIZE + 1];
-static float sb_lastcontrast = NAN;
+static inline float smoothstep01(const float edge0, const float edge1, const float x);
 
-static void _init_sb_weights(const float contrast)
+// Combined neutral-/noise-protection weight for a single pixel. Replaces the
+// separate full-image pass apply_neutral_protection(): the neutral weight
+// (raw saturation vs. protect_from/to) is now computed inline in the main
+// pixel loop instead of upfront over the whole image.
+static inline float protection_weight(const float s_raw,
+                                      const float protect_from,
+                                      const float protect_to,
+                                      const float noise_confidence,
+                                      const float noise_protection)
 {
-  if (sb_lastcontrast == contrast)
-    return;
-  sb_lastcontrast = contrast;
-  const double factor = -60.0 - 40.0 * (double)contrast;
-  for (int i = -DT_SATCURVE_SB_SIZE; i < DT_SATCURVE_SB_SIZE + 1; i++)
-  {
-    const double val = 0.5 / (double)DT_SATCURVE_SB_SIZE * (double)i;
-    sb_weights[i + DT_SATCURVE_SB_SIZE] = (float)(1.0 / (1.0 + exp(factor * val)));
-  }
+  const float neutral_w = smoothstep01(protect_from, protect_to, s_raw);
+  const float noise_w = 1.0f - CLAMP(noise_protection * noise_confidence, 0.0f, 1.0f);
+  return neutral_w * noise_w;
 }
 
-static inline float _get_sb_weight(const float sat)
+static inline void apply_neutral_protection(const float *const restrict raw,
+                                            float *const restrict filtered,
+                                            const float protect_from,
+                                            const float protect_to,
+                                            const size_t npixels)
 {
-  const float isat = (float)DT_SATCURVE_SB_SIZE
-                     * (1.0f + CLAMP(sat, -1.0f, 1.0f - (1.0f / DT_SATCURVE_SB_SIZE)));
-  const float base = floorf(isat);
-  const int i = (int)base;
-  return sb_weights[i] + (isat - base) * (sb_weights[i + 1] - sb_weights[i]);
-}
-
-// Computes, per pixel, the s_in value fed to the saturation curve and,
-// separately, to the brilliance curve. Both start from a lerp between the
-// raw (unfiltered) saturation and a cheap gaussian-blurred version of it;
-// the blend weight is a sigmoid over the blurred saturation (dampens
-// contamination from neighbouring pixels in flat / low-saturation areas).
-// For brilliance, an additional Scharr-gradient term on the blurred
-// saturation pulls the weight further down at sharp transitions, so the
-// blur is not trusted right where it would otherwise bleed across an edge.
-static inline void apply_scharr_blend_to_mask(const dt_iop_satcurve_data_t *d,
-                                              const float *const restrict sat_raw,
-                                              float *const restrict s_in_sat,
-                                              float *const restrict s_in_bri,
-                                              const int width,
-                                              const int height)
-{
-  const size_t npixels = (size_t)width * height;
-  float *const restrict sat_blur = dt_alloc_align_float(npixels);
-  if (!sat_blur)
-  {
-    // degrade gracefully: fall back to the raw, unfiltered saturation
-    memcpy(s_in_sat, sat_raw, npixels * sizeof(float));
-    memcpy(s_in_bri, sat_raw, npixels * sizeof(float));
-    return;
-  }
-
-  memcpy(sat_blur, sat_raw, npixels * sizeof(float));
-  dt_gaussian_mean_blur(sat_blur, width, height, 1, MAX(0.5f, d->sb_radius));
-
-  _init_sb_weights(d->sb_contrast);
-
   DT_OMP_FOR()
-  for (int row = 0; row < height; row++)
+  for (size_t k = 0; k < npixels; k++)
   {
-    for (int col = 0; col < width; col++)
-    {
-      const size_t k = (size_t)row * width + col;
-      const float weight = _get_sb_weight(sat_blur[k] - d->sb_threshold);
-
-      s_in_sat[k] = CLAMP(sat_raw[k] + (sat_blur[k] - sat_raw[k]) * weight, 0.f, 1.f);
-
-      // clamp the sampling position so the 3x3 Scharr stencil never reads
-      // outside the buffer, same trick as dt_iop_colorequal
-      const int vrow = MIN(height - 2, MAX(1, row));
-      const int vcol = MIN(width - 2, MAX(1, col));
-      const size_t kk = (size_t)vrow * width + vcol;
-      const float edge = sqrf(MAX(0.0f, scharr_gradient(&sat_blur[kk], width) - 0.02f));
-      const float bri_weight = weight * (1.0f - CLAMP(4.0f * edge, 0.f, 1.f));
-
-      s_in_bri[k] = CLAMP(sat_raw[k] + (sat_blur[k] - sat_raw[k]) * bri_weight, 0.f, 1.f);
-    }
+    const float weight = smoothstep01(protect_from, protect_to, raw[k]);
+    filtered[k] = CLAMP(raw[k] + weight * (filtered[k] - raw[k]), 0.0f, 1.0f);
   }
-
-  dt_free_align(sat_blur);
 }
 
-// Apply log1p compression to the histogram bins to compress the dynamic 
-// range for better visual representation in the GUI. Shared tail for both 
+// Apply log1p compression to the histogram bins to compress the dynamic
+// range for better visual representation in the GUI. Shared tail for both
 // the CPU path (_update_sat_histogram) and the GPU path (process_cl).
 static void _commit_sat_histogram(dt_iop_module_t *self, const int *const bins)
 {
@@ -566,7 +524,8 @@ static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
                                                 dt_aligned_pixel_t xyz,
                                                 const float L_white,
                                                 const float s_in_sat,
-                                                const float s_in_bri)
+                                                const float s_in_bri,
+                                                const float noise_confidence)
 {
   dt_aligned_pixel_t xyY, JCH, HCB, HSB;
 
@@ -582,7 +541,10 @@ static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
   const float gamut_s = satcurve_ucs_gamut_saturation(JCH[0], JCH[2], L_white, d->gamut_lut);
 
   // Compute curve factors from the (possibly independently blended) per-channel inputs
-  const dt_iop_satcurve_factors_t f = eval_curve_factors(d, s_in_sat, s_in_bri);
+  dt_iop_satcurve_factors_t f = eval_curve_factors(d, s_in_sat, s_in_bri);
+  const float effect = 1.0f - CLAMP(d->noise_protection * noise_confidence, 0.0f, 1.0f);
+  f.sat_factor = 1.0f + effect * (f.sat_factor - 1.0f);
+  f.bri_factor = 1.0f + effect * (f.bri_factor - 1.0f);
 
   HSB[1] = MAX(HSB[1] * f.sat_factor, 0.f);
   HSB[1] = satcurve_soft_clip(HSB[1], .8f * gamut_s, gamut_s);
@@ -613,7 +575,8 @@ static inline void apply_sat_and_brilliance_ucs(const dt_iop_satcurve_data_t *d,
 static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t *d,
                                                    dt_aligned_pixel_t xyz,
                                                    const float s_in_sat,
-                                                   const float s_in_bri)
+                                                   const float s_in_bri,
+                                                   const float noise_confidence)
 {
   dt_aligned_pixel_t jab;
   dt_XYZ_2_JzAzBz(xyz, jab);
@@ -625,7 +588,10 @@ static inline void apply_sat_and_brilliance_jzazbz(const dt_iop_satcurve_data_t 
   const float gamut = MAX(satcurve_lookup_gamut(d->gamut_lut, h), FLT_MIN);
 
   // Compute curve factors from the (possibly independently blended) per-channel inputs
-  const dt_iop_satcurve_factors_t f = eval_curve_factors(d, s_in_sat, s_in_bri);
+  dt_iop_satcurve_factors_t f = eval_curve_factors(d, s_in_sat, s_in_bri);
+  const float effect = 1.0f - CLAMP(d->noise_protection * noise_confidence, 0.0f, 1.0f);
+  f.sat_factor = 1.0f + effect * (f.sat_factor - 1.0f);
+  f.bri_factor = 1.0f + effect * (f.bri_factor - 1.0f);
 
   const float s_out = satcurve_soft_clip(MAX(s_in_sat * f.sat_factor, 0.f), .8f, 1.f) * gamut;
 
@@ -683,28 +649,101 @@ static inline void display_saturation_mask(const float *const restrict in,
   }
 }
 
-// Applies the fast scalar guided filter (edge-aware surface blur) in-place on a
-// saturation mask, using the guided-filter parameters cached in d. No-op if
-// use_guided_filter is off or the parameters are degenerate.
-static inline void apply_guided_filter_to_mask(const dt_iop_satcurve_data_t *d,
-                                               float *const restrict mask,
-                                               const int width,
-                                               const int height)
+static inline float smoothstep01(const float edge0, const float edge1, const float x)
 {
-  if (!d->use_guided_filter || d->gf_radius < 0.5f || d->gf_iterations <= 0)
-    return;
+  const float t = CLAMP((x - edge0) / MAX(edge1 - edge0, 1e-6f), 0.0f, 1.0f);
+  return t * t * (3.0f - 2.0f * t);
+}
 
-  fast_surface_blur(mask,
-                    width,
-                    height,
-                    d->gf_radius,
-                    d->gf_feathering,
-                    d->gf_iterations,
-                    DT_GF_BLENDING_LINEAR,
-                    1.0f,
-                    0.0f,
-                    exp2f(-14.0f),
-                    4.0f);
+// Build a perceptual guide, filter the curve coordinate, and return a confidence
+// which is high only for noisy, spatially homogeneous pixels.
+static inline void filter_curve_coordinate(const dt_iop_satcurve_data_t *d,
+                                           const dt_colormatrix_t inputmatrix_trans,
+                                           const float L_white,
+                                           const float *const restrict in,
+                                           float *const restrict raw,
+                                           float *const restrict filtered,
+                                           float *const restrict noise_confidence,
+                                           const int width,
+                                           const int height,
+                                           const int radius,
+                                           const int iterations)
+{
+  const size_t npixels = (size_t)width * height;
+  float *const restrict guide = dt_alloc_align_float(npixels * 3);
+  if (!guide)
+  {
+    memcpy(filtered, raw, npixels * sizeof(float));
+    memset(noise_confidence, 0, npixels * sizeof(float));
+    return;
+  }
+
+  DT_OMP_FOR()
+  for (size_t k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t rgb, xyz;
+    copy_pixel(rgb, in + 4 * k);
+    dt_vector_clipneg(rgb);
+    dt_apply_transposed_color_matrix(rgb, inputmatrix_trans, xyz);
+
+    if (d->formula == DT_IOP_SATCURVE_JZAZBZ)
+    {
+      dt_aligned_pixel_t jab;
+      dt_XYZ_2_JzAzBz(xyz, jab);
+      guide[3 * k + 0] = 100.0f * jab[0];
+      guide[3 * k + 1] = 100.0f * jab[1];
+      guide[3 * k + 2] = 100.0f * jab[2];
+    }
+    else
+    {
+      dt_aligned_pixel_t xyY, JCH;
+      dt_D65_XYZ_to_xyY(xyz, xyY);
+      xyY_to_dt_UCS_JCH(xyY, L_white, JCH);
+      guide[3 * k + 0] = JCH[0] / MAX(L_white, 1e-6f);
+      guide[3 * k + 1] = JCH[1] * cosf(JCH[2]) / MAX(L_white, 1e-6f);
+      guide[3 * k + 2] = JCH[1] * sinf(JCH[2]) / MAX(L_white, 1e-6f);
+    }
+  }
+
+  guided_filter(guide, raw, filtered, width, height, 3, MAX(1, radius),
+                MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
+
+  DT_OMP_FOR()
+  for (int row = 0; row < height; row++)
+  {
+    for (int col = 0; col < width; col++)
+    {
+      const size_t k = (size_t)row * width + col;
+      float residual_energy = 0.0f;
+      float edge_energy = 0.0f;
+      int count = 0;
+      for (int dy = -1; dy <= 1; dy++)
+      {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+          const int r = CLAMP(row + dy, 0, height - 1);
+          const int c = CLAMP(col + dx, 0, width - 1);
+          const size_t n = (size_t)r * width + c;
+          const float residual = raw[n] - filtered[n];
+          residual_energy += residual * residual;
+          for (int channel = 0; channel < 3; channel++)
+          {
+            const float delta = guide[3 * n + channel] - guide[3 * k + channel];
+            edge_energy += delta * delta;
+          }
+          count++;
+        }
+      }
+      residual_energy /= (float)count;
+      edge_energy /= (float)(count * 3);
+      const float noisy = smoothstep01(0.0005f, 0.01f, residual_energy);
+      const float edge_safe = 1.0f - smoothstep01(0.0005f, 0.01f, edge_energy);
+      const float confidence = noisy * edge_safe;
+      noise_confidence[k] = confidence;
+    }
+  }
+
+  dt_free_align(guide);
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -747,28 +786,30 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     {
       compute_saturation_mask(d, inputmatrix_trans, L_white, in, mask, npixels);
 
-      // Show whichever mask is actually fed into the curve, not the raw
-      // saturation -- guided filter and noise-aware blend are mutually
-      // exclusive (enforced in the GUI), so at most one of these runs.
+      // Show final coordinate fed into curve.
       if (d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0)
       {
-        apply_guided_filter_to_mask(d, mask, roi_out->width, roi_out->height);
-      }
-      else if (d->use_scharr_blend)
-      {
-        // the preview shows the saturation-channel result; brilliance gets
-        // an extra edge term and is discarded here (see apply_scharr_blend_to_mask)
-        float *const restrict sat_out = dt_alloc_align_float(npixels);
-        float *const restrict bri_scratch = dt_alloc_align_float(npixels);
-        if (sat_out && bri_scratch)
+        float *const restrict filtered = dt_alloc_align_float(npixels);
+        float *const restrict confidence = dt_alloc_align_float(npixels);
+        if (filtered && confidence)
         {
-          // sat_raw and s_in_sat must not alias: both parameters are
-          // 'restrict'-qualified, so a separate output buffer is required
-          apply_scharr_blend_to_mask(d, mask, sat_out, bri_scratch, roi_out->width, roi_out->height);
-          memcpy(mask, sat_out, npixels * sizeof(float));
+          filter_curve_coordinate(d, inputmatrix_trans, L_white, in, mask, filtered, confidence,
+                                  roi_out->width, roi_out->height,
+                                  (int)d->gf_radius, d->gf_iterations);
+          apply_neutral_protection(mask, filtered, d->gf_protect_from, d->gf_protect_to, npixels);
+          //  Fold noise-protection damping into the displayed mask so the slider
+          // becomes visible in the preview: blend back toward the raw value in
+          // proportion to how much noise_protection would suppress the curve there.
+          DT_OMP_FOR()
+          for (size_t k = 0; k < npixels; k++)
+          {
+            const float effect = 1.0f - CLAMP(d->noise_protection * confidence[k], 0.0f, 1.0f);
+            mask[k] = mask[k] + effect * (filtered[k] - mask[k]);
+            // mask[k] here is final coordinate after neutral and noise protection.
+          }
         }
-        dt_free_align(sat_out);
-        dt_free_align(bri_scratch);
+        dt_free_align(filtered);
+        dt_free_align(confidence);
       }
 
       display_saturation_mask(in, mask, out, npixels);
@@ -788,46 +829,33 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     return;
   }
 
-  // Compute the input signal(s) for the curves. Three mutually exclusive modes,
-  // in priority order: guided filter (spatial, edge-aware) > noise-aware Scharr/
-  // sigmoid blend (value-domain, cheap) > raw per-pixel saturation (no filtering).
-  float *restrict gf_mask = NULL;
-  float *restrict sb_sat_mask = NULL;
-  float *restrict sb_bri_mask = NULL;
+  // Compute curve inputs from guided-filtered saturation or raw saturation.
+  float *restrict filtered_mask = NULL;
+  float *restrict noise_confidence = NULL;
+  float *restrict raw_mask = NULL;
 
   if (d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0)
   {
-    gf_mask = dt_alloc_align_float(npixels);
-    if (gf_mask)
+    raw_mask = dt_alloc_align_float(npixels);
+    filtered_mask = dt_alloc_align_float(npixels);
+    noise_confidence = dt_alloc_align_float(npixels);
+    if (raw_mask && filtered_mask && noise_confidence)
     {
-      compute_saturation_mask(d, inputmatrix_trans, L_white, in, gf_mask, npixels);
-      apply_guided_filter_to_mask(d, gf_mask, roi_out->width, roi_out->height);
+      compute_saturation_mask(d, inputmatrix_trans, L_white, in, raw_mask, npixels);
+      filter_curve_coordinate(d, inputmatrix_trans, L_white, in, raw_mask, filtered_mask,
+                              noise_confidence, roi_out->width, roi_out->height,
+                              (int)d->gf_radius, d->gf_iterations);
+      // apply_neutral_protection() removed: the protection weight is now
+      // computed inline in the main pixel loop via protection_weight().
     }
     else
     {
       dt_control_log(_("saturation curve: guided filter failed to allocate memory, disabling it for this run"));
+      dt_free_align(raw_mask);
+      dt_free_align(filtered_mask);
+      dt_free_align(noise_confidence);
+      raw_mask = filtered_mask = noise_confidence = NULL;
     }
-  }
-  else if (d->use_scharr_blend)
-  {
-    float *const restrict sat_raw = dt_alloc_align_float(npixels);
-    sb_sat_mask = dt_alloc_align_float(npixels);
-    sb_bri_mask = dt_alloc_align_float(npixels);
-
-    if (sat_raw && sb_sat_mask && sb_bri_mask)
-    {
-      compute_saturation_mask(d, inputmatrix_trans, L_white, in, sat_raw, npixels);
-      apply_scharr_blend_to_mask(d, sat_raw, sb_sat_mask, sb_bri_mask, roi_out->width, roi_out->height);
-    }
-    else
-    {
-      dt_control_log(_("saturation curve: noise-aware blend failed to allocate memory, disabling it for this run"));
-      dt_free_align(sb_sat_mask);
-      dt_free_align(sb_bri_mask);
-      sb_sat_mask = NULL;
-      sb_bri_mask = NULL;
-    }
-    dt_free_align(sat_raw);
   }
 
   DT_OMP_FOR()
@@ -838,18 +866,20 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     dt_vector_clipneg(rgb);
     dt_apply_transposed_color_matrix(rgb, inputmatrix_trans, xyz);
 
-    // Determine input saturation per channel: spatially modulated guided-filter
-    // mask, or the value-domain noise-aware blend (independent per channel,
-    // brilliance gets extra edge damping), or the raw per-pixel saturation.
+    // Guided filtering supplies same protected coordinate to both curves.
     float s_in_sat, s_in_bri;
-    if (sb_sat_mask)
+    float noise_conf = 0.0f;
+    if (filtered_mask)
     {
-      s_in_sat = CLAMP(sb_sat_mask[k], 0.f, 1.f);
-      s_in_bri = CLAMP(sb_bri_mask[k], 0.f, 1.f);
-    }
-    else if (gf_mask)
-    {
-      s_in_sat = s_in_bri = CLAMP(gf_mask[k], 0.f, 1.f);
+      // noise_protection is deliberately NOT passed here (0.0f): the noise
+      // damping still acts on sat_factor/bri_factor inside
+      // apply_sat_and_brilliance_*(), not on the coordinate itself.
+      // protection_weight() effectively yields only the neutral component here.
+      const float weight = protection_weight(raw_mask[k], d->gf_protect_from, d->gf_protect_to,
+                                             noise_confidence[k], 0.0f);
+      const float protected_coord = raw_mask[k] + weight * (filtered_mask[k] - raw_mask[k]);
+      s_in_sat = s_in_bri = CLAMP(protected_coord, 0.f, 1.f);
+      noise_conf = noise_confidence[k];
     }
     else
     {
@@ -857,9 +887,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     }
 
     if (d->formula == DT_IOP_SATCURVE_DTUCS)
-      apply_sat_and_brilliance_ucs(d, xyz, L_white, s_in_sat, s_in_bri);
+      apply_sat_and_brilliance_ucs(d, xyz, L_white, s_in_sat, s_in_bri, noise_conf);
     else
-      apply_sat_and_brilliance_jzazbz(d, xyz, s_in_sat, s_in_bri);
+      apply_sat_and_brilliance_jzazbz(d, xyz, s_in_sat, s_in_bri, noise_conf);
 
     dt_apply_transposed_color_matrix(xyz, outputmatrix_trans, pixout);
     dt_vector_clipneg(pixout);
@@ -869,171 +899,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
   dt_omploop_sfence();
 
-  if (gf_mask)
-    dt_free_align(gf_mask);
-  if (sb_sat_mask)
-    dt_free_align(sb_sat_mask);
-  if (sb_bri_mask)
-    dt_free_align(sb_bri_mask);
-}
-
-#if HAVE_OPENCL
-
-// Forward declaration
-static cl_int _satcurve_guided_filter_cl(const dt_iop_satcurve_global_data_t *gd,
-                                         const int devid,
-                                         cl_mem mask_in, cl_mem mask_out,
-                                         const int width, const int height,
-                                         const int radius, const float feathering,
-                                         const int iterations);
-
-static cl_int _cl_fgf_box_mean(const int devid, const int width, const int height,
-                               const int radius, cl_mem in, cl_mem out, cl_mem temp)
-{
-  cl_int err = dt_opencl_enqueue_kernel_1d_args(
-      devid, darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x, height,
-      CLARG(width), CLARG(height), CLARG(in), CLARG(temp), CLARG(radius));
-  if (err != CL_SUCCESS)
-    return err;
-
-  return dt_opencl_enqueue_kernel_1d_args(
-      devid, darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y, width,
-      CLARG(width), CLARG(height), CLARG(temp), CLARG(out), CLARG(radius));
-}
-
-static cl_int _satcurve_guided_filter_cl(const dt_iop_satcurve_global_data_t *gd,
-                                         const int devid,
-                                         cl_mem mask_in, cl_mem mask_out,
-                                         const int width, const int height,
-                                         const int radius, const float feathering,
-                                         const int iterations)
-{
-  const float scaling = 4.0f;
-  const int ds_radius = (radius < 4) ? 1 : (int)(radius / scaling);
-  const int ds_width = (int)((float)width / scaling);
-  const int ds_height = (int)((float)height / scaling);
-
-  if (ds_width < 1 || ds_height < 1)
-    return dt_opencl_enqueue_copy_image(devid, mask_in, mask_out,
-                                        (size_t[]){0, 0, 0}, (size_t[]){0, 0, 0}, (size_t[]){width, height, 1});
-
-  cl_mem ds_image = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem ds_blend_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem ds_g = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem ds_gg = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem ds_gp = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem mean_g = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem mean_p = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem mean_gg = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem mean_gp = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem a = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem b = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem temp_ds = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
-  cl_mem a_full = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-  cl_mem b_full = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  if (!ds_image || !ds_blend_tmp || !ds_g || !ds_gg || !ds_gp || !mean_g || !mean_p || !mean_gg || !mean_gp || !a || !b || !temp_ds || !a_full || !b_full)
-    goto cleanup;
-
-  err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_fgf_resample, ds_width, ds_height,
-      CLARG(mask_in), CLARG(width), CLARG(height),
-      CLARG(ds_image), CLARG(ds_width), CLARG(ds_height));
-  if (err != CL_SUCCESS)
-    goto cleanup;
-
-  for (int i = 0; i < iterations; i++)
-  {
-    const float qmin = exp2f(-14.0f);
-    const float qmax = 4.0f;
-    const float quantization = 0.0f;
-
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_fgf_quantize, ds_width, ds_height,
-        CLARG(ds_image), CLARG(ds_g), CLARG(ds_width), CLARG(ds_height),
-        CLARG(quantization), CLARG(qmin), CLARG(qmax));
-    if (err != CL_SUCCESS)
-      goto cleanup;
-
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_fgf_covar_products, ds_width, ds_height,
-        CLARG(ds_g), CLARG(ds_image), CLARG(ds_gg), CLARG(ds_gp),
-        CLARG(ds_width), CLARG(ds_height));
-    if (err != CL_SUCCESS)
-      goto cleanup;
-
-    if ((err = _cl_fgf_box_mean(devid, ds_width, ds_height, ds_radius, ds_g, mean_g, temp_ds)) != CL_SUCCESS)
-      goto cleanup;
-    if ((err = _cl_fgf_box_mean(devid, ds_width, ds_height, ds_radius, ds_image, mean_p, temp_ds)) != CL_SUCCESS)
-      goto cleanup;
-    if ((err = _cl_fgf_box_mean(devid, ds_width, ds_height, ds_radius, ds_gg, mean_gg, temp_ds)) != CL_SUCCESS)
-      goto cleanup;
-    if ((err = _cl_fgf_box_mean(devid, ds_width, ds_height, ds_radius, ds_gp, mean_gp, temp_ds)) != CL_SUCCESS)
-      goto cleanup;
-
-    err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_fgf_solve_ab, ds_width, ds_height,
-        CLARG(mean_g), CLARG(mean_p), CLARG(mean_gg), CLARG(mean_gp),
-        CLARG(a), CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(feathering));
-    if (err != CL_SUCCESS)
-      goto cleanup;
-
-    if ((err = _cl_fgf_box_mean(devid, ds_width, ds_height, ds_radius, a, a, temp_ds)) != CL_SUCCESS)
-      goto cleanup;
-    if ((err = _cl_fgf_box_mean(devid, ds_width, ds_height, ds_radius, b, b, temp_ds)) != CL_SUCCESS)
-      goto cleanup;
-
-    if (i != iterations - 1)
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(
-          devid, gd->kernel_fgf_apply_blend, ds_width, ds_height,
-          CLARG(ds_image), CLARG(ds_blend_tmp), CLARG(a), CLARG(b),
-          CLARG(ds_width), CLARG(ds_height));
-      if (err != CL_SUCCESS)
-        goto cleanup;
-
-      const cl_mem swap = ds_image;
-      ds_image = ds_blend_tmp;
-      ds_blend_tmp = swap;
-    }
-  }
-
-  err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_fgf_resample, width, height,
-      CLARG(a), CLARG(ds_width), CLARG(ds_height),
-      CLARG(a_full), CLARG(width), CLARG(height));
-  if (err != CL_SUCCESS)
-    goto cleanup;
-
-  err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_fgf_resample, width, height,
-      CLARG(b), CLARG(ds_width), CLARG(ds_height),
-      CLARG(b_full), CLARG(width), CLARG(height));
-  if (err != CL_SUCCESS)
-    goto cleanup;
-
-  err = dt_opencl_enqueue_kernel_2d_args(
-      devid, gd->kernel_fgf_apply_blend, width, height,
-      CLARG(mask_in), CLARG(mask_out), CLARG(a_full), CLARG(b_full),
-      CLARG(width), CLARG(height));
-
-cleanup:
-  dt_opencl_release_mem_object(ds_image);
-  dt_opencl_release_mem_object(ds_blend_tmp);
-  dt_opencl_release_mem_object(ds_g);
-  dt_opencl_release_mem_object(ds_gg);
-  dt_opencl_release_mem_object(ds_gp);
-  dt_opencl_release_mem_object(mean_g);
-  dt_opencl_release_mem_object(mean_p);
-  dt_opencl_release_mem_object(mean_gg);
-  dt_opencl_release_mem_object(mean_gp);
-  dt_opencl_release_mem_object(a);
-  dt_opencl_release_mem_object(b);
-  dt_opencl_release_mem_object(temp_ds);
-  dt_opencl_release_mem_object(a_full);
-  dt_opencl_release_mem_object(b_full);
-  return err;
+  dt_free_align(raw_mask);
+  dt_free_align(filtered_mask);
+  dt_free_align(noise_confidence);
 }
 
 void tiling_callback(dt_iop_module_t *self,
@@ -1045,7 +913,8 @@ void tiling_callback(dt_iop_module_t *self,
   dt_iop_satcurve_data_t *d = piece->data;
 
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-  const gboolean gf_active = d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
+  const gboolean gf_active =
+      d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
 
   tiling->factor = 1.0f + ioratio;
   tiling->factor_cl = tiling->factor;
@@ -1058,21 +927,19 @@ void tiling_callback(dt_iop_module_t *self,
   if (!gf_active)
     return;
 
-  // OpenCL allocations for guided filter:
-  // mask_scalar_cl  : full-res float -> 0.25
-  // mask_filtered_cl: full-res float -> 0.25
-  // ds_image etc.   : downsampled float (12x) -> 0.75
-  // a_full, b_full  : full-res float -> 0.50
-  // Total overhead factor: 1.75
-  tiling->factor_cl += 1.75f;
+  // Four scalar full-resolution buffers plus one three-channel perceptual
+  // guide are allocated in addition to the normal input/output buffers.
+  tiling->factor_cl += 2.0f;
 
-  const int base_overlap = (int)ceilf(d->gf_radius);
+  const float filter_radius = d->gf_radius;
+  const int base_overlap = (int)ceilf(filter_radius);
   const int scaled_overlap = base_overlap * d->gf_iterations;
   const int resample_margin = 2;
 
   tiling->overlap = MAX(tiling->overlap, scaled_overlap + resample_margin);
 }
 
+#if HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -1096,14 +963,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   // not const anymore: may be downgraded to FALSE below if the guided-filter
   // scratch buffers fail to allocate, mirroring the CPU fallback in process()
-  gboolean gf_active = d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
+  gboolean gf_active =
+      d->use_guided_filter && d->gf_radius >= 0.5f && d->gf_iterations > 0;
 
   const gboolean want_mask =
       self->dev->gui_attached && dt_pipe_is_full(piece->pipe) && g && g->mask_display;
-
-  // not const anymore: may be downgraded to FALSE below if the scharr-blend
-  // scratch buffers fail to allocate, mirroring the CPU fallback in process()
-  gboolean sb_active = !gf_active && d->use_scharr_blend;
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
@@ -1113,8 +977,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   cl_mem hist_bins_cl = NULL;
   cl_mem mask_scalar_cl = NULL;
   cl_mem mask_filtered_cl = NULL;
-  cl_mem sb_sat_mask_cl = NULL;
-  cl_mem sb_bri_mask_cl = NULL;
+  cl_mem guide_cl = NULL;
+  cl_mem noise_confidence_cl = NULL;
+  cl_mem mask_control_cl = NULL;
 
   dt_colormatrix_t input_matrix = {{0.0f}};
   dt_colormatrix_t output_matrix = {{0.0f}};
@@ -1163,96 +1028,38 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     hist_bins_cl = NULL;
   }
 
-  // Mask preview mode. Shows whichever mask is actually fed into the curve --
-  // guided filter, noise-aware blend, or the raw unfiltered saturation --
-  // mirroring the CPU preview block in process().
+  // Mask preview mode mirrors CPU final coordinate.
   if (want_mask)
   {
     if (gf_active)
     {
       mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
       mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
+      guide_cl = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+      noise_confidence_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+      mask_control_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+      if (mask_scalar_cl == NULL || mask_filtered_cl == NULL || guide_cl == NULL || noise_confidence_cl == NULL || mask_control_cl == NULL)
       {
         // fallback: show the unfiltered mask instead of aborting the preview
         dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
                          "disabling it for this preview"));
         dt_opencl_release_mem_object(mask_scalar_cl);
         dt_opencl_release_mem_object(mask_filtered_cl);
+        dt_opencl_release_mem_object(guide_cl);
+        dt_opencl_release_mem_object(noise_confidence_cl);
+        dt_opencl_release_mem_object(mask_control_cl);
+        dt_opencl_release_mem_object(guide_cl);
+        dt_opencl_release_mem_object(noise_confidence_cl);
+        dt_opencl_release_mem_object(mask_control_cl);
         mask_scalar_cl = NULL;
         mask_filtered_cl = NULL;
+        guide_cl = NULL;
+        noise_confidence_cl = NULL;
+        mask_control_cl = NULL;
         gf_active = FALSE;
       }
     }
-    else if (sb_active)
-    {
-      // reuse mask_filtered_cl as the display target: the saturation-channel
-      // output of the blend. Brilliance's own (edge-damped) output isn't
-      // shown here, same simplification as the CPU preview.
-      mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      cl_mem bri_scratch_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-      cl_mem sat_raw_buf = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
-      cl_mem sat_blur_buf = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
-
-      if (mask_filtered_cl == NULL || bri_scratch_cl == NULL || sat_raw_buf == NULL || sat_blur_buf == NULL)
-      {
-        dt_control_log(_("saturation curve: noise-aware blend failed to allocate memory, "
-                         "disabling it for this preview"));
-        dt_opencl_release_mem_object(mask_filtered_cl);
-        dt_opencl_release_mem_object(bri_scratch_cl);
-        dt_opencl_release_mem_object(sat_raw_buf);
-        dt_opencl_release_mem_object(sat_blur_buf);
-        mask_filtered_cl = NULL;
-        sb_active = FALSE;
-      }
-      else
-      {
-        err = dt_opencl_enqueue_kernel_2d_args(
-            devid, gd->kernel_satcurve_scalar_mask_buffer, width, height,
-            CLARG(dev_in), CLARG(sat_raw_buf),
-            CLARG(width), CLARG(height),
-            CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-            CLARG(d->formula), CLARG(L_white));
-        if (err == CL_SUCCESS)
-          err = dt_opencl_enqueue_kernel_2d_args(
-              devid, gd->kernel_satcurve_scalar_mask_buffer, width, height,
-              CLARG(dev_in), CLARG(sat_blur_buf),
-              CLARG(width), CLARG(height),
-              CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-              CLARG(d->formula), CLARG(L_white));
-        if (err == CL_SUCCESS)
-          err = dt_gaussian_mean_blur_cl(devid, sat_blur_buf, width, height, 1, MAX(0.5f, d->sb_radius));
-
-        if (err == CL_SUCCESS)
-        {
-          _init_sb_weights(d->sb_contrast);
-          cl_mem sb_weights_cl = dt_opencl_copy_host_to_device_constant(
-              devid, (size_t)(2 * DT_SATCURVE_SB_SIZE + 1) * sizeof(float), sb_weights);
-          if (sb_weights_cl == NULL)
-          {
-            err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-          }
-          else
-          {
-            err = dt_opencl_enqueue_kernel_2d_args(
-                devid, gd->kernel_satcurve_scharr_blend, width, height,
-                CLARG(sat_raw_buf), CLARG(sat_blur_buf), CLARG(sb_weights_cl),
-                CLARG(d->sb_threshold), CLARG(width), CLARG(height),
-                CLARG(mask_filtered_cl), CLARG(bri_scratch_cl));
-            dt_opencl_release_mem_object(sb_weights_cl);
-          }
-        }
-
-        dt_opencl_release_mem_object(bri_scratch_cl);
-        dt_opencl_release_mem_object(sat_raw_buf);
-        dt_opencl_release_mem_object(sat_blur_buf);
-
-        if (err != CL_SUCCESS)
-          goto error;
-      }
-    }
-
-    if (!gf_active && !sb_active)
+    if (!gf_active)
     {
       err = dt_opencl_enqueue_kernel_2d_args(
           devid, gd->kernel_satcurve_mask, width, height,
@@ -1277,19 +1084,31 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       if (err != CL_SUCCESS)
         goto error;
 
-      err = _satcurve_guided_filter_cl(gd, devid, mask_scalar_cl, mask_filtered_cl,
-                                       width, height, (int)d->gf_radius, d->gf_feathering,
-                                       d->gf_iterations);
+      err = dt_opencl_enqueue_kernel_2d_args(
+          devid, gd->kernel_satcurve_perceptual_guide, width, height,
+          CLARG(dev_in), CLARG(guide_cl), CLARG(width), CLARG(height),
+          CLARG(input_matrix_cl), CLARG(gamut_lut_cl), CLARG(d->formula), CLARG(L_white));
+      if (err == CL_SUCCESS)
+        err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
+                               width, height, 3,
+                               MAX(1, (int)d->gf_radius),
+                               MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
+      if (err == CL_SUCCESS)
+        err = dt_opencl_enqueue_kernel_2d_args(
+            devid, gd->kernel_satcurve_filter_confidence, width, height,
+            CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(guide_cl),
+            CLARG(mask_control_cl), CLARG(noise_confidence_cl), CLARG(width), CLARG(height),
+            CLARG(d->gf_protect_from), CLARG(d->gf_protect_to));
       if (err != CL_SUCCESS)
         goto error;
     }
 
-    // mask_filtered_cl now holds the mask to display, whether it came from
-    // the guided filter or the noise-aware blend branch above
+    // mask_control_cl holds final coordinate.
     err = dt_opencl_enqueue_kernel_2d_args(
-        devid, gd->kernel_satcurve_mask_from_scalar, width, height,
-        CLARG(mask_filtered_cl), CLARG(dev_in), CLARG(dev_out),
-        CLARG(width), CLARG(height));
+        devid, gd->kernel_satcurve_mask_from_control, width, height,
+        CLARG(mask_scalar_cl), CLARG(mask_control_cl), CLARG(noise_confidence_cl),
+        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+        CLARG(d->noise_protection));
 
     if (err == CL_SUCCESS)
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -1326,17 +1145,26 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   {
     mask_scalar_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
     mask_filtered_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    if (mask_scalar_cl == NULL || mask_filtered_cl == NULL)
+    guide_cl = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    noise_confidence_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+    mask_control_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+    if (mask_scalar_cl == NULL || mask_filtered_cl == NULL || guide_cl == NULL || noise_confidence_cl == NULL || mask_control_cl == NULL)
     {
-      // fallback: show the unfiltered mask instead of aborting the 
-      // preview. This mirrors the fallback logic in the main process() 
+      // fallback: show the unfiltered mask instead of aborting the
+      // preview. This mirrors the fallback logic in the main process()
       // path but specifically for the GUI display.
       dt_control_log(_("saturation curve: guided filter failed to allocate memory, "
                        "disabling it for this run"));
       dt_opencl_release_mem_object(mask_scalar_cl);
       dt_opencl_release_mem_object(mask_filtered_cl);
+      dt_opencl_release_mem_object(guide_cl);
+      dt_opencl_release_mem_object(noise_confidence_cl);
+      dt_opencl_release_mem_object(mask_control_cl);
       mask_scalar_cl = NULL;
       mask_filtered_cl = NULL;
+      guide_cl = NULL;
+      noise_confidence_cl = NULL;
+      mask_control_cl = NULL;
       gf_active = FALSE;
     }
   }
@@ -1352,101 +1180,39 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if (err != CL_SUCCESS)
       goto error;
 
-    err = _satcurve_guided_filter_cl(gd, devid, mask_scalar_cl, mask_filtered_cl,
-                                     width, height, (int)d->gf_radius, d->gf_feathering,
-                                     d->gf_iterations);
+    err = dt_opencl_enqueue_kernel_2d_args(
+        devid, gd->kernel_satcurve_perceptual_guide, width, height,
+        CLARG(dev_in), CLARG(guide_cl), CLARG(width), CLARG(height),
+        CLARG(input_matrix_cl), CLARG(gamut_lut_cl), CLARG(d->formula), CLARG(L_white));
+    if (err == CL_SUCCESS)
+      err = guided_filter_cl(devid, guide_cl, mask_scalar_cl, mask_filtered_cl,
+                             width, height, 3,
+                             MAX(1, (int)d->gf_radius),
+                             MAX(0.01f, d->gf_feathering * 0.01f), 1.0f, 0.0f, 1.0f);
+    if (err == CL_SUCCESS)
+      err = dt_opencl_enqueue_kernel_2d_args(
+          devid, gd->kernel_satcurve_filter_confidence, width, height,
+          CLARG(mask_scalar_cl), CLARG(mask_filtered_cl), CLARG(guide_cl),
+          CLARG(mask_control_cl), CLARG(noise_confidence_cl), CLARG(width), CLARG(height),
+          CLARG(d->gf_protect_from), CLARG(d->gf_protect_to));
     if (err != CL_SUCCESS)
       goto error;
   }
 
-  // 1b. Prepare the noise-aware blend masks if enabled (mutually exclusive
-  // with the guided filter, see sb_active above). Mirrors
-  // apply_scharr_blend_to_mask() on the CPU: raw saturation -> plain gaussian
-  // blur -> sigmoid/Scharr blend, producing separate sat/bri masks.
-  if (sb_active)
-  {
-    cl_mem sat_raw_buf = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
-    cl_mem sat_blur_buf = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
-    sb_sat_mask_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-    sb_bri_mask_cl = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-
-    if (sat_raw_buf == NULL || sat_blur_buf == NULL || sb_sat_mask_cl == NULL || sb_bri_mask_cl == NULL)
-    {
-      dt_control_log(_("saturation curve: noise-aware blend failed to allocate memory, "
-                       "disabling it for this run"));
-      dt_opencl_release_mem_object(sat_raw_buf);
-      dt_opencl_release_mem_object(sat_blur_buf);
-      dt_opencl_release_mem_object(sb_sat_mask_cl);
-      dt_opencl_release_mem_object(sb_bri_mask_cl);
-      sat_raw_buf = NULL;
-      sat_blur_buf = NULL;
-      sb_sat_mask_cl = NULL;
-      sb_bri_mask_cl = NULL;
-      sb_active = FALSE;
-    }
-    else
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(
-          devid, gd->kernel_satcurve_scalar_mask_buffer, width, height,
-          CLARG(dev_in), CLARG(sat_raw_buf),
-          CLARG(width), CLARG(height),
-          CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-          CLARG(d->formula), CLARG(L_white));
-      if (err == CL_SUCCESS)
-        err = dt_opencl_enqueue_kernel_2d_args(
-            devid, gd->kernel_satcurve_scalar_mask_buffer, width, height,
-            CLARG(dev_in), CLARG(sat_blur_buf),
-            CLARG(width), CLARG(height),
-            CLARG(input_matrix_cl), CLARG(gamut_lut_cl),
-            CLARG(d->formula), CLARG(L_white));
-      if (err == CL_SUCCESS)
-        err = dt_gaussian_mean_blur_cl(devid, sat_blur_buf, width, height, 1, MAX(0.5f, d->sb_radius));
-
-      if (err == CL_SUCCESS)
-      {
-        _init_sb_weights(d->sb_contrast);
-        cl_mem sb_weights_cl = dt_opencl_copy_host_to_device_constant(
-            devid, (size_t)(2 * DT_SATCURVE_SB_SIZE + 1) * sizeof(float), sb_weights);
-        if (sb_weights_cl == NULL)
-        {
-          err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-        }
-        else
-        {
-          err = dt_opencl_enqueue_kernel_2d_args(
-              devid, gd->kernel_satcurve_scharr_blend, width, height,
-              CLARG(sat_raw_buf), CLARG(sat_blur_buf), CLARG(sb_weights_cl),
-              CLARG(d->sb_threshold), CLARG(width), CLARG(height),
-              CLARG(sb_sat_mask_cl), CLARG(sb_bri_mask_cl));
-          dt_opencl_release_mem_object(sb_weights_cl);
-        }
-      }
-
-      if (err != CL_SUCCESS)
-      {
-        dt_opencl_release_mem_object(sat_raw_buf);
-        dt_opencl_release_mem_object(sat_blur_buf);
-        goto error;
-      }
-    }
-
-    dt_opencl_release_mem_object(sat_raw_buf);
-    dt_opencl_release_mem_object(sat_blur_buf);
-  }
-
-  const int use_mask = (gf_active || sb_active) ? 1 : 0;
-  cl_mem sat_mask_arg = gf_active ? mask_filtered_cl : (sb_active ? sb_sat_mask_cl : dev_in);
-  cl_mem bri_mask_arg = gf_active ? mask_filtered_cl : (sb_active ? sb_bri_mask_cl : dev_in);
+  const int use_mask = gf_active ? 1 : 0;
+  cl_mem sat_mask_arg = gf_active ? mask_control_cl : dev_in;
+  cl_mem bri_mask_arg = gf_active ? mask_control_cl : dev_in;
+  cl_mem noise_confidence_arg = gf_active ? noise_confidence_cl : dev_in;
 
   // 2. Main processing pass: evaluate curves using the smoothed / blended masks
   err = dt_opencl_enqueue_kernel_2d_args(
       devid, gd->kernel_satcurvergb, width, height,
       CLARG(dev_in), CLARG(dev_out),
-      CLARG(sat_mask_arg), CLARG(bri_mask_arg), CLARG(use_mask),
+      CLARG(sat_mask_arg), CLARG(bri_mask_arg), CLARG(noise_confidence_arg), CLARG(use_mask),
       CLARG(width), CLARG(height),
       CLARG(input_matrix_cl), CLARG(output_matrix_cl),
       CLARG(sat_lut_cl), CLARG(bri_lut_cl), CLARG(gamut_lut_cl),
-      CLARG(d->formula), CLARG(L_white));
+      CLARG(d->formula), CLARG(L_white), CLARG(d->noise_protection));
 
   if (err != CL_SUCCESS)
     goto error;
@@ -1460,8 +1226,6 @@ error:
   dt_opencl_release_mem_object(hist_bins_cl);
   dt_opencl_release_mem_object(mask_scalar_cl);
   dt_opencl_release_mem_object(mask_filtered_cl);
-  dt_opencl_release_mem_object(sb_sat_mask_cl);
-  dt_opencl_release_mem_object(sb_bri_mask_cl);
   return err;
 }
 
@@ -1476,9 +1240,10 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_satcurve_histogram = dt_opencl_create_kernel(program, "satcurve_histogram");
   gd->kernel_satcurve_mask = dt_opencl_create_kernel(program, "satcurve_mask");
   gd->kernel_satcurve_scalar_mask = dt_opencl_create_kernel(program, "satcurve_scalar_mask");
-  gd->kernel_satcurve_scalar_mask_buffer = dt_opencl_create_kernel(program, "satcurve_scalar_mask_buffer");
-  gd->kernel_satcurve_scharr_blend = dt_opencl_create_kernel(program, "satcurve_scharr_blend");
   gd->kernel_satcurve_mask_from_scalar = dt_opencl_create_kernel(program, "satcurve_mask_from_scalar");
+  gd->kernel_satcurve_perceptual_guide = dt_opencl_create_kernel(program, "satcurve_perceptual_guide");
+  gd->kernel_satcurve_filter_confidence = dt_opencl_create_kernel(program, "satcurve_filter_confidence");
+  gd->kernel_satcurve_mask_from_control = dt_opencl_create_kernel(program, "satcurve_mask_from_control");
   gd->kernel_fgf_resample = dt_opencl_create_kernel(program_fgf, "fastguided_resample");
   gd->kernel_fgf_quantize = dt_opencl_create_kernel(program_fgf, "fastguided_quantize");
   gd->kernel_fgf_covar_products = dt_opencl_create_kernel(program_fgf, "fastguided_covar_products");
@@ -1493,9 +1258,10 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_satcurve_histogram);
   dt_opencl_free_kernel(gd->kernel_satcurve_mask);
   dt_opencl_free_kernel(gd->kernel_satcurve_scalar_mask);
-  dt_opencl_free_kernel(gd->kernel_satcurve_scalar_mask_buffer);
-  dt_opencl_free_kernel(gd->kernel_satcurve_scharr_blend);
   dt_opencl_free_kernel(gd->kernel_satcurve_mask_from_scalar);
+  dt_opencl_free_kernel(gd->kernel_satcurve_perceptual_guide);
+  dt_opencl_free_kernel(gd->kernel_satcurve_filter_confidence);
+  dt_opencl_free_kernel(gd->kernel_satcurve_mask_from_control);
   dt_opencl_free_kernel(gd->kernel_fgf_resample);
   dt_opencl_free_kernel(gd->kernel_fgf_quantize);
   dt_opencl_free_kernel(gd->kernel_fgf_covar_products);
@@ -1641,11 +1407,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->gf_radius = p->gf_radius;
   d->gf_feathering = p->gf_feathering;
   d->gf_iterations = p->gf_iterations;
-
-  d->use_scharr_blend = p->use_scharr_blend;
-  d->sb_radius = p->sb_radius;
-  d->sb_threshold = p->sb_threshold;
-  d->sb_contrast = p->sb_contrast;
+  d->gf_protect_from = p->gf_protect_from;
+  d->gf_protect_to = p->gf_protect_to;
+  d->noise_protection = p->noise_protection;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
       dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
@@ -1937,18 +1701,19 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
   GtkAllocation a;
   gtk_widget_get_allocation(widget, &a);
 
-  if (event->y >= a.height - DT_RESIZE_HANDLE_SIZE)
+  if (dt_gdk_event_get_y(event) >= a.height - DT_RESIZE_HANDLE_SIZE)
     return FALSE;
 
   float gx0, gy0, w, h;
   _get_graph_geometry(&a, &gx0, &gy0, &w, &h);
 
-  const float x = CLAMP((event->x - gx0) / w, 0.f, 1.f);
-  const float y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
+  const float x = CLAMP((dt_gdk_event_get_x(event) - gx0) / w, 0.f, 1.f);
+  const float y = CLAMP(1.f - (dt_gdk_event_get_y(event) - gy0) / h, 0.f, 1.f);
 
   int hit = _node_hit_at(cp, x, y);
 
-  if (event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+  if (dt_gdk_event_get_type(event) == GDK_2BUTTON_PRESS
+      && dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     reset_channel_curve(cp);
     g->selected = -1;
@@ -1957,9 +1722,9 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
     return TRUE;
   }
 
-  if (event->button == GDK_BUTTON_SECONDARY && hit >= 0)
+  if (dt_gdk_event_get_button(event) == GDK_BUTTON_SECONDARY && hit >= 0)
   {
-    if ((event->state & GDK_CONTROL_MASK) || cp->curve_num_nodes <= 2)
+    if ((dt_gdk_event_get_state(event) & GDK_CONTROL_MASK) || cp->curve_num_nodes <= 2)
     {
       cp->curve[hit].y = .5f;
     }
@@ -1975,7 +1740,7 @@ static gboolean area_button(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
     return TRUE;
   }
 
-  if (event->button == GDK_BUTTON_PRIMARY)
+  if (dt_gdk_event_get_button(event) == GDK_BUTTON_PRIMARY)
   {
     if (hit < 0 && cp->curve_num_nodes < DT_IOP_SATCURVE_MAXNODES)
       hit = add_node_to_channel(cp, x, CLAMP(dt_draw_curve_calc_value(gc->curve, x), 0.f, 1.f));
@@ -2002,7 +1767,7 @@ static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event,
   int delta_y = 0;
   if (dt_gui_get_scroll_unit_delta((const GdkEvent *)event, &delta_y))
   {
-    const float step = 0.02f * (event->state & GDK_CONTROL_MASK ? 5.0f : 1.0f);
+    const float step = 0.02f * (dt_gdk_event_get_state(event) & GDK_CONTROL_MASK ? 5.0f : 1.0f);
     const int n = g->selected;
     cp->curve[n].y = CLAMP(cp->curve[n].y - delta_y * step, 0.f, 1.f);
 
@@ -2029,7 +1794,7 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
   // Dragging a node that was grabbed by a button press.
   if (g->dragging && g->selected >= 0)
   {
-    const float x = CLAMP((event->x - gx0) / w, 0.f, 1.f);
+    const float x = CLAMP((dt_gdk_event_get_x(event) - gx0) / w, 0.f, 1.f);
     const int n = g->selected;
 
     if (n == 0)
@@ -2041,7 +1806,7 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
                              cp->curve[n - 1].x + DT_IOP_SATCURVE_MIN_X_DISTANCE,
                              cp->curve[n + 1].x - DT_IOP_SATCURVE_MIN_X_DISTANCE);
 
-    cp->curve[n].y = CLAMP(1.f - (event->y - gy0) / h, 0.f, 1.f);
+    cp->curve[n].y = CLAMP(1.f - (dt_gdk_event_get_y(event) - gy0) / h, 0.f, 1.f);
     dt_dev_add_history_item(darktable.develop, self, FALSE);
     gtk_widget_queue_draw(widget);
     return TRUE;
@@ -2051,13 +1816,16 @@ static gboolean area_motion(GtkWidget *widget, GdkEventMotion *event, dt_iop_mod
   // subsequent press drags it, the scroll wheel nudges it, and it is drawn
   // highlighted. Hit-test only inside the graph rectangle -- clamping would
   // otherwise grab an endpoint node from the inset/gradient margin.
-  const gboolean inside = event->x >= gx0 && event->x <= gx0 + w && event->y >= gy0 && event->y <= gy0 + h;
+  const gboolean inside = dt_gdk_event_get_x(event) >= gx0
+                          && dt_gdk_event_get_x(event) <= gx0 + w
+                          && dt_gdk_event_get_y(event) >= gy0
+                          && dt_gdk_event_get_y(event) <= gy0 + h;
 
   int hit = -1;
   if (inside)
   {
-    const float x = (event->x - gx0) / w;
-    const float y = 1.f - (event->y - gy0) / h;
+    const float x = (dt_gdk_event_get_x(event) - gx0) / w;
+    const float y = 1.f - (dt_gdk_event_get_y(event) - gy0) / h;
     hit = _node_hit_at(cp, x, y);
   }
 
@@ -2213,6 +1981,21 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+static void _protect_center_width_changed(GtkWidget *widget, dt_iop_module_t *self)
+{
+  DT_GUARD_GUI_UPDATE();
+
+  dt_iop_satcurve_gui_data_t *g = self->gui_data;
+  dt_iop_satcurve_params_t *p = self->params;
+
+  const float center = dt_bauhaus_slider_get(g->gf_protect_center);
+  const float width = dt_bauhaus_slider_get(g->gf_protect_width);
+
+  protect_center_width_to_from_to(center, width, &p->gf_protect_from, &p->gf_protect_to);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 {
   dt_iop_satcurve_gui_data_t *g = self->gui_data;
@@ -2231,30 +2014,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
     gtk_widget_set_sensitive(g->gf_radius, p->use_guided_filter);
     gtk_widget_set_sensitive(g->gf_feathering, p->use_guided_filter);
     gtk_widget_set_sensitive(g->gf_iterations, p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_protect_center, p->use_guided_filter);
+    gtk_widget_set_sensitive(g->gf_protect_width, p->use_guided_filter);
   }
-
-  // guided filter and the noise-aware blend are alternatives (see process()),
-  // switching one on turns the other off to avoid a silently ignored toggle
-  if (widget == g->use_guided_filter && p->use_guided_filter && p->use_scharr_blend)
-  {
-    p->use_scharr_blend = FALSE;
-    dt_bauhaus_toggle_set(g->use_scharr_blend, FALSE);
-  }
-  if (widget == g->use_scharr_blend && p->use_scharr_blend && p->use_guided_filter)
-  {
-    p->use_guided_filter = FALSE;
-    dt_bauhaus_toggle_set(g->use_guided_filter, FALSE);
-    gtk_widget_set_sensitive(g->gf_radius, FALSE);
-    gtk_widget_set_sensitive(g->gf_feathering, FALSE);
-    gtk_widget_set_sensitive(g->gf_iterations, FALSE);
-  }
-
-  if (!widget || widget == g->use_scharr_blend)
-  {
-    gtk_widget_set_sensitive(g->sb_radius, p->use_scharr_blend);
-    gtk_widget_set_sensitive(g->sb_threshold, p->use_scharr_blend);
-    gtk_widget_set_sensitive(g->sb_contrast, p->use_scharr_blend);
-  }
+  if (!widget || widget == g->use_guided_filter)
+    gtk_widget_set_sensitive(g->noise_protection, p->use_guided_filter);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -2267,20 +2031,21 @@ void gui_update(dt_iop_module_t *self)
   if (g->formula)
     dt_bauhaus_combobox_set(g->formula, p->formula);
 
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_guided_filter), p->use_guided_filter);
+
   if (g->notebook)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(g->notebook),
                                   g->active_channel == DT_IOP_SATCURVE_CHANNEL_BRILLIANCE ? 1 : 0);
 
-  gtk_widget_set_sensitive(g->gf_radius, p->use_guided_filter);
-  gtk_widget_set_sensitive(g->gf_feathering, p->use_guided_filter);
-  gtk_widget_set_sensitive(g->gf_iterations, p->use_guided_filter);
-
-  gtk_widget_set_sensitive(g->sb_radius, p->use_scharr_blend);
-  gtk_widget_set_sensitive(g->sb_threshold, p->use_scharr_blend);
-  gtk_widget_set_sensitive(g->sb_contrast, p->use_scharr_blend);
+  float center, width;
+  protect_from_to_to_center_width(p->gf_protect_from, p->gf_protect_to, &center, &width);
+  dt_bauhaus_slider_set(g->gf_protect_center, center);
+  dt_bauhaus_slider_set(g->gf_protect_width, width);
 
   if (g->area)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -2424,46 +2189,38 @@ void gui_init(dt_iop_module_t *self)
                               _("number of times the guided filter is applied recursively; "
                                 "increases smoothing but costs more time"));
 
+  g->gf_protect_center = dt_bauhaus_slider_new_with_range(
+      self, 0.0f, 0.5f, 0.f, 0.055f, 3);
+  dt_bauhaus_widget_set_label(g->gf_protect_center, NULL, _("protect near-neutrals"));
+  dt_bauhaus_slider_set_factor(g->gf_protect_center, 100.0f);
+  dt_bauhaus_slider_set_format(g->gf_protect_center, "%");
+  dt_bauhaus_slider_set_digits(g->gf_protect_center, 1);
+  gtk_widget_set_tooltip_text(g->gf_protect_center,
+                              _("center of the saturation range protected from the guided filter"));
+  g_signal_connect(G_OBJECT(g->gf_protect_center), "value-changed",
+                   G_CALLBACK(_protect_center_width_changed), self);
+  gtk_box_pack_start(GTK_BOX(gf_section->widget), g->gf_protect_center, TRUE, TRUE, 0);
+
+  g->gf_protect_width = dt_bauhaus_slider_new_with_range(
+      self, 0.0f, 0.3f, 0.f, 0.05f, 3);
+  dt_bauhaus_widget_set_label(g->gf_protect_width, NULL, _("protection transition width"));
+  dt_bauhaus_slider_set_format(g->gf_protect_width, "%");
+  dt_bauhaus_slider_set_digits(g->gf_protect_width, 0);
+  gtk_widget_set_tooltip_text(g->gf_protect_width,
+                              _("width of the smooth transition around the protected center; wider "
+                                "values give a gentler, less abrupt protection falloff"));
+  g_signal_connect(G_OBJECT(g->gf_protect_width), "value-changed",
+                   G_CALLBACK(_protect_center_width_changed), self);
+  gtk_box_pack_start(GTK_BOX(gf_section->widget), g->gf_protect_width, TRUE, TRUE, 0);
+
+  g->noise_protection = dt_bauhaus_slider_from_params(gf_section, "noise_protection");
+  dt_bauhaus_slider_set_digits(g->noise_protection, 2);
+  dt_bauhaus_slider_set_format(g->noise_protection, "%");
+  gtk_widget_set_tooltip_text(g->noise_protection,
+                              _("limit curve changes in noisy or uncertain regions"));
+
   dt_gui_box_add(self->widget, gf_box);
-
-  GtkWidget *sb_box = dt_gui_vbox();
-  dt_gui_new_collapsible_section(&g->sb_section,
-                                 "plugins/darkroom/satcurve/expand_scharr_blend",
-                                 _("noise-aware blend"),
-                                 GTK_BOX(sb_box), DT_ACTION(self));
-
-  dt_iop_module_t *sb_section =
-      DT_IOP_SECTION_FOR_PARAMS(self, NULL, g->sb_section.container);
-
-  g->use_scharr_blend = dt_bauhaus_toggle_from_params(sb_section, "use_scharr_blend");
-  gtk_widget_set_tooltip_text(g->use_scharr_blend,
-                              _("alternative to the guided filter: blends the raw saturation with a "
-                                "plain blurred version of it, weighted by a sigmoid over saturation "
-                                "and (for brilliance) by local saturation gradients, to reduce noise "
-                                "and halos without spatial edge-aware filtering"));
-
-  g->sb_radius = dt_bauhaus_slider_from_params(sb_section, "sb_radius");
-  dt_bauhaus_slider_set_format(g->sb_radius, _("px"));
-  dt_bauhaus_slider_set_digits(g->sb_radius, 1);
-  gtk_widget_set_tooltip_text(g->sb_radius, _("radius of the plain gaussian blur applied to the saturation mask"));
-
-  g->sb_threshold = dt_bauhaus_slider_from_params(sb_section, "sb_threshold");
-  dt_bauhaus_slider_set_digits(g->sb_threshold, 3);
-  dt_bauhaus_slider_set_format(g->sb_threshold, "%");
-  gtk_widget_set_tooltip_text(g->sb_threshold,
-                              _("saturation threshold: below it, the blurred value is distrusted "
-                                "and the raw per-pixel saturation is used instead"));
-
-  g->sb_contrast = dt_bauhaus_slider_from_params(sb_section, "sb_contrast");
-  dt_bauhaus_slider_set_digits(g->sb_contrast, 3);
-  gtk_widget_set_tooltip_text(g->sb_contrast,
-                              _("steepness of the blend transition around the threshold\n"
-                                " - increase for a sharper cutoff\n"
-                                " - decrease for a smoother transition"));
-
-  dt_gui_box_add(self->widget, sb_box);
 }
-
 
 void init(dt_iop_module_t *self)
 {

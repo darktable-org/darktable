@@ -179,12 +179,13 @@ satcurve_histogram(read_only image2d_t in, const int width, const int height,
 
 kernel void
 satcurvergb(read_only image2d_t in, write_only image2d_t out,
-            read_only image2d_t sat_mask_in, read_only image2d_t bri_mask_in, const int use_mask,
+            read_only image2d_t sat_mask_in, read_only image2d_t bri_mask_in,
+            read_only image2d_t noise_confidence, const int use_mask,
             const int width, const int height,
             constant const float *const matrix_in, constant const float *const matrix_out,
             global const float *const sat_lut, global const float *const bri_lut,
             global const float *const gamut_lut,
-            const int formula, const float L_white)
+            const int formula, const float L_white, const float noise_protection)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -216,8 +217,10 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
 
     const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_sat), 0.f, 1.f);
     const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_bri), 0.f, 1.f);
-    const float sat_factor = curve_to_factor_cl(sat_c);
-    const float bri_factor = curve_to_factor_cl(bri_c);
+    const float noise_conf = use_mask ? clamp(Areadsingle(noise_confidence, x, y), 0.f, 1.f) : 0.f;
+    const float effect = 1.f - clamp(noise_protection * noise_conf, 0.f, 1.f);
+    const float sat_factor = 1.f + effect * (curve_to_factor_cl(sat_c) - 1.f);
+    const float bri_factor = 1.f + effect * (curve_to_factor_cl(bri_c) - 1.f);
 
     HSB.y = fmax(HSB.y * sat_factor, 0.f);
     HSB.y = satcurve_soft_clip_cl(HSB.y, 0.8f * gamut_s, gamut_s);
@@ -258,8 +261,10 @@ satcurvergb(read_only image2d_t in, write_only image2d_t out,
 
     const float sat_c = clamp(satcurve_lookup_lut_cl(sat_lut, s_in_sat), 0.f, 1.f);
     const float bri_c = clamp(satcurve_lookup_lut_cl(bri_lut, s_in_bri), 0.f, 1.f);
-    const float sat_factor = curve_to_factor_cl(sat_c);
-    const float bri_factor = curve_to_factor_cl(bri_c);
+    const float noise_conf = use_mask ? clamp(Areadsingle(noise_confidence, x, y), 0.f, 1.f) : 0.f;
+    const float effect = 1.f - clamp(noise_protection * noise_conf, 0.f, 1.f);
+    const float sat_factor = 1.f + effect * (curve_to_factor_cl(sat_c) - 1.f);
+    const float bri_factor = 1.f + effect * (curve_to_factor_cl(bri_c) - 1.f);
 
     const float s_out = satcurve_soft_clip_cl(fmax(s_in_sat * sat_factor, 0.f), 0.8f, 1.f) * gamut;
 
@@ -330,6 +335,71 @@ satcurve_scalar_mask(read_only image2d_t in, write_only image2d_t out,
   const float s_in_norm = satcurve_s_in_norm_cl(pix_in, matrix_in, gamut_lut, formula, L_white);
 
   write_imagef(out, (int2)(x, y), fmax(s_in_norm, 0.f));
+}
+
+kernel void
+satcurve_perceptual_guide(read_only image2d_t in, write_only image2d_t out,
+                          const int width, const int height,
+                          constant const float *const matrix_in,
+                          global const float *const gamut_lut,
+                          const int formula, const float L_white)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if (x >= width || y >= height) return;
+
+  const float4 rgb = fmax(Areadpixel(in, x, y), 0.f);
+  const float4 xyz = matrix_product_float4(rgb, matrix_in);
+  float4 guide;
+  if (formula == DT_IOP_SATCURVE_JZAZBZ)
+  {
+    const float4 jab = XYZ_to_JzAzBz(xyz);
+    guide = (float4)(100.f * jab.x, 100.f * jab.y, 100.f * jab.z, 0.f);
+  }
+  else
+  {
+    const float4 xyY = dt_D65_XYZ_to_xyY(xyz);
+    const float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
+    guide = (float4)(JCH.x / fmax(L_white, 1e-6f),
+                    JCH.y * dtcl_cos(JCH.z) / fmax(L_white, 1e-6f),
+                    JCH.y * dtcl_sin(JCH.z) / fmax(L_white, 1e-6f), 0.f);
+  }
+  write_imagef(out, (int2)(x, y), guide);
+}
+
+kernel void
+satcurve_filter_confidence(read_only image2d_t raw, read_only image2d_t filtered,
+                           read_only image2d_t guide, write_only image2d_t control,
+                           write_only image2d_t confidence,
+                           const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if (x >= width || y >= height) return;
+
+  const float raw_center = Areadsingle(raw, x, y);
+  const float filtered_center = Areadsingle(filtered, x, y);
+  const float4 guide_center = Areadpixel(guide, x, y);
+  float residual_energy = 0.f;
+  float edge_energy = 0.f;
+  for (int dy = -1; dy <= 1; dy++)
+    for (int dx = -1; dx <= 1; dx++)
+    {
+      const int nx = clamp(x + dx, 0, width - 1);
+      const int ny = clamp(y + dy, 0, height - 1);
+      const float residual = Areadsingle(raw, nx, ny) - Areadsingle(filtered, nx, ny);
+      const float4 guide_pixel = Areadpixel(guide, nx, ny);
+      residual_energy += residual * residual;
+      const float4 delta = guide_pixel - guide_center;
+      edge_energy += dot(delta, delta);
+    }
+  residual_energy /= 9.f;
+  edge_energy /= 27.f;
+  const float noisy = smoothstep(0.0005f, 0.01f, residual_energy);
+  const float edge_safe = 1.f - smoothstep(0.0005f, 0.01f, edge_energy);
+  const float conf = noisy * edge_safe;
+  write_imagef(confidence, (int2)(x, y), conf);
+  write_imagef(control, (int2)(x, y), clamp(raw_center + conf * (filtered_center - raw_center), 0.f, 1.f));
 }
 
 // same as satcurve_scalar_mask above, but writes into a plain linear buffer
@@ -426,6 +496,26 @@ satcurve_mask_from_scalar(read_only image2d_t scalar_mask, read_only image2d_t i
   float4 pixout = {1.0f - 0.5f * t, 1.0f - t, 1.0f - 0.5f * t, pix_in.w};
 
   write_imagef(out, (int2)(x, y), pixout);
+}
+
+kernel void
+satcurve_mask_from_control(read_only image2d_t raw, read_only image2d_t filtered,
+                           read_only image2d_t confidence, read_only image2d_t in,
+                           write_only image2d_t out,
+                           const int width, const int height,
+                           const float noise_protection)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if (x >= width || y >= height) return;
+  const float raw_value = Areadsingle(raw, x, y);
+  const float filtered_value = Areadsingle(filtered, x, y);
+  const float conf = clamp(Areadsingle(confidence, x, y), 0.f, 1.f);
+  const float effect = 1.f - clamp(noise_protection * conf, 0.f, 1.f);
+  const float value = clamp(raw_value + effect * (filtered_value - raw_value), 0.f, 1.f);
+  const float t = sqrt(value);
+  const float4 pixel = Areadpixel(in, x, y);
+  write_imagef(out, (int2)(x, y), (float4)(1.f - .5f * t, 1.f - t, 1.f - .5f * t, pixel.w));
 }
 
 
