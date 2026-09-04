@@ -485,7 +485,7 @@ static void _menuitem_activate_preset(GSimpleAction *action,
                        minfo->module->plugin_name, minfo->module->version());
 
   // close the menu
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->preset_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
 /* secondary click copies the preset as lua and keeps the menu open: the
@@ -928,7 +928,7 @@ static void _presets_popup_callback(GtkWidget *button,
     .prefs = minfo->module->set_preferences ? _lib_presets_prefs : NULL,
   };
 
-  darktable.gui->preset_popover_menu = dt_gui_presets_popup_menu_show(button, &ops);
+  darktable.gui->active_popover_menu = dt_gui_presets_popup_menu_show(button, &ops);
 
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);

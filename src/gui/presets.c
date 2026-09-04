@@ -1295,7 +1295,7 @@ static void _menuitem_activate_preset(GSimpleAction *action,
   //                                                 "dt-preset-name"), module);
 
   // close the menu
-  gtk_popover_popdown(GTK_POPOVER(darktable.gui->preset_popover_menu));
+  gtk_popover_popdown(GTK_POPOVER(darktable.gui->active_popover_menu));
 }
 
 static void _menuitem_activate_quick_preset(GSimpleAction *action,
@@ -1938,7 +1938,7 @@ void dt_gui_presets_popup_menu_show_for_module(GtkWidget *button, dt_iop_module_
                ? _iop_prefs : NULL,
   };
 
-  darktable.gui->preset_popover_menu = dt_gui_presets_popup_menu_show(button, &ops);
+  darktable.gui->active_popover_menu = dt_gui_presets_popup_menu_show(button, &ops);
   _click_time = 0;
 }
 
